@@ -286,7 +286,6 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     this.breadcrumbService.clearFourthBreadcrumb();
   }
 
-  /** Restore the case-definition + Migration-tab trail that this routed screen is nested under. */
   private initBreadcrumbs(): void {
     const route = `/case-management/case/${this._params.caseDefinitionKey}/version/${this._params.caseDefinitionVersionTag}`;
 
@@ -375,7 +374,6 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     this.applySource(plan.source);
   }
 
-  /** Apply a structured change coming from one of the form tabs and reflect it in the JSON editor. */
   private patchPlan(partial: Partial<MigrationPlan>): void {
     const plan: MigrationPlan = {...this.$plan(), ...partial};
     const value = JSON.stringify(plan, null, 2);
@@ -483,7 +481,6 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       });
   }
 
-  /** The versions of [key], newest first, for the source version picker. */
   private loadSourceVersionOptions(key: string): void {
     this.caseManagementService
       .getCaseDefinitionVersions(key)
@@ -500,7 +497,6 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       });
   }
 
-  /** `processKey -> processDefinitionId` for the processes linked to a case definition version. */
   private linkedProcessDefinitions(
     caseDefinitionKey: string,
     versionTag: string

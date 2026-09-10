@@ -74,8 +74,7 @@ class CallActivityBuildingBlockEntryOwnershipTest {
 
     @Test
     fun `should keep the owner when the other tree declares two versions of its key`() {
-        // Which of them the instances are on cannot be told from here, and taking whichever the set yielded
-        // first made the answer depend on iteration order. Fall back to the version asked about.
+        // Which version the instances are on cannot be told here, and set order decided it. Fall back to the version asked about.
         val onTarget = BuildingBlockDefinitionId.of("verhuizing-inspectie", "1.0.4")
         reaches(
             source,

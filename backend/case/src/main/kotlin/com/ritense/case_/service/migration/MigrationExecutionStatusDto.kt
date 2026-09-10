@@ -21,7 +21,6 @@ import com.ritense.case_.domain.migration.MigrationExecutionError
 import com.ritense.case_.domain.migration.MigrationExecutionWarning
 import java.time.LocalDateTime
 
-/** Read model for the migration status shown in the UI. */
 data class MigrationExecutionStatusDto(
     val status: CaseMigrationStatus,
     /** Cases still to migrate: the estimate before a run, [casesTotal] minus everything touched during and after one. */

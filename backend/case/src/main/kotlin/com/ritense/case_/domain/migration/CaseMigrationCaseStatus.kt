@@ -16,7 +16,6 @@
 
 package com.ritense.case_.domain.migration
 
-/** Per-case outcome recorded for a migration plan run. */
 enum class CaseMigrationCaseStatus {
     MIGRATED,
     FAILED,

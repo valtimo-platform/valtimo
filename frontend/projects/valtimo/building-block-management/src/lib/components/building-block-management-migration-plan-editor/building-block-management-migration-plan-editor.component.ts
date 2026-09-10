@@ -275,7 +275,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     this.breadcrumbService.clearFourthBreadcrumb();
   }
 
-  /** Restore the building-block-definition + Migration-tab trail that this routed screen is nested under. */
   private initBreadcrumbs(): void {
     const base = `/building-block-management/building-block/${this._params.buildingBlockDefinitionKey}/version/${this._params.buildingBlockDefinitionVersionTag}`;
 
@@ -367,7 +366,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
     this.applySource(plan.source);
   }
 
-  /** Apply a structured change coming from one of the form tabs and reflect it in the JSON editor. */
   private patchPlan(partial: Partial<MigrationPlan>): void {
     const plan: MigrationPlan = {...this.$plan(), ...partial};
     const value = JSON.stringify(plan, null, 2);
@@ -475,7 +473,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
       });
   }
 
-  /** The versions of [key], for the source version picker. */
   private loadSourceVersionOptions(key: string): void {
     this.buildingBlockManagementApiService
       .getVersionsForBuildingBlock(key, 0, 100, true)
@@ -492,7 +489,6 @@ export class BuildingBlockManagementMigrationPlanEditorComponent implements OnIn
       });
   }
 
-  /** `processKey -> processDefinitionId` for the processes linked to a building block definition version. */
   private linkedProcessDefinitions(
     key: string,
     versionTag: string

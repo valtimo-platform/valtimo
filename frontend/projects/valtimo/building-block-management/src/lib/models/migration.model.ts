@@ -37,7 +37,6 @@ interface MigrationExecutionError {
 /** How far a plan has got. A building block plan has no run of its own, so the only meaningful figure is how many instances it has been applied to. */
 interface MigrationExecutionStatus {
   status: BuildingBlockMigrationStatus;
-  /** Building block instances this plan has been applied to. */
   casesMigrated: number;
 }
 
@@ -52,15 +51,12 @@ interface MigrationPlanManagement {
 
 type DataMigrationTargetType = 'string' | 'integer' | 'long' | 'number' | 'double' | 'boolean';
 
-/** A single value-resolver patch of the `dataMigration` block of a migration plan. */
 interface DataMigrationPatch {
   /** Value-resolver path to copy from (mutually exclusive with `value`). */
   source?: string | null;
   /** Literal value to set on the target (mutually exclusive with `source`). */
   value?: unknown;
-  /** Value-resolver path to write to. */
   target: string;
-  /** Optional type coercion of the written value. */
   targetType?: DataMigrationTargetType | null;
 }
 
@@ -80,7 +76,6 @@ interface ProcessVariablePatch {
   value?: unknown;
   /** Value-resolver path of the process variable to write to, e.g. `pv:name`. */
   target: string;
-  /** Optional type coercion of the written value. */
   targetType?: DataMigrationTargetType | null;
 }
 
@@ -89,7 +84,6 @@ interface ProcessMigrationInstruction {
   sourceProcessDefinitionKey: string;
   /** Null only while authoring — the suggester leaves it blank for a source it cannot account for, and the backend refuses to store one. */
   targetProcessDefinitionKey: string | null;
-  /** Source activity id -> target activity id. */
   mapActivities: {[sourceActivityId: string]: string};
   /** GZAC-layer value-resolver patches applied to the migrated process instance. */
   setProcessVariables: ProcessVariablePatch[];
@@ -130,7 +124,6 @@ interface RemoveBuildingBlockInstruction {
 /** Either kind of building-block entry — the two carry the same four fields. */
 type BuildingBlockInstruction = AddBuildingBlockInstruction | RemoveBuildingBlockInstruction;
 
-/** Whether a building-block tab edits the `addBuildingBlock` or the `removeBuildingBlock` component. */
 type BuildingBlockMode = 'add' | 'remove';
 
 /** The blueprint version a plan migrates instances FROM. Required, and may name a different key — which is how one blueprint replaces another. */
@@ -164,7 +157,6 @@ interface MigrationEditorTestIds {
 
 /** The migration API with the plan's blueprint already bound — the two hosts address different endpoints and identify a blueprint with differently-named params. */
 interface MigrationEditorApi {
-  /** A best-effort `sourceActivityId -> targetActivityId` mapping for a source/target process pair. */
   suggestActivityMapping(
     sourceProcessDefinitionId: string,
     targetProcessDefinitionId: string

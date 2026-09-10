@@ -23,7 +23,6 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 /** Whose document and processes an add/removeBuildingBlock entry exchanges state with — the parent block for a nested one, since the executors resolve the owner from the running tree. */
 interface BuildingBlockEntryOwnership {
 
-    /** Whether this implementation can answer for migrating blueprints of the given type. */
     fun supports(blueprintType: BlueprintType): Boolean
 
     /** The blueprint an entry for [block] exchanges state with, read against [migratingOwner] — the plan's target for an add, its source for a remove. [migratingOwner] itself when it declares [block] directly. */

@@ -73,7 +73,6 @@ class CaseMigrationManagementResource(
         return ResponseEntity.ok(migrationSuggestionService.suggestPlan(target, source))
     }
 
-    /** A best-effort activity mapping (`sourceActivityId -> targetActivityId`) for a process pair. */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/activity-mapping")
     fun suggestActivityMapping(
@@ -139,7 +138,6 @@ class CaseMigrationManagementResource(
         return ResponseEntity.ok(suggestion)
     }
 
-    /** All migration plans for the case definition version, with their configuration and status. */
     @RunWithoutAuthorization
     @GetMapping
     fun getMigrationPlans(

@@ -398,7 +398,6 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     );
   }
 
-  /** The version-correct process definition id for the group's source (or target) process key. */
   private definitionIdFor(group: FormGroup, side: 'source' | 'target'): string | undefined {
     const key = group.get(`${side}ProcessDefinitionKey`)?.value;
     const scoped =

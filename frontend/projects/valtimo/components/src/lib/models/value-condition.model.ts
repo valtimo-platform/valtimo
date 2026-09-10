@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/** A single condition: a value-resolver path compared with a value. */
 interface ValueCondition {
   path: string;
   operator: string;
@@ -33,7 +32,6 @@ type ValueConditionNode = ValueCondition | ValueConditionGroup;
 /** Which way a group combines its entries. Also the JSON key the group is written under. */
 type ValueConditionGroupMode = 'allOf' | 'anyOf';
 
-/** Whether a row in the editor holds a single condition or a group. */
 type ValueConditionKind = 'condition' | 'group';
 
 export {

@@ -24,6 +24,5 @@ interface ProcessDefinitionBlueprintResolver {
 
     fun supports(blueprintType: BlueprintType): Boolean
 
-    /** Process definition key -> Operaton process definition id, for [blueprintId]'s version. */
     fun resolveProcessDefinitions(blueprintId: BlueprintId): Map<String, String>
 }

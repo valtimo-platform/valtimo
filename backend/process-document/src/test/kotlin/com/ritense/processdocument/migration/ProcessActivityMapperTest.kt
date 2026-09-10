@@ -28,7 +28,6 @@ import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.builder.AbstractFlowNodeBuilder
 
-/** One activity appended to a process being built. */
 private typealias Step = (AbstractFlowNodeBuilder<*, *>) -> AbstractFlowNodeBuilder<*, *>
 
 class ProcessActivityMapperTest {

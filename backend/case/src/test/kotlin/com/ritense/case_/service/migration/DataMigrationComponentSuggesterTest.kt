@@ -372,7 +372,6 @@ class DataMigrationComponentSuggesterTest {
             .thenReturn(paths.map { ValueResolverOption(it, FIELD) })
     }
 
-    /** Deploy a document definition for [blueprintId] whose schema declares [properties]. */
     private fun schema(blueprintId: BlueprintId, properties: String) {
         val name = blueprintId.getIdKey()
         val id = when (blueprintId) {

@@ -84,16 +84,7 @@ class BuildingBlockProcessMigrationComponentExecutor(
         }
     }
 
-    /**
-     * True when the instruction found instances to migrate, false when it matched nothing.
-     *
-     * Matched by key **and business key**, as the case side is: a block may own more than one process, and one its
-     * own BPMN calls is a different process instance from the block's, so pinning the query to the block's own
-     * instance made every such instruction a silent no-op (G65). A process reached this way carries the block's
-     * document id because its call activity maps the business key across — the same requirement
-     * `BuildingBlockCallActivityBusinessKeyValidator` already states for a nested block, whose own document id
-     * keeps it out of this query.
-     */
+    /** True when instances were found. Matched by key **and** business key: a process the block's own BPMN calls is a separate instance, and pinning to the block's own made such instructions silent no-ops (G65). */
     private fun migrateInstruction(
         instruction: ProcessMigrationInstruction,
         targetBuildingBlockDefinitionId: BuildingBlockDefinitionId,

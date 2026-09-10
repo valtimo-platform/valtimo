@@ -366,8 +366,7 @@ class ProcessMigrationComponentSuggesterTest {
 
     @Test
     fun `should leave a relocated process alone when the block kept every activity id`() {
-        // Measured on `verhuizing-bouwstenen-adoptie`: two rows with an empty mapping, saying what
-        // `mapEqualActivities()` already does. The row is the mapping; without one there is nothing to state.
+        // Empty mapping rows say only what `mapEqualActivities()` already does; the row is the mapping.
         val block = buildingBlock("uitvoeren-business-services", "1.0.0")
         reachableFromTarget("uitvoeren-business-services")
         processes(source, "ab-afhandelen-aanvraag-dcm", "uitvoeren-business-services")
@@ -459,7 +458,6 @@ class ProcessMigrationComponentSuggesterTest {
             deployedProcesses[blueprintId].orEmpty()
     })
 
-    /** Processes the target reaches through the building blocks it declares. */
     private fun reachableFromTarget(vararg keys: String) {
         reachable[target] = keys.toSet()
     }
@@ -476,7 +474,6 @@ class ProcessMigrationComponentSuggesterTest {
                 node.get("targetProcessDefinitionKey")?.takeIf { it.isTextual }?.asText()
         }
 
-    /** (source, target) of every row suggested for one building-block entry. */
     private fun entryPairs(
         entrySource: BlueprintId,
         entryTarget: BlueprintId,

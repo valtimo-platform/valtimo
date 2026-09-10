@@ -22,7 +22,6 @@ import com.ritense.valtimo.contract.BlueprintId
 /** Lets the module owning a plan component validate it before the plan is saved, so the API rejects an invalid plan up front. Mirrors [MigrationComponentDeployer]. */
 interface MigrationComponentValidator {
 
-    /** The top-level migration plan property this validator is responsible for (its component key). */
     fun componentKey(): String
 
     /** Descriptions of everything in [component] that would make migrating [source] to [target] invalid; empty when valid. Best-effort — an unresolvable component leaves the run as the final guard. */

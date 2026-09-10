@@ -72,7 +72,6 @@ class CaseMigrationService(
     private val leaseDuration: Duration,
 ) {
 
-    /** Delete a migration plan and everything derived from it (components, execution, per-case rows). */
     fun deletePlan(migrationId: BlueprintMigrationId) {
         transactionTemplate.executeWithoutResult {
             componentDeployers.forEach { it.undeploy(migrationId) }
@@ -93,7 +92,6 @@ class CaseMigrationService(
         ).forEach { deletePlan(it.id) }
     }
 
-    /** All migration plans for a blueprint version, with their configuration and run status. */
     fun getPlans(blueprintId: BlueprintId): List<MigrationPlanManagementDto> {
         return caseDefinitionMigrationRepository.findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
             blueprintId.blueprintType(), blueprintId.getIdKey(), blueprintId.blueprintVersionTag()
@@ -172,7 +170,6 @@ class CaseMigrationService(
         }
     }
 
-    /** Assemble the current migration status (counts and errors come from the per-case table). */
     fun getStatus(migrationId: BlueprintMigrationId): MigrationExecutionStatusDto {
         if (migrationId.blueprintType == BlueprintType.BUILDING_BLOCK) {
             return buildingBlockPlanStatus(migrationId)
@@ -226,7 +223,6 @@ class CaseMigrationService(
         return runToken
     }
 
-    /** Simulate every matching case of an already-claimed dry run, then finish it. */
     fun runClaimedDryRun(migrationId: BlueprintMigrationId, runToken: String) {
         val plan = caseDefinitionMigrationRepository.findById(migrationId).orElseThrow {
             NoSuchElementException("No migration plan found for '$migrationId'")
@@ -239,7 +235,6 @@ class CaseMigrationService(
         }
     }
 
-    /** Assemble the latest dry-run status (counts and errors come from the per-case dry-run table). */
     fun getDryRunStatus(migrationId: BlueprintMigrationId): DryRunStatusDto {
         val dryRun = dryRunRepository.findById(migrationId).orElse(null)
             ?: return DryRunStatusDto.NOT_STARTED
@@ -369,7 +364,6 @@ class CaseMigrationService(
         }
     }
 
-    /** Migrate every case matching the plan, recording a condition failure against the run. */
     private fun migrateMatchingCases(
         migrationId: BlueprintMigrationId,
         plan: CaseDefinitionMigration,
@@ -708,7 +702,6 @@ class CaseMigrationService(
         }
     }
 
-    /** The provider that enumerates candidate instances for a blueprint type, if any. */
     private fun candidateProvider(blueprintType: BlueprintType): MigrationCandidateProvider? {
         return candidateProviders.firstOrNull { it.supports(blueprintType) }
     }

@@ -69,7 +69,6 @@ class AllActivityTypesMigrationEngineIntTest : BaseIntegrationTest() {
             .mapActivities("call_activity", "call_activity_v3")
             .build()
 
-        // 2. A running instance whose token rests on the user task must actually migrate.
         // Business key must be a document id — the engine's task-created listeners resolve the case from it.
         val instance = runtimeService.startProcessInstanceById(source.id, createDocumentId())
         assertEquals(

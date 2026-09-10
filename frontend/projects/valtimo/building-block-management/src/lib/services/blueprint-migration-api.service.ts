@@ -59,7 +59,6 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
     );
   }
 
-  /** A best-effort `sourceActivityId -> targetActivityId` mapping for a source/target process pair. */
   public suggestActivityMapping(
     params: P,
     sourceProcessDefinitionId: string,
@@ -71,7 +70,6 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
     );
   }
 
-  /** The incompatible `sourceActivityId -> failure messages` pairs in a proposed activity mapping. */
   public validateActivityMapping(
     params: P,
     sourceProcessDefinitionId: string,

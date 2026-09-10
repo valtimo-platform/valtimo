@@ -23,7 +23,6 @@ import org.semver4j.Semver
 /** Answers "which version was this blueprint version derived from?" per [BlueprintType]. Only pre-fills a new plan's source and checks a declared one is deployed — a plan always declares its own. */
 interface BlueprintVersionLineage {
 
-    /** Whether this implementation resolves lineage for the given [blueprintType]. */
     fun supports(blueprintType: BlueprintType): Boolean
 
     /** The version the given blueprint was based on — a suggestion for a new plan's source, never the source itself. Null when unknown. */

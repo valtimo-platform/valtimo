@@ -42,7 +42,6 @@ class LinkedBuildingBlockVersionResolver(
     private val repositoryService: RepositoryService,
 ) {
 
-    /** How a blueprint version links a building block version. */
     enum class LinkOrigin { STARTABLE_ITEM, CALL_ACTIVITY }
 
     data class LinkedBuildingBlock(
@@ -52,7 +51,6 @@ class LinkedBuildingBlockVersionResolver(
         val activityId: String? = null,
     )
 
-    /** Every building block version linked by [owner], from both link kinds. */
     fun resolveLinkedVersions(owner: BlueprintId): List<LinkedBuildingBlock> {
         return startableItemLinks(owner) + callActivityLinks(owner)
     }
@@ -92,7 +90,6 @@ class LinkedBuildingBlockVersionResolver(
         val callActivityLinkIndex: Map<Pair<String, String>, BuildingBlockProcessLink>,
     )
 
-    /** One process definition of one blueprint, with everything the walk reads about it. */
     private data class WalkedProcess(
         val processDefinitionId: String,
         /** Null when nothing is deployed — a link row outlives the deployment it names, so this is not a reason to fail. */
@@ -241,7 +238,6 @@ class LinkedBuildingBlockVersionResolver(
             .map { LinkedBuildingBlock(it.buildingBlockDefinitionId, LinkOrigin.CALL_ACTIVITY, it.activityId) }
     }
 
-    /** The process definitions belonging to [owner], whichever kind of blueprint it is. */
     private fun processDefinitionIdsOf(owner: BlueprintId): List<String> = when (owner) {
         is CaseDefinitionId -> processDefinitionCaseDefinitionRepository.findByIdCaseDefinitionId(owner)
             .map { it.id.processDefinitionId.id }

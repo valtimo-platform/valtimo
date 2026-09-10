@@ -477,7 +477,6 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         )
     }
 
-    /** Deploy a plan on [id]'s blueprint version, migrating instances from [sourceKey]:[sourceVersionTag]. */
     private fun deployPlan(
         id: BlueprintMigrationId,
         scheduledAtDate: LocalDateTime? = null,
@@ -556,7 +555,6 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
     private fun definitionOf(id: BuildingBlockDefinitionId): BuildingBlockDefinition =
         buildingBlockDefinitionRepository.findById(id).orElseThrow()
 
-    /** The blueprint version the document is currently homed on. */
     private fun documentVersionOf(documentId: UUID): String = runWithoutAuthorization {
         val document = documentRepository.findById(JsonSchemaDocumentId.existingId(documentId)).orElseThrow()
         (document.definitionId() as JsonSchemaDocumentDefinitionId).blueprintId().blueprintVersionTag().toString()

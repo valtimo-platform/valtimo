@@ -121,7 +121,6 @@ class MigrationConditionEvaluator(
             )
     }
 
-    /** The expected values of an `in` condition, as a list. */
     private fun collectionOf(expected: Any): Collection<Any?> = elementsOf(expected)
         ?: expected.toString().split(",").map { it.trim() }
 

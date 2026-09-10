@@ -22,7 +22,6 @@ class MigrationWarnings {
     companion object {
         private val warningsThreadLocal = ThreadLocal.withInitial { mutableListOf<String>() }
 
-        /** Record [message] against the instance currently being migrated. */
         @JvmStatic
         fun warn(message: String) {
             warningsThreadLocal.get().add(message)

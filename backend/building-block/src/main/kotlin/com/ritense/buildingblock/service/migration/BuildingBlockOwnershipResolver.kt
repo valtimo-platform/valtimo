@@ -26,7 +26,6 @@ class BuildingBlockOwnershipResolver(
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
 ) {
 
-    /** The building blocks owned directly by [ownerDocumentId], whichever kind of owner it is. */
     fun directChildrenOf(ownerDocumentId: UUID): List<BuildingBlockInstance> {
         val owner = buildingBlockInstanceRepository.findByDocumentId(ownerDocumentId)
         return if (owner != null) {

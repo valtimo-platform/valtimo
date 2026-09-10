@@ -69,7 +69,6 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
     private val migrationId = BlueprintMigrationId.from(target, "opruimen")
     private val caseDocumentId: UUID = UUID.randomUUID()
 
-    /** Instance ids in the order they were deleted. */
     private val deleted = mutableListOf<UUID>()
 
     private val instructions = mutableListOf<RemoveBuildingBlockInstruction>()

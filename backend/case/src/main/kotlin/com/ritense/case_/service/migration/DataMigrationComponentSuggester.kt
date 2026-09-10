@@ -48,7 +48,6 @@ class DataMigrationComponentSuggester(
 
     override fun componentKey() = DataMigrationComponentDeployer.DATA_MIGRATION_COMPONENT_KEY
 
-    /** A plan migrating one document between two blueprint versions — the ordinary case. */
     override fun suggest(source: BlueprintId, target: BlueprintId): Any? =
         suggest(source, target, separateDocument = false)
 

@@ -54,12 +54,7 @@ class CallActivityBuildingBlockEntryOwnership(
         return sameKey.singleOrNull() ?: owner
     }
 
-    /**
-     * One version of a key is an answer; several is a guess. Which of them governs cannot be told from here,
-     * and taking whichever the set or map happened to yield first made the answer depend on iteration order —
-     * the same order-dependence D4 refuses where it decides a running block's fate. Both callers fall back to
-     * the blueprint they were given, which is what they already do when the tree declares no version at all.
-     */
+    /** One version of a key is an answer, several a guess: taking whichever the set yielded first made it depend on iteration order (D4). Both callers fall back to the blueprint they were given. */
     private fun warnIfAmbiguous(
         tree: BlueprintId,
         key: String,

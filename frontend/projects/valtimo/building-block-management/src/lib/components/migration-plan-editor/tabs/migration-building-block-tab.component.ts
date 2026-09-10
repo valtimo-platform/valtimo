@@ -73,7 +73,6 @@ const MAX_VERSIONS_PER_KEY = 100;
 })
 export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   @Input() public mode: BuildingBlockMode = 'add';
-  /** The migration API with this plan's blueprint bound. */
   @Input() public api: MigrationEditorApi | null = null;
   /** The blueprint version this plan targets — the default owner of every entry on this tab. */
   @Input() public owner: BuildingBlockEntryOwner | null = null;
@@ -83,11 +82,8 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   @Input() public ownerSourceProcessDefinitions: Record<string, string> = {};
   /** The plan's source version — a `remove` entry's owner is declared in that version's tree. */
   @Input() public planSource: MigrationPlanSource | null = null;
-  /** Intro text above the entries — what this component does, in the host's own words. */
   @Input() public descriptionKey: string | null = null;
-  /** Which way data moves, in the host's own words. */
   @Input() public dataMigrationHintKey: string | null = null;
-  /** Which way processes move, in the host's own words. */
   @Input() public processMigrationHintKey: string | null = null;
   /** What a nested tab's source picker may read; a case plan adds `case:`, which resolves the migrating case's metadata in either direction. */
   @Input() public sourcePrefixes: ValuePathSelectorPrefix[] = [ValuePathSelectorPrefix.DOC];
@@ -194,7 +190,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  /** What a collapsed entry says about itself: the building block it acts on, at the version it names. */
   public summaryOf(group: FormGroup): string {
     const key = group.get('buildingBlockKey')?.value || '';
     const version = group.get('buildingBlockVersionTag')?.value || '';
@@ -271,7 +266,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return group;
   }
 
-  /** Ask the backend for a best-effort `dataMigration` + `processMigration` for this entry and replace its nested migrations with it. */
   private suggestForEntry(group: FormGroup): void {
     const key = group.get('buildingBlockKey')?.value;
     const version = this.resolveBuildingBlockVersion(group);
@@ -333,7 +327,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** The blueprint this entry exchanges state with, once known; null until then. */
   private entryOwnerOf(group: FormGroup): BuildingBlockEntryOwner | null {
     const key = group.get('buildingBlockKey')?.value;
     const version = this.resolveBuildingBlockVersion(group);
@@ -353,12 +346,10 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Whether this entry's data/process migration is currently being suggested (tabs collapsed). */
   public isSuggesting(group: FormGroup): boolean {
     return this._suggesting.has(group);
   }
 
-  /** Version dropdown options for the building block currently selected in this entry. */
   public versionItemsFor(group: FormGroup): SelectItem[] {
     const key = group.get('buildingBlockKey')?.value;
     return (key && this._versionsByKey.get(key)) || [];
@@ -403,7 +394,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     this.loadBuildingBlockProcessKeys(key, version);
   }
 
-  /** The same, for any building block version — an entry's own, or the block that owns the entry. */
   private loadBuildingBlockProcessKeys(key: string, version: string): void {
     const cacheKey = `${key}:${version}`;
     if (this._bbProcessDefs.has(cacheKey) || this._bbInFlight.has(cacheKey)) return;
@@ -439,7 +429,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return this.isAdd ? this.buildingBlockProcessDefs(group) : this.ownerProcessDefs(group);
   }
 
-  /** The processes of that same owner at the target version — the other side of every hand-back. */
   private ownerProcessDefs(group: FormGroup): Record<string, string> {
     const owner = this.entryOwnerOf(group);
     if (!this.isNestedOwner(owner)) return this.ownerProcessDefinitions;
@@ -476,7 +465,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return this.planOwnerContext();
   }
 
-  /** The document of the blueprint this plan targets, as a case or as a building block. */
   private planOwnerContext(): ValuePathContext {
     const key = this.owner?.key ?? null;
     const versionTag = this.owner?.versionTag ?? null;

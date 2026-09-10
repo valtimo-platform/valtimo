@@ -37,7 +37,6 @@ import {ModalMode} from '@valtimo/shared';
 import {Subscription} from 'rxjs';
 import {MigrationEditorTestIds, MigrationPlanSource} from '../../../models';
 
-/** What this component owns of a plan: its identity and where it migrates from. */
 interface GeneralFieldsValue {
   title: string;
   key: string;
@@ -68,7 +67,6 @@ export class MigrationGeneralFieldsComponent implements OnInit, OnDestroy {
   @Input() public blueprintVersionTag: string | null = null;
   /** The blueprints a plan may migrate instances from — any key, not just this one. */
   @Input() public sourceKeyOptions: SelectItem[] = [];
-  /** The versions of the currently selected source key. */
   @Input() public sourceVersionOptions: SelectItem[] = [];
   /** The migration keys this blueprint version already has, so a generated key stays unique. */
   @Input() public usedKeys: string[] = [];

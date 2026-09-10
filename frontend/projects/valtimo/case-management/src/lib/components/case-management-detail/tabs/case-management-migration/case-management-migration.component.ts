@@ -81,10 +81,8 @@ import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../constants';
 
 type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
 
-/** How often the plan list re-reads status while a run is in progress. */
 const POLL_INTERVAL_MS = 3000;
 
-/** Whether the plan has a real run or a dry run currently executing. */
 const isRunInProgress = (plan: MigrationPlanViewModel): boolean =>
   plan.status?.status === 'RUNNING' || plan.dryRun?.status === 'RUNNING';
 

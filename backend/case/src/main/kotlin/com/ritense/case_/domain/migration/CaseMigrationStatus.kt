@@ -17,7 +17,6 @@
 package com.ritense.case_.domain.migration
 
 enum class CaseMigrationStatus {
-    /** No run has started yet. */
     NOT_STARTED,
 
     /** A run is executing right now (claimed by one node, lease-renewed); other triggers must not start it. */

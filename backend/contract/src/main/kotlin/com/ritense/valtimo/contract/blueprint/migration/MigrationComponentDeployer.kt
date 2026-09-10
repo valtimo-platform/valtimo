@@ -24,7 +24,6 @@ interface MigrationComponentDeployer {
     /** The top-level JSON property this deployer owns, e.g. `"dataMigration"`. */
     fun componentKey(): String
 
-    /** Persist [component] (the raw JSON under [componentKey]) for the plan. */
     fun deploy(migrationId: BlueprintMigrationId, component: JsonNode)
 
     /** Remove previously deployed data for the plan, so re-deploys are idempotent. */

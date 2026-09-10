@@ -25,7 +25,6 @@ import java.util.UUID
 /** Enumerates the instances a plan runs over, for one [BlueprintType]. Implement only where plans can be started standalone — there is deliberately no building-block implementation, so the compiler enforces R1. */
 interface MigrationCandidateProvider {
 
-    /** Whether this provider enumerates candidates for the given [blueprintType]. */
     fun supports(blueprintType: BlueprintType): Boolean
 
     /** A page of candidate instance ids homed on the given source version, in a stable order so paging is repeatable across a run. */

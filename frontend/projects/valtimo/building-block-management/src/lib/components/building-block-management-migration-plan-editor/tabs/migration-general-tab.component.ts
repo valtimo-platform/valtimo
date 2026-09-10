@@ -25,7 +25,6 @@ import {
   MigrationGeneralFieldsComponent,
 } from '../../migration-plan-editor/tabs/migration-general-fields.component';
 
-/** The General tab of a building block plan: the shared identity and source fields, plus an explanation of when it runs — all it has where a case plan has triggers and conditions. */
 @Component({
   standalone: true,
   selector: 'valtimo-bb-migration-general-tab',
@@ -36,11 +35,8 @@ import {
 export class BbMigrationGeneralTabComponent {
   @Input() public buildingBlockDefinitionKey: string | null = null;
   @Input() public buildingBlockDefinitionVersionTag: string | null = null;
-  /** The building blocks a plan may migrate instances from — any key, not just this one. */
   @Input() public sourceKeyOptions: SelectItem[] = [];
-  /** The versions of the currently selected source key. */
   @Input() public sourceVersionOptions: SelectItem[] = [];
-  /** The migration keys this building block version already has, so a generated key stays unique. */
   @Input() public usedKeys: string[] = [];
   @Input() public suggesting = false;
   @Input() public isEdit = false;

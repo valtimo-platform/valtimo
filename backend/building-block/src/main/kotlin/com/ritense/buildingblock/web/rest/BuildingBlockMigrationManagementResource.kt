@@ -70,7 +70,6 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.ok(migrationSuggestionService.suggestPlan(target, source))
     }
 
-    /** A best-effort activity mapping (`sourceActivityId -> targetActivityId`) for a process pair. */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/activity-mapping")
     fun suggestActivityMapping(

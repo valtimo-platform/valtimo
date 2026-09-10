@@ -96,13 +96,10 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
     private val uitvoerenPi: String = UUID.fromString("00000000-0000-0000-0000-0000000000b2").toString()
     private val besluitPi: String = UUID.fromString("00000000-0000-0000-0000-0000000000b3").toString()
 
-    /** The running tree under test. */
     private val nodes = mutableListOf<Node>()
 
-    /** The plan's `addBuildingBlock` entries — what the author authorised. */
     private val authorised = mutableListOf<AddBuildingBlockInstruction>()
 
-    /** What the executor created, in order. */
     private val created = mutableListOf<Created>()
 
     private data class Node(
@@ -597,7 +594,6 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
     /** The BPMN `name` a deployed definition carries, as opposed to its key. */
     private fun bpmnNameOf(processDefinitionKey: String) = "Proces: $processDefinitionKey"
 
-    /** [processInstanceId] already has a process-document association, labelled [processName]. */
     private fun associated(processInstanceId: String, processName: String) {
         val existing = mock<ProcessDocumentInstance>()
         whenever(existing.processName()).thenReturn(processName)
@@ -606,7 +602,6 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
             .thenReturn(Optional.of(existing))
     }
 
-    /** Adds a node to the running tree, its calling execution and its process definition. */
     private fun running(node: Node) {
         nodes += node
 
@@ -646,7 +641,6 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         authorises(blockKey, blockVersionTag)
     }
 
-    /** The plan carries an `addBuildingBlock` entry for [blockKey]:[blockVersionTag]. */
     private fun authorises(
         blockKey: String,
         blockVersionTag: String,
@@ -668,7 +662,6 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         )
     }
 
-    /** Building block version [blockKey]:[blockVersionTag] deploys [processDefinitionKey]. */
     private fun deploys(
         blockKey: String,
         blockVersionTag: String,

@@ -26,7 +26,6 @@ import org.springframework.data.jpa.repository.Query
 interface CaseDefinitionMigrationRepository :
     JpaRepository<CaseDefinitionMigration, BlueprintMigrationId> {
 
-    /** All migration plans that target the given blueprint (type + key + version). */
     fun findAllByIdBlueprintTypeAndIdKeyAndIdVersionTag(
         blueprintType: BlueprintType, key: String, versionTag: Semver
     ): List<CaseDefinitionMigration>

@@ -51,7 +51,6 @@ data class BlueprintMigrationId(
     val migrationKey: String,
 ) : Serializable {
 
-    /** Reconstruct the concrete [BlueprintId] this plan targets. */
     fun blueprintId(): BlueprintId = when (blueprintType) {
         BlueprintType.CASE -> CaseDefinitionId(key, versionTag)
         BlueprintType.BUILDING_BLOCK -> BuildingBlockDefinitionId(key, versionTag)
@@ -66,7 +65,6 @@ data class BlueprintMigrationId(
             migrationKey,
         )
 
-        /** Build the concrete [BlueprintId] for a blueprint type + key + version. */
         @JvmStatic
         fun blueprintIdOf(blueprintType: BlueprintType, key: String, versionTag: Semver): BlueprintId =
             when (blueprintType) {

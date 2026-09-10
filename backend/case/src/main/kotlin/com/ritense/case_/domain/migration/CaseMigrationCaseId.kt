@@ -22,7 +22,6 @@ import jakarta.persistence.Embeddable
 import jakarta.persistence.Embedded
 import java.io.Serializable
 
-/** Identifies the per-plan record for a single migrated/failed case. */
 @Embeddable
 data class CaseMigrationCaseId(
 

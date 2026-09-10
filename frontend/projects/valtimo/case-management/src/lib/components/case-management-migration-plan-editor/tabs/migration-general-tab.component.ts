@@ -42,7 +42,6 @@ import {Subscription} from 'rxjs';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
 import {MigrationPlan} from '../../../models';
 
-/** The General tab of a case plan: the shared identity and source fields, plus the triggers and conditions a building block plan is refused at deploy time. */
 @Component({
   standalone: true,
   selector: 'valtimo-migration-general-tab',
@@ -63,9 +62,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public caseDefinitionKey: string | null = null;
   @Input() public caseDefinitionVersionTag: string | null = null;
   @Input() public runAfterOptions: SelectItem[] = [];
-  /** The case definitions a plan may migrate instances from — any key, not just this one. */
   @Input() public sourceKeyOptions: SelectItem[] = [];
-  /** The versions of the currently selected source key. */
   @Input() public sourceVersionOptions: SelectItem[] = [];
   /** The migration keys this case definition version already has, so a generated key stays unique. */
   @Input() public usedKeys: string[] = [];

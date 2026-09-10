@@ -169,7 +169,6 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         }
     }
 
-    /** Whether [instruction] names exactly the building block version [owned] is on. */
     private fun matches(
         instruction: RemoveBuildingBlockInstruction,
         owned: BuildingBlockOwnershipResolver.OwnedBuildingBlock,

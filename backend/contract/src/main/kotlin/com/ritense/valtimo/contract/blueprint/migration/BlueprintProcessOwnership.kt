@@ -22,7 +22,6 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 /** Which processes belong to the blueprints this one reaches rather than to itself — what tells a relocated process from a lost one, and so whether a suggestion owes the author an explanation. */
 interface BlueprintProcessOwnership {
 
-    /** Whether this implementation can answer for owners of the given type. */
     fun supports(blueprintType: BlueprintType): Boolean
 
     /** The process keys owned by the blueprints [blueprintId] reaches through its building blocks, transitively. Its own processes are deliberately not included. */

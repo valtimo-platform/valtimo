@@ -403,7 +403,6 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).isEmpty()
     }
 
-    /** [owner] (a building block) declares [key]:[versionTag] on [activityId] of its own process. */
     private fun blockCallActivityLink(
         owner: BuildingBlockDefinitionId,
         ownerProcessDefinitionId: String,
@@ -512,7 +511,6 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(resolver.resolveCallActivityLink(caseDefinitionId, "ander-proces", "BesluitCallActivity")).isNull()
     }
 
-    /** The case owns [processDefinitionId], with no building-block links on it. */
     private fun caseProcessDefinition() {
         whenever(processDefCaseDefRepository.findByIdCaseDefinitionId(caseDefinitionId)).thenReturn(
             listOf(
@@ -523,7 +521,6 @@ class LinkedBuildingBlockVersionResolverTest {
         )
     }
 
-    /** [owner] (a building block) owns [ownerProcessDefinitionId], with no links on it. */
     private fun blockProcessDefinition(owner: BuildingBlockDefinitionId, ownerProcessDefinitionId: String) {
         whenever(processDefBbDefRepository.findAllByIdBuildingBlockDefinitionId(owner)).thenReturn(
             listOf(
