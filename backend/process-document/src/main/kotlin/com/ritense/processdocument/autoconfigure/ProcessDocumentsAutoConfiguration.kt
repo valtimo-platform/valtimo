@@ -316,10 +316,12 @@ class ProcessDocumentsAutoConfiguration {
     @ConditionalOnMissingBean(CaseDefinitionProcessLinkImporter::class)
     fun caseDefinitionProcessLinkImporter(
         caseDefinitionProcessLinkRepository: CaseDefinitionProcessLinkRepository,
+        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
         objectMapper: ObjectMapper
     ): CaseDefinitionProcessLinkImporter {
         return CaseDefinitionProcessLinkImporter(
             caseDefinitionProcessLinkRepository,
+            caseDefinitionProcessLinkService,
             objectMapper
         )
     }
