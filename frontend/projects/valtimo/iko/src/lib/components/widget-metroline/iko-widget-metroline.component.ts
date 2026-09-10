@@ -15,8 +15,13 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {MetrolineWidget, WidgetLayoutService, WidgetMetrolineComponent} from '@valtimo/layout';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {
+  catchWidgetDataError,
+  MetrolineWidget,
+  WidgetLayoutService,
+  WidgetMetrolineComponent,
+} from '@valtimo/layout';
+import {BehaviorSubject, combineLatest, filter, of, startWith, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
@@ -42,19 +47,27 @@ export class IkoWidgetMetrolineComponent {
 
   public readonly widgetConfiguration$ = new BehaviorSubject<MetrolineWidget | null>(null);
 
+  private readonly _reloadWidgetData$ = this.widgetLayoutService.widgetDataReload$.pipe(
+    filter(uuid => uuid === this.widgetUuid),
+    startWith(null)
+  );
+
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this._reloadWidgetData$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
-            widgetConfiguration.key,
-            widgetParams.entryId
-          )
+        : this.ikoApiService
+            .getIkoWidgetData(
+              widgetParams.ikoViewKey,
+              widgetParams.tabKey,
+              widgetConfiguration.key,
+              widgetParams.entryId
+            )
+            .pipe(catchWidgetDataError(this.widgetLayoutService, () => this.widgetUuid))
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
