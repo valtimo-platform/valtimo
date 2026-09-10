@@ -204,8 +204,12 @@ throwaway environments only). See [`app/README.md`](./app/README.md) for both se
 
 - [Developer & operator guides](./docs/README.md) — developing a plugin, developing an app,
   host deployment, auto-deployment
+- [How a plugin works with Valtimo](./docs/develop-a-plugin.md#how-a-plugin-works-with-valtimo) —
+  the lifecycle, permission model, and how to choose a surface. Start here.
+- [The Valtimo API and event catalogue](./docs/valtimo-api-and-events.md) — what a plugin can call
+  and subscribe to
 - [Plugin Host README](./app/README.md) — API reference, configuration, events
-- [Plugin SDK README](./plugin-sdk/README.md) — Building plugins, SDK API
+- [Plugin SDK README](./plugin-sdk/README.md) — CLI reference, toolchain, frontend SDK
 - [`valtimo-plugin-init`](./plugin-sdk/README.md#valtimo-plugin-init) — Scaffolding a new plugin project
 - [Case Summary Plugin](./sample-plugins/case-summary/README.md) — Example with GZAC callbacks
 - Administrator documentation — [Configuration guides: Plugins](../documentation/configuration-guides/plugins/README.md)

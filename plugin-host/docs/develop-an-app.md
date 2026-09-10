@@ -23,6 +23,38 @@ Node + Fastify service implementing the whole contract; each section below names
 demonstrates it. This page documents every request GZAC sends and every response it expects, so
 you can build against it without reverse-engineering.
 
+Two companion pages carry what this one deliberately does not repeat:
+[Developing an external plugin](./develop-a-plugin.md) explains the concepts an app inherits
+unchanged — the configuration as the unit of everything, the request/grant/enforce permission
+model, and which surface to build for which goal — and
+[The Valtimo API and event catalogue](./valtimo-api-and-events.md) lists what you can call and
+subscribe to.
+
+## What a minimal app has to implement
+
+The full contract below is large, but very little of it is mandatory. An app that only runs
+process actions needs four routes:
+
+| Route | Why it is unavoidable |
+|---|---|
+| `GET /health` | Liveness; any 2xx |
+| `GET /api/host/plugins` | Discovery. Must work **before** first registration |
+| `POST`/`PUT`/`DELETE /api/host/configurations/{configId}` | Receives the settings, grants and service token you need to do anything |
+| `POST /plugins/{pluginId}/{version}/actions/{actionKey}` | Runs the action |
+
+Everything else is opt-in, and skipping it degrades cleanly:
+
+| Skip | Consequence |
+|---|---|
+| `GET /api/host/configurations` | No reconciliation — GZAC skips that pass for your app, and configurations deleted while you were unreachable linger until you remove them |
+| `PUT /api/host/gzac-instances` | GZAC treats a 404 as "serves no framable screens". Correct for an actions-only app |
+| Public routes (`/plugin-manifest`, `/bundles/*`, `/data`, `/frame-policy`) | No plugin screens. Omit them unless your manifest declares `frontendBundles` |
+| `POST …/submit/{submitKey}` | Only needed for a `task-form` bundle with `submitHandler: true` |
+| Event consumption | Declare no `eventSubscriptions` and ignore `eventBroker` |
+| `contentHash` | Recommended, not required. Without it GZAC cannot pin your content, so a change never triggers admin re-acceptance |
+
+Start there, confirm an action runs end to end, then add surfaces.
+
 ## Lifecycle
 
 1. An administrator registers your app (base URL + secret). GZAC **discovers it immediately** —
@@ -89,8 +121,11 @@ config push):
 
 The `manifest` follows the same rules as a packaged plugin's `manifest.json` — per-locale
 `translations`, `permissions`, `eventSubscriptions`, `actions`, `frontendBundles`,
-`configurationSchema` (see [Developing an external plugin](./develop-a-plugin.md#the-manifest)).
-What you declare here is what the administrator is asked to accept.
+`configurationSchema` (see
+[Project anatomy & manifest](./develop-a-plugin.md#2-project-anatomy--manifest)). What you declare
+here is what the administrator is asked to accept, so the same rule applies: declare the minimum
+you need, and ship a `config` bundle unless you want administrators hand-writing your settings as
+JSON.
 
 `contentHash` is optional. Serve a stable value that changes when your plugin's behavior/manifest
 changes and GZAC pins it, flagging unexpected changes for admin re-acceptance — recommended, and
@@ -244,7 +279,12 @@ GZAC does **not** complete — the errors render inline on the form.
 [`demo-app/src/gzac.ts`](../sample-apps/demo-app/src/gzac.ts). The token bypasses user
 permission checks; its reach is exactly the granted endpoint list, so treat that list as your
 API surface. For per-user calls (from `/data` handlers), use the introspected `userToken`
-instead.
+instead — it is bounded by that user's own permissions as well as the endpoint list, which is what
+keeps a plugin screen from becoming a way around access control.
+
+Which endpoints exist, how to discover them for the version you target, and the handful that no
+grant can ever unlock are documented in
+[The Valtimo API and event catalogue](./valtimo-api-and-events.md#part-1--calling-the-valtimo-api).
 
 ## Events
 
@@ -256,6 +296,11 @@ declares a fresh queue instead of colliding with the old declaration. Messages a
 (JSON); dispatch only the **granted** `eventSubscriptions`, ack on success, drop (don't requeue)
 malformed messages, reconnect with backoff, and make handlers idempotent — delivery is
 at-least-once. Reference: [`demo-app/src/events.ts`](../sample-apps/demo-app/src/events.ts).
+
+The event types you can subscribe to, and what each payload contains, are in
+[the event catalogue](./valtimo-api-and-events.md#part-2--events). Payloads are serialisations of
+internal Valtimo classes and are not a stable contract — read the few fields you need, and prefer
+an API call keyed on `resultId` when the data matters.
 
 ## Checklist
 

@@ -4,12 +4,13 @@ A plugin host is a service that stores plugin packages and runs them in a sandbo
 connects it to Valtimo: from then on Valtimo discovers the plugins it serves, and administrators
 can upload packages to it and activate configurations.
 
-Before starting, have the following details from the team operating the host:
+Adding a plugin host requires an administrator role, and two details from the team operating the
+host:
 
 | Detail | Description |
 |--------|-------------|
 | Base URL | The URL where Valtimo can reach the host (for example `https://plugin-host.internal:8090`). |
-| Secret | The host's admin token (its `ADMIN_TOKEN`). Valtimo uses it to sign every request to the host. |
+| Secret | The host's admin token. Valtimo uses it to sign every request to the host, so the value must match the one the host was started with. |
 
 ---
 
@@ -32,16 +33,26 @@ Click **Save**
 {% endstep %}
 {% endstepper %}
 
+### What you fill in
+
 | Property | Description |
 |----------|-------------|
 | Name | Display name for this host. |
 | Base URL | URL where Valtimo reaches the host. |
 | Secret | The host's admin token. Stored encrypted; never shown again. |
-| GZAC callback URL | The URL plugins on this host use to call back into this Valtimo environment. Pre-filled with a sensible default; change it when the host reaches Valtimo on a different address (for example between containers). |
+| Allowed frontend origins | The browser origins (`scheme://host[:port]`, no path) allowed to embed this host's plugin screens. Add every URL users open the Valtimo frontend from, including proxy aliases. With no origins listed, no page can embed this host's plugin screens. |
+
+### Pre-filled — change only when told to
+
+These are filled in with values that are correct for a standard environment. Change them only on
+instruction from the team operating the host or the platform.
+
+| Property | Description |
+|----------|-------------|
+| GZAC callback URL | The URL plugins on this host use to call back into this Valtimo environment. Change it when the host reaches Valtimo on a different address than the default — for example when the two run in separate containers. |
 | Event broker URL (optional) | The message broker (AMQP) address plugins receive events from. Pre-filled from the platform's own broker with the credentials masked as `***` — leaving the masked value in place uses the platform credentials. Leave empty to disable events for this host. |
 | Event broker exchange (optional) | The exchange events are read from. The pre-filled default matches what Valtimo publishes to. |
-| Allowed frontend origins | The browser origins (`scheme://host[:port]`, no path) allowed to embed this host's plugin screens. Add every URL users open the Valtimo frontend from, including proxy aliases. With no origins listed, no page can embed this host's plugin screens. |
-| Event queue mode | **Live** — events published while the host is down are lost. **Durable** — events are retained for a configurable time while the host is down, and delivered when it returns. Durable mode asks for an inactivity TTL (default 72 hours, between 1 hour and 30 days). |
+| Event queue mode | **Live** — events published while the host is down are lost. **Durable** — events are retained for a configurable time while the host is down, and delivered when it returns. Durable mode asks for an inactivity time-to-live, entered in milliseconds (default 72 hours, between 1 hour and 30 days). Also changeable later — see [Manage an integration](manage-an-integration.md#event-queue-settings). |
 
 {% hint style="warning" %}
 An event broker URL is only accepted when the host's base URL uses HTTPS (or points at localhost
@@ -68,5 +79,8 @@ Plugin hosts and their plugins can also be provisioned automatically:
 - An application can declare its integrations, packages, and configurations in a deployment
   descriptor that Valtimo applies at startup.
 
-Both are developer/operator tasks — see the developer documentation in the `plugin-host/docs/`
-folder of the Valtimo repository.
+Both are set up by developers or operators rather than from the admin interface, so ask your
+development team if an environment should be provisioned this way. A configuration created from a
+deployment descriptor is visible here like any other, and carries an **Awaiting host** tag until
+its integration serves the plugin — see
+[Plugin status and reviews](plugin-status-and-reviews.md#awaiting-host).

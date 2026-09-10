@@ -5,7 +5,14 @@ its settings, plus the permissions accepted for it. Only configured plugins can 
 processes, tabs, widgets, and forms.
 
 The same plugin — even the same version — can be configured multiple times with different
-settings; each configuration is independent and separately permissioned.
+settings; each configuration is independent and separately permissioned. Repeat the flow below for
+each one: **Duplicate** in the row menu is not available for external plugin configurations,
+because the permissions for a new configuration have to be accepted explicitly rather than copied.
+
+{% hint style="info" %}
+Configuring plugins, uploading packages and connecting integrations all require an administrator
+role.
+{% endhint %}
 
 ---
 
@@ -28,8 +35,9 @@ External plugins appear alongside embedded ones, with their logo, version, and d
 {% step %}
 In **Enter data**, name the configuration and fill in the plugin's settings
 
-The settings form is provided by the plugin itself, so it can explain and validate its own
-fields.
+Most plugins provide this form themselves, so it can explain and validate its own fields. A plugin
+that does not asks for its settings as JSON instead — see
+[Plugins without a settings form](#plugins-without-a-settings-form).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
 {% endstep %}
@@ -42,6 +50,27 @@ the requested permissions**, and click **Save configuration**
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/09b-configure-plugin-permissions-bottom.png" alt=""><figcaption>Acceptance checkbox</figcaption></figure>
 {% endstep %}
 {% endstepper %}
+
+---
+
+## Plugins without a settings form
+
+A plugin decides whether to ship its own configuration form. When it does not, Valtimo does not
+generate one: the **Enter data** step shows a single **Properties (JSON)** text area, and the
+settings must be entered as a JSON object.
+
+Valtimo validates what you type against the plugin's own schema when you save, so an incorrect
+property name or type is reported rather than silently accepted. It cannot tell you what the
+properties *are*, however — that comes from the plugin's supplier.
+
+{% hint style="info" %}
+Ask the supplier for the property names, their types, and an example. A plugin intended for
+functional administrators should ship a settings form; if one does not, that is worth raising with
+the supplier rather than working around permanently.
+{% endhint %}
+
+The same applies to an action's inputs in the process modeler — see
+[External plugins in cases and processes](external-plugins-in-cases-and-processes.md#process-actions).
 
 ---
 

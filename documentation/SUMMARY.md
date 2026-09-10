@@ -59,8 +59,10 @@
         * [Upload a plugin](configuration-guides/plugins/external-plugins/upload-a-plugin.md)
         * [Configure a plugin](configuration-guides/plugins/external-plugins/configure-a-plugin.md)
         * [Manage an integration](configuration-guides/plugins/external-plugins/manage-an-integration.md)
+        * [Plugin status and reviews](configuration-guides/plugins/external-plugins/plugin-status-and-reviews.md)
         * [Plugin logs](configuration-guides/plugins/external-plugins/plugin-logs.md)
         * [In cases and processes](configuration-guides/plugins/external-plugins/external-plugins-in-cases-and-processes.md)
+        * [Troubleshooting](configuration-guides/plugins/external-plugins/troubleshooting.md)
 * 📊 Dashboard
 * [🔏 Access control](configuration-guides/access-control/README.md)
     * [Configurable elements](configuration-guides/access-control/configurable-elements.md)

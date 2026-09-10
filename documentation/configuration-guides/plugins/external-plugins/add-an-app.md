@@ -51,6 +51,12 @@ automatically once the app becomes reachable, and the configuration can be compl
 the Apps page.
 {% endhint %}
 
+{% hint style="warning" %}
+**An app can only be connected once.** If the plugin it provides is already registered by another
+integration, the dialog reports which registration holds it and stops. Connect the app once, or
+remove the existing registration first.
+{% endhint %}
+
 {% hint style="info" %}
 When an app serves plugin screens (such as a case tab), the page may ask for a refresh before the
 configuration step — security policy for a newly connected app's screens is applied when the page

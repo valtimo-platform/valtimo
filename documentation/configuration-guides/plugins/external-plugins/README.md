@@ -14,9 +14,12 @@ This includes:
   accept its permissions
 - **[Manage an integration](manage-an-integration.md)** — repoint connections, tune event
   delivery, manage frontend origins, and delete safely
+- **[Plugin status and reviews](plugin-status-and-reviews.md)** — what each status tag means, and
+  how to resolve a plugin that changed after it was accepted
 - **[Plugin logs](plugin-logs.md)** — inspect a configuration's log entries and outbound calls
 - **[External plugins in cases and processes](external-plugins-in-cases-and-processes.md)** —
   bind configured plugins to processes, tasks, tabs, widgets, and menus
+- **[Troubleshooting](troubleshooting.md)** — start from the symptom and find the fix
 
 ---
 
@@ -62,6 +65,6 @@ configurations on the next cycle, without any manual step.
 {% hint style="warning" %}
 If a plugin package on a host changes without an approved upload, Valtimo suspends that plugin —
 its actions fail, its screens go dark, and no tokens are issued — until an administrator reviews
-and accepts the change. See [Upload a plugin](upload-a-plugin.md) for the approved way to replace
-a version.
+and accepts the change. The plugin is tagged **Review required** until then; see
+[Plugin status and reviews](plugin-status-and-reviews.md#review-required) for how to resolve it.
 {% endhint %}

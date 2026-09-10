@@ -276,9 +276,14 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
     await serveFile(reply, LOGO_PATH);
   });
 
-  // handle_request data route — public, mirroring the plugin host (this is a
-  // known POC gap; a production app would gate it). CORS + OPTIONS preflight for the opaque-origin
-  // iframe's cross-origin POST.
+  // handle_request data route — public, mirroring the plugin host. CORS + OPTIONS preflight for
+  // the opaque-origin iframe's cross-origin POST.
+  //
+  // DO NOT COPY THIS ROUTE AS-IS. It is deliberately ungated — a known POC gap. A real app must,
+  // before running any handler: require the configuration to exist and target this plugin version;
+  // require `frontend_data` in its pushed grants; rate-limit per configuration; and validate
+  // `userToken` by calling GZAC's introspection endpoint, failing closed (503) when GZAC is
+  // unreachable. See docs/develop-an-app.md, "Public routes".
   fastify.options(`${pluginBase}/data`, async (_request, reply) => {
     reply
       .header("Access-Control-Allow-Origin", "*")

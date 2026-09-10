@@ -23,9 +23,12 @@ This section covers:
   its permissions
 - **[Manage an integration](external-plugins/manage-an-integration.md)** — edit connections,
   event queues, frontend origins, and deletion
+- **[Plugin status and reviews](external-plugins/plugin-status-and-reviews.md)** — what a status
+  tag means and how to resolve a changed plugin
 - **[Plugin logs](external-plugins/plugin-logs.md)** — inspect what a plugin configuration did
 - **[External plugins in cases and processes](external-plugins/external-plugins-in-cases-and-processes.md)** —
   where configured plugins are used
+- **[Troubleshooting](external-plugins/troubleshooting.md)** — symptoms and their fixes
 
 ---
 
@@ -53,4 +56,9 @@ The three pages divide the work as follows:
 {% hint style="info" %}
 For an introduction to what external plugins are and how they stay secure, read
 [What is an external plugin?](../../fundamentals/external-plugins.md) first.
+{% endhint %}
+
+{% hint style="info" %}
+Configuring plugins, uploading packages, and connecting plugin hosts and apps all require an
+administrator role.
 {% endhint %}

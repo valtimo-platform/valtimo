@@ -110,5 +110,8 @@ functionality does:
 ## Learn more
 
 - [Configuration guide: External plugins](../configuration-guides/plugins/external-plugins/README.md)
-- Developer documentation — building plugins, building apps, and running a plugin host — lives in
-  the `plugin-host/docs/` folder of the Valtimo repository.
+- [Plugin status and reviews](../configuration-guides/plugins/external-plugins/plugin-status-and-reviews.md)
+  — what it means when a plugin needs attention
+- Building plugins and apps, and running a plugin host, are developer and operator tasks. That
+  documentation ships with the Valtimo source code rather than here; ask your development team for
+  it if you need to pass requirements to a plugin supplier.

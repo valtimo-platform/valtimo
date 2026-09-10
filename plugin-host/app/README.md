@@ -428,36 +428,6 @@ differ, and this repo supports Windows development (the CI bootstrap job runs on
 A custom checksum table would reintroduce the bespoke migration machinery that adopting a library
 removed. Revisit only if a real desync actually occurs.
 
-## Reconciliation & ownership
-
-One host serves many GZAC instances, so every configuration row records **which** GZAC↔host
-relationship pushed it: GZAC sends its host-row UUID as `ownerId` with every push, and the host
-persists it (`owner_id` column) and echoes it in the configuration listing. The host treats the
-value as an opaque token — it never interprets or enforces it.
-
-Each GZAC's discovery cycle uses this to **reconcile**: it fetches
-`GET /api/host/configurations` and deletes host configurations that carry *its own* `ownerId` but
-no longer exist on its side — healing the case where a configuration was deleted while the host was
-down or unreachable (the direct delete call is best-effort and does not retry). The never-delete
-rules:
-
-- a configuration owned by **another** GZAC is never touched, whatever its state;
-- an **unowned** configuration (`ownerId` null — pushed by a GZAC that predates ownership) is never
-  auto-deleted by anyone; it is claimed on the owner's next push, or must be removed manually;
-- when the listing request fails, or a host does not implement it, reconciliation is skipped
-  entirely for that cycle.
-
-Ownership scoping is a *safety* mechanism against accidental cross-instance deletion, not an
-authorization boundary: every GZAC connecting to a host shares the same `ADMIN_TOKEN` and is fully
-trusted (any of them could overwrite or delete any configuration directly).
-
-**Owner-change warning.** When a push changes an existing configuration's owner, the host logs a
-warning — this is the fingerprint of two GZAC environments pushing the same configuration id.
-The usual cause is a **database-cloned GZAC environment pointed at the same host as its source**:
-clones share host-row UUIDs and configuration ids, so their pushes and reconciliation passes fight
-over the same rows. Never point a cloned environment at the same host — register a fresh host entry
-(new UUID) instead.
-
 ## Events
 
 A GZAC instance publishes domain events through its transactional outbox as CloudEvents v1.0 JSON to
@@ -597,8 +567,8 @@ curl -sS http://localhost:8090/api/host/plugins \
 ### `GET /api/host/plugins/:pluginId` — list all versions of a plugin
 
 ```bash
-host_sign GET /api/host/plugins/say-hello
-curl -sS http://localhost:8090/api/host/plugins/say-hello \
+host_sign GET /api/host/plugins/case-summary
+curl -sS http://localhost:8090/api/host/plugins/case-summary \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" | jq .
 ```
 
@@ -607,17 +577,17 @@ curl -sS http://localhost:8090/api/host/plugins/say-hello \
 The signature binds the **file bytes**, so sign the `.zip` itself:
 
 ```bash
-host_sign POST /api/host/plugins ../sample-plugins/say-hello/dist/say-hello-0.1.0.zip
+host_sign POST /api/host/plugins ../sample-plugins/case-summary/dist/case-summary-0.1.0.zip
 curl -sS -X POST http://localhost:8090/api/host/plugins \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
-  -F "file=@../sample-plugins/say-hello/dist/say-hello-0.1.0.zip" | jq .
+  -F "file=@../sample-plugins/case-summary/dist/case-summary-0.1.0.zip" | jq .
 ```
 
 ### `DELETE /api/host/plugins/:pluginId/:version` — remove a plugin
 
 ```bash
-host_sign DELETE /api/host/plugins/say-hello/0.1.0
-curl -sS -X DELETE http://localhost:8090/api/host/plugins/say-hello/0.1.0 \
+host_sign DELETE /api/host/plugins/case-summary/0.1.0
+curl -sS -X DELETE http://localhost:8090/api/host/plugins/case-summary/0.1.0 \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" -w "\nHTTP %{http_code}\n"
 ```
 
@@ -658,7 +628,7 @@ Write the body to a file so the signed bytes and the sent bytes match exactly
 
 ```bash
 cat > /tmp/config.json <<'JSON'
-{"pluginId":"say-hello","pluginVersion":"0.1.0","properties":{"greeting":"Hello"},"serviceToken":"local-test-token","gzacBaseUrl":"http://localhost:8080"}
+{"pluginId":"case-summary","pluginVersion":"0.1.0","properties":{"currency":"EUR"},"serviceToken":"local-test-token","gzacBaseUrl":"http://localhost:8080"}
 JSON
 host_sign POST /api/host/configurations/my-config /tmp/config.json
 curl -sS -X POST http://localhost:8090/api/host/configurations/my-config \
@@ -670,7 +640,7 @@ curl -sS -X POST http://localhost:8090/api/host/configurations/my-config \
 ### `PUT /api/host/configurations/:configId` — update configuration
 
 ```bash
-printf '%s' '{"properties":{"greeting":"Hola"}}' > /tmp/config.json
+printf '%s' '{"properties":{"currency":"USD"}}' > /tmp/config.json
 host_sign PUT /api/host/configurations/my-config /tmp/config.json
 curl -sS -X PUT http://localhost:8090/api/host/configurations/my-config \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
@@ -689,9 +659,9 @@ curl -sS -X DELETE http://localhost:8090/api/host/configurations/my-config \
 ### `POST /plugins/:pluginId/:version/actions/:actionKey` — execute an action
 
 ```bash
-printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"recipient":"World"}}' > /tmp/action.json
-host_sign POST /plugins/say-hello/0.1.0/actions/say-hello /tmp/action.json
-curl -sS -X POST http://localhost:8090/plugins/say-hello/0.1.0/actions/say-hello \
+printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"titleField":"/applicantName"}}' > /tmp/action.json
+host_sign POST /plugins/case-summary/0.1.0/actions/case-summary /tmp/action.json
+curl -sS -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-summary \
   -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
   -H "Content-Type: application/json" \
   --data-binary @/tmp/action.json | jq .
@@ -700,7 +670,7 @@ curl -sS -X POST http://localhost:8090/plugins/say-hello/0.1.0/actions/say-hello
 ### `GET /plugins/:pluginId/:version/plugin-manifest` — get plugin manifest
 
 ```bash
-curl -sS http://localhost:8090/plugins/say-hello/0.1.0/plugin-manifest | jq .
+curl -sS http://localhost:8090/plugins/case-summary/0.1.0/plugin-manifest | jq .
 ```
 
 ### `PUT /api/host/gzac-instances` — announce a GZAC instance and its frontend origins
@@ -727,6 +697,6 @@ probe rather than a listing: the caller must already know the origin it is askin
 route never enumerates which GZAC frontends use this host.
 
 ```bash
-curl -sS "http://localhost:8090/plugins/say-hello/0.1.0/frame-policy?origin=http%3A%2F%2Flocalhost%3A4200" | jq .
+curl -sS "http://localhost:8090/plugins/case-summary/0.1.0/frame-policy?origin=http%3A%2F%2Flocalhost%3A4200" | jq .
 # → {"allowed": true}
 ```

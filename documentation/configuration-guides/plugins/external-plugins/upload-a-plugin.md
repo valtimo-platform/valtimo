@@ -57,11 +57,20 @@ case tabs. Prefer publishing a new version number and activating it alongside th
 ### The plugin targets a different Valtimo version
 
 A plugin package can declare which Valtimo versions it supports. If the running environment falls
-outside that range, the upload asks for confirmation first. Compatibility is a warning, not a
-hard block — a confirmed upload proceeds.
+outside that range, the upload asks for confirmation first, naming the current version and the
+range the plugin expects. Compatibility is a warning, not a hard block — a confirmed upload
+proceeds, and the plugin then carries an **Incompatible** tag in the list as a standing reminder.
+See [Plugin status and reviews](plugin-status-and-reviews.md#incompatible).
+
+### The package is too large
+
+Packages above the accepted size (100 MB by default) are refused before being uploaded, and the
+message names both the package's size and the limit. A package that large usually means it bundles
+something it should not; send the message to its supplier.
 
 ### The host rejects the package
 
-Invalid packages (broken manifest, disallowed contents, oversized files) are refused with the
-reason shown in the modal. Package rules are part of the developer documentation in the
-`plugin-host/docs/` folder of the Valtimo repository.
+Invalid packages — a broken manifest, disallowed contents, oversized files inside the archive — are
+refused with the reason shown in the modal. What a valid package may contain is decided by the
+plugin's developer, so pass the message to the plugin's supplier rather than trying to repackage
+it.

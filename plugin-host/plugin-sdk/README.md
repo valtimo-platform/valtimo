@@ -2,13 +2,21 @@
 
 NPM package (`@valtimo/plugin-sdk`) for building Valtimo external plugins that compile to WebAssembly.
 
+> **Writing a plugin?** Start with
+> [Developing an external plugin](../docs/develop-a-plugin.md), which explains how a plugin works
+> with Valtimo and documents the backend handler API in context. This README is the reference for
+> the SDK's CLIs, toolchain, and frontend SDK.
+
 ## What It Provides
 
-1. **TypeScript types** — `ActionInput`, `ActionOutput`, `PluginManifest`, etc.
-2. **Runtime helpers** — `action()`, `config`, `log` for use inside plugin code
-3. **`valtimo-plugin-init` CLI** — Scaffolds a complete, buildable plugin project in one command
-4. **`valtimo-plugin-build` CLI** — Compiles TypeScript plugin source to `.wasm` (via esbuild + extism-js)
-5. **`valtimo-plugin-pack` CLI** — Assembles a `.zip` package (`manifest.json` + `plugin.wasm`) ready for upload
+1. **TypeScript types** — `ActionInput`, `ActionOutput`, `EventInput`, `RequestInput`,
+   `SubmitInput`, `PluginManifest`, etc.
+2. **Handler registries** — `action()`, `onEvent()`, `request()`, `submit()`
+3. **Host functions** — `gzacApi`, `httpRequest`, `kv`, `log`, `config`
+4. **Frontend SDK** — `ValtimoPluginSDK` from `@valtimo/plugin-sdk/frontend`, for iframe bundles
+5. **`valtimo-plugin-init` CLI** — Scaffolds a complete, buildable plugin project in one command
+6. **`valtimo-plugin-build` CLI** — Compiles TypeScript plugin source to `.wasm` (via esbuild + extism-js)
+7. **`valtimo-plugin-pack` CLI** — Assembles a `.zip` package (`manifest.json` + `plugin.wasm`) ready for upload
 
 ## Project Structure
 
@@ -18,9 +26,18 @@ src/
     types.ts        # Core type definitions
     index.ts        # Barrel export
   actions.ts        # action() handler registry
+  events.ts         # onEvent() handler registry
+  requests.ts       # request() / onRequest() handler registry
+  submit.ts         # submit() task-form hook registry
+  gzac-api.ts       # gzacApi.{get,post,put,delete} + gzacApi.asUser — calls back into GZAC
+  http-request.ts   # httpRequest.* — outbound HTTP, bounded by the egress allowlist
+  kv.ts             # kv.{get,set,delete,list} — per-configuration key/value store
+  host-functions.ts # log.debug/info/warn/error — logging facade
   config.ts         # config.getAll() / config.get(key) — call-scoped configuration
-  host-functions.ts # log.info/warn/error — logging facade
-  runtime.ts        # Wasm dispatcher: handleAction(), handleGetManifest()
+  egress.ts         # Egress origin parsing/matching shared with the validator
+  manifest-validation.ts # The shared manifest validator (pack time and upload)
+  runtime.ts        # Wasm dispatcher: handle_action/_event/_request/_submit, handleGetManifest()
+  frontend/         # The browser-side SDK (@valtimo/plugin-sdk/frontend)
   scaffold/         # The plugin generator behind valtimo-plugin-init (@valtimo/plugin-sdk/scaffold)
   index.ts          # Public API barrel export
 templates/          # Files valtimo-plugin-init copies into a new project (see templates/README.md)
@@ -145,8 +162,8 @@ entry, its translation keys, and — where it has one — a backend handler:
 
 | Bundle | Generated | Backend |
 |---|---|---|
-| `config` | `frontend/config.{html,tsx}`, a `configurationSchema`, an unkeyed `config` bundle, `config.*` keys. The action then reads its `greeting` from the configuration as well as from the BPMN property. | — |
-| `process-link-action` | `frontend/action-config.{html,tsx}`, a bundle keyed on the plugin id (which is how GZAC matches it to `actions[0]`), `actionConfig.*` keys. Replaces the form GZAC would generate from `actions[].properties`. | — |
+| `config` | `frontend/config.{html,tsx}`, a `configurationSchema`, an unkeyed `config` bundle, `config.*` keys. The action then reads its `greeting` from the configuration as well as from the BPMN property. Replaces the raw **Properties (JSON)** textarea an administrator would otherwise have to fill in. | — |
+| `process-link-action` | `frontend/action-config.{html,tsx}`, a bundle keyed on the plugin id (which is how GZAC matches it to `actions[0]`), `actionConfig.*` keys. Replaces the raw JSON textarea GZAC falls back to for action properties — it does not generate a form from `actions[].properties`. | — |
 | `case-tab` | `frontend/case-tab.{html,tsx}`, a bundle keyed `summary`, `caseTab.*` keys, the `frontend_data` capability. | `request("/summary")` |
 | `case-widget` | `frontend/case-widget.{html,tsx}`, a bundle keyed `summary`, `caseWidget.*` keys, the `frontend_data` capability. | `request("/summary")` |
 | `task-form` | `frontend/task-form.{html,tsx}`, a bundle keyed `review` with `submitHandler: true`, `taskForm.*` keys. The only surface that can **reject** what a user did. | `submit("review")` |
@@ -212,27 +229,44 @@ Reads `pluginId` and `version` from `manifest.json` and produces `{pluginId}-{ve
   (self-reported by the SDK, resolved from the plugin's `cwd` exactly as esbuild is) — i.e. the SDK
   the wasm was compiled against, not the one that happens to be running the pack tool. Those differ
   under `npx`, a global install, or two hoisted copies; the pack tool warns and stamps the plugin's
+  resolved version rather than its own.
 - `plugin.wasm`
 - `frontend/` (if the directory exists)
+- the logo (`logo.svg`/`.png`/`.jpg`/`.jpeg` next to `manifest.json`), if present
 
 ## SDK API (for plugin authors)
 
-```typescript
-import { action, config, log } from "@valtimo/plugin-sdk";
+Registries and host functions, all imported from `@valtimo/plugin-sdk`:
 
-// Register an action handler
-action("my-action", (input) => {
-  const myConfigValue = config.get("someKey");
-  log.info("Executing my-action");
+```typescript
+import { action, onEvent, request, submit, config, log, gzacApi, httpRequest, kv } from "@valtimo/plugin-sdk";
+
+action("my-action", (input) => {                    // a process service task
+  const target = config.get("someKey");             // this configuration's properties
+  const doc = gzacApi.get(`/api/v1/document/${input.documentId}`);   // needs gzac_api + the endpoint
+  log.info("Executing my-action", { target });      // shows in the admin Logs modal
   return { status: "completed", variables: { result: "done" } };
 });
 
-// config.getAll()  — returns the full configuration object
-// config.get(key)  — returns a single configuration value
-// log.info(msg)    — log at info level
-// log.warn(msg)    — log at warn level
-// log.error(msg)   — log at error level
+onEvent((event) => { /* a subscribed platform event */ return { status: "completed" }; });
+request("/summary", (input) => ({ status: 200, body: {} }));   // serves your own iframe bundles
+submit("review", (input) => ({ status: "completed" }));        // validates a task-form submission
 ```
+
+| Member | Purpose |
+|---|---|
+| `action(key, handler)` | Handles a process action declared in `actions[]` |
+| `onEvent(handler)` | Handles subscribed platform events; several registrations all run |
+| `request(path, handler)` / `onRequest(handler)` | Serves your own frontend bundles through the host's `/data` route |
+| `submit(key, handler)` | Validates/transforms a task-form submission before GZAC completes the task |
+| `config.getAll()` / `config.get(key)` | The configuration's properties for this call |
+| `log.debug/info/warn/error(msg, data?)` | Structured entries in the admin Logs modal |
+| `gzacApi.{get,post,put,delete}` / `gzacApi.asUser.*` | Calls back into GZAC as the configuration, or as the logged-in user |
+| `httpRequest.{get,post,put,delete}` | Outbound HTTP, restricted to declared egress origins |
+| `kv.{get,set,delete,list}` | Per-configuration key/value store |
+
+Handler input/output types, execution semantics, and the sandbox's limits are documented in
+[Developing an external plugin](../docs/develop-a-plugin.md#3-backend-handlers-srcplugints).
 
 ### Capabilities
 
