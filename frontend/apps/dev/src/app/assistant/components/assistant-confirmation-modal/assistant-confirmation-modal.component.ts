@@ -15,7 +15,14 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {ButtonModule, LayerModule, ModalModule} from 'carbon-components-angular';
@@ -46,9 +53,8 @@ export class AssistantConfirmationModalComponent {
 
   protected readonly testIds = ASSISTANT_TEST_IDS;
 
-  // Dismissing without confirming has to release the pending action, or it lingers
-  // server-side until it expires.
+  @HostListener('document:keydown.escape')
   public onClose(): void {
-    if (!this.applying) this.cancelEvent.emit();
+    if (this.pendingAction && !this.applying) this.cancelEvent.emit();
   }
 }

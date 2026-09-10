@@ -83,6 +83,8 @@ export class AssistantPanelComponent implements OnInit, AfterViewInit {
 
   @HostListener('keydown.escape')
   public onEscape(): void {
+    if (this.chatService.$pendingAction()) return;
+
     this.minimizeEvent.emit();
   }
 
