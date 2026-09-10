@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.assertTimeoutPreemptively
+import org.springframework.boot.autoconfigure.AutoConfigurations
+import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestClient
 import java.net.ServerSocket
@@ -66,6 +68,28 @@ class ApacheRequestFactoryCustomizerTest {
         }
 
         assertEquals(SocketTimeoutException::class, exception.cause!!::class)
+    }
+
+    @Test
+    fun `should give up reading after the read timeout configured in the application properties`() {
+        ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(RestClientAutoConfiguration::class.java))
+            .withPropertyValues("valtimo.http.rest-client.read-timeout=2")
+            .run { context ->
+                val restClientBuilder = RestClient.builder()
+                context.getBean(ApacheRequestFactoryCustomizer::class.java).customize(restClientBuilder)
+
+                val exception = assertTimeoutPreemptively(Duration.ofSeconds(30)) {
+                    assertThrows<ResourceAccessException> {
+                        restClientBuilder.build().get()
+                            .uri("http://localhost:${silentServer.localPort}/")
+                            .retrieve()
+                            .body(String::class.java)
+                    }
+                }
+
+                assertEquals(SocketTimeoutException::class, exception.cause!!::class)
+            }
     }
 
     private fun restClientWith(properties: ValtimoHttpRestClientConfigurationProperties): RestClient {
