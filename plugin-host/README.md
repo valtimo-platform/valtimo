@@ -100,10 +100,10 @@ node plugin-sdk/bin/valtimo-plugin-init.mjs ~/tmp/my-plugin --yes \
 ```
 
 `--bundles all` gives one of every type, `--bundles none` gives a backend-only plugin, and the
-default is `config` alone. `--sdk file:…` is needed for in-repo work because `@valtimo/plugin-sdk`
-is not on npm yet; from a published SDK the command is
-`npx --package @valtimo/plugin-sdk valtimo-plugin-init my-plugin` and the default `^<version>` range
-resolves on its own. Upload the result with `npm run plugin:upload -- <zip>`. See the
+default is `config` alone. `--sdk file:…` points the generated project at the in-repo SDK; from
+the published SDK, `npx --package @valtimo/plugin-sdk valtimo-plugin-init my-plugin` needs no
+flag — the default `^<version>` range resolves from the registry. Upload the result with
+`npm run plugin:upload -- <zip>`. See the
 [SDK README](./plugin-sdk/README.md#valtimo-plugin-init) for the wizard, the flags, and what each
 bundle generates.
 
@@ -116,16 +116,13 @@ bundles of the same type, and the other two levels of task-form submission.
 `npm run plugin:upload` performs the signed upload for you on any OS. When you want to explore the
 API directly (or script against it from a unix shell), this is the scheme:
 
-Every GZAC→host request is HMAC-SHA256 signed (not a bearer token): the signature covers
-`{METHOD}\n{path}\n{timestamp}\n{bodyHash}` keyed with the `ADMIN_TOKEN`, sent as `X-Valtimo-Signature`
-+ `X-Valtimo-Timestamp`. Replay protection is two-layered: the timestamp must be within ±5 minutes
-of the host's clock, and on side-effecting routes (POST/PUT/DELETE) each accepted signature is
-single-use within that window — resending a captured request verbatim is refused with 401. The
-plugin upload signs the file bytes; other write routes sign the request body. HMAC authenticates and integrity-binds each request but does not
-encrypt it — run the host over TLS (set `TLS_CERT_PATH`/`TLS_KEY_PATH`) so the config push, which
-carries broker credentials and the service token, is also confidential. See
-[`app/README.md`](app/README.md#api-reference) for the full scheme and the `host_sign` helper used
-below, and [Transport security](app/README.md#transport-security) for TLS.
+Every GZAC→host request is HMAC-SHA256 signed (`X-Valtimo-Signature` + `X-Valtimo-Timestamp`
+over `{METHOD}\n{path}\n{timestamp}\n{bodyHash}`, keyed with the `ADMIN_TOKEN`); timestamps are
+bounded to ±5 minutes and accepted signatures are single-use on side-effecting routes. HMAC
+authenticates but does not encrypt — run the host over TLS. The full scheme lives in
+[`app/README.md`](app/README.md#api-reference), TLS in
+[Transport security](app/README.md#transport-security); the `host_sign` helper below implements
+the signing for a unix shell:
 
 ```bash
 ADMIN_TOKEN=test-secret
@@ -174,35 +171,28 @@ The image compiles itself — no local `npm run build` first. Its build context 
 the SDK is built inside the image:
 
 ```bash
+# from plugin-host/, not app/
 docker build -f app/Dockerfile -t valtimo/plugin-host .
 ```
 
 ### Shipping plugins with the host
 
-The image contains **no plugins**: `/data/preinstalled` is empty. Every `.zip` found in that
-directory at boot is installed, so an operator provisions a host without any admin clicking Upload —
-either by mounting a directory of packages over it:
-
-```yaml
-volumes:
-  - ./my-plugins:/data/preinstalled:ro
-```
-
-or by baking them into a derived image:
-
-```dockerfile
-FROM valtimo/plugin-host
-COPY my-plugin-1.0.0.zip /data/preinstalled/
-```
-
-A version already installed with identical content is a no-op on restart. A version already
-installed with *different* content is kept, not replaced — GZAC pins the content hash an admin
-accepted, so replacing it is an explicit decision (`PLUGIN_PREINSTALL_OVERWRITE=true` opts out, for
-throwaway environments only). See [`app/README.md`](./app/README.md) for both settings.
+The image contains **no plugins**: `/data/preinstalled` is empty, and every `.zip` found there at
+boot is installed — mount a directory of packages over it or bake them into a derived image. The
+canonical reference is
+[Shipping plugins with the host](./docs/host-configuration-and-deployment.md#shipping-plugins-with-the-host)
+in the operator guide; per-package outcomes are in [`app/README.md`](./app/README.md).
 
 ## Documentation
 
+- [Developer & operator guides](./docs/README.md) — developing a plugin, developing an app,
+  host deployment, auto-deployment
+- [How a plugin works with Valtimo](./docs/develop-a-plugin.md#how-a-plugin-works-with-valtimo) —
+  the lifecycle, permission model, and how to choose a surface. Start here.
+- [The Valtimo API and event catalogue](./docs/valtimo-api-and-events.md) — what a plugin can call
+  and subscribe to
 - [Plugin Host README](./app/README.md) — API reference, configuration, events
-- [Plugin SDK README](./plugin-sdk/README.md) — Building plugins, SDK API
+- [Plugin SDK README](./plugin-sdk/README.md) — CLI reference, toolchain, frontend SDK
 - [`valtimo-plugin-init`](./plugin-sdk/README.md#valtimo-plugin-init) — Scaffolding a new plugin project
 - [Case Summary Plugin](./sample-plugins/case-summary/README.md) — Example with GZAC callbacks
+- Administrator documentation — [Configuration guides: Plugins](../documentation/configuration-guides/plugins/README.md)

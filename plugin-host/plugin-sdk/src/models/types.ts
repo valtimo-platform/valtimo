@@ -195,6 +195,7 @@ export interface FrontendBundle {
    */
   title?: string;
   path: string;
+  /** Declared intent only — not yet enforced: GZAC's modeler currently offers every `task-form` bundle on user tasks. */
   activityTypes?: string[];
   /** `page` bundles only: the menu icon class, e.g. `icon mdi mdi-view-dashboard`. */
   icon?: string;
