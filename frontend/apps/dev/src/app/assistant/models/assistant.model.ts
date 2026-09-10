@@ -99,20 +99,39 @@ interface AssistantMessage {
   suggestionKeys?: ReadonlyArray<string>;
 }
 
+// What the confirmation modal needs to tell the user exactly what will change.
+interface AssistantPendingAction {
+  id: string;
+  description: string;
+  diff?: {before: string; after: string};
+  affectedResources?: string[];
+}
+
+// Emitted after the backend confirms a change, so a screen can refresh just its own data.
+interface AssistantAppliedChange {
+  pendingActionId: string;
+  description: string;
+  affectedResources: ReadonlyArray<string>;
+}
+
+type AssistantRefreshHandler = (change: AssistantAppliedChange) => void;
+
 interface AssistantReply {
   sessionId: string;
   text: string;
-  pendingActionId: string | null;
-  previewDescription: string | null;
+  pendingAction: AssistantPendingAction | null;
   degraded: AssistantDegradedReason | null;
 }
 
 export {
   AssistantActionDto,
+  AssistantAppliedChange,
   AssistantConfigResponseDto,
   AssistantDegradedReason,
   AssistantMessage,
   AssistantMessageAuthor,
+  AssistantPendingAction,
+  AssistantRefreshHandler,
   AssistantReply,
   AssistantResponseDto,
   ChatRequestDto,

@@ -84,13 +84,12 @@ const ASSISTANT_PAGE_CONTEXTS: ReadonlyArray<AssistantPageContext> = [
 
   // IKO (detail before search)
   {
-    urlPattern:
-      /^\/iko\/(?<key>[^/?#]+)\/(?<searchKey>[^/?#]+)\/details\/(?<resourceId>[^/?#]+)/,
+    urlPattern: /^\/iko\/(?<key>[^/?#]+)\/(?<searchKey>[^/?#]+)\/details\/(?<resourceId>[^/?#]+)/,
     page: 'iko-detail',
     resourceType: 'ikoResult',
   },
   {
-    urlPattern: /^\/iko\/(?<resourceId>[^/?#]+)(?:[?#]|$)/,
+    urlPattern: /^\/iko\/(?<resourceId>[^/?#]+)(?:[/?#]|$)/,
     page: 'iko-search',
     resourceType: 'ikoConfiguration',
   },
@@ -144,8 +143,7 @@ const ASSISTANT_PAGE_CONTEXTS: ReadonlyArray<AssistantPageContext> = [
   // Case Management
   {urlPattern: /^\/case-management(?:[?#]|$)/, page: 'case-management-list'},
   {
-    urlPattern:
-      /^\/case-management\/case\/(?<resourceId>[^/?#]+)\/version\/(?<versionTag>[^/?#]+)/,
+    urlPattern: /^\/case-management\/case\/(?<resourceId>[^/?#]+)\/version\/(?<versionTag>[^/?#]+)/,
     page: 'case-definition-editor',
     resourceType: 'caseDefinition',
   },
@@ -168,7 +166,7 @@ const ASSISTANT_PAGE_CONTEXTS: ReadonlyArray<AssistantPageContext> = [
   },
 
   // Plugins
-  {urlPattern: /^\/plugins(?:[?#]|$)/, page: 'plugin-list'},
+  {urlPattern: /^\/plugins(?:[/?#]|$)/, page: 'plugin-list'},
 
   // Object Management
   {urlPattern: /^\/object-management(?:[?#]|$)/, page: 'object-management-list'},
@@ -180,14 +178,14 @@ const ASSISTANT_PAGE_CONTEXTS: ReadonlyArray<AssistantPageContext> = [
 
   // Other Admin Pages
   {urlPattern: /^\/translation-management(?:[?#]|$)/, page: 'translation-management'},
-  {urlPattern: /^\/admin-settings(?:[?#]|$)/, page: 'admin-settings'},
+  {urlPattern: /^\/admin-settings(?:[/?#]|$)/, page: 'admin-settings'},
   {urlPattern: /^\/process-links(?:[?#]|$)/, page: 'process-links'},
   {urlPattern: /^\/logging(?:[?#]|$)/, page: 'logging'},
   {urlPattern: /^\/case-migration(?:[?#]|$)/, page: 'case-migration'},
   {urlPattern: /^\/process-migration(?:[?#]|$)/, page: 'process-migration'},
-  {urlPattern: /^\/milestones(?:[?#]|$)/, page: 'milestones'},
-  {urlPattern: /^\/choice-fields(?:[?#]|$)/, page: 'choice-fields'},
-  {urlPattern: /^\/iko-management(?:[?#]|$)/, page: 'iko-management'},
+  {urlPattern: /^\/milestones(?:[/?#]|$)/, page: 'milestones'},
+  {urlPattern: /^\/choice-fields(?:[/?#]|$)/, page: 'choice-fields'},
+  {urlPattern: /^\/iko-management(?:[/?#]|$)/, page: 'iko-management'},
 ];
 
 const ASSISTANT_GENERIC_GREETING_KEY = 'assistant.greeting.generic';

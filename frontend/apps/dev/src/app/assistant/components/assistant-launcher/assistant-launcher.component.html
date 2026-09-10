@@ -38,3 +38,12 @@
     <svg cdsIcon="ai-launch" size="24"></svg>
   </button>
 </div>
+
+<!-- Outside .assistant on purpose: that wrapper is a z-index 7900 stacking context and the
+     panel clips its overflow, so a modal nested inside either of them would be trapped. -->
+<valtimo-assistant-confirmation-modal
+  [applying]="chatService.$applying()"
+  [pendingAction]="chatService.$pendingAction()"
+  (cancelEvent)="chatService.cancelPendingAction()"
+  (confirmEvent)="chatService.confirmPendingAction()"
+></valtimo-assistant-confirmation-modal>

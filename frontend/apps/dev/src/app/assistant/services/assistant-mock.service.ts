@@ -44,18 +44,28 @@ export class AssistantMockService implements AssistantTransport {
   public chat(request: ChatRequestDto): Observable<AssistantResponseDto> {
     const normalized = request.message.toLowerCase();
     const wantsChange = normalized.includes('toevoeg') || normalized.includes('add');
-
-    return of({
+    const response: AssistantResponseDto = {
       message: this.replyTo(request.message),
       sessionId: request.sessionId ?? this._sessionId,
       action: wantsChange
-        ? ({
+        ? {
             type: 'confirmation_required',
             pendingActionId: crypto.randomUUID(),
-            preview: {description: 'Add a view permission on CaseDefinition to ROLE_ADMIN.'},
-          } as const)
+            preview: {
+              description: 'Add a view permission on CaseDefinition to ROLE_ADMIN.',
+              affectedResources: ['ROLE_ADMIN'],
+              diff: {
+                before: 'permissions:\n  - resourceType: CaseDefinition\n    action: view_list',
+                after:
+                  'permissions:\n  - resourceType: CaseDefinition\n    action: view_list\n' +
+                  '  - resourceType: CaseDefinition\n    action: view',
+              },
+            },
+          }
         : null,
-    }).pipe(delay(this._LATENCY_MS));
+    };
+
+    return of(response).pipe(delay(this._LATENCY_MS));
   }
 
   public confirmAction(pendingActionId: string): Observable<ConfirmActionResponseDto> {

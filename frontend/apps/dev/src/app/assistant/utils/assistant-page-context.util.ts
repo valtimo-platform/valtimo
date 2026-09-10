@@ -25,11 +25,13 @@ interface ResolvedAssistantPageContext {
 
 function resolveAssistantPageContext(url: string): ResolvedAssistantPageContext | null {
   for (const definition of ASSISTANT_PAGE_CONTEXTS) {
-    const groups = url.match(definition.urlPattern)?.groups;
+    // Test the match, not the groups: a pattern without named groups (every list page)
+    // matches with `groups` undefined, and checking groups skipped all of them.
+    const match = url.match(definition.urlPattern);
 
-    if (!groups) continue;
+    if (!match) continue;
 
-    const {resourceId, ...rest} = groups;
+    const {resourceId, ...rest} = match.groups ?? {};
 
     return {
       definition,

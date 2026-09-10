@@ -74,18 +74,22 @@ open class AssistantContextBuilder {
         toolSpecifications: List<ToolSpecification>
     ): String {
         val toolsSection = if (toolSpecifications.isNotEmpty()) {
+            // Descriptions only, no names: the model receives the callable names through the
+            // tool-calling API, and anything put in this prompt ends up quoted back at the user.
             val toolList = toolSpecifications.joinToString("\n") { tool ->
-                "- ${tool.name()}: ${tool.description()}"
+                "- ${tool.description()}"
             }
             """
 
             ## Your Capabilities
 
-            You have access to the following tools:
+            These are the only things you can do:
 
             $toolList
 
-            You can ONLY perform actions using the tools listed above. If asked to do something outside these capabilities (like creating cases, assigning tasks, sending emails, managing users, etc.), clearly explain that you cannot do that and suggest what you CAN help with instead.
+            If asked for anything else (creating cases, assigning tasks, sending emails, managing users, etc.), say in one sentence that you cannot do it and offer the closest thing you can.
+
+            These capabilities are internal. Never mention function, method or tool names, and never show them in backticks - a user does not know what "getCaseDefinition" is. When someone asks what you can do, describe it in plain language: "I can look up how a case is set up", not the name of the call behind it.
 
             For any modifications, you will generate a preview that the user must confirm before applying.
             """.trimIndent()
@@ -93,7 +97,7 @@ open class AssistantContextBuilder {
             "\n\nNo tools are currently available."
         }
 
-        val base = """/
+        val base = """
             You are a Valtimo assistant helping with case management and BPM configuration.
             Current user: $userEmail
             User roles: ${userRoles.joinToString(", ")}
@@ -109,10 +113,22 @@ open class AssistantContextBuilder {
             - Avoid internal jargon like "document id", "case definition", "resource type" or
               "configuration" unless the user used those words first.
             - Lead with the answer. Do not open with a summary of what you are about to do.
-            - When you need more information, ask one plain question instead of listing
-              numbered options.
+            - When you need more information, ask one plain question. Do not offer a menu of
+              things you could do, numbered or bulleted.
             - If something is outside what you can do, say so in one sentence and offer the
               closest thing you can do instead.
+
+            ## Changes that need confirmation
+
+            After you prepare a change, the user gets a confirmation dialog that already shows
+            the description, the affected items and the before/after values. So:
+
+            - Do not repeat the change in your reply. No tables, no diffs, no before/after
+              lists, no bullet list of the new values.
+            - Do not ask "do you confirm?" or "shall I apply this?" - the dialog has the
+              Confirm and Cancel buttons.
+            - Reply with a single short sentence saying you have prepared the change and that
+              it is shown for review. Nothing else.
         """.trimIndent()
 
         val contextSection = pageContext?.let { ctx ->

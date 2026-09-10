@@ -33,8 +33,14 @@ function toAssistantReply(dto: AssistantResponseDto): AssistantReply {
   return {
     sessionId: dto.sessionId,
     text: message,
-    pendingActionId: confirmation?.pendingActionId ?? null,
-    previewDescription: confirmation?.preview?.description ?? null,
+    pendingAction: confirmation
+      ? {
+          id: confirmation.pendingActionId,
+          description: confirmation.preview?.description ?? '',
+          diff: confirmation.preview?.diff,
+          affectedResources: confirmation.preview?.affectedResources,
+        }
+      : null,
     degraded: detectDegradedReason(message),
   };
 }

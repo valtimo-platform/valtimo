@@ -108,14 +108,29 @@
       border-bottom-color: var(--cds-focus, var(--vcds-color-60));
     }
 
+    /*
+     * Carbon gives the input a transparent 2px outline in its base state and transitions
+     * `outline`. Overriding focus with `outline: none` breaks that interpolation: on blur
+     * the browser animates from `none`, falling back to currentColor, which paints a dark
+     * rectangle around the placeholder. So keep the outline present but transparent in
+     * every state, and drop the transition so nothing can interpolate.
+     */
     input {
       flex: 1 1 auto;
       height: auto;
       border: 0;
+      outline: 2px solid transparent;
+      outline-offset: -2px;
       background-color: transparent;
+      box-shadow: none;
+      transition: none;
 
-      &:focus {
-        outline: none;
+      &:focus,
+      &:focus-visible,
+      &:active {
+        outline: 2px solid transparent;
+        outline-offset: -2px;
+        box-shadow: none;
       }
 
       &::placeholder {

@@ -33,7 +33,6 @@ import {TranslateModule} from '@ngx-translate/core';
 import {IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {ASSISTANT_TEST_IDS} from '../../constants';
 import {AssistantChatService} from '../../services';
-import {AssistantConfirmationComponent} from '../assistant-confirmation/assistant-confirmation.component';
 import {AssistantMessageComponent} from '../assistant-message/assistant-message.component';
 import {AssistantSuggestionsComponent} from '../assistant-suggestions/assistant-suggestions.component';
 
@@ -44,7 +43,6 @@ import {AssistantSuggestionsComponent} from '../assistant-suggestions/assistant-
   styleUrls: ['./assistant-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AssistantConfirmationComponent,
     AssistantMessageComponent,
     AssistantSuggestionsComponent,
     CommonModule,

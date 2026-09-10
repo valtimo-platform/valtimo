@@ -15,9 +15,11 @@
  */
 
 export const ASSISTANT_TEST_IDS = {
-  confirmation: 'assistantConfirmation',
+  confirmationAfter: 'assistantConfirmationAfter',
+  confirmationBefore: 'assistantConfirmationBefore',
   confirmationCancel: 'assistantConfirmationCancel',
   confirmationConfirm: 'assistantConfirmationConfirm',
+  confirmationModal: 'assistantConfirmationModal',
   launcher: 'assistantLauncher',
   message: 'assistantMessage',
   panel: 'assistantPanel',

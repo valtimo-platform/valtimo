@@ -51,13 +51,6 @@
       ></valtimo-assistant-suggestions>
     </ng-container>
 
-    <valtimo-assistant-confirmation
-      *ngIf="chatService.$pendingActionId()"
-      [description]="chatService.$pendingPreview()"
-      (cancelEvent)="chatService.cancelPendingAction()"
-      (confirmEvent)="chatService.confirmPendingAction()"
-    ></valtimo-assistant-confirmation>
-
     <p
       *ngIf="chatService.$awaitingReply()"
       [attr.data-test-id]="testIds.panelThinking"

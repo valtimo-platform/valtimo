@@ -18,4 +18,5 @@ export * from './assistant-api.service';
 export * from './assistant-availability.service';
 export * from './assistant-chat.service';
 export * from './assistant-mock.service';
+export * from './assistant-refresh.service';
 export * from './assistant-transport';
