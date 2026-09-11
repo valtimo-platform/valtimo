@@ -15,17 +15,16 @@
  */
 
 import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
-import {Components} from 'formiojs';
+import {Components} from '@formio/js';
 import {distinctUntilChanged, map, switchMap, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
-import {FormioOptions} from '@formio/angular/';
 import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
   modifyEditFormApiKeyInput,
 } from './form-io-builder.utils';
-import {FormioContextParams, ValtimoFormioOptions} from '../../../../models';
+import {FormioContextParams, FormioOptions, ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
 import {

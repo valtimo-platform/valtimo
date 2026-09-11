@@ -26,13 +26,12 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {ValtimoFormioOptions} from '../../../../models';
+import {FormioOptions, ValtimoFormioOptions} from '../../../../models';
 import {ValtimoModalService} from '../../../../services';
 import {UserProviderService} from '@valtimo/security';
 import {
   FormioComponent as FormIoSourceComponent,
   FormioForm,
-  FormioOptions,
   FormioRefreshValue,
   FormioSubmission,
 } from '@formio/angular';
@@ -45,7 +44,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
-import {Formio} from 'formiojs';
+import {Formio} from '@formio/js';
 import {
   FormIoLocalStorageService,
   FormIoStateService,
@@ -91,7 +90,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
-  public readonly submission$ = new BehaviorSubject<FormioSubmission>({});
+  // Annotated explicitly: inferring resolves FormioSubmission's unexported default type param and fails declaration emit (TS4029).
+  public readonly submission$: BehaviorSubject<FormioSubmission> =
+    new BehaviorSubject<FormioSubmission>({});
 
   private readonly _form$ = new BehaviorSubject<FormioForm>(undefined);
 
