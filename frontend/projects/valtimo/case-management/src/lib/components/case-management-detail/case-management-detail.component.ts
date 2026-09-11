@@ -35,14 +35,17 @@ import {SseService} from '@valtimo/sse';
 import {IconService, Tab} from 'carbon-components-angular';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   map,
   Observable,
+  of,
   shareReplay,
   startWith,
   Subscription,
   switchMap,
+  timeout,
 } from 'rxjs';
 import {
   CaseDefinitionConfigurationIssue,
@@ -51,6 +54,15 @@ import {
 } from '../../models';
 import {CaseDetailService, CaseManagementService, TabService} from '../../services';
 import {CASE_MANAGEMENT_DETAIL_TEST_IDS} from '../../constants';
+
+/**
+ * How long to wait for an injected tab to report whether it is enabled. The tab bar - and with it the page
+ * content - is not rendered until every injected tab has reported, so a tab whose `enabled$` never emits
+ * would otherwise leave the page empty for good. After this long such a tab is treated as enabled, which
+ * matches the contract that a tab without an `enabled$` is enabled and keeps the requested tab reachable. A
+ * report arriving after the fallback no longer hides the tab until the page is opened again.
+ */
+export const INJECTED_TAB_ENABLED_TIMEOUT_MS = 5000;
 
 @Component({
   standalone: false,
@@ -93,6 +105,24 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
 
   public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
     this.tabService.injectedCaseManagementTabs$;
+
+  // Emits only once every injected tab has reported whether it is enabled, so the tab bar is never rendered incomplete.
+  public readonly enabledInjectedTabs$: Observable<CaseManagementTabConfig[]> =
+    this.injectedCaseManagementTabs$.pipe(
+      switchMap((tabs: CaseManagementTabConfig[]) =>
+        tabs.length === 0
+          ? of<CaseManagementTabConfig[]>([])
+          : combineLatest(
+              tabs.map((tab: CaseManagementTabConfig) =>
+                (tab.enabled$ ?? of(true)).pipe(
+                  catchError(() => of(false)),
+                  timeout({first: INJECTED_TAB_ENABLED_TIMEOUT_MS, with: () => of(true)})
+                )
+              )
+            ).pipe(map((enabled: boolean[]) => tabs.filter((_, index) => !!enabled[index])))
+      ),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
 
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
 
