@@ -22,6 +22,7 @@ interface UserSettings {
   preferredTheme?: string;
   caseListPageSizes?: {[key: string]: number};
   taskListPageSizes?: {[key: string]: number};
+  taskPanelWidth?: number;
 }
 
 export {UserSettings};

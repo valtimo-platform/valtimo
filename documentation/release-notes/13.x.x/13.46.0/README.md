@@ -14,9 +14,10 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### The task panel in a case keeps the width you give it
 
-New enhancement explanation.
+The panel on the right of a case can now be dragged wider or narrower while the task list is shown, not only
+while a task is open. The width you set is remembered for you across all case types and after logging in again.
 
 ---
 
