@@ -17,7 +17,6 @@ import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
 import {CarbonListModule} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
@@ -97,13 +96,12 @@ export class CaseWidgetFieldComponent extends WidgetProcess {
 
   constructor(
     protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
     private readonly widgetsService: WidgetsService,
     private readonly caseTabService: CaseTabService,
     private readonly caseWidgetApiService: CaseWidgetsApiService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {
-    super(documentService, permissionService);
+    super(documentService);
   }
 
   public onProcessStartClick(process: WidgetAction): void {
