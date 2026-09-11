@@ -14,20 +14,32 @@
  * limitations under the License.
  */
 
-import {Injectable, TemplateRef} from '@angular/core';
+import {Injectable, OnDestroy, TemplateRef} from '@angular/core';
 import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
-import {BehaviorSubject, combineLatest, filter, map, Observable, startWith} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  startWith,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 import {
   CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
   CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
   CASE_DETAIL_GUTTER_SIZE,
   CASE_DETAIL_LEFT_PANEL_MIN_WIDTH,
   CASE_DETAIL_RIGHT_PANEL_MIN_WIDTHS,
+  CASE_DETAIL_TASK_LIST_MIN_WIDTH,
   CASE_DETAIL_TASK_LIST_WIDTH,
 } from '../constants';
 import {CaseDetailLayout} from '../models';
 import {CaseTabService} from './case-tab.service';
 import {PageHeaderService} from '@valtimo/components';
+import {UserSettingsService} from '@valtimo/shared';
 
 export interface StartFormPanel {
   template: TemplateRef<any>;
@@ -35,8 +47,10 @@ export interface StartFormPanel {
 }
 
 @Injectable()
-export class CaseDetailLayoutService {
+export class CaseDetailLayoutService implements OnDestroy {
   private readonly _tabContentContainerWidth$ = new BehaviorSubject<number | null>(null);
+  private readonly _taskPanelWidth$ = new BehaviorSubject<number | null>(null);
+  private readonly _subscriptions = new Subscription();
   private readonly _showTaskList$ = this.caseTabService.showTaskList$;
   private readonly _taskAndProcessLinkOpenedInPanel$ =
     new BehaviorSubject<TaskWithProcessLink | null>(null);
@@ -87,8 +101,11 @@ export class CaseDetailLayoutService {
 
   constructor(
     private readonly caseTabService: CaseTabService,
-    private readonly pageHeaderService: PageHeaderService
-  ) {}
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly userSettingsService: UserSettingsService
+  ) {
+    this.loadTaskPanelWidth();
+  }
 
   public readonly caseDetailLayout$: Observable<CaseDetailLayout | any> = combineLatest([
     this.tabContentContainerWidth$,
@@ -97,6 +114,7 @@ export class CaseDetailLayoutService {
     this._startFormPanel$,
     this._formDisplayType$,
     this._formDisplaySize$,
+    this._taskPanelWidth$,
   ]).pipe(
     map(
       ([
@@ -106,21 +124,30 @@ export class CaseDetailLayoutService {
         startFormPanel,
         formDisplayType,
         formDisplaySize,
+        taskPanelWidth,
       ]) => {
         if (!showTaskList) {
           return this.getInitialLayout();
         }
 
         if (startFormPanel) {
-          return this.getPanelLayout(tabContentContainerWidth ?? 0, formDisplaySize);
+          return this.getPanelLayout(
+            tabContentContainerWidth ?? 0,
+            formDisplaySize,
+            taskPanelWidth
+          );
         }
 
         if (!taskAndProcessLinkOpenedInPanel) {
-          return this.getTaskListLayout();
+          return this.getTaskListLayout(tabContentContainerWidth ?? 0, taskPanelWidth);
         }
 
         if (taskAndProcessLinkOpenedInPanel && formDisplayType === 'panel') {
-          return this.getPanelLayout(tabContentContainerWidth ?? 0, formDisplaySize);
+          return this.getPanelLayout(
+            tabContentContainerWidth ?? 0,
+            formDisplaySize,
+            taskPanelWidth
+          );
         }
 
         return {} as CaseDetailLayout;
@@ -128,6 +155,10 @@ export class CaseDetailLayoutService {
     ),
     startWith({})
   );
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 
   public setTabContentContainerWidth(width: number): void {
     this._tabContentContainerWidth$.next(width);
@@ -159,6 +190,25 @@ export class CaseDetailLayoutService {
     this._refreshTasks$.next(null);
   }
 
+  public saveTaskPanelWidth(width: number): void {
+    const widthToSave = Math.round(width);
+
+    if (widthToSave === this._taskPanelWidth$.getValue()) return;
+
+    this._taskPanelWidth$.next(widthToSave);
+    this._subscriptions.add(
+      this.userSettingsService
+        .getUserSettings()
+        .pipe(
+          take(1),
+          switchMap(settings =>
+            this.userSettingsService.saveUserSettings({...settings, taskPanelWidth: widthToSave})
+          )
+        )
+        .subscribe()
+    );
+  }
+
   public setMainContentHeaderHeight(height: number): void {
     this._mainContentHeaderHeight$.next(height);
   }
@@ -176,36 +226,70 @@ export class CaseDetailLayoutService {
     };
   }
 
-  private getTaskListLayout(): CaseDetailLayout {
+  private getTaskListLayout(
+    tabContentContainerWidth: number,
+    taskPanelWidth: number | null
+  ): CaseDetailLayout {
+    const rightPanelMaxWidth = this.getRightPanelMaxWidth(tabContentContainerWidth);
+    const rightPanelMinWidth = Math.min(CASE_DETAIL_TASK_LIST_MIN_WIDTH, rightPanelMaxWidth);
+
     return {
       unit: 'pixel',
       showRightPanel: true,
-      widthAdjustable: false,
-      rightPanelMaxWidth: CASE_DETAIL_TASK_LIST_WIDTH,
-      rightPanelMinWidth: CASE_DETAIL_TASK_LIST_WIDTH,
-      rightPanelWidth: CASE_DETAIL_TASK_LIST_WIDTH,
+      widthAdjustable: true,
+      rightPanelMinWidth,
+      rightPanelWidth: this.clampPanelWidth(
+        taskPanelWidth ?? CASE_DETAIL_TASK_LIST_WIDTH,
+        rightPanelMinWidth,
+        rightPanelMaxWidth
+      ),
+      rightPanelMaxWidth,
       leftPanelWidth: '*',
     };
   }
 
   private getPanelLayout(
     tabContentContainerWidth: number,
-    formDisplaySize: FormSize
+    formDisplaySize: FormSize,
+    taskPanelWidth: number | null
   ): CaseDetailLayout {
-    const rightPanelMaxWidth =
-      tabContentContainerWidth - CASE_DETAIL_GUTTER_SIZE - CASE_DETAIL_LEFT_PANEL_MIN_WIDTH;
-    const rightPanelMinWidth = CASE_DETAIL_RIGHT_PANEL_MIN_WIDTHS[formDisplaySize];
-    const rightPanelMinWidthToUse =
-      rightPanelMinWidth < rightPanelMaxWidth ? rightPanelMinWidth : rightPanelMaxWidth;
+    const rightPanelMaxWidth = this.getRightPanelMaxWidth(tabContentContainerWidth);
+    const rightPanelMinWidth = Math.min(
+      CASE_DETAIL_RIGHT_PANEL_MIN_WIDTHS[formDisplaySize],
+      rightPanelMaxWidth
+    );
 
     return {
       unit: 'pixel',
       showRightPanel: true,
       widthAdjustable: true,
-      rightPanelMinWidth: rightPanelMinWidthToUse,
-      rightPanelWidth: rightPanelMinWidthToUse,
+      rightPanelMinWidth,
+      rightPanelWidth: this.clampPanelWidth(
+        taskPanelWidth ?? rightPanelMinWidth,
+        rightPanelMinWidth,
+        rightPanelMaxWidth
+      ),
       rightPanelMaxWidth,
       leftPanelWidth: '*',
     };
+  }
+
+  private getRightPanelMaxWidth(tabContentContainerWidth: number): number {
+    return tabContentContainerWidth - CASE_DETAIL_GUTTER_SIZE - CASE_DETAIL_LEFT_PANEL_MIN_WIDTH;
+  }
+
+  private clampPanelWidth(width: number, minWidth: number, maxWidth: number): number {
+    return Math.min(Math.max(width, minWidth), maxWidth);
+  }
+
+  private loadTaskPanelWidth(): void {
+    this._subscriptions.add(
+      this.userSettingsService
+        .getUserSettings()
+        .pipe(take(1))
+        .subscribe(settings => {
+          if (settings?.taskPanelWidth) this._taskPanelWidth$.next(settings.taskPanelWidth);
+        })
+    );
   }
 }
