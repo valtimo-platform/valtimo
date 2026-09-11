@@ -414,6 +414,14 @@ class JsonSchemaDocumentOpenSearchService(
             }
         }
 
+        // Paging is only reproducible when the sort ends on a unique field, so ties never reshuffle.
+        // Without this, ties fall back to the Lucene doc id, which segment merges and updates reassign.
+        queryBuilder.withSorts(
+            SortBuilders.fieldSort(ID_SORT_FIELD)
+                .order(SortOrder.ASC)
+                .unmappedType("keyword")
+        )
+
         val dataQuery = queryBuilder.build()
         val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
         val total = hits.totalHits
@@ -679,6 +687,10 @@ class JsonSchemaDocumentOpenSearchService(
         private const val CASE_PREFIX = "case:"
         private const val DEFINITION_NAME_FIELD = "definitionId.name"
         private const val BLUEPRINT_TYPE_FIELD = "definitionId.blueprintId.blueprintType"
+
+        // Keyword sub-field of the document id, so it is sortable. Dynamically mapped, so present on
+        // every existing index — no mapping change or reindex needed.
+        private const val ID_SORT_FIELD = "id.keyword"
         private val MATCH_NONE: QueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.matchAllQuery())
 
         private fun AdvancedSearchRequest.OtherFilter.rangeFromValue(): Any? =

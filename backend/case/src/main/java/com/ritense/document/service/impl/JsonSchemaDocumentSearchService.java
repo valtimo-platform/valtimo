@@ -838,7 +838,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         Sort sort,
         Map<String, Class<?>> sortTypeMap
     ) {
-        return sort.stream()
+        var orders = sort.stream()
             .map(order -> {
                 Expression<?> expression;
                 String property = order.getProperty();
@@ -876,19 +876,29 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                     }
 
                     var path = stringToPath(parent, docProperty);
-                    // This groupBy workaround is needed because PBAC adds a groupBy on 'id' by default.
-                    // Since sorting columns should be added to the groupBy, we do that here
-                    if (!query.getGroupList().isEmpty() && !query.getGroupList().contains(path)) {
-                        ArrayList<Expression<?>> grouping = new ArrayList<>(query.getGroupList());
-                        grouping.add(path);
-                        query.groupBy(grouping);
-                    }
+                    addToGroupBy(query, path);
                     expression = path;
                 }
 
                 return order.getDirection().isAscending() ? cb.asc(expression) : cb.desc(expression);
             })
-            .collect(Collectors.toList());
+            .collect(Collectors.toCollection(ArrayList::new));
+
+        // Paging is only reproducible when the ORDER BY ends on a unique column, so ties never reshuffle
+        Path<?> idPath = root.get(ID).get(ID);
+        addToGroupBy(query, idPath);
+        orders.add(cb.asc(idPath));
+        return orders;
+    }
+
+    // This groupBy workaround is needed because PBAC adds a groupBy on 'id' by default.
+    // Since sorting columns should be added to the groupBy, we do that here
+    private void addToGroupBy(CriteriaQuery<JsonSchemaDocument> query, Path<?> path) {
+        if (!query.getGroupList().isEmpty() && !query.getGroupList().contains(path)) {
+            ArrayList<Expression<?>> grouping = new ArrayList<>(query.getGroupList());
+            grouping.add(path);
+            query.groupBy(grouping);
+        }
     }
 
     private <T> Path<T> stringToPath(Path<?> parent, String path) {
