@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Injectable, OnDestroy, TemplateRef} from '@angular/core';
+import {Injectable, TemplateRef} from '@angular/core';
 import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
 import {
   BehaviorSubject,
@@ -23,7 +23,6 @@ import {
   map,
   Observable,
   startWith,
-  Subscription,
   switchMap,
   take,
 } from 'rxjs';
@@ -47,10 +46,9 @@ export interface StartFormPanel {
 }
 
 @Injectable()
-export class CaseDetailLayoutService implements OnDestroy {
+export class CaseDetailLayoutService {
   private readonly _tabContentContainerWidth$ = new BehaviorSubject<number | null>(null);
   private readonly _taskPanelWidth$ = new BehaviorSubject<number | null>(null);
-  private readonly _subscriptions = new Subscription();
   private readonly _showTaskList$ = this.caseTabService.showTaskList$;
   private readonly _taskAndProcessLinkOpenedInPanel$ =
     new BehaviorSubject<TaskWithProcessLink | null>(null);
@@ -156,10 +154,6 @@ export class CaseDetailLayoutService implements OnDestroy {
     startWith({})
   );
 
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
-
   public setTabContentContainerWidth(width: number): void {
     this._tabContentContainerWidth$.next(width);
   }
@@ -196,17 +190,15 @@ export class CaseDetailLayoutService implements OnDestroy {
     if (widthToSave === this._taskPanelWidth$.getValue()) return;
 
     this._taskPanelWidth$.next(widthToSave);
-    this._subscriptions.add(
-      this.userSettingsService
-        .getUserSettings()
-        .pipe(
-          take(1),
-          switchMap(settings =>
-            this.userSettingsService.saveUserSettings({...settings, taskPanelWidth: widthToSave})
-          )
+    this.userSettingsService
+      .getUserSettings()
+      .pipe(
+        take(1),
+        switchMap(settings =>
+          this.userSettingsService.saveUserSettings({...settings, taskPanelWidth: widthToSave})
         )
-        .subscribe()
-    );
+      )
+      .subscribe();
   }
 
   public setMainContentHeaderHeight(height: number): void {
@@ -283,13 +275,11 @@ export class CaseDetailLayoutService implements OnDestroy {
   }
 
   private loadTaskPanelWidth(): void {
-    this._subscriptions.add(
-      this.userSettingsService
-        .getUserSettings()
-        .pipe(take(1))
-        .subscribe(settings => {
-          if (settings?.taskPanelWidth) this._taskPanelWidth$.next(settings.taskPanelWidth);
-        })
-    );
+    this.userSettingsService
+      .getUserSettings()
+      .pipe(take(1))
+      .subscribe(settings => {
+        if (settings?.taskPanelWidth) this._taskPanelWidth$.next(settings.taskPanelWidth);
+      });
   }
 }
