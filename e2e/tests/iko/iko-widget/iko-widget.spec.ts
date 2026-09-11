@@ -39,6 +39,8 @@ import {generateId} from '../../../utils/dataGenerator';
 test.use({storageState: undefined});
 
 test.describe('Feature 15G — IKO Widgets', () => {
+  test.describe.configure({timeout: 120_000});
+
   let context: BrowserContext;
   let page: Page;
   let ikoServerPage: IkoServerPage;

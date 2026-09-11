@@ -20,6 +20,91 @@ import {CaseManagementPage} from './page';
 
 test.use({storageState: undefined});
 
+const FINAL_TEST_KEY = 'e2e-final-test';
+
+const ARCHIVE_VERSION_TAG = '1.0.0';
+
+const TEST_KEY_PREFIXES = ['test-case', 'custom-import', FINAL_TEST_KEY];
+
+interface CaseVersion {
+  versionTag: string;
+  active?: boolean;
+  final?: boolean;
+}
+
+async function getCaseDefinitionVersions(key: string): Promise<CaseVersion[]> {
+  try {
+    return await ApiUtils.apiGet<CaseVersion[]>(
+      `/api/management/v1/case-definition/${key}/version?size=100`
+    );
+  } catch (error) {
+    if (ApiUtils.isApiStatus(error, 404)) return [];
+    throw error;
+  }
+}
+
+async function ensureFinalizedCaseDefinition(): Promise<CaseVersion> {
+  const existing = (await getCaseDefinitionVersions(FINAL_TEST_KEY)).find(
+    version => version.versionTag === ARCHIVE_VERSION_TAG
+  );
+
+  if (existing?.final) return existing;
+
+  if (!existing) {
+    await ApiUtils.apiPost('/api/management/v1/case-definition/draft', {
+      caseDefinitionKey: FINAL_TEST_KEY,
+      caseDefinitionVersion: ARCHIVE_VERSION_TAG,
+      name: 'E2E final version fixture',
+      description:
+        'Fixture for the case management import tests. Finalized on purpose and ' +
+        'therefore permanent — it cannot be deleted through the management API.',
+    });
+  }
+
+  await ApiUtils.apiPost(
+    `/api/management/v1/case-definition/${FINAL_TEST_KEY}/version/${ARCHIVE_VERSION_TAG}/finalize`,
+    {}
+  );
+
+  const finalizedVersion = (await getCaseDefinitionVersions(FINAL_TEST_KEY)).find(
+    version => version.versionTag === ARCHIVE_VERSION_TAG
+  );
+  if (!finalizedVersion) {
+    throw new Error(
+      `[case-management] ${FINAL_TEST_KEY} ${ARCHIVE_VERSION_TAG} is gone right after finalizing it`
+    );
+  }
+  return finalizedVersion;
+}
+
+async function deleteCaseDefinition(key: string): Promise<void> {
+  for (const version of await getCaseDefinitionVersions(key)) {
+    if (version.final) continue;
+
+    try {
+      await ApiUtils.apiDelete(
+        `/api/management/v1/case-definition/${key}/version/${version.versionTag}`
+      );
+    } catch (error) {
+      const isRule = error instanceof ApiUtils.ApiError && error.status < 500;
+      if (!isRule) throw error;
+    }
+  }
+}
+
+async function findTestCaseDefinitionKeys(): Promise<string[]> {
+  const page = await ApiUtils.apiGet<{content: Array<{caseDefinitionKey: string}>}>(
+    '/api/management/v1/case-definition?allVersions=true&size=2000'
+  );
+  return Array.from(
+    new Set(
+      page.content
+        .map(caseDefinition => caseDefinition.caseDefinitionKey)
+        .filter(key => TEST_KEY_PREFIXES.some(prefix => key.startsWith(prefix)))
+    )
+  );
+}
+
 test.describe('Case management', () => {
   let context;
   let page;
@@ -39,37 +124,8 @@ test.describe('Case management', () => {
     caseManagementPage = new CaseManagementPage(page, request);
 
     // Clean up all test case definitions from previous runs
-    const testKeyPrefixes = ['test-case', 'custom-import', 'e2e-final-test'];
-    try {
-      const allCases = await ApiUtils.apiGet<Array<{caseDefinitionKey: string}>>(
-        '/api/management/v1/case-definition/case'
-      );
-      const testCaseKeys = Array.from(new Set(
-        allCases
-          .map(c => c.caseDefinitionKey)
-          .filter(key => testKeyPrefixes.some(prefix => key.startsWith(prefix)))
-      ));
-
-      for (const key of testCaseKeys) {
-        try {
-          const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
-            `/api/management/v1/case-definition/${key}/version`
-          );
-          for (const v of versions) {
-            try {
-              await ApiUtils.apiDelete(
-                `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
-              );
-            } catch {
-              // May be finalized — cannot delete
-            }
-          }
-        } catch {
-          // Ignore errors
-        }
-      }
-    } catch {
-      // API may not be available
+    for (const key of await findTestCaseDefinitionKeys()) {
+      await deleteCaseDefinition(key);
     }
 
     await page.goto('/');
@@ -77,24 +133,8 @@ test.describe('Case management', () => {
   });
 
   test.afterAll(async () => {
-    //Cleanup of keys
-    for (const key of createdKeys) {
-      try {
-        const versions = await ApiUtils.apiGet<Array<{versionTag: string}>>(
-          `/api/management/v1/case-definition/${key}/version`
-        );
-        for (const v of versions) {
-          try {
-            await ApiUtils.apiDelete(
-              `/api/management/v1/case-definition/${key}/version/${v.versionTag}`
-            );
-          } catch {
-            // May be finalized — cannot delete
-          }
-        }
-      } catch {
-        // Case definition may not exist
-      }
+    for (const key of new Set([...createdKeys, FINAL_TEST_KEY])) {
+      await deleteCaseDefinition(key);
     }
     await context.close();
   });
@@ -194,8 +234,7 @@ test.describe('Case management', () => {
         await caseManagementPage.assertExistingDraftWarning();
 
         // Act: check the override checkbox and verify next becomes enabled
-        await caseManagementPage.overrideCheckbox.locator('label').click();
-        await expect(caseManagementPage.uploadWizardNextButton).toBeEnabled();
+        await caseManagementPage.confirmDraftOverride();
       }
 
       // Close wizard without completing
@@ -203,42 +242,13 @@ test.describe('Case management', () => {
     });
 
     test('Existing final version blocks import', async () => {
-      // This test does upload + finalize + second upload — needs extra time
       test.slow();
 
-      // Arrange: import a case with a unique key
-      const uniqueKey = `e2e-final-test-${Date.now().toString(36)}`;
-      await caseManagementPage.goToCaseManagement();
-      await caseManagementPage.uploadCaseButton.click();
-      await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
-      const {key: firstImportKey} = await caseManagementPage.configureStepWithCustomKey(
-        'E2e Final Version Test',
-        uniqueKey
-      );
-      createdKeys.push(firstImportKey);
-
-      const firstImportResponse = await caseManagementPage.pluginConfigurationStep();
-
-      if (firstImportResponse.status() === 200) {
-        await caseManagementPage.fileUploadStep();
-        await caseManagementPage.accessControlStep();
-        await caseManagementPage.dashboardStep();
-      }
-
-      // Finalize the version
-      await ApiUtils.apiPost(
-        `/api/management/v1/case-definition/${firstImportKey}/version/1.0.0/finalize`,
-        {}
+      const finalized = await ensureFinalizedCaseDefinition();
+      expect(finalized.final, `${FINAL_TEST_KEY} ${ARCHIVE_VERSION_TAG} should be final`).toBe(
+        true
       );
 
-      // Verify finalization succeeded before proceeding
-      const versions = await ApiUtils.apiGet<Array<{versionTag: string; final: boolean}>>(
-        `/api/management/v1/case-definition/${firstImportKey}/version`
-      );
-      const finalVersion = versions.find(v => v.versionTag === '1.0.0');
-      expect(finalVersion?.final).toBeTruthy();
-
-      // Act: try to import the same archive again, setting the key to the finalized one
       await caseManagementPage.goToCaseManagement();
       await caseManagementPage.uploadCaseButton.click();
       await caseManagementPage.uploadFileStep('test-case-import-success_1.0.0.case.zip');
@@ -248,9 +258,8 @@ test.describe('Case management', () => {
       await expect(caseManagementPage.configureKeyInput).toBeVisible();
       await caseManagementPage.awaitConfigureValidation();
 
-      // Change the key to the finalized one and wait for its specific validation response
-      const validationPromise = caseManagementPage.waitForKeyValidationResponse(firstImportKey);
-      await caseManagementPage.changeConfigureKey(firstImportKey);
+      const validationPromise = caseManagementPage.waitForKeyValidationResponse(FINAL_TEST_KEY);
+      await caseManagementPage.changeConfigureKey(FINAL_TEST_KEY);
       await validationPromise;
 
       // Wait for the UI to reflect the validation result
@@ -258,6 +267,7 @@ test.describe('Case management', () => {
 
       // Assert: final version warning blocks import
       await caseManagementPage.assertExistingFinalWarning();
+      await expect(caseManagementPage.uploadWizardNextButton).toBeDisabled();
 
       // Close wizard
       await caseManagementPage.closeUploadWizard();

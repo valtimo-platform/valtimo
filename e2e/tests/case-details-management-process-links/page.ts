@@ -22,6 +22,7 @@ import {
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {apiDelete} from '../../utils/api.utils';
+import {openAndSelectOption} from '../../utils/ui.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 
 const BPMN_ASSET_PATH = path.resolve(__dirname, '../../assets/e2e-test-process.bpmn');
@@ -377,26 +378,20 @@ export class CaseDetailsProcessLinksPage {
     await this.typeButton(type).click();
   }
 
-  async selectFormByName(formName: string) {
-    await expect(this.formComboBox).toBeVisible();
-    await this.formComboBox.click();
-    await this.page
+  private optionByText(text: string) {
+    return this.page
       .getByRole('listbox')
       .locator('[role="option"]')
-      .filter({hasText: formName})
-      .first()
-      .click();
+      .filter({hasText: text})
+      .first();
+  }
+
+  async selectFormByName(formName: string) {
+    await openAndSelectOption(this.formComboBox, this.optionByText(formName));
   }
 
   async selectFormFlowByKey(flowKey: string) {
-    await expect(this.formFlowComboBox).toBeVisible();
-    await this.formFlowComboBox.click();
-    await this.page
-      .getByRole('listbox')
-      .locator('[role="option"]')
-      .filter({hasText: flowKey})
-      .first()
-      .click();
+    await openAndSelectOption(this.formFlowComboBox, this.optionByText(flowKey));
   }
 
   async selectPluginConfigurationByTitle(title: string) {

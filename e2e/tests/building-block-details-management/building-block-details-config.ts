@@ -54,7 +54,7 @@ export const BUILDING_BLOCK_DETAIL_TEXTS = {
   metadataTitle: 'General information',
   artworkTitle: 'Artwork',
   noPluginsUsed: 'This building block does not use any plugins',
-  processColumns: ['Name', 'Key', 'Status', ''],
+  processColumns: ['Name', 'Key', 'Status'],
   mainProcessTag: 'Main process',
   makeFinalAction: 'Make version final',
   createDraftAction: 'Create a new draft',

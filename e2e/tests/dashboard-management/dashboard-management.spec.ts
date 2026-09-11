@@ -21,7 +21,7 @@ import {
   createReorderTestData,
   CASE_DEFINITION_KEY,
 } from './dashboard-management-config';
-import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
+import {JSON_EDITOR_SAVE_URLS, JsonEditor} from '../../shared/json-editor/json-editor.utils';
 import {DashboardManagementPage} from './page';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 
@@ -45,7 +45,7 @@ test.describe('Dashboard management', () => {
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     dashboardPage = new DashboardManagementPage(page);
-    jsonEditor = new JsonEditor(page);
+    jsonEditor = new JsonEditor(page, JSON_EDITOR_SAVE_URLS.dashboard);
 
     // Clean up stale test dashboards from previous runs
     await dashboardPage.deleteTestDashboardsViaApi(TEST_TITLE);

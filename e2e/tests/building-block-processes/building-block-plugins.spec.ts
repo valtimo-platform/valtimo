@@ -141,10 +141,9 @@ test.describe('Building block management — plugin integration (13E)', () => {
     test('13.42 — The list shows each plugin with its description, and the wizard its steps', async () => {
       await openWizardFor(PLUGIN_STEPS_PROCESS.serviceTaskId);
 
-      expect(
-        await pluginsPage.linkWizard.pluginList.locator('cds-list-header cds-list-column')
-          .allInnerTexts()
-      ).toEqual([...BUILDING_BLOCK_PLUGIN_TEXTS.selectPluginColumns]);
+      expect(await pluginsPage.linkWizard.pluginListColumnHeaders()).toEqual([
+        ...BUILDING_BLOCK_PLUGIN_TEXTS.selectPluginColumns,
+      ]);
 
       // Logo, name and a non-empty description, in that column order.
       const row = pluginsPage.linkWizard.pluginRow(LINKED_PLUGIN.definitionKey);
@@ -281,7 +280,7 @@ test.describe('Building block management — plugin integration (13E)', () => {
 
         // Cancelling stores nothing.
         await pluginsPage.closeProcessLinkModal();
-        await expect(pluginsPage.createProcessLinkButton).toBeVisible();
+        await pluginsPage.assertStepUnlinked(PLUGIN_STEPS_PROCESS.serviceTaskId);
       });
 
       test('13.45b — A user task cannot be linked to a UI component inside a building block', async () => {
@@ -359,9 +358,7 @@ test.describe('Building block management — plugin integration (13E)', () => {
       // Reopens the link the previous test saved.
       const saved = await currentProcess();
       await pluginsPage.goToProcessBuilder(buildingBlockKey, versionTag, saved.id);
-      await pluginsPage.modeler.selectElement(PLUGIN_STEPS_PROCESS.serviceTaskId);
-      await pluginsPage.modeler.expandGroup('Process link');
-      await pluginsPage.editProcessLinkButton.click();
+      await pluginsPage.openEditProcessLinkForStep(PLUGIN_STEPS_PROCESS.serviceTaskId);
       await pluginsPage.linkWizard.waitForOpen();
 
       // Editing opens on the last step, with the earlier choices marked complete.

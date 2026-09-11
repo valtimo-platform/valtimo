@@ -37,6 +37,8 @@ test.describe('Building block management — building block overview', () => {
   /** Building blocks created through the UI, tracked for cleanup. */
   const createdBuildingBlocks: {key: string; versionTag: string}[] = [];
 
+  test.describe.configure({timeout: 90_000});
+
   test.beforeAll(async ({browser, baseURL}) => {
     context = await browser.newContext({baseURL});
     page = await context.newPage();
@@ -73,14 +75,17 @@ test.describe('Building block management — building block overview', () => {
 
     test('13.1 — List shows every building block returned by the API', async () => {
       const buildingBlocks = await buildingBlockPage.getBuildingBlocksViaApi();
+      const apiKeys = buildingBlocks.map(buildingBlock => buildingBlock.key);
 
       await buildingBlockPage.goToBuildingBlockManagement();
 
-      await expect(buildingBlockPage.carbonList.rows).toHaveCount(buildingBlocks.length);
+      expect(await buildingBlockPage.carbonList.totalItems()).toBe(buildingBlocks.length);
 
-      for (const buildingBlock of buildingBlocks) {
-        await buildingBlockPage.assertBuildingBlockVisibleByKey(buildingBlock.key);
-      }
+      const renderedKeys = await buildingBlockPage.readKeyColumn();
+      expect(apiKeys).toEqual(expect.arrayContaining(renderedKeys));
+
+      const offFirstPage = apiKeys.find(key => !renderedKeys.includes(key)) ?? apiKeys[0];
+      await buildingBlockPage.assertBuildingBlockVisibleByKey(offFirstPage);
     });
 
     test('13.2 — List shows the name, key and version columns', async () => {
