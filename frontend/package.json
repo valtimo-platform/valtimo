@@ -133,7 +133,7 @@
     "libs:test:zgw": "cross-env-shell \"ng test @valtimo/zgw --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
     "libs:test:components": "cross-env-shell \"ng test @valtimo/components --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
     "libs:test:task": "cross-env-shell \"ng test @valtimo/task --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
-    "libs:test:task-management": "cross-env-shell \"ng test @valtimo/task --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
+    "libs:test:task-management": "cross-env-shell \"ng test @valtimo/task-management --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
     "libs:test:process": "cross-env-shell \"ng test @valtimo/process --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
     "libs:test:form": "cross-env-shell \"ng test @valtimo/form --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
     "libs:test:case": "cross-env-shell \"ng test @valtimo/case --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
