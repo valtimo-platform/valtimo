@@ -31,7 +31,6 @@ import com.ritense.valtimo.domain.processdefinition.ProcessDefinitionProperties
 import com.ritense.valtimo.operaton.domain.OperatonDecisionDefinition
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.service.ProcessPropertyService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -60,9 +59,6 @@ class ProcessDefinitionImportPreviewServiceTest {
     @Mock
     lateinit var repositoryService: OperatonRepositoryService
 
-    @Mock
-    lateinit var processPropertyService: ProcessPropertyService
-
     private val objectMapper = MapperSingleton.get().also {
         it.registerSubtypes(TestProcessLinkDeployDto::class.java)
     }
@@ -76,7 +72,6 @@ class ProcessDefinitionImportPreviewServiceTest {
             emptyList(),
             processLinkService,
             repositoryService,
-            processPropertyService,
         )
     }
 
@@ -126,7 +121,6 @@ class ProcessDefinitionImportPreviewServiceTest {
             listOf(contributorReturning(pluginConfigurationId)),
             processLinkService,
             repositoryService,
-            processPropertyService,
         )
 
         val preview = service.preview(zipOf(BPMN_PATH to bpmn()))
@@ -220,19 +214,8 @@ class ProcessDefinitionImportPreviewServiceTest {
     }
 
     @Test
-    fun `should block the import when the process is a read only system process here`() {
-        mockDeployedSystemProcess(readOnly = true)
-
-        val preview = service.preview(zipOf(BPMN_PATH to bpmn()))
-
-        assertThat(preview.missingReferences.single().type)
-            .isEqualTo(MissingReferenceType.READ_ONLY_SYSTEM_PROCESS)
-        assertThat(preview.canImport).isFalse()
-    }
-
-    @Test
-    fun `should allow the import when a system process here may be updated`() {
-        mockDeployedSystemProcess(readOnly = false)
+    fun `should allow the import when the process already exists here as a system process`() {
+        mockDeployedSystemProcess()
 
         val preview = service.preview(zipOf(BPMN_PATH to bpmn()))
 
@@ -242,7 +225,6 @@ class ProcessDefinitionImportPreviewServiceTest {
 
     @Test
     fun `should allow the import when the process does not exist here yet`() {
-        // No properties exist for an unknown process, which isReadOnly cannot handle
         whenever(repositoryService.findLatestProcessDefinition(PROCESS_DEFINITION_KEY)).thenReturn(null)
 
         val preview = service.preview(zipOf(BPMN_PATH to bpmn()))
@@ -364,12 +346,9 @@ class ProcessDefinitionImportPreviewServiceTest {
         verifyNoInteractions(processLinkService)
     }
 
-    private fun mockDeployedSystemProcess(readOnly: Boolean) {
+    private fun mockDeployedSystemProcess() {
         whenever(repositoryService.findLatestProcessDefinition(PROCESS_DEFINITION_KEY))
             .thenReturn(mock<OperatonProcessDefinition>())
-        whenever(processPropertyService.findByProcessDefinitionKey(PROCESS_DEFINITION_KEY))
-            .thenReturn(mock<ProcessDefinitionProperties>())
-        whenever(processPropertyService.isReadOnly(PROCESS_DEFINITION_KEY)).thenReturn(readOnly)
     }
 
     private fun contributorReturning(pluginConfigurationId: UUID) = ImportPreviewContributor {

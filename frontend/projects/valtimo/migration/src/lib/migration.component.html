@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,119 +14,132 @@
   ~ limitations under the License.
   -->
 
-<div class="main-content">
-  <div class="container-fluid">
-    <div class="row mb-5">
-      <div class="col-12">
-        <div class="alert alert-warning pl-2 plr-2" role="alert">
-          <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
-          <div class="message" [innerHTML]="'Process migration warning' | translate"></div>
-        </div>
-      </div>
-    </div>
-    <div class="row mb-5">
-      <div class="col-4">
-        <cds-combo-box
-          [dropUp]="false"
-          [appendInline]="true"
-          [label]="'Source Definition' | translate"
-          [placeholder]="'- ' + ('Source Definition' | translate) + ' -'"
-          [items]="sourceDefinitionItems"
-          (selected)="onDefinitionSelected($event, 'source')"
-          (clear)="onSourceDefinitionClear($event)"
-        >
-          <cds-dropdown-list></cds-dropdown-list>
-        </cds-combo-box>
-      </div>
-      <div class="col-2">
-        <cds-combo-box
-                #sourceVersionCombobox
-          [dropUp]="false"
-          [appendInline]="true"
-          [label]="'Source Definition' | translate"
-          [placeholder]="'- ' + ('Source Version' | translate) + ' -'"
-          [items]="sourceVersionItems"
-          (selected)="onVersionSelected($event, 'source')"
-        >
-          <cds-dropdown-list></cds-dropdown-list>
-        </cds-combo-box>
-      </div>
-      <div class="col-4">
-        <cds-combo-box
-                #targetDefinitionComboBox
-          [dropUp]="false"
-          [appendInline]="true"
-          [label]="'Target Definition' | translate"
-          [placeholder]="'- ' + ('Target Definition' | translate) + ' -'"
-          [items]="targetDefinitionItems"
-          (selected)="onDefinitionSelected($event, 'target')"
-        >
-          <cds-dropdown-list></cds-dropdown-list>
-        </cds-combo-box>
-      </div>
-      <div class="col-2">
-        <cds-combo-box
-                #targetVersionCombobox
-          [dropUp]="false"
-          [appendInline]="true"
-          [label]="'Target Version' | translate"
-          [placeholder]="'- ' + ('Target Version' | translate) + ' -'"
-          [items]="targetVersionItems"
-          (selected)="onVersionSelected($event, 'target')"
-        >
-          <cds-dropdown-list></cds-dropdown-list>
-        </cds-combo-box>
-      </div>
-    </div>
+<div class="process-migration">
+  <cds-notification
+    [notificationObj]="{
+      type: 'warning',
+      title: 'processMigration.warning.title' | translate,
+      message: 'processMigration.warning.message' | translate,
+      showClose: false,
+      lowContrast: true,
+    }"
+  ></cds-notification>
 
-    <div class="row mb-5">
-      <div class="col-6">
-        <valtimo-migration-process-diagram
-          name="source"
-          (loaded)="diagramLoaded($event)"
-          #sourceDiagram
-        ></valtimo-migration-process-diagram>
-      </div>
-      <div class="col-6">
-        <valtimo-migration-process-diagram
-          name="target"
-          (loaded)="diagramLoaded($event)"
-          #targetDiagram
-        ></valtimo-migration-process-diagram>
-      </div>
-    </div>
-    <table class="table table-striped mb-5" *ngIf="selectedId.source && selectedId.target">
-      <tr *ngFor="let node of uniqueFlowNodeMap">
-        <td>{{ node.name ? node.name : node.id }}</td>
-        <td>
-          <cds-combo-box
-            [dropUp]="false"
-            [appendInline]="true"
-            [placeholder]="'- ' + ('Choose Target' | translate) + ' -'"
-            [items]="getFilteredTargetFlowNodeMapItems(node)"
-            (selected)="onTaskMappingSelected($event, node.id)"
-          >
-            <cds-dropdown-list></cds-dropdown-list>
-          </cds-combo-box>
-        </td>
-      </tr>
-    </table>
-    <hr />
-    <div class="btn-group mb-5">
-      <button
-        [disabled]="
-          (uniqueFlowNodeMap.length !== taskMappingLength && uniqueFlowNodeMap.length > 0) ||
-          !loaded.source ||
-          !loaded.target
-        "
-        (click)="migrateProcess()"
-        class="btn btn-primary"
-      >
-        Migrate
-        <span *ngIf="processCount !== null" class="badge badge-pill badge-secondary">{{
-          processCount
-        }}</span>
-      </button>
-    </div>
+  <div class="process-migration__selection">
+    <cds-combo-box
+      [appendInline]="true"
+      [dropUp]="false"
+      [items]="sourceDefinitionItems"
+      [label]="'processMigration.sourceDefinition' | translate"
+      [placeholder]="'processMigration.selectPlaceholder' | translate"
+      (clear)="onSourceDefinitionClear($event)"
+      (selected)="onDefinitionSelected($event, 'source')"
+      [attr.data-test-id]="testIds.sourceDefinitionSelect"
+    >
+      <cds-dropdown-list></cds-dropdown-list>
+    </cds-combo-box>
+
+    <cds-combo-box
+      #sourceVersionCombobox
+      [appendInline]="true"
+      [dropUp]="false"
+      [items]="sourceVersionItems"
+      [label]="'processMigration.sourceVersion' | translate"
+      [placeholder]="'processMigration.selectPlaceholder' | translate"
+      (selected)="onVersionSelected($event, 'source')"
+      [attr.data-test-id]="testIds.sourceVersionSelect"
+    >
+      <cds-dropdown-list></cds-dropdown-list>
+    </cds-combo-box>
+
+    <cds-combo-box
+      #targetDefinitionComboBox
+      [appendInline]="true"
+      [dropUp]="false"
+      [items]="targetDefinitionItems"
+      [label]="'processMigration.targetDefinition' | translate"
+      [placeholder]="'processMigration.selectPlaceholder' | translate"
+      (selected)="onDefinitionSelected($event, 'target')"
+      [attr.data-test-id]="testIds.targetDefinitionSelect"
+    >
+      <cds-dropdown-list></cds-dropdown-list>
+    </cds-combo-box>
+
+    <cds-combo-box
+      #targetVersionCombobox
+      [appendInline]="true"
+      [dropUp]="false"
+      [items]="targetVersionItems"
+      [label]="'processMigration.targetVersion' | translate"
+      [placeholder]="'processMigration.selectPlaceholder' | translate"
+      (selected)="onVersionSelected($event, 'target')"
+      [attr.data-test-id]="testIds.targetVersionSelect"
+    >
+      <cds-dropdown-list></cds-dropdown-list>
+    </cds-combo-box>
+  </div>
+
+  <div class="process-migration__diagrams">
+    <valtimo-migration-process-diagram
+      #sourceDiagram
+      name="source"
+      (loaded)="diagramLoaded($event)"
+    ></valtimo-migration-process-diagram>
+
+    <valtimo-migration-process-diagram
+      #targetDiagram
+      name="target"
+      (loaded)="diagramLoaded($event)"
+    ></valtimo-migration-process-diagram>
+  </div>
+
+  <cds-structured-list
+    *ngIf="selectedId.source && selectedId.target && uniqueFlowNodeMap.length > 0"
+    class="process-migration__mapping"
+  >
+    <cds-list-header>
+      <cds-list-column>{{ 'processMigration.sourceActivity' | translate }}</cds-list-column>
+
+      <cds-list-column>{{ 'processMigration.targetActivity' | translate }}</cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row *ngFor="let node of uniqueFlowNodeMap">
+      <cds-list-column>{{ node.name ? node.name : node.id }}</cds-list-column>
+
+      <cds-list-column>
+        <cds-combo-box
+          [appendInline]="true"
+          [dropUp]="false"
+          [items]="getFilteredTargetFlowNodeMapItems(node)"
+          [placeholder]="'processMigration.selectPlaceholder' | translate"
+          (selected)="onTaskMappingSelected($event, node.id)"
+          [attr.data-test-id]="testIds.activityMappingSelectPrefix + node.id"
+        >
+          <cds-dropdown-list></cds-dropdown-list>
+        </cds-combo-box>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+
+  <div class="process-migration__actions">
+    <button
+      cdsButton="primary"
+      [disabled]="
+        (uniqueFlowNodeMap.length !== taskMappingLength && uniqueFlowNodeMap.length > 0) ||
+        !loaded.source ||
+        !loaded.target
+      "
+      (click)="migrateProcess()"
+      [attr.data-test-id]="testIds.migrateButton"
+    >
+      {{ 'processMigration.migrate' | translate }}
+    </button>
+
+    <cds-tag
+      *ngIf="processCount !== null"
+      type="gray"
+      [attr.data-test-id]="testIds.processInstanceCountTag"
+      >{{ 'processMigration.instanceCount' | translate: {count: processCount} }}</cds-tag
+    >
   </div>
 </div>
