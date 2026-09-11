@@ -17,7 +17,7 @@
 import {TestBed} from '@angular/core/testing';
 import {PageHeaderService} from '@valtimo/components';
 import {UserSettings, UserSettingsService} from '@valtimo/shared';
-import {of} from 'rxjs';
+import {of, Subject, throwError} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CaseDetailLayout} from '../models';
 import {CaseDetailLayoutService} from './case-detail-layout.service';
@@ -44,15 +44,34 @@ describe('CaseDetailLayoutService', () => {
     return TestBed.inject(CaseDetailLayoutService);
   };
 
+  /** Builds the service against a settings response the test controls the timing of. */
+  const createServiceWithPendingSettings = (
+    settings$: Subject<UserSettings>
+  ): CaseDetailLayoutService => {
+    userSettingsService.getUserSettings.and.returnValue(settings$);
+
+    TestBed.configureTestingModule({
+      providers: [
+        CaseDetailLayoutService,
+        {provide: CaseTabService, useValue: {showTaskList$: of(true)}},
+        {provide: PageHeaderService, useValue: {compactMode$: of(false)}},
+        {provide: UserSettingsService, useValue: userSettingsService},
+      ],
+    });
+
+    return TestBed.inject(CaseDetailLayoutService);
+  };
+
   /** The layout only emits once the case detail view has reported its container width. */
   const layoutAfterContainerWidth = (
     layoutService: CaseDetailLayoutService,
-    onLayout: (layout: CaseDetailLayout) => void
+    onLayout: (layout: CaseDetailLayout) => void,
+    containerWidth: number = CONTAINER_WIDTH
   ): void => {
     layoutService.caseDetailLayout$.pipe(take(2)).subscribe(layout => {
       if ((layout as CaseDetailLayout).showRightPanel) onLayout(layout);
     });
-    layoutService.setTabContentContainerWidth(CONTAINER_WIDTH);
+    layoutService.setTabContentContainerWidth(containerWidth);
   };
 
   beforeEach(() => {
@@ -122,5 +141,77 @@ describe('CaseDetailLayoutService', () => {
     service.saveTaskPanelWidth(683);
 
     expect(userSettingsService.saveUserSettings).not.toHaveBeenCalled();
+  });
+
+  it('stores only the width the user stopped at when two drags follow each other quickly', () => {
+    const settings$ = new Subject<UserSettings>();
+    service = createServiceWithPendingSettings(settings$);
+
+    service.saveTaskPanelWidth(600);
+    service.saveTaskPanelWidth(700);
+    settings$.next({compactMode: true, taskPanelWidth: 412});
+
+    expect(userSettingsService.saveUserSettings).toHaveBeenCalledTimes(1);
+    expect(userSettingsService.saveUserSettings).toHaveBeenCalledWith({
+      compactMode: true,
+      taskPanelWidth: 700,
+    });
+  });
+
+  it('stores the width again when the previous attempt to store it failed', () => {
+    service = createService({taskPanelWidth: 412});
+    userSettingsService.saveUserSettings.and.returnValue(throwError(() => new Error('offline')));
+
+    service.saveTaskPanelWidth(700);
+    userSettingsService.saveUserSettings.and.returnValue(of(null));
+    service.saveTaskPanelWidth(700);
+
+    expect(userSettingsService.saveUserSettings).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps a width the user just dragged when the settings arrive afterwards', done => {
+    const settings$ = new Subject<UserSettings>();
+    service = createServiceWithPendingSettings(settings$);
+
+    service.saveTaskPanelWidth(800);
+    settings$.next({taskPanelWidth: 412});
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.rightPanelWidth).toBe(800);
+      done();
+    });
+  });
+
+  it('never asks for a negative task list width when the container is too narrow', done => {
+    service = createService({taskPanelWidth: 700});
+
+    layoutAfterContainerWidth(
+      service,
+      layout => {
+        expect(layout.rightPanelMinWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelMaxWidth).toBeGreaterThanOrEqual(0);
+        done();
+      },
+      200
+    );
+  });
+
+  it('never asks for a negative task form width when the container is too narrow', done => {
+    service = createService({taskPanelWidth: 700});
+    service.setFormDisplayType('panel');
+    service.setFormDisplaySize('medium');
+    service.setTaskAndProcessLinkOpenedInPanel({} as any);
+
+    layoutAfterContainerWidth(
+      service,
+      layout => {
+        expect(layout.rightPanelMinWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelMaxWidth).toBeGreaterThanOrEqual(0);
+        done();
+      },
+      200
+    );
   });
 });

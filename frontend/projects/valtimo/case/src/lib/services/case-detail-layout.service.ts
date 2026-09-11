@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import {Injectable, TemplateRef} from '@angular/core';
+import {Injectable, OnDestroy, TemplateRef} from '@angular/core';
 import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
+  EMPTY,
   filter,
   map,
   Observable,
   startWith,
+  Subject,
+  Subscription,
   switchMap,
   take,
+  tap,
 } from 'rxjs';
 import {
   CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
@@ -46,9 +51,15 @@ export interface StartFormPanel {
 }
 
 @Injectable()
-export class CaseDetailLayoutService {
+export class CaseDetailLayoutService implements OnDestroy {
   private readonly _tabContentContainerWidth$ = new BehaviorSubject<number | null>(null);
   private readonly _taskPanelWidth$ = new BehaviorSubject<number | null>(null);
+  private readonly _taskPanelWidthToSave$ = new Subject<number>();
+  private readonly _saveTaskPanelWidthSubscription: Subscription;
+  /** The width the backend last confirmed, so a failed save can be retried for the same width. */
+  private _persistedTaskPanelWidth: number | null = null;
+  /** Once the user has dragged, a settings response that was already in flight is stale. */
+  private _taskPanelWidthEditedLocally = false;
   private readonly _showTaskList$ = this.caseTabService.showTaskList$;
   private readonly _taskAndProcessLinkOpenedInPanel$ =
     new BehaviorSubject<TaskWithProcessLink | null>(null);
@@ -102,7 +113,13 @@ export class CaseDetailLayoutService {
     private readonly pageHeaderService: PageHeaderService,
     private readonly userSettingsService: UserSettingsService
   ) {
+    this._saveTaskPanelWidthSubscription = this.openTaskPanelWidthSaveQueue();
     this.loadTaskPanelWidth();
+  }
+
+  public ngOnDestroy(): void {
+    this._taskPanelWidthToSave$.complete();
+    this._saveTaskPanelWidthSubscription.unsubscribe();
   }
 
   public readonly caseDetailLayout$: Observable<CaseDetailLayout | any> = combineLatest([
@@ -187,18 +204,12 @@ export class CaseDetailLayoutService {
   public saveTaskPanelWidth(width: number): void {
     const widthToSave = Math.round(width);
 
-    if (widthToSave === this._taskPanelWidth$.getValue()) return;
+    this._taskPanelWidthEditedLocally = true;
+
+    if (widthToSave === this._persistedTaskPanelWidth) return;
 
     this._taskPanelWidth$.next(widthToSave);
-    this.userSettingsService
-      .getUserSettings()
-      .pipe(
-        take(1),
-        switchMap(settings =>
-          this.userSettingsService.saveUserSettings({...settings, taskPanelWidth: widthToSave})
-        )
-      )
-      .subscribe();
+    this._taskPanelWidthToSave$.next(widthToSave);
   }
 
   public setMainContentHeaderHeight(height: number): void {
@@ -267,11 +278,35 @@ export class CaseDetailLayoutService {
   }
 
   private getRightPanelMaxWidth(tabContentContainerWidth: number): number {
-    return tabContentContainerWidth - CASE_DETAIL_GUTTER_SIZE - CASE_DETAIL_LEFT_PANEL_MIN_WIDTH;
+    return Math.max(
+      0,
+      tabContentContainerWidth - CASE_DETAIL_GUTTER_SIZE - CASE_DETAIL_LEFT_PANEL_MIN_WIDTH
+    );
   }
 
   private clampPanelWidth(width: number, minWidth: number, maxWidth: number): number {
     return Math.min(Math.max(width, minWidth), maxWidth);
+  }
+
+  /**
+   * Saves run one at a time, the latest drag cancelling the one before it, so a slow request for an
+   * earlier width cannot land after a newer one and persist a width the user has already left.
+   */
+  private openTaskPanelWidthSaveQueue(): Subscription {
+    return this._taskPanelWidthToSave$
+      .pipe(
+        switchMap(widthToSave =>
+          this.userSettingsService.getUserSettings().pipe(
+            take(1),
+            switchMap(settings =>
+              this.userSettingsService.saveUserSettings({...settings, taskPanelWidth: widthToSave})
+            ),
+            tap(() => (this._persistedTaskPanelWidth = widthToSave)),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+      .subscribe();
   }
 
   private loadTaskPanelWidth(): void {
@@ -279,7 +314,10 @@ export class CaseDetailLayoutService {
       .getUserSettings()
       .pipe(take(1))
       .subscribe(settings => {
-        if (settings?.taskPanelWidth) this._taskPanelWidth$.next(settings.taskPanelWidth);
+        if (this._taskPanelWidthEditedLocally || !settings?.taskPanelWidth) return;
+
+        this._persistedTaskPanelWidth = settings.taskPanelWidth;
+        this._taskPanelWidth$.next(settings.taskPanelWidth);
       });
   }
 }
