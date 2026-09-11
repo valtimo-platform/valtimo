@@ -95,7 +95,7 @@ describe('CaseDetailLayoutService', () => {
     });
   });
 
-  it('keeps a saved width that no longer fits within the space the panel has', done => {
+  it('shrinks a saved width that no longer fits to the space the panel has', done => {
     service = createService({taskPanelWidth: 5000});
 
     layoutAfterContainerWidth(service, layout => {
