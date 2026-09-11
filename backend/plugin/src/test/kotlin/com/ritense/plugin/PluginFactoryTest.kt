@@ -37,6 +37,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 internal class PluginFactoryTest {
     lateinit var pluginFactory: PluginFactory<*>
@@ -182,6 +185,32 @@ internal class PluginFactoryTest {
         assertThat(events.filter { it.level == Level.WARN }).hasSize(2)
     }
 
+    @Test
+    fun `should warn no more than the cap when plugins are created concurrently`() {
+        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        val configurations = List(WARNING_CAP + 50) { configurationWithUnknownProperty() }
+        val startLine = CountDownLatch(1)
+        val pool = Executors.newFixedThreadPool(16)
+
+        val events = try {
+            eventsLoggedWhile {
+                val running = configurations.map { configuration ->
+                    pool.submit {
+                        startLine.await()
+                        pluginFactory.create(configuration)
+                    }
+                }
+                startLine.countDown()
+                running.forEach { it.get(30, TimeUnit.SECONDS) }
+            }
+        } finally {
+            pool.shutdownNow()
+        }
+
+        assertThat(events.filter { it.level == Level.ERROR }).isEmpty()
+        assertThat(events.filter { it.level == Level.WARN }).hasSize(WARNING_CAP)
+    }
+
     private fun configurationWithUnknownProperty() = PluginConfiguration(
         PluginConfigurationId.newId(),
         "Zaken API",
@@ -205,5 +234,10 @@ internal class PluginFactoryTest {
         }
 
         return listAppender.list.toList()
+    }
+
+    private companion object {
+        /** Mirrors PluginFactory.MAX_LOGGED_UNKNOWN_PROPERTIES, which is private. */
+        private const val WARNING_CAP = 100
     }
 }

@@ -105,13 +105,19 @@ abstract class PluginFactory<T : Any>(
     private fun logUnknownProperty(configuration: PluginConfiguration, propertyKey: String) {
         val message = "Ignoring unknown property '$propertyKey' on plugin '${configuration.title}'. " +
             "It is no longer defined by plugin '${configuration.pluginDefinition.key}' and can be removed from the configuration."
-        val firstOccurrence = loggedUnknownProperties.size < MAX_LOGGED_UNKNOWN_PROPERTIES
-            && loggedUnknownProperties.add("${configuration.id.id}|$propertyKey")
-        if (firstOccurrence) {
+        if (admitWarning("${configuration.id.id}|$propertyKey")) {
             logger.warn { message }
         } else {
             logger.debug { message }
         }
+    }
+
+    /**
+     * The size check and the insert have to happen under one lock, or plugins being created in parallel can all
+     * pass the check before any of them inserts and the cap is exceeded. The set being concurrent is not enough.
+     */
+    private fun admitWarning(unknownProperty: String): Boolean = synchronized(loggedUnknownProperties) {
+        loggedUnknownProperties.size < MAX_LOGGED_UNKNOWN_PROPERTIES && loggedUnknownProperties.add(unknownProperty)
     }
 
     private fun setProperty(
