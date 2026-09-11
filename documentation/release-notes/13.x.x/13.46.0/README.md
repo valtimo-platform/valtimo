@@ -25,3 +25,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
+| Plugins | Settings left over from an older version of a plugin no longer fill the log with errors every time a case is opened |
