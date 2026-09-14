@@ -14,4 +14,7 @@
 
 ## Bugfixes
 
-* New bugfix.
+* **Dashboard widgets set to bar chart show their counts again**
+
+  A widget with several case counts stayed empty when its display option was set to bar chart, while donut and
+  meter showed the same counts correctly.
