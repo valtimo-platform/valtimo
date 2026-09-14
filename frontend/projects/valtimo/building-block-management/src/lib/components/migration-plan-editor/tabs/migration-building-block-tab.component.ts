@@ -21,9 +21,11 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
@@ -71,7 +73,7 @@ const MAX_VERSIONS_PER_KEY = 100;
     MigrationProcessMigrationTabComponent,
   ],
 })
-export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
+export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public mode: BuildingBlockMode = 'add';
   @Input() public api: MigrationEditorApi | null = null;
   /** The blueprint version this plan targets — the default owner of every entry on this tab. */
@@ -109,6 +111,10 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
   public keyItems: SelectItem[] = [];
   private readonly _versionsByKey = new Map<string, SelectItem[]>();
   private readonly _versionsInFlight = new Set<string>();
+
+  // `key` -> the version this plan's target links, which is the only one an `add` entry may name (D12).
+  private readonly _linkedVersion = new Map<string, string>();
+  private _linkedVersionsLoaded = false;
 
   // `key` -> latest versionTag, `key:version` -> process keys, and the lookups already in flight.
   private readonly _bbLatestVersion = new Map<string, string>();
@@ -172,8 +178,38 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     });
   }
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    // [api] is null until the host's route params resolve, so the load cannot happen in ngOnInit.
+    if (changes['api']) this.loadLinkedVersions();
+  }
+
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  /** Fetch (once) which version of each block this plan's target links, so a new entry starts on a version the save path accepts rather than on the newest deployed. */
+  private loadLinkedVersions(): void {
+    if (this._linkedVersionsLoaded || !this.api) return;
+
+    this._linkedVersionsLoaded = true;
+    this.api.getLinkedBuildingBlocks().subscribe({
+      next: blocks => {
+        const ambiguous = new Set<string>();
+        (blocks ?? []).forEach(block => {
+          if (this._linkedVersion.has(block.key)) ambiguous.add(block.key);
+          else this._linkedVersion.set(block.key, block.versionTag);
+        });
+        // Two linked versions of one key is not an answer; those keep the latest-deployed default.
+        ambiguous.forEach(key => this._linkedVersion.delete(key));
+        this.cdr.markForCheck();
+      },
+      error: () => (this._linkedVersionsLoaded = false),
+    });
+  }
+
+  /** What a new `add` entry starts on: the version the target links (D12), falling back to the newest deployed while that is unknown. */
+  private defaultVersionFor(key: string): string {
+    return this._linkedVersion.get(key) ?? this._bbLatestVersion.get(key) ?? '';
   }
 
   /** Whether this entry's body is shown. Collapsed unless the author opened it — see [_expanded]. */
@@ -242,14 +278,14 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
       buildingBlockVersionTag: this.fb.control(instruction?.buildingBlockVersionTag ?? ''),
     });
 
-    // `add` defaults to the block's latest version, `remove` to none — what it dissolves is the version instances are on, so a default would be a guess.
+    // `add` defaults to the version the target links, `remove` to none — what it dissolves is the version instances are on, so a default would be a guess.
     this._subscriptions.add(
       group.get('buildingBlockKey')!.valueChanges.subscribe(key => {
         this.ensureVersionItems(key);
         // emitEvent: false so the version subscription doesn't ALSO suggest (avoid a double fetch).
         group
           .get('buildingBlockVersionTag')!
-          .setValue(this.isAdd && key ? (this._bbLatestVersion.get(key) ?? '') : '', {
+          .setValue(this.isAdd && key ? this.defaultVersionFor(key) : '', {
             emitEvent: false,
           });
         this.ensureBuildingBlockProcessKeys(group);
@@ -334,15 +370,11 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnDestroy {
     return this._entryOwners.get(`${key}:${version}`) ?? null;
   }
 
-  /** Whether the counterparty is a building block other than the one this plan targets — the only case where the pickers must be re-scoped away from [owner]. */
+  /** Whether the counterparty is a building block other than the one this plan targets — the only case where the pickers must be re-scoped away from [owner]. Key alone, not key and version: a `remove` entry's owner is read off the plan's source tree, so this plan's own blueprint comes back at the source version, while what the entry moves lands on the target's. */
   private isNestedOwner(owner: BuildingBlockEntryOwner | null): owner is BuildingBlockEntryOwner {
     return (
       owner?.type === 'BUILDING_BLOCK' &&
-      !(
-        this.owner?.type === 'BUILDING_BLOCK' &&
-        owner.key === this.owner.key &&
-        owner.versionTag === this.owner.versionTag
-      )
+      !(this.owner?.type === 'BUILDING_BLOCK' && owner.key === this.owner.key)
     );
   }
 

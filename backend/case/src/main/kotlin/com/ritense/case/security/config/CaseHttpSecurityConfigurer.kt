@@ -132,6 +132,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/activity-mapping")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/suggestion/activity-mapping/validate")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/building-block")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/building-block/linked")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_MIGRATION_URL/{migrationKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/status")).hasAuthority(ADMIN)

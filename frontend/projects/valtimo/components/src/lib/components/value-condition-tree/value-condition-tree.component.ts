@@ -59,6 +59,8 @@ export class ValueConditionTreeComponent {
   // The definition the paths resolve against — a case or building block version, per hosting editor.
   @Input() public caseDefinitionKey: string | null = null;
   @Input() public caseDefinitionVersionTag: string | null = null;
+  /** Extra versions whose fields are merged into the path list, deduplicated by path. */
+  @Input() public additionalVersionTags: string[] = [];
   @Input() public buildingBlockDefinitionKey: string | null = null;
   @Input() public buildingBlockDefinitionVersionTag: string | null = null;
   @Input() public prefixes: ValuePathSelectorPrefix[] = [];

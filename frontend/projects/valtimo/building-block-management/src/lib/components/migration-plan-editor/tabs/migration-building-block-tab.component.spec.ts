@@ -15,6 +15,7 @@
  */
 
 import {FormBuilder, FormGroup} from '@angular/forms';
+import {of} from 'rxjs';
 import {MigrationBuildingBlockTabComponent} from './migration-building-block-tab.component';
 
 describe('MigrationBuildingBlockTabComponent', () => {
@@ -40,7 +41,11 @@ describe('MigrationBuildingBlockTabComponent', () => {
       new FormBuilder(),
       {markForCheck: () => {}} as any,
       {registerAll: () => {}} as any,
-      {} as any
+      {
+        getBuildingBlockDefinitions: () => of([]),
+        getVersionsForBuildingBlock: () => of({content: []}),
+        getProcessDefinitionsForBuildingBlock: () => of([]),
+      } as any
     );
     component.ownerProcessDefinitions = TARGET_DEFS;
     component.ownerSourceProcessDefinitions = SOURCE_DEFS;
@@ -70,6 +75,41 @@ describe('MigrationBuildingBlockTabComponent', () => {
     // Source is the block's own map — empty until an entry names a block — never the owner's.
     expect(component.sourceProcessDefinitionsOf(group)).toEqual({});
     expect(component.targetProcessDefinitionsOf(group)).toEqual(TARGET_DEFS);
+  });
+
+  // A remove entry's owner is read off the plan's source tree, so this plan's own block comes back at the source version — while what the entry hands back lands on the target's.
+  it('keeps a remove entry on the target version when the owner is this plan own block', () => {
+    component.mode = 'remove';
+    component.owner = {type: 'BUILDING_BLOCK', key: 'inspectie', versionTag: '1.0.6'};
+    component.api = {
+      suggestBuildingBlockEntry: () =>
+        of({owner: {type: 'BUILDING_BLOCK', key: 'inspectie', versionTag: '1.0.5'}}),
+    } as any;
+    const group = firstInstruction();
+
+    group.get('buildingBlockKey')!.setValue('dossier');
+    group.get('buildingBlockVersionTag')!.setValue('1.0.0');
+
+    expect(component.targetProcessDefinitionsOf(group)).toEqual(TARGET_DEFS);
+    expect(component.targetContextOf(group)).toEqual({
+      buildingBlockKey: 'inspectie',
+      buildingBlockVersionTag: '1.0.6',
+    });
+  });
+
+  // The newest deployed version is the one D12 refuses when the target links an older one.
+  it('starts a new add entry on the version the target links', () => {
+    component.mode = 'add';
+    component.api = {
+      getLinkedBuildingBlocks: () => of([{key: 'fotos', versionTag: '1.0.0'}]),
+      suggestBuildingBlockEntry: () => of({}),
+    } as any;
+    component.ngOnChanges({api: {} as any});
+    const group = firstInstruction();
+
+    group.get('buildingBlockKey')!.setValue('fotos');
+
+    expect(group.get('buildingBlockVersionTag')!.value).toBe('1.0.0');
   });
 
   // A new object per call would re-trigger the nested tab's ngOnChanges on every change detection.

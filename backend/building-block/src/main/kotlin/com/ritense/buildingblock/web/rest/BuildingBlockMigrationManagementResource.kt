@@ -135,6 +135,16 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.ok(suggestion)
     }
 
+    /** The block versions this version links — which version an `addBuildingBlock` entry for a given key must name (D12). */
+    @RunWithoutAuthorization
+    @GetMapping("/suggestion/building-block/linked")
+    fun getLinkedBuildingBlocks(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+    ): ResponseEntity<JsonNode> = ResponseEntity.ok(
+        migrationSuggestionService.describeLinkedBuildingBlocks(BuildingBlockDefinitionId(key, versionTag))
+    )
+
     @RunWithoutAuthorization
     @GetMapping
     fun getMigrationPlans(

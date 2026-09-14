@@ -43,7 +43,7 @@
             "dataMigration": [
                 {
                     "target": "doc:/aanvragerNaam",
-                    "source": "doc:/aanvrager/naam"
+                    "source": "doc:/aanvragerNaam"
                 }
             ]
         },

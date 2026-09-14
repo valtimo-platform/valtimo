@@ -138,6 +138,18 @@ class CaseMigrationManagementResource(
         return ResponseEntity.ok(suggestion)
     }
 
+    /** The block versions this version links — which version an `addBuildingBlock` entry for a given key must name (D12). */
+    @RunWithoutAuthorization
+    @GetMapping("/suggestion/building-block/linked")
+    fun getLinkedBuildingBlocks(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+    ): ResponseEntity<JsonNode> = ResponseEntity.ok(
+        migrationSuggestionService.describeLinkedBuildingBlocks(
+            CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+        )
+    )
+
     @RunWithoutAuthorization
     @GetMapping
     fun getMigrationPlans(

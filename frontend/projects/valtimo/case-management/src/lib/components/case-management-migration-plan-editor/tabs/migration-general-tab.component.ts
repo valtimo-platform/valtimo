@@ -61,6 +61,11 @@ import {MigrationPlan} from '../../../models';
 export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   @Input() public caseDefinitionKey: string | null = null;
   @Input() public caseDefinitionVersionTag: string | null = null;
+  /** The blueprint the plan migrates FROM — what a condition reads, since it gates cases that are still on it. */
+  @Input() public sourceKey: string | null = null;
+  @Input() public sourceVersionTag: string | null = null;
+  /** Merged into the condition path list beside the source's own fields — a condition may legitimately test a field only the target declares, such as one marking a case as already migrated. */
+  @Input() public conditionAdditionalVersionTags: string[] = [];
   @Input() public runAfterOptions: SelectItem[] = [];
   @Input() public sourceKeyOptions: SelectItem[] = [];
   @Input() public sourceVersionOptions: SelectItem[] = [];

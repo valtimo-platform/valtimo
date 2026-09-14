@@ -505,6 +505,29 @@ class MigrationSuggestionServiceTest {
             }
         }
 
+    @Test
+    fun `should describe the linked building blocks sorted, so the editor defaults an entry to a linked version`() {
+        val service = suggestionService(
+            entryOwners = emptyMap(),
+            linkedBlocks = setOf(
+                BuildingBlockDefinitionId("inspectie-fotos", "1.0.0"),
+                BuildingBlockDefinitionId("inspectie-dossier", "1.0.0"),
+            ),
+        )
+
+        val linked = service.describeLinkedBuildingBlocks(target)
+
+        assertThat(linked.map { it.get("key").asText() to it.get("versionTag").asText() })
+            .containsExactly("inspectie-dossier" to "1.0.0", "inspectie-fotos" to "1.0.0")
+    }
+
+    @Test
+    fun `should describe no linked building blocks when nothing answers for the blueprint type`() {
+        val service = suggestionService()
+
+        assertThat(service.describeLinkedBuildingBlocks(target).isEmpty).isTrue()
+    }
+
     private fun throwingSuggester(componentKey: String) = object : MigrationComponentSuggester {
         override fun componentKey() = componentKey
         override fun suggest(source: BlueprintId, target: BlueprintId): Any =
@@ -521,6 +544,7 @@ class MigrationSuggestionServiceTest {
         componentValidator: MigrationComponentValidator? = null,
         entryOwners: Map<BuildingBlockDefinitionId, BlueprintId>? = null,
         entryOwnersInSourceTree: Map<BlueprintId, BlueprintId> = emptyMap(),
+        linkedBlocks: Set<BuildingBlockDefinitionId> = emptySet(),
         onEntrySuggestion: (String, BlueprintId) -> Unit = { _, _ -> },
     ) = MigrationSuggestionService(
         objectMapper = objectMapper,
@@ -534,19 +558,22 @@ class MigrationSuggestionServiceTest {
         activityMappingValidators = emptyList(),
         componentValidators = listOfNotNull(componentValidator),
         buildingBlockEntryOwnerships = entryOwners
-            ?.let { listOf(entryOwnership(it, entryOwnersInSourceTree)) }
+            ?.let { listOf(entryOwnership(it, entryOwnersInSourceTree, linkedBlocks)) }
             ?: emptyList(),
     )
 
     private fun entryOwnership(
         owners: Map<BuildingBlockDefinitionId, BlueprintId>,
         declaredIn: Map<BlueprintId, BlueprintId> = emptyMap(),
+        linked: Set<BuildingBlockDefinitionId> = emptySet(),
     ) = object : BuildingBlockEntryOwnership {
         override fun supports(blueprintType: BlueprintType) = true
         override fun entryOwnerOf(migratingOwner: BlueprintId, block: BuildingBlockDefinitionId) =
             owners[block] ?: migratingOwner
 
         override fun ownerAsDeclaredIn(tree: BlueprintId, owner: BlueprintId) = declaredIn[owner] ?: owner
+
+        override fun linkedBlocksOf(owner: BlueprintId) = linked
     }
 
     /** Records the blueprint each component was asked to suggest an entry against — [MigrationComponentSuggester.suggestForBuildingBlockEntry]'s `running`. */

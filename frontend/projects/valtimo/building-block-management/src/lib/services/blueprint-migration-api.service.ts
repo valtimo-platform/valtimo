@@ -19,6 +19,7 @@ import {Observable} from 'rxjs';
 import {
   BuildingBlockEntrySuggestion,
   BuildingBlockMode,
+  LinkedBuildingBlock,
   MigrationEditorApi,
   MigrationPlanSource,
 } from '../models';
@@ -105,6 +106,13 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
     );
   }
 
+  /** The block versions this plan's target links — what an `addBuildingBlock` entry may name (D12). */
+  public getLinkedBuildingBlocks(params: P): Observable<LinkedBuildingBlock[]> {
+    return this.httpClient.get<LinkedBuildingBlock[]>(
+      `${this.getMigrationUrl(params)}/suggestion/building-block/linked`
+    );
+  }
+
   /** This service with [params] bound — what lets one set of components serve both blueprint types without knowing how either is identified. */
   public forParams(params: P): MigrationEditorApi {
     return {
@@ -114,6 +122,7 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
         this.validateActivityMapping(params, sourceId, targetId, mapping),
       suggestBuildingBlockEntry: (key, versionTag, mode, source) =>
         this.suggestBuildingBlockEntry(params, key, versionTag, mode, source),
+      getLinkedBuildingBlocks: () => this.getLinkedBuildingBlocks(params),
     };
   }
 }

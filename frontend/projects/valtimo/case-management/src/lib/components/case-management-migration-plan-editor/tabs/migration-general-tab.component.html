@@ -75,11 +75,13 @@
       </p>
     }
 
+    <!-- Scoped to the source, not the target: a condition is evaluated against cases that have not migrated yet, so the fields it can read are the ones that version has. -->
     <valtimo-value-condition-tree
       [addConditionTestId]="testIds.addConditionButton"
+      [additionalVersionTags]="conditionAdditionalVersionTags"
       [addGroupTestId]="testIds.addConditionGroupButton"
-      [caseDefinitionKey]="caseDefinitionKey"
-      [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+      [caseDefinitionKey]="sourceKey ?? caseDefinitionKey"
+      [caseDefinitionVersionTag]="sourceVersionTag"
       [conditions]="conditionsArray"
       [prefixes]="CONDITION_PATH_PREFIXES"
     ></valtimo-value-condition-tree>

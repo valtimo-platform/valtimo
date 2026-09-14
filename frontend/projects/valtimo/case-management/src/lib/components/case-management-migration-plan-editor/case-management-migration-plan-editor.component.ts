@@ -136,6 +136,15 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     caseDefinitionKey: this.$sourceKey(),
     caseDefinitionVersionTag: this.$sourceVersionTag(),
   }));
+  // A condition reads the source version, but may legitimately test a field only the target
+  // declares — one marking a case as already migrated, say — so the target's fields join the list.
+  public readonly $conditionAdditionalVersionTags = computed(() => {
+    const targetVersion = this.$caseDefinitionVersionTag();
+    const sameKey = this.$sourceKey() === this.$caseDefinitionKey();
+    return sameKey && targetVersion && targetVersion !== this.$sourceVersionTag()
+      ? [targetVersion]
+      : [];
+  });
   // Extra version tags merged into the "to" list so source-only fields can be cleared. Same key only.
   public readonly $targetAdditionalVersionTags = computed(() => {
     const sourceVersion = this.$sourceVersionTag();

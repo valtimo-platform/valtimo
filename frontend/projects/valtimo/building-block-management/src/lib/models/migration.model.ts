@@ -176,6 +176,15 @@ interface MigrationEditorApi {
     mode: BuildingBlockMode,
     source?: MigrationPlanSource | null
   ): Observable<BuildingBlockEntrySuggestion>;
+
+  /** The block versions this plan's target links — the only versions an `addBuildingBlock` entry may name. */
+  getLinkedBuildingBlocks(): Observable<LinkedBuildingBlock[]>;
+}
+
+/** One building-block version a blueprint version links, as a startable item or a call activity. */
+interface LinkedBuildingBlock {
+  key: string;
+  versionTag: string;
 }
 
 export {
@@ -188,6 +197,7 @@ export {
   BuildingBlockMode,
   DataMigrationPatch,
   DataMigrationTargetType,
+  LinkedBuildingBlock,
   MigrationEditorApi,
   MigrationEditorTestIds,
   MigrationExecutionError,

@@ -54,6 +54,11 @@ class CallActivityBuildingBlockEntryOwnership(
         return sameKey.singleOrNull() ?: owner
     }
 
+    /** The same set [AddBuildingBlockLinkChecker] accepts, so a version answered here is one the save path takes. */
+    override fun linkedBlocksOf(owner: BlueprintId): Set<BuildingBlockDefinitionId> =
+        linkedBuildingBlockVersionResolver.resolveLinkedVersions(owner).map { it.buildingBlockDefinitionId }
+            .toSet() + linkedBuildingBlockVersionResolver.resolveCallActivityReachable(owner)
+
     /** One version of a key is an answer, several a guess: taking whichever the set yielded first made it depend on iteration order (D4). Both callers fall back to the blueprint they were given. */
     private fun warnIfAmbiguous(
         tree: BlueprintId,

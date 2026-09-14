@@ -36,6 +36,7 @@
 
           <div class="value-condition-tree__nested">
             <valtimo-value-condition-tree
+              [additionalVersionTags]="additionalVersionTags"
               [buildingBlockDefinitionKey]="buildingBlockDefinitionKey"
               [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag"
               [caseDefinitionKey]="caseDefinitionKey"
@@ -51,6 +52,7 @@
           <div class="value-condition-tree__fields">
             <valtimo-value-path-selector
               formControlName="path"
+              [additionalVersionTags]="additionalVersionTags"
               [buildingBlockDefinitionKey]="buildingBlockDefinitionKey"
               [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag"
               [caseDefinitionKey]="caseDefinitionKey"

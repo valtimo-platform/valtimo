@@ -212,6 +212,24 @@ class MigrationSuggestionService(
             ?: owner
     }
 
+    /** The block versions [owner] links, sorted — what the editor defaults a new entry's version to, so it cannot start on a version D12 refuses. */
+    fun linkedBuildingBlocksOf(owner: BlueprintId): List<BuildingBlockDefinitionId> =
+        buildingBlockEntryOwnerships
+            .firstOrNull { it.supports(owner.blueprintType()) }
+            ?.linkedBlocksOf(owner)
+            .orEmpty()
+            .sortedBy { it.toString() }
+
+    /** [linkedBuildingBlocksOf] as the editor reads it. */
+    fun describeLinkedBuildingBlocks(owner: BlueprintId): ArrayNode =
+        linkedBuildingBlocksOf(owner).fold(objectMapper.createArrayNode()) { array, block ->
+            array.add(
+                objectMapper.createObjectNode()
+                    .put("key", block.key)
+                    .put("versionTag", block.versionTag.toString())
+            )
+        }
+
     /** [entryOwnerOf] as the editor reads it: the type tells it which pickers to build. */
     fun describeEntryOwner(owner: BlueprintId): ObjectNode = objectMapper.createObjectNode()
         .put("type", owner.blueprintType().name)
