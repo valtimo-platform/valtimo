@@ -78,7 +78,8 @@ export class FormioBuilderComponent implements OnInit {
 
       const defaultOptions = {
         ...options,
-        ...(formioTranslations === 'object' && {
+        language,
+        ...(typeof formioTranslations === 'object' && {
           i18n: {
             [language]: this.stateService.flattenTranslationsObject(formioTranslations),
           },
