@@ -20,6 +20,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {BreadcrumbService, CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   map,
   Observable,
@@ -36,6 +37,7 @@ import {TranslatePipe} from '@ngx-translate/core';
   selector: 'valtimo-iko-list',
   standalone: true,
   templateUrl: './iko-list.component.html',
+  styleUrls: ['./iko-list.component.scss'],
   imports: [CommonModule, CarbonListModule, TranslatePipe],
 })
 export class IkoListComponent implements OnDestroy {
@@ -47,6 +49,8 @@ export class IkoListComponent implements OnDestroy {
   @Output() public rowSelectedEvent = new EventEmitter<IkoRowSelectedEvent>();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly searchError$ = new BehaviorSubject<boolean>(false);
 
   private readonly _searchParams$ = new ReplaySubject<IkoSearchParams>(1);
 
@@ -79,12 +83,20 @@ export class IkoListComponent implements OnDestroy {
           })
         );
       }),
-      tap(() => this.loading$.next(true)),
+      tap(() => {
+        this.loading$.next(true);
+        this.searchError$.next(false);
+      }),
       switchMap(({ikoViewKey, searchKey, filters}) =>
-        this.ikoApiService.searchIkoSearchAction(ikoViewKey, searchKey, {filters})
+        this.ikoApiService.searchIkoSearchAction(ikoViewKey, searchKey, {filters}).pipe(
+          catchError(() => {
+            this.searchError$.next(true);
+            return of(null);
+          })
+        )
       ),
       map(res => ({
-        fields: res.headers.reduce(
+        fields: (res?.headers ?? []).reduce(
           (acc, curr) => [
             ...acc,
             ...(curr.displayType.type === 'hidden'
@@ -102,7 +114,7 @@ export class IkoListComponent implements OnDestroy {
           ],
           [] as ColumnConfig[]
         ),
-        items: res.rows.content.map(stuff =>
+        items: (res?.rows?.content ?? []).map(stuff =>
           stuff.items.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {})
         ),
       })),

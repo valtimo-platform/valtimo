@@ -18,8 +18,8 @@ package com.ritense.iko.client
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.iko.dto.ContainerParam
+import com.ritense.iko.exception.IkoServerException
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
@@ -67,8 +67,10 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error(e) { "Failed to get data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'" }
-            return jacksonObjectMapper().createObjectNode()
+            logger.error(e) {
+                "Failed to get data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'"
+            }
+            throw IkoServerException(e)
         }
     }
 
@@ -105,8 +107,10 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error(e) { "Failed to search data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'" }
-            return jacksonObjectMapper().createArrayNode()
+            logger.error(e) {
+                "Failed to search data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'"
+            }
+            throw IkoServerException(e)
         }
     }
 
@@ -154,7 +158,7 @@ class IkoClient(
             logger.error(e) {
                 "Failed to get data for aggregatedDataProfile='$aggregatedDataProfileName', id='$id'"
             }
-            objectMapper.createObjectNode()
+            throw IkoServerException(e)
         }
     }
 

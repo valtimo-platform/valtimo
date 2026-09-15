@@ -17,9 +17,14 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
-import {MapWidget, WidgetMapComponent, WidgetLayoutService} from '@valtimo/layout';
+import {
+  catchWidgetDataError,
+  MapWidget,
+  WidgetMapComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, of, startWith, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
@@ -52,19 +57,27 @@ export class IkoWidgetMapComponent {
 
   public readonly widgetConfiguration$ = new BehaviorSubject<MapWidget | null>(null);
 
+  private readonly _reloadWidgetData$ = this.widgetLayoutService.widgetDataReload$.pipe(
+    filter(uuid => uuid === this.widgetUuid),
+    startWith(null)
+  );
+
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this._reloadWidgetData$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
-            widgetConfiguration.key,
-            widgetParams.entryId
-          )
+        : this.ikoApiService
+            .getIkoWidgetData(
+              widgetParams.ikoViewKey,
+              widgetParams.tabKey,
+              widgetConfiguration.key,
+              widgetParams.entryId
+            )
+            .pipe(catchWidgetDataError(this.widgetLayoutService, () => this.widgetUuid))
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
