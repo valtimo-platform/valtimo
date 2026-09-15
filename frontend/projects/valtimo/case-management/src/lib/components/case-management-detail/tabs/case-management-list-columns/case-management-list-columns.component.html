@@ -119,6 +119,8 @@
       isYesNo: isYesNo$ | async,
       showTagAmount: showTagAmount$ | async,
       params: params$ | async,
+      columnTitle: columnTitle$ | async,
+      usedKeys: usedKeys$ | async,
     } as modalObs"
     [open]="modalObs.show"
     size="sm"
@@ -156,27 +158,19 @@
       <input cdsText formControlName="title" [attr.data-test-id]="testIds.title" />
     </cds-label>
 
-    <cds-label
-      [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
-      [invalid]="modalObs.validKey === false"
-      [invalidText]="'listColumn.uniqueKeyWarning' | translate"
+    <valtimo-auto-key-input
+      formControlName="key"
+      labelTranslationKey="listColumn.key"
+      [dataTestId]="testIds.key"
+      [mode]="modalObs.type === 'edit' ? 'edit' : 'add'"
+      [sourceText]="modalObs.columnTitle"
+      [usedKeys]="modalObs.usedKeys"
     >
-      <span class="label-with-tooltip">
-        {{ 'listColumn.key' | translate }}
-
-        <v-tooltip-icon
-          [tooltip]="'listColumn.keyTooltip' | translate"
-          [disabled]="modalObs.disableInput"
-        ></v-tooltip-icon>
-      </span>
-
-      <input
-        cdsText
-        formControlName="key"
-        [invalid]="modalObs.validKey === false"
-        [attr.data-test-id]="testIds.key"
-      />
-    </cds-label>
+      <v-tooltip-icon
+        [tooltip]="'listColumn.keyTooltip' | translate"
+        [disabled]="modalObs.disableInput"
+      ></v-tooltip-icon>
+    </valtimo-auto-key-input>
 
     <cds-label [disabled]="modalObs.disableInput">
       <span class="label-with-tooltip">

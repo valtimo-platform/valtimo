@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,4 @@
  * limitations under the License.
  */
 
-.auto-key-label {
-  display: flex;
-  align-items: center;
-}
-
-:host(.auto-key-input--margin) {
-  display: block;
-  margin-block-end: var(--v-input-margin);
-}
-
-.edit-key-input {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-
-  input[cdsText] {
-    flex: 1 1 auto;
-  }
-
-  cds-icon-button {
-    flex-shrink: 0;
-    margin-left: 4px;
-  }
-}
+export * from './auto-id-behavior';
