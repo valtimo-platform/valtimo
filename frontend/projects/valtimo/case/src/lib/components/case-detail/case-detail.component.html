@@ -81,6 +81,7 @@
         [disabled]="!tabContentObs.caseDetailLayout.widthAdjustable"
         [gutterSize]="CASE_DETAIL_GUTTER_SIZE"
         [unit]="tabContentObs.caseDetailLayout.unit"
+        (dragEnd)="onSplitDragEnd($event)"
         class="split-area"
       >
         <as-split-area
