@@ -20,6 +20,7 @@ import com.ritense.authorization.PbacRegistryService
 import com.ritense.authorization.web.rest.dto.PbacRegistryDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -31,6 +32,10 @@ import org.springframework.web.bind.annotation.RestController
 class PbacRegistryResource(
     private val pbacRegistryService: PbacRegistryService,
 ) {
+    @EndpointDescription(
+        en = "Get the PBAC registry of resources, actions and available role authorizations",
+        nl = "Het PBAC-register met resources, acties en beschikbare rolautorisaties ophalen",
+    )
     @GetMapping("/v1/pbac/registry")
     fun getRegistry(): ResponseEntity<PbacRegistryDto> {
         return ResponseEntity.ok(pbacRegistryService.getRegistry())

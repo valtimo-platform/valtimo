@@ -24,6 +24,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.audit.view.AuditView;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +45,10 @@ public class ProcessDocumentAuditResource {
         this.processDocumentAuditService = processDocumentAuditService;
     }
 
+    @EndpointDescription(
+        en = "Get process document audit log",
+        nl = "Auditlogregels van procesdocument ophalen"
+    )
     @GetMapping("/v1/process-document/instance/document/{documentId}/audit")
     @JsonView(AuditView.Public.class)
     public ResponseEntity<Page<AuditRecord>> getAuditLog(

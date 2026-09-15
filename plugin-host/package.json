@@ -1,0 +1,26 @@
+{
+  "name": "@valtimo/plugin-host-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Root orchestration for the Valtimo external plugin system — see scripts/ for the bootstrap tooling",
+  "type": "module",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "start": "node scripts/dev.mjs",
+    "plugin:upload": "node scripts/upload-plugin.mjs",
+    "sample:build": "npm --prefix sample-plugins/case-summary run build:pack",
+    "db:up": "npm --prefix app run db:up",
+    "db:down": "npm --prefix app run db:down",
+    "db:reset": "npm --prefix app run db:reset",
+    "test": "npm --prefix plugin-sdk test && npm --prefix app test",
+    "test:wasm": "npm --prefix app run test:wasm",
+    "test:int": "npm --prefix app run test:int",
+    "clean": "node scripts/clean.mjs",
+    "clean:deep": "node scripts/clean.mjs --deep"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "license": "EUPL-1.2"
+}
