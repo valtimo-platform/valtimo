@@ -27,6 +27,8 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Building blocks | A file uploaded from a task form inside a building block is added to the case |
+| Building blocks | The breadcrumb back to a mail, text or document template overview opens that overview, instead of the building block's General tab |
+| Case management | The breadcrumb back to a mail, text or document template overview opens that overview, instead of the case's General tab |
 | Forms | Number fields in a form now use the notation of the user's language, so a Dutch user reads and enters 1234,56 instead of 1234.56 |
 | Forms | Standard form buttons and messages, such as Versturen, Opslaan and Annuleren, now appear in the user's language instead of always in English |
 | IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
