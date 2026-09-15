@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,24 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
-import {
-  ConfigurationOutput,
-  DataSourceConfigurationComponent,
-  QueryCondition,
-} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, startWith, Subscription} from 'rxjs';
-import {AbstractControl, FormBuilder} from '@angular/forms';
-import {TaskCountConfiguration} from '../../models';
-import {ListItemWithId, MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {combineLatest, map, Observable, shareReplay, startWith, Subscription} from 'rxjs';
+import {ListItem, NotificationContent} from 'carbon-components-angular';
+import {ListItemWithId} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
 import {TranslateService} from '@ngx-translate/core';
-import {ExpressionOperator} from '@valtimo/shared';
+import {ConfigurationOutput, DataSourceConfigurationComponent} from '../../../../models';
+import {WidgetTranslationService} from '../../../../services';
+import {TASK_COUNT_TEST_IDS} from '../../constants';
+import {ConditionGroupValue, TaskCountConfiguration} from '../../models';
+import {
+  createConditionGroup,
+  EDITABLE_CONDITION_OPERATORS,
+  resetRootGroup,
+  serializeConditionGroup,
+} from '../../utils';
 
 @Component({
   standalone: false,
@@ -46,99 +52,146 @@ export class TaskCountConfigurationComponent
 {
   @Input() public dataSourceKey: string;
 
-  public readonly form = this.fb.group({
-    queryConditions: this.fb.control(null),
-  });
-
   @Input() public set disabled(disabledValue: boolean) {
-    if (disabledValue) {
-      this.form.disable();
-    } else {
-      this.form.enable();
-    }
+    this.$disabled.set(disabledValue);
+    // The rows of a group are a form control, so the multi input follows the form rather than a
+    // [disabled] binding of its own.
+    disabledValue
+      ? this.conditionsForm.disable({emitEvent: false})
+      : this.conditionsForm.enable({emitEvent: false});
   }
 
-  private readonly _OPERATORS: Array<ExpressionOperator> = ['!=', '==', '>', '>=', '<', '<='];
+  @Input() public set prefillConfiguration(configurationValue: TaskCountConfiguration) {
+    if (!configurationValue) {
+      return;
+    }
 
-  public readonly operatorItems$: Observable<Array<ListItemWithId>> = this.translateService
-    .stream('key')
-    .pipe(
-      map(() =>
-        this._OPERATORS.map(operator => ({
-          id: operator,
-          content: this.translateService.instant('condition.operator.' + operator),
-          selected: false,
-        }))
-      )
+    this._$selectedCaseDefinitionName.set(configurationValue.caseDefinitionName ?? undefined);
+    resetRootGroup(
+      this.conditionsForm,
+      configurationValue.conditions ?? configurationValue.queryConditions ?? []
     );
-
-  public readonly defaultConditionValues$ = new BehaviorSubject<MultiInputValues | null>(null);
-  public readonly allConditionsValid$ = new BehaviorSubject<boolean>(true);
-
-  public get queryConditions(): AbstractControl<QueryCondition[]> {
-    return this.form.get('queryConditions');
-  }
-
-  @Input() set prefillConfiguration(configurationValue: TaskCountConfiguration) {
-    if (configurationValue) {
-      this.defaultConditionValues$.next(
-        configurationValue.queryConditions.map(condition => ({
-          key: condition.queryPath,
-          dropdown: condition.queryOperator,
-          value: condition.queryValue,
-        }))
-      );
-    }
   }
 
   @Output() public configurationEvent = new EventEmitter<
     ConfigurationOutput<TaskCountConfiguration>
   >();
 
+  public readonly $disabled = signal<boolean>(false);
+
+  /**
+   * The whole condition tree. Kept for the lifetime of the component - a prefill resets its
+   * contents - so that the subscription below survives it.
+   */
+  public readonly conditionsForm = createConditionGroup('and');
+
+  protected readonly testIds = TASK_COUNT_TEST_IDS;
+
+  // Declared before the observables below, which read it at field-initialization time.
+  private readonly _$selectedCaseDefinitionName = signal<string | undefined>(undefined);
+
+  private readonly _serializedConditions$ = this.conditionsForm.valueChanges.pipe(
+    startWith(null),
+    map(() => serializeConditionGroup(this.conditionsForm.getRawValue() as ConditionGroupValue)),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  public readonly hasUnsupportedConditions$: Observable<boolean> = this._serializedConditions$.pipe(
+    map(serialized => serialized.hasUnsupportedNodes)
+  );
+
+  /**
+   * Emits once and then on every language change. Subscribing to a translation is the only way to
+   * be notified, so the lists below are rebuilt whenever this fires.
+   */
+  private readonly _languageChange$: Observable<unknown> = this.translateService
+    .stream('key')
+    .pipe(shareReplay({bufferSize: 1, refCount: true}));
+
+  public readonly caseDefinitionItems$: Observable<Array<ListItem>> = combineLatest([
+    this.documentService.getAllDefinitions(),
+    toObservable(this._$selectedCaseDefinitionName),
+    this._languageChange$,
+  ]).pipe(
+    map(([definitions, selectedCaseDefinitionName]) => [
+      {
+        content: this.widgetTranslationService.instant('allCaseDefinitions', this.dataSourceKey),
+        selected: selectedCaseDefinitionName === undefined,
+        caseDefinitionName: undefined,
+      },
+      ...definitions.content.map(definition => ({
+        content: definition.id.name,
+        selected: definition.id.name === selectedCaseDefinitionName,
+        caseDefinitionName: definition.id.name,
+      })),
+    ])
+  );
+
+  public readonly operatorItems$: Observable<Array<ListItemWithId>> = this._languageChange$.pipe(
+    map(() =>
+      EDITABLE_CONDITION_OPERATORS.map(operator => ({
+        id: operator,
+        content: this.translateService.instant('condition.operator.' + operator),
+        selected: false,
+      }))
+    )
+  );
+
+  public readonly unsupportedConditionsNotification$: Observable<NotificationContent> =
+    this._languageChange$.pipe(
+      map(() => ({
+        type: 'info',
+        lowContrast: true,
+        title: this.widgetTranslationService.instant(
+          'unsupportedConditionsNotification',
+          this.dataSourceKey
+        ),
+        showClose: false,
+      }))
+    );
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService
+    private readonly documentService: DocumentService,
+    private readonly translateService: TranslateService,
+    private readonly widgetTranslationService: WidgetTranslationService
   ) {}
 
   public ngOnInit(): void {
-    this.openFormSubscription();
+    this._subscriptions.add(this.conditionsForm.valueChanges.subscribe(() => this.emit()));
+    this.emit();
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  public conditionsValueChange(values: Array<MultiInputKeyValue>): void {
-    if (values.length === 0) {
-      this.queryConditions.setValue(null);
-    } else {
-      this.queryConditions.setValue(
-        values.map(value => ({
-          queryPath: value.key,
-          queryOperator: value.dropdown,
-          queryValue: value.value,
-        }))
-      );
+  public caseDefinitionSelected(event: {item?: ListItem}): void {
+    if (!event) {
+      return;
     }
+
+    this._$selectedCaseDefinitionName.set(event.item?.caseDefinitionName ?? undefined);
+    this.emit();
   }
 
-  public onAllConditionsValid(allConditionsValid: boolean): void {
-    this.allConditionsValid$.next(allConditionsValid);
-  }
-
-  private openFormSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([
-        this.form.valueChanges.pipe(startWith(this.form.value)),
-        this.allConditionsValid$,
-      ]).subscribe(([formValue, allConditionsValid]) => {
-        this.configurationEvent.emit({
-          valid: this.form.valid && allConditionsValid,
-          data: formValue as TaskCountConfiguration,
-        });
-      })
+  private emit(): void {
+    const {node} = serializeConditionGroup(
+      this.conditionsForm.getRawValue() as ConditionGroupValue
     );
+
+    this.configurationEvent.emit({
+      // A disabled form is neither valid nor invalid, so a read-only configuration is not reported
+      // as an incomplete one.
+      valid: !this.conditionsForm.invalid,
+      data: {
+        caseDefinitionName: this._$selectedCaseDefinitionName() ?? undefined,
+        // Emitted as a single root node so that the operator of the outermost group survives a
+        // save/reload round-trip. An empty root is omitted entirely: the backend rejects empty
+        // `and`/`or` groups.
+        conditions: node ? [node] : [],
+      },
+    });
   }
 }

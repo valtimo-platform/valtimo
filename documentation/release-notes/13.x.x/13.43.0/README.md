@@ -55,6 +55,10 @@ Values passed to a building block are stored in its document, and results are re
 
 When a plugin action property resolves to no value, a debug log entry now names the property, the activity and the process definition, making it easier to trace why an action behaves as if a value was never provided.
 
+### More filter options for the task count widget
+
+A task count widget can now be limited to a single case type, and its conditions can be combined with **AND** or **OR** in groups that can be nested. Counts that previously could not be configured, such as the assigned tasks of one case type that have one of two names, now take a single widget. Existing task count widgets keep working unchanged.
+
 ---
 
 ## Bugfixes

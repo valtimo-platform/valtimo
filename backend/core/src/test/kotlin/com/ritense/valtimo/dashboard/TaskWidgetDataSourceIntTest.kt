@@ -19,7 +19,10 @@ package com.ritense.valtimo.dashboard
 import com.ritense.valtimo.BaseIntegrationTest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
+import com.ritense.valtimo.contract.conditions.AndConditionGroup
+import com.ritense.valtimo.contract.conditions.ComparableList
 import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.valtimo.contract.conditions.OrConditionGroup
 import com.ritense.valtimo.contract.repository.ExpressionOperator
 import org.assertj.core.api.Assertions.assertThat
 import org.operaton.bpm.engine.task.Task
@@ -201,6 +204,109 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
         assertThat(result1.total).isEqualTo(3)
         assertThat(result2.total).isEqualTo(3)
         assertThat(result3.total).isEqualTo(3)
+    }
+
+    @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
+    fun `should count tasks matching an or-group`() {
+        createTask("A")
+        createTask("A")
+        createTask("B")
+        createTask("C")
+
+        val properties = TaskCountDataSourceProperties(
+            conditions = listOf(
+                OrConditionGroup(
+                    listOf(
+                        Condition("task:name", ExpressionOperator.EQUAL_TO, "A"),
+                        Condition("task:name", ExpressionOperator.EQUAL_TO, "B"),
+                    )
+                )
+            )
+        )
+
+        val result = taskWidgetDataSource.getTaskCount(properties)
+
+        assertThat(result.value).isEqualTo(3)
+        assertThat(result.total).isEqualTo(4)
+    }
+
+    @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
+    fun `should count tasks matching a flat leaf AND-ed with an or-group`() {
+        createTask("A", "u1@test.com")
+        createTask("A", "u2@test.com")
+        createTask("B", "u1@test.com")
+        createTask("C", "u1@test.com")
+
+        val properties = TaskCountDataSourceProperties(
+            conditions = listOf(
+                Condition("task:assignee", ExpressionOperator.EQUAL_TO, "u1@test.com"),
+                OrConditionGroup(
+                    listOf(
+                        Condition("task:name", ExpressionOperator.EQUAL_TO, "A"),
+                        Condition("task:name", ExpressionOperator.EQUAL_TO, "B"),
+                    )
+                )
+            )
+        )
+
+        val result = taskWidgetDataSource.getTaskCount(properties)
+
+        // assignee == u1 AND (name == A OR name == B) -> the "A, u1" task and the "B, u1" task
+        assertThat(result.value).isEqualTo(2)
+        assertThat(result.total).isEqualTo(4)
+    }
+
+    @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
+    fun `should count tasks matching an and-group nested inside an or-group`() {
+        createTask("A", "u1@test.com")
+        createTask("A", "u2@test.com")
+        createTask("B", "u1@test.com")
+        createTask("C", "u1@test.com")
+
+        val properties = TaskCountDataSourceProperties(
+            conditions = listOf(
+                OrConditionGroup(
+                    listOf(
+                        AndConditionGroup(
+                            listOf(
+                                Condition("task:name", ExpressionOperator.EQUAL_TO, "A"),
+                                Condition("task:assignee", ExpressionOperator.EQUAL_TO, "u2@test.com"),
+                            )
+                        ),
+                        Condition("task:name", ExpressionOperator.EQUAL_TO, "B"),
+                    )
+                )
+            )
+        )
+
+        val result = taskWidgetDataSource.getTaskCount(properties)
+
+        // (name == A AND assignee == u2) OR name == B -> the "A, u2" task and the "B, u1" task
+        assertThat(result.value).isEqualTo(2)
+        assertThat(result.total).isEqualTo(4)
+    }
+
+    @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
+    fun `should count tasks matching the in operator`() {
+        createTask("A")
+        createTask("A")
+        createTask("B")
+        createTask("C")
+
+        val properties = TaskCountDataSourceProperties(
+            conditions = listOf(
+                Condition("task:name", ExpressionOperator.IN, ComparableList(listOf("A", "B")))
+            )
+        )
+
+        val result = taskWidgetDataSource.getTaskCount(properties)
+
+        assertThat(result.value).isEqualTo(3)
+        assertThat(result.total).isEqualTo(4)
     }
 
     private fun createTask(
