@@ -31,3 +31,4 @@ New enhancement explanation.
 | Forms | Standard form buttons and messages, such as Versturen, Opslaan and Annuleren, now appear in the user's language instead of always in English |
 | IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
 | Search fields | A task list search field can be saved without a title, as its tooltip already describes. The task list then shows the search field key as the label |
+| Plugins | Settings left over from an older version of a plugin no longer fill the log with errors every time a case is opened |
