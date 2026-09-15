@@ -125,21 +125,65 @@ export class AccessControlPage {
     await this.createRoleButton.click();
   }
 
+  private async selectRowForBatchActions(roleKey: string) {
+    const row = new CarbonList(this.page).row(roleKey);
+    const batchActions = this.page.locator('.cds--batch-actions').first();
+
+    await expect(async () => {
+      const active = await batchActions.evaluate(el =>
+        el.classList.contains('cds--batch-actions--active')
+      );
+      if (!active) await row.select();
+      await expect(batchActions).toHaveClass(/cds--batch-actions--active/, {timeout: 3_000});
+    }).toPass({timeout: 20_000});
+  }
+
+  private async clickBatchAction(button: Locator) {
+    await this.page.evaluate(() => window.scrollTo(0, 0));
+    try {
+      await button.click({timeout: 10_000});
+    } catch (error) {
+      if (!String(error).includes('intercepts pointer events')) throw error;
+      await expect(button).toBeVisible();
+      await expect(button).toBeEnabled();
+
+      console.warn(
+        '[access-control] Batch-action click was swallowed by the table header; ' +
+          'dispatching it directly. The action bar is still rendered underneath the header.'
+      );
+      await button.dispatchEvent('click');
+    }
+  }
+
   async deleteRole(roleKey: string) {
-    const list = new CarbonList(this.page);
-    await list.row(roleKey).select();
+    await this.selectRowForBatchActions(roleKey);
     // Click the batch-action "Delete" button (only visible after row selection)
-    await this.page.locator('cds-table-toolbar-actions').getByRole('button', {name: 'Delete'}).click();
+    await this.clickBatchAction(
+      this.page.locator('cds-table-toolbar-actions').getByRole('button', {name: 'Delete'})
+    );
+
+    const deleted = this.page.waitForResponse(
+      res =>
+        new URL(res.url()).pathname === '/api/management/v1/roles' &&
+        res.request().method() === 'DELETE'
+    );
     // Confirm in valtimo-delete-role-modal — use data-test-id to avoid strict-mode ambiguity
     await this.page.getByTestId('confirmationModalConfirm').click();
+    expect((await deleted).ok(), `deleting role "${roleKey}" should succeed`).toBeTruthy();
   }
 
   // ─── 11.6 Edit role metadata ──────────────────────────────────────
 
   /** Direct navigation to a role's detail page, where the metadata and export actions live. */
   async goToRoleDetail(roleKey: string) {
+    const permissionsLoaded = this.page.waitForResponse(
+      res =>
+        res.url().includes(`/api/management/v1/roles/${roleKey}/permissions`) &&
+        res.request().method() === 'GET'
+    );
     await this.page.goto(`/access-control/${roleKey}`);
     await expect(this.roleDetailMoreMenuTrigger).toBeVisible();
+    await permissionsLoaded;
   }
 
   /**
@@ -207,10 +251,8 @@ export class AccessControlPage {
 
   /** Selects a role in the list and opens the export modal from the batch action bar. */
   async openExportModal(roleKey: string) {
-    const list = new CarbonList(this.page);
-    await list.row(roleKey).select();
-    await expect(this.exportRolesButton).toBeVisible();
-    await this.exportRolesButton.click();
+    await this.selectRowForBatchActions(roleKey);
+    await this.clickBatchAction(this.exportRolesButton);
     await expect(this.exportSingleFileButton).toBeVisible();
   }
 

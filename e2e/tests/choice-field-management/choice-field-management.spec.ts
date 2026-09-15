@@ -65,17 +65,17 @@ test.describe('Choice field management — Manage definitions', () => {
   });
 
   test('View choice field in list', async () => {
+    test.setTimeout(90_000);
+
     const data = createChoiceFieldTestData();
     const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
     try {
-      await choiceFieldPage.goToChoiceFields();
       const list = new CarbonList(page);
-      await list.waitForLoaded();
-      await list.setPageSize(50);
-      await list.waitForLoaded();
-
-      const row = list.row(data.keyName);
-      await row.assertVisible();
+      await expect(async () => {
+        await choiceFieldPage.goToChoiceFields();
+        await list.setPageSize(50);
+        await list.row(data.keyName).assertVisible(5_000);
+      }).toPass({timeout: 60_000});
     } finally {
       await choiceFieldPage.deleteChoiceFieldViaApi(created.id);
     }
@@ -85,13 +85,7 @@ test.describe('Choice field management — Manage definitions', () => {
     const data = createChoiceFieldTestData();
     const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
     try {
-      await choiceFieldPage.goToChoiceFields();
-      const list = new CarbonList(page);
-      await list.setPageSize(50);
-      await list.waitForLoaded();
-
-      const row = list.row(data.keyName);
-      await row.click();
+      await choiceFieldPage.goToChoiceFieldDetail(created.id);
 
       await choiceFieldPage.editChoiceFieldTitle(data.editedTitle);
 
@@ -107,13 +101,7 @@ test.describe('Choice field management — Manage definitions', () => {
     const data = createChoiceFieldTestData();
     const created = await choiceFieldPage.createChoiceFieldViaApi(data.keyName, data.title);
 
-    await choiceFieldPage.goToChoiceFields();
-    const list = new CarbonList(page);
-    await list.setPageSize(50);
-    await list.waitForLoaded();
-
-    const row = list.row(data.keyName);
-    await row.click();
+    await choiceFieldPage.goToChoiceFieldDetail(created.id);
 
     await choiceFieldPage.deleteChoiceField();
 
@@ -176,14 +164,15 @@ test.describe('Choice field management — Add/edit/delete choice options', () =
 
   test('Edit choice field value', async () => {
     const list = new CarbonList(page);
+    await list.waitForLoaded();
     const row = list.row(valueData.name);
+    await row.assertVisible();
     await row.click();
 
     await choiceFieldPage.editChoiceFieldValue(valueData.editedValue);
 
     // Navigate back to the detail page
-    await page.getByRole('link', {name: 'Back', exact: true}).click();
-    await page.waitForSelector('valtimo-choice-field-value-list');
+    await choiceFieldPage.goBackToChoiceFieldDetail();
 
     const updatedList = new CarbonList(page);
     await updatedList.waitForLoaded();

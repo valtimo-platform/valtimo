@@ -16,7 +16,7 @@
 
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../../shared/carbon-list/carbon-list.utils';
-import {JsonEditor} from '../../../shared/json-editor/json-editor.utils';
+import {JSON_EDITOR_SAVE_URLS, JsonEditor} from '../../../shared/json-editor/json-editor.utils';
 import {settleModalReset} from '../../../shared/modal/modal.utils';
 import {
   AUTO_KEY_INPUT_TEST_IDS,
@@ -142,6 +142,23 @@ export class IkoWidgetPage {
     await this.list.waitForLoaded();
   }
 
+  private async saveWidgetsViaJsonEditor(
+    viewKey: string,
+    tabKey: string,
+    widgets: BasicWidget[],
+    stored: (widgets: BasicWidget[]) => boolean
+  ): Promise<void> {
+    await expect(async () => {
+      await this.switchToJsonEditor();
+      await new JsonEditor(this.page, JSON_EDITOR_SAVE_URLS.ikoView).saveChanges(widgets);
+      await expect
+        .poll(async () => stored(await this.getWidgetsViaApi(viewKey, tabKey)), {timeout: 8_000})
+        .toBe(true);
+    }).toPass({timeout: 60_000});
+
+    await this.switchToVisualEditor();
+  }
+
   /** Open the create-widget wizard and wait for it to be interactable. */
   async openWizard(): Promise<void> {
     await this.addWidgetButton.click();
@@ -206,10 +223,9 @@ export class IkoWidgetPage {
   ): Promise<void> {
     const existing = await this.getWidgetsViaApi(viewKey, tabKey);
     const updated = [...existing, widget];
-    await this.switchToJsonEditor();
-    const editor = new JsonEditor(this.page);
-    await editor.saveChanges(updated);
-    await this.switchToVisualEditor();
+    await this.saveWidgetsViaJsonEditor(viewKey, tabKey, updated, widgets =>
+      widgets.some(w => w.key === widget.key)
+    );
   }
 
   async removeWidgetViaJsonEditor(
@@ -219,10 +235,9 @@ export class IkoWidgetPage {
   ): Promise<void> {
     const existing = await this.getWidgetsViaApi(viewKey, tabKey);
     const updated = existing.filter(w => w.key !== widgetKey);
-    await this.switchToJsonEditor();
-    const editor = new JsonEditor(this.page);
-    await editor.saveChanges(updated);
-    await this.switchToVisualEditor();
+    await this.saveWidgetsViaJsonEditor(viewKey, tabKey, updated, widgets =>
+      widgets.every(w => w.key !== widgetKey)
+    );
   }
 
   /**
@@ -238,10 +253,10 @@ export class IkoWidgetPage {
   ): Promise<void> {
     const existing = await this.getWidgetsViaApi(viewKey, tabKey);
     const updated = existing.map(w => (w.key === widgetKey ? {...w, ...patch} : w));
-    await this.switchToJsonEditor();
-    const editor = new JsonEditor(this.page);
-    await editor.saveChanges(updated);
-    await this.switchToVisualEditor();
+    await this.saveWidgetsViaJsonEditor(viewKey, tabKey, updated, widgets => {
+      const stored = widgets.find(w => w.key === widgetKey) as Record<string, unknown> | undefined;
+      return !!stored && Object.entries(patch).every(([field, value]) => stored[field] === value);
+    });
   }
 
   // ─── Assertions ─────────────────────────────────────────────────────

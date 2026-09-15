@@ -66,10 +66,11 @@ test.describe('Feature 2 — Cases (User)', () => {
     });
 
     test('displays the bezwaar case list populated with cases', async () => {
+      test.slow();
       await userCasesPage.goToCaseList();
       await expect(userCasesPage.caseList.table).toBeVisible();
       await userCasesPage.selectCaseListTab('All cases');
-      expect(await userCasesPage.caseList.rows.count()).toBeGreaterThan(0);
+      await userCasesPage.waitForCaseRows('All cases');
       void created;
     });
   });

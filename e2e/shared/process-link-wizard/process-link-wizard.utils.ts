@@ -162,6 +162,13 @@ export class ProcessLinkWizard {
     return this.page.locator(`[data-test-id^="${SELECT_PLUGIN_CONFIGURATION_ROW_TEST_ID_PREFIX}"]`);
   }
 
+  async pluginListColumnHeaders(): Promise<string[]> {
+    const columns = this.pluginList.locator('cds-list-header cds-list-column');
+    await expect.poll(() => columns.count(), {timeout: 15_000}).toBeGreaterThan(0);
+    await expect(this.pluginRows.first()).toBeVisible();
+    return columns.allInnerTexts();
+  }
+
   /**
    * @param id plugin *definition* key in a building block, plugin *configuration*
    * id in a case — the step lists definitions in the one and configurations in

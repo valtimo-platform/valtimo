@@ -88,7 +88,7 @@ export class CaseDetailsManagementWidgetsPage {
   // ─── Widget Wizard ────────────────────────────────────────────────
 
   get addWidgetButton() {
-    return this.page.getByTestId(WIDGET_EDITOR_TEST_IDS.addWidgetButton);
+    return this.page.getByTestId(WIDGET_EDITOR_TEST_IDS.addWidgetButton).first();
   }
 
   get wizardNextButton() {
@@ -249,13 +249,14 @@ export class CaseDetailsManagementWidgetsPage {
    */
   async openWidgetEditWizard(widgetTitle: string) {
     const list = new CarbonList(this.page);
+    const widgetTabUrl = this.page.url();
     await this.waitForWizardClosed();
 
     await expect(async () => {
       if ((await this.wizardHeading.count()) > 0) {
         if ((await this.wizardHeading.innerText()).trim() === 'Edit widget') return;
-        // A create wizard opened instead — dismiss it and try again.
-        await this.wizardCancelButton.click();
+        await this.page.goto(widgetTabUrl);
+        await this.page.waitForSelector('valtimo-widget-management-editor');
         await this.waitForWizardClosed();
       }
       await list.row(widgetTitle).click();
@@ -366,7 +367,7 @@ export class CaseDetailsManagementWidgetsPage {
   // ─── Divider Modal ─────────────────────────────────────────────────
 
   get addDividerButton() {
-    return this.page.getByTestId(WIDGET_EDITOR_TEST_IDS.addDividerButton);
+    return this.page.getByTestId(WIDGET_EDITOR_TEST_IDS.addDividerButton).first();
   }
 
   get dividerTitleInput() {

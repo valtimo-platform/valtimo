@@ -16,6 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {caseConfiguration} from './case-config';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import path from 'path';
 import {
   AUTO_KEY_INPUT_TEST_IDS,
@@ -52,7 +53,7 @@ export class CaseManagementPage {
   }
 
   get createCaseButton() {
-    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.createButton);
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.createButton).first();
   }
 
   get uploadCaseButton() {
@@ -104,6 +105,7 @@ export class CaseManagementPage {
     console.log('Navigate to Case Management...');
     await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
+    await new CarbonList(this.page).waitForLoaded();
   }
 
   // Case form
@@ -240,7 +242,7 @@ export class CaseManagementPage {
 
     // Handle draft override warning — check the confirmation checkbox
     if (await this.overrideCheckbox.isVisible()) {
-      await this.overrideCheckbox.locator('label').click();
+      await this.confirmDraftOverride();
     }
 
     const key = await this.configureKeyInput.inputValue();
@@ -273,9 +275,8 @@ export class CaseManagementPage {
     }
 
     // Handle draft override warning — check the confirmation checkbox
-    // Must click the inner label, not the cds-checkbox host, for the checkedChange event to fire
     if (await this.overrideCheckbox.isVisible()) {
-      await this.overrideCheckbox.locator('label').click();
+      await this.confirmDraftOverride();
     }
 
     const actualKey = await this.configureKeyInput.inputValue();
@@ -300,6 +301,41 @@ export class CaseManagementPage {
         {timeout: 15_000}
       )
       .catch(() => {});
+  }
+
+  private async awaitVersionChecksSettled(maxChecks = 10) {
+    for (let checks = 0; checks <= maxChecks; checks++) {
+      const answered = await this.page
+        .waitForResponse(
+          res => /\/management\/v1\/case-definition\/[^/?]+\/version/.test(res.url()),
+          {timeout: 1_500}
+        )
+        .then(() => true)
+        .catch(() => false);
+
+      if (!answered) return;
+    }
+
+    throw new Error(
+      `[case-management] The configure step fired more than ${maxChecks} version checks ` +
+        'and never settled.'
+    );
+  }
+
+  async confirmDraftOverride() {
+    await this.awaitVersionChecksSettled();
+
+    const input = this.overrideCheckbox.locator('input[type="checkbox"]');
+    const label = this.overrideCheckbox.locator('label');
+
+    await expect(async () => {
+      if (await input.isChecked()) {
+        await label.click();
+        await expect(input).not.toBeChecked({timeout: 2_000});
+      }
+      await label.click();
+      await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 3_000});
+    }).toPass({timeout: 20_000});
   }
 
   async awaitConfigureValidation() {
