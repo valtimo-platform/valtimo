@@ -1,0 +1,55 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "HTML",
+            "content": "This task form runs inside a building block, so it submits the building block document. The upload below has to end up on the zaak of the case, through the DOCUMENT_UPLOAD process of the <strong>case</strong> definition.",
+            "refreshOnChange": false,
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+            "label": "Subject",
+            "disabled": true,
+            "tableView": true,
+            "key": "subject",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "key": "pv.uploadedDocument",
+            "type": "documenten-api-file",
+            "input": true,
+            "label": "Upload een bestand",
+            "tableView": false,
+            "attributes": {
+                "data-testid": "document-upload-in-building-block-upload"
+            },
+            "validate": {
+                "required": true
+            },
+            "customOptions": {
+                "camera": false,
+                "status": "definitief",
+                "language": "nld",
+                "hideTitle": false,
+                "description": "Bijlage",
+                "maxFileSize": 1,
+                "documentType": "test",
+                "documentTitle": "Bijlage",
+                "confidentialityLevel": "zaakvertrouwelijk"
+            }
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "disableOnInvalid": true,
+            "tableView": false,
+            "showValidations": false
+        }
+    ]
+}

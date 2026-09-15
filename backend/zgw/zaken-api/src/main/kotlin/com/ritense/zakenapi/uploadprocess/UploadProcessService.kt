@@ -49,6 +49,7 @@ class UploadProcessService(
     private val catalogiService: CatalogiService,
 ) {
 
+    // documentId can be a building block document. Upload process is case-level — run it on the case document.
     fun startUploadResourceProcess(documentId: UUID, resourceId: String) {
         // Checked before the metadata is read, because the resource itself may no longer exist once it was added
         if (resourceService.getMetadataValueOrNull(resourceId, StorageMetadataKeys.DOCUMENT_URL) != null) {
@@ -69,7 +70,7 @@ class UploadProcessService(
         val result = runWithoutAuthorization {
             processDocumentService.startProcessForDocument(
                 StartProcessForDocumentRequest(
-                    JsonSchemaDocumentId.existingId(documentId),
+                    JsonSchemaDocumentId.existingId(caseDocumentId),
                     link.id.processDefinitionKey,
                     mapOf(RESOURCE_ID_PROCESS_VAR to resourceId)
                 )
