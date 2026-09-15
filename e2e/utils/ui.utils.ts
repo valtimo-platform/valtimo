@@ -6,14 +6,15 @@ export async function readSettledLabels(
   items: Locator,
   timeout = TRANSLATION_TIMEOUT
 ): Promise<string[]> {
+  let settledLabels: string[] = [];
   await expect
     .poll(async () => {
-      const labels = await items.allInnerTexts();
-      return labels.length > 0 && labels.every(label => label.trim() !== '');
+      settledLabels = (await items.allInnerTexts()).map(label => label.trim());
+      return settledLabels.length > 0 && settledLabels.every(Boolean);
     }, {timeout})
     .toBe(true);
 
-  return (await items.allInnerTexts()).map(label => label.trim());
+  return settledLabels;
 }
 
 export async function expectSettledLabels(
