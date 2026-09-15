@@ -878,10 +878,10 @@
       "editor": {
         "general": {
           "titlePlaceholder": "Migreer dossiers met status 'aanvraag-ontvangen'",
-          "sourceHint": "De versie van de zaakdefinitie waarvan dit plan de zaken migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die zaken in één stap hierheen, en een andere sleutel kiezen brengt zaken van die zaakdefinitie over naar deze.",
-          "sourceKey": "Bronzaakdefinitie",
-          "sourceKeyPlaceholder": "Kies een zaakdefinitie",
-          "targetKey": "Doelzaakdefinitie",
+          "sourceHint": "De versie van de dossierdefinitie waarvan dit plan de dossiers migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die dossiers in één stap hierheen, en een andere sleutel kiezen brengt dossiers van die dossierdefinitie over naar deze.",
+          "sourceKey": "Brondossierdefinitie",
+          "sourceKeyPlaceholder": "Kies een dossierdefinitie",
+          "targetKey": "Doeldossierdefinitie",
           "triggers": "Triggers",
           "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
           "triggeredByButton": "Handmatig starten via de UI-knop",
@@ -894,21 +894,21 @@
           "noConditions": "Geen condities — van toepassing op alle dossiers."
         },
         "dataMigration": {
-          "description": "Herstructureer dossiergegevens tijdens de migratie. Elke regel vult één doelveld (rechts) vanuit een bron (links): kopieer de waarde van een bestaand veld ('Pad'), zet een vaste 'Waarde', of maak het leeg ('Null'). De bron leest een waarde uit het zaakdocument; het doel is het veld waar die waarde naartoe wordt geschreven. Het doelveld is altijd verplicht."
+          "description": "Herstructureer dossiergegevens tijdens de migratie. Elke regel vult één doelveld (rechts) vanuit een bron (links): kopieer de waarde van een bestaand veld ('Pad'), zet een vaste 'Waarde', of maak het leeg ('Null'). De bron leest een waarde uit het dossierdocument; het doel is het veld waar die waarde naartoe wordt geschreven. Het doelveld is altijd verplicht."
         },
         "processMigration": {
-          "description": "Migreer lopende procesinstanties naar de procesdefinities van deze zaakversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit.",
+          "description": "Migreer lopende procesinstanties naar de procesdefinities van deze dossierversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit.",
           "activityMappingHint": "Koppel elke activiteit van het bronproces aan een activiteit van het doelproces — dit vertelt de engine waar elke lopende token naartoe gaat. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn."
         },
         "addBuildingBlock": {
-          "description": "Maak één of meer bouwblokken aan op elke gemigreerde zaak. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de zaakproces(sen) over in het bouwblok.",
-          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het zaakdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
-          "processMigrationHint": "Het bronproces is een zaakproces; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde zaakproces(sen) worden overgenomen in het bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
+          "description": "Maak één of meer bouwblokken aan op elk gemigreerd dossier. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de dossierproces(sen) over in het bouwblok.",
+          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het dossierdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een dossierproces; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde dossierproces(sen) worden overgenomen in het bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
         },
         "removeBuildingBlock": {
-          "description": "Verwijder één of meer bouwblokken van elke gemigreerde zaak. Alle direct aan de zaak gekoppelde bouwblokken met de opgegeven sleutel worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar de zaak.",
-          "dataMigrationHint": "Zet data terug naar de zaak voordat het bouwblok wordt verwijderd: elke bron leest uit het bouwblokdocument, elk doel schrijft naar het zaakdocument.",
-          "processMigrationHint": "Het bronproces is een bouwblokproces; het doelproces is een zaakproces. Het/de bouwblokproces(sen) worden teruggegeven aan de zaak en de business key wordt altijd teruggezet op de document-id van de zaak."
+          "description": "Verwijder één of meer bouwblokken van elk gemigreerd dossier. Alle direct aan het dossier gekoppelde bouwblokken met de opgegeven sleutel worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar het dossier.",
+          "dataMigrationHint": "Zet data terug naar het dossier voordat het bouwblok wordt verwijderd: elke bron leest uit het bouwblokdocument, elk doel schrijft naar het dossierdocument.",
+          "processMigrationHint": "Het bronproces is een bouwblokproces; het doelproces is een dossierproces. Het/de bouwblokproces(sen) worden teruggegeven aan het dossier en de business key wordt altijd teruggezet op de document-id van het dossier."
         }
       },
       "deleteModal": {
@@ -941,7 +941,7 @@
       },
       "noResults": {
         "title": "Geen migratieplannen",
-        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit zaaktype."
+        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit dossiertype."
       },
       "status": {
         "NOT_STARTED": "Niet gestart",
@@ -4011,8 +4011,8 @@
           "sourceKeyPlaceholder": "Kies een bouwsteen",
           "targetKey": "Doelbouwsteen",
           "whenItRuns": "Wanneer dit plan draait",
-          "whenItRunsHint": "Dit plan heeft geen eigen trigger en geen eigen condities. Het draait automatisch wanneer een zaak migreert naar een zaakdefinitieversie die {{key}} op versie {{versionTag}} koppelt, en wordt toegepast op elke bouwblokinstantie die die zaakmigratie naar deze versie brengt. Het wordt gesimuleerd als onderdeel van de dry run van die zaakmigratie.",
-          "chainOfPlansHint": "Een keten van migratieplannen moet de versie waarop een bouwblokinstantie staat verbinden met de versie die een zaak koppelt. Eén plan kan de hele sprong dekken — de source is dan de versie waarop de instantie werkelijk staat — of er is een plan per stap, ook een stap die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Verbindt niets de twee, of verbindt meer dan één keten ze, dan mislukt de zaakmigratie in plaats van te gokken. Draai de zaakmigratie eerst als dry run om de hele keten te controleren."
+          "whenItRunsHint": "Dit plan heeft geen eigen trigger en geen eigen condities. Het draait automatisch wanneer een dossier migreert naar een dossierdefinitieversie die {{key}} op versie {{versionTag}} koppelt, en wordt toegepast op elke bouwblokinstantie die die dossiermigratie naar deze versie brengt. Het wordt gesimuleerd als onderdeel van de dry run van die dossiermigratie.",
+          "chainOfPlansHint": "Een keten van migratieplannen moet de versie waarop een bouwblokinstantie staat verbinden met de versie die een dossier koppelt. Eén plan kan de hele sprong dekken — de source is dan de versie waarop de instantie werkelijk staat — of er is een plan per stap, ook een stap die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Verbindt niets de twee, of verbindt meer dan één keten ze, dan mislukt de dossiermigratie in plaats van te gokken. Draai de dossiermigratie eerst als dry run om de hele keten te controleren."
         },
         "dataMigration": {
           "description": "Verplaats of stel bouwblokgegevens in tijdens de migratie. Elke patch kopieert een waarde van een bronlocatie naar de doellocatie, zet een vaste waarde op het doel, of zet het doel op null. Het doelveld is verplicht."
@@ -4057,7 +4057,7 @@
         "status": "Migratiestatus",
         "instancesMigrated": "Instanties gemigreerd"
       },
-      "detailHint": "Wordt toegepast op een bouwblokinstantie zodra een zaakmigratie deze van {{source}} naar {{target}} verplaatst."
+      "detailHint": "Wordt toegepast op een bouwblokinstantie zodra een dossiermigratie deze van {{source}} naar {{target}} verplaatst."
     },
     "formDefinition": {
       "name": "Naam"
