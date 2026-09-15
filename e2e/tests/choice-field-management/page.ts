@@ -159,7 +159,7 @@ export class ChoiceFieldManagementPage {
     await this.valueInput.clear();
     await this.valueInput.fill(newValue);
 
-    await Promise.all([
+    const [response] = await Promise.all([
       this.page.waitForResponse(
         res =>
           new URL(res.url()).pathname === '/api/v1/choice-field-values' &&
@@ -167,6 +167,8 @@ export class ChoiceFieldManagementPage {
       ),
       this.submitButton.click(),
     ]);
+
+    expect(response.ok(), 'choice-field value PUT should succeed').toBeTruthy();
   }
 
   async goBackToChoiceFieldDetail() {
