@@ -1,0 +1,44 @@
+{
+    "title": "Bouwsteen opheffen met alleen een processMigration \u2014 het proces moet terug",
+    "key": "verhuizing-bouwstenen-opruimen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.3"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.3",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [],
+    "removeBuildingBlock": [
+        {
+            "buildingBlockKey": "inspectie-fotos",
+            "buildingBlockVersionTag": "1.0.0",
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "inspectie-fotos-process",
+                    "targetProcessDefinitionKey": "verhuizing-nazorg",
+                    "mapActivities": {
+                        "FotosUploadenTask": "nazorg_uitvoeren"
+                    },
+                    "setProcessVariables": [
+                        {
+                            "target": "pv:teruggegevenDoor",
+                            "value": "inspectie-fotos",
+                            "targetType": "string"
+                        }
+                    ],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ]
+}

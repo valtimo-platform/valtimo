@@ -1,0 +1,7 @@
+{
+    "key": "verhuizing-inspectie",
+    "name": "Verhuizing inspectie",
+    "description": "Woninginspectie die bij een verhuizing wordt uitgevoerd. Wordt tijdens migratie naar verhuizing 1.0.1 toegevoegd aan bestaande zaken.",
+    "versionTag": "1.0.0",
+    "final": false
+}

@@ -1,0 +1,95 @@
+{
+    "title": "Gegevens migreren \u2014 elke dataMigration-modus en elk targetType",
+    "key": "verhuizing-gegevens",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "gegevens"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/nieuwAdres"
+        },
+        {
+            "target": "doc:/toelichting",
+            "source": "doc:/nieuwAdres"
+        },
+        {
+            "target": "doc:/aantalKamers",
+            "source": "doc:/aantalPersonen",
+            "targetType": "integer"
+        },
+        {
+            "target": "doc:/sequenceNummer",
+            "source": "case:sequence",
+            "targetType": "long"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/geschatteWaarde",
+            "value": 123456.78,
+            "targetType": "double"
+        },
+        {
+            "target": "doc:/inspectieAkkoord",
+            "value": "true",
+            "targetType": "boolean"
+        },
+        {
+            "target": "doc:/notitie",
+            "value": "onbekend targetType blijft ongemoeid",
+            "targetType": "tekst"
+        },
+        {
+            "target": "doc:/inspectieStatus",
+            "source": "case:internalStatus"
+        },
+        {
+            "target": "doc:/gemigreerdDoor",
+            "source": "case:createdBy"
+        },
+        {
+            "target": "pv:gemigreerdViaDataMigration",
+            "value": "ja",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

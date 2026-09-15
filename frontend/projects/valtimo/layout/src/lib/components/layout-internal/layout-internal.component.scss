@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Contains `.cds--content`'s 3rem top margin, which otherwise collapsed out and moved the body box 48px down — Carbon positions body-appended menus against body's rect and only compensates for computed margins, so every combo box opened 48px too high.
 :host {
   display: flow-root;
 }

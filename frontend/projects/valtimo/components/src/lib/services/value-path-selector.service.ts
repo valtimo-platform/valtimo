@@ -69,6 +69,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     context: BlueprintContext,
     type: ValuePathType = ValuePathType.FIELD
   ): Observable<ValuePathItem[]> {
+    // Locals rather than shared instance state: selectors with different prefix sets can be in flight at once, and one call's prefixes would clobber another's.
     const cacheKey = this.buildCacheKey(context);
     const url = this.buildUrl(context);
 

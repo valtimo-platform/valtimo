@@ -1,0 +1,15 @@
+{
+    "scenario": "diep",
+    "aanvrager": {
+        "naam": "Sofia Rossi",
+        "email": "oud4@example.com"
+    },
+    "nieuwAdres": "Oudestraat 4, 7000 GG Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 2,
+    "woning": {
+        "oppervlakte": 90,
+        "energielabel": "C"
+    }
+}

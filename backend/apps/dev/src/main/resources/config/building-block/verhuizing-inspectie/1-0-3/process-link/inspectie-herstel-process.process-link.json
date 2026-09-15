@@ -1,0 +1,8 @@
+[
+    {
+        "activityId": "HerstelUitvoerenTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "herstel-uitvoeren"
+    }
+]

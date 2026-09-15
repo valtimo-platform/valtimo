@@ -1,0 +1,14 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-verhuizing-inspectie"
+    },
+    {
+        "activityId": "InspectieUitvoerenTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "inspectie-uitvoeren"
+    }
+]

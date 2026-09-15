@@ -54,6 +54,7 @@ class ValtimoImportTypes {
         const val BUILDING_BLOCK_FORM_FLOW_DEFINITION = "buildingblockformflowdefinition"
         const val CASE_BUILDING_BLOCK_LINK = "casebuildingblocklink"
         const val STARTABLE_ITEM = "startableitem"
+        const val CASE_DEFINITION_MIGRATION = "casedefinitionmigration"
 
         const val OBJECT_MANAGEMENT = "objectmanagement"
 

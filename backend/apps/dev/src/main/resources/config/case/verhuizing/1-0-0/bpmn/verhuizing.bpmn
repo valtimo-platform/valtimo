@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_verhuizing" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:message id="Message_all" name="all-activity-types-message"/>
+  <bpmn:signal id="Signal_all" name="all-activity-types-signal"/>
+  <bpmn:process id="verhuizing" name="Verhuizing" isExecutable="true" camunda:historyTimeToLive="180">
+
+    <!-- ===== Happy path (activity ids preserved across versions) ===== -->
+    <bpmn:startEvent id="StartEvent_1" name="Aanvraag ontvangen">
+      <bpmn:outgoing>Flow_start_registreer</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="registreer_ontvangst" name="Registreer ontvangst" camunda:expression="${execution.setVariable('spoed', valueResolverDelegateService.resolveValue(execution, 'doc:/spoed'))}">
+      <bpmn:incoming>Flow_start_registreer</bpmn:incoming>
+      <bpmn:outgoing>Flow_registreer_route</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gw_route" name="Uitgebreid?" default="Flow_route_spoed">
+      <bpmn:incoming>Flow_registreer_route</bpmn:incoming>
+      <bpmn:outgoing>Flow_route_spoed</bpmn:outgoing>
+      <bpmn:outgoing>Flow_route_exotic</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="gw_spoed" name="Spoed?" default="Flow_gwspoed_join">
+      <bpmn:incoming>Flow_route_spoed</bpmn:incoming>
+      <bpmn:outgoing>Flow_gwspoed_markeer</bpmn:outgoing>
+      <bpmn:outgoing>Flow_gwspoed_join</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="markeer_spoed" name="Markeer als spoed" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/status', 'spoed-behandeling')}">
+      <bpmn:incoming>Flow_gwspoed_markeer</bpmn:incoming>
+      <bpmn:outgoing>Flow_markeer_join</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gw_spoed_join">
+      <bpmn:incoming>Flow_gwspoed_join</bpmn:incoming>
+      <bpmn:incoming>Flow_markeer_join</bpmn:incoming>
+      <bpmn:outgoing>Flow_join_scenario</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="bepaal_scenario" name="Bepaal scenario" camunda:expression="${execution.setVariable('scenario', valueResolverDelegateService.resolveValue(execution, 'doc:/scenario'))}">
+      <bpmn:incoming>Flow_join_scenario</bpmn:incoming>
+      <bpmn:outgoing>Flow_scenario_afsluiten</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gw_afsluiten" name="Direct afsluiten?" default="Flow_afsluiten_beoordelen">
+      <bpmn:incoming>Flow_scenario_afsluiten</bpmn:incoming>
+      <bpmn:outgoing>Flow_afsluiten_afronden</bpmn:outgoing>
+      <bpmn:outgoing>Flow_afsluiten_beoordelen</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="beoordelen_verhuizing" name="Beoordelen verhuizing">
+      <bpmn:incoming>Flow_afsluiten_beoordelen</bpmn:incoming>
+      <bpmn:outgoing>Flow_beoordelen_afronden</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="afronden" name="Verhuizing afronden" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/status', 'afgehandeld')}">
+      <bpmn:incoming>Flow_beoordelen_afronden</bpmn:incoming>
+      <bpmn:incoming>Flow_afsluiten_afronden</bpmn:incoming>
+      <bpmn:outgoing>Flow_afronden_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_end" name="Verhuizing afgehandeld">
+      <bpmn:incoming>Flow_afronden_end</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- ===== Extended branch: one of every remaining activity type (never taken) ===== -->
+    <bpmn:scriptTask id="script_task" name="Script" scriptFormat="groovy">
+      <bpmn:incoming>Flow_route_exotic</bpmn:incoming>
+      <bpmn:outgoing>Flow_script_rule</bpmn:outgoing>
+      <bpmn:script>true</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:businessRuleTask id="business_rule_task" name="Business rule" camunda:decisionRef="dummy-decision" camunda:mapDecisionResult="singleResult" camunda:resultVariable="dummyResult">
+      <bpmn:incoming>Flow_script_rule</bpmn:incoming>
+      <bpmn:outgoing>Flow_rule_sub</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:subProcess id="sub_proces" name="Subproces">
+      <bpmn:incoming>Flow_rule_sub</bpmn:incoming>
+      <bpmn:outgoing>Flow_sub_call</bpmn:outgoing>
+      <bpmn:startEvent id="sub_start">
+        <bpmn:outgoing>Flow_substart_subuser</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:userTask id="sub_user_task" name="Subtaak">
+        <bpmn:incoming>Flow_substart_subuser</bpmn:incoming>
+        <bpmn:outgoing>Flow_subuser_subend</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:endEvent id="sub_end">
+        <bpmn:incoming>Flow_subuser_subend</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_substart_subuser" sourceRef="sub_start" targetRef="sub_user_task"/>
+      <bpmn:sequenceFlow id="Flow_subuser_subend" sourceRef="sub_user_task" targetRef="sub_end"/>
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="boundary_timer" name="Timeout" attachedToRef="sub_proces">
+      <bpmn:outgoing>Flow_boundary_exoticend</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerBoundaryDef">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="call_activity" name="Call activity" calledElement="dummy-subproces">
+      <bpmn:incoming>Flow_sub_call</bpmn:incoming>
+      <bpmn:outgoing>Flow_call_incsplit</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:inclusiveGateway id="inc_split" name="Inclusive split" default="Flow_incsplit_join">
+      <bpmn:incoming>Flow_call_incsplit</bpmn:incoming>
+      <bpmn:outgoing>Flow_incsplit_send</bpmn:outgoing>
+      <bpmn:outgoing>Flow_incsplit_manual</bpmn:outgoing>
+      <bpmn:outgoing>Flow_incsplit_join</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+    <bpmn:sendTask id="send_task" name="Send" camunda:expression="${true}">
+      <bpmn:incoming>Flow_incsplit_send</bpmn:incoming>
+      <bpmn:outgoing>Flow_send_incjoin</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:manualTask id="manual_task" name="Manual">
+      <bpmn:incoming>Flow_incsplit_manual</bpmn:incoming>
+      <bpmn:outgoing>Flow_manual_incjoin</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:inclusiveGateway id="inc_join" name="Inclusive join">
+      <bpmn:incoming>Flow_send_incjoin</bpmn:incoming>
+      <bpmn:incoming>Flow_manual_incjoin</bpmn:incoming>
+      <bpmn:incoming>Flow_incsplit_join</bpmn:incoming>
+      <bpmn:outgoing>Flow_incjoin_parsplit</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+    <bpmn:parallelGateway id="par_split" name="Parallel split">
+      <bpmn:incoming>Flow_incjoin_parsplit</bpmn:incoming>
+      <bpmn:outgoing>Flow_parsplit_receive</bpmn:outgoing>
+      <bpmn:outgoing>Flow_parsplit_eventgw</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:receiveTask id="receive_task" name="Receive">
+      <bpmn:incoming>Flow_parsplit_receive</bpmn:incoming>
+      <bpmn:outgoing>Flow_receive_parjoin</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:eventBasedGateway id="event_gateway" name="Event gateway">
+      <bpmn:incoming>Flow_parsplit_eventgw</bpmn:incoming>
+      <bpmn:outgoing>Flow_eventgw_timer</bpmn:outgoing>
+      <bpmn:outgoing>Flow_eventgw_message</bpmn:outgoing>
+      <bpmn:outgoing>Flow_eventgw_signal</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="timer_catch" name="Timer">
+      <bpmn:incoming>Flow_eventgw_timer</bpmn:incoming>
+      <bpmn:outgoing>Flow_timer_merge</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerCatchDef">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT5M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="message_catch" name="Message">
+      <bpmn:incoming>Flow_eventgw_message</bpmn:incoming>
+      <bpmn:outgoing>Flow_message_merge</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageCatchDef" messageRef="Message_all"/>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="signal_catch" name="Signal">
+      <bpmn:incoming>Flow_eventgw_signal</bpmn:incoming>
+      <bpmn:outgoing>Flow_signal_merge</bpmn:outgoing>
+      <bpmn:signalEventDefinition id="SignalCatchDef" signalRef="Signal_all"/>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="ev_merge" name="Event merge">
+      <bpmn:incoming>Flow_timer_merge</bpmn:incoming>
+      <bpmn:incoming>Flow_message_merge</bpmn:incoming>
+      <bpmn:incoming>Flow_signal_merge</bpmn:incoming>
+      <bpmn:outgoing>Flow_merge_parjoin</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:parallelGateway id="par_join" name="Parallel join">
+      <bpmn:incoming>Flow_receive_parjoin</bpmn:incoming>
+      <bpmn:incoming>Flow_merge_parjoin</bpmn:incoming>
+      <bpmn:outgoing>Flow_parjoin_exoticend</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:endEvent id="exotic_end" name="Uitgebreid afgehandeld">
+      <bpmn:incoming>Flow_parjoin_exoticend</bpmn:incoming>
+      <bpmn:incoming>Flow_boundary_exoticend</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- ===== Sequence flows ===== -->
+    <bpmn:sequenceFlow id="Flow_start_registreer" sourceRef="StartEvent_1" targetRef="registreer_ontvangst"/>
+    <bpmn:sequenceFlow id="Flow_registreer_route" sourceRef="registreer_ontvangst" targetRef="gw_route"/>
+    <bpmn:sequenceFlow id="Flow_route_spoed" sourceRef="gw_route" targetRef="gw_spoed"/>
+    <bpmn:sequenceFlow id="Flow_route_exotic" name="Uitgebreid" sourceRef="gw_route" targetRef="script_task">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_gwspoed_markeer" name="Ja" sourceRef="gw_spoed" targetRef="markeer_spoed">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${spoed == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_gwspoed_join" name="Nee" sourceRef="gw_spoed" targetRef="gw_spoed_join"/>
+    <bpmn:sequenceFlow id="Flow_markeer_join" sourceRef="markeer_spoed" targetRef="gw_spoed_join"/>
+    <bpmn:sequenceFlow id="Flow_join_scenario" sourceRef="gw_spoed_join" targetRef="bepaal_scenario"/>
+    <bpmn:sequenceFlow id="Flow_scenario_afsluiten" sourceRef="bepaal_scenario" targetRef="gw_afsluiten"/>
+    <bpmn:sequenceFlow id="Flow_afsluiten_afronden" name="Ja" sourceRef="gw_afsluiten" targetRef="afronden">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${scenario == 'gepland' || scenario == 'navolger'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_afsluiten_beoordelen" name="Nee" sourceRef="gw_afsluiten" targetRef="beoordelen_verhuizing"/>
+    <bpmn:sequenceFlow id="Flow_beoordelen_afronden" sourceRef="beoordelen_verhuizing" targetRef="afronden"/>
+    <bpmn:sequenceFlow id="Flow_afronden_end" sourceRef="afronden" targetRef="Event_end"/>
+    <bpmn:sequenceFlow id="Flow_script_rule" sourceRef="script_task" targetRef="business_rule_task"/>
+    <bpmn:sequenceFlow id="Flow_rule_sub" sourceRef="business_rule_task" targetRef="sub_proces"/>
+    <bpmn:sequenceFlow id="Flow_sub_call" sourceRef="sub_proces" targetRef="call_activity"/>
+    <bpmn:sequenceFlow id="Flow_boundary_exoticend" sourceRef="boundary_timer" targetRef="exotic_end"/>
+    <bpmn:sequenceFlow id="Flow_call_incsplit" sourceRef="call_activity" targetRef="inc_split"/>
+    <bpmn:sequenceFlow id="Flow_incsplit_send" sourceRef="inc_split" targetRef="send_task">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_incsplit_manual" sourceRef="inc_split" targetRef="manual_task">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_incsplit_join" sourceRef="inc_split" targetRef="inc_join"/>
+    <bpmn:sequenceFlow id="Flow_send_incjoin" sourceRef="send_task" targetRef="inc_join"/>
+    <bpmn:sequenceFlow id="Flow_manual_incjoin" sourceRef="manual_task" targetRef="inc_join"/>
+    <bpmn:sequenceFlow id="Flow_incjoin_parsplit" sourceRef="inc_join" targetRef="par_split"/>
+    <bpmn:sequenceFlow id="Flow_parsplit_receive" sourceRef="par_split" targetRef="receive_task"/>
+    <bpmn:sequenceFlow id="Flow_parsplit_eventgw" sourceRef="par_split" targetRef="event_gateway"/>
+    <bpmn:sequenceFlow id="Flow_receive_parjoin" sourceRef="receive_task" targetRef="par_join"/>
+    <bpmn:sequenceFlow id="Flow_eventgw_timer" sourceRef="event_gateway" targetRef="timer_catch"/>
+    <bpmn:sequenceFlow id="Flow_eventgw_message" sourceRef="event_gateway" targetRef="message_catch"/>
+    <bpmn:sequenceFlow id="Flow_eventgw_signal" sourceRef="event_gateway" targetRef="signal_catch"/>
+    <bpmn:sequenceFlow id="Flow_timer_merge" sourceRef="timer_catch" targetRef="ev_merge"/>
+    <bpmn:sequenceFlow id="Flow_message_merge" sourceRef="message_catch" targetRef="ev_merge"/>
+    <bpmn:sequenceFlow id="Flow_signal_merge" sourceRef="signal_catch" targetRef="ev_merge"/>
+    <bpmn:sequenceFlow id="Flow_merge_parjoin" sourceRef="ev_merge" targetRef="par_join"/>
+    <bpmn:sequenceFlow id="Flow_parjoin_exoticend" sourceRef="par_join" targetRef="exotic_end"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="verhuizing">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="160" y="202" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="registreer_ontvangst_di" bpmnElement="registreer_ontvangst">
+        <dc:Bounds x="250" y="180" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="gw_route_di" bpmnElement="gw_route">
+        <dc:Bounds x="410" y="195" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="gw_spoed_di" bpmnElement="gw_spoed">
+        <dc:Bounds x="520" y="195" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="markeer_spoed_di" bpmnElement="markeer_spoed">
+        <dc:Bounds x="495" y="300" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="gw_spoed_join_di" bpmnElement="gw_spoed_join">
+        <dc:Bounds x="630" y="195" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="beoordelen_verhuizing_di" bpmnElement="beoordelen_verhuizing">
+        <dc:Bounds x="730" y="180" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="afronden_di" bpmnElement="afronden">
+        <dc:Bounds x="890" y="180" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
+        <dc:Bounds x="1050" y="202" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="script_task_di" bpmnElement="script_task">
+        <dc:Bounds x="250" y="460" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="business_rule_task_di" bpmnElement="business_rule_task">
+        <dc:Bounds x="410" y="460" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sub_proces_di" bpmnElement="sub_proces" isExpanded="true">
+        <dc:Bounds x="560" y="420" width="360" height="200"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sub_start_di" bpmnElement="sub_start">
+        <dc:Bounds x="585" y="478" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sub_user_task_di" bpmnElement="sub_user_task">
+        <dc:Bounds x="660" y="460" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sub_end_di" bpmnElement="sub_end">
+        <dc:Bounds x="830" y="478" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="boundary_timer_di" bpmnElement="boundary_timer">
+        <dc:Bounds x="600" y="602" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="call_activity_di" bpmnElement="call_activity">
+        <dc:Bounds x="970" y="460" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="inc_split_di" bpmnElement="inc_split">
+        <dc:Bounds x="1130" y="475" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="send_task_di" bpmnElement="send_task">
+        <dc:Bounds x="1230" y="380" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="manual_task_di" bpmnElement="manual_task">
+        <dc:Bounds x="1230" y="560" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="inc_join_di" bpmnElement="inc_join">
+        <dc:Bounds x="1390" y="475" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="par_split_di" bpmnElement="par_split">
+        <dc:Bounds x="1490" y="475" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="receive_task_di" bpmnElement="receive_task">
+        <dc:Bounds x="1590" y="380" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="event_gateway_di" bpmnElement="event_gateway">
+        <dc:Bounds x="1590" y="560" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="timer_catch_di" bpmnElement="timer_catch">
+        <dc:Bounds x="1750" y="402" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="message_catch_di" bpmnElement="message_catch">
+        <dc:Bounds x="1750" y="502" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="signal_catch_di" bpmnElement="signal_catch">
+        <dc:Bounds x="1750" y="602" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ev_merge_di" bpmnElement="ev_merge">
+        <dc:Bounds x="1850" y="560" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="par_join_di" bpmnElement="par_join">
+        <dc:Bounds x="1960" y="475" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="exotic_end_di" bpmnElement="exotic_end">
+        <dc:Bounds x="2060" y="500" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_substart_subuser_di" bpmnElement="Flow_substart_subuser">
+        <di:waypoint x="621" y="496"/>
+        <di:waypoint x="660" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_subuser_subend_di" bpmnElement="Flow_subuser_subend">
+        <di:waypoint x="760" y="500"/>
+        <di:waypoint x="830" y="496"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_start_registreer_di" bpmnElement="Flow_start_registreer">
+        <di:waypoint x="196" y="220"/>
+        <di:waypoint x="250" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_registreer_route_di" bpmnElement="Flow_registreer_route">
+        <di:waypoint x="350" y="220"/>
+        <di:waypoint x="410" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_route_spoed_di" bpmnElement="Flow_route_spoed">
+        <di:waypoint x="460" y="220"/>
+        <di:waypoint x="520" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_route_exotic_di" bpmnElement="Flow_route_exotic">
+        <di:waypoint x="460" y="220"/>
+        <di:waypoint x="250" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_gwspoed_markeer_di" bpmnElement="Flow_gwspoed_markeer">
+        <di:waypoint x="570" y="220"/>
+        <di:waypoint x="495" y="340"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_gwspoed_join_di" bpmnElement="Flow_gwspoed_join">
+        <di:waypoint x="570" y="220"/>
+        <di:waypoint x="630" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_markeer_join_di" bpmnElement="Flow_markeer_join">
+        <di:waypoint x="595" y="340"/>
+        <di:waypoint x="630" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_join_scenario_di" bpmnElement="Flow_join_scenario">
+        <di:waypoint x="680" y="220"/>
+        <di:waypoint x="730" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_beoordelen_afronden_di" bpmnElement="Flow_beoordelen_afronden">
+        <di:waypoint x="830" y="220"/>
+        <di:waypoint x="890" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_afronden_end_di" bpmnElement="Flow_afronden_end">
+        <di:waypoint x="990" y="220"/>
+        <di:waypoint x="1050" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_script_rule_di" bpmnElement="Flow_script_rule">
+        <di:waypoint x="350" y="500"/>
+        <di:waypoint x="410" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_rule_sub_di" bpmnElement="Flow_rule_sub">
+        <di:waypoint x="510" y="500"/>
+        <di:waypoint x="560" y="520"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_sub_call_di" bpmnElement="Flow_sub_call">
+        <di:waypoint x="920" y="520"/>
+        <di:waypoint x="970" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_boundary_exoticend_di" bpmnElement="Flow_boundary_exoticend">
+        <di:waypoint x="636" y="620"/>
+        <di:waypoint x="2060" y="518"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_call_incsplit_di" bpmnElement="Flow_call_incsplit">
+        <di:waypoint x="1070" y="500"/>
+        <di:waypoint x="1130" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_incsplit_send_di" bpmnElement="Flow_incsplit_send">
+        <di:waypoint x="1180" y="500"/>
+        <di:waypoint x="1230" y="420"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_incsplit_manual_di" bpmnElement="Flow_incsplit_manual">
+        <di:waypoint x="1180" y="500"/>
+        <di:waypoint x="1230" y="600"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_incsplit_join_di" bpmnElement="Flow_incsplit_join">
+        <di:waypoint x="1180" y="500"/>
+        <di:waypoint x="1390" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_send_incjoin_di" bpmnElement="Flow_send_incjoin">
+        <di:waypoint x="1330" y="420"/>
+        <di:waypoint x="1390" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_manual_incjoin_di" bpmnElement="Flow_manual_incjoin">
+        <di:waypoint x="1330" y="600"/>
+        <di:waypoint x="1390" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_incjoin_parsplit_di" bpmnElement="Flow_incjoin_parsplit">
+        <di:waypoint x="1440" y="500"/>
+        <di:waypoint x="1490" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_parsplit_receive_di" bpmnElement="Flow_parsplit_receive">
+        <di:waypoint x="1540" y="500"/>
+        <di:waypoint x="1590" y="420"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_parsplit_eventgw_di" bpmnElement="Flow_parsplit_eventgw">
+        <di:waypoint x="1540" y="500"/>
+        <di:waypoint x="1590" y="585"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_receive_parjoin_di" bpmnElement="Flow_receive_parjoin">
+        <di:waypoint x="1690" y="420"/>
+        <di:waypoint x="1960" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_eventgw_timer_di" bpmnElement="Flow_eventgw_timer">
+        <di:waypoint x="1640" y="585"/>
+        <di:waypoint x="1750" y="420"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_eventgw_message_di" bpmnElement="Flow_eventgw_message">
+        <di:waypoint x="1640" y="585"/>
+        <di:waypoint x="1750" y="520"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_eventgw_signal_di" bpmnElement="Flow_eventgw_signal">
+        <di:waypoint x="1640" y="585"/>
+        <di:waypoint x="1750" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_timer_merge_di" bpmnElement="Flow_timer_merge">
+        <di:waypoint x="1786" y="420"/>
+        <di:waypoint x="1850" y="585"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_message_merge_di" bpmnElement="Flow_message_merge">
+        <di:waypoint x="1786" y="520"/>
+        <di:waypoint x="1850" y="585"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_signal_merge_di" bpmnElement="Flow_signal_merge">
+        <di:waypoint x="1786" y="620"/>
+        <di:waypoint x="1850" y="585"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_merge_parjoin_di" bpmnElement="Flow_merge_parjoin">
+        <di:waypoint x="1900" y="585"/>
+        <di:waypoint x="1960" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_parjoin_exoticend_di" bpmnElement="Flow_parjoin_exoticend">
+        <di:waypoint x="2010" y="500"/>
+        <di:waypoint x="2060" y="518"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="bepaal_scenario_di" bpmnElement="bepaal_scenario">
+        <dc:Bounds x="700" y="180" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="gw_afsluiten_di" bpmnElement="gw_afsluiten">
+        <dc:Bounds x="835" y="195" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -88,6 +88,18 @@
       </cds-tab>
     }
 
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.MIGRATION}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.migration' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.MIGRATION)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-migration></valtimo-building-block-management-migration>
+        }
+      </cds-tab>
+    }
+
     @for (customTab of customTabs; track customTab.tabRoute) {
       @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
         <cds-tab

@@ -1,0 +1,8 @@
+{
+    "key": "subproces-naar-bouwsteen",
+    "name": "Subproces naar bouwsteen",
+    "versionTag": "2.0.0",
+    "final": false,
+    "canHaveAssignee": true,
+    "autoAssignTasks": false
+}

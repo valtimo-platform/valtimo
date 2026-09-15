@@ -1,0 +1,20 @@
+{
+    "title": "Bron die niet gedeployed is (selecteert 0 zaken)",
+    "key": "verhuizing-bron-niet-gedeployed",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "9.9.9"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "9.9.9",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": []
+}

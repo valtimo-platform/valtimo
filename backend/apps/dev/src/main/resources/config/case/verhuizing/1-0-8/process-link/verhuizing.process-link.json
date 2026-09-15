@@ -1,0 +1,41 @@
+[
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-verhuizing"
+    },
+    {
+        "activityId": "beoordelen_verhuizing",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "beoordelen-verhuizing"
+    },
+    {
+        "activityId": "CallInspectieActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "verhuizing-inspectie",
+        "buildingBlockDefinitionVersionTag": "1.0.5",
+        "inputMappings": [
+            {
+                "source": "doc:/aanvrager/naam",
+                "target": "doc:/aanvragerNaam"
+            },
+            {
+                "source": "doc:/nieuwAdres",
+                "target": "doc:/nieuwAdres"
+            },
+            {
+                "source": "doc:/status",
+                "target": "doc:/inspectieStatus"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/inspectieStatus",
+                "target": "doc:/inspectieStatus"
+            }
+        ]
+    }
+]

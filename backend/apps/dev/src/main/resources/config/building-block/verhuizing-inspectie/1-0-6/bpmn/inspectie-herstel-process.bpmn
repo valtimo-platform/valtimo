@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_inspectie_herstel" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="inspectie-herstel-process" name="Inspectieherstel" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Herstel gestart">
+      <bpmn:outgoing>Flow_Start_To_Herstel</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="HerstelUitvoerenTask" name="Herstel uitvoeren">
+      <bpmn:incoming>Flow_Start_To_Herstel</bpmn:incoming>
+      <bpmn:outgoing>Flow_Herstel_To_Registreren</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="RegistreerHerstelTask" name="Registreer herstel" camunda:expression="${execution.setVariable('herstelAfgerond', true)}">
+      <bpmn:incoming>Flow_Herstel_To_Registreren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Registreren_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent" name="Herstel afgerond">
+      <bpmn:incoming>Flow_Registreren_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Herstel" sourceRef="StartEvent" targetRef="HerstelUitvoerenTask" />
+    <bpmn:sequenceFlow id="Flow_Herstel_To_Registreren" sourceRef="HerstelUitvoerenTask" targetRef="RegistreerHerstelTask" />
+    <bpmn:sequenceFlow id="Flow_Registreren_To_End" sourceRef="RegistreerHerstelTask" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="inspectie-herstel-process">
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="160" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="HerstelUitvoerenTask_di" bpmnElement="HerstelUitvoerenTask">
+        <dc:Bounds x="250" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RegistreerHerstelTask_di" bpmnElement="RegistreerHerstelTask">
+        <dc:Bounds x="410" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="572" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Herstel_di" bpmnElement="Flow_Start_To_Herstel">
+        <di:waypoint x="196" y="120"/><di:waypoint x="250" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Herstel_To_Registreren_di" bpmnElement="Flow_Herstel_To_Registreren">
+        <di:waypoint x="350" y="120"/><di:waypoint x="410" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Registreren_To_End_di" bpmnElement="Flow_Registreren_To_End">
+        <di:waypoint x="510" y="120"/><di:waypoint x="572" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

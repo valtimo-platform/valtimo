@@ -1,0 +1,119 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Verhuizing aanvragen",
+            "content": "Vul onderstaande gegevens in om een verhuizing aan te vragen.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvrager.naam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "start-form-verhuizing-naam"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
+        },
+        {
+            "key": "aanvrager.emailadres",
+            "type": "textfield",
+            "input": true,
+            "label": "E-mailadres",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-emailadres"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "jan.jansen@example.com"
+        },
+        {
+            "key": "nieuwAdres",
+            "type": "textfield",
+            "input": true,
+            "label": "Nieuw adres",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-nieuw-adres"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Dorpsstraat 1, 1234 AB Testdorp"
+        },
+        {
+            "key": "spoed",
+            "type": "checkbox",
+            "input": true,
+            "label": "Spoedbehandeling",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-spoed"
+            },
+            "defaultValue": false
+        },
+        {
+            "key": "aantalPersonen",
+            "type": "number",
+            "input": true,
+            "label": "Aantal personen",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-aantal-personen"
+            },
+            "defaultValue": 2
+        },
+        {
+            "key": "oppervlakte",
+            "type": "number",
+            "input": true,
+            "label": "Oppervlakte (m²)",
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-verhuizing-oppervlakte"
+            },
+            "defaultValue": 85
+        },
+        {
+            "key": "verhuisdatum",
+            "type": "datetime",
+            "input": true,
+            "label": "Verhuisdatum",
+            "tableView": true,
+            "enableTime": false,
+            "format": "yyyy-MM-dd",
+            "customOptions": {
+                "saveAs": "text",
+                "dateFormat": "yyyy-MM-dd"
+            },
+            "attributes": {
+                "data-testid": "start-form-verhuizing-verhuisdatum"
+            },
+            "defaultValue": "2026-09-01"
+        },
+        {
+            "key": "status",
+            "type": "hidden",
+            "input": true,
+            "label": "Status",
+            "tableView": false,
+            "defaultValue": "ingediend"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Verhuizing aanvragen",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

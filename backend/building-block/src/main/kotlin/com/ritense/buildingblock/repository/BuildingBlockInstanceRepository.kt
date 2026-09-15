@@ -25,4 +25,14 @@ interface BuildingBlockInstanceRepository :
     fun findByDocumentId(documentId: UUID): BuildingBlockInstance?
     fun findByProcessInstanceId(processInstanceId: String): BuildingBlockInstance?
     fun findAllByCaseDocumentId(caseDocumentId: UUID): List<BuildingBlockInstance>
+
+    /** The blocks a case owns directly. Nested blocks carry the same `caseDocumentId`, so they are excluded by their parent link and reached from their own parent instead. */
+    fun findAllByCaseDocumentIdAndParentBuildingBlockInstanceIdIsNull(
+        caseDocumentId: UUID,
+    ): List<BuildingBlockInstance>
+
+    /** The building blocks a *parent building block* owns directly. */
+    fun findAllByParentBuildingBlockInstanceId(
+        parentBuildingBlockInstanceId: UUID,
+    ): List<BuildingBlockInstance>
 }

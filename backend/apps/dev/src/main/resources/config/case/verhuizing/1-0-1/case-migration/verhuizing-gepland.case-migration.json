@@ -1,0 +1,55 @@
+{
+    "title": "Geplande migratie (scheduledAtDate in het verleden), op afgesloten zaken",
+    "key": "verhuizing-gepland",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "scheduledAtDate": "2026-01-01T03:00:00"
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "gepland"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/gemigreerdDoor",
+            "value": "verhuizing-gepland",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

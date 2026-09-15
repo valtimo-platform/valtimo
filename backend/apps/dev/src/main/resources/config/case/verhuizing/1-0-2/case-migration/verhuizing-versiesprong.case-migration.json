@@ -1,0 +1,61 @@
+{
+    "title": "Versiesprong 1.0.0 -> 1.0.2 in \u00e9\u00e9n keer, langs 1.0.1 heen",
+    "key": "verhuizing-versiesprong",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "versiesprong"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {
+                "registreer_ontvangst": "registreer_ontvangst_v3",
+                "markeer_spoed": "markeer_spoed_v3",
+                "beoordelen_verhuizing": "beoordelen_verhuizing_v3",
+                "afronden": "afronden_v3",
+                "script_task": "script_task_v3",
+                "business_rule_task": "business_rule_task_v3",
+                "send_task": "send_task_v3",
+                "manual_task": "manual_task_v3",
+                "receive_task": "receive_task_v3",
+                "call_activity": "call_activity_v3"
+            },
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}
