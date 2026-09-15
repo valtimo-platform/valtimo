@@ -30,4 +30,7 @@ const EMPTY_BPMN = `
 </bpmn:definitions>
 `;
 
-export {EMPTY_BPMN};
+// process_link.activity_id is varchar(64) — longer ids fail on save
+const MAX_ACTIVITY_ID_LENGTH = 64;
+
+export {EMPTY_BPMN, MAX_ACTIVITY_ID_LENGTH};
