@@ -187,7 +187,7 @@ test.describe('Case management', () => {
         test('Duplicate key shows validation error', async () => {
           // Arrange
           await testPage.addListColumnButton.click();
-          await testPage.keyInput.fill(UI_COLUMN_1.key);
+          await testPage.fillKeyManually(UI_COLUMN_1.key);
 
           // Assert
           await testPage.assertSaveButtonDisabled();
