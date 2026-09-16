@@ -79,7 +79,7 @@ const uploaderDisplayComponents = [
     input: true,
     key: 'customOptions.subtitle',
     label: 'Subtitle',
-    placeholder: 'Title',
+    placeholder: 'Subtitle',
     tooltip: 'Leave empty to hide subtitle',
     weight: 50,
     validate: {
