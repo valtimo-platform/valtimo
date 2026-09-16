@@ -182,8 +182,7 @@ test.describe('Feature 2 — Cases (User)', () => {
       await userCasesPage.startSubProcess(USER_CASES_CONFIG.changeNameProcess);
 
       // The process-start form opens as an HTML form — submit it to start the process.
-      await expect(userCasesPage.taskDetailDialog.first()).toBeVisible({timeout: 60_000});
-      await expect(userCasesPage.formStartButton).toBeVisible({timeout: 60_000});
+      await expect(userCasesPage.formStartButton).toBeVisible({timeout: 15_000});
       await userCasesPage.submitFormStart();
 
       // The new user task appears in the task list panel.

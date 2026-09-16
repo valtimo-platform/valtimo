@@ -62,21 +62,7 @@ export class CarbonToggle {
     const targets = [this.host.locator('label').first(), this.switchControl];
     const target = targets[attempt % targets.length];
 
-    await this.dismissOpenTooltip();
-    await target.scrollIntoViewIfNeeded();
     await target.click({timeout: 5_000});
-  }
-
-  private async dismissOpenTooltip(): Promise<void> {
-    const page = this.host.page();
-    const openTooltip = page.locator('.cds--popover--open');
-    if (!(await openTooltip.count())) return;
-
-    await page.mouse.move(0, 0);
-    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-    await expect(openTooltip)
-      .toHaveCount(0, {timeout: 3_000})
-      .catch(() => {});
   }
 
   async enable() {

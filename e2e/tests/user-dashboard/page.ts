@@ -18,7 +18,6 @@ import {expect, type Locator, type Page} from '@playwright/test';
 import {endpoints} from '../../api/endpoints';
 import {DASHBOARD_TEST_IDS, DASHBOARD_WIDGET_TEST_ID_PREFIX} from '../../constants';
 import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/api.utils';
-import {startCaseOnAnyVersion} from '../../utils/case.utils';
 import {USER_DASHBOARD_CONFIG} from './user-dashboard-config';
 
 /** Widget configuration as returned by the management API. */
@@ -235,12 +234,18 @@ export class UserDashboardPage {
 
   /** Creates a bezwaar case, which increases the counts the seeded widgets report. */
   async createCaseViaApi(): Promise<string> {
-    const response = await startCaseOnAnyVersion<{document: {id: string}}>({
-      endpoint: USER_DASHBOARD_CONFIG.processDocumentEndpoint,
-      caseDefinitionKey: USER_DASHBOARD_CONFIG.caseDefinitionKey,
-      processDefinitionKey: USER_DASHBOARD_CONFIG.processDefinitionKey,
-      preferredVersionTag: USER_DASHBOARD_CONFIG.caseDefinitionVersionTag,
-    });
+    const response = await apiPost<{document: {id: string}}>(
+      USER_DASHBOARD_CONFIG.processDocumentEndpoint,
+      {
+        processDefinitionKey: USER_DASHBOARD_CONFIG.processDefinitionKey,
+        request: {
+          definition: USER_DASHBOARD_CONFIG.caseDefinitionKey,
+          caseDefinitionKey: USER_DASHBOARD_CONFIG.caseDefinitionKey,
+          caseDefinitionVersionTag: USER_DASHBOARD_CONFIG.caseDefinitionVersionTag,
+          content: {},
+        },
+      }
+    );
     return response.document.id;
   }
 

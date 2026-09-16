@@ -16,8 +16,7 @@
 
 import {expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete} from '../../utils/api.utils';
-import {startCaseOnAnyVersion} from '../../utils/case.utils';
+import {apiDelete, apiPost} from '../../utils/api.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
 import {openAndSelectOption} from '../../utils/ui.utils';
 
@@ -33,14 +32,17 @@ export class UserCasesPage {
   // ─── API helpers ─────────────────────────────────────────────────
 
   async createCaseViaApi(): Promise<CreatedCase> {
-    const response = await startCaseOnAnyVersion<{
+    const response = await apiPost<{
       document: {id: string; sequence: number};
       processInstanceId: string;
-    }>({
-      endpoint: USER_CASES_CONFIG.processDocumentEndpoint,
-      caseDefinitionKey: USER_CASES_CONFIG.caseDefinitionKey,
+    }>(USER_CASES_CONFIG.processDocumentEndpoint, {
       processDefinitionKey: USER_CASES_CONFIG.processDefinitionKey,
-      preferredVersionTag: USER_CASES_CONFIG.caseDefinitionVersionTag,
+      request: {
+        definition: USER_CASES_CONFIG.caseDefinitionKey,
+        caseDefinitionKey: USER_CASES_CONFIG.caseDefinitionKey,
+        caseDefinitionVersionTag: USER_CASES_CONFIG.caseDefinitionVersionTag,
+        content: {},
+      },
     });
     return {
       documentId: response.document.id,
@@ -239,7 +241,7 @@ export class UserCasesPage {
   }
 
   get formStartButton(): Locator {
-    return this.taskDetailDialog.getByRole('form').getByRole('button').first();
+    return this.taskDetailDialog.getByRole('button', {name: 'Start', exact: true});
   }
 
   // The task-detail form opened from the case-management case detail renders
@@ -251,9 +253,7 @@ export class UserCasesPage {
   get taskFormStartButton(): Locator {
     return this.page
       .locator('valtimo-task-detail-content')
-      .getByRole('form')
-      .getByRole('button')
-      .first();
+      .getByRole('button', {name: 'Start', exact: true});
   }
 
   // ─── Actions ─────────────────────────────────────────────────────
