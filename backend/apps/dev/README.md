@@ -51,4 +51,4 @@ written before the configuration exists — which is tolerated: they carry the d
 so they resolve as soon as the importer runs, and its `afterImport` retires the configuration issues
 raised in the meantime.
 
-See §22 of `plugin-host/docs/external-plugin-system-plan.md` for the descriptor format.
+See `plugin-host/docs/auto-deployment.md` for the descriptor format.

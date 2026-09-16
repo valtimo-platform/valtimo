@@ -77,4 +77,22 @@ describe("plugin-logs route", () => {
     await get("?page=-5&size=10000");
     expect(logRepository.query).toHaveBeenCalledWith("cfg-1", expect.objectContaining({ page: 0, size: 100 }));
   });
+
+  it("applies the admin per-IP rate limit with 429 once the budget is spent", async () => {
+    const limited = await buildTestApp(async (a) => {
+      await a.register(pluginLogRoutes, {
+        logRepository: logRepository as never,
+        config: testConfig({ ADMIN_RATE_LIMIT_PER_MINUTE: 2 }),
+      });
+    });
+    try {
+      const fire = () =>
+        limited.inject({ method: "GET", url: LOGS_PATH, headers: signHeaders("GET", LOGS_PATH) });
+      expect((await fire()).statusCode).toBe(200);
+      expect((await fire()).statusCode).toBe(200);
+      expect((await fire()).statusCode).toBe(429);
+    } finally {
+      await limited.close();
+    }
+  });
 });

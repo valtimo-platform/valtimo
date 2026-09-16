@@ -34,12 +34,16 @@ interface CloudEventJson {
   data?: { userId?: string; roles?: string[]; resultType?: string; resultId?: string; result?: unknown };
 }
 
+// Mode and TTL are part of the key AND the queue name, like the plugin host: a settings change
+// then declares a fresh consumer on a fresh queue instead of re-asserting the existing queue with
+// different arguments (a RabbitMQ 406 channel error).
 function brokerKey(b: EventBrokerConfig): string {
-  return `${b.amqpUrl} ${b.exchange} ${b.exchangeType}`;
+  return `${b.amqpUrl} ${b.exchange} ${b.exchangeType} ${b.queueMode} ${b.queueTtlMs ?? ""}`;
 }
 
 function queueName(b: EventBrokerConfig, hostId: string): string {
-  return `valtimo-external-apps.${b.exchange}.${hostId}.${b.queueMode}`;
+  const base = `valtimo-external-apps.${b.exchange}.${hostId}.${b.queueMode}`;
+  return b.queueMode === "durable" && b.queueTtlMs != null ? `${base}.t${b.queueTtlMs}` : base;
 }
 
 // Fixed reconnect delay. The plugin host uses exponential backoff with jitter; a flat delay keeps

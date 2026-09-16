@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-import type { FastifyPluginCallback } from "fastify";
+import type { FastifyInstance } from "fastify";
 import type { LogRepository } from "../db/log-repository.js";
 import type { AppConfig } from "../models/index.js";
 import { createHmacAuthHook } from "../security/hmac-auth.js";
+import { registerRouteRateLimit } from "../security/route-rate-limit.js";
 
 interface PluginLogRoutesOptions {
   logRepository: LogRepository;
   config: AppConfig;
 }
 
-export const pluginLogRoutes: FastifyPluginCallback<PluginLogRoutesOptions> = (
-  fastify,
-  { logRepository, config },
-  done
-) => {
+export async function pluginLogRoutes(
+  fastify: FastifyInstance,
+  { logRepository, config }: PluginLogRoutesOptions
+): Promise<void> {
+  // Same per-IP budget as the other HMAC-authenticated admin routes — counted before the HMAC
+  // check, so this route is not an unthrottled ADMIN_TOKEN brute-force surface.
+  await registerRouteRateLimit(fastify, config.ADMIN_RATE_LIMIT_PER_MINUTE);
   const hmacAuth = createHmacAuthHook(config.ADMIN_TOKEN);
 
   fastify.get<{
@@ -52,6 +55,4 @@ export const pluginLogRoutes: FastifyPluginCallback<PluginLogRoutesOptions> = (
       return reply.code(200).send({ ...result, page, size });
     }
   );
-
-  done();
-};
+}
