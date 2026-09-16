@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {isDeepStrictEqual} from 'node:util';
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../../shared/carbon-list/carbon-list.utils';
 import {JSON_EDITOR_SAVE_URLS, JsonEditor} from '../../../shared/json-editor/json-editor.utils';
@@ -255,7 +256,12 @@ export class IkoWidgetPage {
     const updated = existing.map(w => (w.key === widgetKey ? {...w, ...patch} : w));
     await this.saveWidgetsViaJsonEditor(viewKey, tabKey, updated, widgets => {
       const stored = widgets.find(w => w.key === widgetKey) as Record<string, unknown> | undefined;
-      return !!stored && Object.entries(patch).every(([field, value]) => stored[field] === value);
+      // A patch value may be an array or object, and reading it back parses fresh
+      // references, so `===` would never hold and the wait would time out.
+      return (
+        !!stored &&
+        Object.entries(patch).every(([field, value]) => isDeepStrictEqual(stored[field], value))
+      );
     });
   }
 
