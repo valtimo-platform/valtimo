@@ -157,8 +157,12 @@ export class LoggingPage {
     await this.list.waitForLoaded();
   }
 
-  /** Resolves on the next successful logging query, or after the timeout if none is fired. */
-  private async waitForLogQuery(timeout = LOG_QUERY_TIMEOUT) {
+  /**
+   * Resolves on the next successful logging query, or after the timeout if none is fired. Both
+   * callers tolerate a missing response, so the bound has to stay well inside the 30s test
+   * timeout — the long LOG_QUERY_TIMEOUT belongs on waits where a response is required.
+   */
+  private async waitForLogQuery(timeout = 15_000) {
     return this.page
       .waitForResponse(res => res.url().includes('/api/management/v1/logging') && res.ok(), {
         timeout,
