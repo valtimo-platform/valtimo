@@ -17,7 +17,7 @@
 import {TestBed} from '@angular/core/testing';
 import {PageHeaderService} from '@valtimo/components';
 import {UserSettings, UserSettingsService} from '@valtimo/shared';
-import {of, Subject, throwError} from 'rxjs';
+import {of, ReplaySubject, Subject, throwError} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CaseDetailLayout} from '../models';
 import {CaseDetailLayoutService} from './case-detail-layout.service';
@@ -143,16 +143,20 @@ describe('CaseDetailLayoutService', () => {
     expect(userSettingsService.saveUserSettings).not.toHaveBeenCalled();
   });
 
-  it('stores only the width the user stopped at when two drags follow each other quickly', () => {
-    const settings$ = new Subject<UserSettings>();
+  it('ends on the width the user stopped at when two drags follow each other quickly', () => {
+    const settings$ = new ReplaySubject<UserSettings>(1);
     service = createServiceWithPendingSettings(settings$);
 
     service.saveTaskPanelWidth(600);
     service.saveTaskPanelWidth(700);
     settings$.next({compactMode: true, taskPanelWidth: 412});
 
-    expect(userSettingsService.saveUserSettings).toHaveBeenCalledTimes(1);
-    expect(userSettingsService.saveUserSettings).toHaveBeenCalledWith({
+    const savedWidths = userSettingsService.saveUserSettings.calls
+      .allArgs()
+      .map(([settings]) => (settings as UserSettings).taskPanelWidth);
+
+    expect(savedWidths).toEqual([600, 700]);
+    expect(userSettingsService.saveUserSettings.calls.mostRecent().args[0]).toEqual({
       compactMode: true,
       taskPanelWidth: 700,
     });

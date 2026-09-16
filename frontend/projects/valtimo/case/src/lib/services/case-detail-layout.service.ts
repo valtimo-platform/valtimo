@@ -20,6 +20,7 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  concatMap,
   EMPTY,
   filter,
   map,
@@ -289,13 +290,14 @@ export class CaseDetailLayoutService implements OnDestroy {
   }
 
   /**
-   * Saves run one at a time, the latest drag cancelling the one before it, so a slow request for an
-   * earlier width cannot land after a newer one and persist a width the user has already left.
+   * Saves run one at a time, each waiting for the one before it to finish. Cancelling a request
+   * instead would not be enough: the server may already have received it, and as it reads and
+   * rewrites the whole settings record it could still store an earlier width after a newer one.
    */
   private openTaskPanelWidthSaveQueue(): Subscription {
     return this._taskPanelWidthToSave$
       .pipe(
-        switchMap(widthToSave =>
+        concatMap(widthToSave =>
           this.userSettingsService.getUserSettings().pipe(
             take(1),
             switchMap(settings =>
