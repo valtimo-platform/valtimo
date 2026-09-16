@@ -31,9 +31,13 @@ class TestWidgetProcess extends WidgetProcess {
   }
 }
 
-function startableItem(key: string, processDefinitionId: string | null): StartableItem {
+function startableItem(
+  key: string,
+  processDefinitionId: string | null,
+  type: 'PROCESS' | 'BUILDING_BLOCK' = 'PROCESS'
+): StartableItem {
   return {
-    type: 'PROCESS',
+    type,
     name: key,
     key,
     versionTag: null,
@@ -91,6 +95,35 @@ describe('WidgetProcess', () => {
     widget.canCreateCamundaExecution$.subscribe(value => (canCreate = value));
 
     expect(canCreate).toBe(false);
+  });
+
+  it('withholds the process when only a building block carries the configured key', () => {
+    const widget = new TestWidgetProcess(
+      documentServiceStub([startableItem('test-process', 'test-process:1:abc', 'BUILDING_BLOCK')])
+    );
+    widget.setDocumentId('a-document-id');
+    widget.setWidgetConfiguration(widgetConfiguration('test-process'));
+
+    let canCreate: boolean | undefined;
+    widget.canCreateCamundaExecution$.subscribe(value => (canCreate = value));
+
+    expect(canCreate).toBe(false);
+  });
+
+  it('offers the process when a building block shares its key and the process is startable', () => {
+    const widget = new TestWidgetProcess(
+      documentServiceStub([
+        startableItem('test-process', 'test-process:1:abc', 'BUILDING_BLOCK'),
+        startableItem('test-process', 'test-process:1:abc'),
+      ])
+    );
+    widget.setDocumentId('a-document-id');
+    widget.setWidgetConfiguration(widgetConfiguration('test-process'));
+
+    let canCreate: boolean | undefined;
+    widget.canCreateCamundaExecution$.subscribe(value => (canCreate = value));
+
+    expect(canCreate).toBe(true);
   });
 
   it('withholds the process when the widget configures no process at all', () => {

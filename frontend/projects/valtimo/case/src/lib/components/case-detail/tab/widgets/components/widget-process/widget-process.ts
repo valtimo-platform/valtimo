@@ -56,7 +56,8 @@ export class WidgetProcess {
       const processDefinitionKey = widgetConfiguration?.actions?.[0]?.processDefinitionKey;
 
       return !!startableItems?.some(
-        (item: StartableItem) => item.key === processDefinitionKey && !!item.processDefinitionId
+        (item: StartableItem) =>
+          item.type === 'PROCESS' && item.key === processDefinitionKey && !!item.processDefinitionId
       );
     })
   );
