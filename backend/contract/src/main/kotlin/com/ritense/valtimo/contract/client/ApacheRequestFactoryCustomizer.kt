@@ -34,6 +34,9 @@ class ApacheRequestFactoryCustomizer(
         valtimoHttpRestClientConfigurationProperties.connectionRequestTimeout.let {
             apacheRequestFactory.setConnectionRequestTimeout(Duration.ofSeconds(it))
         }
+        valtimoHttpRestClientConfigurationProperties.readTimeout.let {
+            apacheRequestFactory.setReadTimeout(Duration.ofSeconds(it))
+        }
         restClientBuilder.requestFactory(BufferingClientHttpRequestFactory(apacheRequestFactory))
     }
 
