@@ -1,17 +1,5 @@
 # 12.45.0
 
-## New Features
-
-* **New feature title**
-
-  New feature explanation.
-
-## Enhancements
-
-* **New enhancement title**
-
-  New enhancement explanation.
-
 ## Bugfixes
 
 * **A document is added to a case only once, however many times Save is clicked**
