@@ -33,7 +33,6 @@ it stays exactly as you typed it. IDs are limited to 64 characters.
 |------|-----|
 | Building blocks | A file uploaded from a task form inside a building block is added to the case |
 | Case and task lists | Paging through a list sorted on a column that repeats values, such as the assignee, no longer shows the same case or task on two pages while leaving others out |
-| Case widgets | A process button on a widget respects access rules based on the case's status, instead of staying hidden while the same process could be started under **Start** |
 | Forms | Number fields in a form now use the notation of the user's language, so a Dutch user reads and enters 1234,56 instead of 1234.56 |
 | Forms | Standard form buttons and messages, such as Versturen, Opslaan and Annuleren, now appear in the user's language instead of always in English |
 | IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
