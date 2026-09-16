@@ -25,3 +25,4 @@
 .mcp.json
 
 /test-results/
+/frontend/test-results/.last-run.json

@@ -167,6 +167,7 @@ export class IkoViewPage {
     await expect(async () => {
       if ((await rows.count()) <= before) {
         await this.propertyKvAddRowButton(key).click({timeout: 5_000});
+        await expect(rows).toHaveCount(before + 1, {timeout: 3_000});
       }
       expect(await rows.count()).toBeGreaterThan(before);
     }).toPass({timeout: 20_000});
@@ -180,6 +181,7 @@ export class IkoViewPage {
     await expect(async () => {
       if ((await rows.count()) >= before) {
         await removeButton.click({timeout: 3_000});
+        await expect(rows).toHaveCount(before - 1, {timeout: 3_000});
       }
       expect(await rows.count()).toBeLessThan(before);
     }).toPass({timeout: 20_000});

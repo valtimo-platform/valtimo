@@ -62,16 +62,21 @@ export class CarbonToggle {
     const targets = [this.host.locator('label').first(), this.switchControl];
     const target = targets[attempt % targets.length];
 
-    try {
-      await target.click({timeout: 5_000});
-    } catch (error) {
-      if (!String(error).includes('intercepts pointer events')) throw error;
-      console.warn(
-        '[carbon-toggle] The toggle is covered by another element; dispatching the ' +
-          'activation directly. A real user cannot click this control.'
-      );
-      await target.dispatchEvent('click');
-    }
+    await this.dismissOpenTooltip();
+    await target.scrollIntoViewIfNeeded();
+    await target.click({timeout: 5_000});
+  }
+
+  private async dismissOpenTooltip(): Promise<void> {
+    const page = this.host.page();
+    const openTooltip = page.locator('.cds--popover--open');
+    if (!(await openTooltip.count())) return;
+
+    await page.mouse.move(0, 0);
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await expect(openTooltip)
+      .toHaveCount(0, {timeout: 3_000})
+      .catch(() => {});
   }
 
   async enable() {

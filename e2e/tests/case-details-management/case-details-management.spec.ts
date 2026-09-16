@@ -68,9 +68,7 @@ test.describe('Case management', () => {
         await caseDetailsManagementPage.switchCaseVersionViaList();
 
         // Assert
-        await expect(page).toHaveURL(
-          /\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/
-        );
+        await expect(page).toHaveURL(/\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/);
       });
 
       test('Set active version', async () => {
@@ -97,27 +95,16 @@ test.describe('Case management', () => {
 
         test.beforeAll(async () => {
           settingsUrl = `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/settings`;
-          try {
-            originalHandlerSettings = await apiGet<CaseHandlerSettings>(settingsUrl);
-          } catch {
-            originalHandlerSettings = null;
-          }
+          originalHandlerSettings = await apiGet<CaseHandlerSettings>(settingsUrl);
         });
 
         test.afterAll(async () => {
           if (!originalHandlerSettings || !settingsUrl) return;
 
-          try {
-            await apiPatch(settingsUrl, {
-              canHaveAssignee: originalHandlerSettings.canHaveAssignee,
-              autoAssignTasks: originalHandlerSettings.autoAssignTasks,
-            });
-          } catch (error) {
-            console.warn(
-              `[case-details-management] Could not restore the case handler settings on ` +
-                `${settingsUrl}; \`user-cases\` may fail as a result: ${(error as Error).message}`
-            );
-          }
+          await apiPatch(settingsUrl, {
+            canHaveAssignee: originalHandlerSettings.canHaveAssignee,
+            autoAssignTasks: originalHandlerSettings.autoAssignTasks,
+          });
         });
 
         test('Can have handler is false', async () => {
@@ -187,20 +174,18 @@ test.describe('Case management', () => {
           await caseDetailsManagementPage.setCanHaveHandler(false);
 
           await autoAssign.assertDisabled();
-          expect(
-            await caseDetailsManagementPage.getCaseHandlerSettingsViaApi()
-          ).toMatchObject({canHaveAssignee: false, autoAssignTasks: false});
+          expect(await caseDetailsManagementPage.getCaseHandlerSettingsViaApi()).toMatchObject({
+            canHaveAssignee: false,
+            autoAssignTasks: false,
+          });
         });
       });
 
       test.describe('6.4, 6.5 — External start form', () => {
         test('Start form enabled', async () => {
           //Arrange
-          await caseDetailsManagementPage.hasExternalFormToggle.click();
-          await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute(
-            'aria-checked',
-            'true'
-          );
+          await caseDetailsManagementPage.setExternalStartForm(false);
+          await caseDetailsManagementPage.setExternalStartForm(true);
 
           //Act
           await caseDetailsManagementPage.fillInExternalForm();
@@ -217,11 +202,7 @@ test.describe('Case management', () => {
 
         test('Start form disabled', async () => {
           //Act
-          await caseDetailsManagementPage.hasExternalFormToggle.click();
-          await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute(
-            'aria-checked',
-            'false'
-          );
+          await caseDetailsManagementPage.setExternalStartForm(false);
           await caseDetailsManagementPage.externalFormSave.click();
 
           //Assert

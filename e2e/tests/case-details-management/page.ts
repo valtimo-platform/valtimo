@@ -51,7 +51,10 @@ export interface UploadCaseOptions {
 }
 
 export class CaseDetailsManagementPage {
-  constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
+  constructor(
+    private readonly page: Page,
+    private readonly request: APIRequestContext
+  ) {}
 
   // UI Elements
   get versionSelectDropdown() {
@@ -95,11 +98,28 @@ export class CaseDetailsManagementPage {
   }
 
   get hasExternalForm() {
-    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm).getByRole('switch');
+    return this.page
+      .getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm)
+      .getByRole('switch');
   }
 
   get hasExternalFormToggle() {
-    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm).locator('.cds--toggle__switch');
+    return this.page
+      .getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm)
+      .locator('.cds--toggle__switch');
+  }
+
+  async setExternalStartForm(enabled: boolean): Promise<void> {
+    const expected = String(enabled);
+
+    await expect(async () => {
+      if ((await this.hasExternalForm.getAttribute('aria-checked')) === expected) return;
+
+      await this.hasExternalFormToggle.click({timeout: 5_000});
+      await expect(this.hasExternalForm).toHaveAttribute('aria-checked', expected, {
+        timeout: 5_000,
+      });
+    }).toPass({timeout: 20_000});
   }
 
   get externalFormUrl() {
@@ -107,7 +127,9 @@ export class CaseDetailsManagementPage {
   }
 
   get externalFormDescription() {
-    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormDescription);
+    return this.page.getByTestId(
+      CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormDescription
+    );
   }
 
   get externalFormSave() {

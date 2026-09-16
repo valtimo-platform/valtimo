@@ -24,7 +24,7 @@ const FINAL_TEST_KEY = 'e2e-final-test';
 
 const ARCHIVE_VERSION_TAG = '1.0.0';
 
-const TEST_KEY_PREFIXES = ['test-case', 'custom-import', FINAL_TEST_KEY];
+const OWNED_CASE_KEYS = ['test-case-import', 'custom-import-key', FINAL_TEST_KEY];
 
 interface CaseVersion {
   versionTag: string;
@@ -92,19 +92,6 @@ async function deleteCaseDefinition(key: string): Promise<void> {
   }
 }
 
-async function findTestCaseDefinitionKeys(): Promise<string[]> {
-  const page = await ApiUtils.apiGet<{content: Array<{caseDefinitionKey: string}>}>(
-    '/api/management/v1/case-definition?allVersions=true&size=2000'
-  );
-  return Array.from(
-    new Set(
-      page.content
-        .map(caseDefinition => caseDefinition.caseDefinitionKey)
-        .filter(key => TEST_KEY_PREFIXES.some(prefix => key.startsWith(prefix)))
-    )
-  );
-}
-
 test.describe('Case management', () => {
   let context;
   let page;
@@ -123,8 +110,7 @@ test.describe('Case management', () => {
 
     caseManagementPage = new CaseManagementPage(page, request);
 
-    // Clean up all test case definitions from previous runs
-    for (const key of await findTestCaseDefinitionKeys()) {
+    for (const key of OWNED_CASE_KEYS) {
       await deleteCaseDefinition(key);
     }
 
@@ -133,7 +119,7 @@ test.describe('Case management', () => {
   });
 
   test.afterAll(async () => {
-    for (const key of new Set([...createdKeys, FINAL_TEST_KEY])) {
+    for (const key of new Set([...createdKeys, ...OWNED_CASE_KEYS])) {
       await deleteCaseDefinition(key);
     }
     await context.close();
@@ -151,15 +137,14 @@ test.describe('Case management', () => {
       // Act
       const key = await caseManagementPage.addCase(caseName);
       const response = await caseManagementPage.saveConfiguration();
+      createdKeys.push(key);
 
       // Assert
       expect(response.status()).toBe(200);
-      createdKeys.push(key);
 
       // Cleanup route interception
       await page.unroute('**/case-management/case/**');
     });
-
   });
 
   test.describe('Configure step', () => {
@@ -200,7 +185,9 @@ test.describe('Case management', () => {
         await caseManagementPage.dashboardStep();
 
         // Assert: the case appears in the list under the actual name used
-        await expect(page.getByRole('cell', {name, exact: true}).first()).toBeVisible({timeout: 15_000});
+        await expect(page.getByRole('cell', {name, exact: true}).first()).toBeVisible({
+          timeout: 15_000,
+        });
       }
     });
 

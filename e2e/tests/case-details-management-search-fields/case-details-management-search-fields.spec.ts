@@ -188,7 +188,7 @@ test.describe('Case management - Search Fields', () => {
         test('Duplicate key shows validation error', async () => {
           // Arrange
           await testPage.addSearchFieldButton.click();
-          await testPage.keyInput.fill(UI_SEARCH_FIELD_1.key);
+          await testPage.fillKeyManually(UI_SEARCH_FIELD_1.key);
 
           // Assert
           await testPage.assertSaveButtonDisabled();
@@ -232,7 +232,7 @@ test.describe('Case management - Search Fields', () => {
         test('Save button enabled when form is valid', async () => {
           // Act
           await testPage.addSearchFieldButton.click();
-          await testPage.keyInput.fill('uiTestValid');
+          await testPage.fillKeyManually('uitestvalid');
           await testPage.valuePathSelectorToggle.click();
           await testPage.valuePathSelectorInput.fill('case:createdBy');
           await testPage.selectDropdownItem(testPage.dataTypeDropdown, 'Text');

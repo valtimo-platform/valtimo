@@ -176,7 +176,8 @@ export class ChoiceFieldManagementPage {
     const valueList = this.page.locator('valtimo-choice-field-value-list');
 
     await expect(async () => {
-      await backLink.click({timeout: 5_000});
+      if (await valueList.isVisible()) return;
+      if (await backLink.isVisible()) await backLink.click({timeout: 5_000});
       await expect(valueList).toBeVisible({timeout: 5_000});
     }).toPass({timeout: 30_000});
   }

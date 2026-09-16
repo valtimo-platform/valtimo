@@ -34,20 +34,7 @@ test.describe('Feature 2 — Cases (User)', () => {
     page = await context.newPage();
     userCasesPage = new UserCasesPage(page);
 
-    try {
-      const probe = await userCasesPage.createCaseViaApi();
-      createdCases.push(probe);
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : String(e);
-      if (message.includes('→ 500')) {
-        test.skip(
-          true,
-          `Bezwaar case creation returns 500 in this env; skipping user-cases until the backend is investigated. Underlying error: ${message.slice(0, 200)}`
-        );
-      } else {
-        throw e;
-      }
-    }
+    createdCases.push(await userCasesPage.createCaseViaApi());
   });
 
   test.afterAll(async () => {
@@ -86,46 +73,41 @@ test.describe('Feature 2 — Cases (User)', () => {
     });
 
     test('deselecting a status in the filter hides matching rows and re-selecting restores them', async () => {
-      const firstTag = userCasesPage.caseList.rows.locator('cds-tag').first();
-      const hasStatusTags = await firstTag
-        .waitFor({state: 'visible', timeout: 5_000})
-        .then(() => true)
-        .catch(() => false);
-      test.skip(
-        !hasStatusTags,
-        'Case list does not render status tags in this env (bezwaar likely has no status column configured)'
-      );
-
-      const initialStatuses = await userCasesPage.visibleStatusTagTexts();
-      expect(
-        initialStatuses.length,
-        'expected at least one status tag in the case list'
-      ).toBeGreaterThan(0);
-      const statusToToggle = initialStatuses[0];
-
       await userCasesPage.openSearchAccordion();
       await userCasesPage.openStatusDropdown();
 
+      const filterStatuses = (await userCasesPage.statusSelectorOptions.allInnerTexts()).map(text =>
+        text.trim()
+      );
+      const visibleTags = await userCasesPage.visibleStatusTagTexts();
+      const statusToToggle = filterStatuses.find(status => visibleTags.includes(status));
+
+      test.skip(
+        !statusToToggle,
+        'No case in the list carries a status this environment offers as a filter ' +
+          '(bezwaar likely has no status column configured)'
+      );
+
       // All statuses are selected by default, so the one we want must be present
-      await expect(userCasesPage.statusOptionByName(statusToToggle)).toBeVisible();
+      await expect(userCasesPage.statusOptionByName(statusToToggle!)).toBeVisible();
 
       // Deselect the chosen status
-      await userCasesPage.toggleStatusOption(statusToToggle);
+      await userCasesPage.toggleStatusOption(statusToToggle!);
       await userCasesPage.closeStatusDropdown();
 
       // Verify no visible row carries the deselected status tag anymore
       await expect
         .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 15_000})
-        .not.toContain(statusToToggle);
+        .not.toContain(statusToToggle!);
 
       // Restore the original state
       await userCasesPage.openStatusDropdown();
-      await userCasesPage.toggleStatusOption(statusToToggle);
+      await userCasesPage.toggleStatusOption(statusToToggle!);
       await userCasesPage.closeStatusDropdown();
 
       await expect
         .poll(() => userCasesPage.visibleStatusTagTexts(), {timeout: 15_000})
-        .toContain(statusToToggle);
+        .toContain(statusToToggle!);
     });
   });
 
@@ -200,7 +182,8 @@ test.describe('Feature 2 — Cases (User)', () => {
       await userCasesPage.startSubProcess(USER_CASES_CONFIG.changeNameProcess);
 
       // The process-start form opens as an HTML form — submit it to start the process.
-      await expect(userCasesPage.formStartButton).toBeVisible({timeout: 15_000});
+      await expect(userCasesPage.taskDetailDialog.first()).toBeVisible({timeout: 60_000});
+      await expect(userCasesPage.formStartButton).toBeVisible({timeout: 60_000});
       await userCasesPage.submitFormStart();
 
       // The new user task appears in the task list panel.

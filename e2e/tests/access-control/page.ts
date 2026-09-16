@@ -139,20 +139,12 @@ export class AccessControlPage {
   }
 
   private async clickBatchAction(button: Locator) {
-    await this.page.evaluate(() => window.scrollTo(0, 0));
-    try {
-      await button.click({timeout: 10_000});
-    } catch (error) {
-      if (!String(error).includes('intercepts pointer events')) throw error;
+    await expect(async () => {
+      await this.page.evaluate(() => window.scrollTo(0, 0));
       await expect(button).toBeVisible();
       await expect(button).toBeEnabled();
-
-      console.warn(
-        '[access-control] Batch-action click was swallowed by the table header; ' +
-          'dispatching it directly. The action bar is still rendered underneath the header.'
-      );
-      await button.dispatchEvent('click');
-    }
+      await button.click({timeout: 5_000});
+    }).toPass({timeout: 20_000});
   }
 
   async deleteRole(roleKey: string) {
@@ -332,7 +324,11 @@ export class AccessControlPage {
    * so controls in the others are in the DOM but not visible.
    */
   async expandPermissionSection(section: 'sectionResourceActions' | 'sectionConditions') {
-    await this.page.getByTestId(ACCESS_CONTROL_EDITOR_TEST_IDS[section]).getByRole('button').first().click();
+    await this.page
+      .getByTestId(ACCESS_CONTROL_EDITOR_TEST_IDS[section])
+      .getByRole('button')
+      .first()
+      .click();
   }
 
   /** Picks an option from a Carbon combo box. Options render in an overlay, so resolve page-wide. */

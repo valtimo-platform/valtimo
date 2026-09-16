@@ -53,28 +53,18 @@ test.describe('Case management', () => {
 
     testPage = new CaseDetailsManagementCaseListPage(page, request);
 
-    try {
-      originalListColumns = await apiGet<unknown[]>(LIST_COLUMN_URL);
-    } catch {
-      originalListColumns = null;
-    }
+    originalListColumns = await apiGet<unknown[]>(LIST_COLUMN_URL);
 
     await testPage.goToCaseDetailsManagementCaseList('bezwaar');
     await ensureDraftVersionSelected(page);
   });
 
   test.afterAll(async () => {
-    if (originalListColumns) {
-      try {
-        await apiPut(LIST_COLUMN_URL, originalListColumns);
-      } catch (error) {
-        console.warn(
-          `[case-list] Could not restore bezwaar's list columns; \`user-cases\` may ` +
-            `fail as a result: ${(error as Error).message}`
-        );
-      }
+    try {
+      if (originalListColumns) await apiPut(LIST_COLUMN_URL, originalListColumns);
+    } finally {
+      if (context) await context.close();
     }
-    if (context) await context.close();
   });
 
   test.describe('Success test', () => {
@@ -301,7 +291,7 @@ test.describe('Case management', () => {
           // dropdown only renders once a sortable (case:/doc:) path is set
           // (*ngIf="displaySortable"), so give the form a valid path first.
           await testPage.addListColumnButton.click();
-          await testPage.keyInput.fill('uiTestSecondSort');
+          await testPage.fillKeyManually('uitestsecondsort');
           await testPage.valuePathSelectorToggle.click();
           await testPage.valuePathSelectorInput.fill('case:createdBy');
           await testPage.assertDefaultSortDropdownDisabled();
@@ -315,7 +305,7 @@ test.describe('Case management', () => {
         test('Save button enabled when form is valid', async () => {
           // Act
           await testPage.addListColumnButton.click();
-          await testPage.keyInput.fill('uiTestValid');
+          await testPage.fillKeyManually('uitestvalid');
           await testPage.valuePathSelectorToggle.click();
           await testPage.valuePathSelectorInput.fill('case:createdBy');
           await testPage.selectDropdownItem(testPage.displayTypeDropdown, 'Text');

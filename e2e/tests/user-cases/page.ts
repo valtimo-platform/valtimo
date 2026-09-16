@@ -16,7 +16,8 @@
 
 import {expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete, apiPost} from '../../utils/api.utils';
+import {apiDelete} from '../../utils/api.utils';
+import {startCaseOnAnyVersion} from '../../utils/case.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
 import {openAndSelectOption} from '../../utils/ui.utils';
 
@@ -32,17 +33,14 @@ export class UserCasesPage {
   // ─── API helpers ─────────────────────────────────────────────────
 
   async createCaseViaApi(): Promise<CreatedCase> {
-    const response = await apiPost<{
+    const response = await startCaseOnAnyVersion<{
       document: {id: string; sequence: number};
       processInstanceId: string;
-    }>(USER_CASES_CONFIG.processDocumentEndpoint, {
+    }>({
+      endpoint: USER_CASES_CONFIG.processDocumentEndpoint,
+      caseDefinitionKey: USER_CASES_CONFIG.caseDefinitionKey,
       processDefinitionKey: USER_CASES_CONFIG.processDefinitionKey,
-      request: {
-        definition: USER_CASES_CONFIG.caseDefinitionKey,
-        caseDefinitionKey: USER_CASES_CONFIG.caseDefinitionKey,
-        caseDefinitionVersionTag: USER_CASES_CONFIG.caseDefinitionVersionTag,
-        content: {},
-      },
+      preferredVersionTag: USER_CASES_CONFIG.caseDefinitionVersionTag,
     });
     return {
       documentId: response.document.id,
@@ -64,10 +62,9 @@ export class UserCasesPage {
   async goToCaseList() {
     await this.page.goto(`/cases/${USER_CASES_CONFIG.caseDefinitionKey}`);
 
-    await this.page.waitForURL(
-      new RegExp(`/cases/${USER_CASES_CONFIG.caseDefinitionKey}(\\?|$)`),
-      {timeout: 30_000}
-    );
+    await this.page.waitForURL(new RegExp(`/cases/${USER_CASES_CONFIG.caseDefinitionKey}(\\?|$)`), {
+      timeout: 30_000,
+    });
     await this.caseList.waitForLoaded();
   }
 
@@ -242,7 +239,7 @@ export class UserCasesPage {
   }
 
   get formStartButton(): Locator {
-    return this.taskDetailDialog.getByRole('button', {name: 'Start', exact: true});
+    return this.taskDetailDialog.getByRole('form').getByRole('button').first();
   }
 
   // The task-detail form opened from the case-management case detail renders
@@ -254,19 +251,26 @@ export class UserCasesPage {
   get taskFormStartButton(): Locator {
     return this.page
       .locator('valtimo-task-detail-content')
-      .getByRole('button', {name: 'Start', exact: true});
+      .getByRole('form')
+      .getByRole('button')
+      .first();
   }
 
   // ─── Actions ─────────────────────────────────────────────────────
 
   async openStartProcessMenu() {
+    await expect(this.startCaseProcessButton).toBeEnabled({timeout: 30_000});
     await this.startCaseProcessButton.click();
   }
 
   async startSubProcess(displayName: string) {
-    await this.openStartProcessMenu();
     const item = this.startableMenuItem(displayName);
-    await expect(item).toBeVisible();
+
+    await expect(async () => {
+      if (!(await item.isVisible())) await this.openStartProcessMenu();
+      await expect(item).toBeVisible({timeout: 5_000});
+    }).toPass({timeout: 30_000});
+
     await item.click();
   }
 

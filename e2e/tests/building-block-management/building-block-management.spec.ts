@@ -218,8 +218,11 @@ test.describe('Building block management — building block overview', () => {
         });
         await expect(buildingBlockPage.createSaveButton).toBeEnabled();
 
-        // Only [A-Za-z0-9-] is accepted.
-        await buildingBlockPage.enterKeyManually('invalid key!');
+        await buildingBlockPage.enterKeyManually('Invalid key!');
+        await expect(buildingBlockPage.keyInput).toHaveValue('invalid-key');
+
+        await buildingBlockPage.keyInput.fill('!@#');
+        await expect(buildingBlockPage.keyInput).toHaveValue('');
         await expect(buildingBlockPage.createSaveButton).toBeDisabled();
 
         await buildingBlockPage.closeCreateModal();

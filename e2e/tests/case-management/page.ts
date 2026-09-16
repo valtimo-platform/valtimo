@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APIRequestContext, expect, Page} from '@playwright/test';
+import {APIRequestContext, expect, Page, type Request} from '@playwright/test';
 import {caseConfiguration} from './case-config';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import path from 'path';
@@ -185,7 +185,9 @@ export class CaseManagementPage {
 
   // Upload steps
   async pluginConfigurationStep(): Promise<Awaited<ReturnType<Page['waitForResponse']>>> {
-    await expect(this.page.getByText('Plugin Configuration').first()).toBeVisible({timeout: 10_000});
+    await expect(this.page.getByText('Plugin Configuration').first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     const responsePromise = this.page.waitForResponse(
       res =>
@@ -254,7 +256,10 @@ export class CaseManagementPage {
     return {key, name};
   }
 
-  async configureStepWithCustomKey(name: string, key: string): Promise<{key: string; name: string}> {
+  async configureStepWithCustomKey(
+    name: string,
+    key: string
+  ): Promise<{key: string; name: string}> {
     await expect(this.configureNameInput).toBeVisible();
 
     // Clear and fill custom name
@@ -303,23 +308,35 @@ export class CaseManagementPage {
       .catch(() => {});
   }
 
-  private async awaitVersionChecksSettled(maxChecks = 10) {
-    for (let checks = 0; checks <= maxChecks; checks++) {
-      const answered = await this.page
-        .waitForResponse(
-          res => /\/management\/v1\/case-definition\/[^/?]+\/version/.test(res.url()),
-          {timeout: 1_500}
-        )
-        .then(() => true)
-        .catch(() => false);
+  private async awaitVersionChecksSettled(quietMs = 1_500, timeout = 20_000) {
+    const isVersionCheck = (url: string) =>
+      /\/management\/v1\/case-definition\/[^/?]+\/version/.test(url);
 
-      if (!answered) return;
+    let inFlight = 0;
+    let lastFinishedAt = Date.now();
+
+    const onRequest = (request: Request) => {
+      if (isVersionCheck(request.url())) inFlight++;
+    };
+    const onSettled = (request: Request) => {
+      if (!isVersionCheck(request.url())) return;
+      inFlight = Math.max(0, inFlight - 1);
+      lastFinishedAt = Date.now();
+    };
+
+    this.page.on('request', onRequest);
+    this.page.on('requestfinished', onSettled);
+    this.page.on('requestfailed', onSettled);
+
+    try {
+      await expect
+        .poll(() => inFlight === 0 && Date.now() - lastFinishedAt >= quietMs, {timeout})
+        .toBe(true);
+    } finally {
+      this.page.off('request', onRequest);
+      this.page.off('requestfinished', onSettled);
+      this.page.off('requestfailed', onSettled);
     }
-
-    throw new Error(
-      `[case-management] The configure step fired more than ${maxChecks} version checks ` +
-        'and never settled.'
-    );
   }
 
   async confirmDraftOverride() {
