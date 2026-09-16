@@ -167,6 +167,9 @@ export class IkoViewPage {
     await expect(async () => {
       if ((await rows.count()) <= before) {
         await this.propertyKvAddRowButton(key).click({timeout: 5_000});
+        // Wait for this click's own row to render, otherwise a slow FormArray
+        // render lets the retry fire again and add a second row.
+        await expect(rows).toHaveCount(before + 1, {timeout: 3_000});
       }
       expect(await rows.count()).toBeGreaterThan(before);
     }).toPass({timeout: 20_000});
@@ -180,6 +183,8 @@ export class IkoViewPage {
     await expect(async () => {
       if ((await rows.count()) >= before) {
         await removeButton.click({timeout: 3_000});
+        // As above: wait for the removal to render before the retry can click again.
+        await expect(rows).toHaveCount(before - 1, {timeout: 3_000});
       }
       expect(await rows.count()).toBeLessThan(before);
     }).toPass({timeout: 20_000});

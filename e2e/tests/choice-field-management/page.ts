@@ -114,7 +114,7 @@ export class ChoiceFieldManagementPage {
     await this.titleInput.clear();
     await this.titleInput.fill(newTitle);
 
-    await Promise.all([
+    const [response] = await Promise.all([
       this.page.waitForResponse(
         res =>
           new URL(res.url()).pathname === endpoints.choiceField.update &&
@@ -122,6 +122,8 @@ export class ChoiceFieldManagementPage {
       ),
       this.submitButton.click(),
     ]);
+
+    expect(response.ok(), 'choice-field title PUT should succeed').toBeTruthy();
   }
 
   async deleteChoiceField() {
@@ -176,7 +178,12 @@ export class ChoiceFieldManagementPage {
     const valueList = this.page.locator('valtimo-choice-field-value-list');
 
     await expect(async () => {
-      await backLink.click({timeout: 5_000});
+      // A slow value list used to fail the first attempt after the click had already
+      // navigated, leaving later attempts clicking a Back link that no longer exists.
+      // Only click while we are still on the value page.
+      if (!(await valueList.isVisible())) {
+        await backLink.click({timeout: 5_000});
+      }
       await expect(valueList).toBeVisible({timeout: 5_000});
     }).toPass({timeout: 30_000});
   }
