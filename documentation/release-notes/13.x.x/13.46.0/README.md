@@ -25,10 +25,6 @@ In the process editor, an activity you draw now gets an ID based on the name, in
 of a generic one. Activities that already existed keep their ID, and once you edit an ID by hand
 it stays exactly as you typed it. IDs are limited to 64 characters.
 
-### Stop the other processes of a case and carry on
-
-A process can now stop all other running processes of its case and then continue its own flow, so a rejection can clear the remaining work and still set a status or send a letter. It sits in the expression dropdown in the BPMN modeler next to the existing option, which stops every process of the case including the calling process.
-
 ---
 
 ## Bugfixes
