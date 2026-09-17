@@ -1,0 +1,56 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal [open]="open" showFooter="true" valtimoCdsModal (close)="onCloseModal()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'caseManagement.groups.createModal.title' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form [formGroup]="formGroup" cdsModalContent [cdsLayer]="1">
+    <cds-label>
+      {{ 'caseManagement.groups.createModal.name' | translate }}
+
+      <input
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'caseManagement.groups.createModal.namePlaceholder' | translate }}"
+        [attr.modal-primary-focus]="true"
+      />
+    </cds-label>
+
+    <cds-label>
+      {{ 'caseManagement.groups.createModal.description' | translate }}
+
+      <input
+        formControlName="description"
+        cdsText
+        placeholder="{{ 'caseManagement.groups.createModal.descriptionPlaceholder' | translate }}"
+      />
+    </cds-label>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="secondary" (click)="onCloseModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
+      {{ 'interface.create' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

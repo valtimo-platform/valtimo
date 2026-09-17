@@ -1,0 +1,141 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="{members: members$ | async, available: availableCaseDefinitions$ | async} as obs">
+  <div class="valtimo-group-config">
+    <div class="valtimo-group-config__color-panel" [cdsLayer]="1">
+      <h4>{{ 'caseManagement.groups.config.color' | translate }}</h4>
+
+      <div class="valtimo-group-config__swatches">
+        <button
+          *ngFor="let color of COLOR_SWATCHES"
+          type="button"
+          class="valtimo-group-config__swatch"
+          [class.valtimo-group-config__swatch--selected]="selectedColor === color"
+          [style.background-color]="color"
+          (click)="onColorSwatchClick(color)"
+        ></button>
+      </div>
+
+      <cds-label>
+        {{ 'caseManagement.groups.config.customColor' | translate }}
+
+        <input
+          cdsText
+          type="text"
+          [(ngModel)]="customColor"
+          (change)="onCustomColorChange(customColor)"
+          placeholder="#0043ce"
+        />
+      </cds-label>
+
+      <div
+        *ngIf="selectedColor"
+        class="valtimo-group-config__color-preview"
+        [style.background-color]="selectedColor"
+      ></div>
+    </div>
+
+    <div class="valtimo-group-config__members-panel">
+      <div class="valtimo-group-config__table-container">
+        <div class="valtimo-group-config__toolbar">
+          <div class="valtimo-group-config__toolbar-spacer"></div>
+          <div class="valtimo-group-config__add-wrapper">
+            <button
+              cdsButton="primary"
+              (click)="toggleAddPanel()"
+              class="valtimo-group-config__add-btn"
+            >
+              {{ 'caseManagement.groups.config.addCase' | translate }}
+              <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+            </button>
+
+            <div *ngIf="showAddPanel" class="valtimo-group-config__add-panel" [cdsLayer]="1">
+              <p class="valtimo-group-config__add-panel-title">
+                {{ 'caseManagement.groups.config.selectCase' | translate }}
+              </p>
+
+              <cds-combo-box
+                [items]="comboBoxItems"
+                [(ngModel)]="selectedCaseDefinition"
+                [placeholder]="'caseManagement.groups.config.selectCasePlaceholder' | translate"
+                [appendInline]="false"
+              >
+                <cds-dropdown-list></cds-dropdown-list>
+              </cds-combo-box>
+
+              <button
+                cdsButton="primary"
+                [disabled]="!selectedCaseDefinition"
+                (click)="addMember()"
+                class="valtimo-group-config__add-panel-btn"
+              >
+                {{ 'caseManagement.groups.config.addToGroup' | translate }}
+                <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="valtimo-group-config__table-header">
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--name">
+            {{ 'caseManagement.groups.config.columns.name' | translate }}
+          </div>
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--key">
+            {{ 'caseManagement.groups.config.columns.key' | translate }}
+          </div>
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--version">
+            {{ 'caseManagement.groups.config.columns.version' | translate }}
+          </div>
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--actions"></div>
+        </div>
+
+        <div *ngIf="obs.members?.length === 0" class="valtimo-group-config__members-empty">
+          {{ 'caseManagement.groups.config.noMembers' | translate }}
+        </div>
+
+        <div
+          *ngFor="let member of obs.members"
+          class="valtimo-group-config__table-row"
+        >
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--name">
+            {{ member.name }}
+          </div>
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--key">
+            {{ member.caseDefinitionKey }}
+          </div>
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--version">
+            {{ member.version || '-' }}
+          </div>
+          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--actions">
+            <cds-overflow-menu flip="true">
+              <cds-overflow-menu-option
+                type="danger"
+                (selected)="removeMember(member)"
+              >
+                {{ 'caseManagement.groups.config.removeFromGroup' | translate }}
+              </cds-overflow-menu-option>
+            </cds-overflow-menu>
+          </div>
+        </div>
+
+        <div class="valtimo-group-config__table-footer">
+          {{ 'caseManagement.groups.config.caseCount' | translate: {count: obs.members?.length || 0} }}
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

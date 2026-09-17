@@ -405,6 +405,7 @@ interface CaseDefinitionGroup {
   key: string;
   title: string;
   description?: string;
+  color?: string;
   order: number;
 }
 

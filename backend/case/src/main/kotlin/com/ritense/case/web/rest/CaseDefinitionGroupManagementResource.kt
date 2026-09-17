@@ -52,7 +52,10 @@ class CaseDefinitionGroupManagementResource(
     @RunWithoutAuthorization
     @GetMapping
     fun getGroups(): ResponseEntity<List<CaseDefinitionGroupResponseDto>> {
-        val groups = groupService.getGroups().map { CaseDefinitionGroupResponseDto.of(it) }
+        val memberCounts = groupService.getMemberCountsByGroup()
+        val groups = groupService.getGroups().map {
+            CaseDefinitionGroupResponseDto.of(it, memberCounts[it.key] ?: 0)
+        }
         return ResponseEntity.ok(groups)
     }
 
@@ -62,7 +65,8 @@ class CaseDefinitionGroupManagementResource(
         @PathVariable groupKey: String
     ): ResponseEntity<CaseDefinitionGroupWithMembersResponseDto> {
         val group = groupService.getGroup(groupKey)
-        return ResponseEntity.ok(CaseDefinitionGroupWithMembersResponseDto.of(group))
+        val members = groupService.getMembers(groupKey).map { GroupMemberDto.of(it) }
+        return ResponseEntity.ok(CaseDefinitionGroupWithMembersResponseDto.of(group, members))
     }
 
     @RunWithoutAuthorization
@@ -70,7 +74,7 @@ class CaseDefinitionGroupManagementResource(
     fun createGroup(
         @Valid @RequestBody request: CaseDefinitionGroupCreateRequestDto
     ): ResponseEntity<CaseDefinitionGroupResponseDto> {
-        val group = groupService.createGroup(request.title, request.description)
+        val group = groupService.createGroup(request.title, request.description, request.color)
         return ResponseEntity.ok(CaseDefinitionGroupResponseDto.of(group))
     }
 
@@ -80,7 +84,7 @@ class CaseDefinitionGroupManagementResource(
         @PathVariable groupKey: String,
         @Valid @RequestBody request: CaseDefinitionGroupUpdateRequestDto
     ): ResponseEntity<CaseDefinitionGroupResponseDto> {
-        val group = groupService.updateGroup(groupKey, request.title, request.description)
+        val group = groupService.updateGroup(groupKey, request.title, request.description, request.color)
         return ResponseEntity.ok(CaseDefinitionGroupResponseDto.of(group))
     }
 

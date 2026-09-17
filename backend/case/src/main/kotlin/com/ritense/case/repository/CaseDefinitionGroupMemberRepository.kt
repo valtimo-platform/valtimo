@@ -30,4 +30,7 @@ interface CaseDefinitionGroupMemberRepository : JpaRepository<CaseDefinitionGrou
     fun findMaxOrderByGroupKey(groupKey: String): Int
 
     fun findByIdCaseDefinitionKey(caseDefinitionKey: String): List<CaseDefinitionGroupMember>
+
+    @Query("SELECT m.id.groupKey, COUNT(m) FROM CaseDefinitionGroupMember m GROUP BY m.id.groupKey")
+    fun countMembersByGroup(): List<Array<Any>>
 }

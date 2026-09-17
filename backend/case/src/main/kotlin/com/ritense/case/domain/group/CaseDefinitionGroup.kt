@@ -44,6 +44,9 @@ data class CaseDefinitionGroup(
     @Column(name = "sort_order", nullable = false)
     val order: Int,
 
+    @Column(name = "color")
+    val color: String? = null,
+
     @OneToMany(mappedBy = "group", fetch = LAZY, cascade = [ALL], orphanRemoval = true)
     @OrderBy("order ASC")
     val members: MutableList<CaseDefinitionGroupMember> = mutableListOf(),

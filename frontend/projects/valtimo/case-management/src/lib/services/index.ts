@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,3 +21,4 @@ export * from './widget-tab-management.service';
 export * from './case-management.service';
 export * from './startable-item-api.service';
 export * from './startable-item-management.service';
+export * from './case-definition-group-management.service';

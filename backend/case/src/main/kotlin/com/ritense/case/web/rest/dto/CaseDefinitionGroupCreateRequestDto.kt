@@ -18,5 +18,6 @@ package com.ritense.case.web.rest.dto
 
 data class CaseDefinitionGroupCreateRequestDto(
     val title: String,
-    val description: String? = null
+    val description: String? = null,
+    val color: String? = null
 )

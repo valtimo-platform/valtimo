@@ -14,23 +14,31 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-list
-  [items]="caseListItems$ | async"
-  [fields]="fields$ | async"
-  (rowClicked)="redirectToDetails($event)"
-  [pagination]="pagination$ | async"
-  paginationIdentifier="caseManagementList"
-  (paginationClicked)="paginationClicked($event)"
-  (paginationSet)="paginationSet($event)"
->
-  <ng-container carbonToolbarContent [ngTemplateOutlet]="importCaseDefinitionButton"></ng-container>
+<cds-tabs [cacheActive]="true" type="contained">
+  <cds-tab [heading]="'caseManagement.listTabs.cases' | translate">
+    <valtimo-carbon-list
+      [items]="caseListItems$ | async"
+      [fields]="fields$ | async"
+      (rowClicked)="redirectToDetails($event)"
+      [pagination]="pagination$ | async"
+      paginationIdentifier="caseManagementList"
+      (paginationClicked)="paginationClicked($event)"
+      (paginationSet)="paginationSet($event)"
+    >
+      <ng-container carbonToolbarContent [ngTemplateOutlet]="importCaseDefinitionButton"></ng-container>
 
-  <valtimo-no-results
-    [action]="importCaseDefinitionButton"
-    [description]="'caseManagement.noResults.description' | translate"
-    [title]="'caseManagement.noResults.title' | translate"
-  ></valtimo-no-results>
-</valtimo-carbon-list>
+      <valtimo-no-results
+        [action]="importCaseDefinitionButton"
+        [description]="'caseManagement.noResults.description' | translate"
+        [title]="'caseManagement.noResults.title' | translate"
+      ></valtimo-no-results>
+    </valtimo-carbon-list>
+  </cds-tab>
+
+  <cds-tab [heading]="'caseManagement.listTabs.caseGroups' | translate">
+    <valtimo-case-definition-group-list></valtimo-case-definition-group-list>
+  </cds-tab>
+</cds-tabs>
 
 <ng-template #loading>
   <valtimo-carbon-list loading="true"></valtimo-carbon-list>

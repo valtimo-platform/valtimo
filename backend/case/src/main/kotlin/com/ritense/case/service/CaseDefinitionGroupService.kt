@@ -69,13 +69,19 @@ class CaseDefinitionGroupService(
     }
 
     @Transactional(readOnly = true)
+    fun getMemberCountsByGroup(): Map<String, Int> {
+        return memberRepository.countMembersByGroup()
+            .associate { it[0] as String to (it[1] as Long).toInt() }
+    }
+
+    @Transactional(readOnly = true)
     fun getGroup(groupKey: String): CaseDefinitionGroup {
         denyAuthorization()
         return groupRepository.findById(groupKey)
             .orElseThrow { IllegalArgumentException("No group found with key '$groupKey'") }
     }
 
-    fun createGroup(title: String, description: String?): CaseDefinitionGroup {
+    fun createGroup(title: String, description: String?, color: String? = null): CaseDefinitionGroup {
         denyAuthorization()
         val key = generateGroupKey(title)
         val order = groupRepository.findMaxOrder() + 1
@@ -84,18 +90,20 @@ class CaseDefinitionGroupService(
                 key = key,
                 title = title,
                 description = description,
-                order = order
+                order = order,
+                color = color
             )
         )
     }
 
-    fun updateGroup(groupKey: String, title: String, description: String?): CaseDefinitionGroup {
+    fun updateGroup(groupKey: String, title: String, description: String?, color: String? = null): CaseDefinitionGroup {
         denyAuthorization()
         val group = getGroup(groupKey)
         return groupRepository.save(
             group.copy(
                 title = title,
-                description = description
+                description = description,
+                color = color
             )
         )
     }

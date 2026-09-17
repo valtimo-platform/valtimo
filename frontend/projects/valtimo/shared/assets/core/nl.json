@@ -823,6 +823,88 @@
       "draft": "Concept",
       "status": "Status"
     },
+    "listTabs": {
+      "cases": "Zaken",
+      "caseGroups": "Zaakgroepen"
+    },
+    "groups": {
+      "listColumns": {
+        "title": "Lijstkolommen",
+        "key": "Key",
+        "memberCount": "Aantal zaken",
+        "noColumns": "Geen kolommen geconfigureerd",
+        "addColumn": "Kolom toevoegen",
+        "editColumn": "Kolom bewerken",
+        "columnKey": "Key",
+        "columnKeyPlaceholder": "Voer een unieke key in",
+        "columnTitle": "Titel",
+        "columnTitlePlaceholder": "Voer een weergavetitel in",
+        "displayType": "Weergavetype",
+        "sortable": "Sorteerbaar",
+        "exportable": "Exporteerbaar",
+        "saveError": "Opslaan van kolommen mislukt",
+        "searchPlaceholder": "Zoek kolommen..."
+      },
+      "searchFields": {
+        "title": "Zoekvelden",
+        "noFields": "Geen zoekvelden geconfigureerd",
+        "addField": "Zoekveld toevoegen",
+        "editField": "Zoekveld bewerken",
+        "fieldKey": "Key",
+        "fieldKeyPlaceholder": "Voer een unieke key in",
+        "fieldTitle": "Titel",
+        "fieldTitlePlaceholder": "Voer een weergavetitel in",
+        "dataType": "Datatype",
+        "fieldType": "Veldtype",
+        "matchType": "Matchtype",
+        "dropdownDataProvider": "Dropdown data provider",
+        "dropdownDataProviderPlaceholder": "Voer de provider class naam in",
+        "saveError": "Opslaan van zoekvelden mislukt",
+        "searchPlaceholder": "Zoek velden..."
+      },
+      "tabs": {
+        "config": "Configuratie",
+        "listColumns": "Lijstkolommen",
+        "searchFields": "Zoekvelden"
+      },
+      "config": {
+        "color": "Groepskleur",
+        "customColor": "Aangepaste kleur",
+        "assignedCases": "Toegewezen zaakdefinities",
+        "addCase": "Zaak toevoegen",
+        "selectCase": "Selecteer zaak",
+        "selectCasePlaceholder": "Kies zaak...",
+        "addToGroup": "Toevoegen aan groep",
+        "noMembers": "Geen zaken toegewezen. Klik \"Zaak toevoegen\" om er een toe te voegen.",
+        "addMemberError": "Toevoegen van zaakdefinitie mislukt",
+        "removeFromGroup": "Verwijderen uit groep",
+        "caseCount": "{{count}} zaken in deze groep",
+        "columns": {
+          "name": "Naam",
+          "key": "Sleutel",
+          "version": "Versie"
+        }
+      },
+      "pathMappings": {
+        "title": "Padkoppelingen",
+        "caseDefinition": "Zaakdefinitie",
+        "path": "Pad",
+        "pathPlaceholder": "bijv. doc:name of case:createdOn",
+        "noMembers": "Voeg eerst zaakdefinities toe aan de groep",
+        "saveError": "Opslaan van padkoppelingen mislukt"
+      },
+      "noResults": {
+        "title": "Geen zaakgroepen",
+        "description": "Er zijn nog geen zaakgroepen aangemaakt"
+      },
+      "createModal": {
+        "title": "Zaakgroep aanmaken",
+        "name": "Naam",
+        "namePlaceholder": "Voer een naam in",
+        "description": "Omschrijving",
+        "descriptionPlaceholder": "Voer een omschrijving in"
+      }
+    },
     "needsConfiguration": "Configuratie vereist",
     "inactive": "Inactief",
     "globalActiveVersionModal": {

@@ -816,6 +816,88 @@
       "draft": "Draft",
       "status": "Status"
     },
+    "listTabs": {
+      "cases": "Cases",
+      "caseGroups": "Case groups"
+    },
+    "groups": {
+      "listColumns": {
+        "title": "List columns",
+        "key": "Key",
+        "memberCount": "Number of cases",
+        "noColumns": "No columns configured",
+        "addColumn": "Add column",
+        "editColumn": "Edit column",
+        "columnKey": "Key",
+        "columnKeyPlaceholder": "Enter a unique key",
+        "columnTitle": "Title",
+        "columnTitlePlaceholder": "Enter a display title",
+        "displayType": "Display type",
+        "sortable": "Sortable",
+        "exportable": "Exportable",
+        "saveError": "Failed to save columns",
+        "searchPlaceholder": "Search columns..."
+      },
+      "searchFields": {
+        "title": "Search fields",
+        "noFields": "No search fields configured",
+        "addField": "Add search field",
+        "editField": "Edit search field",
+        "fieldKey": "Key",
+        "fieldKeyPlaceholder": "Enter a unique key",
+        "fieldTitle": "Title",
+        "fieldTitlePlaceholder": "Enter a display title",
+        "dataType": "Data type",
+        "fieldType": "Field type",
+        "matchType": "Match type",
+        "dropdownDataProvider": "Dropdown data provider",
+        "dropdownDataProviderPlaceholder": "Enter provider class name",
+        "saveError": "Failed to save search fields",
+        "searchPlaceholder": "Search fields..."
+      },
+      "tabs": {
+        "config": "Config",
+        "listColumns": "List columns",
+        "searchFields": "Search fields"
+      },
+      "config": {
+        "color": "Group color",
+        "customColor": "Custom color",
+        "assignedCases": "Assigned case definitions",
+        "addCase": "Add case",
+        "selectCase": "Select case",
+        "selectCasePlaceholder": "Choose case...",
+        "addToGroup": "Add to group",
+        "noMembers": "No cases assigned. Click \"Add case\" to add one.",
+        "addMemberError": "Failed to add case definition",
+        "removeFromGroup": "Remove from group",
+        "caseCount": "{{count}} cases in this group",
+        "columns": {
+          "name": "Name",
+          "key": "Key",
+          "version": "Version"
+        }
+      },
+      "pathMappings": {
+        "title": "Path mappings",
+        "caseDefinition": "Case definition",
+        "path": "Path",
+        "pathPlaceholder": "e.g. doc:name or case:createdOn",
+        "noMembers": "Add case definitions to the group first",
+        "saveError": "Failed to save path mappings"
+      },
+      "noResults": {
+        "title": "No case groups",
+        "description": "No case groups have been created yet"
+      },
+      "createModal": {
+        "title": "Create case group",
+        "name": "Name",
+        "namePlaceholder": "Enter a name",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter a description"
+      }
+    },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",
     "globalActiveVersionModal": {

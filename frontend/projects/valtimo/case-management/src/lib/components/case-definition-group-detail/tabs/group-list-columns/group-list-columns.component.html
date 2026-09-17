@@ -1,0 +1,123 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="{
+  columns: filteredColumns$ | async,
+  group: group$ | async,
+  showModal: showModal$ | async,
+  editing: editingColumn$ | async
+} as obs">
+  <cds-table-container class="valtimo-group-list-columns">
+    <cds-table-toolbar>
+      <cds-table-toolbar-content>
+        <cds-table-toolbar-search
+          [expandable]="false"
+          [formControl]="searchControl"
+          placeholder="{{ 'caseManagement.groups.listColumns.searchPlaceholder' | translate }}"
+        ></cds-table-toolbar-search>
+
+        <button cdsButton="primary" (click)="showAddModal()">
+          {{ 'interface.add' | translate }}
+          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </cds-table-toolbar-content>
+    </cds-table-toolbar>
+
+    <table cdsTable [sortable]="false">
+      <thead cdsTableHead>
+        <tr>
+          <th class="valtimo-group-list-columns__narrow-col"></th>
+          <th class="valtimo-group-list-columns__narrow-col"></th>
+          <th>{{ 'caseManagement.listColumns.name' | translate }}</th>
+          <th>{{ 'caseManagement.listColumns.key' | translate }}</th>
+          <th>{{ 'caseManagement.groups.listColumns.displayType' | translate }}</th>
+          <th>{{ 'caseManagement.groups.listColumns.sortable' | translate }}</th>
+          <th class="valtimo-group-list-columns__narrow-col"></th>
+        </tr>
+      </thead>
+
+      <tbody cdsTableBody cdkDropList (cdkDropListDropped)="onDropColumn($event)">
+        <ng-container *ngFor="let column of obs.columns">
+          <tr cdkDrag class="valtimo-group-list-columns__row">
+            <td class="valtimo-group-list-columns__cell--narrow">
+              <div cdkDragHandle class="valtimo-group-list-columns__drag-handle">
+                <svg cdsIcon="draggable" size="16"></svg>
+              </div>
+            </td>
+
+            <td class="valtimo-group-list-columns__cell--narrow">
+              <button
+                type="button"
+                class="valtimo-group-list-columns__expand-btn"
+                (click)="toggleExpand(column)"
+              >
+                <svg
+                  cdsIcon="chevron--right"
+                  size="16"
+                  [ngClass]="{'valtimo-group-list-columns__chevron--expanded': column.expanded}"
+                ></svg>
+              </button>
+            </td>
+
+            <td>{{ column.title || column.key }}</td>
+            <td>{{ column.key }}</td>
+            <td>{{ column.displayType.type }}</td>
+            <td>{{ (column.sortable ? 'interface.yes' : 'interface.no') | translate }}</td>
+
+            <td class="valtimo-group-list-columns__cell--narrow">
+              <v-overflow-menu [portalToBody]="true" placement="bottom-end">
+                <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+
+                <v-overflow-menu-option (selected)="showEditModal(column)">
+                  {{ 'interface.edit' | translate }}
+                </v-overflow-menu-option>
+
+                <v-overflow-menu-option type="danger" (selected)="deleteColumn(column)">
+                  {{ 'interface.delete' | translate }}
+                </v-overflow-menu-option>
+              </v-overflow-menu>
+            </td>
+          </tr>
+
+          <tr *ngIf="column.expanded" class="valtimo-group-list-columns__expanded-row">
+            <td colspan="7">
+              <valtimo-group-path-mapping-editor
+                [groupKey]="obs.group?.key"
+                [itemKey]="column.key"
+                [members]="obs.group?.members ?? []"
+                [mappings]="column.pathMappings ?? []"
+                itemType="list-column"
+              ></valtimo-group-path-mapping-editor>
+            </td>
+          </tr>
+        </ng-container>
+
+        <tr *ngIf="obs.columns?.length === 0" class="valtimo-group-list-columns__empty-row">
+          <td colspan="7">
+            {{ 'caseManagement.groups.listColumns.noColumns' | translate }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </cds-table-container>
+
+  <valtimo-group-column-modal
+    [open]="obs.showModal"
+    [groupKey]="obs.group?.key"
+    [column]="obs.editing"
+    (closeModal)="onCloseModal($event)"
+  ></valtimo-group-column-modal>
+</ng-container>

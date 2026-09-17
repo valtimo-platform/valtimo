@@ -101,6 +101,7 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
 import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
 import {CaseManagementHeaderComponent} from './components/case-management-detail/tabs/case-management-header/case-management-header.component';
 import {CaseManagementMissingPluginConfigurationsComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-missing-plugin-configurations/case-management-missing-plugin-configurations.component';
+import {CaseDefinitionGroupListComponent} from './components/case-definition-group-list/case-definition-group-list.component';
 
 @NgModule({
   declarations: [
@@ -192,6 +193,7 @@ import {CaseManagementMissingPluginConfigurationsComponent} from './components/c
     CaseManagementHeaderComponent,
     AutoKeyInputComponent,
     CaseManagementMissingPluginConfigurationsComponent,
+    CaseDefinitionGroupListComponent,
   ],
   providers: [TabManagementService],
 })

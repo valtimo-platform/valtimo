@@ -1,4 +1,3 @@
-<?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <!--
   ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
@@ -14,9 +13,16 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <include file="config/liquibase/13-45-0/20260901-add-case-definition-group-tables.xml"/>
-    <include file="config/liquibase/13-45-0/20260915-add-color-to-case-definition-group.xml"/>
-</databaseChangeLog>
+
+<div class="valtimo-path-mapping-editor">
+  <div class="valtimo-path-mapping-editor__grid">
+    <div *ngFor="let mapping of editableMappings" class="valtimo-path-mapping-editor__item">
+      <p class="valtimo-path-mapping-editor__case-name">{{ mapping.caseDefinitionKey }}</p>
+      <p class="valtimo-path-mapping-editor__path">{{ mapping.path || '—' }}</p>
+    </div>
+
+    <div *ngIf="editableMappings.length === 0" class="valtimo-path-mapping-editor__empty">
+      {{ 'caseManagement.groups.pathMappings.noMembers' | translate }}
+    </div>
+  </div>
+</div>

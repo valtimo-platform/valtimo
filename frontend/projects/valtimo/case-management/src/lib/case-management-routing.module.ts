@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,10 @@ import {CaseManagementGeneralComponent} from './components/case-management-detai
 import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
 import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
+import {CaseDefinitionGroupDetailComponent} from './components/case-definition-group-detail/case-definition-group-detail.component';
+import {GroupConfigComponent} from './components/case-definition-group-detail/tabs/group-config/group-config.component';
+import {GroupListColumnsComponent} from './components/case-definition-group-detail/tabs/group-list-columns/group-list-columns.component';
+import {GroupSearchFieldsComponent} from './components/case-definition-group-detail/tabs/group-search-fields/group-search-fields.component';
 import {TabEnum} from './models';
 
 const routes: Routes = [
@@ -53,6 +57,18 @@ const routes: Routes = [
     component: CaseManagementListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Cases', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'case-management/group/:groupKey',
+    component: CaseDefinitionGroupDetailComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Case group', roles: [ROLE_ADMIN], customPageTitle: true},
+    children: [
+      {path: '', redirectTo: 'config', pathMatch: 'full'},
+      {path: 'config', component: GroupConfigComponent},
+      {path: 'list-columns', component: GroupListColumnsComponent},
+      {path: 'search-fields', component: GroupSearchFieldsComponent},
+    ],
   },
   {
     path: 'case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag',

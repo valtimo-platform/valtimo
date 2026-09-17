@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal [open]="open" showFooter="true" valtimoCdsModal (close)="onCloseModal()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ (column ? 'caseManagement.groups.listColumns.editColumn' : 'caseManagement.groups.listColumns.addColumn') | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form [formGroup]="formGroup" cdsModalContent [cdsLayer]="1">
+    <cds-label>
+      {{ 'caseManagement.groups.listColumns.columnKey' | translate }}
+
+      <input
+        formControlName="key"
+        cdsText
+        [placeholder]="'caseManagement.groups.listColumns.columnKeyPlaceholder' | translate"
+        [attr.modal-primary-focus]="!column"
+      />
+    </cds-label>
+
+    <cds-label>
+      {{ 'caseManagement.groups.listColumns.columnTitle' | translate }}
+
+      <input
+        formControlName="title"
+        cdsText
+        [placeholder]="'caseManagement.groups.listColumns.columnTitlePlaceholder' | translate"
+        [attr.modal-primary-focus]="!!column"
+      />
+    </cds-label>
+
+    <cds-dropdown
+      formControlName="displayType"
+      [label]="'caseManagement.groups.listColumns.displayType' | translate"
+    >
+      <cds-dropdown-list [items]="DISPLAY_TYPE_ITEMS"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <cds-toggle
+      formControlName="sortable"
+      [label]="'caseManagement.groups.listColumns.sortable' | translate"
+    ></cds-toggle>
+
+    <cds-toggle
+      formControlName="exportable"
+      [label]="'caseManagement.groups.listColumns.exportable' | translate"
+    ></cds-toggle>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="secondary" (click)="onCloseModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

@@ -23,18 +23,20 @@ data class CaseDefinitionGroupWithMembersResponseDto(
     val key: String,
     val title: String,
     val description: String?,
+    val color: String?,
     val order: Int,
     val members: List<GroupMemberDto>,
     val createdBy: String,
     val createdOn: ZonedDateTime
 ) {
     companion object {
-        fun of(group: CaseDefinitionGroup) = CaseDefinitionGroupWithMembersResponseDto(
+        fun of(group: CaseDefinitionGroup, members: List<GroupMemberDto>) = CaseDefinitionGroupWithMembersResponseDto(
             key = group.key,
             title = group.title,
             description = group.description,
+            color = group.color,
             order = group.order,
-            members = group.members.map { GroupMemberDto.of(it) },
+            members = members,
             createdBy = group.createdBy,
             createdOn = group.createdOn
         )
