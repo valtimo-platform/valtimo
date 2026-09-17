@@ -239,7 +239,7 @@
     "@types/topojson": "3.2.6",
     "@typescript-eslint/eslint-plugin": "8.0.1",
     "@typescript-eslint/parser": "8.0.1",
-    "@valtimo-plugins/freemarker": "8.5.3-V12",
+    "@valtimo-plugins/freemarker": "8.5.4-V12",
     "@valtimo-plugins/smtpmail": "1.0.2",
     "@webcomponents/custom-elements": "1.6.0",
     "angular-split": "18.0.0-beta.1",

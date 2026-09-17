@@ -116,8 +116,10 @@ allprojects {
                 dependency "commons-fileupload:commons-fileupload:${commonsFileuploadVersion}"
                 dependency "org.assertj:assertj-core:${assertjCoreVersion}"
 
-                // CVE override: Spring Boot 3.5.14 ships with Tomcat 10.1.54. Override
-                // until a new Spring Boot patch includes the fix.
+                // CVE override: Spring Boot 3.5.16 ships Tomcat 10.1.55, affected by
+                // CVE-2026-59083/59084 (rewrite valve security constraint bypass) and
+                // CVE-2026-65182/65637/65905/68525 plus five HIGH issues. Fixed in 10.1.58.
+                // Override until a new Spring Boot patch includes the fix.
                 dependency "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}"
                 dependency "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}"
                 dependency "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}"
@@ -129,12 +131,23 @@ allprojects {
                 dependency "org.apache.httpcomponents.core5:httpcore5:${httpcore5Version}"
                 dependency "org.apache.httpcomponents.core5:httpcore5-h2:${httpcore5Version}"
 
+                // CVE override: Spring Boot 3.5.16 ships httpclient5 5.5.2 which is affected by
+                // CVE-2026-71290 (HostnameVerificationPolicy#BUILTIN ignored by the async client).
+                // Fixed in 5.6.4. Override until a Spring Boot patch includes the fix.
+                dependency "org.apache.httpcomponents.client5:httpclient5:${httpclient5Version}"
+
                 // CVE override: Spring Boot 3.5.16 ships logback 1.5.34 which is affected by
                 // CVE-2026-13006 (arbitrary code execution via unicode-escape bypass in Janino
                 // <if> conditions). Fixed in 1.5.37. Override until a Spring Boot patch includes
                 // the fix.
                 dependency "ch.qos.logback:logback-core:${logbackVersion}"
                 dependency "ch.qos.logback:logback-classic:${logbackVersion}"
+
+                // CVE override: Spring Boot 3.5.16 pins freemarker 2.3.34, affected by
+                // CVE-2026-84939 (path traversal via malformed locale in localized lookup).
+                // The BOM pin is strict, so it downgrades the 2.3.35 the freemarker plugin
+                // asks for. Override until a Spring Boot patch includes the fix.
+                dependency "org.freemarker:freemarker:${freemarkerVersion}"
             }
         }
 
