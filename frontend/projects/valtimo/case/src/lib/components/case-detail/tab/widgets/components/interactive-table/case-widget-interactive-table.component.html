@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@
     widgetConfiguration: widgetConfiguration$ | async,
     widgetData: widgetData$ | async,
   } as obs"
-  [widgetData]="obs.widgetData"
   [widgetConfiguration]="obs.widgetConfiguration"
+  [widgetData]="obs.widgetData"
   (actionEvent)="onActionEvent($event, obs.widgetData)"
-  (rowClickEvent)="onRowClickEvent($event, obs.widgetConfiguration)"
   (caseStartEvent)="onCaseStartEvent($event)"
-  (queryParamsEvent)="onQueryParamsEvent($event)"
->
-</valtimo-widget-interactive-table>
+  (queryParamsEvent)="onQueryParamsEvent($event, obs.widgetConfiguration)"
+  (rowClickEvent)="onRowClickEvent($event, obs.widgetConfiguration)"
+></valtimo-widget-interactive-table>
 
 <valtimo-case-list-actions [navigateAfterSubmit]="false"></valtimo-case-list-actions>

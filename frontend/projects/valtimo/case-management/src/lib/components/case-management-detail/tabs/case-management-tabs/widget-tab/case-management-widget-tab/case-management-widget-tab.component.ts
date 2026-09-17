@@ -139,6 +139,7 @@ export class CaseManagementWidgetTabComponent
     WidgetType.CUSTOM,
     WidgetType.FORMIO,
     WidgetType.TABLE,
+    WidgetType.INTERACTIVE_TABLE,
     WidgetType.MAP,
     WidgetType.PERSON_CARD,
     WidgetType.METROLINE,
