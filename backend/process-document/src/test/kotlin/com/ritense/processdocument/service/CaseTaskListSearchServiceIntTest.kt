@@ -392,6 +392,33 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         assertThat(searchResult.numberOfElements).isEqualTo(10)
     }
 
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [AuthoritiesConstants.USER])
+    fun shouldReturnDisjunctPagesWhenAllTasksShareTheSortedValue() {
+        val taskDefinition = definition("task")
+        repeat(12) { createDocumentAndTwoProcesses("Funenpark", taskDefinition.id().name()) }
+
+        val sort = Sort.by(Sort.Direction.DESC, "doc:street")
+        val firstPageTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(0, 10, sort))
+        val secondPageTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(1, 10, sort))
+        val thirdPageTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(2, 10, sort))
+        val allTaskIds = searchTaskIds(taskDefinition.id().name(), PageRequest.of(0, 24, sort))
+
+        assertThat(firstPageTaskIds).hasSize(10)
+        assertThat(secondPageTaskIds).hasSize(10)
+        assertThat(thirdPageTaskIds).hasSize(4)
+        assertThat(firstPageTaskIds).doesNotContainAnyElementsOf(secondPageTaskIds)
+        val pagedTaskIds = firstPageTaskIds + secondPageTaskIds + thirdPageTaskIds
+        assertThat(pagedTaskIds).hasSize(24)
+        assertThat(pagedTaskIds).doesNotHaveDuplicates()
+        assertThat(pagedTaskIds).isSorted()
+        assertThat(pagedTaskIds).isEqualTo(allTaskIds)
+    }
+
+    private fun searchTaskIds(caseDefinitionName: String, pageable: PageRequest): List<String> =
+        caseTaskListSearchService.search(caseDefinitionName, AdvancedSearchRequest(), pageable)
+            .content.map { it.taskId }
+
     private fun createTeamAndAssignToTask(taskId: String, teamKey: String, teamTitle: String) {
         if (!teamRepository.existsById(teamKey)) {
             teamRepository.save(com.ritense.team.domain.Team(key = teamKey, title = teamTitle))
