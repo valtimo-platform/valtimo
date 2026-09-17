@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Building blocks | Importing a case definition with a building block again lists each of the building block's processes once on the Processes tab, instead of adding another row every import |
