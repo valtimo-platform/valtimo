@@ -31,7 +31,6 @@ it stays exactly as you typed it. IDs are limited to 64 characters.
 
 | Area | Fix |
 |------|-----|
-| Availability | An instance whose database has become unreachable now reports itself as unavailable, so it is taken out of service instead of being sent requests that fail |
 | Building blocks | A file uploaded from a task form inside a building block is added to the case |
 | Case and task lists | Paging through a list sorted on a column that repeats values, such as the assignee, no longer shows the same case or task on two pages while leaving others out |
 | Forms | Number fields in a form now use the notation of the user's language, so a Dutch user reads and enters 1234,56 instead of 1234.56 |
