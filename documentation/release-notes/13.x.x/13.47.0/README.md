@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Notificaties API | Notifications are received again when the plugin's Authentication header starts with "Bearer". Until now every notification sent with such a header was refused, even when the header was exactly the one registered with the subscription |
+| Notificaties API | Notifications are received again when the plugin's Authentication header starts with "Bearer", as long as it matches the header registered with the subscription. Until now every notification sent with such a header was refused |
