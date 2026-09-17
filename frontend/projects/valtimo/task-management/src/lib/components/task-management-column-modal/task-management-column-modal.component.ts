@@ -184,6 +184,7 @@ export class TaskManagementColumnModalComponent {
       this.getInvalidListItem(`listColumn.selectDefaultSort`),
       [Validators.required]
     ),
+    defaultVisible: new FormControl<boolean>(true),
   });
 
   public get title(): AbstractControl<string | null> | null {
@@ -209,6 +210,9 @@ export class TaskManagementColumnModalComponent {
   }
   public get defaultSort(): AbstractControl<TaskListColumnListItem | null> | null {
     return this.formGroup.get('defaultSort');
+  }
+  public get defaultVisible(): AbstractControl<boolean | null> | null {
+    return this.formGroup.get('defaultVisible');
   }
 
   private get _SORT_ASC_ITEM() {
@@ -433,6 +437,7 @@ export class TaskManagementColumnModalComponent {
       displayType: this.getInvalidListItem('listColumnDisplayType.select'),
       sortable: false,
       defaultSort: this.getInvalidListItem(`listColumn.selectDefaultSort`),
+      defaultVisible: true,
     });
   }
 
@@ -484,6 +489,7 @@ export class TaskManagementColumnModalComponent {
         formValue?.defaultSort?.key !== this._INVALID_KEY && {
           defaultSort: formValue?.defaultSort?.key as TaskListColumnDefaultSort,
         }),
+      defaultVisible: formValue.defaultVisible ?? true,
     };
 
     return taskListColumn;
@@ -540,6 +546,7 @@ export class TaskManagementColumnModalComponent {
       key: column.key,
       path: column.path,
       sortable: column.sortable,
+      defaultVisible: column.defaultVisible ?? true,
       displayType: this.getListItemFromViewType(column.displayType.type),
       ...(column.title && {title: column.title}),
       ...(!column.defaultSort && {
