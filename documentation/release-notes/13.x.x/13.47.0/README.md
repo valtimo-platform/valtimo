@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| IKO | Widgets and search results now show when data could not be retrieved, instead of looking the same as when there is no data |
