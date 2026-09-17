@@ -38,4 +38,3 @@ it stays exactly as you typed it. IDs are limited to 64 characters.
 | IKO | A slow IKO server no longer holds up other parts of the application while widget data is loading |
 | Plugins | A call to a slow Zaken or Objecten API now waits up to 180 seconds for an answer instead of giving up after a few seconds. Giving up early could leave a zaak behind without a case around it |
 | Search fields | A task list search field can be saved without a title, as its tooltip already describes. The task list then shows the search field key as the label |
-| Plugins | Settings left over from an older version of a plugin no longer fill the log with errors every time a case is opened |
