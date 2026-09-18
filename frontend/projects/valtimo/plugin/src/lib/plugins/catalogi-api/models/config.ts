@@ -36,6 +36,16 @@ interface GetResultaattypeConfig {
   processVariable: string;
 }
 
+interface GetRoltypenConfig {
+  processVariable: string;
+  zaaktypeUrl?: string;
+}
+
+interface GetRoltypeConfig {
+  roltype: string;
+  processVariable: string;
+}
+
 interface GetStatustypenConfig {
   processVariable: string;
   zaaktypeUrl?: string;
@@ -66,6 +76,8 @@ export {
   GetBesluittypeConfig,
   GetResultaattypenConfig,
   GetResultaattypeConfig,
+  GetRoltypenConfig,
+  GetRoltypeConfig,
   GetStatustypenConfig,
   GetStatustypeConfig,
   GetEigenschapConfig,
