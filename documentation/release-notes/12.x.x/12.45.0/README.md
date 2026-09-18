@@ -18,3 +18,8 @@
 
   Clicking Save more than once in the document metadata window attached the same document to the case that many
   times, and the duplicates had to be deleted by hand on the Documents tab. Only the first click is accepted now.
+
+* **Dashboard widgets set to bar chart show their counts again**
+
+  A widget with several case counts stayed empty when its display option was set to bar chart, while donut and
+  meter showed the same counts correctly.
