@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "snb-hoofdproces",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

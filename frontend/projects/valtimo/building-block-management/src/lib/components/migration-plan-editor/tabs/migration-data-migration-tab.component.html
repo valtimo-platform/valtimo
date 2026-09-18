@@ -1,0 +1,126 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  @if (descriptionKey) {
+    <p class="migration-tab__description">{{ descriptionKey | translate }}</p>
+  }
+
+  <div class="migration-tab__patches" formArrayName="patches">
+    @for (patch of patchesArray.controls; track patch) {
+      <div class="migration-tab__patch" [formGroupName]="$index">
+        <!-- Source (left) -->
+        <div class="migration-tab__patch-side migration-tab__patch-side--from">
+          <cds-select
+            formControlName="mode"
+            [label]="'migrationEditor.dataMigration.mode' | translate"
+          >
+            @for (mode of MODES; track mode) {
+              <option [value]="mode">
+                {{ 'migrationEditor.dataMigration.mode_' + mode | translate }}
+              </option>
+            }
+          </cds-select>
+
+          @switch (patch.get('mode')?.value) {
+            @case ('path') {
+              <valtimo-value-path-selector
+                formControlName="source"
+                [caseDefinitionKey]="sourceContext?.caseDefinitionKey ?? null"
+                [caseDefinitionVersionTag]="sourceContext?.caseDefinitionVersionTag ?? null"
+                [buildingBlockDefinitionKey]="sourceContext?.buildingBlockKey ?? null"
+                [buildingBlockDefinitionVersionTag]="sourceContext?.buildingBlockVersionTag ?? null"
+                [label]="'migrationEditor.dataMigration.source' | translate"
+                [prefixes]="sourcePrefixes"
+                [notation]="'slashes'"
+              ></valtimo-value-path-selector>
+            }
+            @case ('value') {
+              <cds-text-label>
+                {{ 'migrationEditor.dataMigration.value' | translate }}
+                <input
+                  cdsText
+                  formControlName="value"
+                  [placeholder]="'migrationEditor.dataMigration.valuePlaceholder' | translate"
+                />
+              </cds-text-label>
+            }
+            @default {
+              <span class="migration-tab__null-hint">
+                {{ 'migrationEditor.dataMigration.nullHint' | translate }}
+              </span>
+            }
+          }
+        </div>
+
+        <span class="migration-tab__mapping-arrow" aria-hidden="true">→</span>
+
+        <!-- Target (right) -->
+        <div class="migration-tab__patch-side migration-tab__patch-side--to">
+          <valtimo-value-path-selector
+            formControlName="target"
+            [caseDefinitionKey]="targetContext?.caseDefinitionKey ?? null"
+            [caseDefinitionVersionTag]="targetContext?.caseDefinitionVersionTag ?? null"
+            [buildingBlockDefinitionKey]="targetContext?.buildingBlockKey ?? null"
+            [buildingBlockDefinitionVersionTag]="targetContext?.buildingBlockVersionTag ?? null"
+            [additionalVersionTags]="targetAdditionalVersionTags"
+            [label]="'migrationEditor.dataMigration.target' | translate"
+            [prefixes]="TARGET_PREFIXES"
+            [notation]="'slashes'"
+          ></valtimo-value-path-selector>
+
+          @if (patch.get('mode')?.value !== 'null') {
+            <cds-select
+              formControlName="targetType"
+              [label]="'migrationEditor.dataMigration.targetType' | translate"
+            >
+              <option value="">
+                {{ 'migrationEditor.dataMigration.targetTypeAuto' | translate }}
+              </option>
+              @for (type of TARGET_TYPES; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </cds-select>
+          }
+        </div>
+
+        <button
+          cdsButton="danger--ghost"
+          size="sm"
+          [iconOnly]="true"
+          [title]="'interface.delete' | translate"
+          (click)="removePatch($index)"
+        >
+          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </div>
+    } @empty {
+      <p class="migration-tab__empty">
+        {{ 'migrationEditor.dataMigration.empty' | translate }}
+      </p>
+    }
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    [attr.data-test-id]="testIds.addPatchButton"
+    (click)="addPatch()"
+  >
+    {{ 'migrationEditor.dataMigration.addPatch' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

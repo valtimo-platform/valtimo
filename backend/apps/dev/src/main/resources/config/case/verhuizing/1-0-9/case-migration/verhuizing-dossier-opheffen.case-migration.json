@@ -1,0 +1,29 @@
+{
+    "title": "Dossierbouwsteen opheffen binnen de inspectiebouwsteen",
+    "key": "verhuizing-dossier-opheffen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.8"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.8",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

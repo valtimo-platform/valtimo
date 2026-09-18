@@ -1,0 +1,23 @@
+{
+    "title": "Zonder trigger \u2014 wordt gedeployed en kan door niets gestart worden",
+    "key": "verhuizing-zonder-trigger",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "zonder-trigger"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "onbereikbaar",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": []
+}

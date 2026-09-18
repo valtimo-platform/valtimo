@@ -1,0 +1,55 @@
+{
+    "title": "Fotobouwsteen wordt dossierbouwsteen",
+    "key": "inspectie-dossier-uit-fotos",
+    "source": {
+        "key": "inspectie-fotos",
+        "versionTag": "1.0.1"
+    },
+    "dataMigration": [
+        {
+            "target": "doc:/aanvragerNaam",
+            "source": "doc:/aanvragerNaam"
+        },
+        {
+            "target": "doc:/dossierStatus",
+            "source": "doc:/fotoStatus"
+        },
+        {
+            "target": "doc:/aantalBijlagen",
+            "source": "doc:/aantalFotos",
+            "targetType": "integer"
+        },
+        {
+            "target": "doc:/toelichting",
+            "source": "doc:/toelichting"
+        },
+        {
+            "target": "doc:/dossierKwaliteit",
+            "source": "doc:/fotoKwaliteit"
+        },
+        {
+            "target": "doc:/gemigreerdVan",
+            "value": "inspectie-fotos:1.0.1",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "inspectie-fotos-process",
+            "targetProcessDefinitionKey": "inspectie-dossier-process",
+            "mapActivities": {
+                "FotosControlerenTask": "DossierVaststellenTask",
+                "RegistreerKwaliteitTask": "RegistreerDossierstatusTask"
+            },
+            "setProcessVariables": [
+                {
+                    "target": "pv:dossierGemigreerdVan",
+                    "value": "inspectie-fotos:1.0.1",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

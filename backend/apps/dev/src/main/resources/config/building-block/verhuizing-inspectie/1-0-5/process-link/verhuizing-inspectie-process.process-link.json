@@ -1,0 +1,34 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-verhuizing-inspectie"
+    },
+    {
+        "activityId": "InspectieUitvoerenTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "inspectie-uitvoeren"
+    },
+    {
+        "activityId": "CallInspectieFotosActivity",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "inspectie-dossier",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:aanvragerNaam",
+                "target": "aanvragerNaam"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "dossierStatus",
+                "target": "doc:fotoStatus",
+                "syncTiming": "END"
+            }
+        ]
+    }
+]

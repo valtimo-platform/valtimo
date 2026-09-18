@@ -18,6 +18,11 @@ package com.ritense.document.domain
 
 import java.util.Objects
 
+@Deprecated(
+    "Part of the 'Case migration (beta)' admin screen, which has been replaced by the case " +
+        "definition migration feature. Will be removed in a future release."
+)
+@Suppress("DEPRECATION")
 data class DocumentMigrationConflict(
     val source: String,
     val target: String?,

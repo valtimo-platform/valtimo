@@ -1,0 +1,29 @@
+{
+    "title": "Bouwstenen bijwerken \u2014 keten 1.0.2 -> 1.0.3 -> 1.0.4, met recursie",
+    "key": "verhuizing-bouwstenen-bijwerken",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.6"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.6",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

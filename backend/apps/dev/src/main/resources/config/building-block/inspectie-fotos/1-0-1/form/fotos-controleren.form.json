@@ -1,0 +1,59 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Foto's controleren",
+            "content": "Controleer de geüploade foto's en beoordeel de kwaliteit.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aantalFotos",
+            "type": "number",
+            "input": true,
+            "label": "Aantal foto's",
+            "tableView": true,
+            "defaultValue": 3
+        },
+        {
+            "key": "fotoKwaliteit",
+            "type": "select",
+            "input": true,
+            "label": "Fotokwaliteit",
+            "tableView": true,
+            "data": {
+                "values": [
+                    {
+                        "label": "Goed",
+                        "value": "goed"
+                    },
+                    {
+                        "label": "Onvoldoende",
+                        "value": "onvoldoende"
+                    }
+                ]
+            },
+            "dataSrc": "values",
+            "defaultValue": "goed"
+        },
+        {
+            "key": "toelichting",
+            "type": "textfield",
+            "input": true,
+            "label": "Toelichting",
+            "tableView": true,
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Controle afronden",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

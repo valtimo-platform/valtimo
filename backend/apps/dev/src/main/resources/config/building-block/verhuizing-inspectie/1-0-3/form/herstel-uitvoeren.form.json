@@ -1,0 +1,22 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Herstel uitvoeren",
+            "content": "Voer het herstel uit. Dit proces hoort bij de bouwsteen zelf; het is geen geneste bouwsteen.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Herstel afronden",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

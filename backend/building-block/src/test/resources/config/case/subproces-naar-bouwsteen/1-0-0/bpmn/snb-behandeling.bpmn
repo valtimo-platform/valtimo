@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  id="Definitions_snb_behandeling_1_0_0" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="snb-behandeling" name="Behandeling" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start behandeling">
+      <bpmn:outgoing>Flow_Start_To_Task</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Task" sourceRef="StartEvent" targetRef="task1" />
+    <!-- The bouwsteen renames this to `task_1`, which is what the entry's mapActivities has to carry. -->
+    <bpmn:userTask id="task1" name="Behandelen">
+      <bpmn:incoming>Flow_Start_To_Task</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_To_End</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_Task_To_End" sourceRef="task1" targetRef="EndEvent" />
+    <bpmn:endEvent id="EndEvent" name="Behandeling klaar">
+      <bpmn:incoming>Flow_Task_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>
