@@ -23,3 +23,8 @@
 
   A call to a Zaken or Objecten API that was slow to respond could be given up on after a few seconds, which could
   leave a zaak behind without a case around it. Such a call now waits up to three minutes for an answer.
+
+* **Dashboard widgets set to bar chart show their counts again**
+
+  A widget with several case counts stayed empty when its display option was set to bar chart, while donut and
+  meter showed the same counts correctly.
