@@ -16,12 +16,22 @@
 
 import {
   AlertsOptions,
+  AngularFormioOptions,
   ErrorsOptions,
   FormioBeforeSubmit,
   FormioHookOptions,
-  FormioOptions,
 } from '@formio/angular';
 import {ManagementContext} from '@valtimo/shared';
+
+interface FormioOptions extends AngularFormioOptions {
+  language?: string;
+  i18n?: object;
+  fileService?: object;
+  hooks?: FormioHookOptions;
+  readonly?: boolean;
+  decimalSeparator?: string;
+  thousandsSeparator?: string;
+}
 
 interface FormioSubmission {
   data: {
@@ -170,6 +180,7 @@ export {
   AlertsOptionsImpl,
   FormioOptionsImpl,
   ValtimoFormioOptions,
+  FormioOptions,
   ValidateOptions,
   BuilderInfo,
   ComponentSchema,

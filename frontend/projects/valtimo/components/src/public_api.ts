@@ -97,6 +97,7 @@ export * from './lib/components/view-content/view-content.service';
 export * from './lib/components/form-io/components/form-io/form-io.component';
 export * from './lib/components/form-io/components/form-io-builder/form-io-builder.component';
 export * from './lib/components/form-io/form-io.module';
+export * from './lib/components/form-io/form-io-edit-form.utils';
 export * from './lib/components/form-io/patches/patched-datagrid';
 
 export * from './lib/components/modal/modal.module';

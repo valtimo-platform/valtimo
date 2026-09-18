@@ -31,14 +31,13 @@ import {
 import {
   FormioComponent,
   FormioModule,
-  FormioOptions,
   FormioSubmission,
   FormioSubmissionCallback,
 } from '@formio/angular';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {deepmerge} from 'deepmerge-ts';
-import {FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
+import {FormIoStateService, ValtimoFormioOptions, FormioOptions} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
