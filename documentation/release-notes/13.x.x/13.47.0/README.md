@@ -25,4 +25,6 @@ while a task is open. The width you set is remembered for you across all case ty
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Building blocks | The breadcrumb back to a mail, text or document template overview opens that overview, instead of the building block's General tab |
+| Case management | The breadcrumb back to a mail, text or document template overview opens that overview, instead of the case's General tab |
+| Case management | The breadcrumb back to a case opens its General tab, instead of a page with no tab selected |
