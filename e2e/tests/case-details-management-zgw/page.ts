@@ -70,7 +70,7 @@ export class CaseDetailsManagementZgwPage {
   }
 
   get addColumnButton(): Locator {
-    return this.page.getByTestId(ZGW_DOCUMENT_COLUMNS_TEST_IDS.addButton);
+    return this.page.getByTestId(ZGW_DOCUMENT_COLUMNS_TEST_IDS.addButton).first();
   }
 
   get modalColumnDropdown(): Locator {

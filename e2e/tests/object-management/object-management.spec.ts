@@ -68,12 +68,7 @@ test.describe('Feature 12 — Object management', () => {
     test('12.1 — Lists the configured object types', async () => {
       await objectManagementPage.goToObjectManagement();
 
-      const headers = await objectManagementPage.carbonList.table
-        .locator('thead th')
-        .allInnerTexts();
-      expect(headers.map(header => header.trim()).filter(Boolean)).toEqual([
-        ...OBJECT_MANAGEMENT_TEXTS.columns,
-      ]);
+      await objectManagementPage.carbonList.assertColumnHeaders(OBJECT_MANAGEMENT_TEXTS.columns);
 
       // The overview matches the API, one row per configuration.
       const configurations = await objectManagementPage.getConfigurationsViaApi();

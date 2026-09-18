@@ -33,6 +33,8 @@ import {
 
 test.use({storageState: undefined});
 
+test.describe.configure({mode: 'serial'});
+
 test.describe('Feature 15F — IKO Tabs', () => {
   let context: BrowserContext;
   let page: Page;
@@ -58,6 +60,7 @@ test.describe('Feature 15F — IKO Tabs', () => {
     );
 
     const parentViewTitle = `E2E IKO View tab-suite-parent`;
+    await ikoViewPage.deleteViewViaApi(ikoViewPage.viewKeyFor(parentViewTitle));
     parentViewKey = await ikoViewPage.createViewViaApi(parentServerKey, parentViewTitle);
 
     await page.goto('/');

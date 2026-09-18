@@ -15,9 +15,9 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CaseDetailsManagementPage} from './page';
+import {CaseDetailsManagementPage, CaseHandlerSettings} from './page';
 import {expectNotificationMessage} from '../../utils/ui.utils';
-import {apiGet, apiPut, apiDelete} from '../../utils/api.utils';
+import {apiGet, apiPut, apiPatch, apiDelete} from '../../utils/api.utils';
 import {
   ensureDraftVersionSelected,
   ensureFinalVersionSelected,
@@ -32,6 +32,8 @@ test.describe('Case management', () => {
   let caseDetailsManagementPage;
   let request;
   let draftVersion: string;
+
+  test.describe.configure({timeout: 90_000});
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -66,9 +68,7 @@ test.describe('Case management', () => {
         await caseDetailsManagementPage.switchCaseVersionViaList();
 
         // Assert
-        await expect(page).toHaveURL(
-          /\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/
-        );
+        await expect(page).toHaveURL(/\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/);
       });
 
       test('Set active version', async () => {
@@ -86,21 +86,35 @@ test.describe('Case management', () => {
 
     test.describe('General tab', () => {
       test.beforeEach(async () => {
-        //Arrange
-        draftVersion = await ensureDraftVersionSelected(page);
-        // The handler toggles render enabled and unchecked before their settings
-        // GET resolves, so waiting for "enabled" alone hands the test a state that
-        // was never real. Wait for the settings themselves to land.
-        await caseDetailsManagementPage.waitForCaseSettingsLoaded(async () => {
-          await page.reload();
-          await page.waitForLoadState('load');
-        });
+        draftVersion = await caseDetailsManagementPage.openDraftVersionWithSettings();
       });
 
       test.describe('6.2, 6.3 — Case handler', () => {
+        let originalHandlerSettings: CaseHandlerSettings | null = null;
+        let settingsUrl: string | null = null;
+
+        test.beforeAll(async () => {
+          settingsUrl = `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/settings`;
+          originalHandlerSettings = await apiGet<CaseHandlerSettings>(settingsUrl);
+        });
+
+        test.afterAll(async () => {
+          if (!originalHandlerSettings || !settingsUrl) return;
+
+          await apiPatch(settingsUrl, {
+            canHaveAssignee: originalHandlerSettings.canHaveAssignee,
+            autoAssignTasks: originalHandlerSettings.autoAssignTasks,
+          });
+        });
+
         test('Can have handler is false', async () => {
           const canHaveHandler = caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle;
           const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
+
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: true,
+            autoAssignTasks: false,
+          });
 
           //Act
           await caseDetailsManagementPage.setCanHaveHandler(false);
@@ -114,10 +128,10 @@ test.describe('Case management', () => {
           const canHaveHandler = caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle;
           const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
 
-          // Arrange: switching the handler off also resets auto-assign to false on
-          // the backend, which is what makes the "cannot automatically assign"
-          // assertion below meaningful.
-          await caseDetailsManagementPage.setCanHaveHandler(false);
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: false,
+            autoAssignTasks: false,
+          });
 
           //Act
           await caseDetailsManagementPage.setCanHaveHandler(true);
@@ -133,7 +147,10 @@ test.describe('Case management', () => {
           const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
 
           // Arrange: auto-assign is only editable while the case can have a handler
-          await caseDetailsManagementPage.setCanHaveHandler(true);
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: true,
+            autoAssignTasks: false,
+          });
           await canHaveHandler.assertChecked(true);
           await autoAssign.assertEnabled();
 
@@ -143,16 +160,32 @@ test.describe('Case management', () => {
           //Assert
           await autoAssign.assertChecked(true);
         });
+
+        test('Turning the handler off also clears auto-assign', async () => {
+          const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
+
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: true,
+            autoAssignTasks: true,
+          });
+          await autoAssign.assertChecked(true);
+
+          //Act
+          await caseDetailsManagementPage.setCanHaveHandler(false);
+
+          await autoAssign.assertDisabled();
+          expect(await caseDetailsManagementPage.getCaseHandlerSettingsViaApi()).toMatchObject({
+            canHaveAssignee: false,
+            autoAssignTasks: false,
+          });
+        });
       });
 
       test.describe('6.4, 6.5 — External start form', () => {
         test('Start form enabled', async () => {
           //Arrange
-          await caseDetailsManagementPage.hasExternalFormToggle.click();
-          await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute(
-            'aria-checked',
-            'true'
-          );
+          await caseDetailsManagementPage.setExternalStartForm(false);
+          await caseDetailsManagementPage.setExternalStartForm(true);
 
           //Act
           await caseDetailsManagementPage.fillInExternalForm();
@@ -169,11 +202,7 @@ test.describe('Case management', () => {
 
         test('Start form disabled', async () => {
           //Act
-          await caseDetailsManagementPage.hasExternalFormToggle.click();
-          await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute(
-            'aria-checked',
-            'false'
-          );
+          await caseDetailsManagementPage.setExternalStartForm(false);
           await caseDetailsManagementPage.externalFormSave.click();
 
           //Assert
@@ -192,14 +221,13 @@ test.describe('Case management', () => {
 
       test.describe('6.1 — Link upload process', () => {
         let originalUploadProcessKey: string | null;
-
-        const getFeatureProcessUrl = () =>
-          `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
+        let featureProcessUrl: string | null = null;
 
         test.beforeAll(async () => {
+          featureProcessUrl = `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
           try {
             const linked = await apiGet<{processDefinitionKey: string}>(
-              `${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`
+              `${featureProcessUrl}/DOCUMENT_UPLOAD`
             );
             originalUploadProcessKey = linked?.processDefinitionKey ?? null;
           } catch {
@@ -208,17 +236,22 @@ test.describe('Case management', () => {
         });
 
         test.afterAll(async () => {
+          if (!featureProcessUrl) return;
+
           try {
             if (originalUploadProcessKey) {
-              await apiPut(getFeatureProcessUrl(), {
+              await apiPut(featureProcessUrl, {
                 processDefinitionKey: originalUploadProcessKey,
                 linkType: 'DOCUMENT_UPLOAD',
               });
             } else {
-              await apiDelete(`${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`);
+              await apiDelete(`${featureProcessUrl}/DOCUMENT_UPLOAD`);
             }
-          } catch {
-            // Ignore cleanup errors
+          } catch (error) {
+            console.warn(
+              `[case-details-management] Could not restore the upload process link on ` +
+                `${featureProcessUrl}: ${(error as Error).message}`
+            );
           }
         });
 

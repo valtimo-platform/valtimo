@@ -124,8 +124,13 @@ export class CaseDetailsManagementTabsPage {
 
   async deleteTab(title: string) {
     const row = this.page.locator(`tr:has(td:has-text("${title}"))`);
-    await row.locator('.v-overflow-menu__trigger').click();
-    await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
+    const deleteAction = this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'});
+
+    await expect(async () => {
+      await row.locator('.v-overflow-menu__trigger').click({timeout: 5_000});
+      await deleteAction.click({timeout: 5_000});
+    }).toPass({timeout: 30_000});
+
     await this.page.getByRole('button', {name: 'Delete'}).click();
   }
 

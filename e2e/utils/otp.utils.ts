@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-import path from 'path';
-import * as ApiUtils from './api.utils';
-import * as fs from 'fs';
+import * as OTPAuth from 'otpauth';
 
-//Gives unauthorized
-export abstract class CaseManagementUtils {
-  public static async importCase(fileName: string) {
-    const filePath = path.resolve(__dirname, `../assets/case-import-archives/${fileName}.zip`);
-    const buffer = fs.readFileSync(filePath);
-    await ApiUtils.apiPost('/api/management/v1/case/import', {
-      multipart: {
-        file: {
-          name: `${fileName}.zip`,
-          mimeType: 'application/zip',
-          buffer,
-        },
-      },
-    });
-  }
+const NEW_WINDOW_MARGIN_MS = 1_000;
+
+export function millisUntilNextOtp(otpUrl: string): number {
+  const totp = OTPAuth.URI.parse(otpUrl) as OTPAuth.TOTP;
+  const periodMs = totp.period * 1000;
+  return periodMs - (Date.now() % periodMs) + NEW_WINDOW_MARGIN_MS;
+}
+
+export async function waitForNextOtp(otpUrl: string): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, millisUntilNextOtp(otpUrl)));
+}
+
+export function generateOtp(otpUrl: string): string {
+  return OTPAuth.URI.parse(otpUrl).generate();
 }

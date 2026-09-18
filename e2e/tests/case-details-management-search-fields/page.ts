@@ -16,7 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
+import {AUTO_KEY_INPUT_TEST_IDS, VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 
 export class CaseDetailsManagementSearchFieldsPage {
   constructor(
@@ -58,7 +58,16 @@ export class CaseDetailsManagementSearchFieldsPage {
   }
 
   get keyInput() {
-    return this.page.locator('[data-testid="case-management-search-key"]');
+    return this.page.getByTestId('case-management-search-key');
+  }
+
+  get keyEditButton() {
+    return this.page.getByTestId(AUTO_KEY_INPUT_TEST_IDS.editButton);
+  }
+
+  async fillKeyManually(key: string) {
+    await this.keyEditButton.click();
+    await this.keyInput.fill(key);
   }
 
   get dataTypeDropdown() {
@@ -86,7 +95,9 @@ export class CaseDetailsManagementSearchFieldsPage {
   }
 
   get valuePathSelectorInput() {
-    return this.page.locator('valtimo-value-path-selector').getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
+    return this.page
+      .locator('valtimo-value-path-selector')
+      .getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.input);
   }
 
   // Download button
@@ -159,7 +170,7 @@ export class CaseDetailsManagementSearchFieldsPage {
       await this.titleInput.fill(field.title);
     }
 
-    await this.keyInput.fill(field.key);
+    await this.fillKeyManually(field.key);
 
     await this.valuePathSelectorToggle.click();
     await this.valuePathSelectorInput.fill(field.path);

@@ -32,6 +32,8 @@ import {
 
 test.use({storageState: undefined});
 
+test.describe.configure({mode: 'serial'});
+
 test.describe('Feature 15B — IKO View Management', () => {
   let context: BrowserContext;
   let page: Page;
@@ -90,6 +92,10 @@ test.describe('Feature 15B — IKO View Management', () => {
     const initialTitle = uniqueViewTitle('crud');
     const editedTitle = uniqueViewTitle('crud-edited');
 
+    test.afterEach(async () => {
+      await ikoViewPage.dismissOpenModal();
+    });
+
     test('15.13 — displays the views list (empty by default)', async () => {
       await ikoViewPage.list.waitForLoaded();
       await ikoViewPage.list.assertNoResults();
@@ -122,13 +128,13 @@ test.describe('Feature 15B — IKO View Management', () => {
       await expect(removeButtons.first()).toBeDisabled();
 
       // Add a second row, fill it, then remove it.
-      await ikoViewPage.propertyKvAddRowButton(kvKey).click();
+      await ikoViewPage.addKeyValueRow(kvKey);
       await expect(keys).toHaveCount(2);
       await keys.nth(1).fill('second-key');
       await values.nth(1).fill('second-value');
 
       await expect(removeButtons.nth(1)).toBeEnabled();
-      await removeButtons.nth(1).click();
+      await ikoViewPage.removeKeyValueRow(kvKey, 1);
       await expect(keys).toHaveCount(1);
 
       await ikoViewPage.cancelButton.click();

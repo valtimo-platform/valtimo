@@ -40,7 +40,10 @@ export interface PluginConfigurationResponse {
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class PluginPage {
-  constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
+  constructor(
+    private readonly page: Page,
+    private readonly request: APIRequestContext
+  ) {}
 
   // UI Elements
   get configureButton() {
@@ -161,9 +164,7 @@ export class PluginPage {
     expect(response500.status()).toBe(500);
 
     try {
-      const errorToast = this.page
-        .locator('.cds--toast-notification__details')
-        .first();
+      const errorToast = this.page.locator('.cds--toast-notification__details').first();
 
       await expect(errorToast).toBeVisible({timeout: 10_000});
     } finally {
@@ -186,9 +187,7 @@ export class PluginPage {
     expect(response500.status()).toBe(500);
 
     try {
-      const errorToast = this.page
-        .locator('.cds--toast-notification__details')
-        .first();
+      const errorToast = this.page.locator('.cds--toast-notification__details').first();
 
       await expect(errorToast).toBeVisible({timeout: 10_000});
     } finally {
@@ -249,11 +248,10 @@ export class PluginPage {
   }
 
   async deletePlugin(pluginIdentifier: string): Promise<void> {
-    await this.page
-      .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-      .first()
-      .locator('.v-overflow-menu__trigger')
-      .click();
+    const row = this.page.locator(`tr:has(td:has-text("${pluginIdentifier}"))`).first();
+    if (!(await row.count())) return;
+
+    await row.locator('.v-overflow-menu__trigger').click({timeout: 10_000});
     await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
     await this.page.waitForResponse(
       res => res.url().includes('/api/v1/plugin/configuration') && res.request().method() === 'GET'
@@ -385,11 +383,16 @@ export class PluginPage {
     for (const type of pluginTypes) {
       if (type === 'Besluiten API') continue;
 
-      const rows = this.page.locator(
-        `tr:has(td:has-text("${pluginTestConfiguration[type].pluginIdentifier}"))`
-      );
-      while ((await rows.count()) > 0) {
-        await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
+      const identifier = pluginTestConfiguration[type].pluginIdentifier;
+      const rows = this.page.locator(`tr:has(td:has-text("${identifier}"))`);
+
+      let remaining = await rows.count();
+      while (remaining > 0) {
+        await this.deletePlugin(identifier);
+
+        const left = await rows.count();
+        if (left >= remaining) break;
+        remaining = left;
       }
     }
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Page, expect} from '@playwright/test';
+import {Locator, Page, expect} from '@playwright/test';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
 import {CONFIRMATION_MODAL_TEST_IDS, JSON_EDITOR_TEST_IDS} from '../../constants';
 
@@ -23,8 +23,19 @@ const REVERT_LIST_COLUMNS = [
   {test2: 'This is a random second test'},
 ];
 
+export const JSON_EDITOR_SAVE_URLS = {
+  caseDefinition: /\/management\/v1\/case-definition\//,
+  caseListColumn: /\/management\/v1\/case\/[^/]+\/list-column/,
+  caseSearchField: /\/v1\/document-search\/[^/]+\/fields/,
+  dashboard: /\/management\/v1\/dashboard\//,
+  ikoView: /\/management\/v1\/iko-view\//,
+} as const;
+
 export class JsonEditor {
-  constructor(private readonly page: Page) {}
+  constructor(
+    private readonly page: Page,
+    private readonly saveUrlPattern: RegExp = JSON_EDITOR_SAVE_URLS.caseDefinition
+  ) {}
 
   //UI Elements
   get jsonEditorEditButton() {
@@ -74,8 +85,7 @@ export class JsonEditor {
     await this.clearColumnsJSON();
     await this.editColumnsViaJSON(changes);
     await this.jsonEditorSaveButton.click();
-    await this.jsonEditorConfirmationModalConfirmButton.click();
-    await this.waitForReadOnlyView();
+    await this.commitAndWait(this.jsonEditorConfirmationModalConfirmButton);
   }
 
   async assertKeepEditingChanges(changes: object) {
@@ -115,7 +125,30 @@ export class JsonEditor {
     await this.clearColumnsJSON();
     await this.editColumnsViaJSON(changes);
     await this.jsonEditorCancelButton.click();
-    await this.jsonEditorCancelModalSaveButton.click();
+    await this.commitAndWait(this.jsonEditorCancelModalSaveButton);
+  }
+
+  private async commitAndWait(confirm: Locator) {
+    const saved = this.page
+      .waitForResponse(
+        res =>
+          ['POST', 'PUT'].includes(res.request().method()) &&
+          this.saveUrlPattern.test(res.url()) &&
+          res.ok(),
+        {timeout: 20_000}
+      )
+      .catch(() => undefined);
+
+    await confirm.click();
+
+    if (!(await saved)) {
+      throw new Error(
+        `[json-editor] Save produced no successful POST/PUT matching ${this.saveUrlPattern}. ` +
+          'Either the save failed, or this editor was constructed without the ' +
+          'JSON_EDITOR_SAVE_URLS entry for its feature.'
+      );
+    }
+
     await this.waitForReadOnlyView();
   }
 

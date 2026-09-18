@@ -67,11 +67,11 @@ export class BuildingBlockManagementPage {
   // ─── List locators ────────────────────────────────────────────────
 
   get uploadButton() {
-    return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.uploadButton);
+    return this.carbonList.toolbar.getByTestId(BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.uploadButton);
   }
 
   get createButton() {
-    return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.createButton);
+    return this.carbonList.toolbar.getByTestId(BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.createButton);
   }
 
   // ─── Create modal locators ────────────────────────────────────────
@@ -159,9 +159,19 @@ export class BuildingBlockManagementPage {
    * routes.
    */
   async goToBuildingBlockManagement() {
+    const definitionsLoaded = this.waitForDefinitionsResponse();
     await this.page.goto('/building-block-management');
     await this.page.waitForURL(/\/building-block-management$/);
     await this.carbonList.waitForLoaded();
+    await definitionsLoaded;
+  }
+
+  private waitForDefinitionsResponse() {
+    return this.page.waitForResponse(
+      res =>
+        res.request().method() === 'GET' &&
+        new URL(res.url()).pathname.endsWith(BUILDING_BLOCK_API_URL)
+    );
   }
 
   // ─── List assertions ──────────────────────────────────────────────
@@ -174,12 +184,12 @@ export class BuildingBlockManagementPage {
   }
 
   async assertColumnHeaders(expectedHeaders: readonly string[]) {
-    const headers = await this.carbonList.table.locator('thead th').allInnerTexts();
-    expect(headers.map(header => header.trim())).toEqual([...expectedHeaders]);
+    await this.carbonList.assertColumnHeaders(expectedHeaders);
   }
 
-  async assertBuildingBlockVisible(name: string) {
-    await this.carbonList.row(name).assertVisible();
+  async readKeyColumn(): Promise<string[]> {
+    const cells = await this.carbonList.rows.locator('td:nth-child(2)').allInnerTexts();
+    return cells.map(cell => cell.trim());
   }
 
   /**
@@ -187,8 +197,12 @@ export class BuildingBlockManagementPage {
    * may share a name — and substring matching would make a name that is a prefix
    * of another match several rows, so identify rows by their exact key.
    */
+  async findRowByKey(key: string) {
+    return this.carbonList.searchForRow(key, new RegExp(`^${escapeForRegExp(key)}$`));
+  }
+
   async assertBuildingBlockVisibleByKey(key: string) {
-    await this.carbonList.row(new RegExp(`^${escapeForRegExp(key)}$`)).assertVisible();
+    await this.findRowByKey(key);
   }
 
   /**
@@ -196,8 +210,7 @@ export class BuildingBlockManagementPage {
    * The version is rendered as a Carbon tag rather than plain cell text.
    */
   async assertBuildingBlockMetadata(definition: {name: string; key: string; versionTag: string}) {
-    const row = this.carbonList.row(new RegExp(`^${escapeForRegExp(definition.key)}$`));
-    await row.assertVisible();
+    const row = await this.findRowByKey(definition.key);
     await expect(row.cellByIndex(0)).toHaveText(definition.name);
     await expect(row.cellByIndex(1)).toHaveText(definition.key);
     await row.assertTagCount(1);

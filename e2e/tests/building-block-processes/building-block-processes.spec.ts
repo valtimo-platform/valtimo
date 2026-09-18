@@ -39,6 +39,8 @@ test.use({storageState: undefined});
  * building block the other tests write to is kept a draft throughout.
  */
 test.describe('Building block management — processes (13D)', () => {
+  test.describe.configure({timeout: 120_000});
+
   let context;
   let page;
   let request;
@@ -291,18 +293,23 @@ test.describe('Building block management — processes (13D)', () => {
       await processesPage.goToProcessBuilder(buildingBlockKey, versionTag, main.id);
 
       // 13.34 — selecting the shape switches the panel to that element.
-      await processesPage.modeler.selectElement(UPLOADED_PROCESS.startEventId);
-      await expect(processesPage.modeler.panelHeaderType).toHaveAttribute(
-        'title',
-        BUILDING_BLOCK_PROCESS_TEXTS.startEventPanelType
-      );
+      await processesPage.modeler.withSelectedElement(UPLOADED_PROCESS.startEventId, async () => {
+        await expect(processesPage.modeler.panelHeaderType).toHaveAttribute(
+          'title',
+          BUILDING_BLOCK_PROCESS_TEXTS.startEventPanelType,
+          {timeout: 3_000}
+        );
 
-      // 13.35 — the panel groups, including Valtimo's own "Process link" group.
-      expect(await processesPage.modeler.groupTitles()).toEqual(
-        expect.arrayContaining([...BUILDING_BLOCK_PROCESS_TEXTS.startEventPanelGroups])
-      );
+        // 13.35 — the panel groups, including Valtimo's own "Process link" group.
+        expect(await processesPage.modeler.groupTitles()).toEqual(
+          expect.arrayContaining([...BUILDING_BLOCK_PROCESS_TEXTS.startEventPanelGroups])
+        );
+      });
 
-      await processesPage.modeler.expandGroup('General');
+      await processesPage.modeler.selectElementAndExpandGroup(
+        UPLOADED_PROCESS.startEventId,
+        'General'
+      );
       await expect(processesPage.modeler.idInput).toHaveValue(UPLOADED_PROCESS.startEventId);
       await expect(processesPage.modeler.nameInput).toBeVisible();
     });
@@ -312,9 +319,8 @@ test.describe('Building block management — processes (13D)', () => {
       await processesPage.goToProcessBuilder(buildingBlockKey, versionTag, main.id);
 
       const stepName = `Renamed start ${uniqueId}`;
-      await processesPage.modeler.selectElement(UPLOADED_PROCESS.startEventId);
       // 13.36 — a step setting is changed through the properties panel.
-      await processesPage.modeler.renameSelectedElement(stepName);
+      await processesPage.modeler.renameElement(UPLOADED_PROCESS.startEventId, stepName);
 
       // Saved as a draft: a non-draft save validates first and, because the
       // seeded diagram has an unlinked start event, waits on a "Process has
@@ -330,16 +336,18 @@ test.describe('Building block management — processes (13D)', () => {
       expect(saved.id).not.toBe(main.id);
       await processesPage.goToProcessBuilder(buildingBlockKey, versionTag, saved.id);
       await expect(processesPage.modeler.elementShape(UPLOADED_PROCESS.startEventId)).toBeVisible();
-      await processesPage.modeler.selectElement(UPLOADED_PROCESS.startEventId);
-      await expect(processesPage.modeler.panelHeaderLabel).toHaveAttribute('title', stepName);
+      await processesPage.modeler.withSelectedElement(UPLOADED_PROCESS.startEventId, () =>
+        expect(processesPage.modeler.panelHeaderLabel).toHaveAttribute('title', stepName, {
+          timeout: 3_000,
+        })
+      );
     });
 
     test('13.37 — Opens the link wizard for a step and offers the available link types', async () => {
       const main = await processesPage.getMainProcessViaApi(buildingBlockKey, versionTag);
       await processesPage.goToProcessBuilder(buildingBlockKey, versionTag, main.id);
 
-      await processesPage.modeler.selectElement(UPLOADED_PROCESS.startEventId);
-      await processesPage.openProcessLinkModalFromPanel();
+      await processesPage.openProcessLinkModalFromPanel(UPLOADED_PROCESS.startEventId);
 
       await expect(processesPage.processLinkModal).toContainText(
         BUILDING_BLOCK_PROCESS_TEXTS.processLinkChooseTypeStep

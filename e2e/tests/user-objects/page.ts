@@ -85,17 +85,8 @@ export class UserObjectsPage {
 
   // ─── Assertions ───────────────────────────────────────────────────
 
-  /**
-   * Polled: on a cold load the header cells are appended a tick after the rows,
-   * so a straight read can still come back empty.
-   */
   async assertColumnHeaders(expectedHeaders: readonly string[]) {
-    await expect
-      .poll(async () => {
-        const headers = await this.carbonList.table.locator('thead th').allInnerTexts();
-        return headers.map(header => header.trim()).filter(Boolean);
-      })
-      .toEqual([...expectedHeaders]);
+    await this.carbonList.assertColumnHeaders(expectedHeaders);
   }
 
   // ─── API helpers ──────────────────────────────────────────────────
