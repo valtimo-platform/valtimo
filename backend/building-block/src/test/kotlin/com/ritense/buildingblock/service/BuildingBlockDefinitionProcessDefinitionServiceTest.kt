@@ -29,6 +29,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -38,12 +39,18 @@ import org.mockito.Mock
 import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyVararg
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.operaton.bpm.engine.repository.ProcessDefinitionQuery
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.springframework.mock.web.MockMultipartFile
 
@@ -205,5 +212,115 @@ class BuildingBlockDefinitionProcessDefinitionServiceTest {
         verify(processDefinitionBuildingBlockDefinitionRepository).delete(existingLink)
         verify(operatonProcessService).deleteProcessDefinition("existing-id")
         verify(processLinkService).deleteProcessLinksForProcessDefinition("existing-id")
+    }
+
+    @Test
+    fun `setMainLink replaces the link of the same process definition key`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId("bezwaar", "1.0.0")
+        val existingLink = link(buildingBlockDefinitionId, "sub:1:aaa", main = true)
+
+        whenever(
+            processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(
+                buildingBlockDefinitionId
+            )
+        ).thenReturn(listOf(existingLink), emptyList())
+        stubProcessDefinitionKeys("sub:1:aaa" to "sub", "sub:2:bbb" to "sub")
+        doNothing().whenever(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(
+            buildingBlockDefinitionId
+        )
+
+        service.setMainLink(
+            buildingBlockDefinitionId,
+            null,
+            ProcessDefinitionId.of("sub:2:bbb"),
+            false
+        )
+
+        verify(processDefinitionBuildingBlockDefinitionRepository).delete(existingLink)
+        val saved = argumentCaptor<ProcessDefinitionBuildingBlockDefinition>()
+        verify(processDefinitionBuildingBlockDefinitionRepository).save(saved.capture())
+        assertThat(saved.firstValue.id.processDefinitionId).isEqualTo(ProcessDefinitionId.of("sub:2:bbb"))
+        assertThat(saved.firstValue.main).isTrue()
+        verify(operatonProcessService, never()).deleteProcessDefinition(any())
+    }
+
+    @Test
+    fun `setMainLink keeps the link of a different process definition key`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId("bezwaar", "1.0.0")
+        val otherLink = link(buildingBlockDefinitionId, "other:1:aaa", main = true)
+
+        whenever(
+            processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(
+                buildingBlockDefinitionId
+            )
+        ).thenReturn(listOf(otherLink))
+        stubProcessDefinitionKeys("other:1:aaa" to "other", "sub:1:bbb" to "sub")
+        doNothing().whenever(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(
+            buildingBlockDefinitionId
+        )
+
+        service.setMainLink(
+            buildingBlockDefinitionId,
+            null,
+            ProcessDefinitionId.of("sub:1:bbb"),
+            false
+        )
+
+        verify(processDefinitionBuildingBlockDefinitionRepository, never()).delete(otherLink)
+        val saved = argumentCaptor<ProcessDefinitionBuildingBlockDefinition>()
+        verify(processDefinitionBuildingBlockDefinitionRepository).save(saved.capture())
+        assertThat(saved.firstValue.id.processDefinitionId).isEqualTo(ProcessDefinitionId.of("sub:1:bbb"))
+        assertThat(saved.firstValue.main).isFalse()
+    }
+
+    @Test
+    fun `setMainLink marks the requested process definition as main`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId("bezwaar", "1.0.0")
+        val existingLink = link(buildingBlockDefinitionId, "sub:1:aaa", main = false)
+
+        whenever(
+            processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(
+                buildingBlockDefinitionId
+            )
+        ).thenReturn(listOf(existingLink))
+        doNothing().whenever(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(
+            buildingBlockDefinitionId
+        )
+
+        service.setMainLink(
+            buildingBlockDefinitionId,
+            null,
+            ProcessDefinitionId.of("sub:1:aaa"),
+            true
+        )
+
+        val saved = argumentCaptor<ProcessDefinitionBuildingBlockDefinition>()
+        verify(processDefinitionBuildingBlockDefinitionRepository).save(saved.capture())
+        assertThat(saved.firstValue.main).isTrue()
+    }
+
+    private fun link(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        processDefinitionId: String,
+        main: Boolean
+    ) = ProcessDefinitionBuildingBlockDefinition(
+        ProcessDefinitionBuildingBlockDefinitionId(
+            ProcessDefinitionId.of(processDefinitionId),
+            buildingBlockDefinitionId
+        ),
+        main
+    )
+
+    private fun stubProcessDefinitionKeys(vararg keysById: Pair<String, String>) {
+        val definitions = keysById.map { (id, key) ->
+            val definition = mock<ProcessDefinition>()
+            whenever(definition.id).thenReturn(id)
+            whenever(definition.key).thenReturn(key)
+            definition
+        }
+        val query = mock<ProcessDefinitionQuery>()
+        whenever(query.processDefinitionIdIn(anyVararg())).thenReturn(query)
+        whenever(query.list()).thenReturn(definitions)
+        whenever(repositoryService.createProcessDefinitionQuery()).thenReturn(query)
     }
 }
