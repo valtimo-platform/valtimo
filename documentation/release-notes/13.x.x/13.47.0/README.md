@@ -25,4 +25,4 @@ while a task is open. The width you set is remembered for you across all case ty
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Plugins | Settings left over from an older version of a plugin no longer fill the log with errors every time a case is opened |
