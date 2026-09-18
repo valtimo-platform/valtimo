@@ -74,7 +74,8 @@ class StartableBuildingBlockItemProvider(
                     key = link.buildingBlockDefinitionId.key,
                     versionTag = link.buildingBlockDefinitionId.versionTag.toString(),
                     processDefinitionId = processDefinitionId,
-                    draft = buildingBlock?.final != true
+                    draft = buildingBlock?.final != true,
+                    startableByUser = link.startableByUser
                 )
             }
     }
@@ -97,7 +98,8 @@ class StartableBuildingBlockItemProvider(
             key = linkDto.buildingBlockDefinitionKey,
             versionTag = linkDto.buildingBlockDefinitionVersionTag,
             processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id,
-            draft = buildingBlock?.final != true
+            draft = buildingBlock?.final != true,
+            startableByUser = linkDto.startableByUser
         )
     }
 
@@ -122,7 +124,8 @@ class StartableBuildingBlockItemProvider(
             key = linkDto.buildingBlockDefinitionKey,
             versionTag = linkDto.buildingBlockDefinitionVersionTag,
             processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id,
-            draft = buildingBlock?.final != true
+            draft = buildingBlock?.final != true,
+            startableByUser = linkDto.startableByUser
         )
     }
 

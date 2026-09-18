@@ -250,6 +250,43 @@ class DefaultBuildingBlockPluginConfigurationResolverIT @Autowired constructor(
         assertThat(resolvedConfigId).isEqualTo(pluginConfigurationId)
     }
 
+    @Test
+    fun `resolveByKeyPrefix matches a mapping made for a different version of the plugin`() {
+        // The building block's mapping was made for case-summary@0.1.0...
+        val bb1ProcessLink = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = bb1DefinitionId,
+            pluginConfigurationMappings = mapOf("external-plugin:case-summary@0.1.0" to pluginConfigurationId),
+            inputMappings = emptyList()
+        )
+
+        whenever(processLinkService.getProcessLinks("case-process", "callBB1")).thenReturn(listOf(bb1ProcessLink))
+
+        val bb1Execution = createMockExecution(
+            processDefinitionId = "case-process",
+            activityId = "callBB1",
+            businessKey = caseDocumentId.toString()
+        )
+        runWithoutAuthorization {
+            listener.onCallActivityStart(OperatonExecutionEvent(bb1Execution))
+        }
+        val bb1Instance = buildingBlockInstanceRepository.findAll().first()
+        bb1Instance.processInstanceId = "bb1-process-instance"
+        buildingBlockInstanceService.save(bb1Instance)
+
+        val bb1ProcessExecution = mock<DelegateExecution> {
+            on { processInstanceId } doReturn "bb1-process-instance"
+        }
+
+        // ...so an exact lookup for 0.2.0 finds nothing, but the version-agnostic prefix does.
+        assertThat(resolver.resolve(bb1ProcessExecution, "external-plugin:case-summary@0.2.0")).isNull()
+        assertThat(resolver.resolveByKeyPrefix(bb1ProcessExecution, "external-plugin:case-summary@"))
+            .isEqualTo(pluginConfigurationId)
+    }
+
     private fun createMockExecution(
         processDefinitionId: String,
         activityId: String,

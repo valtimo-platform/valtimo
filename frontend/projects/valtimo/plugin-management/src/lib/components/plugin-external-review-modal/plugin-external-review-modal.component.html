@@ -1,0 +1,67 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal *ngIf="open" [open]="open" size="md" valtimoCdsModal>
+  <cds-modal-header (closeSelect)="onClose()">
+    {{ 'pluginManagement.review.modalTitle' | translate }}
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
+
+    <ng-container *ngIf="!$loading()">
+      <cds-inline-notification
+        *ngIf="$errorMessage() as errorMessage"
+        [notificationObj]="{
+          type: 'error',
+          title: ('pluginManagement.review.failed' | translate),
+          message: errorMessage,
+          showClose: false,
+          lowContrast: true,
+        }"
+        class="plugin-external-review-modal__notification"
+      ></cds-inline-notification>
+
+      <valtimo-plugin-external-permissions
+        [capabilities]="$pendingCapabilities()"
+        [egress]="$pendingEgress()"
+        [endpoints]="$pendingEndpoints()"
+        [eventSubscriptions]="$pendingEvents()"
+        (validEvent)="onPermissionsValid($event)"
+      ></valtimo-plugin-external-permissions>
+    </ng-container>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="secondary"
+      [disabled]="$loading()"
+      (click)="onClose()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="!$permissionsValid() || $loading()"
+      (click)="onAccept()"
+      [attr.data-test-id]="testIds.acceptButton"
+    >
+      {{ 'pluginManagement.review.accept' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

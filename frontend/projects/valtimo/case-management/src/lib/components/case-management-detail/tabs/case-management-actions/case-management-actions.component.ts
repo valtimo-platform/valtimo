@@ -48,7 +48,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '@valtimo/process-link';
-import {ButtonModule, IconModule, NotificationModule, TagModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, NotificationModule, TagModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, of, shareReplay, Subscription, switchMap, tap} from 'rxjs';
 import {catchError, filter, take} from 'rxjs/operators';
 import {BuildingBlockConfigRequest, ManagementStartableItem, StartableItemType} from '../../../../models';
@@ -69,6 +69,7 @@ import {CaseManagementActionsModalComponent} from './case-management-actions-mod
     IconModule,
     NotificationModule,
     TagModule,
+    ToggleModule,
     CaseManagementActionsModalComponent,
     ConfirmationModalModule,
     ProcessLinkModule,
@@ -77,6 +78,7 @@ import {CaseManagementActionsModalComponent} from './case-management-actions-mod
 })
 export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('typeColumn') public typeColumnTemplate!: TemplateRef<any>;
+  @ViewChild('startableByUserColumn') public startableByUserColumnTemplate!: TemplateRef<any>;
 
   public readonly StartableItemType = StartableItemType;
 
@@ -91,6 +93,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly loading$: Observable<boolean> = this.startableItemManagementService.loading$;
   public readonly dragAndDropDisabled = signal(false);
+  public readonly togglingStartableByUser = signal(false);
 
   public readonly items$: Observable<ManagementStartableItem[]> =
     this.startableItemManagementService.items$;
@@ -178,6 +181,22 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       )
       .subscribe(() => {
         this.startableItemManagementService.hideDeleteModal();
+        this.startableItemManagementService.loadItems();
+      });
+  }
+
+  public onStartableByUserToggle(item: ManagementStartableItem, startableByUser: boolean): void {
+    if (item.startableByUser === startableByUser) return;
+
+    this.togglingStartableByUser.set(true);
+    this.startableItemManagementService
+      .toggleStartableByUser(item, startableByUser)
+      .pipe(
+        take(1),
+        catchError(() => of(null))
+      )
+      .subscribe(() => {
+        this.togglingStartableByUser.set(false);
         this.startableItemManagementService.loadItems();
       });
   }
@@ -344,6 +363,12 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
         template: this.typeColumnTemplate,
         key: '',
         label: 'caseManagement.actions.columns.type',
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.startableByUserColumnTemplate,
+        key: '',
+        label: 'caseManagement.actions.columns.startableByUser',
       },
     ]);
   }
