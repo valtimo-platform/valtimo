@@ -18,7 +18,8 @@
   fields: filteredFields$ | async,
   group: group$ | async,
   showModal: showModal$ | async,
-  editing: editingField$ | async
+  editing: editingField$ | async,
+  usedKeys: usedKeys$ | async
 } as obs">
   <cds-table-container class="valtimo-group-search-fields">
     <cds-table-toolbar>
@@ -119,7 +120,9 @@
   <valtimo-group-search-field-modal
     [open]="obs.showModal"
     [groupKey]="obs.group?.key"
+    [members]="obs.group?.members ?? []"
     [field]="obs.editing"
+    [usedKeys]="obs.usedKeys ?? []"
     (closeModal)="onCloseModal($event)"
   ></valtimo-group-search-field-modal>
 </ng-container>

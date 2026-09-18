@@ -18,6 +18,7 @@ package com.ritense.case.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionGroupService
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.AddGroupMemberRequestDto
 import com.ritense.case.web.rest.dto.CaseDefinitionGroupCreateRequestDto
 import com.ritense.case.web.rest.dto.CaseDefinitionGroupResponseDto
@@ -46,7 +47,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 @SkipComponentScan
 @RequestMapping("/api/management/v1/case-definition-group", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseDefinitionGroupManagementResource(
-    private val groupService: CaseDefinitionGroupService
+    private val groupService: CaseDefinitionGroupService,
+    private val caseDefinitionService: CaseDefinitionService
 ) {
 
     @RunWithoutAuthorization
@@ -65,7 +67,10 @@ class CaseDefinitionGroupManagementResource(
         @PathVariable groupKey: String
     ): ResponseEntity<CaseDefinitionGroupWithMembersResponseDto> {
         val group = groupService.getGroup(groupKey)
-        val members = groupService.getMembers(groupKey).map { GroupMemberDto.of(it) }
+        val members = groupService.getMembers(groupKey).map { member ->
+            val caseDef = caseDefinitionService.getActiveCaseDefinition(member.id.caseDefinitionKey)
+            GroupMemberDto.of(member, caseDef?.name)
+        }
         return ResponseEntity.ok(CaseDefinitionGroupWithMembersResponseDto.of(group, members))
     }
 
@@ -102,7 +107,10 @@ class CaseDefinitionGroupManagementResource(
     fun getMembers(
         @PathVariable groupKey: String
     ): ResponseEntity<List<GroupMemberDto>> {
-        val members = groupService.getMembers(groupKey).map { GroupMemberDto.of(it) }
+        val members = groupService.getMembers(groupKey).map { member ->
+            val caseDef = caseDefinitionService.getActiveCaseDefinition(member.id.caseDefinitionKey)
+            GroupMemberDto.of(member, caseDef?.name)
+        }
         return ResponseEntity.ok(members)
     }
 
@@ -113,7 +121,8 @@ class CaseDefinitionGroupManagementResource(
         @Valid @RequestBody request: AddGroupMemberRequestDto
     ): ResponseEntity<GroupMemberDto> {
         val member = groupService.addMember(groupKey, request.caseDefinitionKey)
-        return ResponseEntity.ok(GroupMemberDto.of(member))
+        val caseDef = caseDefinitionService.getActiveCaseDefinition(member.id.caseDefinitionKey)
+        return ResponseEntity.ok(GroupMemberDto.of(member, caseDef?.name))
     }
 
     @RunWithoutAuthorization
@@ -133,7 +142,10 @@ class CaseDefinitionGroupManagementResource(
         @Valid @RequestBody request: UpdateGroupMemberOrderRequestDto
     ): ResponseEntity<List<GroupMemberDto>> {
         groupService.updateMemberOrder(groupKey, request.caseDefinitionKeys)
-        val members = groupService.getMembers(groupKey).map { GroupMemberDto.of(it) }
+        val members = groupService.getMembers(groupKey).map { member ->
+            val caseDef = caseDefinitionService.getActiveCaseDefinition(member.id.caseDefinitionKey)
+            GroupMemberDto.of(member, caseDef?.name)
+        }
         return ResponseEntity.ok(members)
     }
 
@@ -142,7 +154,10 @@ class CaseDefinitionGroupManagementResource(
     fun getListColumns(
         @PathVariable groupKey: String
     ): ResponseEntity<List<GroupListColumnDto>> {
-        val columns = groupService.getListColumns(groupKey).map { GroupListColumnDto.of(it) }
+        val columns = groupService.getListColumns(groupKey).map { column ->
+            val mappings = groupService.getListColumnPathMappings(groupKey, column.id.columnKey)
+            GroupListColumnDto.of(column, mappings)
+        }
         return ResponseEntity.ok(columns)
     }
 

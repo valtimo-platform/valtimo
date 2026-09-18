@@ -18,7 +18,9 @@
   columns: filteredColumns$ | async,
   group: group$ | async,
   showModal: showModal$ | async,
-  editing: editingColumn$ | async
+  editing: editingColumn$ | async,
+  usedKeys: usedKeys$ | async,
+  hasDefaultSort: hasDefaultSort$ | async
 } as obs">
   <cds-table-container class="valtimo-group-list-columns">
     <cds-table-toolbar>
@@ -117,7 +119,10 @@
   <valtimo-group-column-modal
     [open]="obs.showModal"
     [groupKey]="obs.group?.key"
+    [members]="obs.group?.members ?? []"
     [column]="obs.editing"
+    [usedKeys]="obs.usedKeys ?? []"
+    [disableDefaultSort]="obs.hasDefaultSort && !obs.editing?.defaultSort"
     (closeModal)="onCloseModal($event)"
   ></valtimo-group-column-modal>
 </ng-container>

@@ -842,6 +842,8 @@
         "displayType": "Weergavetype",
         "sortable": "Sorteerbaar",
         "exportable": "Exporteerbaar",
+        "pathPerCase": "Pad (per zaaktype)",
+        "pathPerCaseTooltip": "Pad naar de eigenschap om weer te geven voor elke zaakdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor zaakeigenschappen.",
         "saveError": "Opslaan van kolommen mislukt",
         "searchPlaceholder": "Zoek kolommen..."
       },
@@ -860,7 +862,14 @@
         "dropdownDataProvider": "Dropdown data provider",
         "dropdownDataProviderPlaceholder": "Voer de provider class naam in",
         "saveError": "Opslaan van zoekvelden mislukt",
-        "searchPlaceholder": "Zoek velden..."
+        "searchPlaceholder": "Zoek velden...",
+        "fieldKeyTooltip": "Verplicht. Unieke identificatie voor dit zoekveld.",
+        "fieldTitleTooltip": "Optioneel. Weergavenaam voor gebruikers.",
+        "dataTypeTooltip": "Verplicht. Het datatype van de veldwaarden.",
+        "fieldTypeTooltip": "Verplicht. Hoe de zoekinvoer wordt weergegeven.",
+        "matchTypeTooltip": "Optioneel. Hoe waarden worden gematcht (exact of gedeeltelijk).",
+        "dropdownDataProviderTooltip": "Optioneel. Class naam die dropdown opties levert.",
+        "pathPerCaseTooltip": "Pad naar de eigenschap om op te zoeken voor elke zaakdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor zaakeigenschappen."
       },
       "tabs": {
         "config": "Configuratie",

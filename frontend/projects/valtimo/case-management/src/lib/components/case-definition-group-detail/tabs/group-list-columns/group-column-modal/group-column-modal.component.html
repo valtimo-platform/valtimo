@@ -23,43 +23,105 @@
 
   <form [formGroup]="formGroup" cdsModalContent [cdsLayer]="1">
     <cds-label>
-      {{ 'caseManagement.groups.listColumns.columnKey' | translate }}
+      <span>
+        {{ 'caseManagement.groups.listColumns.columnTitle' | translate }}
+        <v-tooltip-icon [tooltip]="'listColumn.titleTooltip' | translate"></v-tooltip-icon>
+      </span>
 
       <input
-        formControlName="key"
-        cdsText
-        [placeholder]="'caseManagement.groups.listColumns.columnKeyPlaceholder' | translate"
-        [attr.modal-primary-focus]="!column"
-      />
-    </cds-label>
-
-    <cds-label>
-      {{ 'caseManagement.groups.listColumns.columnTitle' | translate }}
-
-      <input
+        #title
         formControlName="title"
         cdsText
         [placeholder]="'caseManagement.groups.listColumns.columnTitlePlaceholder' | translate"
-        [attr.modal-primary-focus]="!!column"
+        [attr.modal-primary-focus]="true"
       />
     </cds-label>
 
-    <cds-dropdown
-      formControlName="displayType"
-      [label]="'caseManagement.groups.listColumns.displayType' | translate"
-    >
-      <cds-dropdown-list [items]="DISPLAY_TYPE_ITEMS"></cds-dropdown-list>
-    </cds-dropdown>
+    <valtimo-auto-key-input
+      [mode]="modalMode"
+      [usedKeys]="usedKeys"
+      [sourceText]="title.value"
+      formControlName="key"
+      labelTranslationKey="caseManagement.groups.listColumns.columnKey"
+      placeholderTranslationKey="caseManagement.groups.listColumns.columnKeyPlaceholder"
+    ></valtimo-auto-key-input>
 
-    <cds-toggle
-      formControlName="sortable"
-      [label]="'caseManagement.groups.listColumns.sortable' | translate"
-    ></cds-toggle>
+    <div class="valtimo-group-column-modal__path-section" *ngIf="members.length > 0">
+      <p class="valtimo-group-column-modal__path-title">
+        {{ 'caseManagement.groups.listColumns.pathPerCase' | translate }}
+        <v-tooltip-icon [tooltip]="'caseManagement.groups.listColumns.pathPerCaseTooltip' | translate"></v-tooltip-icon>
+      </p>
 
-    <cds-toggle
-      formControlName="exportable"
-      [label]="'caseManagement.groups.listColumns.exportable' | translate"
-    ></cds-toggle>
+      <div
+        *ngFor="let member of members; let i = index"
+        class="valtimo-group-column-modal__path-row"
+      >
+        <div class="valtimo-group-column-modal__case-label">
+          <span class="valtimo-group-column-modal__case-name">{{ member.caseDefinitionName || member.caseDefinitionKey }}</span>
+          <span class="valtimo-group-column-modal__case-key">({{ member.caseDefinitionKey }})</span>
+        </div>
+        <valtimo-value-path-selector
+          [formControl]="pathControls[i]"
+          [caseDefinitionKey]="member.caseDefinitionKey"
+          [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+        ></valtimo-value-path-selector>
+      </div>
+    </div>
+
+    <div class="valtimo-group-column-modal__dropdown-field">
+      <span class="cds--label">
+        {{ 'caseManagement.groups.listColumns.displayType' | translate }}
+        <v-tooltip-icon [tooltip]="'listColumn.displayTypeTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <cds-dropdown formControlName="displayType" [itemValueKey]="'value'">
+        <cds-dropdown-list [items]="DISPLAY_TYPE_ITEMS"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <cds-label *ngIf="showDateFormat">
+      <span>
+        {{ 'listColumn.dateFormat' | translate }}
+        <v-tooltip-icon [tooltip]="'listColumn.dateFormatTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <input cdsText formControlName="dateFormat" />
+    </cds-label>
+
+    <cds-label *ngIf="showTagAmount">
+      <span>
+        {{ 'listColumn.tagAmount' | translate }}
+        <v-tooltip-icon [tooltip]="'listColumn.tagAmountTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <cds-number formControlName="tagAmount" [min]="1" [step]="1"></cds-number>
+    </cds-label>
+
+    <cds-label *ngIf="showEnum">
+      <span>
+        {{ (isYesNo ? 'listColumn.enumTitleOptional' : 'listColumn.enumTitle') | translate }}
+        <v-tooltip-icon [tooltip]="(isYesNo ? 'listColumn.enumTooltipOptional' : 'listColumn.enumTooltip') | translate"></v-tooltip-icon>
+      </span>
+      <valtimo-carbon-multi-input
+        type="keyValue"
+        (valueChange)="enumValueChange($event)"
+        [defaultValues]="defaultEnumValues"
+        [hideAddButton]="isYesNo"
+        [hideDeleteButton]="isYesNo"
+        [maxRows]="isYesNo ? 1 : null"
+      ></valtimo-carbon-multi-input>
+    </cds-label>
+
+    <cds-checkbox formControlName="sortable" [disabled]="showTagAmount">
+      {{ 'caseManagement.groups.listColumns.sortable' | translate }}
+    </cds-checkbox>
+
+    <div class="valtimo-group-column-modal__dropdown-field">
+      <span class="cds--label">
+        {{ 'listColumn.defaultSortTitle' | translate }}
+        <v-tooltip-icon [tooltip]="'listColumn.defaultSortTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <cds-dropdown formControlName="defaultSort" [disabled]="disableDefaultSort || showTagAmount" [itemValueKey]="'value'">
+        <cds-dropdown-list [items]="SORT_ITEMS"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
   </form>
 
   <cds-modal-footer>

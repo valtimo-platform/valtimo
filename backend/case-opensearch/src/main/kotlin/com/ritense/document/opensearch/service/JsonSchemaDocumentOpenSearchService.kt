@@ -395,7 +395,7 @@ class JsonSchemaDocumentOpenSearchService(
         val pathsPerDefinition = filterPathMappings[filterKey]
 
         if (pathsPerDefinition.isNullOrEmpty()) {
-            return buildSingleFilterQuery(filter)
+            return MATCH_NONE
         }
 
         val orConditions = documentDefinitionNames.mapNotNull { definitionName ->

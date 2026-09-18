@@ -385,7 +385,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         Map<String, String> pathsPerDefinition = filterPathMappings.get(filterKey);
 
         if (pathsPerDefinition == null || pathsPerDefinition.isEmpty()) {
-            return buildQueryForSearchCriteria(cb, root, filter);
+            return cb.disjunction();
         }
 
         List<Predicate> orConditions = new ArrayList<>();

@@ -185,8 +185,20 @@ class CaseDefinitionGroupService(
                 )
             )
 
-            existingMappings[dto.key]?.forEach { mapping ->
-                listColumnPathMappingRepository.save(
+            val mappingsToSave = if (dto.pathMappings != null) {
+                dto.pathMappings.map { mappingDto ->
+                    GroupListColumnPathMapping(
+                        id = GroupListColumnPathMappingId(
+                            groupKey = groupKey,
+                            columnKey = dto.key,
+                            caseDefinitionKey = mappingDto.caseDefinitionKey
+                        ),
+                        column = column,
+                        path = mappingDto.path
+                    )
+                }
+            } else {
+                existingMappings[dto.key]?.map { mapping ->
                     GroupListColumnPathMapping(
                         id = GroupListColumnPathMappingId(
                             groupKey = groupKey,
@@ -196,8 +208,10 @@ class CaseDefinitionGroupService(
                         column = column,
                         path = mapping.path
                     )
-                )
+                } ?: emptyList()
             }
+
+            mappingsToSave.forEach { listColumnPathMappingRepository.save(it) }
 
             column
         }
@@ -270,8 +284,19 @@ class CaseDefinitionGroupService(
                 )
             )
 
-            existingMappings[dto.key]?.forEach { mapping ->
-                searchFieldPathMappingRepository.save(
+            val mappingsToSave = if (dto.pathMappings != null) {
+                dto.pathMappings.map { mappingDto ->
+                    GroupSearchFieldPathMapping(
+                        id = GroupSearchFieldPathMappingId(
+                            groupSearchFieldId = field.id,
+                            caseDefinitionKey = mappingDto.caseDefinitionKey
+                        ),
+                        searchField = field,
+                        path = mappingDto.path
+                    )
+                }
+            } else {
+                existingMappings[dto.key]?.map { mapping ->
                     GroupSearchFieldPathMapping(
                         id = GroupSearchFieldPathMappingId(
                             groupSearchFieldId = field.id,
@@ -280,8 +305,10 @@ class CaseDefinitionGroupService(
                         searchField = field,
                         path = mapping.path
                     )
-                )
+                } ?: emptyList()
             }
+
+            mappingsToSave.forEach { searchFieldPathMappingRepository.save(it) }
 
             field
         }

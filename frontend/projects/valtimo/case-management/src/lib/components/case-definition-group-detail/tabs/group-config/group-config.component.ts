@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DialogModule} from 'carbon-components-angular';
 import {Add16} from '@carbon/icons';
-import {CarbonListModule, ColumnConfig} from '@valtimo/components';
+import {CarbonListModule, SelectItem, SelectModule} from '@valtimo/components';
 import {DocumentService, DocumentDefinition} from '@valtimo/document';
 import {
   ButtonModule,
-  ComboBoxModule,
   DropdownModule,
   IconModule,
   IconService,
@@ -43,12 +42,6 @@ interface MemberListItem {
   name: string;
   version: string;
   order: number;
-}
-
-interface CaseDefinitionOption {
-  key: string;
-  name: string;
-  content: string;
 }
 
 const COLOR_SWATCHES = [
@@ -75,7 +68,6 @@ const COLOR_SWATCHES = [
     FormsModule,
     TranslateModule,
     ButtonModule,
-    ComboBoxModule,
     DialogModule,
     DropdownModule,
     IconModule,
@@ -83,10 +75,13 @@ const COLOR_SWATCHES = [
     LayerModule,
     PlaceholderModule,
     CarbonListModule,
+    SelectModule,
   ],
 })
 export class GroupConfigComponent implements OnInit, OnDestroy {
   public readonly COLOR_SWATCHES = COLOR_SWATCHES;
+
+  @ViewChild('addWrapper') addWrapperRef: ElementRef<HTMLElement>;
 
   private readonly _subscriptions = new Subscription();
   private readonly _group$ = new BehaviorSubject<CaseDefinitionGroupWithMembersResponse | null>(
@@ -97,13 +92,12 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   private readonly _members$ = new BehaviorSubject<MemberListItem[]>([]);
   public readonly members$ = this._members$.asObservable();
 
-  private readonly _availableCaseDefinitions$ = new BehaviorSubject<CaseDefinitionOption[]>([]);
+  private readonly _availableCaseDefinitions$ = new BehaviorSubject<SelectItem[]>([]);
   public readonly availableCaseDefinitions$ = this._availableCaseDefinitions$.asObservable();
-  public comboBoxItems: CaseDefinitionOption[] = [];
 
   public selectedColor = '';
   public customColor = '';
-  public selectedCaseDefinition: CaseDefinitionOption | null = null;
+  public selectedCaseDefinitionKey: string | null = null;
   public showAddPanel = false;
 
   public readonly groupKey$ = this.route.parent?.params.pipe(
@@ -125,18 +119,22 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this._loadGroupAndMembers();
     this._loadAvailableCaseDefinitions();
-    this._subscriptions.add(
-      this.availableCaseDefinitions$.subscribe(items => {
-        setTimeout(() => {
-          this.comboBoxItems = items;
-          this.cdr.markForCheck();
-        }, 100);
-      })
-    );
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  @HostListener('document:click', ['$event'])
+  public onPageClick(event: MouseEvent): void {
+    if (!this.showAddPanel || !this.addWrapperRef) return;
+
+    const clickedInside = this.addWrapperRef.nativeElement.contains(event.target as Node);
+    if (!clickedInside) {
+      this.showAddPanel = false;
+      this.selectedCaseDefinitionKey = null;
+      this.cdr.markForCheck();
+    }
   }
 
   public onColorSwatchClick(color: string): void {
@@ -155,21 +153,25 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   public toggleAddPanel(): void {
     this.showAddPanel = !this.showAddPanel;
     if (!this.showAddPanel) {
-      this.selectedCaseDefinition = null;
+      this.selectedCaseDefinitionKey = null;
     }
   }
 
+  public onCaseDefinitionSelected(value: string | number): void {
+    this.selectedCaseDefinitionKey = value ? String(value) : null;
+  }
+
   public addMember(): void {
-    if (!this.selectedCaseDefinition) return;
+    if (!this.selectedCaseDefinitionKey) return;
 
     const groupKey = this.route.parent?.snapshot.params['groupKey'];
     if (!groupKey) return;
 
     this.groupService
-      .addMember(groupKey, {caseDefinitionKey: this.selectedCaseDefinition.key})
+      .addMember(groupKey, {caseDefinitionKey: this.selectedCaseDefinitionKey})
       .subscribe({
         next: () => {
-          this.selectedCaseDefinition = null;
+          this.selectedCaseDefinitionKey = null;
           this.showAddPanel = false;
           this._loadGroupAndMembers();
           this._loadAvailableCaseDefinitions();
@@ -238,12 +240,11 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
       combineLatest([this.documentService.getAllDefinitions(), this._members$]).subscribe(
         ([definitions, members]) => {
           const memberKeys = new Set(members.map(m => m.caseDefinitionKey));
-          const available = definitions.content
+          const available: SelectItem[] = definitions.content
             .filter(def => !memberKeys.has(def.id.name))
             .map(def => ({
-              key: def.id.name,
-              name: def.schema?.title ?? def.id.name,
-              content: def.schema?.title ?? def.id.name,
+              id: def.id.name,
+              text: def.schema?.title ?? def.id.name,
             }));
           this._availableCaseDefinitions$.next(available);
         }

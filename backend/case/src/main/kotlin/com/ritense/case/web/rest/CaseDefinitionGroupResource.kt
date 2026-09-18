@@ -16,6 +16,7 @@
 
 package com.ritense.case.web.rest
 
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.GroupCaseInstanceService
 import com.ritense.case.web.rest.dto.CaseDefinitionGroupResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionQuickSearchDto
@@ -44,7 +45,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 @SkipComponentScan
 @RequestMapping("/api/v1/case-definition-group", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseDefinitionGroupResource(
-    private val groupCaseInstanceService: GroupCaseInstanceService
+    private val groupCaseInstanceService: GroupCaseInstanceService,
+    private val caseDefinitionService: CaseDefinitionService
 ) {
 
     @GetMapping
@@ -67,7 +69,10 @@ class CaseDefinitionGroupResource(
         @PathVariable groupKey: String
     ): ResponseEntity<List<GroupMemberDto>> {
         val members = groupCaseInstanceService.getAccessibleMembers(groupKey)
-            .map { GroupMemberDto.of(it) }
+            .map { member ->
+                val caseDef = caseDefinitionService.getActiveCaseDefinition(member.id.caseDefinitionKey)
+                GroupMemberDto.of(member, caseDef?.name)
+            }
         return ResponseEntity.ok(members)
     }
 

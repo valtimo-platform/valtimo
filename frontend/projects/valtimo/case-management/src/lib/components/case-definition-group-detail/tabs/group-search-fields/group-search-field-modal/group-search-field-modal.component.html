@@ -23,50 +23,86 @@
 
   <form [formGroup]="formGroup" cdsModalContent [cdsLayer]="1">
     <cds-label>
-      {{ 'caseManagement.groups.searchFields.fieldKey' | translate }}
+      <span>
+        {{ 'caseManagement.groups.searchFields.fieldTitle' | translate }}
+        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.fieldTitleTooltip' | translate"></v-tooltip-icon>
+      </span>
 
       <input
-        formControlName="key"
-        cdsText
-        [placeholder]="'caseManagement.groups.searchFields.fieldKeyPlaceholder' | translate"
-        [attr.modal-primary-focus]="!field"
-      />
-    </cds-label>
-
-    <cds-label>
-      {{ 'caseManagement.groups.searchFields.fieldTitle' | translate }}
-
-      <input
+        #title
         formControlName="title"
         cdsText
         [placeholder]="'caseManagement.groups.searchFields.fieldTitlePlaceholder' | translate"
-        [attr.modal-primary-focus]="!!field"
+        [attr.modal-primary-focus]="true"
       />
     </cds-label>
 
-    <cds-dropdown
-      formControlName="dataType"
-      [label]="'caseManagement.groups.searchFields.dataType' | translate"
-    >
-      <cds-dropdown-list [items]="DATA_TYPE_ITEMS"></cds-dropdown-list>
-    </cds-dropdown>
+    <valtimo-auto-key-input
+      [mode]="modalMode"
+      [usedKeys]="usedKeys"
+      [sourceText]="title.value"
+      formControlName="key"
+      labelTranslationKey="caseManagement.groups.searchFields.fieldKey"
+      placeholderTranslationKey="caseManagement.groups.searchFields.fieldKeyPlaceholder"
+    ></valtimo-auto-key-input>
 
-    <cds-dropdown
-      formControlName="fieldType"
-      [label]="'caseManagement.groups.searchFields.fieldType' | translate"
-    >
-      <cds-dropdown-list [items]="FIELD_TYPE_ITEMS"></cds-dropdown-list>
-    </cds-dropdown>
+    <div class="valtimo-group-search-field-modal__path-section" *ngIf="members.length > 0">
+      <p class="valtimo-group-search-field-modal__path-title">
+        {{ 'caseManagement.groups.listColumns.pathPerCase' | translate }}
+        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.pathPerCaseTooltip' | translate"></v-tooltip-icon>
+      </p>
 
-    <cds-dropdown
-      formControlName="matchType"
-      [label]="'caseManagement.groups.searchFields.matchType' | translate"
-    >
-      <cds-dropdown-list [items]="MATCH_TYPE_ITEMS"></cds-dropdown-list>
-    </cds-dropdown>
+      <div
+        *ngFor="let member of members; let i = index"
+        class="valtimo-group-search-field-modal__path-row"
+      >
+        <div class="valtimo-group-search-field-modal__case-label">
+          <span class="valtimo-group-search-field-modal__case-name">{{ member.caseDefinitionName || member.caseDefinitionKey }}</span>
+          <span class="valtimo-group-search-field-modal__case-key">({{ member.caseDefinitionKey }})</span>
+        </div>
+        <valtimo-value-path-selector
+          [formControl]="pathControls[i]"
+          [caseDefinitionKey]="member.caseDefinitionKey"
+          [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+        ></valtimo-value-path-selector>
+      </div>
+    </div>
 
-    <cds-label>
-      {{ 'caseManagement.groups.searchFields.dropdownDataProvider' | translate }}
+    <div class="valtimo-group-search-field-modal__dropdown-field">
+      <span class="cds--label">
+        {{ 'caseManagement.groups.searchFields.dataType' | translate }}
+        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.dataTypeTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <cds-dropdown formControlName="dataType" [itemValueKey]="'value'">
+        <cds-dropdown-list [items]="DATA_TYPE_ITEMS"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <div class="valtimo-group-search-field-modal__dropdown-field">
+      <span class="cds--label">
+        {{ 'caseManagement.groups.searchFields.fieldType' | translate }}
+        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.fieldTypeTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <cds-dropdown formControlName="fieldType" [itemValueKey]="'value'">
+        <cds-dropdown-list [items]="FIELD_TYPE_ITEMS"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <div class="valtimo-group-search-field-modal__dropdown-field" *ngIf="showMatchType">
+      <span class="cds--label">
+        {{ 'caseManagement.groups.searchFields.matchType' | translate }}
+        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.matchTypeTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <cds-dropdown formControlName="matchType" [itemValueKey]="'value'">
+        <cds-dropdown-list [items]="MATCH_TYPE_ITEMS"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <cds-label *ngIf="showDropdownDataProvider">
+      <span>
+        {{ 'caseManagement.groups.searchFields.dropdownDataProvider' | translate }}
+        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.dropdownDataProviderTooltip' | translate"></v-tooltip-icon>
+      </span>
 
       <input
         formControlName="dropdownDataProvider"

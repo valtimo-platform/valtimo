@@ -835,6 +835,8 @@
         "displayType": "Display type",
         "sortable": "Sortable",
         "exportable": "Exportable",
+        "pathPerCase": "Path (per case)",
+        "pathPerCaseTooltip": "Path to the property to display for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties.",
         "saveError": "Failed to save columns",
         "searchPlaceholder": "Search columns..."
       },
@@ -853,7 +855,14 @@
         "dropdownDataProvider": "Dropdown data provider",
         "dropdownDataProviderPlaceholder": "Enter provider class name",
         "saveError": "Failed to save search fields",
-        "searchPlaceholder": "Search fields..."
+        "searchPlaceholder": "Search fields...",
+        "fieldKeyTooltip": "Required. Unique identifier for this search field.",
+        "fieldTitleTooltip": "Optional. Display name shown to users.",
+        "dataTypeTooltip": "Required. The data type of the field values.",
+        "fieldTypeTooltip": "Required. How the search input is displayed.",
+        "matchTypeTooltip": "Optional. How values are matched (exact or partial).",
+        "dropdownDataProviderTooltip": "Optional. Class name providing dropdown options.",
+        "pathPerCaseTooltip": "Path to the property to search on for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties."
       },
       "tabs": {
         "config": "Config",

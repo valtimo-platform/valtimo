@@ -32,17 +32,22 @@ data class GroupSearchFieldDto(
     val matchType: SearchFieldMatchType?,
     val dropdownDataProvider: String?,
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    val order: Int?
+    val order: Int?,
+    val pathMappings: List<GroupSearchFieldPathMappingDto>? = null
 ) {
     companion object {
-        fun of(field: GroupSearchField) = GroupSearchFieldDto(
+        fun of(
+            field: GroupSearchField,
+            mappings: List<GroupSearchFieldPathMappingDto>? = null
+        ) = GroupSearchFieldDto(
             key = field.key,
             title = field.title,
             dataType = field.dataType,
             fieldType = field.fieldType,
             matchType = field.matchType,
             dropdownDataProvider = field.dropdownDataProvider,
-            order = field.order
+            order = field.order,
+            pathMappings = mappings
         )
     }
 }

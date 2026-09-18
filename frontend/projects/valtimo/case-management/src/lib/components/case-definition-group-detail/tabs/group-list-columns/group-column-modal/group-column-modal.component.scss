@@ -1,0 +1,70 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:host ::ng-deep form[cdsModalContent] {
+  > cds-label,
+  > cds-dropdown,
+  > cds-checkbox,
+  > .valtimo-group-column-modal__dropdown-field {
+    display: block;
+    margin-bottom: 1.5rem;
+  }
+
+  > cds-checkbox {
+    margin-bottom: 0;
+  }
+
+  cds-label span,
+  span.cds--label {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+.valtimo-group-column-modal {
+  &__path-section {
+    margin-bottom: 1.5rem;
+  }
+
+  &__path-title {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--cds-text-secondary);
+    margin: 0 0 0.5rem 0;
+  }
+
+  &__path-row {
+    margin-top: 0.5rem;
+  }
+
+  &__case-label {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__case-name {
+    font-weight: 600;
+    color: var(--cds-text-primary);
+  }
+
+  &__case-key {
+    color: var(--cds-text-secondary);
+    margin-left: 0.25rem;
+  }
+}

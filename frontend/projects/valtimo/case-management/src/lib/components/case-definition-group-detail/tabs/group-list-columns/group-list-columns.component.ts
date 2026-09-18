@@ -61,6 +61,8 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   private readonly _subscriptions = new Subscription();
   private readonly _columns$ = new BehaviorSubject<ColumnWithMappings[]>([]);
   public readonly columns$ = this._columns$.asObservable();
+  public readonly usedKeys$ = this._columns$.pipe(map(cols => cols.map(c => c.key)));
+  public readonly hasDefaultSort$ = this._columns$.pipe(map(cols => cols.some(c => c.defaultSort)));
 
   public readonly filteredColumns$ = combineLatest([
     this._columns$,
@@ -83,7 +85,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   public readonly group$ = this._group$.asObservable();
 
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
-  public readonly editingColumn$ = new BehaviorSubject<GroupListColumn | null>(null);
+  public readonly editingColumn$ = new BehaviorSubject<ColumnWithMappings | null>(null);
 
   public readonly groupKey$ = this.route.parent?.params.pipe(
     map(params => params['groupKey'] as string)
@@ -112,9 +114,20 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
     this.showModal$.next(true);
   }
 
-  public showEditModal(column: GroupListColumn): void {
-    this.editingColumn$.next(column);
-    this.showModal$.next(true);
+  public showEditModal(column: ColumnWithMappings): void {
+    if (column.pathMappings) {
+      this.editingColumn$.next(column);
+      this.showModal$.next(true);
+    } else {
+      const groupKey = this.route.parent?.snapshot.params['groupKey'];
+      if (!groupKey) return;
+
+      this.groupService.getListColumnPathMappings(groupKey, column.key).subscribe(mappings => {
+        column.pathMappings = mappings;
+        this.editingColumn$.next(column);
+        this.showModal$.next(true);
+      });
+    }
   }
 
   public onCloseModal(saved: boolean): void {

@@ -61,6 +61,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
   private readonly _subscriptions = new Subscription();
   private readonly _fields$ = new BehaviorSubject<SearchFieldWithMappings[]>([]);
   public readonly fields$ = this._fields$.asObservable();
+  public readonly usedKeys$ = this._fields$.pipe(map(fields => fields.map(f => f.key)));
 
   public readonly filteredFields$ = combineLatest([
     this._fields$,
@@ -83,7 +84,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
   public readonly group$ = this._group$.asObservable();
 
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
-  public readonly editingField$ = new BehaviorSubject<GroupSearchField | null>(null);
+  public readonly editingField$ = new BehaviorSubject<SearchFieldWithMappings | null>(null);
 
   public readonly groupKey$ = this.route.parent?.params.pipe(
     map(params => params['groupKey'] as string)
@@ -112,9 +113,20 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     this.showModal$.next(true);
   }
 
-  public showEditModal(field: GroupSearchField): void {
-    this.editingField$.next(field);
-    this.showModal$.next(true);
+  public showEditModal(field: SearchFieldWithMappings): void {
+    if (field.pathMappings) {
+      this.editingField$.next(field);
+      this.showModal$.next(true);
+    } else {
+      const groupKey = this.route.parent?.snapshot.params['groupKey'];
+      if (!groupKey) return;
+
+      this.groupService.getSearchFieldPathMappings(groupKey, field.key).subscribe(mappings => {
+        field.pathMappings = mappings;
+        this.editingField$.next(field);
+        this.showModal$.next(true);
+      });
+    }
   }
 
   public onCloseModal(saved: boolean): void {

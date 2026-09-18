@@ -20,11 +20,13 @@ import com.ritense.case.domain.group.CaseDefinitionGroupMember
 
 data class GroupMemberDto(
     val caseDefinitionKey: String,
+    val caseDefinitionName: String?,
     val order: Int
 ) {
     companion object {
-        fun of(member: CaseDefinitionGroupMember) = GroupMemberDto(
+        fun of(member: CaseDefinitionGroupMember, caseDefinitionName: String? = null) = GroupMemberDto(
             caseDefinitionKey = member.id.caseDefinitionKey,
+            caseDefinitionName = caseDefinitionName,
             order = member.order
         )
     }

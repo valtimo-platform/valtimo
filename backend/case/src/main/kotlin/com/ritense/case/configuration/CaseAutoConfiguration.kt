@@ -583,9 +583,10 @@ class CaseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CaseDefinitionGroupManagementResource::class)
     fun caseDefinitionGroupManagementResource(
-        groupService: CaseDefinitionGroupService
+        groupService: CaseDefinitionGroupService,
+        caseDefinitionService: CaseDefinitionService
     ): CaseDefinitionGroupManagementResource {
-        return CaseDefinitionGroupManagementResource(groupService)
+    return CaseDefinitionGroupManagementResource(groupService, caseDefinitionService)
     }
 
     @Bean
@@ -623,8 +624,9 @@ class CaseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CaseDefinitionGroupResource::class)
     fun caseDefinitionGroupResource(
-        groupCaseInstanceService: GroupCaseInstanceService
+        groupCaseInstanceService: GroupCaseInstanceService,
+        caseDefinitionService: CaseDefinitionService
     ): CaseDefinitionGroupResource {
-        return CaseDefinitionGroupResource(groupCaseInstanceService)
+        return CaseDefinitionGroupResource(groupCaseInstanceService, caseDefinitionService)
     }
 }

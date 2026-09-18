@@ -50,6 +50,7 @@ interface CaseDefinitionGroupWithMembersResponse {
 
 interface GroupMember {
   caseDefinitionKey: string;
+  caseDefinitionName?: string;
   order: number;
 }
 
@@ -60,6 +61,7 @@ interface GroupListColumnRequest {
   sortable: boolean;
   defaultSort?: 'ASC' | 'DESC';
   exportable: boolean;
+  pathMappings?: GroupPathMapping[];
 }
 
 interface GroupDisplayType {

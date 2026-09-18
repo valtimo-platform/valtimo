@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.group.GroupListColumn
+import com.ritense.case.domain.group.GroupListColumnPathMapping
 import com.ritense.search.domain.DisplayType
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -31,17 +32,22 @@ data class GroupListColumnDto(
     val defaultSort: ColumnDefaultSort?,
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     val order: Int?,
-    val exportable: Boolean = false
+    val exportable: Boolean = false,
+    val pathMappings: List<GroupListColumnPathMappingDto>? = null
 ) {
     companion object {
-        fun of(column: GroupListColumn) = GroupListColumnDto(
+        fun of(
+            column: GroupListColumn,
+            mappings: List<GroupListColumnPathMapping>? = null
+        ) = GroupListColumnDto(
             key = column.id.columnKey,
             title = column.title,
             displayType = column.displayType,
             sortable = column.sortable,
             defaultSort = column.defaultSort,
             order = column.order,
-            exportable = column.exportable
+            exportable = column.exportable,
+            pathMappings = mappings?.map { GroupListColumnPathMappingDto.of(it) }
         )
     }
 }

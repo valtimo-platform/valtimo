@@ -53,7 +53,7 @@
       <div class="valtimo-group-config__table-container">
         <div class="valtimo-group-config__toolbar">
           <div class="valtimo-group-config__toolbar-spacer"></div>
-          <div class="valtimo-group-config__add-wrapper">
+          <div class="valtimo-group-config__add-wrapper" #addWrapper>
             <button
               cdsButton="primary"
               (click)="toggleAddPanel()"
@@ -68,18 +68,16 @@
                 {{ 'caseManagement.groups.config.selectCase' | translate }}
               </p>
 
-              <cds-combo-box
-                [items]="comboBoxItems"
-                [(ngModel)]="selectedCaseDefinition"
+              <v-select
+                [items]="(availableCaseDefinitions$ | async) || []"
                 [placeholder]="'caseManagement.groups.config.selectCasePlaceholder' | translate"
-                [appendInline]="false"
-              >
-                <cds-dropdown-list></cds-dropdown-list>
-              </cds-combo-box>
+                [dropUp]="true"
+                (selectedChange)="onCaseDefinitionSelected($event)"
+              ></v-select>
 
               <button
                 cdsButton="primary"
-                [disabled]="!selectedCaseDefinition"
+                [disabled]="!selectedCaseDefinitionKey"
                 (click)="addMember()"
                 class="valtimo-group-config__add-panel-btn"
               >

@@ -174,6 +174,36 @@ class JsonSchemaDocumentSearchServiceMultiDefinitionIntTest : BaseIntegrationTes
 
     @Test
     @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should return empty when filter key has no path mappings configured`() {
+        createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        createDocumentInDefinition("person", """{"firstName": "Amsterdam"}""")
+
+        // No path mappings for "name" key at all
+        val filterPathMappings = emptyMap<String, Map<String, String>>()
+
+        val searchFilter = SearchWithConfigRequest.SearchWithConfigFilter().apply {
+            key = "name"
+            setValues(listOf("Amsterdam"))
+        }
+
+        val searchRequest = SearchWithConfigRequest()
+        searchRequest.otherFilters = listOf(searchFilter)
+
+        // Should return empty results, not throw an exception
+        val results = documentSearchService.search(
+            listOf("house", "person"),
+            BlueprintType.CASE,
+            searchRequest,
+            filterPathMappings,
+            PageRequest.of(0, 10)
+        )
+
+        assertThat(results.totalElements).isEqualTo(0)
+        assertThat(results.content).isEmpty()
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
     fun `should handle definition without path mapping`() {
         val houseDoc = createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
         val personDoc = createDocumentInDefinition("person", """{"firstName": "Amsterdam"}""")
