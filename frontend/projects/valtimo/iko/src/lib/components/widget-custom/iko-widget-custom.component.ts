@@ -16,11 +16,25 @@
 
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BehaviorSubject, combineLatest, filter, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule} from 'carbon-components-angular';
-import {CustomWidget, WidgetCustomComponent, WidgetLayoutService} from '@valtimo/layout';
+import {
+  catchWidgetDataError,
+  CustomWidget,
+  WidgetCustomComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
@@ -50,19 +64,27 @@ export class IkoWidgetCustomComponent {
     return this._widgetConfigSubject$.pipe(filter(config => config !== null));
   }
 
+  private readonly _reloadWidgetData$ = this.widgetLayoutService.widgetDataReload$.pipe(
+    filter(uuid => uuid === this.widgetUuid),
+    startWith(null)
+  );
+
   public readonly widgetData$ = combineLatest([
     this._widgetConfigSubject$,
     this._widgetParams$,
+    this._reloadWidgetData$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
-            widgetConfiguration.key,
-            widgetParams.entryId
-          )
+        : this.ikoApiService
+            .getIkoWidgetData(
+              widgetParams.ikoViewKey,
+              widgetParams.tabKey,
+              widgetConfiguration.key,
+              widgetParams.entryId
+            )
+            .pipe(catchWidgetDataError(this.widgetLayoutService, () => this.widgetUuid))
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
