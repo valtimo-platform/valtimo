@@ -14,45 +14,73 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{members: members$ | async, available: availableCaseDefinitions$ | async} as obs">
+<ng-container *ngIf="{members: filteredMembers$ | async, allMembers: members$ | async, available: availableCaseDefinitions$ | async} as obs">
   <div class="valtimo-group-config">
     <div class="valtimo-group-config__color-panel" [cdsLayer]="1">
       <h4>{{ 'caseManagement.groups.config.color' | translate }}</h4>
+
+      <p class="valtimo-group-config__color-description">
+        {{ 'caseManagement.groups.config.colorDescription' | translate }}
+      </p>
+
+      <div *ngIf="selectedColor" class="valtimo-group-config__preview-row">
+        <div
+          class="valtimo-group-config__preview-circle"
+          [style.background-color]="selectedColor"
+        ></div>
+
+        <div class="valtimo-group-config__preview-info">
+          <span class="valtimo-group-config__preview-label">
+            {{ 'caseManagement.groups.config.selected' | translate }}
+          </span>
+
+          <span class="valtimo-group-config__preview-hex">{{ selectedColor | uppercase }}</span>
+        </div>
+      </div>
 
       <div class="valtimo-group-config__swatches">
         <button
           *ngFor="let color of COLOR_SWATCHES"
           type="button"
           class="valtimo-group-config__swatch"
-          [class.valtimo-group-config__swatch--selected]="selectedColor === color"
+          [class.valtimo-group-config__swatch--selected]="selectedColor?.toLowerCase() === color.toLowerCase()"
           [style.background-color]="color"
+          [style.box-shadow]="selectedColor?.toLowerCase() === color.toLowerCase() ? '0 0 0 2px white, 0 0 0 4px ' + color : 'none'"
           (click)="onColorSwatchClick(color)"
         ></button>
       </div>
 
-      <cds-label>
-        {{ 'caseManagement.groups.config.customColor' | translate }}
+      <div class="valtimo-group-config__custom-color-row">
+        <span class="valtimo-group-config__custom-color-label">
+          {{ 'caseManagement.groups.config.customColorLabel' | translate }}
+        </span>
 
-        <input
-          cdsText
-          type="text"
-          [(ngModel)]="customColor"
-          (change)="onCustomColorChange(customColor)"
-          placeholder="#0043ce"
-        />
-      </cds-label>
+        <label class="valtimo-group-config__native-picker-label">
+          <input
+            type="color"
+            class="valtimo-group-config__native-picker"
+            [value]="selectedColor || '#525252'"
+            (input)="onNativeColorChange($event)"
+          />
 
-      <div
-        *ngIf="selectedColor"
-        class="valtimo-group-config__color-preview"
-        [style.background-color]="selectedColor"
-      ></div>
+          <span class="valtimo-group-config__native-picker-text">
+            {{ 'caseManagement.groups.config.chooseFreely' | translate }}
+          </span>
+        </label>
+      </div>
     </div>
 
     <div class="valtimo-group-config__members-panel">
       <div class="valtimo-group-config__table-container">
         <div class="valtimo-group-config__toolbar">
+          <cds-table-toolbar-search
+            [expandable]="false"
+            [formControl]="searchControl"
+            placeholder="{{ 'caseManagement.groups.config.searchPlaceholder' | translate }}"
+          ></cds-table-toolbar-search>
+
           <div class="valtimo-group-config__toolbar-spacer"></div>
+
           <div class="valtimo-group-config__add-wrapper" #addWrapper>
             <button
               cdsButton="primary"
@@ -101,8 +129,12 @@
           <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--actions"></div>
         </div>
 
-        <div *ngIf="obs.members?.length === 0" class="valtimo-group-config__members-empty">
+        <div *ngIf="obs.allMembers?.length === 0" class="valtimo-group-config__members-empty">
           {{ 'caseManagement.groups.config.noMembers' | translate }}
+        </div>
+
+        <div *ngIf="obs.allMembers?.length > 0 && obs.members?.length === 0" class="valtimo-group-config__members-empty">
+          {{ 'caseManagement.groups.config.noSearchResults' | translate }}
         </div>
 
         <div
@@ -131,7 +163,7 @@
         </div>
 
         <div class="valtimo-group-config__table-footer">
-          {{ 'caseManagement.groups.config.caseCount' | translate: {count: obs.members?.length || 0} }}
+          {{ 'caseManagement.groups.config.caseCount' | translate: {count: obs.allMembers?.length || 0} }}
         </div>
       </div>
     </div>

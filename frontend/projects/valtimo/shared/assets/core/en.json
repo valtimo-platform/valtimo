@@ -871,7 +871,10 @@
       },
       "config": {
         "color": "Group color",
-        "customColor": "Custom color",
+        "colorDescription": "Choose a display color for this case group",
+        "selected": "Selected",
+        "customColorLabel": "Custom color:",
+        "chooseFreely": "Choose freely",
         "assignedCases": "Assigned case definitions",
         "addCase": "Add case",
         "selectCase": "Select case",
@@ -881,6 +884,8 @@
         "addMemberError": "Failed to add case definition",
         "removeFromGroup": "Remove from group",
         "caseCount": "{{count}} cases in this group",
+        "searchPlaceholder": "Search cases...",
+        "noSearchResults": "No cases match your search",
         "columns": {
           "name": "Name",
           "key": "Key",

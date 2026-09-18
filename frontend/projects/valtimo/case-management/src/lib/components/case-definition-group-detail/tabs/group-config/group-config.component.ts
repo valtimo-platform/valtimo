@@ -17,7 +17,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
-import {FormsModule} from '@angular/forms';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DialogModule} from 'carbon-components-angular';
 import {Add16} from '@carbon/icons';
@@ -31,9 +31,10 @@ import {
   InputModule,
   LayerModule,
   PlaceholderModule,
+  TableModule,
 } from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {BehaviorSubject, combineLatest, filter, forkJoin, map, Subscription, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, forkJoin, map, startWith, Subscription, switchMap} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
 import {CaseDefinitionGroupWithMembersResponse, GroupMember} from '../../../../models';
 
@@ -45,16 +46,14 @@ interface MemberListItem {
 }
 
 const COLOR_SWATCHES = [
-  '#0043ce',
-  '#6929c4',
-  '#9f1853',
-  '#fa4d56',
-  '#ff832b',
-  '#f1c21b',
-  '#198038',
-  '#009d9a',
-  '#1192e8',
-  '#002d9c',
+  '#da1e28', '#ff8389', '#fa4d56', '#ff7eb6', '#ee538b', '#d12771',
+  '#6929c4', '#8a3ffc', '#a56eff', '#d4bbff',
+  '#0043ce', '#1192e8', '#33b1ff', '#82cfff',
+  '#005d5d', '#009d9a', '#3ddbd9',
+  '#0e6027', '#24a148', '#42be65',
+  '#b28600', '#f1c21b',
+  '#570408', '#002d9c',
+  '#525252', '#8d8d8d', '#161616',
 ];
 
 @Component({
@@ -67,6 +66,7 @@ const COLOR_SWATCHES = [
     CommonModule,
     FormsModule,
     TranslateModule,
+    ReactiveFormsModule,
     ButtonModule,
     DialogModule,
     DropdownModule,
@@ -74,6 +74,7 @@ const COLOR_SWATCHES = [
     InputModule,
     LayerModule,
     PlaceholderModule,
+    TableModule,
     CarbonListModule,
     SelectModule,
   ],
@@ -91,6 +92,22 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
 
   private readonly _members$ = new BehaviorSubject<MemberListItem[]>([]);
   public readonly members$ = this._members$.asObservable();
+
+  public readonly searchControl = new FormControl('');
+  public readonly filteredMembers$ = combineLatest([
+    this._members$,
+    this.searchControl.valueChanges.pipe(startWith('')),
+  ]).pipe(
+    map(([members, search]) => {
+      if (!search) return members;
+      const term = search.toLowerCase();
+      return members.filter(
+        m =>
+          m.name.toLowerCase().includes(term) ||
+          m.caseDefinitionKey.toLowerCase().includes(term)
+      );
+    })
+  );
 
   private readonly _availableCaseDefinitions$ = new BehaviorSubject<SelectItem[]>([]);
   public readonly availableCaseDefinitions$ = this._availableCaseDefinitions$.asObservable();
@@ -143,11 +160,11 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
     this._saveColor(color);
   }
 
-  public onCustomColorChange(color: string): void {
-    if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
-      this.selectedColor = color;
-      this._saveColor(color);
-    }
+  public onNativeColorChange(event: Event): void {
+    const color = (event.target as HTMLInputElement).value;
+    this.selectedColor = color;
+    this.customColor = color;
+    this._saveColor(color);
   }
 
   public toggleAddPanel(): void {

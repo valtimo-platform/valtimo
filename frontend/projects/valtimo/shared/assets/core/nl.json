@@ -878,7 +878,10 @@
       },
       "config": {
         "color": "Groepskleur",
-        "customColor": "Aangepaste kleur",
+        "colorDescription": "Kies een weergavekleur voor deze zaakgroep",
+        "selected": "Geselecteerd",
+        "customColorLabel": "Aangepaste kleur:",
+        "chooseFreely": "Kies vrij",
         "assignedCases": "Toegewezen zaakdefinities",
         "addCase": "Zaak toevoegen",
         "selectCase": "Selecteer zaak",
@@ -888,6 +891,8 @@
         "addMemberError": "Toevoegen van zaakdefinitie mislukt",
         "removeFromGroup": "Verwijderen uit groep",
         "caseCount": "{{count}} zaken in deze groep",
+        "searchPlaceholder": "Zoek zaken...",
+        "noSearchResults": "Geen zaken gevonden",
         "columns": {
           "name": "Naam",
           "key": "Sleutel",
