@@ -75,6 +75,8 @@ class CaseWidgetTabExporterTest(
         override val actions: List<WidgetAction>? = emptyList(),
         override val displayConditions: List<Condition<*>> = emptyList(),
     ) : CaseWidgetTabWidgetDto {
+        override var dataGroupId: String? = null
+
         override fun getRelatedExportRequests(caseDefinitionId: CaseDefinitionId) =
             setOf<ExportRequest>(TestExportRequest(caseDefinitionId))
     }

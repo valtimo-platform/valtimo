@@ -16,6 +16,7 @@
 
 package com.ritense.case_.widget.table
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.valtimo.contract.annotation.AllOpen
@@ -62,6 +63,9 @@ class TableCaseWidget(
         displayConditions = displayConditions,
         properties = properties
     )
+
+    @JsonIgnore
+    override fun isPaged(): Boolean = true
 
     override fun getUnresolvedValues(): List<String> = super.getUnresolvedValues() + properties.collection
 }

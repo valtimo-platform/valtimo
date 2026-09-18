@@ -16,20 +16,13 @@
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {PersonCardWidget, WidgetLayoutService, WidgetPersonCardComponent} from '@valtimo/layout';
 import {
-  BehaviorSubject,
-  catchError,
-  combineLatest,
-  Observable,
-  of,
-  startWith,
-  switchMap,
-  tap,
-} from 'rxjs';
-
-import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
-import {WidgetsService} from '../../widgets.service';
+  PersonCardWidget,
+  WidgetDataGroupService,
+  WidgetLayoutService,
+  WidgetPersonCardComponent,
+} from '@valtimo/layout';
+import {BehaviorSubject, Observable, catchError, filter, of, switchMap, tap} from 'rxjs';
 
 @Component({
   selector: 'valtimo-case-widget-person-card',
@@ -53,18 +46,10 @@ export class CaseWidgetPersonCardComponent {
   @Input() public readonly widgetUuid: string;
 
   public readonly widgetConfiguration$ = new BehaviorSubject<PersonCardWidget | null>(null);
-  public readonly tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
-  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
-  public readonly widgetData$: Observable<any> = combineLatest([
-    this.widgetConfiguration$,
-    this.tabKey$,
-    this._documentId$,
-    this._refresh$,
-  ]).pipe(
-    switchMap(([widget, tabKey, documentId]) =>
-      this.caseWidgetApiService.getWidgetData(documentId, tabKey, widget!.key, undefined)
-    ),
+  public readonly widgetData$: Observable<any> = this.widgetConfiguration$.pipe(
+    filter(widget => !!widget),
+    switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid)),
     catchError((error: HttpErrorResponse) => {
       if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
@@ -73,9 +58,7 @@ export class CaseWidgetPersonCardComponent {
   );
 
   constructor(
-    private readonly widgetsService: WidgetsService,
-    private readonly caseTabService: CaseTabService,
-    private readonly caseWidgetApiService: CaseWidgetsApiService,
-    private readonly widgetLayoutService: WidgetLayoutService
+    private readonly widgetLayoutService: WidgetLayoutService,
+    private readonly widgetDataGroupService: WidgetDataGroupService
   ) {}
 }

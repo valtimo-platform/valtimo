@@ -60,6 +60,18 @@ internal class DocumentTableValueResolverTest {
     }
 
     @Test
+    fun `should key the resolver on the document it loads`() {
+        val documentId = UUID.randomUUID().toString()
+
+        assertThat(resolver.resolverCacheKey(mapOf("documentId" to documentId))).isEqualTo(documentId)
+    }
+
+    @Test
+    fun `should declare no key when there is no document to load by id`() {
+        assertThat(resolver.resolverCacheKey(mapOf("processInstanceId" to processInstanceId))).isNull()
+    }
+
+    @Test
     fun `should resolve assigneeFullName from case document`() {
         whenever(processDocumentService.getCaseDocument(OperatonProcessInstanceId(processInstanceId), variableScope))
             .thenReturn(document)

@@ -80,6 +80,10 @@ abstract class CaseWidgetTabWidget(
     @Column(name = "display_conditions", nullable = false)
     val displayConditions: List<Condition<*>> = listOf()
 ) {
+    /** The client pages this widget and fetches it with its own request. */
+    @JsonIgnore
+    fun isPaged(): Boolean = false
+
     @JsonIgnore
     fun getUnresolvedValues(): List<String> {
         return actions.flatMap { it.getUnresolvedValues() }.distinct()

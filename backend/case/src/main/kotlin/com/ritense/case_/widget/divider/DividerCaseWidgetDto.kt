@@ -33,6 +33,8 @@ data class DividerCaseWidgetDto(
     override val isCompact: Boolean?,
     override val displayConditions: List<Condition<*>> = emptyList(),
 ) : CaseWidgetTabWidgetDto {
+    override var dataGroupId: String? = null
+
     override val actions: List<WidgetAction>
         get() = emptyList()
 }
