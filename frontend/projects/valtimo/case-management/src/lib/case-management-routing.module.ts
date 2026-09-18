@@ -47,7 +47,7 @@ import {CaseManagementActionsComponent} from './components/case-management-detai
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
 import {TabEnum} from './models';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: 'case-management',
     component: CaseManagementListComponent,
@@ -65,6 +65,9 @@ const routes: Routes = [
       customPageTitle: true,
     },
     children: [
+      // A case detail url without a tab - the breadcrumb back to the case points at one - would otherwise
+      // match this route with nothing in the outlet, leaving the page blank and no tab selected.
+      {path: '', redirectTo: TabEnum.GENERAL, pathMatch: 'full'},
       {path: TabEnum.GENERAL, component: CaseManagementGeneralComponent},
       {path: TabEnum.DOCUMENT, component: CaseManagementDocumentDefinitionComponent},
       {
