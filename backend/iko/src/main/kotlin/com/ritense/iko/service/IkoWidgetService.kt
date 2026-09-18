@@ -21,10 +21,14 @@ import com.ritense.iko.domain.IkoTabWidget
 import com.ritense.iko.domain.IkoTabWidgetId
 import com.ritense.iko.repository.IkoTabWidgetRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valueresolver.ValueResolverCache
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_VIEW_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.service.WidgetService
+import com.ritense.widget.web.rest.dto.WidgetDataEnvelope
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
@@ -51,8 +55,10 @@ class IkoWidgetService(
 
     @Transactional(readOnly = true)
     fun getByKey(ikoViewKey: String, tabKey: String, widgetKey: String): Widget {
-        return findByKey(ikoViewKey, tabKey, widgetKey)
-            ?: error("Widget $widgetKey not found")
+        return ValueResolverCache.value(WIDGET_BY_KEY_CACHE, listOf(ikoViewKey, tabKey, widgetKey)) {
+            findByKey(ikoViewKey, tabKey, widgetKey)
+                ?: error("Widget $widgetKey not found")
+        }
     }
 
     @Transactional(readOnly = true)
@@ -64,13 +70,15 @@ class IkoWidgetService(
 
     fun findAllByTabKeyFilteredByDisplayConditions(ikoViewKey: String, tabKey: String): List<Widget> {
         val widgets = readOnlyTransactionTemplate.execute { findAllByTabKey(ikoViewKey, tabKey) }!!
-        return widgetService.filterWidgetsOnDisplayConditions(
-            widgets = widgets,
-            properties = mapOf(
-                IKO_VIEW_KEY to ikoViewKey,
-                TAB_KEY to tabKey,
+        return ValueResolverCache.memoized {
+            widgetService.filterWidgetsOnDisplayConditions(
+                widgets = widgets,
+                properties = mapOf(
+                    IKO_VIEW_KEY to ikoViewKey,
+                    TAB_KEY to tabKey,
+                )
             )
-        )
+        }
     }
 
     @Transactional
@@ -120,4 +128,50 @@ class IkoWidgetService(
         return widgetService.getWidgetData(widget, properties)
     }
 
+    fun dataGroupIds(ikoViewKey: String, tabKey: String, widgets: List<Widget>): Map<String, String> {
+        return widgetService.dataGroupIds(widgets, dataGroupProperties(ikoViewKey, tabKey))
+    }
+
+    /**
+     * Every widget in the group, with its data or an error envelope. One cache scope, so the group
+     * pays for its shared upstream request once. Null when the group matches no widget.
+     *
+     * Same filtered list as the widget listing, so a hidden widget costs no call and ships no data.
+     */
+    fun getWidgetDataGroup(
+        ikoViewKey: String,
+        tabKey: String,
+        group: String,
+        properties: Map<String, Any>,
+    ): Map<String, WidgetDataEnvelope>? = ValueResolverCache.memoized {
+        val widgets = findAllByTabKeyFilteredByDisplayConditions(ikoViewKey, tabKey)
+        val groupIds = dataGroupIds(ikoViewKey, tabKey, widgets)
+        val groupWidgets = widgets.filter { groupIds[it.key] == group }
+        if (groupWidgets.isEmpty()) {
+            return@memoized null
+        }
+
+        groupWidgets.associate { widget ->
+            widget.key to envelopeFor(widget, properties + mapOf(WIDGET_KEY to widget.key))
+        }
+    }
+
+    private fun envelopeFor(widget: Widget, properties: Map<String, Any>): WidgetDataEnvelope {
+        return try {
+            WidgetDataEnvelope.of(widgetService.getWidgetData(widget, properties))
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to get data for widget '${widget.key}'" }
+            WidgetDataEnvelope.failed()
+        }
+    }
+
+    private fun dataGroupProperties(ikoViewKey: String, tabKey: String) = mapOf(
+        IKO_VIEW_KEY to ikoViewKey,
+        TAB_KEY to tabKey,
+    )
+
+    companion object {
+        private const val WIDGET_BY_KEY_CACHE = "ikoWidgetByKey"
+        private val logger = KotlinLogging.logger {}
+    }
 }

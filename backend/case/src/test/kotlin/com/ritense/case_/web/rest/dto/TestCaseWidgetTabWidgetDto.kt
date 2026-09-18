@@ -36,4 +36,6 @@ data class TestCaseWidgetTabWidgetDto(
     @field:Valid val properties: TestCaseWidgetProperties = TestCaseWidgetProperties(),
     override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList()
-) : CaseWidgetTabWidgetDto
+) : CaseWidgetTabWidgetDto {
+    override var dataGroupId: String? = null
+}

@@ -49,6 +49,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverOption
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.everit.json.schema.Schema
 import org.operaton.bpm.engine.delegate.VariableScope
@@ -72,6 +73,10 @@ class CaseDocumentJsonValueResolverFactory(
 
     override fun supportedPrefix(): String {
         return PREFIX
+    }
+
+    override fun resolverCacheKey(properties: Map<String, Any>): Any? {
+        return properties[DOCUMENT_ID]?.toString()
     }
 
     override fun createResolver(

@@ -90,6 +90,17 @@ interface BasicWidget {
   isCompact?: boolean;
   actions?: WidgetAction[];
   displayConditions: Array<Condition<string>>;
+  /** Widgets sharing an id need the same upstream request and are served together. */
+  dataGroupId?: string;
+}
+
+interface WidgetDataEnvelope {
+  data?: unknown;
+  error?: {code: string};
+}
+
+interface WidgetDataGroupResponse {
+  [widgetKey: string]: WidgetDataEnvelope;
 }
 
 interface FieldsWidgetValue {
@@ -269,8 +280,10 @@ type OptionalWidgets =
   | WidgetType.IMAGE
   | WidgetType.TEXT;
 
-type WidgetComponentMap =
-  Record<Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>, Type<any>> &
+type WidgetComponentMap = Record<
+  Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>,
+  Type<any>
+> &
   Partial<Record<OptionalWidgets, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
@@ -314,4 +327,6 @@ export {
   WidgetGroup,
   WidgetColor,
   WidgetColorTile,
+  WidgetDataEnvelope,
+  WidgetDataGroupResponse,
 };

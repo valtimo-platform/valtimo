@@ -16,6 +16,16 @@
 
 projectVersion = 1.0
 
+// ValueResolverFactory is implemented outside this repo. Real Java default methods let an
+// implementation compiled against an older version inherit a method added since, instead of
+// throwing AbstractMethodError; 'all-compatibility' keeps the DefaultImpls those older
+// implementations already bind to.
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xjvm-default=all-compatibility")
+    }
+}
+
 dockerCompose {
     projectName = "value-resolver"
 

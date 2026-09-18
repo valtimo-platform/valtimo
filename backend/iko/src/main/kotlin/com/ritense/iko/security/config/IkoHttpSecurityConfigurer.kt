@@ -70,6 +70,7 @@ class IkoHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/iko-view/{key}/tab/{key}")).hasAuthority(ADMIN)
 
                     .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{key}/tab/{key}/widget")).authenticated()
+                    .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{key}/tab/{key}/widget/data")).authenticated()
                     .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{key}/tab/{key}/widget/{key}/data")).authenticated()
                     .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/tab/{key}/widget")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/tab/{key}/widget/{key}")).hasAuthority(ADMIN)

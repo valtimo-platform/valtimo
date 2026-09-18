@@ -39,6 +39,8 @@ data class FormIoWidgetDto(
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: FormIoWidgetProperties
 ) : WidgetDto {
+    override var dataGroupId: String? = null
+
     override fun toEntity(id: UUID, order: Int): Widget = FormIoWidget(
         id = id,
         key = key,

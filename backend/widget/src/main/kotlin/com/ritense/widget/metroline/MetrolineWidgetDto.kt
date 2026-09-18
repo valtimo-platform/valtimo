@@ -39,6 +39,8 @@ data class MetrolineWidgetDto(
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: MetrolineWidgetProperties,
 ) : WidgetDto {
+    override var dataGroupId: String? = null
+
     override fun toEntity(id: UUID, order: Int): Widget = MetrolineWidget(
         id = id,
         key = key,

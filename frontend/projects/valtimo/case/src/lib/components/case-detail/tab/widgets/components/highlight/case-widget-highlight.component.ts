@@ -19,13 +19,11 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   HighlightWidget,
+  WidgetDataGroupService,
   WidgetHighlightComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
-import {BehaviorSubject, catchError, combineLatest, Observable, of, startWith, switchMap, tap} from 'rxjs';
-
-import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
-import {WidgetsService} from '../../widgets.service';
+import {BehaviorSubject, Observable, catchError, filter, of, switchMap, tap} from 'rxjs';
 
 @Component({
   selector: 'valtimo-case-widget-highlight',
@@ -51,18 +49,9 @@ export class CaseWidgetHighlightComponent {
 
   public readonly widgetConfiguration$ = new BehaviorSubject<HighlightWidget | null>(null);
 
-  private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
-  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
-
-  public readonly widgetData$: Observable<object | null> = combineLatest([
-    this.widgetConfiguration$,
-    this._tabKey$,
-    this._documentId$,
-    this._refresh$,
-  ]).pipe(
-    switchMap(([widget, tabkey, documentId]) =>
-      this.caseWidgetApiService.getWidgetData(documentId, tabkey, widget.key, undefined)
-    ),
+  public readonly widgetData$: Observable<object | null> = this.widgetConfiguration$.pipe(
+    filter(widget => !!widget),
+    switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid)),
     catchError((error: HttpErrorResponse) => {
       if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
@@ -71,9 +60,7 @@ export class CaseWidgetHighlightComponent {
   );
 
   constructor(
-    private readonly widgetsService: WidgetsService,
-    private readonly caseTabService: CaseTabService,
-    private readonly caseWidgetApiService: CaseWidgetsApiService,
-    private readonly widgetLayoutService: WidgetLayoutService
+    private readonly widgetLayoutService: WidgetLayoutService,
+    private readonly widgetDataGroupService: WidgetDataGroupService
   ) {}
 }
