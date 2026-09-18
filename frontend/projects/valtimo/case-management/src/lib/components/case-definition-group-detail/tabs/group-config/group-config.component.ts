@@ -146,8 +146,10 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   public onPageClick(event: MouseEvent): void {
     if (!this.showAddPanel || !this.addWrapperRef) return;
 
-    const clickedInside = this.addWrapperRef.nativeElement.contains(event.target as Node);
-    if (!clickedInside) {
+    const target = event.target as HTMLElement;
+    const clickedInside = this.addWrapperRef.nativeElement.contains(target);
+    const clickedOnDropdown = target.closest('.cds--list-box__menu, .cds--list-box__menu-item');
+    if (!clickedInside && !clickedOnDropdown) {
       this.showAddPanel = false;
       this.selectedCaseDefinitionKey = null;
       this.cdr.markForCheck();
