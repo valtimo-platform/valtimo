@@ -160,6 +160,34 @@ class ExternalPluginUserTokenResourceTest {
         verify(userTokenService, never()).issue(any(), any(), any(), any())
     }
 
+    @Test
+    fun `refuses to mint with 409 when the host no longer serves the plugin`() {
+        stubConfiguration()
+        stubDefinition(status = ExternalPluginDefinitionStatus.UNAVAILABLE)
+
+        assertThatThrownBy { resource.mintUserToken(configurationId) }
+            .isInstanceOf(ResponseStatusException::class.java)
+            .extracting { (it as ResponseStatusException).statusCode }
+            .isEqualTo(HttpStatus.CONFLICT)
+        verify(userTokenService, never()).issue(any(), any(), any(), any())
+    }
+
+    @Test
+    fun `still mints for a placeholder definition awaiting discovery`() {
+        // A placeholder is UNAVAILABLE by definition, but nothing changed on a host — the plugin
+        // was simply never served yet. The token stays harmless (PBAC ∩ allowlist), so minting
+        // keeps working exactly as before the unavailable gate existed.
+        stubConfiguration()
+        stubDefinition(status = ExternalPluginDefinitionStatus.UNAVAILABLE, contentHash = null)
+        whenever(userTokenService.issue(any(), any(), any(), any()))
+            .thenReturn(IssuedUserToken("token-value", Instant.now().plusSeconds(900)))
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configurationId)).thenReturn(emptyList())
+
+        val response = resource.mintUserToken(configurationId)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    }
+
     private fun stubConfiguration(tokenGeneration: Long = 0) {
         whenever(configurationRepository.findById(configurationId)).thenReturn(
             Optional.of(
@@ -173,7 +201,11 @@ class ExternalPluginUserTokenResourceTest {
         )
     }
 
-    private fun stubDefinition(pendingContentHash: String? = null) {
+    private fun stubDefinition(
+        pendingContentHash: String? = null,
+        status: ExternalPluginDefinitionStatus = ExternalPluginDefinitionStatus.AVAILABLE,
+        contentHash: String? = "sha256:accepted",
+    ) {
         whenever(definitionRepository.findById(definitionId)).thenReturn(
             Optional.of(
                 ExternalPluginDefinition(
@@ -182,8 +214,8 @@ class ExternalPluginUserTokenResourceTest {
                     version = "0.1.0",
                     hostId = UUID.randomUUID(),
                     baseUrl = "http://localhost:8090/plugins/case-summary",
-                    status = ExternalPluginDefinitionStatus.AVAILABLE,
-                    contentHash = "sha256:accepted",
+                    status = status,
+                    contentHash = contentHash,
                     pendingContentHash = pendingContentHash,
                 )
             )

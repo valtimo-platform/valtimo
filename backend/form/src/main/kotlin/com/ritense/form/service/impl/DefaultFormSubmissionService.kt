@@ -347,9 +347,7 @@ class DefaultFormSubmissionService(
         formDefinition: FormIoFormDefinition,
         formData: JsonNode
     ): List<FormField> {
-        return formDefinition.inputFields
-            .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
-            .mapNotNull { field -> FormField.getFormField(formData, field, applicationEventPublisher) }
+        return FormField.getFormFields(formDefinition, formData, applicationEventPublisher)
     }
 
     private fun preProcessFormFields(formFields: List<FormField>, document: Document?) {

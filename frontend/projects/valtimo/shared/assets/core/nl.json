@@ -1063,13 +1063,15 @@
     "actions": {
       "columns": {
         "name": "Naam",
-        "type": "Type"
+        "type": "Type",
+        "startableByUser": "Zichtbaarheid"
       },
+      "visibleInStartMenu": "Zichtbaar in startmenu",
       "addItem": "Actie aanmaken",
       "noResults": "Geen acties geconfigureerd",
       "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
       "infoNotification": {
-        "message": "Acties verschijnen onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
+        "message": "Acties verschijnen standaard onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
       },
       "type": {
         "PROCESS": "Proces",
@@ -1923,6 +1925,7 @@
     "validationErrors": "Validatiefouten",
     "validationErrorsCount": "Validatiefouten ({{count}})",
     "validationErrorNotification": "Procesdefinitie bevat validatiefouten. Controleer de gemarkeerde elementen.",
+    "idTooLong": "Het ID mag niet langer zijn dan {{max}} tekens.",
     "alreadyExistsNotification": "Procesdefinitie bestaat al",
     "deleteNotification": "Proces succesvol verwijderd",
     "upload": {
@@ -2633,6 +2636,12 @@
       "tag": "Beoordeling vereist",
       "permissionsChanged": "Het pluginpakket op de host is gewijzigd en vraagt nu andere rechten dan de rechten die zijn geaccepteerd. Er wordt niets naar de host gestuurd totdat een beheerder de nieuwe rechten beoordeelt en accepteert.",
       "codeChanged": "Het pluginpakket op de host is gewijzigd. Het vraagt dezelfde rechten als voorheen, maar de code is niet de code die is geaccepteerd. Er wordt niets naar de host gestuurd totdat een beheerder het nieuwe pakket bevestigt."
+    },
+    "review": {
+      "menuItem": "Wijzigingen beoordelen",
+      "modalTitle": "Gewijzigde app beoordelen",
+      "accept": "Wijzigingen accepteren",
+      "failed": "Accepteren van de wijzigingen is mislukt"
     },
     "awaitingHost": {
       "modalTitle": "Pluginhost nog niet beschikbaar",

@@ -18,6 +18,7 @@ package com.ritense.externalplugin.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.TextNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.client.ExternalPluginHostClient.HostConfigurationSummary
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
@@ -31,6 +32,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
+import java.security.MessageDigest
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -284,6 +286,16 @@ class ExternalPluginDiscoveryService(
                 }
                 return@forEach
             }
+            if (definition.status == ExternalPluginDefinitionStatus.UNAVAILABLE) {
+                // Same starvation for a plugin the host no longer serves (removed, or replaced by
+                // another version): no pushes, so no fresh service tokens for a definition whose
+                // code is no longer what the admin accepted.
+                logger.info {
+                    "Withholding configuration pushes for plugin '${definition.pluginId}@${definition.version}': " +
+                        "host ${host.id} no longer serves it"
+                }
+                return@forEach
+            }
             val configs = configurationRepository.findAllByDefinitionId(definition.id)
             configs.forEach { config ->
                 try {
@@ -309,7 +321,12 @@ class ExternalPluginDiscoveryService(
         // per-locale under `translations` (see localizedManifestValue).
         val manifest = pluginEntry.get("manifest") ?: pluginEntry
         val version = pluginEntry.get("version")?.asText() ?: manifest.get("version")?.asText() ?: "0.0.0"
+        // Hosts without package hashing (URL apps that only serve a manifest) get a hash *derived*
+        // from the manifest itself, so a manifest change under the same pluginId@version trips the
+        // exact same pinning/re-acceptance flow as a changed plugin-host package. The derived form
+        // is prefixed so it can never collide with a host-provided package hash.
         val discoveredContentHash = pluginEntry.get("contentHash")?.asText()?.takeIf { it.isNotBlank() }
+            ?: manifestContentHash(manifest)
 
         val existing = definitionRepository.findByPluginIdAndVersion(pluginId, version)
         if (existing != null && existing.hostId != host.id) {
@@ -341,8 +358,10 @@ class ExternalPluginDiscoveryService(
         // acceptance covers. Anything else the host serves later under the same pluginId@version is
         // a change of the running code, so the definition is flagged and its stored (accepted)
         // manifest/schema stay frozen until an admin re-accepts — see acceptContent on the
-        // definition service. A host without hash support (older host) skips pinning entirely.
-        if (discoveredContentHash != null) {
+        // configuration service. Hosts without package hashing are pinned on the derived manifest
+        // hash, so the same flow covers a URL app whose manifest (e.g. requested permissions)
+        // changed in place.
+        run {
             val pinnedContentHash = definition.contentHash
             when {
                 pinnedContentHash == null -> definition.contentHash = discoveredContentHash
@@ -376,8 +395,12 @@ class ExternalPluginDiscoveryService(
         }
 
         val newConfigSchema = manifest.get("configurationSchema") as? ObjectNode
-        warnOnDroppedSecretFlags(definition, newConfigSchema)
-        warnOnDroppedEgressTargetFlags(definition, newConfigSchema)
+        PluginSchemaChangeWarnings.warnOnDroppedSecretFlags(
+            definition.pluginId, definition.version, definition.configSchema, newConfigSchema
+        )
+        PluginSchemaChangeWarnings.warnOnDroppedEgressTargetFlags(
+            definition.pluginId, definition.version, definition.configSchema, newConfigSchema
+        )
 
         definition.name = localizedManifestValue(manifest, "name") ?: definition.name
         definition.description = localizedManifestValue(manifest, "description") ?: definition.description
@@ -431,50 +454,27 @@ class ExternalPluginDiscoveryService(
     }
 
     /**
-     * A property that loses its `x-secret: true` flag between manifest versions silently changes
-     * from "encrypted at rest, masked in the API" to plain text on the next save. That is almost
-     * always a plugin-author mistake, so surface it loudly for the operator.
+     * Content pin for hosts that serve no package hash: a SHA-256 over the *canonicalised*
+     * manifest (object keys sorted recursively, so key order coming off the wire never causes a
+     * false change). Prefixed with `manifest-sha256:` so a derived pin is recognisable and can
+     * never collide with a host-provided package hash.
      */
-    private fun warnOnDroppedSecretFlags(definition: ExternalPluginDefinition, newConfigSchema: ObjectNode?) {
-        val previousSecrets = secretFieldNames(definition.configSchema)
-        if (previousSecrets.isEmpty()) return
-        val droppedSecrets = previousSecrets - secretFieldNames(newConfigSchema)
-        if (droppedSecrets.isNotEmpty()) {
-            logger.warn {
-                "Plugin '${definition.pluginId}@${definition.version}' dropped the x-secret flag from " +
-                    "previously secret propert${if (droppedSecrets.size == 1) "y" else "ies"} " +
-                    "${droppedSecrets.joinToString(", ")} in its new configuration schema — these values " +
-                    "will no longer be encrypted or masked"
-            }
-        }
+    private fun manifestContentHash(manifest: JsonNode): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+            .digest(canonicalJson(manifest).toByteArray(Charsets.UTF_8))
+        return "manifest-sha256:" + digest.joinToString("") { "%02x".format(it) }
     }
 
-    /**
-     * A property that loses its `x-egress-target: true` flag stops contributing its URL to the
-     * configuration's egress allowlist, so the next push silently narrows what the plugin can reach
-     * and its outbound calls start failing. The mirror image of [warnOnDroppedSecretFlags]: almost
-     * always a plugin-author mistake, and invisible without this.
-     */
-    private fun warnOnDroppedEgressTargetFlags(definition: ExternalPluginDefinition, newConfigSchema: ObjectNode?) {
-        val previous = PluginEgressTargets.egressTargetFieldNames(definition.configSchema)
-        if (previous.isEmpty()) return
-        val dropped = previous - PluginEgressTargets.egressTargetFieldNames(newConfigSchema)
-        if (dropped.isNotEmpty()) {
-            logger.warn {
-                "Plugin '${definition.pluginId}@${definition.version}' dropped the x-egress-target flag from " +
-                    "propert${if (dropped.size == 1) "y" else "ies"} ${dropped.joinToString(", ")} in its new " +
-                    "configuration schema — the URLs they hold will no longer be allowed as http_request " +
-                    "destinations, and calls to them will be refused"
-            }
+    private fun canonicalJson(node: JsonNode): String = when {
+        // Field names go through TextNode so they are JSON-escaped like every scalar value —
+        // unescaped, two structurally different manifests could canonicalise to the same string
+        // and share a pin, letting a manifest change slip past re-acceptance.
+        node.isObject -> node.fieldNames().asSequence().sorted().joinToString(",", "{", "}") { field ->
+            TextNode.valueOf(field).toString() + ":" + canonicalJson(node.get(field))
         }
-    }
 
-    private fun secretFieldNames(schema: JsonNode?): Set<String> {
-        val schemaProperties = schema?.get("properties") ?: return emptySet()
-        return schemaProperties.fields().asSequence()
-            .filter { (_, fieldSchema) -> fieldSchema.get("x-secret")?.asBoolean(false) == true }
-            .map { (field, _) -> field }
-            .toSet()
+        node.isArray -> node.joinToString(",", "[", "]") { canonicalJson(it) }
+        else -> node.toString()
     }
 
     private fun markMissingDefinitions(host: ExternalPluginHost, seenDefinitionIds: Set<UUID>) {

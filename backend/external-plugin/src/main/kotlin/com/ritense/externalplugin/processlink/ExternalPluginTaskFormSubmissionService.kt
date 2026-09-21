@@ -27,6 +27,7 @@ import com.ritense.document.domain.impl.request.ModifyDocumentRequest
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.processlink.web.dto.ExternalPluginTaskFormSubmissionResult
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
@@ -115,6 +116,18 @@ class ExternalPluginTaskFormSubmissionService(
                 errors = listOf(
                     "The plugin '${definition.pluginId}@${definition.version}' changed on its host and " +
                         "awaits re-acceptance by an administrator"
+                )
+            )
+        }
+        if (definition.status == ExternalPluginDefinitionStatus.UNAVAILABLE) {
+            logger.warn {
+                "Refusing task-form submission for external plugin " +
+                    "'${definition.pluginId}@${definition.version}': the plugin is no longer served by its host"
+            }
+            return ExternalPluginTaskFormSubmissionResult(
+                errors = listOf(
+                    "The plugin '${definition.pluginId}@${definition.version}' is no longer served by its " +
+                        "host (removed or replaced by another version)"
                 )
             )
         }

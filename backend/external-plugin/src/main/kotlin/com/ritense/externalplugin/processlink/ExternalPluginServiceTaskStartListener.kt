@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.exception.ExternalPluginActionFailedException
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
@@ -77,6 +78,7 @@ class ExternalPluginServiceTaskStartListener(
         val definition = definitionService.get(configuration.definitionId)
         validateResolvedDefinition(processLink, definition)
         requireAcceptedContent(definition, processLink)
+        requireAvailable(definition, processLink)
         val host = hostService.get(definition.hostId)
         val hostSecret = hostService.decryptedSecret(host)
 
@@ -330,6 +332,22 @@ class ExternalPluginServiceTaskStartListener(
         }
     }
 
+    /**
+     * A definition its host no longer serves (removed, or replaced by another version) must not be
+     * invoked: what would answer on the host is not the plugin the admin accepted. UNAVAILABLE is
+     * only set after the miss threshold on *successful* polls, so a temporarily unreachable host
+     * never trips this.
+     */
+    private fun requireAvailable(definition: ExternalPluginDefinition, processLink: ExternalPluginProcessLink) {
+        if (definition.status == ExternalPluginDefinitionStatus.UNAVAILABLE) {
+            val message = "External plugin '${definition.pluginId}@${definition.version}' action " +
+                "'${processLink.actionKey}' was not invoked: the plugin is no longer served by its " +
+                "host (removed or replaced by another version)"
+            logger.warn { message }
+            throw ExternalPluginActionFailedException(UNAVAILABLE_ERROR_CODE, message)
+        }
+    }
+
     private fun actionFailed(
         response: ExternalPluginHostClient.ActionResponse,
         definition: ExternalPluginDefinition,
@@ -350,6 +368,9 @@ class ExternalPluginServiceTaskStartListener(
     companion object {
         /** Error code raised when an invocation is blocked pending content re-acceptance. */
         const val CONTENT_CHANGED_ERROR_CODE = "EXTERNAL_PLUGIN_CONTENT_CHANGED"
+
+        /** Error code raised when the host no longer serves the plugin (removed or version switch). */
+        const val UNAVAILABLE_ERROR_CODE = "EXTERNAL_PLUGIN_UNAVAILABLE"
 
         private val logger = KotlinLogging.logger {}
     }

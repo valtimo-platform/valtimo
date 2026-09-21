@@ -155,6 +155,27 @@ export class ExternalPluginService {
     );
   }
 
+  /**
+   * Accepts the reviewed pending content of a definition whose host serves different content
+   * (package or manifest) than what was accepted. The caller echoes the exact `pendingContentHash`
+   * it reviewed — acceptance of a *specific* state, not of whatever the host serves by now. The
+   * backend pins the hash, promotes the pending manifest to the accepted one and re-grants every
+   * configuration of the definition in the same transaction. `InterceptorSkip: 400,409` keeps the
+   * expected rejections (e.g. the host changed again since the admin looked) off the global error
+   * toast — the review modal renders them inline.
+   */
+  public acceptDefinitionContent(
+    definitionId: string,
+    contentHash: string
+  ): Observable<ExternalPluginDefinition> {
+    const headers = new HttpHeaders().set(InterceptorSkip, '400,409');
+    return this._http.post<ExternalPluginDefinition>(
+      `${this._baseUrl}/definition/${definitionId}/accept-content`,
+      {contentHash},
+      {headers}
+    );
+  }
+
   public getConfigurations(definitionId?: string): Observable<Array<ExternalPluginConfiguration>> {
     let params = new HttpParams();
     if (definitionId) params = params.set('definitionId', definitionId);

@@ -79,6 +79,19 @@ class PluginConfigurationResource(
     }
 
     @EndpointDescription(
+        en = "Get plugin configuration by id",
+        nl = "Pluginconfiguratie ophalen op id",
+    )
+    @GetMapping("/v1/plugin/configuration/{pluginConfigurationId}")
+    fun getPluginConfiguration(
+        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID
+    ): ResponseEntity<PluginConfigurationDto> {
+        return pluginService.findPluginConfiguration(PluginConfigurationId.existingId(pluginConfigurationId))
+            ?.let { ResponseEntity.ok(PluginConfigurationDto(it)) }
+            ?: ResponseEntity.notFound().build()
+    }
+
+    @EndpointDescription(
         en = "Create plugin configuration",
         nl = "Pluginconfiguratie aanmaken",
     )

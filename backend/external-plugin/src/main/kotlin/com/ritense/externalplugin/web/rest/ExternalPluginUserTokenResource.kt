@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
@@ -85,6 +86,13 @@ class ExternalPluginUserTokenResource(
                 HttpStatus.CONFLICT,
                 "Plugin '${definition.pluginId}@${definition.version}' changed on its host and " +
                     "awaits re-acceptance by an administrator",
+            )
+        }
+        if (definition?.status == ExternalPluginDefinitionStatus.UNAVAILABLE && !definition.isPlaceholder) {
+            throw ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Plugin '${definition.pluginId}@${definition.version}' is no longer served by its host " +
+                    "(removed or replaced by another version)",
             )
         }
 

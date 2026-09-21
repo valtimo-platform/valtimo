@@ -123,6 +123,8 @@ class ExternalPluginHostClient(
         configId: String,
         pluginId: String,
         pluginVersion: String,
+        /** The admin-facing configuration name, so the host/app can label this configuration. */
+        title: String,
         properties: ObjectNode,
         serviceToken: String,
         gzacBaseUrl: String,
@@ -168,6 +170,7 @@ class ExternalPluginHostClient(
         val body = objectMapper.createObjectNode().apply {
             put("pluginId", pluginId)
             put("pluginVersion", pluginVersion)
+            put("title", title)
             set<ObjectNode>("properties", properties)
             put("serviceToken", serviceToken)
             put("gzacBaseUrl", gzacBaseUrl)

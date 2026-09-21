@@ -24,6 +24,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
@@ -172,6 +173,32 @@ class ExternalPluginTaskFormSubmissionServiceTest {
 
         assertThat(result.errors).singleElement().asString().contains("awaits re-acceptance")
         // Neither the hook nor completion may run for a changed package.
+        verify(hostClient, never()).invokeSubmit(any(), any(), any(), any(), any(), any())
+        verify(processDocumentService, never()).dispatch(any())
+        verify(operatonTaskService, never()).completeTaskWithFormData(any(), any())
+    }
+
+    @Test
+    fun `refuses the submission for a plugin its host no longer serves`() {
+        givenProcessLink(bundleKey = "review")
+        givenTask()
+        givenManifestWithTaskFormBundle(key = "review", submitHandler = true)
+        val unavailableDefinition = mock<ExternalPluginDefinition> {
+            on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
+            on { status } doReturn ExternalPluginDefinitionStatus.UNAVAILABLE
+        }
+        whenever(definitionService.get(definitionId)).thenReturn(unavailableDefinition)
+
+        val result = service.handleSubmission(
+            processLinkId,
+            objectMapper.readTree("""{"decision":"approve"}"""),
+            documentId = "doc-1",
+            taskInstanceId = "task-1",
+        )
+
+        assertThat(result.errors).singleElement().asString().contains("no longer served")
+        // Whatever answers on the host is not the plugin the admin accepted — nothing may run.
         verify(hostClient, never()).invokeSubmit(any(), any(), any(), any(), any(), any())
         verify(processDocumentService, never()).dispatch(any())
         verify(operatonTaskService, never()).completeTaskWithFormData(any(), any())

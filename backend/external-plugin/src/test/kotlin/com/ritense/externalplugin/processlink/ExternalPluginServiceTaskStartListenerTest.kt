@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.exception.ExternalPluginActionFailedException
@@ -164,6 +165,25 @@ class ExternalPluginServiceTaskStartListenerTest {
         assertThat((thrown as ExternalPluginActionFailedException).errorCode)
             .isEqualTo(ExternalPluginServiceTaskStartListener.CONTENT_CHANGED_ERROR_CODE)
         assertThat(thrown).hasMessageContaining("awaits re-acceptance")
+        verify(hostClient, never()).invokeAction(any(), any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `refuses to invoke a plugin that is no longer served by its host`() {
+        val unavailableDefinition = mock<ExternalPluginDefinition> {
+            on { this.hostId } doReturn hostId
+            on { pluginId } doReturn "case-summary"
+            on { version } doReturn "0.1.0"
+            on { status } doReturn ExternalPluginDefinitionStatus.UNAVAILABLE
+        }
+        whenever(definitionService.get(definitionId)).thenReturn(unavailableDefinition)
+
+        val thrown = runCatching { listener.notify(globalProcessServiceTaskEvent()) }.exceptionOrNull()
+
+        assertThat(thrown).isInstanceOf(ExternalPluginActionFailedException::class.java)
+        assertThat((thrown as ExternalPluginActionFailedException).errorCode)
+            .isEqualTo(ExternalPluginServiceTaskStartListener.UNAVAILABLE_ERROR_CODE)
+        assertThat(thrown).hasMessageContaining("no longer served")
         verify(hostClient, never()).invokeAction(any(), any(), any(), any(), any(), any())
     }
 

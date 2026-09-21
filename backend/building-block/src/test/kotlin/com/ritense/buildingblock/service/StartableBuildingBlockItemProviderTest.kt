@@ -117,6 +117,38 @@ class StartableBuildingBlockItemProviderTest {
         assertThat(result[0].key).isEqualTo("income-check")
         assertThat(result[0].versionTag).isEqualTo("1.0.0")
         assertThat(result[0].processDefinitionId).isEqualTo("bb-process:1")
+        assertThat(result[0].startableByUser).isTrue()
+    }
+
+    @Test
+    fun `should include links that are not startable by user with the flag set`() {
+        // Hidden links must stay visible to the management API; the runtime
+        // start menu filters on the flag in StartableItemService.
+        val link = CaseDefinitionBuildingBlockLink(
+            caseDefinitionId = caseDefinitionId,
+            buildingBlockDefinitionId = buildingBlockDefinitionId,
+            startableByUser = false
+        )
+        whenever(linkRepository.findAllByCaseDefinitionId(caseDefinitionId)).thenReturn(listOf(link))
+
+        val processDefBBDefId = ProcessDefinitionBuildingBlockDefinitionId(
+            processDefinitionId = ProcessDefinitionId("bb-process:1"),
+            buildingBlockDefinitionId = buildingBlockDefinitionId
+        )
+        val mainProcessLink = ProcessDefinitionBuildingBlockDefinition(
+            id = processDefBBDefId,
+            main = true
+        ).apply {
+            processDefinitionName = "Income Check Process"
+        }
+
+        whenever(processDefBBDefRepository.findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true))
+            .thenReturn(mainProcessLink)
+
+        val result = provider.getStartableItems(caseDefinitionId)
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].startableByUser).isFalse()
     }
 
     @Test
@@ -204,7 +236,8 @@ class StartableBuildingBlockItemProviderTest {
             buildingBlockDefinitionVersionTag = "1.0.0",
             inputMappings = emptyList(),
             outputMappings = emptyList(),
-            pluginConfigurationMappings = emptyMap()
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
         )
         whenever(linkService.createLink(eq(caseDefinitionId), any())).thenReturn(linkDto)
 
@@ -233,7 +266,8 @@ class StartableBuildingBlockItemProviderTest {
             buildingBlockDefinitionVersionTag = "1.0.0",
             inputMappings = emptyList(),
             outputMappings = emptyList(),
-            pluginConfigurationMappings = emptyMap()
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
         )
         whenever(linkService.getLink(caseDefinitionId, buildingBlockDefinitionId)).thenReturn(linkDto)
 
@@ -260,7 +294,8 @@ class StartableBuildingBlockItemProviderTest {
             buildingBlockDefinitionVersionTag = "1.0.0",
             inputMappings = emptyList(),
             outputMappings = emptyList(),
-            pluginConfigurationMappings = emptyMap()
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
         )
         whenever(linkService.updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any()))
             .thenReturn(linkDto)

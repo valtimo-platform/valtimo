@@ -62,6 +62,7 @@ import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {PluginAppAddModalComponent} from '../plugin-app-add-modal/plugin-app-add-modal.component';
 import {PluginExternalEditModalComponent} from '../plugin-external-edit-modal/plugin-external-edit-modal.component';
+import {PluginExternalReviewModalComponent} from '../plugin-external-review-modal/plugin-external-review-modal.component';
 import {PluginHostEditModalComponent} from '../plugin-host-edit-modal/plugin-host-edit-modal.component';
 import {PluginHostEventQueueModalComponent} from '../plugin-host-event-queue-modal/plugin-host-event-queue-modal.component';
 import {PluginHostFrontendOriginsModalComponent} from '../plugin-host-frontend-origins-modal/plugin-host-frontend-origins-modal.component';
@@ -72,13 +73,15 @@ import {cspAllowsFrameOrigin} from '../../utils';
 
 /** One row on the apps page: the APP-kind host enriched with its discovered plugin and configuration. */
 interface PluginAppRow extends ExternalPluginHost {
-  statusTag: CarbonTag;
+  statusTags: CarbonTag[];
   lastHealthCheckFormatted: string;
   configurationTitle: string;
   definition: ExternalPluginDefinition | null;
   configuration: ExternalPluginConfiguration | null;
   /** Whether the app's plugin declares the `log` capability — apps without it serve no logs endpoint. */
   supportsLogs: boolean;
+  /** The app changed its manifest/version after acceptance; an admin must review before it runs again. */
+  reviewRequired: boolean;
 }
 
 /** Query parameter that restores the add-app stepper at the configuration step after a reload. */
@@ -106,6 +109,7 @@ const LOG_CAPABILITY = 'log';
     ConfirmationModalModule,
     PluginAppAddModalComponent,
     PluginExternalEditModalComponent,
+    PluginExternalReviewModalComponent,
     PluginHostEditModalComponent,
     PluginHostEventQueueModalComponent,
     PluginHostFrontendOriginsModalComponent,
@@ -137,6 +141,10 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   // --- Edit configuration modal ---
   public readonly $editModalOpen = signal<boolean>(false);
   public readonly $selectedConfiguration = signal<UnifiedPluginConfigurationRow | null>(null);
+
+  // --- Review & accept changed content/permissions ---
+  public readonly $reviewModalOpen = signal<boolean>(false);
+  public readonly $reviewDefinition = signal<ExternalPluginDefinition | null>(null);
 
   // --- Configuration delete ---
   public readonly deleteConfigurationModalOpen$ = new BehaviorSubject<boolean>(false);
@@ -181,9 +189,10 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
       viewType: ViewType.TEXT,
     },
     {
-      key: 'statusTag',
+      key: 'statusTags',
       label: 'pluginManagement.labels.status',
       viewType: ViewType.TAGS,
+      tagAmount: 2,
     },
     {
       key: 'lastHealthCheckFormatted',
@@ -205,6 +214,11 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
       callback: this.editConfiguration.bind(this),
       label: 'pluginManagement.editConfiguration',
       disabledCallback: (row: PluginAppRow) => !row.configuration,
+    },
+    {
+      callback: this.reviewChanges.bind(this),
+      label: 'pluginManagement.review.menuItem',
+      disabledCallback: (row: PluginAppRow) => !row.reviewRequired,
     },
     {
       callback: this.viewLogs.bind(this),
@@ -313,11 +327,32 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
   }
 
   public onRowClicked(row: PluginAppRow): void {
-    if (row.configuration) {
+    if (row.reviewRequired) {
+      // Nothing of the app runs until the change is reviewed — surface that flow first.
+      this.reviewChanges(row);
+    } else if (row.configuration) {
       this.editConfiguration(row);
     } else {
       this.configureApp(row);
     }
+  }
+
+  // --- Review & accept ---
+
+  public reviewChanges(row: PluginAppRow): void {
+    if (!row.reviewRequired || !row.definition) return;
+    this.$reviewDefinition.set(row.definition);
+    this.$reviewModalOpen.set(true);
+  }
+
+  public closeReviewModal(): void {
+    this.$reviewModalOpen.set(false);
+    this.$reviewDefinition.set(null);
+  }
+
+  public onReviewAccepted(): void {
+    this.closeReviewModal();
+    this._refreshApps$.next();
   }
 
   public configureApp(row: PluginAppRow): void {
@@ -655,9 +690,20 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
         .filter(candidate => hostDefinitionIds.has(candidate.definitionId))
         .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''))[0] ?? null;
 
+    const reviewRequired = definition?.requiresReacceptance ?? false;
+    const statusTags: CarbonTag[] = [this._getStatusTag(host.status)];
+    if (reviewRequired) {
+      // Same flag the plugins page shows: the app changed its manifest/version after acceptance
+      // and is deactivated until an admin reviews and accepts the new state.
+      statusTags.push({
+        content: this._translateService.instant('pluginManagement.reviewRequired.tag'),
+        type: 'magenta',
+      });
+    }
+
     return {
       ...host,
-      statusTag: this._getStatusTag(host.status),
+      statusTags,
       lastHealthCheckFormatted: this._formatLastHealthCheck(host.lastHealthCheck),
       configurationTitle:
         configuration?.title ?? this._translateService.instant('pluginManagement.notConfigured'),
@@ -666,6 +712,7 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
       supportsLogs: (definition?.manifest?.permissions?.capabilities ?? []).includes(
         LOG_CAPABILITY
       ),
+      reviewRequired,
     };
   }
 

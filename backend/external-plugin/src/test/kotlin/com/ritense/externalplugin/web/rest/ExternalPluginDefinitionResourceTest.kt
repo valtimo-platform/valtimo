@@ -44,12 +44,13 @@ import java.util.UUID
 /**
  * Definition-facing endpoints of the management resource: the compatibility verdict folded into the
  * response (informational, never blocking), the `requiresReacceptance` flag that makes a
- * changed package visible to the admin, the logo URL the UI renders, and the API-only content
- * re-acceptance recovery path.
+ * changed package visible to the admin, the logo URL the UI renders, and the content
+ * re-acceptance path behind the review-and-accept flow.
  */
 class ExternalPluginDefinitionResourceTest {
 
     private lateinit var definitionService: ExternalPluginDefinitionService
+    private lateinit var configurationService: ExternalPluginConfigurationService
     private lateinit var discoveryService: ExternalPluginDiscoveryService
     private var currentGzacVersion: String? = "12.0.5"
 
@@ -62,12 +63,13 @@ class ExternalPluginDefinitionResourceTest {
     @BeforeEach
     fun setUp() {
         definitionService = mock()
+        configurationService = mock()
         discoveryService = mock()
         currentGzacVersion = "12.0.5"
         resource = ExternalPluginManagementResource(
             hostService = mock<ExternalPluginHostService>(),
             definitionService = definitionService,
-            configurationService = mock<ExternalPluginConfigurationService>(),
+            configurationService = configurationService,
             hostClient = mock<ExternalPluginHostClient>(),
             endpointDescriptionService = mock<EndpointDescriptionService>(),
             discoveryService = discoveryService,
@@ -208,7 +210,7 @@ class ExternalPluginDefinitionResourceTest {
     @Test
     fun `acceptDefinitionContent forwards the reviewed hash and re-discovers before responding`() {
         val accepted = definition(contentHash = "sha256:changed", pendingContentHash = null)
-        whenever(definitionService.acceptContent(definitionId, "sha256:changed")).thenReturn(accepted)
+        whenever(configurationService.acceptContent(definitionId, "sha256:changed")).thenReturn(accepted)
         whenever(definitionService.get(definitionId)).thenReturn(accepted)
 
         val body = resource.acceptDefinitionContent(
@@ -217,8 +219,8 @@ class ExternalPluginDefinitionResourceTest {
         ).body!!
 
         // The response must reflect post-discovery state, so the ordering matters.
-        inOrder(definitionService, discoveryService) {
-            verify(definitionService).acceptContent(definitionId, "sha256:changed")
+        inOrder(configurationService, discoveryService, definitionService) {
+            verify(configurationService).acceptContent(definitionId, "sha256:changed")
             verify(discoveryService).discoverHost(hostId)
             verify(definitionService).get(definitionId)
         }
@@ -229,7 +231,7 @@ class ExternalPluginDefinitionResourceTest {
     @Test
     fun `acceptDefinitionContent still answers when the immediate re-discovery fails`() {
         val accepted = definition(contentHash = "sha256:changed")
-        whenever(definitionService.acceptContent(eq(definitionId), any())).thenReturn(accepted)
+        whenever(configurationService.acceptContent(eq(definitionId), any())).thenReturn(accepted)
         whenever(definitionService.get(definitionId)).thenReturn(accepted)
         whenever(discoveryService.discoverHost(any())).thenThrow(RuntimeException("host down"))
 

@@ -458,10 +458,12 @@ class ExternalPluginManagementResource(
         ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
 
     /**
-     * Re-accepts a definition whose package content changed on its host after the original
-     * acceptance (see `requiresReacceptance` on the definition response). The request echoes the
-     * pending hash the admin reviewed; on success the new hash is pinned and an immediate
-     * re-discovery refreshes the frozen manifest data and resumes configuration pushes.
+     * Re-accepts a definition whose content changed on its host after the original acceptance
+     * (see `requiresReacceptance` on the definition response). The request echoes the pending
+     * hash the admin reviewed; on success the new hash is pinned, the reviewed manifest becomes
+     * the accepted one, every configuration of the definition is re-granted to the manifest's
+     * declared sets, and an immediate re-discovery refreshes the denormalised definition fields
+     * and resumes configuration pushes with the new grants.
      */
     @RunWithoutAuthorization
     @EndpointDescription(
@@ -473,7 +475,7 @@ class ExternalPluginManagementResource(
         @PathVariable definitionId: UUID,
         @RequestBody request: AcceptContentRequest,
     ): ResponseEntity<DefinitionResponse> {
-        val definition = definitionService.acceptContent(definitionId, request.contentHash)
+        val definition = configurationService.acceptContent(definitionId, request.contentHash)
         runCatching { discoveryService.discoverHost(definition.hostId) }
         return ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
     }

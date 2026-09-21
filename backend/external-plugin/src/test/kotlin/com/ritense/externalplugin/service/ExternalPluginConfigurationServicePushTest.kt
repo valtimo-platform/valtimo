@@ -145,6 +145,7 @@ class ExternalPluginConfigurationServicePushTest {
             configId = eq(configuration.id.toString()),
             pluginId = eq("case-summary"),
             pluginVersion = eq("1.0.0"),
+            title = eq(configuration.title),
             properties = any(),
             serviceToken = eq("svc-token"),
             gzacBaseUrl = any(),
@@ -200,6 +201,7 @@ class ExternalPluginConfigurationServicePushTest {
             configId = any(),
             pluginId = any(),
             pluginVersion = any(),
+            title = any(),
             properties = any(),
             serviceToken = any(),
             gzacBaseUrl = any(),
@@ -230,6 +232,7 @@ class ExternalPluginConfigurationServicePushTest {
             configId = any(),
             pluginId = any(),
             pluginVersion = any(),
+            title = any(),
             properties = any(),
             serviceToken = any(),
             gzacBaseUrl = any(),
@@ -261,6 +264,20 @@ class ExternalPluginConfigurationServicePushTest {
     }
 
     @Test
+    fun `pushToHost refuses a definition its host no longer serves`() {
+        // Not a placeholder (it has an accepted hash) — the host simply stopped serving it, e.g.
+        // an app that now announces another version. Whatever answers there is not the code the
+        // admin accepted, so no push and no fresh service token.
+        definition.status = ExternalPluginDefinitionStatus.UNAVAILABLE
+
+        val pushed = service.pushToHost(configuration, definition, host)
+
+        assertThat(pushed).isFalse()
+        verifyNoInteractions(hostClient)
+        verifyNoInteractions(serviceTokenService)
+    }
+
+    @Test
     fun `revokeTokens bumps the generation and immediately re-pushes a fresh token`() {
         val revoked = service.revokeTokens(configuration.id)
 
@@ -275,6 +292,7 @@ class ExternalPluginConfigurationServicePushTest {
             configId = eq(configuration.id.toString()),
             pluginId = any(),
             pluginVersion = any(),
+            title = any(),
             properties = any(),
             serviceToken = eq("svc-token"),
             gzacBaseUrl = any(),

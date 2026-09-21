@@ -43,34 +43,24 @@ class UploadProcessAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ResourceUploadedToDocumentEventListener::class)
-    fun resourceUploadedEventListener(
-        resourceService: TemporaryResourceStorageService,
-        uploadProcessService: UploadProcessService,
-        authorizationService: AuthorizationService,
-        catalogiService: CatalogiService,
-    ): ResourceUploadedToDocumentEventListener {
-        return ResourceUploadedToDocumentEventListener(
-            resourceService,
-            uploadProcessService,
-            authorizationService,
-            catalogiService,
-        )
-    }
-
-    @Bean
     @ConditionalOnMissingBean(UploadProcessService::class)
     fun uploadProcessService(
         documentService: DocumentService,
         processDocumentService: ProcessDocumentService,
         caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
         caseDocumentResolver: CaseDocumentResolver,
+        resourceService: TemporaryResourceStorageService,
+        authorizationService: AuthorizationService,
+        catalogiService: CatalogiService,
     ): UploadProcessService {
         return UploadProcessService(
             documentService,
             processDocumentService,
             caseDefinitionProcessLinkService,
             caseDocumentResolver,
+            resourceService,
+            authorizationService,
+            catalogiService,
         )
     }
 
@@ -78,9 +68,14 @@ class UploadProcessAutoConfiguration {
     @ConditionalOnMissingBean(UploadProcessResource::class)
     fun uploadProcessResource(
         activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
+        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
+        uploadProcessService: UploadProcessService,
     ): UploadProcessResource {
-        return UploadProcessResource(activeCaseDefinitionService, caseDefinitionProcessLinkService)
+        return UploadProcessResource(
+            activeCaseDefinitionService,
+            caseDefinitionProcessLinkService,
+            uploadProcessService,
+        )
     }
 
     @Order(360)

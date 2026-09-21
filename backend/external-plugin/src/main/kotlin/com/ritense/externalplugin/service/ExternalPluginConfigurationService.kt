@@ -25,6 +25,7 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginCapability
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
+import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginGrantedCapability
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEgress
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
@@ -225,6 +226,15 @@ class ExternalPluginConfigurationService(
             }
             return false
         }
+        if (definition.status == ExternalPluginDefinitionStatus.UNAVAILABLE) {
+            // Same starvation when the host no longer serves the plugin (removed, or replaced by
+            // another version): whatever answers there is not the code the admin accepted.
+            logger.warn {
+                "Refusing to push configuration ${configuration.id}: plugin " +
+                    "'${definition.pluginId}@${definition.version}' is no longer served by its host"
+            }
+            return false
+        }
         val adminToken = encryptionService.decrypt(host.secret)
         val decrypted = decryptedProperties(configuration)
         val serviceToken = serviceTokenService.issue(configuration, definition)
@@ -262,6 +272,7 @@ class ExternalPluginConfigurationService(
             configId = configuration.id.toString(),
             pluginId = definition.pluginId,
             pluginVersion = definition.version,
+            title = configuration.title,
             properties = decrypted,
             serviceToken = serviceToken,
             gzacBaseUrl = host.gzacCallbackBaseUrl ?: fallbackGzacBaseUrl,
@@ -378,12 +389,61 @@ class ExternalPluginConfigurationService(
     }
 
     /**
+     * Applies an admin's review-and-accept of a definition whose host serves different content
+     * than what was pinned (see `requiresReacceptance`). The caller must echo the exact pending
+     * hash it reviewed: this is acceptance of a *specific* state, not of "whatever the host
+     * happens to serve by now" — if the host changed again since the admin looked, the echoed
+     * hash no longer matches and the request is rejected until the newest state is reviewed.
+     *
+     * One acceptance act, mirroring [applyApprovedOverwrite]: the pending hash is pinned, the
+     * reviewed pending manifest becomes the accepted one, and every configuration of the
+     * definition is re-granted to **exactly** the new manifest's declared sets — all in a single
+     * transaction, so a failure can never leave accepted content behind with stale grants.
+     */
+    @Transactional
+    fun acceptContent(definitionId: UUID, contentHash: String): ExternalPluginDefinition {
+        val definition = definitionRepository.findById(definitionId)
+            .orElseThrow { ExternalPluginNotFoundException("External plugin definition", definitionId) }
+        val pending = definition.pendingContentHash
+            ?: throw IllegalStateException(
+                "External plugin definition ${definition.pluginId}@${definition.version} " +
+                    "has no pending content change to accept"
+            )
+        require(contentHash == pending) {
+            "The accepted content hash does not match the pending one — the plugin package " +
+                "changed again on the host; review the current state before accepting"
+        }
+        definition.contentHash = pending
+        definition.pendingContentHash = null
+        // What the admin just reviewed becomes the accepted manifest immediately — the re-grant
+        // below and any subsequent edit validate against it without waiting for the next poll.
+        // Null pending manifest = row flagged before the manifest travelled along; pin-only then.
+        val promotedManifest = definition.pendingManifestJson
+        if (promotedManifest != null) {
+            val newConfigSchema = promotedManifest.get("configurationSchema") as? ObjectNode
+            PluginSchemaChangeWarnings.warnOnDroppedSecretFlags(
+                definition.pluginId, definition.version, definition.configSchema, newConfigSchema
+            )
+            PluginSchemaChangeWarnings.warnOnDroppedEgressTargetFlags(
+                definition.pluginId, definition.version, definition.configSchema, newConfigSchema
+            )
+            definition.manifestJson = promotedManifest
+            definition.configSchema = newConfigSchema
+            definition.pendingManifestJson = null
+        }
+        val saved = definitionRepository.save(definition)
+        if (promotedManifest != null) {
+            regrantConfigurations(saved, promotedManifest)
+        }
+        return saved
+    }
+
+    /**
      * Applies an admin-confirmed overwrite of an existing plugin version: the admin
      * re-reviewed the uploaded package's requested permissions in the upload flow, so the new
      * package hash is pinned as the accepted content and every configuration of the definition is
-     * re-granted to **exactly** the new manifest's declared endpoint/event/capability sets — the
-     * same all-or-nothing footprint the activation screen grants. The subsequent discovery cycle
-     * refreshes the stored manifest (the hash now matches the pin) and pushes the new grants.
+     * re-granted to the new manifest's declared sets. The subsequent discovery cycle refreshes
+     * the stored manifest (the hash now matches the pin) and pushes the new grants.
      *
      * A definition GZAC never discovered is a no-op: discovery will pin the uploaded content on
      * first sight and there are no configurations to re-grant.
@@ -399,6 +459,16 @@ class ExternalPluginConfigurationService(
         }
         if (manifest == null) return
 
+        regrantConfigurations(definition, manifest)
+    }
+
+    /**
+     * Replaces every configuration's granted sets with **exactly** the manifest's declared
+     * endpoint/event/capability/egress sets — the same all-or-nothing footprint the activation
+     * screen grants. Shared by the two admin-confirmation flows ([acceptContent] and
+     * [applyApprovedOverwrite]); both run it inside their own transaction.
+     */
+    private fun regrantConfigurations(definition: ExternalPluginDefinition, manifest: JsonNode) {
         val declaredEndpoints = declaredEndpoints(manifest)
         val declaredEvents = declaredEvents(manifest)
         val declaredCapabilities = declaredCapabilities(manifest)
@@ -420,8 +490,8 @@ class ExternalPluginConfigurationService(
             saveGrantedCapabilities(configuration.id, declaredCapabilities)
             saveGrantedEgress(configuration.id, declaredEgress)
             logger.info {
-                "Re-granted configuration ${configuration.id} to the overwritten manifest of " +
-                    "'$pluginId@$version' (${declaredEndpoints.size} endpoints, " +
+                "Re-granted configuration ${configuration.id} to the newly accepted manifest of " +
+                    "'${definition.pluginId}@${definition.version}' (${declaredEndpoints.size} endpoints, " +
                     "${declaredEvents.size} events, ${declaredCapabilities.size} capabilities, " +
                     "${declaredEgress.size} egress targets)"
             }
@@ -513,7 +583,7 @@ class ExternalPluginConfigurationService(
             } catch (e: IllegalArgumentException) {
                 // Unknown to this GZAC version — grant what is known rather than failing after the
                 // host has already replaced the package; the host-side guard denies the rest anyway.
-                logger.warn { "Skipping unknown capability '$value' while re-granting after overwrite: ${e.message}" }
+                logger.warn { "Skipping unknown capability '$value' while re-granting: ${e.message}" }
                 null
             }
         }

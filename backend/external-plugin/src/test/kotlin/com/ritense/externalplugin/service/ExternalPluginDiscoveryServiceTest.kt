@@ -427,6 +427,194 @@ class ExternalPluginDiscoveryServiceTest {
     }
 
     @Test
+    fun `pins a derived manifest hash for a host that serves no package hash`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        givenPluginListing(host, pluginEntryWithoutHash())
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+
+        service.discoverAll()
+
+        val captor = argumentCaptor<ExternalPluginDefinition>()
+        verify(definitionRepository).save(captor.capture())
+        assertThat(captor.firstValue.contentHash).startsWith("manifest-sha256:")
+        assertThat(captor.firstValue.pendingContentHash).isNull()
+    }
+
+    @Test
+    fun `flags a manifest change on a hash-less host for re-acceptance and freezes the accepted manifest`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+        givenPluginListing(host, pluginEntryWithoutHash(name = "Accepted name"))
+        service.discoverAll()
+        val captor = argumentCaptor<ExternalPluginDefinition>()
+        verify(definitionRepository).save(captor.capture())
+        val definition = captor.firstValue
+        val pinned = definition.contentHash
+
+        // The app now serves a changed manifest (e.g. a widened permission footprint) in place,
+        // under the same pluginId@version — the URL-app equivalent of changed package content.
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+        givenPluginListing(host, pluginEntryWithoutHash(name = "Changed name"))
+        service.discoverAll()
+
+        assertThat(definition.contentHash).isEqualTo(pinned)
+        assertThat(definition.pendingContentHash).startsWith("manifest-sha256:")
+        assertThat(definition.pendingContentHash).isNotEqualTo(pinned)
+        assertThat(definition.requiresReacceptance).isTrue()
+        // The stored manifest data reflects what the admin accepted, not the changed manifest.
+        assertThat(definition.name).isEqualTo("Accepted name")
+        assertThat(definition.pendingManifestJson?.at("/translations/en/name")?.asText()).isEqualTo("Changed name")
+        assertThat(definition.status).isEqualTo(ExternalPluginDefinitionStatus.AVAILABLE)
+    }
+
+    @Test
+    fun `does not flag a hash-less host while its manifest is unchanged`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+        givenPluginListing(host, pluginEntryWithoutHash())
+        service.discoverAll()
+        val captor = argumentCaptor<ExternalPluginDefinition>()
+        verify(definitionRepository).save(captor.capture())
+        val definition = captor.firstValue
+
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+        givenPluginListing(host, pluginEntryWithoutHash())
+        service.discoverAll()
+
+        assertThat(definition.pendingContentHash).isNull()
+        assertThat(definition.requiresReacceptance).isFalse()
+    }
+
+    @Test
+    fun `derived pin ignores key order - a reserialised but unchanged manifest is not a change`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+        givenPluginListing(
+            host,
+            objectMapper.readTree(
+                """
+                {
+                  "pluginId": "case-summary",
+                  "version": "1.0.0",
+                  "manifest": {
+                    "pluginId": "case-summary",
+                    "version": "1.0.0",
+                    "translations": {"en": {"name": "Case summary", "description": "Summarises"}}
+                  }
+                }
+                """.trimIndent(),
+            ),
+        )
+        service.discoverAll()
+        val captor = argumentCaptor<ExternalPluginDefinition>()
+        verify(definitionRepository).save(captor.capture())
+        val definition = captor.firstValue
+
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+        // Identical manifest, different key order everywhere — e.g. the app switched JSON
+        // serialisers between releases.
+        givenPluginListing(
+            host,
+            objectMapper.readTree(
+                """
+                {
+                  "version": "1.0.0",
+                  "pluginId": "case-summary",
+                  "manifest": {
+                    "translations": {"en": {"description": "Summarises", "name": "Case summary"}},
+                    "version": "1.0.0",
+                    "pluginId": "case-summary"
+                  }
+                }
+                """.trimIndent(),
+            ),
+        )
+        service.discoverAll()
+
+        assertThat(definition.pendingContentHash).isNull()
+        assertThat(definition.requiresReacceptance).isFalse()
+    }
+
+    @Test
+    fun `derived pin escapes field names - structurally different manifests never share a pin`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(null)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(emptyList())
+        givenPluginListing(
+            host,
+            objectMapper.readTree(
+                """
+                {
+                  "pluginId": "case-summary",
+                  "version": "1.0.0",
+                  "manifest": {"pluginId": "case-summary", "version": "1.0.0", "x": {"a": 1, "b": 2}}
+                }
+                """.trimIndent(),
+            ),
+        )
+        service.discoverAll()
+        val captor = argumentCaptor<ExternalPluginDefinition>()
+        verify(definitionRepository).save(captor.capture())
+        val definition = captor.firstValue
+
+        whenever(definitionRepository.findByPluginIdAndVersion("case-summary", "1.0.0")).thenReturn(definition)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(emptyList())
+        // One field named `a":1,"b` — without JSON-escaping the field names this canonicalises to
+        // the same string as {"a":1,"b":2} above, and a changed manifest would keep the same pin.
+        givenPluginListing(
+            host,
+            objectMapper.readTree(
+                """
+                {
+                  "pluginId": "case-summary",
+                  "version": "1.0.0",
+                  "manifest": {"pluginId": "case-summary", "version": "1.0.0", "x": {"a\":1,\"b": 2}}
+                }
+                """.trimIndent(),
+            ),
+        )
+        service.discoverAll()
+
+        assertThat(definition.pendingContentHash).startsWith("manifest-sha256:")
+        assertThat(definition.requiresReacceptance).isTrue()
+    }
+
+    @Test
+    fun `withholds configuration pushes for a definition its host no longer serves`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        // Not a placeholder (it has an accepted hash) — the host simply stopped serving it, e.g.
+        // because the app now announces another version.
+        val definition = definition(hostId = host.id, contentHash = "sha256:aaa").apply {
+            status = ExternalPluginDefinitionStatus.UNAVAILABLE
+        }
+        val configuration = ExternalPluginConfiguration(UUID.randomUUID(), definition.id, "Primary")
+        givenPluginListing(host)
+        whenever(definitionRepository.findAllByHostId(host.id)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(configuration))
+
+        service.discoverAll()
+
+        verify(configurationService, never()).pushToHost(any(), any(), any())
+    }
+
+    @Test
     fun `reconciliation deletes host configs this GZAC owns but no longer has — and nothing else`() {
         val host = host(status = ExternalPluginHostStatus.CONNECTED)
         givenHost(host)
@@ -717,6 +905,21 @@ class ExternalPluginDiscoveryServiceTest {
         whenever(hostRepository.findAll()).thenReturn(listOf(host))
         whenever(hostRepository.findById(eq(host.id))).thenReturn(Optional.of(host))
     }
+
+    /** A URL app: only a manifest, no package content hash — the pin is derived from the manifest. */
+    private fun pluginEntryWithoutHash(name: String = "Case summary") = objectMapper.readTree(
+        """
+        {
+          "pluginId": "case-summary",
+          "version": "1.0.0",
+          "manifest": {
+            "pluginId": "case-summary",
+            "version": "1.0.0",
+            "translations": {"en": {"name": "$name", "description": "Summarises a case"}}
+          }
+        }
+        """.trimIndent(),
+    )
 
     private fun host(
         status: ExternalPluginHostStatus,

@@ -17,8 +17,8 @@
 import {DECISION_MODELER_TEST_IDS} from '../constants';
 import {DecisionService} from '../services/decision.service';
 import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
-import DmnViewer from 'dmn-js/dist/dmn-viewer.development.js';
+import type DmnJS from 'dmn-js/lib/Modeler';
+import type DmnViewer from 'dmn-js/lib/Viewer';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {DecisionFormValue, DecisionXml} from '../models';
 import {
@@ -28,7 +28,6 @@ import {
   updateDmnXml,
 } from '../utils/dmn-template';
 import {DecisionFormModalComponent} from '../decision-form-modal/decision-form-modal.component';
-import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 import {
   BehaviorSubject,
   catchError,
@@ -126,6 +125,7 @@ export class DecisionModelerComponent
   private $container!: any;
   private $tabs!: any;
   private dmnEditor!: DmnJS | DmnViewer;
+  private _destroyed = false;
 
   public readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly isCreating$ = new BehaviorSubject<boolean>(false);
@@ -275,6 +275,8 @@ export class DecisionModelerComponent
   }
 
   public ngOnDestroy(): void {
+    this._destroyed = true;
+
     // Reset the shared page state first: a failing teardown of the editor or the page header
     // would otherwise leave this page's breadcrumbs and title behind on the next screen.
     this.breadcrumbService.clearThirdBreadcrumb();
@@ -464,8 +466,9 @@ export class DecisionModelerComponent
     // A new decision table is always created in the editable modeler. For existing tables the
     // edit permissions decide whether to render the editable modeler or a read-only viewer.
     if (this.route.snapshot.params?.['id'] === 'create') {
-      this.createEditor(false);
-      this.loadEmptyDecisionTable();
+      this.createEditor(false).then(() => {
+        if (!this._destroyed) this.loadEmptyDecisionTable();
+      });
       return;
     }
 
@@ -474,21 +477,23 @@ export class DecisionModelerComponent
       .subscribe(hasEditPermissions => this.createEditor(!hasEditPermissions));
   }
 
-  private createEditor(readOnly: boolean): void {
+  private async createEditor(readOnly: boolean): Promise<void> {
+    // Loaded on demand: the dmn-js modeler is the single largest dependency in the workspace and
+    // is only needed once a decision table is actually opened.
+    const {default: DmnEditorCtor} = readOnly
+      ? await import('dmn-js/lib/Viewer')
+      : await import('dmn-js/lib/Modeler');
+
+    if (this._destroyed) return;
+
     this.$container = $('.editor-container');
     this.$tabs = $('.editor-tabs');
-    this.dmnEditor = readOnly
-      ? new DmnViewer({
-          container: this.$container,
-          height: 500,
-          width: '100%',
-        })
-      : new DmnJS({
-          container: this.$container,
-          height: 500,
-          width: '100%',
-          keyboard: {bindTo: window},
-        });
+    this.dmnEditor = new DmnEditorCtor({
+      container: this.$container,
+      height: 500,
+      width: '100%',
+      ...(readOnly ? {} : {keyboard: {bindTo: window}}),
+    });
     this.setTabEvents();
     this.setModelerEvents();
     this._editorReady$.next(true);
@@ -545,8 +550,9 @@ export class DecisionModelerComponent
   }
 
   private migrateAndLoadDecisionXml(decision: DecisionXml): void {
-    from(migrateDiagram(decision.dmnXml))
+    from(import('@bpmn-io/dmn-migrate'))
       .pipe(
+        switchMap(({migrateDiagram}) => migrateDiagram(decision.dmnXml)),
         switchMap(xml => this.dmnEditor.importXML(xml)),
         tap(() => this.setEditor()),
         catchError(() => {

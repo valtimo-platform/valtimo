@@ -73,6 +73,13 @@
   (deleteEvent)="onConfigurationDeleteRequested($event)"
 ></valtimo-plugin-external-edit-modal>
 
+<valtimo-plugin-external-review-modal
+  [definition]="$reviewDefinition()"
+  [open]="$reviewModalOpen()"
+  (acceptedEvent)="onReviewAccepted()"
+  (closeEvent)="closeReviewModal()"
+></valtimo-plugin-external-review-modal>
+
 <valtimo-plugin-host-event-queue-modal
   [host]="hostToEditEventQueue$ | async"
   [open]="eventQueueModalOpen$ | async"

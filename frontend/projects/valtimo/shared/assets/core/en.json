@@ -1056,13 +1056,15 @@
     "actions": {
       "columns": {
         "name": "Name",
-        "type": "Type"
+        "type": "Type",
+        "startableByUser": "Visibility"
       },
+      "visibleInStartMenu": "Visible in start menu",
       "addItem": "Create an action",
       "noResults": "No actions configured",
       "noResultsDescription": "No actions are configured for this case type.",
       "infoNotification": {
-        "message": "Actions appear under the start button of an existing case and can be initiated at any time by the user."
+        "message": "Actions appear under the start button of an existing case by default and can be initiated at any time by the user."
       },
       "type": {
         "PROCESS": "Process",
@@ -1893,6 +1895,7 @@
     "validationErrors": "Validation errors",
     "validationErrorsCount": "Validation errors ({{count}})",
     "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
+    "idTooLong": "The ID may not be longer than {{max}} characters.",
     "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {
@@ -2604,6 +2607,12 @@
       "tag": "Review required",
       "permissionsChanged": "The plugin package on the host changed and now requests different permissions than the ones that were accepted. Nothing is sent to the host until an administrator reviews and accepts the new permissions.",
       "codeChanged": "The plugin package on the host changed. It requests the same permissions as before, but the code is not the one that was accepted. Nothing is sent to the host until an administrator confirms the new package."
+    },
+    "review": {
+      "menuItem": "Review changes",
+      "modalTitle": "Review changed app",
+      "accept": "Accept changes",
+      "failed": "Accepting the changes failed"
     },
     "awaitingHost": {
       "modalTitle": "Plugin host not available yet",

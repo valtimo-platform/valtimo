@@ -102,6 +102,7 @@
     [open]="showUploadModal$ | async"
     [supportsTrefwoorden]="obs?.supportedDocumentenApiFeatures?.supportsTrefwoorden"
     [uploadError]="uploadError()"
+    [uploading]="obs.uploading"
     (metadata)="metadataSet($event)"
     (modalClose)="closeMetadataModal()"
     (uploadErrorDismiss)="uploadError.set(null)"
