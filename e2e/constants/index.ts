@@ -1,6 +1,7 @@
 export * from './access-control-test-ids';
 export * from './building-block-management-test-ids';
 export * from './case-management-test-ids';
+export * from './case-test-ids';
 export * from './dashboard-management-test-ids';
 export * from './dashboard-test-ids';
 export * from './components-test-ids';

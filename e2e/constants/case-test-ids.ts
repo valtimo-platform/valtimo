@@ -14,11 +14,4 @@
  * limitations under the License.
  */
 
-export * from './tab';
-export * from './case-tab-token';
-export * from './case-list.constants';
-export * from './case-status.constants';
-export * from './case-widget.constants';
-export * from './case-detail-layout.constants';
-export * from './case-inspection.constants';
-export * from './case.test-ids';
+export {CASE_DETAIL_PANEL_TEST_IDS} from '../../frontend/projects/valtimo/case/src/lib/constants/case.test-ids';

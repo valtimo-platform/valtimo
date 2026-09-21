@@ -15,6 +15,7 @@
  */
 
 import {expect, Locator, Page} from '@playwright/test';
+import {CASE_DETAIL_PANEL_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {apiDelete, apiPost} from '../../utils/api.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
@@ -246,6 +247,47 @@ export class UserCasesPage {
     const item = this.startableMenuItem(displayName);
     await expect(item).toBeVisible();
     await item.click();
+  }
+
+  // ─── Start-form side panel ───────────────────────────────────────
+
+  get startFormPanel(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.startFormPanel);
+  }
+
+  get startFormPanelTitle(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.startFormPanelTitle);
+  }
+
+  get startFormPanelCloseButton(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.startFormPanelCloseButton);
+  }
+
+  // Start-form fields are rendered by the Form.io renderer, so they carry no
+  // Valtimo data-test-id — scope by accessible label inside the panel instead.
+  startFormField(label: string | RegExp): Locator {
+    return this.startFormPanel.getByRole('textbox', {name: label});
+  }
+
+  async openStartFormInPanel(displayName: string) {
+    await this.startSubProcess(displayName);
+    await expect(this.startFormPanel).toBeVisible({timeout: 15_000});
+  }
+
+  async closeStartFormPanel() {
+    await this.startFormPanelCloseButton.click();
+    await expect(this.startFormPanel).toHaveCount(0);
+  }
+
+  // ─── Task detail opened in the side panel ────────────────────────
+
+  get taskDetailPanel(): Locator {
+    return this.page.locator('.task-panel valtimo-case-detail-task-detail');
+  }
+
+  async openTaskInPanel(taskName: string) {
+    await this.taskTileByName(taskName).click();
+    await expect(this.taskDetailPanel).toBeVisible({timeout: 15_000});
   }
 
   async assignTaskToSelf() {
