@@ -26,10 +26,9 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import org.semver4j.Semver
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
 import java.util.UUID
 
-/** The documents currently homed on the plan's declared source case-definition version — key and version tag both — paged by document id. Cases on any other version are left to the plans that claim them. */
+/** The documents currently homed on the plan's declared source case-definition version — key and version tag both — walked by a document-id cursor. Cases on any other version are left to the plans that claim them. */
 class CaseMigrationCandidateProvider(
     private val documentRepository: JsonSchemaDocumentRepository,
     private val caseDefinitionRepository: CaseDefinitionRepository,
@@ -56,13 +55,14 @@ class CaseMigrationCandidateProvider(
         }
     }
 
-    override fun findCandidateIds(source: BlueprintId, pageable: Pageable): Slice<UUID> {
+    override fun findCandidateIds(source: BlueprintId, afterId: UUID?, limit: Int): List<UUID> {
         return runWithoutAuthorization {
-            documentRepository.findCaseIdsByBlueprintVersion(
+            documentRepository.findCaseIdsByBlueprintVersionAfter(
                 source.blueprintType(),
                 source.getIdKey(),
                 source.blueprintVersionTag(),
-                pageable,
+                afterId,
+                Pageable.ofSize(limit),
             )
         }
     }

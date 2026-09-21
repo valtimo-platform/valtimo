@@ -18,8 +18,6 @@ package com.ritense.valtimo.contract.blueprint.migration
 
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
 import java.util.UUID
 
 /** Enumerates the instances a plan runs over, for one [BlueprintType]. Implement only where plans can be started standalone — there is deliberately no building-block implementation, so the compiler enforces R1. */
@@ -28,5 +26,11 @@ interface MigrationCandidateProvider {
     fun supports(blueprintType: BlueprintType): Boolean
 
     /** A page of candidate instance ids homed on the given source version, in a stable order so paging is repeatable across a run. */
-    fun findCandidateIds(source: BlueprintId, pageable: Pageable): Slice<UUID>
+    /**
+     * At most [limit] candidate instance ids on the given *source* version, in a stable ascending id
+     * order, strictly after [afterId] — null for the first batch.
+     *
+     * A cursor, not an offset: a run re-homes what it migrates, so the set shrinks under it (G86).
+     */
+    fun findCandidateIds(source: BlueprintId, afterId: UUID?, limit: Int): List<UUID>
 }
