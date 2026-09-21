@@ -79,6 +79,7 @@ import {
   CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
   CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
   CASE_DETAIL_GUTTER_SIZE,
+  CASE_DETAIL_PANEL_TEST_IDS,
   CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
 } from '../../constants';
 import {
@@ -332,6 +333,8 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   public readonly CASE_DETAIL_GUTTER_SIZE = CASE_DETAIL_GUTTER_SIZE;
+
+  public readonly panelTestIds = CASE_DETAIL_PANEL_TEST_IDS;
 
   public readonly caseDetailLayout$ = this.caseDetailLayoutService.caseDetailLayout$;
 

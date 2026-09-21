@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-export * from './tab';
-export * from './case-tab-token';
-export * from './case-list.constants';
-export * from './case-status.constants';
-export * from './case-widget.constants';
-export * from './case-detail-layout.constants';
-export * from './case-inspection.constants';
-export * from './case.test-ids';
+export const CASE_DETAIL_PANEL_TEST_IDS = {
+  startFormPanel: 'caseStartFormPanel',
+  startFormPanelTitle: 'caseStartFormPanelTitle',
+  startFormPanelCloseButton: 'caseStartFormPanelCloseButton',
+} as const;
