@@ -20,18 +20,18 @@
   gap: 1rem;
   align-items: start;
 
-  h4 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1.125rem;
-    letter-spacing: 0.16px;
-    margin-bottom: 1rem;
-  }
-
   &__color-panel {
     padding: 1.5rem;
     background: var(--cds-layer-01);
     height: fit-content;
+
+    h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      line-height: 1.125rem;
+      letter-spacing: 0.16px;
+      margin-bottom: 0.25rem;
+    }
   }
 
   &__color-description {
@@ -80,7 +80,29 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  &__custom-color-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    valtimo-color-picker cds-label {
+      display: block;
+      font-size: 0;
+      line-height: 0;
+
+      > .valtimo-color-picker {
+        font-size: 1rem;
+        line-height: normal;
+      }
+    }
+  }
+
+  &__custom-color-label {
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
   }
 
   &__swatch {
@@ -99,47 +121,6 @@
     &:focus {
       outline: none;
     }
-  }
-
-  &__custom-color-row {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-  }
-
-  &__custom-color-label {
-    font-size: 0.75rem;
-    color: var(--cds-text-secondary);
-  }
-
-  &__native-picker-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-  }
-
-  &__native-picker {
-    width: 1.75rem;
-    height: 1.75rem;
-    border: 1px solid var(--cds-border-subtle-01);
-    border-radius: 4px;
-    cursor: pointer;
-    padding: 0.125rem;
-
-    &::-webkit-color-swatch-wrapper {
-      padding: 0;
-    }
-
-    &::-webkit-color-swatch {
-      border: none;
-      border-radius: 2px;
-    }
-  }
-
-  &__native-picker-text {
-    font-size: 0.75rem;
-    color: var(--cds-text-secondary);
   }
 
   &__members-panel {

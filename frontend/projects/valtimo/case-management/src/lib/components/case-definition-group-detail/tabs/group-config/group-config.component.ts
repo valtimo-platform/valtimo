@@ -21,7 +21,7 @@ import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DialogModule} from 'carbon-components-angular';
 import {Add16} from '@carbon/icons';
-import {CarbonListModule, SelectItem, SelectModule} from '@valtimo/components';
+import {CarbonListModule, ColorPickerComponent, ColorPickerConfig, SelectItem, SelectModule} from '@valtimo/components';
 import {DocumentService, DocumentDefinition} from '@valtimo/document';
 import {
   ButtonModule,
@@ -76,11 +76,16 @@ const COLOR_SWATCHES = [
     PlaceholderModule,
     TableModule,
     CarbonListModule,
+    ColorPickerComponent,
     SelectModule,
   ],
 })
 export class GroupConfigComponent implements OnInit, OnDestroy {
   public readonly COLOR_SWATCHES = COLOR_SWATCHES;
+  public readonly colorPickerConfig: ColorPickerConfig = {
+    swatches: [],
+    lockOpacity: true,
+  };
 
   @ViewChild('addWrapper') addWrapperRef: ElementRef<HTMLElement>;
 
@@ -113,7 +118,6 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   public readonly availableCaseDefinitions$ = this._availableCaseDefinitions$.asObservable();
 
   public selectedColor = '';
-  public customColor = '';
   public selectedCaseDefinitionKey: string | null = null;
   public showAddPanel = false;
 
@@ -156,16 +160,15 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onColorSwatchClick(color: string): void {
-    this.selectedColor = color;
-    this.customColor = color;
-    this._saveColor(color);
+  public onColorChange(color: string): void {
+    if (color && color !== this.selectedColor) {
+      this.selectedColor = color;
+      this._saveColor(color);
+    }
   }
 
-  public onNativeColorChange(event: Event): void {
-    const color = (event.target as HTMLInputElement).value;
+  public onSwatchClick(color: string): void {
     this.selectedColor = color;
-    this.customColor = color;
     this._saveColor(color);
   }
 
@@ -226,7 +229,6 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
         .subscribe(group => {
           this._group$.next(group);
           this.selectedColor = group.color ?? '';
-          this.customColor = group.color ?? '';
           this._loadMemberDetails(group.members);
         })
     );

@@ -28,12 +28,10 @@
           class="valtimo-group-config__preview-circle"
           [style.background-color]="selectedColor"
         ></div>
-
         <div class="valtimo-group-config__preview-info">
           <span class="valtimo-group-config__preview-label">
             {{ 'caseManagement.groups.config.selected' | translate }}
           </span>
-
           <span class="valtimo-group-config__preview-hex">{{ selectedColor | uppercase }}</span>
         </div>
       </div>
@@ -46,7 +44,7 @@
           [class.valtimo-group-config__swatch--selected]="selectedColor?.toLowerCase() === color.toLowerCase()"
           [style.background-color]="color"
           [style.box-shadow]="selectedColor?.toLowerCase() === color.toLowerCase() ? '0 0 0 2px white, 0 0 0 4px ' + color : 'none'"
-          (click)="onColorSwatchClick(color)"
+          (click)="onSwatchClick(color)"
         ></button>
       </div>
 
@@ -54,19 +52,12 @@
         <span class="valtimo-group-config__custom-color-label">
           {{ 'caseManagement.groups.config.customColorLabel' | translate }}
         </span>
-
-        <label class="valtimo-group-config__native-picker-label">
-          <input
-            type="color"
-            class="valtimo-group-config__native-picker"
-            [value]="selectedColor || '#525252'"
-            (input)="onNativeColorChange($event)"
-          />
-
-          <span class="valtimo-group-config__native-picker-text">
-            {{ 'caseManagement.groups.config.chooseFreely' | translate }}
-          </span>
-        </label>
+        <valtimo-color-picker
+          labelTranslationKey=""
+          [config]="colorPickerConfig"
+          [ngModel]="selectedColor"
+          (colorChangeEvent)="onColorChange($event)"
+        ></valtimo-color-picker>
       </div>
     </div>
 
