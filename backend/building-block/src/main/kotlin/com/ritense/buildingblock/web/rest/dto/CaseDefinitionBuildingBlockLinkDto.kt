@@ -56,7 +56,6 @@ data class CreateCaseDefinitionBuildingBlockLinkDto(
 )
 
 data class UpdateCaseDefinitionBuildingBlockLinkDto(
-    // Null keeps the link on its current building block version.
     val buildingBlockDefinitionKey: String? = null,
     val buildingBlockDefinitionVersionTag: String? = null,
     val inputMappings: List<BuildingBlockInputMapping> = emptyList(),

@@ -115,7 +115,6 @@ class CaseDefinitionBuildingBlockLinkService(
         linkRepository.delete(link)
     }
 
-    // The building block key/version columns are not updatable, so a move is delete + create.
     private fun moveLink(
         caseDefinitionId: CaseDefinitionId,
         link: CaseDefinitionBuildingBlockLink,

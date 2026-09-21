@@ -112,7 +112,6 @@ class StartableBuildingBlockItemProvider(
         val dto = objectMapper.treeToValue(properties, UpdateCaseDefinitionBuildingBlockLinkDto::class.java)
         val linkDto = caseDefinitionBuildingBlockLinkService.updateLink(caseDefinitionId, currentId, dto)
 
-        // The link may have moved to another version, so resolve the rest from the saved link.
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
             linkDto.buildingBlockDefinitionKey,
             linkDto.buildingBlockDefinitionVersionTag
