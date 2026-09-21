@@ -291,7 +291,9 @@ your machine, not the administrator's. Write it to these rules:
 - **Keep the identity path-safe**: `pluginId` is lowercase, 1–64 chars, letters/digits at both
   ends, `.`/`-`/`_` inside; `version` additionally allows uppercase and `+` (semver metadata).
   These become directory names and URL segments, so nothing path-like is accepted.
-- **Write `compatibility` bounds as strict semver** (`13.0.0`, not `13` or `v13.0.0`).
+- **Write `compatibility` bounds as strict semver** (`13.0.0`, not `13` or `v13.0.0`). Base the
+  bounds on the Valtimo versions you support —
+  [Version compatibility](./README.md#version-compatibility) maps those onto host and SDK versions.
 - **Declare capabilities consistently**: `permissions.endpoints` requires the `gzac_api`
   capability, and `permissions.egress` requires `http_request`.
 - **Ship a logo** as `logo.svg`/`.png`/`.jpg`/`.jpeg` next to `manifest.json` — the pack tool

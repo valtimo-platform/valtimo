@@ -42,6 +42,10 @@ bundles to the browser.
 - (Optional) TLS certificates for HTTPS — required for non-loopback deployments
 - (Optional) RabbitMQ if plugins consume platform events
 
+Pick the host version that matches your Valtimo version — see
+[Version compatibility](../external-plugins/README.md#version-compatibility). Nothing at runtime
+checks this pairing, so a mismatched host still reports healthy.
+
 ## Configuration
 
 ### Required

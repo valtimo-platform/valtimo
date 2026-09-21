@@ -32,3 +32,25 @@ transport security), the [SDK README](../../plugin-host/plugin-sdk/README.md) (C
 frontend SDK), [TESTING.md](../../plugin-host/TESTING.md) (test layers and when to use which), and the
 reference implementations [`sample-plugins/case-summary/`](../../plugin-host/sample-plugins/case-summary/)
 (plugin) and [`sample-apps/demo-app/`](../../plugin-host/sample-apps/demo-app/) (app).
+
+## Version compatibility
+
+Valtimo, the plugin host, and the plugin SDK release separately. Each row below is a combination
+Ritense builds, tests, and supports together — pick a row and keep all three components on it.
+
+| Valtimo (GZAC) | Plugin host | Plugin SDK | Status |
+|---|---|---|---|
+| 13.47.0 and up | 1.0.0 | 1.0.0 | Current |
+
+How the three relate in practice:
+
+- **SDK → plugin package.** A plugin is built against one SDK version, and `valtimo-plugin-pack`
+  stamps that version into `manifest.sdkVersion`. It is diagnostic metadata — nothing rejects a
+  package over it — so quote it when raising a support question.
+- **Plugin package → Valtimo.** The manifest's `compatibility.minGzacVersion` /
+  `maxGzacVersion` are checked against the running Valtimo version at upload and wherever the
+  plugin surfaces in admin. A mismatch warns, never blocks — see
+  [the manifest rules](./develop-a-plugin.md#manifest-rules).
+- **Host ↔ Valtimo.** There is no version handshake; `/health` only reports that the host is up.
+  A host from a different row can therefore look perfectly healthy while missing API surface
+  Valtimo expects, so upgrade the two together.
