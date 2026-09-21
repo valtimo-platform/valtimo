@@ -143,7 +143,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     return {
       migrationTriggers: {
         triggeredByButton: !!triggeredByButton,
-        scheduledAtDate: scheduledAtDate || null,
+        scheduledAtDate: this.asInstant(scheduledAtDate),
         runAfter: this.asText(runAfter) || null,
       },
       conditions: this.conditionTreeService.serialize(this.conditionsArray),
@@ -156,15 +156,41 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   }
 
   /** An ISO instant trimmed to the `YYYY-MM-DDTHH:mm` the datetime-local input accepts — a full instant renders blank, so a scheduled plan looked unscheduled every time it was reopened. */
+  /** An instant as the local wall clock `<input type="datetime-local">` shows; the offset must be applied (G88). */
   private asDateTimeLocal(value: unknown): string {
-    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.exec(this.asText(value))?.[0] ?? '';
+    const parsed = this.asDate(value);
+    if (!parsed) return '';
+
+    const pad = (part: number): string => `${part}`.padStart(2, '0');
+
+    return (
+      `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}` +
+      `T${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`
+    );
+  }
+
+  /** The picker's local value as a true instant. Second precision, so [_lastEmitted] matches its own echo. */
+  private asInstant(value: unknown): string | null {
+    const parsed = this.asDate(value);
+
+    return parsed ? `${parsed.toISOString().slice(0, 19)}Z` : null;
+  }
+
+  /** A `datetime-local` value carries no offset and parses as local; an instant carries one. */
+  private asDate(value: unknown): Date | null {
+    const text = typeof value === 'string' ? value : '';
+    if (!text) return null;
+    const parsed = new Date(text);
+
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 
   private writeTriggersAndConditions(plan: MigrationPlan): void {
     const incoming = {
       migrationTriggers: {
         triggeredByButton: plan.migrationTriggers?.triggeredByButton ?? false,
-        scheduledAtDate: this.asDateTimeLocal(plan.migrationTriggers?.scheduledAtDate) || null,
+        // The instant, not the picker's form, so the echo check below recognises our own emission.
+        scheduledAtDate: this.asInstant(plan.migrationTriggers?.scheduledAtDate),
         runAfter: plan.migrationTriggers?.runAfter ?? null,
       },
       conditions: plan.conditions ?? [],
@@ -179,7 +205,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
       this.form.patchValue(
         {
           triggeredByButton: incoming.migrationTriggers.triggeredByButton,
-          scheduledAtDate: incoming.migrationTriggers.scheduledAtDate ?? '',
+          scheduledAtDate: this.asDateTimeLocal(incoming.migrationTriggers.scheduledAtDate),
           runAfter: incoming.migrationTriggers.runAfter ?? '',
         },
         {emitEvent: false}

@@ -25,8 +25,10 @@ import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import org.junit.jupiter.api.BeforeEach
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.semver4j.Semver
+import org.springframework.scheduling.annotation.Scheduled
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -36,6 +38,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.Optional
 
@@ -83,7 +86,7 @@ class MigrationTriggerSchedulerTest(
     @Test
     fun `should start a scheduled plan once its date has passed`() {
         whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
-            .thenReturn(listOf(plan("scheduled", MigrationTriggers(scheduledAtDate = LocalDateTime.of(2020, 1, 1, 0, 0)))))
+            .thenReturn(listOf(plan("scheduled", MigrationTriggers(scheduledAtDate = Instant.parse("2020-01-01T00:00:00Z")))))
 
         scheduler.checkTriggers()
 
@@ -93,7 +96,7 @@ class MigrationTriggerSchedulerTest(
     @Test
     fun `should not start a scheduled plan before its date`() {
         whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
-            .thenReturn(listOf(plan("later", MigrationTriggers(scheduledAtDate = LocalDateTime.now().plusDays(1)))))
+            .thenReturn(listOf(plan("later", MigrationTriggers(scheduledAtDate = Instant.now().plusSeconds(86_400)))))
 
         scheduler.checkTriggers()
 
@@ -129,7 +132,7 @@ class MigrationTriggerSchedulerTest(
         whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
             .thenReturn(listOf(plan("manual", MigrationTriggers(triggeredByButton = true))))
 
-        scheduler.checkTriggers()
+        scheduler.refreshEstimates()
 
         verify(caseMigrationService).refreshCaseCountEstimate(migrationId("manual"))
         verify(caseMigrationRunner, never()).startMigration(any())
@@ -138,11 +141,32 @@ class MigrationTriggerSchedulerTest(
     @Test
     fun `should not refresh the estimate for a plan that is being triggered`() {
         whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
-            .thenReturn(listOf(plan("scheduled", MigrationTriggers(scheduledAtDate = LocalDateTime.of(2020, 1, 1, 0, 0)))))
+            .thenReturn(listOf(plan("scheduled", MigrationTriggers(scheduledAtDate = Instant.parse("2020-01-01T00:00:00Z")))))
 
         scheduler.checkTriggers()
 
         verify(caseMigrationRunner).startMigration(migrationId("scheduled"))
         verify(caseMigrationService, never()).refreshCaseCountEstimate(any())
+    }
+    /** The per-minute sweep must stay cheap: the estimate is a full candidate scan per plan. */
+    @Test
+    fun `the per-minute sweep should never compute an estimate`() {
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
+            .thenReturn(listOf(plan("manual", MigrationTriggers(triggeredByButton = true))))
+
+        scheduler.checkTriggers()
+
+        verify(caseMigrationService, never()).refreshCaseCountEstimate(any())
+    }
+
+    /** The cron defaults are what make the minutes real; nothing else fails if they drift back (G83). */
+    @Test
+    fun `the trigger sweep should poll per minute and the estimate refresh hourly`() {
+        fun cronOf(method: String) = MigrationTriggerScheduler::class.java
+            .getMethod(method).getAnnotation(Scheduled::class.java).cron
+
+        assertThat(cronOf("checkTriggers")).isEqualTo("\${valtimo.case.migration.trigger-poll-cron:0 * * * * *}")
+        assertThat(cronOf("refreshEstimates"))
+            .isEqualTo("\${valtimo.case.migration.estimate-refresh-cron:0 0 * * * *}")
     }
 }

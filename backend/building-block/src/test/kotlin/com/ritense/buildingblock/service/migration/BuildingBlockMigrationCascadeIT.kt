@@ -60,6 +60,7 @@ import org.junit.jupiter.api.Test
 import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -289,7 +290,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
     @Test
     fun `the trigger sweep starts case plans but never a building block plan`() {
         val uid = uniqueSuffix()
-        val dueAt = LocalDateTime.now().minusHours(1)
+        val dueAt = Instant.now().minusSeconds(3_600)
 
         // A case plan that is due: proof that the sweep is doing its job at all.
         val caseKey = "sweep-case-$uid"
@@ -479,7 +480,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
 
     private fun deployPlan(
         id: BlueprintMigrationId,
-        scheduledAtDate: LocalDateTime? = null,
+        scheduledAtDate: Instant? = null,
         sourceKey: String = id.key,
         sourceVersionTag: String = V1,
     ): BlueprintMigrationId {

@@ -45,6 +45,7 @@ import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
@@ -246,7 +247,7 @@ class CaseMigrationServiceTest(
 
         whenever(migrationRepository.findById(migrationId)).thenReturn(
             Optional.of(
-                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = LocalDateTime.now().minusDays(1)))
+                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = Instant.now().minusSeconds(86_400)))
             )
         )
         assertThat(service.isTriggeredByButton(migrationId)).isFalse()
@@ -257,7 +258,7 @@ class CaseMigrationServiceTest(
         // The button check belongs to the manual entry point only: the sweep runs exactly the plans with no button trigger.
         whenever(migrationRepository.findById(migrationId)).thenReturn(
             Optional.of(
-                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = LocalDateTime.now().minusDays(1)))
+                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = Instant.now().minusSeconds(86_400)))
             )
         )
         stubCandidates(case1)

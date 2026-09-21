@@ -40,6 +40,7 @@ type CaseMigrationStatus = 'NOT_STARTED' | 'RUNNING' | 'COMPLETED' | 'COMPLETED_
 
 interface MigrationTriggers {
   triggeredByButton: boolean;
+  /** A true ISO-8601 instant (`2026-01-01T02:00:00Z`), not the picker's local wall clock. */
   scheduledAtDate: string | null;
   runAfter: string | null;
 }

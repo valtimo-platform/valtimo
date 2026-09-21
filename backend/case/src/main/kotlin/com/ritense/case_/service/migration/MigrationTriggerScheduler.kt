@@ -25,13 +25,21 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Instant
 import java.time.LocalDateTime
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
-/** Hourly, ShedLock-guarded sweep: reclaims crashed runs, starts plans whose `scheduledAtDate` or `runAfter` is satisfied, and refreshes the cached estimate. Case plans only — a building block plan has no trigger of its own. */
+/**
+ * ShedLock-guarded sweeps, on two schedules because they cost wildly different amounts. [checkTriggers]
+ * runs every minute: reclaim crashed runs, start plans whose `scheduledAtDate` or `runAfter` is
+ * satisfied. [refreshEstimates] stays hourly: the cached estimate is a full candidate scan per plan.
+ *
+ * One hourly sweep made the editor's minutes dead configuration — 16:13 first ran at 17:00 (G83).
+ * Case plans only — a building block plan has no trigger of its own.
+ */
 @SkipComponentScan
 @Component
 class MigrationTriggerScheduler(
@@ -41,23 +49,35 @@ class MigrationTriggerScheduler(
     private val caseMigrationService: CaseMigrationService,
 ) {
 
-    @Scheduled(cron = "\${valtimo.case.migration.trigger-poll-cron:0 0 * * * *}")
+    @Scheduled(cron = "\${valtimo.case.migration.trigger-poll-cron:0 * * * * *}")
     @SchedulerLock(name = "caseMigrationTriggerScheduler", lockAtLeastFor = "PT5S", lockAtMostFor = "PT60M")
     fun checkTriggers() {
         runWithoutAuthorization {
-            val now = LocalDateTime.now()
-
             // Resume runs abandoned by a crashed node (RUNNING with an expired lease).
-            executionRepository.findReclaimable(now)
+            executionRepository.findReclaimable(LocalDateTime.now())
                 .filter { it.id.blueprintType == BlueprintType.CASE }
                 .forEach { execution -> runTrigger(execution.id) }
 
-            // Only never-triggered plans are loaded; those not yet due get their cached estimate refreshed instead.
+            // Only never-triggered plans are loaded; started ones have an execution row.
+            val now = Instant.now()
             caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
                 .forEach { plan ->
                     if (isScheduledDue(plan, now) || isRunAfterSatisfied(plan)) {
                         runTrigger(plan.id)
-                    } else {
+                    }
+                }
+        }
+    }
+
+    /** The expensive half. A plan already due is skipped: [checkTriggers] is about to run it, and a run counts as it goes. */
+    @Scheduled(cron = "\${valtimo.case.migration.estimate-refresh-cron:0 0 * * * *}")
+    @SchedulerLock(name = "caseMigrationEstimateRefresh", lockAtLeastFor = "PT5S", lockAtMostFor = "PT60M")
+    fun refreshEstimates() {
+        runWithoutAuthorization {
+            val now = Instant.now()
+            caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
+                .forEach { plan ->
+                    if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
                         refreshEstimate(plan.id)
                     }
                 }
@@ -68,22 +88,14 @@ class MigrationTriggerScheduler(
     @EventListener(ApplicationFullyReadyEvent::class)
     fun refresh() {
         runWithoutAuthorization {
-            val now = LocalDateTime.now()
-
-            executionRepository.findReclaimable(now)
+            executionRepository.findReclaimable(LocalDateTime.now())
                 .filter { it.id.blueprintType == BlueprintType.CASE }
                 .forEach { execution ->
                     logger.info { "Resuming migration plan '${execution.id}' interrupted by a restart" }
                     runTrigger(execution.id)
                 }
-
-            caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
-                .forEach { plan ->
-                    if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
-                        refreshEstimate(plan.id)
-                    }
-                }
         }
+        refreshEstimates()
     }
 
     private fun refreshEstimate(migrationId: BlueprintMigrationId) {
@@ -104,7 +116,7 @@ class MigrationTriggerScheduler(
         }
     }
 
-    private fun isScheduledDue(plan: CaseDefinitionMigration, now: LocalDateTime): Boolean {
+    private fun isScheduledDue(plan: CaseDefinitionMigration, now: Instant): Boolean {
         val scheduledAtDate = plan.migrationTriggers.scheduledAtDate ?: return false
         return !now.isBefore(scheduledAtDate)
     }
