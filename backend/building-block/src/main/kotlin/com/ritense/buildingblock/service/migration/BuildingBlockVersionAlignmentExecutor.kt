@@ -81,14 +81,10 @@ class BuildingBlockVersionAlignmentExecutor(
         if (linked == current) {
             return
         }
-        // Only meaningful within one key: across keys the deployed plans are the only authority.
-        if (linked.key == current.key && linked.versionTag.isLowerThan(current.versionTag)) {
-            logger.warn {
-                "'$governing' links building block '$linked', which is older than the '$current' " +
-                    "that instance '${instance.id}' is on; not downgrading"
-            }
-            return
-        }
+        // A lower version of the same key used to stop here on a bare log line, so a case migrated
+        // backwards left its blocks behind in silence, with nothing for the dry run to report (G91).
+        // The plan graph already enforces the rule better: an edge exists only where an author wrote
+        // one, so a downgrade happens if and only if a plan says how — as a key change always did.
 
         logger.debug { "Migrating building block instance '${instance.id}' from '$current' to '$linked'" }
         // An ambiguous chain fails either way — two chains reaching one version is wrong for every instance, running or not.

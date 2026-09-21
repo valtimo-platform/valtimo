@@ -232,15 +232,55 @@ class BuildingBlockVersionAlignmentExecutorTest {
             .contains("'removeBuildingBlock'")
     }
 
+    /**
+     * G91. A case migrated to an *older* version used to leave its blocks behind on a bare log line, so
+     * neither the run nor the dry run reported anything. A backward move is now decided by the plan
+     * graph like any other: a dormant block nothing connects is left behind **with a warning**.
+     */
     @Test
-    fun `should never downgrade a block whose linked version is older than the one it is on`() {
-        val block = block("2.0.0")
+    fun `should warn rather than go silent when the linked version is older and no plan connects it`() {
+        val block = block("2.0.0", runningProcess = null)
         caseOwns(block)
         linked(block, bb("1.0.1"))
+        whenever(pathResolver.findPath(bb("2.0.0"), bb("1.0.1"))).thenReturn(null)
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
         verifyNothingMigrated()
+        assertThat(MigrationWarnings.drain())
+            .contains("no migration plan connects it to '$bbKey:1.0.1'")
+    }
+
+    /** The mirror of the forward refusal: a *running* block nobody wrote a backward plan for fails its case. */
+    @Test
+    fun `should fail the case when a running block's linked version is older and no plan connects it`() {
+        val block = block("2.0.0")
+        caseOwns(block)
+        linked(block, bb("1.0.1"))
+        whenever(pathResolver.resolvePath(bb("2.0.0"), bb("1.0.1")))
+            .thenThrow(IllegalStateException("No migration plan connects building block version"))
+
+        assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("No migration plan connects building block version")
+    }
+
+    /**
+     * And a downgrade an author actually wrote a plan for is applied. The old guard refused this
+     * outright, which is what made the backward direction unreachable rather than merely quiet — while
+     * never blocking the same move across two keys, an inconsistency of its own.
+     */
+    @Test
+    fun `should apply a downgrade the plans authorise`() {
+        val block = block("2.0.0")
+        caseOwns(block)
+        linked(block, bb("1.0.1"))
+        val back = step("terug-naar-1-0-1", bb("1.0.1"))
+        whenever(pathResolver.resolvePath(bb("2.0.0"), bb("1.0.1"))).thenReturn(listOf(back))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verify(planApplier).apply(back.planId, bb("1.0.1"), blockDocumentId)
     }
 
     @Test
