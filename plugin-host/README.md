@@ -180,16 +180,16 @@ docker build -f app/Dockerfile -t valtimo/plugin-host .
 The image contains **no plugins**: `/data/preinstalled` is empty, and every `.zip` found there at
 boot is installed — mount a directory of packages over it or bake them into a derived image. The
 canonical reference is
-[Shipping plugins with the host](./docs/host-configuration-and-deployment.md#shipping-plugins-with-the-host)
+[Shipping plugins with the host](../dev-docs/operations/plugin-host-deployment.md#shipping-plugins-with-the-host)
 in the operator guide; per-package outcomes are in [`app/README.md`](./app/README.md).
 
 ## Documentation
 
-- [Developer & operator guides](./docs/README.md) — developing a plugin, developing an app,
+- [Developer & operator guides](../dev-docs/external-plugins/README.md) — developing a plugin, developing an app,
   host deployment, auto-deployment
-- [How a plugin works with Valtimo](./docs/develop-a-plugin.md#how-a-plugin-works-with-valtimo) —
+- [How a plugin works with Valtimo](../dev-docs/external-plugins/develop-a-plugin.md#how-a-plugin-works-with-valtimo) —
   the lifecycle, permission model, and how to choose a surface. Start here.
-- [The Valtimo API and event catalogue](./docs/valtimo-api-and-events.md) — what a plugin can call
+- [The Valtimo API and event catalogue](../dev-docs/external-plugins/valtimo-api-and-events.md) — what a plugin can call
   and subscribe to
 - [Plugin Host README](./app/README.md) — API reference, configuration, events
 - [Plugin SDK README](./plugin-sdk/README.md) — CLI reference, toolchain, frontend SDK

@@ -8,7 +8,7 @@
 
 > **Audience:** operators running the plugin host as a service. (Contributors working in the
 > Valtimo repository: `cd plugin-host && npm run dev` is the local one-liner — see the
-> [plugin-host README](../README.md).) Full reference: [app README](../app/README.md).
+> [plugin-host README](../../plugin-host/README.md).) Full reference: [app README](../../plugin-host/app/README.md).
 
 The plugin host is a stateless-ish Node.js service (Fastify + Extism) with its own PostgreSQL
 database. It stores plugin packages on disk, persists configurations/KV/logs in PostgreSQL, and
@@ -146,7 +146,7 @@ act (a new version, or an admin-confirmed overwrite). A corrupt package is skipp
 warning; nothing in pre-install can stop the host from starting.
 
 For declaring the GZAC side of an environment (integrations, uploads, configurations) in code,
-see [Auto-deployment](./auto-deployment.md).
+see [Auto-deployment](../external-plugins/auto-deployment.md).
 
 ## Scaling and replicas
 

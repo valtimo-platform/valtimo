@@ -7,7 +7,7 @@
 # Developing an app
 
 > **Audience:** developers building a standalone service that plugs into GZAC. For the
-> administrator side see [Add an app](../../documentation/configuration-guides/plugins/external-plugins/add-an-app.md).
+> administrator side see [Add an app](https://docs.valtimo.nl/configuration-guides/plugins/external-plugins/add-an-app).
 
 An **app** is a remote HTTP service that GZAC treats as a plugin-host-plus-single-plugin: it
 speaks the same GZAC↔host contract, but serves one natively-implemented plugin and accepts no
@@ -18,7 +18,7 @@ user tokens, iframe surfaces, event delivery — works identically to a hosted p
 capability gating, and content pinning from the host. An app trades that for full freedom (any
 language, any runtime, its own persistence) and takes on the contract obligations below itself.
 
-The reference implementation is [`sample-apps/demo-app/`](../sample-apps/demo-app/) — a small
+The reference implementation is [`sample-apps/demo-app/`](../../plugin-host/sample-apps/demo-app/) — a small
 Node + Fastify service implementing the contract (a few deliberate POC gaps are flagged inline);
 each section below names the file that demonstrates it. This page documents every request GZAC
 sends and every response it expects, so you can build against it without reverse-engineering.
@@ -93,9 +93,9 @@ Verify with: both headers present → timestamp within ±5 minutes → recompute
 **timing-safe** → reject a **signature you have already accepted** on POST/PUT/DELETE/PATCH
 (single-use within the window; this closes replays). Respond `401` on any failure.
 
-Reference: [`demo-app/src/hmac.ts`](../sample-apps/demo-app/src/hmac.ts) (a Fastify `preHandler`
+Reference: [`demo-app/src/hmac.ts`](../../plugin-host/sample-apps/demo-app/src/hmac.ts) (a Fastify `preHandler`
 with raw-body capture and the single-use replay check), and
-[`test-fixtures/hmac-vectors.json`](../test-fixtures/hmac-vectors.json) — openssl-generated
+[`test-fixtures/hmac-vectors.json`](../../plugin-host/test-fixtures/hmac-vectors.json) — openssl-generated
 golden vectors to pin your implementation against, the same vectors the plugin host's verifier is
 pinned against (GZAC's client tests cross-check the same construction with an independent
 oracle).
@@ -291,7 +291,7 @@ GZAC does **not** complete — the errors render inline on the form.
 - **`GET …/bundles/*`** and **`GET …/logo`** — your built frontend assets. Guard against path
   traversal; serve a restrictive CSP (`default-src 'none'; script-src 'self'; connect-src
   'self'; …`) plus the announced `frame-ancestors`. Bundles are ordinary web apps built against
-  `@valtimo/plugin-sdk/frontend` — see [demo-app/frontend](../sample-apps/demo-app/frontend/).
+  `@valtimo/plugin-sdk/frontend` — see [demo-app/frontend](../../plugin-host/sample-apps/demo-app/frontend/).
 - **`GET …/frame-policy?origin=`** — optional; answer `{ "allowed": true|false }` for the one
   origin named. The frontend SDK probes it before trusting an unpinned parent: an explicit
   `{"allowed": false}` makes the SDK refuse that parent's `init` (with a console warning), while
@@ -330,7 +330,7 @@ GZAC does **not** complete — the errors render inline on the form.
 ## Calling GZAC back
 
 `Authorization: Bearer {serviceToken}` against `{gzacBaseUrl}` — see
-[`demo-app/src/gzac.ts`](../sample-apps/demo-app/src/gzac.ts). The token bypasses user
+[`demo-app/src/gzac.ts`](../../plugin-host/sample-apps/demo-app/src/gzac.ts). The token bypasses user
 permission checks; its reach is the granted endpoint list — additionally capped by a fixed
 GZAC-side denylist (management, external-plugin token, role/permission surfaces, and user-account
 mutations are never reachable, whatever the grants) — so treat the granted list as your API
@@ -354,7 +354,7 @@ host filters against the granted subscriptions before invoking it; as an app *yo
 filter, so act only on the granted `eventSubscriptions` and drop the rest. Ack on success, drop
 (don't requeue) malformed messages, reconnect with backoff, and make handlers idempotent —
 delivery is at-least-once. Reference:
-[`demo-app/src/events.ts`](../sample-apps/demo-app/src/events.ts) (which deliberately simplifies
+[`demo-app/src/events.ts`](../../plugin-host/sample-apps/demo-app/src/events.ts) (which deliberately simplifies
 the reconnect to a flat delay).
 
 The event types you can subscribe to, and what each payload contains, are in

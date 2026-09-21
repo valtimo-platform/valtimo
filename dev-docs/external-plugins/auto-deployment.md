@@ -7,7 +7,7 @@
 # Auto-deploying external plugins
 
 > **Audience:** implementation developers provisioning environments. For the manual flows see the
-> [admin documentation](../../documentation/configuration-guides/plugins/external-plugins/README.md).
+> [admin documentation](https://docs.valtimo.nl/configuration-guides/plugins/external-plugins).
 
 External plugins live on a **plugin host** (or are served by an **app**) rather than inside the
 Valtimo backend. Getting one running normally means three manual steps in the admin UI: register
@@ -194,6 +194,6 @@ up where the descriptor left off whenever it appears.
 
 The other half of a hands-off environment is the host having its packages. Besides uploading them
 from a descriptor, a plugin host installs every `.zip` found in its pre-install directory when it
-boots — see [Plugin host configuration & deployment](./host-configuration-and-deployment.md#shipping-plugins-with-the-host).
+boots — see [Plugin host deployment](../operations/plugin-host-deployment.md#shipping-plugins-with-the-host).
 A version already installed with identical content is left untouched; one whose content differs is
 kept rather than silently replaced.
