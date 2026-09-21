@@ -20,8 +20,4 @@
 
 ## Architecture
 
-* [Overview](architecture/README.md)
-
-## API Reference
-
-* [Overview](api-reference/README.md)
+* Overview
