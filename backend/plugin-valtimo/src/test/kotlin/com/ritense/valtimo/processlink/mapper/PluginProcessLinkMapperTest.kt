@@ -80,13 +80,8 @@ class PluginProcessLinkMapperTest {
     }
 
     @Test
-    fun `afterImport emits detected event when FIXED link has missing pluginConfigurationId`() {
-        val configId = PluginConfigurationId.existingId(UUID.randomUUID())
-        val link = pluginLink(
-            pluginConfigurationId = configId,
-            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
-        )
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
+    fun `afterImport emits detected event when a process definition has a dangling link`() {
+        whenever(pluginProcessLinkRepository.existsDanglingFixedLink(setOf("pd-1"))).thenReturn(true)
 
         mapper.afterImport(caseDefinitionId, setOf("pd-1"), applicationEventPublisher)
 
@@ -94,35 +89,12 @@ class PluginProcessLinkMapperTest {
         verify(applicationEventPublisher).publishEvent(captor.capture())
         assertThat(captor.firstValue.caseDefinitionId).isEqualTo(caseDefinitionId)
         assertThat(captor.firstValue.issueType).isEqualTo(PluginProcessLinkMapper.ISSUE_TYPE)
-    }
-
-    @Test
-    fun `afterImport emits detected event when FIXED link has null pluginConfigurationId`() {
-        val link = pluginLink(
-            pluginConfigurationId = null,
-            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
-        )
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-
-        mapper.afterImport(caseDefinitionId, setOf("pd-1"), applicationEventPublisher)
-
-        verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueDetectedEvent>())
         verify(applicationEventPublisher, never()).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
     }
 
     @Test
-    fun `afterImport emits resolved event when all FIXED links have existing configurations`() {
-        val configId = PluginConfigurationId.existingId(UUID.randomUUID())
-        val link = pluginLink(
-            pluginConfigurationId = configId,
-            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
-        )
-        val pluginDefinition = mock<PluginDefinition>()
-        whenever(pluginDefinition.key).thenReturn("zaken-api")
-        val pluginConfiguration = mock<PluginConfiguration>()
-        whenever(pluginConfiguration.pluginDefinition).thenReturn(pluginDefinition)
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.findById(eq(configId))).thenReturn(Optional.of(pluginConfiguration))
+    fun `afterImport emits resolved event when no process definition has a dangling link`() {
+        whenever(pluginProcessLinkRepository.existsDanglingFixedLink(setOf("pd-1"))).thenReturn(false)
 
         mapper.afterImport(caseDefinitionId, setOf("pd-1"), applicationEventPublisher)
 
@@ -132,26 +104,21 @@ class PluginProcessLinkMapperTest {
     }
 
     @Test
-    fun `afterImport ignores BUILDING_BLOCK links`() {
-        val link = pluginLink(
-            pluginConfigurationId = null,
-            reference = PluginConfigurationReference(PluginConfigurationReferenceType.BUILDING_BLOCK, "zaken-api"),
-        )
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-
-        mapper.afterImport(caseDefinitionId, setOf("pd-1"), applicationEventPublisher)
+    fun `afterImport emits resolved event without querying when there are no process definitions`() {
+        mapper.afterImport(caseDefinitionId, emptySet(), applicationEventPublisher)
 
         verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
+        verify(pluginProcessLinkRepository, never()).existsDanglingFixedLink(any())
     }
 
     @Test
-    fun `afterImport queries all given process definition ids`() {
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId(any())).thenReturn(emptyList())
+    fun `afterImport checks all given process definition ids in one query`() {
+        whenever(pluginProcessLinkRepository.existsDanglingFixedLink(setOf("pd-1", "pd-2"))).thenReturn(false)
 
         mapper.afterImport(caseDefinitionId, setOf("pd-1", "pd-2"), applicationEventPublisher)
 
-        verify(pluginProcessLinkRepository).findByProcessDefinitionId("pd-1")
-        verify(pluginProcessLinkRepository).findByProcessDefinitionId("pd-2")
+        verify(pluginProcessLinkRepository).existsDanglingFixedLink(setOf("pd-1", "pd-2"))
+        verify(pluginProcessLinkRepository, never()).findByProcessDefinitionId(any())
     }
 
     @Test

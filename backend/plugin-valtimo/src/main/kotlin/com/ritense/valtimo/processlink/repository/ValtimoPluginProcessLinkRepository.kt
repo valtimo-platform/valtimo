@@ -33,4 +33,25 @@ interface ValtimoPluginProcessLinkRepository : BaseProcessLinkRepository<PluginP
     fun findPluginDefinitionKeysByProcessDefinitionIds(
         @Param("processDefinitionIds") processDefinitionIds: Collection<String>
     ): List<String>
+
+    /**
+     * A FIXED link is dangling when it has no configuration id, points at a configuration that no longer
+     * exists, or at one of a different plugin definition than it expects.
+     */
+    @Query(
+        "SELECT CASE WHEN COUNT(link) > 0 THEN true ELSE false END " +
+            "FROM PluginProcessLink link " +
+            "WHERE link.processDefinitionId IN :processDefinitionIds " +
+            "AND link.pluginConfigurationReference.type = com.ritense.plugin.domain.PluginConfigurationReferenceType.FIXED " +
+            "AND (link.pluginConfigurationId.id IS NULL " +
+            "     OR NOT EXISTS (" +
+            "         SELECT config.id FROM PluginConfiguration config " +
+            "         WHERE config.id.id = link.pluginConfigurationId.id " +
+            "         AND (link.pluginConfigurationReference.pluginDefinitionKey IS NULL " +
+            "              OR config.pluginDefinition.key = link.pluginConfigurationReference.pluginDefinitionKey)" +
+            "     ))"
+    )
+    fun existsDanglingFixedLink(
+        @Param("processDefinitionIds") processDefinitionIds: Collection<String>
+    ): Boolean
 }

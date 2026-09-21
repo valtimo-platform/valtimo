@@ -26,22 +26,32 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
+/** Ignores events whose writer rechecks the case definition itself, as `ProcessLinkImporter` does. */
 class ProcessLinkChangedEventListener(
     private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun onProcessLinkCreated(event: ProcessLinkCreatedEvent) {
+        if (event.recheckDeferred) {
+            return
+        }
         recheckIssues(event.processDefinitionId)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun onProcessLinkUpdated(event: ProcessLinkUpdatedEvent) {
+        if (event.recheckDeferred) {
+            return
+        }
         recheckIssues(event.processDefinitionId)
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun onProcessLinkDeleted(event: ProcessLinkDeletedEvent) {
+        if (event.recheckDeferred) {
+            return
+        }
         recheckIssues(event.processDefinitionId)
     }
 

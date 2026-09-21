@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 
 interface BaseProcessLinkRepository<T : ProcessLink> : JpaRepository<T, UUID>, JpaSpecificationExecutor<T> {
     fun findByProcessDefinitionId(processDefinitionId: String): List<T>
+    fun findByProcessDefinitionIdIn(processDefinitionIds: Collection<String>): List<T>
     fun findByProcessDefinitionIdAndActivityId(processDefinitionId: String, activityId: String): List<T>
     fun findByActivityIdAndActivityTypeAndProcessLinkType(
         activityId: String,

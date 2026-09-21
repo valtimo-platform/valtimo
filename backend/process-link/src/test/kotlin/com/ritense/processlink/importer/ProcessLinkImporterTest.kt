@@ -17,8 +17,12 @@
 package com.ritense.processlink.importer
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.ritense.importer.ImportContext.Companion.runImporter
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
+import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -30,6 +34,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
@@ -41,10 +46,16 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.jpa.domain.Specification
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -104,6 +115,73 @@ class ProcessLinkImporterTest {
     }
 
     @Test
+    fun `afterImport does its case-definition-wide work once per import run`() {
+        val mapper = mock<ProcessLinkMapper>()
+        val importer = importerWith(mapper)
+        stubCaseLinks(CASE_DEFINITION_ID, "pd-1", "pd-2")
+        stubDeployedProcessDefinitions("pd-1", "pd-2")
+
+        runImporter<Unit> {
+            repeat(3) { index -> importer.afterImport(importRequest(CASE_DEFINITION_ID, index)) }
+        }
+
+        verify(processDefinitionCaseDefinitionService).findProcessDefinitionCaseDefinitions(CASE_DEFINITION_ID)
+        verify(mapper).afterImport(eq(CASE_DEFINITION_ID), eq(setOf("pd-1", "pd-2")), any())
+    }
+
+    @Test
+    fun `afterImport looks up all process definitions of a case definition in one query`() {
+        val importer = importerWith(mock<ProcessLinkMapper>())
+        stubCaseLinks(CASE_DEFINITION_ID, "pd-1", "pd-2", "pd-3")
+        stubDeployedProcessDefinitions("pd-1", "pd-2", "pd-3")
+
+        runImporter<Unit> { importer.afterImport(importRequest(CASE_DEFINITION_ID, 0)) }
+
+        verify(repositoryService).findProcessDefinitions(any<Specification<OperatonProcessDefinition>>())
+        verify(repositoryService, never()).findProcessDefinitionById(any())
+    }
+
+    @Test
+    fun `afterImport runs once for every case definition in the same import run`() {
+        val mapper = mock<ProcessLinkMapper>()
+        val importer = importerWith(mapper)
+        val otherCaseDefinitionId = CaseDefinitionId.of("other-case", "1.0.0")
+        stubCaseLinks(CASE_DEFINITION_ID, "pd-1")
+        stubCaseLinks(otherCaseDefinitionId, "pd-1")
+        stubDeployedProcessDefinitions("pd-1")
+
+        runImporter<Unit> {
+            importer.afterImport(importRequest(CASE_DEFINITION_ID, 0))
+            importer.afterImport(importRequest(otherCaseDefinitionId, 0))
+            importer.afterImport(importRequest(CASE_DEFINITION_ID, 1))
+            importer.afterImport(importRequest(otherCaseDefinitionId, 1))
+        }
+
+        verify(mapper).afterImport(eq(CASE_DEFINITION_ID), eq(setOf("pd-1")), any())
+        verify(mapper).afterImport(eq(otherCaseDefinitionId), eq(setOf("pd-1")), any())
+    }
+
+    @Test
+    fun `import defers the recheck while writing the links of a case definition`() {
+        assertThat(importDeferringRecheck(CASE_DEFINITION_ID)).isTrue()
+    }
+
+    @Test
+    fun `import does not defer the recheck without a case definition`() {
+        assertThat(importDeferringRecheck(null)).isFalse()
+    }
+
+    @Test
+    fun `afterImport does nothing without a case definition`() {
+        val mapper = mock<ProcessLinkMapper>()
+        val importer = importerWith(mapper)
+
+        runImporter<Unit> { importer.afterImport(importRequest(null, 0)) }
+
+        verifyNoInteractions(mapper, processDefinitionCaseDefinitionService, repositoryService)
+    }
+
+    @Test
     fun `import replaces pluginConfigurationId with mapped value from request`() {
         val sourceId = UUID.randomUUID()
         val targetId = UUID.randomUUID()
@@ -139,6 +217,88 @@ class ProcessLinkImporterTest {
         val capturedDto = importWithMapping(sourceId, null)
 
         assertThat(capturedDto.pluginConfigurationId).isEqualTo(sourceId)
+    }
+
+    /** Whether the scope is active at the moment a link is written. */
+    private fun importDeferringRecheck(caseDefinitionId: CaseDefinitionId?): Boolean {
+        val processDefinitionKey = "my"
+        var deferring: Boolean? = null
+        val mapperMock = TestMapper()
+
+        if (caseDefinitionId == null) {
+            val operatonPd = mock<OperatonProcessDefinition>()
+            whenever(operatonPd.id).thenReturn("pd-1")
+            whenever(repositoryService.findLatestProcessDefinition(processDefinitionKey)).thenReturn(operatonPd)
+        } else {
+            stubCaseLinks(caseDefinitionId, "pd-1")
+            val operatonPd = mock<OperatonProcessDefinition>()
+            whenever(operatonPd.id).thenReturn("pd-1")
+            whenever(operatonPd.key).thenReturn(processDefinitionKey)
+            whenever(repositoryService.findProcessDefinitions(any<Specification<OperatonProcessDefinition>>()))
+                .thenReturn(listOf(operatonPd))
+        }
+        whenever(processLinkService.getProcessLinkMapper("test-type")).thenReturn(mapperMock)
+        doAnswer {
+            deferring = ProcessLinkImportScope.isDeferringRecheck()
+            mock<ProcessLink>()
+        }.whenever(processLinkService).createProcessLink(any(), anyOrNull())
+
+        val json = """
+            [
+              {
+                "activityId": "Task_1",
+                "activityType": "bpmn:ServiceTask:start",
+                "processLinkType": "test-type"
+              }
+            ]
+        """.trimIndent()
+
+        importer.import(
+            ImportRequest(
+                fileName = FILENAME,
+                content = json.toByteArray(),
+                caseDefinitionId = caseDefinitionId,
+            )
+        )
+
+        return deferring!!
+    }
+
+    private fun importerWith(vararg mappers: ProcessLinkMapper) = ProcessLinkImporter(
+        processLinkService,
+        repositoryService,
+        processDefinitionCaseDefinitionService,
+        objectMapper,
+        mappers.toList(),
+        applicationEventPublisher,
+    )
+
+    private fun importRequest(caseDefinitionId: CaseDefinitionId?, index: Int) = ImportRequest(
+        fileName = "/process-link/my-$index.process-link.json",
+        content = ByteArray(0),
+        caseDefinitionId = caseDefinitionId,
+    )
+
+    private fun stubCaseLinks(caseDefinitionId: CaseDefinitionId, vararg processDefinitionIds: String) {
+        whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(caseDefinitionId))
+            .thenReturn(
+                processDefinitionIds.map {
+                    ProcessDefinitionCaseDefinition(
+                        id = ProcessDefinitionCaseDefinitionId(
+                            processDefinitionId = ProcessDefinitionId.of(it),
+                            caseDefinitionId = caseDefinitionId,
+                        )
+                    )
+                }
+            )
+    }
+
+    private fun stubDeployedProcessDefinitions(vararg processDefinitionIds: String) {
+        val processDefinitions = processDefinitionIds.map { id ->
+            mock<OperatonProcessDefinition>().also { whenever(it.id).thenReturn(id) }
+        }
+        whenever(repositoryService.findProcessDefinitions(any<Specification<OperatonProcessDefinition>>()))
+            .thenReturn(processDefinitions)
     }
 
     private fun importWithMapping(
@@ -251,5 +411,7 @@ class ProcessLinkImporterTest {
 
     private companion object {
         const val FILENAME = "/process-link/my.process-link.json"
+
+        val CASE_DEFINITION_ID = CaseDefinitionId.of("my-case", "1.0.0")
     }
 }

@@ -69,6 +69,27 @@ class ProcessLinkChangedEventListenerTest {
     }
 
     @Test
+    fun `ignores a created event whose recheck is deferred`() {
+        listener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1", true))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForProcessDefinition(any())
+    }
+
+    @Test
+    fun `ignores an updated event whose recheck is deferred`() {
+        listener.onProcessLinkUpdated(ProcessLinkUpdatedEvent("plugin", "pd-1", true))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForProcessDefinition(any())
+    }
+
+    @Test
+    fun `ignores a deleted event whose recheck is deferred`() {
+        listener.onProcessLinkDeleted(ProcessLinkDeletedEvent("plugin", "pd-1", true))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForProcessDefinition(any())
+    }
+
+    @Test
     fun `rechecks the case definition on process links deployed`() {
         val caseDefinitionId = CaseDefinitionId("my-case", "1.0.0")
 

@@ -224,21 +224,8 @@ class PluginProcessLinkMapper(
         processDefinitionIds: Set<String>,
         applicationEventPublisher: ApplicationEventPublisher
     ) {
-        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
-            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
-        }
-
-        val hasIssue = allPluginLinks.any { link ->
-            if (link.pluginConfigurationReference.type != PluginConfigurationReferenceType.FIXED) {
-                return@any false
-            }
-
-            val configId = link.pluginConfigurationId ?: return@any true
-            val configuration = pluginConfigurationRepository.findById(configId).orElse(null) ?: return@any true
-            val expectedDefinitionKey = link.pluginConfigurationReference.pluginDefinitionKey
-
-            expectedDefinitionKey != null && configuration.pluginDefinition.key != expectedDefinitionKey
-        }
+        val hasIssue = processDefinitionIds.isNotEmpty() &&
+            pluginProcessLinkRepository.existsDanglingFixedLink(processDefinitionIds)
 
         if (hasIssue) {
             applicationEventPublisher.publishEvent(
