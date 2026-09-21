@@ -4,7 +4,7 @@
     "activityType" : "bpmn:StartEvent:start",
     "formDefinitionName" : "start-form-catalogi-get-typen",
     "viewModelEnabled" : false,
-    "formDisplayType" : "modal",
+    "formDisplayType" : "panel",
     "formSize" : "medium",
     "subtitles" : [],
     "processLinkType" : "form"
@@ -21,16 +21,6 @@
     "referenceType" : "FIXED",
     "pluginDefinitionKey" : "catalogiapi",
     "processLinkType" : "plugin"
-  },
-  {
-    "activityId" : "StartEvent_1",
-    "activityType" : "bpmn:StartEvent:start",
-    "formDefinitionName" : "start-form-catalogi-get-typen",
-    "viewModelEnabled" : false,
-    "formDisplayType" : "modal",
-    "formSize" : "medium",
-    "subtitles" : null,
-    "processLinkType" : "form"
   },
   {
     "activityId" : "get-status-typen",
