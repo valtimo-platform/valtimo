@@ -16,11 +16,19 @@
 
 package com.ritense.valtimo.operaton.task.service;
 
+import com.ritense.valtimo.contract.annotation.ProcessBean;
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod;
 import org.operaton.bpm.engine.delegate.DelegateTask;
 
+@ProcessBean(description = "Sends email notifications for tasks")
 public interface NotificationService {
 
+    @ProcessBeanMethod(description = "Sends a notification for the current task using the default template")
     void sendNotification(DelegateTask task);
 
+    @ProcessBeanMethod(
+        description = "Sends a notification for the current task using a specified template",
+        example = "${notificationService.sendNotification(task, 'custom-template')}"
+    )
     void sendNotification(DelegateTask task, String template);
 }

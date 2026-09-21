@@ -25,7 +25,6 @@ import com.ritense.widget.domain.Widget
 import com.ritense.widget.repository.WidgetRepository
 import java.util.UUID
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import kotlin.jvm.optionals.getOrNull
 
 @SkipComponentScan
@@ -80,7 +79,6 @@ class WidgetService(
     fun getById(id: UUID): Widget =
         findById(id) ?: error("Widget $id not found")
 
-    @Transactional
     fun getWidgetData(widget: Widget, properties: Map<String, Any>): Any? {
         return runWithoutAuthorization {
             widgetDataProviders

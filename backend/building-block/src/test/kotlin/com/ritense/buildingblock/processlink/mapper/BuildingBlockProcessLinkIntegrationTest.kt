@@ -40,6 +40,7 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
@@ -219,6 +220,125 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
     }
 
     @Test
+    fun `should reject input mapping that does not target a building block field`() {
+        val buildingBlockDefinitionId = buildingBlock.id
+        val mainProcessDefinitionId = "bb-process"
+        stubMainProcess(buildingBlockDefinitionId, mainProcessDefinitionId)
+        doReturn(emptyList<PluginProcessLink>()).whenever(processLinkService).getProcessLinks(mainProcessDefinitionId)
+
+        val dto = BuildingBlockProcessLinkCreateRequestDto(
+            processDefinitionId = caseProcessDefinitionId,
+            activityId = "callActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionKey = "bb",
+            buildingBlockDefinitionVersionTag = "1.0.0",
+            pluginConfigurationMappings = emptyMap(),
+            inputMappings = listOf(
+                BuildingBlockInputMappingDto(source = "doc:/attachments", target = "pv:attachmentIds")
+            )
+        )
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            mapper.toNewProcessLink(dto, CaseDefinitionId("case", "1.0.0"))
+        }
+        assertTrue(exception.message!!.contains("pv:attachmentIds"))
+    }
+
+    @Test
+    fun `should reject output mapping that does not source a building block field`() {
+        val buildingBlockDefinitionId = buildingBlock.id
+        val mainProcessDefinitionId = "bb-process"
+        stubMainProcess(buildingBlockDefinitionId, mainProcessDefinitionId)
+        doReturn(emptyList<PluginProcessLink>()).whenever(processLinkService).getProcessLinks(mainProcessDefinitionId)
+
+        val existing = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = caseProcessDefinitionId,
+            activityId = "callActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = buildingBlockDefinitionId,
+            pluginConfigurationMappings = emptyMap()
+        )
+
+        val dto = BuildingBlockProcessLinkUpdateRequestDto(
+            id = existing.id,
+            buildingBlockDefinitionKey = "bb",
+            buildingBlockDefinitionVersionTag = "1.0.0",
+            pluginConfigurationMappings = emptyMap(),
+            outputMappings = listOf(
+                BuildingBlockOutputMappingDto(
+                    source = "pv:result",
+                    target = "doc:/result",
+                    syncTiming = BuildingBlockSyncTiming.END
+                )
+            )
+        )
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            mapper.toUpdatedProcessLink(existing, dto, CaseDefinitionId("case", "1.0.0"))
+        }
+        assertTrue(exception.message!!.contains("pv:result"))
+    }
+
+    @Test
+    fun `should reject process link when the business key mapping is wrong`() {
+        val dto = BuildingBlockProcessLinkCreateRequestDto(
+            processDefinitionId = latestProcessDefinitionId(WRONG_KEY_PROCESS_KEY),
+            activityId = "callActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionKey = "bb",
+            buildingBlockDefinitionVersionTag = "1.0.0",
+            pluginConfigurationMappings = emptyMap()
+        )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            mapper.toNewProcessLink(dto, CaseDefinitionId("case", "1.0.0"))
+        }
+        assertTrue(exception.message!!.contains("#{execution.processBusinessKey}"))
+    }
+
+    @Test
+    fun `should reject process link when the business key mapping is shadowed by operaton namespace elements`() {
+        val dto = BuildingBlockProcessLinkCreateRequestDto(
+            processDefinitionId = latestProcessDefinitionId(DUAL_NS_PROCESS_KEY),
+            activityId = "callActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionKey = "bb",
+            buildingBlockDefinitionVersionTag = "1.0.0",
+            pluginConfigurationMappings = emptyMap()
+        )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            mapper.toNewProcessLink(dto, CaseDefinitionId("case", "1.0.0"))
+        }
+        assertTrue(exception.message!!.contains("<operaton:in>"))
+    }
+
+    @Test
+    fun `should validate the business key mapping on update`() {
+        val existing = BuildingBlockProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = latestProcessDefinitionId(WRONG_KEY_PROCESS_KEY),
+            activityId = "callActivity",
+            activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+            buildingBlockDefinitionId = buildingBlock.id,
+            pluginConfigurationMappings = emptyMap()
+        )
+
+        val dto = BuildingBlockProcessLinkUpdateRequestDto(
+            id = existing.id,
+            buildingBlockDefinitionKey = "bb",
+            buildingBlockDefinitionVersionTag = "1.0.0",
+            pluginConfigurationMappings = emptyMap()
+        )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            mapper.toUpdatedProcessLink(existing, dto, CaseDefinitionId("case", "1.0.0"))
+        }
+        assertTrue(exception.message!!.contains("must map the business key"))
+    }
+
+    @Test
     fun `should throw when required plugin mapping missing`() {
         val buildingBlockDefinitionId = buildingBlock.id
         val mainProcessDefinitionId = "bb-process"
@@ -285,6 +405,17 @@ class BuildingBlockProcessLinkIntegrationTest @Autowired constructor(
 
     companion object {
         private const val CASE_PROCESS_KEY = "building-block-call-activity-main"
+        private const val WRONG_KEY_PROCESS_KEY = "building-block-call-activity-main-wrong-key"
+        private const val DUAL_NS_PROCESS_KEY = "building-block-call-activity-main-dual-ns"
+    }
+
+    private fun latestProcessDefinitionId(processKey: String): String {
+        return repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey(processKey)
+            .latestVersion()
+            .singleResult()
+            ?.id
+            ?: throw IllegalStateException("Process definition '$processKey' not deployed")
     }
 
     private fun stubMainProcess(

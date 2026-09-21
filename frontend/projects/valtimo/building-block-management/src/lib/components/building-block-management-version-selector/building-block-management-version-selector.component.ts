@@ -21,6 +21,10 @@ import {
 } from '../../services';
 import {combineLatest, map, Observable, switchMap} from 'rxjs';
 import {DropdownModule, ListItem, TagModule} from 'carbon-components-angular';
+import {
+  BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS,
+  BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX,
+} from '../../constants';
 
 @Component({
   standalone: true,
@@ -30,6 +34,8 @@ import {DropdownModule, ListItem, TagModule} from 'carbon-components-angular';
   imports: [CommonModule, DropdownModule, TagModule],
 })
 export class BuildingBlockManagementVersionSelectorComponent {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS;
+
   private readonly _versions$ = combineLatest([
     this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$,
     this.buildingBlockManagementDetailService.reloadVersions$,
@@ -49,6 +55,7 @@ export class BuildingBlockManagementVersionSelectorComponent {
         content: version.versionTag,
         selected: versionTag === version.versionTag,
         final: version.final,
+        'data-test-id': `${BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX}${version.versionTag}`,
       }))
     )
   );

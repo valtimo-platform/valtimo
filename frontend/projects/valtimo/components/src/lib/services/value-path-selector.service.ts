@@ -34,9 +34,6 @@ import {isEqual} from 'lodash';
   providedIn: 'root',
 })
 export class ValuePathSelectorService extends BaseApiService implements OnDestroy {
-  private _prefixes: (ValuePathSelectorPrefix | string)[];
-  private _currentCacheKey: string;
-
   private _cache: ValuePathSelectorCache = {};
   private _caseDefinitionCache$ = new BehaviorSubject<CaseDefinition[] | null>(null);
   private readonly _subscriptions = new Subscription();
@@ -72,17 +69,17 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     context: BlueprintContext,
     type: ValuePathType = ValuePathType.FIELD
   ): Observable<ValuePathItem[]> {
-    this._prefixes = prefixes;
-    this._currentCacheKey = this.buildCacheKey(context);
-
+    const cacheKey = this.buildCacheKey(context);
     const url = this.buildUrl(context);
 
-    const prefixesWithoutCache: (ValuePathSelectorPrefix | string)[] = this._prefixes.filter(
-      (prefix: ValuePathSelectorPrefix) => !this.getCacheResult(prefix, type)
+    let effectivePrefixes: (ValuePathSelectorPrefix | string)[] = prefixes;
+
+    const prefixesWithoutCache: (ValuePathSelectorPrefix | string)[] = prefixes.filter(
+      (prefix: ValuePathSelectorPrefix) => !this.getCacheResult(cacheKey, prefix, type)
     );
 
     return (
-      prefixesWithoutCache.length > 0 || this._prefixes.length === 0
+      prefixesWithoutCache.length > 0 || prefixes.length === 0
         ? this.httpClient.post<ValuePathResponse[]>(this.getApiUrl(url), {
             prefixes: prefixesWithoutCache,
             excludePrefixes,
@@ -91,22 +88,26 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
         : of([])
     ).pipe(
       tap((results: ValuePathResponse[]) => {
-        if (this._prefixes.length === 0) this._prefixes = this.getPrefixesFromResults(results);
+        if (prefixes.length === 0) effectivePrefixes = this.getPrefixesFromResults(results);
 
         if (type === ValuePathType.FIELD)
           this.cacheMapping(
+            cacheKey,
+            effectivePrefixes,
             results.map((result: ValuePathResponse) => ({path: result.path})),
             type
           );
         else
           this.cacheMapping(
+            cacheKey,
+            effectivePrefixes,
             results.reduce((acc, curr) => [...acc, ...this.mapCollectionItem(curr)], []),
             type
           );
       }),
       map(() =>
-        this._prefixes.reduce(
-          (acc, curr) => [...acc, ...(this.getCacheResult(curr, type) ?? [])],
+        effectivePrefixes.reduce(
+          (acc, curr) => [...acc, ...(this.getCacheResult(cacheKey, curr, type) ?? [])],
           []
         )
       )
@@ -138,10 +139,11 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
   }
 
   private getCacheResult(
+    cacheKey: string,
     prefix: ValuePathSelectorPrefix | string,
     type: ValuePathType
   ): ValuePathItem[] | undefined {
-    return this._cache[this._currentCacheKey]?.[prefix]?.[type];
+    return this._cache[cacheKey]?.[prefix]?.[type];
   }
 
   private mapCollectionItem(item: ValuePathResponse, parentPath?: string): ValuePathItem[] {
@@ -165,13 +167,18 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     ];
   }
 
-  private cacheMapping(results: ValuePathItem[], type: ValuePathType): void {
+  private cacheMapping(
+    cacheKey: string,
+    prefixes: (ValuePathSelectorPrefix | string)[],
+    results: ValuePathItem[],
+    type: ValuePathType
+  ): void {
     if (!results.length) return;
 
-    const prefixResults = this._prefixes.reduce(
+    const prefixResults = prefixes.reduce(
       (acc, curr) => ({
         ...acc,
-        ...(!this.getCacheResult(curr, type) && {
+        ...(!this.getCacheResult(cacheKey, curr, type) && {
           [curr]: {
             [type]: results.filter((result: ValuePathItem) => result.path.split(':')[0] === curr),
           },
@@ -181,7 +188,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     );
 
     const tempCache: ValuePathSelectorCache = {
-      [this._currentCacheKey]: prefixResults,
+      [cacheKey]: prefixResults,
     };
 
     this._cache = deepmerge(this._cache, tempCache);

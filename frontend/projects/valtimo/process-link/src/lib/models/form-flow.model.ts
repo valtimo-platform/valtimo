@@ -14,24 +14,10 @@
  * limitations under the License.
  */
 
-import {EventEmitter, Type} from '@angular/core';
-import {FormioSubmission} from '@valtimo/components';
-
-interface ChangeEvent {
-  data: object;
-}
-
-interface FormFlowCustomComponent {
-  formFlowInstanceId: string;
-  componentId?: string;
-  disabled: boolean;
-  changeEvent: EventEmitter<ChangeEvent>;
-  submitEvent: EventEmitter<FormioSubmission>;
-}
-
-interface FormFlowCustomComponentDefinition {
-  id: string;
-  component: Type<FormFlowCustomComponent>;
-}
-
-export {FormFlowCustomComponentDefinition, FormFlowCustomComponent, ChangeEvent};
+// Moved to @valtimo/form-flow-management (the owning library); re-exported here for backwards
+// compatibility.
+export {
+  ChangeEvent,
+  FormFlowCustomComponent,
+  FormFlowCustomComponentDefinition,
+} from '@valtimo/form-flow-management';

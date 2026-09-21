@@ -20,8 +20,10 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.event.CaseDefinitionCreatedEvent
+import com.ritense.valtimo.contract.event.CaseDefinitionFinalizedEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -51,9 +53,28 @@ class ProcessDocumentLinkEventListener(
     }
 
     @RunWithoutAuthorization
+    @EventListener(CaseDefinitionFinalizedEvent::class)
+    fun handleCaseDefinitionFinalizedEvent(event: CaseDefinitionFinalizedEvent) {
+        caseDefinitionProcessLinkService.pinLinksOf(event.caseDefinitionId)
+    }
+
+    @RunWithoutAuthorization
     @EventListener(CaseDefinitionPreDeleteEvent::class)
     fun handleCaseDefinitionPreDeleteEvent(event: CaseDefinitionPreDeleteEvent) {
         caseDefinitionProcessLinkService.deleteDocumentDefinitionProcesses(event.caseDefinitionId)
+    }
+
+    // The earliest point at which both the case definitions and the global processes are deployed
+    @RunWithoutAuthorization
+    @EventListener(ApplicationReadyEvent::class)
+    fun handleApplicationReadyEvent() {
+        // Backfills links that could not be pinned at deployment. Swallowed because an ApplicationReadyEvent
+        // exception stops the application, and an unpinned link still resolves - it just follows the latest.
+        try {
+            caseDefinitionProcessLinkService.pinLinksThatCanNoLongerChange()
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to pin case-definition-process-links that can no longer change" }
+        }
     }
 
     companion object {

@@ -44,7 +44,7 @@ class ProcessDefinitionValidatorIntegrationTest : BaseIntegrationTest() {
         val result = processDefinitionValidator.validate(bpmnModel, emptyList())
 
         assertThat(result.errors).noneMatch {
-            it.errorCode == ExpressionValidationErrorCode.BEAN_NOT_FOUND.name
+            it.errorCode == ProcessDefinitionValidationErrorCode.EXPRESSION_BEAN_NOT_FOUND.name
         }
     }
 
@@ -60,7 +60,7 @@ class ProcessDefinitionValidatorIntegrationTest : BaseIntegrationTest() {
         val result = processDefinitionValidator.validate(bpmnModel, emptyList())
 
         assertThat(result.errors).anyMatch {
-            it.errorCode == ExpressionValidationErrorCode.BEAN_NOT_FOUND.name &&
+            it.errorCode == ProcessDefinitionValidationErrorCode.EXPRESSION_BEAN_NOT_FOUND.name &&
                 it.expression == "\${nonExistentBean.doSomething()}"
         }
     }

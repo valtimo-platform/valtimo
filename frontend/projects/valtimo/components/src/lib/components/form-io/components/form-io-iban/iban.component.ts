@@ -29,11 +29,13 @@ import {FormioCustomComponent} from '../../../../modules';
   styleUrls: ['./iban.component.scss'],
   standalone: false,
 })
-export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterViewInit, OnDestroy {
+export class FormIoIbanComponent
+  implements FormioCustomComponent<string>, AfterViewInit, OnDestroy
+{
   @Input() public value: string;
   @Input() public disabled = false;
   @Input() public required = false;
-  @Output() public valueChange = new EventEmitter<any>();
+  @Output() public valueChange = new EventEmitter<string>();
   public ibanForm = new FormGroup({
     iban: new FormControl(''),
   });
@@ -46,6 +48,12 @@ export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterVie
         this.required ? [Validators.required, ibanValidator()] : [ibanValidator()]
       );
       this.ibanForm.controls.iban.updateValueAndValidity();
+
+      // Form.io recreates this component on every redraw, for example when a row is added to a
+      // datagrid. Without this, the error of an already invalid iban is hidden until it is touched.
+      if (this.value) {
+        this.ibanForm.controls.iban.markAsTouched();
+      }
 
       if (this.disabled) {
         Object.keys(this.ibanForm.controls).forEach(key => {
@@ -66,9 +74,9 @@ export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterVie
   }
 
   private onValueChange(): void {
-    (this.value as any) = this.ibanForm.valid
-      ? this.ibanForm.controls.iban.value
-      : [this.ibanForm.value];
+    // Always emit the string, also when invalid: form.io stores this as the submission value, and
+    // anything else renders as [object Object] on redraw. Rejecting is done by the customValidator.
+    this.value = this.ibanForm.controls.iban.value ?? '';
     this.valueChange.emit(this.value);
   }
 }

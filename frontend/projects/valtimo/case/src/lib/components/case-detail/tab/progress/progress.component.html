@@ -37,6 +37,7 @@
       [placeholder]="'progress.process' | translate"
       [items]="obs.processInstanceItems.value || []"
       (selected)="loadProcessInstance($event)"
+      class="process-select"
     >
       <cds-dropdown-list></cds-dropdown-list>
     </cds-combo-box>

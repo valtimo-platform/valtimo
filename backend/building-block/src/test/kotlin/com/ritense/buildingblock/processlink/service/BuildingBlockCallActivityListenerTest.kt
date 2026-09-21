@@ -99,8 +99,9 @@ class BuildingBlockCallActivityListenerTest {
                 eq(inputMappings.map { it.source })
             )
         ).thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
-        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:name" to "Ada Lovelace")))
-            .thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
+        whenever(
+            valueResolverService.preProcessValuesForNewDocument(eq(mapOf("doc:name" to "Ada Lovelace")), any())
+        ).thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
@@ -191,8 +192,9 @@ class BuildingBlockCallActivityListenerTest {
                 eq(inputMappings.map { it.source })
             )
         ).thenReturn(mapOf("doc:/data" to "parent data"))
-        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:input" to "parent data")))
-            .thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
+        whenever(
+            valueResolverService.preProcessValuesForNewDocument(eq(mapOf("doc:input" to "parent data")), any())
+        ).thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
 
         // Parent BB instance is found because we're calling from a BB process
         whenever(buildingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)

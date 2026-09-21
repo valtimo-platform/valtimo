@@ -61,12 +61,12 @@ private fun Schema.walkValueResolverOptions(
         is ObjectSchema ->
             // The root schema itself (empty path) is not a selectable option, but every nested object node is,
             // so a whole subtree can be selected (e.g. doc:/applicant) in addition to its individual leaf properties.
-            objectSelfOption(prefix, path) +
+            containerSelfOption(prefix, path) +
                 propertySchemas.flatMap { (key, sub) ->
                     sub.walkValueResolverOptions(prefix, "$path/$key", depth + 1, visitedReferences)
                 }
 
-        is ArraySchema -> listOf(
+        is ArraySchema -> containerSelfOption(prefix, path) + listOf(
             ValueResolverOption(
                 "$prefix$path",
                 COLLECTION,
@@ -90,7 +90,7 @@ private fun Schema.walkValueResolverOptions(
 
         is CombinedSchema ->
             subschemas.flatMap { it.walkValueResolverOptions(prefix, path, depth + 1, visitedReferences) }
-                .distinctBy { it.path }
+                .mergeByPathAndType()
 
         is StringSchema, is NumberSchema, is BooleanSchema, is EnumSchema, is ConstSchema ->
             listOf(ValueResolverOption("$prefix$path", FIELD))
@@ -99,11 +99,21 @@ private fun Schema.walkValueResolverOptions(
     }
 }
 
+private fun List<ValueResolverOption>.mergeByPathAndType(): List<ValueResolverOption> =
+    groupBy { it.path to it.type }.map { (_, sameNode) ->
+        sameNode.singleOrNull() ?: ValueResolverOption(
+            sameNode.first().path,
+            sameNode.first().type,
+            sameNode.mapNotNull { it.children }.takeIf { it.isNotEmpty() }?.flatten()?.mergeByPathAndType()
+        )
+    }
+
 /**
- * An object container node is offered as a [FIELD] option so it shows up in the (field-typed) value path pickers,
- * allowing a whole subtree to be resolved at once. The root object (empty [path]) is not selectable.
+ * A container node — an object or an array — is offered as a [FIELD] option so it shows up in the (field-typed)
+ * value path pickers, allowing a whole subtree to be resolved at once. The root container (empty [path]) is not
+ * selectable.
  */
-private fun objectSelfOption(prefix: String, path: String): List<ValueResolverOption> =
+private fun containerSelfOption(prefix: String, path: String): List<ValueResolverOption> =
     if (path.isEmpty()) emptyList() else listOf(ValueResolverOption("$prefix$path", FIELD))
 
 private val logger = KotlinLogging.logger {}

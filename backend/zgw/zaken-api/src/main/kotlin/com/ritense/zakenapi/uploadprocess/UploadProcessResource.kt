@@ -18,6 +18,7 @@ package com.ritense.zakenapi.uploadprocess
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.logging.LoggableResource
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -26,8 +27,10 @@ import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.DOCUMEN
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -35,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController
 class UploadProcessResource(
     private val activeCaseDefinitionService: ActiveCaseDefinitionService,
     private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
+    private val uploadProcessService: UploadProcessService,
 ) {
 
     @Deprecated("Marked for removal since 9.22.0")
@@ -46,5 +50,14 @@ class UploadProcessResource(
             runWithoutAuthorization { activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName) }
         val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinition.id, DOCUMENT_UPLOAD)
         return ResponseEntity.ok(CheckLinkResponse(link != null))
+    }
+
+    @PostMapping("/v1/uploadprocess/document/{documentId}/resource/{resourceId}")
+    fun startUploadResourceProcess(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable documentId: UUID,
+        @PathVariable resourceId: String,
+    ): ResponseEntity<Unit> {
+        uploadProcessService.startUploadResourceProcess(documentId, resourceId)
+        return ResponseEntity.noContent().build()
     }
 }

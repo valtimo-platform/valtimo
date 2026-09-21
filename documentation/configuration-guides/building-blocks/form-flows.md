@@ -4,6 +4,8 @@ Form flows are multi-step form wizards that guide users through a sequence of fo
 
 In the context of building blocks, form flows allow you to package reusable wizard-style interactions that can be linked to user tasks in BPMN processes.
 
+Form flows of a building block are edited in the same form flow editor as case form flows, with a **JSON editor** tab (the default) and a visual **Editor (beta)** tab. The **Form** dropdown of a step lists the forms of the building block. See the [form flow editor documentation](../cases/form-flows.md#editing-in-the-json-editor) for how to configure steps, transitions and actions.
+
 ---
 
 ## Configuring form flows
@@ -49,7 +51,7 @@ Click **Create** to open the JSON editor
 
 ### Editing a form flow
 
-Click on a form flow row to open the JSON editor. The editor provides syntax highlighting and validation against the form flow JSON schema.
+Click on a form flow row to open the form flow editor, which opens on the JSON editor tab. The editor provides syntax highlighting and validation against the form flow JSON schema.
 
 <figure><img src="../../assets/configuration-guides/building-blocks/form-flows/03-form-flow-editor.png" alt=""><figcaption>Form flow JSON editor</figcaption></figure>
 

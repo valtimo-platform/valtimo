@@ -14,6 +14,11 @@
   ~ limitations under the License.
   -->
 
-<div class="v-overflow-menu-trigger" [class.--compact]="compact">
+<div
+  class="v-overflow-menu-trigger"
+  [attr.aria-label]="label || null"
+  [attr.title]="label || null"
+  [class.--compact]="compact"
+>
   <svg cdsIcon="overflow-menu--vertical" size="16"></svg>
 </div>

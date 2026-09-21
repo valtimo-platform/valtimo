@@ -113,7 +113,7 @@ class EveritSchemaResolvableOptionsTest {
     }
 
     @Test
-    fun `should still expose an array as a single collection option`() {
+    fun `should expose an array as both a collection and a field option`() {
         val options = schemaOf(
             """
             "properties": {
@@ -125,9 +125,189 @@ class EveritSchemaResolvableOptionsTest {
             """.trimIndent()
         ).collectValueResolverOptions("doc:")
 
-        assertThat(options).hasSize(1)
-        assertThat(options.single().path).isEqualTo("doc:/tags")
-        assertThat(options.single().type).isEqualTo(COLLECTION)
+        assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "doc:/tags" to FIELD,
+            "doc:/tags" to COLLECTION
+        )
+        assertThat(options.single { it.type == COLLECTION }.children).isNotEmpty()
+        assertThat(options.single { it.type == FIELD }.children).isNull()
+    }
+
+    @Test
+    fun `should expose an array nested inside an object, and the objects inside its items`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "applicant": {
+                "type": "object",
+                "properties": {
+                  "children": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.filter { it.type == FIELD }.map { it.path }).containsExactlyInAnyOrder(
+            "doc:/applicant",
+            "doc:/applicant/children"
+        )
+        val collection = options.single { it.type == COLLECTION }
+        assertThat(collection.path).isEqualTo("doc:/applicant/children")
+        assertThat(collection.children?.map { it.path }).contains("/name")
+    }
+
+    @Test
+    fun `should keep both answers for a node that is either a list or a single value`() {
+        listOf(
+            """{ "type": "array", "items": { "type": "string" } }, { "type": "string" }""",
+            """{ "type": "string" }, { "type": "array", "items": { "type": "string" } }""",
+        ).forEach { branches ->
+            val options = schemaOf(
+                """
+                "properties": {
+                  "incomeTypes": { "oneOf": [$branches] }
+                }
+                """.trimIndent()
+            ).collectValueResolverOptions("doc:")
+
+            assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+                "doc:/incomeTypes" to FIELD,
+                "doc:/incomeTypes" to COLLECTION
+            )
+        }
+    }
+
+    @Test
+    fun `should keep both answers for a node declared with a list of types`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "incomeTypes": { "type": ["array", "string"], "items": { "type": "string" } }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "doc:/incomeTypes" to FIELD,
+            "doc:/incomeTypes" to COLLECTION
+        )
+    }
+
+    @Test
+    fun `should still collapse two branches that describe the same field`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "reference": {
+                "oneOf": [
+                  { "type": "string", "minLength": 1 },
+                  { "type": "string", "maxLength": 9 }
+                ]
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path to it.type }).containsExactly("doc:/reference" to FIELD)
+    }
+
+    @Test
+    fun `should keep the item fields of every branch of a node that is a list either way`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "contacts": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": { "type": "object", "properties": { "email": { "type": "string" } } }
+                  },
+                  {
+                    "type": "array",
+                    "items": { "type": "object", "properties": { "phoneNumber": { "type": "string" } } }
+                  }
+                ]
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        assertThat(options.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "doc:/contacts" to FIELD,
+            "doc:/contacts" to COLLECTION
+        )
+        assertThat(options.single { it.type == COLLECTION }.children?.map { it.path to it.type })
+            .containsExactlyInAnyOrder("/email" to FIELD, "/phoneNumber" to FIELD)
+    }
+
+    @Test
+    fun `should keep the item fields of every branch of a list nested inside the items of a list`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "contacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "addresses": {
+                      "oneOf": [
+                        {
+                          "type": "array",
+                          "items": { "type": "object", "properties": { "city": { "type": "string" } } }
+                        },
+                        {
+                          "type": "array",
+                          "items": { "type": "object", "properties": { "postalCode": { "type": "string" } } }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        val addresses = options.single { it.type == COLLECTION }.children
+            .orEmpty().single { it.type == COLLECTION }
+        assertThat(addresses.path).isEqualTo("/addresses")
+        assertThat(addresses.children?.map { it.path })
+            .containsExactlyInAnyOrder("/city", "/postalCode")
+    }
+
+    @Test
+    fun `should offer an array inside the items of a collection as both a field and a collection child`() {
+        val options = schemaOf(
+            """
+            "properties": {
+              "contacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "emails": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+        ).collectValueResolverOptions("doc:")
+
+        val children = options.single { it.path == "doc:/contacts" && it.type == COLLECTION }.children
+        assertThat(children?.map { it.path to it.type }).containsExactlyInAnyOrder(
+            "/emails" to FIELD,
+            "/emails" to COLLECTION
+        )
     }
 
     @Test

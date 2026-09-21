@@ -71,6 +71,7 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
 import {SelectBuildingBlockComponent} from './components/select-building-block';
 import {ConfigureBuildingBlockPluginsComponent} from './components/configure-building-block-plugins';
 import {ConfigureBuildingBlockMappingsComponent} from './components/configure-building-block-mappings/configure-building-block-mappings.component';
+import {ReadOnlyContentDirective} from './directives';
 
 @NgModule({
   declarations: [
@@ -92,6 +93,7 @@ import {ConfigureBuildingBlockMappingsComponent} from './components/configure-bu
     ConfigureBuildingBlockPluginsComponent,
   ],
   imports: [
+    ReadOnlyContentDirective,
     CommonModule,
     ProcessLinkRoutingModule,
     FormsModule,

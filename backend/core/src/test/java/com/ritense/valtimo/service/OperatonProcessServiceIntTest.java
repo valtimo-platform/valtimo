@@ -27,7 +27,6 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
 import com.ritense.valtimo.exception.NoFileExtensionFoundException;
-import com.ritense.valtimo.exception.ProcessNotDeployableException;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -170,27 +169,30 @@ class OperatonProcessServiceIntTest extends BaseIntegrationTest {
     }
 
     @Test
-    void shouldNotUpdateExistingSystemProcess() throws IOException {
+    void shouldUpdateExistingSystemProcess() throws IOException {
         List<Resource> processes = List.of(bpmn);
         var stream = getFileStream("systemProcess.xml", processes);
         var systemProcessModel = Bpmn.readModelFromStream(stream);
         repositoryService.createDeployment().addModelInstance("systemProcess.bpmn", systemProcessModel).deploy();
-        List<OperatonProcessDefinition> definitions = AuthorizationContext
+        List<OperatonProcessDefinition> definitionsBefore = AuthorizationContext
             .runWithoutAuthorization(() -> operatonProcessService.getDeployedDefinitions());
-        Assertions.assertTrue(definitions.stream().anyMatch(processDefinition -> processDefinition.getKey().equals("secondProcess")));
+        Assertions.assertTrue(definitionsBefore.stream().anyMatch(processDefinition -> processDefinition.getKey().equals("secondProcess")));
 
-        Assertions.assertThrows(ProcessNotDeployableException.class,
+        assertDoesNotThrow(
             () -> AuthorizationContext.runWithoutAuthorization(() -> {
                 operatonProcessService.deploy(
                     CaseDefinitionId.of("deployedProcess", "1.0.0"),
                     "aProcessName.bpmn",
-                    new ByteArrayInputStream(processes.stream().filter(process -> Objects.equals(process.getFilename(), "shouldNotDeploy.xml"))
+                    new ByteArrayInputStream(processes.stream().filter(process -> Objects.equals(process.getFilename(), "systemProcessUpdate.xml"))
                         .findFirst().orElseGet(() -> new ByteArrayResource(new byte[]{})).getInputStream().readAllBytes()));
                 return null;
             }
         ));
-        Assertions.assertFalse(definitions.stream().anyMatch(processDefinition -> processDefinition.getKey().equals("firstProcess")));
-        Assertions.assertTrue(definitions.stream().anyMatch(processDefinition -> processDefinition.getKey().equals("secondProcess")));
+
+        List<OperatonProcessDefinition> definitionsAfter = AuthorizationContext
+            .runWithoutAuthorization(() -> operatonProcessService.getDeployedDefinitions());
+        Assertions.assertTrue(definitionsAfter.stream().anyMatch(processDefinition -> processDefinition.getKey().equals("firstProcess")));
+        Assertions.assertTrue(definitionsAfter.stream().anyMatch(processDefinition -> processDefinition.getKey().equals("secondProcess")));
     }
 
     @Test

@@ -34,9 +34,16 @@ interface FormFlowDefinitionItem extends ListFormFlowDefinition {
   latestVersion: number;
 }
 
+interface BuildingBlockDefinitionQuery {
+  page: number;
+  searchTerm: string;
+  size: number;
+}
+
 export {
   BuildingBlockManagementTabKey,
   BuildingBlockProcessDefinitionItem,
   BuildingBlockFormDefinitionItem,
+  BuildingBlockDefinitionQuery,
   FormFlowDefinitionItem,
 };

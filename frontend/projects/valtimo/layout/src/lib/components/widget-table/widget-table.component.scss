@@ -79,14 +79,33 @@
       }
     }
 
+    th {
+      min-width: 0;
+    }
+
+    // Carbon pins both the header cell and the row to a fixed height. Because they
+    // are laid out as flex boxes here, that height becomes a hard cap instead of a
+    // minimum, so a wrapping column header overflows onto the first body row.
+    // `thead th` is needed to outweigh `.cds--data-table--md.cds--data-table--sort th`.
+    thead th {
+      height: auto;
+    }
+
     tr {
       gap: 16px;
+      height: auto;
+      min-height: 40px;
+    }
+
+    .cds--table-header-label {
+      overflow-wrap: anywhere;
     }
   }
 
   &--compact .cds--data-table tr {
     gap: 12px;
-    height: 32px;
+    height: auto;
+    min-height: 32px;
   }
 
   .cds--table-header-label > span {

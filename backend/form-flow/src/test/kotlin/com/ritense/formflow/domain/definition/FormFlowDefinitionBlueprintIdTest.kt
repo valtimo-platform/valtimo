@@ -16,10 +16,12 @@
 
 package com.ritense.formflow.domain.definition
 
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.semver4j.Semver
 
@@ -92,6 +94,38 @@ class FormFlowDefinitionBlueprintIdTest {
         assertThat(str).contains("BUILDING_BLOCK")
         assertThat(str).contains("my-bb")
         assertThat(str).contains("1.2.3")
+    }
+
+    @Test
+    fun `of dispatches a CaseDefinitionId to forCase`() {
+        val caseDefinitionId = CaseDefinitionId("my-case", "2.1.0")
+
+        val blueprintId = FormFlowDefinitionBlueprintId.of(caseDefinitionId)
+
+        assertThat(blueprintId).isEqualTo(FormFlowDefinitionBlueprintId.forCase(caseDefinitionId))
+        assertThat(blueprintId.blueprintType).isEqualTo(BlueprintType.CASE)
+    }
+
+    @Test
+    fun `of dispatches a BuildingBlockDefinitionId to forBuildingBlock`() {
+        val bbId = BuildingBlockDefinitionId("my-bb", "1.0.0")
+
+        val blueprintId = FormFlowDefinitionBlueprintId.of(bbId)
+
+        assertThat(blueprintId).isEqualTo(FormFlowDefinitionBlueprintId.forBuildingBlock(bbId))
+        assertThat(blueprintId.blueprintType).isEqualTo(BlueprintType.BUILDING_BLOCK)
+    }
+
+    @Test
+    fun `of throws for an unsupported blueprint id type`() {
+        val unsupported = object : BlueprintId {
+            override fun getTagPrefix() = "XX:"
+            override fun getIdKey() = "x"
+            override fun toString() = "unsupported"
+        }
+
+        assertThatThrownBy { FormFlowDefinitionBlueprintId.of(unsupported) }
+            .isInstanceOf(IllegalArgumentException::class.java)
     }
 
     @Test

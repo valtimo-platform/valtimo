@@ -32,13 +32,14 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.web.rest.dto.MissingReferenceDto
+import com.ritense.processlink.web.rest.dto.MissingReferenceType
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import org.operaton.bpm.engine.repository.ProcessDefinition
@@ -171,14 +172,10 @@ class FormFlowProcessLinkMapper(
     }
 
     private fun assertFormFlowDefinitionExists(formFlowDefinitionKey: String, blueprintId: BlueprintId?) {
-        val definition = when (blueprintId) {
-            is CaseDefinitionId -> formFlowService.findDefinition(formFlowDefinitionKey, blueprintId)
-            is BuildingBlockDefinitionId -> formFlowService.findDefinition(formFlowDefinitionKey, blueprintId)
-            else -> throw RuntimeException("A blueprint id (case or building block) is required for a form flow process link")
-        }
-        if (definition == null) {
-            throw RuntimeException("FormFlow definition not found with id $formFlowDefinitionKey")
-        }
+        blueprintId
+            ?: throw RuntimeException("A blueprint id (case or building block) is required for a form flow process link")
+        formFlowService.findDefinitionOrNull(formFlowDefinitionKey, blueprintId)
+            ?: throw RuntimeException("FormFlow definition not found with id $formFlowDefinitionKey")
     }
 
     override fun createRelatedExportRequests(
@@ -192,6 +189,24 @@ class FormFlowProcessLinkMapper(
     }
 
     override fun getImporterType() = "formflow"
+
+    override fun getMissingReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): MissingReferenceDto? {
+        deployDto as FormFlowProcessLinkDeployDto
+        // A form flow definition only exists for a case or building block, so a form flow process
+        // link without a blueprint can never resolve. See assertFormFlowDefinitionExists.
+        val definition = blueprintId?.let {
+            formFlowService.findDefinitionOrNull(deployDto.formFlowDefinitionKey, it)
+        }
+        return if (definition != null) {
+            null
+        } else {
+            MissingReferenceDto(
+                type = MissingReferenceType.FORM_FLOW,
+                reference = deployDto.formFlowDefinitionKey,
+                activityId = deployDto.activityId,
+            )
+        }
+    }
 
     companion object {
         const val PROCESS_LINK_TYPE_FORM_FLOW = "form-flow"

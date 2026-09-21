@@ -66,7 +66,7 @@ export class PluginTranslationService {
     const pluginSpecification = pluginSpecifications.find(
       specification => specification.pluginId === pluginDefinitionKey
     );
-    const translation = pluginSpecification?.pluginTranslations[currentLang][translateKey];
+    const translation = pluginSpecification?.pluginTranslations?.[currentLang]?.[translateKey];
     return translation || `${pluginDefinitionKey}.${translateKey}`;
   }
 

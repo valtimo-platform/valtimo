@@ -25,6 +25,8 @@ import com.ritense.processdocument.sse.event.TaskUpdateSseEvent
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.event.TaskTeamAssignedEvent
+import com.ritense.valtimo.security.exceptions.TaskNotFoundException
+import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,6 +43,7 @@ class TaskUpdateListener(
     private val caseDocumentResolver: CaseDocumentResolver,
     private val documentService: DocumentService,
     private val operatonTaskService: OperatonTaskService,
+    private val operatonProcessService: OperatonProcessService,
 ) {
 
     @TransactionalEventListener(
@@ -51,17 +54,38 @@ class TaskUpdateListener(
         fallbackExecution = true
     )
     fun handle(taskEvent: TaskEvent) {
-        val document = processDocumentService.getDocument(OperatonProcessInstanceId(taskEvent.processInstanceId), null)
-        notifyTaskUpdate(taskEvent.id, document)
+        resolveAndNotify(taskEvent.id, taskEvent.processInstanceId) {
+            processDocumentService.getDocument(OperatonProcessInstanceId(taskEvent.processInstanceId), null)
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     fun handleTeamAssignment(event: TaskTeamAssignedEvent): Unit = runWithoutAuthorization {
-        val task = operatonTaskService.findTaskById(event.taskId)
-        val processInstanceId = OperatonProcessInstanceId(task.getProcessInstanceId())
-        val document = processDocumentService.getDocument(processInstanceId, task)
-        notifyTaskUpdate(event.taskId, document)
+        val task = try {
+            operatonTaskService.findTaskById(event.taskId)
+        } catch (e: TaskNotFoundException) {
+            logger.debug(e) { "Task ${event.taskId} no longer exists, skipping the task update notification" }
+            return@runWithoutAuthorization
+        }
+        resolveAndNotify(event.taskId, task.getProcessInstanceId()) {
+            processDocumentService.getDocument(OperatonProcessInstanceId(task.getProcessInstanceId()), task)
+        }
     }
+
+    // Both listeners run after commit, so the process instance may have ended in the very transaction that fired the event.
+    private fun resolveAndNotify(taskId: String, processInstanceId: String, resolveDocument: () -> Document) {
+        val document = try {
+            resolveDocument()
+        } catch (e: Exception) {
+            if (processInstanceExists(processInstanceId)) throw e
+            logger.debug(e) { "Process instance $processInstanceId has ended, skipping the task update notification for task $taskId" }
+            return
+        }
+        notifyTaskUpdate(taskId, document)
+    }
+
+    private fun processInstanceExists(processInstanceId: String) =
+        runWithoutAuthorization { operatonProcessService.findProcessInstanceById(processInstanceId).isPresent }
 
     private fun notifyTaskUpdate(taskId: String, document: Document) {
         try {
@@ -79,7 +103,7 @@ class TaskUpdateListener(
                 )
             )
         } catch (e: Exception) {
-            logger.error(e) { "Failed to send SSE notification for team assignment on task $taskId" }
+            logger.error(e) { "Failed to send SSE notification for task update on task $taskId" }
         }
     }
 

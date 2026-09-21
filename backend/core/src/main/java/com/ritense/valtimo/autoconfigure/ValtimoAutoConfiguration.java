@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionReposito
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
 import com.ritense.valtimo.processdefinition.repository.ProcessDefinitionPropertiesRepository;
 import com.ritense.valtimo.repository.OperatonReportingRepository;
@@ -186,7 +187,8 @@ public class ValtimoAutoConfiguration {
         final OperatonByteArrayService operatonByteArrayService,
         final ApplicationEventPublisher applicationEventPublisher,
         final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
-        final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
+        final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository,
+        final ProcessDefinitionAutofillService processDefinitionAutofillService
     ) {
         return new OperatonProcessService(
             runtimeService,
@@ -203,7 +205,8 @@ public class ValtimoAutoConfiguration {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepository
+            operatonProcessDefinitionRepository,
+            processDefinitionAutofillService
         );
     }
 
@@ -336,7 +339,8 @@ public class ValtimoAutoConfiguration {
         final OperatonProcessService operatonProcessService,
         final ProcessShortTimerService processShortTimerService,
         final OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository,
-        final ProcessPropertyService processPropertyService
+        final ProcessPropertyService processPropertyService,
+        final ProcessDefinitionAutofillService processDefinitionAutofillService
     ) {
         return new ProcessResource(
             historyService,
@@ -348,7 +352,8 @@ public class ValtimoAutoConfiguration {
             operatonProcessService,
             processShortTimerService,
             operatonSearchProcessInstanceRepository,
-            processPropertyService
+            processPropertyService,
+            processDefinitionAutofillService
         );
     }
 

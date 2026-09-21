@@ -15,6 +15,12 @@
  */
 
 import {CaseTag, Document, DocumentDefinitionId, RelatedFile} from '@valtimo/document';
+import {
+  BuildingBlockInstanceDto as BuildingBlockInstance,
+  BuildingBlockProcessReference,
+  ProcessVariableMutationRequest,
+  ProcessVariableType,
+} from '@valtimo/shared';
 
 interface DocumentInspection {
   id: string;
@@ -57,14 +63,6 @@ interface ProcessVariable {
   value: unknown;
 }
 
-type ProcessVariableType = 'STRING' | 'INTEGER' | 'LONG' | 'DOUBLE' | 'BOOLEAN' | 'JSON';
-
-interface ProcessVariableMutationRequest {
-  name: string;
-  type: ProcessVariableType;
-  value: unknown;
-}
-
 type ProcessJobType = 'TIMER' | 'ASYNC_CONTINUATION' | 'MESSAGE' | 'BATCH' | 'OTHER';
 
 interface ProcessJob {
@@ -88,13 +86,6 @@ interface ProcessTask {
   taskDefinitionKey: string | null;
 }
 
-interface BuildingBlockProcessReference {
-  instanceId: string;
-  definitionKey: string;
-  definitionVersionTag: string;
-  documentId: string;
-}
-
 interface ProcessInstanceInspection {
   processInstanceId: string;
   processDefinitionId: string | null;
@@ -111,19 +102,6 @@ interface ProcessInstanceInspection {
   variables: ProcessVariable[];
   jobs: ProcessJob[];
   buildingBlock: BuildingBlockProcessReference | null;
-}
-
-interface BuildingBlockInstance {
-  id: string;
-  documentId: string;
-  caseDocumentId: string | null;
-  definitionKey: string;
-  definitionVersionTag: string;
-  activityId: string | null;
-  callerProcessDefinitionId: string | null;
-  processInstanceId: string | null;
-  parentBuildingBlockInstanceId: string | null;
-  rootBuildingBlockInstanceId: string | null;
 }
 
 interface ModifyDocumentRequest {

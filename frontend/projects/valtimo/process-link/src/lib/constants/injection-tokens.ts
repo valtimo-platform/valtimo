@@ -15,15 +15,14 @@
  */
 
 import {InjectionToken} from '@angular/core';
-import {FormCustomComponentConfig, FormFlowCustomComponentDefinition} from '../models';
+import {FormCustomComponentConfig} from '../models';
 
-const FORM_FLOW_COMPONENT_TOKEN = new InjectionToken<Array<FormFlowCustomComponentDefinition>>(
-  'Supported form-flow Angular components',
-  {factory: () => []}
-);
+// Moved to @valtimo/form-flow-management (the owning library); re-exported here for backwards
+// compatibility.
+export {FORM_FLOW_COMPONENT_TOKEN} from '@valtimo/form-flow-management';
 
 const FORM_CUSTOM_COMPONENT_TOKEN = new InjectionToken<FormCustomComponentConfig>(
   'Custom component that can be used instead of FormIO or form-flow'
 );
 
-export {FORM_FLOW_COMPONENT_TOKEN, FORM_CUSTOM_COMPONENT_TOKEN};
+export {FORM_CUSTOM_COMPONENT_TOKEN};

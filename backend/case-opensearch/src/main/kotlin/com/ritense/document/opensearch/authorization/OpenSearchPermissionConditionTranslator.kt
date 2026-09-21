@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,13 +186,15 @@ class OpenSearchPermissionConditionTranslator(
          * their corresponding field names in the OpenSearch document.
          */
         val fieldMappings: Map<String, String> = mapOf(
-            "createdBy"           to "createdBy",
-            "assigneeId"          to "assigneeId",
-            "assigneeFullName"    to "assigneeFullName",
-            "content"             to "content",
-            "content.content"     to "content",
-            "sequence"            to "sequence",
-            "retentionDate"       to "retentionDate",
+            "createdBy"             to "createdBy",
+            "assigneeId"            to "assigneeId",
+            "assigneeFullName"      to "assigneeFullName",
+            "content"               to "content",
+            "content.content"       to "content",
+            "sequence"              to "sequence",
+            "retentionDate"         to "retentionDate",
+            "internalStatus.id.key" to "internalStatus",
+            "caseTags"              to "caseTags.key",
         )
 
         fun jpaToOsField(jpaField: String): String = fieldMappings[jpaField] ?: jpaField

@@ -15,3 +15,4 @@
  */
 
 export * from './form-flow.service';
+export * from './form-flow-component.service';

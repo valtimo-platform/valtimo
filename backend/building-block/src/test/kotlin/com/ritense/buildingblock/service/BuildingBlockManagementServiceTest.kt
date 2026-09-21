@@ -24,6 +24,9 @@ import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Path
+import jakarta.persistence.criteria.Root
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -34,10 +37,17 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
@@ -140,6 +150,118 @@ class BuildingBlockManagementServiceTest {
     }
 
     @Test
+    fun `searchLatestPerKey refuses to sort on the version tag`() {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            buildingBlockManagementService.searchLatestPerKey(
+                null,
+                PageRequest.of(0, 10, Sort.by("versionTag"))
+            )
+        }
+
+        assertTrue(exception.message!!.contains("versionTag"))
+        assertTrue(exception.message!!.contains("name"))
+        assertTrue(exception.message!!.contains("key"))
+    }
+
+    @Test
+    fun `searchLatestPerKey refuses an unknown sort property rather than silently ignoring it`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            buildingBlockManagementService.searchLatestPerKey(
+                null,
+                PageRequest.of(0, 10, Sort.by("description"))
+            )
+        }
+    }
+
+    @Test
+    fun `searchLatestPerKey refuses a bad sort even when there is nothing to return`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            buildingBlockManagementService.searchLatestPerKey(
+                null,
+                PageRequest.of(0, 10, Sort.by("versionTag"))
+            )
+        }
+
+        verify(buildingBlockDefinitionRepository, never()).findAllIds()
+    }
+
+    @Test
+    fun `searchLatestPerKey queries only the latest id per key, by SemVer`() {
+        whenever(buildingBlockDefinitionRepository.findAllIds()).thenReturn(
+            listOf(
+                BuildingBlockDefinitionId("alpha", "1.2.0"),
+                BuildingBlockDefinitionId("alpha", "1.9.0"),
+                BuildingBlockDefinitionId("alpha", "1.10.0"),
+                BuildingBlockDefinitionId("bravo", "2.0.0"),
+            )
+        )
+        whenever(buildingBlockDefinitionRepository.findAll(any<Specification<BuildingBlockDefinition>>(), any<Pageable>()))
+            .thenReturn(PageImpl(emptyList()))
+
+        buildingBlockManagementService.searchLatestPerKey(null, PageRequest.of(0, 10))
+
+        val specification = argumentCaptor<Specification<BuildingBlockDefinition>>()
+        verify(buildingBlockDefinitionRepository).findAll(specification.capture(), any<Pageable>())
+
+        // '1.10.0' outranks '1.9.0' by SemVer, where a string comparison would pick '1.9.0'.
+        assertEquals(
+            setOf(
+                BuildingBlockDefinitionId("alpha", "1.10.0"),
+                BuildingBlockDefinitionId("bravo", "2.0.0"),
+            ),
+            idsRestrictedTo(specification.firstValue)
+        )
+    }
+
+    /**
+     * Runs the specification against a mocked criteria API and reports which identifiers it restricted
+     * the query to, so the assertion is about the versions selected, not about a specification existing.
+     */
+    private fun idsRestrictedTo(
+        specification: Specification<BuildingBlockDefinition>
+    ): Set<BuildingBlockDefinitionId> {
+        val root: Root<BuildingBlockDefinition> = mock()
+        val idPath: Path<Any> = mock()
+        whenever(root.get<Any>("id")).thenReturn(idPath)
+
+        specification.toPredicate(root, mock<CriteriaQuery<Any>>(), mock())
+
+        val ids = argumentCaptor<Collection<*>>()
+        verify(idPath).`in`(ids.capture())
+        return ids.firstValue.filterIsInstance<BuildingBlockDefinitionId>().toSet()
+    }
+
+    @Test
+    fun `searchLatestPerKey adds the key to the order so that equal names cannot shuffle between pages`() {
+        whenever(buildingBlockDefinitionRepository.findAllIds())
+            .thenReturn(listOf(BuildingBlockDefinitionId("alpha", "1.0.0")))
+        whenever(buildingBlockDefinitionRepository.findAll(any<Specification<BuildingBlockDefinition>>(), any<Pageable>()))
+            .thenReturn(PageImpl(emptyList()))
+
+        buildingBlockManagementService.searchLatestPerKey(null, PageRequest.of(0, 10))
+
+        val pageable = argumentCaptor<Pageable>()
+        verify(buildingBlockDefinitionRepository)
+            .findAll(any<Specification<BuildingBlockDefinition>>(), pageable.capture())
+        assertEquals(
+            listOf("name", "id.key"),
+            pageable.firstValue.sort.map { it.property }.toList()
+        )
+    }
+
+    @Test
+    fun `searchLatestPerKey returns an empty page without querying when there are no definitions`() {
+        whenever(buildingBlockDefinitionRepository.findAllIds()).thenReturn(emptyList())
+
+        val page = buildingBlockManagementService.searchLatestPerKey(null, PageRequest.of(0, 10))
+
+        assertTrue(page.content.isEmpty())
+        assertEquals(0, page.totalElements)
+        verify(buildingBlockDefinitionRepository, never())
+            .findAll(any<Specification<BuildingBlockDefinition>>(), any<Pageable>())
+    }
+
+    @Test
     fun `createDraft clones metadata and related resources`() {
         whenever(buildingBlockDefinitionRepository.existsById(newDraftId)).thenReturn(false)
         whenever(buildingBlockDefinitionRepository.findById(definitionId)).thenReturn(Optional.of(finalizedDefinition))
@@ -158,4 +280,23 @@ class BuildingBlockManagementServiceTest {
         assertTrue(!result.final)
         verify(applicationEventPublisher).publishEvent(any<BuildingBlockDefinitionCreatedEvent>())
     }
+
+    @Test
+    fun `getAllVersionsWithFinalFlag returns every version newest first by semver precedence`() {
+        // Query order: the version tag is a string, so the DB sorts lexicographically (1.10.0 before 1.9.0).
+        val versionTags = listOf("1.0.0", "1.1.0", "1.10.0", "1.2.0", "1.9.0", "2.0.0")
+        whenever(buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(definitionId.key))
+            .thenReturn(versionTags.map { versionOf(it) })
+
+        val result = buildingBlockManagementService.getAllVersionsWithFinalFlag(definitionId.key)
+
+        assertEquals(
+            listOf("2.0.0", "1.10.0", "1.9.0", "1.2.0", "1.1.0", "1.0.0"),
+            result.content.map { it.versionTag }
+        )
+    }
+
+    private fun versionOf(versionTag: String) = draftDefinition.copy(
+        id = BuildingBlockDefinitionId(definitionId.key, versionTag)
+    )
 }

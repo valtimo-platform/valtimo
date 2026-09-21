@@ -98,6 +98,10 @@ const DisableBpmnWriteModule = {
   ],
   move: ['value', null],
   resizeHandles: ['value', {addResizer: () => {}, removeResizers: () => {}}],
+  bendpoints: ['value', {}],
+  bendpointMove: ['value', {start: () => {}}],
+  bendpointMovePreview: ['value', {}],
+  connectionSegmentMove: ['value', {start: () => {}}],
 };
 
 const disableCommands = (editor: Modeler | NavigatedViewer): void => {

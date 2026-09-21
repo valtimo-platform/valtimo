@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {TranslateModule} from '@ngx-translate/core';
 import {ModalModule} from 'carbon-components-angular';
 import {LoggingEvent} from '../../models';
+import {LOG_DETAILS_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-log-details',
@@ -28,6 +29,7 @@ import {LoggingEvent} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogDetailsComponent {
+  public readonly testIds = LOG_DETAILS_TEST_IDS;
   @Input() public open = false;
 
   @Input() public set logEvent(logEvent: LoggingEvent) {

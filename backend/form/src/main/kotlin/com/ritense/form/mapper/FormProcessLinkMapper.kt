@@ -19,6 +19,7 @@ package com.ritense.form.mapper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.FormDefinitionExportRequest
+import com.ritense.exporter.request.GlobalFormDefinitionExportRequest
 import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
@@ -32,10 +33,14 @@ import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.web.rest.dto.MissingReferenceDto
+import com.ritense.processlink.web.rest.dto.MissingReferenceType
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementDto
+import com.ritense.processlink.web.rest.dto.ReplacedElementType
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.util.UUID
@@ -169,7 +174,56 @@ class FormProcessLinkMapper(
         return setOf(FormDefinitionExportRequest(formDefinition.name, caseDefinitionId = caseDefinitionId))
     }
 
+    override fun createGlobalRelatedExportRequests(processLink: ProcessLink): Set<ExportRequest> {
+        processLink as FormProcessLink
+        // The form is referenced by id, so its name is not available when it no longer exists. The
+        // activity and process the link belongs to are the locator that lets the user find it.
+        val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId)
+            .orElseThrow {
+                IllegalStateException(
+                    "Form definition '${processLink.formDefinitionId}' referenced by the process link on " +
+                        "activity '${processLink.activityId}' of process '${processLink.processDefinitionId}' " +
+                        "could not be found. The form may have been deleted while the process link remained."
+                )
+            }
+        return setOf(GlobalFormDefinitionExportRequest(formDefinition.name))
+    }
+
     override fun getImporterType() = "form"
+
+    override fun getMissingReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): MissingReferenceDto? {
+        deployDto as FormProcessLinkDeployDto
+        return if (formExists(deployDto.formDefinitionName, blueprintId)) {
+            null
+        } else {
+            MissingReferenceDto(
+                type = MissingReferenceType.FORM,
+                reference = deployDto.formDefinitionName,
+                activityId = deployDto.activityId,
+            )
+        }
+    }
+
+    override fun getReplacedReference(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): ReplacedElementDto? {
+        deployDto as FormProcessLinkDeployDto
+        return if (formExists(deployDto.formDefinitionName, blueprintId)) {
+            ReplacedElementDto(
+                type = ReplacedElementType.FORM,
+                key = deployDto.formDefinitionName,
+            )
+        } else {
+            null
+        }
+    }
+
+    private fun formExists(formName: String, blueprintId: BlueprintId?): Boolean {
+        val formDefinition = if (blueprintId != null) {
+            formDefinitionService.getFormDefinitionByName(formName, blueprintId)
+        } else {
+            formDefinitionService.getFormDefinitionByName(formName)
+        }
+        return formDefinition.isPresent
+    }
 
     private fun resolveFormDefinition(formName: String, blueprintId: BlueprintId?): FormIoFormDefinition {
         val result = if (blueprintId != null) {

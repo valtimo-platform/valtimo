@@ -68,8 +68,22 @@ export class CarbonListRow {
    * Note: menu items are rendered in a portal/overlay, so we use page-scoped getByRole.
    */
   async clickAction(actionName: string) {
-    await this.locator.locator('.v-overflow-menu__trigger').click();
+    await this.openActionMenu();
     await this.page.getByRole('menu').getByRole('menuitem', {name: actionName}).click();
+  }
+
+  /**
+   * Open the overflow action menu without selecting anything — for asserting which actions are
+   * offered, and whether they are enabled.
+   */
+  async openActionMenu() {
+    await this.locator.locator('.v-overflow-menu__trigger').click();
+    await expect(this.page.getByRole('menu')).toBeVisible();
+  }
+
+  /** An item in this row's (already open) overflow menu. */
+  actionMenuItem(actionName: string): Locator {
+    return this.page.getByRole('menu').getByRole('menuitem', {name: actionName});
   }
 
   // ─── Selection (Checkboxes) ─────────────────────────────────────

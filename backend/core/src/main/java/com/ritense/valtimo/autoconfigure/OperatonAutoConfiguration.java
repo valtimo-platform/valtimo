@@ -119,7 +119,7 @@ public class OperatonAutoConfiguration {
         return new CustomRepositoryServiceImpl(applicationEventPublisher);
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Sends email notifications for tasks")
     @Bean
     @ConditionalOnMissingBean(NotificationService.class)
     public NotificationService notificationService(

@@ -15,6 +15,7 @@
  */
 import {Component, ViewEncapsulation} from '@angular/core';
 import {BehaviorSubject, Observable, tap} from 'rxjs';
+import {DASHBOARD_TEST_IDS} from '../../constants';
 import {Dashboard, WidgetData} from '../../models';
 import {DashboardService} from '../../services';
 import {WidgetApiService} from '../../services/widget-api.service';
@@ -40,6 +41,8 @@ export class WidgetDashboardComponent {
   });
 
   public readonly selectedDashboardKey$ = new BehaviorSubject<string>('');
+
+  public readonly testIds = DASHBOARD_TEST_IDS;
 
   constructor(
     private readonly dashboardService: DashboardService,

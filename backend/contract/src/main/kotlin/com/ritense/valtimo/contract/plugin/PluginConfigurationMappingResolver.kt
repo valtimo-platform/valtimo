@@ -28,4 +28,5 @@ interface PluginConfigurationMappingResolver {
     fun resolve(caseDefinitionId: CaseDefinitionId, mappings: Map<UUID, UUID>)
     fun getDanglingPluginConfigurations(caseDefinitionId: CaseDefinitionId): List<DanglingPluginConfigurationDto>
     fun recheckIssuesForProcessDefinition(processDefinitionId: String)
+    fun recheckIssuesForCaseDefinition(caseDefinitionId: CaseDefinitionId)
 }

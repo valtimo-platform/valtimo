@@ -143,13 +143,20 @@ export class CaseListOrchestrationService {
 
   public readonly schema$ = this.listService.caseDefinitionKey$.pipe(
     filter(caseDefinitionKey => !!caseDefinitionKey),
-    switchMap(caseDefinitionKey => this.documentService.getDocumentDefinition(caseDefinitionKey)),
-    map(caseDefinition => caseDefinition?.schema),
-    tap(schema => {
-      if (schema?.title) {
-        this.pageTitleService.setCustomPageTitle(schema?.title, true);
+    switchMap((caseDefinitionKey: string) =>
+      forkJoin({
+        documentDefinition: this.documentService.getDocumentDefinition(caseDefinitionKey),
+        activeCaseDefinition: this.documentService.getActiveCaseDefinition(caseDefinitionKey),
+      })
+    ),
+    tap(({documentDefinition, activeCaseDefinition}) => {
+      const pageTitle = activeCaseDefinition?.name || documentDefinition?.schema?.title;
+
+      if (pageTitle) {
+        this.pageTitleService.setCustomPageTitle(pageTitle, true);
       }
-    })
+    }),
+    map(({documentDefinition}) => documentDefinition?.schema)
   );
 
   public readonly canCreateCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(

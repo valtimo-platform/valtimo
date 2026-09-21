@@ -192,7 +192,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
       .subscribe(([selectedProcessLink, isUserTask, isStartEvent]) => {
         const updateProcessLinkRequest: FormFlowProcessLinkUpdateRequestDto = {
           id: selectedProcessLink.id,
-          formFlowDefinitionId: this.selectedFormFlowDefinitionId,
+          formFlowDefinitionKey: this.selectedFormFlowDefinitionId,
           activityId: selectedProcessLink.activityId,
           ...(isUserTask && {
             formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,

@@ -19,11 +19,14 @@ package com.ritense.processdocument.domain.impl.delegate
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 
+@ProcessBean(description = "Case document operations (deprecated, use documentDelegateService)")
 @Deprecated(message = "Since 11.0.0", ReplaceWith("com.ritense.processdocument.service.DocumentDelegateService"))
 class DocumentDelegate(
     val userManagementService: UserManagementService,
@@ -31,6 +34,7 @@ class DocumentDelegate(
     val caseDocumentResolver: CaseDocumentResolver,
 ) {
 
+    @ProcessBeanMethod(description = "Assigns a user to the case document by email (deprecated)")
     fun setAssignee(execution: DelegateExecution, userEmail: String?) {
         AuthorizationContext.runWithoutAuthorization {
             if (userEmail == null) {
@@ -46,6 +50,7 @@ class DocumentDelegate(
         }
     }
 
+    @ProcessBeanMethod(description = "Removes the assignee from the case document (deprecated)")
     fun unassign(execution: DelegateExecution) {
         logger.debug("Unassigning user from document {}", execution.processBusinessKey)
         val caseDocumentId = getCaseDocumentId(execution)

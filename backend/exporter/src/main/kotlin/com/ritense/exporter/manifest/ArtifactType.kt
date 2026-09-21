@@ -18,5 +18,6 @@ package com.ritense.exporter.manifest
 
 enum class ArtifactType {
     CASE_DEFINITION,
-    BUILDING_BLOCK
+    BUILDING_BLOCK,
+    PROCESS_DEFINITION
 }

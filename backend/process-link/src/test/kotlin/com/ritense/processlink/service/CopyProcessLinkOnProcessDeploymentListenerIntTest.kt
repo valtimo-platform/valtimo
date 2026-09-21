@@ -24,6 +24,7 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
 import org.junit.jupiter.api.BeforeEach
@@ -82,6 +83,73 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
         assertEquals(1, processLinkService.getProcessLinks(processDefinition.id, SERVICE_TASK_ID).count())
         assertEquals(3, latestProcessDefinition.version)
         assertEquals(0, processLinkService.getProcessLinks(latestProcessDefinition.id, SERVICE_TASK_ID).count())
+    }
+
+    @Test
+    fun `should NOT copy process links to a building block that deploys the same process definition key`() {
+        // given a case definition that owns a process with a process link
+        createProcessLink(processDefinition)
+
+        // when a building block deploys a process with the same process definition key
+        val buildingBlockProcessBpmn =
+            readFileAsString("/config/case/autodeploy/1-0-0/bpmn/service-task-process.bpmn")
+        runWithoutAuthorization {
+            operatonProcessService.deploy(
+                BuildingBlockDefinitionId("service-task-block", "1.0.0"),
+                "service-task-process.bpmn",
+                buildingBlockProcessBpmn.byteInputStream()
+            )
+        }
+
+        // then the case definition's process link did not leak into the building block's deployment
+        val buildingBlockProcessDefinition = getLatestProcessDefinition()
+        assertEquals("BB:service-task-block:1.0.0", buildingBlockProcessDefinition.versionTag)
+        assertEquals(1, processLinkService.getProcessLinks(processDefinition.id, SERVICE_TASK_ID).count())
+        assertEquals(0, processLinkService.getProcessLinks(buildingBlockProcessDefinition.id, SERVICE_TASK_ID).count())
+    }
+
+    @Test
+    fun `should NOT copy process links to another case definition that deploys the same process definition key`() {
+        // given a case definition that owns a process with a process link
+        createProcessLink(processDefinition)
+
+        // when another case definition deploys a process with the same process definition key
+        val otherCaseProcessBpmn = readFileAsString("/config/case/autodeploy/1-0-0/bpmn/service-task-process.bpmn")
+        runWithoutAuthorization {
+            operatonProcessService.deploy(
+                CaseDefinitionId("test", "1.0.0"),
+                "service-task-process.bpmn",
+                otherCaseProcessBpmn.byteInputStream()
+            )
+        }
+
+        // then the process link did not leak into the other case definition's deployment
+        val otherCaseProcessDefinition = getLatestProcessDefinition()
+        assertEquals("CD:test:1.0.0", otherCaseProcessDefinition.versionTag)
+        assertEquals(1, processLinkService.getProcessLinks(processDefinition.id, SERVICE_TASK_ID).count())
+        assertEquals(0, processLinkService.getProcessLinks(otherCaseProcessDefinition.id, SERVICE_TASK_ID).count())
+    }
+
+    @Test
+    fun `should copy process links when the owning case definition deploys the process again`() {
+        // given a case definition that owns a process with a process link
+        createProcessLink(processDefinition)
+
+        // when that same case definition version deploys a changed version of the process
+        val changedProcessBpmn = readFileAsString("/config/case/autodeploy/1-0-0/bpmn/service-task-process.bpmn")
+            .replace("My service task", "My service task changed")
+        runWithoutAuthorization {
+            operatonProcessService.deploy(
+                CaseDefinitionId("autodeploy", "1.0.0"),
+                "service-task-process.bpmn",
+                changedProcessBpmn.byteInputStream()
+            )
+        }
+
+        // then the process link was carried forward
+        val redeployedProcessDefinition = getLatestProcessDefinition()
+        assertEquals("CD:autodeploy:1.0.0", redeployedProcessDefinition.versionTag)
+        assertEquals(1, processLinkService.getProcessLinks(redeployedProcessDefinition.id, SERVICE_TASK_ID).count())
     }
 
     private fun createProcessLink(processDefinition: OperatonProcessDefinition) {

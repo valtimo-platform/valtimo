@@ -28,7 +28,25 @@ import {
   WIDGET_WIZARD_APPEARANCE_TEST_IDS,
   WIDGET_CONTENT_FIELDS_TEST_IDS,
   WIDGET_DIVIDER_MODAL_TEST_IDS,
+  VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS,
 } from '../../constants';
+import {fillValuePathManually} from '../../utils/value-path-selector.utils';
+
+/** A single display condition as stored on a widget. */
+export interface WidgetDisplayCondition {
+  path: string;
+  operator: string;
+  value: string;
+}
+
+export interface WidgetConfigResponse {
+  widgets: Array<{
+    title: string;
+    key: string;
+    displayConditions?: WidgetDisplayCondition[];
+    [k: string]: unknown;
+  }>;
+}
 
 export class CaseDetailsManagementWidgetsPage {
   constructor(
@@ -134,8 +152,10 @@ export class CaseDetailsManagementWidgetsPage {
     title: string;
     fieldTitle: string;
     valuePath: string;
+    /** Optional display condition, set on the final wizard step before saving (6.94). */
+    condition?: {path: string; operatorLabel: string; value: string};
   }) {
-    const {title, fieldTitle, valuePath} = opts;
+    const {title, fieldTitle, valuePath, condition} = opts;
 
     // Step 1: Select type
     await this.addWidgetButton.click();
@@ -166,56 +186,181 @@ export class CaseDetailsManagementWidgetsPage {
     await expect(this.wizardNextButton).toBeEnabled();
     await this.wizardNextButton.click();
 
-    // Step 6: Display conditions — skip, just save
+    // Step 6: Display conditions — optional; with no conditions the widget always shows
+    if (condition) {
+      await this.addDisplayCondition(condition);
+    }
     await expect(this.wizardSaveButton).toBeEnabled();
     await this.wizardSaveButton.click();
 
     // Wait for the wizard modal to close and the list to refresh
-    await expect(this.page.locator('cds-modal[open]')).toHaveCount(0, {timeout: 10_000});
+    await this.waitForWizardClosed();
   }
 
-  // ─── Display Conditions (Edit Wizard) ──────────────────────────────
+  // ─── 6.94 Display Conditions ───────────────────────────────────────
+  //
+  // The conditions step renders a `valtimo-carbon-multi-input` named `displayConditions`; each
+  // row is a value-path-selector (path) + dropdown (operator) + text input (value).
+
+  get conditionsAddButton() {
+    return this.visibleWizard.getByTestId('multiInputAddButton-displayConditions');
+  }
+
+  conditionRow(index = 0) {
+    return this.visibleWizard.getByTestId(`multiInputValuePathSelectorDropdownValue-${index}`);
+  }
+
+  conditionDeleteButton(index = 0) {
+    return this.visibleWizard.getByTestId(`multiInputDeleteButton-${index}`);
+  }
+
+  get conditionOperatorDropdown() {
+    return this.visibleWizard.getByTestId(VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS.dropdown);
+  }
+
+  get conditionValueInput() {
+    return this.visibleWizard.getByTestId(VALUE_PATH_SELECTOR_DROPDOWN_VALUE_TEST_IDS.valueInput);
+  }
+
+  /**
+   * The currently open modal.
+   *
+   * Scoping matters here: the wizard component stays in the DOM when closed, so unscoped
+   * `getByTestId` also matches the hidden wizard. Note `cds-modal[open]` never matches anything —
+   * Carbon toggles the `is-visible` class instead — so it cannot be used to detect open modals.
+   */
+  get visibleWizard() {
+    return this.page.locator('.cds--modal.is-visible');
+  }
+
+  get wizardHeading() {
+    return this.visibleWizard.getByTestId(WIDGET_WIZARD_TEST_IDS.heading);
+  }
+
+  async waitForWizardClosed() {
+    await expect(this.visibleWizard).toHaveCount(0, {timeout: 10_000});
+  }
+
+  /**
+   * Opens the edit wizard for an existing widget by clicking its row.
+   *
+   * Clicking a row while the previous wizard is still closing can re-open the *create* wizard
+   * instead, so wait for a clean slate first and retry until the edit wizard is actually up.
+   */
+  async openWidgetEditWizard(widgetTitle: string) {
+    const list = new CarbonList(this.page);
+    await this.waitForWizardClosed();
+
+    await expect(async () => {
+      if ((await this.wizardHeading.count()) > 0) {
+        if ((await this.wizardHeading.innerText()).trim() === 'Edit widget') return;
+        // A create wizard opened instead — dismiss it and try again.
+        await this.wizardCancelButton.click();
+        await this.waitForWizardClosed();
+      }
+      await list.row(widgetTitle).click();
+      await expect(this.wizardHeading).toHaveText('Edit widget', {timeout: 5_000});
+    }).toPass({timeout: 30_000});
+  }
+
+  /**
+   * Jumps to the display-conditions step via the wizard's progress indicator.
+   *
+   * The steps are rendered internally by Carbon's `cds-progress-indicator` from a `steps` input,
+   * which offers no hook for a `data-test-id`, so the step is located by its (English) label —
+   * global setup pins the UI language to English.
+   */
+  async goToDisplayConditionsStep() {
+    const step = this.visibleWizard.getByRole('button', {name: /Set display conditions/});
+
+    // The progress indicator can swallow a click while the previous step's content is still
+    // being torn down, leaving the wizard on the old step. Retry until the step's content is up.
+    await expect(async () => {
+      await step.click();
+      await expect(this.conditionsAddButton).toBeVisible({timeout: 3_000});
+    }).toPass({timeout: 30_000});
+  }
+
+  /**
+   * Fills condition row `index`. The path is entered in manual mode via the shared helper: the
+   * selector's dropdown renders its options in an overlay outside the modal and the available
+   * paths vary per environment, so typing the path is both simpler and more stable.
+   */
+  async fillDisplayCondition(
+    condition: {path: string; operatorLabel: string; value: string},
+    index = 0
+  ) {
+    const row = this.conditionRow(index);
+    await expect(row).toBeVisible();
+
+    await fillValuePathManually(row, condition.path);
+
+    await this.conditionOperatorDropdown.click();
+    // Carbon renders dropdown options in an overlay outside the modal, and the modal header can
+    // overlap them, so the option is resolved page-wide and clicked with force.
+    await this.page
+      .getByRole('option', {name: condition.operatorLabel, exact: true})
+      .click({force: true});
+
+    await this.conditionValueInput.fill(condition.value);
+    await expect(this.conditionValueInput).toHaveValue(condition.value);
+  }
+
+  /** Adds a condition row and fills it. */
+  async addDisplayCondition(
+    condition: {path: string; operatorLabel: string; value: string},
+    index = 0
+  ) {
+    await this.conditionsAddButton.click();
+    await this.fillDisplayCondition(condition, index);
+  }
 
   /**
    * Opens the edit wizard for a widget, navigates to the display conditions step,
-   * adds a single condition (path, operator, value), and saves.
+   * adds a single condition, and saves.
    */
   async setDisplayCondition(
     widgetTitle: string,
-    opts: {path: string; operator: string; value: string}
+    condition: {path: string; operatorLabel: string; value: string}
   ) {
-    // Click the widget row to open the edit wizard (opens at Content step)
-    const list = new CarbonList(this.page);
-    const row = list.row(widgetTitle);
-    await row.click();
+    await this.openWidgetEditWizard(widgetTitle);
+    await this.goToDisplayConditionsStep();
+    await this.addDisplayCondition(condition);
 
-    // Navigate to the "Set display conditions" step in the progress indicator
-    await this.page.getByRole('button', {name: /Set display conditions/}).click();
-
-    // Add a condition row
-    await this.page.getByTestId('multiInputAddButton-undefined').click();
-
-    // Select the path via the value-path-selector combobox (scoped to first row)
-    const conditionRow = this.page.getByTestId('multiInputValuePathSelectorDropdownValue-0');
-    await conditionRow.getByRole('combobox').click();
-    await this.page.getByText(opts.path).click();
-
-    // Select the operator from the dropdown
-    // Use force:true because the modal header can overlap the dropdown options
-    await this.page.getByTestId('valuePathSelectorDropdownValueDropDown').click();
-    await this.page.getByText(opts.operator, {exact: true}).click({force: true});
-
-    // Fill in the value
-    const valueInput = this.page.getByTestId('valuePathSelectorDropdownValueValueInput');
-    await valueInput.click();
-    await valueInput.fill(opts.value);
-
-    // Save
     await expect(this.wizardSaveButton).toBeEnabled();
     await this.wizardSaveButton.click();
-
-    // Wait for the wizard modal to close
     await expect(this.page.locator('cds-modal[open]')).toHaveCount(0, {timeout: 10_000});
+  }
+
+  // ─── 6.94 Assertions ───────────────────────────────────────────────
+
+  async getWidgetConfigViaApi(
+    caseDefinitionKey: string,
+    versionTag: string,
+    tabKey: string
+  ): Promise<WidgetConfigResponse> {
+    return ApiUtils.apiGet<WidgetConfigResponse>(
+      `/api/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/widget-tab/${tabKey}`
+    );
+  }
+
+  /** Asserts the persisted `displayConditions` of a widget, polling until the save lands. */
+  async assertWidgetDisplayConditions(
+    caseDefinitionKey: string,
+    versionTag: string,
+    tabKey: string,
+    widgetTitle: string,
+    expected: WidgetDisplayCondition[]
+  ) {
+    await expect
+      .poll(
+        async () => {
+          const config = await this.getWidgetConfigViaApi(caseDefinitionKey, versionTag, tabKey);
+          return config.widgets.find(w => w.title === widgetTitle)?.displayConditions ?? null;
+        },
+        {message: `displayConditions of "${widgetTitle}" never matched`}
+      )
+      .toEqual(expected);
   }
 
   // ─── Divider Modal ─────────────────────────────────────────────────

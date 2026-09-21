@@ -83,6 +83,23 @@ class ValtimoExportServiceTest {
         assertThat(dependencyKeys).doesNotContain("ignored-root-dependency")
     }
 
+    /**
+     * A root request can be answered by more than one exporter: a process definition and its process
+     * links are exported by two exporters that support the same request. Only one of them contributes
+     * the artifact, the dependencies of the other belong to that artifact.
+     */
+    @Test
+    fun `should collect manifest dependencies of a root exporter that does not contribute the artifact`() {
+        val service = service(ArtifactExporter(), CoRootDependencyExporter())
+
+        val manifest = service.export(RootArtifactRequest()).manifest()
+
+        val dependencyKeys = manifest.path("artifacts").single().path("dependencies")
+            .map { it.path("key").asText() }
+        assertThat(dependencyKeys).contains("co-root-plugin")
+        assertThat(dependencyKeys).doesNotContain("ignored-root-dependency")
+    }
+
     @Test
     fun `should deduplicate dependencies contributed by multiple exporters`() {
         val service = service(ArtifactExporter(), PluginDependencyExporter(), DuplicatePluginDependencyExporter())
@@ -187,6 +204,21 @@ class ValtimoExportServiceTest {
                     DependencyType.PLUGIN,
                     ResolvableValue.of("openzaak"),
                     ResolvableValue.of("OpenZaak Plugin"),
+                )
+            ),
+        )
+    }
+
+    private inner class CoRootDependencyExporter : Exporter<RootArtifactRequest> {
+        override fun supports() = RootArtifactRequest::class.java
+        override fun export(request: RootArtifactRequest) = ExportResult(
+            exportFiles = setOf(ExportFile("config/case/bezwaar/1-0-0/process-link/bezwaar.process-link.json", "[]".toByteArray())),
+            manifestArtifact = null,
+            manifestDependencies = setOf(
+                ArtifactDependency(
+                    DependencyType.PLUGIN,
+                    ResolvableValue.of("co-root-plugin"),
+                    ResolvableValue.of("Co Root Plugin"),
                 )
             ),
         )

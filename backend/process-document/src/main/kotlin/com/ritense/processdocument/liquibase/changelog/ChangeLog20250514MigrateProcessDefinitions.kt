@@ -118,11 +118,12 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         logger.info { "Migrating process $processDefinitionKey for case $caseDefinitionKey:$caseDefinitionVersionTag" }
 
         // get the original process definition
-        val procDef = getLatestProcDef(connection, processDefinitionKey)
+        val procDef = getOriginalProcDef(connection, processDefinitionKey)
 
         // set version tag to the case definition version tag
         val setCaseVersionTagResult = transformProcessDefinitionData(
             procDef,
+            getNextVersion(connection, VersionedTable.PROCESS_DEFINITION, processDefinitionKey),
             caseDefinitionKey,
             caseDefinitionVersionTag,
         )
@@ -374,11 +375,12 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             return
         }
 
-        val decisionDefinitionSet: DecisionDefinitionSet? = getLatestDecisionDefinition(connection, decisionDefinitionKey)
+        val decisionDefinitionSet: DecisionDefinitionSet? = getOriginalDecisionDefinition(connection, decisionDefinitionKey)
         if (decisionDefinitionSet == null) {
             error("No decision definition found for key: $decisionDefinitionKey")
         }
         val updatedDecisionDefinition = changeDecisionDefinitionData(
+            connection,
             caseDefinitionKey,
             caseDefinitionVersionTag,
             decisionDefinitionSet!!
@@ -387,6 +389,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
     }
 
     private fun changeDecisionDefinitionData(
+        connection: JdbcConnection,
         caseDefinitionKey: String,
         caseDefinitionVersionTag: String,
         decisionDefinitionSet: DecisionDefinitionSet,
@@ -398,7 +401,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
                 decisionDefinition.copy(
                     id = UUID.randomUUID().toString(),
                     versionTag = OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
-                    version = decisionDefinition.version + 1,
+                    version = getNextVersion(connection, VersionedTable.DECISION_DEFINITION, decisionDefinition.key),
                     deploymentId = deploymentId,
                 )
             },
@@ -413,7 +416,11 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             decisionRequirementsDefinition = decisionDefinitionSet.decisionRequirementsDefinition?.copy(
                 id = UUID.randomUUID().toString(),
                 deploymentId = deploymentId,
-                version = decisionDefinitionSet.decisionRequirementsDefinition.version + 1
+                version = getNextVersion(
+                    connection,
+                    VersionedTable.DECISION_REQUIREMENTS_DEFINITION,
+                    decisionDefinitionSet.decisionRequirementsDefinition.key
+                )
             )
         )
     }
@@ -460,7 +467,8 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         return numberOfDecisions > 0
     }
 
-    private fun getLatestDecisionDefinition(
+    // clones this migration inserted are excluded, so every case starts from the same pristine definition
+    private fun getOriginalDecisionDefinition(
         connection: JdbcConnection,
         decisionDefinitionKey: String,
     ): DecisionDefinitionSet? {
@@ -520,6 +528,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
                 join act_re_decision_def ardd2
                     on ardd2.deployment_id_ = ard2.id_
                 where ardd2.key_ = ?
+                and (ardd2.version_tag_ is null or ardd2.version_tag_ not like ?)
                 order by version_ desc
                 limit 1
             ) as original_definition
@@ -529,6 +538,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
         val statement = connection.prepareStatement(query)
         statement.setString(1, decisionDefinitionKey)
+        statement.setString(2, MIGRATED_VERSION_TAG_PATTERN)
 
         val results = statement.executeQuery()
         var decisionDefinition: DecisionDefinitionSet? = null
@@ -861,6 +871,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
     private fun transformProcessDefinitionData(
         processDefinition: ProcessDefinition,
+        version: Int,
         caseDefinitionKey: String,
         caseDefinitionVersionTag: String,
     ): Pair<ProcessDefinition, ReferencedEntities> {
@@ -877,7 +888,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         return Pair(
             processDefinition.copy(
                 id = UUID.randomUUID().toString(),
-                version = processDefinition.version+1,
+                version = version,
                 versionTag = versionTag,
                 deploymentId = deploymentId,
                 deployment = processDefinition.deployment.copy(
@@ -894,7 +905,8 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         )
     }
 
-    private fun getLatestProcDef(
+    // clones this migration inserted are excluded, so every case starts from the same pristine bindings
+    private fun getOriginalProcDef(
         connection: JdbcConnection,
         processDefinitionKey: String
     ): ProcessDefinition {
@@ -927,6 +939,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             join (
                 select max(version_) as max_version, key_
                 from act_re_procdef
+                where (version_tag_ is null or version_tag_ not like ?)
                 group by key_
             ) as mv
                 on pd.key_ = mv.key_
@@ -935,13 +948,18 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
                 on agb.deployment_id_ = pd.deployment_id_
                 and agb.name_ = pd.resource_name_
             where pd.key_ = ?
+            and (pd.version_tag_ is null or pd.version_tag_ not like ?)
         """.trimIndent()
 
         val statement = connection.prepareStatement(processDefinitionQuery)
-        statement.setString(1, processDefinitionKey)
+        statement.setString(1, MIGRATED_VERSION_TAG_PATTERN)
+        statement.setString(2, processDefinitionKey)
+        statement.setString(3, MIGRATED_VERSION_TAG_PATTERN)
 
         val results = statement.executeQuery()
-        results.next()
+        if (!results.next()) {
+            error("No process definition found for key: $processDefinitionKey")
+        }
 
         return ProcessDefinition(
             results.getString("id_"),
@@ -980,6 +998,22 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
                 results.getTimestamp("removal_time_")
             )
         )
+    }
+
+    // a clone shares its key with the definition it was cloned from, so the version has to stay unique across both
+    private fun getNextVersion(
+        connection: JdbcConnection,
+        table: VersionedTable,
+        key: String,
+    ): Int {
+        val statement = connection.prepareStatement(
+            "select coalesce(max(version_), 0) + 1 as next_version from ${table.tableName} where key_ = ?"
+        )
+        statement.setString(1, key)
+
+        val results = statement.executeQuery()
+        results.next()
+        return results.getInt("next_version")
     }
 
     private fun isProcDefMigrated(
@@ -1058,6 +1092,13 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
     companion object {
         private val logger = KotlinLogging.logger {}
+        private const val MIGRATED_VERSION_TAG_PATTERN = "$OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX%"
+    }
+
+    private enum class VersionedTable(val tableName: String) {
+        PROCESS_DEFINITION("act_re_procdef"),
+        DECISION_DEFINITION("act_re_decision_def"),
+        DECISION_REQUIREMENTS_DEFINITION("act_re_decision_req_def"),
     }
 
     data class ProcessDefinition(

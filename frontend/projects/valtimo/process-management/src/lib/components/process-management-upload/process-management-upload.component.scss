@@ -13,3 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.process-management-upload {
+  &__review {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__description {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--cds-text-secondary);
+  }
+}

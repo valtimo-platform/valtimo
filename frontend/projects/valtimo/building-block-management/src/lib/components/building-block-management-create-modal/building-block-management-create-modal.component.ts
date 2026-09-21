@@ -41,7 +41,10 @@ import {
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
 import {catchError, of} from 'rxjs';
 import {Router} from '@angular/router';
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {
+  BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_TABS,
+} from '../../constants';
 
 @Component({
   standalone: true,
@@ -65,6 +68,8 @@ import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
   ],
 })
 export class BuildingBlockManagementCreateModalComponent {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS;
+
   public readonly showModal$ = this.buildingBlockManagementService.showCreateModal$;
   public readonly usedKeys$ = this.buildingBlockManagementService.usedKeys$;
 

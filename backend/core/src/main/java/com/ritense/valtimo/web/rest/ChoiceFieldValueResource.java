@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ public class ChoiceFieldValueResource {
         @PathVariable(name = "choice_field_name") String choiceFieldName
     ) {
         logger.debug("REST request to get ChoiceField : {}", choiceFieldName);
-        final Page<ChoiceFieldValue> page = choiceFieldValueService.findAllByChoiceFieldKeyName(pageable, choiceFieldName);
+        final Page<ChoiceFieldValue> page = choiceFieldValueService.findAllByChoiceFieldKeyName(pageable, choiceFieldName, true);
         final HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/v1/choice-field-values");
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -150,10 +150,11 @@ public class ChoiceFieldValueResource {
     @GetMapping("/v2/choice-field-values/{choice_field_name}/values")
     public ResponseEntity<Page<ChoiceFieldValue>> getChoiceFieldValuesByChoiceFieldPaged(
         Pageable pageable,
-        @PathVariable(name = "choice_field_name") String choiceFieldName
+        @PathVariable(name = "choice_field_name") String choiceFieldName,
+        @RequestParam(defaultValue = "false") boolean includeDeprecated
     ) {
-        logger.debug("REST request to get ChoiceField : {}", choiceFieldName);
-        final Page<ChoiceFieldValue> page = choiceFieldValueService.findAllByChoiceFieldKeyName(pageable, choiceFieldName);
+        logger.debug("REST request to get ChoiceField : {}, includeDeprecated={}", choiceFieldName, includeDeprecated);
+        final Page<ChoiceFieldValue> page = choiceFieldValueService.findAllByChoiceFieldKeyName(pageable, choiceFieldName, includeDeprecated);
         return ResponseEntity.ok(page);
     }
 

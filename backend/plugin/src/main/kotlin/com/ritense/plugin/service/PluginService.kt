@@ -306,9 +306,9 @@ class PluginService(
         activityType: ActivityTypeWithEventName?
     ): List<PluginActionDefinitionDto> {
         val actions = if (activityType == null)
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKey(pluginDefinitionKey)
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyOrderByTitleAsc(pluginDefinitionKey)
         else
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypes(
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypesOrderByTitleAsc(
                 pluginDefinitionKey,
                 activityType
             )
@@ -651,6 +651,8 @@ class PluginService(
                 )
             }
 
+        logUnresolvedActionProperties(resolvedValueMap, method, execution.currentActivityId, execution.processDefinitionId)
+
         return mapActionParamValues(paramValues, resolvedValueMap)
     }
 
@@ -691,7 +693,36 @@ class PluginService(
                     )
                 }
 
+            logUnresolvedActionProperties(resolvedValueMap, method, task.taskDefinitionKey, task.processDefinitionId)
+
             mapActionParamValues(paramValues, resolvedValueMap)
+        }
+    }
+
+    /**
+     * A property that resolves to null is passed to the plugin action as null, which typically makes
+     * the action silently skip the related behaviour (e.g. sending a mail without attachments). Log
+     * it, so misconfigured references are diagnosable. A common cause is referencing a process
+     * variable (pv:) inside a building block: values passed to a building block only exist in the
+     * building block document (doc:), never as process variables.
+     *
+     * Logged at debug: null can be a perfectly valid value for an optional property, so this must
+     * not add noise to operational logs.
+     */
+    private fun logUnresolvedActionProperties(
+        resolvedValueMap: Map<String, Any?>,
+        method: Method,
+        activityId: String?,
+        processDefinitionId: String?
+    ) {
+        val unresolvedKeys = resolvedValueMap.filterValues { it == null }.keys
+        if (unresolvedKeys.isEmpty()) {
+            return
+        }
+        logger.debug {
+            "Plugin action '${method.name}' on activity '$activityId' of process definition " +
+                "'$processDefinitionId': property value(s) ${unresolvedKeys.joinToString { "'$it'" }} " +
+                "resolved to null and will be passed to the action as null."
         }
     }
 
@@ -797,6 +828,12 @@ class PluginService(
     ): PluginConfiguration {
         return pluginConfigurationRepository.findById(id)
             .orElseThrow { IllegalStateException("Plugin configuration with id '$id' does not exist!") }
+    }
+
+    fun findPluginConfiguration(
+        @LoggableResource(resourceType = PluginConfiguration::class) id: PluginConfigurationId
+    ): PluginConfiguration? {
+        return pluginConfigurationRepository.findByIdOrNull(id)
     }
 
     @Throws(ConstraintViolationException::class)

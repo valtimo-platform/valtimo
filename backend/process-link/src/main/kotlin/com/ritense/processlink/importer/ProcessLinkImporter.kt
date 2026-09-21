@@ -112,7 +112,7 @@ open class ProcessLinkImporter(
         }
     }
 
-    private fun resolveProcessDefinitionId(request: ImportRequest, processDefinitionKey: String): String {
+    protected fun resolveProcessDefinitionId(request: ImportRequest, processDefinitionKey: String): String {
         val caseDefinitionId = request.caseDefinitionId
 
         if (caseDefinitionId == null) {

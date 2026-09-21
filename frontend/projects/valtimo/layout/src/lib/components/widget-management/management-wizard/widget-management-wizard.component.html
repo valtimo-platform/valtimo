@@ -23,7 +23,7 @@
   (close)="onClose()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
-    <h3 cdsModalHeaderHeading>
+    <h3 cdsModalHeaderHeading [attr.data-test-id]="testIds.heading">
       {{ 'widgetTabManagement.wizard.' + (editMode ? 'edit' : 'create') | translate }}
     </h3>
   </cds-modal-header>

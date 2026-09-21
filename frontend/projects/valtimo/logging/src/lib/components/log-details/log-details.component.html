@@ -14,7 +14,12 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="open" size="lg" (close)="onCloseSelect()">
+<cds-modal
+  [open]="open"
+  size="lg"
+  [attr.data-test-id]="testIds.modal"
+  (close)="onCloseSelect()"
+>
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()">
     {{ 'logging.detailsTitle' | translate }}
   </cds-modal-header>
@@ -24,13 +29,15 @@
       {{ 'logging.formattedMessage' | translate }}
     </h4>
 
-    <div class="log-text">{{ logEventFormatted?.formattedMessage || '-' }}</div>
+    <div class="log-text" [attr.data-test-id]="testIds.message">
+      {{ logEventFormatted?.formattedMessage || '-' }}
+    </div>
 
     <h4 class="log-header">
       {{ 'logging.timestamp' | translate }}
     </h4>
 
-    <div>
+    <div [attr.data-test-id]="testIds.timestamp">
       {{ logEventFormatted?.timestamp || '-' }}
     </div>
 

@@ -19,4 +19,5 @@
  */
 
 export * from './lib/building-block-management.module';
+export * from './lib/constants';
 export * from './lib/services';

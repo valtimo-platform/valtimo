@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export {IntermediateSaveRequest} from '@valtimo/shared';
+
 export interface IntermediateSubmission {
   submission: object;
   taskInstanceId: string;
@@ -21,9 +23,4 @@ export interface IntermediateSubmission {
   createdOn: string;
   editedBy?: string;
   editedOn?: string;
-}
-
-export interface IntermediateSaveRequest {
-  submission: object;
-  taskInstanceId: string;
 }

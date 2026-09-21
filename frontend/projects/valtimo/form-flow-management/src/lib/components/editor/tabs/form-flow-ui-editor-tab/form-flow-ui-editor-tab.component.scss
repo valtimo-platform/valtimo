@@ -1,0 +1,95 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.ui-editor {
+  // fitPage gives this container an explicit height. An optional notification stacks above the body
+  // row; the sidebar and panel inside the body scroll independently, so the container itself never
+  // scrolls and toggling the notification never changes its outer height.
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cds-border-subtle, #e0e0e0);
+  overflow: hidden;
+
+  &__body {
+    // The sidebar/panel row fills the height left below the notification.
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  &__sidebar {
+    background: var(--cds-layer-01, #f4f4f4);
+    border-right: 1px solid var(--cds-border-subtle, #e0e0e0);
+    display: flex;
+    flex: 0 0 22rem;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  &__panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 1rem 1.5rem 1.5rem;
+  }
+
+  &__notification {
+    // Sits at the top of the fixed-height container, above the body; kept out of the flex-grow so it
+    // takes only its natural height and the body absorbs the rest.
+    flex: 0 0 auto;
+
+    cds-inline-notification {
+      display: block;
+      max-width: none;
+      margin: 0;
+    }
+
+    // Carbon draws the low-contrast notification's subtle frame with a ::before border on all sides
+    // but the accented left edge. Sitting flush at the top of the editor container, only the bottom
+    // divider is wanted, so drop the top and right edges.
+    ::ng-deep .cds--inline-notification--low-contrast::before {
+      border-width: 0 0 1px 0;
+    }
+  }
+
+  &__empty {
+    align-items: center;
+    border: 1px dashed var(--cds-border-strong, #8d8d8d);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 2rem auto;
+    max-width: 30rem;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  &__empty-title {
+    margin: 0;
+  }
+
+  &__empty-message {
+    color: var(--cds-text-secondary, #525252);
+    margin: 0 0 0.5rem;
+  }
+
+  &__loading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding: var(--cds-spacing-07);
+  }
+}

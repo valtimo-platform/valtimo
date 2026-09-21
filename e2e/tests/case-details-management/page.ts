@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {APIRequestContext, expect, Page} from '@playwright/test';
+import {APIRequestContext, expect, Page, Response} from '@playwright/test';
+import {CarbonToggle} from '../../shared/carbon-toggle/carbon-toggle.utils';
 import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
 import {
   caseConfiguration,
@@ -63,20 +64,20 @@ export class CaseDetailsManagementPage {
     return this.page.getByTestId('caseSeeAllVersionsButton');
   }
 
-  get caseHandlerCanHaveHandlerToggle() {
-    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.canHaveHandler).locator('.cds--toggle__switch');
-  }
-
   get caseHandlerCanHaveHandler() {
     return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.canHaveHandler);
   }
 
-  get caseHandlerAutomaticallyAssignToggle() {
-    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.automaticallyAssign).locator('.cds--toggle__switch');
+  get caseHandlerCanHaveHandlerToggle(): CarbonToggle {
+    return new CarbonToggle(this.caseHandlerCanHaveHandler);
   }
 
   get caseHandlerAutomaticallyAssign() {
     return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.automaticallyAssign);
+  }
+
+  get caseHandlerAutomaticallyAssignToggle(): CarbonToggle {
+    return new CarbonToggle(this.caseHandlerAutomaticallyAssign);
   }
 
   get hasExternalForm() {
@@ -209,5 +210,69 @@ export class CaseDetailsManagementPage {
     await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
     await this.linkUploadProcessClearButton.click();
     await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
+  }
+
+  // ─── Case handler settings ───────────────────────────────────────
+  //
+  // `valtimo-case-management-case-handler` binds `[checked]` one-way to the case
+  // settings it fetches, and only `[disabled]` to its own in-flight state. So the
+  // toggles render *enabled and unchecked* in the window between paint and the
+  // settings GET resolving, and then snap to the persisted value. Reading the
+  // toggle in that window reports a state that was never real, which is why these
+  // assertions have to be anchored on the settings request rather than on
+  // "the switch is enabled".
+
+  private isCaseSettingsRequest(response: Response, method: 'GET' | 'PATCH'): boolean {
+    return (
+      /\/api\/management\/v1\/case-definition\/[^/]+\/version\/[^/]+\/settings$/.test(
+        response.url()
+      ) && response.request().method() === method
+    );
+  }
+
+  /**
+   * Run `trigger` (a navigation or reload) and resolve once the case settings the
+   * handler toggles are bound to have actually arrived.
+   */
+  async waitForCaseSettingsLoaded(trigger: () => Promise<unknown>): Promise<void> {
+    const loaded = this.page.waitForResponse(
+      response => this.isCaseSettingsRequest(response, 'GET') && response.ok(),
+      {timeout: 15_000}
+    );
+    await trigger();
+    await loaded;
+    await this.caseHandlerCanHaveHandlerToggle.assertEnabled();
+  }
+
+  /**
+   * Flip a case-handler toggle and wait for the PATCH *and* the refresh GET that
+   * re-feeds `[checked]`. Without waiting for both, the assertion races the
+   * server: Carbon flips optimistically, then the refresh overwrites it.
+   */
+  private async toggleCaseHandlerSetting(toggle: CarbonToggle, checked: boolean): Promise<void> {
+    if ((await toggle.isChecked()) === checked) return;
+
+    const patched = this.page.waitForResponse(
+      response => this.isCaseSettingsRequest(response, 'PATCH'),
+      {timeout: 15_000}
+    );
+    const refreshed = this.page.waitForResponse(
+      response => this.isCaseSettingsRequest(response, 'GET'),
+      {timeout: 15_000}
+    );
+
+    await toggle.set(checked);
+
+    expect((await patched).ok(), 'case settings PATCH should succeed').toBeTruthy();
+    await refreshed;
+    await toggle.assertChecked(checked);
+  }
+
+  async setCanHaveHandler(checked: boolean): Promise<void> {
+    await this.toggleCaseHandlerSetting(this.caseHandlerCanHaveHandlerToggle, checked);
+  }
+
+  async setAutomaticallyAssign(checked: boolean): Promise<void> {
+    await this.toggleCaseHandlerSetting(this.caseHandlerAutomaticallyAssignToggle, checked);
   }
 }

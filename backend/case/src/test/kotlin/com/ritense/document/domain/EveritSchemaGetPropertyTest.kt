@@ -19,8 +19,12 @@ package com.ritense.document.domain
 import com.ritense.document.domain.impl.JsonSchema
 import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.everit.json.schema.CombinedSchema
+import org.everit.json.schema.ObjectSchema
 import org.everit.json.schema.Schema
 import org.everit.json.schema.StringSchema
+import org.everit.json.schema.ValidationException
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 
@@ -64,6 +68,84 @@ class EveritSchemaGetPropertyTest {
     }
 
     @Test
+    fun `should resolve the item schema of an array element the pointer stops at`() {
+        val schema = arraySchema()
+
+        assertThat(schema.getProperty("/items/0")).isInstanceOf(ObjectSchema::class.java)
+        assertThat(schema.getProperty("/items/0/value")).isInstanceOf(StringSchema::class.java)
+    }
+
+    @Test
+    fun `should refuse an array index the schema cannot have`() {
+        val schema = arraySchema()
+
+        assertThat(schema.getProperty("/items/5")).isNull()
+        assertThat(schema.getProperty("/items/-1")).isNull()
+    }
+
+    @Test
+    fun `should answer a path its combined branches disagree about with all of them`() {
+        val stringFirst = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "v": { "type": "number" } } }"""
+        )
+        val numberFirst = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "number" } } },
+               { "type": "object", "properties": { "v": { "type": "string" } } }"""
+        )
+
+        assertThat(stringFirst.getProperty("/p/v")).isInstanceOf(CombinedSchema::class.java)
+        assertThat(stringFirst.getProperty("/p/v")).isEqualTo(numberFirst.getProperty("/p/v"))
+        assertThat(stringFirst.getProperty("/p/v")?.getTypeReference()?.type).isEqualTo(Any::class.java)
+    }
+
+    @Test
+    fun `should answer with the branch itself when only one describes the path`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "other": { "type": "number" } } }"""
+        )
+
+        assertThat(schema.getProperty("/p/v")).isInstanceOf(StringSchema::class.java)
+    }
+
+    @Test
+    fun `should recombine allOf branches with the allOf criterion`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string", "minLength": 5 } } },
+               { "type": "object", "properties": { "v": { "type": "string", "maxLength": 3 } } }""",
+            criterion = "allOf"
+        )
+
+        val property = schema.getProperty("/p/v")
+        assertThat(property).isInstanceOf(CombinedSchema::class.java)
+        assertThat((property as CombinedSchema).criterion).isEqualTo(CombinedSchema.ALL_CRITERION)
+        assertThatThrownBy { property.validate("Ada Lovelace") }
+            .isInstanceOf(ValidationException::class.java)
+    }
+
+    @Test
+    fun `should recombine oneOf branches with the oneOf criterion`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "v": { "type": "number" } } }"""
+        )
+
+        assertThat((schema.getProperty("/p/v") as CombinedSchema).criterion)
+            .isEqualTo(CombinedSchema.ONE_CRITERION)
+    }
+
+    @Test
+    fun `should collapse combined branches that describe the path identically`() {
+        val schema = combinedSchemaOf(
+            """{ "type": "object", "properties": { "v": { "type": "string" } } },
+               { "type": "object", "properties": { "v": { "type": "string" } } }"""
+        )
+
+        assertThat(schema.getProperty("/p/v")).isInstanceOf(StringSchema::class.java)
+    }
+
+    @Test
     fun `should stop resolving beyond the maximum schema depth instead of overflowing the stack`() {
         val schema = recursiveSchema()
         val tooDeep = "/root" + "/child".repeat(MAX_SCHEMA_DEPTH + 20) + "/name"
@@ -89,8 +171,7 @@ class EveritSchemaGetPropertyTest {
 
         // without the depth guard both walkers recurse through the cycle until the JVM throws a StackOverflowError
         assertThat(schema.getProperty("/root/name")).isNull()
-        // the cycle resolves nothing, so the property is only allowed because the root permits additional properties
-        assertThat(schema.allowsProperty("/root/name")).isTrue()
+        assertThat(schema.allowsProperty("/root/name")).isFalse()
     }
 
     @Test
@@ -133,6 +214,29 @@ class EveritSchemaGetPropertyTest {
         },
         "properties": {
           "root": { "${'$'}ref": "#/definitions/node" }
+        }
+        """.trimIndent()
+    )
+
+    private fun arraySchema(): Schema = schemaOf(
+        """
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "properties": { "value": { "type": "string" } }
+            }
+          }
+        }
+        """.trimIndent()
+    )
+
+    private fun combinedSchemaOf(branches: String, criterion: String = "oneOf"): Schema = schemaOf(
+        """
+        "properties": {
+          "p": { "$criterion": [$branches] }
         }
         """.trimIndent()
     )

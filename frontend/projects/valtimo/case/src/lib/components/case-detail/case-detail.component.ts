@@ -53,6 +53,7 @@ import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {SseService} from '@valtimo/sse';
 import {IntermediateSubmission, TaskUpdateSseEvent} from '@valtimo/task';
+import {SplitGutterInteractionEvent} from 'angular-split';
 import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
@@ -61,6 +62,7 @@ import {
   combineLatest,
   debounceTime,
   filter,
+  forkJoin,
   map,
   merge,
   Observable,
@@ -652,6 +654,14 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.caseDetailLayoutService.setMainContentHeaderHeight(height);
   }
 
+  public onSplitDragEnd(event: SplitGutterInteractionEvent): void {
+    const taskPanelWidth = event.sizes[1];
+
+    if (typeof taskPanelWidth === 'number') {
+      this.caseDetailLayoutService.saveTaskPanelWidth(taskPanelWidth);
+    }
+  }
+
   protected onConfirmRedirect(): void {
     if (!this.tabLoader || !this._pendingTab) return;
     this._activeChange = false;
@@ -666,9 +676,12 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   private initBreadcrumb(): void {
-    this.documentService.getDocumentDefinition(this.caseDefinitionKey).subscribe(definition => {
-      this.documentDefinitionTitle = definition.schema.title;
-      this.caseDefinitionVersionTag = definition.id.blueprintId.blueprintVersionTag;
+    forkJoin({
+      documentDefinition: this.documentService.getDocumentDefinition(this.caseDefinitionKey),
+      activeCaseDefinition: this.documentService.getActiveCaseDefinition(this.caseDefinitionKey),
+    }).subscribe(({documentDefinition, activeCaseDefinition}) => {
+      this.documentDefinitionTitle = activeCaseDefinition?.name || documentDefinition.schema.title;
+      this.caseDefinitionVersionTag = documentDefinition.id.blueprintId.blueprintVersionTag;
       this.setBreadcrumb();
     });
   }

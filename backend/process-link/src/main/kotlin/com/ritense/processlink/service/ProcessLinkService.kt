@@ -171,8 +171,17 @@ class ProcessLinkService(
         }
     }
 
+    @Transactional
     fun deleteProcessLinksForProcessDefinition(processDefinitionId: String) {
+        val deletedProcessLinks = processLinkRepository.findByProcessDefinitionId(processDefinitionId)
         processLinkRepository.deleteAllByProcessDefinitionId(processDefinitionId)
+        // One event per type is enough: listeners react per process definition, so emitting one event per
+        // deleted link would only trigger the same work again for every link of the same type.
+        deletedProcessLinks.distinctBy { it.processLinkType }.forEach { processLink ->
+            applicationEventPublisher.publishEvent(
+                ProcessLinkDeletedEvent(processLink.processLinkType, processDefinitionId)
+            )
+        }
     }
 
     fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {

@@ -42,6 +42,7 @@ class ValtimoFormFlowHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "/api/v1/form-flow/instance/{formFlowId}/step/instance/{stepInstanceId}/to/step/instance/{targetStepInstanceId}")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/form-flow/instance/{formFlowId}/breadcrumbs")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/form-flow-definition/schema")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/form-flow/registry")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/process-link-option")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}")).hasAuthority(ADMIN)

@@ -24,6 +24,7 @@ import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.event.CaseConfigurationIssuesResetEvent
+import com.ritense.valtimo.contract.event.CaseDefinitionFinalizedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 
@@ -51,6 +52,9 @@ class CaseDefinitionImporter(
             .let { applyOverrides(it, request.keyOverride, request.nameOverride) }
         if (caseDefinitionDto.final) {
             caseDefinitionRepository.save(caseDefinitionDto.toEntity())
+            applicationEventPublisher.publishEvent(
+                CaseDefinitionFinalizedEvent(caseDefinitionDto.getCaseDefinitionId())
+            )
         }
     }
 

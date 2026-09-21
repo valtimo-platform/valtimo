@@ -42,6 +42,7 @@ import {catchError, finalize, shareReplay, switchMap, take, takeUntil, tap} from
 import {ColumnType, FormType} from '../../models/object.model';
 import {ObjectColumnService} from '../../services/object-column.service';
 import {ObjectService} from '../../services/object.service';
+import {OBJECT_LIST_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -50,6 +51,8 @@ import {ObjectService} from '../../services/object.service';
   styleUrls: ['./object-list.component.scss'],
 })
 export class ObjectListComponent implements OnInit, OnDestroy {
+  protected readonly testIds = OBJECT_LIST_TEST_IDS;
+
   private readonly _destroy$ = new Subject<void>();
 
   readonly loading$ = new BehaviorSubject<boolean>(true);

@@ -31,6 +31,7 @@ import com.ritense.valtimo.contract.plugin.DanglingPluginConfigurationDto
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
@@ -100,12 +101,27 @@ open class PluginConfigurationMappingResolverImpl(
             }
     }
 
+    /**
+     * Runs in its own transaction: this is called from an `AFTER_COMMIT` event listener, where the
+     * transaction of the original request has already been committed while still being bound to the thread.
+     * Joining that transaction would mean the writes done by the listeners of the events published below are
+     * flushed into a transaction that is never committed again, silently losing them.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     override fun recheckIssuesForProcessDefinition(processDefinitionId: String) {
         val link = processDefinitionCaseDefinitionService
             .findByProcessDefinitionIdOrNull(ProcessDefinitionId.of(processDefinitionId))
             ?: return
-        val caseDefinitionId = link.id.caseDefinitionId
+        recheckIssuesForCaseDefinition(link.id.caseDefinitionId)
+    }
 
+    /**
+     * See [recheckIssuesForProcessDefinition] for why this needs its own transaction. Note that the call from
+     * [recheckIssuesForProcessDefinition] bypasses the proxy, which is harmless: that method already opened a
+     * new transaction.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    override fun recheckIssuesForCaseDefinition(caseDefinitionId: CaseDefinitionId) {
         val processDefinitionIds = processDefinitionCaseDefinitionService
             .findProcessDefinitionCaseDefinitions(caseDefinitionId)
             .map { it.id.processDefinitionId.id }

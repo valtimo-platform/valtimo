@@ -19,8 +19,7 @@ import {CommonModule} from '@angular/common';
 import {ActivatedRoute, RouterModule} from '@angular/router';
 import {DecisionService} from '../services/decision.service';
 import {DecisionXml} from '../models';
-import DmnViewer from 'dmn-js';
-import {migrateDiagram} from '@bpmn-io/dmn-migrate';
+import type DmnViewer from 'dmn-js';
 import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
@@ -41,8 +40,11 @@ export class DecisionDisplayComponent implements OnInit {
     private readonly route: ActivatedRoute
   ) {}
 
-  ngOnInit(): void {
-    this.viewer = new DmnViewer({
+  async ngOnInit(): Promise<void> {
+    // Loaded on demand: dmn-js is only needed on the decision table screens.
+    const {default: DmnViewerCtor} = await import('dmn-js');
+
+    this.viewer = new DmnViewerCtor({
       container: '#canvas',
     });
     this.decisionId = this.route.snapshot.paramMap.get('id')!;
@@ -61,6 +63,7 @@ export class DecisionDisplayComponent implements OnInit {
   }
 
   async migrateAndLoadDecisionXml(decision: DecisionXml): Promise<void> {
+    const {migrateDiagram} = await import('@bpmn-io/dmn-migrate');
     const decisionXml = await migrateDiagram(decision.dmnXml);
 
     if (decisionXml) {

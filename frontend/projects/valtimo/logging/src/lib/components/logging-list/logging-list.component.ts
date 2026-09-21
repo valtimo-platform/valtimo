@@ -58,6 +58,7 @@ import {
 import {LoggingApiService} from '../../services';
 import {LogDetailsComponent} from '../log-details/log-details.component';
 import {LogSearchComponent} from '../log-search/log-search.component';
+import {LOGGING_LIST_TEST_IDS} from '../../constants';
 
 @Component({
   templateUrl: './logging-list.component.html',
@@ -78,6 +79,7 @@ import {LogSearchComponent} from '../log-search/log-search.component';
   providers: [LoggingApiService],
 })
 export class LoggingListComponent implements OnInit, OnDestroy {
+  public readonly testIds = LOGGING_LIST_TEST_IDS;
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly logItems$: Observable<CarbonListItem> = this.activatedRoute.queryParamMap.pipe(
     tap(() => this.loading$.next(true)),

@@ -41,6 +41,7 @@ import {
   BuildingBlockManagementDetailService,
 } from '../../services';
 import {BuildingBlockManagementVersionSelectorComponent} from '../building-block-management-version-selector/building-block-management-version-selector.component';
+import {BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: true,
@@ -65,6 +66,8 @@ import {BuildingBlockManagementVersionSelectorComponent} from '../building-block
   ],
 })
 export class BuildingBlockManagementDetailActionsComponent {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS;
+
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
 

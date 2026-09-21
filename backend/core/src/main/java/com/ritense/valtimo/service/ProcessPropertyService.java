@@ -50,12 +50,27 @@ public class ProcessPropertyService {
         return processProperties.isSystemProcess();
     }
 
-    public boolean isReadOnlyById(String processDefinitionId) {
-        return isReadOnly(getProcessDefinitionKeyById(processDefinitionId));
+    /**
+     * A process with no properties row is not a system process. Unlike {@link #isSystemProcess(String)}
+     * this does not throw for such a key, which a listing endpoint cannot afford.
+     */
+    public boolean isKnownSystemProcess(String processDefinitionKey) {
+        final var processProperties = processDefinitionPropertiesRepository.findByProcessDefinitionKey(processDefinitionKey);
+        return processProperties != null && processProperties.isSystemProcess();
     }
 
+    /**
+     * @deprecated no process definition is read-only anymore, so this always returns {@code false}.
+     *     Editing a system process deploys a new version and leaves earlier pinned case definitions untouched.
+     */
+    @Deprecated(since = "13.45.0", forRemoval = true)
+    public boolean isReadOnlyById(String processDefinitionId) {
+        return false;
+    }
+
+    @Deprecated(since = "13.45.0", forRemoval = true)
     public boolean isReadOnly(String processDefinitionKey) {
-        return !valtimoProperties.getProcess().isSystemProcessUpdatable() && isSystemProcess(processDefinitionKey);
+        return false;
     }
 
     private String getProcessDefinitionKeyById(String processDefinitionId) {

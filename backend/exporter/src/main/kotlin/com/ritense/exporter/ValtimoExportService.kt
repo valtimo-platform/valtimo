@@ -82,8 +82,14 @@ class ValtimoExportService(
         }.mapNotNull { exporter ->
             try {
                 val result = exporter.export(request)
-                if (isRoot) {
-                    result.manifestArtifact?.let { artifacts.add(it) }
+                // The manifestDependencies of the exporter that contributes the artifact describe that
+                // artifact itself, for when it is pulled in as a dependency of another export. It is not
+                // a dependency of itself, so those are ignored here. Any other exporter of the root
+                // request does contribute dependencies: a root request can be answered by more than one
+                // exporter (a process definition and its process links, for example).
+                val artifact = result.manifestArtifact
+                if (isRoot && artifact != null) {
+                    artifacts.add(artifact)
                 } else {
                     dependencies.addAll(result.manifestDependencies)
                 }

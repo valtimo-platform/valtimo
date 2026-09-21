@@ -99,6 +99,7 @@
 
     <cds-accordion class="permission-form__accordion">
       <cds-accordion-item
+        [attr.data-test-id]="testIds.sectionResourceActions"
         [expanded]="$openSection() === 'resourceActions'"
         [title]="'accessControl.editor.resourceAndActions' | translate"
         (selected)="onSectionToggle('resourceActions', $event)"
@@ -172,6 +173,7 @@
       </cds-accordion-item>
 
       <cds-accordion-item
+        [attr.data-test-id]="testIds.sectionConditions"
         [class.permission-form__section-configured]="conditionsArray.length > 0"
         [expanded]="$openSection() === 'conditions'"
         [title]="'accessControl.editor.conditions' | translate"
@@ -194,6 +196,7 @@
       </cds-accordion-item>
 
       <cds-accordion-item
+        [attr.data-test-id]="testIds.sectionContext"
         [class.permission-form__section-configured]="hasContext"
         [expanded]="$openSection() === 'context'"
         [title]="'accessControl.editor.contextSection' | translate"

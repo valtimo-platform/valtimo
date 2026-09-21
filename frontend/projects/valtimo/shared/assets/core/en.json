@@ -737,6 +737,9 @@
   "cta": {"close": "Close", "moreDetails": "More details"},
   "carousel": {"previous": "Previous", "next": "Next", "goToSlide": "Go to slide"},
   "formManagement": {
+    "edit": {
+      "title": "Edit form"
+    },
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To configure this, click on the button below.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
     "gotoProcessLinksButton": "Configure now",
@@ -1752,7 +1755,8 @@
     "rowLocked": "You don't have access to this task",
     "allCases": "All cases",
     "noSearchResultsTitle": "No tasks found",
-    "noSearchResultsDescription": "There are no tasks that match your search criteria."
+    "noSearchResultsDescription": "There are no tasks that match your search criteria.",
+    "refreshTasks": "Refresh tasks"
   },
   "Task": "Task",
   "Tasks": "Tasks",
@@ -1784,12 +1788,23 @@
   "Translations": "Translations",
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
-  "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
-  "Source Definition": "Source Definition",
-  "Source Version": "Source Version",
-  "Target Definition": "Target Definition",
-  "Target Version": "Target Version",
-  "Choose Target": "Choose Target",
+  "processMigration": {
+    "warning": {
+      "title": "Candidate groups are not migrated",
+      "message": "When migrating a process, the candidate groups of running instances are not updated. This can be done in the database if necessary. For example, if a specific user task is open for ROLE_USER and the candidate group for that user task is changed to ROLE_ADMIN in the process, the task stays accessible for ROLE_USER. Only newly started processes use the updated candidate group."
+    },
+    "sourceDefinition": "Source process",
+    "sourceVersion": "Source version",
+    "targetDefinition": "Target process",
+    "targetVersion": "Target version",
+    "sourceActivity": "Activity in the source version",
+    "targetActivity": "Activity in the target version",
+    "selectPlaceholder": "Select...",
+    "migrate": "Migrate",
+    "instanceCount": "{{count}} running process instance(s)",
+    "success": "The process was migrated.",
+    "failure": "The process could not be migrated."
+  },
   "Case": "Case",
   "Cases": "Cases",
   "Deployment": "Version management",
@@ -1839,6 +1854,7 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "exportErrorNotification": "Failed to export the process. Check that the sub-processes, decision tables and forms it references are available on this environment.",
     "validate": "Validate",
     "validationSuccessNotification": "Process definition is valid",
     "validationWarningNotification": "Process definition has warnings",
@@ -1848,12 +1864,13 @@
     "validationErrors": "Validation errors",
     "validationErrorsCount": "Validation errors ({{count}})",
     "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
+    "idTooLong": "The ID may not be longer than {{max}} characters.",
     "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {
       "modalTitle": "Upload process definition",
       "title": "Upload file",
-      "description": "Only BPMN files are supported.",
+      "description": "BPMN files and exported process packages (.zip) are supported.",
       "buttonText": "Select file",
       "success": "Deployment successful",
       "failure": "Deployment failed",
@@ -1861,24 +1878,103 @@
       "replaceTitle": "Replace existing process?",
       "replaceContent": "A process with the same key already exists. Do you want to replace it?",
       "replaceContentWithDuplicates": "A process with the same key already exists: {{duplicates}}. Do you want to replace it?",
-      "replaceConfirm": "Replace"
+      "replaceConfirm": "Replace",
+      "invalidZip": {
+        "title": "Invalid file",
+        "text": "This file is not a valid process package."
+      },
+      "pluginsDescription": "For each plugin configuration in the package, choose the configuration of this environment.",
+      "summaryDescription": "The following items the process refers to are missing on this environment. Import them separately.",
+      "missingReference": {
+        "SUB_PROCESS": {
+          "title": "Sub-processes not included",
+          "message": "These called processes could not be included in the package and do not exist on this environment. They use a dynamic or deployment binding, so import them separately:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Decision tables not included",
+          "message": "These decision tables could not be included in the package and do not exist on this environment. They use a dynamic or deployment binding, so import them separately:"
+        },
+        "FORM": {
+          "title": "Missing forms",
+          "message": "Import these forms first:"
+        },
+        "FORM_FLOW": {
+          "title": "Form flows are not supported",
+          "message": "Form flows cannot be linked to a process outside a case definition:"
+        },
+        "READ_ONLY_SYSTEM_PROCESS": {
+          "title": "Process is managed by configuration",
+          "message": "This process cannot be overwritten because it is managed by the application configuration:"
+        }
+      },
+      "willBeReplaced": {
+        "PROCESS_DEFINITION": {
+          "title": "Processes will be replaced",
+          "message": "These processes already exist on this environment and will be replaced by the import:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Decision tables will be replaced",
+          "message": "These decision tables already exist on this environment and will be replaced by the import:"
+        },
+        "FORM": {
+          "title": "Forms will be replaced",
+          "message": "These forms already exist on this environment and will be replaced by the import:"
+        }
+      }
     },
+    "exportBpmn": "Export BPMN definition",
     "canInitializeDocument": "Starts case",
     "startableByUser": "Startable by user",
-    "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
-      "UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis '('",
-      "UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace '}'",
-      "UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket '['",
-      "MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
-      "INCOMPLETE_EXPRESSION": "Expression {{expression}} is incomplete",
-      "INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
-      "BEAN_NOT_FOUND": "No bean found with this name: {{expression}}. If using a process variable, ensure it exists at runtime"
+    "validationErrorCodes": {
+      "NO_START_EVENT": "Process has no start event",
+      "NO_END_EVENT": "Process has no end event",
+      "MULTIPLE_NONE_START_EVENTS": "Process has multiple none start events",
+      "NO_OUTGOING_FLOW": "Element has no outgoing flow",
+      "NO_INCOMING_FLOW": "Element has no incoming flow",
+      "UNREACHABLE_ELEMENT": "Element is not reachable from any start event",
+      "NO_PATH_TO_END_EVENT": "Start event has no path to an end event",
+      "SERVICE_TASK_NO_IMPLEMENTATION": "Service task has no process link, implementation, or execution listener",
+      "USER_TASK_NO_FORM": "User task has no process link or form",
+      "SEND_TASK_NO_IMPLEMENTATION": "Send task has no process link or implementation",
+      "RECEIVE_TASK_NO_MESSAGE": "Receive task has no process link or message",
+      "BUSINESS_RULE_TASK_NO_IMPLEMENTATION": "Business rule task has no DMN decision reference",
+      "CALL_ACTIVITY_NO_CALLED_ELEMENT": "Call activity has no process link or called element",
+      "SEQUENCE_FLOW_NO_CONDITION": "Sequence flow from exclusive gateway has no condition",
+      "MESSAGE_EVENT_NO_MESSAGE": "Message event has no process link or message reference",
+      "TIMER_EVENT_NO_CONFIG": "Timer event has no timer configuration",
+      "SIGNAL_EVENT_NO_SIGNAL": "Signal event has no signal reference",
+      "CONDITIONAL_EVENT_NO_CONDITION": "Conditional event has no condition",
+      "ERROR_EVENT_NO_ERROR": "Error event has no error reference",
+      "ESCALATION_EVENT_NO_ESCALATION": "Escalation event has no escalation reference",
+      "START_EVENT_NO_FORM": "Start event has no process link or form",
+      "EXPRESSION_MISSING_EL_MARKERS": "Expression {{expression}} must use ${...} or #{...} syntax",
+      "EXPRESSION_UNCLOSED_PARENTHESIS": "Expression {{expression}} has an unclosed parenthesis",
+      "EXPRESSION_UNCLOSED_BRACE": "Expression {{expression}} is missing a closing brace",
+      "EXPRESSION_UNCLOSED_BRACKET": "Expression {{expression}} has an unclosed bracket",
+      "EXPRESSION_MISMATCHED_DELIMITER": "Expression {{expression}} has mismatched brackets or braces",
+      "EXPRESSION_INCOMPLETE": "Expression {{expression}} is incomplete",
+      "EXPRESSION_INVALID_SYNTAX": "Expression {{expression}} has invalid syntax",
+      "EXPRESSION_BEAN_NOT_FOUND": "No bean '{{expression}}' found. If using a process variable, ensure it exists at runtime",
+      "EXPRESSION_METHOD_NOT_FOUND": "Method not found on bean. Check the expression {{expression}}",
+      "EXPRESSION_ARGUMENT_COUNT_MISMATCH": "Wrong number of arguments in expression",
+      "EXPRESSION_EMPTY_ARGUMENTS": "One or more arguments are empty in expression"
     },
     "warningConfirmation": {
       "title": "Process has warnings",
       "content": "The process definition contains warnings. Are you sure you want to save it without resolving the warnings?",
       "confirm": "Save anyway"
+    },
+    "markers": {
+      "processLink": "Process link attached",
+      "executionListener": "Execution listener",
+      "taskListener": "Task listener",
+      "toggleTooltip": "Toggle visibility of process link, execution listener, and task listener markers",
+      "hide": "Hide markers",
+      "show": "Show markers"
+    },
+    "autofilled": {
+      "generic": "Auto-filled values present",
+      "sidebarMessage": "This field was auto-filled. Dismiss to not see this message again."
     }
   },
   "processCaseConnection": {
@@ -1971,6 +2067,7 @@
     "noResults": "No results",
     "loading": "Loading...",
     "edit": "Edit",
+    "view": "View",
     "noItemsFound": "No items found",
     "clearAll": "Clear all",
     "clear": "Clear",
@@ -2011,6 +2108,7 @@
     "create": "Create",
     "save": "Save",
     "more": "More",
+    "options": "Options",
     "export": "Export",
     "defaultSort": "Default sort",
     "list": {
@@ -2212,6 +2310,18 @@
     "noConfigurationComponent": "No configuration component is available.",
     "configurationId": "Configuration ID",
     "configurationIdTooltip": "The plugin will be saved under this ID. The ID must be in the format of a UUID"
+  },
+  "pluginConfigurationMapping": {
+    "unknownPlugin": "Unknown plugin",
+    "source": "From the package",
+    "target": "On this environment",
+    "selectPlaceholder": "Select a configuration",
+    "notInstalled": "Plugin not installed",
+    "noConfigurations": "No configurations available",
+    "unidentifiable": {
+      "title": "Plugin configurations unknown",
+      "message": "For some plugin configurations it cannot be determined which plugin they belong to. Those links have to be set manually after importing."
+    }
   },
   "pluginManagement": {
     "tableItemsText": "plugin configurations",
@@ -2983,6 +3093,103 @@
     "noResults": {
       "description": "Click <strong>Add new form flow</strong> to start designing your form flow",
       "title": "No form flows added"
+    },
+    "tabs": {
+      "editor": "Editor (beta)",
+      "jsonEditor": "JSON editor"
+    },
+    "uiEditor": {
+      "stepsTitle": "Steps",
+      "startStep": "Start step",
+      "stepType": "Type",
+      "addStep": "Add step",
+      "deleteStep": "Delete step",
+      "makeStartStep": "Make start step",
+      "selectForm": "Select a form",
+      "selectComponent": "Select a component",
+      "fieldTooltips": {
+        "key": "Identifies this step. It is referenced by the start step and by transitions, so renaming it updates those references automatically.",
+        "title": "Optional. Shown in the breadcrumb trail while a user walks through the form flow.",
+        "type": "What this step shows: \"form\" renders a Form.io form, \"custom-component\" renders an Angular component registered by this implementation. Other values are handled by a matching step type handler in the backend.",
+        "typeNoComponents": "\"custom-component\" is unavailable because this implementation has not registered any custom components.",
+        "definition": "The form of this case definition or building block that is shown for this step.",
+        "componentId": "The registered Angular component that is shown for this step.",
+        "targetStep": "The step the user goes to when this transition is taken.",
+        "condition": "Optional SpEL expression between ${ and }. Transitions are evaluated from top to bottom; leave empty to make this the default route."
+      },
+      "stepDetails": "Step details",
+      "title": "Title",
+      "titlePlaceholder": "Shown in the breadcrumb trail",
+      "keyPlaceholder": "For example personalDetailsStep",
+      "duplicateKey": "This key is already used by another step",
+      "required": "This field is required",
+      "navigation": "Navigation",
+      "navigationDescription": "Where the user can go after completing this step. Transitions are evaluated from top to bottom; the first one whose condition holds is taken and a transition without a condition is the default.",
+      "targetStep": "Next step",
+      "selectStep": "Select a step",
+      "condition": "Condition",
+      "conditionPlaceholder": "${step.submissionData.age >= 21} (leave empty for default)",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "addTransition": "Add transition",
+      "noTransitions": "No transitions — the form flow ends after this step.",
+      "multipleDefaultTransitions": "Only one transition may omit its condition; that transition is the default.",
+      "conditionExamplesTitle": "Conditions are Spring Expression Language (SpEL) expressions between ${ and }. They can use:",
+      "conditionExampleSubmission": "values the user submitted in this step, via step.submissionData",
+      "conditionExampleContext": "case and process context, via additionalProperties (the exact entries are listed below)",
+      "conditionExampleDefault": "Comparison operators like ==, !=, >, >= and boolean operators like && and || are supported. A transition without a condition is the default route.",
+      "additionalPropertiesTitle": "Available in additionalProperties:",
+      "additionalPropertiesUserTask": "When the form flow is linked to a user task:",
+      "additionalPropertiesStartEvent": "When the form flow is linked to a start event:",
+      "additionalPropertiesOptional": "(if available)",
+      "additionalProperties": {
+        "processInstanceId": "the id of the process instance the task belongs to",
+        "processInstanceBusinessKey": "the business key of that process instance",
+        "taskInstanceId": "the id of the user task that opened this form flow",
+        "documentId": "the id of the case, when the process belongs to one",
+        "processDefinitionKey": "the key of the process definition being started",
+        "documentDefinitionName": "the document definition of the new case, when starting a new case"
+      },
+      "actions": "Actions",
+      "actionsDescription": "Actions run on the server at specific moments in the step's lifecycle, for example to prefill forms, store submissions, complete tasks or start processes.",
+      "help": {
+        "title": "How expressions work",
+        "button": "How do expressions work?",
+        "intro": "Conditions and actions are Spring Expression Language (SpEL) expressions written between ${ and }. They are evaluated on the server while the form flow runs.",
+        "conditionsHeading": "Conditions",
+        "actionsHeading": "Actions",
+        "actionsBody": "Actions run at specific moments in a step's lifecycle: when it opens, when it is completed and when the user navigates back. They can call the registered form flow functions listed under \"Add action\", and can read the submitted data via step.submissionData and the case and process context via additionalProperties. Use them to prefill forms, store submissions, complete tasks or start processes.",
+        "dataHeading": "Available data",
+        "conditionsInlineTitle": "Conditions are expressions.",
+        "conditionsInlineMessage": "For example ${step.submissionData.age >= 21}. Leave the condition empty for the default route.",
+        "actionsInlineTitle": "Actions are expressions.",
+        "actionsInlineMessage": "They can call registered functions and read submitted data and case context."
+      },
+      "onOpen": "When the step opens",
+      "onOpenDescription": "Runs when the user opens this step, for example to prefill the form.",
+      "onComplete": "When the step is completed",
+      "onCompleteDescription": "Runs when the user submits this step, for example to store data or complete a task.",
+      "onBack": "When the user navigates back",
+      "onBackDescription": "Runs when the user goes back to the previous step, for example to clean up data.",
+      "addExpression": "Add action",
+      "blankExpression": "Blank expression",
+      "noExpressions": "No actions configured.",
+      "stepInvalid": "This step has configuration errors",
+      "noStepsTitle": "No steps yet",
+      "noStepsDescription": "Add a step to start designing this form flow.",
+      "parseFailedTitle": "Cannot open the visual editor",
+      "parseFailedMessage": "The definition contains invalid JSON. Fix it in the JSON editor first.",
+      "properties": {
+        "definition": "Form",
+        "componentId": "Component ID"
+      },
+      "errors": {
+        "title": "The definition contains errors",
+        "duplicateKeys": "Duplicate step keys: {{keys}}.",
+        "startStepMissing": "The start step \"{{startStep}}\" does not exist.",
+        "unknownTargets": "Transitions point to unknown steps: {{targets}}.",
+        "stepIncomplete": "Step \"{{step}}\" has missing or invalid fields."
+      }
     }
   },
   "taskManagement": {
@@ -3345,6 +3552,10 @@
         "enableGenericCaseList": {
           "title": "Enable generic case list",
           "description": "Show a single case list view with a dropdown to switch between case definitions."
+        },
+        "enableManualTaskListRefresh": {
+          "title": "Enable manual task list refresh",
+          "description": "Show a refresh button in the task list instead of refreshing it automatically when tasks change."
         }
       }
     },

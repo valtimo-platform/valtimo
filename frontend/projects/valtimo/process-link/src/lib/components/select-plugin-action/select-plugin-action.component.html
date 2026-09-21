@@ -15,18 +15,24 @@
   -->
 
 <ng-container *ngIf="pluginFunctions$ | async as pluginFunctions; else loading">
-  <div class="choose-plugin-action" *ngIf="pluginFunctions?.length > 0">
+  <div
+    class="choose-plugin-action"
+    *ngIf="pluginFunctions?.length > 0"
+    [attr.data-test-id]="testIds.container"
+  >
     <p class="step-description">
       {{ 'processLinkConfiguration.choosePluginActionDescription' | translate }}
     </p>
     <div class="action-tiles">
       <cds-tile-group
+        [attr.data-test-id]="testIds.tileGroup"
         [multiple]="false"
         *ngIf="{selectedPluginDefinition: selectedPluginDefinition$ | async} as obs"
         (selected)="selected($event)"
       >
         <cds-selection-tile
           *ngFor="let pluginFunction of pluginFunctions"
+          [attr.data-test-id]="tileTestIdPrefix + pluginFunction.key"
           [value]="stringify(pluginFunction)"
           [selected]="false"
           >{{
@@ -42,7 +48,7 @@
 </ng-container>
 
 <ng-template #noPluginFunctionsTemplate>
-  <p class="step-description">
+  <p class="step-description" [attr.data-test-id]="testIds.noActionsMessage">
     {{ 'processLink.noPluginFunctions' | translate }}
   </p>
 </ng-template>

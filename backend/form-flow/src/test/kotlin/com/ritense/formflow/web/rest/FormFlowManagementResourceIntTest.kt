@@ -23,7 +23,11 @@ import com.ritense.formflow.service.FormFlowService
 import com.ritense.formflow.BaseIntegrationTest
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import jakarta.ws.rs.core.MediaType.APPLICATION_JSON
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,6 +54,9 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
+
+    @PersistenceContext
+    lateinit var entityManager: EntityManager
 
     lateinit var mockMvc: MockMvc
 
@@ -142,6 +149,43 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
             .andExpect(jsonPath("$.key").value("test"))
             .andExpect(jsonPath("$.startStep").value("start-step-changed"))
             .andExpect(jsonPath("$.steps").exists())
+    }
+
+    @Test
+    fun `should remove steps that are dropped from the definition on update`() {
+        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
+
+        // A freshly created flow is seeded with a 'start-step' step (mirrors the new-form-flow modal).
+        mockMvc.perform(
+            post("/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition", "profile", "1.0.0")
+                .contentType(APPLICATION_JSON)
+                .content("""{"key":"orphan-test","startStep":"start-step","steps":[{"key":"start-step","type":{"name":"form","properties":{"definition":""}},"nextSteps":[]}]}""")
+        )
+            .andExpect(status().isOk)
+
+        // Commit the create and drop the first-level cache so the update runs against a freshly
+        // loaded definition, exactly as it would across two separate HTTP requests.
+        entityManager.flush()
+        entityManager.clear()
+
+        // The admin replaces 'start-step' with 'personal-details' and saves, dropping 'start-step'.
+        mockMvc.perform(
+            put("/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}", "profile", "1.0.0", "orphan-test")
+                .contentType(APPLICATION_JSON)
+                .content("""{"key":"orphan-test","startStep":"personal-details","steps":[{"key":"personal-details","type":{"name":"form","properties":{"definition":""}},"nextSteps":[]}]}""")
+        )
+            .andExpect(status().isOk)
+
+        // Flush the pending orphan removal and drop the first-level cache, so the assertion sees the
+        // real persisted state rather than the managed entity still held in the session.
+        entityManager.flush()
+        entityManager.clear()
+
+        val persisted = formFlowService.findDefinition(FormFlowDefinitionId.existingId("orphan-test", caseDefinitionId))
+        val stepKeys = persisted.steps.map { it.id.key }
+        assertEquals(1, stepKeys.size)
+        assertTrue(stepKeys.contains("personal-details"))
+        assertTrue(!stepKeys.contains("start-step"), "The dropped 'start-step' step should have been deleted")
     }
 
 }

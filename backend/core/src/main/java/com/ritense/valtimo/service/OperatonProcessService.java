@@ -74,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -97,6 +96,9 @@ import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
+import com.ritense.valtimo.processautofill.domain.AutofillModificationType;
+import com.ritense.valtimo.processautofill.service.AutofillModification;
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService;
 import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.operaton.bpm.model.bpmn.instance.CallActivity;
 import org.operaton.bpm.model.bpmn.instance.EndEvent;
@@ -106,6 +108,7 @@ import org.operaton.bpm.model.bpmn.instance.MessageEventDefinition;
 import org.operaton.bpm.model.bpmn.instance.Process;
 import org.operaton.bpm.model.bpmn.instance.SendTask;
 import org.operaton.bpm.model.bpmn.instance.ServiceTask;
+import org.operaton.bpm.model.bpmn.instance.ThrowEvent;
 import org.operaton.bpm.model.bpmn.instance.TimeDuration;
 import org.operaton.bpm.model.bpmn.instance.TimerEventDefinition;
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonIn;
@@ -139,6 +142,7 @@ public class OperatonProcessService {
     private final OperatonExecutionRepository operatonExecutionRepository;
     private final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper;
     private final OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
+    private final ProcessDefinitionAutofillService processDefinitionAutofillService;
 
     public OperatonProcessService(
         RuntimeService runtimeService,
@@ -155,7 +159,8 @@ public class OperatonProcessService {
         OperatonByteArrayService operatonByteArrayService,
         ApplicationEventPublisher applicationEventPublisher,
         OperatonDeploymentSourceHelper operatonDeploymentSourceHelper,
-        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository
+        OperatonProcessDefinitionRepository operatonProcessDefinitionRepository,
+        ProcessDefinitionAutofillService processDefinitionAutofillService
     ) {
         this.runtimeService = runtimeService;
         this.operatonRuntimeService = operatonRuntimeService;
@@ -172,6 +177,7 @@ public class OperatonProcessService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.operatonDeploymentSourceHelper = operatonDeploymentSourceHelper;
         this.operatonProcessDefinitionRepository = operatonProcessDefinitionRepository;
+        this.processDefinitionAutofillService = processDefinitionAutofillService;
     }
 
     public OperatonProcessDefinition findProcessDefinitionById(String processDefinitionId) {
@@ -413,9 +419,17 @@ public class OperatonProcessService {
     }
 
     public List<OperatonProcessDefinition> getDeployedDefinitions() {
+        return getDeployedDefinitions(false);
+    }
+
+    /**
+     * A suspended process still has running instances, so migration must offer it even though nothing else should.
+     */
+    public List<OperatonProcessDefinition> getDeployedDefinitions(boolean includeSuspended) {
         denyAuthorization();
+        var specification = includeSuspended ? byLatestVersion() : byActive().and(byLatestVersion());
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
-            byActive().and(byLatestVersion()),
+            specification,
             Sort.by(NAME)
         ));
     }
@@ -546,6 +560,10 @@ public class OperatonProcessService {
 
     }
 
+    /**
+     * @param skipIsDeployableCheck ignored - a system process may always be updated. Kept so external
+     *     callers keep compiling; due for removal in the next major version.
+     */
     @Transactional
     public DeploymentWithDefinitions deploy(
         BlueprintId blueprintId,
@@ -557,14 +575,40 @@ public class OperatonProcessService {
         @Nullable String originalVersionTag,
         @Nullable String originalProcessDefinitionId
     ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deployDefinition(
+            blueprintId,
+            fileName,
+            fileInput,
+            skipProcessLinksCopy,
+            setExecutable,
+            originalVersionTag,
+            originalProcessDefinitionId,
+            false
+        );
+    }
+
+    @Transactional
+    public DeploymentWithDefinitions deployFromConfiguration(
+        String fileName,
+        ByteArrayInputStream fileInput
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+        return deployDefinition(null, fileName, fileInput, false, true, null, null, true);
+    }
+
+    private DeploymentWithDefinitions deployDefinition(
+        BlueprintId blueprintId,
+        String fileName,
+        ByteArrayInputStream fileInput,
+        boolean skipProcessLinksCopy,
+        boolean setExecutable,
+        @Nullable String originalVersionTag,
+        @Nullable String originalProcessDefinitionId,
+        boolean matchAnyDeployedVersion
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
         denyAuthorization();
 
         if (fileName.endsWith(".bpmn")) {
             BpmnModelInstance bpmnModel = Bpmn.readModelFromStream(fileInput);
-
-            if (!isDeployable(bpmnModel) && !skipIsDeployableCheck) {
-                throw new ProcessNotDeployableException(fileName);
-            }
 
             updateCaseDefinitionProcessesVersionTags(bpmnModel, blueprintId);
             updateBuildingBlockDefinitionProcessesVersionTags(bpmnModel, blueprintId);
@@ -572,17 +616,37 @@ public class OperatonProcessService {
             if (setExecutable) {
                 setProcessesExecutable(bpmnModel);
             }
-            setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
-            setToNullWhenSendTaskExpressionIsEmpty(bpmnModel);
-            setToCorrelateAllWhenMessageSendEventExpressionIsEmpty(bpmnModel);
-            setToPropagateBusinessKeyWhenCallActivityIsNew(bpmnModel);
-            setTo60SecondsWhenTimerIsEmpty(bpmnModel);
+            OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(blueprintId, bpmnModel);
 
-            if (isProcessDefinitionPreviouslyDeployed(blueprintId, bpmnModel)) {
+            // Get unchanged autofills from previous version to carry forward
+            List<AutofillModification> unchangedAutofills = latestProcessDefinition != null
+                ? getUnchangedAutofills(latestProcessDefinition.getId(), bpmnModel)
+                : new ArrayList<>();
+
+            // Collect new autofills for empty fields
+            List<AutofillModification> newAutofillModifications = new ArrayList<>();
+            newAutofillModifications.addAll(setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel));
+            newAutofillModifications.addAll(setToNullWhenSendTaskExpressionIsEmpty(bpmnModel));
+            newAutofillModifications.addAll(setToCorrelateAllWhenMessageSendEventExpressionIsEmpty(bpmnModel));
+            newAutofillModifications.addAll(setToPropagateBusinessKeyWhenCallActivityIsNew(bpmnModel));
+            newAutofillModifications.addAll(setTo60SecondsWhenTimerIsEmpty(bpmnModel));
+
+            // Merge: unchanged from previous + new ones (new ones won't duplicate since those fields are now filled)
+            List<AutofillModification> autofillModifications = new ArrayList<>(unchangedAutofills);
+            autofillModifications.addAll(newAutofillModifications);
+
+            if (isProcessDefinitionPreviouslyDeployed(blueprintId, bpmnModel, matchAnyDeployedVersion)) {
                 return null;
             }
-
-            OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(blueprintId, bpmnModel);
+            if (matchAnyDeployedVersion && latestProcessDefinition != null) {
+                logger.info(
+                    "Configuration file '{}' holds content that was not deployed before and supersedes version {} "
+                        + "of process definition '{}'.",
+                    fileName,
+                    latestProcessDefinition.getVersion(),
+                    latestProcessDefinition.getKey()
+                );
+            }
             if (latestProcessDefinition != null && blueprintId != null) {
                 // clean up previous process definition, can only be triggered when we're deploying a draft version
                 applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
@@ -614,6 +678,11 @@ public class OperatonProcessService {
                     (CaseDefinitionId) blueprintId,
                     deployment.getDeployedProcessDefinitions().get(0).getId()
                 );
+            }
+
+            if (!deployment.getDeployedProcessDefinitions().isEmpty()) {
+                String processDefinitionId = deployment.getDeployedProcessDefinitions().get(0).getId();
+                processDefinitionAutofillService.saveAutofillRecords(processDefinitionId, autofillModifications);
             }
 
             return deployment;
@@ -713,43 +782,58 @@ public class OperatonProcessService {
 
     private boolean isProcessDefinitionPreviouslyDeployed(
         BlueprintId blueprintId,
-        BpmnModelInstance bpmnModel
+        BpmnModelInstance bpmnModel,
+        boolean matchAnyDeployedVersion
     ) throws ProcessNotDeployableException {
-        OperatonProcessDefinition latestProcessDefinition = getExistingProcessForFile(blueprintId, bpmnModel);
+        List<OperatonProcessDefinition> deployedVersions = getExistingProcessVersionsForFile(blueprintId, bpmnModel);
 
-        if (latestProcessDefinition != null) {
-            try {
-                byte[] savedBytes = repositoryService.getResourceAsStream(
-                        latestProcessDefinition.getDeploymentId(),
-                        latestProcessDefinition.getResourceName()
-                    )
-                    .readAllBytes();
+        if (deployedVersions.isEmpty()) {
+            return false;
+        }
+        if (!matchAnyDeployedVersion) {
+            deployedVersions = deployedVersions.subList(0, 1);
+        }
 
-                // Normalize both through the same XML pipeline so comparisons are
-                // namespace-agnostic. Applying normalizeXmlToCamundaNamespace directly to
-                // the saved bytes handles both old deployments (operaton: namespace, stored
-                // via addModelInstance) and new deployments (camunda: namespace, already
-                // Transformer output) because the DOM+Transformer step is idempotent on
-                // already-normalized XML.
-                byte[] normalizedSavedBytes = normalizeXmlToCamundaNamespace(
-                    new String(savedBytes, StandardCharsets.UTF_8),
-                    "http://operaton.org/schema/1.0/bpmn",
-                    "http://camunda.org/schema/1.0/bpmn"
-                ).readAllBytes();
-                byte[] normalizedNewBytes = normalizeToCamundaNamespace(bpmnModel).readAllBytes();
+        try {
+            byte[] normalizedNewBytes = normalizeToCamundaNamespace(bpmnModel).readAllBytes();
 
-                if (Arrays.equals(normalizedNewBytes, normalizedSavedBytes)) {
+            for (OperatonProcessDefinition deployedVersion : deployedVersions) {
+                if (Arrays.equals(normalizedNewBytes, normalizedResourceOf(deployedVersion))) {
                     return true;
                 }
-
-            } catch (IOException e) {
-                throw new ProcessNotDeployableException(blueprintId + " and process: " + latestProcessDefinition.getKey());
             }
+        } catch (IOException e) {
+            throw new ProcessNotDeployableException(blueprintId + " and process: " + deployedVersions.get(0).getKey());
         }
         return false;
     }
 
+    /** Normalizes a deployed resource through the same idempotent XML pipeline, so comparisons are namespace-agnostic. */
+    private byte[] normalizedResourceOf(OperatonProcessDefinition processDefinition) throws IOException {
+        byte[] savedBytes = repositoryService.getResourceAsStream(
+                processDefinition.getDeploymentId(),
+                processDefinition.getResourceName()
+            )
+            .readAllBytes();
+
+        return normalizeXmlToCamundaNamespace(
+            new String(savedBytes, StandardCharsets.UTF_8),
+            "http://operaton.org/schema/1.0/bpmn",
+            "http://camunda.org/schema/1.0/bpmn"
+        ).readAllBytes();
+    }
+
     public OperatonProcessDefinition getExistingProcessForFile(
+        BlueprintId blueprintId,
+        BpmnModelInstance bpmnModel
+    ) {
+        List<OperatonProcessDefinition> processDefinitions = getExistingProcessVersionsForFile(blueprintId, bpmnModel);
+
+        return processDefinitions.isEmpty() ? null : processDefinitions.getFirst();
+    }
+
+    /** All deployed versions of the process in this file, latest version first. */
+    private List<OperatonProcessDefinition> getExistingProcessVersionsForFile(
         BlueprintId blueprintId,
         BpmnModelInstance bpmnModel
     ) {
@@ -757,24 +841,22 @@ public class OperatonProcessService {
             .map(Process::getId)
             .findFirst().orElseThrow();
 
-        List<OperatonProcessDefinition> processDefinition = operatonRepositoryService.findProcessDefinitions(
+        List<OperatonProcessDefinition> processDefinitions = operatonRepositoryService.findProcessDefinitions(
             byKey(processDefinitionKey)
-                .and(blueprintId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
-                    blueprintId.getTagPrefix() + blueprintId))
+                .and(blueprintId == null
+                    ? byNotLinkedToCaseDefinition().and(byNotLinkedToBuildingBlock())
+                    : byVersionTag(blueprintId.getTagPrefix() + blueprintId))
             ,
             Sort.by(Sort.Order.desc(VERSION))
         );
 
-        if (processDefinition.size() > 1 && blueprintId != null) {
+        if (processDefinitions.size() > 1 && blueprintId != null) {
             throw new IllegalStateException(
                 "Only one process definition should be found for key: " + processDefinitionKey
                     + " and case definition id: " + blueprintId
             );
-        } else if (processDefinition.size() > 0) {
-            return processDefinition.getFirst();
-        } else {
-            return null;
         }
+        return processDefinitions;
     }
 
      public void setBuildingBlockDefinitionProcessesVersionTags(BpmnModelInstance bpmnModel, BuildingBlockDefinitionId buildingBlockDefinitionId) {
@@ -997,49 +1079,73 @@ public class OperatonProcessService {
         );
     }
 
-    private void setToNullWhenServiceTaskExpressionIsEmpty(BpmnModelInstance bpmnModel) {
+    private List<AutofillModification> setToNullWhenServiceTaskExpressionIsEmpty(BpmnModelInstance bpmnModel) {
+        List<AutofillModification> modifications = new ArrayList<>();
         bpmnModel.getModelElementsByType(ServiceTask.class).forEach(task -> {
             if (task.getOperatonType() == null
                 && task.getOperatonClass() == null
                 && task.getOperatonExpression() == null
                 && task.getOperatonDelegateExpression() == null) {
-                task.setOperatonExpression("${null}");
+                String appliedValue = "${null}";
+                task.setOperatonExpression(appliedValue);
                 task.setOperatonAsyncAfter(true);
+                modifications.add(new AutofillModification(
+                    task.getId(),
+                    AutofillModificationType.SERVICE_TASK_EXPRESSION,
+                    appliedValue
+                ));
             }
         });
+        return modifications;
     }
 
-    private void setToNullWhenSendTaskExpressionIsEmpty(BpmnModelInstance bpmnModel) {
+    private List<AutofillModification> setToNullWhenSendTaskExpressionIsEmpty(BpmnModelInstance bpmnModel) {
+        List<AutofillModification> modifications = new ArrayList<>();
         bpmnModel.getModelElementsByType(SendTask.class).forEach(task -> {
             if (task.getOperatonType() == null
                 && task.getOperatonClass() == null
                 && task.getOperatonExpression() == null
                 && task.getOperatonDelegateExpression() == null) {
-                task.setOperatonExpression("${null}");
+                String appliedValue = "${null}";
+                task.setOperatonExpression(appliedValue);
                 task.setOperatonAsyncAfter(true);
+                modifications.add(new AutofillModification(
+                    task.getId(),
+                    AutofillModificationType.SEND_TASK_EXPRESSION,
+                    appliedValue
+                ));
             }
         });
+        return modifications;
     }
 
-    private void setToCorrelateAllWhenMessageSendEventExpressionIsEmpty(BpmnModelInstance bpmnModel) {
+    private List<AutofillModification> setToCorrelateAllWhenMessageSendEventExpressionIsEmpty(BpmnModelInstance bpmnModel) {
+        List<AutofillModification> modifications = new ArrayList<>();
         Stream.of(IntermediateThrowEvent.class, EndEvent.class)
             .flatMap(sendEventClass -> bpmnModel.getModelElementsByType(sendEventClass).stream())
             .filter(sendEvent -> sendEvent.getId().matches("Event_[a-z0-9]{6,8}"))
-            .flatMap(sendEvent -> sendEvent.getChildElementsByType(MessageEventDefinition.class).stream())
-            .forEach(event -> {
-                if (event.getOperatonType() == null
-                    && event.getOperatonClass() == null
-                    && event.getOperatonExpression() == null
-                    && event.getOperatonDelegateExpression() == null) {
-                    String messageName = event.getMessage() == null ? "MY_MESSAGE" : event.getMessage().getName();
-                    event.setOperatonExpression(
-                        "${correlationService.sendMessageToAll(\"" + messageName + "\", execution)}"
-                    );
-                }
+            .forEach(sendEvent -> {
+                sendEvent.getChildElementsByType(MessageEventDefinition.class).forEach(event -> {
+                    if (event.getOperatonType() == null
+                        && event.getOperatonClass() == null
+                        && event.getOperatonExpression() == null
+                        && event.getOperatonDelegateExpression() == null) {
+                        String messageName = event.getMessage() == null ? "MY_MESSAGE" : event.getMessage().getName();
+                        String appliedValue = "${correlationService.sendMessageToAll(\"" + messageName + "\", execution)}";
+                        event.setOperatonExpression(appliedValue);
+                        modifications.add(new AutofillModification(
+                            sendEvent.getId(),
+                            AutofillModificationType.MESSAGE_EVENT_EXPRESSION,
+                            appliedValue
+                        ));
+                    }
+                });
             });
+        return modifications;
     }
 
-    private void setToPropagateBusinessKeyWhenCallActivityIsNew(BpmnModelInstance bpmnModel) {
+    private List<AutofillModification> setToPropagateBusinessKeyWhenCallActivityIsNew(BpmnModelInstance bpmnModel) {
+        List<AutofillModification> modifications = new ArrayList<>();
         bpmnModel.getModelElementsByType(CallActivity.class).forEach(callActivity -> {
             if (callActivity.getId().matches("Activity_[a-z0-9]{6,8}")
                 && callActivity.getCalledElement() != null
@@ -1047,58 +1153,124 @@ public class OperatonProcessService {
                 ExtensionElements extensionElement = bpmnModel.newInstance(ExtensionElements.class);
                 callActivity.addChildElement(extensionElement);
                 OperatonIn businessKeyIn = bpmnModel.newInstance(OperatonIn.class);
-                businessKeyIn.setOperatonBusinessKey("#{execution.processBusinessKey}");
+                String appliedValue = "#{execution.processBusinessKey}";
+                businessKeyIn.setOperatonBusinessKey(appliedValue);
                 extensionElement.addChildElement(businessKeyIn);
                 callActivity.setOperatonAsyncAfter(true);
+                modifications.add(new AutofillModification(
+                    callActivity.getId(),
+                    AutofillModificationType.CALL_ACTIVITY_BUSINESS_KEY,
+                    appliedValue
+                ));
             }
         });
+        return modifications;
     }
 
-    private void setTo60SecondsWhenTimerIsEmpty(BpmnModelInstance bpmnModel) {
+    private List<AutofillModification> setTo60SecondsWhenTimerIsEmpty(BpmnModelInstance bpmnModel) {
+        List<AutofillModification> modifications = new ArrayList<>();
         bpmnModel.getModelElementsByType(TimerEventDefinition.class).forEach(timerEvent -> {
             if (timerEvent.getTimeDate() == null
                 && timerEvent.getTimeDuration() == null
                 && timerEvent.getTimeCycle() == null) {
+                String appliedValue = "PT60S";
                 TimeDuration timeDuration = bpmnModel.newInstance(TimeDuration.class);
-                timeDuration.setTextContent("PT60S");
+                timeDuration.setTextContent(appliedValue);
                 timerEvent.addChildElement(timeDuration);
+                modifications.add(new AutofillModification(
+                    timerEvent.getParentElement().getAttributeValue("id"),
+                    AutofillModificationType.TIMER_DURATION,
+                    appliedValue
+                ));
             }
         });
+        return modifications;
     }
 
-    private boolean isDeployable(BpmnModelInstance model) {
-        AtomicBoolean isDeployable = new AtomicBoolean(true);
-        if (valtimoProperties.getProcess().isSystemProcessUpdatable()) {
-            return isDeployable.get();
+    private List<AutofillModification> getUnchangedAutofills(String previousProcessDefinitionId, BpmnModelInstance bpmnModel) {
+        var previousAutofills = processDefinitionAutofillService.findByProcessDefinitionId(previousProcessDefinitionId);
+        List<AutofillModification> unchanged = new ArrayList<>();
+
+        for (var autofill : previousAutofills) {
+            String currentValue = getFieldValueForAutofill(bpmnModel, autofill.getActivityId(), autofill.getModificationType());
+
+            // If value matches the autofilled value, carry it forward (user hasn't changed it)
+            if (currentValue != null && currentValue.equals(autofill.getAppliedValue())) {
+                unchanged.add(new AutofillModification(
+                    autofill.getActivityId(),
+                    autofill.getModificationType(),
+                    autofill.getAppliedValue()
+                ));
+            }
+            // If value is different or null (user configured it or removed it), don't carry forward
         }
-        model.getDefinitions().getChildElementsByType(Process.class).forEach(
-            process -> {
-                String processDefinitionKey = process.getId();
-                String versionTag = process.getOperatonVersionTag();
-                if (processDefinitionKey == null || processDefinitionKey.isEmpty() || isSystemProcess(
-                    AuthorizationContext
-                        .runWithoutAuthorization(
-                            () -> operatonRepositoryService.findProcessDefinition(
-                                byKey(processDefinitionKey)
-                                    .and(OperatonProcessDefinitionSpecificationHelper.maxVersionOf(versionTag != null ? byVersionTag(versionTag) : byNotLinkedToCaseDefinition()))
-                            )
-                        )
-                )) {
-                    isDeployable.set(false);
+
+        return unchanged;
+    }
+
+    private String getFieldValueForAutofill(BpmnModelInstance bpmnModel, String activityId, AutofillModificationType modificationType) {
+        return switch (modificationType) {
+            case SERVICE_TASK_EXPRESSION -> {
+                var element = bpmnModel.getModelElementById(activityId);
+                if (element instanceof ServiceTask task) {
+                    if (task.getOperatonExpression() != null) yield task.getOperatonExpression();
+                    if (task.getOperatonDelegateExpression() != null) yield task.getOperatonDelegateExpression();
+                    if (task.getOperatonClass() != null) yield task.getOperatonClass();
                 }
-            });
-        return isDeployable.get();
-    }
-
-    private boolean isSystemProcess(OperatonProcessDefinition processDefinition) {
-        if (processDefinition == null) {
-            return false;
-        }
-        var processProperties = processPropertyService.findByProcessDefinitionKey(processDefinition.getKey());
-        if (processProperties != null) {
-            return processProperties.isSystemProcess();
-        }
-        return false;
+                yield null;
+            }
+            case SEND_TASK_EXPRESSION -> {
+                var element = bpmnModel.getModelElementById(activityId);
+                if (element instanceof SendTask task) {
+                    if (task.getOperatonExpression() != null) yield task.getOperatonExpression();
+                    if (task.getOperatonDelegateExpression() != null) yield task.getOperatonDelegateExpression();
+                    if (task.getOperatonClass() != null) yield task.getOperatonClass();
+                }
+                yield null;
+            }
+            case MESSAGE_EVENT_EXPRESSION -> {
+                var element = bpmnModel.getModelElementById(activityId);
+                if (element instanceof ThrowEvent throwEvent) {
+                    var messageDefs = throwEvent.getChildElementsByType(MessageEventDefinition.class);
+                    for (var msgDef : messageDefs) {
+                        String expr = msgDef.getOperatonExpression();
+                        if (expr != null) {
+                            yield expr;
+                        }
+                    }
+                }
+                yield null;
+            }
+            case TIMER_DURATION -> {
+                var element = bpmnModel.getModelElementById(activityId);
+                if (element != null) {
+                    var timerDefs = element.getChildElementsByType(TimerEventDefinition.class);
+                    for (var timerDef : timerDefs) {
+                        var duration = timerDef.getTimeDuration();
+                        if (duration != null) {
+                            yield duration.getTextContent();
+                        }
+                    }
+                }
+                yield null;
+            }
+            case CALL_ACTIVITY_BUSINESS_KEY -> {
+                var element = bpmnModel.getModelElementById(activityId);
+                if (element instanceof CallActivity callActivity) {
+                    var extensionElements = callActivity.getChildElementsByType(ExtensionElements.class);
+                    for (var ext : extensionElements) {
+                        var inMappings = ext.getChildElementsByType(OperatonIn.class);
+                        for (var inMapping : inMappings) {
+                            String businessKey = inMapping.getOperatonBusinessKey();
+                            if (businessKey != null) {
+                                yield businessKey;
+                            }
+                        }
+                    }
+                }
+                yield null;
+            }
+        };
     }
 
     ByteArrayInputStream normalizeToCamundaNamespace(BpmnModelInstance bpmnModel) {

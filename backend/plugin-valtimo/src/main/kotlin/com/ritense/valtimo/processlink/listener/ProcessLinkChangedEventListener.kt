@@ -19,6 +19,8 @@ package com.ritense.valtimo.processlink.listener
 import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkDeletedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
+import com.ritense.processlink.event.ProcessLinksDeployedEvent
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.event.TransactionPhase
@@ -43,11 +45,26 @@ class ProcessLinkChangedEventListener(
         recheckIssues(event.processDefinitionId)
     }
 
+    /**
+     * A deployment that leaves the process definition without any process links writes no process link, so
+     * none of the events above are published. Without this handler such a deployment could never clear an
+     * issue that was already recorded for the case definition.
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun onProcessLinksDeployed(event: ProcessLinksDeployedEvent) {
+        val caseDefinitionId = event.blueprintId as? CaseDefinitionId ?: return
+        try {
+            pluginConfigurationMappingResolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+        } catch (e: Exception) {
+            logger.warn(e) { "Could not recheck plugin configuration issues for case definition $caseDefinitionId" }
+        }
+    }
+
     private fun recheckIssues(processDefinitionId: String) {
         try {
             pluginConfigurationMappingResolver.recheckIssuesForProcessDefinition(processDefinitionId)
         } catch (e: Exception) {
-            logger.debug(e) { "Could not recheck plugin configuration issues for process definition $processDefinitionId" }
+            logger.warn(e) { "Could not recheck plugin configuration issues for process definition $processDefinitionId" }
         }
     }
 

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
+import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityBusinessKeyValidator
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkCreateRequestDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkDeployDto
 import com.ritense.buildingblock.processlink.dto.BuildingBlockProcessLinkExportResponseDto
@@ -45,7 +46,7 @@ import java.util.UUID
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.operaton.bpm.model.bpmn.instance.Process
-import org.operaton.bpm.model.bpmn.instance.operaton.OperatonIn
+import org.operaton.bpm.model.xml.instance.ModelElementInstance
 import org.springframework.stereotype.Component
 
 @Component
@@ -147,6 +148,9 @@ class BuildingBlockProcessLinkMapper(
             createRequestDto.buildingBlockDefinitionKey,
             createRequestDto.buildingBlockDefinitionVersionTag
         )
+        val inputMappings = createRequestDto.inputMappings.toInputDomain()
+        val outputMappings = createRequestDto.outputMappings.toOutputDomain()
+        verifyMappingsUseBuildingBlockFields(inputMappings, outputMappings)
         return BuildingBlockProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = createRequestDto.processDefinitionId,
@@ -158,8 +162,8 @@ class BuildingBlockProcessLinkMapper(
                 createRequestDto.pluginConfigurationMappings,
                 buildingBlockDefinitionId
             ),
-            inputMappings = createRequestDto.inputMappings.toInputDomain(),
-            outputMappings = createRequestDto.outputMappings.toOutputDomain()
+            inputMappings = inputMappings,
+            outputMappings = outputMappings
         )
     }
 
@@ -170,12 +174,19 @@ class BuildingBlockProcessLinkMapper(
     ): ProcessLink {
         processLinkToUpdate as BuildingBlockProcessLink
         updateRequestDto as BuildingBlockProcessLinkUpdateRequestDto
+        verifyBuildingBlockDocumentIdBusinessKey(
+            processLinkToUpdate.processDefinitionId,
+            processLinkToUpdate.activityId
+        )
         val isNestedBuildingBlockLink = isNestedBuildingBlockLink(blueprintId, processLinkToUpdate.processDefinitionId)
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             val buildingBlockDefinitionId = toDefinitionId(
                 updateRequestDto.buildingBlockDefinitionKey,
                 updateRequestDto.buildingBlockDefinitionVersionTag
             )
+            val inputMappings = updateRequestDto.inputMappings.toInputDomain()
+            val outputMappings = updateRequestDto.outputMappings.toOutputDomain()
+            verifyMappingsUseBuildingBlockFields(inputMappings, outputMappings)
             BuildingBlockProcessLink(
                 id = updateRequestDto.id,
                 processDefinitionId = processLinkToUpdate.processDefinitionId,
@@ -187,8 +198,8 @@ class BuildingBlockProcessLinkMapper(
                     updateRequestDto.pluginConfigurationMappings,
                     buildingBlockDefinitionId
                 ),
-                inputMappings = updateRequestDto.inputMappings.toInputDomain(),
-                outputMappings = updateRequestDto.outputMappings.toOutputDomain()
+                inputMappings = inputMappings,
+                outputMappings = outputMappings
             )
         }
     }
@@ -271,28 +282,44 @@ class BuildingBlockProcessLinkMapper(
         return BuildingBlockDefinitionId.of(key, versionTag)
     }
 
+    /**
+     * The building-block side of a mapping is always a building block field (`doc:`). Values enter a
+     * building block through its document before its process instance exists, and are read back from
+     * its document after its process instance has ended. Targets/sources with other prefixes (like
+     * `pv:`) can never be delivered on the building-block side and would fail silently at runtime.
+     * The caller side (input sources, output targets) is unrestricted.
+     */
+    private fun verifyMappingsUseBuildingBlockFields(
+        inputMappings: List<BuildingBlockInputMapping>,
+        outputMappings: List<BuildingBlockOutputMapping>
+    ) {
+        val invalidInputTargets = inputMappings
+            .map { it.getPrefixedTarget() }
+            .filter { !it.startsWith(DOC_TARGET_PREFIX) }
+        require(invalidInputTargets.isEmpty()) {
+            "Input mapping targets must be 'doc:' building block fields. Invalid: ${invalidInputTargets.joinToString()}"
+        }
+
+        val invalidOutputSources = outputMappings
+            .map { it.getPrefixedSource() }
+            .filter { !it.startsWith(DOC_TARGET_PREFIX) }
+        require(invalidOutputSources.isEmpty()) {
+            "Output mapping sources must be 'doc:' building block fields. Invalid: ${invalidOutputSources.joinToString()}"
+        }
+    }
+
     private fun verifyBuildingBlockDocumentIdBusinessKey(processDefinitionId: String, activityId: String) {
         val bpmnModel = repositoryService.getBpmnModelInstance(processDefinitionId)
             ?: error("BPMN model not found for process definition '$processDefinitionId'")
-        val callActivity = bpmnModel.getModelElementById<CallActivity>(activityId)
+        // Typed overload compiles to a checkcast, so a mismatched element type throws rather than reaching the message below.
+        val callActivity = bpmnModel.getModelElementById<ModelElementInstance>(activityId) as? CallActivity
             ?: error(
                 "Activity '$activityId' in process definition '$processDefinitionId' " +
                     "must be a call activity for a building-block process link."
             )
-        val hasBuildingBlockBusinessKey = callActivity.extensionElements
-            ?.elementsQuery
-            ?.filterByType(OperatonIn::class.java)
-            ?.list()
-            ?.any { it.operatonBusinessKey == BUILDING_BLOCK_DOCUMENT_ID_EXPRESSION }
-            ?: false
-        if (!hasBuildingBlockBusinessKey) {
-            val processDefinitionKey = bpmnModel.getModelElementsByType<Process?>(Process::class.java)
-                .singleOrNull()?.getId() ?: processDefinitionId
-            error(
-                "Call activity '$activityId' in process definition '$processDefinitionKey' must define " +
-                    "<camunda:in businessKey=\"$BUILDING_BLOCK_DOCUMENT_ID_EXPRESSION\" />."
-            )
-        }
+        val processDefinitionKey = bpmnModel.getModelElementsByType<Process?>(Process::class.java)
+            .singleOrNull()?.getId() ?: processDefinitionId
+        BuildingBlockCallActivityBusinessKeyValidator.validate(callActivity, processDefinitionKey)
     }
 
     private fun List<com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto>.toInputDomain(): List<BuildingBlockInputMapping> =
@@ -320,6 +347,6 @@ class BuildingBlockProcessLinkMapper(
         }
 
     companion object {
-        private const val BUILDING_BLOCK_DOCUMENT_ID_EXPRESSION = "#{buildingBlockDocumentId}"
+        private const val DOC_TARGET_PREFIX = "doc:"
     }
 }

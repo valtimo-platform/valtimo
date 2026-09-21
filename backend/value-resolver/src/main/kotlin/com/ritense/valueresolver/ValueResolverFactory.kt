@@ -143,8 +143,18 @@ interface ValueResolverFactory {
      *
      * @param values The values to handle. i.e. mapOf(doc:add:/firstname to John)
      */
+    @Deprecated(
+        message = "Replaced by preProcessValuesForNewDocument(values, documentDefinitionName), which lets resolvers " +
+            "make schema-aware decisions such as how to write 'null' values.",
+        replaceWith = ReplaceWith("preProcessValuesForNewDocument(values, documentDefinitionName)")
+    )
     fun preProcessValuesForNewCase(values: Map<String, Any?>): Any {
         return values
+    }
+
+    @Suppress("DEPRECATION")
+    fun preProcessValuesForNewDocument(values: Map<String, Any?>, documentDefinitionName: String): Any {
+        return preProcessValuesForNewCase(values)
     }
 
     fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {

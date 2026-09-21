@@ -108,9 +108,20 @@ interface ValueResolverService {
         values: Map<String, Any?>
     )
 
+    @Deprecated(
+        message = "Replaced by preProcessValuesForNewDocument(values, documentDefinitionName), which lets resolvers " +
+            "make schema-aware decisions such as how to write 'null' values.",
+        replaceWith = ReplaceWith("preProcessValuesForNewDocument(values, documentDefinitionName)")
+    )
     fun preProcessValuesForNewCase(
         values: Map<String, Any?>
     ): Map<String, Any?>
+
+    @Suppress("DEPRECATION")
+    fun preProcessValuesForNewDocument(
+        values: Map<String, Any?>,
+        documentDefinitionName: String
+    ): Map<String, Any?> = preProcessValuesForNewCase(values)
 
     fun supportsValue(value: String): Boolean
 

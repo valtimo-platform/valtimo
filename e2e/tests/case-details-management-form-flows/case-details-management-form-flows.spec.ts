@@ -20,6 +20,12 @@ import {CaseDetailsManagementFormFlowsPage} from './page';
 
 test.use({storageState: undefined});
 
+// Tests share a single context/page created in beforeAll and depend on each other
+// (create → open → edit → delete). Serial mode keeps them in one group (so
+// beforeAll/afterAll run exactly once despite fullyParallel) and skips the remaining
+// tests when one fails, instead of cascading "context closed" errors.
+test.describe.configure({mode: 'serial'});
+
 test.describe('Case details management — Form Flows', () => {
   let context;
   let page;
@@ -45,7 +51,7 @@ test.describe('Case details management — Form Flows', () => {
 
   test.afterAll(async () => {
     await formFlowsPage.deleteFormFlowViaApi(formFlowTestData.key);
-    await context.close();
+    if (context) await context.close();
   });
 
   // ─── 6.58 View form flows list ────────────────────────────────────
@@ -65,7 +71,7 @@ test.describe('Case details management — Form Flows', () => {
         await formFlowsPage.createFormFlow(formFlowTestData.key);
 
         // Assert — creation navigates directly to the form flow editor
-        await formFlowsPage.assertEditorVisible();
+        await formFlowsPage.assertEditorPageVisible();
       });
     });
   });
@@ -77,8 +83,9 @@ test.describe('Case details management — Form Flows', () => {
       // Navigate back to list first (creation left us on the editor)
       await formFlowsPage.navigateBackToFormFlowsList();
 
-      // Act
+      // Act — open the form flow and switch to the JSON editor tab
       await formFlowsPage.openFormFlow(formFlowTestData.key);
+      await formFlowsPage.openJsonEditorTab();
 
       // Assert — Monaco editor is rendered
       await formFlowsPage.assertEditorVisible();
@@ -122,11 +129,14 @@ test.describe('Case details management — Form Flows', () => {
     });
 
     test.describe('Failure scenarios', () => {
-      test('Save button is disabled when JSON is invalid', async () => {
+      test('Saving invalid JSON reveals errors and disables the button until fixed', async () => {
         // Act
         await formFlowsPage.pasteRawTextInEditor('{ this is not valid json }');
 
-        // Assert
+        // Assert — validate-on-save: the button stays enabled while modelling, a save attempt
+        // on an invalid definition reveals the errors and gates the button on validity
+        await expect(formFlowsPage.saveButton).toBeEnabled();
+        await formFlowsPage.saveButton.click();
         await expect(formFlowsPage.saveButton).toBeDisabled({timeout: 10_000});
 
         // Restore valid JSON so subsequent tests (delete) can proceed
@@ -145,6 +155,60 @@ test.describe('Case details management — Form Flows', () => {
         });
         await expect(formFlowsPage.saveButton).toBeEnabled({timeout: 10_000});
       });
+    });
+  });
+
+  // ─── 6.62 Visual editor ───────────────────────────────────────────
+
+  test.describe('6.62 — Visual editor', () => {
+    test('Visual editor shows the saved steps', async () => {
+      // Act — switch from the JSON tab to the visual editor tab
+      await formFlowsPage.openVisualEditorTab();
+
+      // Assert — the step saved through the JSON editor is listed and selected; its form key is
+      // preserved in the form dropdown even though no form with that name exists. The editor can
+      // briefly show a stale definition while the reload after the tab switch settles, so allow
+      // a generous timeout.
+      await expect(formFlowsPage.visualStepListItems).toHaveCount(1, {timeout: 15_000});
+      await expect(formFlowsPage.visualStepListItems.first()).toContainText('step1');
+      await expect(formFlowsPage.visualStepKeyInput).toHaveValue('step1');
+      await expect(formFlowsPage.visualFormDefinitionDropdown).toContainText('test-form');
+    });
+
+    test('Edit a step title in the visual editor and save', async () => {
+      // Act
+      await formFlowsPage.visualStepTitleInput.fill('First step');
+      await expect(formFlowsPage.saveButton).toBeEnabled();
+      const response = await formFlowsPage.saveFormFlow(formFlowTestData.key, CASE_IDENTIFIER);
+
+      // Assert
+      expect(response.ok()).toBeTruthy();
+      await formFlowsPage.assertSaveSuccessNotification(formFlowTestData.key);
+    });
+
+    test('Add a step with a transition in the visual editor and save', async () => {
+      // Act — add a second step and pick the first available form of the case definition
+      await formFlowsPage.addVisualStep();
+      await expect(formFlowsPage.visualStepKeyInput).toHaveValue('step-2');
+      // The new step is not the start step, so it offers the make-start action
+      await expect(formFlowsPage.visualMakeStartStepButton).toBeVisible();
+      await formFlowsPage.selectFirstVisualFormDefinition();
+
+      // Act — connect the first step to the new step
+      await formFlowsPage.selectVisualStep(0);
+      await formFlowsPage.visualAddTransitionButton.click();
+      await formFlowsPage.selectVisualTransitionTarget(0, 'step-2');
+
+      await expect(formFlowsPage.saveButton).toBeEnabled();
+      const response = await formFlowsPage.saveFormFlow(formFlowTestData.key, CASE_IDENTIFIER);
+
+      // Assert
+      expect(response.ok()).toBeTruthy();
+      await formFlowsPage.assertSaveSuccessNotification(formFlowTestData.key);
+
+      // Assert — the transition is part of the persisted definition shown in the JSON editor
+      await formFlowsPage.openJsonEditorTab();
+      await expect(formFlowsPage.monacoEditor).toContainText('step-2');
     });
   });
 

@@ -16,10 +16,11 @@ import {
   MenuModule,
   WidgetModule,
   enableCustomFormioComponents,
-  registerFormioCurrencyComponent,
+  registerFormioMailPreviewComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
+  registerFormioCurrencyComponent,
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
 } from '@valtimo/components';
@@ -184,5 +185,6 @@ export class AppModule {
     registerFormioIbanComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
     registerIkoSearchFormioComponent(injector);
+    registerFormioMailPreviewComponent(injector);
   }
 }

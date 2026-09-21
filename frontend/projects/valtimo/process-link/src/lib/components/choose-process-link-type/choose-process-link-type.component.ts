@@ -16,7 +16,11 @@
 
 import {Component} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
-import {UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../../constants';
+import {
+  PROCESS_LINK_TYPE_BUTTON_TEST_ID_PREFIX,
+  PROCESS_LINK_TYPE_CHOOSER_TEST_IDS,
+  UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK,
+} from '../../constants';
 
 @Component({
   standalone: false,
@@ -25,6 +29,9 @@ import {UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK} from '../../constants'
   styleUrls: ['./choose-process-link-type.component.scss'],
 })
 export class ChooseProcessLinkTypeComponent {
+  protected readonly testIds = PROCESS_LINK_TYPE_CHOOSER_TEST_IDS;
+  protected readonly testIdPrefix = PROCESS_LINK_TYPE_BUTTON_TEST_ID_PREFIX;
+
   public readonly availableProcessLinkTypes$ =
     this.processLinkStateService.availableProcessLinkTypes$;
 

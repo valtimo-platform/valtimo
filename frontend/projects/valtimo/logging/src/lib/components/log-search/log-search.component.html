@@ -26,6 +26,7 @@
       <input
         cdsText
         [attr.data-carbon-theme]="theme"
+        [attr.data-test-id]="testIds.messageInput"
         formControlName="likeFormattedMessage"
         [placeholder]="'logging.columns.formattedMessage' | translate"
       />
@@ -35,6 +36,7 @@
       class="valtimo-log-search__level"
       formControlName="level"
       [attr.data-carbon-theme]="theme"
+      [attr.data-test-id]="testIds.levelDropdown"
       [appendInline]="true"
       [label]="'logging.columns.level' | translate"
       [placeholder]="'logging.columns.level' | translate"
@@ -82,6 +84,7 @@
           <input
             cdsText
             [attr.data-carbon-theme]="theme"
+            [attr.data-test-id]="testIds.propertyKeyInput"
             formControlName="key"
             [placeholder]="'interface.key' | translate"
           />
@@ -91,6 +94,7 @@
           <input
             cdsText
             [attr.data-carbon-theme]="theme"
+            [attr.data-test-id]="testIds.propertyValueInput"
             formControlName="value"
             [placeholder]="'interface.value' | translate"
           />
@@ -98,6 +102,7 @@
 
         <button
           cdsButton="danger--ghost"
+          [attr.data-test-id]="testIds.removePropertyButton"
           [disabled]="$count === 1"
           iconOnly="true"
           type="button"
@@ -108,14 +113,25 @@
       </form>
     }
 
-    <button cdsButton="primary" size="sm" type="button" (click)="addPropertySearchField()">
+    <button
+      cdsButton="primary"
+      size="sm"
+      type="button"
+      [attr.data-test-id]="testIds.addPropertyButton"
+      (click)="addPropertySearchField()"
+    >
       {{ 'logging.search.addProperty' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
     </button>
   </section>
 
-  <button cdsButton="tertiary" type="button" (click)="onClearFilter()">
+  <button
+    cdsButton="tertiary"
+    type="button"
+    [attr.data-test-id]="testIds.clearButton"
+    (click)="onClearFilter()"
+  >
     {{ 'interface.clear' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>

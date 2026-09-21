@@ -103,6 +103,13 @@
         "portalTaakInformatie": {
             "type": "string",
             "description": "Portal taak informatie"
+        },
+        "bijlagen": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Resource-ids van bijlagen in de tijdelijke opslag"
         }
     }
 }

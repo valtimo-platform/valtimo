@@ -72,6 +72,15 @@ class PluginConfigurationResource(
                 .map { PluginConfigurationDto(it) })
     }
 
+    @GetMapping("/v1/plugin/configuration/{pluginConfigurationId}")
+    fun getPluginConfiguration(
+        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: UUID
+    ): ResponseEntity<PluginConfigurationDto> {
+        return pluginService.findPluginConfiguration(PluginConfigurationId.existingId(pluginConfigurationId))
+            ?.let { ResponseEntity.ok(PluginConfigurationDto(it)) }
+            ?: ResponseEntity.notFound().build()
+    }
+
     @PostMapping("/v1/plugin/configuration")
     fun createPluginConfiguration(
         @Valid @RequestBody createPluginConfiguration: CreatePluginConfigurationDto

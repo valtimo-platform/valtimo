@@ -25,6 +25,8 @@ export * from './lib/constants';
 /* plugin configuration container */
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.component';
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.module';
+/* plugin configuration mapping */
+export * from './lib/components/plugin-configuration-mapping/plugin-configuration-mapping.component';
 /* open-zaak plugin */
 export * from './lib/plugins/open-zaak/open-zaak-plugin.module';
 export * from './lib/plugins/open-zaak/components/open-zaak-configuration/open-zaak-configuration.component';

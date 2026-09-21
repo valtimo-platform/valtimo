@@ -18,6 +18,7 @@
  * Public API Surface of migration
  */
 
+export * from './lib/constants';
 export * from './lib/migration.service';
 export * from './lib/migration.component';
 export * from './lib/migration.module';

@@ -27,6 +27,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {ChevronDown16, ChevronUp16} from '@carbon/icons';
+import {SEARCH_FIELD_TEST_ID_PREFIX, SEARCH_FIELDS_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-search-fields',
@@ -35,6 +36,9 @@ import {ChevronDown16, ChevronUp16} from '@carbon/icons';
   standalone: false,
 })
 export class SearchFieldsComponent implements OnInit, OnDestroy {
+  protected readonly testIds = SEARCH_FIELDS_TEST_IDS;
+  protected readonly searchFieldTestIdPrefix = SEARCH_FIELD_TEST_ID_PREFIX;
+
   @Input() public loading!: boolean;
   @Input() public set searchFields(fields: Array<SearchField>) {
     this.searchFields$.next(fields);

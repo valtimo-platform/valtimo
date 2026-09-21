@@ -15,3 +15,4 @@
  */
 
 export * from './task-list.constants';
+export * from './task-list.test-ids';

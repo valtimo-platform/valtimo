@@ -34,7 +34,11 @@ class GlobalProcessDefinitionImporter(
 
     override fun import(request: ImportRequest) {
         request.content.inputStream().use {
-            operatonProcessService.deploy(null, fileNameWithoutPath(request.fileName), it, false, true)
+            if (request.fromConfiguration) {
+                operatonProcessService.deployFromConfiguration(fileNameWithoutPath(request.fileName), it)
+            } else {
+                operatonProcessService.deploy(null, fileNameWithoutPath(request.fileName), it, false, true)
+            }
         }
     }
 

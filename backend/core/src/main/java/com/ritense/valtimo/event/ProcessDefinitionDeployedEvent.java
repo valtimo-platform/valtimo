@@ -31,6 +31,8 @@ public class ProcessDefinitionDeployedEvent {
     private final String processDefinitionId;
     private final String processDefinitionKey;
     @Nullable
+    private final String versionTag;
+    @Nullable
     private final CaseDefinitionId caseDefinitionId;
     private final BpmnModelInstance processDefinitionModelInstance;
     private final OperatonDeploymentSource source;
@@ -43,6 +45,7 @@ public class ProcessDefinitionDeployedEvent {
         this.previousProcessDefinitionId = processDefinition.getPreviousProcessDefinitionId();
         this.processDefinitionId = processDefinition.getId();
         this.processDefinitionKey = processDefinition.getKey();
+        this.versionTag = processDefinition.getVersionTag();
         this.caseDefinitionId = CaseDefinitionId.fromProcessVersionTag(processDefinition.getVersionTag());
         this.source = source;
 
@@ -65,6 +68,11 @@ public class ProcessDefinitionDeployedEvent {
 
     public String getProcessDefinitionKey() {
         return processDefinitionKey;
+    }
+
+    @Nullable
+    public String getVersionTag() {
+        return versionTag;
     }
 
     @Nullable

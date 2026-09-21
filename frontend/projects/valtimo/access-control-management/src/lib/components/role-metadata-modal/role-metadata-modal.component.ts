@@ -27,6 +27,7 @@ import {FormBuilder, Validators} from '@angular/forms';
 import {CARBON_CONSTANTS, SelectItem} from '@valtimo/components';
 import {Role, RoleMetadataModal} from '../../models';
 import {AccessControlService} from '../../services';
+import {ACCESS_CONTROL_ROLES_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -58,6 +59,7 @@ export class RoleMetadataModalComponent implements OnInit {
   // only lists these; a custom key is entered via manual mode.
   public readonly $roleKeyItems = signal<SelectItem[]>([]);
   public readonly $loadingRoles = signal<boolean>(false);
+  public readonly testIds = ACCESS_CONTROL_ROLES_TEST_IDS;
   // Whether the key is typed manually rather than picked from the dropdown.
   public readonly $keyManual = signal<boolean>(false);
 

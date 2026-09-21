@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  A process whose steps cover the element types that can carry a process link:
+  a service task (plugin only), a user task (form / form-flow / plugin) and a
+  call activity (plugin / building block). Used by the building block plugin
+  integration e2e test, which needs real shapes in the diagram so the link
+  wizard can be opened from the properties panel.
+
+  Every step carries an implementation (expression / form key / called element).
+  `ProcessDefinitionValidator` warns about steps that have neither a process link
+  nor an implementation, and the building block process upload rejects a diagram
+  on warnings too — so without these attributes the upload would 422.
+-->
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:operaton="http://operaton.org/schema/1.0/bpmn" targetNamespace="http://bpmn.io/schema/bpmn" id="Definitions_PluginSteps">
+  <bpmn:process id="e2e-plugin-steps-process" name="E2E Plugin Steps Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Start">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="ServiceTask_1" name="Service step" operaton:expression="${true}">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="UserTask_1" name="User step" operaton:formKey="e2e-plugin-steps-form">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:callActivity id="CallActivity_1" name="Call step" calledElement="e2e-test-process">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent_1" name="End">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="ServiceTask_1"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="ServiceTask_1" targetRef="UserTask_1"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="UserTask_1" targetRef="CallActivity_1"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="CallActivity_1" targetRef="EndEvent_1"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="e2e-plugin-steps-process">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="173.0" y="102.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1_di" bpmnElement="ServiceTask_1">
+        <dc:Bounds height="80.0" width="100.0" x="260.0" y="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_1_di" bpmnElement="UserTask_1">
+        <dc:Bounds height="80.0" width="100.0" x="420.0" y="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1_di" bpmnElement="CallActivity_1">
+        <dc:Bounds height="80.0" width="100.0" x="580.0" y="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="742.0" y="102.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="209" y="120"/>
+        <di:waypoint x="260" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="360" y="120"/>
+        <di:waypoint x="420" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="520" y="120"/>
+        <di:waypoint x="580" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="680" y="120"/>
+        <di:waypoint x="742" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

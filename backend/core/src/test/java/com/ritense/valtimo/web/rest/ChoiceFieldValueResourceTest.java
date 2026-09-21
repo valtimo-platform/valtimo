@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ class ChoiceFieldValueResourceTest {
 
         Pageable pageable = PageRequest.of(1, 1);
 
-        when(choiceFieldValueService.findAllByChoiceFieldKeyName(any(), eq("some-name"))).thenReturn(new PageImpl<>(List.of(choiceFieldValue), pageable, 5L));
+        when(choiceFieldValueService.findAllByChoiceFieldKeyName(any(), eq("some-name"), eq(false))).thenReturn(new PageImpl<>(List.of(choiceFieldValue), pageable, 5L));
 
         mvc.perform(get("/api/v2/choice-field-values/some-name/values"))
             .andExpect(status().isOk())

@@ -111,7 +111,7 @@ open class ValtimoFormFlow(
         val submissionValues = submissionSavePath.entries
             .associate { it.key to getValue(submission, it.value) }
             .filter { it.value !is MissingNode }
-        val submittedByType = valueResolverService.preProcessValuesForNewCase(submissionValues)
+        val submittedByType = valueResolverService.preProcessValuesForNewDocument(submissionValues, documentDefinitionName)
 
         val document = AuthorizationContext.runWithoutAuthorization {
             documentService.createDocument(
@@ -171,6 +171,7 @@ open class ValtimoFormFlow(
             .associate { it.key to getValue(submission, it.value) }
             .filter { it.value !is MissingNode }
         valueResolverService.handleValues(UUID.fromString(documentId), submissionValues)
+        @Suppress("DEPRECATION")
         val submittedByType = valueResolverService.preProcessValuesForNewCase(submissionValues)
 
         val processDefinitionKey = getRequiredAdditionalProperty(formFlowInstance.getAdditionalProperties(), "processDefinitionKey").toString()

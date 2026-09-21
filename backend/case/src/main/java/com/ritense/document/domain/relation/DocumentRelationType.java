@@ -17,5 +17,5 @@
 package com.ritense.document.domain.relation;
 
 public enum DocumentRelationType {
-    PREVIOUS, NEXT, SUPPORTING
+    PREVIOUS, NEXT, SUPPORTING, PARENT, CHILD
 }

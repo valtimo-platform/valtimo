@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './process-bean.service';
 export * from './process-management-editor.service';
 export * from './process-management-state.service';
 export * from './process-management.service';

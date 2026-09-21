@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,6 +158,9 @@ class OperatonProcessServiceTest {
     @Mock
     private OperatonProcessDefinitionRepository operatonProcessDefinitionRepository;
 
+    @Mock
+    private com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService processDefinitionAutofillService;
+
     private OperatonHistoryService historyService = mock(OperatonHistoryService.class, RETURNS_DEEP_STUBS);
 
     @BeforeEach
@@ -188,7 +191,8 @@ class OperatonProcessServiceTest {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepository
+            operatonProcessDefinitionRepository,
+            processDefinitionAutofillService
         );
 
         //when
@@ -236,7 +240,8 @@ class OperatonProcessServiceTest {
             operatonByteArrayService,
             applicationEventPublisher,
             operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepository
+            operatonProcessDefinitionRepository,
+            processDefinitionAutofillService
         );
 
         //when
@@ -553,7 +558,7 @@ class OperatonProcessServiceTest {
             formService, historyService, processPropertyService, valtimoProperties,
             authorizationService, operatonExecutionRepository, processDefinitionCaseDefinitionLinker,
             operatonByteArrayService, applicationEventPublisher, operatonDeploymentSourceHelper,
-            operatonProcessDefinitionRepository
+            operatonProcessDefinitionRepository, processDefinitionAutofillService
         );
     }
 
