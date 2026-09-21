@@ -15,7 +15,9 @@ was briefly unavailable recovers on its own, without any manual step.
 | What you see | Most likely cause | Where to go |
 |--------------|-------------------|-------------|
 | An integration shows **Unreachable** | Wrong base URL, a rotated secret, or the service is down | [Integration is unreachable](#integration-is-unreachable) |
-| A plugin shows **Review required** | Its package on the host changed and is no longer the accepted one | [Plugin status and reviews](plugin-status-and-reviews.md#review-required) |
+| A plugin shows **Review required** | Its package on the host changed and is no longer the accepted one | [Resolving it on a plugin host](plugin-status-and-reviews.md#resolving-it-on-a-plugin-host) |
+| An app shows **Review required** | The app changed its manifest under the same version | [Resolving it on an app](plugin-status-and-reviews.md#resolving-it-on-an-app) |
+| A plugin's actions fail although its integration is reachable | The integration no longer serves that plugin version | [No longer served](plugin-status-and-reviews.md#no-longer-served) |
 | A plugin shows **Awaiting host** | Declared by a deployment descriptor; its integration has not served it yet | [Plugin status and reviews](plugin-status-and-reviews.md#awaiting-host) |
 | A plugin shows **Incompatible** | The plugin declares a Valtimo version range this environment falls outside | [Plugin status and reviews](plugin-status-and-reviews.md#incompatible) |
 | A case tab, widget or page is blank or shows unavailable | The frontend origin is not allowed, or the plugin is suspended | [A plugin screen does not load](#a-plugin-screen-does-not-load) |
@@ -90,6 +92,7 @@ action. The distinction that matters is whether the plugin ran:
 |-------|---------|-----------|
 | The integration is unreachable | The action never ran | [Integration is unreachable](#integration-is-unreachable) |
 | The plugin is awaiting review | The action was refused before running | [Review required](plugin-status-and-reviews.md#review-required) |
+| The plugin is no longer served by its integration | The action was refused before running | [No longer served](plugin-status-and-reviews.md#no-longer-served) |
 | An error from the plugin itself | The plugin ran and reported a failure | [Plugin logs](plugin-logs.md) |
 
 Retry the activity once the cause is resolved; nothing about the process link needs to be rebuilt.

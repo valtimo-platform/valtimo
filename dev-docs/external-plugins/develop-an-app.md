@@ -50,7 +50,7 @@ subscribe to.
 | **Configuration** | A named instance of your plugin with its own settings and granted permissions |
 | **Service token** | A short-lived credential (~10 min) pushed with each configuration, used for GZAC API callbacks |
 | **HMAC signature** | Request authentication via `X-Valtimo-Signature` header — your secret signs every GZAC request |
-| **Content hash** | Optional digest of your plugin's behavior/manifest — enables GZAC to detect unauthorized changes |
+| **Content hash** | Digest of your plugin's behavior/manifest that GZAC pins to detect unauthorized changes. Serve your own, or GZAC derives one from your manifest |
 
 ## Step 1: Understand the minimal requirements
 
@@ -73,7 +73,7 @@ Everything else is opt-in, and skipping it degrades cleanly:
 | Public routes (`/plugin-manifest`, `/bundles/*`, `/data`, `/frame-policy`) | No plugin screens. Omit them unless your manifest declares `frontendBundles` |
 | `POST …/submit/{submitKey}` | Only needed for a `task-form` bundle with `submitHandler: true` |
 | Event consumption | Declare no `eventSubscriptions` and ignore `eventBroker` |
-| `contentHash` | Recommended, not required. Without it GZAC cannot pin your content, so a change never triggers admin re-acceptance |
+| `contentHash` | Recommended, not required — but omitting it does **not** opt out of pinning. GZAC falls back to a hash derived from your manifest, so any manifest change under the same version still freezes your app pending admin re-acceptance |
 
 Start there, confirm an action runs end to end, then add surfaces.
 
@@ -159,11 +159,22 @@ Pick a `pluginId` unique to your app: `pluginId@version` is unique across a whol
 environment, so registering an app whose plugin is already served by another integration there is
 refused with a conflict error.
 
-`contentHash` is optional. Serve a stable value that changes when your plugin's behavior/manifest
-changes and GZAC pins it, flagging unexpected changes for admin re-acceptance — recommended, and
-cheap if you derive it from your build. While a changed hash awaits re-acceptance, GZAC also
-withholds every configuration push, so your latest service token expires within its ~10-minute
-TTL and callbacks stop until an administrator accepts.
+`contentHash` is optional, but pinning is not. Serve a stable value that changes when your plugin's
+behavior or manifest changes — recommended, and cheap if you derive it from your build. If you serve
+none, GZAC derives one itself: `manifest-sha256:` over your canonicalised manifest (object keys
+sorted recursively, so key order on the wire never reads as a change). Either way the version you
+were accepted on is pinned.
+
+The practical consequence: **editing your manifest in place under the same `pluginId@version`
+freezes your app.** Adding a permission, an action or a bundle changes the derived hash, and GZAC
+deactivates the app until an administrator reviews and accepts the new footprint. While it waits,
+GZAC also withholds every configuration push, so your latest service token expires within its
+~10-minute TTL and callbacks stop.
+
+{% hint style="info" %}
+Bump the version for a new footprint you want configured fresh. Reserve in-place manifest edits for
+development, where re-accepting is cheap.
+{% endhint %}
 
 ### `PUT /api/host/gzac-instances` — frame-ancestor announcement (optional)
 
@@ -186,6 +197,7 @@ runtime — so the table below notes per field what actually binds an app:
 {
   "pluginId": "demo-app",
   "pluginVersion": "1.0.0",
+  "title": "Greeting service (acceptance)",
   "properties": { "greeting": "Hello" },
   "serviceToken": "eyJ…",
   "gzacBaseUrl": "http://gzac:8080",
@@ -208,13 +220,14 @@ runtime — so the table below notes per field what actually binds an app:
 |---|---|
 | `serviceToken` | **Required — 400 without it.** Your credential for calling GZAC back. Replaced on every poll; expires in ~10 minutes. Never cache beyond the next push, never expose it (not in the listing, not to the browser). |
 | `gzacBaseUrl` | **Required.** The base URL for callbacks, and the identity of the pushing GZAC instance. |
+| `title` | The name the admin gave this configuration. Purely for labelling — store it so your logs and any UI you serve can name the configuration instead of showing a bare id. |
 | `properties` | The configuration values the admin entered (secrets decrypted — server-side only). |
 | `ownerId` | Opaque identity of the GZAC↔app relationship. Persist and echo it in the listing; it is what lets a GZAC clean up only its own configurations. |
 | `eventSubscriptions` | The event types the admin granted (which can lag your manifest). Act on these and drop the rest — your obligation, not an enforced bound: the broker feed is a fanout carrying every platform event (see [Events](#events)). |
 | `grantedEndpoints` | The GZAC endpoints your service token may call. GZAC enforces this server-side on every callback — treat the list as your API surface. |
 | `grantedCapabilities` | For an app, two matter: `frontend_data` gates your `/data` route, and declaring `log` in the manifest enables the admin's **Logs** dialog — which calls the logs route below, so serve it when you declare `log`. The others (`gzac_api`, `http_request`, `kv`) switch host functions inside the Wasm sandbox — an app has no such runtime, so they arrive for contract parity and record what the admin accepted. |
 | `allowedEgress` | The outbound connections the admin accepted — informational for an app: a plugin host enforces this on sandboxed plugins, but nothing can enforce it on a native service. Declare your real targets in the manifest so the **Permissions** step tells the truth; actually bounding an app's traffic is a deployment concern (network policy). |
-| `expectedContentHash` | Present when GZAC pinned your `contentHash`. If it doesn't match what you currently serve, refuse with `409` — the admin accepted different content. |
+| `expectedContentHash` | The footprint the admin accepted — your own `contentHash`, or the `manifest-sha256:` GZAC derived when you serve none. If it doesn't match what you currently serve, refuse with `409`. |
 | `eventBroker` | Broker connection for events; absent = events disabled for this configuration. `queueTtlMs` is only sent in `durable` mode. Normalize defensively: unknown `queueMode` → `live`; clamp `queueTtlMs` to 1 h–30 d (default 72 h). |
 
 Reply any 2xx. **POST is an upsert** — GZAC re-POSTs the same `configId` on every edit and every

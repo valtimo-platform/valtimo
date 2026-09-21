@@ -58,6 +58,14 @@ integration, the dialog reports which registration holds it and stops. Connect t
 remove the existing registration first.
 {% endhint %}
 
+{% hint style="warning" %}
+**Accepting an app pins its manifest.** From here on, that version means exactly the manifest that
+was accepted. If the app later changes its manifest in place under the same version, the app stops
+running and is tagged **Review required** until an administrator accepts the new footprint — see
+[Resolving it on an app](plugin-status-and-reviews.md#resolving-it-on-an-app). For a genuinely new
+footprint, have the app publish a new version instead.
+{% endhint %}
+
 {% hint style="info" %}
 When an app serves plugin screens (such as a case tab), the page may ask for a refresh before the
 configuration step — security policy for a newly connected app's screens is applied when the page

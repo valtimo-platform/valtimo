@@ -64,8 +64,9 @@ Because of this loop, most problems are self-healing: an integration that was do
 configurations on the next cycle, without any manual step.
 
 {% hint style="warning" %}
-If a plugin package on a host changes without an approved upload, Valtimo suspends that plugin —
-its actions fail, its screens go dark, and no tokens are issued — until an administrator reviews
-and accepts the change. The plugin is tagged **Review required** until then; see
+If what an integration serves stops matching what was accepted — a changed package on a plugin
+host, or a changed manifest on an app — Valtimo suspends it: its actions fail, its screens go dark,
+and no tokens are issued, until an administrator reviews and accepts the change. It is tagged
+**Review required** until then; see
 [Plugin status and reviews](plugin-status-and-reviews.md#review-required) for how to resolve it.
 {% endhint %}
