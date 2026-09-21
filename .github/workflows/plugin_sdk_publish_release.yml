@@ -1,0 +1,311 @@
+name: Plugin SDK - Publish release
+run-name: Publish plugin-sdk ${{ github.ref_name }}
+
+# Worker for @valtimo/plugin-sdk releases. Dispatched by plugin_sdk_start_release.yml on a
+# release/plugin-sdk/<version> branch and derives the version from that branch name, so every
+# gate below keys off the ref rather than a free-form input. Publishes the SDK to npmjs, then
+# commits the version bump, tags it, cuts a GitHub release and opens the merge-back PR.
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build, test and pack only — no npm publish, tag, release or PR"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  prepare:
+    name: Determine version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      npm_tag: ${{ steps.version.outputs.npm_tag }}
+    steps:
+      - name: Validate and extract release branch
+        id: version
+        run: |
+          set -euo pipefail
+          if [[ ! "${GITHUB_REF_NAME}" =~ ^release/plugin-sdk/([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?)$ ]]; then
+            echo "::error::Branch must be release/plugin-sdk/<semver> (e.g. release/plugin-sdk/1.0.0). Current: ${GITHUB_REF_NAME}."
+            exit 1
+          fi
+          VERSION="${BASH_REMATCH[1]}"
+
+          # A prerelease goes out under the 'next' dist-tag so `npm i @valtimo/plugin-sdk`
+          # keeps resolving the last stable release.
+          if [[ "${VERSION}" == *-* ]]; then
+            PRERELEASE=true
+            NPM_TAG=next
+          else
+            PRERELEASE=false
+            NPM_TAG=latest
+          fi
+
+          {
+            echo "version=${VERSION}"
+            echo "prerelease=${PRERELEASE}"
+            echo "npm_tag=${NPM_TAG}"
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build, test and pack
+    needs: prepare
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node 22 matches the SDK's engine requirement and plugin_host_ci.yml.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: plugin-host/plugin-sdk/package-lock.json
+
+      - name: Install
+        working-directory: plugin-host/plugin-sdk
+        run: npm ci
+
+      # Set the released version before building: SDK_VERSION is read from package.json, the
+      # scaffold pins `^<that version>` into generated plugins and the pack tool stamps it into
+      # every package. The bump is committed later, after the publish succeeds.
+      - name: Set version
+        working-directory: plugin-host/plugin-sdk
+        run: npm version "${VERSION}" --no-git-tag-version --allow-same-version
+
+      - name: Build
+        working-directory: plugin-host/plugin-sdk
+        run: npm run build
+
+      - name: Test
+        working-directory: plugin-host/plugin-sdk
+        run: npm run test:cov
+
+      - name: Pack
+        id: pack
+        working-directory: plugin-host/plugin-sdk
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/sdk-pack"
+          npm pack --pack-destination "$RUNNER_TEMP/sdk-pack"
+          # npm derives the filename from name + version; asserting it also asserts the bump landed.
+          TARBALL="$RUNNER_TEMP/sdk-pack/valtimo-plugin-sdk-${VERSION}.tgz"
+          test -f "$TARBALL"
+          echo "tarball=${TARBALL}" >> "$GITHUB_OUTPUT"
+
+      # Scaffold against the packed tarball rather than the working tree, so the smoke test
+      # exercises exactly what is about to be published — `files`, `exports`, `bin` and all.
+      - name: Scaffold a plugin against the tarball
+        run: |
+          node plugin-host/plugin-sdk/bin/valtimo-plugin-init.mjs "$RUNNER_TEMP/smoke" \
+            --plugin-id sdk-release-smoke --yes --bundles all --locales en,nl \
+            --sdk "file:${{ steps.pack.outputs.tarball }}" --no-install
+
+      - name: Scaffolded plugin - install
+        working-directory: ${{ runner.temp }}/smoke
+        run: npm install
+
+      # esbuild only transpiles, so without this nothing type-checks the shipped templates.
+      - name: Scaffolded plugin - type-check
+        working-directory: ${{ runner.temp }}/smoke
+        run: npx tsc --noEmit
+
+      # Downloads extism-js + binaryen into the toolchain dir on first use, like every other build.
+      - name: Scaffolded plugin - build & pack
+        working-directory: ${{ runner.temp }}/smoke
+        run: npm run build:pack
+
+      - name: Verify the package was produced
+        run: test -f "$RUNNER_TEMP/smoke/dist/sdk-release-smoke-0.1.0.zip"
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-sdk-tarball
+          path: ${{ runner.temp }}/sdk-pack/*.tgz
+          if-no-files-found: error
+
+  publish:
+    name: Publish to NPMJS
+    needs:
+      - prepare
+      - build
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      NPM_TAG: ${{ needs.prepare.outputs.npm_tag }}
+    steps:
+      # registry-url + scope write the .npmrc that npm publish authenticates with, using
+      # NODE_AUTH_TOKEN below.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          scope: "@valtimo"
+
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-sdk-tarball
+          path: ${{ runner.temp }}/sdk-pack
+
+      # Publishing the packed tarball (not the directory) ships the exact bytes the smoke test
+      # ran against, and skips the package's prepublishOnly rebuild.
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_JS_REPOSITORY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          TARBALL="$RUNNER_TEMP/sdk-pack/valtimo-plugin-sdk-${VERSION}.tgz"
+          test -f "$TARBALL"
+
+          # npm view fails for an unpublished package or version — that is the normal path here.
+          published="$(npm view "@valtimo/plugin-sdk@${VERSION}" version 2>/dev/null || true)"
+          if [[ "${published}" == "${VERSION}" ]]; then
+            echo "::warning::Skipping @valtimo/plugin-sdk@${VERSION} as it is already published."
+            exit 0
+          fi
+
+          # --access public is required for the first publish of a scoped package.
+          npm publish "$TARBALL" --access public --tag "${NPM_TAG}"
+          echo "Published @valtimo/plugin-sdk@${VERSION} under dist-tag '${NPM_TAG}'."
+
+  tag_and_release:
+    name: Commit version, tag and create GitHub release
+    needs:
+      - prepare
+      - publish
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          # Push with the valtimo-platform PAT — not GITHUB_TOKEN — so branch protection and
+          # tag-protecting rulesets don't block the bump commit and the tag.
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          # Don't leave the ruleset-bypassing PAT in the git config: the third-party
+          # softprops/action-gh-release step runs later in this job and could read it.
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set version
+        working-directory: plugin-host/plugin-sdk
+        run: npm version "${VERSION}" --no-git-tag-version --allow-same-version
+
+      - name: Commit version bump
+        id: commit
+        env:
+          RELEASE_PAT: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${RELEASE_PAT}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git add plugin-host/plugin-sdk/package.json plugin-host/plugin-sdk/package-lock.json
+          if git diff --cached --quiet; then
+            echo "package.json is already at ${VERSION}; nothing to commit."
+          else
+            git commit -m "Release @valtimo/plugin-sdk ${VERSION}"
+            git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # action-gh-release creates the tag when it is absent but will NOT move one that already
+      # exists. So the first release tags the bump commit, and a re-run force-moves the tag here
+      # so the corrected build is what the release points at.
+      - name: Force-move tag on re-run
+        env:
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          set -euo pipefail
+          TAG="plugin-sdk/${VERSION}"
+          if git ls-remote --tags --exit-code origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists — re-run detected; force-moving it to ${SHA}."
+            git tag -f "${TAG}" "${SHA}"
+            git push --force origin "refs/tags/${TAG}"
+          else
+            echo "Tag ${TAG} does not exist yet — first release; the release step will create it."
+          fi
+          # Drop the PAT from the remote before the third-party release action runs.
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-sdk-tarball
+          path: ${{ runner.temp }}/sdk-pack
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: plugin-sdk/${{ needs.prepare.outputs.version }}
+          # Tag the bump commit. Without this the API defaults target_commitish to the repo's
+          # default branch, which would tag next-minor content instead of the release branch.
+          target_commitish: ${{ steps.commit.outputs.sha }}
+          name: Plugin SDK ${{ needs.prepare.outputs.version }}
+          body: |
+            `@valtimo/plugin-sdk@${{ needs.prepare.outputs.version }}` — published to npmjs under dist-tag `${{ needs.prepare.outputs.npm_tag }}`.
+
+            ```
+            npm install --save-dev @valtimo/plugin-sdk@${{ needs.prepare.outputs.version }}
+            ```
+
+            Build from commit ${{ steps.commit.outputs.sha }}.
+          files: ${{ runner.temp }}/sdk-pack/*.tgz
+          draft: false
+          prerelease: ${{ needs.prepare.outputs.prerelease == 'true' }}
+
+  # Post-release admin: get the committed version bump back onto the development branch, so the
+  # scaffold keeps pinning a version that exists on npm. Best-effort — the release itself is
+  # already done, so a PR failure must not fail the run.
+  pr_to_next_minor:
+    name: Open PR release -> next-minor
+    needs:
+      - prepare
+      - tag_and_release
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      GH_TOKEN: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+      - name: Create release -> next-minor PR
+        run: |
+          set -euo pipefail
+          BRANCH="release/plugin-sdk/${VERSION}"
+          existing="$(gh pr list --base next-minor --head "$BRANCH" --state all --json url --jq '.[0].url // empty')"
+          if [ -n "$existing" ]; then
+            echo "PR already exists: ${existing} — skipping."
+            exit 0
+          fi
+          gh pr create \
+            --base next-minor \
+            --head "$BRANCH" \
+            --title "Merge ${BRANCH} into next-minor" \
+            --body "Brings the @valtimo/plugin-sdk ${VERSION} version bump back to next-minor. Don't squash!"
