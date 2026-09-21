@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {BaseApiService} from '@valtimo/shared';
+import {HttpHeaders} from '@angular/common/http';
+import {BaseApiService, InterceptorSkip} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   BuildingBlockEntrySuggestion,
@@ -38,8 +39,17 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
     );
   }
 
-  public savePlan(params: P, plan: Record<string, unknown>): Observable<M[]> {
-    return this.httpClient.post<M[]>(this.getMigrationUrl(params), plan);
+  /** `showRefusalInline` keeps the generic "unexpected error" toast off a 400 the caller renders itself (G90). */
+  public savePlan(
+    params: P,
+    plan: Record<string, unknown>,
+    showRefusalInline = false
+  ): Observable<M[]> {
+    return this.httpClient.post<M[]>(
+      this.getMigrationUrl(params),
+      plan,
+      showRefusalInline ? {headers: new HttpHeaders().set(InterceptorSkip, '400')} : {}
+    );
   }
 
   public deletePlan(params: P, migrationKey: string): Observable<void> {
