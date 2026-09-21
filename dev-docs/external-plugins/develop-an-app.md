@@ -11,17 +11,29 @@
 
 An **app** is a remote HTTP service that GZAC treats as a plugin-host-plus-single-plugin: it
 speaks the same GZAC↔host contract, but serves one natively-implemented plugin and accepts no
-plugin uploads. Everything downstream of registration — service tokens, the endpoint allowlist,
-user tokens, iframe surfaces, event delivery — works identically to a hosted plugin.
+plugin uploads. This guide documents every request GZAC sends and every response it expects, so
+you can build against the contract without reverse-engineering.
+
+## Prerequisites
+
+- A language/framework capable of serving HTTP (examples use Node.js + Fastify)
+- HMAC-SHA256 implementation for request authentication
+- PostgreSQL or equivalent persistence for configurations and logs
+- (Optional) RabbitMQ client if consuming platform events
+- A running GZAC instance to register and test against
+
+## Overview
 
 **Build a plugin when you can; build an app when you must.** A Wasm plugin gets the sandbox,
 capability gating, and content pinning from the host. An app trades that for full freedom (any
-language, any runtime, its own persistence) and takes on the contract obligations below itself.
+language, any runtime, its own persistence) and takes on the contract obligations documented here.
+
+Everything downstream of registration — service tokens, the endpoint allowlist, user tokens,
+iframe surfaces, event delivery — works identically to a hosted plugin.
 
 The reference implementation is [`sample-apps/demo-app/`](../../plugin-host/sample-apps/demo-app/) — a small
 Node + Fastify service implementing the contract (a few deliberate POC gaps are flagged inline);
-each section below names the file that demonstrates it. This page documents every request GZAC
-sends and every response it expects, so you can build against it without reverse-engineering.
+each section below names the file that demonstrates it.
 
 Two companion pages carry what this one deliberately does not repeat:
 [Developing an external plugin](./develop-a-plugin.md) explains the concepts an app inherits
@@ -30,7 +42,17 @@ model, and which surface to build for which goal — and
 [The Valtimo API and event catalogue](./valtimo-api-and-events.md) lists what you can call and
 subscribe to.
 
-## What a minimal app has to implement
+### Key Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **App** | A remote HTTP service implementing the GZAC↔host contract for a single plugin |
+| **Configuration** | A named instance of your plugin with its own settings and granted permissions |
+| **Service token** | A short-lived credential (~10 min) pushed with each configuration, used for GZAC API callbacks |
+| **HMAC signature** | Request authentication via `X-Valtimo-Signature` header — your secret signs every GZAC request |
+| **Content hash** | Optional digest of your plugin's behavior/manifest — enables GZAC to detect unauthorized changes |
+
+## Step 1: Understand the minimal requirements
 
 The full contract below is large, but very little of it is mandatory. An app that only runs
 process actions needs four routes:
@@ -55,7 +77,7 @@ Everything else is opt-in, and skipping it degrades cleanly:
 
 Start there, confirm an action runs end to end, then add surfaces.
 
-## Lifecycle
+## Step 2: Understand the lifecycle
 
 1. An administrator registers your app (base URL + secret). GZAC **discovers it immediately** —
    `GET /api/host/plugins` must work before first registration, because the add-app wizard flows
@@ -66,7 +88,7 @@ Start there, confirm an action runs end to end, then add surfaces.
 3. When the admin activates/edits/deletes a configuration, GZAC pushes/deletes it immediately as
    well. Actions and task-form hooks arrive whenever a process or task needs them.
 
-## Authentication — verifying the HMAC
+## Step 3: Implement authentication (HMAC verification)
 
 Every GZAC→app request — except `GET /health`, which is sent **unsigned**, and the public plugin
 surfaces — carries two headers:
@@ -100,7 +122,7 @@ golden vectors to pin your implementation against, the same vectors the plugin h
 pinned against (GZAC's client tests cross-check the same construction with an independent
 oracle).
 
-## Routes GZAC calls
+## Step 4: Implement GZAC-facing routes
 
 ### `GET /health`
 
@@ -285,7 +307,7 @@ completes the task with those values, or
 `{ "status": "error", "errorMessage": "…", "fieldErrors": { "field": "message" } }` (non-2xx) and
 GZAC does **not** complete — the errors render inline on the form.
 
-## Public routes (browser-facing, CORS `*`)
+## Step 5: Implement public routes (browser-facing, CORS `*`)
 
 - **`GET …/plugin-manifest`** — the manifest JSON. The iframe SDK fetches it for translations.
 - **`GET …/bundles/*`** and **`GET …/logo`** — your built frontend assets. Guard against path
@@ -327,7 +349,7 @@ GZAC does **not** complete — the errors render inline on the form.
   attach it instead of the service token, and the call is bounded by that user's permissions ∩
   the granted endpoint list.
 
-## Calling GZAC back
+## Step 6: Implement GZAC callbacks
 
 `Authorization: Bearer {serviceToken}` against `{gzacBaseUrl}` — see
 [`demo-app/src/gzac.ts`](../../plugin-host/sample-apps/demo-app/src/gzac.ts). The token bypasses user
@@ -342,7 +364,7 @@ Which endpoints exist, how to discover them for the version you target, and the 
 documented in
 [The Valtimo API and event catalogue](./valtimo-api-and-events.md#part-1--calling-the-valtimo-api).
 
-## Events
+## Step 7: Consume events (optional)
 
 When a push carries `eventBroker`, consume the fanout exchange with the semantics of
 `queueMode`: `live` → `{durable: false, autoDelete: true}` (events while you're down are lost);
@@ -362,7 +384,7 @@ The event types you can subscribe to, and what each payload contains, are in
 internal Valtimo classes and are not a stable contract — read the few fields you need, and prefer
 an API call keyed on `resultId` when the data matters.
 
-## Checklist
+## Verification Checklist
 
 - [ ] `GET /health` (unauthenticated), `GET /api/host/plugins` (with `manifest`, ideally `contentHash`) work before first registration
 - [ ] HMAC verified on every GZAC-facing route except `GET /health`: ±5 min window, timing-safe, replay-rejecting; pinned against `hmac-vectors.json`
@@ -373,3 +395,9 @@ an API call keyed on `resultId` when the data matters.
 - [ ] Bundles served with strict CSP + announced `frame-ancestors`, fail closed
 - [ ] `/data` gated: `frontend_data` grant, rate limit, user-token introspection, fail closed on GZAC outage
 - [ ] Served over HTTPS (or loopback in development) — GZAC refuses to connect a plain-HTTP remote app: the configuration push carries a service token, decrypted secret properties and any broker credentials
+
+## Next Steps
+
+- [Developing an external plugin](./develop-a-plugin.md) — the concepts an app inherits (configuration model, permission model, surface selection)
+- [The Valtimo API and event catalogue](./valtimo-api-and-events.md) — which endpoints and events are available
+- [`sample-apps/demo-app/`](../../plugin-host/sample-apps/demo-app/) — the reference implementation

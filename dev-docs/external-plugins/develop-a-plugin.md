@@ -11,13 +11,57 @@
 
 An external plugin is a TypeScript project compiled to WebAssembly and packed into a `.zip`. The
 plugin host runs the Wasm in a sandbox; the zip can additionally carry frontend screens (case
-tabs, task forms, widgets, pages) that render inside GZAC as sandboxed iframes.
+tabs, task forms, widgets, pages) that render inside GZAC as sandboxed iframes. This guide walks
+you through building a plugin from scratch, from scaffolding to deployment.
 
-Read the next section before the reference material that follows it. Every signature below makes
+## Prerequisites
+
+Plugin development is standalone: you build against the published
+[`@valtimo/plugin-sdk`](https://www.npmjs.com/package/@valtimo/plugin-sdk) npm package and test
+against a plugin host running as a Docker container — the Valtimo repository is not involved.
+
+- **Node.js 18+** — enough for the SDK CLIs and the build; only the host itself needs Node 22,
+  and you run that as a container
+- The Wasm toolchain (`extism-js` + `binaryen`) installs itself on first build, cached per user
+- **To run your plugin:** a plugin host connected to a GZAC instance — run the
+  `valtimo/plugin-host` image with its PostgreSQL
+  ([host configuration & deployment](../operations/plugin-host-deployment.md)) and connect it from
+  the admin UI ([Add a plugin host](https://docs.valtimo.nl/configuration-guides/plugins/external-plugins/add-a-plugin-host))
+
+### Getting that environment to actually work
+
+Three things trip up a first setup, none of them plugin code:
+
+1. **The two sides resolve each other by URL.** In Docker the defaults are usually wrong in both
+   directions: the host's **Base URL** must be reachable *from the GZAC container* (e.g.
+   `http://plugin-host:8090`, not `localhost`), while the **GZAC callback URL** must be reachable
+   *from the host container* (e.g. `http://gzac:8080`). The **event broker URL** is the same story —
+   `host.docker.internal` rather than `localhost` when the broker runs on your machine.
+2. **Your frontend origin must be allowed.** Before any of your screens render, the origin you open
+   the Valtimo frontend on (e.g. `http://localhost:4200`) has to be listed under the integration's
+   **Allowed frontend origins**. With none listed, plugin screens deliberately stay blank.
+3. **Iterating means re-uploading.** `npm run build:pack`, then upload the zip through
+   **Admin > Plugins > Upload plugin**. Re-uploading the same version with changed content asks you
+   to confirm an overwrite — fine in development, and an identical re-upload is a no-op. Bump the
+   version once anything else depends on it.
+
+## Overview
+
+Read this section before the reference material that follows it. Every signature below makes
 sense only against the lifecycle it is called from, and the most expensive mistake available here
 is building the wrong surface for the job.
 
-## How a plugin works with Valtimo
+### Key Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Plugin** | A TypeScript project compiled to WebAssembly, packaged as a `.zip` with manifest, Wasm binary, and optional frontend bundles |
+| **Configuration** | A named instance of a plugin with its own settings and granted permissions — the unit of everything |
+| **Action** | A plugin entry point invoked from a BPMN service task |
+| **Event handler** | A plugin entry point invoked when a subscribed platform event occurs |
+| **Frontend bundle** | An HTML/JS screen (case tab, task form, widget, page, config) that renders in a sandboxed iframe |
+| **Service token** | A short-lived credential (~10 min) pushed with each configuration, used for GZAC API callbacks |
+| **Plugin host** | The Node.js service that runs Wasm plugins in sandboxes and handles GZAC communication |
 
 ### The lifecycle
 
@@ -128,38 +172,7 @@ A thrown exception becomes a structured error envelope — for an action, a fail
 surfaces as a process incident — never a host crash. Note that this is deliberately *not* a BPMN
 error, so a boundary event cannot catch it.
 
-## Prerequisites
-
-Plugin development is standalone: you build against the published
-[`@valtimo/plugin-sdk`](https://www.npmjs.com/package/@valtimo/plugin-sdk) npm package and test
-against a plugin host running as a Docker container — the Valtimo repository is not involved.
-
-- **Node.js 18+** — enough for the SDK CLIs and the build; only the host itself needs Node 22,
-  and you run that as a container
-- The Wasm toolchain (`extism-js` + `binaryen`) installs itself on first build, cached per user
-- **To run your plugin:** a plugin host connected to a GZAC instance — run the
-  `valtimo/plugin-host` image with its PostgreSQL
-  ([host configuration & deployment](../operations/plugin-host-deployment.md)) and connect it from
-  the admin UI ([Add a plugin host](https://docs.valtimo.nl/configuration-guides/plugins/external-plugins/add-a-plugin-host))
-
-### Getting that environment to actually work
-
-Three things trip up a first setup, none of them plugin code:
-
-1. **The two sides resolve each other by URL.** In Docker the defaults are usually wrong in both
-   directions: the host's **Base URL** must be reachable *from the GZAC container* (e.g.
-   `http://plugin-host:8090`, not `localhost`), while the **GZAC callback URL** must be reachable
-   *from the host container* (e.g. `http://gzac:8080`). The **event broker URL** is the same story —
-   `host.docker.internal` rather than `localhost` when the broker runs on your machine.
-2. **Your frontend origin must be allowed.** Before any of your screens render, the origin you open
-   the Valtimo frontend on (e.g. `http://localhost:4200`) has to be listed under the integration's
-   **Allowed frontend origins**. With none listed, plugin screens deliberately stay blank.
-3. **Iterating means re-uploading.** `npm run build:pack`, then upload the zip through
-   **Admin > Plugins > Upload plugin**. Re-uploading the same version with changed content asks you
-   to confirm an overwrite — fine in development, and an identical re-upload is a no-op. Bump the
-   version once anything else depends on it.
-
-## 1. Scaffold a project
+## Step 1: Scaffold a project
 
 `valtimo-plugin-init` writes a complete, buildable project:
 
@@ -195,7 +208,7 @@ cd my-plugin
 npm run build:pack        # -> dist/my-plugin-0.1.0.zip
 ```
 
-## 2. Project anatomy & manifest
+## Step 2: Project anatomy & manifest
 
 ```
 my-plugin/
@@ -296,7 +309,7 @@ every handler as `input.configuration`. Two `x-` keywords change how GZAC treats
   plugin's outbound allowlist. Use it for per-environment endpoints only the admin knows; fixed
   endpoints belong in `permissions.egress`.
 
-## 3. Backend handlers (`src/plugin.ts`)
+## Step 3: Backend handlers (`src/plugin.ts`)
 
 Everything imports from `@valtimo/plugin-sdk`. The build tool generates the Wasm exports
 (`handle_action`, `handle_event`, `handle_request`, `handle_submit`) from your registrations —
@@ -442,7 +455,7 @@ the configuration, `asUser` acts as the person on the screen and is additionally
 own permissions. [Two identities, two meanings](./valtimo-api-and-events.md#two-identities-two-meanings)
 covers when each is correct, and which endpoints no grant can ever unlock.
 
-## 4. Frontend bundles
+## Step 4: Frontend bundles
 
 A bundle is a `frontend/*.html` file that references `<script src="x.bundle.js">`; the pack tool
 compiles the matching source file (`x.tsx`, `.ts`, `.jsx`, or `.js`) into that bundle with
@@ -532,7 +545,7 @@ regardless.
   `gzacApi.asUser.post('/api/v1/task/{id}/complete')` (needs that endpoint granted), then
   `emit("taskCompleted", {})`.
 
-## 5. Build, pack, upload
+## Step 5: Build, pack, upload
 
 ```bash
 npm run build:pack                     # esbuild → extism-js → plugin.wasm → dist/<id>-<version>.zip
@@ -556,7 +569,7 @@ the upload dialog (an identical re-upload is a friendly no-op), or bump the vers
 capabilities, or egress gets them only after an administrator re-accepts. Dispatch, allowlists,
 and egress all follow the *granted* set, not the manifest.
 
-## 6. Debugging
+## Troubleshooting
 
 There is no console in the sandbox, so plan your feedback loop deliberately:
 
@@ -579,7 +592,7 @@ Two habits that shorten the loop considerably:
   independent, most puzzling behaviour turns out to be a second configuration or a redelivery.
   Logging `configurationId` makes that obvious immediately.
 
-## 7. Reference
+## Next Steps
 
 - [`sample-plugins/case-summary/`](../../plugin-host/sample-plugins/case-summary/) is the reference plugin:
   every capability, all bundle types, all three task-form levels, declared action outputs, i18n,
@@ -589,7 +602,7 @@ Two habits that shorten the loop considerably:
 - [`TESTING.md`](../../plugin-host/TESTING.md) explains the test layers and which test to write when.
 - [SDK README](../../plugin-host/plugin-sdk/README.md) — full CLI and toolchain reference
   ([`valtimo-plugin-init`](../../plugin-host/plugin-sdk/README.md#valtimo-plugin-init)). The backend handler API is
-  documented above, in [section 3](#3-backend-handlers-srcplugints).
+  documented above, in [Step 3](#step-3-backend-handlers-srcplugints).
 - [Host README](../../plugin-host/app/README.md) — the routes and checks your plugin runs under.
 - Contributing to the plugin system itself? [`TESTING.md`](../../plugin-host/TESTING.md) explains its test
   layers.
