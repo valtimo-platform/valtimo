@@ -25,4 +25,4 @@ while a task is open. The width you set is remembered for you across all case ty
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Startup | A case definition that is not final no longer slows startup down as it gains processes. In a test case definition with 200 processes, startup took almost nine minutes and now takes under a minute |
