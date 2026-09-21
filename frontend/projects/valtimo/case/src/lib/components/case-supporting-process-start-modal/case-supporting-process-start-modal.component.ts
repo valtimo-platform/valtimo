@@ -363,6 +363,10 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this.closeStartForm();
   }
 
+  public closeModalOnTabSwitch(): void {
+    if (!this._displayInPanel) this.closeCdsModal();
+  }
+
   private closeStartForm(): void {
     if (this._displayInPanel) {
       this._displayInPanel = false;

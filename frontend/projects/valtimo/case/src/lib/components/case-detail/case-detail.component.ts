@@ -635,7 +635,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     // }
 
     if (!tab.showTasks) this.openTaskAndProcessLinkInModal$.next(null);
-    this.supportingProcessStart.closePanel();
+    this.supportingProcessStart.closeModalOnTabSwitch();
     this.tabLoader.load(tab);
     this.setDocumentStyle();
   }
