@@ -43,10 +43,6 @@ Validation messages use a consistent error code format for easier troubleshootin
 
 The metadata tab of the case inspection page now displays the case definition key and version.
 
-### More filter options for the task count widget
-
-A task count widget can now be limited to a single case type, and its conditions can be combined with **AND** or **OR** in groups that can be nested. Counts that previously could not be configured, such as the assigned tasks of one case type that have one of two names, now take a single widget. Existing task count widgets keep working unchanged.
-
 ---
 
 ## Bugfixes

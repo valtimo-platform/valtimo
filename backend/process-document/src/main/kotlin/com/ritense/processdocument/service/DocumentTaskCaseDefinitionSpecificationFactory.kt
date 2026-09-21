@@ -26,7 +26,6 @@ import com.ritense.valtimo.service.TaskBusinessKeyResolver
 import com.ritense.valtimo.service.TaskCaseDefinitionSpecificationFactory
 import jakarta.persistence.criteria.Expression
 import org.springframework.data.jpa.domain.Specification
-import java.util.UUID
 
 class DocumentTaskCaseDefinitionSpecificationFactory(
     private val queryDialectHelper: QueryDialectHelper,
@@ -37,23 +36,26 @@ class DocumentTaskCaseDefinitionSpecificationFactory(
         Specification { root, query, cb ->
             val businessKeyPath = root.get<OperatonExecution>("processInstance").get<String>("businessKey")
 
-            // Building-block (and similar) tasks have a business key that doesn't directly refer
-            // to the case document. Mirrors CaseTaskListSearchService.constructWhere.
+            // Building-block (and similar) tasks have a business key that doesn't directly refer to
+            // the case document. Resolved as text, like OperatonTaskService: casting a business key
+            // that is not a UUID fails the whole query.
             val resolverExpressions = taskBusinessKeyResolvers.mapNotNull { resolver ->
-                resolver.resolveCaseDocumentId(cb, query, businessKeyPath)
+                resolver.resolveBusinessKeyExpression(cb, query, businessKeyPath)
             }
-            val caseDocumentId: Expression<UUID> = if (resolverExpressions.isEmpty()) {
-                queryDialectHelper.stringToUuid(cb, businessKeyPath)
+            val caseDocumentId: Expression<String> = if (resolverExpressions.isEmpty()) {
+                businessKeyPath
             } else {
-                cb.coalesce<UUID>().apply {
+                cb.coalesce<String>().apply {
                     resolverExpressions.forEach { value(it) }
-                    value(queryDialectHelper.stringToUuid(cb, businessKeyPath))
+                    value(businessKeyPath)
                 }
             }
 
-            val subquery = query.subquery(UUID::class.java)
+            val subquery = query.subquery(String::class.java)
             val documentRoot = subquery.from(JsonSchemaDocument::class.java)
-            subquery.select(documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id"))
+            subquery.select(
+                queryDialectHelper.uuidToString(cb, documentRoot.get<JsonSchemaDocumentId>("id").get("id"))
+            )
             subquery.where(
                 cb.equal(
                     documentRoot.get<JsonSchemaDocumentDefinitionId>("documentDefinitionId").get<String>("name"),

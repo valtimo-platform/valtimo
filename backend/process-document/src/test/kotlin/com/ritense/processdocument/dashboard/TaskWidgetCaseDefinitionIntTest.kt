@@ -29,13 +29,18 @@ import com.ritense.valtimo.contract.conditions.OrConditionGroup
 import com.ritense.valtimo.contract.repository.ExpressionOperator
 import com.ritense.valtimo.dashboard.TaskCountDataSourceProperties
 import com.ritense.valtimo.dashboard.TaskWidgetDataSource
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.TaskService
 import org.operaton.bpm.engine.task.Task
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Transactional
 class TaskWidgetCaseDefinitionIntTest : BaseIntegrationTest() {
@@ -51,6 +56,15 @@ class TaskWidgetCaseDefinitionIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var taskService: TaskService
+
+    @Autowired
+    lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var runtimeService: RuntimeService
+
+    @PersistenceContext
+    lateinit var entityManager: EntityManager
 
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
@@ -139,6 +153,18 @@ class TaskWidgetCaseDefinitionIntTest : BaseIntegrationTest() {
         assertThat(unscopedResult.total).isEqualTo(2)
     }
 
+    @Test
+    @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
+    fun `should ignore a task whose business key is not a case document id`() {
+        createCaseWithProcess(HOUSE, "loan-process-demo")
+        createTaskWithBusinessKey("not-a-document-id")
+
+        val result = count(TaskCountDataSourceProperties(caseDefinitionName = HOUSE))
+
+        assertThat(result.value).isEqualTo(1)
+        assertThat(result.total).isEqualTo(1)
+    }
+
     private fun count(properties: TaskCountDataSourceProperties) =
         runWithoutAuthorization { taskWidgetDataSource.getTaskCount(properties) }
 
@@ -166,8 +192,24 @@ class TaskWidgetCaseDefinitionIntTest : BaseIntegrationTest() {
         taskService.saveTask(task)
     }
 
+    // Key set afterwards - CaseAssigneeTaskCreatedListener parses it as a UUID on task creation.
+    private fun createTaskWithBusinessKey(businessKey: String) {
+        repositoryService.createDeployment()
+            .addClasspathResource("bpmn/$SYSTEM_PROCESS_KEY.bpmn")
+            .deploy()
+        val processInstance =
+            runtimeService.startProcessInstanceByKey(SYSTEM_PROCESS_KEY, UUID.randomUUID().toString())
+
+        entityManager
+            .createNativeQuery("UPDATE ACT_RU_EXECUTION SET BUSINESS_KEY_ = :businessKey WHERE ID_ = :id")
+            .setParameter("businessKey", businessKey)
+            .setParameter("id", processInstance.id)
+            .executeUpdate()
+    }
+
     companion object {
         private const val HOUSE = "house"
         private const val TASK = "task"
+        private const val SYSTEM_PROCESS_KEY = "system-process"
     }
 }

@@ -198,8 +198,22 @@ function rowToLeaf(row: MultiInputKeyValue): ConditionLeaf {
   return {
     path: row.key,
     operator: row.dropdown as ExpressionOperator,
-    value: row.value,
+    value: parseRowValue(row.value),
   };
+}
+
+/**
+ * Rows only hold strings. Restore the type - the backend compares a string as text, so '100' > '50'
+ * is false. Only values that round-trip unchanged convert, keeping "0050" and "50.10" strings.
+ */
+function parseRowValue(value: string): string | number | boolean {
+  if (value === 'true' || value === 'false') {
+    return value === 'true';
+  }
+
+  const asNumber = Number(value);
+
+  return Number.isFinite(asNumber) && String(asNumber) === value ? asNumber : value;
 }
 
 function isRowComplete(row: MultiInputKeyValue): boolean {

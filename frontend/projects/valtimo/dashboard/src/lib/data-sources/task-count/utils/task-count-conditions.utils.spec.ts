@@ -134,6 +134,32 @@ describe('task count condition utils', () => {
       });
     });
 
+    it('round-trips a numeric value as a number, so the backend compares it numerically', () => {
+      expect(roundTrip([{path: 'task:priority', operator: '>', value: 50}])).toEqual({
+        and: [{path: 'task:priority', operator: '>', value: 50}],
+      });
+    });
+
+    it('round-trips a boolean value as a boolean', () => {
+      expect(roundTrip([{path: 'task:suspended', operator: '==', value: false}])).toEqual({
+        and: [{path: 'task:suspended', operator: '==', value: false}],
+      });
+    });
+
+    it('leaves a value that only looks numeric a string', () => {
+      expect(
+        roundTrip([
+          {path: 'case:number', operator: '==', value: '0050'},
+          {path: 'case:version', operator: '==', value: '50.10'},
+        ])
+      ).toEqual({
+        and: [
+          {path: 'case:number', operator: '==', value: '0050'},
+          {path: 'case:version', operator: '==', value: '50.10'},
+        ],
+      });
+    });
+
     it('preserves unsupported nodes inside the group they were configured in', () => {
       const inLeaf = {path: 'task:name', operator: 'in', value: ['A', 'B']};
 

@@ -176,6 +176,18 @@ describe('TaskCountConfigurationComponent', () => {
     expect(output.current?.valid).toBe(true);
   });
 
+  it('keeps a prefilled tree disabled when [disabled] arrived before the prefill', () => {
+    const component = createComponent();
+
+    component.disabled = true;
+    component.prefillConfiguration = {
+      conditions: [{and: [{or: [{path: 'task:name', operator: '==', value: 'A'}]}]}],
+    };
+
+    expect(component.conditionsForm.disabled).toBe(true);
+    expect(component.conditionsForm.controls.groups.at(0).disabled).toBe(true);
+  });
+
   it('emits the selected case definition name', () => {
     const component = createComponent();
     const output = captureOutput(component);

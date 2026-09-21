@@ -54,11 +54,7 @@ export class TaskCountConfigurationComponent
 
   @Input() public set disabled(disabledValue: boolean) {
     this.$disabled.set(disabledValue);
-    // The rows of a group are a form control, so the multi input follows the form rather than a
-    // [disabled] binding of its own.
-    disabledValue
-      ? this.conditionsForm.disable({emitEvent: false})
-      : this.conditionsForm.enable({emitEvent: false});
+    this.applyDisabledState();
   }
 
   @Input() public set prefillConfiguration(configurationValue: TaskCountConfiguration) {
@@ -71,6 +67,8 @@ export class TaskCountConfigurationComponent
       this.conditionsForm,
       configurationValue.conditions ?? configurationValue.queryConditions ?? []
     );
+    // Prefill runs after [disabled] and adds enabled groups, which re-enable their parents.
+    this.applyDisabledState();
   }
 
   @Output() public configurationEvent = new EventEmitter<
@@ -174,6 +172,13 @@ export class TaskCountConfigurationComponent
 
     this._$selectedCaseDefinitionName.set(event.item?.caseDefinitionName ?? undefined);
     this.emit();
+  }
+
+  /** Rows are a form control, so the multi input follows the form, not a [disabled] binding. */
+  private applyDisabledState(): void {
+    this.$disabled()
+      ? this.conditionsForm.disable({emitEvent: false})
+      : this.conditionsForm.enable({emitEvent: false});
   }
 
   private emit(): void {

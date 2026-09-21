@@ -41,7 +41,7 @@ interface QueryCondition {
 interface ConditionLeaf {
   path: string;
   operator: ExpressionOperator;
-  value: string;
+  value: string | number | boolean;
 }
 
 interface AndConditionGroup {
