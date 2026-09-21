@@ -29,13 +29,16 @@ describe('CaseDetailLayoutService', () => {
 
   const CONTAINER_WIDTH = 1600;
 
-  const createService = (settings: UserSettings): CaseDetailLayoutService => {
+  const createService = (
+    settings: UserSettings,
+    showTaskList = true
+  ): CaseDetailLayoutService => {
     userSettingsService.getUserSettings.and.returnValue(of(settings));
 
     TestBed.configureTestingModule({
       providers: [
         CaseDetailLayoutService,
-        {provide: CaseTabService, useValue: {showTaskList$: of(true)}},
+        {provide: CaseTabService, useValue: {showTaskList$: of(showTaskList)}},
         {provide: PageHeaderService, useValue: {compactMode$: of(false)}},
         {provide: UserSettingsService, useValue: userSettingsService},
       ],
@@ -217,5 +220,75 @@ describe('CaseDetailLayoutService', () => {
       },
       200
     );
+  });
+
+  const startFormPanel = {template: {} as any, title: 'A start form'};
+
+  it('opens the start form panel and records the requested form size', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'large');
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBe(startFormPanel);
+
+      service.formDisplaySize$.pipe(take(1)).subscribe(size => {
+        expect(size).toBe('large');
+        done();
+      });
+    });
+  });
+
+  it('clears the start form panel only through closeStartFormPanel', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'medium');
+    service.closeStartFormPanel();
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBeNull();
+      done();
+    });
+  });
+
+  it('leaves the start form panel open when the task panel state is cleared', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'medium');
+    service.setTaskAndProcessLinkOpenedInPanel(null);
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBe(startFormPanel);
+      done();
+    });
+  });
+
+  it('keeps the right panel while a start form is open on a tab that hides the task list', done => {
+    service = createService({}, false);
+    service.openStartFormPanel(startFormPanel, 'medium');
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.showRightPanel).toBeTrue();
+      done();
+    });
+  });
+
+  it('keeps the right panel while a task form is in the panel on a tab that hides the task list', done => {
+    service = createService({}, false);
+    service.setFormDisplayType('panel');
+    service.setTaskAndProcessLinkOpenedInPanel({} as any);
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.showRightPanel).toBeTrue();
+      done();
+    });
+  });
+
+  it('hides the right panel on a task-hiding tab when no form is open', done => {
+    service = createService({}, false);
+
+    service.caseDetailLayout$.pipe(take(2)).subscribe(layout => {
+      if (Object.keys(layout).length === 0) return;
+      expect((layout as CaseDetailLayout).showRightPanel).toBeFalse();
+      done();
+    });
+    service.setTabContentContainerWidth(CONTAINER_WIDTH);
   });
 });

@@ -124,7 +124,11 @@
           [minSize]="tabContentObs.caseDetailLayout.rightPanelMinWidth"
           [maxSize]="tabContentObs.caseDetailLayout.rightPanelMaxWidth"
         >
-          @if (tabContentObs.showTaskList) {
+          @if (
+            tabContentObs.showTaskList ||
+            tabContentObs.startFormPanel ||
+            tabContentObs.taskAndProcessLinkOpenedInPanel
+          ) {
             <div class="task-panel">
               @if (tabContentObs.startFormPanel) {
                 <div class="start-form-panel">
