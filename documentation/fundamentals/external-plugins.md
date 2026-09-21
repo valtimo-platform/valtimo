@@ -16,7 +16,7 @@ External plugins exist so that:
 ## How external plugins work
 
 External plugins do not run inside the Valtimo backend. They run on a separate service. Valtimo
-communicates with that service over HTTP; platform events reach it through a message broker:
+communicates with that service over web requests; platform events reach it through a message broker:
 
 - A **plugin host** is a lightweight service that stores uploaded plugin packages and runs them in
   a secure sandbox. One plugin host can run many plugins, and many versions of the same plugin
@@ -30,9 +30,9 @@ Together, plugin hosts and apps are called **integrations**.
 ┌──────────────┐   discovers plugins, pushes configurations   ┌──────────────┐
 │    Valtimo   │ ───────────────────────────────────────────▶ │ Plugin host  │
 │              │ ◀─────────────────────────────────────────── │   or app     │
-│              │      calls back with a scoped token          │  (runs the   │
+│              │      calls back with an access token         │  (runs the   │
 │              │                                              │   plugins)   │
-└──────────────┘   invokes actions; events via a broker       └──────────────┘
+└──────────────┘   invokes actions; events via broker         └──────────────┘
 ```
 
 Valtimo checks in with every integration regularly (every minute by default). It discovers which
@@ -74,11 +74,11 @@ The security model rests on a few principles:
 
 - **Sandboxed execution** — plugin backend code runs in an isolated sandbox on the plugin host,
   with no direct access to the network, the file system, or Valtimo.
-- **Scoped, short-lived tokens** — when a plugin calls back into Valtimo it uses a token that is
+- **Short-lived access tokens** — when a plugin calls back into Valtimo it uses a token that is
   limited to the accepted endpoint list and expires within minutes. Plugin screens acting on
   behalf of a logged-in user are additionally limited to what that user is allowed to see and do.
-- **Signed traffic** — every request Valtimo sends to an integration is cryptographically signed,
-  so an integration only accepts instructions from the Valtimo environment that holds its secret.
+- **Signed traffic** — every request Valtimo sends to an integration is signed, so an integration
+  only accepts instructions from the Valtimo environment that holds its secret.
   Configuration data — tokens, settings, broker credentials — additionally only travels to an
   integration over an encrypted (or local) connection, unless an operator deliberately lifts that
   requirement for a fully trusted network.

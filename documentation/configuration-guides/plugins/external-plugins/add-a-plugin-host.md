@@ -57,7 +57,7 @@ instruction from the team operating the host or the platform.
 | Property | Description |
 |----------|-------------|
 | GZAC callback URL | The URL plugins on this host use to call back into this Valtimo environment. Change it when the host reaches Valtimo on a different address than the default — for example when the two run in separate containers. |
-| Event broker URL (optional) | The message broker (AMQP) address plugins receive events from. Pre-filled from the platform's own broker with the credentials masked as `***` — leaving the masked value in place uses the platform credentials. Leave empty to disable events for this host. |
+| Event broker URL (optional) | The message broker address plugins receive events from. Pre-filled from the platform's own broker with the credentials masked as `***` — leaving the masked value in place uses the platform credentials. Leave empty to disable events for this host. |
 | Event broker exchange (optional) | The exchange events are read from. The pre-filled default matches what Valtimo publishes to. |
 | Event queue mode | **Live** — events published while the host is down are lost. **Durable** — events are retained for a configurable time while the host is down, and delivered when it returns. Durable mode asks for an inactivity time-to-live, entered in milliseconds (default 72 hours, between 1 hour and 30 days). Also changeable later — see [Manage an integration](manage-an-integration.md#event-queue-settings). |
 

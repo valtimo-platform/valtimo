@@ -3,7 +3,7 @@
 NPM package (`@valtimo/plugin-sdk`) for building Valtimo external plugins that compile to WebAssembly.
 
 > **Writing a plugin?** Start with
-> [Developing an external plugin](../docs/develop-a-plugin.md), which explains how a plugin works
+> [Developing an external plugin](../../dev-docs/external-plugins/develop-a-plugin.md), which explains how a plugin works
 > with Valtimo and documents the backend handler API in context. This README is the reference for
 > the SDK's CLIs, toolchain, and frontend SDK.
 
@@ -234,7 +234,7 @@ Reads `pluginId` and `version` from `manifest.json` and produces `{pluginId}-{ve
 ## SDK API (for plugin authors)
 
 The canonical handler and host-function reference is
-[Developing an external plugin](../docs/develop-a-plugin.md) —
+[Developing an external plugin](../../dev-docs/external-plugins/develop-a-plugin.md) —
 this section only sketches the surface:
 
 ```typescript
@@ -268,7 +268,7 @@ submit("review", (input) => ({ status: "completed" }));    // handle_submit: tas
 | `kv.{get,set,delete,list}` | Per-configuration key/value store |
 
 Handler input/output types, execution semantics, and the sandbox's limits are documented in
-[Developing an external plugin](../docs/develop-a-plugin.md#3-backend-handlers-srcplugints).
+[Developing an external plugin](../../dev-docs/external-plugins/develop-a-plugin.md#3-backend-handlers-srcplugints).
 
 ### Capabilities
 
