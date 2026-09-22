@@ -1,0 +1,383 @@
+name: Plugin host - Publish release
+run-name: Publish plugin-host ${{ inputs.version }} from ${{ github.ref_name }}
+
+# One-click release for the plugin-host Docker image. Pick a branch, type a version, run.
+#
+# Deliberately a SINGLE workflow, unlike the two-file plugin_sdk_*_release.yml pair. The SDK
+# needs a release branch because its package.json version is read back by the scaffold and
+# pinned into every generated plugin, so the bump has to be committed and merged back. Nothing
+# reads the host's own package.json version — the deliverable is an image whose *tag* is the
+# version — so there is no bump to commit, no release branch and no merge-back PR.
+#
+# Runs on whatever ref you dispatch it from (normally next-minor); it tags that commit and
+# never pushes to a branch.
+
+permissions:
+  contents: write
+  packages: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Host version to release (e.g. 1.0.0 or 1.0.0-rc.1)"
+        required: true
+        type: string
+      dry_run:
+        description: "Build, test and smoke only — no Docker Hub push, tag or GitHub release"
+        required: false
+        type: boolean
+        default: false
+
+env:
+  IMAGE_NAME: valtimo-plugin-host
+
+jobs:
+  prepare:
+    name: Determine version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate version
+        id: version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::Version must be <semver> with an optional prerelease suffix (e.g. 1.0.0 or 1.0.0-rc.1). Got: '${VERSION}'."
+            exit 1
+          fi
+
+          # A prerelease is marked as such on the GitHub release; the Docker tag is the
+          # version either way. No `latest` tag is ever published — a Helm chart pins.
+          if [[ "${VERSION}" == *-* ]]; then PRERELEASE=true; else PRERELEASE=false; fi
+
+          {
+            echo "version=${VERSION}"
+            echo "prerelease=${PRERELEASE}"
+          } >> "$GITHUB_OUTPUT"
+
+      # app/package.json is the release floor. Nothing reads it at runtime, but keeping it at the
+      # last released version makes it the one place that answers "what may ship next", and stops
+      # a typo from publishing below what is already out there. Compares the numeric core only, so
+      # 1.0.0-rc.1 is allowed against a 1.0.0 floor.
+      - name: Refuse a version below the in-repo baseline
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs");
+            const baseline = JSON.parse(fs.readFileSync("plugin-host/app/package.json", "utf8")).version;
+            const core = (v) => v.split("-")[0].split(".").map(Number);
+            const [a, b] = [core(process.env.VERSION), core(baseline)];
+            if ((a[0] - b[0] || a[1] - b[1] || a[2] - b[2]) < 0) {
+              console.error(`::error::Refusing to release ${process.env.VERSION}: below the baseline ${baseline} in plugin-host/app/package.json.`);
+              process.exit(1);
+            }
+            console.log(`${process.env.VERSION} is at or above the baseline ${baseline}.`);
+          '
+
+      - name: Refuse to overwrite a published Docker Hub tag
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Anonymous pull token is enough to read the tag list of a public repo.
+          TOKEN="$(curl -fsSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ritense/${IMAGE_NAME}:pull" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+          code="$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Accept: application/vnd.oci.image.index.v1+json,application/vnd.docker.distribution.manifest.list.v2+json" \
+            "https://registry-1.docker.io/v2/ritense/${IMAGE_NAME}/manifests/${VERSION}")"
+          if [ "$code" = "200" ]; then
+            echo "::error::ritense/${IMAGE_NAME}:${VERSION} already exists on Docker Hub. Bump the version — published tags are never overwritten."
+            exit 1
+          fi
+          echo "ritense/${IMAGE_NAME}:${VERSION} is free (registry returned ${code})."
+
+  # Re-verifies the shipped runtime on the exact commit being released: SDK, host unit tests,
+  # the Wasm/Extism layer and the Testcontainers integration layer. Sequential in one job on
+  # purpose — a release runs rarely, and mirroring plugin_host_ci.yml's job split here would
+  # duplicate its scaffolding and invite drift. The scaffold and bootstrap legs are skipped:
+  # they gate the plugin-author experience, not the bytes in this image.
+  verify:
+    name: Build and test
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            plugin-host/plugin-sdk/package-lock.json
+            plugin-host/app/package-lock.json
+            plugin-host/test-fixtures/test-plugin/package-lock.json
+
+      - name: SDK - install & build
+        working-directory: plugin-host/plugin-sdk
+        run: npm ci && npm run build
+
+      - name: SDK - test
+        working-directory: plugin-host/plugin-sdk
+        run: npm run test:cov
+
+      - name: App - install & build
+        working-directory: plugin-host/app
+        run: npm ci && npm run build
+
+      - name: App - unit tests
+        working-directory: plugin-host/app
+        run: npm run test:cov
+
+      # The fixture is compiled to Wasm by the suite's globalSetup, which needs the SDK's
+      # toolchain (extism-js + binaryen, downloaded on first use).
+      - name: Fixture - install deps
+        working-directory: plugin-host/test-fixtures/test-plugin
+        run: npm install
+
+      - name: App - Wasm/Extism tests (L3)
+        working-directory: plugin-host/app
+        run: npm run test:wasm
+
+      - name: App - integration tests (Testcontainers)
+        working-directory: plugin-host/app
+        run: npm run test:int
+
+  # GHCR only at this stage. The smoke job below boots this exact image and only then is it
+  # copied to Docker Hub, so Docker Hub never receives an image that has not booted.
+  build:
+    name: Build image (GHCR)
+    needs:
+      - prepare
+      - verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Stamps the released version into the package.json the Dockerfile copies, so the image
+      # is self-describing. Never committed: nothing reads this value back, so persisting it
+      # would buy a release branch and a merge-back PR for no gain. `npm version` updates the
+      # lockfile too, keeping the image's `npm ci` consistent.
+      - name: Stamp version into the image
+        working-directory: plugin-host/app
+        run: npm version "${VERSION}" --no-git-tag-version --allow-same-version
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.VERSION }}
+            type=raw,value=commit-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.version=${{ env.VERSION }}
+            org.opencontainers.image.title=Valtimo Plugin Host
+          flavor: |
+            latest=false
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          install: true
+
+      # Context is plugin-host/, not plugin-host/app/: the app depends on the SDK through a
+      # `file:../plugin-sdk` dependency, so the SDK must be inside the context.
+      - name: Build and push to GHCR
+        uses: docker/build-push-action@v6
+        with:
+          context: plugin-host
+          file: plugin-host/app/Dockerfile
+          platforms: linux/amd64,linux/arm64/v8
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  smoke:
+    name: Smoke test image
+    needs:
+      - prepare
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      # The commit tag is deterministic and slash-free; use it as the exact image under test
+      # and, below, as the promotion source.
+      SMOKE_IMAGE: ghcr.io/${{ github.repository }}/valtimo-plugin-host:commit-${{ github.sha }}
+      COMPOSE_FILE: plugin-host/app/docker-compose.smoke.yml
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Boot image against Postgres
+        run: |
+          set -euo pipefail
+          echo "Image under test: $SMOKE_IMAGE"
+          docker compose -f "$COMPOSE_FILE" pull app
+          docker compose -f "$COMPOSE_FILE" up -d
+
+      # A green /health means the process started, DB_MIGRATE_ON_BOOT migrated a real Postgres
+      # and Fastify is serving. That is the whole gate.
+      - name: Wait for /health
+        run: |
+          set -uo pipefail
+          deadline=$(( $(date +%s) + 120 ))
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            if curl -fsS http://localhost:8090/health 2>/dev/null | grep -q '"status":"UP"'; then
+              echo "Host reported status UP — image boots cleanly."
+              exit 0
+            fi
+            if ! docker compose -f "$COMPOSE_FILE" ps app --status running --quiet | grep -q .; then
+              echo "::error::Host container exited before reporting healthy."
+              break
+            fi
+            sleep 3
+          done
+          echo "::error::Image ${SMOKE_IMAGE} did not report healthy in time."
+          echo "----- last 200 lines of host logs -----"
+          docker compose -f "$COMPOSE_FILE" logs --tail=200 app || true
+          exit 1
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose -f "$COMPOSE_FILE" down -v || true
+
+  promote:
+    name: Promote to Docker Hub
+    needs:
+      - prepare
+      - smoke
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      SMOKE_IMAGE: ghcr.io/${{ github.repository }}/valtimo-plugin-host:commit-${{ github.sha }}
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      # A manifest copy, not a rebuild: Docker Hub gets the identical multi-arch image that
+      # just booted, digest for digest.
+      - name: Promote tested image
+        run: |
+          set -euo pipefail
+          TARGET="docker.io/ritense/${IMAGE_NAME}:${VERSION}"
+          echo "Promoting $SMOKE_IMAGE -> $TARGET (multi-arch manifest copy)"
+          docker buildx imagetools create --tag "$TARGET" "$SMOKE_IMAGE"
+          docker buildx imagetools inspect "$TARGET"
+
+  release:
+    name: Tag and create GitHub release
+    needs:
+      - prepare
+      - promote
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout released commit
+        uses: actions/checkout@v4
+        with:
+          # Tag with the valtimo-platform PAT — not GITHUB_TOKEN — so a tag-protecting
+          # repository ruleset doesn't block it (GITHUB_TOKEN is not on the bypass list).
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+          fetch-depth: 0
+          # Don't leave the ruleset-bypassing PAT in the git config: the third-party
+          # softprops/action-gh-release step runs later in this job and could read it.
+          persist-credentials: false
+
+      # action-gh-release creates the tag when it is absent but will NOT move one that already
+      # exists. So a first release tags this commit, and a re-run force-moves the tag here so
+      # the release points at the build that actually shipped.
+      - name: Force-move tag on re-run
+        env:
+          RELEASE_PAT: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TAG="plugin-host/${VERSION}"
+          git remote set-url origin "https://x-access-token:${RELEASE_PAT}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --tags --exit-code origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists — re-run detected; force-moving it to ${GITHUB_SHA}."
+            git tag -f "${TAG}" "${GITHUB_SHA}"
+            git push --force origin "refs/tags/${TAG}"
+          else
+            echo "Tag ${TAG} does not exist yet — the release step will create it."
+          fi
+          # Drop the PAT from the remote before the third-party release action runs.
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: plugin-host/${{ needs.prepare.outputs.version }}
+          # Without this the API defaults target_commitish to the repo's default branch,
+          # which would tag different content than was built.
+          target_commitish: ${{ github.sha }}
+          name: Plugin host ${{ needs.prepare.outputs.version }}
+          body: |
+            Valtimo plugin host ${{ needs.prepare.outputs.version }} — published to Docker Hub.
+
+            ```
+            docker pull ritense/valtimo-plugin-host:${{ needs.prepare.outputs.version }}
+            ```
+
+            Built from `${{ github.ref_name }}` at commit ${{ github.sha }}.
+          draft: false
+          prerelease: ${{ needs.prepare.outputs.prerelease == 'true' }}

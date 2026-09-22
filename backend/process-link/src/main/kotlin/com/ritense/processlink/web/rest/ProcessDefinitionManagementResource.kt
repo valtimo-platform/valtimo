@@ -40,6 +40,7 @@ import com.ritense.processlink.web.rest.dto.ProcessDefinitionValidateResponseDto
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.ProcessPropertyService
@@ -88,6 +89,10 @@ class ProcessDefinitionManagementResource(
     private val assembler: ProcessDefinitionResponseAssembler,
 ) {
 
+    @EndpointDescription(
+        en = "List unlinked process definitions with links",
+        nl = "Ongekoppelde procesdefinities met koppelingen ophalen",
+    )
     @GetMapping("/management/v1/process-definition")
     @Transactional
     fun getUnlinkedProcessDefinitionsAndProcessLinks(): ResponseEntity<List<ProcessDefinitionResponseDto>> {
@@ -110,6 +115,10 @@ class ProcessDefinitionManagementResource(
         return ResponseEntity.ok(definitions)
     }
 
+    @EndpointDescription(
+        en = "List unlinked process definitions by key",
+        nl = "Ongekoppelde procesdefinities per sleutel ophalen",
+    )
     @GetMapping("/management/v1/process-definition/key/{processDefinitionKey}")
     @Transactional
     fun getUnlinkedProcessDefinitionsByKeyList(
@@ -132,6 +141,10 @@ class ProcessDefinitionManagementResource(
         return ResponseEntity.ok(responseDtos)
     }
 
+    @EndpointDescription(
+        en = "List global process definitions with links by key",
+        nl = "Globale procesdefinities met koppelingen per sleutel ophalen",
+    )
     @GetMapping("/management/v1/process-definition/{processDefinitionKey}")
     @Transactional
     fun getUnlinkedProcessDefinitionsWithLinks(
@@ -151,6 +164,10 @@ class ProcessDefinitionManagementResource(
         return ResponseEntity.ok(responseDto)
     }
 
+    @EndpointDescription(
+        en = "Delete unlinked process definitions and links by key",
+        nl = "Ongekoppelde procesdefinities en koppelingen per sleutel verwijderen",
+    )
     @DeleteMapping("/management/v1/process-definition/key/{processDefinitionKey}")
     @Transactional
     fun deleteUnlinkedProcessDefinitionsAndLinksByKey(
@@ -167,6 +184,10 @@ class ProcessDefinitionManagementResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Deploy unlinked process definition and links",
+        nl = "Ongekoppelde procesdefinitie en koppelingen uitrollen",
+    )
     @PostMapping(
         value = ["/management/v1/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -194,6 +215,10 @@ class ProcessDefinitionManagementResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Update unlinked process definition and links",
+        nl = "Ongekoppelde procesdefinitie en koppelingen bijwerken",
+    )
     @PutMapping(
         value = ["/management/v1/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -215,6 +240,10 @@ class ProcessDefinitionManagementResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Validate a BPMN process definition and its process links",
+        nl = "Een BPMN-procesdefinitie en de bijbehorende proceskoppelingen valideren",
+    )
     @PostMapping(
         value = ["/management/v1/process-definition/validate"],
         consumes = [MediaType.APPLICATION_JSON_VALUE],
@@ -238,6 +267,10 @@ class ProcessDefinitionManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Export process definition and referenced elements",
+        nl = "Procesdefinitie en gerefereerde elementen exporteren",
+    )
     @GetMapping(
         value = ["/management/v1/process-definition/{processDefinitionId}/export"],
         produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
@@ -258,6 +291,10 @@ class ProcessDefinitionManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Preview process definition import",
+        nl = "Import van procesdefinitie vooraf bekijken",
+    )
     @PostMapping("/management/v1/process-definition/import/preview")
     fun previewProcessDefinitionImport(
         @RequestParam("file") file: MultipartFile
@@ -270,6 +307,10 @@ class ProcessDefinitionManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Import process definition and referenced elements",
+        nl = "Procesdefinitie en gerefereerde elementen importeren",
+    )
     @PostMapping("/management/v1/process-definition/import")
     fun importProcessDefinition(
         @RequestParam("file") file: MultipartFile,
@@ -304,6 +345,10 @@ class ProcessDefinitionManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Delete autofill of a process definition activity",
+        nl = "Automatisch invullen van procesdefinitie-activiteit verwijderen",
+    )
     @DeleteMapping("/management/v1/process-definition/{processDefinitionId}/autofill/{activityId}")
     fun deleteAutofill(
         @LoggableResource(resourceType = OperatonProcessDefinition::class) @PathVariable processDefinitionId: String,
