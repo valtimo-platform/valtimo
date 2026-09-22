@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.processlink.event
+package com.ritense.valtimo.contract.annotation
 
-class ProcessLinkUpdatedEvent(
-    val processLinkType: String,
-    val processDefinitionId: String,
-    /** The writer rechecks the whole case definition once when the import finishes. */
-    val recheckDeferred: Boolean,
-) {
-    // Kept so callers compiled against an older version keep working
-    constructor(processLinkType: String, processDefinitionId: String) :
-        this(processLinkType, processDefinitionId, false)
+import io.github.classgraph.ScanResult
+import org.springframework.context.ApplicationContext
+
+/** Counts scans. Keeping the count at one guards against the startup scan count creeping back up. */
+class CountingAnnotationScanner(context: ApplicationContext) : AnnotationScanner(context) {
+
+    var scanCount: Int = 0
+        private set
+
+    override fun scan(acceptPackages: Array<String>): ScanResult {
+        scanCount++
+        return super.scan(acceptPackages)
+    }
 }
