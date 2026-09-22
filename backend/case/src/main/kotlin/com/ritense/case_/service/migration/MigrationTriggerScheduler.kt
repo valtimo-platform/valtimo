@@ -32,14 +32,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
-/**
- * ShedLock-guarded sweeps, on two schedules because they cost wildly different amounts. [checkTriggers]
- * runs every minute: reclaim crashed runs, start plans whose `scheduledAtDate` or `runAfter` is
- * satisfied. [refreshEstimates] stays hourly: the cached estimate is a full candidate scan per plan.
- *
- * One hourly sweep made the editor's minutes dead configuration — 16:13 first ran at 17:00 (G83).
- * Case plans only — a building block plan has no trigger of its own.
- */
+/** Two ShedLock'd sweeps: [checkTriggers] per minute so the picker's minutes are real, [refreshEstimates] hourly because it scans candidates per plan. Case plans only. */
 @SkipComponentScan
 @Component
 class MigrationTriggerScheduler(
@@ -50,7 +43,7 @@ class MigrationTriggerScheduler(
 ) {
 
     @Scheduled(cron = "\${valtimo.case.migration.trigger-poll-cron:0 * * * * *}")
-    @SchedulerLock(name = "caseMigrationTriggerScheduler", lockAtLeastFor = "PT5S", lockAtMostFor = "PT60M")
+    @SchedulerLock(name = "caseMigrationTriggerScheduler", lockAtLeastFor = "PT5S", lockAtMostFor = "PT5M")
     fun checkTriggers() {
         runWithoutAuthorization {
             // Resume runs abandoned by a crashed node (RUNNING with an expired lease).
@@ -72,7 +65,10 @@ class MigrationTriggerScheduler(
     /** The expensive half. A plan already due is skipped: [checkTriggers] is about to run it, and a run counts as it goes. */
     @Scheduled(cron = "\${valtimo.case.migration.estimate-refresh-cron:0 0 * * * *}")
     @SchedulerLock(name = "caseMigrationEstimateRefresh", lockAtLeastFor = "PT5S", lockAtMostFor = "PT60M")
-    fun refreshEstimates() {
+    fun refreshEstimates() = refreshEstimatesNow()
+
+    /** The body both entry points share. Called directly on startup, where there is deliberately no lock — as there never was. */
+    private fun refreshEstimatesNow() {
         runWithoutAuthorization {
             val now = Instant.now()
             caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
@@ -95,7 +91,7 @@ class MigrationTriggerScheduler(
                     runTrigger(execution.id)
                 }
         }
-        refreshEstimates()
+        refreshEstimatesNow()
     }
 
     private fun refreshEstimate(migrationId: BlueprintMigrationId) {
