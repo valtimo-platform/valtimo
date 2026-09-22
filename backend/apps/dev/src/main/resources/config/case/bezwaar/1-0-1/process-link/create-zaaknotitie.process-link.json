@@ -18,7 +18,7 @@
     "activityType" : "bpmn:StartEvent:start",
     "formDefinitionName" : "start-form-create-zaaknotitie",
     "viewModelEnabled" : false,
-    "formDisplayType" : "modal",
+    "formDisplayType" : "panel",
     "formSize" : "medium",
     "subtitles" : null,
     "processLinkType" : "form"

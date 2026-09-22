@@ -124,14 +124,28 @@
           [minSize]="tabContentObs.caseDetailLayout.rightPanelMinWidth"
           [maxSize]="tabContentObs.caseDetailLayout.rightPanelMaxWidth"
         >
-          @if (tabContentObs.showTaskList) {
+          @if (
+            tabContentObs.showTaskList ||
+            tabContentObs.startFormPanel ||
+            tabContentObs.taskAndProcessLinkOpenedInPanel
+          ) {
             <div class="task-panel">
               @if (tabContentObs.startFormPanel) {
-                <div class="start-form-panel">
+                <div class="start-form-panel" [attr.data-test-id]="panelTestIds.startFormPanel">
                   <section class="start-form-panel__header">
-                    <h4 class="start-form-panel__title">{{ tabContentObs.startFormPanel.title }}</h4>
+                    <h4
+                      class="start-form-panel__title"
+                      [attr.data-test-id]="panelTestIds.startFormPanelTitle"
+                    >
+                      {{ tabContentObs.startFormPanel.title }}
+                    </h4>
 
-                    <button cdsButton="ghost" [iconOnly]="true" (click)="onStartFormPanelClose()">
+                    <button
+                      cdsButton="ghost"
+                      [attr.data-test-id]="panelTestIds.startFormPanelCloseButton"
+                      [iconOnly]="true"
+                      (click)="onStartFormPanelClose()"
+                    >
                       <svg cdsIcon="close" size="16"></svg>
                     </button>
                   </section>

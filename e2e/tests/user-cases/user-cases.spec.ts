@@ -219,4 +219,74 @@ test.describe('Feature 2 — Cases (User)', () => {
       await expect(taskTile).not.toBeVisible({timeout: 15_000});
     });
   });
+
+  // Regression for #842: a start form opened in the side panel must stay open and
+  // keep its entered data on every tab switch — including tabs that hide the task
+  // panel — until the user deliberately closes it. Before the fix the panel was
+  // force-closed on each tab switch (and torn down entirely on task-hiding tabs).
+  test.describe('2.7 — In-panel start form persists across tab switches', () => {
+    const noteSubject = 'Persistent panel note 842';
+
+    test.beforeAll(async () => {
+      const created = await userCasesPage.createCaseViaApi();
+      createdCases.push(created);
+      await userCasesPage.goToCaseDetail(created.documentId);
+    });
+
+    test('keeps a start form open with entered data across task-hiding tabs and back', async () => {
+      await userCasesPage.openStartFormInPanel(USER_CASES_CONFIG.createZaaknotitieProcess);
+      await expect(userCasesPage.startFormPanelTitle).toHaveText(
+        USER_CASES_CONFIG.createZaaknotitieProcess
+      );
+
+      const subject = userCasesPage.startFormField(/Onderwerp/);
+      await subject.fill(noteSubject);
+
+      // Progress and Documents both hide the task panel — the panel used to be torn down here
+      await userCasesPage.detailTab(USER_CASES_CONFIG.detailTabs.progress).click();
+      await expect(userCasesPage.startFormPanel).toBeVisible();
+      await expect(subject).toHaveValue(noteSubject);
+
+      await userCasesPage.detailTab(USER_CASES_CONFIG.detailTabs.documents).click();
+      await expect(userCasesPage.startFormPanel).toBeVisible();
+      await expect(subject).toHaveValue(noteSubject);
+
+      // Back to a tab that shows the task panel — the form is still there
+      await userCasesPage.detailTab(USER_CASES_CONFIG.detailTabs.summary).click();
+      await expect(userCasesPage.startFormPanel).toBeVisible();
+      await expect(subject).toHaveValue(noteSubject);
+    });
+
+    test('closes the panel via the header close button', async () => {
+      await userCasesPage.closeStartFormPanel();
+    });
+
+    test('keeps a read-only start form open across a task-hiding tab', async () => {
+      await userCasesPage.openStartFormInPanel(USER_CASES_CONFIG.catalogiGetTypenProcess);
+      await expect(userCasesPage.startFormPanelTitle).toHaveText(
+        USER_CASES_CONFIG.catalogiGetTypenProcess
+      );
+
+      await userCasesPage.detailTab(USER_CASES_CONFIG.detailTabs.audit).click();
+      await expect(userCasesPage.startFormPanel).toBeVisible();
+
+      await userCasesPage.detailTab(USER_CASES_CONFIG.detailTabs.summary).click();
+      await expect(userCasesPage.startFormPanel).toBeVisible();
+
+      await userCasesPage.closeStartFormPanel();
+    });
+
+    test('keeps an in-panel task form open across a task-hiding tab and back', async () => {
+      // The first task of a fresh bezwaar case (validate-request) is configured to
+      // open its form in the side panel — before the fix this was hidden and reset
+      // when routing through a tab that does not show the task panel.
+      await userCasesPage.openTaskInPanel(USER_CASES_CONFIG.validateRequestTask);
+
+      await userCasesPage.detailTab(USER_CASES_CONFIG.detailTabs.audit).click();
+      await expect(userCasesPage.taskDetailPanel).toBeVisible();
+
+      await userCasesPage.detailTab(USER_CASES_CONFIG.detailTabs.summary).click();
+      await expect(userCasesPage.taskDetailPanel).toBeVisible();
+    });
+  });
 });
