@@ -125,9 +125,7 @@ class MigrationSuggestionService(
             ?: return@inRun listOf(
                 "the plan declares no valid 'source' (the blueprint version it migrates instances from)"
             )
-        if (lineageOf(target)?.exists(source) == false) {
-            return@inRun listOf("its source '$source' is not deployed, so the plan would migrate no instances")
-        }
+        // An undeployed source is deliberately not a problem: the file deployer has always accepted one, and refusing it here made every plan sourcing a deleted case version unsavable.
         componentValidators.flatMap { validator ->
             plan.get(validator.componentKey())
                 ?.takeUnless { it.isNull }

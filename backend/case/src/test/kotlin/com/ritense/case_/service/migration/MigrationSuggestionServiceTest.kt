@@ -331,15 +331,15 @@ class MigrationSuggestionServiceTest {
         assertThat(problems).singleElement().asString().contains("no valid 'source'")
     }
 
+    /** The file deployer has always accepted an undeployed source, so refusing one here made a plan that deploys impossible to save again — the state every plan migrating *from* a deleted case version lands in. Running such a plan is still refused; that check is on the run path. */
     @Test
-    fun `a plan naming a source nobody deployed cannot be saved`() {
-        // Checked here rather than at file import: on this path every definition is deployed, and a source that is not selects nothing.
+    fun `a plan naming a source nobody deployed can still be saved`() {
         val service = suggestionService(lineage = lineage(exists = false))
         val plan = objectMapper.readTree("""{"key": "x", "source": {"versionTag": "1.0.1"}}""")
 
         val problems = service.findPlanProblems(target, plan)
 
-        assertThat(problems).singleElement().asString().contains("is not deployed")
+        assertThat(problems).isEmpty()
     }
 
     @Test
