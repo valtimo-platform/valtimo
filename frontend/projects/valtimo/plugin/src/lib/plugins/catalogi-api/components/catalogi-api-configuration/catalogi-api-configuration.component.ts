@@ -26,7 +26,6 @@ import {CATALOGI_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
   standalone: false,
   selector: 'valtimo-catalogi-api-configuration',
   templateUrl: './catalogi-api-configuration.component.html',
-  styleUrls: ['./catalogi-api-configuration.component.scss'],
 })
 export class CatalogiApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
