@@ -17,6 +17,9 @@
 import { hostname } from "node:os";
 import { z } from "zod";
 
+/** Kept in step with the plugin host's own floor (`app/src/models/app-config.ts`). */
+export const MIN_ADMIN_TOKEN_LENGTH = 16;
+
 /**
  * An app needs far less configuration than a full plugin host: it has no plugin storage, no
  * database, and learns its broker (if any) from the configuration GZAC pushes. All it needs is a
@@ -26,8 +29,15 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(8095),
 
   // The shared secret GZAC uses as the HMAC key for every GZAC→app request. Must equal the
-  // "secret" entered when the app is registered in GZAC.
-  ADMIN_TOKEN: z.string().min(1),
+  // "secret" entered when the app is registered in GZAC. Same 16-character floor the plugin host
+  // enforces — an app is the other end of the identical HMAC scheme.
+  ADMIN_TOKEN: z
+    .string()
+    .min(
+      MIN_ADMIN_TOKEN_LENGTH,
+      `ADMIN_TOKEN must be at least ${MIN_ADMIN_TOKEN_LENGTH} characters ` +
+        `(generate one with: openssl rand -hex 32)`
+    ),
 
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 

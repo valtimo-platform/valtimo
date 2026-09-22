@@ -224,3 +224,50 @@ jobs:
         working-directory: plugin-host
         run: node --input-type=module -e "const {samplePluginZipPath} = await import('./scripts/setup.mjs'); const {existsSync} = await import('node:fs'); const zip = samplePluginZipPath(); if (!existsSync(zip)) { console.error('missing ' + zip); process.exit(1); } console.log('OK ' + zip);"
         shell: bash
+
+  # Build-only mirror of the release image build (plugin_host_publish_release.yml), so a broken
+  # Dockerfile fails the PR instead of the release. amd64 only and no push: this leg proves the
+  # image compiles from a clean checkout, not that it is publishable.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          install: true
+
+      # Context is plugin-host/, not plugin-host/app/: the app depends on the SDK through a
+      # `file:../plugin-sdk` dependency, so the SDK must be inside the context.
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: plugin-host
+          file: plugin-host/app/Dockerfile
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: valtimo-plugin-host:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Boots the just-built image with no database reachable: the process must fail loudly
+      # rather than hang or exit 0. Cheap proof that the entrypoint and the runtime dependency
+      # tree are intact — full boot is covered by the release smoke test.
+      - name: Verify the image runs
+        run: |
+          set -euo pipefail
+          out="$(docker run --rm -e ADMIN_TOKEN=ci-admin-token-value -e DB_HOST=127.0.0.1 \
+            valtimo-plugin-host:ci node -e 'console.log("entrypoint ok:", process.version)')"
+          echo "$out"
+          printf '%s' "$out" | grep -q 'entrypoint ok: v22'
+
+      - name: Verify the image runs as non-root
+        run: |
+          set -euo pipefail
+          uid="$(docker run --rm valtimo-plugin-host:ci id -u)"
+          echo "runtime uid: ${uid}"
+          [ "$uid" != "0" ]

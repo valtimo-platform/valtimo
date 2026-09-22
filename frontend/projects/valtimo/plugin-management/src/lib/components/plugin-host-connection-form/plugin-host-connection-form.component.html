@@ -29,6 +29,15 @@
     {{ 'pluginManagement.labels.secret' | translate }}
     <input cdsText formControlName="secret" type="password" [placeholder]="secretPlaceholder" />
 
+    <small
+      *ngIf="form.controls.secret.touched && form.controls.secret.hasError('minlength')"
+      class="plugin-host-connection-form__error"
+    >
+      {{
+        'pluginManagement.hints.secretMinLength' | translate: {min: MIN_SECRET_LENGTH}
+      }}
+    </small>
+
     <small *ngIf="editHost">{{ 'pluginManagement.hints.secretUnchanged' | translate }}</small>
   </cds-label>
 

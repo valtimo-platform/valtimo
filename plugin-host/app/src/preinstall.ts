@@ -78,6 +78,7 @@ export async function preinstallPlugins(
       const result = await installPluginZip(pluginManager, zipBuffer, {
         overwrite: false,
         tmpBase,
+        maxUncompressedBytes: config.PLUGIN_MAX_UNCOMPRESSED_BYTES,
       });
 
       if (result.outcome === "invalid-manifest") {
@@ -128,6 +129,7 @@ export async function preinstallPlugins(
       const replaced = await installPluginZip(pluginManager, zipBuffer, {
         overwrite: true,
         tmpBase,
+        maxUncompressedBytes: config.PLUGIN_MAX_UNCOMPRESSED_BYTES,
       });
       if (replaced.outcome === "installed") {
         log.warn(

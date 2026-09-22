@@ -83,10 +83,20 @@ export class PluginHostConnectionFormComponent implements OnInit, OnChanges, OnD
 
   @Output() public validChange = new EventEmitter<boolean>();
 
+  /**
+   * Matches `ExternalPluginHostService.MIN_SECRET_LENGTH` and the host's `MIN_ADMIN_TOKEN_LENGTH`.
+   * Checked here so the form names the problem instead of saving an unusable secret.
+   */
+  public readonly MIN_SECRET_LENGTH = 16;
+
   public readonly form = new FormGroup({
     name: new FormControl('', Validators.required),
     baseUrl: new FormControl('', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]),
-    secret: new FormControl('', Validators.required),
+    // Edit mode drops only `required`: minLength passes an empty value, so blank stays "unchanged".
+    secret: new FormControl('', [
+      Validators.required,
+      Validators.minLength(this.MIN_SECRET_LENGTH),
+    ]),
     gzacCallbackBaseUrl: new FormControl('', [
       Validators.required,
       Validators.pattern(/^https?:\/\/.+/),

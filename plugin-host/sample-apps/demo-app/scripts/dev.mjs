@@ -22,6 +22,7 @@
 import {spawn, spawnSync} from "node:child_process";
 import {delimiter, dirname, join, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
+import {DEV_ADMIN_TOKEN} from "../../../scripts/lib/common.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const isWindows = process.platform === "win32";
@@ -35,7 +36,7 @@ if (build.status !== 0) process.exit(build.status ?? 1);
 
 const env = {
   ...process.env,
-  ADMIN_TOKEN: process.env.ADMIN_TOKEN || "test-secret",
+  ADMIN_TOKEN: process.env.ADMIN_TOKEN || DEV_ADMIN_TOKEN,
   PATH: `${join(projectRoot, "node_modules", ".bin")}${delimiter}${process.env.PATH ?? ""}`,
 };
 

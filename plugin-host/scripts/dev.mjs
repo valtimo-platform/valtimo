@@ -26,12 +26,13 @@
  *   3. Starts the plugin host with auto-reload (tsx watch)
  *   4. Waits for /health, then uploads the built sample plugin over the signed admin API
  *
- * Environment: ADMIN_TOKEN (default `test-secret` — dev only), PORT (default 8090).
+ * Environment: ADMIN_TOKEN (defaults to DEV_ADMIN_TOKEN — dev only), PORT (default 8090).
  */
 
 import {join} from "node:path";
 import {
   APP_DIR,
+  DEV_ADMIN_TOKEN,
   checkNodeVersion,
   dockerIsRunning,
   envWithPath,
@@ -48,7 +49,8 @@ import {needsSetup, runSetup, samplePluginZipPath} from "./setup.mjs";
 checkNodeVersion();
 
 const uploadSample = !process.argv.includes("--no-sample");
-const adminToken = process.env.ADMIN_TOKEN || "test-secret";
+const adminToken = process.env.ADMIN_TOKEN || DEV_ADMIN_TOKEN;
+const usingDevToken = adminToken === DEV_ADMIN_TOKEN;
 const port = process.env.PORT || "8090";
 const baseUrl = process.env.PLUGIN_HOST_URL || `http://localhost:${port}`;
 
@@ -67,8 +69,8 @@ if (!dockerIsRunning()) {
 run("docker", ["compose", "up", "-d", "db"], {cwd: APP_DIR});
 
 step(`Plugin host — starting on ${baseUrl} (auto-reload)`);
-if (adminToken === "test-secret") {
-  note("ADMIN_TOKEN not set — using the dev default 'test-secret'.");
+if (usingDevToken) {
+  note(`ADMIN_TOKEN not set — using the dev default '${DEV_ADMIN_TOKEN}'.`);
 }
 const child = spawnLongRunning("tsx", ["watch", "src/index.ts"], {
   cwd: APP_DIR,
@@ -124,6 +126,12 @@ if (uploadSample) {
 
 step("Ready");
 info(`Plugin host:  ${baseUrl}  (health: ${baseUrl}/health)`);
-info(`Admin token:  ${adminToken}`);
+// Only the throwaway dev default is ever echoed. A real ADMIN_TOKEN would otherwise end up in
+// terminal scrollback and CI logs.
+info(
+  usingDevToken
+    ? `Admin token:  ${DEV_ADMIN_TOKEN}  (dev default)`
+    : "Admin token:  taken from ADMIN_TOKEN (not shown)"
+);
 info(`Upload more:  npm run plugin:upload -- path/to/plugin.zip`);
 info("Stop with Ctrl+C (PostgreSQL keeps running; 'npm run db:down' stops it).");

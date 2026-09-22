@@ -102,8 +102,8 @@ class ExternalPluginAutoDeploymentIntTest @Autowired constructor(
         assertThat(host.gzacCallbackBaseUrl).isEqualTo("http://localhost:8080")
         assertThat(host.eventBrokerAmqpUrl).isEqualTo("amqp://guest:guest@localhost:5672")
         assertThat(host.frontendOriginList).containsExactly("http://localhost:4200")
-        assertThat(host.secret).isNotEqualTo("test-secret")
-        assertThat(hostService.decryptedSecret(host)).isEqualTo("test-secret")
+        assertThat(host.secret).isNotEqualTo("dev-only-insecure-secret")
+        assertThat(hostService.decryptedSecret(host)).isEqualTo("dev-only-insecure-secret")
 
         assertThat(uploadCount).isEqualTo(0)
         assertThat(host.status).isEqualTo(ExternalPluginHostStatus.UNREACHABLE)

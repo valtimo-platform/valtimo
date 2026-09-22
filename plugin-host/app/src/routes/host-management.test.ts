@@ -326,6 +326,63 @@ describe("host-management routes", () => {
         await smallApp.close();
       }
     });
+
+    it("maps a zip the library itself refuses to 400, not a 500 echoing its message", async () => {
+      // adm-zip refuses duplicate entry names outright. Its writer de-duplicates, so byte-patch
+      // two entries to one name — the same trick the zip-slip spec above uses.
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", Buffer.from(JSON.stringify(validManifest)));
+      zip.addFile("plugin.wasm", Buffer.from([0x00, 0x61, 0x73, 0x6d]));
+      zip.addFile("duplicate.aa", Buffer.from("one"));
+      zip.addFile("duplicate.bb", Buffer.from("two"));
+      const raw = Buffer.from(
+        zip.toBuffer().toString("latin1").replaceAll("duplicate.bb", "duplicate.aa"),
+        "latin1"
+      );
+
+      const res = await uploadZip(raw);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ error: "Invalid plugin package" });
+      expect(pluginManager.installPackage).not.toHaveBeenCalled();
+    });
+
+    it("refuses a package that expands beyond PLUGIN_MAX_UNCOMPRESSED_BYTES", async () => {
+      // Well under the cap compressed, 16x it uncompressed.
+      const cap = 4096;
+      const cappedApp = await buildTestApp((a) =>
+        hostManagementRoutes(a, {
+          pluginManager: pluginManager as never,
+          configRegistry: configRegistry as never,
+          config: testConfig({ PLUGIN_MAX_UNCOMPRESSED_BYTES: cap }),
+        })
+      );
+      try {
+        const zip = new AdmZip();
+        zip.addFile("manifest.json", Buffer.from(JSON.stringify(validManifest)));
+        zip.addFile("plugin.wasm", Buffer.from([0x00, 0x61, 0x73, 0x6d]));
+        zip.addFile("bomb.txt", Buffer.alloc(cap * 16, 0x41));
+        const payload = zip.toBuffer();
+        expect(payload.length).toBeLessThan(cap);
+
+        const boundary = "----vitestboundary";
+        const res = await cappedApp.inject({
+          method: "POST",
+          url: PLUGINS_PATH,
+          headers: {
+            "content-type": `multipart/form-data; boundary=${boundary}`,
+            ...signHeaders("POST", PLUGINS_PATH, payload),
+          },
+          payload: multipartBody(boundary, payload),
+        });
+
+        expect(res.statusCode).toBe(400);
+        expect(res.json()).toMatchObject({ error: "Invalid plugin package" });
+        expect(pluginManager.installPackage).not.toHaveBeenCalled();
+      } finally {
+        await cappedApp.close();
+      }
+    });
   });
 
   describe("DELETE plugin", () => {

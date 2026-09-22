@@ -39,10 +39,10 @@ The case tab shows the four communication levels the platform supports:
 ```bash
 cd plugin-host/sample-apps/demo-app
 npm install
-npm run dev                              # builds the iframe bundles, then watches src/ (ADMIN_TOKEN=test-secret)
+npm run dev                              # builds the iframe bundles, then watches src/ (ADMIN_TOKEN=dev-only-insecure-secret)
 # or, for a production-style run:
 npm run build
-ADMIN_TOKEN=test-secret npm start
+ADMIN_TOKEN=dev-only-insecure-secret npm start
 ```
 
 The app listens on `http://localhost:8095` by default.
@@ -51,7 +51,7 @@ The app listens on `http://localhost:8095` by default.
 
 | Var | Default | Notes |
 |---|---|---|
-| `ADMIN_TOKEN` | *(required)* | Shared secret; the HMAC key GZAC signs every request with. Must equal the "secret" you enter when registering the app. |
+| `ADMIN_TOKEN` | *(required)* | Shared secret; the HMAC key GZAC signs every request with. Must equal the "secret" you enter when registering the app. **Minimum 16 characters**, same floor as the plugin host. |
 | `PORT` | `8095` | HTTP port. |
 | `LOG_LEVEL` | `info` | `debug`/`info`/`warn`/`error`. |
 | `HOST_ID` | OS hostname | Names the app's event queue on GZAC's exchange. |
@@ -65,7 +65,7 @@ memory and learns its broker (if any) from GZAC's configuration push.
 2. In **Admin → Plugins → Integrations**, click **Add app**.
 3. Fill in:
    - **Base URL**: `http://localhost:8095`
-   - **Secret**: the `ADMIN_TOKEN` the app runs with (`test-secret` when started via `npm run dev`)
+   - **Secret**: the `ADMIN_TOKEN` the app runs with (`dev-only-insecure-secret` when started via `npm run dev`)
    - **GZAC callback URL**: `http://localhost:8080` (the backend's own URL)
    - **Event broker** (optional): leave blank to skip events, or fill in the AMQP URL to enable them.
 4. Save. The app is polled immediately and its single plugin appears under **Configurations →

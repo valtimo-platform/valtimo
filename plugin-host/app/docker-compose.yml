@@ -26,7 +26,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      ADMIN_TOKEN: ${ADMIN_TOKEN:-changeme}
+      # Local-compose fallback only — always pass a real ADMIN_TOKEN outside development.
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-dev-only-insecure-secret}
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB:-pluginhost}

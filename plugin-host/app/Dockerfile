@@ -50,7 +50,12 @@ COPY --from=builder /build/app/dist ./dist
 # against WORKDIR (/app) — where no volume mount or derived-image COPY would ever land.
 ENV PLUGIN_STORAGE_DIR=/data/plugins \
     PLUGIN_PREINSTALL_DIR=/data/preinstalled
-RUN mkdir -p /data/plugins /data/preinstalled
+RUN mkdir -p /data/plugins /data/preinstalled && chown -R node:node /data
+
+# Runs as the image's built-in unprivileged user (uid 1000) so a Helm chart can set
+# runAsNonRoot. /data is the only writable path the host needs; /app stays root-owned
+# and read-only. A mounted PLUGIN_PREINSTALL_DIR must be readable by uid 1000.
+USER node
 
 EXPOSE 8090
 

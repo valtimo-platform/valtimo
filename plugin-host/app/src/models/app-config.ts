@@ -17,9 +17,21 @@
 import { hostname } from "node:os";
 import { z } from "zod";
 
+// Matches the floor Valtimo already applies to `valtimo.plugin.encryption-secret` (16/24/32 bytes
+// for AES). The admin token is the HMAC key behind every GZAC→host call, so a short one is the
+// whole system's weakest link — the admin-route rate limit only slows a brute force, it is not a
+// substitute for entropy.
+export const MIN_ADMIN_TOKEN_LENGTH = 16;
+
 export const envSchema = z.object({
   PORT: z.coerce.number().default(8090),
-  ADMIN_TOKEN: z.string().min(1),
+  ADMIN_TOKEN: z
+    .string()
+    .min(
+      MIN_ADMIN_TOKEN_LENGTH,
+      `ADMIN_TOKEN must be at least ${MIN_ADMIN_TOKEN_LENGTH} characters ` +
+        `(generate one with: openssl rand -hex 32)`
+    ),
   PLUGIN_STORAGE_DIR: z.string().default("./plugins"),
 
   // Directory scanned once at boot for plugin packages (.zip) to install — how an operator ships
@@ -81,6 +93,10 @@ export const envSchema = z.object({
   // Maximum accepted plugin package (.zip) upload size in bytes. The multipart parser enforces
   // this before the file is buffered for the HMAC check.
   UPLOAD_MAX_BYTES: z.coerce.number().int().positive().default(100 * 1024 * 1024),
+
+  // Bounds what a package expands to; UPLOAD_MAX_BYTES bounds only the compressed zip. adm-zip
+  // stops at each entry's declared size, but a small zip can declare gigabytes.
+  PLUGIN_MAX_UNCOMPRESSED_BYTES: z.coerce.number().int().positive().default(256 * 1024 * 1024),
 
   // Per-configuration rate limit for the public /plugins/:id/:version/data route (requests per
   // minute per configurationId). 0 disables the limit.

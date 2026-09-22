@@ -96,6 +96,7 @@ class ExternalPluginHostService(
         // Every rejection below throws ExternalPluginHostValidationException rather than
         // IllegalArgumentException so it surfaces as a 400 carrying this text, which the add-host
         // modal renders next to the fields the admin already filled in.
+        requireSecretLength(secret)
         val normalizedBaseUrl = normalizeHostBaseUrl(baseUrl, "base URL")
         val normalizedCallbackUrl = normalizeHostBaseUrl(gzacCallbackBaseUrl, "GZAC callback base URL")
         val brokerAmqpUrl = eventBrokerAmqpUrl?.takeIf { it.isNotBlank() }?.let { normalizeBrokerUrl(it) }
@@ -233,6 +234,8 @@ class ExternalPluginHostService(
             if (it.isBlank()) throw ExternalPluginHostValidationException("The base URL must not be blank.")
             normalizeHostBaseUrl(it, "base URL")
         }
+        // Blank means unchanged; a typed rotation clears the same floor registration applies.
+        secret?.takeIf { it.isNotBlank() }?.let { requireSecretLength(it) }
         if (eventBrokerAmqpUrl != null && eventBrokerAmqpUrl.contains("$AMQP_USERINFO_REDACTION@")) {
             throw ExternalPluginHostValidationException(
                 "The event broker AMQP URL looks like a redacted value " +
@@ -386,6 +389,19 @@ class ExternalPluginHostService(
      * Refuses a base URL that cannot carry a push confidentially. Unconditional — the body carries
      * the service token and decrypted secret properties, not just broker credentials.
      */
+    /**
+     * Refuses a secret too short to be a credible HMAC key. Accepting one here only defers the
+     * refusal to the host, which then fails to start with the reason only in its own log.
+     */
+    private fun requireSecretLength(secret: String) {
+        if (secret.length >= MIN_SECRET_LENGTH) return
+        throw ExternalPluginHostValidationException(
+            "The secret must be at least $MIN_SECRET_LENGTH characters. It is the HMAC key behind " +
+                "every call GZAC makes to this host, and the host refuses to start below that " +
+                "length. Generate one with 'openssl rand -hex 32'."
+        )
+    }
+
     private fun requireConfidentialTransport(baseUrl: String, refusalPrefix: String) {
         if (allowPlaintextHostTransport || isSecureTransport(baseUrl)) return
         throw ExternalPluginHostValidationException(
@@ -539,6 +555,12 @@ class ExternalPluginHostService(
 
         /** Replaces AMQP userinfo in responses; [updateConnection] refuses URLs echoing it back. */
         const val AMQP_USERINFO_REDACTION = "***"
+
+        /**
+         * Matches the plugin host's own ADMIN_TOKEN floor (`MIN_ADMIN_TOKEN_LENGTH` in
+         * `plugin-host/app/src/models/app-config.ts`) — two ends of one HMAC scheme.
+         */
+        const val MIN_SECRET_LENGTH = 16
 
         const val ALLOWED_ORIGINS_PROPERTY = "valtimo.external-plugin.allowed-host-origins"
 

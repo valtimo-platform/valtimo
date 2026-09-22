@@ -151,7 +151,7 @@ services:
             - "8090:8090"
         environment:
             # Must match the "secret" in dev.externalplugin.json.
-            ADMIN_TOKEN: ${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:-test-secret}
+            ADMIN_TOKEN: ${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:-dev-only-insecure-secret}
             DB_HOST: plugin-host-database
             DB_PORT: 5432
             DB_NAME: pluginhost
@@ -185,7 +185,7 @@ services:
         ports:
             - "8095:8095"
         environment:
-            ADMIN_TOKEN: ${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:-test-secret}
+            ADMIN_TOKEN: ${VALTIMO_EXTERNAL_PLUGIN_ADMIN_TOKEN:-dev-only-insecure-secret}
             HOST_ID: dev-demo-app
             LOG_LEVEL: ${PLUGIN_HOST_LOG_LEVEL:-info}
         extra_hosts:

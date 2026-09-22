@@ -88,7 +88,7 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
         val host = hostService.register(
             name = "connection-int-test",
             baseUrl = "http://localhost:${server.address.port}",
-            secret = "test-secret",
+            secret = "test-secret-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = "amqp://guest:guest@localhost:5672",
             eventBrokerExchange = null,
@@ -186,11 +186,11 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
         mockMvc.perform(
             patch("$BASE/host/$hostId/connection")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"secret": "rotated-token"}""")
+                .content("""{"secret": "rotated-token-at-least-16"}""")
         ).andExpect(status().isOk)
         val host = hostRepository.findById(hostId).orElseThrow()
         assertThat(host.secret).isNotEqualTo(originalCiphertext)
-        assertThat(hostService.decryptedSecret(host)).isEqualTo("rotated-token")
+        assertThat(hostService.decryptedSecret(host)).isEqualTo("rotated-token-at-least-16")
         // Rotation revokes the outstanding tokens but never purges — the address did not move.
         assertThat(configurationRepository.findById(configurationId).orElseThrow().tokenGeneration)
             .isEqualTo(1)
@@ -238,7 +238,7 @@ class ExternalPluginConnectionUpdateIntTest @Autowired constructor(
         val other = hostService.register(
             name = "other-host",
             baseUrl = "https://other.example.com",
-            secret = "other-secret",
+            secret = "other-secret-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,

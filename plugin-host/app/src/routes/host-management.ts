@@ -109,6 +109,7 @@ export async function hostManagementRoutes(
       const result = await installPluginZip(pluginManager, zipBuffer, {
         overwrite: (request.query as {overwrite?: string}).overwrite === "true",
         tmpBase: pluginInstallTmpBase(),
+        maxUncompressedBytes: config.PLUGIN_MAX_UNCOMPRESSED_BYTES,
       });
 
       if (result.outcome === "invalid-manifest") {

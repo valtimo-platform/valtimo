@@ -4,6 +4,10 @@
   gap: var(--cds-spacing-05);
 }
 
+.plugin-host-connection-form__error {
+  color: var(--cds-text-error);
+}
+
 .plugin-host-connection-form__origins {
   display: flex;
   flex-direction: column;

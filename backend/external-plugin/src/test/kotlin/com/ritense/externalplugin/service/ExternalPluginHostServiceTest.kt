@@ -70,7 +70,7 @@ class ExternalPluginHostServiceTest {
         hostClient = mock()
         encryptionService = mock()
         whenever(encryptionService.encrypt(any())).thenReturn("encrypted-secret")
-        whenever(encryptionService.decrypt("encrypted-secret")).thenReturn("admin-token")
+        whenever(encryptionService.decrypt("encrypted-secret")).thenReturn("admin-token-at-least-16")
         whenever(hostRepository.save(any<ExternalPluginHost>())).thenAnswer { it.getArgument(0) }
         whenever(configurationRepository.save(any<ExternalPluginConfiguration>()))
             .thenAnswer { it.getArgument(0) }
@@ -101,7 +101,7 @@ class ExternalPluginHostServiceTest {
         val host = service.register(
             name = "remote",
             baseUrl = "https://plugin-host.example.com",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "https://gzac.example.com",
             eventBrokerAmqpUrl = "amqp://guest:guest@broker:5672",
             eventBrokerExchange = null,
@@ -117,7 +117,7 @@ class ExternalPluginHostServiceTest {
             val host = service.register(
                 name = "local",
                 baseUrl = baseUrl,
-                secret = "admin-token",
+                secret = "admin-token-at-least-16",
                 gzacCallbackBaseUrl = "http://localhost:8080",
                 eventBrokerAmqpUrl = "amqp://guest:guest@localhost:5672",
                 eventBrokerExchange = null,
@@ -133,7 +133,7 @@ class ExternalPluginHostServiceTest {
             service.register(
                 name = "remote",
                 baseUrl = "http://plugin-host:8090",
-                secret = "admin-token",
+                secret = "admin-token-at-least-16",
                 gzacCallbackBaseUrl = "http://localhost:8080",
                 eventBrokerAmqpUrl = "amqp://guest:guest@broker:5672",
                 eventBrokerExchange = null,
@@ -152,7 +152,7 @@ class ExternalPluginHostServiceTest {
                 service.register(
                     name = "bound-everywhere",
                     baseUrl = baseUrl,
-                    secret = "admin-token",
+                    secret = "admin-token-at-least-16",
                     gzacCallbackBaseUrl = "http://localhost:8080",
                     eventBrokerAmqpUrl = null,
                     eventBrokerExchange = null,
@@ -164,13 +164,28 @@ class ExternalPluginHostServiceTest {
     }
 
     @Test
+    fun `rejects a secret shorter than the plugin host's own floor`() {
+        assertThatThrownBy {
+            service.register(
+                name = "short-secret",
+                baseUrl = "https://plugin-host.example.com",
+                secret = "a".repeat(ExternalPluginHostService.MIN_SECRET_LENGTH - 1),
+                gzacCallbackBaseUrl = "https://gzac.example.com",
+                eventBrokerAmqpUrl = null,
+                eventBrokerExchange = null,
+            )
+        }.isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("at least ${ExternalPluginHostService.MIN_SECRET_LENGTH} characters")
+    }
+
+    @Test
     fun `accepts a host name java net URI cannot parse rather than guessing it is unreachable`() {
         // Docker service names may contain underscores, which URI.getHost() rejects. Only genuine
         // bind addresses are refused here.
         val host = service.register(
             name = "docker",
             baseUrl = "https://plugin_host:8090",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -196,7 +211,7 @@ class ExternalPluginHostServiceTest {
                 service.register(
                     name = "bad",
                     baseUrl = baseUrl,
-                    secret = "admin-token",
+                    secret = "admin-token-at-least-16",
                     gzacCallbackBaseUrl = "http://localhost:8080",
                     eventBrokerAmqpUrl = null,
                     eventBrokerExchange = null,
@@ -213,7 +228,7 @@ class ExternalPluginHostServiceTest {
         val host = service.register(
             name = "padded",
             baseUrl = "  https://plugin-host.example.com/  ",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -227,7 +242,7 @@ class ExternalPluginHostServiceTest {
         val host = service.register(
             name = "proxied",
             baseUrl = "https://gateway.example.com/plugin-host",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -242,7 +257,7 @@ class ExternalPluginHostServiceTest {
             service.register(
                 name = "bad-callback",
                 baseUrl = "https://plugin-host.example.com",
-                secret = "admin-token",
+                secret = "admin-token-at-least-16",
                 gzacCallbackBaseUrl = "gzac.example.com",
                 eventBrokerAmqpUrl = null,
                 eventBrokerExchange = null,
@@ -257,7 +272,7 @@ class ExternalPluginHostServiceTest {
             service.register(
                 name = "bad-broker",
                 baseUrl = "https://plugin-host.example.com",
-                secret = "admin-token",
+                secret = "admin-token-at-least-16",
                 gzacCallbackBaseUrl = "http://localhost:8080",
                 eventBrokerAmqpUrl = "rabbitmq://user:pw@broker:5672",
                 eventBrokerExchange = null,
@@ -276,7 +291,7 @@ class ExternalPluginHostServiceTest {
             restricted.register(
                 name = "elsewhere",
                 baseUrl = "https://collector.attacker.tld",
-                secret = "admin-token",
+                secret = "admin-token-at-least-16",
                 gzacCallbackBaseUrl = "http://localhost:8080",
                 eventBrokerAmqpUrl = null,
                 eventBrokerExchange = null,
@@ -287,7 +302,7 @@ class ExternalPluginHostServiceTest {
         val allowed = restricted.register(
             name = "in-allowlist",
             baseUrl = "https://plugin-host.example.com",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -355,7 +370,7 @@ class ExternalPluginHostServiceTest {
         val host = service.register(
             name = "local",
             baseUrl = "https://plugin-host.example.com",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "https://gzac.example.com",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -437,7 +452,7 @@ class ExternalPluginHostServiceTest {
             service.register(
                 name = "actions-only",
                 baseUrl = "http://plugin-host:8090",
-                secret = "admin-token",
+                secret = "admin-token-at-least-16",
                 gzacCallbackBaseUrl = "http://localhost:8080",
                 eventBrokerAmqpUrl = null,
                 eventBrokerExchange = null,
@@ -453,7 +468,7 @@ class ExternalPluginHostServiceTest {
         val host = permissive.register(
             name = "actions-only",
             baseUrl = "http://plugin-host:8090",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -467,7 +482,7 @@ class ExternalPluginHostServiceTest {
         val host = service.register(
             name = "actions-only",
             baseUrl = "https://plugin-host:8090",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = "   ",
             eventBrokerExchange = null,
@@ -582,7 +597,7 @@ class ExternalPluginHostServiceTest {
         val host = service.register(
             name = "demo-app",
             baseUrl = "https://demo-app.example.com",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "https://gzac.example.com",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -597,7 +612,7 @@ class ExternalPluginHostServiceTest {
         val app = service.register(
             name = "demo-app",
             baseUrl = "https://demo-app.example.com",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "https://gzac.example.com",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -618,7 +633,7 @@ class ExternalPluginHostServiceTest {
         val host = service.register(
             name = "local",
             baseUrl = "http://localhost:8090",
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "http://localhost:8080",
             eventBrokerAmqpUrl = null,
             eventBrokerExchange = null,
@@ -771,12 +786,12 @@ class ExternalPluginHostServiceTest {
     fun `updateConnection re-encrypts a new secret and leaves a blank one untouched`() {
         val existing = stubExisting()
         val originalCiphertext = existing.secret
-        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+        whenever(encryptionService.encrypt("rotated-token-at-least-16")).thenReturn("encrypted-rotated")
 
         val untouched = service.updateConnection(existing.id, secret = "  ")
         assertThat(untouched.secret).isEqualTo(originalCiphertext)
 
-        val rotated = service.updateConnection(existing.id, secret = "rotated-token")
+        val rotated = service.updateConnection(existing.id, secret = "rotated-token-at-least-16")
         assertThat(rotated.secret).isEqualTo("encrypted-rotated")
     }
 
@@ -832,7 +847,7 @@ class ExternalPluginHostServiceTest {
         assertThat(existing.consecutiveFailures).isEqualTo(0)
 
         existing.consecutiveFailures = 2
-        service.updateConnection(existing.id, secret = "rotated-token")
+        service.updateConnection(existing.id, secret = "rotated-token-at-least-16")
         assertThat(existing.consecutiveFailures).isEqualTo(0)
     }
 
@@ -887,9 +902,9 @@ class ExternalPluginHostServiceTest {
     fun `updateConnection revokes every token under the host when only the secret rotates`() {
         val existing = stubExisting()
         val configuration = configurationUnder(existing)
-        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+        whenever(encryptionService.encrypt("rotated-token-at-least-16")).thenReturn("encrypted-rotated")
 
-        service.updateConnection(existing.id, secret = "rotated-token")
+        service.updateConnection(existing.id, secret = "rotated-token-at-least-16")
 
         assertThat(configuration.tokenGeneration).isEqualTo(1)
     }
@@ -927,7 +942,7 @@ class ExternalPluginHostServiceTest {
 
         // decrypt(stored) equals the submitted value: not a rotation — nothing re-encrypts,
         // revokes or resets.
-        val result = service.updateConnection(existing.id, secret = "admin-token")
+        val result = service.updateConnection(existing.id, secret = "admin-token-at-least-16")
 
         assertThat(result.secret).isEqualTo("encrypted-secret")
         assertThat(configuration.tokenGeneration).isZero()
@@ -935,24 +950,34 @@ class ExternalPluginHostServiceTest {
     }
 
     @Test
+    fun `updateConnection refuses a rotation below the minimum length`() {
+        val existing = stubExisting()
+
+        assertThatThrownBy { service.updateConnection(existing.id, secret = "too-short") }
+            .isInstanceOf(ExternalPluginHostValidationException::class.java)
+            .hasMessageContaining("at least ${ExternalPluginHostService.MIN_SECRET_LENGTH} characters")
+        assertThat(existing.secret).isEqualTo("encrypted-secret")
+    }
+
+    @Test
     fun `updateConnection purges the configurations from the old address with the old secret`() {
         val existing = stubExisting()
         val first = configurationUnder(existing)
         val second = configurationUnder(existing)
-        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+        whenever(encryptionService.encrypt("rotated-token-at-least-16")).thenReturn("encrypted-rotated")
 
         service.updateConnection(
             existing.id,
             baseUrl = "https://moved.example.com",
-            secret = "rotated-token",
+            secret = "rotated-token-at-least-16",
         )
 
         // Old address, old admin token — the new pair has no authority there.
         verify(hostClient).deleteConfiguration(
-            eq("https://plugin-host.example.com"), eq("admin-token"), eq(first.id.toString()),
+            eq("https://plugin-host.example.com"), eq("admin-token-at-least-16"), eq(first.id.toString()),
         )
         verify(hostClient).deleteConfiguration(
-            eq("https://plugin-host.example.com"), eq("admin-token"), eq(second.id.toString()),
+            eq("https://plugin-host.example.com"), eq("admin-token-at-least-16"), eq(second.id.toString()),
         )
     }
 
@@ -960,9 +985,9 @@ class ExternalPluginHostServiceTest {
     fun `updateConnection does not purge anything when the base url is unchanged`() {
         val existing = stubExisting()
         configurationUnder(existing)
-        whenever(encryptionService.encrypt("rotated-token")).thenReturn("encrypted-rotated")
+        whenever(encryptionService.encrypt("rotated-token-at-least-16")).thenReturn("encrypted-rotated")
 
-        service.updateConnection(existing.id, secret = "rotated-token")
+        service.updateConnection(existing.id, secret = "rotated-token-at-least-16")
 
         verify(hostClient, never()).deleteConfiguration(any(), any(), any())
     }
@@ -989,7 +1014,7 @@ class ExternalPluginHostServiceTest {
         val host = using.register(
             name = "local",
             baseUrl = baseUrl,
-            secret = "admin-token",
+            secret = "admin-token-at-least-16",
             gzacCallbackBaseUrl = "https://gzac.example.com",
             eventBrokerAmqpUrl = brokerAmqpUrl,
             eventBrokerExchange = null,
@@ -1036,7 +1061,7 @@ class ExternalPluginHostServiceTest {
     ): ExternalPluginHost = service.register(
         name = "local",
         baseUrl = "https://plugin-host.example.com",
-        secret = "admin-token",
+        secret = "admin-token-at-least-16",
         gzacCallbackBaseUrl = "https://gzac.example.com",
         eventBrokerAmqpUrl = "amqp://guest:guest@broker:5672",
         eventBrokerExchange = null,

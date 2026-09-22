@@ -84,6 +84,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     GZAC_API_TIMEOUT_MS: 60_000,
     USER_TOKEN_INTROSPECTION_TIMEOUT_MS: 10_000,
     UPLOAD_MAX_BYTES: 100 * 1024 * 1024,
+    PLUGIN_MAX_UNCOMPRESSED_BYTES: 256 * 1024 * 1024,
     DATA_RATE_LIMIT_PER_MINUTE: 120,
     // Disabled so request-heavy specs never trip them; route-rate-limit.test.ts covers the limiter.
     ADMIN_RATE_LIMIT_PER_MINUTE: 0,

@@ -34,6 +34,13 @@ export const SAMPLE_PLUGIN_DIR = join(ROOT, "sample-plugins", "case-summary");
 export const DEMO_APP_DIR = join(ROOT, "sample-apps", "demo-app");
 export const TEST_FIXTURE_DIR = join(ROOT, "test-fixtures", "test-plugin");
 
+/**
+ * Local-development fallback for ADMIN_TOKEN. Published in the docs and shared with GZAC's dev
+ * config, so it is public by construction — never use it anywhere real. Must clear the host's
+ * MIN_ADMIN_TOKEN_LENGTH; app/src/models/app-config.test.ts guards that.
+ */
+export const DEV_ADMIN_TOKEN = "dev-only-insecure-secret";
+
 const useColor = process.stdout.isTTY && !process.env.NO_COLOR;
 const bold = (s) => (useColor ? `\x1b[1m${s}\x1b[0m` : s);
 const dim = (s) => (useColor ? `\x1b[2m${s}\x1b[0m` : s);

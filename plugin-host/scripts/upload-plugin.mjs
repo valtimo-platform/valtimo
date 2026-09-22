@@ -22,12 +22,13 @@
  *   npm run plugin:upload -- path/to/plugin.zip            # uploads a specific package
  *   npm run plugin:upload -- path/to/plugin.zip --overwrite
  *
- * Environment: ADMIN_TOKEN (default `test-secret`), PLUGIN_HOST_URL (default http://localhost:8090).
+ * Environment: ADMIN_TOKEN (defaults to DEV_ADMIN_TOKEN), PLUGIN_HOST_URL (default
+ * http://localhost:8090).
  */
 
 import {existsSync} from "node:fs";
 import {resolve} from "node:path";
-import {checkNodeVersion, fail, info, step} from "./lib/common.mjs";
+import {DEV_ADMIN_TOKEN, checkNodeVersion, fail, info, step} from "./lib/common.mjs";
 import {isHealthy, listPlugins, uploadPlugin} from "./lib/host-client.mjs";
 import {samplePluginZipPath} from "./setup.mjs";
 
@@ -38,7 +39,7 @@ const overwrite = args.includes("--overwrite");
 const positional = args.filter((a) => !a.startsWith("--"));
 
 const zipPath = positional[0] ? resolve(positional[0]) : samplePluginZipPath();
-const adminToken = process.env.ADMIN_TOKEN || "test-secret";
+const adminToken = process.env.ADMIN_TOKEN || DEV_ADMIN_TOKEN;
 const baseUrl = process.env.PLUGIN_HOST_URL || `http://localhost:${process.env.PORT || "8090"}`;
 
 if (!existsSync(zipPath)) {

@@ -5,7 +5,7 @@
             "name": "Integration test plugin host",
             "kind": "PLUGIN_HOST",
             "baseUrl": "${test.external-plugin.base-url}",
-            "secret": "${test.external-plugin.admin-token:test-secret}",
+            "secret": "${test.external-plugin.admin-token:dev-only-insecure-secret}",
             "gzacCallbackBaseUrl": "http://localhost:8080",
             "eventBrokerAmqpUrl": "amqp://guest:guest@localhost:5672",
             "eventBrokerExchange": "valtimo-events",

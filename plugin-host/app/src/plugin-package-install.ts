@@ -24,15 +24,36 @@ import type { PluginManager } from "./plugin-manager.js";
 import type { PluginManifest } from "./models/index.js";
 
 /**
+ * adm-zip throws on a malformed or hostile archive — duplicate entry names, a ZIP64 value out of
+ * range, a local header outside the buffer, inflation past the declared size. All describe the
+ * package, not the host, so they reach the caller as a 400 rather than an opaque 500.
+ */
+function readZip<T>(read: () => T, what: string): T {
+  try {
+    return read();
+  } catch (err) {
+    throw new InvalidPluginPackageError(`Could not ${what}: ${(err as Error).message}`);
+  }
+}
+
+/**
  * Extracts a plugin package entry-by-entry, defending against zip-slip: every entry's resolved
  * destination must stay inside `extractDir` (a crafted `../`, absolute, or drive-letter entry name
  * rejects the whole package). Additionally only the files a plugin package may legitimately carry
  * are extracted — root-level files (manifest.json, plugin.wasm, the logo) and `frontend/**` — so a
  * hostile zip cannot plant anything else even inside the temp dir.
+ *
+ * `maxUncompressedBytes` bounds what the package expands to — a zip compresses arbitrarily well,
+ * so the upload cap says nothing about the memory extraction needs.
  */
-export async function safeExtractPluginZip(zip: AdmZip, extractDir: string): Promise<void> {
+export async function safeExtractPluginZip(
+  zip: AdmZip,
+  extractDir: string,
+  maxUncompressedBytes: number
+): Promise<void> {
   const root = resolve(extractDir);
-  for (const entry of zip.getEntries()) {
+  let budget = maxUncompressedBytes;
+  for (const entry of readZip(() => zip.getEntries(), "read the package index")) {
     if (entry.isDirectory) continue;
     const name = entry.entryName;
     const destination = resolve(root, name);
@@ -47,8 +68,16 @@ export async function safeExtractPluginZip(zip: AdmZip, extractDir: string): Pro
     if (!isRootFile && !isFrontendAsset) {
       continue;
     }
+    // Charged before inflating — the declared size is the ceiling adm-zip enforces. Skipped
+    // entries never inflate, so they cost nothing.
+    budget -= entry.header.size;
+    if (budget < 0) {
+      throw new InvalidPluginPackageError(
+        `Plugin package expands to more than the permitted ${maxUncompressedBytes} bytes`
+      );
+    }
     await mkdir(dirname(destination), { recursive: true });
-    await writeFile(destination, entry.getData());
+    await writeFile(destination, readZip(() => entry.getData(), `read zip entry ${name}`));
   }
 }
 
@@ -89,7 +118,7 @@ export function pluginInstallTmpBase(): string {
 export async function installPluginZip(
   pluginManager: PluginManager,
   zipBuffer: Buffer,
-  options: { overwrite: boolean; tmpBase: string }
+  options: { overwrite: boolean; tmpBase: string; maxUncompressedBytes: number }
 ): Promise<PluginZipInstallResult> {
   await mkdir(options.tmpBase, { recursive: true });
   const tempDir = await mkdtemp(join(options.tmpBase, "plugin-upload-"));
@@ -97,8 +126,8 @@ export async function installPluginZip(
   try {
     // Extract zip — per entry, with zip-slip protection (see safeExtractPluginZip).
     const extractDir = join(tempDir, "extracted");
-    const zip = new AdmZip(zipBuffer);
-    await safeExtractPluginZip(zip, extractDir);
+    const zip = readZip(() => new AdmZip(zipBuffer), "read the plugin package");
+    await safeExtractPluginZip(zip, extractDir, options.maxUncompressedBytes);
 
     // Read manifest
     const manifestPath = join(extractDir, "manifest.json");

@@ -2461,6 +2461,7 @@
       "eventQueueTtlMsApp": "The durable queue is deleted after this many ms with no connected app. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
       "frontendOrigins": "Browser origins (scheme://host[:port], no path) allowed to embed this host's plugin screens. Add every Valtimo frontend URL users open plugins from, including any proxy alias.",
       "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens.",
+      "secretMinLength": "The secret must be at least {{min}} characters — the host refuses to start below that.",
       "secretUnchanged": "Leave blank to keep the current secret."
     },
     "editConnection": "Edit connection",
