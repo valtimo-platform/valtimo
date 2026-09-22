@@ -179,8 +179,8 @@ interface MigrationEditorApi {
     source?: MigrationPlanSource | null
   ): Observable<BuildingBlockEntrySuggestion>;
 
-  /** The block versions this plan's target links — the only versions an `addBuildingBlock` entry may name. */
-  getLinkedBuildingBlocks(): Observable<LinkedBuildingBlock[]>;
+  /** Omit `source` for what the target links, which is all an `addBuildingBlock` entry may name; pass it for what a migrating case already carries. */
+  getLinkedBuildingBlocks(source?: MigrationPlanSource | null): Observable<LinkedBuildingBlock[]>;
 }
 
 /** One building-block version a blueprint version links, as a startable item or a call activity. */

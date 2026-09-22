@@ -168,6 +168,7 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonByteArrayService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.ObjectProvider
@@ -1131,10 +1132,12 @@ class BuildingBlockAutoConfiguration {
         objectMapper: ObjectMapper,
         addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
         addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
+        valueResolverFactories: List<ValueResolverFactory>,
     ) = AddBuildingBlockMigrationComponentValidator(
         objectMapper,
         addBuildingBlockLinkChecker,
         addBuildingBlockProcessChecker,
+        valueResolverFactories,
     )
 
     @Bean
@@ -1155,7 +1158,13 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentValidator::class)
     fun removeBuildingBlockMigrationComponentValidator(
         removeBuildingBlockVersionChecker: RemoveBuildingBlockVersionChecker,
-    ) = RemoveBuildingBlockMigrationComponentValidator(removeBuildingBlockVersionChecker)
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        valueResolverFactories: List<ValueResolverFactory>,
+    ) = RemoveBuildingBlockMigrationComponentValidator(
+        removeBuildingBlockVersionChecker,
+        linkedBuildingBlockVersionResolver,
+        valueResolverFactories,
+    )
 
     @Bean
     @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentDeployer::class)

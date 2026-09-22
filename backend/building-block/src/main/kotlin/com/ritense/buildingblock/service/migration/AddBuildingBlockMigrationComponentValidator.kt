@@ -20,15 +20,20 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.domain.migration.AddBuildingBlockInstruction
+import com.ritense.case_.service.migration.DataMigrationComponentValidator
+import com.ritense.case_.service.migration.DataMigrationPatchChecker
 import com.ritense.processdocument.migration.ProcessMigrationTargetChecker
+import com.ritense.processdocument.migration.ProcessVariableTargetChecker
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
+import com.ritense.valueresolver.ValueResolverFactory
 
 /** Validates `addBuildingBlock` before save: the version must be linked and the process must be one that can exist. Also the only place an entry's nested `processMigration` is checked — validators dispatch on top-level keys. */
 class AddBuildingBlockMigrationComponentValidator(
     private val objectMapper: ObjectMapper,
     private val addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
     private val addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
+    private val valueResolverFactories: List<ValueResolverFactory>,
 ) : MigrationComponentValidator {
 
     override fun componentKey() = AddBuildingBlockMigrationComponentDeployer.ADD_BUILDING_BLOCK_COMPONENT_KEY
@@ -54,6 +59,13 @@ class AddBuildingBlockMigrationComponentValidator(
         component.filter { it.isObject }.flatMap { entry ->
             val block = entry.get("buildingBlockKey")?.takeIf { it.isTextual }?.asText() ?: "?"
             ProcessMigrationTargetChecker.sourcesWithoutTarget(entry.get("processMigration"))
-                .map { sourceKey -> "adds building block '$block': ${ProcessMigrationTargetChecker.describe(sourceKey)}" }
+                .map { sourceKey -> "adds building block '$block': ${ProcessMigrationTargetChecker.describe(sourceKey)}" } +
+                // Same control, same `doc:` hazard as the top-level section: these copies reach no other validator.
+                ProcessVariableTargetChecker.findNonProcessVariableTargets(entry.get("processMigration"))
+                    .map { problem -> "adds building block '$block': $problem" } +
+                // The entry's own dataMigration copies, judged by the rule the top-level section is.
+                DataMigrationPatchChecker
+                    .findProblems(entry.get("dataMigration"), DataMigrationComponentValidator.knownPrefixes(valueResolverFactories))
+                    .map { problem -> "adds building block '$block': $problem" }
         }
 }

@@ -138,15 +138,20 @@ class CaseMigrationManagementResource(
         return ResponseEntity.ok(suggestion)
     }
 
-    /** The block versions this version links — which version an `addBuildingBlock` entry for a given key must name. */
+    /** The block versions a version links: this one by default, which an `addBuildingBlock` entry must name, or the plan's source when asked, which is all a `removeBuildingBlock` entry may dissolve. */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block/linked")
     fun getLinkedBuildingBlocks(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
+        @RequestParam(required = false) sourceKey: String?,
+        @RequestParam(required = false) sourceVersionTag: String?,
     ): ResponseEntity<JsonNode> = ResponseEntity.ok(
         migrationSuggestionService.describeLinkedBuildingBlocks(
-            CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+            CaseDefinitionId(
+                sourceKey?.takeUnless { it.isBlank() } ?: caseDefinitionKey,
+                sourceVersionTag?.takeUnless { it.isBlank() } ?: caseDefinitionVersionTag,
+            )
         )
     )
 
