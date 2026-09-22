@@ -29,6 +29,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -55,6 +56,10 @@ class ProcessLinkResource(
     private val processLinkService: ProcessLinkService,
 ) {
 
+    @EndpointDescription(
+        en = "List process links",
+        nl = "Proceskoppelingen ophalen",
+    )
     @GetMapping("/v1/process-link")
     fun getProcessLinks(
         @LoggableResource(resourceType = OperatonProcessDefinition::class) @RequestParam("processDefinitionId") processDefinitionId: String,
@@ -69,6 +74,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(list)
     }
 
+    @EndpointDescription(
+        en = "List supported process link types",
+        nl = "Ondersteunde proceskoppelingstypen ophalen",
+    )
     @GetMapping("/v1/process-link/types")
     fun getSupportedProcessLinkTypes(
         @RequestParam(name = "activityType") activityType: String
@@ -76,6 +85,10 @@ class ProcessLinkResource(
         return ResponseEntity.ok(processLinkService.getSupportedProcessLinkTypes(activityType))
     }
 
+    @EndpointDescription(
+        en = "Create process link",
+        nl = "Proceskoppeling aanmaken",
+    )
     @PostMapping("/v1/process-link")
     fun createProcessLink(
         @Valid @RequestBody processLink: ProcessLinkCreateRequestDto
@@ -86,6 +99,10 @@ class ProcessLinkResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Update process link",
+        nl = "Proceskoppeling bijwerken",
+    )
     @PutMapping("/v1/process-link")
     fun updateProcessLink(
         @Valid @RequestBody processLink: ProcessLinkUpdateRequestDto
@@ -96,6 +113,10 @@ class ProcessLinkResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Delete process link",
+        nl = "Proceskoppeling verwijderen",
+    )
     @DeleteMapping("/v1/process-link/{processLinkId}")
     fun deleteProcessLink(
         @LoggableResource(resourceType = ProcessLink::class) @PathVariable(name = "processLinkId") processLinkId: UUID
@@ -105,6 +126,10 @@ class ProcessLinkResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Export process links",
+        nl = "Proceskoppelingen exporteren",
+    )
     @Deprecated("Since 12.7.0")
     @GetMapping("/v1/process-link/export")
     fun exportProcessLinks(

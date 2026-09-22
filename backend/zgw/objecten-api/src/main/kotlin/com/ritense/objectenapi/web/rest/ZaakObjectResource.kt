@@ -23,6 +23,7 @@ import com.ritense.objectenapi.web.rest.result.ObjectDto
 import com.ritense.objectenapi.web.rest.result.ObjecttypeDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -43,6 +44,10 @@ import java.util.UUID
 class ZaakObjectResource(
     private val zaakObjectService: ZaakObjectService
 ) {
+    @EndpointDescription(
+        en = "List zaak object types for document",
+        nl = "Zaakobjecttypes voor document ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/zaak/objecttype")
     fun getZaakObjecttypes(
         @PathVariable(name = "documentId") documentId: UUID
@@ -53,6 +58,10 @@ class ZaakObjectResource(
         return ResponseEntity.ok(zaakObjectTypes)
     }
 
+    @EndpointDescription(
+        en = "List zaak objects for document",
+        nl = "Zaakobjecten voor document ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/zaak/object")
     fun getZaakObjecten(
         @PathVariable(name = "documentId") documentId: UUID,
@@ -67,6 +76,10 @@ class ZaakObjectResource(
         message = "The documentId is not mandatory anymore",
         replaceWith = ReplaceWith("api/v1/object/form")
     )
+    @EndpointDescription(
+        en = "Get object form by object URL",
+        nl = "Objectformulier op object-URL ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/zaak/object/form")
     fun getZaakObjecten(
         @RequestParam(name = "objectUrl") objectUrl: URI
@@ -75,6 +88,10 @@ class ZaakObjectResource(
         return form?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Create object",
+        nl = "Object aanmaken",
+    )
     @PostMapping("/v1/object")
     fun createZaakObject(
         @RequestParam(name = "objectManagementId") objectManagementId: UUID,
@@ -90,6 +107,10 @@ class ZaakObjectResource(
         } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Update object",
+        nl = "Object bijwerken",
+    )
     @PutMapping("/v1/object")
     fun updateZaakObject(
         @RequestParam(name = "objectManagementId") objectManagementId: UUID,
@@ -106,6 +127,10 @@ class ZaakObjectResource(
         } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Delete object",
+        nl = "Object verwijderen",
+    )
     @DeleteMapping("/v1/object")
     fun deleteZaakObject(
         @RequestParam(name = "objectManagementId") objectManagementId: UUID,

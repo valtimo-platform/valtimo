@@ -38,6 +38,7 @@
       <div *ngIf="tabTypes$ | async as tabTypes" class="valtimo-add-tab-modal__types">
         <cds-tooltip
           *ngFor="let tabType of tabTypes"
+          [autoAlign]="true"
           [caret]="true"
           enterDelayMs="0"
           leaveDelayMs="0"

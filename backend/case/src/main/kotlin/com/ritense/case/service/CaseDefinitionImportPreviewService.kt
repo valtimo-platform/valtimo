@@ -54,6 +54,8 @@ class CaseDefinitionImportPreviewService(
                     processDefinitionKey = it.processDefinitionKey,
                     activityId = it.activityId,
                     existsInTargetEnvironment = it.existsInTargetEnvironment,
+                    source = it.source,
+                    pluginDefinitionVersion = it.pluginDefinitionVersion,
                 )
             },
         )
