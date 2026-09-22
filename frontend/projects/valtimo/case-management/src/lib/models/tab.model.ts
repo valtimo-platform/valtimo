@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
+/** A `case-tab` bundle exposed by an external plugin (the second dropdown in the tab editor). */
+export interface ExternalPluginTabBundleOption {
+  key: string | null;
+  title: string;
+}
+
+/** An activated external-plugin configuration that exposes ≥1 `case-tab` bundle (the first dropdown). */
+export interface ExternalPluginTabConfigOption {
+  configId: string;
+  label: string;
+  bundles: ExternalPluginTabBundleOption[];
+}
+
 export enum TabEnum {
   GENERAL = 'general',
   DOCUMENT = 'document',

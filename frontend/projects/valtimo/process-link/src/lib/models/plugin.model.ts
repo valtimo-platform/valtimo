@@ -14,13 +14,30 @@
  * limitations under the License.
  */
 
+type PluginRequirementSource = 'EMBEDDED' | 'EXTERNAL';
+
 interface PluginsWithDependencies {
   plugins: {
     pluginDefinitionKey: string;
     dependencies: {
       key: string;
     }[];
+    source?: PluginRequirementSource;
+    pluginDefinitionVersion?: string | null;
   }[];
 }
 
-export {PluginsWithDependencies};
+/**
+ * A single plugin requirement resolved for a building block, keyed by the
+ * `pluginConfigurationMappings` entry it maps to. `mappingKey` is the plain `pluginDefinitionKey`
+ * for embedded requirements, or the namespaced `external-plugin:<pluginId>@<version>` key (D2) for
+ * external requirements — see `BuildingBlockStateService`.
+ */
+interface RequiredPlugin {
+  mappingKey: string;
+  pluginDefinitionKey: string;
+  pluginDefinitionVersion: string | null;
+  source: PluginRequirementSource;
+}
+
+export {PluginRequirementSource, PluginsWithDependencies, RequiredPlugin};

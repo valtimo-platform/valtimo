@@ -34,6 +34,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -64,6 +65,10 @@ class BuildingBlockManagementResource(
     private val importService: ImportService,
     private val exportService: ExportService,
 ) {
+    @EndpointDescription(
+        en = "List building block definitions",
+        nl = "Bouwblokdefinities ophalen",
+    )
     @GetMapping
     fun getBuildingBlockDefinitions(
         @RequestParam(value = "includeArtwork", required = false) includeArtwork: Boolean = false,
@@ -76,6 +81,10 @@ class BuildingBlockManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Search building block definitions",
+        nl = "Bouwblokdefinities zoeken",
+    )
     @GetMapping("/search")
     fun searchBuildingBlockDefinitions(
         @RequestParam(value = "searchTerm", required = false) searchTerm: String?,
@@ -91,6 +100,10 @@ class BuildingBlockManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Create building block definition",
+        nl = "Bouwblokdefinitie aanmaken",
+    )
     @PostMapping(consumes = [APPLICATION_JSON_UTF8_VALUE])
     fun createBuildingBlockDefinition(
         @Valid @RequestBody dto: CreateBuildingBlockDefinitionDto
@@ -99,6 +112,10 @@ class BuildingBlockManagementResource(
         return ResponseEntity.ok(savedDto)
     }
 
+    @EndpointDescription(
+        en = "Get building block definition",
+        nl = "Bouwblokdefinitie ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}")
     fun getBuildingBlockDefinition(
         @PathVariable key: String,
@@ -110,6 +127,10 @@ class BuildingBlockManagementResource(
             ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Update building block definition",
+        nl = "Bouwblokdefinitie bijwerken",
+    )
     @PutMapping("/{key}/version/{versionTag}", consumes = [APPLICATION_JSON_UTF8_VALUE])
     fun updateBuildingBlockDefinition(
         @PathVariable key: String,
@@ -120,6 +141,10 @@ class BuildingBlockManagementResource(
         return ResponseEntity.ok(updated)
     }
 
+    @EndpointDescription(
+        en = "Finalize building block definition",
+        nl = "Bouwblokdefinitie definitief maken",
+    )
     @PostMapping("/{key}/version/{versionTag}/finalize")
     fun finalizeBuildingBlockDefinition(
         @PathVariable key: String,
@@ -129,6 +154,10 @@ class BuildingBlockManagementResource(
         return ResponseEntity.ok(finalized)
     }
 
+    @EndpointDescription(
+        en = "Create building block draft",
+        nl = "Bouwblokconcept aanmaken",
+    )
     @PostMapping("/{key}/version/{versionTag}/draft", consumes = [APPLICATION_JSON_UTF8_VALUE])
     fun createDraftBuildingBlockDefinition(
         @PathVariable key: String,
@@ -141,6 +170,10 @@ class BuildingBlockManagementResource(
         return ResponseEntity.ok(draft)
     }
 
+    @EndpointDescription(
+        en = "Import building block definition",
+        nl = "Bouwblokdefinitie importeren",
+    )
     @PostMapping("/import")
     @RunWithoutAuthorization
     fun import(
@@ -158,6 +191,10 @@ class BuildingBlockManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Export building block definition",
+        nl = "Bouwblokdefinitie exporteren",
+    )
     @GetMapping(
         "/{key}/version/{versionTag}/export",
         produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
@@ -178,6 +215,10 @@ class BuildingBlockManagementResource(
             .body(baos.toByteArray())
     }
 
+    @EndpointDescription(
+        en = "List building block definition versions",
+        nl = "Bouwblokdefinitieversies ophalen",
+    )
     @GetMapping("/{key}/version")
     fun getBuildingBlockDefinitionVersions(
         @PathVariable key: String,

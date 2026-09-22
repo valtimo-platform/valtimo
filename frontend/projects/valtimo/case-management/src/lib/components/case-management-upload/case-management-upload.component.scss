@@ -151,6 +151,19 @@
     width: 100%;
   }
 
+  &__plugins-target {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-02);
+    align-self: center;
+  }
+
+  &__plugins-version-warning {
+    font-size: 0.75rem;
+    color: var(--cds-support-warning);
+    padding: 0 1rem;
+  }
+
   &__plugins-unavailable {
     font-size: 0.875rem;
     color: var(--cds-text-disabled);

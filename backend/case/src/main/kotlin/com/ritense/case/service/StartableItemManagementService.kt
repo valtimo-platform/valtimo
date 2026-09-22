@@ -54,7 +54,8 @@ class StartableItemManagementService(
                     key = item.key,
                     versionTag = item.versionTag,
                     processDefinitionId = item.processDefinitionId,
-                    sortOrder = sortOrderMap[Triple(item.key, item.type, item.versionTag.orEmpty())]
+                    sortOrder = sortOrderMap[Triple(item.key, item.type, item.versionTag.orEmpty())],
+                    startableByUser = item.startableByUser
                 )
             }
             .sortedWith(compareBy(

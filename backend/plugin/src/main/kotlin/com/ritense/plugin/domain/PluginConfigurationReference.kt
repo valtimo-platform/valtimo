@@ -28,7 +28,20 @@ data class PluginConfigurationReference(
     val type: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
 
     @Column(name = "plugin_definition_key")
-    val pluginDefinitionKey: String? = null
+    val pluginDefinitionKey: String? = null,
+
+    /**
+     * Design-time metadata only, populated exclusively by the external-plugin system (embedded
+     * plugin definitions are unversioned, so embedded usage always keeps this `null`). Used for
+     * validation, UI warnings and the import chooser; the **runtime** invocation version always
+     * derives from the resolved configuration's definition, never from this field.
+     *
+     * Whether `null` is allowed/required per [type] and per caller (embedded vs. external) is
+     * enforced by the respective `ProcessLinkMapper`, not here — this embeddable is shared by both
+     * systems and cannot encode a rule that only applies to one of them.
+     */
+    @Column(name = "plugin_definition_version")
+    val pluginDefinitionVersion: String? = null,
 ) {
     init {
         when (type) {

@@ -23,6 +23,7 @@ import com.ritense.objectmanagement.domain.search.SearchWithConfigRequest
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -52,6 +53,10 @@ class ObjectManagementConsumerResource(
     private val objectManagementService: ObjectManagementService
 ) {
 
+    @EndpointDescription(
+        en = "Get objects for an object management configuration",
+        nl = "Objecten ophalen voor een objectbeheerconfiguratie",
+    )
     @GetMapping("/objects")
     fun getObjects(
         @RequestParam(required = false) id: UUID?,
@@ -70,10 +75,18 @@ class ObjectManagementConsumerResource(
         )
     }
 
+    @EndpointDescription(
+        en = "List object management configurations available to the current user",
+        nl = "Objectbeheerconfiguraties ophalen die beschikbaar zijn voor de huidige gebruiker",
+    )
     @GetMapping("/configuration")
     fun getConfigurations(): ResponseEntity<List<ObjectManagementDto>> =
         ResponseEntity.ok(objectManagementService.getConfigurationsForUser())
 
+    @EndpointDescription(
+        en = "List object instances for an object management configuration",
+        nl = "Objectinstanties ophalen voor een objectbeheerconfiguratie",
+    )
     @GetMapping("/configuration/{id}/object")
     fun getObjectInstances(
         @PathVariable id: UUID,
@@ -85,6 +98,10 @@ class ObjectManagementConsumerResource(
             }
         )
 
+    @EndpointDescription(
+        en = "Search object instances for an object management configuration",
+        nl = "Objectinstanties zoeken voor een objectbeheerconfiguratie",
+    )
     @PostMapping("/configuration/{id}/object")
     fun searchObjectInstances(
         @PathVariable id: UUID,

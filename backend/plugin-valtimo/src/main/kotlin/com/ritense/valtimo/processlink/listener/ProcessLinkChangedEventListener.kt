@@ -28,7 +28,7 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 /** Ignores events whose writer rechecks the case definition itself, as `ProcessLinkImporter` does. */
 class ProcessLinkChangedEventListener(
-    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -63,18 +63,22 @@ class ProcessLinkChangedEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun onProcessLinksDeployed(event: ProcessLinksDeployedEvent) {
         val caseDefinitionId = event.blueprintId as? CaseDefinitionId ?: return
-        try {
-            pluginConfigurationMappingResolver.recheckIssuesForCaseDefinition(caseDefinitionId)
-        } catch (e: Exception) {
-            logger.warn(e) { "Could not recheck plugin configuration issues for case definition $caseDefinitionId" }
+        pluginConfigurationMappingResolvers.forEach { resolver ->
+            try {
+                resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
+            } catch (e: Exception) {
+                logger.warn(e) { "Could not recheck plugin configuration issues for case definition $caseDefinitionId" }
+            }
         }
     }
 
     private fun recheckIssues(processDefinitionId: String) {
-        try {
-            pluginConfigurationMappingResolver.recheckIssuesForProcessDefinition(processDefinitionId)
-        } catch (e: Exception) {
-            logger.warn(e) { "Could not recheck plugin configuration issues for process definition $processDefinitionId" }
+        pluginConfigurationMappingResolvers.forEach { resolver ->
+            try {
+                resolver.recheckIssuesForProcessDefinition(processDefinitionId)
+            } catch (e: Exception) {
+                logger.debug(e) { "Could not recheck plugin configuration issues for process definition $processDefinitionId" }
+            }
         }
     }
 
