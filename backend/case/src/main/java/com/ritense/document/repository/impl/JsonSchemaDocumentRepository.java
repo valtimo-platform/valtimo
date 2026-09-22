@@ -54,6 +54,19 @@ public interface JsonSchemaDocumentRepository extends DocumentRepository<JsonSch
         Pageable pageable
     );
 
+    /** Whether one document is currently homed on exactly this blueprint version. */
+    @Query("SELECT count(d) > 0 FROM JsonSchemaDocument d "
+        + "WHERE d.id.id = :caseId "
+        + "AND d.documentDefinitionId.blueprintId.blueprintType = :blueprintType "
+        + "AND d.documentDefinitionId.blueprintId.blueprintKey = :blueprintKey "
+        + "AND d.documentDefinitionId.blueprintId.blueprintVersionTag = :versionTag")
+    boolean isCaseHomedOnBlueprintVersion(
+        @Param("caseId") UUID caseId,
+        @Param("blueprintType") BlueprintType blueprintType,
+        @Param("blueprintKey") String blueprintKey,
+        @Param("versionTag") Semver versionTag
+    );
+
     @Query(" SELECT  doc " +
         "    FROM    JsonSchemaDocument doc " +
         "    WHERE   (:definitionName IS NULL OR doc.documentDefinitionId.name = :definitionName)" +

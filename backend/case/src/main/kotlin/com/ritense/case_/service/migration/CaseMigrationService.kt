@@ -438,7 +438,7 @@ class CaseMigrationService(
             // One transaction per case: the migration and the record of it commit or roll back together.
             transactionTemplate.executeWithoutResult {
                 assertOwnership(migrationId, runToken) // stop if another node has taken over
-                if (caseMigrationCaseRepository.existsByIdAndStatus(caseRecordId, CaseMigrationCaseStatus.MIGRATED)) {
+                if (isAlreadyMigrated(caseRecordId, target, caseId)) {
                     return@executeWithoutResult // already migrated (idempotent re-run)
                 }
                 val from = applyMigration(migrationId, target, caseId)
@@ -470,6 +470,19 @@ class CaseMigrationService(
             logger.warn(e) { "Migration failed for case '$caseId' in plan '$migrationId'; rolled back" }
             recordFailure(migrationId, caseId, e, runToken, warnings ?: MigrationWarnings.drain())
         }
+    }
+
+    /** A MIGRATED row alone is not enough: it outlives the migration it records, so a case another plan moved back onto this plan's source was invisible to it forever. The row has to still describe where the case actually is. */
+    private fun isAlreadyMigrated(
+        caseRecordId: CaseMigrationCaseId,
+        target: BlueprintId,
+        caseId: UUID,
+    ): Boolean {
+        if (!caseMigrationCaseRepository.existsByIdAndStatus(caseRecordId, CaseMigrationCaseStatus.MIGRATED)) {
+            return false
+        }
+        val provider = candidateProvider(target.blueprintType()) ?: return true
+        return provider.isHomedOn(caseId, target)
     }
 
     private fun recordFailure(
