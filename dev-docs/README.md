@@ -7,8 +7,8 @@
 # Valtimo Developer Documentation
 
 Technical documentation for developers, operators, and implementers working with the Valtimo
-platform. For administrator and end-user documentation, see the main
-[documentation](../documentation/README.md).
+platform. For administrator and end-user documentation, see the published docs at
+[docs.valtimo.nl](https://docs.valtimo.nl) (sources under [`documentation/`](../documentation/SUMMARY.md)).
 
 ## Getting Started
 

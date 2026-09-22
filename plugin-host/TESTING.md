@@ -287,6 +287,16 @@ proven until a real plugin runs them (L3).
 - **`integration`** — runs the L4 tests against the Docker daemon that comes with the CI runner.
 - **`bootstrap`** — runs the documented one-command setup (`npm run setup -- --ci`) on Linux,
   Windows, and macOS and checks that the sample plugin package is produced.
+- **`docker`** — build-only mirror of the release image build (amd64, no push), so a broken
+  Dockerfile fails the pull request instead of the release. It also asserts the entrypoint runs on
+  Node 22 and that the container's uid is not 0. Full boot against PostgreSQL is the release
+  workflow's smoke job, not this one.
+
+Releases are separate, manually dispatched workflows: `plugin_host_publish_release.yml` builds,
+smoke-tests and promotes the image to `ritense/valtimo-plugin-host:<version>` on Docker Hub, and
+the `plugin_sdk_start_release.yml` / `plugin_sdk_publish_release.yml` pair releases
+`@valtimo/plugin-sdk` to npm. The host and the SDK version independently of Valtimo and of each
+other.
 
 ## Known behaviours pinned by tests
 

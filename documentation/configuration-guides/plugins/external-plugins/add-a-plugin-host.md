@@ -10,7 +10,7 @@ host:
 | Detail | Description |
 |--------|-------------|
 | Base URL | The URL where Valtimo can reach the host (for example `https://plugin-host.internal:8090`). |
-| Secret | The host's admin token. Valtimo uses it to sign every request to the host, so the value must match the one the host was started with. |
+| Secret | The host's admin token. Valtimo uses it to sign every request to the host, so the value must match the one the host was started with. It must be at least 16 characters — the host will not start with a shorter one, so Valtimo refuses to save it. |
 
 ---
 
@@ -46,7 +46,7 @@ saved.
 |----------|-------------|
 | Name | Display name for this host. |
 | Base URL | URL where Valtimo reaches the host. |
-| Secret | The host's admin token. Stored encrypted; never shown again. |
+| Secret | The host's admin token. At least 16 characters. Stored encrypted; never shown again. |
 | Allowed frontend origins | The browser origins (`scheme://host[:port]`, no path) allowed to embed this host's plugin screens. Add every URL users open the Valtimo frontend from, including proxy aliases. With no origins listed, no page can embed this host's plugin screens. |
 
 ### Pre-filled — change only when told to

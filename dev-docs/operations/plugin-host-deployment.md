@@ -52,7 +52,7 @@ checks this pairing, so a mismatched host still reports healthy.
 
 | Variable | Type | Description |
 |----------|------|-------------|
-| `ADMIN_TOKEN` | string | The shared secret GZAC signs every request with (HMAC). The value the admin enters as **Secret** when adding the host. |
+| `ADMIN_TOKEN` | string | The shared secret GZAC signs every request with (HMAC). The value the admin enters as **Secret** when adding the host. **Minimum 16 characters** — the host refuses to start below that, and GZAC refuses to register or update a connection with a shorter one. Generate with `openssl rand -hex 32`. |
 | `DB_HOST` | string | PostgreSQL hostname |
 | `DB_PORT` | string | PostgreSQL port (default: 5432) |
 | `DB_NAME` | string | Database name |
@@ -82,7 +82,8 @@ checks this pairing, so a mismatched host still reports healthy.
 | `WASM_POOL_ACQUIRE_TIMEOUT_MS` | number | `30000` | Max wait for a free instance under load |
 | `WASM_INSTANCE_IDLE_TTL_MS` | number | `600000` | Idle instances are evicted; a quiet host returns to zero |
 | `GZAC_API_TIMEOUT_MS` | number | `60000` | Bound on plugin→GZAC callbacks |
-| `UPLOAD_MAX_BYTES` | number | `104857600` | Package size cap (100 MiB) |
+| `UPLOAD_MAX_BYTES` | number | `104857600` | Package size cap (100 MiB), on the compressed zip |
+| `PLUGIN_MAX_UNCOMPRESSED_BYTES` | number | `268435456` | Cap on what a package *expands to* (256 MiB). A small zip declaring gigabytes is refused with a 400 before anything is inflated. Raise only for genuinely large frontend bundles. |
 | `DATA_RATE_LIMIT_PER_MINUTE` | number | `120` | Per-configuration rate limit on the public `/data` route |
 | `ADMIN_RATE_LIMIT_PER_MINUTE` | number | `120` | Per-IP budget for HMAC-authenticated admin routes |
 | `BUNDLE_RATE_LIMIT_PER_MINUTE` | number | `600` | Per-IP budget for public bundle/logo/manifest routes |
@@ -98,7 +99,7 @@ checks this pairing, so a mismatched host still reports healthy.
 
 ```bash
 # .env
-ADMIN_TOKEN=your-strong-shared-secret
+ADMIN_TOKEN=your-strong-shared-secret   # min 16 chars; openssl rand -hex 32
 DB_HOST=db
 DB_PORT=5432
 DB_NAME=pluginhost
@@ -113,13 +114,16 @@ TLS_KEY_PATH=/tls/tls.key
 
 ### Docker
 
-The host ships as the `valtimo/plugin-host` image (port 8090). A minimal deployment is the image
-plus its own PostgreSQL:
+The host ships as the `ritense/valtimo-plugin-host` image on Docker Hub (port 8090), released on
+its own cadence with the version as the tag — `ritense/valtimo-plugin-host:1.0.0`. **No `latest`
+tag is ever published**: pin the version from the
+[compatibility table](../external-plugins/README.md#version-compatibility). A minimal deployment
+is the image plus its own PostgreSQL:
 
 ```yaml
 services:
   plugin-host:
-    image: valtimo/plugin-host
+    image: ritense/valtimo-plugin-host:1.0.0
     environment:
       ADMIN_TOKEN: ${ADMIN_TOKEN:?set a strong shared secret}
       DB_HOST: db
@@ -161,10 +165,16 @@ image ships no plugins — `/data/preinstalled` starts empty (see
 [Shipping plugins](#shipping-plugins-with-the-host)). Replicas of one host must share the
 database, the `/data/plugins` volume, and `HOST_ID`.
 
-Building from a checkout instead: `docker build -f app/Dockerfile -t valtimo/plugin-host .` from
+The container runs as the unprivileged `node` user (uid 1000), so a Kubernetes deployment can set
+`runAsNonRoot`. `/data` is the only path the host writes to and is owned by that uid in the image;
+a mounted `/data/plugins` volume or read-only `/data/preinstalled` directory must be
+readable — and for `/data/plugins`, writable — by uid 1000.
+
+Building from a checkout instead: `docker build -f app/Dockerfile -t valtimo-plugin-host .` from
 `plugin-host/` — not `plugin-host/app/`; the context must contain `plugin-sdk/` — or
 `cd plugin-host/app && ADMIN_TOKEN=your-secret npm run docker:up` for a local PostgreSQL + host
-pair (note: the dev compose falls back to `ADMIN_TOKEN=changeme` when the variable is unset).
+pair (note: the dev compose falls back to `ADMIN_TOKEN=dev-only-insecure-secret` when the variable
+is unset — long enough to clear the 16-character floor, and a development value only).
 
 ### Shipping plugins with the host
 
@@ -179,8 +189,8 @@ volumes:
 or baked into a derived image:
 
 ```dockerfile
-FROM valtimo/plugin-host
-COPY my-plugin-1.0.0.zip /data/preinstalled/
+FROM ritense/valtimo-plugin-host:1.0.0
+COPY --chown=node:node my-plugin-1.0.0.zip /data/preinstalled/
 ```
 
 An already-installed version with identical content is a no-op; one with **different** content is
@@ -287,6 +297,17 @@ modal per configuration.
 - Wait up to 60 seconds for the next discovery poll
 - Check host logs for manifest validation errors
 - Verify the zip contains a valid `manifest.json`
+
+### Host exits at boot with an `ADMIN_TOKEN` error
+
+**Symptom:** The container starts and immediately exits; the log names `ADMIN_TOKEN`.
+
+**Cause:** The token is unset or shorter than 16 characters — the HMAC key behind every GZAC→host
+call, so the host refuses to run with a weak one rather than fail later.
+
+**Resolution:** Set a token of at least 16 characters (`openssl rand -hex 32`) and enter the same
+value as **Secret** on the GZAC side. GZAC enforces the same floor, so a connection saved there
+cannot be too short for the host.
 
 ### Secret rotation not taking effect
 

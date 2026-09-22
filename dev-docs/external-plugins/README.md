@@ -42,6 +42,11 @@ Ritense builds, tests, and supports together — pick a row and keep all three c
 |---|---|---|---|
 | 13.47.0 and up | 1.0.0 | 1.0.0 | Current |
 
+Where each comes from: the host is the Docker Hub image `ritense/valtimo-plugin-host:<version>`
+(version-tagged only — no `latest`), and the SDK is the npm package
+[`@valtimo/plugin-sdk`](https://www.npmjs.com/package/@valtimo/plugin-sdk). Both are released on
+their own cadence, independently of Valtimo and of each other, so pin both explicitly.
+
 How the three relate in practice:
 
 - **SDK → plugin package.** A plugin is built against one SDK version, and `valtimo-plugin-pack`

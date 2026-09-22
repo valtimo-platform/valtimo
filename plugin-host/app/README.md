@@ -232,7 +232,12 @@ settings, broker or no broker. Deployments on a fully trusted network can lift t
 
 The image is multi-stage and its build context is `plugin-host/`, not `plugin-host/app/`: the app
 depends on the SDK through `file:../plugin-sdk`, so the SDK is built first inside the image. To
-build it directly: `docker build -f app/Dockerfile -t valtimo/plugin-host .` from `plugin-host/`.
+build it directly: `docker build -f app/Dockerfile -t valtimo-plugin-host .` from `plugin-host/`.
+
+The image runs as the unprivileged `node` user (uid 1000) and writes only under `/data`, which it
+owns. Mounted plugin storage and pre-install directories must be accessible to that uid. Released
+builds are published as `ritense/valtimo-plugin-host:<version>` on Docker Hub — version-tagged
+only, never `latest`.
 
 ## Persistence
 
@@ -262,8 +267,8 @@ volumes:
 or by baking them into a derived image:
 
 ```dockerfile
-FROM valtimo/plugin-host
-COPY my-plugin-1.0.0.zip /data/preinstalled/
+FROM ritense/valtimo-plugin-host:1.0.0
+COPY --chown=node:node my-plugin-1.0.0.zip /data/preinstalled/
 ```
 
 What happens per package, in this order:

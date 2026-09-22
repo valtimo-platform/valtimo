@@ -176,8 +176,11 @@ the SDK is built inside the image:
 
 ```bash
 # from plugin-host/, not app/
-docker build -f app/Dockerfile -t valtimo/plugin-host .
+docker build -f app/Dockerfile -t valtimo-plugin-host .
 ```
+
+Released builds come from the *Plugin host - Publish release* workflow and are published as
+`ritense/valtimo-plugin-host:<version>` on Docker Hub — version-tagged only, never `latest`.
 
 ### Shipping plugins with the host
 

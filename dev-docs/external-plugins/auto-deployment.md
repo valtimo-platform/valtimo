@@ -75,11 +75,16 @@ import — leave it out for `LIVE`); on a package, `"overwrite": true` lets the 
 with **different** content (default `false`: the installed version is kept and a warning names
 the conflict).
 
+`secret` must be at least 16 characters — registration applies the same floor as the admin UI, and
+the host itself refuses to start below it. An entry with a shorter secret fails the import.
+
 `${PROPERTY}` and `${PROPERTY:default}` placeholders are resolved against the application
 environment before the file is parsed, so secrets and per-environment URLs stay out of the
 repository. A placeholder with no environment value and no default is left in the file
 literally — the `${…}` text becomes the stored value — so treat an unresolved placeholder in
-the logs or UI as a missing environment variable.
+the logs or UI as a missing environment variable. Note that an unresolved placeholder in `secret`
+is long enough to pass the length check above — it registers, and the host then rejects every
+push as an HMAC failure.
 
 ## What happens at startup
 

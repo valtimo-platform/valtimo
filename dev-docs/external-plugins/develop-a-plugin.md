@@ -24,7 +24,7 @@ against a plugin host running as a Docker container — the Valtimo repository i
   and you run that as a container
 - The Wasm toolchain (`extism-js` + `binaryen`) installs itself on first build, cached per user
 - **To run your plugin:** a plugin host connected to a GZAC instance — run the
-  `valtimo/plugin-host` image with its PostgreSQL
+  `ritense/valtimo-plugin-host:<version>` image with its PostgreSQL
   ([host configuration & deployment](../operations/plugin-host-deployment.md)) and connect it from
   the admin UI ([Add a plugin host](https://docs.valtimo.nl/configuration-guides/plugins/external-plugins/add-a-plugin-host))
 
