@@ -52,6 +52,7 @@
     * [Decision tables](configuration-guides/building-blocks/decision-tables.md)
 * [🔀 System processes](configuration-guides/system-processes/README.md)
 * 🔌 Plugins
+    * [Verzoek](configuration-guides/plugins/verzoek.md)
 * 📊 Dashboard
 * [🔏 Access control](configuration-guides/access-control/README.md)
     * [Configurable elements](configuration-guides/access-control/configurable-elements.md)
