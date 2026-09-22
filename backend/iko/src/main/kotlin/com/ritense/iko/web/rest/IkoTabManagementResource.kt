@@ -23,6 +23,7 @@ import com.ritense.iko.web.rest.request.IkoTabUpdateRequest
 import com.ritense.tab.web.rest.dto.TabDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.iko.PropertyField
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -43,6 +44,10 @@ class IkoTabManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO tab property fields by type",
+        nl = "Eigenschapsvelden van IKO-tabblad ophalen per type",
+    )
     @GetMapping("/v1/iko-property-fields/{type}/tab")
     fun getIkoTabPropertyFields(
         @PathVariable type: String,
@@ -51,6 +56,10 @@ class IkoTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO tabs for management",
+        nl = "IKO-tabbladen ophalen voor beheer",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun getIkoTabsForManagement(
         @PathVariable ikoViewKey: String,
@@ -62,6 +71,10 @@ class IkoTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO tab by key",
+        nl = "IKO-tabblad ophalen op sleutel",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun getIkoTab(
         @PathVariable ikoViewKey: String,
@@ -72,6 +85,10 @@ class IkoTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create IKO tab",
+        nl = "IKO-tabblad aanmaken",
+    )
     @PostMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun createIkoTab(
         @PathVariable ikoViewKey: String,
@@ -86,6 +103,10 @@ class IkoTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO tab",
+        nl = "IKO-tabblad bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun updateIkoTab(
         @PathVariable ikoViewKey: String,
@@ -104,6 +125,10 @@ class IkoTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO tabs order",
+        nl = "Volgorde van IKO-tabbladen bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun updateIkoTabOrder(
         @PathVariable ikoViewKey: String,
@@ -121,6 +146,10 @@ class IkoTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete IKO tab",
+        nl = "IKO-tabblad verwijderen",
+    )
     @DeleteMapping("/v1/iko-view/{ikoViewKey}/tab/{key}")
     fun deleteIkoTab(
         @PathVariable ikoViewKey: String,
