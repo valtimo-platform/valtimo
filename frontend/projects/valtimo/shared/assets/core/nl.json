@@ -3518,7 +3518,8 @@
     "placeholder": "Kies een pad",
     "dropdown": "Dropdown",
     "manual": "Handmatig",
-    "selectCaseDefPlaceholder": "Kies een dossier"
+    "selectCaseDefPlaceholder": "Kies een dossier",
+    "notInThisVersion": "(niet in deze versie)"
   },
   "valueConditionTree": {
     "path": "Veld",

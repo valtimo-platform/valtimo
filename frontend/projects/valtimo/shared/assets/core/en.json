@@ -3509,7 +3509,8 @@
     "placeholder": "Select a path",
     "dropdown": "Dropdown",
     "manual": "Manual",
-    "selectCaseDefPlaceholder": "Select a case"
+    "selectCaseDefPlaceholder": "Select a case",
+    "notInThisVersion": "(not in this version)"
   },
   "valueConditionTree": {
     "path": "Field",
