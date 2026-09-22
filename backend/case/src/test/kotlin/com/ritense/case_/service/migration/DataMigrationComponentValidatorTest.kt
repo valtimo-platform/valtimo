@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
-/** A `dataMigration` target is only checked at run otherwise, where an unresolvable prefix fails every case with a message about resolver factories. */
+/** A `dataMigration` target is only checked at run otherwise, where an unresolvable prefix fails every case with a message about resolver factories. The same rules apply to the copies nested in a building-block entry, through [DataMigrationPatchChecker]. */
 class DataMigrationComponentValidatorTest {
 
     private val objectMapper = ObjectMapper()
@@ -72,6 +72,15 @@ class DataMigrationComponentValidatorTest {
         assertThat(validate("""[{"value": "x"}]"""))
             .singleElement().asString()
             .contains("names no 'target'")
+    }
+
+    /** The nested copies go through the same checker, so an entry's patches cannot be judged by a laxer rule. */
+    @Test
+    fun `the shared checker answers the same for a nested entry's patches`() {
+        val nested = objectMapper.readTree("""[{"target": "zzz:/nope", "value": "x"}]""")
+
+        assertThat(DataMigrationPatchChecker.findProblems(nested, listOf("doc", "pv")))
+            .singleElement().asString().contains("'zzz:'")
     }
 
     private fun validate(json: String) = validator.validate(source, target, objectMapper.readTree(json))

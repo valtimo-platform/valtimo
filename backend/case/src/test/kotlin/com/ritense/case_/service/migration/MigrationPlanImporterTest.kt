@@ -16,11 +16,12 @@
 
 package com.ritense.case_.service.migration
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.case_.domain.migration.AllOfMigrationCondition
 import com.ritense.case_.domain.migration.AnyOfMigrationCondition
 import com.ritense.case_.domain.migration.CaseDefinitionMigration
+import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.case_.domain.migration.MigrationCondition
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
 import com.ritense.importer.ImportRequest
@@ -29,6 +30,8 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentJson
+import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,9 +51,12 @@ import org.mockito.kotlin.whenever
 class MigrationPlanImporterTest(
     @Mock private val caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
     @Mock private val dataMigrationComponentDeployer: MigrationComponentDeployer,
+    // A second deployer: the importer refuses a section no deployer claims, which is what catches a misspelled one.
+    @Mock private val processMigrationComponentDeployer: MigrationComponentDeployer,
 ) {
 
-    private val objectMapper = jacksonObjectMapper()
+    // The product's mapper, not a bare jacksonObjectMapper(): that one fails on unknown properties by default, which is the opposite of production and hid exactly the defect these tests pin.
+    private val objectMapper = MapperSingleton.get()
     private lateinit var importer: MigrationPlanImporter
 
     private val caseDefinitionId = CaseDefinitionId("bezwaar", "1.0.1")
@@ -61,7 +67,7 @@ class MigrationPlanImporterTest(
         importer = MigrationPlanImporter(
             objectMapper,
             caseDefinitionMigrationRepository,
-            listOf(dataMigrationComponentDeployer),
+            listOf(dataMigrationComponentDeployer, processMigrationComponentDeployer),
         )
     }
 
@@ -99,6 +105,7 @@ class MigrationPlanImporterTest(
     @Test
     fun `should save skeleton and dispatch component to matching deployer`() {
         whenever(dataMigrationComponentDeployer.componentKey()).thenReturn("dataMigration")
+        whenever(processMigrationComponentDeployer.componentKey()).thenReturn("processMigration")
 
         val json = """
             {
@@ -214,6 +221,7 @@ class MigrationPlanImporterTest(
     @Test
     fun `should not dispatch when the matching section is absent`() {
         whenever(dataMigrationComponentDeployer.componentKey()).thenReturn("dataMigration")
+        whenever(processMigrationComponentDeployer.componentKey()).thenReturn("processMigration")
 
         val json = """
             {
@@ -233,6 +241,85 @@ class MigrationPlanImporterTest(
 
         verify(caseDefinitionMigrationRepository).save(any())
         verify(dataMigrationComponentDeployer, never()).deploy(any(), any())
+    }
+
+    /** A misspelled section is dropped rather than deployed, so the plan saves having lost every patch under it. */
+    @Test
+    fun `should refuse a plan whose component section no deployer claims`() {
+        whenever(dataMigrationComponentDeployer.componentKey()).thenReturn("dataMigration")
+        whenever(processMigrationComponentDeployer.componentKey()).thenReturn("processMigration")
+
+        val json = """
+            {
+                "key": "typo-plan",
+                "source": { "versionTag": "1.0.0" },
+                "dataMigraton": [ { "target": "doc:/x" } ]
+            }
+        """.trimIndent()
+
+        val thrown = assertThrows<IllegalArgumentException> {
+            importer.import(
+                ImportRequest(
+                    fileName = "/case-migration/bezwaar.case-migration.json",
+                    content = json.toByteArray(),
+                    caseDefinitionId = caseDefinitionId,
+                )
+            )
+        }
+
+        assertThat(thrown).hasMessageContaining("'dataMigraton'").hasMessageContaining("'dataMigration'")
+        verify(caseDefinitionMigrationRepository, never()).save(any())
+    }
+
+    /** `sourse` silently turned a copy into a clear. Through the importer, with the product's own mapper: the DTO annotation that looked like it did this is inert, because it defers to a feature the mapper disables. */
+    @Test
+    fun `should refuse a data migration patch with a misspelled optional key`() {
+        whenever(dataMigrationComponentDeployer.componentKey()).thenReturn("dataMigration")
+        whenever(dataMigrationComponentDeployer.deploy(any(), any())).thenAnswer { invocation ->
+            // Stands in for the real deployer, which parses its own section strictly.
+            MigrationComponentJson.strict(MapperSingleton.get()).convertValue(
+                invocation.getArgument<JsonNode>(1),
+                object : TypeReference<List<DataMigrationPatch>>() {},
+            )
+        }
+
+        val json = """
+            {
+                "key": "typo-patch",
+                "source": { "versionTag": "1.0.0" },
+                "dataMigration": [ { "target": "doc:/x", "sourse": "doc:/y" } ]
+            }
+        """.trimIndent()
+
+        val thrown = assertThrows<IllegalArgumentException> {
+            importer.import(
+                ImportRequest(
+                    fileName = "/case-migration/bezwaar.case-migration.json",
+                    content = json.toByteArray(),
+                    caseDefinitionId = caseDefinitionId,
+                )
+            )
+        }
+
+        assertThat(thrown).hasMessageContaining("'sourse'").hasMessageContaining("'dataMigration'")
+    }
+
+    /** The plan's `source` is a nested object the top-level key check does not reach on its own. */
+    @Test
+    fun `should refuse an unknown property inside source`() {
+        val json = """{"key": "x", "source": {"versionTag": "1.0.0", "verson": "1.0.1"}}"""
+
+        val thrown = assertThrows<IllegalArgumentException> {
+            importer.import(
+                ImportRequest(
+                    fileName = "/case-migration/bezwaar.case-migration.json",
+                    content = json.toByteArray(),
+                    caseDefinitionId = caseDefinitionId,
+                )
+            )
+        }
+
+        assertThat(thrown).hasMessageContaining("'verson'").hasMessageContaining("in 'source'")
     }
 
     @Test

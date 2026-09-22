@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentJson
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import com.ritense.valtimo.migration.domain.ProcessMigrationConfiguration
 import com.ritense.valtimo.migration.domain.ProcessMigrationInstruction
@@ -33,10 +34,13 @@ class ProcessMigrationComponentDeployer(
     private val processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
 ) : MigrationComponentDeployer {
 
+    /** Refuses an unknown property rather than dropping it: a misspelled key in a hand-written plan must not pass as a different instruction. */
+    private val strictMapper = MigrationComponentJson.strict(objectMapper)
+
     override fun componentKey() = PROCESS_MIGRATION_COMPONENT_KEY
 
     override fun deploy(migrationId: BlueprintMigrationId, component: JsonNode) {
-        val instructions: List<ProcessMigrationInstruction> = objectMapper.convertValue(
+        val instructions: List<ProcessMigrationInstruction> = strictMapper.convertValue(
             component,
             object : TypeReference<List<ProcessMigrationInstruction>>() {}
         )

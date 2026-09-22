@@ -23,6 +23,7 @@ import com.ritense.buildingblock.domain.migration.RemoveBuildingBlockConfigurati
 import com.ritense.buildingblock.domain.migration.RemoveBuildingBlockInstruction
 import com.ritense.buildingblock.repository.RemoveBuildingBlockConfigurationRepository
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentJson
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import org.springframework.transaction.annotation.Transactional
 
@@ -34,12 +35,15 @@ class RemoveBuildingBlockMigrationComponentDeployer(
     private val removeBuildingBlockVersionChecker: RemoveBuildingBlockVersionChecker,
 ) : MigrationComponentDeployer {
 
+    /** Refuses an unknown property rather than dropping it: a misspelled key in a hand-written plan must not pass as a different instruction. */
+    private val strictMapper = MigrationComponentJson.strict(objectMapper)
+
     override fun componentKey() = REMOVE_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun deploy(migrationId: BlueprintMigrationId, component: JsonNode) {
         // Ahead of parsing: without a version tag Jackson fails with a message about a Kotlin constructor parameter.
         removeBuildingBlockVersionChecker.assertVersioned(component)
-        val instructions: List<RemoveBuildingBlockInstruction> = objectMapper.convertValue(
+        val instructions: List<RemoveBuildingBlockInstruction> = strictMapper.convertValue(
             component,
             object : TypeReference<List<RemoveBuildingBlockInstruction>>() {}
         )

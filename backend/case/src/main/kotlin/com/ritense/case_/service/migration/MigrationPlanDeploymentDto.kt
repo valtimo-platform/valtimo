@@ -30,8 +30,7 @@ data class MigrationPlanDeploymentDto(
     val conditions: List<MigrationConditionNode> = emptyList(),
 )
 
-/** The blueprint version a plan migrates instances FROM. Both fields required — inferring a source is what stops a plan spanning versions or changing key. No type: it matches the plan's own. */
-@JsonIgnoreProperties(ignoreUnknown = true)
+/** The blueprint version a plan migrates instances FROM. Both fields required — inferring a source is what stops a plan spanning versions or changing key. No type: it matches the plan's own. Unknown keys are refused by the importer, which checks them by name. */
 data class MigrationPlanSourceDto(
     val key: String? = null,
     val versionTag: String? = null,
