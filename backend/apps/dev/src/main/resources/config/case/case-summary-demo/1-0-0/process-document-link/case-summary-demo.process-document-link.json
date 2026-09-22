@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "case-summary-demo",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

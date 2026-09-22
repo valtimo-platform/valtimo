@@ -50,6 +50,7 @@ const WidgetTypeTags: Record<WidgetType, TagType> = {
   [WidgetType.CUSTOM]: 'brown' as TagType,
   [WidgetType.IMAGE]: 'cool-gray',
   [WidgetType.DIVIDER]: 'outline',
+  [WidgetType.EXTERNAL_PLUGIN]: 'cool-gray' as TagType,
 };
 
 export {WidgetManagementTab, WidgetTypeTags};

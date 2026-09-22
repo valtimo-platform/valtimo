@@ -45,6 +45,7 @@ import com.ritense.document.service.findByOrNull
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.validation.Valid
 import org.springframework.context.event.EventListener
@@ -67,7 +68,8 @@ class CaseWidgetService(
     private val caseWidgetMappers: List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>,
     private val caseWidgetDataProviders: List<CaseWidgetDataProvider>,
     private val caseDefinitionChecker: CaseDefinitionChecker,
-    private val valueResolverService: ValueResolverService
+    private val valueResolverService: ValueResolverService,
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver> = emptyList()
 ) {
 
     @EventListener(CaseTabCreatedEvent::class)
@@ -131,8 +133,13 @@ class CaseWidgetService(
                 },
                 widgetLayout = tabDto.widgetLayout
             )
+        val savedTab = caseWidgetTabRepository.save(caseWidgetTab)
+        // A widget saved over management REST (e.g. the JSON editor) can reference an external-plugin
+        // configuration that does not resolve in this environment; recheck in-transaction so the
+        // configuration issue surfaces immediately instead of at the next import or repair recheck.
+        pluginConfigurationMappingResolvers.forEach { it.recheckIssuesForCaseDefinition(caseDefinitionId) }
         return CaseWidgetTabDto.of(
-            caseWidgetTabRepository.save(caseWidgetTab),
+            savedTab,
             caseWidgetMappers,
             this::viewPermissionCheck
         )

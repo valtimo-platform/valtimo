@@ -1,0 +1,37 @@
+{
+  "name": "valtimo-demo-app",
+  "version": "1.0.0",
+  "description": "Reference Valtimo App — a remote service that IS a plugin-host-plus-single-plugin, added to GZAC by URL",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "installDeps": "npm install",
+    "build:frontend": "node scripts/build-frontend.mjs",
+    "build": "npm run build:frontend && tsc",
+    "dev": "node scripts/dev.mjs",
+    "start": "node dist/index.js",
+    "clean": "node -e \"const fs=require('fs');for(const d of ['dist','public'])fs.rmSync(d,{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "fastify": "^5.8.5",
+    "fastify-raw-body": "^5.0.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@valtimo/plugin-sdk": "file:../../plugin-sdk",
+    "esbuild": "^0.25.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "license": "EUPL-1.2"
+}

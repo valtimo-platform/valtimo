@@ -104,6 +104,7 @@ interface PluginFunction {
   description?: string;
   key: string;
   title?: string;
+  outputs?: string[];
 }
 
 export {

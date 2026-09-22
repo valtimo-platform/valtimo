@@ -18,6 +18,7 @@ package com.ritense.valtimo.processlink.web.rest
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import com.ritense.valtimo.processlink.web.rest.result.CompatiblePluginProcessLinks
 import org.springframework.http.ResponseEntity
@@ -32,6 +33,10 @@ import org.springframework.web.bind.annotation.RestController
 class PluginProcessLinkResource(
     private var pluginProcessLinkService: PluginProcessLinkService
 ) {
+    @EndpointDescription(
+        en = "List compatible plugin process links",
+        nl = "Compatibele plugin-proceskoppelingen ophalen",
+    )
     @GetMapping("/v1/process-link/plugin")
     fun getCompatiblePluginProcessLinks(
         @RequestParam("pluginActionDefinitionKey") pluginActionDefinitionKey: String
