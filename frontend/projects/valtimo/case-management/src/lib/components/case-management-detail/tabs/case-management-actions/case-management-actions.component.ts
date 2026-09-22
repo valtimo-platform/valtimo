@@ -119,6 +119,8 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
     },
   ];
 
+  private readonly _$editedBuildingBlockItem = signal<ManagementStartableItem | null>(null);
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -224,6 +226,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   }
 
   private openProcessLinkModalForBuildingBlockEdit(item: ManagementStartableItem): void {
+    this._$editedBuildingBlockItem.set(item);
     this.processLinkStepService.setSkipBuildingBlockSelectionStep(true);
 
     this.startableItemManagementService
@@ -293,22 +296,25 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   }
 
   private updateBuildingBlockStartableItem(event: BuildingBlockProcessLinkUpdateDto): void {
-    const key = event.buildingBlockDefinitionKey;
-    const versionTag = event.buildingBlockDefinitionVersionTag;
+    const editedItem = this._$editedBuildingBlockItem();
+    this._$editedBuildingBlockItem.set(null);
+
+    if (!editedItem) return;
 
     const request = {
       type: StartableItemType.BUILDING_BLOCK,
       properties: {
-        buildingBlockDefinitionKey: key,
-        buildingBlockDefinitionVersionTag: versionTag,
+        buildingBlockDefinitionKey: event.buildingBlockDefinitionKey,
+        buildingBlockDefinitionVersionTag: event.buildingBlockDefinitionVersionTag,
         inputMappings: this.normalizeMappingsForSave(event.inputMappings || [], 'input'),
         outputMappings: this.normalizeMappingsForSave(event.outputMappings || [], 'output'),
         pluginConfigurationMappings: event.pluginConfigurationMappings || {},
       },
     };
 
+    // Look up the existing item by the identity it had when the modal opened — the event carries the new version.
     this.startableItemManagementService
-      .updateItem(key, versionTag, request)
+      .updateItem(editedItem.key, editedItem.versionTag, request)
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
         this.startableItemManagementService.loadItems();

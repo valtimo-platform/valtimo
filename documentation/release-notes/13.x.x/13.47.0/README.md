@@ -14,9 +14,10 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### The task panel in a case keeps the width you give it
 
-New enhancement explanation.
+The panel on the right of a case can now be dragged wider or narrower while the task list is shown, not only
+while a task is open. The width you set is remembered for you across all case types and after logging in again.
 
 ---
 
@@ -25,3 +26,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Availability | An instance whose database has become unreachable now reports itself as unavailable, so it is taken out of service instead of being sent requests that fail |
+| Case types | A building block action on the Actions tab can be saved on another version |
