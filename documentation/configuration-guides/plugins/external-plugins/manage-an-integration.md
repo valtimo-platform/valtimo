@@ -69,9 +69,17 @@ plugin screens is applied when the page loads.
 | Mode | Behavior |
 |------|----------|
 | **Live** (default) | Events published while the integration is down are lost. No queue cleanup ever needed. |
-| **Durable** | Events are retained while the integration is down and delivered when it returns. The **inactivity TTL** (default 72 hours, between 1 hour and 30 days) removes the queue after that long without a connected integration, so a decommissioned one does not accumulate events forever. |
+| **Durable** | Events are retained while the integration is down and delivered when it returns. The **inactivity TTL** (default 72 hours, between 1 hour and 30 days) removes the queue after that long without a connected integration, so a decommissioned one does not accumulate events forever. Once the TTL runs out, the retained events go with the queue: the integration resumes from empty, as in Live mode. |
 
 A mode or TTL change takes effect immediately — no restart of either side.
+
+{% hint style="warning" %}
+**Changing the mode or the TTL starts a new queue.** The setting is part of the queue's identity,
+so the integration begins consuming from a fresh, empty one. Anything still waiting in the old
+queue is never delivered — change these settings while the integration is connected and caught up,
+not while it is down with events banked up. The abandoned queue disappears on its own once its own
+TTL expires; ask whoever operates the message broker to remove it sooner if that matters.
+{% endhint %}
 
 ---
 

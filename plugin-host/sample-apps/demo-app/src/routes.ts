@@ -344,7 +344,7 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   // before running any handler: require the configuration to exist and target this plugin version;
   // require `frontend_data` in its pushed grants; rate-limit per configuration; and validate
   // `userToken` by calling GZAC's introspection endpoint, failing closed (503) when GZAC is
-  // unreachable. See docs/develop-an-app.md, "Public routes".
+  // unreachable. See dev-docs/external-plugins/develop-an-app.md, "Public routes".
   fastify.options(`${pluginBase}/data`, async (_request, reply) => {
     reply
       .header("Access-Control-Allow-Origin", "*")

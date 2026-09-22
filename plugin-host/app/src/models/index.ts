@@ -15,7 +15,12 @@
  */
 
 export type { AppConfig, MigrateConfig } from "./app-config.js";
-export { envSchema, migrateEnvSchema } from "./app-config.js";
+export {
+  PRODUCTION_DB_PORT,
+  applyDatabasePolicy,
+  envSchema,
+  migrateEnvSchema,
+} from "./app-config.js";
 export type { HostLogger } from "./host-logger.js";
 export type { PluginConfiguration, EventBrokerConfig } from "./plugin-configuration.js";
 export type { PluginManifest, FrontendBundle, Endpoint } from "./plugin-manifest.js";

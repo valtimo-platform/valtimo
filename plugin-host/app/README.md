@@ -117,11 +117,11 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `PLUGIN_PREINSTALL_OVERWRITE` | no | `false` | Let a pre-install package replace an installed version whose content **differs**. Only the literal string `true` enables it. Throwaway environments only — GZAC pins the content hash an admin accepted. |
 | `LOG_LEVEL` | no | `info` | `debug`, `info`, `warn`, or `error` |
 | `HOST_ID` | no | OS hostname | Identity of this logical host; names its per-host event queue. Replicas of the **same** host must share one value (see [Events](#events)). |
-| `DB_HOST` | no | `localhost` | PostgreSQL host |
-| `DB_PORT` | no | `5434` | PostgreSQL port |
-| `DB_NAME` | no | `pluginhost` | PostgreSQL database name |
-| `DB_USER` | no | `pluginhost` | PostgreSQL username |
-| `DB_PASSWORD` | no | `pluginhost` | PostgreSQL password |
+| `DB_HOST` | in production | `localhost` (local) | PostgreSQL host |
+| `DB_PORT` | no | `5434` (local), `5432` (production) | PostgreSQL port |
+| `DB_NAME` | in production | `pluginhost` (local) | PostgreSQL database name |
+| `DB_USER` | in production | `pluginhost` (local) | PostgreSQL username |
+| `DB_PASSWORD` | in production | `pluginhost` (local) | PostgreSQL password |
 | `DB_MIGRATE_ON_BOOT` | no | `true` | Whether the app applies pending migrations at boot. Set `false` when a pre-deploy job or init container runs `node dist/migrate.js` instead (see [Database migrations](#database-migrations)). Only `true`/`false` are accepted; anything else fails the boot. |
 | `WASM_TIMEOUT_MS` | no | `30000` | Hard wall-clock limit per Wasm plugin call; Extism cancels the call when exceeded and the route reports a `HOST_ERROR`. |
 | `WASM_MAX_MEMORY_PAGES` | no | `4096` | Cap on a plugin's linear memory in 64 KiB pages (default 256 MiB). `0` removes the cap. |
@@ -147,6 +147,11 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `HOST_ALLOWED_INTERNAL_CIDRS` | no | — | Comma-separated CIDRs plugins may reach despite being private address space — the production way to allow an internal service. `169.254.0.0/16` (cloud metadata) is never allowlistable. |
 | `HOST_ALLOW_HTTP` | no | `false` | Allow plain-http egress targets. Local development only; only the literal string `true` enables it. |
 | `HOST_ALLOW_PRIVATE_NETWORK` | no | `false` | Disables the SSRF classifier wholesale — local development only; logs a loud warning at boot. |
+
+The `DB_*` defaults are for running from a checkout. They are withdrawn under `NODE_ENV=production`
+(set by the image), where the host exits at startup listing what is missing. `DB_PORT` keeps a
+default either way: `5434` locally — Valtimo's own database holds 5432 on a dev machine — and
+`5432` in production. `node dist/migrate.js` follows the same rule.
 
 The host does **not** configure an event broker. Each GZAC instance pushes its own broker connection
 alongside every configuration (see [Events](#events)), so one host can serve many GZAC instances,

@@ -42,7 +42,7 @@ Beyond the action, the plugin exercises the rest of the SDK surface:
 
 That breadth makes this the reference rather than a starting point. For the minimal counterpart,
 scaffold a project with `valtimo-plugin-init` — see
-[Developing an external plugin](../../docs/develop-a-plugin.md).
+[Developing an external plugin](../../../dev-docs/external-plugins/develop-a-plugin.md).
 
 ## Project Structure
 

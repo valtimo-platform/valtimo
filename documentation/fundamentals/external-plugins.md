@@ -63,17 +63,30 @@ Every plugin package declares up front what it needs:
 - **Events** — which platform events the plugin wants to receive.
 - **External connections** — which outside addresses the plugin may contact.
 
-During activation the administrator reviews and accepts this complete list. The plugin can never
-do more than what was accepted: every call is checked again at runtime, and a request outside the
-accepted set is refused. A new plugin version that asks for more does not receive it until an
-administrator reviews and accepts again.
+During activation the administrator reviews and accepts this complete list. A new plugin version
+that asks for more does not receive it until an administrator reviews and accepts again.
+
+How firmly the list is held depends on which kind of integration serves the plugin:
+
+- On a **plugin host**, all four are enforced. The plugin runs in a sandbox that can only reach
+  the outside world through the host, so every call is checked again at runtime and anything
+  outside the accepted set is refused.
+- On an **app**, the **API endpoints** are enforced by Valtimo itself on every callback, and the
+  rest are a declaration of intent. An app is ordinary software running on someone else's server,
+  not sandboxed code: it receives the whole event feed and filters it itself, and nothing can stop
+  it contacting an address it did not list.
+
+So accepting an app's permissions is closer to accepting a supplier's word than to enforcing a
+boundary. Judge an app on who operates it; confine its network access where it runs, if that
+matters.
 
 #### Security model
 
 The security model rests on a few principles:
 
 - **Sandboxed execution** — plugin backend code runs in an isolated sandbox on the plugin host,
-  with no direct access to the network, the file system, or Valtimo.
+  with no direct access to the network, the file system, or Valtimo. This applies to uploaded
+  plugin packages; an app runs its own code on its own server and is trusted accordingly.
 - **Short-lived access tokens** — when a plugin calls back into Valtimo it uses a token that is
   limited to the accepted endpoint list and expires within minutes. Plugin screens acting on
   behalf of a logged-in user are additionally limited to what that user is allowed to see and do.

@@ -45,7 +45,7 @@ Three things trip up a first setup, none of them plugin code:
    to confirm an overwrite — fine in development, and an identical re-upload is a no-op. Bump the
    version once anything else depends on it.
 
-## Overview
+## How a plugin works with Valtimo
 
 Read this section before the reference material that follows it. Every signature below makes
 sense only against the lifecycle it is called from, and the most expensive mistake available here

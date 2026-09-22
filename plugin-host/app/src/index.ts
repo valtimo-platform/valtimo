@@ -38,6 +38,7 @@ import {KvRepository} from "./db/kv-repository.js";
 import {LogRepository} from "./db/log-repository.js";
 import {pluginLogRoutes} from "./routes/plugin-logs.js";
 import {parseAllowedInternalCidrs} from "./security/url-guard.js";
+import {ConfigurationError} from "./errors.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -264,4 +265,12 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+main().catch((err) => {
+  // Config errors are the operator's to fix, so print the message bare. Anything else keeps its stack.
+  if (err instanceof ConfigurationError) {
+    console.error(`\n${err.message}\n`);
+  } else {
+    console.error(err);
+  }
+  process.exit(1);
+});

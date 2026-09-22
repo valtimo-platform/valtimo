@@ -26,6 +26,7 @@ was briefly unavailable recovers on its own, without any manual step.
 | A configuration cannot be deleted | Something still references it | [Manage an integration](manage-an-integration.md#deleting-configurations-and-integrations) |
 | An upload is refused | Invalid package, too large, or the version exists with different contents | [An upload is refused](#an-upload-is-refused) |
 | An app cannot be connected | Wrong details, the app is not ready, or its plugin is already registered | [An app cannot be connected](#an-app-cannot-be-connected) |
+| The plugin never reacts to events | No broker configured, the wrong events accepted, or the queue was reset | [Events do not reach the plugin](#events-do-not-reach-the-plugin) |
 | The plugin runs but does the wrong thing | A plugin-side problem | [Plugin logs](plugin-logs.md) |
 
 ---
@@ -108,6 +109,39 @@ settings have to be entered as JSON.
 Ask the plugin's supplier for the property names, types and an example — or, preferably, for a
 version that ships a configuration form. The same applies to an action's inputs in the process-link
 modeler. See [Configure a plugin](configure-a-plugin.md#plugins-without-a-settings-form).
+
+---
+
+## Events do not reach the plugin
+
+An action that works while an event handler stays silent points at event delivery, not at the
+plugin. Check, in order:
+
+{% stepper %}
+{% step %}
+Confirm the integration has an event broker
+
+**Edit connection** shows the **Event broker URL**. Empty means events are switched off for this
+integration entirely — no event ever arrives, whatever the plugin subscribed to.
+{% endstep %}
+{% step %}
+Confirm the event type was accepted for this configuration
+
+Only the events listed under **Events** on the configuration's permissions are delivered. A plugin
+that asks for an event the administrator did not accept never receives it.
+{% endstep %}
+{% step %}
+Check whether the queue was reset
+
+In **Live** mode, anything published while the integration was down is gone — expected, not a
+fault. Changing the queue mode or the inactivity TTL also starts a fresh queue and abandons what
+was waiting in the old one; so does exceeding the TTL in **Durable** mode. See
+[Event queue settings](manage-an-integration.md#event-queue-settings).
+{% endstep %}
+{% endstepper %}
+
+If all three check out, the event is reaching the integration and the plugin is not acting on it —
+a plugin-side problem, visible in [Plugin logs](plugin-logs.md).
 
 ---
 

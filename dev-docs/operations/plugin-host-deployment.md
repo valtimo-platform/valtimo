@@ -10,10 +10,15 @@
 > Valtimo repository: `cd plugin-host && npm run dev` is the local one-liner — see the
 > [plugin-host README](../../plugin-host/README.md).) Full reference: [app README](../../plugin-host/app/README.md).
 
-The plugin host is a stateless-ish Node.js service (Fastify + Extism) with its own PostgreSQL
-database. It stores plugin packages on disk, persists configurations/KV/logs in PostgreSQL, and
-holds **no GZAC-side configuration at all** — every credential, grant, and broker detail arrives
-in the configuration pushes from GZAC.
+The plugin host is a stateful Node.js service (Fastify + Extism). Plugin packages live on disk;
+plugin configurations, plugin KV data, and logs live in its own PostgreSQL database. Both must be
+persisted and backed up.
+
+Nothing GZAC-owned is *authored* on the host, though. Service tokens, granted permissions, secret
+properties, and broker details all arrive in GZAC's configuration pushes and are stored as a local
+replica of what GZAC holds. GZAC remains the source of truth and re-pushes every ~60 seconds, so a
+lost `plugin_configurations` table is restored within one polling cycle. The host's own
+configuration is the environment variables below — nothing else.
 
 ## Overview
 
@@ -54,24 +59,26 @@ checks this pairing, so a mismatched host still reports healthy.
 |----------|------|-------------|
 | `ADMIN_TOKEN` | string | The shared secret GZAC signs every request with (HMAC). The value the admin enters as **Secret** when adding the host. **Minimum 16 characters** — the host refuses to start below that, and GZAC refuses to register or update a connection with a shorter one. Generate with `openssl rand -hex 32`. |
 | `DB_HOST` | string | PostgreSQL hostname |
-| `DB_PORT` | string | PostgreSQL port (default: 5432) |
 | `DB_NAME` | string | Database name |
 | `DB_USER` | string | Database user |
 | `DB_PASSWORD` | string | Database password |
+
+Miss any of them and the host exits at startup listing what it needs.
 
 ### Optional
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `PORT` | number | `8090` | HTTP(S) listen port |
-| `PLUGIN_STORAGE_DIR` | string | `/data/plugins` | Where installed packages live (persist this) |
+| `PLUGIN_STORAGE_DIR` | string | `/data/plugins` | Where installed packages live (persist this). Set by the image; outside it the code default is `./plugins`. |
+| `DB_PORT` | number | `5432` | PostgreSQL port |
 | `DB_MIGRATE_ON_BOOT` | boolean | `true` | Apply pending migrations at boot. Set `false` when a pre-deploy job runs migrations. |
 | `HOST_ID` | string | OS hostname | Event-queue identity — replicas of one host must share this value |
 | `TLS_CERT_PATH` | string | unset | Path to TLS certificate. Required for non-loopback hosts. |
 | `TLS_KEY_PATH` | string | unset | Path to TLS private key |
 | `TLS_CA_PATH` | string | unset | Path to CA certificate (optional) |
 | `TRUST_PROXY` | boolean | `false` | Honour `X-Forwarded-For` for client addresses. Enable behind a reverse proxy. |
-| `PLUGIN_PREINSTALL_DIR` | string | `/data/preinstalled` | Boot-time package directory |
+| `PLUGIN_PREINSTALL_DIR` | string | `/data/preinstalled` | Boot-time package directory. Set by the image; outside it the code default is `./preinstalled`. |
 | `PLUGIN_PREINSTALL_OVERWRITE` | boolean | `false` | Replace an installed version whose content differs — throwaway environments only |
 | `LOG_LEVEL` | string | `info` | Logging level |
 | `LOG_RETENTION_DAYS` | number | `30` | `plugin_logs` retention (cleanup runs 6-hourly) |
@@ -138,6 +145,7 @@ services:
     volumes:
       - plugin-storage:/data/plugins           # installed packages — must persist
       # - ./my-plugins:/data/preinstalled:ro   # packages installed at boot (see below)
+      # - ./tls:/tls:ro                        # the cert/key the TLS_* paths point at
     depends_on:
       db:
         condition: service_healthy
@@ -160,7 +168,8 @@ volumes:
 ```
 
 The image applies pending migrations at boot; in production prefer `DB_MIGRATE_ON_BOOT=false`
-with a pre-deploy job or init container running `node dist/migrate.js` from the same image. The
+with a pre-deploy job or init container running `node dist/migrate.js` from the same image, given
+the same `DB_*` variables (it needs no `ADMIN_TOKEN`). The
 image ships no plugins — `/data/preinstalled` starts empty (see
 [Shipping plugins](#shipping-plugins-with-the-host)). Replicas of one host must share the
 database, the `/data/plugins` volume, and `HOST_ID`.
@@ -229,10 +238,18 @@ authenticated cycle succeeded, which is the signal that matters.
 | Resource | Minimum | Recommended | Notes |
 |----------|---------|-------------|-------|
 | CPU | 0.5 | 2 | Depends on plugin workload |
-| Memory | 512 MB | 2 GB | Worst-case: `WASM_POOL_MAX_INSTANCES` x `WASM_MAX_MEMORY_PAGES` x 64 KB |
+| Memory | 512 MB | 2 GB | Baseline for the Node process — add the plugin ceiling below |
 
-Memory scales with concurrent plugin executions. The default pool (max 10 instances x 256 MiB)
-can consume up to 2.5 GB under full load.
+The Wasm instance pool is **per plugin version**, not per host. The ceiling is
+`WASM_POOL_MAX_INSTANCES` x `WASM_MAX_MEMORY_PAGES` x 64 KB *for each loaded plugin version* — at
+the defaults, 10 x 256 MiB = 2.5 GB per plugin version. A host running five plugin versions has a
+theoretical ceiling of 12.5 GB.
+
+Real usage is far lower and highly variable. Instances are created lazily, a plugin only occupies
+its memory cap if it actually allocates that much, and idle instances are evicted after
+`WASM_INSTANCE_IDLE_TTL_MS` — including below the pool minimum, so a quiet host returns to zero.
+Size from measured usage rather than from the ceiling, and lower `WASM_POOL_MAX_INSTANCES` or
+`WASM_MAX_MEMORY_PAGES` on hosts that carry many plugin versions.
 
 ## Monitoring
 
@@ -250,6 +267,27 @@ The host logs to stdout in JSON format. Key log messages:
 Plugin-level logs (from `log.debug/info/warn/error()` calls) are stored in `plugin_logs` and
 retained for `LOG_RETENTION_DAYS` (default 30). Administrators view them in the GZAC **Logs**
 modal per configuration.
+
+### Event queues
+
+When plugins consume platform events, the host declares one queue per logical host on the GZAC
+broker:
+
+```
+valtimo-external-plugins.{exchange}.{HOST_ID}.live
+valtimo-external-plugins.{exchange}.{HOST_ID}.durable.t{ttlMs}
+```
+
+The queue mode — and for durable queues the TTL — is **part of the name**, deliberately: RabbitMQ
+answers a re-declaration of an existing durable queue with different `x-expires` with a 406
+`PRECONDITION_FAILED`, and encoding the value sidesteps that entirely.
+
+The consequence is what to watch for. An admin who changes the queue mode or the TTL moves the
+host onto a *new, empty* queue; whatever was banked in the old one is never consumed. A superseded
+`.live` queue auto-deletes as soon as its consumer closes, but an orphaned `.durable` queue sits on
+the broker until its own `x-expires` fires — up to 30 days — holding whatever it accumulated. On a
+broker where that matters, watch for `valtimo-external-plugins.*` queues with no consumers and
+delete them once the events in them are known to be stale.
 
 ## Security Considerations
 

@@ -16,6 +16,7 @@
 
 import { hostname } from "node:os";
 import { z } from "zod";
+import { ConfigurationError } from "../errors.js";
 
 // Matches the floor Valtimo already applies to `valtimo.plugin.encryption-secret` (16/24/32 bytes
 // for AES). The admin token is the HMAC key behind every GZAC→host call, so a short one is the
@@ -128,7 +129,8 @@ export const envSchema = z.object({
   // down for maintenance does not lose its plugins' framability.
   FRAME_ANCESTOR_STALE_MS: z.coerce.number().int().positive().default(7 * 24 * 60 * 60 * 1000),
 
-  // Database configuration
+  // Dev-only defaults — requireDatabaseConfig withdraws them under NODE_ENV=production.
+  // 5434, not 5432: Valtimo's own database holds 5432 on a dev machine.
   DB_HOST: z.string().default("localhost"),
   DB_PORT: z.coerce.number().default(5434),
   DB_NAME: z.string().default("pluginhost"),
@@ -182,3 +184,28 @@ export const migrateEnvSchema = envSchema.pick({
 });
 
 export type MigrateConfig = z.infer<typeof migrateEnvSchema>;
+
+/** Required in production. DB_PORT excluded — 5432 is standard, safe to guess. */
+const REQUIRED_DB_VARS = ["DB_HOST", "DB_NAME", "DB_USER", "DB_PASSWORD"] as const;
+
+export const PRODUCTION_DB_PORT = "5432";
+
+/**
+ * Withdraws the dev database defaults under NODE_ENV=production — set by the image, unset in a checkout.
+ *
+ * Otherwise an unconfigured container dials localhost:5434 in its own namespace, and a bare prod
+ * process on a dev machine reaches the dev database.
+ *
+ * Reports rather than throws so the caller can list these alongside the schema's own complaints.
+ */
+export function applyDatabasePolicy(env: NodeJS.ProcessEnv): {
+  env: NodeJS.ProcessEnv;
+  missing: string[];
+} {
+  if (env.NODE_ENV !== "production") return { env, missing: [] };
+
+  return {
+    env: (env.DB_PORT ?? "").trim() === "" ? { ...env, DB_PORT: PRODUCTION_DB_PORT } : env,
+    missing: REQUIRED_DB_VARS.filter((name) => (env[name] ?? "").trim() === ""),
+  };
+}

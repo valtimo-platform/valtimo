@@ -59,7 +59,18 @@ instruction from the team operating the host or the platform.
 | GZAC callback URL | The URL plugins on this host use to call back into this Valtimo environment. Change it when the host reaches Valtimo on a different address than the default — for example when the two run in separate containers. |
 | Event broker URL (optional) | The message broker address plugins receive events from. Pre-filled from the platform's own broker with the credentials masked as `***` — leaving the masked value in place uses the platform credentials. Leave empty to disable events for this host. |
 | Event broker exchange (optional) | The exchange events are read from. The pre-filled default matches what Valtimo publishes to. |
-| Event queue mode | **Live** — events published while the host is down are lost. **Durable** — events are retained for a configurable time while the host is down, and delivered when it returns. Durable mode asks for an inactivity time-to-live, entered in milliseconds (default 72 hours, between 1 hour and 30 days). Also changeable later — see [Manage an integration](manage-an-integration.md#event-queue-settings). |
+| Event queue mode | **Live** — events published while the host is down are lost. **Durable** — events are retained while the host is down and delivered when it returns. Durable mode asks for an inactivity time-to-live, entered in milliseconds (default 72 hours, between 1 hour and 30 days). Also changeable later — see [Manage an integration](manage-an-integration.md#event-queue-settings). |
+
+{% hint style="info" %}
+**When the inactivity TTL runs out.** The TTL counts from the moment the host last disconnected.
+Stay away longer than that and the queue is deleted along with every event waiting in it; when the
+host comes back it starts from an empty queue, exactly as in Live mode. Nothing is alerted and
+nothing is recoverable, so set the TTL to cover the longest outage you expect to replay — and give
+processes that must not miss an event a design that does not rely on the queue surviving.
+
+The clock only runs while the host is disconnected. A host that reconnects within the TTL keeps
+its queue and receives everything that accumulated.
+{% endhint %}
 
 {% hint style="warning" %}
 The base URL must use HTTPS (or point at localhost during development). Everything Valtimo sends

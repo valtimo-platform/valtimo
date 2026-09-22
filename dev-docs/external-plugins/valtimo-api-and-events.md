@@ -8,7 +8,7 @@
 
 > **Audience:** plugin and app developers. This page answers "what can my plugin actually reach in
 > Valtimo, and what can it react to?" — the two questions
-> [`permissions.endpoints`](./develop-a-plugin.md#2-project-anatomy--manifest) and
+> [`permissions.endpoints`](./develop-a-plugin.md#step-2-project-anatomy--manifest) and
 > `eventSubscriptions` are answers to.
 
 Your manifest declares reach; an administrator grants it; the runtime enforces the granted set.
@@ -100,7 +100,8 @@ worse way to find out, so do not declare them:
 | `POST`/`PUT`/`PATCH`/`DELETE` on `/api/v1/users/**` | User-account mutation escalates to a real admin login. Reads stay grantable |
 
 The single exception is `GET /api/v1/external-plugin/user-token/introspect`, which apps use to
-validate a user token (see [Developing an app](./develop-an-app.md#public-routes-browser-facing-cors-)).
+validate a user token (see
+[Developing an app](./develop-an-app.md#step-5-implement-public-routes-browser-facing-cors-)).
 
 A call outside the granted set — or inside the denylist — comes back as a 403-shaped response
 rather than an exception, so handle it as a normal failure path.

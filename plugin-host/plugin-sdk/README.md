@@ -268,7 +268,7 @@ submit("review", (input) => ({ status: "completed" }));    // handle_submit: tas
 | `kv.{get,set,delete,list}` | Per-configuration key/value store |
 
 Handler input/output types, execution semantics, and the sandbox's limits are documented in
-[Developing an external plugin](../../dev-docs/external-plugins/develop-a-plugin.md#3-backend-handlers-srcplugints).
+[Developing an external plugin](../../dev-docs/external-plugins/develop-a-plugin.md#step-3-backend-handlers-srcplugints).
 
 ### Capabilities
 

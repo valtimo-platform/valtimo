@@ -32,6 +32,7 @@
 import pino from "pino";
 import { loadMigrateConfig } from "./config.js";
 import { closeDbPool, createDbPool, runMigrations } from "./db/index.js";
+import { ConfigurationError } from "./errors.js";
 
 async function main(): Promise<void> {
   const config = loadMigrateConfig();
@@ -58,6 +59,6 @@ async function main(): Promise<void> {
 main().catch((err) => {
   // Non-zero exit is the contract with the deploy job: a failed migration must fail the deploy
   // loudly rather than let the app roll out against a stale schema.
-  console.error(err);
+  console.error(err instanceof ConfigurationError ? `\n${err.message}\n` : err);
   process.exit(1);
 });

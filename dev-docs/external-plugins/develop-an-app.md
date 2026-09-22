@@ -94,9 +94,14 @@ Every GZAC→app request — except `GET /health`, which is sent **unsigned**, a
 surfaces — carries two headers:
 
 ```
-X-Valtimo-Timestamp: 2026-09-01T12:00:00Z          # ISO-8601 UTC, Instant.now() on the GZAC side
+X-Valtimo-Timestamp: 2026-09-01T12:00:00.123456Z   # ISO-8601 UTC, Instant.now() on the GZAC side
 X-Valtimo-Signature: 3f1a…                          # lowercase hex
 ```
+
+Parse the timestamp as ISO-8601 rather than matching a fixed layout: `Instant.toString()` emits
+sub-second digits only when they are non-zero, so both `…T12:00:00Z` and `…T12:00:00.123456Z`
+occur. The sub-second precision is also what keeps two genuine back-to-back requests from
+colliding in your replay cache.
 
 The signature is `HMAC-SHA256` over this exact string, keyed with your app's admin secret (the
 value the administrator entered):
@@ -150,7 +155,7 @@ config push):
 The `manifest` follows the same rules as a packaged plugin's `manifest.json` — per-locale
 `translations`, `permissions`, `eventSubscriptions`, `actions`, `frontendBundles`,
 `configurationSchema` (see
-[Project anatomy & manifest](./develop-a-plugin.md#2-project-anatomy--manifest)). What you declare
+[Project anatomy & manifest](./develop-a-plugin.md#step-2-project-anatomy--manifest)). What you declare
 here is what the administrator is asked to accept, so the same rule applies: declare the minimum
 you need, and ship a `config` bundle unless you want administrators hand-writing your settings as
 JSON.
@@ -223,7 +228,7 @@ runtime — so the table below notes per field what actually binds an app:
 | `title` | The name the admin gave this configuration. Purely for labelling — store it so your logs and any UI you serve can name the configuration instead of showing a bare id. |
 | `properties` | The configuration values the admin entered (secrets decrypted — server-side only). |
 | `ownerId` | Opaque identity of the GZAC↔app relationship. Persist and echo it in the listing; it is what lets a GZAC clean up only its own configurations. |
-| `eventSubscriptions` | The event types the admin granted (which can lag your manifest). Act on these and drop the rest — your obligation, not an enforced bound: the broker feed is a fanout carrying every platform event (see [Events](#events)). |
+| `eventSubscriptions` | The event types the admin granted (which can lag your manifest). Act on these and drop the rest — your obligation, not an enforced bound: the broker feed is a fanout carrying every platform event (see [Consume events](#step-7-consume-events-optional)). |
 | `grantedEndpoints` | The GZAC endpoints your service token may call. GZAC enforces this server-side on every callback — treat the list as your API surface. |
 | `grantedCapabilities` | For an app, two matter: `frontend_data` gates your `/data` route, and declaring `log` in the manifest enables the admin's **Logs** dialog — which calls the logs route below, so serve it when you declare `log`. The others (`gzac_api`, `http_request`, `kv`) switch host functions inside the Wasm sandbox — an app has no such runtime, so they arrive for contract parity and record what the admin accepted. |
 | `allowedEgress` | The outbound connections the admin accepted — informational for an app: a plugin host enforces this on sandboxed plugins, but nothing can enforce it on a native service. Declare your real targets in the manifest so the **Permissions** step tells the truth; actually bounding an app's traffic is a deployment concern (network policy). |

@@ -1,8 +1,10 @@
 # Developer Documentation
 
+* [Overview](README.md)
+
 ## Getting Started
 
-* [Overview](README.md)
+* [Overview](getting-started/README.md)
 * [Development Setup](getting-started/development-setup.md)
 
 ## External Plugin System
@@ -17,7 +19,3 @@
 
 * [Overview](operations/README.md)
 * [Plugin Host Deployment](operations/plugin-host-deployment.md)
-
-## Architecture
-
-* Overview

@@ -18,7 +18,12 @@ import {readFileSync} from "node:fs";
 import {hostname} from "node:os";
 import {describe, expect, it} from "vitest";
 import {DEV_ADMIN_TOKEN} from "../../../scripts/lib/common.mjs";
-import {MIN_ADMIN_TOKEN_LENGTH, envSchema, migrateEnvSchema} from "./app-config";
+import {
+  MIN_ADMIN_TOKEN_LENGTH,
+  applyDatabasePolicy,
+  envSchema,
+  migrateEnvSchema,
+} from "./app-config";
 
 /** Shortest token the schema accepts — every unrelated case parses with this. */
 const VALID_TOKEN = "a".repeat(MIN_ADMIN_TOKEN_LENGTH);
@@ -182,5 +187,45 @@ describe("migrateEnvSchema", () => {
   it("coerces DB_PORT and rejects an out-of-enum LOG_LEVEL", () => {
     expect(migrateEnvSchema.parse({ DB_PORT: "6000" }).DB_PORT).toBe(6000);
     expect(() => migrateEnvSchema.parse({ LOG_LEVEL: "trace" })).toThrow();
+  });
+});
+
+describe("applyDatabasePolicy", () => {
+  const PROD_DB = {
+    NODE_ENV: "production",
+    DB_HOST: "db.internal",
+    DB_NAME: "pluginhost",
+    DB_USER: "pluginhost",
+    DB_PASSWORD: "s3cret",
+  };
+
+  it("leaves a development environment untouched", () => {
+    // `npm run dev` never sets NODE_ENV.
+    const env = { DB_HOST: undefined };
+    const result = applyDatabasePolicy(env);
+    expect(result.env).toBe(env);
+    expect(result.missing).toEqual([]);
+    expect(envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN }).DB_PORT).toBe(5434);
+  });
+
+  it("reports every unstated database variable in production", () => {
+    // The unconfigured container: image sets NODE_ENV=production and no DB_*.
+    expect(applyDatabasePolicy({ NODE_ENV: "production" }).missing).toEqual([
+      "DB_HOST",
+      "DB_NAME",
+      "DB_USER",
+      "DB_PASSWORD",
+    ]);
+  });
+
+  it("reports only what is actually missing, blanks included", () => {
+    expect(applyDatabasePolicy({ ...PROD_DB, DB_USER: undefined }).missing).toEqual(["DB_USER"]);
+    expect(applyDatabasePolicy({ ...PROD_DB, DB_PASSWORD: "   " }).missing).toEqual(["DB_PASSWORD"]);
+    expect(applyDatabasePolicy(PROD_DB).missing).toEqual([]);
+  });
+
+  it("defaults DB_PORT to 5432 in production, never the dev port", () => {
+    expect(applyDatabasePolicy(PROD_DB).env.DB_PORT).toBe("5432");
+    expect(applyDatabasePolicy({ ...PROD_DB, DB_PORT: "6543" }).env.DB_PORT).toBe("6543");
   });
 });

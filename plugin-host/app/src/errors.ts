@@ -22,3 +22,6 @@
  * 400 with the reason rather than an opaque 500.
  */
 export class InvalidPluginPackageError extends Error {}
+
+/** Unusable startup environment. Own type so entry points print the message alone — no stack. */
+export class ConfigurationError extends Error {}
