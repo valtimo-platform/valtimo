@@ -32,6 +32,7 @@ while a task is open. The width you set is remembered for you across all case ty
 |------|-----|
 | Case types | A building block action on the Actions tab can be saved on another version |
 | IKO | Widgets and search results now show when data could not be retrieved, instead of looking the same as when there is no data |
+| Startup | A case definition that is not final no longer slows startup down as it gains processes. In a test case definition with 200 processes, startup took almost nine minutes and now takes under a minute |
 
 ---
 
