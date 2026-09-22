@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section class="result-mappings-section" [attr.data-test-id]="testIds.section">
+  <p class="section-description">
+    {{ 'processLinkConfiguration.resultMappings.description' | translate }}
+  </p>
+
+  <div class="mapping-table" [formGroup]="mappingsForm">
+    @if (mappingRows.controls.length > 0) {
+      <div class="mapping-header">
+        <v-input-label [title]="'processLinkConfiguration.resultMappings.source' | translate" />
+
+        <v-input-label [title]="'processLinkConfiguration.resultMappings.target' | translate" />
+      </div>
+    }
+
+    <div formArrayName="mappings">
+      @for (group of mappingRows.controls; let rowIndex = $index; track rowIndex) {
+        <div class="mapping-row" [formGroup]="group" [attr.data-test-id]="testIds.row">
+          <div class="mapping-part">
+            <div class="mapping-cell" [attr.data-test-id]="testIds.sourceSelectWrapper">
+              @if (hasDeclaredSourceKeys) {
+                <v-select
+                  [cdsLayer]="2"
+                  [appendInline]="false"
+                  formControlName="source"
+                  [items]="sourceKeyItems"
+                  [placeholder]="
+                    'processLinkConfiguration.resultMappings.sourceSelectPlaceholder' | translate
+                  "
+                  [dropUp]="false"
+                >
+                </v-select>
+              } @else {
+                <input
+                  [cdsLayer]="2"
+                  cdsText
+                  formControlName="source"
+                  [placeholder]="
+                    'processLinkConfiguration.resultMappings.sourcePlaceholder' | translate
+                  "
+                  [attr.data-test-id]="testIds.sourceInput"
+                />
+              }
+            </div>
+
+            <div class="arrow">→</div>
+          </div>
+
+          <div class="mapping-part">
+            <div class="mapping-cell" [attr.data-test-id]="testIds.targetSelectWrapper">
+              @if (hasDocumentContext) {
+                <valtimo-value-path-selector
+                  [cdsLayer]="2"
+                  [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [notation]="'slashes'"
+                  [caseDefinitionKey]="caseDefinitionKey"
+                  [caseDefinitionVersionTag]="caseDefinitionVersionTag"
+                  [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+                  [buildingBlockDefinitionKey]="buildingBlockDefinitionKey"
+                  [buildingBlockDefinitionVersionTag]="buildingBlockDefinitionVersionTag"
+                  [formControl]="group.get('target')"
+                  [appendInline]="false"
+                  [dropUp]="true"
+                ></valtimo-value-path-selector>
+              } @else {
+                <input [cdsLayer]="2" cdsText formControlName="target" [placeholder]="'pv:'" />
+              }
+            </div>
+
+            <div class="mapping-cell-actions">
+              <button
+                cdsButton="danger--ghost"
+                iconOnly
+                size="sm"
+                (click)="deleteRow(rowIndex)"
+                [attr.data-test-id]="testIds.deleteButton"
+              >
+                <svg cdsIcon="trash-can" class="cds--btn__icon" size="16"></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    (click)="addRow()"
+    [title]="'processLinkConfiguration.resultMappings.addRow' | translate"
+    [attr.data-test-id]="testIds.addButton"
+  >
+    {{ 'processLinkConfiguration.resultMappings.addRow' | translate }}
+
+    <svg cdsIcon="add" class="cds--btn__icon" size="16"></svg>
+  </button>
+</section>
