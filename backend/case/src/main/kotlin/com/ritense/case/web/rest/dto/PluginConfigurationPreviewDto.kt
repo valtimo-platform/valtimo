@@ -25,4 +25,6 @@ data class PluginConfigurationPreviewDto(
     val processDefinitionKey: String,
     val activityId: String,
     val existsInTargetEnvironment: Boolean,
+    val source: String = "embedded",
+    val pluginDefinitionVersion: String? = null,
 )

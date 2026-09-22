@@ -25,4 +25,11 @@ data class ImportPreviewContribution(
     val processDefinitionKey: String,
     val activityId: String,
     val existsInTargetEnvironment: Boolean,
-)
+    val source: String = SOURCE_EMBEDDED,
+    val pluginDefinitionVersion: String? = null,
+) {
+    companion object {
+        const val SOURCE_EMBEDDED = "embedded"
+        const val SOURCE_EXTERNAL = "external"
+    }
+}
