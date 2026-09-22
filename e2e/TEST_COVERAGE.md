@@ -8,7 +8,7 @@
 | Admin Features (ROLE_ADMIN) | 15       | 365       | 352        | 7              |
 | **Total**                   | **20**   | **391**   | **373**    | **11**         |
 
-**Coverage:** `372 / 390` — `95.4%`
+**Coverage:** `373 / 391` — `95.4%`
 
 > Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (1).
 
