@@ -271,4 +271,48 @@ class StartableBuildingBlockItemProviderTest {
         assertThat(result.key).isEqualTo("income-check")
         verify(linkService).updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any())
     }
+
+    @Test
+    fun `should return the new version when the item is updated to another version`() {
+        val newBuildingBlockDefinitionId = BuildingBlockDefinitionId.of("income-check", "2.0.0")
+        val properties = objectMapper.readTree("""{
+            "buildingBlockDefinitionKey": "income-check",
+            "buildingBlockDefinitionVersionTag": "2.0.0",
+            "inputMappings": [],
+            "outputMappings": [],
+            "pluginConfigurationMappings": {}
+        }""")
+
+        val linkDto = CaseDefinitionBuildingBlockLinkDto(
+            id = UUID.randomUUID(),
+            caseDefinitionKey = "my-case",
+            caseDefinitionVersionTag = "1.0.0",
+            buildingBlockDefinitionKey = "income-check",
+            buildingBlockDefinitionVersionTag = "2.0.0",
+            inputMappings = emptyList(),
+            outputMappings = emptyList(),
+            pluginConfigurationMappings = emptyMap()
+        )
+        whenever(linkService.updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any()))
+            .thenReturn(linkDto)
+
+        val processDefBBDefId = ProcessDefinitionBuildingBlockDefinitionId(
+            processDefinitionId = ProcessDefinitionId("bb-process:2"),
+            buildingBlockDefinitionId = newBuildingBlockDefinitionId
+        )
+        whenever(
+            processDefBBDefRepository.findByIdBuildingBlockDefinitionIdAndMain(newBuildingBlockDefinitionId, true)
+        ).thenReturn(
+            ProcessDefinitionBuildingBlockDefinition(id = processDefBBDefId, main = true).apply {
+                processDefinitionName = "Income Check Process v2"
+            }
+        )
+
+        val result = provider.updateItem(caseDefinitionId, "income-check", "1.0.0", properties)
+
+        assertThat(result.versionTag).isEqualTo("2.0.0")
+        assertThat(result.name).isEqualTo("Income Check Process v2")
+        assertThat(result.processDefinitionId).isEqualTo("bb-process:2")
+        verify(linkService).updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any())
+    }
 }
