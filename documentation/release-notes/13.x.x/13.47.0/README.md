@@ -32,6 +32,7 @@ while a task is open. The width you set is remembered for you across all case ty
 |------|-----|
 | Case types | A building block action on the Actions tab can be saved on another version |
 | Plugins | Settings left over from an older version of a plugin no longer fill the log with errors every time a case is opened |
+| Startup | A case definition that is not final no longer slows startup down as it gains processes. In a test case definition with 200 processes, startup took almost nine minutes and now takes under a minute |
 
 ---
 
