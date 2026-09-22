@@ -29,7 +29,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {Code16, Development16, TableBuilt16, WatsonHealthPageScroll16} from '@carbon/icons';
+import {Code16, Development16, Plug16, TableBuilt16, WatsonHealthPageScroll16} from '@carbon/icons';
 import {ApiTabItem, ApiTabType, TabSelectItem} from '@valtimo/case';
 import {CaseManagementParams, ConfigService} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
@@ -86,6 +86,14 @@ export class CaseManagementAddTabModalComponent {
         type: ApiTabType.WIDGETS,
         disabled: disabled.widgets,
       },
+      {
+        icon: 'plug',
+        title: 'caseManagement.tabManagement.addModal.externalPlugin',
+        type: ApiTabType.EXTERNAL_PLUGIN,
+        disabled: disabled.externalPlugin,
+        disabledTooltipTranslationKey:
+          'caseManagement.tabManagement.addModal.externalPluginDisabled',
+      },
     ])
   );
 
@@ -104,7 +112,13 @@ export class CaseManagementAddTabModalComponent {
     private readonly configService: ConfigService,
     private readonly route: ActivatedRoute
   ) {
-    this.iconService.registerAll([Code16, Development16, TableBuilt16, WatsonHealthPageScroll16]);
+    this.iconService.registerAll([
+      Code16,
+      Development16,
+      Plug16,
+      TableBuilt16,
+      WatsonHealthPageScroll16,
+    ]);
   }
 
   public addTab(type: ApiTabType): void {

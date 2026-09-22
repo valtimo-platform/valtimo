@@ -31,6 +31,7 @@ import com.ritense.authorization.web.request.UpdateRoleRequest
 import com.ritense.authorization.web.result.RoleResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -52,12 +53,20 @@ class RoleManagementResource(
     val permissionRepository: PermissionRepository,
     val migrator: PermissionResourceTypeMigrator
 ) {
+    @EndpointDescription(
+        en = "List roles",
+        nl = "Rollen ophalen",
+    )
     @GetMapping("/v1/roles")
     fun getRoles()
         : ResponseEntity<List<RoleResult>> {
         return ResponseEntity.ok(roleRepository.findAll().map { RoleResult.fromRole(it) })
     }
 
+    @EndpointDescription(
+        en = "Create role",
+        nl = "Rol aanmaken",
+    )
     @PostMapping("/v1/roles")
     fun createRole(@Valid @RequestBody saveRoleRequest: SaveRoleRequest)
         : ResponseEntity<RoleResult> {
@@ -69,6 +78,10 @@ class RoleManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Update role by key",
+        nl = "Rol bijwerken op sleutel",
+    )
     @PutMapping("/v1/roles/{oldRoleKey}")
     fun updateRole(@PathVariable oldRoleKey: String, @Valid @RequestBody updateRoleRequest: UpdateRoleRequest)
         : ResponseEntity<RoleResult> {
@@ -79,6 +92,10 @@ class RoleManagementResource(
         return ResponseEntity.ok(RoleResult.fromRole(role))
     }
 
+    @EndpointDescription(
+        en = "Delete roles",
+        nl = "Rollen verwijderen",
+    )
     @DeleteMapping("/v1/roles")
     @Transactional
     fun deleteRole(@Valid @RequestBody deleteRolesRequest: DeleteRolesRequest)
@@ -89,6 +106,10 @@ class RoleManagementResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "List role permissions by key",
+        nl = "Rolpermissies ophalen op sleutel",
+    )
     @GetMapping("/v1/roles/{roleKey}/permissions")
     @JsonView(PermissionView.RoleManagement::class)
     fun getRolePermissions(@PathVariable roleKey: String)
@@ -107,6 +128,10 @@ class RoleManagementResource(
         return ResponseEntity.ok(rolePermissions)
     }
 
+    @EndpointDescription(
+        en = "Update role permissions by key",
+        nl = "Rolpermissies bijwerken op sleutel",
+    )
     @PutMapping("/v1/roles/{roleKey}/permissions")
     @JsonView(PermissionView.RoleManagement::class)
     @Transactional

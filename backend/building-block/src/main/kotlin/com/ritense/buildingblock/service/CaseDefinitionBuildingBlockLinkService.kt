@@ -80,7 +80,8 @@ class CaseDefinitionBuildingBlockLinkService(
             buildingBlockDefinitionId = buildingBlockDefinitionId,
             inputMappings = dto.inputMappings,
             outputMappings = dto.outputMappings,
-            pluginConfigurationMappings = dto.pluginConfigurationMappings
+            pluginConfigurationMappings = dto.pluginConfigurationMappings,
+            startableByUser = dto.startableByUser
         )
 
         return CaseDefinitionBuildingBlockLinkDto.from(linkRepository.save(link))
@@ -93,10 +94,16 @@ class CaseDefinitionBuildingBlockLinkService(
         dto: UpdateCaseDefinitionBuildingBlockLinkDto
     ): CaseDefinitionBuildingBlockLinkDto {
         val link = findLinkOrThrow(caseDefinitionId, buildingBlockDefinitionId)
+        val targetId = targetBuildingBlockDefinitionId(dto) ?: buildingBlockDefinitionId
+
+        if (targetId != buildingBlockDefinitionId) {
+            return moveLink(caseDefinitionId, link, targetId, dto)
+        }
 
         link.inputMappings = dto.inputMappings
         link.outputMappings = dto.outputMappings
         link.pluginConfigurationMappings = dto.pluginConfigurationMappings
+        dto.startableByUser?.let { link.startableByUser = it }
 
         return CaseDefinitionBuildingBlockLinkDto.from(linkRepository.save(link))
     }
@@ -108,6 +115,47 @@ class CaseDefinitionBuildingBlockLinkService(
     ) {
         val link = findLinkOrThrow(caseDefinitionId, buildingBlockDefinitionId)
         linkRepository.delete(link)
+    }
+
+    private fun moveLink(
+        caseDefinitionId: CaseDefinitionId,
+        link: CaseDefinitionBuildingBlockLink,
+        targetId: BuildingBlockDefinitionId,
+        dto: UpdateCaseDefinitionBuildingBlockLinkDto
+    ): CaseDefinitionBuildingBlockLinkDto {
+        if (!buildingBlockDefinitionRepository.existsById(targetId)) {
+            throw NoSuchElementException("Building block definition not found: $targetId")
+        }
+        if (findLink(caseDefinitionId, targetId) != null) {
+            throw IllegalStateException(
+                "Case definition '$caseDefinitionId' is already linked to building block '$targetId'"
+            )
+        }
+
+        linkRepository.delete(link)
+        linkRepository.flush()
+
+        return CaseDefinitionBuildingBlockLinkDto.from(
+            linkRepository.save(
+                CaseDefinitionBuildingBlockLink(
+                    caseDefinitionId = caseDefinitionId,
+                    buildingBlockDefinitionId = targetId,
+                    inputMappings = dto.inputMappings,
+                    outputMappings = dto.outputMappings,
+                    pluginConfigurationMappings = dto.pluginConfigurationMappings
+                )
+            )
+        )
+    }
+
+    private fun targetBuildingBlockDefinitionId(
+        dto: UpdateCaseDefinitionBuildingBlockLinkDto
+    ): BuildingBlockDefinitionId? {
+        val key = dto.buildingBlockDefinitionKey ?: return null
+        val versionTag = requireNotNull(dto.buildingBlockDefinitionVersionTag) {
+            "buildingBlockDefinitionVersionTag is required when buildingBlockDefinitionKey is provided"
+        }
+        return BuildingBlockDefinitionId.of(key, versionTag)
     }
 
     private fun findLinkOrThrow(

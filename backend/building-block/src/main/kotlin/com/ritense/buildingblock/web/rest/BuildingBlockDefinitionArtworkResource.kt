@@ -22,6 +22,7 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionArtworkDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionArtworkDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -39,6 +40,10 @@ class BuildingBlockDefinitionArtworkResource(
     private val buildingBlockDefinitionArtworkService: BuildingBlockDefinitionArtworkService
 ) {
 
+    @EndpointDescription(
+        en = "Get building block artwork",
+        nl = "Bouwblokafbeelding ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/artwork")
     fun getArtwork(
         @PathVariable key: String,
@@ -49,6 +54,10 @@ class BuildingBlockDefinitionArtworkResource(
             ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Create building block artwork",
+        nl = "Bouwblokafbeelding aanmaken",
+    )
     @PostMapping(
         path = ["/{key}/version/{versionTag}/artwork"],
         consumes = [APPLICATION_JSON_UTF8_VALUE]
@@ -63,6 +72,10 @@ class BuildingBlockDefinitionArtworkResource(
         return ResponseEntity.ok(created)
     }
 
+    @EndpointDescription(
+        en = "Delete building block artwork",
+        nl = "Bouwblokafbeelding verwijderen",
+    )
     @DeleteMapping("/{key}/version/{versionTag}/artwork")
     fun deleteArtwork(
         @PathVariable key: String,

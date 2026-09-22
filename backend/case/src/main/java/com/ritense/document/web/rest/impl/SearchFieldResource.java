@@ -24,6 +24,7 @@ import com.ritense.document.service.SearchFieldService;
 import com.ritense.document.web.rest.DocumentSearchFields;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -48,6 +49,10 @@ public class SearchFieldResource implements DocumentSearchFields {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Add search field",
+        nl = "Zoekveld aanmaken"
+    )
     @PostMapping("/v1/document-search/{documentDefinitionName}/fields")
     public ResponseEntity<Void> addSearchField(
         @LoggableResource("documentDefinitionName") @PathVariable String documentDefinitionName,
@@ -70,6 +75,10 @@ public class SearchFieldResource implements DocumentSearchFields {
     }
 
     @Override
+    @EndpointDescription(
+        en = "List search fields",
+        nl = "Zoekvelden ophalen"
+    )
     @GetMapping("/v1/document-search/{documentDefinitionName}/fields")
     public ResponseEntity<List<SearchFieldDto>> getSearchFields(
         @LoggableResource("documentDefinitionName") @PathVariable String documentDefinitionName
@@ -79,6 +88,10 @@ public class SearchFieldResource implements DocumentSearchFields {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Update search fields",
+        nl = "Zoekvelden bijwerken"
+    )
     @PutMapping("/v1/document-search/{documentDefinitionName}/fields")
     public ResponseEntity<Void> updateSearchField(
         @LoggableResource("documentDefinitionName") @PathVariable String documentDefinitionName,
@@ -98,6 +111,10 @@ public class SearchFieldResource implements DocumentSearchFields {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Delete search field",
+        nl = "Zoekveld verwijderen"
+    )
     @DeleteMapping("/v1/document-search/{documentDefinitionName}/fields")
     public ResponseEntity<Void> deleteSearchField(
         @LoggableResource("documentDefinitionName") @PathVariable String documentDefinitionName,

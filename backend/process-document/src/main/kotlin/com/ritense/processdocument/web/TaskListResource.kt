@@ -25,6 +25,7 @@ import com.ritense.processdocument.web.result.TaskListRowDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.service.OperatonTaskService
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -48,6 +49,10 @@ class TaskListResource (
     private val taskQuickSearchService: TaskQuickSearchService,
 ) {
 
+    @EndpointDescription(
+        en = "List filtered tasks",
+        nl = "Gefilterde takenlijst ophalen",
+    )
     @PostMapping("/v3/task")
     fun getTaskList(
         @RequestParam("filter") assignmentFilter: OperatonTaskService.TaskFilter,
@@ -61,6 +66,10 @@ class TaskListResource (
         }
     }
 
+    @EndpointDescription(
+        en = "Search task list by case definition",
+        nl = "Takenlijst zoeken per dossierdefinitie",
+    )
     @PostMapping("/v1/document-definition/{caseDefinitionName}/task/search")
     fun searchTaskList(
         @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -71,6 +80,10 @@ class TaskListResource (
         return ResponseEntity.ok(result)
     }
 
+    @EndpointDescription(
+        en = "Save task quick search",
+        nl = "Snelzoekopdracht voor taken aanmaken",
+    )
     @PostMapping("/v1/task/{caseDefinitionKey}/stored-quick-search")
     fun saveQuickSearch(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -81,6 +94,10 @@ class TaskListResource (
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete task quick search",
+        nl = "Snelzoekopdracht voor taken verwijderen",
+    )
     @DeleteMapping("/v1/task/{caseDefinitionKey}/stored-quick-search/{title}")
     fun deleteQuickSearch(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
@@ -91,6 +108,10 @@ class TaskListResource (
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "List task quick searches",
+        nl = "Snelzoekopdrachten voor taken ophalen",
+    )
     @GetMapping("/v1/task/{caseDefinitionKey}/stored-quick-search")
     fun getQuickSearchList(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String
