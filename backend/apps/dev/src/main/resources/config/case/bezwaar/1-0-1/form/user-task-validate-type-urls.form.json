@@ -1,0 +1,84 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "HTML",
+            "content": "Valideer de Status, Resultaat, Informatieobject en Rol type URLs die zijn opgehaald bij de Catalogi API.",
+            "refreshOnChange": false
+        },
+        {
+            "key": "statusTypeUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Status type Url",
+            "disabled": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "user-task-validate-type-urls-statusTypeUrl"
+            },
+            "properties": {
+                "sourceKey": "pv:statusTypeUrl"
+            }
+        },
+        {
+            "key": "resultaatTypeUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Resultaat type Url",
+            "disabled": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "user-task-validate-type-urls-resultaatTypeUrl"
+            },
+            "properties": {
+                "sourceKey": "pv:resultaatTypeUrl"
+            }
+        },
+        {
+            "key": "informatieObjectTypeUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Informatieobject type Url",
+            "disabled": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "user-task-validate-type-urls-informatieObjectTypeUrl"
+            },
+            "properties": {
+                "sourceKey": "pv:informatieObjectTypeUrl"
+            }
+        },
+        {
+            "key": "rolTypeUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Rol type Url",
+            "disabled": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "user-task-validate-type-urls-rolTypeUrl"
+            },
+            "properties": {
+                "sourceKey": "pv:rolTypeUrl"
+            }
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Start",
+            "disableOnInvalid": true
+        }
+    ]
+}

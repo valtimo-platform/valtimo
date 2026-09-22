@@ -119,11 +119,11 @@
                 "target": "doc:/zgwActionSummary"
             },
             {
-                "source": "doc:/reviewerRemarks",
+                "source": "doc:/submission/reviewerRemarks",
                 "target": "doc:/reviewerRemarks"
             },
             {
-                "source": "doc:/approvalDecision",
+                "source": "doc:/submission/approvalDecision",
                 "target": "doc:/approvalDecision"
             }
         ]

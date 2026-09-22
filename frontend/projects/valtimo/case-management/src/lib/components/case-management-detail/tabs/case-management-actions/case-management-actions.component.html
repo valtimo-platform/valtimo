@@ -63,6 +63,26 @@
     </cds-tag>
   </ng-template>
 
+  <!-- Processes are always startable while listed here; only building block
+       links can stay linked (and runnable by the application) while hidden
+       from the start menu. -->
+  <ng-template #startableByUserColumn let-data="data">
+    <div
+      *ngIf="data.item.type === StartableItemType.BUILDING_BLOCK"
+      class="startable-by-user-toggle"
+      (click)="$event.stopPropagation()"
+    >
+      <cds-toggle
+        size="sm"
+        [label]="'caseManagement.actions.visibleInStartMenu' | translate"
+        [hideLabel]="true"
+        [checked]="data.item.startableByUser"
+        [disabled]="togglingStartableByUser() || !obs.hasEditPermissions"
+        (checkedChange)="onStartableByUserToggle(data.item, $event)"
+      ></cds-toggle>
+    </div>
+  </ng-template>
+
   <ng-template #addItemButton>
     <button
       *ngIf="obs.hasEditPermissions"

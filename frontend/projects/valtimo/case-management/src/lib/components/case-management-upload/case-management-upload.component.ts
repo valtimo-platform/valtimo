@@ -26,6 +26,10 @@ import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/form
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {
+  ExternalPluginConfiguration,
+  ExternalPluginDefinition,
+  ExternalPluginService,
+  getExternalPluginDisplayName,
   PluginConfiguration,
   PluginManagementService,
   PluginTranslationService,
@@ -33,13 +37,16 @@ import {
 import {FileItem, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   debounceTime,
   distinctUntilChanged,
   forkJoin,
   map,
   Observable,
+  of,
   Subscription,
+  switchMap,
   take,
 } from 'rxjs';
 import {
@@ -53,6 +60,7 @@ import {CASE_MANAGEMENT_UPLOAD_TEST_IDS} from '../../constants';
 import {
   CaseDefinitionImportPreview,
   PluginConfigurationPreview,
+  PluginConfigurationPreviewSource,
 } from '../../models/case-deployment.model';
 
 type PluginMappingStatus = 'available' | 'no-configurations' | 'not-installed';
@@ -64,6 +72,14 @@ interface PluginMappingRow {
   existsInTargetEnvironment: boolean;
   listItems: ListItem[];
   status: PluginMappingStatus;
+  source: PluginConfigurationPreviewSource;
+  pluginDefinitionVersion: string | null;
+  /**
+   * External configuration id -> actual definition version, populated only for options whose
+   * version differs from `pluginDefinitionVersion` (D3 non-blocking warning). Empty for embedded
+   * rows and exact-version-only sets.
+   */
+  mismatchedVersionsById: Map<string, string>;
 }
 
 @Component({
@@ -164,7 +180,8 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
     private readonly pluginManagementService: PluginManagementService,
-    private readonly pluginTranslationService: PluginTranslationService
+    private readonly pluginTranslationService: PluginTranslationService,
+    private readonly externalPluginService: ExternalPluginService
   ) {}
 
   public ngOnInit(): void {
@@ -236,6 +253,23 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * The actual definition version of the currently selected external configuration for [row],
+   * `null` when the selection is an exact `pluginId@version` match or the row has no selection
+   * (D3 non-blocking warning). Reads the live form control value so the warning stays in sync as
+   * the admin changes the dropdown selection.
+   */
+  public selectedConfigurationVersion(row: PluginMappingRow): string | null {
+    if (row.mismatchedVersionsById.size === 0) {
+      return null;
+    }
+    const selectedId = this.pluginMappingForm.get(row.sourcePluginConfigurationId)?.value;
+    if (!selectedId) {
+      return null;
+    }
+    return row.mismatchedVersionsById.get(selectedId) ?? null;
+  }
+
+  /**
    * Works around a carbon-components-angular bug where clearing a single-select
    * cds-combo-box with itemValueKey set writes `[]` to the FormControl instead
    * of `null` (see combobox.component clearSelected).
@@ -288,7 +322,11 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   private loadPluginMappingRows(pluginConfigs: PluginConfigurationPreview[]): void {
     const uniqueById = new Map<string, PluginConfigurationPreview>();
     for (const config of pluginConfigs) {
-      if (!uniqueById.has(config.pluginConfigurationId)) {
+      // One row per configuration id, but never let a key-less contribution (e.g. an external
+      // plugin case tab) shadow a mappable one (a process link) for the same configuration —
+      // key-less rows are filtered out below, which would hide the mapping choice entirely.
+      const existing = uniqueById.get(config.pluginConfigurationId);
+      if (!existing || (existing.pluginDefinitionKey === null && config.pluginDefinitionKey !== null)) {
         uniqueById.set(config.pluginConfigurationId, config);
       }
     }
@@ -309,53 +347,72 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Fetch all installed plugin definitions first, then configs per key
-    this.pluginManagementService
-      .getPluginDefinitions()
+    const embeddedConfigs = uniqueConfigs.filter(c => (c.source ?? 'embedded') === 'embedded');
+    const externalConfigs = uniqueConfigs.filter(c => c.source === 'external');
+
+    combineLatest([
+      this.loadEmbeddedMappingRows(embeddedConfigs),
+      this.loadExternalMappingRows(externalConfigs),
+    ])
       .pipe(take(1))
-      .subscribe(definitions => {
+      .subscribe(([embeddedRows, externalRows]) => {
+        this.clearPluginMappingForm();
+        const rows = [...embeddedRows, ...externalRows];
+        for (const row of rows) {
+          if (row.status === 'available') {
+            this.pluginMappingForm.addControl(
+              row.sourcePluginConfigurationId,
+              this.fb.control(row.listItems.find(item => item.selected)?.id ?? null)
+            );
+          }
+        }
+        this.pluginMappingRows$.next(rows);
+      });
+  }
+
+  private loadEmbeddedMappingRows(
+    uniqueConfigs: PluginConfigurationPreview[]
+  ): Observable<PluginMappingRow[]> {
+    if (uniqueConfigs.length === 0) {
+      return of([]);
+    }
+
+    return this.pluginManagementService.getPluginDefinitions().pipe(
+      take(1),
+      switchMap(definitions => {
         const installedKeys = new Set(definitions.map(d => d.key));
-        this.loadPluginConfigurations(uniqueConfigs, installedKeys);
-      });
+        const installableKeys = [
+          ...new Set(uniqueConfigs.map(c => c.pluginDefinitionKey).filter(Boolean)),
+        ].filter(key => installedKeys.has(key));
+
+        if (installableKeys.length === 0) {
+          return of(this.buildEmbeddedRows(uniqueConfigs, new Map(), installedKeys));
+        }
+
+        const configRequests: Record<string, Observable<PluginConfiguration[]>> = {};
+        for (const key of installableKeys) {
+          configRequests[key] = this.pluginManagementService
+            .getPluginConfigurationsByPluginDefinitionKey(key)
+            .pipe(take(1));
+        }
+
+        return forkJoin(configRequests).pipe(
+          take(1),
+          map(results => {
+            const configsByKey = new Map<string, PluginConfiguration[]>(Object.entries(results));
+            return this.buildEmbeddedRows(uniqueConfigs, configsByKey, installedKeys);
+          })
+        );
+      })
+    );
   }
 
-  private loadPluginConfigurations(
-    uniqueConfigs: PluginConfigurationPreview[],
-    installedKeys: Set<string>
-  ): void {
-    const uniqueDefinitionKeys = [
-      ...new Set(uniqueConfigs.map(c => c.pluginDefinitionKey).filter(Boolean)),
-    ];
-
-    const installableKeys = uniqueDefinitionKeys.filter(k => installedKeys.has(k));
-
-    if (installableKeys.length === 0) {
-      this.buildMappingRows(uniqueConfigs, new Map(), installedKeys);
-      return;
-    }
-
-    const configRequests: Record<string, Observable<PluginConfiguration[]>> = {};
-    for (const key of installableKeys) {
-      configRequests[key] = this.pluginManagementService
-        .getPluginConfigurationsByPluginDefinitionKey(key)
-        .pipe(take(1));
-    }
-
-    forkJoin(configRequests)
-      .pipe(take(1))
-      .subscribe(results => {
-        const configsByKey = new Map<string, PluginConfiguration[]>(Object.entries(results));
-        this.buildMappingRows(uniqueConfigs, configsByKey, installedKeys);
-      });
-  }
-
-  private buildMappingRows(
+  private buildEmbeddedRows(
     uniqueConfigs: PluginConfigurationPreview[],
     configsByKey: Map<string, PluginConfiguration[]>,
     installedKeys: Set<string>
-  ): void {
-    this.clearPluginMappingForm();
-    const rows: PluginMappingRow[] = uniqueConfigs.map(config => {
+  ): PluginMappingRow[] {
+    return uniqueConfigs.map(config => {
       const key = config.pluginDefinitionKey;
       const isInstalled = key ? installedKeys.has(key) : false;
       const available = configsByKey.get(key) || [];
@@ -378,13 +435,6 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
         selected: c.id === defaultSelectionId,
       }));
 
-      if (status === 'available') {
-        this.pluginMappingForm.addControl(
-          config.pluginConfigurationId,
-          this.fb.control(defaultSelectionId)
-        );
-      }
-
       return {
         pluginDefinitionKey: key,
         pluginDefinitionTitle: this.getPluginTitle(key),
@@ -392,9 +442,101 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
         existsInTargetEnvironment: config.existsInTargetEnvironment,
         listItems,
         status,
+        source: 'embedded' as PluginConfigurationPreviewSource,
+        pluginDefinitionVersion: null,
+        mismatchedVersionsById: new Map<string, string>(),
       };
     });
-    this.pluginMappingRows$.next(rows);
+  }
+
+  private loadExternalMappingRows(
+    uniqueConfigs: PluginConfigurationPreview[]
+  ): Observable<PluginMappingRow[]> {
+    if (uniqueConfigs.length === 0) {
+      return of([]);
+    }
+
+    return combineLatest([
+      this.externalPluginService
+        .getConfigurations()
+        .pipe(catchError(() => of([] as Array<ExternalPluginConfiguration>))),
+      this.externalPluginService
+        .getDefinitions()
+        .pipe(catchError(() => of([] as Array<ExternalPluginDefinition>))),
+    ]).pipe(
+      take(1),
+      map(([configurations, definitions]) => {
+        const definitionById = new Map(definitions.map(d => [d.id, d]));
+        const lang = this.translateService.currentLang;
+
+        return uniqueConfigs.map(config => {
+          const matchingConfigurations = configurations.filter(configuration => {
+            const definition = definitionById.get(configuration.definitionId);
+            return definition?.pluginId === config.pluginDefinitionKey;
+          });
+
+          let status: PluginMappingStatus;
+          if (matchingConfigurations.length === 0) {
+            status = definitionById.size > 0 &&
+              [...definitionById.values()].some(d => d.pluginId === config.pluginDefinitionKey)
+              ? 'no-configurations'
+              : 'not-installed';
+          } else {
+            status = 'available';
+          }
+
+          const defaultSelectionId = config.existsInTargetEnvironment
+            ? config.pluginConfigurationId
+            : null;
+
+          const mismatchedVersionsById = new Map<string, string>();
+          const listItems: ListItem[] = matchingConfigurations.map(configuration => {
+            const definition = definitionById.get(configuration.definitionId);
+            if (definition && definition.version !== config.pluginDefinitionVersion) {
+              mismatchedVersionsById.set(configuration.id, definition.version);
+            }
+            return {
+              content: definition
+                ? `${configuration.title} — ${getExternalPluginDisplayName(definition, lang)}`
+                : configuration.title,
+              id: configuration.id,
+              selected: configuration.id === defaultSelectionId,
+            };
+          });
+
+          return {
+            pluginDefinitionKey: config.pluginDefinitionKey,
+            pluginDefinitionTitle: this.getExternalPluginTitle(config, definitionById),
+            sourcePluginConfigurationId: config.pluginConfigurationId,
+            existsInTargetEnvironment: config.existsInTargetEnvironment,
+            listItems,
+            status,
+            source: 'external' as PluginConfigurationPreviewSource,
+            pluginDefinitionVersion: config.pluginDefinitionVersion ?? null,
+            mismatchedVersionsById,
+          };
+        });
+      })
+    );
+  }
+
+  private getExternalPluginTitle(
+    config: PluginConfigurationPreview,
+    definitionById: Map<string, ExternalPluginDefinition>
+  ): string {
+    if (!config.pluginDefinitionKey) {
+      return this.translateService.instant('caseManagement.importDefinition.plugins.unknownPlugin');
+    }
+    const lang = this.translateService.currentLang;
+    const matchingDefinition = [...definitionById.values()].find(
+      d => d.pluginId === config.pluginDefinitionKey && d.version === config.pluginDefinitionVersion
+    );
+    if (matchingDefinition) {
+      return getExternalPluginDisplayName(matchingDefinition, lang);
+    }
+    return config.pluginDefinitionVersion
+      ? `${config.pluginDefinitionKey} (${config.pluginDefinitionVersion})`
+      : config.pluginDefinitionKey;
   }
 
   private clearPluginMappingForm(): void {
@@ -489,11 +631,14 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   private buildPluginConfigurationMappings(): Record<string, string | null> {
     const mappings: Record<string, string | null> = {};
     for (const row of this.pluginMappingRows$.value) {
+      // Only rows the user could actually act on are sent. An explicit null tells the importer
+      // to clear the configuration id (a deliberate dangling import); omitting the key keeps the
+      // original id. Rows without a dropdown (plugin not installed / no configurations — possibly
+      // a transient lookup failure) must not silently clear ids: a cleared id disappears from the
+      // next export's import preview, making the mapping unrecoverable through the wizard.
       if (row.status === 'available') {
         const control = this.pluginMappingForm.get(row.sourcePluginConfigurationId);
         mappings[row.sourcePluginConfigurationId] = control?.value ?? null;
-      } else {
-        mappings[row.sourcePluginConfigurationId] = null;
       }
     }
     return mappings;

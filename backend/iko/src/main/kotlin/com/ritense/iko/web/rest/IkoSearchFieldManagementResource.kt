@@ -23,6 +23,7 @@ import com.ritense.iko.web.rest.request.IkoSearchFieldUpdateRequest
 import com.ritense.iko.web.rest.response.IkoSearchFieldResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -42,6 +43,10 @@ class IkoSearchFieldManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO search fields for management",
+        nl = "IKO-zoekvelden ophalen voor beheer",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field")
     fun getIkoSearchFieldsForManagement(
         @PathVariable ikoViewKey: String,
@@ -55,6 +60,10 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO search field by key",
+        nl = "IKO-zoekveld ophalen op sleutel",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun getIkoSearchField(
         @PathVariable ikoViewKey: String,
@@ -66,6 +75,10 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create IKO search field",
+        nl = "IKO-zoekveld aanmaken",
+    )
     @PostMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun createIkoSearchField(
         @PathVariable ikoViewKey: String,
@@ -86,6 +99,10 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO search field",
+        nl = "IKO-zoekveld bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun updateIkoSearchField(
         @PathVariable ikoViewKey: String,
@@ -110,6 +127,10 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO search fields order",
+        nl = "Volgorde van IKO-zoekvelden bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field")
     fun updateIkoSearchFieldsOrder(
         @PathVariable ikoViewKey: String,
@@ -133,6 +154,10 @@ class IkoSearchFieldManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete IKO search field",
+        nl = "IKO-zoekveld verwijderen",
+    )
     @DeleteMapping("/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")
     fun deleteIkoSearchField(
         @PathVariable ikoViewKey: String,
