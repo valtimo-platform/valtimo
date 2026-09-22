@@ -43,6 +43,13 @@
   object-fit: contain;
   height: 60px;
   width: 100%;
+
+  &--external {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cds-icon-secondary);
+  }
 }
 
 .plugin-definition__grid {
@@ -71,6 +78,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   width: calc(100% - 24px);
+  padding-bottom: var(--cds-spacing-09);
 }
 
 :host ::ng-deep .cds--tile--selectable {

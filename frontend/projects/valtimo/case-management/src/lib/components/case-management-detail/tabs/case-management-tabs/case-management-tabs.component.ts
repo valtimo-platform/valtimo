@@ -90,6 +90,9 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
   public readonly dragAndDropDisabled = signal(false);
 
+  // contentKey → human label for EXTERNAL_PLUGIN tabs (the raw contentKey is a config UUID).
+  private _externalPluginContentLabels: Record<string, string> = {};
+
   private readonly params$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route);
 
@@ -117,10 +120,34 @@ export class CaseManagementTabsComponent implements AfterViewInit {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
     this.cd.detectChanges();
     this.setFields();
+    this.loadExternalPluginContentLabels();
   }
 
   public isTranslated(key: string): boolean {
     return this.translateService.instant(key) !== key;
+  }
+
+  /**
+   * Label shown in the content column. For an external-plugin tab the raw `contentKey` is a
+   * configuration UUID, so it is resolved to "configTitle (pluginName) — bundleTitle"; other tab
+   * types keep the `case.tabs.<contentKey>` translation (falling back to the raw key).
+   */
+  public getTabContentLabel(item: ApiTabItem): string {
+    if (item.type === ApiTabType.EXTERNAL_PLUGIN) {
+      return this._externalPluginContentLabels[item.contentKey] ?? item.contentKey;
+    }
+    const key = `case.tabs.${item.contentKey}`;
+    return this.isTranslated(key) ? this.translateService.instant(key) : item.contentKey;
+  }
+
+  private loadExternalPluginContentLabels(): void {
+    this.tabService.getExternalPluginTabItems().subscribe(items => {
+      this._externalPluginContentLabels = items.reduce<Record<string, string>>((labels, item) => {
+        labels[item.contentKey] = item.content;
+        return labels;
+      }, {});
+      this.cd.markForCheck();
+    });
   }
 
   public openAddTabModal(): void {
