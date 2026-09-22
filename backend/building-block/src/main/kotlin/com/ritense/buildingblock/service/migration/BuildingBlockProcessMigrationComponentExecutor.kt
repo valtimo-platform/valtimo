@@ -36,8 +36,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/** Migrates a building block instance's running process onto the target version's definition, resolved through the building block ↔ process-definition link. Synchronous, in the caller's transaction. Building block plans only. */
-// Order 200 — the building block counterpart of the case process migration stage.
+/** Migrates a building block instance's running process onto the target version's definition, resolved through the building block ↔ process-definition link. Synchronous, in the caller's transaction. Building block plans only. Order 200 — the block counterpart of the case process migration stage. */
 @Order(200)
 @Transactional
 class BuildingBlockProcessMigrationComponentExecutor(
@@ -72,7 +71,7 @@ class BuildingBlockProcessMigrationComponentExecutor(
             migrateInstruction(it, targetBuildingBlockDefinitionId, ownerDocumentId)
         }
 
-        // One instruction matching nothing is normal; the component as a whole matching nothing is the wrong-key plan D13 exists to catch. Mirrors the case-side executor.
+        // One instruction matching nothing is normal; the component as a whole matching nothing is the wrong-key plan the per-case warning exists to catch. Mirrors the case-side executor.
         if (unmatched.size == instructions.size) {
             val message = "No process was migrated for building block '$ownerDocumentId': none of the " +
                 "plan's ${instructions.size} processMigration instruction(s) (" +
@@ -84,7 +83,7 @@ class BuildingBlockProcessMigrationComponentExecutor(
         }
     }
 
-    /** True when instances were found. Matched by key **and** business key: a process the block's own BPMN calls is a separate instance, and pinning to the block's own made such instructions silent no-ops (G65). */
+    /** True when instances were found. Matched by key **and** business key: a process the block's own BPMN calls is a separate instance, and pinning to the block's own made such instructions silent no-ops. */
     private fun migrateInstruction(
         instruction: ProcessMigrationInstruction,
         targetBuildingBlockDefinitionId: BuildingBlockDefinitionId,

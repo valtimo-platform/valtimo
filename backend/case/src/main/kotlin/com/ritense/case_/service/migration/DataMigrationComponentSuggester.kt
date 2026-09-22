@@ -66,7 +66,7 @@ class DataMigrationComponentSuggester(
         if (sourcePaths.isEmpty()) {
             logger.info {
                 "'$source' resolves no document path, so no 'dataMigration' is suggested for '$target'. " +
-                    "Either it is not deployed — a plan that names it migrates nothing (G16) — or its " +
+                    "Either it is not deployed — a plan that names it migrates nothing — or its " +
                     "schema is empty, and either way there is no value to carry over."
             }
             return null

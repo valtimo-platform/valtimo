@@ -69,7 +69,7 @@ class MigrationSuggestionServiceTest {
 
     @Test
     fun `should drop a blank process row an addBuildingBlock entry hijacks`() {
-        // Two components answering the same question differently, and the blank row is what made the plan unsaveable (G73).
+        // Two components answering the same question differently, and the blank row is what made the plan unsaveable.
         val service = suggestionService(
             processMigration = listOf(
                 mapOf("sourceProcessDefinitionKey" to "inspectie-dossier-process"),
@@ -129,7 +129,7 @@ class MigrationSuggestionServiceTest {
 
     @Test
     fun `should keep a blank process row no entry hijacks`() {
-        // Nothing accounts for it, so the author still needs to see it — that is what G59 left it in for.
+        // Nothing accounts for it, so the author still needs to see it — which is what a blank row is left in for.
         val service = suggestionService(
             processMigration = listOf(mapOf("sourceProcessDefinitionKey" to "verhuizing-nazorg")),
             addBuildingBlock = listOf(

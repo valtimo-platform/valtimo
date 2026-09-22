@@ -25,8 +25,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/** Keeps a migrating block instance's version in step with its document — the engine re-homes the document, so without this a migrated block kept claiming its old version and stayed eligible for the same migration. Has no plan section of its own. */
-// Order 50 — before every other component, so the rest of the migration sees the instance on its target version.
+/** Keeps a migrating block instance's version in step with its document — without it a migrated block kept claiming its old version and stayed eligible for the same migration. No plan section of its own. Order 50 — first, so every other component sees the instance on its target version. */
 @Order(50)
 @Transactional
 class BuildingBlockInstanceRehomeExecutor(

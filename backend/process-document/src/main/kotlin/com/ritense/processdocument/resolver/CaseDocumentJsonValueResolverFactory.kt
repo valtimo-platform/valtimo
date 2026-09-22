@@ -304,13 +304,7 @@ class CaseDocumentJsonValueResolverFactory(
         return if (removed) removals.build() else null
     }
 
-    /**
-     * Both write paths hand the result to `JsonDocumentContent.build(current, modified)`, which re-diffs
-     * against a fresh parse of the stored document and drops every object-property removal — making
-     * [NullWriteStrategy.REMOVE] unreachable (G89). Removals therefore travel again as a pre-patch, which
-     * `build` applies with removals allowed. The filter stays: it is what stops a partial update from
-     * deleting the fields it omits.
-     */
+    /** Removals travel again as a pre-patch: `build` re-diffs and filters object-property removals out, so [NullWriteStrategy.REMOVE] would never reach the document. The filter stays — it stops a partial update deleting what it omits. */
     private fun modifyDocumentAllowingRemovals(document: Document, content: JsonNode, removals: JsonPatch?) {
         // Only a removal needs the detour; everything else keeps the ordinary write.
         if (removals == null) {

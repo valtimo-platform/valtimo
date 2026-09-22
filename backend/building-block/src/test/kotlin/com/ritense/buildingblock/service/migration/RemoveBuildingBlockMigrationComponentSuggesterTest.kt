@@ -33,7 +33,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-/** The dissolve suggestion must cover the whole subtree the owner stops modelling (G25) and aim each entry at the owner that block really hands back to. */
+/** The dissolve suggestion must cover the whole subtree the owner stops modelling and aim each entry at the owner that block really hands back to. */
 class RemoveBuildingBlockMigrationComponentSuggesterTest {
 
     private lateinit var caseLinkRepository: CaseDefinitionBuildingBlockLinkRepository
@@ -152,7 +152,7 @@ class RemoveBuildingBlockMigrationComponentSuggesterTest {
 
     @Test
     fun `should still suggest dissolving a nested block whose parent is dissolved too`() {
-        // The parent is going too, so nothing survives to carry the child (G25). Both entries belong here.
+        // The parent is going too, so nothing survives to carry the child. Both entries belong here.
         declares(source, uitvoeren to source, besluit to uitvoeren)
         reaches(source, uitvoeren, besluit)
 

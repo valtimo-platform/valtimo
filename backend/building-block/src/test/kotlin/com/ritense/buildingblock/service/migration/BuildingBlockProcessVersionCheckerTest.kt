@@ -132,7 +132,7 @@ class BuildingBlockProcessVersionCheckerTest {
 
     @Test
     fun `should fail when a second process the block owns was left on the previous version`() {
-        // G65: a process the block's own BPMN calls is a different process instance, so the recorded id never reached it and nothing asserted it onto the target version.
+        // a process the block's own BPMN calls is a different process instance, so the recorded id never reached it and nothing asserted it onto the target version.
         runningOn(newProcessDefinitionId)
         alsoRunning("pi-2", "verhuizing-inspectie-controle:3:old", "verhuizing-inspectie-controle")
         linksProcessDefinitions(
@@ -186,7 +186,7 @@ class BuildingBlockProcessVersionCheckerTest {
         definitionKeyOf(processDefinitionId, processDefinitionKey)
     }
 
-    /** A second process the block owns, reachable only by its business key — the G65 shape. */
+    /** A second process the block owns, reachable only by its business key. */
     private fun alsoRunning(
         processInstanceId: String,
         processDefinitionId: String,

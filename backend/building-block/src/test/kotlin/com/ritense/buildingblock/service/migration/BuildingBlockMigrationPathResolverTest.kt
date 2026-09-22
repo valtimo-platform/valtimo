@@ -157,7 +157,7 @@ class BuildingBlockMigrationPathResolverTest {
             .hasMessageContaining("No migration plan connects building block version")
     }
 
-    /** G49: the "no path" refusal is only right for a caller that cannot do without a plan. `findPath` is the same search for the caller that can. */
+    /** the "no path" refusal is only right for a caller that cannot do without a plan. `findPath` is the same search for the caller that can. */
     @Test
     fun `findPath should answer null when no plan connects the two versions`() {
         plan("controle", from = block("1.0.0"), to = block("1.0.1"))

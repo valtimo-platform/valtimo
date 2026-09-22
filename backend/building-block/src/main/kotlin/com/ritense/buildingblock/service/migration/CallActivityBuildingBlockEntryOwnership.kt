@@ -59,7 +59,7 @@ class CallActivityBuildingBlockEntryOwnership(
         linkedBuildingBlockVersionResolver.resolveLinkedVersions(owner).map { it.buildingBlockDefinitionId }
             .toSet() + linkedBuildingBlockVersionResolver.resolveCallActivityReachable(owner)
 
-    /** One version of a key is an answer, several a guess: taking whichever the set yielded first made it depend on iteration order (D4). Both callers fall back to the blueprint they were given. */
+    /** One version of a key is an answer, several a guess: taking whichever the set yielded first made it depend on iteration order. Both callers fall back to the blueprint they were given. */
     private fun warnIfAmbiguous(
         tree: BlueprintId,
         key: String,

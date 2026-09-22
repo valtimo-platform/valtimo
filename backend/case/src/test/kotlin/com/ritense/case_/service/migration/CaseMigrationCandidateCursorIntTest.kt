@@ -27,15 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/**
- * The candidate cursor against a real database (G86): `afterId` as a strict lower bound on the id the
- * query orders by, and `:afterId IS NULL` — which compiles in HQL and can still fail at the driver —
- * on both PostgreSQL and MySQL.
- *
- * Never asserted against `UUID.compareTo`: a database orders a uuid bytewise, Kotlin compares its
- * halves as signed longs, and the two disagree above `7fff…`. Harmless, since the cursor is only ever
- * handed back to the database — so what is asserted is that the order is total and stable.
- */
+/** The cursor on both databases: `:afterId IS NULL` compiles in HQL and can still fail at the driver. Never asserted in `UUID.compareTo` order. */
 @Transactional
 class CaseMigrationCandidateCursorIntTest @Autowired constructor(
     private val caseMigrationCandidateProvider: CaseMigrationCandidateProvider,

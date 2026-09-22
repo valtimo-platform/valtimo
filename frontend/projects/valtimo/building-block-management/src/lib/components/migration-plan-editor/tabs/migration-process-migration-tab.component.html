@@ -165,7 +165,6 @@
                   <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
                 </button>
               </div>
-              <!-- whitespace -->
               <!-- The engine's own reason, not a guess at it: a mapping can fail for more than one thing. -->
               @for (error of mappingErrors(instruction, mapping); track error) {
                 <p class="migration-tab__mapping-error">{{ error }}</p>

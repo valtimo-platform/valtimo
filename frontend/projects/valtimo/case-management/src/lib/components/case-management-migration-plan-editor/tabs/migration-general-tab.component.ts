@@ -156,7 +156,6 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   }
 
   /** An ISO instant trimmed to the `YYYY-MM-DDTHH:mm` the datetime-local input accepts — a full instant renders blank, so a scheduled plan looked unscheduled every time it was reopened. */
-  /** An instant as the local wall clock `<input type="datetime-local">` shows; the offset must be applied (G88). */
   private asDateTimeLocal(value: unknown): string {
     const parsed = this.asDate(value);
     if (!parsed) return '';
@@ -169,7 +168,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** The picker's local value as a true instant. Second precision, so [_lastEmitted] matches its own echo. */
+  /** The picker's local value as a true instant. Second precision, so the echo check matches its own emission. */
   private asInstant(value: unknown): string | null {
     const parsed = this.asDate(value);
 

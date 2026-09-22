@@ -37,7 +37,7 @@ import java.time.temporal.ChronoUnit
 data class MigrationTriggers(
     val triggeredByButton: Boolean = false,
 
-    /** An instant, not a wall clock: a `LocalDateTime` went out labelled UTC by the ambient mapper and was compared against the server's zone (G88). */
+    /** An instant, not a wall clock: a `LocalDateTime` went out labelled UTC by the ambient mapper and was compared against the server's zone. */
     @JsonSerialize(using = ScheduledAtDateSerializer::class)
     @JsonDeserialize(using = ScheduledAtDateDeserializer::class)
     val scheduledAtDate: Instant? = null,
@@ -52,7 +52,7 @@ class ScheduledAtDateSerializer : JsonSerializer<Instant>() {
     }
 }
 
-/** Offset-bearing, or naive as UTC — fixed, since `systemDefault()` changes on ApplicationReadyEvent (G88). */
+/** Offset-bearing, or naive as UTC — fixed, since `systemDefault()` changes on ApplicationReadyEvent. */
 class ScheduledAtDateDeserializer : JsonDeserializer<Instant?>() {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Instant? {
         if (p.currentToken?.isNumeric == true) return Instant.ofEpochMilli(p.longValue)

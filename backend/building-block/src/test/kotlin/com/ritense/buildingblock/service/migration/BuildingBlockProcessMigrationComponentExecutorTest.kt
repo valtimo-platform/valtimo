@@ -47,7 +47,7 @@ import org.operaton.bpm.engine.runtime.ProcessInstanceQuery
 import java.util.Optional
 import java.util.UUID
 
-/** G65: a block may own more than one process, and the instructions naming the others were silent no-ops. */
+/** a block may own more than one process, and the instructions naming the others were silent no-ops. */
 class BuildingBlockProcessMigrationComponentExecutorTest {
 
     private lateinit var configurationRepository: ProcessMigrationConfigurationRepository
@@ -114,7 +114,7 @@ class BuildingBlockProcessMigrationComponentExecutorTest {
 
     @Test
     fun `should migrate a process the block owns but did not start itself`() {
-        // The heart of G65: matched by business key, so a called process is reachable. Pinned to the block's own instance it was not, and nothing said so.
+        // The heart of it: matched by business key, so a called process is reachable. Pinned to the block's own instance it was not, and nothing said so.
         givenRunning(calledKey, "pi-called", calledOldId)
         instructions += instruction(calledKey, calledKey)
 
@@ -139,7 +139,7 @@ class BuildingBlockProcessMigrationComponentExecutorTest {
 
     @Test
     fun `should warn when not one instruction matched a running process`() {
-        // The D13 warning the case-side executor has and this one did not, which is what made the miss silent.
+        // The per-case warning the case-side executor has and this one did not, which is what made the miss silent.
         instructions += instruction(calledKey, calledKey)
 
         executor.execute(migrationId, target, documentId)

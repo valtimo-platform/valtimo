@@ -55,7 +55,7 @@ class LinkedBuildingBlockVersionResolver(
         return startableItemLinks(owner) + callActivityLinks(owner)
     }
 
-    /** Every block reachable from [owner] by call-activity links, to any depth. Expands through unlinked `BB:`-tagged hops, returns only what is genuinely linked (D12). */
+    /** Every block reachable from [owner] by call-activity links, to any depth. Expands through unlinked `BB:`-tagged hops, returns only what is genuinely linked. */
     fun resolveCallActivityReachable(owner: BlueprintId): Set<BuildingBlockDefinitionId> =
         resolveCallActivityDeclarers(owner).keys
 

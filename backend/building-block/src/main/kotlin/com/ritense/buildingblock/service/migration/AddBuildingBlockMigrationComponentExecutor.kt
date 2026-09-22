@@ -54,8 +54,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/** Executes `addBuildingBlock`: hijacks the owner's own processes by business key, then walks the running tree adopting declared call activities. */
-// Order 300 — after processMigration (@200) puts the owner on the target version, before removeBuildingBlock (@400) and alignment (@500).
+/** Executes `addBuildingBlock`: hijacks the owner's own processes by business key, then walks the running tree adopting declared call activities. Order 300 — after processMigration (200) re-homes the owner, before removeBuildingBlock (400) and alignment (500). */
 @Order(300)
 @Transactional
 class AddBuildingBlockMigrationComponentExecutor(
@@ -128,7 +127,7 @@ class AddBuildingBlockMigrationComponentExecutor(
         reportEntriesNeitherPassReached(instructions, ownerDocumentId, adoptable, satisfied)
     }
 
-    /** Warns once when the component created nothing at all; per-entry misses go to the log only (D13). */
+    /** Warns once when the component created nothing at all; per-entry misses go to the log only. */
     private fun reportEntriesNeitherPassReached(
         instructions: List<AddBuildingBlockInstruction>,
         ownerDocumentId: UUID,
@@ -343,7 +342,7 @@ class AddBuildingBlockMigrationComponentExecutor(
                 val existing = buildingBlockInstanceRepository.findByProcessInstanceId(childProcessInstanceId)
                     ?: instanceRecordedOn(callingExecution.id)
                 if (existing?.processInstanceId != null) {
-                    // Already a block with a process — an entry naming it has been honoured (G30).
+                    // Already a block with a process — an entry naming it has been honoured.
                     satisfied += existing.definition.id
                     takeOverTreeBelow(
                         target, listOf(childProcessInstanceId), existing.documentId, existing.id, caseDocumentId,
@@ -354,7 +353,7 @@ class AddBuildingBlockMigrationComponentExecutor(
 
                 val callerActivityId = callingExecution.activityId
                 val callerDefinitionId = callingExecution.getProcessDefinitionId()
-                // A caller left as a plain sub-process still runs the old deployment; fall back to the target model by caller key (G23/G30).
+                // A caller left as a plain sub-process still runs the old deployment; fall back to the target model by caller key.
                 val link = callerActivityId?.let { activityId ->
                     buildingBlockLinkOf(callerDefinitionId, activityId)
                         ?: keyOfDefinition(callerDefinitionId)?.let { callerProcessDefinitionKey ->
@@ -455,7 +454,7 @@ class AddBuildingBlockMigrationComponentExecutor(
                 childProcessInstanceId, callerActivityId, callerProcessDefinitionId,
             )
 
-            // Listener-created block with no process: a link attaches to every deployment sharing the key (G21).
+            // Listener-created block with no process: a link attaches to every deployment sharing the key.
             existing.definition.id == buildingBlockDefinitionId -> {
                 existing.processInstanceId = childProcessInstanceId
                 existing.activityId = callerActivityId
@@ -577,7 +576,7 @@ class AddBuildingBlockMigrationComponentExecutor(
 
     // Shared: everything after "which process?"
 
-    /** Migrates the process onto the block's deployment and moves both business key and process-document association (G17). */
+    /** Migrates the process onto the block's deployment and moves both business key and process-document association. */
     private fun takeOver(
         processInstanceId: String,
         sourceDefinitionId: String,
@@ -668,7 +667,7 @@ class AddBuildingBlockMigrationComponentExecutor(
         )
     }
 
-    /** Repoints the association — the stale one is removed first, and the label must survive the delete/recreate (G43). */
+    /** Repoints the association — the stale one is removed first, and the label must survive the delete/recreate. */
     private fun associateWithBuildingBlockDocument(processInstanceId: String, buildingBlockDocumentId: UUID) {
         runWithoutAuthorization {
             val operatonProcessInstanceId = OperatonProcessInstanceId(processInstanceId)

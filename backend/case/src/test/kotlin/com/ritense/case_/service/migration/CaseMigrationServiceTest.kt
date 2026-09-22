@@ -157,7 +157,7 @@ class CaseMigrationServiceTest(
             .thenReturn(Optional.of(documentDefinition))
     }
 
-    /** G16: an undeployed source selects nothing, migrates nothing and reports success. The save path refuses it, but a file-deployed plan never passes the save path. */
+    /** an undeployed source selects nothing, migrates nothing and reports success. The save path refuses it, but a file-deployed plan never passes the save path. */
     @Test
     fun `should refuse to run a plan whose source version is not deployed`() {
         val lineage = mock<BlueprintVersionLineage>()
@@ -391,7 +391,7 @@ class CaseMigrationServiceTest(
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
     }
 
-    /** G86, and the only test reaching a second batch. The stub shrinks as it migrates, or nothing can fail. */
+    /** and the only test reaching a second batch. The stub shrinks as it migrates, or nothing can fail. */
     @Test
     fun `should migrate every case across batches even though migrating them shrinks the candidate set`() {
         val allIds = (0 until 1_000).map { UUID(0L, it.toLong()) }
@@ -415,7 +415,7 @@ class CaseMigrationServiceTest(
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
     }
 
-    /** G87. Real fencing is `assertOwnership`'s own throw, pinned by the takeover test below. */
+    /** Real fencing is `assertOwnership`'s own throw, pinned by the takeover test below. */
     @Test
     fun `should record a per-case lock or constraint failure and carry on with the rest of the run`() {
         stubCandidates(case1, case2, case3)

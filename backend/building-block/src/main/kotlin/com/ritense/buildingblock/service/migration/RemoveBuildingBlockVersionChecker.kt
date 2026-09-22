@@ -19,7 +19,7 @@ package com.ritense.buildingblock.service.migration
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.buildingblock.domain.migration.RemoveBuildingBlockInstruction
 
-/** Checks that every `removeBuildingBlock` entry names the version it dissolves. Reads raw JSON: parsing an entry without one fails inside Jackson, which reaches the editor as a 500 rather than a 400 (D7). */
+/** Checks that every `removeBuildingBlock` entry names the version it dissolves. Reads raw JSON: parsing an entry without one fails inside Jackson, which reaches the editor as a 500 rather than a 400. */
 class RemoveBuildingBlockVersionChecker {
 
     /** Descriptions of every entry in [component] that names no version; empty when they all do. */
@@ -38,7 +38,7 @@ class RemoveBuildingBlockVersionChecker {
         }
     }
 
-    /** @throws IllegalArgumentException when any entry names no version — the save path rethrows exactly that as a 400 (D7). */
+    /** @throws IllegalArgumentException when any entry names no version — the save path rethrows exactly that as a 400. */
     fun assertVersioned(component: JsonNode) {
         val problems = findVersionless(component)
         require(problems.isEmpty()) { "Migration plan cannot be deployed: ${problems.joinToString("; and ")}" }

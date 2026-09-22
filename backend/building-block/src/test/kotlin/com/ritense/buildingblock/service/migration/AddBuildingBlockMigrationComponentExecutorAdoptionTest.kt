@@ -215,7 +215,7 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         verify(jdbcTemplate).update(any<String>(), eq(created[0].documentId.toString()), eq(uitvoerenPi))
     }
 
-    /** G68. A mapping the caller cannot answer must leave the property unset; writing the null failed schema validation and took the case with it. */
+    /** A mapping the caller cannot answer must leave the property unset; writing the null failed schema validation and took the case with it. */
     @Test
     fun `should leave a mapping the caller cannot answer unset rather than writing null`() {
         running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
@@ -247,7 +247,7 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
         assertThat(created).hasSize(1)
     }
 
-    /** G43. The association carries the name the progress tab labels the process with; recreating it without one left every adopted process showing '-'. */
+    /** The association carries the name the progress tab labels the process with; recreating it without one left every adopted process showing '-'. */
     @Test
     fun `should keep the process name when moving the association onto the block document`() {
         running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
@@ -339,11 +339,11 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
             assertThat(it.key).isEqualTo("bijstand-besluit")
             assertThat(it.parentInstanceId).isEqualTo(existingId)
         })
-        // The entry for the block already there counts as honoured, not as one nothing created (G30).
+        // The entry for the block already there counts as honoured, not as one nothing created.
         assertThat(MigrationWarnings.drain()).isNull()
     }
 
-    /** G23/G30: the owner's process was left on its pre-upgrade deployment, so the link comes from the target model, looked up by the caller's key — never the called process's. */
+    /** the owner's process was left on its pre-upgrade deployment, so the link comes from the target model, looked up by the caller's key — never the called process's. */
     @Test
     fun `should resolve the link from the target model when the caller is still on its old deployment`() {
         running(Node(rootPi, "bijstand-process:cd-old", "bijstand-process"))
@@ -371,12 +371,12 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
             assertThat(it.processInstanceId).isEqualTo(uitvoerenPi)
         })
         verify(runtimeService).createMigrationPlan("bijstand-uitvoeren:cd", "bijstand-uitvoeren:bb")
-        // Found under the caller's key, and resolved once for the whole instance rather than per hop (G31).
+        // Found under the caller's key, and resolved once for the whole instance rather than per hop.
         verify(linkedResolver).resolveCallActivityLinkIndex(target)
         assertThat(MigrationWarnings.drain()).isNull()
     }
 
-    /** G21: a process link attaches to every deployment sharing the key, so the listener creates a block even on a pre-migration case — with no processInstanceId. Adoption must claim it. */
+    /** a process link attaches to every deployment sharing the key, so the listener creates a block even on a pre-migration case — with no processInstanceId. Adoption must claim it. */
     @Test
     fun `should claim a half-formed block the runtime listener left on the call activity`() {
         givenTwoLevelTree()
@@ -512,7 +512,7 @@ class AddBuildingBlockMigrationComponentExecutorAdoptionTest {
     /** case process → uitvoeren (declared) → besluit (declared by the block's own definition). */
     @Test
     fun `should adopt every level of a block whose own process calls the same block again`() {
-        // A block may declare itself; in the running tree each level is a distinct instance, so one entry authorises them all (D14).
+        // A block may declare itself; in the running tree each level is a distinct instance, so one entry authorises them all.
         running(Node(rootPi, "bijstand-process:1", "bijstand-process"))
         val depth = 4
         val pis = (1..depth).map { UUID.fromString("00000000-0000-0000-0000-0000000000c$it").toString() }

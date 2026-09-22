@@ -25,10 +25,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-/**
- * `scheduledAtDate` on the wire (G88). Asserted on two mappers because the JSON column goes through
- * hypersistence's own, so the bare one proves the annotations carry the format, not the ambient config.
- */
+/** `scheduledAtDate` on the wire, on two mappers: the JSON column uses hypersistence's, not Spring's. */
 class MigrationTriggersJsonTest {
 
     private val springMapper: ObjectMapper = MapperSingleton.get()

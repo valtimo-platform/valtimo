@@ -17,13 +17,7 @@
 import {expect, test, type BrowserContext, type Page} from '@playwright/test';
 import {VSelect} from '../../shared/v-select/v-select.utils';
 
-/**
- * A new `addBuildingBlock` entry must start on the block version its target *links*, not on the
- * newest deployed one — D12 refuses the latter, and the refusal only surfaces on save.
- *
- * `verhuizing:1.0.11` links `inspectie-fotos:1.0.0` while `1.0.1` is the newest deployed, so the
- * two differ and the default is observable.
- */
+/** A new entry must start on the version its target links, not the newest deployed; `verhuizing:1.0.11` links `inspectie-fotos:1.0.0` while `1.0.1` is newer, so the two differ. */
 test.describe('Migration plan editor — new building-block entry version default', () => {
   test.use({storageState: undefined});
   test.skip(

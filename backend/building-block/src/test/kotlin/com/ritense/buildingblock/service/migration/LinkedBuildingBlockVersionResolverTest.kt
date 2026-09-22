@@ -316,7 +316,7 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(declarers).containsExactly(java.util.Map.entry(herhaling, caseDefinitionId))
     }
 
-    /** Counted, not asserted on the result: repeating the reads changes nothing but the bill (G31). */
+    /** Counted, not asserted on the result: repeating the reads changes nothing but the bill. */
     @Test
     fun `should read each process definition's links once while building the link index`() {
         callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
@@ -352,7 +352,7 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(link?.buildingBlockDefinitionId).isEqualTo(uitvoeren)
     }
 
-    /** The three call sites all pass the same target for every case in a run (G31). */
+    /** The three call sites all pass the same target for every case in a run. */
     @Test
     fun `should walk the tree once per run however many times it is asked`() {
         callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
@@ -484,7 +484,7 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).isEmpty()
     }
 
-    /** G23: a hop left as a plain sub-process runs the old blueprint's copy, so the link for what it calls comes from the blueprint the target model says deploys it. */
+    /** a hop left as a plain sub-process runs the old blueprint's copy, so the link for what it calls comes from the blueprint the target model says deploys it. */
     @Test
     fun `should resolve a link from the blueprint the target model says deploys the process`() {
         caseProcessDefinition()

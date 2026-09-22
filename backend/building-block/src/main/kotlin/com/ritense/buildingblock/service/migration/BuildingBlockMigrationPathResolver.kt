@@ -49,7 +49,7 @@ class BuildingBlockMigrationPathResolver(
             )
     }
 
-    /** As [resolvePath], but null rather than a refusal when nothing connects the two versions — for a block with no running process (G49). Ambiguity still throws. */
+    /** As [resolvePath], but null rather than a refusal when nothing connects the two versions — for a block with no running process. Ambiguity still throws. */
     fun findPath(
         current: BuildingBlockDefinitionId,
         target: BuildingBlockDefinitionId,

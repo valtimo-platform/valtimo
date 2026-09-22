@@ -159,7 +159,7 @@ class MigrationTriggerSchedulerTest(
         verify(caseMigrationService, never()).refreshCaseCountEstimate(any())
     }
 
-    /** The cron defaults are what make the minutes real; nothing else fails if they drift back (G83). */
+    /** The cron defaults are what make the minutes real; nothing else fails if they drift back. */
     @Test
     fun `the trigger sweep should poll per minute and the estimate refresh hourly`() {
         fun cronOf(method: String) = MigrationTriggerScheduler::class.java

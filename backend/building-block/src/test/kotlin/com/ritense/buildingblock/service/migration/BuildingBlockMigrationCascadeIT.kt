@@ -64,7 +64,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.util.UUID
 
-/** Whole-engine coverage of building block migration as a consequence of case migration: recursion (R4), atomicity (R5), G49, dry run, no independent trigger (R1) and nesting. Fixtures carry no running process. */
+/** Whole-engine coverage of building block migration as a consequence of case migration: recursion, atomicity, a missing chain, dry run, no independent trigger and nesting. Fixtures carry no running process. */
 class BuildingBlockMigrationCascadeIT @Autowired constructor(
     private val caseMigrationService: CaseMigrationService,
     private val migrationTriggerScheduler: MigrationTriggerScheduler,
@@ -109,7 +109,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
 
     @Test
     fun `a failing building block step rolls back the whole case migration`() {
-        // Two chains reach the version the owner links, so alignment refuses rather than improvising (R3).
+        // Two chains reach the version the owner links, so alignment refuses rather than improvising.
         val fixture = createCascadeFixture()
         deployPlan(BlueprintMigrationId.from(fixture.innerV2, "cascade-inner-shortcut"))
 
@@ -135,7 +135,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         assertThat(migratedCount(fixture.outerPlanId)).isZero()
     }
 
-    /** G49: no plan connects the inner block's version to the one its owner now links, and nothing runs under it. */
+    /** no plan connects the inner block's version to the one its owner now links, and nothing runs under it. */
     @Test
     fun `a case migration leaves a block with no running process behind rather than failing over a missing plan`() {
         val fixture = createCascadeFixture(deployInnerPlan = false)

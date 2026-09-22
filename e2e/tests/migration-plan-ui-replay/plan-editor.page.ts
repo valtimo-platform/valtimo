@@ -156,8 +156,7 @@ export class PlanEditorPage {
     if (await this.saveButton.isDisabled()) {
       return {saved: false, reason: 'Save stayed disabled'};
     }
-    // Exactly the save endpoint: `…/migration/suggestion/activity-mapping/validate` is also a
-    // POST containing '/migration', and matching it returned "saved" before the save had run.
+    // Exactly the save endpoint — `…/suggestion/activity-mapping/validate` is also a POST containing '/migration'.
     const response = this.page.waitForResponse(
       r => r.request().method() === 'POST' && new URL(r.url()).pathname.endsWith('/migration'),
       {timeout: 30_000}
@@ -201,10 +200,7 @@ export class PlanEditorPage {
     await select.selectByLabel(label);
   }
 
-  /**
-   * A `valtimo-value-path-selector`. Prefers the dropdown and records when the path
-   * is only reachable by switching the selector to manual entry.
-   */
+  /** A `valtimo-value-path-selector`: prefers the dropdown, records when only manual entry reaches the path. */
   private async setValuePath(host: Locator, path: string, control: string): Promise<void> {
     const combo = host.getByTestId(VALUE_PATH_SELECTOR_TEST_IDS.path);
 
@@ -233,11 +229,7 @@ export class PlanEditorPage {
     await fillValuePathManually(host, path);
   }
 
-  /**
-   * A mapping side: a select when the engine returned flow nodes, a free-text input otherwise.
-   * The nodes are fetched after the process pair is chosen, so the row renders as the input
-   * first — waiting for the select is what tells "no flow nodes" apart from "not yet".
-   */
+  /** A mapping side: select when the engine returned flow nodes, free-text otherwise. The row renders as the input first, so waiting for the select tells "none" from "not yet". */
   private async setActivity(row: Locator, side: 'source' | 'target', id: string, control: string) {
     const select = row.locator(`cds-select[formcontrolname="${side}"]`);
     await select.waitFor({state: 'attached', timeout: ACTIVITY_TIMEOUT}).catch(() => undefined);
@@ -273,8 +265,7 @@ export class PlanEditorPage {
       'general.sourceVersion'
     );
 
-    // Title after the source: picking a source re-suggests the plan, and the suggestion
-    // rewrites a title it believes it wrote itself.
+    // Title after the source: picking a source re-suggests, overwriting a title it believes it wrote.
     await expect(this.page.locator('.migration-tab__loading')).toHaveCount(0, {timeout: 60_000});
     await this.fillText(pane.locator('input[formcontrolname="title"]'), plan.title ?? '');
 
@@ -583,10 +574,7 @@ async function setChecked(input: Locator, checked: boolean): Promise<void> {
 
 let _api: APIRequestContext | undefined;
 
-/**
- * Its own admin context rather than `utils/api.utils`: the shared e2e token is minted for
- * the configured QA user, which the migration management endpoints answer 403 for.
- */
+/** Its own admin context: the shared e2e token is the QA user, which migration management answers 403 for. */
 async function migrationApi(): Promise<APIRequestContext> {
   if (_api) return _api;
 

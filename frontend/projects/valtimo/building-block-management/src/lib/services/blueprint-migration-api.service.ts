@@ -39,7 +39,7 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
     );
   }
 
-  /** `showRefusalInline` keeps the generic "unexpected error" toast off a 400 the caller renders itself (G90). */
+  /** `showRefusalInline` keeps the generic "unexpected error" toast off a 400 the caller renders itself. */
   public savePlan(
     params: P,
     plan: Record<string, unknown>,
@@ -116,7 +116,7 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
     );
   }
 
-  /** The block versions this plan's target links — what an `addBuildingBlock` entry may name (D12). */
+  /** The block versions this plan's target links — what an `addBuildingBlock` entry may name. */
   public getLinkedBuildingBlocks(params: P): Observable<LinkedBuildingBlock[]> {
     return this.httpClient.get<LinkedBuildingBlock[]>(
       `${this.getMigrationUrl(params)}/suggestion/building-block/linked`

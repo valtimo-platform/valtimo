@@ -112,7 +112,7 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
   private readonly _versionsByKey = new Map<string, SelectItem[]>();
   private readonly _versionsInFlight = new Set<string>();
 
-  // `key` -> the version this plan's target links, which is the only one an `add` entry may name (D12).
+  // `key` -> the version this plan's target links, which is the only one an `add` entry may name.
   private readonly _linkedVersion = new Map<string, string>();
   private _linkedVersionsLoaded = false;
 
@@ -207,7 +207,7 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
     });
   }
 
-  /** What a new `add` entry starts on: the version the target links (D12), falling back to the newest deployed while that is unknown. */
+  /** What a new `add` entry starts on: the version the target links, falling back to the newest deployed while that is unknown. */
   private defaultVersionFor(key: string): string {
     return this._linkedVersion.get(key) ?? this._bbLatestVersion.get(key) ?? '';
   }

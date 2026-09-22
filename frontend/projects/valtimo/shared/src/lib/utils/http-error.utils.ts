@@ -19,12 +19,7 @@ import {HttpErrorResponse} from '@angular/common/http';
 /** `400 BAD_REQUEST "the message"` — what Spring puts in `detail` for a `ResponseStatusException`. */
 const RESPONSE_STATUS_WRAPPER = /^\d{3}\s+[A-Z_]+\s+"([\s\S]*)"$/;
 
-/**
- * The server's own sentence out of an error response, or null when it did not send one.
- *
- * A `ResponseStatusException` reaches `detail` wrapped as `400 BAD_REQUEST "…"`, which is an
- * implementation detail of Spring and not something to show anyone, so the wrapper is unpeeled.
- */
+/** The server's own sentence, or null when it sent none. Spring wraps a `ResponseStatusException` as `400 BAD_REQUEST "…"`, so the wrapper is unpeeled. */
 export const getServerErrorMessage = (error: unknown): string | null => {
   const body = (error as HttpErrorResponse)?.error;
   const raw = body?.detail ?? body?.message ?? (typeof body === 'string' ? body : null);

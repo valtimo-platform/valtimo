@@ -26,8 +26,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
-/** Executes `dataMigration` for one case through value resolvers only, so it never touches the document store directly. The document is already re-homed, so writes validate against the target schema. */
-// Order 100 — runs first: the case's data before its process or any building blocks.
+/** Executes `dataMigration` for one case through value resolvers only, so it never touches the document store directly. The document is already re-homed, so writes validate against the target schema. Order 100 — first: the case's data before its process or any building blocks. */
 @Order(100)
 @Transactional
 class DataMigrationComponentExecutor(

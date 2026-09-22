@@ -305,7 +305,7 @@ class CaseMigrationService(
         return count
     }
 
-    /** Walk the candidates by id cursor, each batch once. Not an offset: a run shrinks its own set (G86). */
+    /** Walk the candidates by id cursor, each batch once. Not an offset: a run shrinks its own set. */
     private fun forEachCandidateBatch(
         source: BlueprintId,
         provider: MigrationCandidateProvider,
@@ -466,8 +466,7 @@ class CaseMigrationService(
         } catch (e: MigrationOwnershipLostException) {
             throw e // propagate: this node has been fenced, stop the run
         } catch (e: Exception) {
-            // The case stays on the old version and the run continues.
-            // A lost lock lands here too — this case moved under us, not the plan's ownership (G87).
+            // The case stays on the old version and the run continues; a lost lock lands here too.
             logger.warn(e) { "Migration failed for case '$caseId' in plan '$migrationId'; rolled back" }
             recordFailure(migrationId, caseId, e, runToken, warnings ?: MigrationWarnings.drain())
         }
@@ -684,7 +683,7 @@ class CaseMigrationService(
         }
     }
 
-    /** Refuses an undeployed source version, which would otherwise select nothing and finish COMPLETED (G16). Never refuses an empty one — that is the normal state of a plan that already ran. */
+    /** Refuses an undeployed source version, which would otherwise select nothing and finish COMPLETED. Never refuses an empty one — that is the normal state of a plan that already ran. */
     private fun assertSourceIsDeployed(plan: CaseDefinitionMigration) {
         val source = plan.sourceBlueprintId()
         val lineage = blueprintVersionLineages.firstOrNull { it.supports(source.blueprintType()) } ?: return
@@ -695,7 +694,7 @@ class CaseMigrationService(
         }
     }
 
-    /** A building block plan has no run of its own (R1); starting one is refused rather than quietly doing nothing. */
+    /** A building block plan has no run of its own; starting one is refused rather than quietly doing nothing. */
     private fun assertNotBuildingBlockPlan(migrationId: BlueprintMigrationId) {
         require(migrationId.blueprintType != BlueprintType.BUILDING_BLOCK) {
             "Building block migration plan '$migrationId' cannot be started on its own. A building " +

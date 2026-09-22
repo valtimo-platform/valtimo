@@ -33,8 +33,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/** Migrates a case's running process instances onto the target case definition version's process definitions, synchronously in the caller's transaction so they commit with the data migration. */
-// Order 200 — runs after the case data migration, before building blocks are added/removed.
+/** Migrates a case's running process instances onto the target case definition version's process definitions, synchronously in the caller's transaction so they commit with the data migration. Order 200 — after the case data migration, before building blocks are added or removed. */
 @Order(200)
 @Transactional
 class ProcessMigrationComponentExecutor(

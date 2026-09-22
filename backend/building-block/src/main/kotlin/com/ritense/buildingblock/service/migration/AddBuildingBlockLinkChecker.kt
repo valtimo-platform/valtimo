@@ -20,7 +20,7 @@ import com.ritense.buildingblock.domain.migration.AddBuildingBlockInstruction
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 
-/** Refuses an `addBuildingBlock` entry naming a block version [target] links nowhere — alignment would never find it again (R2). Checked on the save path and at execution, which catches a file-deployed plan. */
+/** Refuses an `addBuildingBlock` entry naming a block version [target] links nowhere — alignment would never find it again. Checked on the save path and at execution, which catches a file-deployed plan. */
 class AddBuildingBlockLinkChecker(
     private val linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
 ) {
@@ -29,7 +29,7 @@ class AddBuildingBlockLinkChecker(
     fun findUnlinked(
         target: BlueprintId,
         instructions: List<AddBuildingBlockInstruction>,
-        /** [target]'s call-activity closure when the caller already has it (G31); null means work it out — the save path, which checks one plan once. */
+        /** [target]'s call-activity closure when the caller already has it; null means work it out — the save path, which checks one plan once. */
         callActivityReachable: Set<BuildingBlockDefinitionId>? = null,
     ): List<String> {
         if (instructions.isEmpty()) {

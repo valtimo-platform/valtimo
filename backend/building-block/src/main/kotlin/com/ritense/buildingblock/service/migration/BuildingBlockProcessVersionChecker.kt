@@ -43,7 +43,7 @@ class BuildingBlockProcessVersionChecker(
         }
     }
 
-    /** The recorded process plus anything else carrying the block's document id as business key — a process its own BPMN calls is a separate instance the recorded id never reached, left on the old deployment in silence (G65). */
+    /** The recorded process plus anything else carrying the block's document id as business key — a process its own BPMN calls is a separate instance the recorded id never reached, left on the old deployment in silence. */
     private fun runningProcessesOf(documentId: UUID, processInstanceId: String): List<ProcessInstance> {
         val recorded = runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstanceId)

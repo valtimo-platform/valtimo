@@ -88,7 +88,7 @@ class AddBuildingBlockProcessCheckerTest {
         assertThat(checker.findEntriesWithoutProcessMigration(target, listOf(instruction()))).isEmpty()
     }
 
-    /** G31: the walk behind the closure is the dominant cost per instance, so passing it in has to actually skip it or the saving is imaginary. */
+    /** the walk behind the closure is the dominant cost per instance, so passing it in has to actually skip it or the saving is imaginary. */
     @Test
     fun `should not walk the tree again when the caller already resolved the closure`() {
         val problems = checker.findEntriesWithoutProcessMigration(

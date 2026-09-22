@@ -252,7 +252,7 @@ class DataMigrationComponentSuggesterTest {
         )
     }
 
-    // targetType — suggested only where the two schemas disagree about the type (G77)
+    // targetType — suggested only where the two schemas disagree about the type
 
     @Test
     fun `should type a copy the target version declares differently from the source`() {

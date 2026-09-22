@@ -167,7 +167,7 @@ class AddBuildingBlockMigrationComponentValidatorTest {
 
     @Test
     fun `should refuse a nested instruction whose target is null, rather than answering 500`() {
-        // G47 fixed this for the top-level component only; `findPlanProblems` dispatches on top-level keys, so these nested copies kept failing Jackson on a non-nullable String.
+        // The top-level component was fixed for this and the nested copies were not; `findPlanProblems` dispatches on top-level keys, so these nested copies kept failing Jackson on a non-nullable String.
         linksOn(linked("income-check", "1.0.0"))
         val withNullTarget = component(
             """"processMigration": [

@@ -277,11 +277,7 @@ internal class CaseDocumentJsonValueResolverNullWriteTest {
             .thenReturn(Optional.of(buildDefinition(schemaProperties, required)))
     }
 
-    /**
-     * What the document is actually left holding — the write replayed through the same
-     * `JsonDocumentContent.build` the service uses. Asserting the handed-over node is what hid G89:
-     * the resolver removed the field and the re-diff put it straight back.
-     */
+    /** What the document is left holding, replayed through the real `build` — asserting the handed-over node is what hid the removal being filtered back out. */
     private fun storedContent(originalContent: String): JsonNode {
         val stored = MapperSingleton.get().readTree(originalContent)
         // A removal travels as a pre-patch on the request; every other write takes the ordinary call.
