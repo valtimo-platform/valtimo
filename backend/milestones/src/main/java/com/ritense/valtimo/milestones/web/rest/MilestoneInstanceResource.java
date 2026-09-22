@@ -19,6 +19,7 @@ package com.ritense.valtimo.milestones.web.rest;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.milestones.service.MilestoneInstanceService;
 import com.ritense.valtimo.milestones.web.rest.dto.FlowNodeDTO;
 import com.ritense.valtimo.milestones.web.rest.dto.MilestoneInstanceDTO;
@@ -51,12 +52,20 @@ public class MilestoneInstanceResource {
         this.milestoneInstanceService = milestoneInstanceService;
     }
 
+    @EndpointDescription(
+        en = "List all milestone instances",
+        nl = "Alle mijlpaal-instanties ophalen"
+    )
     @GetMapping("/v1/milestone-instances")
     public ResponseEntity<List<MilestoneInstanceDTO>> getMilestoneInstances() {
         logger.debug("REST request to get all milestone instances");
         return ResponseEntity.ok(milestoneInstanceService.getAllMilestoneInstances());
     }
 
+    @EndpointDescription(
+        en = "Get diagram flow nodes for a process definition",
+        nl = "Diagram-flownodes voor een procesdefinitie ophalen"
+    )
     @GetMapping("/v1/milestones/{processDefinitionId}/flownodes")
     @ResponseBody
     public ResponseEntity<FlowNodeDTO> getDiagramFlowNodes(@PathVariable String processDefinitionId) {

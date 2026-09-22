@@ -20,10 +20,17 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.AnotherTestProcessLink
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.domain.TestProcessLink
+import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
+import com.ritense.processlink.domain.TestProcessLinkMapper
+import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkDeletedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
+import com.ritense.processlink.importer.ProcessLinkImportScope.runDeferringRecheck
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -38,6 +45,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
+import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -64,7 +72,7 @@ class ProcessLinkServiceTest {
     fun before() {
         processLinkService = ProcessLinkService(
             processLinkRepository,
-            emptyList(),
+            listOf(TestProcessLinkMapper(MapperSingleton.get())),
             emptyList(),
             operatonRepositoryService,
             caseDefinitionChecker,
@@ -103,6 +111,90 @@ class ProcessLinkServiceTest {
 
         verify(processLinkRepository).deleteAllByProcessDefinitionId(PROCESS_DEFINITION_ID)
         verify(applicationEventPublisher, never()).publishEvent(any<ProcessLinkDeletedEvent>())
+    }
+
+    @Test
+    fun `createProcessLink defers the recheck while the importer writes links`() {
+        val createRequest = TestProcessLinkCreateRequestDto(
+            processDefinitionId = PROCESS_DEFINITION_ID,
+            activityId = "Task_1",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+        )
+        whenever(processLinkRepository.save<ProcessLink>(any())).thenReturn(testProcessLink("Task_1"))
+
+        runDeferringRecheck<Unit>(true) { processLinkService.createProcessLink(createRequest, null) }
+
+        val captor = argumentCaptor<ProcessLinkCreatedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.recheckDeferred).isTrue()
+    }
+
+    @Test
+    fun `createProcessLink does not defer the recheck outside an import`() {
+        val createRequest = TestProcessLinkCreateRequestDto(
+            processDefinitionId = PROCESS_DEFINITION_ID,
+            activityId = "Task_1",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+        )
+        whenever(processLinkRepository.save<ProcessLink>(any())).thenReturn(testProcessLink("Task_1"))
+
+        processLinkService.createProcessLink(createRequest, null)
+
+        val captor = argumentCaptor<ProcessLinkCreatedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.recheckDeferred).isFalse()
+    }
+
+    @Test
+    fun `updateProcessLink defers the recheck while the importer writes links`() {
+        val processLink = testProcessLink("Task_1")
+        val updateRequest = TestProcessLinkUpdateRequestDto(processLink.id)
+        whenever(processLinkRepository.findById(processLink.id)).thenReturn(Optional.of(processLink))
+        whenever(processLinkRepository.save<ProcessLink>(any())).thenReturn(processLink)
+
+        runDeferringRecheck<Unit>(true) { processLinkService.updateProcessLink(updateRequest, null) }
+
+        val captor = argumentCaptor<ProcessLinkUpdatedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.recheckDeferred).isTrue()
+    }
+
+    @Test
+    fun `updateProcessLink does not defer the recheck outside an import`() {
+        val processLink = testProcessLink("Task_1")
+        val updateRequest = TestProcessLinkUpdateRequestDto(processLink.id)
+        whenever(processLinkRepository.findById(processLink.id)).thenReturn(Optional.of(processLink))
+        whenever(processLinkRepository.save<ProcessLink>(any())).thenReturn(processLink)
+
+        processLinkService.updateProcessLink(updateRequest, null)
+
+        val captor = argumentCaptor<ProcessLinkUpdatedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.recheckDeferred).isFalse()
+    }
+
+    @Test
+    fun `deleteProcessLink defers the recheck while the importer writes links`() {
+        val processLink = testProcessLink("Task_1")
+        whenever(processLinkRepository.findById(processLink.id)).thenReturn(Optional.of(processLink))
+
+        runDeferringRecheck<Unit>(true) { processLinkService.deleteProcessLink(processLink.id) }
+
+        val captor = argumentCaptor<ProcessLinkDeletedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.recheckDeferred).isTrue()
+    }
+
+    @Test
+    fun `deleteProcessLink does not defer the recheck outside an import`() {
+        val processLink = testProcessLink("Task_1")
+        whenever(processLinkRepository.findById(processLink.id)).thenReturn(Optional.of(processLink))
+
+        processLinkService.deleteProcessLink(processLink.id)
+
+        val captor = argumentCaptor<ProcessLinkDeletedEvent>()
+        verify(applicationEventPublisher).publishEvent(captor.capture())
+        assertThat(captor.firstValue.recheckDeferred).isFalse()
     }
 
     private fun testProcessLink(activityId: String): ProcessLink = TestProcessLink(
