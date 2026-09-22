@@ -25,4 +25,4 @@ while a task is open. The width you set is remembered for you across all case ty
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Case types | A building block action on the Actions tab can be saved on another version |
