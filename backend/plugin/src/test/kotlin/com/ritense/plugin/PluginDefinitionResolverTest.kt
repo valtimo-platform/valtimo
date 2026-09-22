@@ -16,6 +16,7 @@
 
 package com.ritense.plugin
 
+import com.ritense.valtimo.contract.annotation.AnnotationScanner
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,7 +27,9 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationContext
+import java.util.function.Supplier
 
 internal class PluginDefinitionResolverTest {
 
@@ -35,6 +38,11 @@ internal class PluginDefinitionResolverTest {
         val context: ApplicationContext = mock(defaultAnswer = Mockito.RETURNS_DEEP_STUBS)
         whenever(context.environment.getProperty(eq("valtimo.annotation-scan.accepted-packages"), any(), any<Array<String>>()))
             .thenReturn(emptyArray())
+        // A deep-stubbed context would hand out a mocked scanner, so let the resolver build its own
+        val scannerProvider = mock<ObjectProvider<AnnotationScanner>>()
+        whenever(context.getBeanProvider(AnnotationScanner::class.java)).thenReturn(scannerProvider)
+        whenever(scannerProvider.getIfAvailable(any<Supplier<AnnotationScanner>>()))
+            .thenAnswer { invocation -> invocation.getArgument<Supplier<AnnotationScanner>>(0).get() }
         val resolver = PluginDefinitionResolver(context)
 
         val pluginMap = resolver.findPluginClasses()

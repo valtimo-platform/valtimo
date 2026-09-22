@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.processlink.event
+package com.ritense.valtimo.contract.custom
 
-class ProcessLinkUpdatedEvent(
-    val processLinkType: String,
-    val processDefinitionId: String,
-    /** The writer rechecks the whole case definition once when the import finishes. */
-    val recheckDeferred: Boolean,
-) {
-    // Kept so callers compiled against an older version keep working
-    constructor(processLinkType: String, processDefinitionId: String) :
-        this(processLinkType, processDefinitionId, false)
-}
+import com.ritense.valtimo.contract.annotation.AnnotatedClassResolver
+import org.springframework.context.ApplicationContext
+import org.springframework.stereotype.Component
+
+/** Second resolver bean, so a test can prove two resolvers in one context share a single scan. */
+@Component
+class SecondTestAnnotatedClassResolver(context: ApplicationContext) : AnnotatedClassResolver(context)
