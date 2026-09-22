@@ -55,6 +55,14 @@
     border-top: 1px solid var(--cds-border-subtle);
   }
 
+  // A heavier rule than the one between blocks within a result: this is where the real run's
+  // figures end and the dry run's begin, and the two carry near-identical labels.
+  &__dry-run {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid var(--cds-border-strong);
+  }
+
   &__hint {
     margin: 0 0 8px;
     color: var(--cds-text-secondary);

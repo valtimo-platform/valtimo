@@ -930,6 +930,7 @@
         "content": "Simuleer dit migratieplan voor alle overeenkomende dossiers zonder er ook maar één te migreren? Er wordt niets gewijzigd; je krijgt een overzicht van welke dossiers zouden migreren en welke zouden mislukken."
       },
       "dryRunResults": {
+        "status": "Status testrun",
         "heading": "Laatste testrun",
         "casesChecked": "Gecontroleerde dossiers",
         "casesWouldMigrate": "Zouden migreren",

@@ -930,6 +930,7 @@
         "content": "Simulate this migration plan for all matching cases without migrating any of them? Nothing is changed; you get a report of which cases would migrate and which would fail."
       },
       "dryRunResults": {
+        "status": "Dry run status",
         "heading": "Latest dry run",
         "casesChecked": "Cases checked",
         "casesWouldMigrate": "Would migrate",
