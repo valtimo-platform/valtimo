@@ -50,7 +50,10 @@ class ProcessMigrationComponentValidator(
             object : TypeReference<List<ProcessMigrationInstruction>>() {},
         )
 
-        return instructions.flatMap { instruction ->
+        // Accumulated with the rest: the author should see every problem in one save, not the first one.
+        val badVariableTargets = ProcessVariableTargetChecker.findNonProcessVariableTargets(component)
+
+        return badVariableTargets + instructions.flatMap { instruction ->
             val sourceDefinitionId = sourceProcessDefinitions[instruction.sourceProcessDefinitionKey]
             val targetDefinitionId = targetProcessDefinitions[instruction.targetProcessDefinitionKey]
             // There is no run-time guard: an unmatched source key finds no instances and is skipped without a word, so a mistyped key migrates every document and no process.
@@ -79,10 +82,10 @@ class ProcessMigrationComponentValidator(
         }
     }
 
+
     /** Process key -> definition id for the blueprint, or null when no resolver handles its type. */
     private fun resolveProcessDefinitions(blueprintId: BlueprintId): Map<String, String>? =
         processDefinitionBlueprintResolvers
             .firstOrNull { it.supports(blueprintId.blueprintType()) }
             ?.resolveProcessDefinitions(blueprintId)
-
 }
