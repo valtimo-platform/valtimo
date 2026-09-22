@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_18vfwpp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
-  <bpmn:process id="javascript-script-task-process-allowed" name="Javascript script task process" isExecutable="true" camunda:historyTimeToLive="180">
+  <bpmn:process id="javascript-script-task-process-reflection-bypass" name="Javascript script task reflection bypass test" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0kymcf3</bpmn:outgoing>
     </bpmn:startEvent>
@@ -9,16 +9,21 @@
       <bpmn:incoming>Flow_1muqoyt</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1muqoyt" sourceRef="Activity_1wy7vpn" targetRef="Event_0k1400n" />
-    <bpmn:scriptTask id="Activity_1wy7vpn" name="Sum" scriptFormat="javascript">
+    <bpmn:scriptTask id="Activity_1wy7vpn" name="Reflection bypass attempt" scriptFormat="javascript">
       <bpmn:incoming>Flow_0kymcf3</bpmn:incoming>
       <bpmn:outgoing>Flow_1muqoyt</bpmn:outgoing>
-      <bpmn:script>const Instant = Java.type("java.time.Instant");
-
-const result = Instant.now().toEpochMilli();</bpmn:script>
+      <bpmn:script>// Attempt to bypass sandbox via reflection on bound 'execution' object
+var clz = execution.getClass();
+var loader = clz.getClassLoader();
+var rtClass = loader.loadClass("java.lang.Runtime");
+var getRuntime = rtClass.getMethod("getRuntime");
+var runtime = getRuntime.invoke(null);
+// If we get here, sandbox is bypassed
+execution.setVariable("bypassSucceeded", true);</bpmn:script>
     </bpmn:scriptTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="javascript-script-task-process-allowed">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="javascript-script-task-process-reflection-bypass">
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
