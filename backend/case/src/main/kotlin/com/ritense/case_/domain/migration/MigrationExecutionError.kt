@@ -16,8 +16,9 @@
 
 package com.ritense.case_.domain.migration
 
-/** A case whose migration failed and was rolled back, with the full stacktrace, so operators can see which cases errored and why. */
+/** A case whose migration failed and was rolled back. [summary] is the line that says why — the rule that refused it, not the wrapper around it; [message] keeps the whole stacktrace behind it. */
 data class MigrationExecutionError(
     val caseId: String,
+    val summary: String?,
     val message: String?,
 )

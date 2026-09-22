@@ -366,8 +366,8 @@
 <ng-template #errorColumn let-data="data">
   <div class="migration-error">
     <div class="migration-error__cell">
-      <span class="migration-error__message" [title]="data.item.message">
-        {{ firstErrorLine(data.item.message) }}
+      <span class="migration-error__message" [title]="errorSummary(data.item)">
+        {{ errorSummary(data.item) }}
       </span>
 
       <div class="migration-error__actions">

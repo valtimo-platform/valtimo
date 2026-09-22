@@ -31,6 +31,8 @@ interface BuildingBlockMigrationParams {
 
 interface MigrationExecutionError {
   caseId: string;
+  /** The line that says why the case failed. The `message` below is the whole stacktrace it came from. */
+  summary: string | null;
   message: string | null;
 }
 
