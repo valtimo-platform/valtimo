@@ -27,18 +27,6 @@
     (close)="$saveError.set(null)"
   ></cds-inline-notification>
 
-  <cds-inline-notification
-    *ngIf="$saveError() as saveError"
-    [notificationObj]="{
-      type: 'error',
-      title: ('caseManagement.migration.editor.saveFailed.title' | translate),
-      message: saveError,
-      showClose: true,
-      lowContrast: true,
-    }"
-    (close)="$saveError.set(null)"
-  ></cds-inline-notification>
-
   <cds-tabs type="contained">
     <cds-tab
       [heading]="'migrationEditor.tabs.general' | translate"

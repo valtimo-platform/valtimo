@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -108,7 +109,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
   public readonly $plan = signal<MigrationPlan>({});
   public readonly $valid = signal<boolean>(false);
   public readonly $saving = signal<boolean>(false);
-  /** The server's refusal, kept on screen until the next save (G90). */
+  /** The server's refusal, kept on screen until the next save. */
   public readonly $saveError = signal<string | null>(null);
   // True while the backend composes the pre-filled plan; on a large case definition that is ten seconds of an empty screen.
   public readonly $suggesting = signal<boolean>(false);
@@ -145,8 +146,7 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     caseDefinitionKey: this.$sourceKey(),
     caseDefinitionVersionTag: this.$sourceVersionTag(),
   }));
-  // A condition reads the source version, but may legitimately test a field only the target
-  // declares — one marking a case as already migrated, say — so the target's fields join the list.
+  // A condition reads the source version but may test a target-only field, so both sets are offered.
   public readonly $conditionAdditionalVersionTags = computed(() => {
     const targetVersion = this.$caseDefinitionVersionTag();
     const sameKey = this.$sourceKey() === this.$caseDefinitionKey();
@@ -377,8 +377,10 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
     this.$saveError.set(null);
     this.caseMigrationApiService.savePlan(this._params, parsed, true).subscribe({
       next: () => this.navigateBack(),
-      error: (error: unknown) => {
+      error: (error: HttpErrorResponse) => {
         this.$saving.set(false);
+        // Only the 400 the request suppressed the toast for; anything else is the global handler's.
+        if (error?.status !== 400) return;
         this.$saveError.set(
           getServerErrorMessage(error) ??
             this.translateService.instant('caseManagement.migration.editor.saveFailed.fallback')
