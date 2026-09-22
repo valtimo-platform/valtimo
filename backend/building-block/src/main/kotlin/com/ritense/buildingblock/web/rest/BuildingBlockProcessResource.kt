@@ -26,6 +26,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -50,6 +51,10 @@ class BuildingBlockProcessResource(
     private val buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
 ) {
 
+    @EndpointDescription(
+        en = "Check if process is a building block",
+        nl = "Controleren of proces een bouwblok is",
+    )
     @GetMapping("/process-definition/{processDefinitionId}/is-building-block")
     fun isBuildingBlockProcess(
         @PathVariable processDefinitionId: String
@@ -60,6 +65,10 @@ class BuildingBlockProcessResource(
         return ResponseEntity.ok(result)
     }
 
+    @EndpointDescription(
+        en = "List building block process definitions",
+        nl = "Procesdefinities van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/process-definition")
     fun getProcessDefinitionsForBuildingBlock(
         @PathVariable key: String,
@@ -74,6 +83,10 @@ class BuildingBlockProcessResource(
         return ResponseEntity.ok(items)
     }
 
+    @EndpointDescription(
+        en = "Get building block process definition with process links",
+        nl = "Procesdefinitie van bouwblok met proceskoppelingen ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}")
     fun getProcessDefinitionWithLinksForBuildingBlock(
         @PathVariable key: String,
@@ -90,6 +103,10 @@ class BuildingBlockProcessResource(
         return dto?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Create building block process definition",
+        nl = "Procesdefinitie van bouwblok aanmaken",
+    )
     @PostMapping(
         value = ["/{key}/version/{versionTag}/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -118,6 +135,10 @@ class BuildingBlockProcessResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Update building block process definition",
+        nl = "Procesdefinitie van bouwblok bijwerken",
+    )
     @PutMapping(
         value = ["/{key}/version/{versionTag}/process-definition/{processDefinitionId}"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -148,6 +169,10 @@ class BuildingBlockProcessResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "List building block plugin definitions",
+        nl = "Plugindefinities van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/plugin")
     fun getPluginDefinitionsForBuildingBlock(
         @PathVariable key: String,
@@ -161,6 +186,10 @@ class BuildingBlockProcessResource(
         return ResponseEntity.ok(pluginKeysWithDependencies)
     }
 
+    @EndpointDescription(
+        en = "List plugin keys for building block process definition",
+        nl = "Pluginsleutels voor procesdefinitie van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}/plugin")
     fun getPluginDefinitionsForProcessDefinition(
         @PathVariable key: String,
@@ -173,6 +202,10 @@ class BuildingBlockProcessResource(
         return ResponseEntity.ok(pluginKeys.toList().sorted())
     }
 
+    @EndpointDescription(
+        en = "Get main building block process definition key",
+        nl = "Hoofdprocesdefinitiesleutel van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/process-definition/main/key")
     fun getMainProcessDefinitionKeyForBuildingBlock(
         @PathVariable key: String,
@@ -188,6 +221,10 @@ class BuildingBlockProcessResource(
         return mainKey?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Set main building block process definition",
+        nl = "Hoofdprocesdefinitie van bouwblok instellen",
+    )
     @PostMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}/main")
     fun setMainProcessDefinitionForBuildingBlock(
         @PathVariable key: String,
@@ -205,6 +242,10 @@ class BuildingBlockProcessResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Delete building block process definition",
+        nl = "Procesdefinitie van bouwblok verwijderen",
+    )
     @DeleteMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}")
     fun deleteProcessDefinitionForBuildingBlock(
         @PathVariable key: String,

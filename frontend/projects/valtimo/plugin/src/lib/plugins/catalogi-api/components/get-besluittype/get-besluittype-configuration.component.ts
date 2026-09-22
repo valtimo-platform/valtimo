@@ -23,7 +23,6 @@ import {GetBesluittypeConfig} from '../../models';
   standalone: false,
   selector: 'valtimo-set-besluittype-configuration',
   templateUrl: './get-besluittype-configuration.component.html',
-  styleUrls: ['./get-besluittype-configuration.component.scss'],
 })
 export class GetBesluittypeConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
