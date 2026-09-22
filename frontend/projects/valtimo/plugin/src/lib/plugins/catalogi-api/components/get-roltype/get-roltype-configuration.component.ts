@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,53 +16,52 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {GetEigenschapConfig} from '../../models';
 import {FunctionConfigurationComponent} from '../../../../models';
+import {GetRoltypeConfig} from '../../models';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-get-eigenschap-configuration',
-  templateUrl: './get-eigenschap-configuration.component.html',
+  selector: 'valtimo-get-roltype-configuration',
+  templateUrl: './get-roltype-configuration.component.html',
 })
-export class GetEigenschapConfigurationComponent
+export class GetRoltypeConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() public save$: Observable<void>;
   @Input() public disabled$: Observable<boolean>;
   @Input() public pluginId: string;
-  @Input() public prefillConfiguration$: Observable<GetEigenschapConfig>;
+  @Input() public prefillConfiguration$: Observable<GetRoltypeConfig>;
+  @Input() public save$: Observable<void>;
+  @Output() public configuration: EventEmitter<GetRoltypeConfig> =
+    new EventEmitter<GetRoltypeConfig>();
   @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() public configuration: EventEmitter<GetEigenschapConfig> =
-    new EventEmitter<GetEigenschapConfig>();
 
+  private readonly _formValue$ = new BehaviorSubject<GetRoltypeConfig | null>(null);
   private _saveSubscription!: Subscription;
-
-  private readonly formValue$ = new BehaviorSubject<GetEigenschapConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
+  private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
   public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  public ngOnDestroy() {
+  public ngOnDestroy(): void {
     this._saveSubscription?.unsubscribe();
   }
 
-  public formValueChange(formValue: GetEigenschapConfig): void {
-    this.formValue$.next(formValue);
+  public formValueChange(formValue: GetRoltypeConfig): void {
+    this._formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
-  private handleValid(formValue: GetEigenschapConfig): void {
-    const valid = !!(formValue.eigenschap && formValue.processVariable);
+  private handleValid(formValue: GetRoltypeConfig): void {
+    const valid = !!(formValue.roltype && formValue.processVariable);
 
-    this.valid$.next(valid);
+    this._valid$.next(valid);
     this.valid.emit(valid);
   }
 
   private openSaveSubscription(): void {
     this._saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
+      combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
