@@ -15,40 +15,25 @@
  */
 
 import {Components} from 'formiojs';
-import {Subject} from 'rxjs';
-import {debounceTime} from 'rxjs/operators';
 
 const BuiltInButton = (Components as any).components['button'];
 
-const DEBOUNCE_TIME_MS = 1000;
-
 /**
  * A button component with the exact same schema and behavior as Form.io's
- * built-in Button component, except that repeated clicks (double-clicks,
- * rapid Enter presses, etc.) within a `debounce` window are
- * ignored. This prevents the underlying action (typically `submit`) from
- * being triggered more than once in quick succession.
+ * built-in Button component, except that only the first click (or Enter press)
+ * is handled. All following clicks are ignored, which prevents the underlying
+ * action (typically `submit`) from being triggered more than once.
+ *
+ * The button is released again when Form.io rejects the submit (e.g. because of
+ * validation errors), so the user can correct the form and submit again.
  */
-class DebouncedButtonComponent extends BuiltInButton {
-  private readonly click$ = new Subject<Event>();
-  private emittedCount = 0;
-
-  constructor(...args: any[]) {
-    super(...args);
-
-    this.click$
-      .pipe(debounceTime(DEBOUNCE_TIME_MS, undefined))
-      .subscribe(event => {
-        this.emittedCount++;
-        super.onClick(event);
-      });
-  }
+class SingleClickButtonComponent extends BuiltInButton {
+  private isPressed = false;
 
   static schema(...extend: any[]) {
     return BuiltInButton.schema(
       {
-        type: 'debouncedButton',
-        debounce: DEBOUNCE_TIME_MS,
+        type: 'singleClickButton',
       },
       ...extend
     );
@@ -56,12 +41,12 @@ class DebouncedButtonComponent extends BuiltInButton {
 
   static get builderInfo() {
     return {
-      title: 'Submit (debounced)',
+      title: 'Submit (single click)',
       group: 'basic',
       icon: 'stop',
       documentation: '/userguide/form-building/form-components#button',
       weight: 111,
-      schema: DebouncedButtonComponent.schema(),
+      schema: SingleClickButtonComponent.schema(),
     };
   }
 
@@ -69,18 +54,32 @@ class DebouncedButtonComponent extends BuiltInButton {
     return BuiltInButton.editForm(...extend);
   }
 
+  attach(element: HTMLElement): Promise<void> {
+    // Form.io emits `submitError` whenever a submit is rejected (e.g. validation errors);
+    // `error` covers errors raised outside the submit flow.
+    ['submitError', 'error'].forEach(eventName =>
+      this.on(eventName, () => this.release(), true)
+    );
+
+    return super.attach(element);
+  }
+
+  private release(): void {
+    this.isPressed = false;
+  }
+
   onClick(event: Event): void {
-    const countBeforeClick = this.emittedCount;
-
-    this.click$.next(event);
-
-    if (this.emittedCount === countBeforeClick) {
+    if (this.isPressed) {
       event.preventDefault();
       event.stopPropagation();
+      return;
     }
+
+    this.isPressed = true;
+    super.onClick(event);
   }
 }
 
-export function registerDebouncedButtonComponent(): void {
-  Components.setComponent('debouncedButton', DebouncedButtonComponent);
+export function registerSingleClickButtonComponent(): void {
+  Components.setComponent('singleClickButton', SingleClickButtonComponent);
 }
