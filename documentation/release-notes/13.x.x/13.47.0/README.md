@@ -70,6 +70,3 @@ task that uses one of them now fails and has to be rewritten, for example with
 Tomcat, Netty, Apache HttpClient, FreeMarker and the PostgreSQL and MySQL drivers were updated to
 the versions that carry the latest security fixes. Apart from the two database driver issues
 listed above, the vulnerabilities these updates close are not reachable in Valtimo.
-components and settings Valtimo does not use, such as the Tomcat login and URL rewriting modules,
-the Netty protocol decoders and certificate checks, the asynchronous HTTP client, and the
-FreeMarker template loader.
