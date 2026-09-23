@@ -6,6 +6,19 @@ Release date: 23-09-2026
 
 ## New Features
 
+### External plugins
+
+Connect plugin packages and apps built outside Valtimo without rebuilding or redeploying the application. External plugins can add process actions, event handlers, case tabs and widgets, task forms, and menu pages — all managed from new **Plugin hosts** and **Apps** screens under **Admin > Integrations**.
+
+For each plugin, you review and accept the permissions it requests before it can run. Valtimo enforces the accepted list at runtime, so a plugin only ever reaches the data and systems you approved. Multiple versions of a plugin can run side by side: existing cases keep using the version they were built with while new cases use a newer one.
+
+{% hint style="info" %}
+A plugin host is a separate service that runs alongside Valtimo. Ask your development team or
+operator to set one up before connecting it.
+{% endhint %}
+
+See [What is an external plugin?](../../../fundamentals/external-plugins.md) for the concepts, and the [external plugins configuration guide](../../../configuration-guides/plugins/external-plugins/README.md) to start connecting and configuring plugins for a running plugin host.
+
 ### More filter options for the task count widget
 
 A task count widget can now be limited to a single case type, and its conditions can be combined with **AND** or **OR** in groups that can be nested. Counts that previously could not be configured, such as the assigned tasks of one case type that have one of two names, now take a single widget. Existing task count widgets keep working unchanged.
