@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,13 @@
  * limitations under the License.
  */
 
-export * from './task-count-condition-group';
-export * from './task-count-configuration';
+export const TASK_COUNT_TEST_IDS = {
+  caseDefinitionDropdown: 'taskCountCaseDefinitionDropdown',
+  conditionGroup: 'taskCountConditionGroup',
+  operatorSwitcher: 'taskCountGroupOperatorSwitcher',
+  operatorAndButton: 'taskCountGroupOperatorAndButton',
+  operatorOrButton: 'taskCountGroupOperatorOrButton',
+  operatorMirror: 'taskCountGroupOperatorMirror',
+  addGroupButton: 'taskCountAddGroupButton',
+  deleteGroupButton: 'taskCountDeleteGroupButton',
+} as const;

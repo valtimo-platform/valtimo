@@ -6,6 +6,10 @@ Release date: 23-09-2026
 
 ## New Features
 
+### More filter options for the task count widget
+
+A task count widget can now be limited to a single case type, and its conditions can be combined with **AND** or **OR** in groups that can be nested. Counts that previously could not be configured, such as the assigned tasks of one case type that have one of two names, now take a single widget. Existing task count widgets keep working unchanged.
+
 ### Roltypen from the Catalogi API
 
 Two new Catalogi API plugin actions make the roltypen of a zaaktype available to a process:
@@ -41,6 +45,8 @@ takes under a minute.
 | Area | Fix |
 |------|-----|
 | Case types | A building block action on the Actions tab can be saved on another version |
+| Startup | A case definition that is not final no longer slows startup down as it gains processes. In a test case definition with 200 processes, startup took almost nine minutes and now takes under a minute |
+| SmartDocuments / Exact | These modules no longer bring their own copy of the Valtimo platform modules along, so pinning an older version of them no longer pulls an older Valtimo into the application. |
 
 ---
 

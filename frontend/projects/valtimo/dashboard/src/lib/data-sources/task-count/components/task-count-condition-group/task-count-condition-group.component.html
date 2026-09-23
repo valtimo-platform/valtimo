@@ -1,0 +1,155 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!-- The AND/OR selector for this group, in the header of a nested group or on the first connector
+  between the root sections. -->
+<ng-template #operatorSwitcher>
+  <cds-content-switcher
+    class="condition-operator"
+    [attr.data-test-id]="testIds.operatorSwitcher"
+    size="sm"
+  >
+    <button
+      cdsContentOption
+      type="button"
+      [active]="operator === 'and'"
+      [attr.data-test-id]="testIds.operatorAndButton"
+      [disabled]="disabled"
+      (selected)="setOperator('and')"
+    >
+      {{ 'and' | widgetTranslate: dataSourceKey | async }}
+    </button>
+
+    <button
+      cdsContentOption
+      type="button"
+      [active]="operator === 'or'"
+      [attr.data-test-id]="testIds.operatorOrButton"
+      [disabled]="disabled"
+      (selected)="setOperator('or')"
+    >
+      {{ 'or' | widgetTranslate: dataSourceKey | async }}
+    </button>
+  </cds-content-switcher>
+</ng-template>
+
+<!--
+  The condition rows of this group. The multi input is a form control, so the rows are written and
+  read through [rowsControl] and its disabled state follows the control - binding [disabled] here
+  would set it on the form directive as well.
+-->
+<ng-template #conditionRows let-minimumAmountOfRows="minimumAmountOfRows">
+  <valtimo-carbon-multi-input
+    [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
+    [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
+    [dropdownItems]="operatorItems"
+    [formControl]="rowsControl"
+    [fullWidth]="true"
+    [initialAmountOfRows]="minimumAmountOfRows"
+    [minimumAmountOfRows]="minimumAmountOfRows"
+    [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+    [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
+    (allValuesValidEvent)="onAllRowsValid($event)"
+    addButtonType="tertiary"
+    deleteButtonType="danger--ghost"
+    type="keyDropdownValue"
+  ></valtimo-carbon-multi-input>
+</ng-template>
+
+@if (root) {
+  <!--
+    The root group is not a section of its own: it only groups the sections. Its single operator
+    defines how all of the sections relate to each other, and is rendered as a connector between
+    them - a selector on the first connector, static text on the ones after it. Connectors only
+    appear once there is something to relate (two or more sections, or a section following
+    root-level rows). Each section carries its own operator for the conditions inside it. "Add
+    condition group" appends a new section. Direct root-level rows only exist for configuration
+    authored in a file; they are kept editable so that saving does not drop them.
+  -->
+  <div class="condition-root" [attr.data-test-id]="testIds.conditionGroup">
+    @if (rowsControl.value.length) {
+      <ng-container
+        *ngTemplateOutlet="conditionRows; context: {minimumAmountOfRows: 0}"
+      ></ng-container>
+    }
+
+    @for (nestedGroup of groups.controls; track nestedGroup; let index = $index) {
+      @if (index === interactiveConnectorIndex) {
+        <ng-container *ngTemplateOutlet="operatorSwitcher"></ng-container>
+      } @else if (index > interactiveConnectorIndex) {
+        <p
+          class="condition-root__operator-mirror"
+          [attr.data-test-id]="testIds.operatorMirror"
+          aria-hidden="true"
+        >
+          {{ operator | widgetTranslate: dataSourceKey | async }}
+        </p>
+      }
+
+      <valtimo-task-count-condition-group
+        [dataSourceKey]="dataSourceKey"
+        [disabled]="disabled"
+        [group]="nestedGroup"
+        [operatorItems]="operatorItems"
+        (deleteGroupEvent)="removeGroup(index)"
+      ></valtimo-task-count-condition-group>
+    }
+
+    <button
+      class="condition-root__add-button"
+      cdsButton="tertiary"
+      type="button"
+      [attr.data-test-id]="testIds.addGroupButton"
+      [disabled]="disabled"
+      (click)="addGroup()"
+    >
+      {{ 'addGroup' | widgetTranslate: dataSourceKey | async }}
+
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </div>
+} @else {
+  <cds-tile class="condition-group" [attr.data-test-id]="testIds.conditionGroup" [cdsLayer]="0">
+    <div class="condition-group__header">
+      <ng-container *ngTemplateOutlet="operatorSwitcher"></ng-container>
+
+      <cds-icon-button
+        [attr.data-test-id]="testIds.deleteGroupButton"
+        [description]="'deleteGroup' | widgetTranslate: dataSourceKey | async"
+        [disabled]="disabled"
+        (click)="deleteGroupEvent.emit()"
+        kind="danger--ghost"
+        size="sm"
+      >
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+      </cds-icon-button>
+    </div>
+
+    <ng-container
+      *ngTemplateOutlet="conditionRows; context: {minimumAmountOfRows: 1}"
+    ></ng-container>
+
+    @for (nestedGroup of groups.controls; track nestedGroup; let index = $index) {
+      <valtimo-task-count-condition-group
+        [dataSourceKey]="dataSourceKey"
+        [disabled]="disabled"
+        [group]="nestedGroup"
+        [operatorItems]="operatorItems"
+        (deleteGroupEvent)="removeGroup(index)"
+      ></valtimo-task-count-condition-group>
+    }
+  </cds-tile>
+}
