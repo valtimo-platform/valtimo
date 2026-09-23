@@ -42,9 +42,16 @@ data class Condition<T : Comparable<T>>(
     @JsonAlias("queryValue")
     @JsonDeserialize(using = ComparableDeserializer::class)
     val value: T
-) {
+) : ConditionNode {
 
-    fun isValid(
+    init {
+        // A list is never equal to a scalar, so '==' would always be false and '!=' always true.
+        require(value !is Collection<*> || operator in LIST_VALUE_OPERATORS) {
+            "Operator '${operator.asText}' does not accept a list value, use 'in' or 'list_contains'"
+        }
+    }
+
+    override fun isValid(
         expressionResolver: (String) -> Any?
     ): Boolean {
         val fieldValue = expressionResolver.invoke(path)
@@ -52,7 +59,7 @@ data class Condition<T : Comparable<T>>(
         return operator.evaluate(fieldValue, resolvedValue)
     }
 
-    fun toPredicate(
+    override fun toPredicate(
         root: Root<*>,
         criteriaBuilder: CriteriaBuilder,
         pathExpressionFunction: (Class<Any>, String, Root<*>, CriteriaBuilder) -> Expression<Any>
@@ -60,10 +67,13 @@ data class Condition<T : Comparable<T>>(
         pathExpressionFunction as (Class<T>, String, Root<*>, CriteriaBuilder) -> Expression<T>
 
         val resolvedValue = resolveValue(value)
-        val valueClass = if (resolvedValue != null) {
-            resolvedValue::class.java as Class<T>
-        } else {
-            Any::class.java as Class<T>
+        // For collection values (e.g. the 'in' operator) the path expression must be cast to the
+        // element type, not to the collection type itself.
+        val valueClass = when {
+            resolvedValue is Collection<*> ->
+                (resolvedValue.firstOrNull()?.let { it::class.java } ?: Any::class.java) as Class<T>
+            resolvedValue != null -> resolvedValue::class.java as Class<T>
+            else -> Any::class.java as Class<T>
         }
 
         val expression = pathExpressionFunction(valueClass, path, root, criteriaBuilder)
@@ -100,5 +110,9 @@ data class Condition<T : Comparable<T>>(
 
     private fun getExpressionContextRoot(): ConditionSpelEvaluationContext {
         return ConditionSpelEvaluationContext()
+    }
+
+    companion object {
+        private val LIST_VALUE_OPERATORS = setOf(ExpressionOperator.IN, ExpressionOperator.LIST_CONTAINS)
     }
 }

@@ -11,6 +11,7 @@
 * [What is a case?](fundamentals/case.md)
 * [What is a process?](fundamentals/process.md)
 * [What is a form?](fundamentals/form.md)
+* [What is an external plugin?](fundamentals/external-plugins.md)
 * [Users, roles and permissions](fundamentals/roles-permissions.md)
 
 ## Tutorials
@@ -51,8 +52,19 @@
     * [Form flows](configuration-guides/building-blocks/form-flows.md)
     * [Decision tables](configuration-guides/building-blocks/decision-tables.md)
 * [🔀 System processes](configuration-guides/system-processes/README.md)
-* 🔌 Plugins
-* 📊 Dashboard
+* [🔌 Plugins](configuration-guides/plugins/README.md)
+    * [External plugins](configuration-guides/plugins/external-plugins/README.md)
+        * [Add a plugin host](configuration-guides/plugins/external-plugins/add-a-plugin-host.md)
+        * [Add an app](configuration-guides/plugins/external-plugins/add-an-app.md)
+        * [Upload a plugin](configuration-guides/plugins/external-plugins/upload-a-plugin.md)
+        * [Configure a plugin](configuration-guides/plugins/external-plugins/configure-a-plugin.md)
+        * [Manage an integration](configuration-guides/plugins/external-plugins/manage-an-integration.md)
+        * [Plugin status and reviews](configuration-guides/plugins/external-plugins/plugin-status-and-reviews.md)
+        * [Plugin logs](configuration-guides/plugins/external-plugins/plugin-logs.md)
+        * [In cases and processes](configuration-guides/plugins/external-plugins/external-plugins-in-cases-and-processes.md)
+        * [Troubleshooting](configuration-guides/plugins/external-plugins/troubleshooting.md)
+* [📊 Dashboard](configuration-guides/dashboard/README.md)
+    * [Widgets](configuration-guides/dashboard/widgets.md)
 * [🔏 Access control](configuration-guides/access-control/README.md)
     * [Configurable elements](configuration-guides/access-control/configurable-elements.md)
     * [Roles](configuration-guides/access-control/roles.md)
@@ -63,11 +75,16 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
-  * [13.47.0](release-notes/13.x.x/13.47.0/README.md)
+  * [13.48.0](release-notes/13.x.x/13.48.0/README.md)
+  * [13.46.0](release-notes/13.x.x/13.46.0/README.md)
   * [13.45.1](release-notes/13.x.x/13.45.1/README.md)
   * [13.45.0](release-notes/13.x.x/13.45.0/README.md)
   * [13.44.0](release-notes/13.x.x/13.44.0/README.md)
   * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
+
+## Advanced
+
+* [Dashboard widget data sources](advanced/dashboard-widget-data-sources.md)
 
 ## Support
 

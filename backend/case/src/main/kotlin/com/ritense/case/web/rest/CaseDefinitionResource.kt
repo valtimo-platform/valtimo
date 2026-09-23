@@ -48,6 +48,7 @@ import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.plugin.DanglingPluginConfigurationDto
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -88,10 +89,14 @@ class CaseDefinitionResource(
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     private val caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
-    private val pluginConfigurationMappingResolver: PluginConfigurationMappingResolver?,
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get case definition",
+        nl = "Dossierdefinitie ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}")
     fun getCaseDefinition(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -111,6 +116,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create case definition draft",
+        nl = "Concept dossierdefinitie aanmaken",
+    )
     @PostMapping("/management/v1/case-definition/draft")
     fun createCaseDefinitionDraft(
         @Valid @RequestBody request: CaseDefinitionDraftCreateRequest
@@ -123,6 +132,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete case definition",
+        nl = "Dossierdefinitie verwijderen",
+    )
     @DeleteMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}")
     fun deleteCaseDefinition(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -133,6 +146,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case definition",
+        nl = "Dossierdefinitie bijwerken",
+    )
     @PatchMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}")
     fun updateCaseDefinition(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -147,6 +164,10 @@ class CaseDefinitionResource(
         return ResponseEntity.ok(CaseDefinitionResponseDto.of(caseDefinition))
     }
 
+    @EndpointDescription(
+        en = "List case definitions",
+        nl = "Dossierdefinities ophalen",
+    )
     @GetMapping("/v1/case-definition")
     fun getCaseDefinitions(
         @RequestParam caseDefinitionKey: String?,
@@ -162,6 +183,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case definitions (management)",
+        nl = "Dossierdefinities ophalen (beheer)",
+    )
     @GetMapping("/management/v1/case-definition")
     fun getCaseDefinitionsForManagement(
         @RequestParam caseDefinitionKey: String?,
@@ -192,6 +217,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case definition versions",
+        nl = "Versies van dossierdefinitie ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version")
     fun getCaseDefinitionVersions(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -203,6 +232,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Finalize case definition",
+        nl = "Dossierdefinitie definitief maken",
+    )
     @PostMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/finalize")
     fun finalizeCaseDefinition(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -215,6 +248,10 @@ class CaseDefinitionResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Get case settings",
+        nl = "Dossierinstellingen ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/settings")
     fun getCaseSettings(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -230,6 +267,10 @@ class CaseDefinitionResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Get case settings (management)",
+        nl = "Dossierinstellingen ophalen (beheer)",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     @RunWithoutAuthorization
     fun getCaseSettingsForManagement(
@@ -247,6 +288,10 @@ class CaseDefinitionResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Update case settings",
+        nl = "Dossierinstellingen bijwerken",
+    )
     @PatchMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     @RunWithoutAuthorization
     fun updateCaseSettingsForManagement(
@@ -268,6 +313,10 @@ class CaseDefinitionResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Get active case definition",
+        nl = "Actieve dossierdefinitie ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}")
     @RunWithoutAuthorization
     fun getActive(
@@ -281,6 +330,10 @@ class CaseDefinitionResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Set active case definition",
+        nl = "Actieve dossierdefinitie instellen",
+    )
     @PostMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/active")
     @RunWithoutAuthorization
     fun setActive(
@@ -300,6 +353,10 @@ class CaseDefinitionResource(
         }
     }
 
+    @EndpointDescription(
+        en = "List hidden case list columns",
+        nl = "Verborgen dossierlijstkolommen ophalen",
+    )
     @GetMapping("/v1/case/{caseDefinitionName}/hidden-list-column")
     fun getHiddenCaseListColumnForUser(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
@@ -314,6 +371,10 @@ class CaseDefinitionResource(
             )
     }
 
+    @EndpointDescription(
+        en = "Save hidden case list columns",
+        nl = "Verborgen dossierlijstkolommen opslaan",
+    )
     @PostMapping("/v1/case/{caseDefinitionName}/hidden-list-column")
     fun setHiddenListColumnsForUser(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
@@ -324,6 +385,10 @@ class CaseDefinitionResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "List case list columns",
+        nl = "Dossierlijstkolommen ophalen",
+    )
     @GetMapping("/v1/case/{caseDefinitionName}/list-column")
     fun getCaseListColumn(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
@@ -331,12 +396,20 @@ class CaseDefinitionResource(
         return ResponseEntity.ok().body(service.getListColumns(caseDefinitionName))
     }
 
+    @EndpointDescription(
+        en = "List case list columns (management)",
+        nl = "Dossierlijstkolommen ophalen (beheer)",
+    )
     @GetMapping("/management/v1/case/{caseDefinitionName}/list-column")
     @RunWithoutAuthorization
     fun getCaseListColumnForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
     ): ResponseEntity<List<CaseListColumnDto>> = getCaseListColumn(caseDefinitionName)
 
+    @EndpointDescription(
+        en = "Create case list column",
+        nl = "Dossierlijstkolom aanmaken",
+    )
     @PostMapping("/management/v1/case/{caseDefinitionName}/list-column")
     @RunWithoutAuthorization
     fun createCaseListColumnForManagement(
@@ -347,6 +420,10 @@ class CaseDefinitionResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Update case list columns",
+        nl = "Dossierlijstkolommen bijwerken",
+    )
     @PutMapping("/management/v1/case/{caseDefinitionName}/list-column")
     @RunWithoutAuthorization
     fun updateListColumnForManagement(
@@ -357,6 +434,10 @@ class CaseDefinitionResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete case list column",
+        nl = "Dossierlijstkolom verwijderen",
+    )
     @DeleteMapping("/management/v1/case/{caseDefinitionName}/list-column/{columnKey}")
     @RunWithoutAuthorization
     fun deleteListColumnForManagement(
@@ -367,6 +448,10 @@ class CaseDefinitionResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Export case definition",
+        nl = "Dossierdefinitie exporteren",
+    )
     @GetMapping(
         "/management/v1/case/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/export",
         produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
@@ -386,6 +471,10 @@ class CaseDefinitionResource(
             .body(baos.toByteArray())
     }
 
+    @EndpointDescription(
+        en = "Preview case definition import",
+        nl = "Voorbeeld van dossierdefinitie-import ophalen",
+    )
     @PostMapping("/management/v1/case/import/preview")
     @RunWithoutAuthorization
     fun importPreview(
@@ -400,6 +489,10 @@ class CaseDefinitionResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Import case definition",
+        nl = "Dossierdefinitie importeren",
+    )
     @PostMapping("/management/v1/case/import")
     @RunWithoutAuthorization
     fun import(
@@ -429,6 +522,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List configuration issues for case definition",
+        nl = "Configuratieproblemen voor dossierdefinitie ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/configuration-issues")
     fun getConfigurationIssues(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -439,18 +536,28 @@ class CaseDefinitionResource(
         return ResponseEntity.ok(issues.map { CaseDefinitionConfigurationIssueDto.of(it) })
     }
 
+    @EndpointDescription(
+        en = "List dangling plugin configurations for case definition",
+        nl = "Losse pluginconfiguraties voor dossierdefinitie ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/dangling-plugin-configurations")
     @RunWithoutAuthorization
     fun getDanglingPluginConfigurations(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
     ): ResponseEntity<List<DanglingPluginConfigurationDto>> {
-        val resolver = pluginConfigurationMappingResolver
-            ?: return ResponseEntity.ok(emptyList())
+        if (pluginConfigurationMappingResolvers.isEmpty()) {
+            return ResponseEntity.ok(emptyList())
+        }
         val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
-        return ResponseEntity.ok(resolver.getDanglingPluginConfigurations(caseDefinitionId))
+        val dangling = pluginConfigurationMappingResolvers.flatMap { it.getDanglingPluginConfigurations(caseDefinitionId) }
+        return ResponseEntity.ok(dangling)
     }
 
+    @EndpointDescription(
+        en = "Resolve plugin configuration mappings for case definition",
+        nl = "Pluginconfiguratiekoppelingen voor dossierdefinitie toewijzen",
+    )
     @PutMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/plugin-configuration-mappings")
     @RunWithoutAuthorization
     fun resolvePluginConfigurationMappings(
@@ -458,14 +565,19 @@ class CaseDefinitionResource(
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
         @RequestBody mappings: Map<UUID, UUID>,
     ): ResponseEntity<Void> {
-        val resolver = pluginConfigurationMappingResolver
-            ?: return ResponseEntity.status(501).build()
+        if (pluginConfigurationMappingResolvers.isEmpty()) {
+            return ResponseEntity.status(501).build()
+        }
         val caseDefinitionId = CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
-        resolver.resolve(caseDefinitionId, mappings)
+        pluginConfigurationMappingResolvers.forEach { it.resolve(caseDefinitionId, mappings) }
         return ResponseEntity.noContent().build()
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Check case definition capabilities",
+        nl = "Mogelijkheden van dossierdefinitie controleren",
+    )
     @GetMapping("/management/v1/case-definition/check")
     fun checkCaseDefinition(): ResponseEntity<CaseDefinitionCheckResponse> {
         return ResponseEntity.ok(
@@ -476,6 +588,10 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Check if case definition is finalizable",
+        nl = "Controleren of dossierdefinitie afrondbaar is",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/finalizable")
     fun checkIfCaseDefinitionIsFinalizable(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,

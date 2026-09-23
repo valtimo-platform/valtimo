@@ -20,6 +20,7 @@ import com.ritense.iko.service.IkoViewService
 import com.ritense.iko.web.rest.response.IkoViewUserListResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.constraints.Size
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -40,6 +41,10 @@ class IkoViewResource(
     private val ikoViewService: IkoViewService,
 ) {
 
+    @EndpointDescription(
+        en = "List IKO views",
+        nl = "IKO-weergaven ophalen",
+    )
     @GetMapping("/v1/iko-view")
     fun getIkoViews(
         @RequestParam @Size(max = 256) key: String?,

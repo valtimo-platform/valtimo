@@ -109,6 +109,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/data"))
                     .hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$DOCUMENT_EXTERNAL_PLUGIN_TAB_URL/{tabKey}")).hasAuthority(USER)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
@@ -149,6 +150,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
         private const val MANAGEMENT_WIDGET_TAB_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab"
         private const val DOCUMENT_WIDGET_TAB_URL = "/api/v1/document/{documentId}/widget-tab"
+        private const val DOCUMENT_EXTERNAL_PLUGIN_TAB_URL =
+            "/api/v1/document/{documentId}/external-plugin-tab"
         private const val MANAGEMENT_HEADER_WIDGET_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget"
         private const val HEADER_WIDGET_URL =

@@ -30,6 +30,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -48,6 +49,10 @@ class DocumentenApiManagementResource(
     private val documentenApiVersionService: DocumentenApiVersionService
 ) {
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get document column keys for case definition",
+        nl = "Documentkolomsleutels voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column-key")
     fun getColumnKeys(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
@@ -59,6 +64,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get configured document columns for case definition",
+        nl = "Geconfigureerde documentkolommen voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column")
     fun getConfiguredColumns(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
@@ -70,6 +79,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update document column order",
+        nl = "Volgorde van documentkolommen bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column")
     fun updateColumnOrder(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -83,6 +96,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create or update document column",
+        nl = "Documentkolom aanmaken of bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column/{columnKey}")
     fun createOrUpdateColumn(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -95,6 +112,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete document column",
+        nl = "Documentkolom verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column/{columnKey}")
     fun deleteColumn(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -105,6 +126,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get Documenten API version for case definition",
+        nl = "Documenten API-versie voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/documenten-api/version")
     fun getApiVersion(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
@@ -115,6 +140,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get Documenten API version for case definition version",
+        nl = "Documenten API-versie voor dossierdefinitieversie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/version/{caseDefinitionVersionTag}/documenten-api/version")
     fun getApiVersionForVersion(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -127,6 +156,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get all Documenten API versions",
+        nl = "Alle Documenten API-versies ophalen",
+    )
     @GetMapping("/v1/documenten-api/versions")
     fun getAllApiVersion(): ResponseEntity<DocumentenApiVersionsManagementDto> {
         val versions = documentenApiVersionService.getAllVersions()
@@ -134,6 +167,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get document upload fields for case definition",
+        nl = "Documentuploadvelden voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")
     fun getUploadFields(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -143,6 +180,10 @@ class DocumentenApiManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update document upload field",
+        nl = "Documentuploadveld bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")
     fun updateUploadField(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
