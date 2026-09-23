@@ -36,6 +36,7 @@ data class ExternalPluginCaseWidgetDto(
     override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: ExternalPluginWidgetProperties,
+    override var dataGroupId: String? = null
 ) : CaseWidgetTabWidgetDto {
 
     /**
