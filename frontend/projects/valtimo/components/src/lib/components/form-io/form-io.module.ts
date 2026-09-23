@@ -36,9 +36,11 @@ import {FormioDummyComponent} from './components/form-io-dummy/dummy.component';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
 import {applyDataGridPatch} from './patches/patched-datagrid';
+import {registerDebouncedButtonComponent} from './components/form-io-debounced-button/debounced-button.formio';
 
-// Apply FormIO patches before any form renders
+// Apply FormIO patches and register custom components before any form renders
 applyDataGridPatch();
+registerDebouncedButtonComponent();
 
 @NgModule({
   imports: [
