@@ -14,4 +14,4 @@
 
 ## Bugfixes
 
-* New bugfix.
+* The edit and delete options of a note in the case notes timeline are now translated.

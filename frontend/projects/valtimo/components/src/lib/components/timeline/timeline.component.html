@@ -55,7 +55,7 @@
                   <i class="icon mdi" [ngClass]="action.icon"></i>
                 </ng-container>
 
-                {{ action?.label || '-' }}
+                {{ (action?.label | translate) || '-' }}
               </a>
             </div>
           </div>
