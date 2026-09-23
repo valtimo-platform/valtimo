@@ -151,12 +151,16 @@ allprojects {
                 mavenBom "software.amazon.awssdk:bom:${awssdkVersion}"
                 mavenBom "com.fasterxml.jackson:jackson-bom:${jacksonVersion}"
                 mavenBom "org.junit:junit-bom:${junitVersion}"
-                // Temporary override, remove on next upgrade of spring
+                // CVE override: Spring Boot 3.5.16 ships netty 4.1.135.Final, affected by 12 CVEs
+                // including CVE-2026-56820 (9.1). Fixed in 4.2.16.Final; take the latest 4.2.x.
                 mavenBom "io.netty:netty-bom:${nettyVersion}"
             }
             dependencies {
                 dependency "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
+                // CVE override: Spring Boot 3.5.16 ships pgjdbc 42.7.11 which is affected by
+                // CVE-2026-54291 (8.2) — channelBinding=require can be silently downgraded.
+                // Fixed in 42.7.12; take the latest 42.7.x.
                 dependency "org.postgresql:postgresql:${postgresqlDriverVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
                 dependency "org.apache.commons:commons-lang3:${commonsLangVersion}"
@@ -166,8 +170,9 @@ allprojects {
                 //  of 03-02-2026
                 dependency "org.assertj:assertj-core:3.27.7"
 
-                // CVE override: Spring Boot 3.5.14 ships with Tomcat 10.1.54. Override
-                // until a new Spring Boot patch includes the fix.
+                // CVE override: Spring Boot 3.5.16 ships Tomcat 10.1.55, affected by 11 CVEs
+                // including CVE-2026-65637 and CVE-2026-65905 (both 9.8). Fixed in 10.1.58;
+                // 10.1.58 was never published to Maven Central, so take the latest 10.1.x.
                 dependency "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}"
                 dependency "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}"
                 dependency "org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}"
@@ -189,6 +194,17 @@ allprojects {
                 // includes the fix.
                 dependency "org.apache.httpcomponents.core5:httpcore5:${httpcore5Version}"
                 dependency "org.apache.httpcomponents.core5:httpcore5-h2:${httpcore5Version}"
+
+                // CVE override: Spring Boot 3.5.16 ships httpclient5 5.5.2 which is affected by
+                // CVE-2026-71290 (9.1) — HostnameVerificationPolicy#BUILTIN has no effect on the
+                // async client, allowing server impersonation. Fixed in 5.6.4.
+                dependency "org.apache.httpcomponents.client5:httpclient5:${httpclient5Version}"
+
+                // CVE override: Spring Boot 3.5.16 ships freemarker 2.3.34 which is affected by
+                // CVE-2026-84939 (9.1) — path traversal via a malformed locale identifier when
+                // localized lookup is enabled. Fixed in 2.3.35. Needed even though
+                // freemarker-plugin 8.5.6 already asks for 2.3.35: the BOM downgrades it back.
+                dependency "org.freemarker:freemarker:${freemarkerVersion}"
 
                 // CVE override: Spring Boot 3.5.16 ships logback 1.5.34 which is affected by
                 // CVE-2026-13006 (arbitrary code execution via unicode-escape bypass in Janino

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.ritense.document.service.DocumentSnapshotService;
 import com.ritense.document.web.rest.DocumentSnapshotResource;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -55,6 +56,10 @@ public class JsonSchemaDocumentSnapshotResource implements DocumentSnapshotResou
     }
 
     @Override
+    @EndpointDescription(
+        en = "Get document snapshot by id",
+        nl = "Document-snapshot ophalen op id"
+    )
     @GetMapping("/v1/document-snapshot/{id}")
     public ResponseEntity<? extends DocumentSnapshot> getDocumentSnapshot(@PathVariable(name = "id") UUID snapshotId) {
         return documentSnapshotService.findById(JsonSchemaDocumentSnapshotId.existingId(snapshotId))
@@ -64,6 +69,10 @@ public class JsonSchemaDocumentSnapshotResource implements DocumentSnapshotResou
     }
 
     @Override
+    @EndpointDescription(
+        en = "List document snapshots",
+        nl = "Document-snapshots ophalen"
+    )
     @GetMapping("/v1/document-snapshot")
     public ResponseEntity<Page<? extends DocumentSnapshot>> getDocumentSnapshots(
         @LoggableResource("documentDefinitionName") @RequestParam(value = "definitionName", required = false) String definitionName,

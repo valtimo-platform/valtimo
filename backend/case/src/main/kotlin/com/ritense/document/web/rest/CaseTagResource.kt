@@ -26,6 +26,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -46,6 +47,10 @@ class CaseTagResource(
     private val caseTagService: CaseTagService
 ) {
 
+    @EndpointDescription(
+        en = "List case tags by version",
+        nl = "Dossiertags per versie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag")
     fun getCaseTags(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -55,6 +60,10 @@ class CaseTagResource(
         return ResponseEntity.ok(caseTags.map { CaseTagResponseDto(it) }.sortedBy { it.order })
     }
 
+    @EndpointDescription(
+        en = "List case tags",
+        nl = "Dossiertags ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/case-tag")
     fun getCaseTags(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -64,6 +73,10 @@ class CaseTagResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case tags for management",
+        nl = "Dossiertags voor beheer ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag")
     fun getCaseTagForManagement(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -74,6 +87,10 @@ class CaseTagResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create case tag",
+        nl = "Dossiertag aanmaken",
+    )
     @PostMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag")
     fun createCaseTag(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -95,6 +112,10 @@ class CaseTagResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case tags",
+        nl = "Dossiertags bijwerken",
+    )
     @PutMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag")
     fun editCaseTags(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -106,6 +127,10 @@ class CaseTagResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case tag",
+        nl = "Dossiertag bijwerken",
+    )
     @PutMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag/{caseTagKey}")
     fun updateCaseTag(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -118,6 +143,10 @@ class CaseTagResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete case tag",
+        nl = "Dossiertag verwijderen",
+    )
     @DeleteMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag/{caseTagKey}")
     fun deleteCaseTag(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,

@@ -22,3 +22,18 @@
 :host ::ng-deep .cds-tag--no-margin {
   margin: 0;
 }
+
+:host ::ng-deep .startable-by-user-toggle {
+  display: flex;
+  align-items: center;
+  height: 100%;
+
+  .cds--form-item {
+    margin: 0;
+    flex: none;
+  }
+
+  .cds--toggle__label {
+    margin: 0;
+  }
+}

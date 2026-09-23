@@ -28,6 +28,7 @@ import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import org.springframework.http.HttpStatus
@@ -61,6 +62,10 @@ class CaseProcessDefinitionManagementResource(
     private val assembler: ProcessDefinitionResponseAssembler,
 ) {
 
+    @EndpointDescription(
+        en = "List process definitions with links by case definition",
+        nl = "Procesdefinities met koppelingen per dossierdefinitie ophalen",
+    )
     @GetMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"],
     )
@@ -93,6 +98,10 @@ class CaseProcessDefinitionManagementResource(
         return ResponseEntity.ok(definitions)
     }
 
+    @EndpointDescription(
+        en = "Get process definition by key with links",
+        nl = "Procesdefinitie per sleutel met koppelingen ophalen",
+    )
     @GetMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"]
     )
@@ -125,6 +134,10 @@ class CaseProcessDefinitionManagementResource(
         return ResponseEntity.ok(responseDto)
     }
 
+    @EndpointDescription(
+        en = "Delete process definitions and links by key",
+        nl = "Procesdefinities en koppelingen per sleutel verwijderen",
+    )
     @DeleteMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"],
     )
@@ -152,6 +165,10 @@ class CaseProcessDefinitionManagementResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Deploy process definition and links for case definition",
+        nl = "Procesdefinitie en koppelingen voor dossierdefinitie uitrollen",
+    )
     @PostMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -186,6 +203,10 @@ class CaseProcessDefinitionManagementResource(
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    @EndpointDescription(
+        en = "Update process definition and links for case definition",
+        nl = "Procesdefinitie en koppelingen voor dossierdefinitie bijwerken",
+    )
     @PutMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
