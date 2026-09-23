@@ -1,0 +1,231 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {readFileSync} from "node:fs";
+import {hostname} from "node:os";
+import {describe, expect, it} from "vitest";
+import {DEV_ADMIN_TOKEN} from "../../../scripts/lib/common.mjs";
+import {
+  MIN_ADMIN_TOKEN_LENGTH,
+  applyDatabasePolicy,
+  envSchema,
+  migrateEnvSchema,
+} from "./app-config";
+
+/** Shortest token the schema accepts — every unrelated case parses with this. */
+const VALID_TOKEN = "a".repeat(MIN_ADMIN_TOKEN_LENGTH);
+
+describe("envSchema", () => {
+  it("requires ADMIN_TOKEN", () => {
+    expect(() => envSchema.parse({})).toThrow();
+    expect(() => envSchema.parse({ ADMIN_TOKEN: "" })).toThrow();
+  });
+
+  it("rejects an ADMIN_TOKEN below the minimum length", () => {
+    // A one-character HMAC key is the weakest link in every GZAC→host call; the admin-route rate
+    // limit slows a brute force but does not make a short secret safe.
+    expect(() =>
+      envSchema.parse({ ADMIN_TOKEN: "a".repeat(MIN_ADMIN_TOKEN_LENGTH - 1) })
+    ).toThrow(/at least 16 characters/);
+    expect(envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN }).ADMIN_TOKEN).toBe(VALID_TOKEN);
+  });
+
+  it("keeps the sample app's copy of the floor in step", () => {
+    // Two deployables, two copies — held together here instead of drifting.
+    const source = readFileSync(
+      new URL("../../../sample-apps/demo-app/src/config.ts", import.meta.url),
+      "utf8"
+    );
+    const declared = source.match(/MIN_ADMIN_TOKEN_LENGTH\s*=\s*(\d+)/)?.[1];
+    expect(Number(declared)).toBe(MIN_ADMIN_TOKEN_LENGTH);
+  });
+
+  it("accepts the dev launchers' fallback token", () => {
+    // Shortening DEV_ADMIN_TOKEN would otherwise only surface as `npm run dev` dying at boot.
+    expect(envSchema.parse({ ADMIN_TOKEN: DEV_ADMIN_TOKEN }).ADMIN_TOKEN).toBe(DEV_ADMIN_TOKEN);
+  });
+
+  it("applies defaults when only ADMIN_TOKEN is supplied", () => {
+    const cfg = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN });
+    expect(cfg.PORT).toBe(8090);
+    expect(cfg.PLUGIN_STORAGE_DIR).toBe("./plugins");
+    expect(cfg.LOG_LEVEL).toBe("info");
+    // The host DB defaults to 5434, not the standard 5432.
+    expect(cfg.DB_PORT).toBe(5434);
+    expect(cfg.DB_NAME).toBe("pluginhost");
+  });
+
+  it("defaults HOST_ID to the OS hostname", () => {
+    const cfg = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN });
+    expect(cfg.HOST_ID).toBe(hostname());
+  });
+
+  it("honours an explicit HOST_ID", () => {
+    const cfg = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, HOST_ID: "host-a" });
+    expect(cfg.HOST_ID).toBe("host-a");
+  });
+
+  it("coerces numeric env strings for PORT and DB_PORT", () => {
+    const cfg = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, PORT: "9000", DB_PORT: "6000" });
+    expect(cfg.PORT).toBe(9000);
+    expect(cfg.DB_PORT).toBe(6000);
+  });
+
+  it("rejects an out-of-enum LOG_LEVEL", () => {
+    expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, LOG_LEVEL: "trace" })).toThrow();
+  });
+
+  it("defaults the execution/limit knobs and coerces their env strings", () => {
+    const defaults = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN });
+    expect(defaults.WASM_TIMEOUT_MS).toBe(30_000);
+    expect(defaults.WASM_MAX_MEMORY_PAGES).toBe(4096);
+    expect(defaults.WASM_INSTANCE_IDLE_TTL_MS).toBe(10 * 60 * 1000);
+    expect(defaults.GZAC_API_TIMEOUT_MS).toBe(60_000);
+    expect(defaults.USER_TOKEN_INTROSPECTION_TIMEOUT_MS).toBe(10_000);
+    expect(defaults.UPLOAD_MAX_BYTES).toBe(100 * 1024 * 1024);
+    expect(defaults.PLUGIN_MAX_UNCOMPRESSED_BYTES).toBe(256 * 1024 * 1024);
+    expect(defaults.DATA_RATE_LIMIT_PER_MINUTE).toBe(120);
+    expect(defaults.CONFIG_CACHE_TTL_MS).toBe(10_000);
+
+    const cfg = envSchema.parse({
+      ADMIN_TOKEN: VALID_TOKEN,
+      WASM_TIMEOUT_MS: "5000",
+      WASM_MAX_MEMORY_PAGES: "0",
+      DATA_RATE_LIMIT_PER_MINUTE: "0",
+    });
+    expect(cfg.WASM_TIMEOUT_MS).toBe(5000);
+    expect(cfg.WASM_MAX_MEMORY_PAGES).toBe(0); // 0 = no memory cap
+    expect(cfg.DATA_RATE_LIMIT_PER_MINUTE).toBe(0); // 0 = rate limit off
+  });
+
+  it("rejects non-positive or non-numeric execution limits", () => {
+    expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, WASM_TIMEOUT_MS: "0" })).toThrow();
+    expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, WASM_TIMEOUT_MS: "abc" })).toThrow();
+    expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, UPLOAD_MAX_BYTES: "-1" })).toThrow();
+    expect(() =>
+      envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, PLUGIN_MAX_UNCOMPRESSED_BYTES: "0" })
+    ).toThrow();
+  });
+
+  it("defaults the pre-install directory and keeps overwrite off", () => {
+    const cfg = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN });
+    expect(cfg.PLUGIN_PREINSTALL_DIR).toBe("./preinstalled");
+    expect(cfg.PLUGIN_PREINSTALL_OVERWRITE).toBe(false);
+  });
+
+  it("only enables the pre-install overwrite for the literal string 'true'", () => {
+    const enabled = (value: string) =>
+      envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, PLUGIN_PREINSTALL_OVERWRITE: value })
+        .PLUGIN_PREINSTALL_OVERWRITE;
+    expect(enabled("true")).toBe(true);
+    expect(enabled("TRUE")).toBe(true);
+    // The trap z.coerce.boolean() would fall into: every non-empty string becomes true, so
+    // "false" would silently enable replacing a package an admin already accepted.
+    expect(enabled("false")).toBe(false);
+    expect(enabled("0")).toBe(false);
+    expect(enabled("")).toBe(false);
+  });
+
+  it("leaves TLS paths undefined when not set", () => {
+    const cfg = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN });
+    expect(cfg.TLS_CERT_PATH).toBeUndefined();
+    expect(cfg.TLS_KEY_PATH).toBeUndefined();
+    expect(cfg.TLS_CA_PATH).toBeUndefined();
+  });
+
+  it("migrates on boot by default and accepts both explicit values", () => {
+    expect(envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN }).DB_MIGRATE_ON_BOOT).toBe(true);
+    expect(
+      envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, DB_MIGRATE_ON_BOOT: "true" }).DB_MIGRATE_ON_BOOT
+    ).toBe(true);
+    expect(
+      envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, DB_MIGRATE_ON_BOOT: "false" }).DB_MIGRATE_ON_BOOT
+    ).toBe(false);
+  });
+
+  it("rejects a DB_MIGRATE_ON_BOOT typo instead of falling back to a default", () => {
+    // Whether the schema gets maintained is not something to guess at: "yes", "1" and "False" all
+    // fail the boot rather than silently resolving to true or false.
+    for (const value of ["yes", "1", "False", "", "TRUE"]) {
+      expect(() => envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN, DB_MIGRATE_ON_BOOT: value })).toThrow();
+    }
+  });
+});
+
+describe("migrateEnvSchema", () => {
+  it("parses with no ADMIN_TOKEN present", () => {
+    // The entire reason this schema exists: a migration job must not need the HMAC admin secret.
+    const cfg = migrateEnvSchema.parse({});
+    expect(cfg).not.toHaveProperty("ADMIN_TOKEN");
+  });
+
+  it("applies the same DB_* and LOG_LEVEL defaults as envSchema", () => {
+    const migrate = migrateEnvSchema.parse({});
+    const app = envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN });
+
+    expect(migrate.DB_HOST).toBe(app.DB_HOST);
+    expect(migrate.DB_PORT).toBe(app.DB_PORT);
+    expect(migrate.DB_NAME).toBe(app.DB_NAME);
+    expect(migrate.DB_USER).toBe(app.DB_USER);
+    expect(migrate.DB_PASSWORD).toBe(app.DB_PASSWORD);
+    expect(migrate.LOG_LEVEL).toBe(app.LOG_LEVEL);
+  });
+
+  it("coerces DB_PORT and rejects an out-of-enum LOG_LEVEL", () => {
+    expect(migrateEnvSchema.parse({ DB_PORT: "6000" }).DB_PORT).toBe(6000);
+    expect(() => migrateEnvSchema.parse({ LOG_LEVEL: "trace" })).toThrow();
+  });
+});
+
+describe("applyDatabasePolicy", () => {
+  const PROD_DB = {
+    NODE_ENV: "production",
+    DB_HOST: "db.internal",
+    DB_NAME: "pluginhost",
+    DB_USER: "pluginhost",
+    DB_PASSWORD: "s3cret",
+  };
+
+  it("leaves a development environment untouched", () => {
+    // `npm run dev` never sets NODE_ENV.
+    const env = { DB_HOST: undefined };
+    const result = applyDatabasePolicy(env);
+    expect(result.env).toBe(env);
+    expect(result.missing).toEqual([]);
+    expect(envSchema.parse({ ADMIN_TOKEN: VALID_TOKEN }).DB_PORT).toBe(5434);
+  });
+
+  it("reports every unstated database variable in production", () => {
+    // The unconfigured container: image sets NODE_ENV=production and no DB_*.
+    expect(applyDatabasePolicy({ NODE_ENV: "production" }).missing).toEqual([
+      "DB_HOST",
+      "DB_NAME",
+      "DB_USER",
+      "DB_PASSWORD",
+    ]);
+  });
+
+  it("reports only what is actually missing, blanks included", () => {
+    expect(applyDatabasePolicy({ ...PROD_DB, DB_USER: undefined }).missing).toEqual(["DB_USER"]);
+    expect(applyDatabasePolicy({ ...PROD_DB, DB_PASSWORD: "   " }).missing).toEqual(["DB_PASSWORD"]);
+    expect(applyDatabasePolicy(PROD_DB).missing).toEqual([]);
+  });
+
+  it("defaults DB_PORT to 5432 in production, never the dev port", () => {
+    expect(applyDatabasePolicy(PROD_DB).env.DB_PORT).toBe("5432");
+    expect(applyDatabasePolicy({ ...PROD_DB, DB_PORT: "6543" }).env.DB_PORT).toBe("6543");
+  });
+});
