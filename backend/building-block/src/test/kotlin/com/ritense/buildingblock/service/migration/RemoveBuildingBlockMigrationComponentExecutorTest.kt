@@ -53,7 +53,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import java.util.Optional
 import java.util.UUID
 
-/** The dissolve direction: which blocks an entry reaches and in what order (G25), plus the required version tag. The two running-process tests pin whether a hand-back happened, which nothing else covers. */
+/** The dissolve direction: which blocks an entry reaches and in what order, plus the required version tag. The two running-process tests pin whether a hand-back happened, which nothing else covers. */
 class RemoveBuildingBlockMigrationComponentExecutorTest {
 
     private lateinit var configurationRepository: RemoveBuildingBlockConfigurationRepository
@@ -130,7 +130,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
         assertThat(deleted).containsExactly(child.id, parent.id)
     }
 
-    /** G25: nothing cascades in the persistence layer, so a child goes with its parent and is reported — without an entry it has no `dataMigration` to hand its fields back with. */
+    /** nothing cascades in the persistence layer, so a child goes with its parent and is reported — without an entry it has no `dataMigration` to hand its fields back with. */
     @Test
     fun `should dissolve a child no entry names along with the parent that is named`() {
         val parent = block("verhuizing-inspectie", "1.0.0")
@@ -187,7 +187,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
 
     @Test
     fun `should fail the case when a block is on a version no entry names`() {
-        // The version the plan was not told about would be stranded: alignment would never find a candidate for it again (G24).
+        // The version the plan was not told about would be stranded: alignment would never find a candidate for it again.
         val named = block("inspectie-dossier", "1.0.0")
         val unnamed = block("inspectie-dossier", "2.0.0")
         givenSubtree(owned(named, null, 0), owned(unnamed, null, 0))
@@ -218,7 +218,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
 
     @Test
     fun `should refuse an entry that names no version instead of dissolving on the key`() {
-        // Only reachable from a row stored before the version was required (G29). Dissolving whatever is there is what it may not do.
+        // Only reachable from a row stored before the version was required. Dissolving whatever is there is what it may not do.
         val onOldVersion = block("inspectie-dossier", "1.0.0")
         givenSubtree(owned(onOldVersion, null, 0))
         instructions += RemoveBuildingBlockInstruction(buildingBlockKey = "inspectie-dossier")
@@ -266,7 +266,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
 
     @Test
     fun `should refuse to dissolve a block whose second process was not handed back`() {
-        // One hand-back used to satisfy the whole entry (G70). Real UUIDs: the hand-back builds an `OperatonProcessInstanceId`.
+        // One hand-back used to satisfy the whole entry. Real UUIDs: the hand-back builds an `OperatonProcessInstanceId`.
         val handedBackId = UUID.randomUUID().toString()
         val strandedId = UUID.randomUUID().toString()
         val block = block("verhuizing-inspectie", "1.0.2", processInstanceId = handedBackId)
@@ -337,7 +337,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
 
     @Test
     fun `should dissolve every level of a recursive block from one entry, deepest first`() {
-        // A self-calling process gives a chain of instances on one definition id; one entry names them all, and the walk orders them (G25).
+        // A self-calling process gives a chain of instances on one definition id; one entry names them all, and the walk orders them.
         val level1 = block("herhaling", "1.0.0")
         val level2 = block("herhaling", "1.0.0", parent = level1)
         val level3 = block("herhaling", "1.0.0", parent = level2)
@@ -423,7 +423,7 @@ class RemoveBuildingBlockMigrationComponentExecutorTest {
         whenever(query.singleResult()).thenReturn(processInstance)
     }
 
-    /** Two processes on one block, of which the entry names one — the block records the one it hands back, so a query pinned to that id sees a complete hand-back (G70). */
+    /** Two processes on one block, of which the entry names one — the block records the one it hands back, so a query pinned to that id sees a complete hand-back. */
     private fun givenTwoProcessesOneHandedBack(
         handedBackId: String,
         handedBackKey: String,

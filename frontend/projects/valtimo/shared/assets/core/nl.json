@@ -876,6 +876,10 @@
       "errorCount": "{{count}} fouten",
       "warningCount": "{{count}} waarschuwingen",
       "editor": {
+        "saveFailed": {
+          "title": "Het migratieplan kon niet worden opgeslagen",
+          "fallback": "De server heeft het plan geweigerd zonder reden op te geven. Bekijk de browserconsole voor details."
+        },
         "general": {
           "titlePlaceholder": "Migreer dossiers met status 'aanvraag-ontvangen'",
           "sourceHint": "De versie van de dossierdefinitie waarvan dit plan de dossiers migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die dossiers in één stap hierheen, en een andere sleutel kiezen brengt dossiers van die dossierdefinitie over naar deze.",
@@ -4004,6 +4008,10 @@
       "addPlan": "Migratieplan toevoegen",
       "duplicateSuffix": "kopie",
       "editor": {
+        "saveFailed": {
+          "title": "Het migratieplan kon niet worden opgeslagen",
+          "fallback": "De server heeft het plan geweigerd zonder reden op te geven. Bekijk de browserconsole voor details."
+        },
         "general": {
           "titlePlaceholder": "Migreer bouwblokken met status 'aanvraag-ontvangen'",
           "sourceHint": "De bouwsteenversie waarvan dit plan de instanties migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die instanties in één stap hierheen. Een andere bouwsteen kiezen maakt dit plan de brug die de lopende instanties daarvan hierheen brengt — en dat is het enige dat dat kan, want niets anders verbindt twee verschillende bouwstenen.",

@@ -60,10 +60,11 @@ import org.junit.jupiter.api.Test
 import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.UUID
 
-/** Whole-engine coverage of building block migration as a consequence of case migration: recursion (R4), atomicity (R5), G49, dry run, no independent trigger (R1) and nesting. Fixtures carry no running process. */
+/** Whole-engine coverage of building block migration as a consequence of case migration: recursion, atomicity, a missing chain, dry run, no independent trigger and nesting. Fixtures carry no running process. */
 class BuildingBlockMigrationCascadeIT @Autowired constructor(
     private val caseMigrationService: CaseMigrationService,
     private val migrationTriggerScheduler: MigrationTriggerScheduler,
@@ -108,7 +109,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
 
     @Test
     fun `a failing building block step rolls back the whole case migration`() {
-        // Two chains reach the version the owner links, so alignment refuses rather than improvising (R3).
+        // Two chains reach the version the owner links, so alignment refuses rather than improvising.
         val fixture = createCascadeFixture()
         deployPlan(BlueprintMigrationId.from(fixture.innerV2, "cascade-inner-shortcut"))
 
@@ -134,7 +135,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
         assertThat(migratedCount(fixture.outerPlanId)).isZero()
     }
 
-    /** G49: no plan connects the inner block's version to the one its owner now links, and nothing runs under it. */
+    /** no plan connects the inner block's version to the one its owner now links, and nothing runs under it. */
     @Test
     fun `a case migration leaves a block with no running process behind rather than failing over a missing plan`() {
         val fixture = createCascadeFixture(deployInnerPlan = false)
@@ -289,7 +290,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
     @Test
     fun `the trigger sweep starts case plans but never a building block plan`() {
         val uid = uniqueSuffix()
-        val dueAt = LocalDateTime.now().minusHours(1)
+        val dueAt = Instant.now().minusSeconds(3_600)
 
         // A case plan that is due: proof that the sweep is doing its job at all.
         val caseKey = "sweep-case-$uid"
@@ -479,7 +480,7 @@ class BuildingBlockMigrationCascadeIT @Autowired constructor(
 
     private fun deployPlan(
         id: BlueprintMigrationId,
-        scheduledAtDate: LocalDateTime? = null,
+        scheduledAtDate: Instant? = null,
         sourceKey: String = id.key,
         sourceVersionTag: String = V1,
     ): BlueprintMigrationId {

@@ -97,7 +97,7 @@ describe('MigrationBuildingBlockTabComponent', () => {
     });
   });
 
-  // The newest deployed version is the one D12 refuses when the target links an older one.
+  // The newest deployed version is the one the save path refuses when the target links an older one.
   it('starts a new add entry on the version the target links', () => {
     component.mode = 'add';
     component.api = {

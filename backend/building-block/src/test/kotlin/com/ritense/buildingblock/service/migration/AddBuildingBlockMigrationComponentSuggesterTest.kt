@@ -34,7 +34,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
-/** The suggestion must carry the whole subtree, over both link kinds — a block the target only offers as a startable item is an entry no other component supplies (G69). */
+/** The suggestion must carry the whole subtree, over both link kinds — a block the target only offers as a startable item is an entry no other component supplies. */
 class AddBuildingBlockMigrationComponentSuggesterTest {
 
     private lateinit var linkResolver: LinkedBuildingBlockVersionResolver
@@ -92,7 +92,7 @@ class AddBuildingBlockMigrationComponentSuggesterTest {
 
     @Test
     fun `should suggest an entry for a block the target only offers as a startable item`() {
-        // Nothing else supplies it: adoption needs a call activity, and alignment only ever upgrades a block that already exists (G69).
+        // Nothing else supplies it: adoption needs a call activity, and alignment only ever upgrades a block that already exists.
         startable(target, besluit)
 
         val suggestion = suggester.suggest(source, target) as List<SuggestedAddBuildingBlockEntry>
@@ -135,7 +135,7 @@ class AddBuildingBlockMigrationComponentSuggesterTest {
 
     @Test
     fun `should not suggest a startable item the target now declares on a call activity instead`() {
-        // Same key, another mechanism: the instance exists, so this is alignment's job (R2) and adoption's.
+        // Same key, another mechanism: the instance exists, so this is alignment's job and adoption's.
         startable(source, uitvoeren)
         declares(target, uitvoeren to target)
 
@@ -165,7 +165,7 @@ class AddBuildingBlockMigrationComponentSuggesterTest {
 
     @Test
     fun `should suggest nothing for a block the source already models at another version`() {
-        // A version bump is alignment's job (R2) and needs a plan for the jump (R3); an entry for it would be a no-op that now also warns for having reached nothing.
+        // A version bump is alignment's job and needs a plan for the jump; an entry for it would be a no-op that now also warns for having reached nothing.
         models(source, BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0"))
         declares(target, BuildingBlockDefinitionId.of("bijstand-uitvoeren", "2.0.0") to target)
 

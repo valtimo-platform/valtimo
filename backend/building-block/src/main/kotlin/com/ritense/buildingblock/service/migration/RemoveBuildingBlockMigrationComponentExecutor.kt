@@ -46,8 +46,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/** Dissolves every block an entry names below the owner, deepest first: hand the processes back, transfer data back, then delete document and instance. Runs in the case's transaction. */
-// Order 400 — runs last: blocks are removed only after data and process migration and any additions.
+/** Dissolves every block an entry names below the owner, deepest first: hand the processes back, transfer data back, then delete document and instance. Runs in the case's transaction. Order 400 — after data and process migration and any additions. */
 @Order(400)
 @Transactional
 class RemoveBuildingBlockMigrationComponentExecutor(
@@ -74,7 +73,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
             return
         }
 
-        // A blank version can only come from a row stored before the field was required (G29); every rule below reads it.
+        // A blank version can only come from a row stored before the field was required; every rule below reads it.
         assertEveryEntryNamesAVersion(migrationId, instructions)
 
         val ownedBlocks = buildingBlockOwnershipResolver.subtreeOf(ownerDocumentId)
@@ -82,10 +81,10 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         // Before anything is deleted, so the failure names the whole tree rather than whatever half a partial run reached.
         assertNoOtherVersionIsStranded(migrationId, instructions, ownedBlocks)
 
-        // Dissolving a block dissolves what it owns: nothing cascades in the persistence layer, so an unnamed child would survive pointing at a deleted parent (G25).
+        // Dissolving a block dissolves what it owns: nothing cascades in the persistence layer, so an unnamed child would survive pointing at a deleted parent.
         val cascaded = cascadedFrom(instructions, ownedBlocks)
 
-        // Deepest first, instances outside entries: one entry naming a parent and another its child would otherwise orphan the child (G25).
+        // Deepest first, instances outside entries: one entry naming a parent and another its child would otherwise orphan the child.
         val dissolved = mutableSetOf<BuildingBlockDefinitionId>()
         ownedBlocks.forEach { owned ->
             val instruction = instructions.firstOrNull { matches(it, owned) }
@@ -153,7 +152,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         return false
     }
 
-    /** Fails the case when an entry names no version, which only a plan stored before the field was required can do (G29). The version is not derivable, so the repair is the author's. */
+    /** Fails the case when an entry names no version, which only a plan stored before the field was required can do. The version is not derivable, so the repair is the author's. */
     private fun assertEveryEntryNamesAVersion(
         migrationId: BlueprintMigrationId,
         instructions: List<RemoveBuildingBlockInstruction>,
@@ -174,7 +173,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         owned: BuildingBlockOwnershipResolver.OwnedBuildingBlock,
     ): Boolean = owned.instance.definition.id == idOf(instruction)
 
-    /** Fails the case when a block sits on an unnamed version of a named key: nothing would link it afterwards, and unlike a plan an orphaned instance cannot be re-sourced (G24). */
+    /** Fails the case when a block sits on an unnamed version of a named key: nothing would link it afterwards, and unlike a plan an orphaned instance cannot be re-sourced. */
     private fun assertNoOtherVersionIsStranded(
         migrationId: BlueprintMigrationId,
         instructions: List<RemoveBuildingBlockInstruction>,
@@ -203,7 +202,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         }
     }
 
-    /** Warns per entry that dissolved nothing (D13) — legitimate, so not fatal, but a plan dissolving nothing must be distinguishable from one that did its work. */
+    /** Warns per entry that dissolved nothing — legitimate, so not fatal, but a plan dissolving nothing must be distinguishable from one that did its work. */
     private fun warnEntriesThatDissolvedNothing(
         migrationId: BlueprintMigrationId,
         instructions: List<RemoveBuildingBlockInstruction>,
@@ -244,7 +243,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         }
     }
 
-    /** Refuses to delete the document while anything of the block still runs, naming what. Asked of the runtime, not of a "did any instruction do something" flag — one hand-back used to satisfy a two-process block (G70). */
+    /** Refuses to delete the document while anything of the block still runs, naming what. Asked of the runtime, not of a "did any instruction do something" flag — one hand-back used to satisfy a two-process block. */
     private fun assertNothingIsStillRunningOn(
         instruction: RemoveBuildingBlockInstruction,
         instance: BuildingBlockInstance,
@@ -316,7 +315,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         }
     }
 
-    /** Every running process of [instance] for [processDefinitionKey]: business-keyed to its document, plus the one it records. Pinning this to the recorded instance left the block's other processes unhanded — G65's mistake on the way out (G70). */
+    /** Every running process of [instance] for [processDefinitionKey]: business-keyed to its document, plus the one it records. Pinning this to the recorded instance left the block's other processes unhanded. */
     private fun runningProcessesOf(
         instance: BuildingBlockInstance,
         processDefinitionKey: String,
@@ -334,7 +333,7 @@ class RemoveBuildingBlockMigrationComponentExecutor(
         return (listOfNotNull(recorded) + byBusinessKey).distinctBy { it.processInstanceId }
     }
 
-    /** Repoints the association back to [ownerDocumentId]; leaving it would make deleting the block document try to delete a running process instance. The process name rides along (G43). */
+    /** Repoints the association back to [ownerDocumentId]; leaving it would make deleting the block document try to delete a running process instance. The process name rides along. */
     private fun associateWithOwnerDocument(processInstanceId: String, ownerDocumentId: UUID) {
         runWithoutAuthorization {
             val operatonProcessInstanceId = OperatonProcessInstanceId(processInstanceId)

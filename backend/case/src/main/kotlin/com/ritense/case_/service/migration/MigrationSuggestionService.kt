@@ -89,7 +89,7 @@ class MigrationSuggestionService(
         plan
     }
 
-    /** Drops a targetless row an `addBuildingBlock` entry hijacks — both answered the same question and the blank one made the plan unsaveable (G73). A resolved row stays: `processMigration` (@200) may move the process before the entry (@300) takes it over. */
+    /** Drops a targetless row an `addBuildingBlock` entry hijacks — both answered the same question and the blank one made the plan unsaveable. A resolved row stays: `processMigration` (@200) may move the process before the entry (@300) takes it over. */
     private fun dropBlankRowsAnEntryHijacks(plan: ObjectNode, target: BlueprintId) {
         val hijacked = (plan.get(ADD_BUILDING_BLOCK) as? ArrayNode)
             ?.flatMap { entry -> (entry.get(PROCESS_MIGRATION) as? ArrayNode)?.toList().orEmpty() }
@@ -212,7 +212,7 @@ class MigrationSuggestionService(
             ?: owner
     }
 
-    /** The block versions [owner] links, sorted — what the editor defaults a new entry's version to, so it cannot start on a version D12 refuses. */
+    /** The block versions [owner] links, sorted — what the editor defaults a new entry's version to, so it cannot start on a version the save path refuses. */
     fun linkedBuildingBlocksOf(owner: BlueprintId): List<BuildingBlockDefinitionId> =
         buildingBlockEntryOwnerships
             .firstOrNull { it.supports(owner.blueprintType()) }

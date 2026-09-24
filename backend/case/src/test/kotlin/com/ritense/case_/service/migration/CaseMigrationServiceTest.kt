@@ -45,6 +45,7 @@ import com.ritense.valtimo.contract.blueprint.migration.event.CaseMigratedEvent
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
@@ -59,6 +60,7 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
@@ -70,8 +72,9 @@ import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 import org.semver4j.Semver
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -102,6 +105,7 @@ class CaseMigrationServiceTest(
     private val migrationId = BlueprintMigrationId.from(caseDefinitionId, "plan")
     private val case1 = UUID.randomUUID()
     private val case2 = UUID.randomUUID()
+    private val case3 = UUID.randomUUID()
 
     private lateinit var execution: CaseDefinitionMigrationExecution
     private lateinit var dryRun: CaseMigrationDryRun
@@ -153,7 +157,7 @@ class CaseMigrationServiceTest(
             .thenReturn(Optional.of(documentDefinition))
     }
 
-    /** G16: an undeployed source selects nothing, migrates nothing and reports success. The save path refuses it, but a file-deployed plan never passes the save path. */
+    /** an undeployed source selects nothing, migrates nothing and reports success. The save path refuses it, but a file-deployed plan never passes the save path. */
     @Test
     fun `should refuse to run a plan whose source version is not deployed`() {
         val lineage = mock<BlueprintVersionLineage>()
@@ -180,10 +184,13 @@ class CaseMigrationServiceTest(
         whenever(lineage.exists(any())).thenReturn(true)
         val guarded = serviceWith(lineage)
         whenever(migrationRepository.findById(migrationId)).thenReturn(Optional.of(plan()))
+        stubCandidates()
 
-        // An empty source version is the normal state of a plan that already ran, so it stays a silent no-op. Asserted on the guard alone.
-        val thrown = runCatching { guarded.startMigration(migrationId) }.exceptionOrNull()
-        assertThat(thrown?.message).doesNotContain("is not deployed")
+        // An empty source version is the normal state of a plan that already ran, so it stays a silent no-op.
+        val result = guarded.startMigration(migrationId)
+
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+        verify(executor, never()).execute(any(), any(), any())
     }
 
     private fun serviceWith(lineage: BlueprintVersionLineage) = CaseMigrationService(
@@ -240,7 +247,7 @@ class CaseMigrationServiceTest(
 
         whenever(migrationRepository.findById(migrationId)).thenReturn(
             Optional.of(
-                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = LocalDateTime.now().minusDays(1)))
+                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = Instant.now().minusSeconds(86_400)))
             )
         )
         assertThat(service.isTriggeredByButton(migrationId)).isFalse()
@@ -251,7 +258,7 @@ class CaseMigrationServiceTest(
         // The button check belongs to the manual entry point only: the sweep runs exactly the plans with no button trigger.
         whenever(migrationRepository.findById(migrationId)).thenReturn(
             Optional.of(
-                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = LocalDateTime.now().minusDays(1)))
+                plan(migrationTriggers = MigrationTriggers(scheduledAtDate = Instant.now().minusSeconds(86_400)))
             )
         )
         stubCandidates(case1)
@@ -266,8 +273,8 @@ class CaseMigrationServiceTest(
     private fun caseRecordId(caseId: UUID) = CaseMigrationCaseId(migrationId, caseId.toString())
 
     private fun stubCandidates(vararg caseIds: UUID) {
-        whenever(documentRepository.findCaseIdsByBlueprintVersion(any(), any(), any(), any()))
-            .thenReturn(PageImpl(caseIds.toList()))
+        whenever(documentRepository.findCaseIdsByBlueprintVersionAfter(any(), any(), any(), anyOrNull(), any()))
+            .thenReturn(caseIds.toList())
     }
 
     @Test
@@ -293,8 +300,8 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentRepository).findCaseIdsByBlueprintVersion(
-            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("1.0.0")), any()
+        verify(documentRepository).findCaseIdsByBlueprintVersionAfter(
+            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("1.0.0")), anyOrNull(), any()
         )
     }
 
@@ -308,8 +315,8 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentRepository).findCaseIdsByBlueprintVersion(
-            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("0.9.0")), any()
+        verify(documentRepository).findCaseIdsByBlueprintVersionAfter(
+            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("0.9.0")), anyOrNull(), any()
         )
     }
 
@@ -322,8 +329,8 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentRepository).findCaseIdsByBlueprintVersion(
-            eq(BlueprintType.CASE), eq("bezwaar-oud"), eq(Semver("2.0.0")), any()
+        verify(documentRepository).findCaseIdsByBlueprintVersionAfter(
+            eq(BlueprintType.CASE), eq("bezwaar-oud"), eq(Semver("2.0.0")), anyOrNull(), any()
         )
     }
 
@@ -346,8 +353,8 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentRepository).findCaseIdsByBlueprintVersion(
-            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("0.8.0")), any()
+        verify(documentRepository).findCaseIdsByBlueprintVersionAfter(
+            eq(BlueprintType.CASE), eq("bezwaar"), eq(Semver("0.8.0")), anyOrNull(), any()
         )
     }
 
@@ -382,6 +389,54 @@ class CaseMigrationServiceTest(
         verify(caseRepository, never()).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.MIGRATED))
         assertThat(result.casesToMigrate).isEqualTo(1)
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+    }
+
+    /** and the only test reaching a second batch. The stub shrinks as it migrates, or nothing can fail. */
+    @Test
+    fun `should migrate every case across batches even though migrating them shrinks the candidate set`() {
+        val allIds = (0 until 1_000).map { UUID(0L, it.toLong()) }
+        val stillOnSource = allIds.toMutableList()
+        whenever(documentRepository.findCaseIdsByBlueprintVersionAfter(any(), any(), any(), anyOrNull(), any()))
+            .thenAnswer { invocation ->
+                val afterId = invocation.getArgument<UUID?>(3)
+                val limit = invocation.getArgument<Pageable>(4).pageSize
+                stillOnSource.filter { afterId == null || it > afterId }.take(limit)
+            }
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+        // Re-homing takes a migrated case out of the source version's result set.
+        doAnswer { stillOnSource.remove(it.getArgument<UUID>(2)); null }
+            .whenever(executor).execute(eq(migrationId), eq(caseDefinitionId), any())
+
+        val result = service.startMigration(migrationId)
+
+        assertThat(stillOnSource).isEmpty()
+        verify(executor, times(1_000)).execute(eq(migrationId), eq(caseDefinitionId), any())
+        assertThat(result.casesToMigrate).isEqualTo(1_000)
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+    }
+
+    /** Real fencing is `assertOwnership`'s own throw, pinned by the takeover test below. */
+    @Test
+    fun `should record a per-case lock or constraint failure and carry on with the rest of the run`() {
+        stubCandidates(case1, case2, case3)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+        whenever(executor.execute(migrationId, caseDefinitionId, case1))
+            .thenThrow(OptimisticLockingFailureException("case edited mid-run"))
+        whenever(executor.execute(migrationId, caseDefinitionId, case2))
+            .thenThrow(DataIntegrityViolationException("constraint violated"))
+        whenever(caseRepository.countByIdMigrationIdAndStatus(migrationId, CaseMigrationCaseStatus.FAILED))
+            .thenReturn(2L)
+
+        val result = service.startMigration(migrationId)
+
+        verify(executor).execute(migrationId, caseDefinitionId, case3)
+        val saved = argumentCaptor<CaseMigrationCase>()
+        verify(caseRepository, times(3)).save(saved.capture())
+        assertThat(saved.allValues.filter { it.status == CaseMigrationCaseStatus.FAILED }.map { it.id })
+            .containsExactlyInAnyOrder(caseRecordId(case1), caseRecordId(case2))
+        assertThat(saved.allValues.single { it.status == CaseMigrationCaseStatus.MIGRATED }.id)
+            .isEqualTo(caseRecordId(case3))
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED_WITH_ERRORS)
     }
 
     @Test
@@ -496,7 +551,8 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentRepository, never()).findCaseIdsByBlueprintVersion(any(), any(), any(), any())
+        verify(documentRepository, never())
+            .findCaseIdsByBlueprintVersionAfter(any(), any(), any(), anyOrNull(), any())
         verify(executor, never()).execute(any(), any(), any())
     }
 
@@ -506,7 +562,8 @@ class CaseMigrationServiceTest(
 
         service.startMigration(migrationId)
 
-        verify(documentRepository, never()).findCaseIdsByBlueprintVersion(any(), any(), any(), any())
+        verify(documentRepository, never())
+            .findCaseIdsByBlueprintVersionAfter(any(), any(), any(), anyOrNull(), any())
         verify(executor, never()).execute(any(), any(), any())
     }
 
@@ -709,7 +766,8 @@ class CaseMigrationServiceTest(
 
         service.startDryRun(migrationId)
 
-        verify(documentRepository, never()).findCaseIdsByBlueprintVersion(any(), any(), any(), any())
+        verify(documentRepository, never())
+            .findCaseIdsByBlueprintVersionAfter(any(), any(), any(), anyOrNull(), any())
         verify(executor, never()).execute(any(), any(), any())
     }
 

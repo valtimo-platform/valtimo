@@ -23,8 +23,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 @JsonDeserialize(using = MigrationConditionNodeDeserializer::class)
 sealed interface MigrationConditionNode
 
-/** A group that holds when *all* of its [allOf] entries hold. */
-// @JsonDeserialize is switched off, or deserializing would loop back into the deserializer that produced it.
+/** A group that holds when *all* of its [allOf] entries hold. `JsonDeserialize` is switched off, or deserializing would loop back into the deserializer that produced it. */
 @JsonDeserialize(using = JsonDeserializer.None::class)
 data class AllOfMigrationCondition(
     val allOf: List<MigrationConditionNode>,

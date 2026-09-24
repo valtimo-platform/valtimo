@@ -148,7 +148,7 @@ export class MigrationGeneralFieldsComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  /** Fills in `Migration plan 1.0.1 to 1.0.2` while the author has not written a title — the key is generated from it, so an untitled plan cannot be saved at all (§8.6). Offered, never imposed. */
+  /** Fills in `Migration plan 1.0.1 to 1.0.2` while the author has not written a title — the key is generated from it, so an untitled plan cannot be saved at all. Offered, never imposed. */
   private suggestTitle(): void {
     if (this.$keyMode() === 'edit') return;
 

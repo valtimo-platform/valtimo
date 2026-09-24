@@ -35,6 +35,7 @@ import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.domain.impl.request.ModifyDocumentRequest
 import com.ritense.document.domain.patch.JsonPatchFilterFlag.allowRemovalOperations
 import com.ritense.document.domain.patch.JsonPatchFilterFlag.defaultPatchFlags
 import com.ritense.document.domain.patch.JsonPatchService
@@ -46,6 +47,7 @@ import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.json.patch.JsonPatch
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverOption
@@ -127,12 +129,12 @@ class CaseDocumentJsonValueResolverFactory(
                 val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
                 val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
                 val documentContent = lockedDocument.content().asJson()
-                buildJsonPatch(documentContent, values) { documentDefinition.schema.schema }
+                val removals = buildJsonPatch(documentContent, values) { documentDefinition.schema.schema }
 
                 val modifiedContent = JsonDocumentContent.build(
                     jsonSchemaDoc.content().asJson(),
                     documentContent,
-                    null
+                    removals,
                 )
                 val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
                 result.resultingDocument().orElseThrow()
@@ -154,12 +156,10 @@ class CaseDocumentJsonValueResolverFactory(
                     processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
                 }
                 val documentContent = document.content().asJson()
-                buildJsonPatch(documentContent, values) { getSchema(document) }
+                val removals = buildJsonPatch(documentContent, values) { getSchema(document) }
 
                 //TODO: PBAC MODIFY check
-                AuthorizationContext.runWithoutAuthorization {
-                    documentService.modifyDocument(document, documentContent)
-                }
+                modifyDocumentAllowingRemovals(document, documentContent, removals)
                 return // Success, exit retry loop
             } catch (exception: ModifyDocumentException) {
                 val cause = exception.cause
@@ -192,12 +192,12 @@ class CaseDocumentJsonValueResolverFactory(
                 val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
                 val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
                 val documentContent = lockedDocument.content().asJson()
-                buildJsonPatch(documentContent, values) { documentDefinition.schema.schema }
+                val removals = buildJsonPatch(documentContent, values) { documentDefinition.schema.schema }
 
                 val modifiedContent = JsonDocumentContent.build(
                     jsonSchemaDoc.content().asJson(),
                     documentContent,
-                    null
+                    removals,
                 )
                 val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
                 result.resultingDocument().orElseThrow()
@@ -213,9 +213,9 @@ class CaseDocumentJsonValueResolverFactory(
             try {
                 val document = AuthorizationContext.runWithoutAuthorization { documentService.get(documentId.toString()) }
                 val documentContent = document.content().asJson()
-                buildJsonPatch(documentContent, values) { getSchema(document) }
+                val removals = buildJsonPatch(documentContent, values) { getSchema(document) }
 
-                AuthorizationContext.runWithoutAuthorization { documentService.modifyDocument(document, documentContent) }
+                modifyDocumentAllowingRemovals(document, documentContent, removals)
                 return // Success, exit retry loop
             } catch (exception: ModifyDocumentException) {
                 val cause = exception.cause
@@ -268,8 +268,12 @@ class CaseDocumentJsonValueResolverFactory(
         jsonNode: JsonNode,
         values: Map<String, Any?>,
         schemaSupplier: () -> Schema? = { null }
-    ) {
+    ): JsonPatch? {
         val nullStrategies = determineNullWriteStrategies(values, schemaSupplier)
+        // Removals replay against the stored document, so only what exists there qualifies.
+        val original = jsonNode.deepCopy<JsonNode>()
+        val removals = JsonPatchBuilder()
+        var removed = false
         values.forEach { (key, value) ->
             val jsonPointer = toJsonPointer(key.substringAfter(":"))
             val jsonPatchBuilder = JsonPatchBuilder()
@@ -294,6 +298,25 @@ class CaseDocumentJsonValueResolverFactory(
             }
             val flags = if (isRemoval) allowRemovalOperations() else defaultPatchFlags()
             JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode, flags)
+            if (isRemoval && !original.at(jsonPointer).isMissingNode) {
+                removals.remove(jsonPointer)
+                removed = true
+            }
+        }
+        return if (removed) removals.build() else null
+    }
+
+    /** Removals travel again as a pre-patch: `build` re-diffs and filters object-property removals out, so [NullWriteStrategy.REMOVE] would never reach the document. The filter stays — it stops a partial update deleting what it omits. */
+    private fun modifyDocumentAllowingRemovals(document: Document, content: JsonNode, removals: JsonPatch?) {
+        // Only a removal needs the detour; everything else keeps the ordinary write.
+        if (removals == null) {
+            AuthorizationContext.runWithoutAuthorization { documentService.modifyDocument(document, content) }
+            return
+        }
+        val request = ModifyDocumentRequest.create(document, content).withJsonPatch(removals)
+        val result = AuthorizationContext.runWithoutAuthorization { documentService.modifyDocument(request) }
+        if (result.errors().isNotEmpty()) {
+            throw ModifyDocumentException(result.errors())
         }
     }
 

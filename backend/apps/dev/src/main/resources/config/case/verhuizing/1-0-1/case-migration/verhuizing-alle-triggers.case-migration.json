@@ -7,7 +7,7 @@
     },
     "migrationTriggers": {
         "triggeredByButton": true,
-        "scheduledAtDate": "2026-01-01T04:00:00",
+        "scheduledAtDate": "2026-01-01T04:00:00+01:00",
         "runAfter": "verhuizing-navolger"
     },
     "conditions": [

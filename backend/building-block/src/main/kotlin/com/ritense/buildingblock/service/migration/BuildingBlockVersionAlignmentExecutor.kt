@@ -34,8 +34,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/** Brings a migrated instance's building blocks onto the versions its new blueprint version links, applying each block's own plans as a chain, recursively. A missing chain fails only a running block (G49). */
-// Order 500 — last. Dissolved blocks (@400) are gone; blocks just added (@300) are already aligned.
+/** Brings a migrated instance's building blocks onto the versions its new blueprint version links, applying each block's own plans as a chain, recursively. A missing chain fails only a running block. Order 500 — last: dissolved blocks (400) are gone, added ones (300) already aligned. */
 @Order(500)
 @Transactional
 class BuildingBlockVersionAlignmentExecutor(
@@ -63,12 +62,12 @@ class BuildingBlockVersionAlignmentExecutor(
 
     private fun align(ownerTarget: BlueprintId, instance: BuildingBlockInstance) {
         val current = instance.definition.id
-        // Normally the owner's target version, but a block adopted from under a plain sub-process is governed by the blueprint declaring its call activity (G33).
+        // Normally the owner's target version, but a block adopted from under a plain sub-process is governed by the blueprint declaring its call activity.
         val governing = linkedBuildingBlockVersionResolver.resolveGoverningBlueprint(ownerTarget, instance)
         val linked = linkedBuildingBlockVersionResolver.resolveTarget(governing, instance)
 
         if (linked == null) {
-            // The link is gone: never dissolve on inference — that is `removeBuildingBlock`'s job — but say so, because the failure would otherwise surface weeks later (G24).
+            // The link is gone: never dissolve on inference — that is `removeBuildingBlock`'s job — but say so, because the failure would otherwise surface weeks later.
             val stale = "Building block '$current' (instance '${instance.id}') is still running under " +
                 "'${instance.caseDocumentId ?: instance.documentId}', but '$governing' no longer links it, so it " +
                 "was left as it is. A case started on this version would not have it. Add a " +
@@ -81,14 +80,7 @@ class BuildingBlockVersionAlignmentExecutor(
         if (linked == current) {
             return
         }
-        // Only meaningful within one key: across keys the deployed plans are the only authority.
-        if (linked.key == current.key && linked.versionTag.isLowerThan(current.versionTag)) {
-            logger.warn {
-                "'$governing' links building block '$linked', which is older than the '$current' " +
-                    "that instance '${instance.id}' is on; not downgrading"
-            }
-            return
-        }
+        // A downgrade is the plan graph's call, not a version compare: an edge exists only where an author wrote one.
 
         logger.debug { "Migrating building block instance '${instance.id}' from '$current' to '$linked'" }
         // An ambiguous chain fails either way — two chains reaching one version is wrong for every instance, running or not.
@@ -107,7 +99,7 @@ class BuildingBlockVersionAlignmentExecutor(
         alignChildrenOf(linked, instance.documentId)
     }
 
-    /** Whether anything is actually running under [instance] — nothing deletes an instance row when its process ends, so a finished block looks live unless the runtime is asked (G49). */
+    /** Whether anything is actually running under [instance] — nothing deletes an instance row when its process ends, so a finished block looks live unless the runtime is asked. */
     private fun hasRunningProcess(instance: BuildingBlockInstance): Boolean {
         val processInstanceId = instance.processInstanceId ?: return false
         return runtimeService.createProcessInstanceQuery()

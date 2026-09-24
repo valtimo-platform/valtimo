@@ -37,7 +37,7 @@ class BuildingBlockOwnershipResolver(
         }
     }
 
-    /** Every building block below [ownerDocumentId], deepest first — a parent taken out before its children orphans them (G25). Each entry carries its real owner, which a nested block's state is handed back to. */
+    /** Every building block below [ownerDocumentId], deepest first — a parent taken out before its children orphans them. Each entry carries its real owner, which a nested block's state is handed back to. */
     fun subtreeOf(ownerDocumentId: UUID): List<OwnedBuildingBlock> {
         val byDepth = mutableListOf<List<OwnedBuildingBlock>>()
         var level = directChildrenOf(ownerDocumentId).map { OwnedBuildingBlock(it, parent = null, depth = 0) }

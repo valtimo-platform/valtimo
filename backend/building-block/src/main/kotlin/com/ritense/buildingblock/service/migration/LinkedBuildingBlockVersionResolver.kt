@@ -55,7 +55,7 @@ class LinkedBuildingBlockVersionResolver(
         return startableItemLinks(owner) + callActivityLinks(owner)
     }
 
-    /** Every block reachable from [owner] by call-activity links, to any depth. Expands through unlinked `BB:`-tagged hops, returns only what is genuinely linked (D12). */
+    /** Every block reachable from [owner] by call-activity links, to any depth. Expands through unlinked `BB:`-tagged hops, returns only what is genuinely linked. */
     fun resolveCallActivityReachable(owner: BlueprintId): Set<BuildingBlockDefinitionId> =
         resolveCallActivityDeclarers(owner).keys
 
@@ -167,7 +167,7 @@ class LinkedBuildingBlockVersionResolver(
             .mapNotNull { BuildingBlockDefinitionId.fromProcessVersionTag(it.operatonCalledElementVersionTag) }
     }
 
-    /** The version [instance] should be on per [owner], matched via its originating call activity; one reachable link wins, several throw rather than guess, none leaves it alone. */
+    /** The version [instance] should be on per [owner], matched via its originating call activity; one reachable link wins, several throw rather than guess, none falls back to the owner's only version of its key, else leaves it alone. */
     fun resolveTarget(owner: BlueprintId, instance: BuildingBlockInstance): BuildingBlockDefinitionId? {
         val current = instance.definition.id
         val candidates = resolveLinkedVersions(owner)
@@ -194,11 +194,18 @@ class LinkedBuildingBlockVersionResolver(
         } else {
             "startable item"
         }
-        val reachable = candidates
-            .map { it.buildingBlockDefinitionId }
-            .distinct()
-            .filter { buildingBlockMigrationPathResolver.isReachable(current, it) }
+        val linkedVersions = candidates.map { it.buildingBlockDefinitionId }.distinct()
+        val reachable = linkedVersions.filter { buildingBlockMigrationPathResolver.isReachable(current, it) }
         if (reachable.isEmpty()) {
+            // The owner's one version of this key is this instance's link, even unreachable — alignment fails or warns on the missing path, a null would claim the link is gone.
+            val sameKey = linkedVersions.filter { it.key == current.key }
+            if (sameKey.size == 1) {
+                logger.warn {
+                    "No $origin link found on '$owner' for building block instance '${instance.id}' ('$current'), " +
+                        "but '${sameKey.single()}' is the only version of '${current.key}' it links; using it"
+                }
+                return sameKey.single()
+            }
             logger.debug {
                 "No $origin link on '$owner' matches building block instance '${instance.id}' ('$current'), " +
                     "and none of the versions it does link is reachable from '$current'; leaving it as is"

@@ -41,6 +41,7 @@ import {
 import {Subscription} from 'rxjs';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
 import {MigrationPlan} from '../../../models';
+import {pickedInstant, planInstant, toDateTimeLocal} from './migration-schedule.utils';
 
 @Component({
   standalone: true,
@@ -103,6 +104,8 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
   });
 
   private _lastEmittedExtras = '';
+  // The loaded plan's instant, whose seconds an untouched picker keeps.
+  private _loadedScheduledAt: string | null = null;
   // True while [writeTriggersAndConditions] loads a plan, so its intermediate states stay private.
   private _writing = false;
   private readonly _subscriptions = new Subscription();
@@ -143,7 +146,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     return {
       migrationTriggers: {
         triggeredByButton: !!triggeredByButton,
-        scheduledAtDate: scheduledAtDate || null,
+        scheduledAtDate: pickedInstant(scheduledAtDate, this._loadedScheduledAt),
         runAfter: this.asText(runAfter) || null,
       },
       conditions: this.conditionTreeService.serialize(this.conditionsArray),
@@ -155,16 +158,12 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     return typeof value === 'string' ? value : '';
   }
 
-  /** An ISO instant trimmed to the `YYYY-MM-DDTHH:mm` the datetime-local input accepts — a full instant renders blank, so a scheduled plan looked unscheduled every time it was reopened. */
-  private asDateTimeLocal(value: unknown): string {
-    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.exec(this.asText(value))?.[0] ?? '';
-  }
-
   private writeTriggersAndConditions(plan: MigrationPlan): void {
     const incoming = {
       migrationTriggers: {
         triggeredByButton: plan.migrationTriggers?.triggeredByButton ?? false,
-        scheduledAtDate: this.asDateTimeLocal(plan.migrationTriggers?.scheduledAtDate) || null,
+        // The instant, not the picker's form, so the echo check below recognises our own emission.
+        scheduledAtDate: planInstant(plan.migrationTriggers?.scheduledAtDate),
         runAfter: plan.migrationTriggers?.runAfter ?? null,
       },
       conditions: plan.conditions ?? [],
@@ -173,13 +172,15 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     // Ignore the echo of our own emission to avoid rebuilding the form (and losing focus).
     if (JSON.stringify(incoming) === this._lastEmittedExtras) return;
 
+    this._loadedScheduledAt = incoming.migrationTriggers.scheduledAtDate;
+
     // The flag makes the write atomic: a mid-patch emission carried later fields at their previous values, switching `triggeredByButton` off just by opening a plan.
     this._writing = true;
     try {
       this.form.patchValue(
         {
           triggeredByButton: incoming.migrationTriggers.triggeredByButton,
-          scheduledAtDate: incoming.migrationTriggers.scheduledAtDate ?? '',
+          scheduledAtDate: toDateTimeLocal(incoming.migrationTriggers.scheduledAtDate),
           runAfter: incoming.migrationTriggers.runAfter ?? '',
         },
         {emitEvent: false}

@@ -80,7 +80,7 @@ class MigrationConditionValidatorTest {
 
     @Test
     fun `should reject a process variable path`() {
-        // Conditions are resolved for every candidate, and a case whose process has ended has no variables (G67).
+        // Conditions are resolved for every candidate, and a case whose process has ended has no variables.
         assertThatThrownBy { MigrationConditionValidator.validate(listOf(MigrationCondition("pv:status", "==", "x"))) }
             .hasMessageContaining("reads a process variable")
     }

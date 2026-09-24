@@ -25,13 +25,15 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Instant
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
-/** Hourly, ShedLock-guarded sweep: reclaims crashed runs, starts plans whose `scheduledAtDate` or `runAfter` is satisfied, and refreshes the cached estimate. Case plans only — a building block plan has no trigger of its own. */
+/** Two ShedLock'd sweeps: [checkTriggers] per minute so the picker's minutes are real, [refreshEstimates] hourly because it scans candidates per plan. Case plans only. */
 @SkipComponentScan
 @Component
 class MigrationTriggerScheduler(
@@ -41,23 +43,41 @@ class MigrationTriggerScheduler(
     private val caseMigrationService: CaseMigrationService,
 ) {
 
-    @Scheduled(cron = "\${valtimo.case.migration.trigger-poll-cron:0 0 * * * *}")
-    @SchedulerLock(name = "caseMigrationTriggerScheduler", lockAtLeastFor = "PT5S", lockAtMostFor = "PT60M")
+    // Last failure per plan that could not start, so a retry each minute logs its error once.
+    private val startFailures = ConcurrentHashMap<BlueprintMigrationId, String>()
+
+    @Scheduled(cron = "\${valtimo.case.migration.trigger-poll-cron:0 * * * * *}")
+    @SchedulerLock(name = "caseMigrationTriggerScheduler", lockAtLeastFor = "PT5S", lockAtMostFor = "PT5M")
     fun checkTriggers() {
         runWithoutAuthorization {
-            val now = LocalDateTime.now()
-
             // Resume runs abandoned by a crashed node (RUNNING with an expired lease).
-            executionRepository.findReclaimable(now)
+            val reclaimable = executionRepository.findReclaimable(LocalDateTime.now())
                 .filter { it.id.blueprintType == BlueprintType.CASE }
-                .forEach { execution -> runTrigger(execution.id) }
+                .map { it.id }
+            reclaimable.forEach { runTrigger(it) }
 
-            // Only never-triggered plans are loaded; those not yet due get their cached estimate refreshed instead.
+            // Only never-triggered plans are loaded; started ones have an execution row.
+            val now = Instant.now()
+            val due = caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
+                .filter { plan -> isScheduledDue(plan, now) || isRunAfterSatisfied(plan) }
+                .map { it.id }
+            due.forEach { runTrigger(it) }
+            startFailures.keys.retainAll((reclaimable + due).toSet())
+        }
+    }
+
+    /** The expensive half. A plan already due is skipped: [checkTriggers] is about to run it, and a run counts as it goes. */
+    @Scheduled(cron = "\${valtimo.case.migration.estimate-refresh-cron:0 0 * * * *}")
+    @SchedulerLock(name = "caseMigrationEstimateRefresh", lockAtLeastFor = "PT5S", lockAtMostFor = "PT60M")
+    fun refreshEstimates() = refreshEstimatesNow()
+
+    /** The body both entry points share. Called directly on startup, where there is deliberately no lock — as there never was. */
+    private fun refreshEstimatesNow() {
+        runWithoutAuthorization {
+            val now = Instant.now()
             caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
                 .forEach { plan ->
-                    if (isScheduledDue(plan, now) || isRunAfterSatisfied(plan)) {
-                        runTrigger(plan.id)
-                    } else {
+                    if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
                         refreshEstimate(plan.id)
                     }
                 }
@@ -68,22 +88,14 @@ class MigrationTriggerScheduler(
     @EventListener(ApplicationFullyReadyEvent::class)
     fun refresh() {
         runWithoutAuthorization {
-            val now = LocalDateTime.now()
-
-            executionRepository.findReclaimable(now)
+            executionRepository.findReclaimable(LocalDateTime.now())
                 .filter { it.id.blueprintType == BlueprintType.CASE }
                 .forEach { execution ->
                     logger.info { "Resuming migration plan '${execution.id}' interrupted by a restart" }
                     runTrigger(execution.id)
                 }
-
-            caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
-                .forEach { plan ->
-                    if (!isScheduledDue(plan, now) && !isRunAfterSatisfied(plan)) {
-                        refreshEstimate(plan.id)
-                    }
-                }
         }
+        refreshEstimatesNow()
     }
 
     private fun refreshEstimate(migrationId: BlueprintMigrationId) {
@@ -99,12 +111,18 @@ class MigrationTriggerScheduler(
         try {
             logger.debug { "Trigger fired for migration plan '$migrationId'" }
             caseMigrationRunner.startMigration(migrationId)
+            startFailures.remove(migrationId)
         } catch (e: Exception) {
-            logger.error(e) { "Failed to run migration trigger for plan '$migrationId'" }
+            val failure = "${e::class.qualifiedName}: ${e.message}"
+            if (startFailures.put(migrationId, failure) == failure) {
+                logger.debug { "Migration plan '$migrationId' still cannot start: $failure" }
+            } else {
+                logger.error(e) { "Failed to run migration trigger for plan '$migrationId'; retrying every sweep, logged again only if the error changes" }
+            }
         }
     }
 
-    private fun isScheduledDue(plan: CaseDefinitionMigration, now: LocalDateTime): Boolean {
+    private fun isScheduledDue(plan: CaseDefinitionMigration, now: Instant): Boolean {
         val scheduledAtDate = plan.migrationTriggers.scheduledAtDate ?: return false
         return !now.isBefore(scheduledAtDate)
     }

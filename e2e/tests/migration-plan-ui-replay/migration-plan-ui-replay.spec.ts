@@ -19,12 +19,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {AuditEntry, PlanEditorPage, PlanTarget} from './plan-editor.page';
 
-/**
- * Deletes every dev migration-plan fixture and rebuilds it through the plan editor,
- * picking every value from the control that owns it — so what the editor cannot offer
- * shows up as a `not-offered` or `manual-fallback` entry in the report rather than as
- * a guess. Opt-in: it rewrites dev fixture data and takes minutes per plan.
- */
+/** Rebuilds every dev fixture through the editor, each value from the control that owns it, so what the editor cannot offer is reported rather than guessed. Opt-in: rewrites fixture data, minutes per plan. */
 const ENABLED = !!process.env.MIGRATION_UI_REPLAY;
 const ONLY = process.env.MIGRATION_UI_REPLAY_ONLY;
 
@@ -101,6 +96,8 @@ test.describe('Migration plan editor — fixture replay audit', () => {
     context = await browser.newContext({
       baseURL,
       storageState: 'playwright/.auth/uiState.json',
+      // UTC, so the picker's local time is the instant's own digits.
+      timezoneId: 'UTC',
     });
     page = await context.newPage();
     editor = new PlanEditorPage(page);
@@ -111,8 +108,7 @@ test.describe('Migration plan editor — fixture replay audit', () => {
     test(`replays ${fixture.label}`, async () => {
       test.setTimeout(Number(process.env.MIGRATION_UI_REPLAY_TIMEOUT ?? 10 * 60_000));
 
-      // The API's own export of the deployed plan, not the file: the importer normalises
-      // `scheduledAtDate` to an instant and fills in trigger defaults, and neither is the UI's doing.
+      // The API's export, not the file: the importer normalises `scheduledAtDate` and fills trigger defaults.
       const baseline = (await editor.getPlanViaApi(fixture)) ?? fixture.plan;
       await editor.deletePlanViaApi(fixture);
 

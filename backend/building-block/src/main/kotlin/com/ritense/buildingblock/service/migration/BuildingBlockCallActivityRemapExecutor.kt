@@ -32,8 +32,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-/** Repoints the call activity a block was started from after its calling process migrated — stale values leave the version resolver and the plugin configuration resolver both falling back wrongly. Direct blocks only. */
-// Order 250 — after the process migration (200) that invalidates these, before 300/400/500 read them.
+/** Repoints the call activity a block was started from after its calling process migrated — stale values leave the version and plugin-configuration resolvers both falling back wrongly. Direct blocks only. Order 250 — after the process migration (200) that invalidates these, before 300/400/500 read them. */
 @Order(250)
 @Transactional
 class BuildingBlockCallActivityRemapExecutor(

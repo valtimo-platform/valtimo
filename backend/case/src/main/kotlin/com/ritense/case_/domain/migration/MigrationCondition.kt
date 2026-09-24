@@ -19,8 +19,7 @@ package com.ritense.case_.domain.migration
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
-/** One condition gating whether a plan may run for a case: a value-resolver [path], a comparison [operator] and the [value] to compare against. Combinable with AND/OR — see [MigrationConditionNode]. */
-// @JsonDeserialize is switched off, or deserializing would loop back into the deserializer that produced it.
+/** One condition gating whether a plan may run for a case: a value-resolver [path], a comparison [operator] and the [value] to compare against. Combinable with AND/OR — see [MigrationConditionNode]. `JsonDeserialize` is switched off, or deserializing would loop back into the deserializer that produced it. */
 @JsonDeserialize(using = JsonDeserializer.None::class)
 data class MigrationCondition(
     val path: String,

@@ -138,7 +138,7 @@ class AddBuildingBlockLinkCheckerTest {
         verify(linkResolver, never()).resolveLinkedVersions(any())
     }
 
-    /** G31: the executor runs this per instance and needs the same closure itself, so passing it in has to actually skip the walk. */
+    /** the executor runs this per instance and needs the same closure itself, so passing it in has to actually skip the walk. */
     @Test
     fun `should not walk the tree again when the caller already resolved the closure`() {
         linksOn(target) // no links of its own, so only the closure it is handed can satisfy the entry

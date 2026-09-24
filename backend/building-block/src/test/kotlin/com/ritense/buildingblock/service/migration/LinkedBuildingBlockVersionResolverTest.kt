@@ -189,6 +189,28 @@ class LinkedBuildingBlockVersionResolverTest {
     }
 
     @Test
+    fun `should hand a renamed activity's only same-key link to alignment even when no plan reaches it`() {
+        // A downgrade under a renamed activity: alignment decides — fail if running, warn if dormant — rather than "no longer links".
+        callActivityLink("inspectie_uitvoeren_v1", "1.0.0")
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(false)
+
+        val target = resolver.resolveTarget(caseDefinitionId, instance("2.0.0", activityId = "inspectie_uitvoeren"))
+
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.0"))
+    }
+
+    @Test
+    fun `should resolve nothing when several unreachable versions of the same key are linked`() {
+        callActivityLink("inspectie_uitvoeren_v1", "1.0.0")
+        callActivityLink("herinspectie_uitvoeren", "1.5.0")
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(false)
+
+        val target = resolver.resolveTarget(caseDefinitionId, instance("2.0.0", activityId = "inspectie_uitvoeren"))
+
+        assertThat(target).isNull()
+    }
+
+    @Test
     fun `should follow the link of a different building block key when the instance's own activity names it`() {
         // The activity is re-pointed at another block; nothing is in doubt, so the key change is followed.
         callActivityLink("foto_maken", "1.0.0", key = "inspectie-dossier")
@@ -316,7 +338,7 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(declarers).containsExactly(java.util.Map.entry(herhaling, caseDefinitionId))
     }
 
-    /** Counted, not asserted on the result: repeating the reads changes nothing but the bill (G31). */
+    /** Counted, not asserted on the result: repeating the reads changes nothing but the bill. */
     @Test
     fun `should read each process definition's links once while building the link index`() {
         callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
@@ -352,7 +374,7 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(link?.buildingBlockDefinitionId).isEqualTo(uitvoeren)
     }
 
-    /** The three call sites all pass the same target for every case in a run (G31). */
+    /** The three call sites all pass the same target for every case in a run. */
     @Test
     fun `should walk the tree once per run however many times it is asked`() {
         callActivityLink("UitvoerenCallActivity", "1.0.0", key = "bijstand-uitvoeren")
@@ -484,7 +506,7 @@ class LinkedBuildingBlockVersionResolverTest {
         assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).isEmpty()
     }
 
-    /** G23: a hop left as a plain sub-process runs the old blueprint's copy, so the link for what it calls comes from the blueprint the target model says deploys it. */
+    /** a hop left as a plain sub-process runs the old blueprint's copy, so the link for what it calls comes from the blueprint the target model says deploys it. */
     @Test
     fun `should resolve a link from the blueprint the target model says deploys the process`() {
         caseProcessDefinition()

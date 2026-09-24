@@ -24,7 +24,7 @@ import com.ritense.processdocument.migration.ProcessMigrationTargetChecker
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
 
-/** Validates `addBuildingBlock` before save: the version must be linked (D12) and the process must be one that can exist. Also the only place an entry's nested `processMigration` is checked — validators dispatch on top-level keys. */
+/** Validates `addBuildingBlock` before save: the version must be linked and the process must be one that can exist. Also the only place an entry's nested `processMigration` is checked — validators dispatch on top-level keys. */
 class AddBuildingBlockMigrationComponentValidator(
     private val objectMapper: ObjectMapper,
     private val addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
@@ -34,7 +34,7 @@ class AddBuildingBlockMigrationComponentValidator(
     override fun componentKey() = AddBuildingBlockMigrationComponentDeployer.ADD_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun validate(source: BlueprintId, target: BlueprintId, component: JsonNode): List<String> {
-        // Before `convertValue`, which is what a nested null target answers 500 from (G47).
+        // Before `convertValue`, which is what a nested null target answers 500 from.
         val missingTarget = nestedInstructionsWithoutTarget(component)
         if (missingTarget.isNotEmpty()) {
             return missingTarget

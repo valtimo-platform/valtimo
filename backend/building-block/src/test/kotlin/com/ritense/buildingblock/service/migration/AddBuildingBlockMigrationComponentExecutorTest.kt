@@ -148,7 +148,7 @@ class AddBuildingBlockMigrationComponentExecutorTest {
 
     @Test
     fun `should warn when the component creates nothing at all`() {
-        // The shape §6.7 hit live: the level above stayed a plain sub-process, so neither pass reached the block and both stayed silent. The warning is now raised once per component and still names every block tried.
+        // The shape seen live: the level above stayed a plain sub-process, so neither pass reached the block and both stayed silent. The warning is now raised once per component and still names every block tried.
         deploy(instruction()) // no processMigration: pass 1 defers to the walk
         whenever(linkResolver.resolveCallActivityReachable(any()))
             .thenReturn(setOf(BuildingBlockDefinitionId.of("income-check", "1.0.0")))

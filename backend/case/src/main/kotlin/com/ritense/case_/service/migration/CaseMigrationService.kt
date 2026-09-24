@@ -46,8 +46,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.transaction.support.TransactionTemplate
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -298,17 +296,29 @@ class CaseMigrationService(
         val provider = candidateProvider(source.blueprintType()) ?: return 0
 
         var count = 0
-        var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
-        while (true) {
-            val page = provider.findCandidateIds(source, pageable)
+        forEachCandidateBatch(source, provider) { batch ->
             // No run in progress, so an unevaluable case is logged and dropped, recorded nowhere.
-            count += page.content.count { caseId ->
+            count += batch.count { caseId ->
                 matchesConditions(plan, caseId, "while estimating plan '${plan.id}'")
             }
-            if (!page.hasNext()) break
-            pageable = page.nextPageable()
         }
         return count
+    }
+
+    /** Walk the candidates by id cursor, each batch once. Not an offset: a run shrinks its own set. */
+    private fun forEachCandidateBatch(
+        source: BlueprintId,
+        provider: MigrationCandidateProvider,
+        onBatch: (List<UUID>) -> Unit,
+    ) {
+        var afterId: UUID? = null
+        while (true) {
+            val batch = provider.findCandidateIds(source, afterId, CANDIDATE_BATCH_SIZE)
+            if (batch.isEmpty()) return
+            afterId = batch.last()
+            onBatch(batch)
+            if (batch.size < CANDIDATE_BATCH_SIZE) return
+        }
     }
 
     /** Whether the case's conditions currently hold; what an evaluation failure is worth recording is the caller's call, via [onFailure]. */
@@ -340,14 +350,11 @@ class CaseMigrationService(
 
         val renewInterval = leaseDuration.dividedBy(2)
         var leaseRenewedAt = LocalDateTime.now()
-        var pageable: Pageable = PageRequest.of(0, CANDIDATE_PAGE_SIZE)
 
         // The scan is the run: the target is fixed for its duration and every case asks it the same questions. In memory, so a dry run's rollback neither undoes nor affects it.
         MigrationRunCache.inRun {
-            while (true) {
-                val page = provider.findCandidateIds(source, pageable)
-
-                page.content.forEach { caseId ->
+            forEachCandidateBatch(source, provider) { batch ->
+                batch.forEach { caseId ->
                     if (matches(caseId)) {
                         onMatch(caseId)
                     }
@@ -358,8 +365,6 @@ class CaseMigrationService(
                 }
 
                 onPageComplete()
-                if (!page.hasNext()) break
-                pageable = page.nextPageable()
             }
         }
     }
@@ -460,12 +465,8 @@ class CaseMigrationService(
             }
         } catch (e: MigrationOwnershipLostException) {
             throw e // propagate: this node has been fenced, stop the run
-        } catch (e: OptimisticLockingFailureException) {
-            throw MigrationOwnershipLostException("Concurrent modification of '$migrationId' while migrating '$caseId'")
-        } catch (e: DataIntegrityViolationException) {
-            throw MigrationOwnershipLostException("Case '$caseId' of '$migrationId' was concurrently migrated by another run")
         } catch (e: Exception) {
-            // The case stays on the old version and the run continues.
+            // The case stays on the old version and the run continues; a lost lock lands here too.
             logger.warn(e) { "Migration failed for case '$caseId' in plan '$migrationId'; rolled back" }
             recordFailure(migrationId, caseId, e, runToken, warnings ?: MigrationWarnings.drain())
         }
@@ -682,7 +683,7 @@ class CaseMigrationService(
         }
     }
 
-    /** Refuses an undeployed source version, which would otherwise select nothing and finish COMPLETED (G16). Never refuses an empty one — that is the normal state of a plan that already ran. */
+    /** Refuses an undeployed source version, which would otherwise select nothing and finish COMPLETED. Never refuses an empty one — that is the normal state of a plan that already ran. */
     private fun assertSourceIsDeployed(plan: CaseDefinitionMigration) {
         val source = plan.sourceBlueprintId()
         val lineage = blueprintVersionLineages.firstOrNull { it.supports(source.blueprintType()) } ?: return
@@ -693,7 +694,7 @@ class CaseMigrationService(
         }
     }
 
-    /** A building block plan has no run of its own (R1); starting one is refused rather than quietly doing nothing. */
+    /** A building block plan has no run of its own; starting one is refused rather than quietly doing nothing. */
     private fun assertNotBuildingBlockPlan(migrationId: BlueprintMigrationId) {
         require(migrationId.blueprintType != BlueprintType.BUILDING_BLOCK) {
             "Building block migration plan '$migrationId' cannot be started on its own. A building " +
@@ -753,6 +754,6 @@ class CaseMigrationService(
 
     private companion object {
         val logger = KotlinLogging.logger {}
-        const val CANDIDATE_PAGE_SIZE = 500
+        const val CANDIDATE_BATCH_SIZE = 500
     }
 }

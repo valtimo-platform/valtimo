@@ -88,9 +88,9 @@ class BuildingBlockVersionAlignmentExecutorTest {
 
         // By default nothing owns anything.
         whenever(ownershipResolver.directChildrenOf(any())).thenReturn(emptyList())
-        // By default the owner's own version governs its blocks; the redirection to a declarer is the exception (G33).
+        // By default the owner's own version governs its blocks; the redirection to a declarer is the exception.
         whenever(linkedVersionResolver.resolveGoverningBlueprint(any(), any())).thenAnswer { it.getArgument(0) }
-        // By default a block is running, which is what makes a missing chain fatal (G49).
+        // By default a block is running, which is what makes a missing chain fatal.
         whenever(runtimeService.createProcessInstanceQuery()).thenReturn(processInstanceQuery)
         whenever(processInstanceQuery.processInstanceId(any())).thenReturn(processInstanceQuery)
         whenever(processInstanceQuery.singleResult()).thenReturn(mock())
@@ -217,7 +217,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
         verifyNothingMigrated()
     }
 
-    /** G24: leaving it alone is right, but the block keeps running under a version that does not declare it — this warning is the one moment an author can act. */
+    /** leaving it alone is right, but the block keeps running under a version that does not declare it — this warning is the one moment an author can act. */
     @Test
     fun `should warn about a block the target case version no longer links`() {
         val block = block("1.0.1")
@@ -232,15 +232,47 @@ class BuildingBlockVersionAlignmentExecutorTest {
             .contains("'removeBuildingBlock'")
     }
 
+    /** a backward move used to stop on a bare log line, reported nowhere. */
     @Test
-    fun `should never downgrade a block whose linked version is older than the one it is on`() {
-        val block = block("2.0.0")
+    fun `should warn rather than go silent when the linked version is older and no plan connects it`() {
+        val block = block("2.0.0", runningProcess = null)
         caseOwns(block)
         linked(block, bb("1.0.1"))
+        whenever(pathResolver.findPath(bb("2.0.0"), bb("1.0.1"))).thenReturn(null)
 
         executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
 
         verifyNothingMigrated()
+        assertThat(MigrationWarnings.drain())
+            .contains("no migration plan connects it to '$bbKey:1.0.1'")
+    }
+
+    /** The mirror of the forward refusal: a *running* block nobody wrote a backward plan for fails its case. */
+    @Test
+    fun `should fail the case when a running block's linked version is older and no plan connects it`() {
+        val block = block("2.0.0")
+        caseOwns(block)
+        linked(block, bb("1.0.1"))
+        whenever(pathResolver.resolvePath(bb("2.0.0"), bb("1.0.1")))
+            .thenThrow(IllegalStateException("No migration plan connects building block version"))
+
+        assertThatThrownBy { executor.execute(casePlanId, caseDefinitionId, caseDocumentId) }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("No migration plan connects building block version")
+    }
+
+    /** The old guard refused this outright, while never blocking the same move across two keys. */
+    @Test
+    fun `should apply a downgrade the plans authorise`() {
+        val block = block("2.0.0")
+        caseOwns(block)
+        linked(block, bb("1.0.1"))
+        val back = step("terug-naar-1-0-1", bb("1.0.1"))
+        whenever(pathResolver.resolvePath(bb("2.0.0"), bb("1.0.1"))).thenReturn(listOf(back))
+
+        executor.execute(casePlanId, caseDefinitionId, caseDocumentId)
+
+        verify(planApplier).apply(back.planId, bb("1.0.1"), blockDocumentId)
     }
 
     @Test
@@ -272,7 +304,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
         verify(planApplier, never()).apply(any(), any(), any())
     }
 
-    /** G49: the refusal rests on there being a token to strand. A block that never started has none, so failing its case refuses work that does not exist. */
+    /** the refusal rests on there being a token to strand. A block that never started has none, so failing its case refuses work that does not exist. */
     @Test
     fun `should leave a block that never started a process where it is when no chain of plans reaches it`() {
         val block = block("1.0.0", runningProcess = null)
@@ -288,7 +320,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
         verify(pathResolver, never()).resolvePath(any(), any())
     }
 
-    /** G49, the other half, and the state a long-lived case is far more likely in: the instance row outlives the process. */
+    /** the other half, and the state a long-lived case is far more likely in: the instance row outlives the process. */
     @Test
     fun `should leave a block whose process has already finished where it is when no chain of plans reaches it`() {
         val block = block("1.0.0")
@@ -390,7 +422,7 @@ class BuildingBlockVersionAlignmentExecutorTest {
         verify(processVersionChecker).assertProcessOnVersion(childDocumentId, childTarget)
     }
 
-    /** G33: a block adopted from under a plain sub-process hangs off the case while its declaring call activity belongs to the skipped block. The declarer has to be asked, or it is never upgraded again. */
+    /** a block adopted from under a plain sub-process hangs off the case while its declaring call activity belongs to the skipped block. The declarer has to be asked, or it is never upgraded again. */
     @Test
     fun `should ask the blueprint that declares the call activity rather than the owner`() {
         val block = block("1.0.0", activityId = "BesluitCallActivity")

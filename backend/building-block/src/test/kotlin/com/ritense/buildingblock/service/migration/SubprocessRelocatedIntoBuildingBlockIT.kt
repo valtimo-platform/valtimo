@@ -52,7 +52,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
 import java.util.UUID
 
-/** A version moving its own sub-process into a building block (G79): the link tells adoption *which* process becomes the block, but not that the block renamed `task1` to `task_1`, and a token sitting there is what needs it said. */
+/** A version moving its own sub-process into a building block: the link tells adoption *which* process becomes the block, but not that the block renamed `task1` to `task_1`, and a token sitting there is what needs it said. */
 class SubprocessRelocatedIntoBuildingBlockIT @Autowired constructor(
     private val migrationSuggestionService: MigrationSuggestionService,
     private val migrationPlanImporter: MigrationPlanImporter,

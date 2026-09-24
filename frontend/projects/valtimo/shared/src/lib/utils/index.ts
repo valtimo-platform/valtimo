@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './http-error.utils';
 export * from './router.utils';
 export * from './url.utils';
 export * from './global-notification.utils';

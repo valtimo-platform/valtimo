@@ -50,7 +50,7 @@ class AddBuildingBlockMigrationComponentSuggester(
     override fun componentKey() = AddBuildingBlockMigrationComponentDeployer.ADD_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun suggest(source: BlueprintId, target: BlueprintId): Any? {
-        // Compared by key, not key and version: a block whose key the source already models is being version-bumped, which is alignment's job (R2), not an `addBuildingBlock` entry.
+        // Compared by key, not key and version: a block whose key the source already models is being version-bumped, which is alignment's job, not an `addBuildingBlock` entry.
         val keysBefore = modelledBy(source).keys.map { it.key }.toSet()
         val declaredBy = modelledBy(target)
         val instructions = declaredBy.keys
@@ -85,7 +85,7 @@ class AddBuildingBlockMigrationComponentSuggester(
         return instructions.ifEmpty { null }
     }
 
-    /** Every block version [owner] models, mapped to the blueprint that declares it: its startable-item links plus the transitive call-activity closure — the same set [AddBuildingBlockLinkChecker] accepts (D12), so an entry this misses is one the save path would have taken. */
+    /** Every block version [owner] models, mapped to the blueprint that declares it: its startable-item links plus the transitive call-activity closure — the same set [AddBuildingBlockLinkChecker] accepts, so an entry this misses is one the save path would have taken. */
     private fun modelledBy(owner: BlueprintId): Map<BuildingBlockDefinitionId, BlueprintId> {
         val startable = startableItemLinks(owner).associateWith { owner }
         // Call-activity declarers win on a clash: that is the relationship the running tree nests through, and adoption then serves it.

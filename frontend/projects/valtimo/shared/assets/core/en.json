@@ -876,6 +876,10 @@
       "errorCount": "{{count}} errors",
       "warningCount": "{{count}} warnings",
       "editor": {
+        "saveFailed": {
+          "title": "The migration plan could not be saved",
+          "fallback": "The server refused the plan but sent no reason. Check the browser console for details."
+        },
         "general": {
           "titlePlaceholder": "Migrate cases with status 'aanvraag-ontvangen'",
           "sourceHint": "The case definition version whose cases this plan migrates. It need not be the immediately preceding version: naming an older one migrates those cases here in a single step, and naming a different key moves cases of that case definition onto this one.",
@@ -3995,6 +3999,10 @@
       "addPlan": "Add migration plan",
       "duplicateSuffix": "copy",
       "editor": {
+        "saveFailed": {
+          "title": "The migration plan could not be saved",
+          "fallback": "The server refused the plan but sent no reason. Check the browser console for details."
+        },
         "general": {
           "titlePlaceholder": "Migrate building blocks with status 'aanvraag-ontvangen'",
           "sourceHint": "The building block version whose instances this plan migrates. It need not be the immediately preceding version: naming an older one migrates those instances here in a single step. Naming a different building block makes this plan the bridge that carries its running instances over to this one — which is the only thing that can, since nothing else connects two different building blocks.",

@@ -31,6 +31,6 @@ interface BuildingBlockEntryOwnership {
     /** [owner] at the version [tree] declares it — where its instances still are, when [owner] was read off a version they have not reached yet. [owner] itself when [tree] declares no version of it. */
     fun ownerAsDeclaredIn(tree: BlueprintId, owner: BlueprintId): BlueprintId = owner
 
-    /** Every block version [owner] links, directly or through the call-activity closure — the versions an `addBuildingBlock` entry may name (D12). */
+    /** Every block version [owner] links, directly or through the call-activity closure — the versions an `addBuildingBlock` entry may name. */
     fun linkedBlocksOf(owner: BlueprintId): Set<BuildingBlockDefinitionId> = emptySet()
 }

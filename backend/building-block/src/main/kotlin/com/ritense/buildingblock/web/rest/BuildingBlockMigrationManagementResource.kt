@@ -135,7 +135,7 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.ok(suggestion)
     }
 
-    /** The block versions this version links — which version an `addBuildingBlock` entry for a given key must name (D12). */
+    /** The block versions this version links — which version an `addBuildingBlock` entry for a given key must name. */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block/linked")
     fun getLinkedBuildingBlocks(
