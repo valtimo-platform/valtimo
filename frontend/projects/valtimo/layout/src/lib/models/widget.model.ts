@@ -80,6 +80,12 @@ interface WidgetAction {
   openInNewTab?: boolean;
 }
 
+/** Widget data, or a single row of it, an action is resolved against. */
+interface WidgetActionData {
+  resolved?: {[key: string]: any} | null;
+  [key: string]: any;
+}
+
 interface BasicWidget {
   type: WidgetType;
   title: string;
@@ -125,11 +131,6 @@ interface CollectionWidget extends BasicWidget {
 interface TableWidget extends BasicWidget {
   type: WidgetType.TABLE;
   properties: WidgetTableContent;
-}
-
-interface InteractiveTableWidget extends BasicWidget {
-  type: WidgetType.INTERACTIVE_TABLE;
-  properties: WidgetInteractiveTableContent;
 }
 
 interface InteractiveTableWidget extends BasicWidget {
@@ -292,6 +293,7 @@ export {
   BasicWidget,
   Widget,
   WidgetAction,
+  WidgetActionData,
   WidgetConfigurationBin,
   WidgetContentHeightsPx,
   WidgetContentHeightsPxWithContainerWidth,
