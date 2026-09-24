@@ -352,6 +352,7 @@ interface CaseListColumn {
   defaultSort: string;
   uuid?: string;
   exportable?: boolean;
+  defaultVisible?: boolean;
 }
 
 interface CaseListColumnView {
@@ -364,6 +365,7 @@ interface CaseListColumnView {
   defaultSort: string;
   uuid?: string;
   exportable?: boolean;
+  defaultVisible?: string;
 }
 
 interface DocumentDefinitionVersionsResult {
