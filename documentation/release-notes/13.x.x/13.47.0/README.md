@@ -58,6 +58,7 @@ takes under a minute.
 | Area | Fix |
 |------|-----|
 | Case types | A building block action on the Actions tab can be saved on another version |
+| Plugins | Settings left over from an older version of a plugin no longer fill the log with errors every time a case is opened |
 | Startup | A case definition that is not final no longer slows startup down as it gains processes. In a test case definition with 200 processes, startup took almost nine minutes and now takes under a minute |
 | SmartDocuments / Exact | These modules no longer bring their own copy of the Valtimo platform modules along, so pinning an older version of them no longer pulls an older Valtimo into the application. |
 
