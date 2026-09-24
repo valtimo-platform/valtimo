@@ -224,7 +224,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         val newLink = createOrReplaceLink(
             buildingBlockDefinitionId,
             deployedProcessDefinitionId,
-            existingLink,
+            listOfNotNull(existingLink),
             mainFlag
         )
 
@@ -248,17 +248,16 @@ class BuildingBlockDefinitionProcessDefinitionService(
         main: Boolean
     ) {
         buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
-        val existingLink = if (currentProcessDefinitionId != null) {
-            findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
-        } else {
-            null
-        }
-        val mainFlag = existingLink?.main ?: main
+        val supersededLinks = (
+            listOfNotNull(findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)) +
+                findLinksBySameProcessDefinitionKey(buildingBlockDefinitionId, deployedProcessDefinitionId)
+            ).distinctBy { it.id }
+        val mainFlag = main || supersededLinks.any { it.main }
 
         val newLink = createOrReplaceLink(
             buildingBlockDefinitionId,
             deployedProcessDefinitionId,
-            existingLink,
+            supersededLinks,
             mainFlag
         )
 
@@ -391,13 +390,39 @@ class BuildingBlockDefinitionProcessDefinitionService(
             )
     }
 
+    // Resolves keys through the engine rather than the entity's @Formula, which is null for a link saved in this transaction.
+    private fun findLinksBySameProcessDefinitionKey(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        deployedProcessDefinitionId: ProcessDefinitionId
+    ): List<ProcessDefinitionBuildingBlockDefinition> {
+        val otherLinks = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+            .filter { it.id.processDefinitionId != deployedProcessDefinitionId }
+        if (otherLinks.isEmpty()) return emptyList()
+
+        val keysById = processDefinitionKeysById(
+            otherLinks.map { it.id.processDefinitionId.id } + deployedProcessDefinitionId.id
+        )
+        val deployedProcessDefinitionKey = keysById[deployedProcessDefinitionId.id] ?: return emptyList()
+
+        return otherLinks.filter { keysById[it.id.processDefinitionId.id] == deployedProcessDefinitionKey }
+    }
+
+    private fun processDefinitionKeysById(processDefinitionIds: List<String>): Map<String, String> {
+        return repositoryService
+            .createProcessDefinitionQuery()
+            .processDefinitionIdIn(*processDefinitionIds.toTypedArray())
+            .list()
+            .associate { it.id to it.key }
+    }
+
     private fun createOrReplaceLink(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         newProcessDefinitionId: ProcessDefinitionId,
-        existingLink: ProcessDefinitionBuildingBlockDefinition?,
+        existingLinks: List<ProcessDefinitionBuildingBlockDefinition>,
         main: Boolean
     ): ProcessDefinitionBuildingBlockDefinition {
-        existingLink?.let {
+        existingLinks.forEach {
             processDefinitionBuildingBlockDefinitionRepository.delete(it)
         }
 
