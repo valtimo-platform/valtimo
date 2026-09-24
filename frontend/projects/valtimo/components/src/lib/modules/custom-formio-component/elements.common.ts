@@ -28,6 +28,7 @@ export interface FormioCustomComponentInfo extends BuilderInfo {
   template?: string;
   changeEvent?: string; // Default: valueChange
   editForm?: () => {components: ExtendedComponentSchema[]};
+  customValidator?: (value: any) => string | null;
 }
 
 export type FormioCustomElement = NgElement &
