@@ -57,6 +57,7 @@ takes under a minute.
 
 | Area | Fix |
 |------|-----|
+| Availability | An instance whose database has become unreachable now reports itself as unavailable, so it is taken out of service instead of being sent requests that fail |
 | Case types | A building block action on the Actions tab can be saved on another version |
 | Startup | A case definition that is not final no longer slows startup down as it gains processes. In a test case definition with 200 processes, startup took almost nine minutes and now takes under a minute |
 | SmartDocuments / Exact | These modules no longer bring their own copy of the Valtimo platform modules along, so pinning an older version of them no longer pulls an older Valtimo into the application. |

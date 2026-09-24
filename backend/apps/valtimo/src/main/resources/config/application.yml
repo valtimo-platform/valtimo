@@ -21,13 +21,12 @@ management:
             probes:
                 enabled: true
             group:
-                # readiness (and a dedicated startup group) only report UP once the bootstrap
-                # health indicator is UP, i.e. after migrations + autodeployments have finished.
+                # readiness/startup report UP only once bootstrap has finished and the database is reachable.
                 # Point the Kubernetes readinessProbe/startupProbe at these groups.
                 readiness:
-                    include: readinessState,bootstrap
+                    include: readinessState,bootstrap,db
                 startup:
-                    include: readinessState,bootstrap
+                    include: readinessState,bootstrap,db
 
 spring:
     profiles:
