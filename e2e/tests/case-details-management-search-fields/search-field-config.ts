@@ -53,7 +53,7 @@ export const SEARCH_FIELDS_2 = [
 ];
 
 export const UI_SEARCH_FIELD_1 = {
-  key: 'uiSearchField1',
+  key: 'uisearchfield1',
   title: 'UI Search Field 1',
   path: 'case:createdBy',
   dataType: 'Text',
@@ -62,7 +62,7 @@ export const UI_SEARCH_FIELD_1 = {
 };
 
 export const UI_SEARCH_FIELD_2 = {
-  key: 'uiSearchField2',
+  key: 'uisearchfield2',
   title: 'UI Search Field 2',
   path: 'case:createdOn',
   dataType: 'Date',
@@ -70,7 +70,7 @@ export const UI_SEARCH_FIELD_2 = {
 };
 
 export const UI_SEARCH_FIELD_3 = {
-  key: 'uiSearchField3',
+  key: 'uisearchfield3',
   title: 'UI Search Field 3',
   path: 'case:createdBy',
   dataType: 'Text',
@@ -79,7 +79,7 @@ export const UI_SEARCH_FIELD_3 = {
 };
 
 export const UI_SEARCH_FIELD_NUMBER = {
-  key: 'uiSearchFieldNumber',
+  key: 'uisearchfieldnumber',
   title: 'Number Field',
   path: 'case:createdBy',
   dataType: 'Number',
@@ -87,7 +87,7 @@ export const UI_SEARCH_FIELD_NUMBER = {
 };
 
 export const UI_SEARCH_FIELD_NUMBER_RANGE = {
-  key: 'uiSearchFieldNumberRange',
+  key: 'uisearchfieldnumberrange',
   title: 'Number Range Field',
   path: 'case:createdBy',
   dataType: 'Number',
@@ -95,7 +95,7 @@ export const UI_SEARCH_FIELD_NUMBER_RANGE = {
 };
 
 export const UI_SEARCH_FIELD_DATETIME = {
-  key: 'uiSearchFieldDatetime',
+  key: 'uisearchfielddatetime',
   title: 'Datetime Field',
   path: 'case:createdOn',
   dataType: 'Date and time',
@@ -103,7 +103,7 @@ export const UI_SEARCH_FIELD_DATETIME = {
 };
 
 export const UI_SEARCH_FIELD_BOOLEAN = {
-  key: 'uiSearchFieldBoolean',
+  key: 'uisearchfieldboolean',
   title: 'Boolean Field',
   path: 'case:createdBy',
   dataType: 'Yes / no',
@@ -111,7 +111,7 @@ export const UI_SEARCH_FIELD_BOOLEAN = {
 };
 
 export const UI_SEARCH_FIELD_TEXT_EXACT = {
-  key: 'uiSearchFieldTextExact',
+  key: 'uisearchfieldtextexact',
   title: 'Text Exact Field',
   path: 'case:createdBy',
   dataType: 'Text',
@@ -120,7 +120,7 @@ export const UI_SEARCH_FIELD_TEXT_EXACT = {
 };
 
 export const UI_SEARCH_FIELD_SINGLE_SELECT_DROPDOWN = {
-  key: 'uiSearchFieldSingleSelect',
+  key: 'uisearchfieldsingleselect',
   title: 'Single Select Dropdown Field',
   path: 'case:createdBy',
   dataType: 'Text',
@@ -128,10 +128,9 @@ export const UI_SEARCH_FIELD_SINGLE_SELECT_DROPDOWN = {
 };
 
 export const UI_SEARCH_FIELD_MULTI_SELECT_DROPDOWN = {
-  key: 'uiSearchFieldMultiSelect',
+  key: 'uisearchfieldmultiselect',
   title: 'Multi Select Dropdown Field',
   path: 'case:createdBy',
   dataType: 'Text',
   fieldType: 'Multi select dropdown',
 };
-

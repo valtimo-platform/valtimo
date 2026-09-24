@@ -23,3 +23,6 @@
 # Riptide artifacts (cloud-synced)
 .humanlayer/tasks/
 .mcp.json
+
+/test-results/
+/frontend/test-results/.last-run.json

@@ -63,6 +63,24 @@ export class BpmnModeler {
   async waitForLoaded() {
     await expect(this.container).toBeVisible();
     await expect(this.palette).toBeVisible();
+    await this.waitForDiagramSettled();
+  }
+
+  async waitForDiagramSettled(quietWindowMs = 1_000, maxImports = 10) {
+    for (let imports = 0; imports <= maxImports; imports++) {
+      const reimported = await this.page
+        .waitForResponse(res => /\/v1\/process\/definition\/[^/]+\/xml/.test(res.url()), {
+          timeout: quietWindowMs,
+        })
+        .then(() => true)
+        .catch(() => false);
+
+      if (!reimported) return;
+    }
+
+    throw new Error(
+      `[bpmn-modeler] The diagram was re-imported more than ${maxImports} times and never settled.`
+    );
   }
 
   /**
@@ -74,21 +92,30 @@ export class BpmnModeler {
    * retried because a first click right after the diagram loads is sometimes only
    * registered as a hover, leaving the selection unchanged.
    */
-  async selectElement(elementId: string) {
+  async selectElement(elementId: string, timeout = 20_000) {
     const shape = this.elementShape(elementId);
     await expect(shape).toBeVisible();
 
     await expect(async () => {
       await shape.click();
       await expect(this.idInput).toHaveValue(elementId, {timeout: 2_000});
-    }).toPass({timeout: 20_000});
+    }).toPass({timeout});
+  }
+
+  async openContextPad(elementId: string, timeout = 20_000) {
+    const shape = this.elementShape(elementId);
+    await expect(shape).toBeVisible();
+
+    await expect(async () => {
+      await shape.click();
+      await expect(this.appendTaskContextPadAction).toBeVisible({timeout: 2_000});
+    }).toPass({timeout});
   }
 
   /** Append a task to an element through its context pad. */
   async appendTaskTo(elementId: string): Promise<string> {
     const before = await this.taskShapes.count();
-    await this.elementShape(elementId).click();
-    await expect(this.appendTaskContextPadAction).toBeVisible();
+    await this.openContextPad(elementId);
     await this.appendTaskContextPadAction.click();
     // The new shape enters direct-editing mode; leave it to commit the change.
     await this.page.keyboard.press('Escape');
@@ -137,11 +164,34 @@ export class BpmnModeler {
    * entries in the DOM but hidden, so they have to be expanded before they can be
    * read or filled.
    */
-  async expandGroup(title: string) {
+  async expandGroup(title: string, timeout = 20_000) {
     const group = this.group(title);
-    await expect(group).toBeVisible();
-    await group.locator('.bio-properties-panel-group-header').click();
-    await expect(group.locator('.bio-properties-panel-group-entries')).toBeVisible();
+    await expect(group).toBeVisible({timeout: Math.min(timeout, 10_000)});
+
+    const header = group.locator('.bio-properties-panel-group-header');
+    const entries = group.locator('.bio-properties-panel-group-entries');
+
+    await expect(async () => {
+      if (!(await entries.isVisible())) {
+        await header.click({timeout: 5_000});
+      }
+      await expect(entries).toBeVisible({timeout: 2_000});
+    }).toPass({timeout});
+  }
+
+  async selectElementAndExpandGroup(elementId: string, groupTitle: string) {
+    await this.withSelectedElement(elementId, () => this.expandGroup(groupTitle, 5_000));
+  }
+
+  async withSelectedElement(
+    elementId: string,
+    action: () => Promise<unknown>,
+    timeout = 25_000
+  ): Promise<void> {
+    await expect(async () => {
+      await this.selectElement(elementId, 5_000);
+      await action();
+    }).toPass({timeout});
   }
 
   /** An entry of the (expanded) panel, located by its bpmn-js entry id. */
@@ -157,10 +207,16 @@ export class BpmnModeler {
     return this.entryInput('id');
   }
 
-  /** Rename the selected element through the panel's General group. */
-  async renameSelectedElement(name: string) {
-    await this.expandGroup('General');
-    await this.nameInput.fill(name);
-    await expect(this.panelHeaderLabel).toHaveAttribute('title', name);
+  async renameElement(elementId: string, name: string) {
+    await expect(async () => {
+      await this.withSelectedElement(elementId, async () => {
+        await this.expandGroup('General', 5_000);
+        await this.nameInput.fill(name);
+        await expect(this.panelHeaderLabel).toHaveAttribute('title', name, {timeout: 3_000});
+      });
+
+      await this.waitForDiagramSettled();
+      await expect(this.panelHeaderLabel).toHaveAttribute('title', name, {timeout: 3_000});
+    }).toPass({timeout: 40_000});
   }
 }

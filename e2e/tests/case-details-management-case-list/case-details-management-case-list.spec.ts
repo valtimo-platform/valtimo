@@ -16,7 +16,8 @@
 
 import {expect, test} from '@playwright/test';
 
-import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
+import {JSON_EDITOR_SAVE_URLS, JsonEditor} from '../../shared/json-editor/json-editor.utils';
+import {apiGet, apiPut} from '../../utils/api.utils';
 import {clearMonacoEditor, pasteToMonacoEditor} from '../../utils/monaco.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {
@@ -34,11 +35,14 @@ import {CaseDetailsManagementCaseListPage} from './page';
 
 test.use({storageState: undefined});
 
+const LIST_COLUMN_URL = '/api/management/v1/case/bezwaar/list-column';
+
 test.describe('Case management', () => {
   let context;
   let page;
   let testPage;
   let request;
+  let originalListColumns: unknown[] | null = null;
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -49,8 +53,18 @@ test.describe('Case management', () => {
 
     testPage = new CaseDetailsManagementCaseListPage(page, request);
 
+    originalListColumns = await apiGet<unknown[]>(LIST_COLUMN_URL);
+
     await testPage.goToCaseDetailsManagementCaseList('bezwaar');
     await ensureDraftVersionSelected(page);
+  });
+
+  test.afterAll(async () => {
+    try {
+      if (originalListColumns) await apiPut(LIST_COLUMN_URL, originalListColumns);
+    } finally {
+      if (context) await context.close();
+    }
   });
 
   test.describe('Success test', () => {
@@ -67,7 +81,7 @@ test.describe('Case management', () => {
       test.describe('JSON Editor', () => {
         let jsonEditor;
         test.beforeAll(async () => {
-          jsonEditor = new JsonEditor(page);
+          jsonEditor = new JsonEditor(page, JSON_EDITOR_SAVE_URLS.caseListColumn);
         });
 
         test.beforeEach(async () => {
@@ -277,7 +291,7 @@ test.describe('Case management', () => {
           // dropdown only renders once a sortable (case:/doc:) path is set
           // (*ngIf="displaySortable"), so give the form a valid path first.
           await testPage.addListColumnButton.click();
-          await testPage.keyInput.fill('uiTestSecondSort');
+          await testPage.fillKeyManually('uitestsecondsort');
           await testPage.valuePathSelectorToggle.click();
           await testPage.valuePathSelectorInput.fill('case:createdBy');
           await testPage.assertDefaultSortDropdownDisabled();
@@ -291,7 +305,7 @@ test.describe('Case management', () => {
         test('Save button enabled when form is valid', async () => {
           // Act
           await testPage.addListColumnButton.click();
-          await testPage.keyInput.fill('uiTestValid');
+          await testPage.fillKeyManually('uitestvalid');
           await testPage.valuePathSelectorToggle.click();
           await testPage.valuePathSelectorInput.fill('case:createdBy');
           await testPage.selectDropdownItem(testPage.displayTypeDropdown, 'Text');

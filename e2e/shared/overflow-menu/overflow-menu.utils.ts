@@ -15,6 +15,7 @@
  */
 
 import {expect, type Locator, type Page} from '@playwright/test';
+import {readSettledLabels} from '../../utils/ui.utils';
 
 /**
  * Wrapper for the Valtimo `v-overflow-menu` component (the "More" menus in
@@ -63,7 +64,6 @@ export class OverflowMenu {
 
   /** Labels of the options currently offered, in render order. */
   async optionLabels(): Promise<string[]> {
-    const labels = await this.menu.getByRole('menuitem').allInnerTexts();
-    return labels.map(label => label.trim());
+    return readSettledLabels(this.menu.getByRole('menuitem'));
   }
 }

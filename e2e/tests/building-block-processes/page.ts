@@ -216,8 +216,7 @@ export class BuildingBlockProcessesPage {
    * overflow menu, so the empty headers are dropped before comparing.
    */
   async assertColumnHeaders(expectedHeaders: readonly string[]) {
-    const headers = await this.carbonList.table.locator('thead th').allInnerTexts();
-    expect(headers.map(header => header.trim()).filter(Boolean)).toEqual([...expectedHeaders]);
+    await this.carbonList.assertColumnHeaders(expectedHeaders);
   }
 
   async assertProcessMetadata(definition: {name: string; key: string}) {
@@ -239,8 +238,7 @@ export class BuildingBlockProcessesPage {
   async readRowActions(key: string): Promise<string[]> {
     const row = this.rowByKey(key);
     await row.openActionMenu();
-    const labels = await this.page.getByRole('menu').getByRole('menuitem').allInnerTexts();
-    return labels.map(label => label.trim());
+    return row.actionLabels();
   }
 
   async closeRowActionMenu() {
@@ -381,24 +379,49 @@ export class BuildingBlockProcessesPage {
   // ─── Process link modal ───────────────────────────────────────────
 
   /** Open the process link wizard from the panel's "Process link" group. */
-  async openProcessLinkModalFromPanel() {
-    await this.modeler.expandGroup('Process link');
+  async openProcessLinkModalFromPanel(elementId: string) {
+    await this.openProcessLinkWizard(elementId, this.createProcessLinkButton);
+  }
+
+  async openEditProcessLinkForStep(elementId: string) {
+    await this.openProcessLinkWizard(elementId, this.editProcessLinkButton);
+  }
+
+  private async openProcessLinkWizard(elementId: string, button: Locator) {
+    let attempt = 0;
+
+    await this.modeler.withSelectedElement(elementId, async () => {
+      attempt++;
+      await this.modeler.expandGroup('Process link', 5_000);
+      const force = attempt > 2;
+      if (force) {
+        await expect(button).toBeVisible();
+        await expect(button).toBeEnabled();
+
+        console.warn(
+          `[building-block-processes] Forcing the process-link click for "${elementId}" — ` +
+            'the properties panel never stopped re-rendering.'
+        );
+      }
+      await button.click({timeout: 5_000, force});
+      await expect(this.processLinkModalHeading).toBeVisible({timeout: 5_000});
+    });
+  }
+
+  private get processLinkModalHeading(): Locator {
+    return this.processLinkModal.getByRole('heading', {
+      name: BUILDING_BLOCK_PROCESS_TEXTS.processLinkModalHeading,
+    });
+  }
+
+  async assertStepUnlinked(elementId: string) {
+    await this.modeler.selectElementAndExpandGroup(elementId, 'Process link');
     await expect(this.createProcessLinkButton).toBeVisible();
-    await this.createProcessLinkButton.click();
-    await expect(
-      this.processLinkModal.getByRole('heading', {
-        name: BUILDING_BLOCK_PROCESS_TEXTS.processLinkModalHeading,
-      })
-    ).toBeVisible();
   }
 
   async closeProcessLinkModal() {
     await this.processLinkModal.getByRole('button', {name: 'Cancel'}).click();
-    await expect(
-      this.processLinkModal.getByRole('heading', {
-        name: BUILDING_BLOCK_PROCESS_TEXTS.processLinkModalHeading,
-      })
-    ).not.toBeVisible();
+    await expect(this.processLinkModalHeading).not.toBeVisible();
   }
 
   /**
@@ -412,8 +435,7 @@ export class BuildingBlockProcessesPage {
     elementId: string
   ) {
     await this.goToProcessBuilder(key, versionTag, processDefinitionId);
-    await this.modeler.selectElement(elementId);
-    await this.openProcessLinkModalFromPanel();
+    await this.openProcessLinkModalFromPanel(elementId);
   }
 
   // ─── Plugin action configuration ──────────────────────────────────
