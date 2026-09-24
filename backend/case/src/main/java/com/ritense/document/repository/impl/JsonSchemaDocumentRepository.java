@@ -39,7 +39,7 @@ public interface JsonSchemaDocumentRepository extends DocumentRepository<JsonSch
 
     Page<JsonSchemaDocument> findAllByDocumentDefinitionIdName(Pageable pageable, String definitionName);
 
-    /** Projects only the document ids homed on one specific blueprint version, in id order after {@code afterId} ({@code null} for the first batch). The version tag is part of the filter: selecting by definition name alone would sweep up every version and skip the plans in between. A cursor, not an offset: a run re-homes what it migrates, so the set shrinks under it (G86). */
+    /** Projects only the document ids homed on one specific blueprint version, in id order after {@code afterId} ({@code null} for the first batch). The version tag is part of the filter: selecting by definition name alone would sweep up every version and skip the plans in between. A cursor, not an offset: a run re-homes what it migrates, so the set shrinks under it. */
     @Query("SELECT d.id.id FROM JsonSchemaDocument d "
         + "WHERE d.documentDefinitionId.blueprintId.blueprintType = :blueprintType "
         + "AND d.documentDefinitionId.blueprintId.blueprintKey = :blueprintKey "
