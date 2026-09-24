@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,10 @@ class IkoWidgetResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Get grouped IKO widget data",
+        nl = "Gegroepeerde IKO-widgetgegevens ophalen",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/data")
     fun getIkoWidgetDataGroup(
         @PathVariable @Size(max = 256) ikoViewKey: String,

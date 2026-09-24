@@ -74,6 +74,10 @@ class CaseWidgetTabResource(
     }
 
     // Not '.../widget/data': the per-widget path ends in {widgetKey}, so a widget keyed 'data' would claim it.
+    @EndpointDescription(
+        en = "Get grouped case widget data",
+        nl = "Gegroepeerde dossierwidgetgegevens ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/widget-tab/{tabKey}/data")
     fun getCaseWidgetDataGroup(
         @PathVariable documentId: UUID,
