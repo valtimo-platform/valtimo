@@ -189,6 +189,28 @@ class LinkedBuildingBlockVersionResolverTest {
     }
 
     @Test
+    fun `should hand a renamed activity's only same-key link to alignment even when no plan reaches it`() {
+        // A downgrade under a renamed activity: alignment decides — fail if running, warn if dormant — rather than "no longer links".
+        callActivityLink("inspectie_uitvoeren_v1", "1.0.0")
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(false)
+
+        val target = resolver.resolveTarget(caseDefinitionId, instance("2.0.0", activityId = "inspectie_uitvoeren"))
+
+        assertThat(target).isEqualTo(BuildingBlockDefinitionId.of(bbKey, "1.0.0"))
+    }
+
+    @Test
+    fun `should resolve nothing when several unreachable versions of the same key are linked`() {
+        callActivityLink("inspectie_uitvoeren_v1", "1.0.0")
+        callActivityLink("herinspectie_uitvoeren", "1.5.0")
+        whenever(pathResolver.isReachable(any(), any())).thenReturn(false)
+
+        val target = resolver.resolveTarget(caseDefinitionId, instance("2.0.0", activityId = "inspectie_uitvoeren"))
+
+        assertThat(target).isNull()
+    }
+
+    @Test
     fun `should follow the link of a different building block key when the instance's own activity names it`() {
         // The activity is re-pointed at another block; nothing is in doubt, so the key change is followed.
         callActivityLink("foto_maken", "1.0.0", key = "inspectie-dossier")

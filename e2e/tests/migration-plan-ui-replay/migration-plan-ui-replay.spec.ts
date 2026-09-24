@@ -96,6 +96,8 @@ test.describe('Migration plan editor — fixture replay audit', () => {
     context = await browser.newContext({
       baseURL,
       storageState: 'playwright/.auth/uiState.json',
+      // UTC, so the picker's local time is the instant's own digits.
+      timezoneId: 'UTC',
     });
     page = await context.newPage();
     editor = new PlanEditorPage(page);

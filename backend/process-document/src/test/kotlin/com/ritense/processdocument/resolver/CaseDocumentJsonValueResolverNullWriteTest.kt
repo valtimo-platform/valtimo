@@ -21,9 +21,11 @@ import com.fasterxml.jackson.databind.node.MissingNode
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.ritense.document.config.DocumentProperties
+import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocument.ModifyDocumentResultImpl
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
@@ -42,6 +44,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atMost
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -49,6 +52,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
+import java.util.function.Function
 
 internal class CaseDocumentJsonValueResolverNullWriteTest {
 
@@ -203,6 +207,41 @@ internal class CaseDocumentJsonValueResolverNullWriteTest {
     }
 
     @Test
+    fun `should create a parent and clear its optional child in one call`() {
+        mockDocument(
+            schemaProperties = ADDRESS_SCHEMA,
+            content = """{}"""
+        )
+
+        resolver.handleValues(
+            documentId,
+            linkedMapOf("doc:/address" to mapOf("street" to "Main", "note" to "x"), "doc:/address/note" to null)
+        )
+
+        assertThat(storedContent("""{}""")).isEqualTo(MapperSingleton.get().readTree("""{"address":{"street":"Main"}}"""))
+    }
+
+    @Test
+    fun `should remove the node under a pessimistic lock`() {
+        val content = """{"address":{"street":"Main","note":"x"}}"""
+        mockDocument(schemaProperties = ADDRESS_SCHEMA, content = content)
+        val stored = modifyUnderPessimisticLock(content, mapOf("doc:/address/note" to null))
+
+        assertThat(stored).isEqualTo(MapperSingleton.get().readTree("""{"address":{"street":"Main"}}"""))
+    }
+
+    @Test
+    fun `should create a parent and clear its optional child under a pessimistic lock`() {
+        mockDocument(schemaProperties = ADDRESS_SCHEMA, content = """{}""")
+        val stored = modifyUnderPessimisticLock(
+            """{}""",
+            linkedMapOf("doc:/address" to mapOf("street" to "Main", "note" to "x"), "doc:/address/note" to null)
+        )
+
+        assertThat(stored).isEqualTo(MapperSingleton.get().readTree("""{"address":{"street":"Main"}}"""))
+    }
+
+    @Test
     fun `preProcessValuesForNewDocument should write null when the schema allows null`() {
         mockActiveDefinition(""""middleName": { "type": ["string", "null"] }""")
 
@@ -296,5 +335,34 @@ internal class CaseDocumentJsonValueResolverNullWriteTest {
         val captor = argumentCaptor<JsonNode>()
         verify(documentService).modifyDocument(eq(document), captor.capture())
         return captor.firstValue
+    }
+
+    /** Runs the atomic path and returns what `applyModifiedContent` was handed. */
+    private fun modifyUnderPessimisticLock(content: String, values: Map<String, Any?>): JsonNode {
+        whenever(document.content()).thenAnswer { JsonDocumentContent(content) }
+        doAnswer { it.getArgument<Function<Document, Document>>(1).apply(document) }
+            .whenever(documentService).modifyDocumentAtomic(any(), any())
+        val result = mock<ModifyDocumentResultImpl>()
+        whenever(result.resultingDocument()).thenReturn(Optional.of(document))
+        val modified = argumentCaptor<JsonDocumentContent>()
+        whenever(document.applyModifiedContent(modified.capture(), any())).thenReturn(result)
+        val pessimistic = DocumentProperties(
+            DocumentProperties.Locking(DocumentProperties.Locking.ValueResolver().apply { isPessimisticEnabled = true })
+        )
+
+        CaseDocumentJsonValueResolverFactory(
+            mock<ProcessDocumentService>(),
+            documentService,
+            documentDefinitionService,
+            MapperSingleton.get(),
+            pessimistic
+        ).handleValues(documentId, values)
+
+        return modified.firstValue.asJson()
+    }
+
+    private companion object {
+        const val ADDRESS_SCHEMA =
+            """"address": { "type": "object", "properties": { "street": { "type": "string" }, "note": { "type": "string" } } }"""
     }
 }

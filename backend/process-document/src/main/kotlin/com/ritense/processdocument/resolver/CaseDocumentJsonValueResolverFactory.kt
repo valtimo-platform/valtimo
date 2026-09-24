@@ -270,6 +270,8 @@ class CaseDocumentJsonValueResolverFactory(
         schemaSupplier: () -> Schema? = { null }
     ): JsonPatch? {
         val nullStrategies = determineNullWriteStrategies(values, schemaSupplier)
+        // Removals replay against the stored document, so only what exists there qualifies.
+        val original = jsonNode.deepCopy<JsonNode>()
         val removals = JsonPatchBuilder()
         var removed = false
         values.forEach { (key, value) ->
@@ -296,7 +298,7 @@ class CaseDocumentJsonValueResolverFactory(
             }
             val flags = if (isRemoval) allowRemovalOperations() else defaultPatchFlags()
             JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode, flags)
-            if (isRemoval) {
+            if (isRemoval && !original.at(jsonPointer).isMissingNode) {
                 removals.remove(jsonPointer)
                 removed = true
             }

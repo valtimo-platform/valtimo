@@ -288,9 +288,10 @@ export class PlanEditorPage {
     else await setChecked(button, false);
 
     if (triggers.scheduledAtDate) {
-      // `input[type=datetime-local]` takes minute precision only; seconds cannot be typed at all.
-      const minutes = String(triggers.scheduledAtDate).slice(0, 16);
-      if (minutes !== triggers.scheduledAtDate) {
+      // The instant the server stores, typed in the context's UTC; the picker takes whole minutes only.
+      const instant = toServerInstant(String(triggers.scheduledAtDate));
+      const minutes = instant.slice(0, 16);
+      if (!instant.endsWith(':00Z')) {
         this.record('general.scheduledAtDate', triggers.scheduledAtDate, 'not-offered', [minutes]);
       }
       await this.fillText(pane.locator('input[formcontrolname="scheduledAtDate"]'), minutes);
@@ -570,6 +571,13 @@ async function setChecked(input: Locator, checked: boolean): Promise<void> {
   if ((await input.isChecked()) === checked) return;
   if (checked) await input.check({force: true, timeout: CLICK_TIMEOUT});
   else await input.uncheck({force: true, timeout: CLICK_TIMEOUT});
+}
+
+/** As the server reads `scheduledAtDate`: an offset is honoured, none means UTC. */
+function toServerInstant(value: string): string {
+  const hasOffset = /(Z|[+-]\d{2}:?\d{2})$/i.test(value);
+
+  return `${new Date(hasOffset ? value : `${value}Z`).toISOString().slice(0, 19)}Z`;
 }
 
 let _api: APIRequestContext | undefined;

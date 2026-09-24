@@ -27,6 +27,7 @@ import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
@@ -42,23 +43,26 @@ class MigrationTriggerScheduler(
     private val caseMigrationService: CaseMigrationService,
 ) {
 
+    // Last failure per plan that could not start, so a retry each minute logs its error once.
+    private val startFailures = ConcurrentHashMap<BlueprintMigrationId, String>()
+
     @Scheduled(cron = "\${valtimo.case.migration.trigger-poll-cron:0 * * * * *}")
     @SchedulerLock(name = "caseMigrationTriggerScheduler", lockAtLeastFor = "PT5S", lockAtMostFor = "PT5M")
     fun checkTriggers() {
         runWithoutAuthorization {
             // Resume runs abandoned by a crashed node (RUNNING with an expired lease).
-            executionRepository.findReclaimable(LocalDateTime.now())
+            val reclaimable = executionRepository.findReclaimable(LocalDateTime.now())
                 .filter { it.id.blueprintType == BlueprintType.CASE }
-                .forEach { execution -> runTrigger(execution.id) }
+                .map { it.id }
+            reclaimable.forEach { runTrigger(it) }
 
             // Only never-triggered plans are loaded; started ones have an execution row.
             val now = Instant.now()
-            caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
-                .forEach { plan ->
-                    if (isScheduledDue(plan, now) || isRunAfterSatisfied(plan)) {
-                        runTrigger(plan.id)
-                    }
-                }
+            val due = caseDefinitionMigrationRepository.findAllWithoutExecutionByBlueprintType(BlueprintType.CASE)
+                .filter { plan -> isScheduledDue(plan, now) || isRunAfterSatisfied(plan) }
+                .map { it.id }
+            due.forEach { runTrigger(it) }
+            startFailures.keys.retainAll((reclaimable + due).toSet())
         }
     }
 
@@ -107,8 +111,14 @@ class MigrationTriggerScheduler(
         try {
             logger.debug { "Trigger fired for migration plan '$migrationId'" }
             caseMigrationRunner.startMigration(migrationId)
+            startFailures.remove(migrationId)
         } catch (e: Exception) {
-            logger.error(e) { "Failed to run migration trigger for plan '$migrationId'" }
+            val failure = "${e::class.qualifiedName}: ${e.message}"
+            if (startFailures.put(migrationId, failure) == failure) {
+                logger.debug { "Migration plan '$migrationId' still cannot start: $failure" }
+            } else {
+                logger.error(e) { "Failed to run migration trigger for plan '$migrationId'; retrying every sweep, logged again only if the error changes" }
+            }
         }
     }
 

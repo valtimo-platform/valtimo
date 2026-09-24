@@ -16,6 +16,10 @@
 
 package com.ritense.case_.service.migration
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.ritense.case_.domain.migration.CaseDefinitionMigration
 import com.ritense.case_.domain.migration.CaseDefinitionMigrationExecution
 import com.ritense.case_.domain.migration.CaseMigrationStatus
@@ -28,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.semver4j.Semver
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
@@ -35,6 +40,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
@@ -157,6 +163,47 @@ class MigrationTriggerSchedulerTest(
         scheduler.checkTriggers()
 
         verify(caseMigrationService, never()).refreshCaseCountEstimate(any())
+    }
+
+    @Test
+    fun `a due plan that cannot start should be retried every sweep but logged as an error once`() {
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
+            .thenReturn(listOf(plan("undeployed", MigrationTriggers(scheduledAtDate = Instant.parse("2020-01-01T00:00:00Z")))))
+        whenever(caseMigrationRunner.startMigration(migrationId("undeployed")))
+            .thenThrow(IllegalStateException("source version is not deployed"))
+        val errors = captureErrors {
+            repeat(3) { scheduler.checkTriggers() }
+        }
+
+        verify(caseMigrationRunner, times(3)).startMigration(migrationId("undeployed"))
+        assertThat(errors).hasSize(1)
+    }
+
+    @Test
+    fun `a start failure should be logged again once its error changes`() {
+        whenever(migrationRepository.findAllWithoutExecutionByBlueprintType(any()))
+            .thenReturn(listOf(plan("undeployed", MigrationTriggers(scheduledAtDate = Instant.parse("2020-01-01T00:00:00Z")))))
+        whenever(caseMigrationRunner.startMigration(migrationId("undeployed")))
+            .thenThrow(IllegalStateException("first"))
+            .thenThrow(IllegalStateException("first"))
+            .thenThrow(IllegalStateException("second"))
+        val errors = captureErrors {
+            repeat(3) { scheduler.checkTriggers() }
+        }
+
+        assertThat(errors).hasSize(2)
+    }
+
+    private fun captureErrors(block: () -> Unit): List<ILoggingEvent> {
+        val logger = LoggerFactory.getLogger(MigrationTriggerScheduler::class.java) as Logger
+        val appender = ListAppender<ILoggingEvent>().apply { start() }
+        logger.addAppender(appender)
+        try {
+            block()
+        } finally {
+            logger.detachAppender(appender)
+        }
+        return appender.list.filter { it.level == Level.ERROR }
     }
 
     /** The cron defaults are what make the minutes real; nothing else fails if they drift back. */
