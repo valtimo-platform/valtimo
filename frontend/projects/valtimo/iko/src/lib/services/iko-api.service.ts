@@ -31,6 +31,8 @@ import {Router} from '@angular/router';
   providedIn: 'root',
 })
 export class IkoApiService extends BaseApiService {
+  private readonly WIDGET_DATA_SKIP_TOAST_STATUSES = '500,502,503,504';
+
   private readonly _cachedMenuItems$ = new BehaviorSubject<IkoView[]>([]);
 
   public get cachedMenuItems$(): Observable<IkoView[]> {
@@ -94,7 +96,10 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get(
       this.getApiUrl(
         `/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}${!queryParams ? '' : '&' + queryParams.toString()}`
-      )
+      ),
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, this.WIDGET_DATA_SKIP_TOAST_STATUSES),
+      }
     );
   }
 
