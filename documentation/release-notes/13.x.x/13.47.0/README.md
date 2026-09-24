@@ -57,6 +57,9 @@ takes under a minute.
 
 | Area | Fix |
 |------|-----|
+| Building blocks | The breadcrumb back to a mail, text or document template overview opens that overview, instead of the building block's General tab |
+| Case management | The breadcrumb back to a mail, text or document template overview opens that overview, instead of the case's General tab |
+| Case management | The breadcrumb back to a case opens its General tab, instead of a page with no tab selected |
 | Case types | A building block action on the Actions tab can be saved on another version |
 | Startup | A case definition that is not final no longer slows startup down as it gains processes. In a test case definition with 200 processes, startup took almost nine minutes and now takes under a minute |
 | SmartDocuments / Exact | These modules no longer bring their own copy of the Valtimo platform modules along, so pinning an older version of them no longer pulls an older Valtimo into the application. |

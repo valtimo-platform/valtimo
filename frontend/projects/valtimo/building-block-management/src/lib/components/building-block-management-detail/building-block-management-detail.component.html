@@ -14,9 +14,9 @@
   ~ limitations under the License.
   -->
 
-@if (activeTabKey$ | async; as activeTabKey) {
+@if (tabState$ | async; as tabState) {
   <cds-tabs [attr.data-test-id]="testIds.tabs" type="line">
-    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL}; as obs) {
+    @if ({active: tabState.activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL}; as obs) {
       <cds-tab
         [active]="obs.active"
         [heading]="'buildingBlockManagement.tabs.general' | translate"
@@ -28,7 +28,7 @@
       </cds-tab>
     }
 
-    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT}; as obs) {
+    @if ({active: tabState.activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT}; as obs) {
       <cds-tab
         [active]="obs.active"
         [heading]="'buildingBlockManagement.tabs.document' | translate"
@@ -40,7 +40,7 @@
       </cds-tab>
     }
 
-    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}; as obs) {
+    @if ({active: tabState.activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}; as obs) {
       <cds-tab
         [active]="obs.active"
         [heading]="'buildingBlockManagement.tabs.processes' | translate"
@@ -52,7 +52,7 @@
       </cds-tab>
     }
 
-    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.FORMS}; as obs) {
+    @if ({active: tabState.activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.FORMS}; as obs) {
       <cds-tab
         [active]="obs.active"
         [heading]="'buildingBlockManagement.tabs.forms' | translate"
@@ -64,7 +64,7 @@
       </cds-tab>
     }
 
-    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.FORM_FLOWS}; as obs) {
+    @if ({active: tabState.activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.FORM_FLOWS}; as obs) {
       <cds-tab
         [active]="obs.active"
         [heading]="'buildingBlockManagement.tabs.formFlows' | translate"
@@ -76,7 +76,7 @@
       </cds-tab>
     }
 
-    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS}; as obs) {
+    @if ({active: tabState.activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DECISIONS}; as obs) {
       <cds-tab
         [active]="obs.active"
         [heading]="'buildingBlockManagement.tabs.decisions' | translate"
@@ -88,8 +88,8 @@
       </cds-tab>
     }
 
-    @for (customTab of customTabs; track customTab.tabRoute) {
-      @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
+    @for (customTab of tabState.customTabs; track customTab.tabRoute) {
+      @if ({active: tabState.activeTabKey === customTab.tabRoute}; as obs) {
         <cds-tab
           [active]="obs.active"
           [heading]="customTab.translationKey | translate"
