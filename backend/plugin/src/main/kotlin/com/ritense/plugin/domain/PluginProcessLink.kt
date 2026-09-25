@@ -50,9 +50,7 @@ class PluginProcessLink(
     @Column(name = "plugin_action_definition_key", nullable = false)
     val pluginActionDefinitionKey: String,
 
-    @Type(value = JsonType::class)
-    @Column(name = "action_result_mappings", columnDefinition = "JSON")
-    val actionResultMappings: List<PluginActionResultMapping>? = null,
+    actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 
 ) : ProcessLink(
     id,
@@ -61,6 +59,14 @@ class PluginProcessLink(
     activityType,
     PROCESS_LINK_TYPE_PLUGIN,
 ) {
+
+    // Nullable: legacy rows hold NULL
+    @Type(value = JsonType::class)
+    @Column(name = "action_result_mappings", columnDefinition = "JSON")
+    private val _actionResultMappings: List<PluginActionResultMapping>? = actionResultMappings
+
+    val actionResultMappings: List<PluginActionResultMapping>
+        get() = _actionResultMappings.orEmpty()
 
     init {
         if (pluginConfigurationReference.type == BUILDING_BLOCK) {
@@ -111,7 +117,7 @@ class PluginProcessLink(
         pluginConfigurationId: PluginConfigurationId? = this.pluginConfigurationId,
         pluginConfigurationReference: PluginConfigurationReference = this.pluginConfigurationReference,
         pluginActionDefinitionKey: String = this.pluginActionDefinitionKey,
-        actionResultMappings: List<PluginActionResultMapping>? = this.actionResultMappings,
+        actionResultMappings: List<PluginActionResultMapping> = this.actionResultMappings,
     ) = PluginProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
@@ -146,7 +152,7 @@ class PluginProcessLink(
         result = 31 * result + (pluginConfigurationId?.hashCode() ?: 0)
         result = 31 * result + pluginConfigurationReference.hashCode()
         result = 31 * result + pluginActionDefinitionKey.hashCode()
-        result = 31 * result + (actionResultMappings?.hashCode() ?: 0)
+        result = 31 * result + actionResultMappings.hashCode()
         return result
     }
 }

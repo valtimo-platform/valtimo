@@ -81,8 +81,7 @@ class ZaakDocumentServiceIT @Autowired constructor(
         )
         permissionRepository.saveAllAndFlush(permissions)
 
-        // Should throw ZaakInstanceLinkNotFoundException because no zaak link exists,
-        // but this proves the permission check passed (otherwise would return empty list)
+        // No zaak link -> throws; proves permission check passed
         assertThrows<ZaakInstanceLinkNotFoundException> {
             zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)
         }

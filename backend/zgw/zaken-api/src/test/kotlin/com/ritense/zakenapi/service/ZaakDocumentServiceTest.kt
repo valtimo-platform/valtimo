@@ -80,6 +80,7 @@ class ZaakDocumentServiceTest {
         documentenApiService = mock()
         documentenApiVersionService = mock()
         authorizationService = mock()
+        whenever(authorizationService.hasPermission<Any>(any())).thenReturn(true)
         service = ZaakDocumentService(
             zaakUrlProvider,
             pluginService,

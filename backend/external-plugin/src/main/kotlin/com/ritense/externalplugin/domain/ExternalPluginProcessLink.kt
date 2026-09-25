@@ -64,9 +64,7 @@ class ExternalPluginProcessLink(
     @Column(name = "external_plugin_action_properties", columnDefinition = "JSON")
     val actionProperties: ObjectNode? = null,
 
-    @Type(value = JsonType::class)
-    @Column(name = "action_result_mappings", columnDefinition = "JSON")
-    val actionResultMappings: List<PluginActionResultMapping>? = null,
+    actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 ) : ProcessLink(
     id,
     processDefinitionId,
@@ -74,6 +72,14 @@ class ExternalPluginProcessLink(
     activityType,
     PROCESS_LINK_TYPE,
 ) {
+
+    // Nullable: legacy rows hold NULL
+    @Type(value = JsonType::class)
+    @Column(name = "action_result_mappings", columnDefinition = "JSON")
+    private val _actionResultMappings: List<PluginActionResultMapping>? = actionResultMappings
+
+    val actionResultMappings: List<PluginActionResultMapping>
+        get() = _actionResultMappings.orEmpty()
 
     override fun copy(id: UUID, processDefinitionId: String) = copy(
         id = id,
@@ -90,7 +96,7 @@ class ExternalPluginProcessLink(
         actionKey: String = this.actionKey,
         pluginConfigurationReference: PluginConfigurationReference = this.pluginConfigurationReference,
         actionProperties: ObjectNode? = this.actionProperties,
-        actionResultMappings: List<PluginActionResultMapping>? = this.actionResultMappings,
+        actionResultMappings: List<PluginActionResultMapping> = this.actionResultMappings,
     ) = ExternalPluginProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
@@ -125,7 +131,7 @@ class ExternalPluginProcessLink(
         result = 31 * result + actionKey.hashCode()
         result = 31 * result + pluginConfigurationReference.hashCode()
         result = 31 * result + (actionProperties?.hashCode() ?: 0)
-        result = 31 * result + (actionResultMappings?.hashCode() ?: 0)
+        result = 31 * result + actionResultMappings.hashCode()
         return result
     }
 

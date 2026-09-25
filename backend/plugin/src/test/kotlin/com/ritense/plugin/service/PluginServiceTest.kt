@@ -575,7 +575,7 @@ internal class PluginServiceTest {
         verify(pluginActionResultHandler).handle(
             org.mockito.kotlin.eq(execution),
             resultCaptor.capture(),
-            org.mockito.kotlin.eq(processLink.actionResultMappings!!),
+            org.mockito.kotlin.eq(processLink.actionResultMappings),
         )
         assertEquals(123, resultCaptor.firstValue.get("value").intValue())
     }
