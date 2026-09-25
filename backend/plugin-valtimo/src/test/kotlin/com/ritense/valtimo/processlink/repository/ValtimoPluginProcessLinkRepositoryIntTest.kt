@@ -26,9 +26,12 @@ import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
@@ -44,6 +47,29 @@ class ValtimoPluginProcessLinkRepositoryIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var pluginDefinitionRepository: PluginDefinitionRepository
+
+    @Autowired
+    lateinit var entityManager: EntityManager
+
+    @Autowired
+    lateinit var jdbcTemplate: JdbcTemplate
+
+    @Autowired
+    lateinit var pluginProcessLinkMapper: PluginProcessLinkMapper
+
+    @Test
+    fun `should read NULL action_result_mappings as an empty list`() {
+        val link = saveLink(pluginConfigurationId = null, pluginDefinitionKey = "test-plugin")
+        entityManager.flush()
+        jdbcTemplate.update("UPDATE process_link SET action_result_mappings = NULL WHERE id = ?", link.id)
+        entityManager.clear()
+
+        val loaded = pluginProcessLinkRepository.findById(link.id).orElseThrow()
+
+        assertThat(loaded.actionResultMappings).isEmpty()
+        assertThat(pluginProcessLinkMapper.toProcessLinkResponseDto(loaded).actionResultMappings).isEmpty()
+        assertThat(pluginProcessLinkMapper.toProcessLinkExportResponseDto(loaded).actionResultMappings).isEmpty()
+    }
 
     @Test
     fun `should not report an issue when the process definitions have no plugin links`() {
