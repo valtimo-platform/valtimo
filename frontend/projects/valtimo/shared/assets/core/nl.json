@@ -914,7 +914,7 @@
           "dataMigrationHint": "Zet data terug naar het dossier voordat het bouwblok wordt verwijderd: elke bron leest uit het bouwblokdocument, elk doel schrijft naar het dossierdocument.",
           "processMigrationHint": "Het bronproces is een bouwblokproces; het doelproces is een dossierproces. Het/de bouwblokproces(sen) worden teruggegeven aan het dossier en de business key wordt altijd teruggezet op de document-id van het dossier."
         },
-        "sourceNotDeployed": "{{versionTag}} (niet meer gedeployed)"
+        "sourceNotDeployed": "{{versionTag}} (hier niet gedeployed)"
       },
       "deleteModal": {
         "title": "Migratieplan verwijderen",

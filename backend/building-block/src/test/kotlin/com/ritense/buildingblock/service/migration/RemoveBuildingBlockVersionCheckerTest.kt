@@ -35,9 +35,7 @@ class RemoveBuildingBlockVersionCheckerTest {
 
     // The source carries 'inspectie-dossier:1.0.0', so the entries below name a block a case actually has.
     private val linkedVersionResolver: LinkedBuildingBlockVersionResolver = mock {
-        on { resolveLinkedVersions(any()) } doReturn emptyList()
-        on { resolveCallActivityReachable(any()) } doReturn
-            setOf(BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0"))
+        on { resolveCarried(any()) } doReturn setOf(BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0"))
     }
     private val validator = RemoveBuildingBlockMigrationComponentValidator(
         checker,
@@ -105,20 +103,19 @@ class RemoveBuildingBlockVersionCheckerTest {
 
         assertThat(validator.validate(source, target, component))
             .singleElement().asString()
-            .contains("removes building block 'verhuizing-inspectie:1.0.4'")
-            .contains("links no version of 'verhuizing-inspectie' at all")
+            .contains("removes building block 'verhuizing-inspectie'")
+            .contains("links no version of it")
+            .contains("Available: 'inspectie-dossier'")
     }
 
-    /** A wrong version of a block the source does link is named as that, not as an unknown block. */
+    /** A block alignment could not move stays on its old version, and the executor demands an entry for exactly that version. */
     @Test
-    fun `should name the version the source links when only the version is wrong`() {
+    fun `should accept a version the source does not link when it links the key`() {
         val component = component(
-            """[{"buildingBlockKey": "inspectie-dossier", "buildingBlockVersionTag": "2.0.0"}]"""
+            """[{"buildingBlockKey": "inspectie-dossier", "buildingBlockVersionTag": "0.9.0"}]"""
         )
 
-        assertThat(validator.validate(source, target, component))
-            .singleElement().asString()
-            .contains("links 'inspectie-dossier:1.0.0' instead")
+        assertThat(validator.validate(source, target, component)).isEmpty()
     }
 
     @Test

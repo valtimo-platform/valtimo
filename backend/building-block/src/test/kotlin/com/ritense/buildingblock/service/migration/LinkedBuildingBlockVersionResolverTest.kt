@@ -327,6 +327,18 @@ class LinkedBuildingBlockVersionResolverTest {
     }
 
     @Test
+    fun `should carry what sits below a startable-item link, which the call-activity walk does not reach`() {
+        // case -startable-> uitvoeren -call activity-> besluit
+        startableItemLink("1.0.0", key = "bijstand-uitvoeren")
+        val uitvoeren = BuildingBlockDefinitionId.of("bijstand-uitvoeren", "1.0.0")
+        val besluit = BuildingBlockDefinitionId.of("bijstand-besluit", "1.0.0")
+        blockCallActivityLink(uitvoeren, "besluit:1:x", "BesluitCallActivity", "bijstand-besluit", "1.0.0")
+
+        assertThat(resolver.resolveCallActivityReachable(caseDefinitionId)).doesNotContain(besluit)
+        assertThat(resolver.resolveCarried(caseDefinitionId)).containsExactlyInAnyOrder(uitvoeren, besluit)
+    }
+
+    @Test
     fun `should record the shallowest declarer for a block that also declares itself`() {
         // A recursive block: the case must stay its declarer, or the remove suggester computes the mapping against the block itself.
         callActivityLink("HerhaalCallActivity", "1.0.0", key = "herhaling")

@@ -331,15 +331,15 @@ class MigrationSuggestionServiceTest {
         assertThat(problems).singleElement().asString().contains("no valid 'source'")
     }
 
-    /** The file deployer has always accepted an undeployed source, so refusing one here made a plan that deploys impossible to save again — the state every plan migrating *from* a deleted case version lands in. Running such a plan is still refused; that check is on the run path. */
+    /** Import accepts such a plan; saving it is refused with one clear reason instead of per-component noise about a source that is not there. */
     @Test
-    fun `a plan naming a source nobody deployed can still be saved`() {
+    fun `a plan naming a source nobody deployed cannot be saved`() {
         val service = suggestionService(lineage = lineage(exists = false))
         val plan = objectMapper.readTree("""{"key": "x", "source": {"versionTag": "1.0.1"}}""")
 
         val problems = service.findPlanProblems(target, plan)
 
-        assertThat(problems).isEmpty()
+        assertThat(problems).singleElement().asString().contains("is not deployed in this environment")
     }
 
     @Test
@@ -521,6 +521,24 @@ class MigrationSuggestionServiceTest {
             .containsExactly("inspectie-dossier" to "1.0.0", "inspectie-fotos" to "1.0.0")
     }
 
+    /** The remove tab's keys: what an instance can carry, which reaches further than what an add entry may name. */
+    @Test
+    fun `should describe the carried building blocks, not the linked ones`() {
+        val service = suggestionService(
+            entryOwners = emptyMap(),
+            linkedBlocks = setOf(BuildingBlockDefinitionId("inspectie-dossier", "1.0.0")),
+            carriedBlocks = setOf(
+                BuildingBlockDefinitionId("inspectie-fotos", "1.0.0"),
+                BuildingBlockDefinitionId("inspectie-dossier", "1.0.0"),
+            ),
+        )
+
+        val carried = service.describeCarriedBuildingBlocks(target)
+
+        assertThat(carried.map { it.get("key").asText() })
+            .containsExactly("inspectie-dossier", "inspectie-fotos")
+    }
+
     @Test
     fun `should describe no linked building blocks when nothing answers for the blueprint type`() {
         val service = suggestionService()
@@ -545,6 +563,7 @@ class MigrationSuggestionServiceTest {
         entryOwners: Map<BuildingBlockDefinitionId, BlueprintId>? = null,
         entryOwnersInSourceTree: Map<BlueprintId, BlueprintId> = emptyMap(),
         linkedBlocks: Set<BuildingBlockDefinitionId> = emptySet(),
+        carriedBlocks: Set<BuildingBlockDefinitionId> = linkedBlocks,
         onEntrySuggestion: (String, BlueprintId) -> Unit = { _, _ -> },
     ) = MigrationSuggestionService(
         objectMapper = objectMapper,
@@ -558,7 +577,7 @@ class MigrationSuggestionServiceTest {
         activityMappingValidators = emptyList(),
         componentValidators = listOfNotNull(componentValidator),
         buildingBlockEntryOwnerships = entryOwners
-            ?.let { listOf(entryOwnership(it, entryOwnersInSourceTree, linkedBlocks)) }
+            ?.let { listOf(entryOwnership(it, entryOwnersInSourceTree, linkedBlocks, carriedBlocks)) }
             ?: emptyList(),
     )
 
@@ -566,6 +585,7 @@ class MigrationSuggestionServiceTest {
         owners: Map<BuildingBlockDefinitionId, BlueprintId>,
         declaredIn: Map<BlueprintId, BlueprintId> = emptyMap(),
         linked: Set<BuildingBlockDefinitionId> = emptySet(),
+        carried: Set<BuildingBlockDefinitionId> = linked,
     ) = object : BuildingBlockEntryOwnership {
         override fun supports(blueprintType: BlueprintType) = true
         override fun entryOwnerOf(migratingOwner: BlueprintId, block: BuildingBlockDefinitionId) =
@@ -574,6 +594,8 @@ class MigrationSuggestionServiceTest {
         override fun ownerAsDeclaredIn(tree: BlueprintId, owner: BlueprintId) = declaredIn[owner] ?: owner
 
         override fun linkedBlocksOf(owner: BlueprintId) = linked
+
+        override fun carriedBlocksOf(owner: BlueprintId) = carried
     }
 
     /** Records the blueprint each component was asked to suggest an entry against — [MigrationComponentSuggester.suggestForBuildingBlockEntry]'s `running`. */

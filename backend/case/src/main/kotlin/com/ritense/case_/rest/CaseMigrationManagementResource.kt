@@ -138,7 +138,7 @@ class CaseMigrationManagementResource(
         return ResponseEntity.ok(suggestion)
     }
 
-    /** The block versions a version links: this one by default, which an `addBuildingBlock` entry must name, or the plan's source when asked, which is all a `removeBuildingBlock` entry may dissolve. */
+    /** The block versions this version links, which an `addBuildingBlock` entry must name; given a source, every block an instance of it can carry, which is what a `removeBuildingBlock` entry may name. */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block/linked")
     fun getLinkedBuildingBlocks(
@@ -146,14 +146,20 @@ class CaseMigrationManagementResource(
         @PathVariable caseDefinitionVersionTag: String,
         @RequestParam(required = false) sourceKey: String?,
         @RequestParam(required = false) sourceVersionTag: String?,
-    ): ResponseEntity<JsonNode> = ResponseEntity.ok(
-        migrationSuggestionService.describeLinkedBuildingBlocks(
-            CaseDefinitionId(
-                sourceKey?.takeUnless { it.isBlank() } ?: caseDefinitionKey,
-                sourceVersionTag?.takeUnless { it.isBlank() } ?: caseDefinitionVersionTag,
-            )
+    ): ResponseEntity<JsonNode> {
+        val source = sourceVersionTag?.takeUnless { it.isBlank() }?.let { versionTag ->
+            CaseDefinitionId(sourceKey?.takeUnless { it.isBlank() } ?: caseDefinitionKey, versionTag)
+        }
+        return ResponseEntity.ok(
+            if (source == null) {
+                migrationSuggestionService.describeLinkedBuildingBlocks(
+                    CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
+                )
+            } else {
+                migrationSuggestionService.describeCarriedBuildingBlocks(source)
+            }
         )
-    )
+    }
 
     @RunWithoutAuthorization
     @GetMapping

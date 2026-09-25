@@ -59,6 +59,16 @@ class LinkedBuildingBlockVersionResolver(
     fun resolveCallActivityReachable(owner: BlueprintId): Set<BuildingBlockDefinitionId> =
         resolveCallActivityDeclarers(owner).keys
 
+    /** Every block an instance of [owner] can carry, at any depth. The call-activity walk does not descend into a startable-item link, so each directly linked block seeds its own walk. */
+    fun resolveCarried(owner: BlueprintId): Set<BuildingBlockDefinitionId> {
+        val direct = resolveLinkedVersions(owner).map { it.buildingBlockDefinitionId }
+        return buildSet {
+            addAll(direct)
+            addAll(resolveCallActivityReachable(owner))
+            direct.forEach { addAll(resolveCallActivityReachable(it)) }
+        }
+    }
+
     /** The link for [activityId] as [owner]'s model declares it — needed when the hop above stays a plain sub-process and still runs the old deployment. */
     fun resolveCallActivityLink(
         owner: BlueprintId,

@@ -59,6 +59,10 @@ class CallActivityBuildingBlockEntryOwnership(
         linkedBuildingBlockVersionResolver.resolveLinkedVersions(owner).map { it.buildingBlockDefinitionId }
             .toSet() + linkedBuildingBlockVersionResolver.resolveCallActivityReachable(owner)
 
+    /** The same set [RemoveBuildingBlockMigrationComponentValidator] accepts. */
+    override fun carriedBlocksOf(owner: BlueprintId): Set<BuildingBlockDefinitionId> =
+        linkedBuildingBlockVersionResolver.resolveCarried(owner)
+
     /** One version of a key is an answer, several a guess: taking whichever the set yielded first made it depend on iteration order. Both callers fall back to the blueprint they were given. */
     private fun warnIfAmbiguous(
         tree: BlueprintId,
