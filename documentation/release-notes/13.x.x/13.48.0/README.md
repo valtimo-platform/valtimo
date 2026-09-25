@@ -1,6 +1,6 @@
 # 13.48.0
 
-Release date: 30-09-2026
+Release date: 02-10-2026
 
 ---
 
