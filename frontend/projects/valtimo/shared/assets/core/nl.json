@@ -913,7 +913,8 @@
           "description": "Verwijder één of meer bouwblokken van elk gemigreerd dossier. Alle direct aan het dossier gekoppelde bouwblokken met de opgegeven sleutel worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar het dossier.",
           "dataMigrationHint": "Zet data terug naar het dossier voordat het bouwblok wordt verwijderd: elke bron leest uit het bouwblokdocument, elk doel schrijft naar het dossierdocument.",
           "processMigrationHint": "Het bronproces is een bouwblokproces; het doelproces is een dossierproces. Het/de bouwblokproces(sen) worden teruggegeven aan het dossier en de business key wordt altijd teruggezet op de document-id van het dossier."
-        }
+        },
+        "sourceNotDeployed": "{{versionTag}} (hier niet gedeployed)"
       },
       "deleteModal": {
         "title": "Migratieplan verwijderen",
@@ -929,6 +930,7 @@
         "content": "Simuleer dit migratieplan voor alle overeenkomende dossiers zonder er ook maar één te migreren? Er wordt niets gewijzigd; je krijgt een overzicht van welke dossiers zouden migreren en welke zouden mislukken."
       },
       "dryRunResults": {
+        "status": "Status testrun",
         "heading": "Laatste testrun",
         "casesChecked": "Gecontroleerde dossiers",
         "casesWouldMigrate": "Zouden migreren",
@@ -3517,7 +3519,8 @@
     "placeholder": "Kies een pad",
     "dropdown": "Dropdown",
     "manual": "Handmatig",
-    "selectCaseDefPlaceholder": "Kies een dossier"
+    "selectCaseDefPlaceholder": "Kies een dossier",
+    "notInThisVersion": "(niet in deze versie)"
   },
   "valueConditionTree": {
     "path": "Veld",

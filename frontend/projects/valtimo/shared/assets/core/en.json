@@ -913,7 +913,8 @@
           "description": "Remove one or more building blocks from each migrated case. All building blocks directly linked to the case with the given key are dissolved after their data and process(es) are transferred back to the case.",
           "dataMigrationHint": "Transfers data back to the case before the building block is deleted: each source reads from the building block document, each target writes into the case document.",
           "processMigrationHint": "The source process is a building block process; the target process is a case process. The building block process(es) are handed back to the case, and the business key is always set back to the case document id."
-        }
+        },
+        "sourceNotDeployed": "{{versionTag}} (not deployed here)"
       },
       "deleteModal": {
         "title": "Delete migration plan",
@@ -929,6 +930,7 @@
         "content": "Simulate this migration plan for all matching cases without migrating any of them? Nothing is changed; you get a report of which cases would migrate and which would fail."
       },
       "dryRunResults": {
+        "status": "Dry run status",
         "heading": "Latest dry run",
         "casesChecked": "Cases checked",
         "casesWouldMigrate": "Would migrate",
@@ -3508,7 +3510,8 @@
     "placeholder": "Select a path",
     "dropdown": "Dropdown",
     "manual": "Manual",
-    "selectCaseDefPlaceholder": "Select a case"
+    "selectCaseDefPlaceholder": "Select a case",
+    "notInThisVersion": "(not in this version)"
   },
   "valueConditionTree": {
     "path": "Field",

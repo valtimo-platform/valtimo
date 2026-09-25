@@ -125,8 +125,12 @@ class MigrationSuggestionService(
             ?: return@inRun listOf(
                 "the plan declares no valid 'source' (the blueprint version it migrates instances from)"
             )
+        // Import accepts an undeployed source (plans travel with their target from another environment); saving one does not.
         if (lineageOf(target)?.exists(source) == false) {
-            return@inRun listOf("its source '$source' is not deployed, so the plan would migrate no instances")
+            return@inRun listOf(
+                "its source '$source' is not deployed in this environment. Deploy that version, or point the " +
+                    "plan at one that is, to save it"
+            )
         }
         componentValidators.flatMap { validator ->
             plan.get(validator.componentKey())
@@ -220,9 +224,22 @@ class MigrationSuggestionService(
             .orEmpty()
             .sortedBy { it.toString() }
 
+    /** The block versions an instance of [owner] can carry, sorted — the keys the remove tab offers, the same the remove validator accepts. */
+    fun carriedBuildingBlocksOf(owner: BlueprintId): List<BuildingBlockDefinitionId> =
+        buildingBlockEntryOwnerships
+            .firstOrNull { it.supports(owner.blueprintType()) }
+            ?.carriedBlocksOf(owner)
+            .orEmpty()
+            .sortedBy { it.toString() }
+
     /** [linkedBuildingBlocksOf] as the editor reads it. */
-    fun describeLinkedBuildingBlocks(owner: BlueprintId): ArrayNode =
-        linkedBuildingBlocksOf(owner).fold(objectMapper.createArrayNode()) { array, block ->
+    fun describeLinkedBuildingBlocks(owner: BlueprintId): ArrayNode = describe(linkedBuildingBlocksOf(owner))
+
+    /** [carriedBuildingBlocksOf] as the editor reads it. */
+    fun describeCarriedBuildingBlocks(owner: BlueprintId): ArrayNode = describe(carriedBuildingBlocksOf(owner))
+
+    private fun describe(blocks: List<BuildingBlockDefinitionId>): ArrayNode =
+        blocks.fold(objectMapper.createArrayNode()) { array, block ->
             array.add(
                 objectMapper.createObjectNode()
                     .put("key", block.key)

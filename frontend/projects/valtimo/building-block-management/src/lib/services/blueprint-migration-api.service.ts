@@ -116,10 +116,18 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
     );
   }
 
-  /** The block versions this plan's target links — what an `addBuildingBlock` entry may name. */
-  public getLinkedBuildingBlocks(params: P): Observable<LinkedBuildingBlock[]> {
+  /** What [source] links, or the target when omitted — a remove entry may only name a block the case already carries. */
+  public getLinkedBuildingBlocks(
+    params: P,
+    source?: MigrationPlanSource | null
+  ): Observable<LinkedBuildingBlock[]> {
+    const query: Record<string, string> = {};
+    if (source?.key) query['sourceKey'] = source.key;
+    if (source?.versionTag) query['sourceVersionTag'] = source.versionTag;
+
     return this.httpClient.get<LinkedBuildingBlock[]>(
-      `${this.getMigrationUrl(params)}/suggestion/building-block/linked`
+      `${this.getMigrationUrl(params)}/suggestion/building-block/linked`,
+      {params: query}
     );
   }
 
@@ -132,7 +140,7 @@ export abstract class BlueprintMigrationApiService<P, M> extends BaseApiService 
         this.validateActivityMapping(params, sourceId, targetId, mapping),
       suggestBuildingBlockEntry: (key, versionTag, mode, source) =>
         this.suggestBuildingBlockEntry(params, key, versionTag, mode, source),
-      getLinkedBuildingBlocks: () => this.getLinkedBuildingBlocks(params),
+      getLinkedBuildingBlocks: source => this.getLinkedBuildingBlocks(params, source),
     };
   }
 }

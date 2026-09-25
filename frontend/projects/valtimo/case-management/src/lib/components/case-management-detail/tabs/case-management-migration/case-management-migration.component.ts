@@ -348,9 +348,9 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     return id ? `${id.slice(0, 8)}…` : '-';
   }
 
-  // The first line of a stacktrace is the exception type + message — the useful one-line summary.
-  public firstErrorLine(message: string | null): string {
-    return message ? message.split('\n')[0].trim() : '-';
+  /** The server's own summary — the rule that refused the case. Its first stacktrace line is only the wrapper around that. */
+  public errorSummary(error: {summary?: string | null; message: string | null}): string {
+    return error.summary?.trim() || error.message?.split('\n')[0].trim() || '-';
   }
 
   public onCopyError(event: Event, message: string | null): void {

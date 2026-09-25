@@ -18,6 +18,7 @@ package com.ritense.case_.service.migration
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.case_.domain.migration.CaseDefinitionMigration
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
@@ -70,6 +71,8 @@ class MigrationPlanImporter(
     fun deploy(blueprintId: BlueprintId, tree: JsonNode) {
         val objectNode = tree as? ObjectNode
             ?: throw IllegalArgumentException("Migration plan must be a JSON object")
+        // Before deserialization: an unknown key must be named as such, not surface as whatever the mapper makes of it.
+        rejectUnknownPlanKeys(objectNode)
         val dto = objectMapper.treeToValue(objectNode, MigrationPlanDeploymentDto::class.java)
         require(dto.key.isNotBlank()) { "A migration plan requires a non-blank 'key'" }
         val isBuildingBlockPlan = blueprintId.blueprintType() == BlueprintType.BUILDING_BLOCK
@@ -101,8 +104,49 @@ class MigrationPlanImporter(
                 ?.takeUnless { it.isNull }
                 ?.let { component ->
                     logger.debug { "Deploying migration component '${deployer.componentKey()}' for '$migrationId'" }
-                    deployer.deploy(migrationId, component)
+                    deployComponent(deployer, migrationId, component)
                 }
+        }
+    }
+
+    /** A deployer parses its own section strictly, so an unknown property arrives as a Jackson error. Said in the plan's own terms instead, and as the [IllegalArgumentException] the save path answers as a 400. */
+    private fun deployComponent(
+        deployer: MigrationComponentDeployer,
+        migrationId: BlueprintMigrationId,
+        component: JsonNode,
+    ) {
+        try {
+            deployer.deploy(migrationId, component)
+        } catch (e: Exception) {
+            // convertValue wraps it, so the unknown property is somewhere down the cause chain rather than thrown as itself.
+            val unknown = generateSequence<Throwable>(e) { it.cause }
+                .filterIsInstance<UnrecognizedPropertyException>()
+                .firstOrNull()
+                ?: throw e
+            throw IllegalArgumentException(
+                "Migration plan has an unknown property '${unknown.propertyName}' in " +
+                    "'${deployer.componentKey()}'. Known properties there are " +
+                    unknown.knownPropertyIds.orEmpty().sortedBy { it.toString() }.joinToString { "'$it'" } + ".",
+                e,
+            )
+        }
+    }
+
+    /** A misspelled component section is silently dropped rather than deployed, so `dataMigraton` loses every patch under it and the plan still saves. The plan DTO cannot catch this itself: it has to ignore unknown keys, because the component sections are exactly that to it. */
+    private fun rejectUnknownPlanKeys(objectNode: ObjectNode) {
+        val allowed = PLAN_LEVEL_KEYS + componentDeployers.map { it.componentKey() }
+        val unknown = objectNode.fieldNames().asSequence().filterNot { it in allowed }.toList()
+        require(unknown.isEmpty()) {
+            "Migration plan has ${if (unknown.size == 1) "an unknown property" else "unknown properties"} " +
+                unknown.joinToString { "'$it'" } + ". Known properties are " +
+                allowed.sorted().joinToString { "'$it'" } + "."
+        }
+        val unknownSource = objectNode.get("source")?.takeIf { it.isObject }
+            ?.fieldNames()?.asSequence()?.filterNot { it in SOURCE_KEYS }?.toList().orEmpty()
+        require(unknownSource.isEmpty()) {
+            "Migration plan has ${if (unknownSource.size == 1) "an unknown property" else "unknown properties"} " +
+                unknownSource.joinToString { "'$it'" } + " in 'source'. Known properties there are " +
+                SOURCE_KEYS.sorted().joinToString { "'$it'" } + "."
         }
     }
 
@@ -150,6 +194,12 @@ class MigrationPlanImporter(
         val logger = KotlinLogging.logger {}
 
         val REJECTED_BUILDING_BLOCK_FIELDS = listOf("migrationTriggers", "conditions")
+
+        /** Every property [MigrationPlanDeploymentDto] declares; the component sections are added per deployer. */
+        val PLAN_LEVEL_KEYS = setOf("key", "source", "title", "migrationTriggers", "conditions")
+
+        /** Every property [MigrationPlanSourceDto] declares. */
+        val SOURCE_KEYS = setOf("key", "versionTag")
 
         // Matches both `<name>.case-migration.json` and `<name>.building-block-migration.json`.
         val FILENAME_REGEX =

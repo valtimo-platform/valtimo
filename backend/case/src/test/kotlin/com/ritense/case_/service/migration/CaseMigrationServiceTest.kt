@@ -277,6 +277,12 @@ class CaseMigrationServiceTest(
             .thenReturn(caseIds.toList())
     }
 
+    /** Says the case already sits on the plan's target — what makes a MIGRATED row mean "done" rather than "was done once". */
+    private fun stubHomedOnTarget(caseId: UUID) {
+        whenever(documentRepository.isCaseHomedOnBlueprintVersion(eq(caseId), any(), any(), any()))
+            .thenReturn(true)
+    }
+
     @Test
     fun `should migrate all matching candidates and complete`() {
         stubCandidates(case1, case2)
@@ -466,12 +472,28 @@ class CaseMigrationServiceTest(
         stubCandidates(case1, case2)
         whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
         whenever(caseRepository.existsByIdAndStatus(caseRecordId(case1), CaseMigrationCaseStatus.MIGRATED)).thenReturn(true)
+        stubHomedOnTarget(case1)
 
         val result = service.startMigration(migrationId)
 
         verify(executor, never()).execute(migrationId, caseDefinitionId, case1)
         verify(executor).execute(migrationId, caseDefinitionId, case2)
         verify(caseRepository).save(CaseMigrationCase(caseRecordId(case2), CaseMigrationCaseStatus.MIGRATED))
+        assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
+    }
+
+    /** The MIGRATED row outlives the migration it records. Another plan moving the case back onto this plan's source used to leave it a permanent candidate that was skipped every run. */
+    @Test
+    fun `should migrate an already-migrated case again once it is no longer on the target version`() {
+        stubCandidates(case1)
+        whenever(conditionEvaluator.matches(any(), any())).thenReturn(true)
+        whenever(caseRepository.existsByIdAndStatus(caseRecordId(case1), CaseMigrationCaseStatus.MIGRATED)).thenReturn(true)
+        // Not stubbed as homed on the target: the case has been moved back off it.
+
+        val result = service.startMigration(migrationId)
+
+        verify(executor).execute(migrationId, caseDefinitionId, case1)
+        verify(caseRepository).save(CaseMigrationCase(caseRecordId(case1), CaseMigrationCaseStatus.MIGRATED))
         assertThat(result.status).isEqualTo(CaseMigrationStatus.COMPLETED)
     }
 

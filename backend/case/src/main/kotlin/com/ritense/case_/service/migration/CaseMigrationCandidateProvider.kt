@@ -66,4 +66,15 @@ class CaseMigrationCandidateProvider(
             )
         }
     }
+
+    override fun isHomedOn(instanceId: UUID, blueprintId: BlueprintId): Boolean {
+        return runWithoutAuthorization {
+            documentRepository.isCaseHomedOnBlueprintVersion(
+                instanceId,
+                blueprintId.blueprintType(),
+                blueprintId.getIdKey(),
+                blueprintId.blueprintVersionTag(),
+            )
+        }
+    }
 }

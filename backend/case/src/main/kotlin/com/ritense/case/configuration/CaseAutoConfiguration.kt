@@ -79,6 +79,7 @@ import com.ritense.case_.service.migration.CaseMigrationCandidateProvider
 import com.ritense.case_.service.migration.CaseMigrationRunner
 import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.DataMigrationComponentDeployer
+import com.ritense.case_.service.migration.DataMigrationComponentValidator
 import com.ritense.case_.service.migration.DataMigrationComponentExecutor
 import com.ritense.case_.service.migration.DataMigrationComponentSuggester
 import com.ritense.case_.service.migration.MigrationConditionEvaluator
@@ -106,6 +107,7 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
+import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentValidator
@@ -582,6 +584,12 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         dataMigrationConfigurationRepository: DataMigrationConfigurationRepository,
     ) = DataMigrationComponentDeployer(objectMapper, dataMigrationConfigurationRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(DataMigrationComponentValidator::class)
+    fun dataMigrationComponentValidator(
+        valueResolverFactories: List<ValueResolverFactory>,
+    ) = DataMigrationComponentValidator(valueResolverFactories)
 
     @Bean
     @ConditionalOnMissingBean(MigrationPlanImporter::class)

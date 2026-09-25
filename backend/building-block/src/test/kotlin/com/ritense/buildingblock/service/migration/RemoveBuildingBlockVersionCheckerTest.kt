@@ -17,17 +17,31 @@
 package com.ritense.buildingblock.service.migration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.doReturn
 
 /** The version tag a `removeBuildingBlock` entry must name, refused at both points a plan can still be corrected: the save path and deploy, which is what a file-deployed plan passes. */
 class RemoveBuildingBlockVersionCheckerTest {
 
     private val objectMapper = ObjectMapper()
     private val checker = RemoveBuildingBlockVersionChecker()
-    private val validator = RemoveBuildingBlockMigrationComponentValidator(checker)
+
+    // The source carries 'inspectie-dossier:1.0.0', so the entries below name a block a case actually has.
+    private val linkedVersionResolver: LinkedBuildingBlockVersionResolver = mock {
+        on { resolveCarried(any()) } doReturn setOf(BuildingBlockDefinitionId.of("inspectie-dossier", "1.0.0"))
+    }
+    private val validator = RemoveBuildingBlockMigrationComponentValidator(
+        checker,
+        linkedVersionResolver,
+        listOf(mock { on { supportedPrefix() } doReturn "doc" }),
+    )
 
     private val source = CaseDefinitionId("verhuizing", "1.0.7")
     private val target = CaseDefinitionId("verhuizing", "1.0.8")
@@ -78,6 +92,30 @@ class RemoveBuildingBlockVersionCheckerTest {
         assertThat(checker.findVersionless(component)).hasSize(2)
         assertThat(checker.findVersionless(component)[0]).contains("entry 2 for building block 'inspectie-dossier'")
         assertThat(checker.findVersionless(component)[1]).contains("entry 4 for building block '(no key)'")
+    }
+
+    /** The mirror of the add side's link check: an entry naming a block the source never carried removed nothing, and only said so per case at run. */
+    @Test
+    fun `should refuse an entry naming a building block the source does not link`() {
+        val component = component(
+            """[{"buildingBlockKey": "verhuizing-inspectie", "buildingBlockVersionTag": "1.0.4"}]"""
+        )
+
+        assertThat(validator.validate(source, target, component))
+            .singleElement().asString()
+            .contains("removes building block 'verhuizing-inspectie'")
+            .contains("links no version of it")
+            .contains("Available: 'inspectie-dossier'")
+    }
+
+    /** A block alignment could not move stays on its old version, and the executor demands an entry for exactly that version. */
+    @Test
+    fun `should accept a version the source does not link when it links the key`() {
+        val component = component(
+            """[{"buildingBlockKey": "inspectie-dossier", "buildingBlockVersionTag": "0.9.0"}]"""
+        )
+
+        assertThat(validator.validate(source, target, component)).isEmpty()
     }
 
     @Test

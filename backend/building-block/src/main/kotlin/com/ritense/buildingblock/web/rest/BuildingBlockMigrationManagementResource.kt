@@ -135,15 +135,26 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.ok(suggestion)
     }
 
-    /** The block versions this version links — which version an `addBuildingBlock` entry for a given key must name. */
+    /** The block versions this version links, which an `addBuildingBlock` entry must name; given a source, every block an instance of it can carry, which is what a `removeBuildingBlock` entry may name. */
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block/linked")
     fun getLinkedBuildingBlocks(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-    ): ResponseEntity<JsonNode> = ResponseEntity.ok(
-        migrationSuggestionService.describeLinkedBuildingBlocks(BuildingBlockDefinitionId(key, versionTag))
-    )
+        @RequestParam(required = false) sourceKey: String?,
+        @RequestParam(required = false) sourceVersionTag: String?,
+    ): ResponseEntity<JsonNode> {
+        val source = sourceVersionTag?.takeUnless { it.isBlank() }?.let { sourceVersion ->
+            BuildingBlockDefinitionId(sourceKey?.takeUnless { it.isBlank() } ?: key, sourceVersion)
+        }
+        return ResponseEntity.ok(
+            if (source == null) {
+                migrationSuggestionService.describeLinkedBuildingBlocks(BuildingBlockDefinitionId(key, versionTag))
+            } else {
+                migrationSuggestionService.describeCarriedBuildingBlocks(source)
+            }
+        )
+    }
 
     @RunWithoutAuthorization
     @GetMapping

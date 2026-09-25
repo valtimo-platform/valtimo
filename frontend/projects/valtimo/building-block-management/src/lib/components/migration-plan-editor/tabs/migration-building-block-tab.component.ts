@@ -109,11 +109,14 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
 
   // Versions are loaded per key on demand — the definition list carries only the latest of each.
   public keyItems: SelectItem[] = [];
+  private _allKeyItems: SelectItem[] = [];
   private readonly _versionsByKey = new Map<string, SelectItem[]>();
   private readonly _versionsInFlight = new Set<string>();
 
   // `key` -> the version this plan's target links, which is the only one an `add` entry may name.
   private readonly _linkedVersion = new Map<string, string>();
+  // On the remove tab, the keys the source links. Null until they are known — every key stays offered until then.
+  private _selectableKeys: Set<string> | null = null;
   private _linkedVersionsLoaded = false;
 
   // `key` -> latest versionTag, `key:version` -> process keys, and the lookups already in flight.
@@ -170,7 +173,8 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
           keyItems.push({id: definition.key, text: label});
         }
       });
-      this.keyItems = keyItems.sort((a, b) => a.text.localeCompare(b.text));
+      this._allKeyItems = keyItems.sort((a, b) => a.text.localeCompare(b.text));
+      this.applyKeyFilter();
       this.instructionsArray.controls.forEach(control =>
         this.ensureBuildingBlockProcessKeys(control as FormGroup)
       );
@@ -179,8 +183,13 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    // [api] is null until the host's route params resolve, so the load cannot happen in ngOnInit.
-    if (changes['api']) this.loadLinkedVersions();
+    // [api] resolves after ngOnInit, and the remove tab's [planSource] arrives separately and can change again — without both, the list answers for the target or goes stale on a source switch.
+    if (changes['planSource'] && !this.isAdd) {
+      this._linkedVersionsLoaded = false;
+      this._linkedVersion.clear();
+      this._selectableKeys = null;
+    }
+    if (changes['api'] || (changes['planSource'] && !this.isAdd)) this.loadLinkedVersions();
   }
 
   public ngOnDestroy(): void {
@@ -190,21 +199,45 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
   /** Fetch (once) which version of each block this plan's target links, so a new entry starts on a version the save path accepts rather than on the newest deployed. */
   private loadLinkedVersions(): void {
     if (this._linkedVersionsLoaded || !this.api) return;
+    // The remove tab's answer depends on the source; asking before it is known would answer for the target.
+    if (!this.isAdd && !this.planSource?.versionTag) return;
 
     this._linkedVersionsLoaded = true;
-    this.api.getLinkedBuildingBlocks().subscribe({
+    // An add entry lands on what the target links; a remove entry can only name what the source carries.
+    this.api.getLinkedBuildingBlocks(this.isAdd ? null : this.planSource).subscribe({
       next: blocks => {
         const ambiguous = new Set<string>();
         (blocks ?? []).forEach(block => {
           if (this._linkedVersion.has(block.key)) ambiguous.add(block.key);
           else this._linkedVersion.set(block.key, block.versionTag);
         });
+        this._selectableKeys = new Set((blocks ?? []).map(block => block.key));
+        this.applyKeyFilter();
         // Two linked versions of one key is not an answer; those keep the latest-deployed default.
         ambiguous.forEach(key => this._linkedVersion.delete(key));
         this.cdr.markForCheck();
       },
       error: () => (this._linkedVersionsLoaded = false),
     });
+  }
+
+  /** The remove tab offered every building block in the installation, including ones the case being migrated could never have carried. An add entry is unfiltered: it creates a block rather than finding one, and the version it lands on is checked separately. */
+  private applyKeyFilter(): void {
+    const selectable = this._selectableKeys;
+    if (this.isAdd || !selectable) {
+      this.keyItems = this._allKeyItems;
+    } else {
+      // A key a loaded entry uses stays offered whatever the source links: filtering it out leaves that row bound to a missing option, which renders as an empty dropdown.
+      const inUse = new Set(
+        this.instructionsArray.controls
+          .map(control => `${control.get('buildingBlockKey')?.value ?? ''}`)
+          .filter(key => !!key)
+      );
+      this.keyItems = this._allKeyItems.filter(
+        item => selectable.has(`${item.id}`) || inUse.has(`${item.id}`)
+      );
+    }
+    this.cdr.markForCheck();
   }
 
   /** What a new `add` entry starts on: the version the target links, falling back to the newest deployed while that is unknown. */
@@ -565,5 +598,7 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
     });
 
     this._lastEmitted = JSON.stringify(this.serialize());
+    // The keys these entries use must stay offered, whatever the source turns out to link.
+    this.applyKeyFilter();
   }
 }

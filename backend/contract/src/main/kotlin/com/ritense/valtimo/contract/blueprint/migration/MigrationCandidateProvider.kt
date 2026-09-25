@@ -27,4 +27,7 @@ interface MigrationCandidateProvider {
 
     /** At most [limit] ids on [source] after [afterId] (null = first batch), in stable id order. A cursor, not an offset: a run shrinks its own set. */
     fun findCandidateIds(source: BlueprintId, afterId: UUID?, limit: Int): List<UUID>
+
+    /** Whether [instanceId] currently sits on [blueprintId] — what tells an already-migrated case apart from one that was moved back. */
+    fun isHomedOn(instanceId: UUID, blueprintId: BlueprintId): Boolean
 }

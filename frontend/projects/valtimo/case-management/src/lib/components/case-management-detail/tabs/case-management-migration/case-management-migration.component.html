@@ -17,7 +17,7 @@
 <ng-container
   *ngIf="{
     plans: plans$ | async,
-    loading: loading$ | async
+    loading: loading$ | async,
   } as obs"
 >
   <valtimo-carbon-list
@@ -28,11 +28,7 @@
     (rowClicked)="onRowClicked($event)"
   >
     <ng-container carbonToolbarContent>
-      <button
-        cdsButton="primary"
-        [attr.data-test-id]="testIds.addButton"
-        (click)="onAddPlan()"
-      >
+      <button cdsButton="primary" [attr.data-test-id]="testIds.addButton" (click)="onAddPlan()">
         {{ 'caseManagement.migration.addPlan' | translate }}
       </button>
     </ng-container>
@@ -206,7 +202,7 @@
           <dl class="migration-metrics">
             <div class="migration-metric">
               <dt class="migration-metric__label">
-                {{ 'caseManagement.migration.fields.status' | translate }}
+                {{ 'caseManagement.migration.dryRunResults.status' | translate }}
               </dt>
               <dd class="migration-metric__value">
                 <cds-tag class="cds-tag--no-margin" [type]="statusTagType(plan.dryRun.status)">
@@ -250,7 +246,9 @@
                 <dt class="migration-metric__label">
                   {{ 'caseManagement.migration.fields.finishedOn' | translate }}
                 </dt>
-                <dd class="migration-metric__value">{{ plan.dryRun.finishedOn | date: 'medium' }}</dd>
+                <dd class="migration-metric__value">
+                  {{ plan.dryRun.finishedOn | date: 'medium' }}
+                </dd>
               </div>
             }
           </dl>
@@ -333,8 +331,7 @@
   @if (data.item.status.casesWithErrors > 0) {
     <cds-tag type="red" class="cds-tag--no-margin">
       {{
-        'caseManagement.migration.errorCount'
-          | translate: {count: data.item.status.casesWithErrors}
+        'caseManagement.migration.errorCount' | translate: {count: data.item.status.casesWithErrors}
       }}
     </cds-tag>
   }
@@ -366,8 +363,8 @@
 <ng-template #errorColumn let-data="data">
   <div class="migration-error">
     <div class="migration-error__cell">
-      <span class="migration-error__message" [title]="data.item.message">
-        {{ firstErrorLine(data.item.message) }}
+      <span class="migration-error__message" [title]="errorSummary(data.item)">
+        {{ errorSummary(data.item) }}
       </span>
 
       <div class="migration-error__actions">

@@ -55,6 +55,14 @@
     border-top: 1px solid var(--cds-border-subtle);
   }
 
+  // A heavier rule than the one between blocks within a result: this is where the real run's
+  // figures end and the dry run's begin, and the two carry near-identical labels.
+  &__dry-run {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid var(--cds-border-strong);
+  }
+
   &__hint {
     margin: 0 0 8px;
     color: var(--cds-text-secondary);
@@ -105,6 +113,13 @@
 }
 
 // The failed-cases table: case id compact, the stacktrace one truncated line with a copy button.
+// An auto-laid-out table takes its width from its widest cell, and a migration failure carries a
+// stacktrace — one message stretched the table to roughly six times the modal it sits in.
+.migration-detail__errors ::ng-deep table {
+  width: 100%;
+  table-layout: fixed;
+}
+
 .migration-error {
   &__case-column {
     width: 12rem;
@@ -118,7 +133,7 @@
   &__cell {
     display: flex;
     gap: 8px;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
   }
 
@@ -128,11 +143,12 @@
     align-items: center;
   }
 
+  // Wraps rather than ellipsising: the summary is now the sentence that says why, so it is worth reading in full.
   &__message {
-    overflow: hidden;
+    min-width: 0;
     font-family: var(--cds-code-01-font-family, monospace);
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   &__trace {

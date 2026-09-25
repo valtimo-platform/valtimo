@@ -23,6 +23,7 @@ import com.ritense.buildingblock.service.migration.LinkedBuildingBlockVersionRes
 import com.ritense.processdocument.migration.ProcessDefinitionBlueprintResolver
 import com.ritense.processdocument.migration.ProcessMigrationActivityValidator
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -30,6 +31,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -73,6 +75,8 @@ class AddBuildingBlockMigrationComponentValidatorTest {
                 activityValidator,
                 linkResolver,
             ),
+            // 'doc:' and 'pv:' are all a migration patch may target.
+            listOf(prefixFactory("doc"), prefixFactory("pv")),
         )
     }
 
@@ -236,4 +240,7 @@ class AddBuildingBlockMigrationComponentValidatorTest {
     private fun linksOn(vararg links: LinkedBuildingBlock) {
         whenever(linkResolver.resolveLinkedVersions(target)).thenReturn(links.toList())
     }
+
+    private fun prefixFactory(prefix: String): ValueResolverFactory =
+        mock { on { supportedPrefix() } doReturn prefix }
 }

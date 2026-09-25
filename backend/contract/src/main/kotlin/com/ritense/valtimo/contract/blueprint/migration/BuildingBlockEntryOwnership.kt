@@ -33,4 +33,7 @@ interface BuildingBlockEntryOwnership {
 
     /** Every block version [owner] links, directly or through the call-activity closure — the versions an `addBuildingBlock` entry may name. */
     fun linkedBlocksOf(owner: BlueprintId): Set<BuildingBlockDefinitionId> = emptySet()
+
+    /** Every block version an instance of [owner] can carry, at any depth — the keys a `removeBuildingBlock` entry may name. Wider than [linkedBlocksOf]: it also reaches below startable-item links. */
+    fun carriedBlocksOf(owner: BlueprintId): Set<BuildingBlockDefinitionId> = linkedBlocksOf(owner)
 }

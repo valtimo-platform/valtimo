@@ -515,13 +515,34 @@ export class CaseManagementMigrationPlanEditorComponent implements OnInit, OnDes
       .subscribe({
         next: versions =>
           this.$sourceVersionOptions.set(
-            (versions ?? [])
-              .map(version => version?.versionTag)
-              .filter((versionTag): versionTag is string => !!versionTag)
-              .map(versionTag => ({id: versionTag, text: versionTag}))
+            this.withDeclaredSource(
+              key,
+              (versions ?? [])
+                .map(version => version?.versionTag)
+                .filter((versionTag): versionTag is string => !!versionTag)
+                .map(versionTag => ({id: versionTag, text: versionTag}))
+            )
           ),
-        error: () => this.$sourceVersionOptions.set([]),
+        error: () => this.$sourceVersionOptions.set(this.withDeclaredSource(key, [])),
       });
+  }
+
+  /** The plan's own source, even when nobody deploys it any more — deleting a case version leaves every plan migrating from it naming a version this list no longer has, and the picker rendered the word `undefined` rather than saying so. */
+  private withDeclaredSource(key: string, options: SelectItem[]): SelectItem[] {
+    const declared = this.$sourceVersionTag();
+    if (!declared || this.$sourceKey() !== key || options.some(option => option.id === declared)) {
+      return options;
+    }
+
+    return [
+      ...options,
+      {
+        id: declared,
+        text: this.translateService.instant('caseManagement.migration.editor.sourceNotDeployed', {
+          versionTag: declared,
+        }),
+      },
+    ];
   }
 
   private linkedProcessDefinitions(

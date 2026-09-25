@@ -23,6 +23,7 @@ import com.ritense.case_.domain.migration.DataMigrationConfiguration
 import com.ritense.case_.domain.migration.DataMigrationPatch
 import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentJson
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import org.springframework.transaction.annotation.Transactional
 
@@ -33,10 +34,13 @@ class DataMigrationComponentDeployer(
     private val dataMigrationConfigurationRepository: DataMigrationConfigurationRepository,
 ) : MigrationComponentDeployer {
 
+    /** Refuses an unknown property rather than dropping it: a misspelled key in a hand-written plan must not pass as a different instruction. */
+    private val strictMapper = MigrationComponentJson.strict(objectMapper)
+
     override fun componentKey() = DATA_MIGRATION_COMPONENT_KEY
 
     override fun deploy(migrationId: BlueprintMigrationId, component: JsonNode) {
-        val patches: List<DataMigrationPatch> = objectMapper.convertValue(
+        val patches: List<DataMigrationPatch> = strictMapper.convertValue(
             component,
             object : TypeReference<List<DataMigrationPatch>>() {}
         )

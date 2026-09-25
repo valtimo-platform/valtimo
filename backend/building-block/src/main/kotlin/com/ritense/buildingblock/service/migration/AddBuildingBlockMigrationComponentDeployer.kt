@@ -23,6 +23,7 @@ import com.ritense.buildingblock.domain.migration.AddBuildingBlockConfiguration
 import com.ritense.buildingblock.domain.migration.AddBuildingBlockInstruction
 import com.ritense.buildingblock.repository.AddBuildingBlockConfigurationRepository
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
+import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentJson
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
 import org.springframework.transaction.annotation.Transactional
 
@@ -33,10 +34,13 @@ class AddBuildingBlockMigrationComponentDeployer(
     private val addBuildingBlockConfigurationRepository: AddBuildingBlockConfigurationRepository,
 ) : MigrationComponentDeployer {
 
+    /** Refuses an unknown property rather than dropping it: a misspelled key in a hand-written plan must not pass as a different instruction. */
+    private val strictMapper = MigrationComponentJson.strict(objectMapper)
+
     override fun componentKey() = ADD_BUILDING_BLOCK_COMPONENT_KEY
 
     override fun deploy(migrationId: BlueprintMigrationId, component: JsonNode) {
-        val instructions: List<AddBuildingBlockInstruction> = objectMapper.convertValue(
+        val instructions: List<AddBuildingBlockInstruction> = strictMapper.convertValue(
             component,
             object : TypeReference<List<AddBuildingBlockInstruction>>() {}
         )

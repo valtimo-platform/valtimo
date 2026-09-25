@@ -67,6 +67,16 @@ class CaseMigrationCandidateCursorIntTest @Autowired constructor(
         assertThat(caseMigrationCandidateProvider.findCandidateIds(source, beyondEverything, LIMIT)).isEmpty()
     }
 
+    /** The skip check runs per case on every run, so a query that compiles in HQL and fails at the driver would break every migration. */
+    @Test
+    fun `isHomedOn answers true only for the version the case is actually on`() {
+        val caseId = createCases(1).single()
+
+        assertThat(caseMigrationCandidateProvider.isHomedOn(caseId, source)).isTrue()
+        assertThat(caseMigrationCandidateProvider.isHomedOn(caseId, CaseDefinitionId(KEY, "0.0.1"))).isFalse()
+        assertThat(caseMigrationCandidateProvider.isHomedOn(UUID.randomUUID(), source)).isFalse()
+    }
+
     @Test
     fun `cases on another version of the same key are not candidates`() {
         createCases(1)
