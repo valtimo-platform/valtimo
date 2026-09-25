@@ -40,6 +40,7 @@
                          defaultValue="[]"/>
     </changeSet>
 
+    <!-- MySQL does not support default values on JSON columns, so we only add NOT NULL constraint -->
     <changeSet author="Ritense" id="2">
         <preConditions onFail="MARK_RAN">
             <dbms type="mysql"/>
@@ -49,9 +50,6 @@
         <addNotNullConstraint tableName="process_link"
                               columnName="action_result_mappings"
                               columnDataType="${jsonType}"/>
-        <addDefaultValue tableName="process_link"
-                         columnName="action_result_mappings"
-                         defaultValue="[]"/>
     </changeSet>
 
 </databaseChangeLog>
