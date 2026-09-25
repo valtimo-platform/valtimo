@@ -24,6 +24,7 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
 import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
 import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
 import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
+import {DeleteInformatieObjectConfigurationComponent} from './components/delete-informatie-object/delete-informatie-object-configuration.component';
 import {documentenApiActionFilterFunction} from './services';
 
 const documentenApiPluginSpecification: PluginSpecification = {
@@ -38,6 +39,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'link-document-to-object': LinkDocumentToObjectConfigurationComponent,
     'delete-document-link': DeleteDocumentLinkConfigurationComponent,
     'get-audit-trail': GetAuditTrailConfigurationComponent,
+    'delete-informatie-object': DeleteInformatieObjectConfigurationComponent,
   },
   functionConfigurationComponentsFilter: documentenApiActionFilterFunction,
   pluginTranslations: {
@@ -150,6 +152,10 @@ const documentenApiPluginSpecification: PluginSpecification = {
       auditTrailProcessVariableName: 'Naam procesvariabele voor audit trail',
       auditTrailProcessVariableNameTooltip:
         'De naam van de procesvariabele waarin het resultaat van de audit trail opgeslagen wordt als JSON',
+      'delete-informatie-object': 'Informatieobject verwijderen',
+      deleteInformatieObjectMessage:
+        "Verwijdert een document (enkelvoudiginformatieobject) op basis van de opgegeven URL. " +
+        "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
     },
     en: {
       title: 'Documenten API',
@@ -261,6 +267,10 @@ const documentenApiPluginSpecification: PluginSpecification = {
       auditTrailProcessVariableName: 'Process variable name for audit trail',
       auditTrailProcessVariableNameTooltip:
         'The name of the process variable in which the audit trail result will be stored as JSON',
+      'delete-informatie-object': 'Delete informatie object',
+      deleteInformatieObjectMessage:
+        "Deletes a document (enkelvoudiginformatieobject) based on the given URL. " +
+        "Process variables can be referenced using the notation 'pv:variableName'.",
     },
   },
 };

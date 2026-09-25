@@ -81,6 +81,10 @@ export interface GetAuditTrailConfig {
   processVariableName: string;
 }
 
+export interface DeleteInformatieObjectConfig {
+  documentUrl: string;
+}
+
 export {
   DocumentenApiConfig,
   StoreTempDocumentConfig,

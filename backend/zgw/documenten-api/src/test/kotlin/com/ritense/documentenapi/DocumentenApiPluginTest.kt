@@ -1036,6 +1036,29 @@ internal class DocumentenApiPluginTest {
     }
 
     @Test
+    fun `should deleteInformatieObject via plugin action`() {
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsObjectInformatieObjecten = true)
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
+
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            authenticationMock = authenticationMock,
+            apiVersion = "1.5.0-baseflow"
+        )
+
+        val execution = mock<DelegateExecution>()
+        val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
+        whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
+        val documentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/789")
+
+        plugin.deleteInformatieObject(execution, documentUrl)
+
+        verify(client).deleteInformatieObject(authenticationMock, caseDocumentId, documentUrl)
+    }
+
+    @Test
     fun `should download document via plugin action using documentId process variable`() {
         val storageService: TemporaryResourceStorageService = mock()
         val applicationEventPublisher: ApplicationEventPublisher = mock()
