@@ -81,6 +81,10 @@ export interface GetAuditTrailConfig {
   processVariableName: string;
 }
 
+export interface AddDocumentTrefwoordConfig {
+  trefwoord: string;
+}
+
 export {
   DocumentenApiConfig,
   StoreTempDocumentConfig,

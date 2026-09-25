@@ -57,6 +57,7 @@ import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -1176,6 +1177,126 @@ internal class DocumentenApiPluginTest {
     }
 
     @Test
+    fun `should add trefwoord to document via plugin action`() {
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsTrefwoorden = true)
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
+
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            authenticationMock = authenticationMock,
+            apiVersion = "1.5.0-baseflow"
+        )
+
+        val execution = mock<DelegateExecution>()
+        val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
+        val documentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/123")
+        whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
+        whenever(execution.getVariable(DOCUMENT_URL_PROCESS_VAR)).thenReturn(documentUrl.toString())
+
+        val informatieObject = DocumentInformatieObject(
+            url = documentUrl,
+            bronorganisatie = Rsin("000000000"),
+            creatiedatum = LocalDate.now(),
+            titel = "titel",
+            auteur = "auteur",
+            taal = "taal",
+            beginRegistratie = OffsetDateTime.now(),
+            status = IN_BEWERKING,
+            trefwoorden = listOf("Bestaand")
+        )
+        whenever(client.getInformatieObject(authenticationMock, caseDocumentId, documentUrl))
+            .thenReturn(informatieObject)
+        whenever(client.lockInformatieObject(authenticationMock, documentUrl)).thenReturn(DocumentLock("lock"))
+        whenever(client.modifyInformatieObject(eq(authenticationMock), eq(documentUrl), any(), any())).thenReturn(informatieObject)
+
+        plugin.addTrefwoordToDocument(execution, "Printstraat")
+
+        val patchCaptor = argumentCaptor<PatchDocumentRequest>()
+        verify(client).modifyInformatieObject(eq(authenticationMock), eq(documentUrl), patchCaptor.capture(), any())
+        assertEquals(listOf("Bestaand", "Printstraat"), patchCaptor.firstValue.trefwoorden)
+        verify(client).unlockInformatieObject(eq(authenticationMock), eq(documentUrl), any())
+    }
+
+    @Test
+    fun `should not add trefwoord to document when it is already present`() {
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsTrefwoorden = true)
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
+
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            authenticationMock = authenticationMock,
+            apiVersion = "1.5.0-baseflow"
+        )
+
+        val execution = mock<DelegateExecution>()
+        val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
+        val documentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/123")
+        whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
+        whenever(execution.getVariable(DOCUMENT_URL_PROCESS_VAR)).thenReturn(documentUrl.toString())
+
+        val informatieObject = DocumentInformatieObject(
+            url = documentUrl,
+            bronorganisatie = Rsin("000000000"),
+            creatiedatum = LocalDate.now(),
+            titel = "titel",
+            auteur = "auteur",
+            taal = "taal",
+            beginRegistratie = OffsetDateTime.now(),
+            status = IN_BEWERKING,
+            trefwoorden = listOf("Printstraat")
+        )
+        whenever(client.getInformatieObject(authenticationMock, caseDocumentId, documentUrl))
+            .thenReturn(informatieObject)
+
+        plugin.addTrefwoordToDocument(execution, "Printstraat")
+
+        verify(client, never()).modifyInformatieObject(any(), any(), any(), any())
+        verify(client, never()).lockInformatieObject(any(), any())
+    }
+
+    @Test
+    fun `should throw when add-document-trefwoord is called on unsupported version`() {
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        whenever(documentenApiVersionService.getVersionByTag("1.0.0"))
+            .thenReturn(DocumentenApiVersion(version = "1.0.0", supportsTrefwoorden = false))
+
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            apiVersion = "1.0.0"
+        )
+
+        val execution = mock<DelegateExecution>()
+
+        val exception = assertThrows<Exception> {
+            plugin.addTrefwoordToDocument(execution, "Printstraat")
+        }
+        assertEquals("Documenten API version '1.0.0' does not support trefwoorden", exception.message)
+    }
+
+    @Test
+    fun `should throw when add-document-trefwoord is called with a blank trefwoord`() {
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow"))
+            .thenReturn(DocumentenApiVersion(version = "1.5.0-baseflow", supportsTrefwoorden = true))
+
+        val plugin = createPlugin(
+            documentenApiVersionService = documentenApiVersionService,
+            apiVersion = "1.5.0-baseflow"
+        )
+
+        val execution = mock<DelegateExecution>()
+
+        val exception = assertThrows<Exception> {
+            plugin.addTrefwoordToDocument(execution, "  ")
+        }
+        assertEquals("Failed to add trefwoord to document. Trefwoord may not be blank.", exception.message)
+    }
+
+    @Test
     fun `should throw when download plugin action has neither documentUrl nor documentId`() {
         val storageService: TemporaryResourceStorageService = mock()
         val applicationEventPublisher: ApplicationEventPublisher = mock()
@@ -1206,7 +1327,7 @@ internal class DocumentenApiPluginTest {
             plugin.downloadInformatieObject(executionMock)
         }
         assertEquals(
-            "Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' or '$DOCUMENT_ID_PROCESS_VAR' found.",
+            "Failed to resolve document. No process variable '$DOCUMENT_URL_PROCESS_VAR' or '$DOCUMENT_ID_PROCESS_VAR' found.",
             exception.message
         )
     }
