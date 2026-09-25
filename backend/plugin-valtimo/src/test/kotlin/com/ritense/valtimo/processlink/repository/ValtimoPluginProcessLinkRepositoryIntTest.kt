@@ -26,6 +26,7 @@ import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -53,6 +54,9 @@ class ValtimoPluginProcessLinkRepositoryIntTest : BaseIntegrationTest() {
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
 
+    @Autowired
+    lateinit var pluginProcessLinkMapper: PluginProcessLinkMapper
+
     @Test
     fun `should read NULL action_result_mappings as an empty list`() {
         val link = saveLink(pluginConfigurationId = null, pluginDefinitionKey = "test-plugin")
@@ -63,6 +67,8 @@ class ValtimoPluginProcessLinkRepositoryIntTest : BaseIntegrationTest() {
         val loaded = pluginProcessLinkRepository.findById(link.id).orElseThrow()
 
         assertThat(loaded.actionResultMappings).isEmpty()
+        assertThat(pluginProcessLinkMapper.toProcessLinkResponseDto(loaded).actionResultMappings).isEmpty()
+        assertThat(pluginProcessLinkMapper.toProcessLinkExportResponseDto(loaded).actionResultMappings).isEmpty()
     }
 
     @Test
