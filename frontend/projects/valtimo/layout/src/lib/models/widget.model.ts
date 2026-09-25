@@ -92,6 +92,17 @@ interface BasicWidget {
   isCompact?: boolean;
   actions?: WidgetAction[];
   displayConditions: Array<Condition<string>>;
+  /** Widgets sharing an id need the same upstream request and are served together. */
+  dataGroupId?: string;
+}
+
+interface WidgetDataEnvelope {
+  data?: unknown;
+  error?: {code: string};
+}
+
+interface WidgetDataGroupResponse {
+  [widgetKey: string]: WidgetDataEnvelope;
 }
 
 interface FieldsWidgetValue {
@@ -328,4 +339,6 @@ export {
   WidgetGroup,
   WidgetColor,
   WidgetColorTile,
+  WidgetDataEnvelope,
+  WidgetDataGroupResponse,
 };

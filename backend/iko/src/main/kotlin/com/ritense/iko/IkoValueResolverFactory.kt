@@ -62,6 +62,27 @@ class IkoValueResolverFactory(
         return "iko"
     }
 
+    override fun resolverCacheKey(properties: Map<String, Any>): Any? {
+        val ikoViewKey = properties[IKO_VIEW_KEY]?.toString()
+        if (ikoViewKey != null) {
+            return listOf(
+                "iko-view",
+                ikoViewKey,
+                properties[TAB_KEY]?.toString(),
+                properties[ID]?.toString(),
+                getContainerParams(properties),
+            )
+        }
+        val adp = properties[IKO_ADP]?.toString() ?: return null
+        return listOf(
+            "iko-adp",
+            adp,
+            properties[IKO_SERVER_URL]?.toString(),
+            properties[ID]?.toString(),
+            getContainerParams(properties),
+        )
+    }
+
     override fun createResolver(documentId: String): Function<String, Any?> {
         return createResolver(mapOf(DOCUMENT_ID to documentId))
     }

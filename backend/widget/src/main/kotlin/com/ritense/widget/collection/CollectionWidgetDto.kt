@@ -39,6 +39,8 @@ data class CollectionWidgetDto(
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: CollectionWidgetProperties
 ) : WidgetDto {
+    override var dataGroupId: String? = null
+
     override fun toEntity(id: UUID, order: Int): Widget = CollectionWidget(
         id = id,
         key = key,

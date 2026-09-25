@@ -91,6 +91,18 @@ interface ValueResolverService {
     ): Map<String, Any?> = throw NotImplementedError()
 
     /**
+     * What resolving [requestedValues] depends on. Prefixes whose factory declares no cache key are
+     * reported apart, so "depends on nothing" stays distinct from "cannot tell".
+     *
+     * @param properties A map containing additional details about the value that needs to be resolved.
+     * @param requestedValues The requestedValues whose dependencies should be determined.
+     */
+    fun resolverDependencies(
+        properties: Map<String, Any>,
+        requestedValues: Collection<String>
+    ): ValueResolverDependencies = ValueResolverDependencies.NONE
+
+    /**
      * Handle values. Usually by storing them somewhere.
      *
      * @param processInstanceId The Operaton processInstanceId these values belong to

@@ -16,6 +16,7 @@
 
 package com.ritense.widget.table
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
@@ -89,6 +90,9 @@ class TableWidget(
         displayConditions = this.displayConditions,
         properties = this.properties,
     )
+
+    @JsonIgnore
+    override fun isPaged(): Boolean = true
 
     override fun getUnresolvedValues(): List<String> = super.getUnresolvedValues() + properties.collection
 }

@@ -119,6 +119,19 @@ interface ValueResolverFactory {
     }
 
     /**
+     * Identity of the external context this resolver depends on. Equal keys share one resolver in a
+     * [ValueResolverCache] scope, so the fetch happens once. Null opts out: callers then assume this
+     * factory may fetch on every resolve, and bundle nothing.
+     *
+     * Needs value-based [Any.equals] and [Any.toString] — the toString is hashed into a widget's
+     * data group id, which must match across requests and instances. Strings, data classes and lists
+     * of those are safe; a plain class is not.
+     *
+     * @param properties A map containing additional details about the value that needs to be resolved.
+     */
+    fun resolverCacheKey(properties: Map<String, Any>): Any? = null
+
+    /**
      * @param processInstanceId The Operaton processInstanceId these values belong to
      * @param variableScope An implementation of VariableScope.
      * @param values The values to handle. i.e. mapOf(doc:add:/firstname to John)

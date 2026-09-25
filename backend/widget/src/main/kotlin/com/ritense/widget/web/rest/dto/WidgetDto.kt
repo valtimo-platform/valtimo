@@ -16,6 +16,8 @@
 
 package com.ritense.widget.web.rest.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
@@ -41,6 +43,14 @@ interface WidgetDto {
     val isCompact: Boolean?
     val actions: List<WidgetAction>
     val displayConditions: List<Condition<*>>?
+
+    /**
+     * Widgets sharing an id can be served together. Set per request by the REST layer; null
+     * everywhere else, so it stays out of export bundles.
+     */
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    var dataGroupId: String?
 
     fun toEntity(id: UUID, order: Int): Widget
 }

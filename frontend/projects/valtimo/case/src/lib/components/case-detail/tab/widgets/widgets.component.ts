@@ -19,10 +19,29 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, WidgetLayout} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, shareReplay, startWith, switchMap} from 'rxjs';
+import {
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  shareReplay,
+  startWith,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
 import {CaseWidgetsRes, DocumentUpdatedSseEvent} from '../../../../models';
-import {BasicWidget, DividerWidget, Widget, WidgetComponentMap, WidgetContainerComponent, WidgetGroup, WidgetType,} from '@valtimo/layout';
+import {
+  BasicWidget,
+  DividerWidget,
+  Widget,
+  WidgetComponentMap,
+  WidgetContainerComponent,
+  WidgetDataGroupService,
+  WidgetGroup,
+  WidgetType,
+} from '@valtimo/layout';
 import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
 import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
@@ -51,6 +70,7 @@ import {isEqual} from 'lodash-es';
     TranslateModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [WidgetDataGroupService],
 })
 export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   @HostBinding('class.tab--no-margin') private readonly _noMargin = true;
@@ -75,17 +95,20 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   private _previousWidgetConfiguration: BasicWidget[] | null = null;
 
+  // Source and widget list are set before the containers render, so widgets find their group
   private readonly _widgetConfiguration$ = combineLatest([
     this._documentId$,
     this._tabKey$,
     this._documentUpdates$,
   ]).pipe(
+    tap(([documentId, tabKey]) => this.setDataSource(documentId, tabKey)),
     switchMap(([documentId, tabKey, documentUpdatedEvent]) => {
       return this.filterDuplicateConfigurations(
         this.widgetsApiService.getWidgetTab(documentId, tabKey),
         documentUpdatedEvent
       );
     }),
+    tap(configuration => this.widgetDataGroupService.setWidgets(configuration.widgets)),
     shareReplay({bufferSize: 1, refCount: true})
   );
 
@@ -112,20 +135,37 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.TEXT]: CaseWidgetTextComponent,
   };
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly caseTabService: CaseTabService,
     private readonly widgetsApiService: CaseWidgetsApiService,
     private readonly sseService: SseService,
-    private readonly widgetsService: WidgetsService
+    private readonly widgetsService: WidgetsService,
+    private readonly widgetDataGroupService: WidgetDataGroupService
   ) {}
 
   public ngOnInit(): void {
     this.caseTabService.disableTabHorizontalOverflow();
+    // An unchanged configuration refreshes data only
+    this._subscriptions.add(
+      this.widgetsService.refreshWidgets$.subscribe(() => this.widgetDataGroupService.refresh())
+    );
   }
 
   public ngOnDestroy(): void {
     this.caseTabService.enableTabHorizontalOverflow();
+    this._subscriptions.unsubscribe();
+  }
+
+  private setDataSource(documentId: string, tabKey: string): void {
+    this.widgetDataGroupService.setSource({
+      fetchGroup: (group: string) =>
+        this.widgetsApiService.getWidgetDataGroup(documentId, tabKey, group),
+      fetchWidget: (widgetKey: string) =>
+        this.widgetsApiService.getWidgetData(documentId, tabKey, widgetKey, undefined),
+    });
   }
 
   private toCaseWidgetGroups(widgets: BasicWidget[]): WidgetGroup[] {

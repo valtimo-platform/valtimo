@@ -105,6 +105,10 @@ abstract class Widget(
 
     abstract fun toDto(): WidgetDto
 
+    /** The client pages this widget and fetches it with its own request. */
+    @JsonIgnore
+    fun isPaged(): Boolean = false
+
     @JsonIgnore
     fun getUnresolvedValues(): List<String> {
         return actions.flatMap { it.getUnresolvedValues() }.distinct()

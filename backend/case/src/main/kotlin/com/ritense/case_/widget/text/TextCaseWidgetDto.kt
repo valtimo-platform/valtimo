@@ -38,4 +38,6 @@ data class TextCaseWidgetDto(
     override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList(),
     val properties: TextWidgetProperties,
-) : CaseWidgetTabWidgetDto
+) : CaseWidgetTabWidgetDto {
+    override var dataGroupId: String? = null
+}

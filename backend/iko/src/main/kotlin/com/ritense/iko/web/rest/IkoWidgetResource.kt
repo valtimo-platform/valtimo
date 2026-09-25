@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.NO_PAGE_SIZE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
+import com.ritense.widget.web.rest.dto.WidgetDataEnvelope
 import com.ritense.widget.web.rest.dto.WidgetDto
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.constraints.Size
@@ -44,7 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam
 @Validated
 @RequestMapping("/api", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class IkoWidgetResource(
-    private val ikoWidgetService: IkoWidgetService
+    private val ikoWidgetService: IkoWidgetService,
 ) {
 
     @EndpointDescription(
@@ -56,8 +57,37 @@ class IkoWidgetResource(
         @PathVariable @Size(max = 256) ikoViewKey: String,
         @PathVariable @Size(max = 256) tabKey: String,
     ): ResponseEntity<List<WidgetDto>> {
+        val widgets = ikoWidgetService.findAllByTabKeyFilteredByDisplayConditions(ikoViewKey, tabKey)
+        val groupIds = ikoWidgetService.dataGroupIds(ikoViewKey, tabKey, widgets)
         return ResponseEntity.ok(
-            ikoWidgetService.findAllByTabKeyFilteredByDisplayConditions(ikoViewKey, tabKey).map { it.toDto() })
+            widgets.map { widget ->
+                widget.toDto().apply { dataGroupId = groupIds[widget.key] }
+            }
+        )
+    }
+
+    @EndpointDescription(
+        en = "Get grouped IKO widget data",
+        nl = "Gegroepeerde IKO-widgetgegevens ophalen",
+    )
+    @GetMapping("/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/data")
+    fun getIkoWidgetDataGroup(
+        @PathVariable @Size(max = 256) ikoViewKey: String,
+        @PathVariable @Size(max = 256) tabKey: String,
+        @RequestParam @Size(max = 64) group: String,
+        @RequestParam properties: LinkedMultiValueMap<String, List<Any>>,
+    ): ResponseEntity<Map<String, WidgetDataEnvelope>> {
+        // 'group' routes the request — not a widget property, and a filter could be keyed 'group'
+        val allProperties = collapseSingleValues(properties).minus(GROUP_PARAM) + mapOf(
+            IKO_VIEW_KEY to ikoViewKey,
+            TAB_KEY to tabKey,
+            // Initial load only — paging and filtering go to the per-widget endpoint
+            NO_PAGE_SIZE to true
+        )
+
+        return ResponseEntity.ofNullable(
+            ikoWidgetService.getWidgetDataGroup(ikoViewKey, tabKey, group, allProperties)
+        )
     }
 
     @EndpointDescription(
@@ -74,11 +104,7 @@ class IkoWidgetResource(
         request: HttpServletRequest,
     ): ResponseEntity<Any?> {
         val pageSize = request.parameterMap["size"]?.firstOrNull()?.toIntOrNull()
-        val collapsedValuesPropertiesMap =
-            properties
-                .map { if (it.value.size == 1) it.key to it.value.first() else it.key to it.value }
-                .toMap()
-        val allProperties = collapsedValuesPropertiesMap + mapOf(
+        val allProperties = collapseSingleValues(properties) + mapOf(
             IKO_VIEW_KEY to ikoViewKey,
             TAB_KEY to tabKey,
             WIDGET_KEY to widgetKey,
@@ -91,4 +117,12 @@ class IkoWidgetResource(
         )
     }
 
+    private fun collapseSingleValues(properties: LinkedMultiValueMap<String, List<Any>>): Map<String, Any> =
+        properties
+            .map { if (it.value.size == 1) it.key to it.value.first() else it.key to it.value }
+            .toMap()
+
+    companion object {
+        private const val GROUP_PARAM = "group"
+    }
 }
