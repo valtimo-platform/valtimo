@@ -307,8 +307,8 @@ class ExternalPluginServiceTaskStartListener(
             }
         }
 
-        if (processLink.actionResultMappings.isNotEmpty()) {
-            pluginActionResultHandler.handle(execution, body?.get("result"), processLink.actionResultMappings)
+        if (!processLink.actionResultMappings.isNullOrEmpty()) {
+            pluginActionResultHandler.handle(execution, body?.get("result"), processLink.actionResultMappings!!)
         }
     }
 

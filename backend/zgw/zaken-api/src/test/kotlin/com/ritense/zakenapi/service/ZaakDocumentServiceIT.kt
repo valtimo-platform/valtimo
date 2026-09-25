@@ -34,7 +34,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.test.assertTrue
@@ -45,8 +44,6 @@ class ZaakDocumentServiceIT @Autowired constructor(
     private val permissionRepository: PermissionRepository,
 ) : BaseIntegrationTest() {
 
-    @MockitoSpyBean
-    lateinit var zaakUrlProviderSpy: ZaakUrlProvider
 
     lateinit var roleTest: Role
 
@@ -64,7 +61,7 @@ class ZaakDocumentServiceIT @Autowired constructor(
         val result = zaakDocumentService.getInformatieObjectenAsRelatedFiles(caseDocumentId)
 
         assertTrue(result.isEmpty())
-        verify(zaakUrlProviderSpy, never()).getZaakUrl(any())
+        verify(zaakUrlProvider, never()).getZaakUrl(any())
     }
 
     @Test

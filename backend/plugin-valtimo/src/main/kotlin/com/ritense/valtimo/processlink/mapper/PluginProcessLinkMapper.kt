@@ -85,7 +85,7 @@ class PluginProcessLinkMapper(
                 pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
-                actionResultMappings = processLink.actionResultMappings,
+                actionResultMappings = processLink.actionResultMappings ?: emptyList(),
             )
         }
     }
@@ -139,7 +139,7 @@ class PluginProcessLinkMapper(
                 actionProperties = processLink.actionProperties,
                 referenceType = processLink.pluginConfigurationReference.type,
                 pluginDefinitionKey = definitionKey,
-                actionResultMappings = processLink.actionResultMappings,
+                actionResultMappings = processLink.actionResultMappings ?: emptyList(),
             )
         }
     }

@@ -541,11 +541,11 @@ class PluginService(
      * `@PluginAction` method produces was discarded here before result mappings existed.
      */
     private fun applyActionResultMappings(execution: DelegateExecution, processLink: PluginProcessLink, result: Any?) {
-        if (processLink.actionResultMappings.isEmpty()) {
+        if (processLink.actionResultMappings.isNullOrEmpty()) {
             return
         }
         val resultNode = result?.let { objectMapper.valueToTree<JsonNode>(it) }
-        pluginActionResultHandler.handle(execution, resultNode, processLink.actionResultMappings)
+        pluginActionResultHandler.handle(execution, resultNode, processLink.actionResultMappings ?: emptyList())
     }
 
 

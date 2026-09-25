@@ -92,7 +92,7 @@ class ExternalPluginProcessLinkMapper(
             referenceType = processLink.pluginConfigurationReference.type,
             pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
             pluginVersion = processLink.pluginConfigurationReference.pluginDefinitionVersion,
-            actionResultMappings = processLink.actionResultMappings,
+            actionResultMappings = processLink.actionResultMappings ?: emptyList(),
         )
     }
 
@@ -204,7 +204,7 @@ class ExternalPluginProcessLinkMapper(
             referenceType = processLink.pluginConfigurationReference.type,
             pluginDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey,
             pluginVersion = processLink.pluginConfigurationReference.pluginDefinitionVersion,
-            actionResultMappings = processLink.actionResultMappings,
+            actionResultMappings = processLink.actionResultMappings ?: emptyList(),
         )
     }
 

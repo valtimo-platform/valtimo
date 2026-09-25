@@ -66,7 +66,7 @@ class ExternalPluginProcessLink(
 
     @Type(value = JsonType::class)
     @Column(name = "action_result_mappings", columnDefinition = "JSON")
-    val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
+    val actionResultMappings: List<PluginActionResultMapping>? = null,
 ) : ProcessLink(
     id,
     processDefinitionId,
@@ -90,7 +90,7 @@ class ExternalPluginProcessLink(
         actionKey: String = this.actionKey,
         pluginConfigurationReference: PluginConfigurationReference = this.pluginConfigurationReference,
         actionProperties: ObjectNode? = this.actionProperties,
-        actionResultMappings: List<PluginActionResultMapping> = this.actionResultMappings,
+        actionResultMappings: List<PluginActionResultMapping>? = this.actionResultMappings,
     ) = ExternalPluginProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
@@ -125,7 +125,7 @@ class ExternalPluginProcessLink(
         result = 31 * result + actionKey.hashCode()
         result = 31 * result + pluginConfigurationReference.hashCode()
         result = 31 * result + (actionProperties?.hashCode() ?: 0)
-        result = 31 * result + actionResultMappings.hashCode()
+        result = 31 * result + (actionResultMappings?.hashCode() ?: 0)
         return result
     }
 
