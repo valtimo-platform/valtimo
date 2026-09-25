@@ -50,9 +50,7 @@ class PluginProcessLink(
     @Column(name = "plugin_action_definition_key", nullable = false)
     val pluginActionDefinitionKey: String,
 
-    @Type(value = JsonType::class)
-    @Column(name = "action_result_mappings", columnDefinition = "JSON")
-    val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
+    actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 
 ) : ProcessLink(
     id,
@@ -61,6 +59,14 @@ class PluginProcessLink(
     activityType,
     PROCESS_LINK_TYPE_PLUGIN,
 ) {
+
+    // Nullable: legacy rows hold NULL
+    @Type(value = JsonType::class)
+    @Column(name = "action_result_mappings", columnDefinition = "JSON")
+    private val _actionResultMappings: List<PluginActionResultMapping>? = actionResultMappings
+
+    val actionResultMappings: List<PluginActionResultMapping>
+        get() = _actionResultMappings.orEmpty()
 
     init {
         if (pluginConfigurationReference.type == BUILDING_BLOCK) {
