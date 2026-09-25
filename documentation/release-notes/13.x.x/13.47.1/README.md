@@ -6,7 +6,7 @@ Release date: 25-09-2026
 
 ## Bugfixes
 
-| Area          | Fix                                                                                                   |
-|---------------|-------------------------------------------------------------------------------------------------------|
-| Process links | Process links with NULL action_result_mappings no longer crash when loading                           |
-| Related files | The v1 related files endpoint now enforces permission checks, consistent with the v2 endpoint         |
+| Area          | Fix                                                                                       |
+|---------------|-------------------------------------------------------------------------------------------|
+| Process links | Process link configurations that previously failed to open now load correctly             |
+| Related files | Users only see related files they have permission to view                                 |
