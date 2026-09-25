@@ -20,17 +20,35 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
                    logicalFilePath="config/liquibase/13-47-1/20260925-fix-null-action-result-mappings.xml">
 
+    <!--
+      Fixes NULL values in action_result_mappings column. The column was added in 13-32-0 without
+      a default value, and 13-45-1 copied process_link records without including this column,
+      resulting in NULL values that crash the PluginProcessLinkResultDto constructor.
+    -->
+
     <changeSet author="Ritense" id="1">
-        <preConditions onFail="CONTINUE">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
             <columnExists tableName="process_link" columnName="action_result_mappings"/>
         </preConditions>
-        <update tableName="process_link">
-            <column name="action_result_mappings" value="[]"/>
-            <where>action_result_mappings IS NULL</where>
-        </update>
+        <sql>UPDATE process_link SET action_result_mappings = '[]' WHERE action_result_mappings IS NULL</sql>
         <addNotNullConstraint tableName="process_link"
                               columnName="action_result_mappings"
-                              defaultNullValue="[]"/>
+                              columnDataType="${jsonType}"/>
+        <addDefaultValue tableName="process_link"
+                         columnName="action_result_mappings"
+                         defaultValue="[]"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <columnExists tableName="process_link" columnName="action_result_mappings"/>
+        </preConditions>
+        <sql>UPDATE process_link SET action_result_mappings = '[]' WHERE action_result_mappings IS NULL</sql>
+        <addNotNullConstraint tableName="process_link"
+                              columnName="action_result_mappings"
+                              columnDataType="${jsonType}"/>
         <addDefaultValue tableName="process_link"
                          columnName="action_result_mappings"
                          defaultValue="[]"/>
