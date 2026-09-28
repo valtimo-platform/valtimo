@@ -28,6 +28,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -55,6 +56,10 @@ class BuildingBlockMigrationManagementResource(
 ) {
 
     /** A best-effort pre-filled plan for this building block version. A source with a different key is legal — that is how one building block replaces another. */
+    @EndpointDescription(
+        en = "Suggest a building block migration plan (management)",
+        nl = "Bouwblokmigratieplan voorstellen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion")
     fun suggestMigrationPlan(
@@ -70,6 +75,10 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.ok(migrationSuggestionService.suggestPlan(target, source))
     }
 
+    @EndpointDescription(
+        en = "Suggest an activity mapping for a building block migration plan (management)",
+        nl = "Activiteitkoppeling voor bouwblokmigratieplan voorstellen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion/activity-mapping")
     fun suggestActivityMapping(
@@ -87,6 +96,10 @@ class BuildingBlockMigrationManagementResource(
     }
 
     /** The incompatible pairs of a proposed activity mapping. An inspection endpoint — always 200; the plan save is what rejects. */
+    @EndpointDescription(
+        en = "Validate an activity mapping for a building block migration plan (management)",
+        nl = "Activiteitkoppeling voor bouwblokmigratieplan valideren (beheer)",
+    )
     @RunWithoutAuthorization
     @PostMapping("/suggestion/activity-mapping/validate")
     fun validateActivityMapping(
@@ -106,6 +119,10 @@ class BuildingBlockMigrationManagementResource(
     }
 
     /** A best-effort suggestion for one nested building-block entry. The owner is the blueprint whose call activity declares the block, which two levels down is the block in between. */
+    @EndpointDescription(
+        en = "Suggest a building block entry for a building block migration plan (management)",
+        nl = "Bouwbloklemma voor bouwblokmigratieplan voorstellen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block")
     fun suggestBuildingBlockEntry(
@@ -136,6 +153,10 @@ class BuildingBlockMigrationManagementResource(
     }
 
     /** The block versions this version links, which an `addBuildingBlock` entry must name; given a source, every block an instance of it can carry, which is what a `removeBuildingBlock` entry may name. */
+    @EndpointDescription(
+        en = "List the building blocks linked to a building block definition version (management)",
+        nl = "Bouwblokken gekoppeld aan een bouwblokversie ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block/linked")
     fun getLinkedBuildingBlocks(
@@ -156,6 +177,10 @@ class BuildingBlockMigrationManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "List building block migration plans (management)",
+        nl = "Bouwblokmigratieplannen ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping
     fun getMigrationPlans(
@@ -165,6 +190,10 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.ok(caseMigrationService.getPlans(BuildingBlockDefinitionId(key, versionTag)))
     }
 
+    @EndpointDescription(
+        en = "Get a building block migration plan (management)",
+        nl = "Bouwblokmigratieplan ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/{migrationKey}")
     fun getMigrationPlan(
@@ -176,6 +205,10 @@ class BuildingBlockMigrationManagementResource(
         return if (json != null) ResponseEntity.ok(json) else ResponseEntity.notFound().build()
     }
 
+    @EndpointDescription(
+        en = "Save a building block migration plan (management)",
+        nl = "Bouwblokmigratieplan opslaan (beheer)",
+    )
     @RunWithoutAuthorization
     @PostMapping
     fun saveMigrationPlan(
@@ -200,6 +233,10 @@ class BuildingBlockMigrationManagementResource(
         return ResponseEntity.ok(caseMigrationService.getPlans(blueprintId))
     }
 
+    @EndpointDescription(
+        en = "Delete a building block migration plan (management)",
+        nl = "Bouwblokmigratieplan verwijderen (beheer)",
+    )
     @RunWithoutAuthorization
     @DeleteMapping("/{migrationKey}")
     fun deleteMigrationPlan(
@@ -212,6 +249,10 @@ class BuildingBlockMigrationManagementResource(
     }
 
     /** How far this plan has got, in instances applied to. No `start` or `dry-run`: a building block plan is applied by the case migration that moves its block, never run. */
+    @EndpointDescription(
+        en = "Get the status of a building block migration run (management)",
+        nl = "Status van een bouwblokmigratie ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/{migrationKey}/status")
     fun getMigrationStatus(

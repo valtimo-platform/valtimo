@@ -31,6 +31,7 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -58,6 +59,10 @@ class CaseMigrationManagementResource(
 ) {
 
     /** A best-effort pre-filled plan for a new plan on this case definition version; omitting [sourceKey]/[sourceVersionTag] falls back to this version's predecessor. */
+    @EndpointDescription(
+        en = "Suggest a case migration plan (management)",
+        nl = "Dossiermigratieplan voorstellen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion")
     fun suggestMigrationPlan(
@@ -73,6 +78,10 @@ class CaseMigrationManagementResource(
         return ResponseEntity.ok(migrationSuggestionService.suggestPlan(target, source))
     }
 
+    @EndpointDescription(
+        en = "Suggest an activity mapping for a case migration plan (management)",
+        nl = "Activiteitkoppeling voor dossiermigratieplan voorstellen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion/activity-mapping")
     fun suggestActivityMapping(
@@ -90,6 +99,10 @@ class CaseMigrationManagementResource(
     }
 
     /** The incompatible pairs of a proposed activity mapping, as the engine judges them. An inspection endpoint — always 200; the plan save is what rejects. */
+    @EndpointDescription(
+        en = "Validate an activity mapping for a case migration plan (management)",
+        nl = "Activiteitkoppeling voor dossiermigratieplan valideren (beheer)",
+    )
     @RunWithoutAuthorization
     @PostMapping("/suggestion/activity-mapping/validate")
     fun validateActivityMapping(
@@ -109,6 +122,10 @@ class CaseMigrationManagementResource(
     }
 
     /** A best-effort suggestion for one building-block entry. The owner is read from the running tree rather than assumed to be the case, and echoed back because the editor cannot work it out either. */
+    @EndpointDescription(
+        en = "Suggest a building block entry for a case migration plan (management)",
+        nl = "Bouwbloklemma voor dossiermigratieplan voorstellen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block")
     fun suggestBuildingBlockEntry(
@@ -139,6 +156,10 @@ class CaseMigrationManagementResource(
     }
 
     /** The block versions this version links, which an `addBuildingBlock` entry must name; given a source, every block an instance of it can carry, which is what a `removeBuildingBlock` entry may name. */
+    @EndpointDescription(
+        en = "List the building blocks linked to a case definition version (management)",
+        nl = "Bouwblokken gekoppeld aan een dossiertypeversie ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/suggestion/building-block/linked")
     fun getLinkedBuildingBlocks(
@@ -161,6 +182,10 @@ class CaseMigrationManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "List case migration plans (management)",
+        nl = "Dossiermigratieplannen ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping
     fun getMigrationPlans(
@@ -172,6 +197,10 @@ class CaseMigrationManagementResource(
     }
 
     /** The full migration plan JSON for editing, or 404 when the plan does not exist. */
+    @EndpointDescription(
+        en = "Get a case migration plan (management)",
+        nl = "Dossiermigratieplan ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/{migrationKey}")
     fun getMigrationPlan(
@@ -184,6 +213,10 @@ class CaseMigrationManagementResource(
     }
 
     /** Create or update a migration plan from its JSON (the plan's `key` is taken from the body). */
+    @EndpointDescription(
+        en = "Save a case migration plan (management)",
+        nl = "Dossiermigratieplan opslaan (beheer)",
+    )
     @RunWithoutAuthorization
     @PostMapping
     fun saveMigrationPlan(
@@ -203,6 +236,10 @@ class CaseMigrationManagementResource(
         return ResponseEntity.ok(caseMigrationService.getPlans(caseDefinitionId))
     }
 
+    @EndpointDescription(
+        en = "Delete a case migration plan (management)",
+        nl = "Dossiermigratieplan verwijderen (beheer)",
+    )
     @RunWithoutAuthorization
     @DeleteMapping("/{migrationKey}")
     fun deleteMigrationPlan(
@@ -215,6 +252,10 @@ class CaseMigrationManagementResource(
     }
 
     /** Manual trigger: start the plan now, refused unless it declares `triggeredByButton`. Checked here rather than in the service, which the trigger sweep calls for plans that have no button. */
+    @EndpointDescription(
+        en = "Start a case migration plan (management)",
+        nl = "Dossiermigratieplan starten (beheer)",
+    )
     @RunWithoutAuthorization
     @PostMapping("/{migrationKey}/start")
     fun startMigration(
@@ -238,6 +279,10 @@ class CaseMigrationManagementResource(
         return if (started) ResponseEntity.accepted().body(status) else ResponseEntity.ok(status)
     }
 
+    @EndpointDescription(
+        en = "Get the status of a case migration run (management)",
+        nl = "Status van een dossiermigratie ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/{migrationKey}/status")
     fun getMigrationStatus(
@@ -250,6 +295,10 @@ class CaseMigrationManagementResource(
     }
 
     /** Manual (button) trigger: dry-run the migration plan now — simulate it without migrating any case. */
+    @EndpointDescription(
+        en = "Start a dry run of a case migration plan (management)",
+        nl = "Proefrun van een dossiermigratieplan starten (beheer)",
+    )
     @RunWithoutAuthorization
     @PostMapping("/{migrationKey}/dry-run")
     fun startDryRun(
@@ -264,6 +313,10 @@ class CaseMigrationManagementResource(
         return if (started) ResponseEntity.accepted().body(status) else ResponseEntity.ok(status)
     }
 
+    @EndpointDescription(
+        en = "Get the status of a case migration dry run (management)",
+        nl = "Status van een proefrun van een dossiermigratie ophalen (beheer)",
+    )
     @RunWithoutAuthorization
     @GetMapping("/{migrationKey}/dry-run/status")
     fun getDryRunStatus(
