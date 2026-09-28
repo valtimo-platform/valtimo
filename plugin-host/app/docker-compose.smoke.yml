@@ -1,0 +1,53 @@
+# Minimal boot stack for the release Docker-image smoke test.
+#
+# Boots the plugin-host image under test against the only dependency it needs to reach
+# readiness: a Postgres database. No RabbitMQ — the host has no broker env vars at all
+# (GZAC pushes broker details per configuration), so a freshly booted host with no
+# configurations connects to nothing. No GZAC either: every route that calls back into
+# GZAC is driven by a pushed configuration, of which there are none here.
+#
+# A green `GET /health` proves the image boots, DB_MIGRATE_ON_BOOT ran the migrations
+# against a real Postgres, and Fastify is listening — which is the release gate.
+#
+# The image under test is injected via ${SMOKE_IMAGE}.
+#
+# Usage (see plugin_host_publish_release.yml):
+#   SMOKE_IMAGE=ghcr.io/<owner>/<repo>/valtimo-plugin-host:commit-<sha> \
+#     docker compose -f plugin-host/app/docker-compose.smoke.yml up -d
+
+name: plugin-host-smoke
+
+services:
+  smoke-database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pluginhost
+      POSTGRES_PASSWORD: pluginhost
+      POSTGRES_DB: pluginhost
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pluginhost -d pluginhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    image: ${SMOKE_IMAGE:?set SMOKE_IMAGE to the plugin-host image under test}
+    depends_on:
+      smoke-database:
+        condition: service_healthy
+    environment:
+      # Boot fails below MIN_ADMIN_TOKEN_LENGTH (16), so this throwaway value is
+      # deliberately long enough rather than a placeholder like "changeme".
+      ADMIN_TOKEN: smoke-test-admin-token
+      DB_HOST: smoke-database
+      DB_PORT: "5432"
+      DB_NAME: pluginhost
+      DB_USER: pluginhost
+      DB_PASSWORD: pluginhost
+      HOST_ID: smoke
+      LOG_LEVEL: info
+    ports:
+      # SMOKE_PORT only exists so this gate can be reproduced locally: the dev host in
+      # docker-compose.yml already defaults to 8090, so a developer running both would
+      # otherwise collide — and a collision silently polls the *dev* host instead.
+      - "${SMOKE_PORT:-8090}:8090"

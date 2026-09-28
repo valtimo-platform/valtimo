@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Summary",
+        "key": "summary",
+        "type": "standard",
+        "contentKey": "summary"
+    },
+    {
+        "name": "Progress",
+        "key": "progress",
+        "type": "standard",
+        "contentKey": "progress",
+        "showTasks": true
+    },
+    {
+        "name": "Case summary (plugin)",
+        "key": "plugin-summary",
+        "type": "external_plugin",
+        "contentKey": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d1001:summary",
+        "pluginDefinitionKey": "case-summary",
+        "pluginVersion": "0.1.0"
+    }
+]

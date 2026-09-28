@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
 import {Observable, map} from 'rxjs';
 import {CarbonListItem} from '@valtimo/components';
-import {BasicWidget} from '@valtimo/layout';
+import {BasicWidget, WidgetDataGroupResponse} from '@valtimo/layout';
 import {CaseWidgetsRes} from '../models';
 
 @Injectable({
@@ -39,6 +39,20 @@ export class CaseWidgetsApiService extends BaseApiService {
   public getWidgetTab(documentId: string, tabKey: string): Observable<CaseWidgetsRes> {
     return this.httpClient.get<CaseWidgetsRes>(
       this.getApiUrl(`v1/document/${documentId}/widget-tab/${tabKey}`)
+    );
+  }
+
+  /** Every widget in the group in one request. Paging uses getWidgetData. */
+  public getWidgetDataGroup(
+    documentId: string,
+    tabKey: string,
+    group: string
+  ): Observable<WidgetDataGroupResponse> {
+    return this.httpClient.get<WidgetDataGroupResponse>(
+      this.getApiUrl(
+        `v1/document/${documentId}/widget-tab/${tabKey}/data?group=${encodeURIComponent(group)}`
+      ),
+      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
     );
   }
 

@@ -80,7 +80,8 @@ class CaseDefinitionBuildingBlockLinkService(
             buildingBlockDefinitionId = buildingBlockDefinitionId,
             inputMappings = dto.inputMappings,
             outputMappings = dto.outputMappings,
-            pluginConfigurationMappings = dto.pluginConfigurationMappings
+            pluginConfigurationMappings = dto.pluginConfigurationMappings,
+            startableByUser = dto.startableByUser
         )
 
         return CaseDefinitionBuildingBlockLinkDto.from(linkRepository.save(link))
@@ -102,6 +103,7 @@ class CaseDefinitionBuildingBlockLinkService(
         link.inputMappings = dto.inputMappings
         link.outputMappings = dto.outputMappings
         link.pluginConfigurationMappings = dto.pluginConfigurationMappings
+        dto.startableByUser?.let { link.startableByUser = it }
 
         return CaseDefinitionBuildingBlockLinkDto.from(linkRepository.save(link))
     }

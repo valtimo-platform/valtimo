@@ -1,0 +1,18 @@
+:host {
+  display: block;
+}
+
+.plugin-upload-modal__content,
+.plugin-upload-modal__overwrite-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-05);
+
+  // The modal content is a definite-height scroll area (`.cds--modal-content`, overflow-y auto).
+  // Without this, overflowing content makes the flex column *shrink* its children instead of
+  // scrolling — the inline notification gets squashed to its 48px minimum while its text paints
+  // outside the box. Children keep their natural height; the section scrolls.
+  > * {
+    flex-shrink: 0;
+  }
+}

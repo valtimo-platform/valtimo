@@ -19,6 +19,7 @@ package com.ritense.valtimo.milestones.web.rest;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.milestones.domain.Milestone;
 import com.ritense.valtimo.milestones.repository.MilestoneRepository;
 import com.ritense.valtimo.milestones.service.MilestoneService;
@@ -59,6 +60,10 @@ public class MilestoneResource {
         this.milestoneMapper = milestoneMapper;
     }
 
+    @EndpointDescription(
+        en = "Get a milestone by id",
+        nl = "Mijlpaal op id ophalen"
+    )
     @GetMapping("/v1/milestones/{id}")
     public ResponseEntity<MilestoneDTO> getMilestone(@PathVariable Long id) {
         logger.debug("REST request to get Milestone : {}", id);
@@ -69,6 +74,10 @@ public class MilestoneResource {
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @EndpointDescription(
+        en = "List all milestones",
+        nl = "Alle mijlpalen ophalen"
+    )
     @GetMapping("/v1/milestones")
     public ResponseEntity<List<MilestoneDTO>> listMilestones() {
         logger.debug("REST request to get all milestones");
@@ -76,6 +85,10 @@ public class MilestoneResource {
         return ResponseEntity.ok(milestoneDTOList);
     }
 
+    @EndpointDescription(
+        en = "Save a milestone",
+        nl = "Mijlpaal opslaan"
+    )
     @PostMapping("/v1/milestones")
     public ResponseEntity<MilestoneDTO> saveMilestone(@Valid @RequestBody MilestoneSaveDTO milestoneSaveDTO) throws Exception {
         logger.debug("REST request to save Milestone : {}", milestoneSaveDTO);
@@ -90,6 +103,10 @@ public class MilestoneResource {
             .body(savedMilestoneDTO);
     }
 
+    @EndpointDescription(
+        en = "Delete a milestone",
+        nl = "Mijlpaal verwijderen"
+    )
     @DeleteMapping("/v1/milestones/{id}")
     public ResponseEntity<Void> deleteMilestone(@PathVariable Long id) throws IllegalStateException {
         logger.debug("REST request to delete Milestone : {}", id);

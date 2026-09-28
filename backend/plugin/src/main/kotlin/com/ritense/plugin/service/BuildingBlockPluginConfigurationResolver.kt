@@ -23,4 +23,14 @@ import java.util.UUID
 interface BuildingBlockPluginConfigurationResolver {
     fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID?
     fun resolve(task: DelegateTask, pluginDefinitionKey: String): UUID?
+
+    /**
+     * Resolves the configuration id for the first `pluginConfigurationMappings` key that starts with
+     * [keyPrefix], or `null` when none matches. Lets a caller resolve version-tolerantly: the
+     * external-plugin system keys building-block mappings as `external-plugin:<pluginId>@<version>`,
+     * so a prefix of `external-plugin:<pluginId>@` matches a mapping made for a *different* version of
+     * the same plugin (the resolved configuration's version then applies at runtime — D1). Callers try
+     * the exact key first and fall back to this. Default no-op for resolvers that don't support it.
+     */
+    fun resolveByKeyPrefix(execution: DelegateExecution, keyPrefix: String): UUID? = null
 }

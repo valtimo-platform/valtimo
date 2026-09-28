@@ -23,7 +23,6 @@ import {FunctionConfigurationComponent} from '../../../../models';
   standalone: false,
   selector: 'valtimo-get-eigenschap-configuration',
   templateUrl: './get-eigenschap-configuration.component.html',
-  styleUrls: ['./get-eigenschap-configuration.component.scss'],
 })
 export class GetEigenschapConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

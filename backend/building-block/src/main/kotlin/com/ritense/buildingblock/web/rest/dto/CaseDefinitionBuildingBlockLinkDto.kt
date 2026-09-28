@@ -29,7 +29,8 @@ data class CaseDefinitionBuildingBlockLinkDto(
     val buildingBlockDefinitionVersionTag: String,
     val inputMappings: List<BuildingBlockInputMapping>,
     val outputMappings: List<BuildingBlockOutputMapping>,
-    val pluginConfigurationMappings: Map<String, UUID>
+    val pluginConfigurationMappings: Map<String, UUID>,
+    val startableByUser: Boolean
 ) {
     companion object {
         fun from(entity: CaseDefinitionBuildingBlockLink): CaseDefinitionBuildingBlockLinkDto {
@@ -41,7 +42,8 @@ data class CaseDefinitionBuildingBlockLinkDto(
                 buildingBlockDefinitionVersionTag = entity.buildingBlockDefinitionId.versionTag.toString(),
                 inputMappings = entity.inputMappings,
                 outputMappings = entity.outputMappings,
-                pluginConfigurationMappings = entity.pluginConfigurationMappings
+                pluginConfigurationMappings = entity.pluginConfigurationMappings,
+                startableByUser = entity.startableByUser
             )
         }
     }
@@ -52,7 +54,8 @@ data class CreateCaseDefinitionBuildingBlockLinkDto(
     val buildingBlockDefinitionVersionTag: String,
     val inputMappings: List<BuildingBlockInputMapping> = emptyList(),
     val outputMappings: List<BuildingBlockOutputMapping> = emptyList(),
-    val pluginConfigurationMappings: Map<String, UUID> = emptyMap()
+    val pluginConfigurationMappings: Map<String, UUID> = emptyMap(),
+    val startableByUser: Boolean = true
 )
 
 data class UpdateCaseDefinitionBuildingBlockLinkDto(
@@ -60,5 +63,7 @@ data class UpdateCaseDefinitionBuildingBlockLinkDto(
     val buildingBlockDefinitionVersionTag: String? = null,
     val inputMappings: List<BuildingBlockInputMapping> = emptyList(),
     val outputMappings: List<BuildingBlockOutputMapping> = emptyList(),
-    val pluginConfigurationMappings: Map<String, UUID> = emptyMap()
+    val pluginConfigurationMappings: Map<String, UUID> = emptyMap(),
+    /** Null means: leave the current value unchanged. */
+    val startableByUser: Boolean? = null
 )

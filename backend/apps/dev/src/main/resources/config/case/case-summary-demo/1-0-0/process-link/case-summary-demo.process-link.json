@@ -1,0 +1,25 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-case-summary-demo"
+    },
+    {
+        "activityId": "BuildCaseSummary",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "external_plugin",
+        "externalPluginConfigurationId": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d1001",
+        "actionKey": "case-summary",
+        "referenceType": "FIXED",
+        "pluginDefinitionKey": "case-summary",
+        "pluginVersion": "0.1.0",
+        "actionProperties": {
+            "titleField": "/applicantName",
+            "amountField": "/requestedAmount",
+            "summaryVariable": "caseSummary",
+            "definitionKeyVariable": "caseDefinitionKey"
+        },
+        "actionResultMappings": []
+    }
+]

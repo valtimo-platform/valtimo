@@ -21,5 +21,6 @@ xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="20260826-case-definition-process-link-version.xml" relativeToChangelogFile="true"/>
+    <include file="20260916-add-startable-by-user-to-case-definition-building-block-link.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
