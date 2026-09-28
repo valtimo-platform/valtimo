@@ -6,9 +6,10 @@ Release date: 30-09-2026
 
 ## New Features
 
-### New feature title
+### Deploy case definitions between environments automatically
 
-New feature explanation.
+Administrators can now let the deployer export a case definition from one environment and import it into
+another, without downloading and uploading the file by hand.
 
 ---
 
