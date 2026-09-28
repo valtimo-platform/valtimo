@@ -102,6 +102,38 @@ class ProcessMigrationComponentValidatorTest {
     }
 
     @Test
+    fun `should refuse an instruction that names no source, rather than answering 500`() {
+        // The mirror of the missing target: `sourceProcessDefinitionKey` is not nullable either, so this threw out of the validator and the save answered 500.
+        val nullSource = objectMapper.readTree(
+            """[{"sourceProcessDefinitionKey": null, "targetProcessDefinitionKey": "verhuizing-process"}]"""
+        )
+
+        assertThat(validator.validate(source, target, nullSource))
+            .singleElement().asString()
+            .contains("the instruction migrating onto 'verhuizing-process' names no 'sourceProcessDefinitionKey'")
+            .contains("remove the instruction to migrate no process onto 'verhuizing-process'")
+            .contains("Available: 'verhuizing-process'")
+    }
+
+    @Test
+    fun `should refuse an instruction whose source field is absent entirely`() {
+        val absentSource = objectMapper.readTree("""[{"targetProcessDefinitionKey": "verhuizing-process"}]""")
+
+        assertThat(validator.validate(source, target, absentSource))
+            .singleElement().asString()
+            .contains("names no 'sourceProcessDefinitionKey'")
+    }
+
+    @Test
+    fun `should report the missing target once for an instruction that names neither end`() {
+        val namesNeither = objectMapper.readTree("""[{}]""")
+
+        assertThat(validator.validate(source, target, namesNeither))
+            .singleElement().asString()
+            .contains("names no 'targetProcessDefinitionKey'")
+    }
+
+    @Test
     fun `should report every instruction that names no target, not only the first`() {
         val twoNulls = objectMapper.readTree(
             """

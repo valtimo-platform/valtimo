@@ -225,7 +225,8 @@ class CaseMigrationManagementResource(
         @RequestBody plan: JsonNode,
     ): ResponseEntity<List<MigrationPlanManagementDto>> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
-        val problems = migrationSuggestionService.findPlanProblems(caseDefinitionId, plan)
+        // Inside the guard as well: a plan malformed past what the checkers name still throws from a validator, and it is the caller's plan that is wrong.
+        val problems = asBadRequestOnInvalidPlan { migrationSuggestionService.findPlanProblems(caseDefinitionId, plan) }
         if (problems.isNotEmpty()) {
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,

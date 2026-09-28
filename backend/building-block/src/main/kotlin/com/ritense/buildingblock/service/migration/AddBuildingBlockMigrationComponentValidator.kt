@@ -60,6 +60,11 @@ class AddBuildingBlockMigrationComponentValidator(
             val block = entry.get("buildingBlockKey")?.takeIf { it.isTextual }?.asText() ?: "?"
             ProcessMigrationTargetChecker.sourcesWithoutTarget(entry.get("processMigration"))
                 .map { sourceKey -> "adds building block '$block': ${ProcessMigrationTargetChecker.describe(sourceKey)}" } +
+                ProcessMigrationTargetChecker.targetsWithoutSource(entry.get("processMigration"))
+                    .map { targetKey ->
+                        "adds building block '$block': " +
+                            ProcessMigrationTargetChecker.describeMissingSource(targetKey)
+                    } +
                 // Same control, same `doc:` hazard as the top-level section: these copies reach no other validator.
                 ProcessVariableTargetChecker.findNonProcessVariableTargets(entry.get("processMigration"))
                     .map { problem -> "adds building block '$block': $problem" } +

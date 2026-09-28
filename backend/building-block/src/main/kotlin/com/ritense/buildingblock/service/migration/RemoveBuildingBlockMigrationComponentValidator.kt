@@ -65,6 +65,11 @@ class RemoveBuildingBlockMigrationComponentValidator(
                 .map { sourceKey ->
                     "removes building block '$block': ${ProcessMigrationTargetChecker.describe(sourceKey)}"
                 } +
+                ProcessMigrationTargetChecker.targetsWithoutSource(entry.get("processMigration"))
+                    .map { targetKey ->
+                        "removes building block '$block': " +
+                            ProcessMigrationTargetChecker.describeMissingSource(targetKey)
+                    } +
                 // Same control, same `doc:` hazard as the top-level section: these copies reach no other validator.
                 ProcessVariableTargetChecker.findNonProcessVariableTargets(entry.get("processMigration"))
                     .map { problem -> "removes building block '$block': $problem" } +

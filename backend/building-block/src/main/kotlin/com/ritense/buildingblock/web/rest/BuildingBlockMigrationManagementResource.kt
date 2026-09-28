@@ -217,19 +217,15 @@ class BuildingBlockMigrationManagementResource(
         @RequestBody plan: JsonNode,
     ): ResponseEntity<List<MigrationPlanManagementDto>> {
         val blueprintId = BuildingBlockDefinitionId(key, versionTag)
-        val problems = migrationSuggestionService.findPlanProblems(blueprintId, plan)
+        // As on the case save path: a malformed plan is refused with IllegalArgumentException by the validators and by the importer, and it is the caller's plan that is wrong.
+        val problems = asBadRequestOnInvalidPlan { migrationSuggestionService.findPlanProblems(blueprintId, plan) }
         if (problems.isNotEmpty()) {
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Migration plan cannot be saved: ${problems.joinToString("; ")}",
             )
         }
-        // As on the case save path: the importer refuses a malformed plan with IllegalArgumentException, and it is the caller's plan that is wrong.
-        try {
-            migrationPlanImporter.deploy(blueprintId, plan)
-        } catch (e: IllegalArgumentException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message, e)
-        }
+        asBadRequestOnInvalidPlan { migrationPlanImporter.deploy(blueprintId, plan) }
         return ResponseEntity.ok(caseMigrationService.getPlans(blueprintId))
     }
 
@@ -263,6 +259,14 @@ class BuildingBlockMigrationManagementResource(
         val migrationId = migrationId(key, versionTag, migrationKey)
         return ResponseEntity.ok(caseMigrationService.getStatus(migrationId))
     }
+
+    /** Run [block], answering 400 rather than 500 when it is the plan that is wrong — the validators and the importer both refuse a bad plan with `require`, which Spring would otherwise render as a server fault. */
+    private fun <T> asBadRequestOnInvalidPlan(block: () -> T): T =
+        try {
+            block()
+        } catch (e: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message, e)
+        }
 
     private fun migrationId(key: String, versionTag: String, migrationKey: String) =
         BlueprintMigrationId.from(BuildingBlockDefinitionId(key, versionTag), migrationKey)

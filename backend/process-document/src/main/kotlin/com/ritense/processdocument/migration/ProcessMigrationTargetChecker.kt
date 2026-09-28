@@ -18,7 +18,7 @@ package com.ritense.processdocument.migration
 
 import com.fasterxml.jackson.databind.JsonNode
 
-/** Finds `processMigration` instructions naming no target, on the raw JSON before deserialization — a null target fails Jackson and answers 500 for the likeliest hand-edit mistake (G47). Blank counts as none. */
+/** Finds `processMigration` instructions naming no target or no source, on the raw JSON before deserialization — either end left null fails Jackson and answers 500 for the likeliest hand-edit mistakes (G47). Blank counts as none. */
 object ProcessMigrationTargetChecker {
 
     const val SOURCE_KEY = "sourceProcessDefinitionKey"
@@ -42,6 +42,27 @@ object ProcessMigrationTargetChecker {
             "instruction to leave instances of '$sourceKey' where they are.$available"
     }
 
+    /** The `targetProcessDefinitionKey` of every instruction in [component] that names no source; `?` for one that names neither. */
+    fun targetsWithoutSource(component: JsonNode?): List<String> =
+        component
+            ?.filter { instruction -> instruction.isObject && !instruction.namesASource() }
+            ?.map { instruction -> instruction.get(TARGET_KEY)?.takeIf { it.isTextual }?.asText() ?: "?" }
+            .orEmpty()
+
+    /** Why a missing source stops the save. The mirror of [describe] — without it there is nothing to migrate *from*. */
+    fun describeMissingSource(targetKey: String, availableSources: Collection<String> = emptyList()): String {
+        val available = availableSources
+            .takeIf { it.isNotEmpty() }
+            ?.let { " Available: ${it.sorted().joinToString { source -> "'$source'" }}." }
+            .orEmpty()
+        return "the instruction migrating onto '$targetKey' names no '$SOURCE_KEY', so there is nothing to " +
+            "migrate from. Every process this plan migrates has to name the process it migrates from; " +
+            "remove the instruction to migrate no process onto '$targetKey'.$available"
+    }
+
     private fun JsonNode.namesATarget(): Boolean =
         get(TARGET_KEY)?.takeIf { it.isTextual }?.asText()?.isNotBlank() == true
+
+    private fun JsonNode.namesASource(): Boolean =
+        get(SOURCE_KEY)?.takeIf { it.isTextual }?.asText()?.isNotBlank() == true
 }

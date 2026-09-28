@@ -45,6 +45,13 @@ class ProcessMigrationComponentValidator(
             }
         }
 
+        val missingSource = ProcessMigrationTargetChecker.targetsWithoutSource(component)
+        if (missingSource.isNotEmpty()) {
+            return missingSource.map { targetKey ->
+                ProcessMigrationTargetChecker.describeMissingSource(targetKey, sourceProcessDefinitions.keys)
+            }
+        }
+
         val instructions: List<ProcessMigrationInstruction> = objectMapper.convertValue(
             component,
             object : TypeReference<List<ProcessMigrationInstruction>>() {},

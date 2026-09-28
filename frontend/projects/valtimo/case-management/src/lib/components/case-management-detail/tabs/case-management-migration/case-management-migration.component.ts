@@ -66,6 +66,7 @@ import {
   Subscription,
   switchMap,
   take,
+  takeUntil,
   tap,
   timer,
 } from 'rxjs';
@@ -152,9 +153,13 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   private readonly _showDetailModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDetailModal$ = this._showDetailModal$.asObservable();
 
+  // Declared before the streams that take until it — a field initialiser cannot reach one below it.
+  private readonly _destroy$ = new Subject<void>();
+
   private readonly _params$: Observable<CaseManagementParams | undefined> =
     getCaseManagementRouteParams(this.route).pipe(
       tap(params => (this._params = params)),
+      takeUntil(this._destroy$),
       shareReplay(1)
     );
 
@@ -185,6 +190,8 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
           )
     ),
     tap(() => this._loading$.next(false)),
+    // Before shareReplay, which does not refCount: without this the poll timer outlives the component and keeps fetching for the rest of the run.
+    takeUntil(this._destroy$),
     shareReplay(1)
   );
 
@@ -275,6 +282,8 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   }
 
   public ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
     this._subscriptions.unsubscribe();
   }
 
