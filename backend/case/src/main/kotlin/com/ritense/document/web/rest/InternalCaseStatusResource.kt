@@ -25,6 +25,7 @@ import com.ritense.document.web.rest.dto.InternalCaseStatusUpdateRequestDto
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -44,12 +45,20 @@ class InternalCaseStatusResource(
     private val internalCaseStatusService: InternalCaseStatusService
 ) {
 
+    @EndpointDescription(
+        en = "List all internal case statuses",
+        nl = "Alle interne dossierstatussen ophalen",
+    )
     @GetMapping("/v1/internal-status")
     fun getAllInternalCaseStatuses(): ResponseEntity<List<InternalCaseStatusResponseDto>> {
         val internalCaseStatuses = internalCaseStatusService.getAllInternalCaseStatuses()
         return ResponseEntity.ok(internalCaseStatuses.map { InternalCaseStatusResponseDto(it) })
     }
 
+    @EndpointDescription(
+        en = "List internal case statuses for case definition",
+        nl = "Interne dossierstatussen voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/internal-status")
     fun getInternalCaseStatuses(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
@@ -59,6 +68,10 @@ class InternalCaseStatusResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List internal case statuses for management",
+        nl = "Interne dossierstatussen voor beheer ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionName}/internal-status")
     fun getInternalCaseStatusesForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
@@ -68,6 +81,10 @@ class InternalCaseStatusResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create internal case status",
+        nl = "Interne dossierstatus aanmaken",
+    )
     @PostMapping("/management/v1/case-definition/{caseDefinitionName}/internal-status")
     fun createInternalCaseStatus(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
@@ -87,6 +104,10 @@ class InternalCaseStatusResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update internal case status order",
+        nl = "Volgorde interne dossierstatussen bijwerken",
+    )
     @PutMapping("/management/v1/case-definition/{caseDefinitionName}/internal-status")
     fun editInternalCaseStatuses(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
@@ -97,6 +118,10 @@ class InternalCaseStatusResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update internal case status",
+        nl = "Interne dossierstatus bijwerken",
+    )
     @PutMapping("/management/v1/case-definition/{caseDefinitionName}/internal-status/{internalStatusKey}")
     fun updateInternalCaseStatus(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,
@@ -108,6 +133,10 @@ class InternalCaseStatusResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete internal case status",
+        nl = "Interne dossierstatus verwijderen",
+    )
     @DeleteMapping("/management/v1/case-definition/{caseDefinitionName}/internal-status/{internalStatusKey}")
     fun deleteInternalCaseStatus(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String,

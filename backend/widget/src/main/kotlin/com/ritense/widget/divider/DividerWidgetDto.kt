@@ -35,6 +35,8 @@ data class DividerWidgetDto(
     override val highContrast: Boolean,
     override val isCompact: Boolean?,
 ) : WidgetDto {
+    override var dataGroupId: String? = null
+
     override val actions: List<WidgetAction>
         get() = emptyList()
     override val displayConditions: List<Condition<*>>

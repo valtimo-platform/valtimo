@@ -75,6 +75,7 @@ import com.ritense.case_.repository.DataMigrationConfigurationRepository
 import com.ritense.case_.repository.HiddenCaseListColumnRepository
 import com.ritense.case_.rest.CaseMigrationManagementResource
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.ExternalPluginCaseTabResolver
 import com.ritense.case_.service.migration.CaseMigrationCandidateProvider
 import com.ritense.case_.service.migration.CaseMigrationRunner
 import com.ritense.case_.service.migration.CaseMigrationService
@@ -117,6 +118,7 @@ import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverService
 import java.time.Duration
+import java.util.Optional
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -164,7 +166,7 @@ class CaseAutoConfiguration {
         caseDefinitionChecker: CaseDefinitionChecker,
         configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
         caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
-        pluginConfigurationMappingResolver: PluginConfigurationMappingResolver?,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
     ): CaseDefinitionResource {
         return CaseDefinitionResource(
             service,
@@ -175,7 +177,7 @@ class CaseAutoConfiguration {
             caseDefinitionChecker,
             configurationIssueRepository,
             caseDefinitionImportPreviewService,
-            pluginConfigurationMappingResolver,
+            pluginConfigurationMappingResolvers,
         )
     }
 
@@ -369,9 +371,11 @@ class CaseAutoConfiguration {
     fun caseTabExporter(
         objectMapper: ObjectMapper,
         caseTabService: CaseTabService,
+        externalPluginCaseTabResolver: Optional<ExternalPluginCaseTabResolver>,
     ) = CaseTabExporter(
         objectMapper,
-        caseTabService
+        caseTabService,
+        externalPluginCaseTabResolver
     )
 
     @Bean
@@ -396,8 +400,10 @@ class CaseAutoConfiguration {
     @ConditionalOnMissingBean(CaseTabImporter::class)
     fun caseTabImporter(
         objectMapper: ObjectMapper,
-        caseTabRepository: CaseTabRepository
-    ) = CaseTabImporter(objectMapper, caseTabRepository)
+        caseTabRepository: CaseTabRepository,
+        applicationEventPublisher: ApplicationEventPublisher,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>
+    ) = CaseTabImporter(objectMapper, caseTabRepository, applicationEventPublisher, pluginConfigurationMappingResolvers)
 
     @Bean
     @ConditionalOnMissingBean(CaseTaskListExporter::class)

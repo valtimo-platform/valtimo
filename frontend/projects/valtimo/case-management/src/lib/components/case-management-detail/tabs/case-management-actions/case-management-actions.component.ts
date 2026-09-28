@@ -48,7 +48,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '@valtimo/process-link';
-import {ButtonModule, IconModule, NotificationModule, TagModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, NotificationModule, TagModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, of, shareReplay, Subscription, switchMap, tap} from 'rxjs';
 import {catchError, filter, take} from 'rxjs/operators';
 import {BuildingBlockConfigRequest, ManagementStartableItem, StartableItemType} from '../../../../models';
@@ -69,6 +69,7 @@ import {CaseManagementActionsModalComponent} from './case-management-actions-mod
     IconModule,
     NotificationModule,
     TagModule,
+    ToggleModule,
     CaseManagementActionsModalComponent,
     ConfirmationModalModule,
     ProcessLinkModule,
@@ -77,6 +78,7 @@ import {CaseManagementActionsModalComponent} from './case-management-actions-mod
 })
 export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('typeColumn') public typeColumnTemplate!: TemplateRef<any>;
+  @ViewChild('startableByUserColumn') public startableByUserColumnTemplate!: TemplateRef<any>;
 
   public readonly StartableItemType = StartableItemType;
 
@@ -91,6 +93,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly loading$: Observable<boolean> = this.startableItemManagementService.loading$;
   public readonly dragAndDropDisabled = signal(false);
+  public readonly togglingStartableByUser = signal(false);
 
   public readonly items$: Observable<ManagementStartableItem[]> =
     this.startableItemManagementService.items$;
@@ -118,6 +121,8 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       type: 'danger',
     },
   ];
+
+  private readonly _$editedBuildingBlockItem = signal<ManagementStartableItem | null>(null);
 
   private readonly _subscriptions = new Subscription();
 
@@ -182,6 +187,22 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
       });
   }
 
+  public onStartableByUserToggle(item: ManagementStartableItem, startableByUser: boolean): void {
+    if (item.startableByUser === startableByUser) return;
+
+    this.togglingStartableByUser.set(true);
+    this.startableItemManagementService
+      .toggleStartableByUser(item, startableByUser)
+      .pipe(
+        take(1),
+        catchError(() => of(null))
+      )
+      .subscribe(() => {
+        this.togglingStartableByUser.set(false);
+        this.startableItemManagementService.loadItems();
+      });
+  }
+
   public onConfigureBuildingBlock(request: BuildingBlockConfigRequest): void {
     this.openProcessLinkModalForBuildingBlock(
       request.buildingBlockDefinitionKey,
@@ -224,6 +245,7 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   }
 
   private openProcessLinkModalForBuildingBlockEdit(item: ManagementStartableItem): void {
+    this._$editedBuildingBlockItem.set(item);
     this.processLinkStepService.setSkipBuildingBlockSelectionStep(true);
 
     this.startableItemManagementService
@@ -293,22 +315,25 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
   }
 
   private updateBuildingBlockStartableItem(event: BuildingBlockProcessLinkUpdateDto): void {
-    const key = event.buildingBlockDefinitionKey;
-    const versionTag = event.buildingBlockDefinitionVersionTag;
+    const editedItem = this._$editedBuildingBlockItem();
+    this._$editedBuildingBlockItem.set(null);
+
+    if (!editedItem) return;
 
     const request = {
       type: StartableItemType.BUILDING_BLOCK,
       properties: {
-        buildingBlockDefinitionKey: key,
-        buildingBlockDefinitionVersionTag: versionTag,
+        buildingBlockDefinitionKey: event.buildingBlockDefinitionKey,
+        buildingBlockDefinitionVersionTag: event.buildingBlockDefinitionVersionTag,
         inputMappings: this.normalizeMappingsForSave(event.inputMappings || [], 'input'),
         outputMappings: this.normalizeMappingsForSave(event.outputMappings || [], 'output'),
         pluginConfigurationMappings: event.pluginConfigurationMappings || {},
       },
     };
 
+    // Look up the existing item by the identity it had when the modal opened — the event carries the new version.
     this.startableItemManagementService
-      .updateItem(key, versionTag, request)
+      .updateItem(editedItem.key, editedItem.versionTag, request)
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
         this.startableItemManagementService.loadItems();
@@ -344,6 +369,12 @@ export class CaseManagementActionsComponent implements AfterViewInit, OnDestroy 
         template: this.typeColumnTemplate,
         key: '',
         label: 'caseManagement.actions.columns.type',
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.startableByUserColumnTemplate,
+        key: '',
+        label: 'caseManagement.actions.columns.startableByUser',
       },
     ]);
   }

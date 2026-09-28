@@ -83,14 +83,14 @@ class UploadProcessServiceTest {
     }
 
     @Test
-    fun `should start the upload process that is linked to the case`() {
+    fun `should start the upload process that is linked to the case, on the case document`() {
         givenCaseWithUploadProcess()
 
         uploadProcessService.startUploadResourceProcess(DOCUMENT_ID, RESOURCE_ID)
 
         val captor = argumentCaptor<StartProcessForDocumentRequest>()
         verify(processDocumentService).startProcessForDocument(captor.capture())
-        assertThat(captor.firstValue.documentId.id).isEqualTo(DOCUMENT_ID)
+        assertThat(captor.firstValue.documentId.id).isEqualTo(CASE_DOCUMENT_ID)
         assertThat(captor.firstValue.processDefinitionKey).isEqualTo(UPLOAD_PROCESS_KEY)
     }
 

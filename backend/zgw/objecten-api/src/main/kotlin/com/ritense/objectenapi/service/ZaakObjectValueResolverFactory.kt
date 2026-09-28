@@ -24,6 +24,7 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valueresolver.ValueResolverFactory
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.VariableScope
 import java.util.UUID
@@ -37,6 +38,11 @@ class ZaakObjectValueResolverFactory(
 
     override fun supportedPrefix(): String {
         return ZaakObjectConstants.ZAAKOBJECT_PREFIX
+    }
+
+    // Groups per document. Fetching stays per requestedValue — each names its own objecttype.
+    override fun resolverCacheKey(properties: Map<String, Any>): Any? {
+        return properties[DOCUMENT_ID]?.toString()
     }
 
     override fun createResolver(

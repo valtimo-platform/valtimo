@@ -18,6 +18,7 @@ package com.ritense.valtimo.processbean.web.rest
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.processbean.ProcessBeanService
 import com.ritense.valtimo.processbean.dto.ProcessBeanDto
 import org.springframework.http.ResponseEntity
@@ -32,11 +33,19 @@ import org.springframework.web.bind.annotation.RestController
 class ProcessBeanResource(
     private val processBeanService: ProcessBeanService
 ) {
+    @EndpointDescription(
+        en = "List process beans",
+        nl = "Procesbeans ophalen",
+    )
     @GetMapping("/management/v1/process-bean")
     fun getProcessBeans(): ResponseEntity<List<ProcessBeanDto>> {
         return ResponseEntity.ok(processBeanService.getProcessBeans())
     }
 
+    @EndpointDescription(
+        en = "Get process bean by name",
+        nl = "Procesbean ophalen per naam",
+    )
     @GetMapping("/management/v1/process-bean/{beanName}")
     fun getProcessBean(
         @PathVariable beanName: String

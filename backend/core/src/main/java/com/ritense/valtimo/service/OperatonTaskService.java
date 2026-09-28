@@ -96,6 +96,7 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -839,7 +840,7 @@ public class OperatonTaskService {
     }
 
     private List<Order> getOrderBy(CriteriaBuilder cb, Root<OperatonTask> root, Sort sort) {
-        return sort.stream()
+        var orders = sort.stream()
             .map(order -> {
                 String sortProperty;
                 if (order.getProperty().equals("created")) {
@@ -854,7 +855,11 @@ public class OperatonTaskService {
                 return order.isAscending() ? cb.asc(expression) : cb.desc(expression);
             })
             .map(Order.class::cast)
-            .toList();
+            .collect(Collectors.toCollection(ArrayList::new));
+
+        // Paging is only reproducible when the ORDER BY ends on a unique column, so ties never reshuffle
+        orders.add(cb.asc(root.get(ID)));
+        return orders;
     }
 
     private AuthorizationSpecification<OperatonTask> getAuthorizationSpecification(Action<OperatonTask> action) {

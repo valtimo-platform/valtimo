@@ -24,10 +24,16 @@
     flex: 1 1 auto;
     min-width: 0;
   }
+
+  &--full-width {
+    width: 100%;
+  }
 }
 
+// Use the layer-contextual field token (not a hardcoded layer) so the combobox field matches the
+// surrounding fields at whatever Carbon layer it is placed in (e.g. `cdsLayer` inside a modal).
 :host ::ng-deep .cds--list-box {
-  background: var(--cds-layer-01);
+  background: var(--cds-field);
 }
 
 .mdi-icon-preview {

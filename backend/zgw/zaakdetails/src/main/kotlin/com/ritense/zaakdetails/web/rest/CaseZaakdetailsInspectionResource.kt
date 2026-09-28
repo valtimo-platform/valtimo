@@ -23,6 +23,7 @@ import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.zaakdetails.service.CaseZaakdetailsInspectionService
 import com.ritense.zaakdetails.web.rest.dto.CaseZaakdetailsInspectionDto
 import com.ritense.zaakdetails.web.rest.dto.ZaakdetailsObjectContentDto
@@ -45,6 +46,10 @@ class CaseZaakdetailsInspectionResource(
     private val caseZaakdetailsInspectionService: CaseZaakdetailsInspectionService,
 ) {
 
+    @EndpointDescription(
+        en = "Get zaakdetails inspection for case",
+        nl = "Zaakdetails-inspectie voor dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/zgw/zaakdetails")
     @Transactional
     fun getZaakdetailsInspection(
@@ -55,6 +60,10 @@ class CaseZaakdetailsInspectionResource(
         return ResponseEntity.ok(caseZaakdetailsInspectionService.getInspection(caseId, document))
     }
 
+    @EndpointDescription(
+        en = "Get zaakdetails object content for case",
+        nl = "Zaakdetails-objectinhoud voor dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/zgw/zaakdetails/object")
     @Transactional
     fun getZaakdetailsObjectContent(
@@ -65,6 +74,10 @@ class CaseZaakdetailsInspectionResource(
         return ResponseEntity.ok(caseZaakdetailsInspectionService.getZaakdetailsObjectContent(caseId))
     }
 
+    @EndpointDescription(
+        en = "Resolve zaakobject content for case",
+        nl = "Zaakobjectinhoud voor dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/zgw/zaakobject/resolve")
     @Transactional
     fun resolveZaakobjectContent(

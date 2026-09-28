@@ -53,6 +53,7 @@ import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {SseService} from '@valtimo/sse';
 import {IntermediateSubmission, TaskUpdateSseEvent} from '@valtimo/task';
+import {SplitGutterInteractionEvent} from 'angular-split';
 import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
@@ -653,6 +654,14 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.caseDetailLayoutService.setMainContentHeaderHeight(height);
   }
 
+  public onSplitDragEnd(event: SplitGutterInteractionEvent): void {
+    const taskPanelWidth = event.sizes[1];
+
+    if (typeof taskPanelWidth === 'number') {
+      this.caseDetailLayoutService.saveTaskPanelWidth(taskPanelWidth);
+    }
+  }
+
   protected onConfirmRedirect(): void {
     if (!this.tabLoader || !this._pendingTab) return;
     this._activeChange = false;
@@ -790,7 +799,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
       ...(isAdmin && {
         actions: [
           {
-            text: this.translateService.instant('dossier.configure'),
+            text: this.translateService.instant('case.configure'),
             click: () => this.router.navigate(['/process-links']),
           },
         ],

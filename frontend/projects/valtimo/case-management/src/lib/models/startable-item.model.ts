@@ -30,6 +30,7 @@ export interface ManagementStartableItem {
   versionTag: string | null;
   processDefinitionId: string | null;
   sortOrder: number | null;
+  startableByUser: boolean;
 }
 
 export interface CreateStartableItemRequest {
@@ -44,10 +45,17 @@ export interface CreateStartableItemProcessProperties {
 export interface CreateStartableItemBuildingBlockProperties {
   buildingBlockDefinitionKey: string;
   buildingBlockDefinitionVersionTag: string;
+  inputMappings?: Array<BuildingBlockInputMapping>;
+  outputMappings?: Array<BuildingBlockOutputMapping>;
+  pluginConfigurationMappings?: Record<string, string>;
+  startableByUser?: boolean;
 }
 
 export interface BuildingBlockItemProperties {
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
   inputMappings: Array<BuildingBlockInputMapping>;
   outputMappings: Array<BuildingBlockOutputMapping>;
   pluginConfigurationMappings: Record<string, string>;
+  startableByUser: boolean;
 }

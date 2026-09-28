@@ -33,4 +33,56 @@ interface ValtimoPluginProcessLinkRepository : BaseProcessLinkRepository<PluginP
     fun findPluginDefinitionKeysByProcessDefinitionIds(
         @Param("processDefinitionIds") processDefinitionIds: Collection<String>
     ): List<String>
+
+    /**
+     * A FIXED link is dangling when it has no configuration id, points at a configuration that no longer
+     * exists, or at one of a different plugin definition than it expects.
+     */
+    @Query(
+        "SELECT CASE WHEN COUNT(link) > 0 THEN true ELSE false END " +
+            "FROM PluginProcessLink link " +
+            "WHERE link.processDefinitionId IN :processDefinitionIds " +
+            "AND link.pluginConfigurationReference.type = com.ritense.plugin.domain.PluginConfigurationReferenceType.FIXED " +
+            "AND (link.pluginConfigurationId.id IS NULL " +
+            "     OR NOT EXISTS (" +
+            "         SELECT config.id FROM PluginConfiguration config " +
+            "         WHERE config.id.id = link.pluginConfigurationId.id " +
+            "         AND (link.pluginConfigurationReference.pluginDefinitionKey IS NULL " +
+            "              OR config.pluginDefinition.key = link.pluginConfigurationReference.pluginDefinitionKey)" +
+            "     ))"
+    )
+    fun existsDanglingFixedLink(
+        @Param("processDefinitionIds") processDefinitionIds: Collection<String>
+    ): Boolean
+
+    /**
+     * `ExternalPluginProcessLink` (the `external_plugin` `process_link_type` row) lives in
+     * `:backend:external-plugin`, which `:backend:building-block` does not depend on. Rather than
+     * introduce that module dependency, this reads the shared `process_link` columns
+     * (`plugin_definition_key`/`plugin_definition_version`, populated by both the embedded and
+     * external plugin systems via the shared `PluginConfigurationReference` embeddable) natively,
+     * filtered to external `BUILDING_BLOCK` references only.
+     */
+    @Query(
+        value = """
+            SELECT DISTINCT
+                plugin_definition_key AS pluginDefinitionKey,
+                plugin_definition_version AS pluginDefinitionVersion
+            FROM process_link
+            WHERE process_link_type = 'external_plugin'
+                AND reference_type = 'BUILDING_BLOCK'
+                AND process_definition_id IN :processDefinitionIds
+                AND plugin_definition_key IS NOT NULL
+                AND plugin_definition_version IS NOT NULL
+        """,
+        nativeQuery = true
+    )
+    fun findExternalPluginReferencesByProcessDefinitionIds(
+        @Param("processDefinitionIds") processDefinitionIds: Collection<String>
+    ): List<ExternalPluginReferenceProjection>
+}
+
+interface ExternalPluginReferenceProjection {
+    fun getPluginDefinitionKey(): String
+    fun getPluginDefinitionVersion(): String
 }
