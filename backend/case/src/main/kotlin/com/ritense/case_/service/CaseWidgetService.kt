@@ -46,7 +46,13 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
+import com.ritense.valueresolver.ValueResolverCache
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.service.WidgetDataDependencies
+import com.ritense.widget.service.dataGroupIds
+import com.ritense.widget.web.rest.dto.WidgetDataEnvelope
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Pageable
@@ -94,16 +100,18 @@ class CaseWidgetService(
                 checkCaseTabAccess(existingDocument as JsonSchemaDocument, caseTab, VIEW)
                 caseWidgetTabRepository.findByIdOrNull(CaseTabId(existingDocument.definitionId().caseDefinitionId(), key))
                     ?.let { widgetTab ->
-                        CaseWidgetTabDto
-                        .of(
-                            widgetTab,
-                            caseWidgetMappers,
-                            { widget ->
-                                document as JsonSchemaDocument
-                                this.viewPermissionCheckForContext(widget, document) &&
-                                    this.widgetHiddenCheck(widget, document)
-                            }
-                        )
+                        ValueResolverCache.memoized {
+                            CaseWidgetTabDto
+                                .of(
+                                    widgetTab,
+                                    caseWidgetMappers,
+                                    { widget ->
+                                        document as JsonSchemaDocument
+                                        this.viewPermissionCheckForContext(widget, document) &&
+                                            this.widgetHiddenCheck(widget, document)
+                                    }
+                                )
+                        }
                     }
             }
         }
@@ -169,6 +177,65 @@ class CaseWidgetService(
         )
 
         return callCaseWidgetDataProvider(widget, document, pageable, widgetTab.id.caseDefinitionId)
+    }
+
+    /** Widget key to the id of the upstream request it needs. */
+    fun dataGroupIds(documentId: UUID, tabKey: String): Map<String, String> {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
+        } as JsonSchemaDocument? ?: return emptyMap()
+        return dataGroupIds(document, widgetsOf(document, tabKey) ?: return emptyMap())
+    }
+
+    private fun dataGroupIds(
+        document: JsonSchemaDocument,
+        widgets: List<CaseWidgetTabWidget>
+    ): Map<String, String> {
+        val properties = mapOf<String, Any>(DOCUMENT_ID to document.id().id.toString())
+        val byKey = widgets.associateBy { it.id.key }
+        return dataGroupIds(byKey.keys) { widgetKey ->
+            val widget = byKey.getValue(widgetKey)
+            WidgetDataDependencies(
+                dependencies = valueResolverService.resolverDependencies(properties, widget.getUnresolvedValues()),
+                paged = widget.isPaged(),
+            )
+        }
+    }
+
+    /**
+     * Every widget in the group, with its data or an error envelope. One cache scope, so the group
+     * pays for its shared upstream request once. Null when the group matches no widget.
+     *
+     * Permission is checked per widget, as on the per-widget endpoint — a widget the user may not
+     * view drops out instead of failing the group. Hidden widgets drop out too.
+     */
+    @Transactional
+    fun getCaseWidgetDataGroup(
+        documentId: UUID,
+        tabKey: String,
+        group: String,
+        pageable: Pageable
+    ): Map<String, WidgetDataEnvelope>? = ValueResolverCache.memoized {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
+        } as JsonSchemaDocument? ?: return@memoized null
+        val caseDefinitionId = document.definitionId().caseDefinitionId()
+        checkCaseTabAccess(caseDefinitionId, tabKey, VIEW, document)
+        val widgets = widgetsOf(document, tabKey) ?: return@memoized null
+
+        val groupIds = dataGroupIds(document, widgets)
+        val groupWidgets = widgets.filter { groupIds[it.id.key] == group }
+        if (groupWidgets.isEmpty()) {
+            return@memoized null
+        }
+
+        groupWidgets
+            .filter { widget ->
+                viewPermissionCheckForContext(widget, document) && widgetHiddenCheck(widget, document)
+            }
+            .associate { widget ->
+                widget.id.key to envelopeFor(widget, document, pageable, caseDefinitionId)
+            }
     }
 
     @Transactional
@@ -283,11 +350,34 @@ class CaseWidgetService(
         )
     }
 
+    private fun widgetsOf(document: JsonSchemaDocument, tabKey: String): List<CaseWidgetTabWidget>? =
+        caseWidgetTabRepository
+            .findByIdOrNull(CaseTabId(document.definitionId().caseDefinitionId(), tabKey))
+            ?.widgets
+
+    private fun envelopeFor(
+        widget: CaseWidgetTabWidget,
+        document: JsonSchemaDocument,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
+    ): WidgetDataEnvelope {
+        return try {
+            WidgetDataEnvelope.of(callCaseWidgetDataProvider(widget, document, pageable, caseDefinitionId))
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to get data for widget '${widget.id.key}'" }
+            WidgetDataEnvelope.failed()
+        }
+    }
+
     private fun callCaseWidgetDataProvider(widget: Any, document: Document, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Any? {
         return runWithoutAuthorization {
             caseWidgetDataProviders
                 .first { provider -> provider.supports(widget) }
                 .getData(document.id().id, widget, pageable, caseDefinitionId)
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
