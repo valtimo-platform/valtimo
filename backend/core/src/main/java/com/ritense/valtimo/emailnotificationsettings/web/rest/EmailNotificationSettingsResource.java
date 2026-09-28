@@ -19,6 +19,7 @@ package com.ritense.valtimo.emailnotificationsettings.web.rest;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettings;
 import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettingsRequestImpl;
@@ -42,6 +43,10 @@ public class EmailNotificationSettingsResource {
         this.emailNotificationService = emailNotificationService;
     }
 
+    @EndpointDescription(
+        en = "Get email notification settings",
+        nl = "E-mailnotificatie-instellingen ophalen"
+    )
     @GetMapping("/email-notification-settings")
     public ResponseEntity<EmailNotificationSettings.JsonViewResult> getSettingsFor() {
         final String emailAddress = SecurityUtils.getCurrentUserLogin();
@@ -50,6 +55,10 @@ public class EmailNotificationSettingsResource {
             .orElse(ResponseEntity.noContent().build());
     }
 
+    @EndpointDescription(
+        en = "Update email notification settings",
+        nl = "E-mailnotificatie-instellingen bijwerken"
+    )
     @PutMapping("/email-notification-settings")
     public ResponseEntity<EmailNotificationSettings.JsonViewResult> process(
         @RequestBody @Valid EmailNotificationSettingsRequestImpl request

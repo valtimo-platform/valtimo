@@ -28,6 +28,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.operaton.dto.TeamDto;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import com.ritense.valtimo.service.OperatonProcessService;
@@ -83,6 +84,10 @@ public class TaskResource extends AbstractTaskResource {
      *
      * @deprecated since 12.0.0, use v2 instead
      */
+    @EndpointDescription(
+        en = "List tasks filtered",
+        nl = "Gefilterde taken ophalen"
+    )
     @GetMapping("/v1/task")
     @Deprecated(since = "12.0.0", forRemoval = true)
     public ResponseEntity<List<TaskExtended>> getTasks(
@@ -94,6 +99,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @EndpointDescription(
+        en = "List tasks filtered paged",
+        nl = "Gefilterde taken gepagineerd ophalen"
+    )
     @GetMapping("/v2/task")
     public ResponseEntity<Page<TaskExtended>> getTasksPaged(
         @RequestParam OperatonTaskService.TaskFilter filter,
@@ -103,6 +112,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok(page);
     }
 
+    @EndpointDescription(
+        en = "Get a task by id",
+        nl = "Taak op id ophalen"
+    )
     @GetMapping("/v1/task/{taskId}")
     public ResponseEntity<CustomTaskDto> getTask(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
@@ -121,6 +134,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok(customTaskDto);
     }
 
+    @EndpointDescription(
+        en = "Assign a task to a user or team",
+        nl = "Taak toewijzen aan een gebruiker of team"
+    )
     @PostMapping("/v1/task/{taskId}/assign")
     public ResponseEntity<Void> assign(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
@@ -143,6 +160,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Assign multiple tasks at once",
+        nl = "Meerdere taken tegelijk toewijzen"
+    )
     @PostMapping("/v1/task/assign/batch-assign")
     public ResponseEntity<Void> batchClaim(@Valid @RequestBody BatchAssignTaskDTO batchAssignTaskDTO) {
         final String assignee = batchAssignTaskDTO.getAssignee();
@@ -158,6 +179,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Unassign a task",
+        nl = "Toewijzing van een taak ongedaan maken"
+    )
     @PostMapping("/v1/task/{taskId}/unassign")
     public ResponseEntity<Void> unassign(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId
@@ -167,6 +192,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Complete a task",
+        nl = "Taak afronden"
+    )
     @PostMapping("/v1/task/{taskId}/complete")
     public ResponseEntity<Void> complete(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
@@ -176,6 +205,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Complete multiple tasks at once",
+        nl = "Meerdere taken tegelijk afronden"
+    )
     @PostMapping("/v1/task/batch-complete")
     public ResponseEntity<Void> batchComplete(@RequestBody List<String> taskIdList) {
         taskIdList.forEach(taskId -> {
@@ -188,6 +221,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Set the due date of a task",
+        nl = "Vervaldatum van een taak instellen"
+    )
     @PostMapping("/v1/task/{taskId}/set-due-date")
     public ResponseEntity<Void> setDueDate(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,
@@ -207,6 +244,10 @@ public class TaskResource extends AbstractTaskResource {
      * @deprecated Task comments will be removed in the future.
      */
     @Deprecated(since = "11.1.0", forRemoval = true)
+    @EndpointDescription(
+        en = "List comments for a task",
+        nl = "Opmerkingen voor een taak ophalen"
+    )
     @GetMapping("/v1/task/{taskId}/comments")
     public ResponseEntity<List<Comment>> getProcessInstanceComments(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId
@@ -219,6 +260,10 @@ public class TaskResource extends AbstractTaskResource {
     }
 
     @Deprecated(since = "10.8.0", forRemoval = true)
+    @EndpointDescription(
+        en = "List candidate users for a task",
+        nl = "Kandidaat-gebruikers voor een taak ophalen"
+    )
     @GetMapping("/v1/task/{taskId}/candidate-user")
     public ResponseEntity<List<ManageableUser>> getTaskCandidateUsers(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId
@@ -227,6 +272,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok(users);
     }
 
+    @EndpointDescription(
+        en = "List candidate users for a task",
+        nl = "Kandidaat-gebruikers voor een taak ophalen"
+    )
     @GetMapping("/v2/task/{taskId}/candidate-user")
     public ResponseEntity<List<NamedUser>> getNamedCandidateUsers(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId
@@ -235,6 +284,10 @@ public class TaskResource extends AbstractTaskResource {
         return ResponseEntity.ok(users);
     }
 
+    @EndpointDescription(
+        en = "List candidate teams for a task",
+        nl = "Kandidaat-teams voor een taak ophalen"
+    )
     @GetMapping("/v1/task/{taskId}/candidate-team")
     public ResponseEntity<Page<TeamDto>> getCandidateTeams(
         @LoggableResource(resourceType = OperatonTask.class) @PathVariable String taskId,

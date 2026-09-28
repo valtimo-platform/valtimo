@@ -22,6 +22,7 @@ import com.ritense.document.domain.DocumentMigrationRequest
 import com.ritense.document.service.DocumentMigrationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -37,6 +38,10 @@ class DocumentMigrationManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get document migration conflicts",
+        nl = "Documentmigratieconflicten ophalen",
+    )
     @PostMapping("/v1/document-definition/migration/conflicts")
     fun getConflicts(
         @Valid @RequestBody documentMigrationRequest: DocumentMigrationRequest,
@@ -46,6 +51,10 @@ class DocumentMigrationManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Migrate documents",
+        nl = "Documenten migreren",
+    )
     @PostMapping("/v1/document-definition/migrate")
     fun migrateDocuments(
         @Valid @RequestBody documentMigrationRequest: DocumentMigrationRequest,

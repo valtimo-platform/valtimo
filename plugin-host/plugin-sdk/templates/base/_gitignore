@@ -1,0 +1,6 @@
+# Dependencies
+node_modules/
+
+# Build output — the Wasm module, the frontend bundles and the packaged .zip
+dist/
+frontend/*.bundle.js

@@ -201,8 +201,8 @@ export class ProcessManagementEditorService implements OnDestroy {
   public updateProcessLink(event: ProcessLinkUpdateEvent): void {
     this.setProcessLinksForSelectedDefinition(
       this.processLinksForSelectedDefinition.map(processLink => {
-        if (processLink.activityId === event.activityId) {
-          return {...processLink, ...(event as any)};
+        if (processLink.id === event.id) {
+          return {...processLink, ...event} as ProcessLink;
         }
 
         return processLink;

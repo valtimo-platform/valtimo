@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.importer.ImportContext
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
@@ -32,7 +33,9 @@ import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byIdIn
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
@@ -58,56 +61,52 @@ open class ProcessLinkImporter(
     override fun import(request: ImportRequest) {
         val processDefinitionKey = getFilenameRegexToImport().matchEntire(request.fileName)!!.groupValues[1]
 
-        withLoggingContext("processDefinitionKey", processDefinitionKey) {
-            val processDefinitionId = AuthorizationContext.runWithoutAuthorization {
-                resolveProcessDefinitionId(request, processDefinitionKey)
+        // Only a case definition gets an end-of-import recheck from afterImport below
+        ProcessLinkImportScope.runDeferringRecheck(request.caseDefinitionId != null) {
+            withLoggingContext("processDefinitionKey", processDefinitionKey) {
+                importProcessLinks(request, processDefinitionKey)
+            }
+        }
+    }
+
+    private fun importProcessLinks(request: ImportRequest, processDefinitionKey: String) {
+        val processDefinitionId = AuthorizationContext.runWithoutAuthorization {
+            resolveProcessDefinitionId(request, processDefinitionKey)
+        }
+
+        val jsonTree = objectMapper.readTree(request.content.toString(Charsets.UTF_8))
+        require(jsonTree is ArrayNode) {
+            "Error while processing file ${request.fileName}. Expected root item to be an array!"
+        }
+
+        jsonTree.forEachIndexed { index, node ->
+            require(node is ObjectNode) {
+                "Error while processing file ${request.fileName}. Expected item at index $index to be an object!"
             }
 
-            val jsonTree = objectMapper.readTree(request.content.toString(Charsets.UTF_8))
-            require(jsonTree is ArrayNode) {
-                "Error while processing file ${request.fileName}. Expected root item to be an array!"
+            if (!node.has("processDefinitionId")) {
+                node.set<ObjectNode>("processDefinitionId", TextNode.valueOf(processDefinitionId))
             }
 
-            jsonTree.forEachIndexed { index, node ->
-                require(node is ObjectNode) {
-                    "Error while processing file ${request.fileName}. Expected item at index $index to be an object!"
-                }
+            val processLinkType = node.path("processLinkType").asText(null)
+                ?: throw IllegalStateException(
+                    "Error while processing file ${request.fileName}. Item at index $index has no 'processLinkType'!"
+                )
+            val mapper = processLinkService.getProcessLinkMapper(processLinkType)
 
-                if (!node.has("processDefinitionId")) {
-                    node.set<ObjectNode>("processDefinitionId", TextNode.valueOf(processDefinitionId))
-                }
+            val mappings = request.pluginConfigurationMappings
+            if (mappings != null) {
+                mapper.applyPluginConfigurationMappings(node, mappings)
+            }
 
-                val mappings = request.pluginConfigurationMappings
-                if (mappings != null && node.has("pluginConfigurationId")) {
-                    val originalIdText = node.get("pluginConfigurationId").asText(null)
-                    if (originalIdText != null) {
-                        val originalId = try {
-                            java.util.UUID.fromString(originalIdText)
-                        } catch (_: IllegalArgumentException) {
-                            null
-                        }
-                        if (originalId != null && mappings.containsKey(originalId)) {
-                            val mappedId = mappings[originalId]
-                            if (mappedId != null) {
-                                node.set<ObjectNode>("pluginConfigurationId", TextNode.valueOf(mappedId.toString()))
-                            } else {
-                                node.putNull("pluginConfigurationId")
-                            }
-                        }
-                    }
-                }
+            val deployDto = objectMapper.treeToValue<ProcessLinkDeployDto>(node)
+            val createDto = mapper.toProcessLinkCreateRequestDto(deployDto, request.caseDefinitionId)
 
-                val deployDto = objectMapper.treeToValue<ProcessLinkDeployDto>(node)
-
-                val mapper = processLinkService.getProcessLinkMapper(deployDto.processLinkType)
-                val createDto = mapper.toProcessLinkCreateRequestDto(deployDto, request.caseDefinitionId)
-
-                try {
-                    processLinkService.createProcessLink(createDto, request.caseDefinitionId)
-                } catch (e: ProcessLinkExistsException) {
-                    val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId, request.caseDefinitionId)
-                    processLinkService.updateProcessLink(updateDto, request.caseDefinitionId)
-                }
+            try {
+                processLinkService.createProcessLink(createDto, request.caseDefinitionId)
+            } catch (e: ProcessLinkExistsException) {
+                val updateDto = mapper.toProcessLinkUpdateRequestDto(deployDto, e.existingProcessLinkId, request.caseDefinitionId)
+                processLinkService.updateProcessLink(updateDto, request.caseDefinitionId)
             }
         }
     }
@@ -130,9 +129,9 @@ open class ProcessLinkImporter(
             )
         }
 
-        val candidates: List<OperatonProcessDefinition> = caseLinks
-            .mapNotNull { repositoryService.findProcessDefinitionById(it.id.processDefinitionId.id) }
-            .filter { it.key == processDefinitionKey }
+        val candidates: List<OperatonProcessDefinition> = findDeployedProcessDefinitions(
+            caseLinks.map { it.id.processDefinitionId.id }
+        ).filter { it.key == processDefinitionKey }
 
         val latestCandidate = candidates.maxByOrNull { it.version }
             ?: throw IllegalStateException(
@@ -144,11 +143,18 @@ open class ProcessLinkImporter(
 
     override fun afterImport(request: ImportRequest) {
         val caseDefinitionId = request.caseDefinitionId ?: return
+
+        // Called per file; the work below is case-definition-wide
+        if (!ImportContext.claimOncePerRun(AfterImportClaim(type(), caseDefinitionId))) {
+            return
+        }
+
         val processDefinitionIds = AuthorizationContext.runWithoutAuthorization {
-            processDefinitionCaseDefinitionService
-                .findProcessDefinitionCaseDefinitions(caseDefinitionId)
-                .mapNotNull { repositoryService.findProcessDefinitionById(it.id.processDefinitionId.id)?.id }
-                .toSet()
+            findDeployedProcessDefinitions(
+                processDefinitionCaseDefinitionService
+                    .findProcessDefinitionCaseDefinitions(caseDefinitionId)
+                    .map { it.id.processDefinitionId.id }
+            ).map { it.id }.toSet()
         }
         processLinkMappers.forEach { mapper ->
             mapper.afterImport(caseDefinitionId, processDefinitionIds, applicationEventPublisher)
@@ -156,6 +162,19 @@ open class ProcessLinkImporter(
     }
 
     protected fun getFilenameRegexToImport(): Regex = FILENAME_REGEX
+
+    /** The ones Operaton still knows about, in one query. */
+    private fun findDeployedProcessDefinitions(
+        processDefinitionIds: Collection<String>
+    ): List<OperatonProcessDefinition> {
+        if (processDefinitionIds.isEmpty()) {
+            return emptyList()
+        }
+        return repositoryService.findProcessDefinitions(byIdIn(processDefinitionIds))
+    }
+
+    // Importer type is part of the key so a subclass registered alongside this one claims separately
+    private data class AfterImportClaim(val importerType: String, val caseDefinitionId: CaseDefinitionId)
 
     private companion object {
         val FILENAME_REGEX = """/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()

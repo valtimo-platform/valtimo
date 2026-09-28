@@ -19,6 +19,7 @@ enum ApiTabType {
   FORMIO = 'formio',
   CUSTOM = 'custom',
   WIDGETS = 'widgets',
+  EXTERNAL_PLUGIN = 'external_plugin',
   MAP = 'map',
 }
 

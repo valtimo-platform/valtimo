@@ -1,0 +1,24 @@
+# Shared build context for app/Dockerfile (the plugin host) and sample-apps/demo-app/Dockerfile.
+# Everything either image needs is compiled inside its builder stage, so local build output and
+# installed dependencies are deliberately excluded: that is what makes `docker build` work from a
+# clean checkout, and what proves it does not silently reuse a stale local `dist/`.
+**/node_modules
+**/dist
+**/.tmp
+**/coverage
+sample-apps/demo-app/public
+
+# Host runtime state — never part of an image.
+app/plugins
+app/preinstalled
+
+# Sample plugin sources are never copied into either image (the released host ships no plugins);
+# excluded here only to keep the context small. sample-apps/ stays, because the demo app builds
+# from it.
+sample-plugins
+test-fixtures
+
+docs
+**/*.md
+.git
+.gitignore

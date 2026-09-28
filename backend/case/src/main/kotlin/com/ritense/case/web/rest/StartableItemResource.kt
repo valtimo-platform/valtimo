@@ -20,6 +20,7 @@ import com.ritense.case.service.StartableItemService
 import com.ritense.case.web.rest.dto.StartableItemDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import java.util.UUID
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,6 +35,10 @@ class StartableItemResource(
     private val startableItemService: StartableItemService,
 ) {
 
+    @EndpointDescription(
+        en = "List startable items",
+        nl = "Startbare items ophalen",
+    )
     @GetMapping("/startable-item")
     fun getStartableItems(
         @RequestParam(required = false) caseDocumentId: UUID?,

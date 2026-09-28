@@ -16,5 +16,6 @@
 
 export * from './accent-colors.model';
 export * from './feature-toggle.model';
+export * from './menu-configuration.model';
 export * from './reindex.model';
 export * from './search-engine.model';

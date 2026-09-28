@@ -40,6 +40,12 @@ export * from './lib/components/menu/menu-routing.module';
 export * from './lib/components/menu/menu.module';
 export * from './lib/components/menu/menu.init';
 export * from './lib/components/menu/menu-item-text.component';
+export * from './lib/components/menu/menu-configuration.model';
+export * from './lib/components/menu/menu-item-catalog';
+export * from './lib/components/menu/menu-configuration.resolver';
+export * from './lib/components/menu/menu-configuration.seed';
+
+export * from './lib/components/drag-drop-list/drag-drop-list.component';
 
 export * from './lib/components/right-sidebar/right-sidebar.component';
 export * from './lib/components/right-sidebar/right-sidebar.module';

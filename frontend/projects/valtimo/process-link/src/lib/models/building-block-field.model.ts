@@ -41,10 +41,21 @@ type OutputsFormGroup = FormGroup<{
   outputs: FormArray<OutputRowFormGroup>;
 }>;
 
+type ResultMappingRowFormGroup = FormGroup<{
+  source: FormControl<string>;
+  target: FormControl<string>;
+}>;
+
+type ResultMappingsFormGroup = FormGroup<{
+  mappings: FormArray<ResultMappingRowFormGroup>;
+}>;
+
 export {
   BuildingBlockField,
   InputsFormGroup,
   OutputsFormGroup,
   InputRowFormGroup,
   OutputRowFormGroup,
+  ResultMappingRowFormGroup,
+  ResultMappingsFormGroup,
 };
