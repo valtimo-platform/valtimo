@@ -75,6 +75,9 @@ data class CaseDefinition(
     val originalName: String? = null,
     @Column(name = "original_version_tag", nullable = true)
     val originalVersionTag: String? = null,
+
+    @Column(name = "color")
+    val color: String? = null,
 ) {
     init {
         require(

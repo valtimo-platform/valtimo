@@ -46,6 +46,8 @@ data class CaseDefinitionResponseDto(
     val originalKey: String? = null,
     val originalName: String? = null,
     val originalVersionTag: String? = null,
+
+    val color: String? = null,
 ) {
     companion object {
         fun of(caseDefinition: CaseDefinition, hasConfigurationIssues: Boolean = false) =
@@ -69,6 +71,7 @@ data class CaseDefinitionResponseDto(
                 originalKey = caseDefinition.originalKey,
                 originalName = caseDefinition.originalName,
                 originalVersionTag = caseDefinition.originalVersionTag,
+                color = caseDefinition.color,
             )
 
     fun of(caseDefinition: CaseDefinition, conflictingVersions: String?) =
@@ -93,6 +96,7 @@ data class CaseDefinitionResponseDto(
             originalKey = caseDefinition.originalKey,
             originalName = caseDefinition.originalName,
             originalVersionTag = caseDefinition.originalVersionTag,
+            color = caseDefinition.color,
         )
     }
 }
