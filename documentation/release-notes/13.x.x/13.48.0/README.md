@@ -24,4 +24,4 @@ Widget tabs with multiple widgets now load faster.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Plugins | Settings left over from an older version of a plugin no longer fill the log with errors every time a case is opened |
