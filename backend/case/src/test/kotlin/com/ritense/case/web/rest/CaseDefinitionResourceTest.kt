@@ -142,11 +142,13 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should update case settings`() {
         val caseDefinition = caseDefinition(
             canHaveAssignee = true,
-            autoAssignTasks = false
+            autoAssignTasks = false,
+            color = "#FF5733"
         )
         val caseSettingsDto = CaseSettingsDto(
             canHaveAssignee = false,
-            autoAssignTasks = false
+            autoAssignTasks = false,
+            color = "#FF5733"
         )
 
         whenever(service.updateCaseSettings(caseDefinition.id, caseSettingsDto))
@@ -171,6 +173,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(jsonPath(AUTO_ASSIGN_TASKS).value(false))
             .andExpect(jsonPath(HAS_EXTERNAL_CREATE_FORM).value(false))
             .andExpect(jsonPath(EXTERNAL_START_FORM_URL, nullValue()))
+            .andExpect(jsonPath("$.color").value("#FF5733"))
 
         verify(service).updateCaseSettings(caseDefinition.id, caseSettingsDto)
     }
@@ -243,7 +246,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     @Test
     fun `should get case definition`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(caseDefinitionId)
+        val caseDefinition = caseDefinition(caseDefinitionId, color = "#FF5733")
         whenever(service.getCaseDefinition(eq(caseDefinitionId))).thenReturn(caseDefinition)
 
         mockMvc.perform(
@@ -265,18 +268,20 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(jsonPath("$.final").value(caseDefinition.final))
             .andExpect(jsonPath("$.canHaveAssignee").value(caseDefinition.canHaveAssignee))
             .andExpect(jsonPath("$.autoAssignTasks").value(caseDefinition.autoAssignTasks))
+            .andExpect(jsonPath("$.color").value("#FF5733"))
     }
 
     @Test
     fun `should create case definition draft`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(caseDefinitionId)
+        val caseDefinition = caseDefinition(caseDefinitionId, color = "#FF5733")
         val request = CaseDefinitionDraftCreateRequest(
             caseDefinitionKey = caseDefinition.id.key,
             caseDefinitionVersion = caseDefinition.id.versionTag.toString(),
             name = "name",
             description = "description",
-            basedOnCaseDefinitionVersion = "1.0.0-SNAPSHOT"
+            basedOnCaseDefinitionVersion = "1.0.0-SNAPSHOT",
+            color = "#FF5733"
         )
         whenever(service.createCaseDefinitionDraft(eq(request))).thenReturn(caseDefinition)
 
@@ -300,6 +305,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(jsonPath("$.final").value(caseDefinition.final))
             .andExpect(jsonPath("$.canHaveAssignee").value(caseDefinition.canHaveAssignee))
             .andExpect(jsonPath("$.autoAssignTasks").value(caseDefinition.autoAssignTasks))
+            .andExpect(jsonPath("$.color").value("#FF5733"))
     }
 
     @Test
@@ -453,7 +459,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             description = "description",
         )
         val caseDefinition = caseDefinition()
-        whenever(service.updateCaseDefinition(caseDefinition.id, request.name, request.description))
+        whenever(service.updateCaseDefinition(caseDefinition.id, request.name, request.description, request.color))
             .thenReturn(caseDefinition)
 
         mockMvc.perform(

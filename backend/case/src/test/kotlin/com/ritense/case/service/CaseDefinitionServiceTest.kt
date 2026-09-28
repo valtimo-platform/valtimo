@@ -665,12 +665,13 @@ class CaseDefinitionServiceTest : BaseTest() {
 
     @Test
     fun `should create case definition draft with the name from the request`() {
-        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"), name = "Layout Test")
+        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"), name = "Layout Test", color = "#FF5733")
         val request = CaseDefinitionDraftCreateRequest(
             caseDefinitionKey = "key",
             caseDefinitionVersion = "2.0.0",
             name = "Layout Test - EDIT",
-            basedOnCaseDefinitionVersion = "1.0.0"
+            basedOnCaseDefinitionVersion = "1.0.0",
+            color = "#00FF00"
         )
 
         whenever(caseDefinitionRepository.findById(basedOnCaseDefinition.id))
@@ -681,12 +682,13 @@ class CaseDefinitionServiceTest : BaseTest() {
 
         assertEquals("Layout Test - EDIT", draft.name)
         assertEquals(basedOnCaseDefinition.description, draft.description)
+        assertEquals("#00FF00", draft.color)
         assertFalse(draft.final)
     }
 
     @Test
     fun `should create case definition draft when the based on version has unresolved configuration issues`() {
-        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"))
+        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"), color = "#FF5733")
         val request = CaseDefinitionDraftCreateRequest(
             caseDefinitionKey = "key",
             caseDefinitionVersion = "2.0.0",
@@ -715,7 +717,7 @@ class CaseDefinitionServiceTest : BaseTest() {
 
     @Test
     fun `should create case definition draft with the name of the based on version when no name is requested`() {
-        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"), name = "Layout Test")
+        val basedOnCaseDefinition = caseDefinition(id = CaseDefinitionId.of("key", "1.0.0"), name = "Layout Test", color = "#FF5733")
         val request = CaseDefinitionDraftCreateRequest(
             caseDefinitionKey = "key",
             caseDefinitionVersion = "2.0.0",
@@ -730,6 +732,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val draft = service.createCaseDefinitionDraft(request)
 
         assertEquals("Layout Test", draft.name)
+        assertEquals("#FF5733", draft.color)
     }
 
     private fun getListColumnDtoLastName(displayType: DisplayType): CaseListColumnDto {

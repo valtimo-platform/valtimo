@@ -142,7 +142,8 @@ class CaseDefinitionResource(
         val caseDefinition = service.updateCaseDefinition(
             CaseDefinitionId.of(caseDefinitionKey, versionTag),
             request.name,
-            request.description
+            request.description,
+            request.color
         )
         return ResponseEntity.ok(CaseDefinitionResponseDto.of(caseDefinition))
     }
