@@ -235,7 +235,7 @@
     "@floating-ui/dom": "1.7.4",
     "@formio/angular": "11.0.6",
     "@formio/bootstrap": "4.0.5",
-    "@formio/js": "5.6.0",
+    "@formio/js": "5.6.1",
     "@foxythemes/bootstrap-datetime-picker-bs4": "2.3.5",
     "@mdi/font": "7.4.47",
     "@ng-bootstrap/ng-bootstrap": "11.0.1",
