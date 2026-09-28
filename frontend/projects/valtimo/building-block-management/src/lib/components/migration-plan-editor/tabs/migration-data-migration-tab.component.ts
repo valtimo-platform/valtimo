@@ -40,11 +40,9 @@ import {
   DataMigrationPatch,
   DataMigrationTargetType,
   MigrationEditorTestIds,
+  PatchMode,
   ValuePathContext,
 } from '../../../models';
-
-/** How the left ("from") side of a patch is filled: copy a field, set a literal, or set null. */
-type PatchMode = 'path' | 'value' | 'null';
 
 /** The `dataMigration` component of a plan, for either blueprint type — which document each path resolves against is [sourceContext] / [targetContext]'s business, set by the host. */
 @Component({

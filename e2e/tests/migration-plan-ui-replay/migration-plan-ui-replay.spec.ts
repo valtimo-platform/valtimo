@@ -17,7 +17,8 @@
 import {test, type BrowserContext, type Page} from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
-import {AuditEntry, PlanEditorPage, PlanTarget} from './plan-editor.page';
+import {PlanEditorPage} from './plan-editor.page';
+import {Fixture, PlanResult} from './migration-plan-ui-replay.types';
 
 /** Rebuilds every dev fixture through the editor, each value from the control that owns it, so what the editor cannot offer is reported rather than guessed. Opt-in: rewrites fixture data, minutes per plan. */
 const ENABLED = !!process.env.MIGRATION_UI_REPLAY;
@@ -25,11 +26,6 @@ const ONLY = process.env.MIGRATION_UI_REPLAY_ONLY;
 
 const CONFIG_ROOT = path.resolve(__dirname, '../../../backend/apps/dev/src/main/resources/config');
 const REPORT = path.resolve(__dirname, '../../playwright/migration-ui-replay-report.json');
-
-interface Fixture extends PlanTarget {
-  label: string;
-  plan: Record<string, any>;
-}
 
 function collectFixtures(): Fixture[] {
   const fixtures: Fixture[] = [];
@@ -65,16 +61,6 @@ function collectFixtures(): Fixture[] {
     }
   }
   return fixtures.sort((a, b) => a.label.localeCompare(b.label));
-}
-
-interface PlanResult {
-  plan: string;
-  saved: boolean;
-  reason?: string;
-  differences: string[];
-  audit: AuditEntry[];
-  /** Set when the fixture could not be put back — a plan the save path refuses needs a redeploy. */
-  restoreFailed?: string;
 }
 
 test.describe('Migration plan editor — fixture replay audit', () => {

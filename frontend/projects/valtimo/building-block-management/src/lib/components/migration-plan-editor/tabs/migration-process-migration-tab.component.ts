@@ -50,26 +50,15 @@ import {forkJoin, of, Subscription} from 'rxjs';
 import {catchError, debounceTime} from 'rxjs/operators';
 import {
   DataMigrationTargetType,
+  FlowNodeOption,
+  InstructionActivities,
   MigrationEditorApi,
   MigrationEditorTestIds,
+  PatchMode,
   ProcessMigrationInstruction,
   ProcessVariablePatch,
   ValuePathContext,
 } from '../../../models';
-
-/** How the left ("from") side of a variable patch is filled: copy a field, set a literal, or null. */
-type PatchMode = 'path' | 'value' | 'null';
-
-interface FlowNodeOption {
-  id: string;
-  label: string;
-}
-
-interface InstructionActivities {
-  sourceNodes: FlowNodeOption[];
-  targetNodes: FlowNodeOption[];
-  loading: boolean;
-}
 
 /** The `processMigration` component of a plan, for either blueprint type — the blueprint reaches it only through [api] and the two process maps. */
 @Component({

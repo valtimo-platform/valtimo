@@ -81,6 +81,22 @@ interface ProcessVariablePatch {
   targetType?: DataMigrationTargetType | null;
 }
 
+/** How the left ("from") side of a data or variable patch is filled: copy a field, set a literal, or null. */
+type PatchMode = 'path' | 'value' | 'null';
+
+/** One activity of a deployed process, as the activity-mapping pickers list it. */
+interface FlowNodeOption {
+  id: string;
+  label: string;
+}
+
+/** The activities both sides of one `processMigration` instruction offer, and whether they are still loading. */
+interface InstructionActivities {
+  sourceNodes: FlowNodeOption[];
+  targetNodes: FlowNodeOption[];
+  loading: boolean;
+}
+
 /** A single instruction of the `processMigration` block, translated 1:1 into an Operaton MigrationPlan. */
 interface ProcessMigrationInstruction {
   sourceProcessDefinitionKey: string;
@@ -132,6 +148,13 @@ type BuildingBlockMode = 'add' | 'remove';
 interface MigrationPlanSource {
   key?: string;
   versionTag?: string;
+}
+
+/** The half of a plan's General tab every plan has, as the shared fields component emits it. */
+interface GeneralFieldsValue {
+  title: string;
+  key: string;
+  source: MigrationPlanSource;
 }
 
 /** The editable plan, matching the auto-deploy `*-migration.json` shape. The target is the version the plan is deployed under; triggers and conditions are case-only. */
@@ -199,6 +222,9 @@ export {
   BuildingBlockMode,
   DataMigrationPatch,
   DataMigrationTargetType,
+  FlowNodeOption,
+  GeneralFieldsValue,
+  InstructionActivities,
   LinkedBuildingBlock,
   MigrationEditorApi,
   MigrationEditorTestIds,
@@ -207,6 +233,7 @@ export {
   MigrationPlan,
   MigrationPlanManagement,
   MigrationPlanSource,
+  PatchMode,
   ProcessMigrationInstruction,
   ProcessVariablePatch,
   RemoveBuildingBlockInstruction,

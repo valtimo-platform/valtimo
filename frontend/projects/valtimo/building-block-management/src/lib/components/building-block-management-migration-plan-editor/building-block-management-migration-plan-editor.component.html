@@ -60,7 +60,6 @@
       ></valtimo-migration-data-migration-tab>
     </cds-tab>
 
-    <!-- A template rather than a string so the heading can carry the warning: a blank target blocks Save from another tab, and the tab strip is the only place that can point at it. -->
     <ng-template #processMigrationHeading>
       {{ 'migrationEditor.tabs.processMigration' | translate }}
       @if ($unmappedProcesses().length) {

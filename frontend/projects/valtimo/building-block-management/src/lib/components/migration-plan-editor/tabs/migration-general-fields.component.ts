@@ -35,13 +35,7 @@ import {
 } from '@valtimo/components';
 import {ModalMode} from '@valtimo/shared';
 import {Subscription} from 'rxjs';
-import {MigrationEditorTestIds, MigrationPlanSource} from '../../../models';
-
-interface GeneralFieldsValue {
-  title: string;
-  key: string;
-  source: MigrationPlanSource;
-}
+import {GeneralFieldsValue, MigrationEditorTestIds} from '../../../models';
 
 /** The half of a plan's General tab every plan has — title, generated key and source. What each blueprint type adds is projected in, so the building block editor carries no controls for fields its plans may not declare. */
 @Component({
@@ -246,5 +240,3 @@ export class MigrationGeneralFieldsComponent implements OnInit, OnDestroy {
     this.suggestTitle();
   }
 }
-
-export {GeneralFieldsValue};

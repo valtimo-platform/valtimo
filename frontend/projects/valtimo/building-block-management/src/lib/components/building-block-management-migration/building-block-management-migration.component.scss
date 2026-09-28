@@ -30,7 +30,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-// The migration details/status live in a modal opened from a list-row click; these style its sections.
 .migration-detail {
   &__config {
     display: flex;
