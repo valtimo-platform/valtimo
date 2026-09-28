@@ -34,6 +34,7 @@ import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupQuickSearchRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
+import com.ritense.case.repository.PinnedItemRepository
 import com.ritense.case.repository.QuickSearchRepository
 import com.ritense.case.repository.StartableItemRepository
 import com.ritense.case.repository.HiddenTaskListColumnRepository
@@ -44,6 +45,7 @@ import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.case.service.CaseDefinitionGroupService
 import com.ritense.case.service.GroupCaseInstanceService
+import com.ritense.case.service.PinnedItemService
 import com.ritense.case.service.CaseDefinitionImportPreviewService
 import com.ritense.case.service.CaseDefinitionImporter
 import com.ritense.case.service.CaseDefinitionService
@@ -67,6 +69,7 @@ import com.ritense.case.service.TaskColumnService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.case.web.rest.CaseDefinitionGroupManagementResource
 import com.ritense.case.web.rest.CaseDefinitionGroupResource
+import com.ritense.case.web.rest.PinnedItemResource
 import com.ritense.case.web.rest.CaseDefinitionResource
 import com.ritense.case.web.rest.CaseInstanceResource
 import com.ritense.case.web.rest.CaseTabManagementResource
@@ -121,6 +124,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
         GroupListColumnPathMappingRepository::class,
         GroupSearchFieldRepository::class,
         GroupSearchFieldPathMappingRepository::class,
+        PinnedItemRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case.domain", "com.ritense.case.domain.group"])
@@ -628,5 +632,29 @@ class CaseAutoConfiguration {
         caseDefinitionService: CaseDefinitionService
     ): CaseDefinitionGroupResource {
         return CaseDefinitionGroupResource(groupCaseInstanceService, caseDefinitionService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PinnedItemService::class)
+    fun pinnedItemService(
+        pinnedItemRepository: PinnedItemRepository,
+        caseDefinitionService: CaseDefinitionService,
+        groupRepository: CaseDefinitionGroupRepository,
+        authorizationService: AuthorizationService
+    ): PinnedItemService {
+        return PinnedItemService(
+            pinnedItemRepository,
+            caseDefinitionService,
+            groupRepository,
+            authorizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PinnedItemResource::class)
+    fun pinnedItemResource(
+        pinnedItemService: PinnedItemService
+    ): PinnedItemResource {
+        return PinnedItemResource(pinnedItemService)
     }
 }

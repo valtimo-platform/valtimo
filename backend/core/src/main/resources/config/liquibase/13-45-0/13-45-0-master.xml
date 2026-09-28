@@ -20,4 +20,5 @@
     <include file="config/liquibase/13-45-0/20260901-add-case-definition-group-tables.xml"/>
     <include file="config/liquibase/13-45-0/20260915-add-color-to-case-definition-group.xml"/>
     <include file="config/liquibase/13-45-0/20260928-add-color-to-case-definition.xml"/>
+    <include file="config/liquibase/13-45-0/20260928-create-pinned-item-table.xml"/>
 </databaseChangeLog>
