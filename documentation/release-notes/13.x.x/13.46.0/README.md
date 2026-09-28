@@ -4,14 +4,6 @@ Release date: 16-09-2026
 
 ---
 
-## New Features
-
-### New feature title
-
-New feature explanation.
-
----
-
 ## Enhancements
 
 ### Suggested keys for list columns and search fields

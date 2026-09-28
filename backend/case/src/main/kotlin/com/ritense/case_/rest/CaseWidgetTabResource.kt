@@ -22,6 +22,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId.existingId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
+import com.ritense.widget.web.rest.dto.WidgetDataEnvelope
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
@@ -29,13 +30,14 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import java.util.UUID
 
 @Controller
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseWidgetTabResource(
-    private val caseWidgetService: CaseWidgetService
+    private val caseWidgetService: CaseWidgetService,
 ) {
 
     @EndpointDescription(
@@ -47,8 +49,13 @@ class CaseWidgetTabResource(
         @PathVariable documentId: String,
         @PathVariable tabKey: String
     ): ResponseEntity<CaseWidgetTabDto> {
-        val widgetTab = caseWidgetService.getWidgetTab(existingId(UUID.fromString(documentId)), tabKey)
-        return ResponseEntity.ofNullable(widgetTab)
+        val id = UUID.fromString(documentId)
+        val widgetTab = caseWidgetService.getWidgetTab(existingId(id), tabKey)
+            ?: return ResponseEntity.notFound().build()
+        val groupIds = caseWidgetService.dataGroupIds(id, tabKey)
+        widgetTab.widgets.forEach { widget -> widget.dataGroupId = groupIds[widget.key] }
+
+        return ResponseEntity.ok(widgetTab)
     }
 
     @EndpointDescription(
@@ -64,5 +71,22 @@ class CaseWidgetTabResource(
     ): ResponseEntity<Any> {
         val data = caseWidgetService.getCaseWidgetData(documentId, tabKey, widgetKey, pageable)
         return ResponseEntity.ofNullable(data)
+    }
+
+    // Not '.../widget/data': the per-widget path ends in {widgetKey}, so a widget keyed 'data' would claim it.
+    @EndpointDescription(
+        en = "Get grouped case widget data",
+        nl = "Gegroepeerde dossierwidgetgegevens ophalen",
+    )
+    @GetMapping("/v1/document/{documentId}/widget-tab/{tabKey}/data")
+    fun getCaseWidgetDataGroup(
+        @PathVariable documentId: UUID,
+        @PathVariable tabKey: String,
+        @RequestParam group: String,
+        @PageableDefault(size = 5) pageable: Pageable
+    ): ResponseEntity<Map<String, WidgetDataEnvelope>> {
+        return ResponseEntity.ofNullable(
+            caseWidgetService.getCaseWidgetDataGroup(documentId, tabKey, group, pageable)
+        )
     }
 }

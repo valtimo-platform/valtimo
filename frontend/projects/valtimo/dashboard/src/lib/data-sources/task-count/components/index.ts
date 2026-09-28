@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+export * from './task-count-condition-group';
 export * from './task-count-configuration';
