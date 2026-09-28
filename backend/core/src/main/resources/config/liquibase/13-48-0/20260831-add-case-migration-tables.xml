@@ -22,7 +22,7 @@
     logicalFilePath="config/liquibase/changelog/20260831-add-case-migration-tables.xml">
 
     <!--
-        The whole schema for case and building-block migration, in one file for the 13.45.0 release.
+        The whole schema for case and building-block migration, in one file for the 13.48.0 release.
 
         A migration plan migrates the instances of a blueprint (a case definition version or a
         building block definition version) from a declared source version onto the version the plan
