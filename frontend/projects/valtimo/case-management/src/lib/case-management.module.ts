@@ -101,6 +101,7 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
 import {CaseManagementActionsComponent} from './components/case-management-detail/tabs/case-management-actions/case-management-actions.component';
 import {CaseManagementHeaderComponent} from './components/case-management-detail/tabs/case-management-header/case-management-header.component';
 import {CaseManagementMissingPluginConfigurationsComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-missing-plugin-configurations/case-management-missing-plugin-configurations.component';
+import {CaseManagementColorComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-color/case-management-color.component';
 import {CaseDefinitionGroupListComponent} from './components/case-definition-group-list/case-definition-group-list.component';
 
 @NgModule({
@@ -193,6 +194,7 @@ import {CaseDefinitionGroupListComponent} from './components/case-definition-gro
     CaseManagementHeaderComponent,
     AutoKeyInputComponent,
     CaseManagementMissingPluginConfigurationsComponent,
+    CaseManagementColorComponent,
     CaseDefinitionGroupListComponent,
   ],
   providers: [TabManagementService],

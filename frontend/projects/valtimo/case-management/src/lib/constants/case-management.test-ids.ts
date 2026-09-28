@@ -120,3 +120,10 @@ export const CASE_MANAGEMENT_TAGS_TEST_IDS = {
 export const CASE_MANAGEMENT_DOCUMENT_TEST_IDS = {
   downloadButton: 'caseManagementDocumentDownloadButton',
 } as const;
+
+export const CASE_MANAGEMENT_COLOR_TEST_IDS = {
+  panel: 'caseColorPanel',
+  previewCircle: 'caseColorPreview',
+  swatch: 'caseColorSwatch',
+  customPicker: 'caseColorCustomPicker',
+} as const;

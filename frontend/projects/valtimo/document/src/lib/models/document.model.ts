@@ -336,6 +336,7 @@ interface CaseSettings extends ExternalStartFormConfiguration {
   caseDefinitionVersionTag?: string;
   canHaveAssignee?: boolean;
   autoAssignTasks?: boolean;
+  color?: string;
 }
 
 interface OpenDocumentCount {

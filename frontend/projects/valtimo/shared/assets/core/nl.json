@@ -1080,6 +1080,12 @@
           "assignUser": "Gebruikerstaken automatisch toewijzen aan dossierbehandelaar",
           "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de dossierbehandelaar kan alleen worden ingeschakeld als de dossier zelf een behandelaar kan hebben.",
           "toggle": {"onText": "Ja", "offText": "Nee"}
+        },
+        "color": {
+          "title": "Zaakkleur",
+          "description": "Kies een weergavekleur voor deze zaakdefinitie",
+          "selected": "Geselecteerd",
+          "customColorLabel": "Aangepaste kleur:"
         }
       },
       "caseListTab": {
