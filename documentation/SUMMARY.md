@@ -64,7 +64,8 @@
         * [In cases and processes](configuration-guides/plugins/external-plugins/external-plugins-in-cases-and-processes.md)
         * [Troubleshooting](configuration-guides/plugins/external-plugins/troubleshooting.md)
     * [Verzoek](configuration-guides/plugins/verzoek.md)
-* 📊 Dashboard
+* [📊 Dashboard](configuration-guides/dashboard/README.md)
+    * [Widgets](configuration-guides/dashboard/widgets.md)
 * [🔏 Access control](configuration-guides/access-control/README.md)
     * [Configurable elements](configuration-guides/access-control/configurable-elements.md)
     * [Roles](configuration-guides/access-control/roles.md)
@@ -75,12 +76,18 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
+  * [13.48.0](release-notes/13.x.x/13.48.0/README.md)
+  * [13.47.1](release-notes/13.x.x/13.47.1/README.md)
   * [13.47.0](release-notes/13.x.x/13.47.0/README.md)
   * [13.46.0](release-notes/13.x.x/13.46.0/README.md)
   * [13.45.1](release-notes/13.x.x/13.45.1/README.md)
   * [13.45.0](release-notes/13.x.x/13.45.0/README.md)
   * [13.44.0](release-notes/13.x.x/13.44.0/README.md)
   * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
+
+## Advanced
+
+* [Dashboard widget data sources](advanced/dashboard-widget-data-sources.md)
 
 ## Support
 

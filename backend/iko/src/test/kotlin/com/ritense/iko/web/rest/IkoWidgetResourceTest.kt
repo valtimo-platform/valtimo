@@ -23,7 +23,9 @@ import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetDto
 import com.ritense.widget.fields.FieldsWidgetProperties
+import com.ritense.widget.web.rest.dto.WidgetDataEnvelope
 import jakarta.validation.Validator
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -96,6 +98,76 @@ internal class IkoWidgetResourceTest {
             .andExpect(jsonPath("$[0].properties.columns[0][0].key").value("naam"))
             .andExpect(jsonPath("$[0].properties.columns[0][0].title").value("Naam"))
             .andExpect(jsonPath("$[0].properties.columns[0][0].value").value("iko:/persoon/naam/volledigeNaam"))
+    }
+
+    @Test
+    fun `should get iko widgets with their data group id`() {
+        whenever(service.findAllByTabKeyFilteredByDisplayConditions("klant", "general")).thenReturn(
+            listOf(widget())
+        )
+        whenever(service.dataGroupIds(eq("klant"), eq("general"), any()))
+            .thenReturn(mapOf("partner" to "abcdef0123456789"))
+
+        mockMvc.perform(
+            get(
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget",
+                "klant",
+                "general"
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].key").value("partner"))
+            .andExpect(jsonPath("$[0].dataGroupId").value("abcdef0123456789"))
+    }
+
+    // The exporter serializes this same DTO without setting the field
+    @Test
+    fun `should leave dataGroupId out of a widget DTO that was not enriched`() {
+        val json = objectMapper.writeValueAsString(widget().toDto())
+
+        assertThat(json).doesNotContain("dataGroupId")
+    }
+
+    @Test
+    fun `should get iko widget data for a group`() {
+        whenever(service.getWidgetDataGroup(eq("klant"), eq("general"), eq("group1"), any()))
+            .thenReturn(
+                mapOf(
+                    "klant" to WidgetDataEnvelope.of(mapOf("bsn" to "000000000")),
+                    "verblijfplaats" to WidgetDataEnvelope.failed(),
+                )
+            )
+
+        mockMvc.perform(
+            get(
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/data?group=group1&id=999990123",
+                "klant",
+                "general"
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.klant.data.bsn").value("000000000"))
+            .andExpect(jsonPath("$.klant.error").doesNotExist())
+            .andExpect(jsonPath("$.verblijfplaats.error.code").value("UPSTREAM_UNAVAILABLE"))
+            .andExpect(jsonPath("$.verblijfplaats.data").doesNotExist())
+    }
+
+    @Test
+    fun `should return 404 for an unknown data group`() {
+        whenever(service.getWidgetDataGroup(eq("klant"), eq("general"), eq("unknown"), any()))
+            .thenReturn(null)
+
+        mockMvc.perform(
+            get(
+                "/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/data?group=unknown",
+                "klant",
+                "general"
+            )
+        )
+            .andDo(print())
+            .andExpect(status().isNotFound())
     }
 
     @Test
