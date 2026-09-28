@@ -348,6 +348,7 @@ export interface ManagementStartableItemDto {
     versionTag: string | null;
     processDefinitionId: string | null;
     sortOrder: number | null;
+    startableByUser: boolean;
 }
 
 export interface PluginConfigurationPreviewDto {
@@ -366,6 +367,7 @@ export interface StartableItemDto {
     versionTag: string | null;
     processDefinitionId: string | null;
     draft: boolean;
+    startableByUser: boolean;
 }
 
 export interface StartableItemOrderEntry {

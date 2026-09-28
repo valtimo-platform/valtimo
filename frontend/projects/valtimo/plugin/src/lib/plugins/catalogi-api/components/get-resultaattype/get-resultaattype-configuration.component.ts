@@ -23,7 +23,6 @@ import {GetResultaattypeConfig} from '../../models';
   standalone: false,
   selector: 'valtimo-set-resultaattype-configuration',
   templateUrl: './get-resultaattype-configuration.component.html',
-  styleUrls: ['./get-resultaattype-configuration.component.scss'],
 })
 export class GetResultaattypeConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

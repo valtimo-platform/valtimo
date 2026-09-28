@@ -23,6 +23,7 @@ import com.ritense.plugin.web.rest.result.PluginActionDefinitionDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,6 +38,10 @@ class PluginDefinitionResource(
     private var pluginService: PluginService
 ) {
 
+    @EndpointDescription(
+        en = "List plugin definitions",
+        nl = "Plugindefinities ophalen",
+    )
     @GetMapping("/v1/plugin/definition")
     fun getPluginDefinitions(
         @RequestParam(value = "activityType", required = false) activityType: ActivityTypeWithEventName?
@@ -44,6 +49,10 @@ class PluginDefinitionResource(
         return ResponseEntity.ok(pluginService.getPluginDefinitions(activityType))
     }
 
+    @EndpointDescription(
+        en = "List plugin definition actions by key",
+        nl = "Plugindefinitie-acties ophalen op sleutel",
+    )
     @GetMapping("/v1/plugin/definition/{pluginDefinitionKey}/action")
     fun getPluginDefinitionActions(
         @LoggableResource(resourceType = PluginDefinition::class) @PathVariable pluginDefinitionKey: String,

@@ -1,5 +1,5 @@
 {
-    "changesetId": "user-dashboard-v9",
+    "changesetId": "user-dashboard-v10",
     "dashboards": [
         {
             "key": "user-dashboard",
@@ -74,6 +74,41 @@
                         "title": "Zaakstatussen",
                         "subtitle": "Bezwaar",
                         "label": "Lopende zaken"
+                    }
+                },
+                {
+                    "key": "task_count_chart",
+                    "title": "Task count chart",
+                    "dataSourceKey": "task-count",
+                    "dataSourceProperties": {
+                        "caseDefinitionName": "bezwaar",
+                        "conditions": [
+                            {
+                                "path": "task:assignee",
+                                "operator": "!=",
+                                "value": "${null}"
+                            },
+                            {
+                                "or": [
+                                    {
+                                        "path": "task:name",
+                                        "operator": "==",
+                                        "value": "Beoordeel aanvraag"
+                                    },
+                                    {
+                                        "path": "task:name",
+                                        "operator": "==",
+                                        "value": "Controleer documenten"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "displayType": "gauge",
+                    "displayTypeProperties": {
+                        "title": "Toegewezen taken",
+                        "subtitle": "Bezwaar",
+                        "label": "taken"
                     }
                 }
             ]

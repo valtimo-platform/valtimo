@@ -24,7 +24,8 @@ data class ManagementStartableItemDto(
     val key: String,
     val versionTag: String?,
     val processDefinitionId: String? = null,
-    val sortOrder: Int? = null
+    val sortOrder: Int? = null,
+    val startableByUser: Boolean = true
 )
 
 data class CreateStartableItemRequest(

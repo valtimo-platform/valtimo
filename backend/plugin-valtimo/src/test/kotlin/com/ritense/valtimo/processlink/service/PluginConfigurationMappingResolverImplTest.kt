@@ -16,9 +16,11 @@
 
 package com.ritense.valtimo.processlink.service
 
+import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
@@ -41,10 +43,12 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
+import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -83,7 +87,7 @@ class PluginConfigurationMappingResolverImplTest {
     @Test
     fun `resolve asserts user can update case definition configuration`() {
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
+        stubPluginLinks("pd-1")
 
         resolver.resolve(caseDefinitionId, emptyMap())
 
@@ -102,8 +106,7 @@ class PluginConfigurationMappingResolverImplTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(true)
+        stubPluginLinks("pd-1", links = listOf(link))
 
         resolver.resolve(caseDefinitionId, mapOf(sourceId to targetId))
 
@@ -123,7 +126,7 @@ class PluginConfigurationMappingResolverImplTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
+        stubPluginLinks("pd-1", links = listOf(link))
 
         resolver.resolve(caseDefinitionId, mapOf(linkId to targetId))
 
@@ -139,7 +142,7 @@ class PluginConfigurationMappingResolverImplTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
+        stubPluginLinks("pd-1", links = listOf(link))
 
         resolver.resolve(caseDefinitionId, mapOf(UUID.randomUUID() to UUID.randomUUID()))
 
@@ -154,7 +157,7 @@ class PluginConfigurationMappingResolverImplTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.BUILDING_BLOCK, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
+        stubPluginLinks("pd-1", links = listOf(link))
 
         resolver.resolve(caseDefinitionId, mapOf(sourceId to UUID.randomUUID()))
 
@@ -170,8 +173,7 @@ class PluginConfigurationMappingResolverImplTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(true)
+        stubPluginLinks("pd-1", links = listOf(link), hasDanglingLink = false)
 
         resolver.resolve(caseDefinitionId, mapOf(sourceId to targetId))
 
@@ -182,21 +184,12 @@ class PluginConfigurationMappingResolverImplTest {
     fun `resolve emits detected event when dangling links remain`() {
         val sourceId = UUID.randomUUID()
         val targetId = UUID.randomUUID()
-        val danglingLink = pluginLink(
-            pluginConfigurationId = PluginConfigurationId.existingId(UUID.randomUUID()),
-            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
-        )
-        val mappedLink = pluginLink(
+        val link = pluginLink(
             pluginConfigurationId = PluginConfigurationId.existingId(sourceId),
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1"))
-            .thenReturn(listOf(danglingLink, mappedLink))
-        whenever(pluginConfigurationRepository.existsById(any())).thenAnswer { invocation ->
-            val id = invocation.arguments[0] as PluginConfigurationId
-            id.id == targetId
-        }
+        stubPluginLinks("pd-1", links = listOf(link), hasDanglingLink = true)
 
         resolver.resolve(caseDefinitionId, mapOf(sourceId to targetId))
 
@@ -223,12 +216,9 @@ class PluginConfigurationMappingResolverImplTest {
         )
 
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1"))
-            .thenReturn(listOf(link1, link2, link3))
-        whenever(pluginConfigurationRepository.existsById(any())).thenAnswer { invocation ->
-            val id = invocation.arguments[0] as PluginConfigurationId
-            id.id == existingId
-        }
+        stubPluginLinks("pd-1", links = listOf(link1, link2, link3))
+        stubConfiguration(existingId, pluginDefinitionKey = "other-api")
+        stubMissingConfigurations(danglingId1, danglingId2)
 
         val result = resolver.getDanglingPluginConfigurations(caseDefinitionId)
 
@@ -247,12 +237,45 @@ class PluginConfigurationMappingResolverImplTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
+        stubPluginLinks("pd-1", links = listOf(link))
 
         val result = resolver.getDanglingPluginConfigurations(caseDefinitionId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0].sourcePluginConfigurationIds).containsExactly(linkId)
+    }
+
+    @Test
+    fun `getDanglingPluginConfigurations includes a link pointing at another plugin definition`() {
+        val configurationId = UUID.randomUUID()
+        val link = pluginLink(
+            pluginConfigurationId = PluginConfigurationId.existingId(configurationId),
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
+        )
+        stubProcessDefinitions("pd-1")
+        stubPluginLinks("pd-1", links = listOf(link))
+        stubConfiguration(configurationId, pluginDefinitionKey = "documenten-api")
+
+        val result = resolver.getDanglingPluginConfigurations(caseDefinitionId)
+
+        assertThat(result).hasSize(1)
+        assertThat(result.single().sourcePluginConfigurationIds).containsExactly(configurationId)
+    }
+
+    @Test
+    fun `getDanglingPluginConfigurations skips a link without an expected plugin definition key`() {
+        val configurationId = UUID.randomUUID()
+        val link = pluginLink(
+            pluginConfigurationId = PluginConfigurationId.existingId(configurationId),
+            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, null),
+        )
+        stubProcessDefinitions("pd-1")
+        stubPluginLinks("pd-1", links = listOf(link))
+        // No expected key, so the configuration's plugin definition is never looked at
+        whenever(pluginConfigurationRepository.findById(PluginConfigurationId.existingId(configurationId)))
+            .thenReturn(Optional.of(mock<PluginConfiguration>()))
+
+        assertThat(resolver.getDanglingPluginConfigurations(caseDefinitionId)).isEmpty()
     }
 
     @Test
@@ -262,7 +285,7 @@ class PluginConfigurationMappingResolverImplTest {
             reference = PluginConfigurationReference(PluginConfigurationReferenceType.BUILDING_BLOCK, "zaken-api"),
         )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
+        stubPluginLinks("pd-1", links = listOf(link))
 
         val result = resolver.getDanglingPluginConfigurations(caseDefinitionId)
 
@@ -276,7 +299,7 @@ class PluginConfigurationMappingResolverImplTest {
         whenever(processDefinitionCaseDefinitionService.findByProcessDefinitionIdOrNull(eq(pdId))).thenReturn(link)
         whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(eq(caseDefinitionId)))
             .thenReturn(listOf(link))
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
+        whenever(pluginProcessLinkRepository.existsDanglingFixedLink(listOf("pd-1"))).thenReturn(false)
 
         resolver.recheckIssuesForProcessDefinition("pd-1")
 
@@ -295,24 +318,20 @@ class PluginConfigurationMappingResolverImplTest {
     }
 
     @Test
-    fun `recheckIssuesForCaseDefinition emits resolved event when the case definition has no process definitions`() {
+    fun `recheckIssuesForCaseDefinition emits resolved event without querying when there are no process definitions`() {
         whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(eq(caseDefinitionId)))
             .thenReturn(emptyList())
 
         resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
 
         verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueResolvedEvent>())
+        verify(pluginProcessLinkRepository, never()).existsDanglingFixedLink(any())
     }
 
     @Test
     fun `recheckIssuesForCaseDefinition emits resolved event when no dangling links remain`() {
-        val link = pluginLink(
-            pluginConfigurationId = PluginConfigurationId.existingId(UUID.randomUUID()),
-            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
-        )
         stubProcessDefinitions("pd-1")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(listOf(link))
-        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(true)
+        whenever(pluginProcessLinkRepository.existsDanglingFixedLink(listOf("pd-1"))).thenReturn(false)
 
         resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
 
@@ -320,25 +339,51 @@ class PluginConfigurationMappingResolverImplTest {
     }
 
     @Test
-    fun `recheckIssuesForCaseDefinition emits detected event when another process still has dangling links`() {
-        val danglingLink = pluginLink(
-            pluginConfigurationId = PluginConfigurationId.existingId(UUID.randomUUID()),
-            reference = PluginConfigurationReference(PluginConfigurationReferenceType.FIXED, "zaken-api"),
-        )
-        stubProcessDefinitions("pd-1", "pd-2")
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-1")).thenReturn(emptyList())
-        whenever(pluginProcessLinkRepository.findByProcessDefinitionId("pd-2")).thenReturn(listOf(danglingLink))
-        whenever(pluginConfigurationRepository.existsById(any())).thenReturn(false)
+    fun `recheckIssuesForCaseDefinition checks all process definitions in one query`() {
+        stubProcessDefinitions("pd-1", "pd-2", "pd-3")
+        whenever(pluginProcessLinkRepository.existsDanglingFixedLink(listOf("pd-1", "pd-2", "pd-3")))
+            .thenReturn(true)
 
         resolver.recheckIssuesForCaseDefinition(caseDefinitionId)
 
         verify(applicationEventPublisher).publishEvent(any<CaseConfigurationIssueDetectedEvent>())
+        verify(pluginProcessLinkRepository).existsDanglingFixedLink(any())
+        verify(pluginProcessLinkRepository, never()).findByProcessDefinitionId(any())
     }
 
     private fun stubProcessDefinitions(vararg processDefinitionIds: String) {
         val links = processDefinitionIds.map { processDefinitionCaseDefinition(it) }
         whenever(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(eq(caseDefinitionId)))
             .thenReturn(links)
+    }
+
+    private fun stubPluginLinks(
+        vararg processDefinitionIds: String,
+        links: List<PluginProcessLink> = emptyList(),
+        hasDanglingLink: Boolean? = null,
+    ) {
+        whenever(pluginProcessLinkRepository.findByProcessDefinitionIdIn(processDefinitionIds.toList()))
+            .thenReturn(links)
+        if (hasDanglingLink != null) {
+            whenever(pluginProcessLinkRepository.existsDanglingFixedLink(processDefinitionIds.toList()))
+                .thenReturn(hasDanglingLink)
+        }
+    }
+
+    private fun stubConfiguration(configurationId: UUID, pluginDefinitionKey: String) {
+        val pluginDefinition = mock<PluginDefinition>()
+        whenever(pluginDefinition.key).thenReturn(pluginDefinitionKey)
+        val configuration = mock<PluginConfiguration>()
+        whenever(configuration.pluginDefinition).thenReturn(pluginDefinition)
+        whenever(pluginConfigurationRepository.findById(PluginConfigurationId.existingId(configurationId)))
+            .thenReturn(Optional.of(configuration))
+    }
+
+    private fun stubMissingConfigurations(vararg configurationIds: UUID) {
+        configurationIds.forEach {
+            whenever(pluginConfigurationRepository.findById(PluginConfigurationId.existingId(it)))
+                .thenReturn(Optional.empty())
+        }
     }
 
     private fun processDefinitionCaseDefinition(processDefinitionId: String) =

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
@@ -50,6 +51,10 @@ class DocumentenApiResource(
     private val documentenApiVersionService: DocumentenApiVersionService
 ) {
     @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.downloadDocument(pluginConfigurationId, caseDocumentId, documentId)"))
+    @EndpointDescription(
+        en = "Download document file",
+        nl = "Documentbestand downloaden",
+    )
     @GetMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")
     fun downloadDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
@@ -76,6 +81,10 @@ class DocumentenApiResource(
     }
 
     @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.modifyDocument(pluginConfigurationId, caseDocumentId, documentId)"))
+    @EndpointDescription(
+        en = "Modify document metadata",
+        nl = "Documentmetadata bijwerken",
+    )
     @PutMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun modifyDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
@@ -96,6 +105,10 @@ class DocumentenApiResource(
     }
 
     @Deprecated("Will be removed in 14.0", ReplaceWith("ZaakDocumentResource.deleteDocument(pluginConfigurationId, caseDocumentId, documentId)"))
+    @EndpointDescription(
+        en = "Delete document",
+        nl = "Document verwijderen",
+    )
     @DeleteMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun deleteDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
@@ -108,6 +121,10 @@ class DocumentenApiResource(
             .build()
     }
 
+    @EndpointDescription(
+        en = "Get document columns for case definition",
+        nl = "Documentkolommen voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column")
     fun getColumns(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
@@ -118,6 +135,10 @@ class DocumentenApiResource(
         return ResponseEntity.ok(columns)
     }
 
+    @EndpointDescription(
+        en = "Get Documenten API version for case definition",
+        nl = "Documenten API-versie voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/documenten-api/version")
     fun getApiVersion(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
@@ -126,6 +147,10 @@ class DocumentenApiResource(
         return ResponseEntity.ok(DocumentenApiVersionDto.of(version))
     }
 
+    @EndpointDescription(
+        en = "Get resolved document upload fields",
+        nl = "Verwerkte documentuploadvelden ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/zgw-document/upload-field")
     fun getResolvedUploadFields(
         @LoggableResource("documentId") @PathVariable(name = "documentId") documentId: String

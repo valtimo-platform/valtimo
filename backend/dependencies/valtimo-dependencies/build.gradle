@@ -28,6 +28,7 @@ dependencies {
     api(project(":backend:dashboard"))
     api(project(":backend:data-provider"))
     api(project(":backend:exporter"))
+    api(project(":backend:external-plugin"))
     api(project(":backend:form"))
     api(project(":backend:form-flow"))
     api(project(":backend:form-view-model"))

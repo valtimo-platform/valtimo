@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@
   <div class="cds-loading-container" *ngIf="obs.saving">
     <cds-loading></cds-loading>
   </div>
-  <div [ngClass]="{hidden: obs.saving}">
+  <div [ngClass]="{hidden: obs.saving}" class="step-content">
     <ng-container>
       <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
         <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
@@ -128,7 +128,12 @@
         <valtimo-select-plugin-action></valtimo-select-plugin-action>
       </ng-container>
 
-      <ng-container *ngIf="obs.currentStepId === 'configurePluginAction'">
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'configurePluginAction' ||
+          obs.currentStepId === 'configurePluginActionResultMappings'
+        "
+      >
         <valtimo-plugin-action-configuration
           [selectedPluginConfiguration$]="selectedPluginConfiguration$"
         ></valtimo-plugin-action-configuration>

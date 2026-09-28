@@ -19,6 +19,7 @@ package com.ritense.valtimo.processlink.service
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -53,9 +54,9 @@ open class PluginConfigurationMappingResolverImpl(
             .findProcessDefinitionCaseDefinitions(caseDefinitionId)
             .map { it.id.processDefinitionId.id }
 
-        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
-            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
-        }.filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
+        val allPluginLinks = pluginProcessLinkRepository
+            .findByProcessDefinitionIdIn(processDefinitionIds)
+            .filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
 
         for (link in allPluginLinks) {
             // Match by pluginConfigurationId if present, otherwise by process link id
@@ -82,14 +83,11 @@ open class PluginConfigurationMappingResolverImpl(
             .findProcessDefinitionCaseDefinitions(caseDefinitionId)
             .map { it.id.processDefinitionId.id }
 
-        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
-            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
-        }.filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
+        val allPluginLinks = pluginProcessLinkRepository
+            .findByProcessDefinitionIdIn(processDefinitionIds)
+            .filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
 
-        val danglingLinks = allPluginLinks.filter { link ->
-            link.pluginConfigurationId == null ||
-                !pluginConfigurationRepository.existsById(link.pluginConfigurationId!!)
-        }
+        val danglingLinks = allPluginLinks.filter { isDangling(it) }
 
         return danglingLinks
             .groupBy { it.pluginConfigurationReference.pluginDefinitionKey }
@@ -128,19 +126,23 @@ open class PluginConfigurationMappingResolverImpl(
         checkForRemainingIssues(caseDefinitionId, processDefinitionIds)
     }
 
+    /**
+     * Same rule as `ValtimoPluginProcessLinkRepository.existsDanglingFixedLink`, per link: the mapping dialog
+     * offers exactly what the issue check flags.
+     */
+    private fun isDangling(link: PluginProcessLink): Boolean {
+        val configurationId = link.pluginConfigurationId ?: return true
+        val configuration = pluginConfigurationRepository.findById(configurationId).orElse(null) ?: return true
+        val expectedDefinitionKey = link.pluginConfigurationReference.pluginDefinitionKey
+        return expectedDefinitionKey != null && configuration.pluginDefinition.key != expectedDefinitionKey
+    }
+
     private fun checkForRemainingIssues(
         caseDefinitionId: CaseDefinitionId,
         processDefinitionIds: List<String>,
     ) {
-        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
-            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
-        }
-
-        val hasIssue = allPluginLinks.any { link ->
-            link.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED &&
-                (link.pluginConfigurationId == null ||
-                    !pluginConfigurationRepository.existsById(link.pluginConfigurationId!!))
-        }
+        val hasIssue = processDefinitionIds.isNotEmpty() &&
+            pluginProcessLinkRepository.existsDanglingFixedLink(processDefinitionIds)
 
         if (hasIssue) {
             applicationEventPublisher.publishEvent(

@@ -579,5 +579,4 @@ class IkoAutoConfiguration {
             ikoWidgetService,
         )
     }
-
 }
