@@ -21,6 +21,7 @@ import {DocumentenApiConfigurationComponent} from './components/documenten-api-c
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+import {DeleteInformatieObjectConfigurationComponent} from './components/delete-informatie-object/delete-informatie-object-configuration.component';
 
 const documentenApiPluginSpecification: PluginSpecification = {
   pluginId: 'documentenapi',
@@ -31,6 +32,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'store-uploaded-document': StoreUploadedDocumentConfigurationComponent,
     'store-uploaded-document-in-parts': StoreUploadedDocumentInPartsConfigurationComponent,
     'download-document': DownloadDocumentConfigurationComponent,
+    'delete-informatie-object': DeleteInformatieObjectConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -96,6 +98,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
       processVariableName:
         'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
+      'delete-informatie-object': 'Informatieobject verwijderen',
+      deleteInformatieObjectMessage:
+        "Verwijdert een document (enkelvoudiginformatieobject) op basis van de opgegeven URL. " +
+        "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'De volledige URL naar het enkelvoudiginformatieobject dat verwijderd moet worden',
     },
     en: {
       title: 'Documenten API',
@@ -160,6 +169,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Downloading a document form the Documenten API does not require any configuration.',
       processVariableName:
         'What is the name of the process variable you want to download the document to?',
+      'delete-informatie-object': 'Delete informatie object',
+      deleteInformatieObjectMessage:
+        "Deletes a document (enkelvoudiginformatieobject) based on the given URL. " +
+        "Process variables can be referenced using the notation 'pv:variableName'.",
+      documentUrl: 'Document URL',
+      documentUrlTooltip:
+        'The full URL to the enkelvoudiginformatieobject that should be deleted',
     },
     de: {
       title: 'Documenten API',
@@ -224,6 +240,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Das Herunterladen eines Dokuments aus der Documenten-API erfordert keine Konfiguration.',
       processVariableName:
         'Wie lautet der Name der Prozessvariablen, in die Sie das Dokument herunterladen möchten?',
+      'delete-informatie-object': 'Informationsobjekt löschen',
+      deleteInformatieObjectMessage:
+        "Löscht ein Dokument (enkelvoudiginformatieobject) anhand der angegebenen URL. " +
+        "Prozessvariablen können mit der Notation 'pv:variablenname' referenziert werden.",
+      documentUrl: 'Dokument-URL',
+      documentUrlTooltip:
+        'Die vollständige URL zum enkelvoudiginformatieobject, das gelöscht werden soll',
     },
   },
 };
