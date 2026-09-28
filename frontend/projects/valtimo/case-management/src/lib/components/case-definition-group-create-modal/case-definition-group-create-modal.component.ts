@@ -18,12 +18,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  ButtonModule,
-  InputModule,
-  ModalModule,
-  LayerModule,
-} from 'carbon-components-angular';
+import {ButtonModule, InputModule, ModalModule, LayerModule} from 'carbon-components-angular';
 import {ValtimoCdsModalDirective, CARBON_CONSTANTS} from '@valtimo/components';
 import {CaseDefinitionGroupManagementService} from '../../services';
 
@@ -31,6 +26,7 @@ import {CaseDefinitionGroupManagementService} from '../../services';
   standalone: true,
   selector: 'valtimo-case-definition-group-create-modal',
   templateUrl: './case-definition-group-create-modal.component.html',
+  styleUrls: ['./case-definition-group-create-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,

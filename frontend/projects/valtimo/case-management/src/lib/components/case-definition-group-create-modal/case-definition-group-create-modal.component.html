@@ -14,14 +14,25 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="open" showFooter="true" valtimoCdsModal (close)="onCloseModal()">
+<cds-modal
+  [open]="open"
+  showFooter="true"
+  valtimoCdsModal
+  class="valtimo-group-create"
+  (close)="onCloseModal()"
+>
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
       {{ 'caseManagement.groups.createModal.title' | translate }}
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent [cdsLayer]="1">
+  <form
+    [formGroup]="formGroup"
+    cdsModalContent
+    [cdsLayer]="1"
+    class="valtimo-group-create__content"
+  >
     <cds-label>
       {{ 'caseManagement.groups.createModal.name' | translate }}
 

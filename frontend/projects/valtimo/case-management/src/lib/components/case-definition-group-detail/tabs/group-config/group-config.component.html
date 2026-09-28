@@ -90,6 +90,7 @@
               <v-select
                 [items]="(availableCaseDefinitions$ | async) || []"
                 [placeholder]="'caseManagement.groups.config.selectCasePlaceholder' | translate"
+                [dropUp]="false"
                 (selectedChange)="onCaseDefinitionSelected($event)"
               ></v-select>
 
