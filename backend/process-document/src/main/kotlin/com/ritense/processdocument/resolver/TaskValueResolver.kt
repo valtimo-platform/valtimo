@@ -37,6 +37,8 @@ import org.springframework.stereotype.Component
  * Only the task list and task search field editors should therefore offer these paths. Every other
  * value picker excludes the 'task' prefix, because configuration pointing at a 'task:' path would fail
  * the first time it is rendered.
+ *
+ * Nothing is fetched, so there is no [resolverCacheKey] to declare.
  */
 @SkipComponentScan
 @Component
