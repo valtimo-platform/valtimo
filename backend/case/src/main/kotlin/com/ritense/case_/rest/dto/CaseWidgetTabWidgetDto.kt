@@ -16,6 +16,8 @@
 
 package com.ritense.case_.rest.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -39,6 +41,14 @@ interface CaseWidgetTabWidgetDto {
     val isCompact: Boolean?
     val actions: List<WidgetAction>?
     val displayConditions: List<Condition<*>>?
+
+    /**
+     * Widgets sharing an id can be served together. Set per request by the REST layer; null
+     * everywhere else, so it stays out of export bundles.
+     */
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    var dataGroupId: String?
 
     /**
      * @param caseDefinitionId the id of the case definition that this widget is configured for

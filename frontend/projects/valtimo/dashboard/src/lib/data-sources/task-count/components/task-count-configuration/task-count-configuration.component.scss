@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,20 @@
  */
 
 ::ng-deep .task-count-configuration-form {
-  .conditions-label {
+  // Space between the "Add" button at the end of the conditions and the following "Display type".
+  margin-bottom: 24px;
+
+  .form__element {
     margin-bottom: 16px;
   }
 
-  .conditions-multi-input .cds--form__helper-text {
-    font-style: italic;
+  .conditions-label {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+
+    .cds--form__helper-text {
+      font-style: italic;
+    }
   }
 }

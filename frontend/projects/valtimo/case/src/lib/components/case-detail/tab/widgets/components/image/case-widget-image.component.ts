@@ -21,6 +21,7 @@ import {DocumentService} from '@valtimo/document';
 import {
   ImageWidget,
   WidgetAction,
+  WidgetDataGroupService,
   WidgetImageComponent,
   WidgetImageItem,
   WidgetImageResolved,
@@ -30,19 +31,16 @@ import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/reso
 import {ButtonModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
+  Observable,
   catchError,
-  combineLatest,
   filter,
   forkJoin,
   map,
-  Observable,
   of,
-  startWith,
   switchMap,
   tap,
 } from 'rxjs';
 
-import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetsService} from '../../widgets.service';
 import {WidgetProcess} from '../widget-process/widget-process';
 
@@ -84,48 +82,38 @@ export class CaseWidgetImageComponent extends WidgetProcess implements OnDestroy
 
   public readonly widgetConfiguration$ = new BehaviorSubject<ImageWidget | null>(null);
 
-  private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
-  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
-
   private _objectUrls: string[] = [];
 
-  public readonly images$: Observable<WidgetImageResolved[] | null> = combineLatest([
-    this.widgetConfiguration$,
-    this._tabKey$,
-    this._documentId$,
-    this._refresh$,
-  ]).pipe(
-    filter(([widget, , documentId]) => !!widget && !!documentId),
-    switchMap(([widget, tabKey, documentId]) =>
-      this.caseWidgetApiService.getWidgetData(documentId, tabKey, widget!.key, undefined)
-    ),
-    switchMap(data => {
-      const widgetData = data as any;
-      const valueMap = new Map<string, string>(
-        (widgetData?.value ?? []).map((v: any) => [v.id, v.filename])
-      );
-      const images: WidgetImageItem[] = (widgetData?.images ?? []).map((img: any) => ({
-        ...img,
-        fileName: img.fileName ?? valueMap.get(img.resourceId) ?? '',
-      }));
-      return this.resolveImages(images);
-    }),
-    tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid)),
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
-      return of([]);
-    })
-  );
+  public readonly images$: Observable<WidgetImageResolved[] | null> =
+    this.widgetConfiguration$.pipe(
+      filter(widget => !!widget),
+      switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
+      switchMap(data => {
+        const widgetData = data as any;
+        const valueMap = new Map<string, string>(
+          (widgetData?.value ?? []).map((v: any) => [v.id, v.filename])
+        );
+        const images: WidgetImageItem[] = (widgetData?.images ?? []).map((img: any) => ({
+          ...img,
+          fileName: img.fileName ?? valueMap.get(img.resourceId) ?? '',
+        }));
+        return this.resolveImages(images);
+      }),
+      tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid)),
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+        return of([]);
+      })
+    );
 
   constructor(
     protected readonly documentService: DocumentService,
     private readonly widgetsService: WidgetsService,
-    private readonly caseTabService: CaseTabService,
-    private readonly caseWidgetApiService: CaseWidgetsApiService,
     private readonly widgetLayoutService: WidgetLayoutService,
     private readonly uploadProviderService: UploadProviderService,
     private readonly downloadService: DownloadService,
-    private readonly httpClient: HttpClient
+    private readonly httpClient: HttpClient,
+    private readonly widgetDataGroupService: WidgetDataGroupService
   ) {
     super(documentService);
   }
@@ -172,9 +160,7 @@ export class CaseWidgetImageComponent extends WidgetProcess implements OnDestroy
       )
     ).pipe(
       map(resolved =>
-        resolved.filter(
-          (item): item is WidgetImageResolved => item !== null && this.isImage(item)
-        )
+        resolved.filter((item): item is WidgetImageResolved => item !== null && this.isImage(item))
       )
     );
   }
