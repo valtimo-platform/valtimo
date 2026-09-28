@@ -20,6 +20,7 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -38,6 +39,10 @@ class CaseZakenApiSyncManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get Zaken API synchronisation configuration",
+        nl = "Zaken API-synchronisatieconfiguratie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync")
     fun getSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -50,6 +55,10 @@ class CaseZakenApiSyncManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create or update Zaken API synchronisation configuration",
+        nl = "Zaken API-synchronisatieconfiguratie aanmaken of bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync")
     fun createOrUpdateSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -62,6 +71,10 @@ class CaseZakenApiSyncManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete Zaken API synchronisation configuration",
+        nl = "Zaken API-synchronisatieconfiguratie verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/zaken-api-sync")
     fun deleteSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,

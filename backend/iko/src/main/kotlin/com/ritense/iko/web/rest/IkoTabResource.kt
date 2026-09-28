@@ -20,6 +20,7 @@ import com.ritense.iko.service.IkoTabService
 import com.ritense.tab.web.rest.dto.TabDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.constraints.Size
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -36,6 +37,10 @@ class IkoTabResource(
     private val ikoTabService: IkoTabService
 ) {
 
+    @EndpointDescription(
+        en = "List IKO tabs",
+        nl = "IKO-tabbladen ophalen",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/tab")
     fun getIkoTabs(
         @PathVariable @Size(max = 256) ikoViewKey: String,

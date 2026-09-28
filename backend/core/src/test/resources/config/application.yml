@@ -51,9 +51,6 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    operaton:
-        scripting:
-            allowedClasses: java.lang.System
     process:
         jobs:
             retry:

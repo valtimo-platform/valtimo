@@ -37,6 +37,7 @@ class PluginHttpSecurityConfigurer: HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/v1/plugin/configuration/{pluginConfigurationId}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "/api/v1/plugin/configuration/{pluginConfigurationId}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/v1/plugin/configuration/{pluginConfigurationId}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/v1/plugin/configuration/{pluginConfigurationId}/usages")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/v1/plugin/definition/{pluginDefinitionKey}/action")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/v1/plugin/configuration/export")).hasAuthority(ADMIN)
             }

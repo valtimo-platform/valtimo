@@ -92,6 +92,7 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
     private val zaaktypeUrl get() = "$apiBaseUrl/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002"
     private val zaaktypeInformatieobjecttypeUrl get() = "$apiBaseUrl/zaaktype-informatieobjecttypen/f1234567-1234-1234-1234-123456789012"
     private val informatieobjecttypeUrl get() = "$apiBaseUrl/informatieobjecttypen/$INFORMATIEOBJECTTYPE_ID"
+    private val roltypeUrl get() = "$apiBaseUrl/roltypen/$ROLTYPE_ID"
 
     @BeforeEach
     internal fun setUp() {
@@ -123,7 +124,7 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         pluginConfigurationId = configuration.id
 
         processDefinitionId = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionKey("catalogi-api-plugin")
+            .processDefinitionKey(PROCESS_DEFINITION_KEY)
             .latestVersion()
             .singleResult()
             .id
@@ -154,6 +155,46 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         }
         assertNotNull(zaaktypeInformatieobjecttypesRequest)
         assertTrue(zaaktypeInformatieobjecttypesRequest.path?.contains("zaaktype=$zaaktypeUrl") == true)
+    }
+
+    @Test
+    fun `should get roltype url by omschrijving through process execution`() {
+        createRoltypeProcessLink(ROLTYPE_OMSCHRIJVING)
+        setupZaaktypeUrlProviderMock()
+
+        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest())
+        val response = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
+
+        assertTrue(response is NewDocumentAndStartProcessResultSucceeded)
+
+        val processInstanceId = response.resultingProcessInstanceId().get().toString()
+        val processVariable = getHistoricProcessVariable(processInstanceId, ROLTYPE_PROCESS_VARIABLE_NAME)
+
+        assertEquals(roltypeUrl, processVariable)
+
+        val roltypenRequest = executedRequests.find { it.path?.contains("roltypen") == true }
+        assertNotNull(roltypenRequest)
+        assertTrue(roltypenRequest.path?.contains("zaaktype=$zaaktypeUrl") == true)
+    }
+
+    private fun createRoltypeProcessLink(roltype: String) {
+        pluginProcessLinkRepository.save(
+            PluginProcessLink(
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = "GetRoltype",
+                activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+                actionProperties = objectMapper.readTree("""
+                    {
+                        "roltype": "$roltype",
+                        "processVariable": "$ROLTYPE_PROCESS_VARIABLE_NAME"
+                    }
+                """) as ObjectNode,
+                pluginConfigurationId = pluginConfigurationId,
+                pluginConfigurationReference = PluginConfigurationReference(),
+                pluginActionDefinitionKey = "get-roltype"
+            )
+        )
     }
 
     private fun createProcessLink(informatieobjecttype: String) {
@@ -205,6 +246,8 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
                         zaaktypeInformatieobjecttypesResponse()
                     request.path?.contains("informatieobjecttypen/$INFORMATIEOBJECTTYPE_ID") == true ->
                         informatieobjecttypeResponse()
+                    request.path?.contains("roltypen") == true ->
+                        roltypenResponse()
                     else -> MockResponse().setResponseCode(404)
                 }
             }
@@ -225,6 +268,28 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
                     "volgnummer": 1,
                     "richting": "inkomend",
                     "statustype": null
+                }]
+            }
+        """.trimIndent()
+        return mockResponse(body)
+    }
+
+    private fun roltypenResponse(): MockResponse {
+        val body = """
+            {
+                "count": 2,
+                "next": null,
+                "previous": null,
+                "results": [{
+                    "url": "$roltypeUrl",
+                    "zaaktype": "$zaaktypeUrl",
+                    "omschrijving": "$ROLTYPE_OMSCHRIJVING",
+                    "omschrijvingGeneriek": "behandelaar"
+                }, {
+                    "url": "$apiBaseUrl/roltypen/9e1cb0a2-1f4b-4a51-9a2c-3f1d8b7c6e50",
+                    "zaaktype": "$zaaktypeUrl",
+                    "omschrijving": "Adviseur",
+                    "omschrijvingGeneriek": "adviseur"
                 }]
             }
         """.trimIndent()
@@ -269,5 +334,8 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         private const val INFORMATIEOBJECTTYPE_ID = "12345678-be3b-4bad-9e3c-49a6219c92ad"
         private const val INFORMATIEOBJECTTYPE_OMSCHRIJVING = "Bijlage"
         private const val PROCESS_VARIABLE_NAME = "informatieobjecttypeUrl"
+        private const val ROLTYPE_ID = "8f2e4c17-3a5d-4b8e-9c1f-2d6a7b3e4f50"
+        private const val ROLTYPE_OMSCHRIJVING = "Behandelaar"
+        private const val ROLTYPE_PROCESS_VARIABLE_NAME = "roltypeUrl"
     }
 }

@@ -166,6 +166,26 @@ export class StartableItemManagementService {
     );
   }
 
+  /**
+   * Toggles whether a building block item is shown in the case start menu.
+   * The update endpoint replaces all link properties, so the current
+   * properties are fetched first and sent back with the flag flipped.
+   */
+  public toggleStartableByUser(
+    item: ManagementStartableItem,
+    startableByUser: boolean
+  ): Observable<ManagementStartableItem> {
+    return this.getItemProperties(item.key, item.versionTag, item.type).pipe(
+      take(1),
+      switchMap(properties =>
+        this.updateItem(item.key, item.versionTag, {
+          type: item.type,
+          properties: {...properties, startableByUser},
+        })
+      )
+    );
+  }
+
   public deleteItem(item: ManagementStartableItem): Observable<void> {
     return this.startableItemApiService.deleteItem(
       this.getParams(),
