@@ -18,7 +18,7 @@ package com.ritense.processdocument.migration
 
 import com.fasterxml.jackson.databind.JsonNode
 
-/** Finds `processMigration` instructions naming no target or no source, on the raw JSON before deserialization — either end left null fails Jackson and answers 500 for the likeliest hand-edit mistakes (G47). Blank counts as none. */
+/** Finds `processMigration` instructions naming no target or no source, on the raw JSON before deserialization — either end left null fails Jackson and answers 500 for the likeliest hand-edit mistakes. Blank counts as none. */
 object ProcessMigrationTargetChecker {
 
     const val SOURCE_KEY = "sourceProcessDefinitionKey"
