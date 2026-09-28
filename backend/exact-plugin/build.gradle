@@ -15,13 +15,13 @@
  */
 
 dependencies {
-    implementation project(':backend:case')
-    implementation project(':backend:contract')
-    implementation project(':backend:core')
-    implementation project(':backend:process-document')
-    implementation project(':backend:resource')
-    implementation project(':backend:plugin')
-    implementation project(':backend:value-resolver')
+    compileOnly project(':backend:case')
+    compileOnly project(':backend:contract')
+    compileOnly project(':backend:core')
+    compileOnly project(':backend:plugin')
+    compileOnly project(':backend:process-document')
+    compileOnly project(':backend:resource')
+    compileOnly project(':backend:value-resolver')
 
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -35,6 +35,14 @@ dependencies {
     // Shedlock
     implementation "net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}"
     implementation "net.javacrumbs.shedlock:shedlock-provider-jdbc-template:${shedlockVersion}"
+
+    testImplementation project(':backend:case')
+    testImplementation project(':backend:contract')
+    testImplementation project(':backend:core')
+    testImplementation project(':backend:plugin')
+    testImplementation project(':backend:process-document')
+    testImplementation project(':backend:resource')
+    testImplementation project(':backend:value-resolver')
 
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
