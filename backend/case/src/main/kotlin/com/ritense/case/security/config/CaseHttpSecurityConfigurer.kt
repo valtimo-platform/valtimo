@@ -106,6 +106,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, METROLINE_AVAILABLE_MODES_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/widget/{widgetKey}"))
                     .hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/data"))
+                    .hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_EXTERNAL_PLUGIN_TAB_URL/{tabKey}")).hasAuthority(USER)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
