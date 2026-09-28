@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Faster widget loading on case tabs
 
-New enhancement explanation.
+Widget tabs with multiple widgets now load faster.
 
 ---
 
