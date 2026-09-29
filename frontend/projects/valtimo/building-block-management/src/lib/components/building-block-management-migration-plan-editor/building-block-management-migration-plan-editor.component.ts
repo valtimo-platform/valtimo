@@ -26,9 +26,9 @@ import {
 } from '../../constants';
 import {BuildingBlockManagementApiService, BuildingBlockMigrationApiService} from '../../services';
 import {BuildingBlockEntryOwnerType, BuildingBlockMigrationParams} from '../../models';
-import {MigrationPlanEditorBaseComponent} from '../migration-plan-editor/migration-plan-editor-base.component';
+import {MigrationPlanEditorBaseComponent} from '../migration-plan-editor/migration-plan-editor-base/migration-plan-editor-base.component';
 import {MigrationPlanEditorShellComponent} from '../migration-plan-editor/migration-plan-editor-shell/migration-plan-editor-shell.component';
-import {BbMigrationGeneralTabComponent} from './bb-migration-general-tab/migration-general-tab.component';
+import {BbMigrationGeneralTabComponent} from './bb-migration-general-tab/bb-migration-general-tab.component';
 
 /** The migration plan editor of one building block definition version. Everything but the General tab and how a building block is addressed comes from [MigrationPlanEditorBaseComponent]. */
 @Component({

@@ -31,6 +31,7 @@ export const BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS = {
   deletePatchButton: 'buildingBlockMigrationDeletePatchButton',
   addInstructionButton: 'buildingBlockMigrationAddInstructionButton',
   deleteInstructionButton: 'buildingBlockMigrationDeleteInstructionButton',
+  toggleInstructionButton: 'buildingBlockMigrationToggleInstructionButton',
   addMappingButton: 'buildingBlockMigrationAddMappingButton',
   deleteMappingButton: 'buildingBlockMigrationDeleteMappingButton',
   addVariableButton: 'buildingBlockMigrationAddVariableButton',
@@ -38,5 +39,6 @@ export const BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS = {
   addBuildingBlockButton: 'buildingBlockMigrationAddBuildingBlockButton',
   removeBuildingBlockButton: 'buildingBlockMigrationRemoveBuildingBlockButton',
   deleteBuildingBlockEntryButton: 'buildingBlockMigrationDeleteBuildingBlockEntryButton',
+  toggleBuildingBlockEntryButton: 'buildingBlockMigrationToggleBuildingBlockEntryButton',
   detailModalCloseButton: 'buildingBlockMigrationDetailModalCloseButton',
 } as const;

@@ -20,11 +20,13 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   OnDestroy,
   signal,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -110,7 +112,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   public readonly $planToStart = signal<MigrationPlanViewModel | null>(null);
   public readonly $planToDryRun = signal<MigrationPlanViewModel | null>(null);
 
-  // The confirmation modal takes a Subject, so these three stay streams.
+  // Streams, not signals: Cancel never resets them, so reopening relies on re-emitting `true`, which a signal drops.
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly showStartModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDryRunModal$ = new BehaviorSubject<boolean>(false);
@@ -126,7 +128,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     );
 
   private readonly _refresh$ = new Subject<void>();
-  private readonly _selectedKey$ = new BehaviorSubject<string | null>(null);
+  private readonly _$selectedKey = signal<string | null>(null);
   // True while any plan on this version has a run in progress.
   private readonly _polling$ = new BehaviorSubject<boolean>(false);
 
@@ -154,12 +156,8 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     shareReplay(1)
   );
 
-  public readonly selectedPlan$: Observable<MigrationPlanViewModel | null> = combineLatest([
-    this.plans$,
-    this._selectedKey$,
-  ]).pipe(
-    map(([plans, key]) => plans.find(plan => plan.migrationKey === key) ?? null),
-    startWith(null)
+  public readonly $selectedPlan = computed(
+    () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
   );
 
   protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
@@ -167,6 +165,9 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   private _params: CaseManagementParams | undefined;
   private readonly _subscriptions = new Subscription();
+
+  // Last field: toSignal subscribes right here, and the stream reads the fields above.
+  private readonly _$plans = toSignal(this.plans$, {initialValue: []});
 
   /** Where the detail modal links a failed case. Null until the route resolves. */
   public get caseDefinitionKey(): string | null {
@@ -194,14 +195,14 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   }
 
   public onRowClicked(plan: MigrationPlanViewModel): void {
-    // Keeping _selectedKey$ set means the modal keeps live-updating from the polled list while it is open.
-    this._selectedKey$.next(plan.migrationKey);
+    // Keeping _$selectedKey set means the modal keeps live-updating from the polled list while it is open.
+    this._$selectedKey.set(plan.migrationKey);
     this.$showDetailModal.set(true);
   }
 
   public onCloseDetail(): void {
     this.$showDetailModal.set(false);
-    this._selectedKey$.next(null);
+    this._$selectedKey.set(null);
   }
 
   public onAddPlan(): void {
@@ -273,7 +274,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
         this.showDeleteModal$.next(false);
-        if (this._selectedKey$.value === plan.migrationKey) this._selectedKey$.next(null);
+        if (this._$selectedKey() === plan.migrationKey) this._$selectedKey.set(null);
         this._refresh$.next();
       });
   }

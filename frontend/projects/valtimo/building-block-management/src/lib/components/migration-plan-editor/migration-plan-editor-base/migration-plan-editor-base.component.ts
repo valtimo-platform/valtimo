@@ -42,51 +42,15 @@ import {
   ProcessMigrationInstruction,
   RemoveBuildingBlockInstruction,
   ValuePathContext,
-} from '../../models';
-import {BlueprintMigrationApiService} from '../../services/blueprint-migration-api.service';
+} from '../../../models';
+import {BlueprintMigrationApiService} from '../../../services/blueprint-migration-api.service';
 import {
   asPlanText,
   migrationEditorKeys,
   parsePlan,
   sourceIdOf,
   unmappedProcessesIn,
-} from './migration-plan.utils';
-
-/** What the shared editor chrome reads off its host. Separate from the base class itself so `MigrationPlanEditorShellComponent` can type its one input without the base class's blueprint-params generic. */
-export interface MigrationPlanEditorHost {
-  readonly testIds: MigrationEditorTestIds;
-  readonly keys: MigrationEditorTranslationKeys;
-  readonly compactMode$: Observable<boolean>;
-  readonly sourcePrefixes: ValuePathSelectorPrefix[];
-  readonly $model: Signal<EditorModel | null>;
-  readonly $plan: Signal<MigrationPlan>;
-  readonly $api: Signal<MigrationEditorApi | null>;
-  readonly $owner: Signal<BuildingBlockEntryOwner | null>;
-  readonly $sourceContext: Signal<ValuePathContext>;
-  readonly $targetContext: Signal<ValuePathContext>;
-  readonly $targetAdditionalVersionTags: Signal<string[]>;
-  readonly $sourceProcessDefs: Signal<Record<string, string>>;
-  readonly $targetProcessDefs: Signal<Record<string, string>>;
-  readonly $canSave: Signal<boolean>;
-  readonly $unmappedProcesses: Signal<string[]>;
-  readonly $unmappedAddBuildingBlockProcesses: Signal<string[]>;
-  readonly $unmappedRemoveBuildingBlockProcesses: Signal<string[]>;
-
-  readSaveError(): string | null;
-  clearSaveError(): void;
-  onValid(valid: boolean): void;
-  onValueChange(value: string): void;
-  onDataMigrationChange(patches: DataMigrationPatch[]): void;
-  onProcessMigrationChange(instructions: ProcessMigrationInstruction[]): void;
-  onAddBuildingBlockChange(
-    instructions: (AddBuildingBlockInstruction | RemoveBuildingBlockInstruction)[]
-  ): void;
-  onRemoveBuildingBlockChange(
-    instructions: (AddBuildingBlockInstruction | RemoveBuildingBlockInstruction)[]
-  ): void;
-  onSave(): void;
-  onCancel(): void;
-}
+} from '../../../utils';
 
 /** Blueprint-agnostic editor half — holds the plan, keeps JSON and form tabs in step, follows the declared source, saves. Subclass supplies blueprint identity. */
 @Directive()
@@ -94,7 +58,7 @@ export abstract class MigrationPlanEditorBaseComponent<
     P,
     M extends MigrationPlanSummary = MigrationPlanManagement,
   >
-  implements OnInit, OnDestroy, MigrationPlanEditorHost
+  implements OnInit, OnDestroy
 {
   protected readonly route = inject(ActivatedRoute);
   protected readonly translateService = inject(TranslateService);
@@ -186,12 +150,13 @@ export abstract class MigrationPlanEditorBaseComponent<
   /** What every "copy from" picker may read. A case plan widens this — `case:` metadata is its alone. */
   public readonly sourcePrefixes: ValuePathSelectorPrefix[] = [ValuePathSelectorPrefix.DOC];
 
+  public abstract readonly testIds: MigrationEditorTestIds;
+  /** The value-path contexts each side of the plan resolves against — the one place the two blueprint types name a blueprint differently. */
+  public abstract readonly $sourceContext: Signal<ValuePathContext>;
+  public abstract readonly $targetContext: Signal<ValuePathContext>;
+
   protected _params!: P;
   protected _migrationKey: string | null = null;
-  private _currentValue = '';
-  // What the current components were suggested for; guards against re-requesting them, including the echo of the response itself.
-  private _suggestedForSource: string | null = null;
-  private _keys: MigrationEditorTranslationKeys | null = null;
   protected readonly _subscriptions = new Subscription();
 
   /** Which blueprint type this editor serves — the namespace its translations live under, and the `type` of every building-block entry's owner. */
@@ -200,10 +165,10 @@ export abstract class MigrationPlanEditorBaseComponent<
   protected abstract readonly NEW_PLAN_TEMPLATE: string;
   protected abstract readonly migrationApiService: BlueprintMigrationApiService<P, M>;
 
-  public abstract readonly testIds: MigrationEditorTestIds;
-  /** The value-path contexts each side of the plan resolves against — the one place the two blueprint types name a blueprint differently. */
-  public abstract readonly $sourceContext: Signal<ValuePathContext>;
-  public abstract readonly $targetContext: Signal<ValuePathContext>;
+  private _currentValue = '';
+  // What the current components were suggested for; guards against re-requesting them, including the echo of the response itself.
+  private _suggestedForSource: string | null = null;
+  private _keys: MigrationEditorTranslationKeys | null = null;
 
   /** Cached, so the shell's inputs keep a stable reference under OnPush. */
   public get keys(): MigrationEditorTranslationKeys {
@@ -270,14 +235,6 @@ export abstract class MigrationPlanEditorBaseComponent<
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
     this.clearBreadcrumbs();
-  }
-
-  public readSaveError(): string | null {
-    return this.$saveError();
-  }
-
-  public clearSaveError(): void {
-    this.$saveError.set(null);
   }
 
   public onValid(valid: boolean): void {
@@ -365,25 +322,6 @@ export abstract class MigrationPlanEditorBaseComponent<
     this.$valid.set(true);
   }
 
-  /** The version's other plans: the keys a new plan must stay clear of, plus whatever else a blueprint type does with them — see [onPlansLoaded]. */
-  private loadExistingPlans(): void {
-    this.migrationApiService
-      .getPlans(this._params)
-      .pipe(take(1))
-      .subscribe(plans => {
-        const others = plans.filter(plan => plan.migrationKey !== this._migrationKey);
-        this.$usedMigrationKeys.set(others.map(plan => plan.migrationKey));
-        this.onPlansLoaded(others);
-      });
-  }
-
-  /** Scope the process pickers. Only the target half is loaded here — the source half follows the plan and is reloaded by [applySource]. */
-  private loadProcessKeys(): void {
-    this.linkedProcessDefinitions(this.$targetKey()!, this.$targetVersionTag()!)
-      .pipe(take(1))
-      .subscribe(defs => this.$targetProcessDefs.set(defs));
-  }
-
   /** Follow the plan's declared source and re-scope everything resolving against it. A no-op when it has not changed, so it can be called on every plan change. */
   protected applySource(source: MigrationPlanSource | undefined): void {
     const key = asPlanText(source?.key) ?? this.$targetKey()!;
@@ -407,6 +345,47 @@ export abstract class MigrationPlanEditorBaseComponent<
         // A source that is not deployed has no processes to offer; the save itself reports the problem.
         error: () => this.$sourceProcessDefs.set({}),
       });
+  }
+
+  /** What identifies this editor's blueprint, read off the route. */
+  protected abstract readParams(params: Params): P;
+  protected abstract targetKeyOf(params: P): string;
+  protected abstract targetVersionTagOf(params: P): string;
+
+  /** The blueprints a plan may migrate from, and the versions of whichever one is selected. */
+  protected abstract loadSourceKeyOptions(): void;
+  protected abstract loadSourceVersionOptions(key: string): void;
+
+  /** The `key -> processDefinitionId` map of one blueprint version — how the two types link a process differs. */
+  protected abstract linkedProcessDefinitions(
+    key: string,
+    versionTag: string
+  ): Observable<Record<string, string>>;
+
+  protected abstract initBreadcrumbs(): void;
+  protected abstract clearBreadcrumbs(): void;
+  protected abstract navigateBack(): void;
+
+  /** What else this blueprint type does with the version's other plans. Nothing, unless a subclass says otherwise. */
+  protected onPlansLoaded(_others: M[]): void {}
+
+  /** The version's other plans: the keys a new plan must stay clear of, plus whatever else a blueprint type does with them — see [onPlansLoaded]. */
+  private loadExistingPlans(): void {
+    this.migrationApiService
+      .getPlans(this._params)
+      .pipe(take(1))
+      .subscribe(plans => {
+        const others = plans.filter(plan => plan.migrationKey !== this._migrationKey);
+        this.$usedMigrationKeys.set(others.map(plan => plan.migrationKey));
+        this.onPlansLoaded(others);
+      });
+  }
+
+  /** Scope the process pickers. Only the target half is loaded here — the source half follows the plan and is reloaded by [applySource]. */
+  private loadProcessKeys(): void {
+    this.linkedProcessDefinitions(this.$targetKey()!, this.$targetVersionTag()!)
+      .pipe(take(1))
+      .subscribe(defs => this.$targetProcessDefs.set(defs));
   }
 
   /** Re-fill the plan's components from a suggestion against [source] — most of all across keys, where the old suggestion describes two blueprints the plan no longer mentions. Only while creating: editing leaves them alone, since they are the author's work. */
@@ -437,26 +416,4 @@ export abstract class MigrationPlanEditorBaseComponent<
         error: () => {},
       });
   }
-
-  /** What identifies this editor's blueprint, read off the route. */
-  protected abstract readParams(params: Params): P;
-  protected abstract targetKeyOf(params: P): string;
-  protected abstract targetVersionTagOf(params: P): string;
-
-  /** The blueprints a plan may migrate from, and the versions of whichever one is selected. */
-  protected abstract loadSourceKeyOptions(): void;
-  protected abstract loadSourceVersionOptions(key: string): void;
-
-  /** The `key -> processDefinitionId` map of one blueprint version — how the two types link a process differs. */
-  protected abstract linkedProcessDefinitions(
-    key: string,
-    versionTag: string
-  ): Observable<Record<string, string>>;
-
-  protected abstract initBreadcrumbs(): void;
-  protected abstract clearBreadcrumbs(): void;
-  protected abstract navigateBack(): void;
-
-  /** What else this blueprint type does with the version's other plans. Nothing, unless a subclass says otherwise. */
-  protected onPlansLoaded(_others: M[]): void {}
 }

@@ -41,7 +41,7 @@ import {
 import {Subscription} from 'rxjs';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
 import {MigrationPlan} from '../../../models';
-import {pickedInstant, planInstant, toDateTimeLocal} from './migration-schedule.utils';
+import {pickedInstant, planInstant, toDateTimeLocal} from '../../../utils';
 
 @Component({
   standalone: true,

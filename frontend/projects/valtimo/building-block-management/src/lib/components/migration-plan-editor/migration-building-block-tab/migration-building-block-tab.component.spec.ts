@@ -21,6 +21,7 @@ import {BuildingBlockEntryLookupService} from './building-block-entry-lookup.ser
 
 describe('MigrationBuildingBlockTabComponent', () => {
   let component: MigrationBuildingBlockTabComponent;
+  let lookup: BuildingBlockEntryLookupService;
 
   // The case still runs 'aanvraag-behandelen' — the target version handed it to the block, so it links only 'aanvraag-start'.
   const SOURCE_DEFS = {
@@ -38,8 +39,8 @@ describe('MigrationBuildingBlockTabComponent', () => {
   };
 
   beforeEach(() => {
-    const lookup = new BuildingBlockEntryLookupService({
-      getBuildingBlockDefinitions: () => of([]),
+    lookup = new BuildingBlockEntryLookupService({
+      getBuildingBlockDefinitions: () => of([{key: 'fotos', versionTag: '1.0.0'}]),
       getVersionsForBuildingBlock: () => of({content: []}),
       getProcessDefinitionsForBuildingBlock: () => of([]),
     } as any);
@@ -123,5 +124,22 @@ describe('MigrationBuildingBlockTabComponent', () => {
     expect(component.sourceProcessDefinitionsOf(group)).toBe(
       component.sourceProcessDefinitionsOf(group)
     );
+  });
+
+  // A new [items] array re-renders every open key select, which can reset an open dropdown.
+  it('keeps the key list reference when a per-entry lookup fills', () => {
+    component.mode = 'remove';
+    component.planSource = {versionTag: '1.0.0'};
+    component.api = {
+      getLinkedBuildingBlocks: () => of([{key: 'fotos', versionTag: '1.0.0'}]),
+    } as any;
+    component.ngOnChanges({planSource: {} as any});
+    component.ngOnInit();
+    const keyItems = component.keyItems;
+
+    lookup.ensureVersionItems('fotos');
+
+    expect(component.keyItems.map(item => item.id)).toEqual(['fotos']);
+    expect(component.keyItems).toBe(keyItems);
   });
 });

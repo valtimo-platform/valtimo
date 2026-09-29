@@ -14,12 +14,5 @@
  * limitations under the License.
  */
 
-// What the list itself renders. The run's own figures are the detail modal's — see its stylesheet.
-::ng-deep .cds-tag--no-margin {
-  margin: 0;
-}
-
-.migration-progress {
-  margin-right: var(--cds-spacing-03);
-  font-variant-numeric: tabular-nums;
-}
+export * from './migration-plan.utils';
+export * from './migration-status.utils';

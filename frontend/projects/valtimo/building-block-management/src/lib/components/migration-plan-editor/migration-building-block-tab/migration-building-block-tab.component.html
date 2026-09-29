@@ -31,6 +31,7 @@
             [title]="
               (isExpanded(instruction) ? 'interface.collapse' : 'interface.expand') | translate
             "
+            [attr.data-test-id]="testIds?.toggleBuildingBlockEntryButton"
             (click)="toggleExpanded(instruction)"
           >
             <svg

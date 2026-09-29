@@ -35,6 +35,7 @@
             [title]="
               (isExpanded(instruction) ? 'interface.collapse' : 'interface.expand') | translate
             "
+            [attr.data-test-id]="testIds?.toggleInstructionButton"
             (click)="toggleExpanded(instruction)"
           >
             <svg
@@ -108,8 +109,10 @@
             [hintKey]="activityMappingHintKey"
             [mappings]="mapActivitiesArray(instruction)"
             [request]="mappingRequestFor(instruction)"
+            [suggest]="isSuggestPending(instruction)"
             [testIds]="testIds"
-            (mappingsChange)="onMappingsChange(instruction)"
+            (mappingsChange)="onMappingsChange()"
+            (suggestSettledEvent)="onSuggestSettled(instruction, $event)"
           ></valtimo-migration-activity-mapping>
 
           <!-- Set process variables -->

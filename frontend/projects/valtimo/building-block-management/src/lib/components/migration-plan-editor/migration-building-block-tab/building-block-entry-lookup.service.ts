@@ -36,6 +36,7 @@ export class BuildingBlockEntryLookupService {
   public keyItems: SelectItem[] = [];
 
   private readonly _changed$ = new Subject<void>();
+  private readonly _definitionsLoaded$ = new Subject<void>();
 
   // `key` -> newest deployed versionTag, and the full version list once someone asks for it.
   private readonly _latestVersion = new Map<string, string>();
@@ -60,6 +61,11 @@ export class BuildingBlockEntryLookupService {
     return this._changed$.asObservable();
   }
 
+  /** Fires when [keyItems] and the latest versions arrive — unlike [changed$], not on every per-entry lookup. */
+  public get definitionsLoaded$(): Observable<void> {
+    return this._definitionsLoaded$.asObservable();
+  }
+
   /** Every deployed building block. This endpoint answers the latest version per key only, so the version dropdown comes from [ensureVersionItems] instead. */
   public loadDefinitions(): void {
     this.buildingBlockApiService.getBuildingBlockDefinitions().subscribe(definitions => {
@@ -82,6 +88,7 @@ export class BuildingBlockEntryLookupService {
       });
 
       this.keyItems = keyItems.sort((a, b) => a.text.localeCompare(b.text));
+      this._definitionsLoaded$.next();
       this._changed$.next();
     });
   }

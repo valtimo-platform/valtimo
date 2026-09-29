@@ -96,6 +96,7 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   deletePatchButton: 'caseMigrationDeletePatchButton',
   addInstructionButton: 'caseMigrationAddInstructionButton',
   deleteInstructionButton: 'caseMigrationDeleteInstructionButton',
+  toggleInstructionButton: 'caseMigrationToggleInstructionButton',
   addMappingButton: 'caseMigrationAddMappingButton',
   deleteMappingButton: 'caseMigrationDeleteMappingButton',
   addVariableButton: 'caseMigrationAddVariableButton',
@@ -108,7 +109,10 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   addBuildingBlockButton: 'caseMigrationAddBuildingBlockButton',
   removeBuildingBlockButton: 'caseMigrationRemoveBuildingBlockButton',
   deleteBuildingBlockEntryButton: 'caseMigrationDeleteBuildingBlockEntryButton',
+  toggleBuildingBlockEntryButton: 'caseMigrationToggleBuildingBlockEntryButton',
   detailModalCloseButton: 'caseMigrationDetailModalCloseButton',
+  toggleErrorButton: 'caseMigrationToggleErrorButton',
+  copyErrorButton: 'caseMigrationCopyErrorButton',
 } as const;
 
 export const CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS = {

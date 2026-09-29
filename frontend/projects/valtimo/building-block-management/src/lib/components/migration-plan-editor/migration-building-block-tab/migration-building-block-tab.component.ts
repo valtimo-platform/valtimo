@@ -138,16 +138,17 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
 
   public ngOnInit(): void {
     this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
+    // Only the definition list changes the key list and the latest versions; the other lookups just need a re-render.
     this._subscriptions.add(
-      this.lookup.changed$.subscribe(() => {
+      this.lookup.definitionsLoaded$.subscribe(() => {
         this.applyKeyFilter();
         // Entries restored before the definition list arrived resolve their latest version here; cached.
         this.instructionsArray.controls.forEach(control =>
           this.ensureProcessDefinitions(control as FormGroup)
         );
-        this.cdr.markForCheck();
       })
     );
+    this._subscriptions.add(this.lookup.changed$.subscribe(() => this.cdr.markForCheck()));
 
     this.lookup.loadDefinitions();
   }

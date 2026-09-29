@@ -16,7 +16,7 @@
 
 <div class="migration-plan-editor">
   <cds-inline-notification
-    *ngIf="editor.readSaveError() as saveError"
+    *ngIf="editor.$saveError() as saveError"
     [notificationObj]="{
       type: 'error',
       title: (editor.keys.saveFailedTitle | translate),
@@ -24,7 +24,7 @@
       showClose: true,
       lowContrast: true,
     }"
-    (close)="editor.clearSaveError()"
+    (close)="editor.$saveError.set(null)"
   ></cds-inline-notification>
 
   <cds-tabs type="contained">

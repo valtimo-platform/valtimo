@@ -15,7 +15,8 @@
  */
 
 import {FormArray, FormBuilder, FormGroup} from '@angular/forms';
-import {of, throwError} from 'rxjs';
+import {of, Subject, throwError} from 'rxjs';
+import {MigrationFlowNodeCacheService} from '../migration-process-migration-tab/migration-flow-node-cache.service';
 import {MigrationActivityMappingComponent} from './migration-activity-mapping.component';
 
 describe('MigrationActivityMappingComponent', () => {
@@ -32,18 +33,15 @@ describe('MigrationActivityMappingComponent', () => {
       fb,
       {markForCheck: () => {}} as any,
       {registerAll: () => {}} as any,
-      processService as any
+      new MigrationFlowNodeCacheService(processService as any)
     );
     instance.mappings = fb.array<FormGroup>([]) as FormArray;
     return instance;
   };
 
-  const resolve = (suggest: boolean): void => {
-    component.request = {
-      sourceProcessDefinitionId: 'src:1:aaa',
-      targetProcessDefinitionId: 'tgt:2:bbb',
-      suggest,
-    };
+  const resolve = (suggest: boolean, sourceProcessDefinitionId = 'src:1:aaa'): void => {
+    component.suggest = suggest;
+    component.request = {sourceProcessDefinitionId, targetProcessDefinitionId: 'tgt:2:bbb'};
     component.ngOnChanges({request: {} as any});
   };
 
@@ -87,13 +85,16 @@ describe('MigrationActivityMappingComponent', () => {
       validateActivityMapping: () => of({}),
     } as any;
     const announced = jasmine.createSpy('mappingsChange');
+    const settled = jasmine.createSpy('suggestSettledEvent');
     component.mappingsChange.subscribe(announced);
+    component.suggestSettledEvent.subscribe(settled);
 
     resolve(true);
 
     expect(component.mappings.length).toBe(1);
     expect(component.mappings.at(0).get('target')!.value).toBe('task-b');
     expect(announced).toHaveBeenCalled();
+    expect(settled).toHaveBeenCalledWith(true);
   });
 
   // null = "don't touch": a failed suggestion must not empty what the author has.
@@ -102,6 +103,8 @@ describe('MigrationActivityMappingComponent', () => {
       suggestActivityMapping: () => throwError(() => new Error('nope')),
       validateActivityMapping: () => of({}),
     } as any;
+    const settled = jasmine.createSpy('suggestSettledEvent');
+    component.suggestSettledEvent.subscribe(settled);
     component.mappings.push(
       new FormBuilder().group({source: 'kept-a', target: 'kept-b'}) as FormGroup
     );
@@ -110,6 +113,47 @@ describe('MigrationActivityMappingComponent', () => {
 
     expect(component.mappings.length).toBe(1);
     expect(component.mappings.at(0).get('source')!.value).toBe('kept-a');
+    // The host must hear a failed try too, or the suggestion stays owed and a later expand wipes hand-typed rows.
+    expect(settled).toHaveBeenCalledWith(false);
+  });
+
+  // Nothing was asked, so nothing is spent: the host keeps the suggestion owed until an api is bound.
+  it('does not report a suggestion as tried without an api', () => {
+    const settled = jasmine.createSpy('suggestSettledEvent');
+    component.suggestSettledEvent.subscribe(settled);
+
+    resolve(true);
+
+    expect(settled).not.toHaveBeenCalled();
+  });
+
+  // A late answer for an earlier pick must not overwrite the options and rows of the later one.
+  it('applies only the latest request when an earlier answer arrives last', () => {
+    const first$ = new Subject<unknown>();
+    const second$ = new Subject<unknown>();
+    component = build({
+      getFlowNodes: (sourceId: string) => (sourceId === 'src:1:aaa' ? first$ : second$),
+    });
+
+    resolve(false, 'src:1:aaa');
+    resolve(false, 'src:2:ccc');
+    second$.next({sourceFlowNodeMap: {'task-new': 'Nieuw'}, targetFlowNodeMap: {}});
+    second$.complete();
+    first$.next(FLOW_NODES);
+    first$.complete();
+
+    expect(component.activities.sourceNodes.map(node => node.id)).toEqual(['task-new']);
+  });
+
+  // The mapping child is rebuilt on every expand; the definitions it names do not change.
+  it('reuses the flow nodes of a definition pair it already loaded', () => {
+    const getFlowNodes = jasmine.createSpy('getFlowNodes').and.returnValue(of(FLOW_NODES));
+    const cache = new MigrationFlowNodeCacheService({getFlowNodes} as any);
+
+    cache.getFlowNodes('src:1:aaa', 'tgt:2:bbb').subscribe();
+    cache.getFlowNodes('src:1:aaa', 'tgt:2:bbb').subscribe();
+
+    expect(getFlowNodes).toHaveBeenCalledTimes(1);
   });
 
   it('reports the engine refusal against the row that caused it', () => {
@@ -129,11 +173,7 @@ describe('MigrationActivityMappingComponent', () => {
   // Neither side resolved means there is nothing to offer and nothing to judge.
   it('clears the activities and the refusals when a process is unset', () => {
     resolve(false);
-    component.request = {
-      sourceProcessDefinitionId: null,
-      targetProcessDefinitionId: 'tgt:2:bbb',
-      suggest: false,
-    };
+    component.request = {sourceProcessDefinitionId: null, targetProcessDefinitionId: 'tgt:2:bbb'};
     component.ngOnChanges({request: {} as any});
 
     expect(component.activities).toEqual({sourceNodes: [], targetNodes: [], loading: false});

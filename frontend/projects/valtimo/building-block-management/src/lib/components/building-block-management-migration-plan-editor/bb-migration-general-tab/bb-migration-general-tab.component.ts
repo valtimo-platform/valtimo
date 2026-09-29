@@ -25,7 +25,7 @@ import {MigrationGeneralFieldsComponent} from '../../migration-plan-editor/migra
 @Component({
   standalone: true,
   selector: 'valtimo-bb-migration-general-tab',
-  templateUrl: './migration-general-tab.component.html',
+  templateUrl: './bb-migration-general-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TranslateModule, MigrationGeneralFieldsComponent],
 })

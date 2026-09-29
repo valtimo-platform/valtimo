@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-// What the list itself renders. The run's own figures are the detail modal's — see its stylesheet.
-::ng-deep .cds-tag--no-margin {
-  margin: 0;
-}
+import {TagType} from 'carbon-components-angular';
+import {BuildingBlockMigrationStatus} from '../models';
 
-.migration-progress {
-  margin-right: var(--cds-spacing-03);
-  font-variant-numeric: tabular-nums;
+/** The tag colour a run's status wears — the same for cases and building blocks, in both the list column and the detail modal. */
+export function migrationStatusTagType(status: BuildingBlockMigrationStatus): TagType {
+  switch (status) {
+    case 'RUNNING':
+      return 'blue';
+    case 'COMPLETED':
+      return 'green';
+    case 'COMPLETED_WITH_ERRORS':
+      return 'red';
+    default:
+      return 'gray';
+  }
 }

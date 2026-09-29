@@ -66,4 +66,74 @@ describe('MigrationProcessMigrationTabComponent', () => {
 
     expect(group.get('targetProcessDefinitionKey')!.value).toBe('main');
   });
+
+  describe('suggested activity mapping', () => {
+    const pickedInstruction = (): FormGroup => {
+      component.sourceProcessDefinitions = {main: 'main:1:aaa'};
+      component.targetProcessDefinitions = {main: 'main:2:ccc'};
+      const group = firstInstruction();
+      group.get('sourceProcessDefinitionKey')!.setValue('main');
+      return group;
+    };
+
+    const addRow = (group: FormGroup): void => {
+      component
+        .mapActivitiesArray(group)
+        .push(new FormBuilder().group({source: 'task-a', target: 'task-b'}));
+    };
+
+    it('owes a suggestion once the author picks a process', () => {
+      expect(component.isSuggestPending(pickedInstruction())).toBeTrue();
+    });
+
+    // Spending the suggestion must not reload the child, or every suggestion resolves twice.
+    it('spends an applied suggestion without handing the child a new request', () => {
+      const group = pickedInstruction();
+      const request = component.mappingRequestFor(group);
+
+      component.onSuggestSettled(group, true);
+
+      expect(component.isSuggestPending(group)).toBeFalse();
+      expect(component.mappingRequestFor(group)).toBe(request);
+    });
+
+    // Nothing to overwrite yet, so the next expand may try again.
+    it('keeps a failed suggestion owed while there are no rows', () => {
+      const group = pickedInstruction();
+
+      component.onSuggestSettled(group, false);
+
+      expect(component.isSuggestPending(group)).toBeTrue();
+    });
+
+    it('drops a failed suggestion when there are rows it would overwrite', () => {
+      const group = pickedInstruction();
+      addRow(group);
+
+      component.onSuggestSettled(group, false);
+
+      expect(component.isSuggestPending(group)).toBeFalse();
+    });
+
+    // The author typing rows after a failed try: a retry on the next expand would wipe them.
+    it('drops an owed suggestion as soon as the author edits the rows', () => {
+      const group = pickedInstruction();
+      component.onSuggestSettled(group, false);
+
+      addRow(group);
+
+      expect(component.isSuggestPending(group)).toBeFalse();
+    });
+
+    // The scoping maps re-arriving with the same ids must not reload every card.
+    it('keeps the request reference when the resolved ids did not change', () => {
+      const group = pickedInstruction();
+      const request = component.mappingRequestFor(group);
+
+      component.targetProcessDefinitions = {main: 'main:2:ccc'};
+      component.ngOnChanges({targetProcessDefinitions: {} as any});
+
+      expect(component.mappingRequestFor(group)).toBe(request);
+    });
+  });
 });

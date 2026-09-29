@@ -26,7 +26,8 @@ import {
   NotificationModule,
   TabsModule,
 } from 'carbon-components-angular';
-import {MigrationPlanEditorHost} from '../migration-plan-editor-base.component';
+import {MigrationPlanSummary} from '../../../models';
+import {MigrationPlanEditorBaseComponent} from '../migration-plan-editor-base/migration-plan-editor-base.component';
 import {MigrationBuildingBlockTabComponent} from '../migration-building-block-tab/migration-building-block-tab.component';
 import {MigrationDataMigrationTabComponent} from '../migration-data-migration-tab/migration-data-migration-tab.component';
 import {MigrationProcessMigrationTabComponent} from '../migration-process-migration-tab/migration-process-migration-tab.component';
@@ -54,7 +55,7 @@ import {MigrationProcessMigrationTabComponent} from '../migration-process-migrat
 })
 export class MigrationPlanEditorShellComponent {
   /** The editor this chrome belongs to — one input rather than twenty, since every one of them would come from the same object. */
-  @Input() public editor!: MigrationPlanEditorHost;
+  @Input() public editor!: MigrationPlanEditorBaseComponent<unknown, MigrationPlanSummary>;
 
   constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([WarningFilled16]);

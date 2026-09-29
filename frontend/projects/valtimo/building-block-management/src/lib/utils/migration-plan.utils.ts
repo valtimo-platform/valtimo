@@ -19,7 +19,7 @@ import {
   MigrationEditorTranslationKeys,
   MigrationPlan,
   MigrationPlanSource,
-} from '../../models';
+} from '../models';
 
 /** Pure readings of the plan JSON, so both editor hosts answer these questions identically. */
 

@@ -101,11 +101,10 @@ interface InstructionActivities {
   loading: boolean;
 }
 
-/** What one instruction's activity mapping resolves against. A new object asks for a reload; `suggest` separates the author picking another process — which replaces the rows — from a plan being restored, which keeps them. */
+/** What one instruction's activity mapping resolves against. A new object asks for a reload. Whether that load suggests is the child's separate `suggest` input, so spending the suggestion does not reload. */
 interface ActivityMappingRequest {
   sourceProcessDefinitionId: string | null;
   targetProcessDefinitionId: string | null;
-  suggest: boolean;
 }
 
 /** A single instruction of the `processMigration` block, translated 1:1 into an Operaton MigrationPlan. */
@@ -196,6 +195,7 @@ interface MigrationEditorTestIds {
   deletePatchButton: string;
   addInstructionButton: string;
   deleteInstructionButton: string;
+  toggleInstructionButton: string;
   addMappingButton: string;
   deleteMappingButton: string;
   addVariableButton: string;
@@ -203,6 +203,7 @@ interface MigrationEditorTestIds {
   addBuildingBlockButton: string;
   removeBuildingBlockButton: string;
   deleteBuildingBlockEntryButton: string;
+  toggleBuildingBlockEntryButton: string;
   sourceKeySelect: string;
   sourceVersionSelect: string;
   targetReadout: string;

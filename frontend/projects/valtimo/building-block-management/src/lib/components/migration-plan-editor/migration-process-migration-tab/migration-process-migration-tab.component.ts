@@ -52,6 +52,7 @@ import {
   ValuePathContext,
 } from '../../../models';
 import {MigrationActivityMappingComponent} from '../migration-activity-mapping/migration-activity-mapping.component';
+import {MigrationFlowNodeCacheService} from './migration-flow-node-cache.service';
 
 /** The `processMigration` component of a plan, for either blueprint type — the blueprint reaches it only through [api] and the two process maps. */
 @Component({
@@ -60,6 +61,7 @@ import {MigrationActivityMappingComponent} from '../migration-activity-mapping/m
   templateUrl: './migration-process-migration-tab.component.html',
   styleUrls: ['../styles/migration-tab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [MigrationFlowNodeCacheService],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -118,6 +120,8 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
   // A suggested plan carries one instruction per process of the blueprint, each with its own mapping, so collapsed is the default.
   private readonly _expanded = new Set<FormGroup>();
   private readonly _mappingRequests = new Map<FormGroup, ActivityMappingRequest>();
+  // Instructions whose author picked another process and has not had the suggestion for it yet.
+  private readonly _pendingSuggest = new Set<FormGroup>();
   private _lastEmitted = '[]';
   private readonly _subscriptions = new Subscription();
 
@@ -168,9 +172,13 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     this._subscriptions.unsubscribe();
   }
 
-  /** What the instruction's activity mapping resolves against. A new object on every request, so the child reloads. */
+  /** What the instruction's activity mapping resolves against. A new object only when the ids change, so the child reloads only then. */
   public mappingRequestFor(group: FormGroup): ActivityMappingRequest | null {
     return this._mappingRequests.get(group) ?? null;
+  }
+
+  public isSuggestPending(group: FormGroup): boolean {
+    return this._pendingSuggest.has(group);
   }
 
   public mapActivitiesArray(group: FormGroup): FormArray {
@@ -225,6 +233,7 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     const group = this.instructionsArray.at(index) as FormGroup;
     this._expanded.delete(group);
     this._mappingRequests.delete(group);
+    this._pendingSuggest.delete(group);
     this.instructionsArray.removeAt(index);
   }
 
@@ -237,15 +246,13 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
   }
 
   /** The mapping child applied a suggestion, which its `emitEvent: false` writes kept from the form's own `valueChanges`. */
-  public onMappingsChange(group: FormGroup): void {
-    this.clearSuggest(group);
+  public onMappingsChange(): void {
     this.emit();
   }
 
-  /** Spend the suggestion once. The child is rebuilt on every expand, and a still-set flag would overwrite the author's edits. */
-  private clearSuggest(group: FormGroup): void {
-    const request = this._mappingRequests.get(group);
-    if (request?.suggest) this._mappingRequests.set(group, {...request, suggest: false});
+  /** Spend the suggestion once tried: the child is rebuilt on every expand, and a still-pending one would overwrite the author's rows. A failed try with no rows to overwrite stays pending, so the next expand retries it. */
+  public onSuggestSettled(group: FormGroup, applied: boolean): void {
+    if (applied || this.mapActivitiesArray(group).length > 0) this._pendingSuggest.delete(group);
   }
 
   private createInstructionGroup(instruction?: ProcessMigrationInstruction): FormGroup {
@@ -279,6 +286,10 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     this._subscriptions.add(
       targetControl.valueChanges.subscribe(() => this.requestMapping(group, true))
     );
+    // Only the author's edits reach here — suggestions write with `emitEvent: false` — and a pending suggestion must not overwrite them.
+    this._subscriptions.add(
+      group.get('mapActivities')!.valueChanges.subscribe(() => this._pendingSuggest.delete(group))
+    );
 
     return group;
   }
@@ -311,14 +322,27 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     return 'null';
   }
 
-  /** Hand the mapping child a fresh request so it reloads. [suggest] separates the author picking another process from a plan being restored — see [ActivityMappingRequest]. */
+  /** Hand the mapping child a fresh request when the ids changed. [suggest] separates the author picking another process, which replaces the rows, from a plan being restored, which keeps them. */
   private requestMapping(group: FormGroup, suggest: boolean): void {
-    this._mappingRequests.set(group, {
+    if (suggest) this._pendingSuggest.add(group);
+
+    const request: ActivityMappingRequest = {
       sourceProcessDefinitionId: this.definitionIdFor(group, 'source') ?? null,
       targetProcessDefinitionId: this.definitionIdFor(group, 'target') ?? null,
-      suggest,
-    });
+    };
+    const current = this._mappingRequests.get(group);
+    // Same ids and nothing to suggest: keep the reference, or the child reloads for nothing.
+    if (!suggest && current && this.isSameRequest(current, request)) return;
+
+    this._mappingRequests.set(group, request);
     this.cdr.markForCheck();
+  }
+
+  private isSameRequest(a: ActivityMappingRequest, b: ActivityMappingRequest): boolean {
+    return (
+      a.sourceProcessDefinitionId === b.sourceProcessDefinitionId &&
+      a.targetProcessDefinitionId === b.targetProcessDefinitionId
+    );
   }
 
   private definitionIdFor(group: FormGroup, side: 'source' | 'target'): string | undefined {
@@ -394,6 +418,7 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     // The groups below are new instances, so anything still held here refers to a form that no longer exists.
     this._expanded.clear();
     this._mappingRequests.clear();
+    this._pendingSuggest.clear();
     this.instructionsArray.clear({emitEvent: false});
     instructions.forEach(instruction => {
       const group = this.createInstructionGroup(instruction);

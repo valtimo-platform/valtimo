@@ -32,7 +32,7 @@ import {
 } from '../../services';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../constants';
 import {BuildingBlockEntryOwnerType, MigrationPlanManagement} from '../../models';
-import {MigrationGeneralTabComponent} from './case-migration-general-tab/migration-general-tab.component';
+import {MigrationGeneralTabComponent} from './migration-general-tab/migration-general-tab.component';
 
 /** The migration plan editor of one case definition version. What is added over [MigrationPlanEditorBaseComponent] is what only a case plan has — conditions, triggers, `runAfter`, and `case:` metadata in its value pickers. */
 @Component({

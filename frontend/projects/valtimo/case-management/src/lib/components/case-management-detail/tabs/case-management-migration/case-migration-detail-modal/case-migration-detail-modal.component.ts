@@ -73,13 +73,17 @@ export class CaseMigrationDetailModalComponent implements AfterViewInit {
   @ViewChild('caseIdColumn') public caseIdColumnTemplate!: TemplateRef<unknown>;
   @ViewChild('errorColumn') public errorColumnTemplate!: TemplateRef<unknown>;
 
-  @Input() public open = false;
+  /** Paging and expanded stacktraces reset on every open — Start and Dry run close the modal without deselecting the plan. */
+  @Input() public set open(value: boolean) {
+    if (value && !this.$open()) this.resetPaging();
+    this.$open.set(value);
+  }
+
   /** Where a failed case's id links to. Null renders the id as plain text. */
   @Input() public caseDefinitionKey: string | null = null;
 
-  /** The plan on show. Kept live by the list's poll, so this is re-set on every refresh — paging only resets when it is a different plan. */
+  /** The plan on show. Kept live by the list's poll, so this is re-set on every refresh. */
   @Input() public set plan(value: MigrationPlanViewModel | null) {
-    if (value?.migrationKey !== this.$plan()?.migrationKey) this.resetPaging();
     this.$plan.set(value);
   }
 
@@ -94,6 +98,7 @@ export class CaseMigrationDetailModalComponent implements AfterViewInit {
     showPageInput: false,
   };
 
+  public readonly $open = signal<boolean>(false);
   public readonly $plan = signal<MigrationPlanViewModel | null>(null);
   public readonly $errorFields = signal<ColumnConfig[]>([]);
   public readonly $warningFields = signal<ColumnConfig[]>([]);
@@ -116,11 +121,11 @@ export class CaseMigrationDetailModalComponent implements AfterViewInit {
   public readonly $dryRunErrorPage = signal<number>(1);
   public readonly $dryRunWarningPage = signal<number>(1);
 
-  // Case ids whose full stacktrace is expanded. A new Set per change so the OnPush view re-renders.
-  private readonly _$expandedErrors = signal<ReadonlySet<string>>(new Set());
-
   protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
   protected readonly statusTagType = migrationStatusTagType;
+
+  // Case ids whose full stacktrace is expanded. A new Set per change so the OnPush view re-renders.
+  private readonly _$expandedErrors = signal<ReadonlySet<string>>(new Set());
 
   constructor(
     private readonly globalNotificationService: GlobalNotificationService,

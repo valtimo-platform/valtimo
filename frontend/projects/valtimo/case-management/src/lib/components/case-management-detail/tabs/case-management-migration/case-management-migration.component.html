@@ -63,7 +63,7 @@
 <valtimo-case-migration-detail-modal
   [caseDefinitionKey]="caseDefinitionKey"
   [open]="$showDetailModal()"
-  [plan]="selectedPlan$ | async"
+  [plan]="$selectedPlan()"
   (closeEvent)="onCloseDetail()"
   (dryRunEvent)="onDryRunPlan($event)"
   (startEvent)="onStartPlan($event)"

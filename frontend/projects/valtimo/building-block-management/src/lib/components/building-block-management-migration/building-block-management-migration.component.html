@@ -42,14 +42,8 @@
   (confirmEvent)="onDeleteConfirm($event)"
 ></valtimo-confirmation-modal>
 
-<cds-modal
-  valtimoCdsModal
-  *ngIf="{plan: selectedPlan$ | async} as obs"
-  size="md"
-  [open]="$showDetailModal()"
-  (close)="onCloseDetail()"
->
-  @if (obs.plan; as plan) {
+<cds-modal valtimoCdsModal size="md" [open]="$showDetailModal()" (close)="onCloseDetail()">
+  @if ($selectedPlan(); as plan) {
     <cds-modal-header [cdsLayer]="1" (closeSelect)="onCloseDetail()">
       <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
     </cds-modal-header>

@@ -43,9 +43,9 @@ import {
   InputModule,
   SelectModule,
 } from 'carbon-components-angular';
-import {ProcessService} from '@valtimo/process';
-import {forkJoin, Observable, of, Subscription} from 'rxjs';
-import {catchError, debounceTime} from 'rxjs/operators';
+import {FlowNodeMigration} from '@valtimo/process';
+import {forkJoin, Observable, of, Subject, Subscription} from 'rxjs';
+import {catchError, debounceTime, map, switchMap} from 'rxjs/operators';
 import {
   ActivityMappingRequest,
   FlowNodeOption,
@@ -53,6 +53,14 @@ import {
   MigrationEditorApi,
   MigrationEditorTestIds,
 } from '../../../models';
+import {MigrationFlowNodeCacheService} from '../migration-process-migration-tab/migration-flow-node-cache.service';
+
+/** One load's answer. [suggested] is whether it asked for a suggestion, so the host hears the try even when it failed. */
+interface ResolvedMapping {
+  flowNodes: FlowNodeMigration | null;
+  mapping: Record<string, string> | null;
+  suggested: boolean;
+}
 
 /** The `mapActivities` half of one `processMigration` instruction: which activities each side offers, what the engine suggests for them, and which of the author's pairs it refuses. */
 @Component({
@@ -84,6 +92,9 @@ export class MigrationActivityMappingComponent implements OnInit, OnChanges, OnD
   /** The process definition ids to resolve against. A new object reloads; see [ActivityMappingRequest]. */
   @Input() public request: ActivityMappingRequest | null = null;
 
+  /** Whether a load replaces the rows with the engine's suggestion. Read when the load starts, so clearing it never reloads. */
+  @Input() public suggest = false;
+
   /** What mapping activities means for this blueprint type — the one hint the two hosts word differently. */
   @Input() public hintKey: string | null = null;
 
@@ -92,30 +103,48 @@ export class MigrationActivityMappingComponent implements OnInit, OnChanges, OnD
   /** Raised when a suggestion replaced the rows, which the form's own `valueChanges` does not see — they are applied with `emitEvent: false` so the reload does not retrigger itself. */
   @Output() public readonly mappingsChange = new EventEmitter<void>();
 
+  /** Raised once a suggestion was asked: `true` when it replaced the rows, `false` when it failed. Not raised without an api — the suggestion stays owed. */
+  @Output() public readonly suggestSettledEvent = new EventEmitter<boolean>();
+
   public activities: InstructionActivities = {sourceNodes: [], targetNodes: [], loading: false};
 
   // Incompatible source activity id -> the engine's failure messages, as judged live.
   private _invalid: Record<string, string[]> = {};
+  private readonly _request$ = new Subject<ActivityMappingRequest | null>();
+  private readonly _validate$ = new Subject<void>();
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly cdr: ChangeDetectorRef,
     private readonly iconService: IconService,
-    private readonly processService: ProcessService
+    private readonly flowNodeCache: MigrationFlowNodeCacheService
   ) {
     this.iconService.registerAll([Add16, TrashCan16]);
+
+    // Subscribed here: the first ngOnChanges runs before ngOnInit. switchMap drops an answer a newer request or edit has overtaken.
+    this._subscriptions.add(
+      this._request$
+        .pipe(switchMap(request => this.load(request)))
+        .subscribe(resolved => this.apply(resolved))
+    );
+    this._subscriptions.add(
+      this._validate$.pipe(switchMap(() => this.check())).subscribe(invalid => {
+        this._invalid = invalid;
+        this.cdr.markForCheck();
+      })
+    );
   }
 
   public ngOnInit(): void {
     // Debounced re-check on the author's edits only — suggestion and restore apply rows with `emitEvent: false` and validate explicitly.
     this._subscriptions.add(
-      this.mappings.valueChanges.pipe(debounceTime(300)).subscribe(() => this.validate())
+      this.mappings.valueChanges.pipe(debounceTime(300)).subscribe(() => this._validate$.next())
     );
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['request']) this.resolve();
+    if (changes['request']) this._request$.next(this.request);
   }
 
   public ngOnDestroy(): void {
@@ -141,78 +170,67 @@ export class MigrationActivityMappingComponent implements OnInit, OnChanges, OnD
     this.mappings.removeAt(index);
   }
 
-  /** Reload the activity options and — when the author picked another process — the suggested mapping, applying both in the same tick so each select has its new options before its value is reapplied. */
-  private resolve(): void {
-    const sourceId = this.request?.sourceProcessDefinitionId;
-    const targetId = this.request?.targetProcessDefinitionId;
+  /** The activity options and — when [suggest] is set — the suggested mapping, fetched together so each select has its new options before its value is reapplied. */
+  private load(request: ActivityMappingRequest | null): Observable<ResolvedMapping> {
+    const sourceId = request?.sourceProcessDefinitionId;
+    const targetId = request?.targetProcessDefinitionId;
 
-    if (!sourceId || !targetId) {
-      this.activities = {sourceNodes: [], targetNodes: [], loading: false};
-      this._invalid = {};
-      this.cdr.markForCheck();
-      return;
-    }
+    if (!sourceId || !targetId) return of({flowNodes: null, mapping: null, suggested: false});
 
     this.activities = {sourceNodes: [], targetNodes: [], loading: true};
     this.cdr.markForCheck();
 
-    // A failed suggestion (or an unbound api) leaves the rows untouched: null = "don't touch".
+    const suggested = this.suggest && !!this.api;
+    // A failed suggestion leaves the rows untouched: null = "don't touch".
     const mapping$: Observable<Record<string, string> | null> =
-      this.request?.suggest && this.api
+      suggested && this.api
         ? this.api
             .suggestActivityMapping(sourceId, targetId)
             .pipe(catchError(() => of<Record<string, string> | null>(null)))
         : of<Record<string, string> | null>(null);
 
-    this._subscriptions.add(
-      forkJoin({
-        flowNodes: this.processService
-          .getFlowNodes(sourceId, targetId)
-          .pipe(catchError(() => of(null))),
-        mapping: mapping$,
-      }).subscribe(({flowNodes, mapping}) => {
-        // Straight from each side's own flow nodes — no augmenting with stored values, so the dropdowns only offer activities that belong to the selected process.
-        this.activities = {
-          sourceNodes: flowNodes ? this.toOptions(flowNodes.sourceFlowNodeMap) : [],
-          targetNodes: flowNodes ? this.toOptions(flowNodes.targetFlowNodeMap) : [],
-          loading: false,
-        };
-
-        if (mapping) {
-          this.mappings.clear({emitEvent: false});
-          Object.entries(mapping).forEach(([source, target]) =>
-            this.mappings.push(this.createMappingGroup(source, target), {emitEvent: false})
-          );
-          this.mappingsChange.emit();
-        }
-
-        this.validate();
-        this.cdr.markForCheck();
-        // Options and rows are now set together, so a single re-sync reflects both selects.
-        this.reapplySelections();
-      })
-    );
+    return forkJoin({
+      flowNodes: this.flowNodeCache.getFlowNodes(sourceId, targetId),
+      mapping: mapping$,
+    }).pipe(map(({flowNodes, mapping}) => ({flowNodes, mapping, suggested})));
   }
 
-  /** Ask the engine whether this mapping is a valid migration; clears the flags when it cannot judge. */
-  private validate(): void {
+  private apply({flowNodes, mapping, suggested}: ResolvedMapping): void {
+    // Straight from each side's own flow nodes — no augmenting with stored values, so the dropdowns only offer activities that belong to the selected process.
+    this.activities = {
+      sourceNodes: flowNodes ? this.toOptions(flowNodes.sourceFlowNodeMap) : [],
+      targetNodes: flowNodes ? this.toOptions(flowNodes.targetFlowNodeMap) : [],
+      loading: false,
+    };
+
+    if (mapping) {
+      this.mappings.clear({emitEvent: false});
+      Object.entries(mapping).forEach(([source, target]) =>
+        this.mappings.push(this.createMappingGroup(source, target), {emitEvent: false})
+      );
+      this.mappingsChange.emit();
+    }
+    if (suggested) this.suggestSettledEvent.emit(!!mapping);
+
+    this._validate$.next();
+    this.cdr.markForCheck();
+    // Options and rows are now set together, so a single re-sync reflects both selects.
+    this.reapplySelections();
+  }
+
+  /** The engine's verdict on this mapping as a migration; empty when it cannot judge. */
+  private check(): Observable<Record<string, string[]>> {
     const sourceId = this.request?.sourceProcessDefinitionId;
     const targetId = this.request?.targetProcessDefinitionId;
     const mapping = this.mappingObject();
 
     if (!this.api || !sourceId || !targetId || Object.keys(mapping).length === 0) {
-      this._invalid = {};
-      this.cdr.markForCheck();
-      return;
+      return of<Record<string, string[]>>({});
     }
 
-    this.api
+    return this.api
       .validateActivityMapping(sourceId, targetId, mapping)
-      .pipe(catchError(() => of<Record<string, string[]>>({})))
-      .subscribe(invalid => {
-        this._invalid = invalid;
-        this.cdr.markForCheck();
-      });
+      .pipe(catchError(() => of<Record<string, string[]>>({})));
   }
 
   /** The `sourceActivityId -> targetActivityId` map, skipping incomplete rows. */

@@ -14,19 +14,4 @@
  * limitations under the License.
  */
 
-import {TagType} from 'carbon-components-angular';
-import {BuildingBlockMigrationStatus} from '../../models';
-
-/** The tag colour a run's status wears — the same for cases and building blocks, in both the list column and the detail modal. */
-export function migrationStatusTagType(status: BuildingBlockMigrationStatus): TagType {
-  switch (status) {
-    case 'RUNNING':
-      return 'blue';
-    case 'COMPLETED':
-      return 'green';
-    case 'COMPLETED_WITH_ERRORS':
-      return 'red';
-    default:
-      return 'gray';
-  }
-}
+export * from './migration-schedule.utils';

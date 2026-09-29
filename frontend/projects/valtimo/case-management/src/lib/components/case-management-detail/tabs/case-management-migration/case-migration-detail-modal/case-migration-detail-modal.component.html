@@ -15,7 +15,7 @@
   -->
 
 <!-- Wait for a plan: Carbon focuses the modal's first focusable element on open, and `[open]` binds before `[plan]`. -->
-<cds-modal valtimoCdsModal size="md" [open]="open && !!$plan()" (close)="onClose()">
+<cds-modal valtimoCdsModal size="md" [open]="$open() && !!$plan()" (close)="onClose()">
   @if ($plan(); as plan) {
     <cds-modal-header [cdsLayer]="1" (closeSelect)="onClose()">
       <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
@@ -289,6 +289,7 @@
               : 'caseManagement.migration.errors.showStacktrace'
             ) | translate
           "
+          [attr.data-test-id]="testIds.toggleErrorButton"
           (click)="onToggleError($event, data.item.caseId)"
         >
           <svg
@@ -302,6 +303,7 @@
           size="sm"
           [iconOnly]="true"
           [title]="'caseManagement.migration.errors.copyFullError' | translate"
+          [attr.data-test-id]="testIds.copyErrorButton"
           (click)="onCopyError($event, data.item.message)"
         >
           <svg cdsIcon="copy" size="16"></svg>
