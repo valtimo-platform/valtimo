@@ -62,6 +62,8 @@
 
           <cds-sidenav-menu
             [title]="menuItem | menuItemTranslate | async"
+            [valtimoSubmenuTitleClick]="!!menuItem.titleLink"
+            (submenuTitleClickEvent)="onSubmenuTitleClick(menuItem, $event)"
             [attr.data-testid]="'sidenav-item-' + menuItem.title"
           >
             <ng-container

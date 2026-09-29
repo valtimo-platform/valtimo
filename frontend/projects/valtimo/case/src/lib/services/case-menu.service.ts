@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +14,24 @@
  * limitations under the License.
  */
 
-import {Injectable, OnDestroy} from '@angular/core';
-import {CaseDefinition, DocumentService} from '@valtimo/document';
+import {Injectable} from '@angular/core';
 import {ConfigService, MenuItem} from '@valtimo/shared';
-import {BehaviorSubject, from, Observable, of, Subscription} from 'rxjs';
-import {filter, switchMap} from 'rxjs/operators';
-import {SseService} from '@valtimo/sse';
+import {Observable, of} from 'rxjs';
+import {map} from 'rxjs/operators';
 import {MenuService} from '@valtimo/components';
+import {PinnedItem, PinnedItemType} from '../models';
+import {PinnedItemsService} from './pinned-items.service';
+
+const CASES_OVERVIEW_LINK = ['/cases-overview'];
 
 @Injectable({providedIn: 'root'})
-export class CaseMenuService implements OnDestroy {
-  private readonly _subscriptions = new Subscription();
-  public readonly disableCaseCount$: Observable<boolean>;
-
+export class CaseMenuService {
   constructor(
-    private readonly documentService: DocumentService,
-    private readonly sseService: SseService,
     private readonly menuService: MenuService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly pinnedItemsService: PinnedItemsService
   ) {
-    this.disableCaseCount$ = this.configService.getFeatureToggleObservable('disableCaseCount');
     this.menuService.registerAppendMenuItemsFunction(this.appendCaseMenuItems.bind(this));
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
   }
 
   public appendCaseMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> => {
@@ -46,7 +39,7 @@ export class CaseMenuService implements OnDestroy {
       this.configService.config?.featureToggles?.enableGenericCaseList === true;
 
     if (isGenericCaseList) {
-      const index = menuItems.findIndex(i => i.title === 'Cases' || i.title === 'Dossiers');
+      const index = this.getCasesIndex(menuItems);
       if (index >= 0) {
         menuItems[index].link = ['/cases'];
         delete menuItems[index].children;
@@ -54,62 +47,54 @@ export class CaseMenuService implements OnDestroy {
       return of(menuItems);
     }
 
-    return from(this.documentService.getCaseDefinitions({active: true})).pipe(
-      switchMap(definitions => {
-        const countMap = this.getCountMap(definitions);
-
-        const caseItems: MenuItem[] = definitions.map((def, index) => ({
-          link: ['/cases/' + def.caseDefinitionKey],
-          title: def.name,
-          iconClass: 'icon mdi mdi-dot-circle',
-          sequence: index,
-          show: true,
-          ...(countMap && {count$: countMap.get(def.caseDefinitionKey)}),
-        }));
-
-        const index = menuItems.findIndex(i => i.title === 'Cases' || i.title === 'Dossiers');
+    // Kept subscribed on purpose: pinning emits, which re-emits the menu items.
+    return this.pinnedItemsService.pinnedItems$.pipe(
+      map((pinnedItems: PinnedItem[]) => {
+        const index = this.getCasesIndex(menuItems);
 
         if (index >= 0) {
-          menuItems[index].children = caseItems;
+          menuItems[index].titleLink = CASES_OVERVIEW_LINK;
+          menuItems[index].children = this.toMenuItems(pinnedItems);
         }
 
-        return of(menuItems);
+        return menuItems;
       })
     );
   };
 
-  private getCountMap(definitions: CaseDefinition[]): Map<string, BehaviorSubject<number>> {
-    const map = new Map<string, BehaviorSubject<number>>();
-
-    definitions.forEach(def => {
-      map.set(def.caseDefinitionKey, new BehaviorSubject<number>(0));
-    });
-
-    this._subscriptions.add(
-      this.sseService
-        .getSseMessagesObservableByEventType(['CASE_UNASSIGNED', 'CASE_ASSIGNED', 'CASE_CREATED'])
-        .subscribe(() => this.updateCounts(map))
-    );
-
-    this.updateCounts(map);
-    return map;
+  private getCasesIndex(menuItems: MenuItem[]): number {
+    return menuItems.findIndex(item => item.title === 'Cases' || item.title === 'Dossiers');
   }
 
-  private updateCounts(map: Map<string, BehaviorSubject<number>>): void {
-    this._subscriptions.add(
-      this.disableCaseCount$
-        .pipe(
-          filter(disableCaseCount => !disableCaseCount),
-          switchMap(_ => this.documentService.getOpenDocumentCount())
-        )
-        .subscribe(counts => {
-          counts.forEach(entry => {
-            const subject = map.get(entry.documentDefinitionName);
-            if (subject) {
-              subject.next(entry.openDocumentCount);
-            }
-          });
-        })
-    );
+  /**
+   * Built straight from the pinned items: the backend already resolved the name and colour, and
+   * left out what the user may no longer see.
+   */
+  private toMenuItems(pinnedItems: PinnedItem[]): MenuItem[] {
+    const menuItems: MenuItem[] = pinnedItems
+      .filter((pinnedItem: PinnedItem) => !!pinnedItem.displayName)
+      .map((pinnedItem: PinnedItem, index: number) => ({
+        link:
+          pinnedItem.itemType === PinnedItemType.CASE_DEFINITION_GROUP
+            ? ['/groups/' + pinnedItem.itemKey]
+            : ['/cases/' + pinnedItem.itemKey],
+        title: pinnedItem.displayName as string,
+        iconClass: 'icon mdi mdi-dot-circle',
+        color: pinnedItem.color,
+        sequence: index,
+        show: true,
+      }));
+
+    return menuItems.length > 0 ? menuItems : [this.getPlaceholderMenuItem()];
+  }
+
+  private getPlaceholderMenuItem(): MenuItem {
+    return {
+      link: CASES_OVERVIEW_LINK,
+      title: 'case.menu.pinPlaceholder',
+      iconClass: 'icon mdi mdi-pin',
+      sequence: 0,
+      show: true,
+    };
   }
 }

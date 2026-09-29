@@ -19,7 +19,41 @@
     "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
+    "menu": {
+      "pinPlaceholder": "Pin items om ze hier te zetten"
+    },
     "allCases": "Alle dossiers",
+    "overview": {
+      "title": "Cases overzicht",
+      "pin": "Vastzetten in het menu",
+      "pinnedToast": "Staat nu in je zijbalk onder Cases.",
+      "unpinnedToast": "Is losgemaakt uit je zijbalk.",
+      "unpin": "Verwijderen uit het menu",
+      "search": {
+        "label": "Zoek zaaktypen en zaakgroepen",
+        "placeholder": "Zoek zaaktypen en zaakgroepen..."
+      },
+      "groups": {
+        "title": "Zaakgroepen",
+        "singular": "Zaakgroep",
+        "myCases": "Mijn dossiers in deze zaakgroep",
+        "noResults": "Geen zaakgroepen gevonden voor je zoekopdracht.",
+        "open": "{{title}} openen",
+        "pin": "Vastzetten in de zijbalk"
+      },
+      "types": {
+        "title": "Zaaktypen",
+        "singular": "Zaaktype",
+        "name": "Naam",
+        "noResults": "Geen zaaktypen gevonden voor je zoekopdracht.",
+        "open": "{{name}} openen",
+        "pin": "Vastzetten in de zijbalk"
+      },
+      "pinInfo": {
+        "title": "Zet de zaakgroepen die je vaak gebruikt in je zijbalk:",
+        "message": "klik op het pin-icoon bij een zaakgroep of zaaktype. Het verschijnt dan links onder Cases, zodat je er vanaf elke pagina in één klik bij bent."
+      }
+    },
     "exportButtonTooltip": "Exporteer huidige dossier lijst",
     "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {

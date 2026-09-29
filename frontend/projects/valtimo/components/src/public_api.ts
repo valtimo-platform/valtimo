@@ -272,6 +272,8 @@ export * from './lib/directives/fit-page/fit-page.directive';
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click
 export * from './lib/directives/ctrl-click/ctrl-click.directive';
+// submenu title click
+export * from './lib/directives/submenu-title-click/submenu-title-click.directive';
 // overflow menu (floating-ui based)
 export * from './lib/components/overflow-menu/overflow-menu.component';
 export * from './lib/components/overflow-menu/overflow-menu-option/overflow-menu-option.component';

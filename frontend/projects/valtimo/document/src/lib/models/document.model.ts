@@ -400,6 +400,8 @@ interface CaseDefinition {
   caseDefinitionVersionTag: string;
   canHaveAssignee: boolean;
   autoAssignTasks: boolean;
+  // Set per version in case management; absent until someone picks one.
+  color?: string;
 }
 
 interface CaseDefinitionGroup {

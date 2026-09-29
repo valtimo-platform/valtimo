@@ -42,4 +42,16 @@
   .empty-menu-icon-text {
     font-weight: 600 !important;
   }
+
+  // Own element rather than the icon container, which the sidebar collapses to zero width.
+  // It has to stay inside the label box: the sidebar clips anything outside it (overflow: hidden).
+  .menu-item-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: 0.375rem;
+    flex-shrink: 0;
+    align-self: center;
+    border-radius: 50%;
+  }
 }

@@ -24,8 +24,15 @@ import {ROLE_USER} from '@valtimo/shared';
 import {CaseInspectionComponent} from './case-inspection/case-inspection.component';
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
+import {CaseOverviewComponent} from './components/case-overview/case-overview.component';
 
 const routes: Routes = [
+  {
+    path: 'cases-overview',
+    component: CaseOverviewComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'case.overview.title', roles: [ROLE_USER]},
+  },
   {
     path: 'groups/:groupKey',
     component: CaseListComponent,

@@ -30,6 +30,12 @@
         <i class="{{ menuItem.iconClass }}"></i>
       </div>
 
+      <span
+        *ngIf="menuItem?.color"
+        class="menu-item-dot"
+        [style.background-color]="menuItem.color"
+      ></span>
+
       {{ obs.titleTranslation + (accent ? ' >' : '') }}
     </span>
   </div>

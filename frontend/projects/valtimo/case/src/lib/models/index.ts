@@ -26,3 +26,4 @@ export * from './case-list-quick-search.model';
 export * from './case-widget.model';
 export * from './case-inspection.models';
 export * from './case-list-context.model';
+export * from './pinned-item.model';

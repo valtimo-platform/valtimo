@@ -128,6 +128,17 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  public onSubmenuTitleClick(menuItem: MenuItem, event: MouseEvent): void {
+    if (!menuItem.titleLink) return;
+
+    if (event.ctrlKey || event.metaKey) {
+      this.openInNewTab(menuItem.titleLink);
+      return;
+    }
+
+    this.navigateToRoute(menuItem.titleLink, event);
+  }
+
   public onRightClick(sequence: string): boolean {
     this.overflowMenuSequence$.next(sequence);
 

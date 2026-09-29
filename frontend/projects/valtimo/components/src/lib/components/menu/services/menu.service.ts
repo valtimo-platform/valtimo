@@ -98,6 +98,10 @@ export class MenuService implements OnDestroy {
           const topLink = Array.isArray(item.link) ? item.link.join('/') : '';
           checkItemMatch(topLink, `${item.sequence}`);
 
+          // Parent sequence is passed as its own parent, so the item shows up as a breadcrumb.
+          if (Array.isArray(item.titleLink))
+            checkItemMatch(item.titleLink.join('/'), `${item.sequence}`, `${item.sequence}`);
+
           item.children?.forEach(child => {
             if (Array.isArray(child.link)) {
               const fullLink = [...(item.link || []), ...child.link].join('/');

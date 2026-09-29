@@ -25,6 +25,14 @@ import {GlobalNotificationService} from '../services';
     ::ng-deep.cds--toast-notification {
       width: 100%;
     }
+
+    /* Carbon drops its overlay top-right; the design puts notifications bottom-left. */
+    ::ng-deep .notification-overlay {
+      top: auto;
+      right: auto;
+      bottom: 1rem;
+      left: 1rem;
+    }
   `,
   providers: [NotificationService],
   standalone: true,

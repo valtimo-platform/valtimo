@@ -155,6 +155,13 @@
   }
 }
 
+// A pinned item's dot has to sit inside the label box, which the sidebar clips. Reclaiming its
+// width from the link padding keeps the label aligned with the items that have no dot.
+// Selector kept specific enough to beat Carbon's own padding rule for submenu links.
+::ng-deep .cds--side-nav__menu .cds--side-nav__menu-item a.cds--side-nav__link:has(.menu-item-dot) {
+  padding-left: calc(3.5rem - 0.875rem);
+}
+
 ::ng-deep .cds--side-nav__link[href*='javascript:return false;'] {
   padding-right: 3rem !important;
 }

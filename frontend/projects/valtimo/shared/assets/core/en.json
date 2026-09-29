@@ -19,7 +19,41 @@
     "ProcessTimerSkippedEvent": "Timer skipped > {{activityId}}"
   },
   "case": {
+    "menu": {
+      "pinPlaceholder": "Pin items to place them here"
+    },
     "allCases": "All cases",
+    "overview": {
+      "title": "Cases overview",
+      "pin": "Pin to menu",
+      "pinnedToast": "Now in your sidebar under Cases.",
+      "unpinnedToast": "Removed from your sidebar.",
+      "unpin": "Remove from menu",
+      "search": {
+        "label": "Search case types and case groups",
+        "placeholder": "Search case types and case groups..."
+      },
+      "groups": {
+        "title": "Case groups",
+        "singular": "Case group",
+        "myCases": "My cases in this case group",
+        "noResults": "No case groups match your search.",
+        "open": "Open {{title}}",
+        "pin": "Pin to sidebar"
+      },
+      "types": {
+        "title": "Case types",
+        "singular": "Case type",
+        "name": "Name",
+        "noResults": "No case types match your search.",
+        "open": "Open {{name}}",
+        "pin": "Pin to sidebar"
+      },
+      "pinInfo": {
+        "title": "Put the case groups you use most in your sidebar:",
+        "message": "click the pin icon on a case group or case type. It then appears on the left under Cases, so you can reach it from any page in a single click."
+      }
+    },
     "exportButtonTooltip": "Export current case list",
     "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
     "bulkAssign": {

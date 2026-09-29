@@ -29,6 +29,9 @@ interface MenuItem {
   sequence?: number;
   id?: string;
   link?: string[] | null;
+  titleLink?: string[];
+  // Tints the item's icon, e.g. the dot of a pinned case group or case type.
+  color?: string;
   textClass?: string;
   iconClass?: string;
   children?: MenuItem[];

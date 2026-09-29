@@ -40,7 +40,6 @@ import {
   InputModule,
   IsArrayPipe,
   ListColumnViewComponent,
-  MenuService,
   ModalModule,
   ObserveSizeDirective,
   ParagraphModule,
@@ -101,7 +100,7 @@ import {CaseProcessStartModalComponent} from './components/case-process-start-mo
 import {CaseSupportingProcessStartModalComponent} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
 import {TAB_MAP} from './constants';
-import {CaseBulkAssignService, CaseMenuService, CaseService, GroupMenuService} from './services';
+import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
 import {CaseDetailTabFormioComponent} from './components/case-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
 import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
@@ -225,11 +224,6 @@ export class CaseModule {
     };
   }
 
-  constructor(
-    private readonly _caseMenuService: CaseMenuService,
-    private readonly _groupMenuService: GroupMenuService,
-    private readonly _menuService: MenuService
-  ) {
-    this._menuService.registerAppendMenuItemsFunction(this._caseMenuService.appendCaseMenuItems);
-  }
+  // CaseMenuService registers its own append function; injecting it here is what instantiates it.
+  constructor(private readonly _caseMenuService: CaseMenuService) {}
 }
