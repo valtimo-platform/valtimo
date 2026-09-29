@@ -89,25 +89,26 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
 
   @Output() public readonly instructionsChange = new EventEmitter<BuildingBlockInstruction[]>();
 
-  public readonly form = this.fb.group({
-    instructions: this.fb.array<FormGroup>([]),
-  });
-
   /** The keys this tab offers. Not every deployed one on the remove tab — see [applyKeyFilter]. */
   public keyItems: SelectItem[] = [];
 
   /** What every open entry card reads; see [BuildingBlockEntryContext]. */
   public entryContext!: BuildingBlockEntryContext;
 
+  public readonly form = this.fb.group({
+    instructions: this.fb.array<FormGroup>([]),
+  });
+
+  private _lastEmitted = '[]';
   // Index-aligned with the form array; owned by the reused child migration tab components.
   private _dataMigrations: DataMigrationPatch[][] = [];
   private _processMigrations: ProcessMigrationInstruction[][] = [];
-  private _lastEmitted = '[]';
-  private readonly _subscriptions = new Subscription();
 
   // On the remove tab, the keys the source links. Null until they are known — every key stays offered until then.
   private _selectableKeys: Set<string> | null = null;
   private _linkedVersionsLoaded = false;
+
+  private readonly _subscriptions = new Subscription();
   // `key` -> the version this plan's target links, which is the only one an `add` entry may name.
   private readonly _linkedVersion = new Map<string, string>();
 

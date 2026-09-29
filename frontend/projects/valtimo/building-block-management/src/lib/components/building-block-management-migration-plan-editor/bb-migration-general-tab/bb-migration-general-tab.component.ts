@@ -48,9 +48,9 @@ export class BbMigrationGeneralTabComponent {
 
   @Output() public readonly generalChange = new EventEmitter<Partial<MigrationPlan>>();
 
-  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
-
   public fields: GeneralFieldsValue = {title: '', key: '', source: {}};
+
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
 
   public onFieldsChange(value: GeneralFieldsValue): void {
     this.generalChange.emit({...value});

@@ -74,9 +74,9 @@ export class ValueConditionTreeComponent {
   @Input() public addConditionTestId: string | null = null;
   @Input() public addGroupTestId: string | null = null;
 
-  protected readonly testIds = VALUE_CONDITION_TREE_TEST_IDS;
-
   public readonly GROUP_MODES: ValueConditionGroupMode[] = ['anyOf', 'allOf'];
+
+  protected readonly testIds = VALUE_CONDITION_TREE_TEST_IDS;
 
   // Carbon provides three layer tokens, two of which contrast, so nesting levels alternate between them.
   public get rowLayerLevel(): 1 | 2 {

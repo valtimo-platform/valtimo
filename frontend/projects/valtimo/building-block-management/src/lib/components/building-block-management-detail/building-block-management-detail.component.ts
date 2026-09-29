@@ -65,10 +65,10 @@ import {BuildingBlockManagementMigrationComponent} from '../building-block-manag
   providers: [BuildingBlockManagementDetailService],
 })
 export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy {
-  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS;
-
   public readonly BUILDING_BLOCK_MANAGEMENT_TABS = BUILDING_BLOCK_MANAGEMENT_TABS;
   public readonly activeTabKey$ = this.buildingBlockManagementDetailService.activeTabKey$;
+
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS;
 
   public get customTabs(): BuildingBlockManagementTabConfig[] {
     return this.toArray(this.buildingBlockManagementTabConfig).map(tab => ({

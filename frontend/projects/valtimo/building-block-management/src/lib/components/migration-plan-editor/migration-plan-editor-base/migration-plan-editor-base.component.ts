@@ -345,6 +345,9 @@ export abstract class MigrationPlanEditorBaseComponent<
       });
   }
 
+  /** What else this blueprint type does with the version's other plans. Nothing, unless a subclass says otherwise. */
+  protected onPlansLoaded(_others: M[]): void {}
+
   /** What identifies this editor's blueprint, read off the route. */
   protected abstract readParams(params: Params): P;
   protected abstract targetKeyOf(params: P): string;
@@ -363,9 +366,6 @@ export abstract class MigrationPlanEditorBaseComponent<
   protected abstract initBreadcrumbs(): void;
   protected abstract clearBreadcrumbs(): void;
   protected abstract navigateBack(): void;
-
-  /** What else this blueprint type does with the version's other plans. Nothing, unless a subclass says otherwise. */
-  protected onPlansLoaded(_others: M[]): void {}
 
   /** The version's other plans: the keys a new plan must stay clear of, plus whatever else a blueprint type does with them — see [onPlansLoaded]. */
   private loadExistingPlans(): void {

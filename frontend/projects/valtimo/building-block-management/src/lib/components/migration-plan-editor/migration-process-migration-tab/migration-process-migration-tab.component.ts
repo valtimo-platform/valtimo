@@ -102,14 +102,15 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     instructions: this.fb.array<FormGroup>([]),
   });
 
+  private _lastEmitted = '[]';
+
+  private readonly _subscriptions = new Subscription();
   private readonly _keyToLatestId = new Map<string, string>();
   // A suggested plan carries one instruction per process of the blueprint, each with its own mapping, so collapsed is the default.
   private readonly _expanded = new Set<FormGroup>();
   private readonly _mappingRequests = new Map<FormGroup, ActivityMappingRequest>();
   // Instructions whose author picked another process and has not had the suggestion for it yet.
   private readonly _pendingSuggest = new Set<FormGroup>();
-  private _lastEmitted = '[]';
-  private readonly _subscriptions = new Subscription();
 
   public get instructionsArray(): FormArray {
     return this.form.get('instructions') as FormArray;

@@ -86,7 +86,7 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
 
   @Output() public readonly generalChange = new EventEmitter<Partial<MigrationPlan>>();
 
-  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
+  public fields: GeneralFieldsValue = {title: '', key: '', source: {}};
 
   // A condition can gate on document data or on case metadata (e.g. case:internalStatus).
   public readonly CONDITION_PATH_PREFIXES = [
@@ -94,14 +94,14 @@ export class MigrationGeneralTabComponent implements OnInit, OnDestroy {
     ValuePathSelectorPrefix.CASE,
   ];
 
-  public fields: GeneralFieldsValue = {title: '', key: '', source: {}};
-
   public readonly form = this.fb.group({
     triggeredByButton: this.fb.control(false),
     scheduledAtDate: this.fb.control(''),
     runAfter: this.fb.control(''),
     conditions: this.fb.array<FormGroup>([]),
   });
+
+  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
 
   private _lastEmittedExtras = '';
   // The loaded plan's instant, whose seconds an untouched picker keeps.

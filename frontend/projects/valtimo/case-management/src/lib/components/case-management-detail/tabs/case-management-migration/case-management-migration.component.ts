@@ -36,6 +36,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
+import {migrationStatusTagType} from '@valtimo/building-block-management';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {
@@ -58,11 +59,10 @@ import {
   timer,
 } from 'rxjs';
 import {catchError} from 'rxjs/operators';
+import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../constants';
 import {MigrationPlanManagement, MigrationPlanViewModel} from '../../../../models';
 import {CaseMigrationApiService} from '../../../../services';
-import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../constants';
 import {CaseMigrationDetailModalComponent} from './case-migration-detail-modal/case-migration-detail-modal.component';
-import {migrationStatusTagType} from '@valtimo/building-block-management';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -92,9 +92,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<unknown>;
   @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<unknown>;
 
-  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
-  protected readonly statusTagType = migrationStatusTagType;
-
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
       label: 'caseManagement.migration.startNow',
@@ -123,6 +120,9 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   public readonly $selectedPlan = computed(
     () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
   );
+
+  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
+  protected readonly statusTagType = migrationStatusTagType;
 
   private _params: CaseManagementParams | undefined;
   private readonly _subscriptions = new Subscription();

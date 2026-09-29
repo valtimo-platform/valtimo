@@ -78,8 +78,8 @@
     <!-- Scoped to the source, not the target: a condition is evaluated against cases that have not migrated yet, so the fields it can read are the ones that version has. -->
     <valtimo-value-condition-tree
       [addConditionTestId]="testIds.addConditionButton"
-      [additionalVersionTags]="conditionAdditionalVersionTags"
       [addGroupTestId]="testIds.addConditionGroupButton"
+      [additionalVersionTags]="conditionAdditionalVersionTags"
       [caseDefinitionKey]="sourceKey ?? caseDefinitionKey"
       [caseDefinitionVersionTag]="sourceVersionTag"
       [conditions]="conditionsArray"

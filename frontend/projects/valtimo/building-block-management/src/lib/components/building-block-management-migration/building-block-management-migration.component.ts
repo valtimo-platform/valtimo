@@ -90,9 +90,6 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
   @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<unknown>;
   @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<unknown>;
 
-  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
-  protected readonly statusTagType = migrationStatusTagType;
-
   // No "start" and no "dry run": a building block plan is applied by the case migration that moves its block.
   public readonly ACTION_ITEMS: ActionItem[] = [
     {label: 'interface.edit', callback: this.onEditPlan.bind(this)},
@@ -111,6 +108,9 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
   public readonly $selectedPlan = computed(
     () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
   );
+
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
+  protected readonly statusTagType = migrationStatusTagType;
 
   private _params: BuildingBlockMigrationParams | undefined;
   private readonly _subscriptions = new Subscription();

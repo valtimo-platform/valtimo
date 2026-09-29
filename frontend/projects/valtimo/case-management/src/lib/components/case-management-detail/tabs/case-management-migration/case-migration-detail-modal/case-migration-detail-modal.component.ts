@@ -24,11 +24,11 @@ import {
   signal,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {migrationStatusTagType} from '@valtimo/building-block-management';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {ButtonModule, LayerModule, ModalModule, TagModule} from 'carbon-components-angular';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../../constants';
 import {MigrationPlanViewModel} from '../../../../../models';
-import {migrationStatusTagType} from '@valtimo/building-block-management';
 import {CaseMigrationCaseTableComponent} from '../case-migration-case-table/case-migration-case-table.component';
 
 /** One plan's run: what it migrated, what it refused, and the same again for its latest dry run. The list behind it only says which plan to show. */
@@ -67,11 +67,11 @@ export class CaseMigrationDetailModalComponent {
   @Output() public readonly startEvent = new EventEmitter<MigrationPlanViewModel>();
   @Output() public readonly dryRunEvent = new EventEmitter<MigrationPlanViewModel>();
 
-  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
-  protected readonly statusTagType = migrationStatusTagType;
-
   public readonly $open = signal<boolean>(false);
   public readonly $plan = signal<MigrationPlanViewModel | null>(null);
+
+  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
+  protected readonly statusTagType = migrationStatusTagType;
 
   public onClose(): void {
     this.closeEvent.emit();

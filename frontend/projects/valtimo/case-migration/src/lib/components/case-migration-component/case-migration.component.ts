@@ -62,6 +62,8 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
   public readonly errors$ = new BehaviorSubject<Array<string> | null>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
+  protected readonly CARBON_THEME = 'g10';
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -178,11 +180,11 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  mappingValueChange(patches: MultiInputValues): void {
+  public mappingValueChange(patches: MultiInputValues): void {
     this.patchItems$.next(patches);
   }
 
-  checkPatches() {
+  public checkPatches(): void {
     this.errors$.next(null);
     combineLatest([
       this.sourceCaseDefinitionKeySelected$,
@@ -228,7 +230,7 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
       });
   }
 
-  migrate() {
+  public migrate(): void {
     this.errors$.next(null);
     combineLatest([
       this.sourceCaseDefinitionKeySelected$,
@@ -335,6 +337,4 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
       )
       .sort((left, right) => left.content.localeCompare(right.content));
   }
-
-  protected readonly CARBON_THEME = 'g10';
 }
