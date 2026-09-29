@@ -17,7 +17,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {ButtonModule, ModalModule, TagModule} from 'carbon-components-angular';
+import {ButtonModule, LayerModule, ModalModule, TagModule} from 'carbon-components-angular';
 import {BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../constants';
 import {MigrationPlanManagement} from '../../../models';
 import {migrationStatusTagType} from '../../../utils';
@@ -31,7 +31,14 @@ type BuildingBlockMigrationPlanViewModel = MigrationPlanManagement & {name: stri
   templateUrl: './building-block-migration-detail-modal.component.html',
   styleUrls: ['./building-block-migration-detail-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ModalModule, ButtonModule, TagModule, ValtimoCdsModalDirective, TranslateModule],
+  imports: [
+    ModalModule,
+    ButtonModule,
+    TagModule,
+    LayerModule,
+    ValtimoCdsModalDirective,
+    TranslateModule,
+  ],
 })
 export class BuildingBlockMigrationDetailModalComponent {
   @Input() public open = false;

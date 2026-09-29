@@ -90,6 +90,9 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
   @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<unknown>;
   @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<unknown>;
 
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
+  protected readonly statusTagType = migrationStatusTagType;
+
   // No "start" and no "dry run": a building block plan is applied by the case migration that moves its block.
   public readonly ACTION_ITEMS: ActionItem[] = [
     {label: 'interface.edit', callback: this.onEditPlan.bind(this)},
@@ -105,6 +108,15 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
   // A stream, not a signal: Cancel never resets it, so reopening relies on re-emitting `true`, which a signal drops.
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
+  public readonly $selectedPlan = computed(
+    () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
+  );
+
+  private _params: BuildingBlockMigrationParams | undefined;
+  private readonly _subscriptions = new Subscription();
+  private readonly _refresh$ = new Subject<void>();
+  private readonly _$selectedKey = signal<string | null>(null);
+
   private readonly _params$: Observable<BuildingBlockMigrationParams> = combineLatest([
     this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$,
     this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag$,
@@ -117,9 +129,6 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     shareReplay(1)
   );
 
-  private readonly _refresh$ = new Subject<void>();
-  private readonly _$selectedKey = signal<string | null>(null);
-
   // Fetched once on load and re-fetched only on a manual action — no background polling.
   public readonly plans$: Observable<BuildingBlockMigrationPlanViewModel[]> = this._params$.pipe(
     switchMap(params =>
@@ -131,16 +140,6 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     tap(() => this.$loading.set(false)),
     shareReplay(1)
   );
-
-  public readonly $selectedPlan = computed(
-    () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
-  );
-
-  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
-  protected readonly statusTagType = migrationStatusTagType;
-
-  private _params: BuildingBlockMigrationParams | undefined;
-  private readonly _subscriptions = new Subscription();
 
   // Last field: toSignal subscribes right here, and the stream reads the fields above.
   private readonly _$plans = toSignal(this.plans$, {initialValue: []});

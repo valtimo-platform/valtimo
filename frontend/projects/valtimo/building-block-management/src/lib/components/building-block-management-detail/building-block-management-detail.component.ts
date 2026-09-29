@@ -65,10 +65,17 @@ import {BuildingBlockManagementMigrationComponent} from '../building-block-manag
   providers: [BuildingBlockManagementDetailService],
 })
 export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy {
-  public readonly BUILDING_BLOCK_MANAGEMENT_TABS = BUILDING_BLOCK_MANAGEMENT_TABS;
-
   protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS;
+
+  public readonly BUILDING_BLOCK_MANAGEMENT_TABS = BUILDING_BLOCK_MANAGEMENT_TABS;
   public readonly activeTabKey$ = this.buildingBlockManagementDetailService.activeTabKey$;
+
+  public get customTabs(): BuildingBlockManagementTabConfig[] {
+    return this.toArray(this.buildingBlockManagementTabConfig).map(tab => ({
+      ...tab,
+      enabled$: tab.enabled$ ?? of(true),
+    }));
+  }
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -81,18 +88,11 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
     this.buildingBlockManagementDetailService.setRoute(this.route);
   }
 
-  public get customTabs(): BuildingBlockManagementTabConfig[] {
-    return this.toArray(this.buildingBlockManagementTabConfig).map(tab => ({
-      ...tab,
-      enabled$: tab.enabled$ ?? of(true),
-    }));
-  }
-
-  public ngOnInit() {
+  public ngOnInit(): void {
     this.pageTitleService.disableReset();
   }
 
-  public ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
   }
 

@@ -92,6 +92,9 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<unknown>;
   @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<unknown>;
 
+  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
+  protected readonly statusTagType = migrationStatusTagType;
+
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
       label: 'caseManagement.migration.startNow',
@@ -117,6 +120,17 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   public readonly showStartModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDryRunModal$ = new BehaviorSubject<boolean>(false);
 
+  public readonly $selectedPlan = computed(
+    () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
+  );
+
+  private _params: CaseManagementParams | undefined;
+  private readonly _subscriptions = new Subscription();
+  private readonly _refresh$ = new Subject<void>();
+  private readonly _$selectedKey = signal<string | null>(null);
+  // True while any plan on this version has a run in progress.
+  private readonly _polling$ = new BehaviorSubject<boolean>(false);
+
   // Declared before the streams that take until it — a field initialiser cannot reach one below it.
   private readonly _destroy$ = new Subject<void>();
 
@@ -126,11 +140,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
       takeUntil(this._destroy$),
       shareReplay(1)
     );
-
-  private readonly _refresh$ = new Subject<void>();
-  private readonly _$selectedKey = signal<string | null>(null);
-  // True while any plan on this version has a run in progress.
-  private readonly _polling$ = new BehaviorSubject<boolean>(false);
 
   /** Refreshes on a manual action and, while a run is in progress, on a timer — a run is dispatched to a background thread and takes hours, so the start response is only its first moment. Polling stops when nothing runs. */
   public readonly plans$: Observable<MigrationPlanViewModel[]> = this._params$.pipe(
@@ -155,16 +164,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     takeUntil(this._destroy$),
     shareReplay(1)
   );
-
-  public readonly $selectedPlan = computed(
-    () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
-  );
-
-  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
-  protected readonly statusTagType = migrationStatusTagType;
-
-  private _params: CaseManagementParams | undefined;
-  private readonly _subscriptions = new Subscription();
 
   // Last field: toSignal subscribes right here, and the stream reads the fields above.
   private readonly _$plans = toSignal(this.plans$, {initialValue: []});

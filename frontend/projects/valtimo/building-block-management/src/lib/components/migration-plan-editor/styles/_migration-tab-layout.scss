@@ -17,12 +17,12 @@
 /// Layout classes shared by a migration tab and the content its host projects in — included twice, because Angular gives projected content the host's encapsulation attribute rather than the projecting component's.
 @mixin blocks {
   .migration-tab__subheading {
-    margin: 8px 0 0;
+    margin: var(--cds-spacing-03) 0 0;
     font-weight: 600;
   }
 
   .migration-tab__hint {
-    font-size: 0.75rem;
+    font-size: var(--cds-helper-text-01-font-size);
     color: var(--cds-text-secondary);
   }
 
@@ -34,7 +34,7 @@
   .migration-tab__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: var(--cds-spacing-05);
   }
 
   // A wrapper a host adds around its projected content without it becoming a single flex child and collapsing the gap between the blocks inside it.

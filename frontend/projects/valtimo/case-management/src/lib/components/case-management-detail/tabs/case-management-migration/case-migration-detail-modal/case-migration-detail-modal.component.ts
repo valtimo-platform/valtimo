@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {ButtonModule, ModalModule, TagModule} from 'carbon-components-angular';
+import {ButtonModule, LayerModule, ModalModule, TagModule} from 'carbon-components-angular';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../../constants';
 import {MigrationPlanViewModel} from '../../../../../models';
 import {migrationStatusTagType} from '@valtimo/building-block-management';
@@ -44,6 +44,7 @@ import {CaseMigrationCaseTableComponent} from '../case-migration-case-table/case
     ButtonModule,
     TagModule,
     ModalModule,
+    LayerModule,
     ValtimoCdsModalDirective,
     CaseMigrationCaseTableComponent,
   ],
@@ -66,11 +67,11 @@ export class CaseMigrationDetailModalComponent {
   @Output() public readonly startEvent = new EventEmitter<MigrationPlanViewModel>();
   @Output() public readonly dryRunEvent = new EventEmitter<MigrationPlanViewModel>();
 
-  public readonly $open = signal<boolean>(false);
-  public readonly $plan = signal<MigrationPlanViewModel | null>(null);
-
   protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
   protected readonly statusTagType = migrationStatusTagType;
+
+  public readonly $open = signal<boolean>(false);
+  public readonly $plan = signal<MigrationPlanViewModel | null>(null);
 
   public onClose(): void {
     this.closeEvent.emit();

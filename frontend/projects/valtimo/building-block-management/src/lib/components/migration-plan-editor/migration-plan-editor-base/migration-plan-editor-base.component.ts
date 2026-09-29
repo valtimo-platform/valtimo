@@ -60,12 +60,7 @@ export abstract class MigrationPlanEditorBaseComponent<
   >
   implements OnInit, OnDestroy
 {
-  protected readonly route = inject(ActivatedRoute);
-  protected readonly translateService = inject(TranslateService);
-  protected readonly pageHeaderService = inject(PageHeaderService);
-  protected readonly pageTitleService = inject(PageTitleService);
-
-  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+  public readonly compactMode$ = inject(PageHeaderService).compactMode$;
 
   public readonly $model = signal<EditorModel | null>(null);
   public readonly $plan = signal<MigrationPlan>({});
@@ -158,6 +153,9 @@ export abstract class MigrationPlanEditorBaseComponent<
   protected _params!: P;
   protected _migrationKey: string | null = null;
   protected readonly _subscriptions = new Subscription();
+  protected readonly route = inject(ActivatedRoute);
+  protected readonly translateService = inject(TranslateService);
+  protected readonly pageTitleService = inject(PageTitleService);
 
   /** Which blueprint type this editor serves — the namespace its translations live under, and the `type` of every building-block entry's owner. */
   protected abstract readonly translationPrefix: string;
