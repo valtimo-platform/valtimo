@@ -223,6 +223,14 @@ class CaseDefinitionService(
         return caseDefinitionRepository.findByActiveIsTrueAndIdKey(caseDefinitionKey)
     }
 
+    fun getActiveCaseDefinitions(caseDefinitionKeys: Collection<String>): Map<String, CaseDefinition> {
+        if (caseDefinitionKeys.isEmpty()) {
+            return emptyMap()
+        }
+        return caseDefinitionRepository.findByActiveIsTrueAndIdKeyIn(caseDefinitionKeys)
+            .associateBy { it.id.key }
+    }
+
     fun updateCaseDefinition(caseDefinitionId: CaseDefinitionId, name: String?, description: String?, color: String? = null): CaseDefinition {
         denyManagementOperation()
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)

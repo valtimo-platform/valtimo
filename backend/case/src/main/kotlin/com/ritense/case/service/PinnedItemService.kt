@@ -31,6 +31,7 @@ import com.ritense.case.web.rest.dto.PinnedItemResponseDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import org.springframework.security.access.AccessDeniedException
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -149,17 +150,19 @@ class PinnedItemService(
                     caseDefinition
                 )
             )
-        } catch (e: Exception) {
+        } catch (e: AccessDeniedException) {
             false
         }
     }
 
     private fun hasAccessToGroupMembers(members: List<CaseDefinitionGroupMember>): Boolean {
-        return members.any { member ->
-            val caseDefinition = runWithoutAuthorization {
-                caseDefinitionService.getActiveCaseDefinition(member.id.caseDefinitionKey)
-            }
-            caseDefinition != null && hasViewPermission(caseDefinition)
+        if (members.isEmpty()) return false
+
+        val keys = members.map { it.id.caseDefinitionKey }
+        val caseDefinitions = runWithoutAuthorization {
+            caseDefinitionService.getActiveCaseDefinitions(keys)
         }
+
+        return caseDefinitions.values.any { hasViewPermission(it) }
     }
 }

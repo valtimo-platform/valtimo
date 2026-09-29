@@ -23,5 +23,6 @@ import java.util.UUID
 
 interface GroupSearchFieldPathMappingRepository : JpaRepository<GroupSearchFieldPathMapping, GroupSearchFieldPathMappingId> {
     fun findByIdGroupSearchFieldId(groupSearchFieldId: UUID): List<GroupSearchFieldPathMapping>
+    fun findByIdGroupSearchFieldIdIn(groupSearchFieldIds: Collection<UUID>): List<GroupSearchFieldPathMapping>
     fun deleteByIdGroupSearchFieldId(groupSearchFieldId: UUID)
 }

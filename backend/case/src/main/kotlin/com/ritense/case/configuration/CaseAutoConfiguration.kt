@@ -571,6 +571,7 @@ class CaseAutoConfiguration {
         listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
         searchFieldRepository: GroupSearchFieldRepository,
         searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+        caseDefinitionRepository: CaseDefinitionRepository,
         authorizationService: AuthorizationService
     ): CaseDefinitionGroupService {
         return CaseDefinitionGroupService(
@@ -580,6 +581,7 @@ class CaseAutoConfiguration {
             listColumnPathMappingRepository,
             searchFieldRepository,
             searchFieldPathMappingRepository,
+            caseDefinitionRepository,
             authorizationService
         )
     }

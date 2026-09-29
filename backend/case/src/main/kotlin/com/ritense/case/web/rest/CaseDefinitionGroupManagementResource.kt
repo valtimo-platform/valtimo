@@ -154,8 +154,8 @@ class CaseDefinitionGroupManagementResource(
     fun getListColumns(
         @PathVariable groupKey: String
     ): ResponseEntity<List<GroupListColumnDto>> {
-        val columns = groupService.getListColumns(groupKey).map { column ->
-            val mappings = groupService.getListColumnPathMappings(groupKey, column.id.columnKey)
+        val columnsWithMappings = groupService.getListColumnsWithMappings(groupKey)
+        val columns = columnsWithMappings.map { (column, mappings) ->
             GroupListColumnDto.of(column, mappings)
         }
         return ResponseEntity.ok(columns)

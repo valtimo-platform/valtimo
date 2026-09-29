@@ -36,6 +36,7 @@ import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.GroupListColumnPathMappingDto
 import com.ritense.case.web.rest.dto.GroupSearchFieldDto
@@ -59,6 +60,7 @@ class CaseDefinitionGroupService(
     private val listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
     private val searchFieldRepository: GroupSearchFieldRepository,
     private val searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+    private val caseDefinitionRepository: CaseDefinitionRepository,
     private val authorizationService: AuthorizationService
 ) {
 
@@ -122,6 +124,9 @@ class CaseDefinitionGroupService(
 
     fun addMember(groupKey: String, caseDefinitionKey: String): CaseDefinitionGroupMember {
         denyAuthorization()
+        require(caseDefinitionRepository.existsByIdKey(caseDefinitionKey)) {
+            "Case definition with key '$caseDefinitionKey' does not exist"
+        }
         val group = getGroup(groupKey)
         val order = memberRepository.findMaxOrderByGroupKey(groupKey) + 1
         return memberRepository.save(
@@ -223,6 +228,18 @@ class CaseDefinitionGroupService(
     fun getListColumnPathMappings(groupKey: String, columnKey: String): List<GroupListColumnPathMapping> {
         denyAuthorization()
         return listColumnPathMappingRepository.findByIdGroupKeyAndIdColumnKey(groupKey, columnKey)
+    }
+
+    @Transactional(readOnly = true)
+    fun getListColumnsWithMappings(groupKey: String): List<Pair<GroupListColumn, List<GroupListColumnPathMapping>>> {
+        denyAuthorization()
+        val columns = listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
+        val allMappings = listColumnPathMappingRepository.findByIdGroupKey(groupKey)
+        val mappingsByColumn = allMappings.groupBy { it.id.columnKey }
+
+        return columns.map { column ->
+            column to (mappingsByColumn[column.id.columnKey] ?: emptyList())
+        }
     }
 
     fun updateListColumnPathMappings(

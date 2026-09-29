@@ -22,6 +22,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface GroupListColumnPathMappingRepository : JpaRepository<GroupListColumnPathMapping, GroupListColumnPathMappingId> {
     fun findByIdGroupKeyAndIdColumnKey(groupKey: String, columnKey: String): List<GroupListColumnPathMapping>
+    fun findByIdGroupKey(groupKey: String): List<GroupListColumnPathMapping>
     fun deleteByIdGroupKeyAndIdColumnKey(groupKey: String, columnKey: String)
     fun deleteByIdGroupKey(groupKey: String)
 }
