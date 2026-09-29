@@ -75,3 +75,4 @@ Widget tabs with multiple widgets now load faster.
 | Area | Fix |
 |------|-----|
 | Area name | New bugfix. |
+| Cases | Choosing one of several start processes for a case opens its start form again, instead of sending the user back to the dashboard |
