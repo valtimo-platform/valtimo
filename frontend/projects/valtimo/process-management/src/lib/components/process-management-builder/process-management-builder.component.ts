@@ -1586,24 +1586,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         .subscribe(result => {
           const processDefinitionResult = result as ProcessDefinitionResult;
 
-          this.cleanUpListenersOnModeler();
-          this._autofilledElements = processDefinitionResult.autofilledElements ?? [];
-          this.processManagementEditorService.setAutofilledElements(this._autofilledElements);
-
-          this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
-            this.highlightAutofilledElements();
-          });
-          this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
-            this.highlightAutofilledElements();
-          });
-
+          // Diagram and loading owned by selectedProcessDefinitionXml$ — a second import re-rendered the panel
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
           );
           this.startableByUser$.next(!!processDefinitionResult?.processCaseLink?.startableByUser);
           this.draft$.next(!!processDefinitionResult?.draft);
-
-          this.loading$.next(false);
         })
     );
   }

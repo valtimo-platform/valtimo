@@ -481,6 +481,11 @@ export class BuildingBlockProcessesPage {
     return apiGet<{key: string}[]>(BUILDING_BLOCK_PLUGIN_API.pluginDefinitions(activityType));
   }
 
+  /** External plugin definitions, keyed by the id the wizard prefixes with `external:`. */
+  async getExternalPluginDefinitionsViaApi(): Promise<{id: string}[]> {
+    return apiGet<{id: string}[]>(BUILDING_BLOCK_PLUGIN_API.externalPluginDefinitions);
+  }
+
   // ─── API helpers ──────────────────────────────────────────────────
 
   async createBuildingBlockViaApi(definition: {

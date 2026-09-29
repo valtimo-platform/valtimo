@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-export * from './plugin-add-modal.test-ids';
-export * from './plugin-app-add-modal.test-ids';
-export * from './plugin-external-review-modal.test-ids';
+export const PLUGIN_ADD_MODAL_TEST_IDS = {
+  cancelButton: 'pluginAddModalCancelButton',
+  /** Advances from the catalog to the configuration step. */
+  enterDataButton: 'pluginAddModalEnterDataButton',
+  /** Advances an external plugin from configuration to its permissions step. */
+  permissionsButton: 'pluginAddModalPermissionsButton',
+  completeButton: 'pluginAddModalCompleteButton',
+} as const;

@@ -26,10 +26,14 @@ const formSizeToCarbonModalSizeMap: Record<FormSize, CarbonModalSize> = {
 
 const UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK = ['ui-component'];
 
+/** Reached through the "Plugins & Apps" tile — these never render a tile of their own. */
+const EXTERNAL_PLUGIN_PROCESS_LINK_TYPES = ['external_plugin', 'external_plugin_task_form'];
+
 /** The `activityListenerType` the BPMN editor reports for a user task. */
 const USER_TASK_ACTIVITY = 'bpmn:UserTask:create';
 
 export {
+  EXTERNAL_PLUGIN_PROCESS_LINK_TYPES,
   formSizeToCarbonModalSizeMap,
   UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK,
   USER_TASK_ACTIVITY,

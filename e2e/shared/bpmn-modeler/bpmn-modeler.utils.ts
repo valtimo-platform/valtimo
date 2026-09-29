@@ -59,10 +59,10 @@ export class BpmnModeler {
     return this.page.locator('.djs-context-pad [data-action="append.append-task"]');
   }
 
-  /** Wait until the diagram is rendered and interactive. */
-  async waitForLoaded() {
-    await expect(this.container).toBeVisible();
-    await expect(this.palette).toBeVisible();
+  /** Wait until the diagram is rendered and interactive; first mount is slow (lazy route). */
+  async waitForLoaded(timeout = 30_000) {
+    await expect(this.container).toBeVisible({timeout});
+    await expect(this.palette).toBeVisible({timeout});
     await this.waitForDiagramSettled();
   }
 
@@ -94,7 +94,7 @@ export class BpmnModeler {
    */
   async selectElement(elementId: string, timeout = 20_000) {
     const shape = this.elementShape(elementId);
-    await expect(shape).toBeVisible();
+    await expect(shape).toBeVisible({timeout});
 
     await expect(async () => {
       await shape.click();
@@ -104,7 +104,7 @@ export class BpmnModeler {
 
   async openContextPad(elementId: string, timeout = 20_000) {
     const shape = this.elementShape(elementId);
-    await expect(shape).toBeVisible();
+    await expect(shape).toBeVisible({timeout});
 
     await expect(async () => {
       await shape.click();
@@ -179,8 +179,9 @@ export class BpmnModeler {
     }).toPass({timeout});
   }
 
+  // Generous budget — the panel re-renders on every selection and is slow late in a full run
   async selectElementAndExpandGroup(elementId: string, groupTitle: string) {
-    await this.withSelectedElement(elementId, () => this.expandGroup(groupTitle, 5_000));
+    await this.withSelectedElement(elementId, () => this.expandGroup(groupTitle, 10_000), 40_000);
   }
 
   async withSelectedElement(

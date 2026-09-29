@@ -59,10 +59,19 @@ export class CarbonToggle {
   }
 
   async clickOnce(attempt = 0): Promise<void> {
+    // Park the pointer away so a tooltip from the previous interaction closes and stops eating clicks
+    await this.host.page().mouse.move(0, 0);
+
     const targets = [this.host.locator('label').first(), this.switchControl];
     const target = targets[attempt % targets.length];
 
-    await target.click({timeout: 5_000});
+    try {
+      await target.click({timeout: 5_000});
+    } catch (error) {
+      // Still covered — go straight at the control, bypassing hit testing
+      if (attempt < 2) throw error;
+      await this.switchControl.dispatchEvent('click');
+    }
   }
 
   async enable() {

@@ -22,10 +22,11 @@ import {
   pluginTypes,
 } from './plugin-config';
 import {
+  CONFIRMATION_MODAL_TEST_IDS,
   DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS,
+  PLUGIN_ADD_MODAL_TEST_IDS,
   PLUGIN_CATALOG_TEST_IDS,
   PLUGIN_EDIT_MODAL_TEST_IDS,
-  STEPPER_FOOTER_STEP_TEST_IDS,
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
@@ -51,11 +52,14 @@ export class PluginPage {
   }
 
   get enterDataButton() {
-    return this.page.getByRole('button', {name: 'Enter data'});
+    return this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.enterDataButton);
   }
 
+  /** Add wizard or, when duplicating, the edit modal — both in the DOM, so scope to the open one. */
   get saveButton() {
-    return this.page.getByRole('button', {name: 'Save configuration'});
+    return this.visibleModal
+      .getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.completeButton)
+      .or(this.visibleModal.getByTestId(PLUGIN_EDIT_MODAL_TEST_IDS.saveButton));
   }
 
   // Navigation
@@ -83,31 +87,32 @@ export class PluginPage {
     await this.verifyStepperStep2();
   }
 
-  // Stepper checks
+  // Stepper checks — the wizard header is a Carbon progress indicator
+  get stepper() {
+    return this.page.locator('.cds--progress');
+  }
+
+  stepperStep(index: number) {
+    return this.stepper.locator('.cds--progress-step').nth(index);
+  }
+
   async verifyStepperStep1() {
-    const stepper = this.page.locator('.stepper-header');
-    await expect(stepper).toBeVisible();
+    await expect(this.stepper).toBeVisible();
 
-    const step1 = stepper.locator('.stepper-header__step').first();
-    await expect(step1).toHaveClass(/stepper-header__step--active/);
-    await expect(step1.locator('.stepper-header__step-number')).toHaveText('1');
-    await expect(step1.locator('.stepper-header__step-title')).toHaveText('Choose your plugin');
+    const step1 = this.stepperStep(0);
+    await expect(step1).toHaveClass(/cds--progress-step--current/);
+    await expect(step1.locator('.cds--progress-label')).toHaveText('Choose your plugin');
 
-    const step2 = stepper.locator('.stepper-header__step').nth(1);
-    await expect(step2).not.toHaveClass(/stepper-header__step--active/);
+    await expect(this.stepperStep(1)).not.toHaveClass(/cds--progress-step--current/);
 
     await expect(this.enterDataButton).toBeDisabled();
   }
 
   async verifyStepperStep2() {
-    const stepper = this.page.locator('.stepper-header');
-    await expect(stepper).toBeVisible();
+    await expect(this.stepper).toBeVisible();
 
-    const step1 = stepper.locator('.stepper-header__step').first();
-    await expect(step1).toHaveClass(/stepper-header__step--active/);
-
-    const step2 = stepper.locator('.stepper-header__step').nth(1);
-    await expect(step2).toHaveClass(/stepper-header__step--active/);
+    await expect(this.stepperStep(0)).toHaveClass(/cds--progress-step--complete/);
+    await expect(this.stepperStep(1)).toHaveClass(/cds--progress-step--current/);
 
     await expect(this.saveButton).toBeDisabled();
   }
@@ -169,7 +174,7 @@ export class PluginPage {
       await expect(errorToast).toBeVisible({timeout: 10_000});
     } finally {
       // Always close the wizard, even if the assertion fails
-      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+      await this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton).click();
     }
   }
 
@@ -192,7 +197,7 @@ export class PluginPage {
       await expect(errorToast).toBeVisible({timeout: 10_000});
     } finally {
       // Always close the wizard, even if the assertion fails
-      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+      await this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton).click();
     }
   }
 
@@ -253,9 +258,19 @@ export class PluginPage {
 
     await row.locator('.v-overflow-menu__trigger').click({timeout: 10_000});
     await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
+    await this.confirmDeletion();
     await this.page.waitForResponse(
       res => res.url().includes('/api/v1/plugin/configuration') && res.request().method() === 'GET'
     );
+  }
+
+  /** Confirm deletion; the page holds several confirmation modals, so address the open one. */
+  async confirmDeletion(): Promise<void> {
+    const confirmButton = this.page
+      .locator('.cds--modal.is-visible')
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton);
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
   }
 
   async deleteZakenApiExpectingError(): Promise<void> {
@@ -359,7 +374,7 @@ export class PluginPage {
   }
 
   async closeWizard(): Promise<void> {
-    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+    await this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton).click();
   }
 
   async assertPluginDeleted(pluginType: string): Promise<void> {
@@ -423,7 +438,7 @@ export class PluginPage {
   }
 
   get cancelWizardButton(): Locator {
-    return this.visibleModal.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton);
+    return this.visibleModal.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton);
   }
 
   /**

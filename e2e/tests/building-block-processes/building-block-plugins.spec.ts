@@ -19,6 +19,7 @@ import {generateId} from '../../utils/dataGenerator';
 import {
   BUILDING_BLOCK_PLUGIN_API,
   BUILDING_BLOCK_PLUGIN_TEXTS,
+  EXTERNAL_PLUGIN_KEY_PREFIX,
   LINKED_PLUGIN,
   OTHER_PLUGIN,
   PLUGIN_STEPS_PROCESS,
@@ -126,14 +127,22 @@ test.describe('Building block management — plugin integration (13E)', () => {
       // More than one plugin is offered, so the list is a real choice.
       expect(offered).toEqual(expect.arrayContaining([OTHER_PLUGIN.definitionKey]));
 
-      // Every offered definition is one the backend serves for this activity
-      // type. The UI additionally drops definitions without a frontend plugin
-      // specification, so it is a subset rather than an exact match.
+      // Embedded and external come from separate endpoints; each half is a subset of its source
+      const isExternal = (id: string) => id.startsWith(EXTERNAL_PLUGIN_KEY_PREFIX);
+      const offeredExternal = offered.filter(isExternal);
+      const offeredEmbedded = offered.filter(id => !isExternal(id));
+
       const definitions = await pluginsPage.getPluginDefinitionsViaApi(
         BUILDING_BLOCK_PLUGIN_API.serviceTaskActivityType
       );
       const definitionKeys = definitions.map(definition => definition.key);
-      expect(definitionKeys).toEqual(expect.arrayContaining(offered));
+      expect(definitionKeys).toEqual(expect.arrayContaining(offeredEmbedded));
+
+      const externalDefinitions = await pluginsPage.getExternalPluginDefinitionsViaApi();
+      const externalKeys = externalDefinitions.map(
+        definition => `${EXTERNAL_PLUGIN_KEY_PREFIX}${definition.id}`
+      );
+      expect(externalKeys).toEqual(expect.arrayContaining(offeredExternal));
 
       await pluginsPage.closeProcessLinkModal();
     });

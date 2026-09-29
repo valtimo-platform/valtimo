@@ -15,7 +15,7 @@
  */
 
 import type { Page } from '@playwright/test';
-import { apiGet, apiPut } from './api.utils';
+import { ApiError, apiGet, apiPut } from './api.utils';
 
 export type LanguageCode = 'en' | 'nl' | 'de';
 
@@ -47,12 +47,21 @@ export async function pinLanguage(
       );
       if ((await getLanguage()) === languageCode && bootLanguage === languageCode) return;
     } catch (error) {
+      if (isSettingsWriteConflict(error)) {
+        await page.waitForTimeout(500);
+        continue;
+      }
       if (!isNavigationRace(error)) throw error;
       await page.waitForLoadState('domcontentloaded').catch(() => undefined);
     }
   }
 
   throw new Error(`[settings] Language did not stay on "${languageCode}" after ${attempts} attempts`);
+}
+
+// Booting app writes its own settings — concurrent save loses the insert race and 400s
+function isSettingsWriteConflict(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 400 && /\/user\/settings/.test(error.message);
 }
 
 function isNavigationRace(error: unknown): boolean {
