@@ -39,9 +39,7 @@ describe('migration schedule utils', () => {
 
   describe('toDateTimeLocal', () => {
     it('shows an offset-less plan value at the same moment the server will run it', () => {
-      expect(toDateTimeLocal('2026-10-01T16:13:00')).toBe(
-        toDateTimeLocal('2026-10-01T16:13:00Z')
-      );
+      expect(toDateTimeLocal('2026-10-01T16:13:00')).toBe(toDateTimeLocal('2026-10-01T16:13:00Z'));
     });
 
     it('round-trips through the picker to the same minute', () => {

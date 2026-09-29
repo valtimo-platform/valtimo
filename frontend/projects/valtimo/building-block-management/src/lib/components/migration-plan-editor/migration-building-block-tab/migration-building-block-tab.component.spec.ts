@@ -17,6 +17,7 @@
 import {FormBuilder, FormGroup} from '@angular/forms';
 import {of} from 'rxjs';
 import {MigrationBuildingBlockTabComponent} from './migration-building-block-tab.component';
+import {BuildingBlockEntryLookupService} from './building-block-entry-lookup.service';
 
 describe('MigrationBuildingBlockTabComponent', () => {
   let component: MigrationBuildingBlockTabComponent;
@@ -37,15 +38,17 @@ describe('MigrationBuildingBlockTabComponent', () => {
   };
 
   beforeEach(() => {
+    const lookup = new BuildingBlockEntryLookupService({
+      getBuildingBlockDefinitions: () => of([]),
+      getVersionsForBuildingBlock: () => of({content: []}),
+      getProcessDefinitionsForBuildingBlock: () => of([]),
+    } as any);
+
     component = new MigrationBuildingBlockTabComponent(
       new FormBuilder(),
       {markForCheck: () => {}} as any,
       {registerAll: () => {}} as any,
-      {
-        getBuildingBlockDefinitions: () => of([]),
-        getVersionsForBuildingBlock: () => of({content: []}),
-        getProcessDefinitionsForBuildingBlock: () => of([]),
-      } as any
+      lookup
     );
     component.ownerProcessDefinitions = TARGET_DEFS;
     component.ownerSourceProcessDefinitions = SOURCE_DEFS;

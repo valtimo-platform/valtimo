@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import {BuildingBlockInstruction, MigrationPlan, MigrationPlanSource} from '../../models';
+import {
+  BuildingBlockInstruction,
+  MigrationEditorTranslationKeys,
+  MigrationPlan,
+  MigrationPlanSource,
+} from '../../models';
 
 /** Pure readings of the plan JSON, so both editor hosts answer these questions identically. */
 
@@ -41,6 +46,24 @@ export function sourceIdOf(
   const key = asPlanText(source?.key) ?? fallbackKey;
   const versionTag = asPlanText(source?.versionTag);
   return versionTag ? `${key}:${versionTag}` : null;
+}
+
+/** The editor chrome's translation keys under one blueprint type's namespace. Every key follows the same shape, so the two hosts differ by [prefix] alone. */
+export function migrationEditorKeys(prefix: string): MigrationEditorTranslationKeys {
+  const editor = `${prefix}.migration.editor`;
+  return {
+    saveFailedTitle: `${editor}.saveFailed.title`,
+    saveFailedFallback: `${editor}.saveFailed.fallback`,
+    dataMigrationDescription: `${editor}.dataMigration.description`,
+    processMigrationDescription: `${editor}.processMigration.description`,
+    processMigrationActivityMappingHint: `${editor}.processMigration.activityMappingHint`,
+    addBuildingBlockDescription: `${editor}.addBuildingBlock.description`,
+    addBuildingBlockDataMigrationHint: `${editor}.addBuildingBlock.dataMigrationHint`,
+    addBuildingBlockProcessMigrationHint: `${editor}.addBuildingBlock.processMigrationHint`,
+    removeBuildingBlockDescription: `${editor}.removeBuildingBlock.description`,
+    removeBuildingBlockDataMigrationHint: `${editor}.removeBuildingBlock.dataMigrationHint`,
+    removeBuildingBlockProcessMigrationHint: `${editor}.removeBuildingBlock.processMigrationHint`,
+  };
 }
 
 /** The blank-target sources across every building-block entry's nested `processMigration` — counted by nothing before, so Save stayed enabled and the refusal came from the server. */

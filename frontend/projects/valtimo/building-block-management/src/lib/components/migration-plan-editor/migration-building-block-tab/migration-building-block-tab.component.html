@@ -50,6 +50,7 @@
             size="sm"
             [iconOnly]="true"
             [title]="'interface.delete' | translate"
+            [attr.data-test-id]="testIds?.deleteBuildingBlockEntryButton"
             (click)="removeInstruction($index)"
           >
             <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>

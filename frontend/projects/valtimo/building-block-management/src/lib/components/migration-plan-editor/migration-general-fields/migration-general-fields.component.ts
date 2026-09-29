@@ -43,7 +43,10 @@ import {GeneralFieldsValue, MigrationEditorTestIds} from '../../../models';
   selector: 'valtimo-migration-general-fields',
   templateUrl: './migration-general-fields.component.html',
   // The second sheet styles what a host projects into `<ng-content>`; see the note in it for why the first cannot.
-  styleUrls: ['./migration-tab.component.scss', './migration-general-fields.component.scss'],
+  styleUrls: [
+    '../styles/migration-tab.component.scss',
+    './migration-general-fields.component.scss',
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,

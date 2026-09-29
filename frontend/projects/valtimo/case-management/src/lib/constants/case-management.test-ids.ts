@@ -93,7 +93,13 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   removeBuildingBlockTab: 'caseMigrationRemoveBuildingBlockTab',
   jsonEditorTab: 'caseMigrationJsonEditorTab',
   addPatchButton: 'caseMigrationAddPatchButton',
+  deletePatchButton: 'caseMigrationDeletePatchButton',
   addInstructionButton: 'caseMigrationAddInstructionButton',
+  deleteInstructionButton: 'caseMigrationDeleteInstructionButton',
+  addMappingButton: 'caseMigrationAddMappingButton',
+  deleteMappingButton: 'caseMigrationDeleteMappingButton',
+  addVariableButton: 'caseMigrationAddVariableButton',
+  deleteVariableButton: 'caseMigrationDeleteVariableButton',
   sourceKeySelect: 'caseMigrationSourceKeySelect',
   sourceVersionSelect: 'caseMigrationSourceVersionSelect',
   targetReadout: 'caseMigrationTargetReadout',
@@ -101,6 +107,8 @@ export const CASE_MANAGEMENT_MIGRATION_TEST_IDS = {
   addConditionGroupButton: 'caseMigrationAddConditionGroupButton',
   addBuildingBlockButton: 'caseMigrationAddBuildingBlockButton',
   removeBuildingBlockButton: 'caseMigrationRemoveBuildingBlockButton',
+  deleteBuildingBlockEntryButton: 'caseMigrationDeleteBuildingBlockEntryButton',
+  detailModalCloseButton: 'caseMigrationDetailModalCloseButton',
 } as const;
 
 export const CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS = {

@@ -30,27 +30,12 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   CarbonListModule,
-  CarbonPaginatorConfig,
   ColumnConfig,
   ConfirmationModalModule,
-  Pagination,
-  ValtimoCdsModalDirective,
   ViewType,
 } from '@valtimo/components';
-import {
-  CaseManagementParams,
-  getCaseManagementRouteParams,
-  GlobalNotificationService,
-} from '@valtimo/shared';
-import {ChevronDown16, ChevronUp16, Copy16} from '@carbon/icons';
-import {
-  ButtonModule,
-  IconModule,
-  IconService,
-  ModalModule,
-  TagModule,
-  TagType,
-} from 'carbon-components-angular';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -71,22 +56,18 @@ import {
   timer,
 } from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {
-  CaseMigrationStatus,
-  MigrationExecutionError,
-  MigrationExecutionWarning,
-  MigrationPlanManagement,
-} from '../../../../models';
+import {MigrationPlanManagement, MigrationPlanViewModel} from '../../../../models';
 import {CaseMigrationApiService} from '../../../../services';
 import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../constants';
-
-type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
+import {CaseMigrationDetailModalComponent} from './case-migration-detail-modal/case-migration-detail-modal.component';
+import {migrationStatusTagType} from '@valtimo/building-block-management';
 
 const POLL_INTERVAL_MS = 3000;
 
 const isRunInProgress = (plan: MigrationPlanViewModel): boolean =>
   plan.status?.status === 'RUNNING' || plan.dryRun?.status === 'RUNNING';
 
+/** The migration plans of one case definition version: the list, the actions on a plan, and the confirmations each of them needs. What a plan's run produced is the detail modal's. */
 @Component({
   standalone: true,
   selector: 'valtimo-case-management-migration',
@@ -101,29 +82,13 @@ const isRunInProgress = (plan: MigrationPlanViewModel): boolean =>
     ButtonModule,
     IconModule,
     TagModule,
-    ModalModule,
-    ValtimoCdsModalDirective,
     ConfirmationModalModule,
+    CaseMigrationDetailModalComponent,
   ],
 })
 export class CaseManagementMigrationComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<any>;
-  @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<any>;
-  @ViewChild('caseIdColumn') public caseIdColumnTemplate!: TemplateRef<any>;
-  @ViewChild('errorColumn') public errorColumnTemplate!: TemplateRef<any>;
-
-  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
-
-  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
-  public readonly errorFields$ = new BehaviorSubject<ColumnConfig[]>([]);
-  public readonly warningFields$ = new BehaviorSubject<ColumnConfig[]>([]);
-
-  // The failed-cases table pages client-side: the full error list lives on the plan status.
-  public readonly ERROR_PAGE_SIZE = 10;
-  public readonly ERROR_PAGINATOR_CONFIG: CarbonPaginatorConfig = {
-    itemsPerPageOptions: [this.ERROR_PAGE_SIZE],
-    showPageInput: false,
-  };
+  @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<unknown>;
+  @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<unknown>;
 
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
@@ -137,21 +102,18 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     {label: 'interface.delete', callback: this.onDeletePlan.bind(this), type: 'danger'},
   ];
 
+  public readonly $fields = signal<ColumnConfig[]>([]);
+  public readonly $loading = signal<boolean>(true);
+  public readonly $showDetailModal = signal<boolean>(false);
+
   public readonly $planToDelete = signal<MigrationPlanViewModel | null>(null);
   public readonly $planToStart = signal<MigrationPlanViewModel | null>(null);
   public readonly $planToDryRun = signal<MigrationPlanViewModel | null>(null);
 
-  private readonly _showDeleteModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showDeleteModal$ = this._showDeleteModal$.asObservable();
-
-  private readonly _showStartModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showStartModal$ = this._showStartModal$.asObservable();
-
-  private readonly _showDryRunModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showDryRunModal$ = this._showDryRunModal$.asObservable();
-
-  private readonly _showDetailModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showDetailModal$ = this._showDetailModal$.asObservable();
+  // The confirmation modal takes a Subject, so these three stay streams.
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showStartModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showDryRunModal$ = new BehaviorSubject<boolean>(false);
 
   // Declared before the streams that take until it — a field initialiser cannot reach one below it.
   private readonly _destroy$ = new Subject<void>();
@@ -165,9 +127,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   private readonly _refresh$ = new Subject<void>();
   private readonly _selectedKey$ = new BehaviorSubject<string | null>(null);
-  private readonly _loading$ = new BehaviorSubject<boolean>(true);
-  public readonly loading$ = this._loading$.asObservable();
-
   // True while any plan on this version has a run in progress.
   private readonly _polling$ = new BehaviorSubject<boolean>(false);
 
@@ -189,7 +148,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
             tap(plans => this._polling$.next(plans.some(plan => isRunInProgress(plan))))
           )
     ),
-    tap(() => this._loading$.next(false)),
+    tap(() => this.$loading.set(false)),
     // Before shareReplay, which does not refCount: without this the poll timer outlives the component and keeps fetching for the rest of the run.
     takeUntil(this._destroy$),
     shareReplay(1)
@@ -203,77 +162,24 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     startWith(null)
   );
 
-  private readonly _errorPage$ = new BehaviorSubject<number>(1);
-
-  // Case ids whose full stacktrace is expanded. A new Set per change so the OnPush view re-renders.
-  private readonly _$expandedErrors = signal<ReadonlySet<string>>(new Set());
-
-  // The current page of failed cases for the selected plan, plus the pagination model the list needs.
-  public readonly errorsView$: Observable<{
-    items: MigrationExecutionError[];
-    pagination: Pagination;
-  }> = combineLatest([this.selectedPlan$, this._errorPage$]).pipe(
-    map(([plan, page]) => {
-      const errors = plan?.status.errors ?? [];
-      const start = (page - 1) * this.ERROR_PAGE_SIZE;
-      return {
-        items: errors.slice(start, start + this.ERROR_PAGE_SIZE),
-        pagination: {page, size: this.ERROR_PAGE_SIZE, collectionSize: errors.length},
-      };
-    })
-  );
-
-  private readonly _warningPage$ = new BehaviorSubject<number>(1);
-
-  // Cases the run migrated but did not do everything for. A separate table: a warning is not a failure.
-  public readonly warningsView$: Observable<{
-    items: MigrationExecutionWarning[];
-    pagination: Pagination;
-  }> = combineLatest([this.selectedPlan$, this._warningPage$]).pipe(
-    map(([plan, page]) => this.pageOf(plan?.status.warnings ?? [], page))
-  );
-
-  private readonly _dryRunWarningPage$ = new BehaviorSubject<number>(1);
-
-  // The same for the latest dry run — where an author should discover a plan that would create nothing.
-  public readonly dryRunWarningsView$: Observable<{
-    items: MigrationExecutionWarning[];
-    pagination: Pagination;
-  }> = combineLatest([this.selectedPlan$, this._dryRunWarningPage$]).pipe(
-    map(([plan, page]) => this.pageOf(plan?.dryRun.warnings ?? [], page))
-  );
-
-  private readonly _dryRunErrorPage$ = new BehaviorSubject<number>(1);
-
-  // The current page of would-fail cases from the selected plan's latest dry run.
-  public readonly dryRunErrorsView$: Observable<{
-    items: MigrationExecutionError[];
-    pagination: Pagination;
-  }> = combineLatest([this.selectedPlan$, this._dryRunErrorPage$]).pipe(
-    map(([plan, page]) => {
-      const errors = plan?.dryRun.errors ?? [];
-      const start = (page - 1) * this.ERROR_PAGE_SIZE;
-      return {
-        items: errors.slice(start, start + this.ERROR_PAGE_SIZE),
-        pagination: {page, size: this.ERROR_PAGE_SIZE, collectionSize: errors.length},
-      };
-    })
-  );
+  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
+  protected readonly statusTagType = migrationStatusTagType;
 
   private _params: CaseManagementParams | undefined;
   private readonly _subscriptions = new Subscription();
+
+  /** Where the detail modal links a failed case. Null until the route resolves. */
+  public get caseDefinitionKey(): string | null {
+    return this._params?.caseDefinitionKey ?? null;
+  }
 
   constructor(
     private readonly cd: ChangeDetectorRef,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly caseMigrationApiService: CaseMigrationApiService,
-    private readonly globalNotificationService: GlobalNotificationService,
-    private readonly iconService: IconService,
     private readonly translateService: TranslateService
-  ) {
-    this.iconService.registerAll([ChevronDown16, ChevronUp16, Copy16]);
-  }
+  ) {}
 
   public ngAfterViewInit(): void {
     this.cd.detectChanges();
@@ -289,126 +195,13 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   public onRowClicked(plan: MigrationPlanViewModel): void {
     // Keeping _selectedKey$ set means the modal keeps live-updating from the polled list while it is open.
-    this._errorPage$.next(1);
-    this._dryRunErrorPage$.next(1);
-    this._warningPage$.next(1);
-    this._dryRunWarningPage$.next(1);
-    this._$expandedErrors.set(new Set());
     this._selectedKey$.next(plan.migrationKey);
-    this._showDetailModal$.next(true);
+    this.$showDetailModal.set(true);
   }
 
   public onCloseDetail(): void {
-    this._showDetailModal$.next(false);
+    this.$showDetailModal.set(false);
     this._selectedKey$.next(null);
-    this._errorPage$.next(1);
-    this._dryRunErrorPage$.next(1);
-    this._warningPage$.next(1);
-    this._dryRunWarningPage$.next(1);
-    this._$expandedErrors.set(new Set());
-  }
-
-  public onErrorPageChange(page: number): void {
-    this._errorPage$.next(page);
-  }
-
-  public onDryRunPageChange(page: number): void {
-    this._dryRunErrorPage$.next(page);
-  }
-
-  public onWarningPageChange(page: number): void {
-    this._warningPage$.next(page);
-  }
-
-  public onDryRunWarningPageChange(page: number): void {
-    this._dryRunWarningPage$.next(page);
-  }
-
-  private pageOf<T>(items: T[], page: number): {items: T[]; pagination: Pagination} {
-    const start = (page - 1) * this.ERROR_PAGE_SIZE;
-    return {
-      items: items.slice(start, start + this.ERROR_PAGE_SIZE),
-      pagination: {page, size: this.ERROR_PAGE_SIZE, collectionSize: items.length},
-    };
-  }
-
-  public isErrorExpanded(caseId: string): boolean {
-    return this._$expandedErrors().has(caseId);
-  }
-
-  public onToggleError(event: Event, caseId: string): void {
-    event.stopPropagation();
-    const expanded = new Set(this._$expandedErrors());
-    if (expanded.has(caseId)) {
-      expanded.delete(caseId);
-    } else {
-      expanded.add(caseId);
-    }
-    this._$expandedErrors.set(expanded);
-  }
-
-  // Null when no case route applies (e.g. building blocks); the id then renders as plain text.
-  public caseDetailLink(caseId: string): string[] | null {
-    if (!this._params || !caseId) return null;
-    return ['/cases', this._params.caseDefinitionKey, 'document', caseId];
-  }
-
-  public shortId(id: string): string {
-    return id ? `${id.slice(0, 8)}…` : '-';
-  }
-
-  /** The server's own summary — the rule that refused the case. Its first stacktrace line is only the wrapper around that. */
-  public errorSummary(error: {summary?: string | null; message: string | null}): string {
-    return error.summary?.trim() || error.message?.split('\n')[0].trim() || '-';
-  }
-
-  public onCopyError(event: Event, message: string | null): void {
-    event.stopPropagation();
-    if (!message) return;
-
-    navigator.clipboard?.writeText(message);
-    this.globalNotificationService.showToast({
-      title: this.translateService.instant('caseManagement.migration.errors.copied'),
-      type: 'success',
-    });
-  }
-
-  public onStartPlan(plan: MigrationPlanViewModel): void {
-    // Close the details modal first so the start confirmation isn't stacked behind it.
-    this._showDetailModal$.next(false);
-    this.$planToStart.set(plan);
-    this._showStartModal$.next(true);
-  }
-
-  public onStartConfirm(plan: MigrationPlanViewModel): void {
-    if (!this._params || !plan) return;
-
-    this.caseMigrationApiService
-      .startMigration(this._params, plan.migrationKey)
-      .pipe(catchError(() => of(null)))
-      .subscribe(() => {
-        this._showStartModal$.next(false);
-        this._refresh$.next();
-      });
-  }
-
-  public onDryRunPlan(plan: MigrationPlanViewModel): void {
-    // Close the details modal first so the dry-run confirmation isn't stacked behind it.
-    this._showDetailModal$.next(false);
-    this.$planToDryRun.set(plan);
-    this._showDryRunModal$.next(true);
-  }
-
-  public onDryRunConfirm(plan: MigrationPlanViewModel): void {
-    if (!this._params || !plan) return;
-
-    this.caseMigrationApiService
-      .startDryRun(this._params, plan.migrationKey)
-      .pipe(catchError(() => of(null)))
-      .subscribe(() => {
-        this._showDryRunModal$.next(false);
-        this._refresh$.next();
-      });
   }
 
   public onAddPlan(): void {
@@ -469,7 +262,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
 
   public onDeletePlan(plan: MigrationPlanViewModel): void {
     this.$planToDelete.set(plan);
-    this._showDeleteModal$.next(true);
+    this.showDeleteModal$.next(true);
   }
 
   public onDeleteConfirm(plan: MigrationPlanViewModel): void {
@@ -479,8 +272,46 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
       .deletePlan(this._params, plan.migrationKey)
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
-        this._showDeleteModal$.next(false);
+        this.showDeleteModal$.next(false);
         if (this._selectedKey$.value === plan.migrationKey) this._selectedKey$.next(null);
+        this._refresh$.next();
+      });
+  }
+
+  public onStartPlan(plan: MigrationPlanViewModel): void {
+    // Close the details modal first so the start confirmation isn't stacked behind it.
+    this.$showDetailModal.set(false);
+    this.$planToStart.set(plan);
+    this.showStartModal$.next(true);
+  }
+
+  public onStartConfirm(plan: MigrationPlanViewModel): void {
+    if (!this._params || !plan) return;
+
+    this.caseMigrationApiService
+      .startMigration(this._params, plan.migrationKey)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this.showStartModal$.next(false);
+        this._refresh$.next();
+      });
+  }
+
+  public onDryRunPlan(plan: MigrationPlanViewModel): void {
+    // Close the details modal first so the dry-run confirmation isn't stacked behind it.
+    this.$showDetailModal.set(false);
+    this.$planToDryRun.set(plan);
+    this.showDryRunModal$.next(true);
+  }
+
+  public onDryRunConfirm(plan: MigrationPlanViewModel): void {
+    if (!this._params || !plan) return;
+
+    this.caseMigrationApiService
+      .startDryRun(this._params, plan.migrationKey)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this.showDryRunModal$.next(false);
         this._refresh$.next();
       });
   }
@@ -492,19 +323,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
     return candidate;
   }
 
-  public statusTagType(status: CaseMigrationStatus): TagType {
-    switch (status) {
-      case 'RUNNING':
-        return 'blue';
-      case 'COMPLETED':
-        return 'green';
-      case 'COMPLETED_WITH_ERRORS':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  }
-
   private fetchPlans(params: CaseManagementParams): Observable<MigrationPlanViewModel[]> {
     return this.caseMigrationApiService.getPlans(params).pipe(
       // Ignore a failed fetch so the list keeps its last value instead of flashing empty.
@@ -514,7 +332,7 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
   }
 
   private setFields(): void {
-    this.fields$.next([
+    this.$fields.set([
       {key: 'name', label: 'caseManagement.migration.columns.plan', viewType: ViewType.TEXT},
       {key: 'source', label: 'caseManagement.migration.columns.source', viewType: ViewType.TEXT},
       {key: 'target', label: 'caseManagement.migration.columns.target', viewType: ViewType.TEXT},
@@ -529,38 +347,6 @@ export class CaseManagementMigrationComponent implements AfterViewInit, OnDestro
         label: 'caseManagement.migration.columns.progress',
         viewType: ViewType.TEMPLATE,
         template: this.progressColumnTemplate,
-      },
-    ]);
-
-    this.errorFields$.next([
-      {
-        key: 'caseId',
-        label: 'caseManagement.migration.errors.caseId',
-        viewType: ViewType.TEMPLATE,
-        template: this.caseIdColumnTemplate,
-        className: 'migration-error__case-column',
-      },
-      {
-        key: 'message',
-        label: 'caseManagement.migration.errors.message',
-        viewType: ViewType.TEMPLATE,
-        template: this.errorColumnTemplate,
-      },
-    ]);
-
-    // A warning is a sentence, not a stacktrace, so it needs no expand/collapse template.
-    this.warningFields$.next([
-      {
-        key: 'caseId',
-        label: 'caseManagement.migration.errors.caseId',
-        viewType: ViewType.TEMPLATE,
-        template: this.caseIdColumnTemplate,
-        className: 'migration-error__case-column',
-      },
-      {
-        key: 'message',
-        label: 'caseManagement.migration.warnings.message',
-        viewType: ViewType.TEXT,
       },
     ]);
   }

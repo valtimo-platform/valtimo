@@ -102,6 +102,7 @@
           size="sm"
           [iconOnly]="true"
           [title]="'interface.delete' | translate"
+          [attr.data-test-id]="testIds?.deletePatchButton"
           (click)="removePatch($index)"
         >
           <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>

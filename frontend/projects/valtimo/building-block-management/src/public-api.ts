@@ -23,9 +23,8 @@ export * from './lib/constants';
 export * from './lib/models';
 export * from './lib/services';
 
-/* The blueprint-agnostic half of the migration plan editor; `@valtimo/case-management` builds its own editor out of these. */
-export * from './lib/components/migration-plan-editor/migration-plan.utils';
-export * from './lib/components/migration-plan-editor/tabs/migration-building-block-tab.component';
-export * from './lib/components/migration-plan-editor/tabs/migration-data-migration-tab.component';
-export * from './lib/components/migration-plan-editor/tabs/migration-general-fields.component';
-export * from './lib/components/migration-plan-editor/tabs/migration-process-migration-tab.component';
+/* Editor extension points — case-management extends the base and projects its General tab; shell tabs stay internal. */
+export * from './lib/components/migration-plan-editor/migration-plan-editor-base.component';
+export * from './lib/components/migration-plan-editor/migration-plan-editor-shell/migration-plan-editor-shell.component';
+export * from './lib/components/migration-plan-editor/migration-general-fields/migration-general-fields.component';
+export * from './lib/components/migration-plan-editor/migration-status.utils';

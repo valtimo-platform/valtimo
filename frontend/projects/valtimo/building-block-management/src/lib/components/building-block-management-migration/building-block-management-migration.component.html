@@ -14,35 +14,24 @@
   ~ limitations under the License.
   -->
 
-<ng-container
-  *ngIf="{
-    plans: plans$ | async,
-    loading: loading$ | async
-  } as obs"
+<valtimo-carbon-list
+  [actionItems]="ACTION_ITEMS"
+  [fields]="$fields()"
+  [items]="plans$ | async"
+  [loading]="$loading()"
+  (rowClicked)="onRowClicked($event)"
 >
-  <valtimo-carbon-list
-    [actionItems]="ACTION_ITEMS"
-    [fields]="fields$ | async"
-    [items]="obs.plans"
-    [loading]="obs.loading"
-    (rowClicked)="onRowClicked($event)"
-  >
-    <ng-container carbonToolbarContent>
-      <button
-        cdsButton="primary"
-        [attr.data-test-id]="testIds.addButton"
-        (click)="onAddPlan()"
-      >
-        {{ 'buildingBlockManagement.migration.addPlan' | translate }}
-      </button>
-    </ng-container>
+  <ng-container carbonToolbarContent>
+    <button cdsButton="primary" [attr.data-test-id]="testIds.addButton" (click)="onAddPlan()">
+      {{ 'buildingBlockManagement.migration.addPlan' | translate }}
+    </button>
+  </ng-container>
 
-    <valtimo-no-results
-      [title]="'buildingBlockManagement.migration.noResults.title' | translate"
-      [description]="'buildingBlockManagement.migration.noResults.description' | translate"
-    ></valtimo-no-results>
-  </valtimo-carbon-list>
-</ng-container>
+  <valtimo-no-results
+    [title]="'buildingBlockManagement.migration.noResults.title' | translate"
+    [description]="'buildingBlockManagement.migration.noResults.description' | translate"
+  ></valtimo-no-results>
+</valtimo-carbon-list>
 
 <valtimo-confirmation-modal
   [confirmButtonTextTranslationKey]="'interface.delete'"
@@ -55,9 +44,9 @@
 
 <cds-modal
   valtimoCdsModal
-  *ngIf="{show: showDetailModal$ | async, plan: selectedPlan$ | async} as obs"
+  *ngIf="{plan: selectedPlan$ | async} as obs"
   size="md"
-  [open]="!!obs.show"
+  [open]="$showDetailModal()"
   (close)="onCloseDetail()"
 >
   @if (obs.plan; as plan) {
@@ -97,7 +86,11 @@
     </section>
 
     <cds-modal-footer [cdsLayer]="1">
-      <button cdsButton="ghost" (click)="onCloseDetail()">
+      <button
+        cdsButton="ghost"
+        [attr.data-test-id]="testIds.detailModalCloseButton"
+        (click)="onCloseDetail()"
+      >
         {{ 'interface.close' | translate }}
       </button>
     </cds-modal-footer>

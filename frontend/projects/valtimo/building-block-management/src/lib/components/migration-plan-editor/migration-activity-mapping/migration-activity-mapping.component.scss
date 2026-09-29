@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-// What the list itself renders. The run's own figures are the detail modal's — see its stylesheet.
-::ng-deep .cds-tag--no-margin {
-  margin: 0;
-}
-
-.migration-progress {
-  margin-right: 8px;
-  font-variant-numeric: tabular-nums;
+// `contents` — stay a child of the card's flex column so its gap still falls between the blocks.
+:host {
+  display: contents;
 }

@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+// `contents` — out of the box tree, so `.migration-plan-editor` still sizes against the routed host.
+:host {
+  display: contents;
+}
+
 .migration-plan-editor {
   display: flex;
   flex-direction: column;
@@ -23,13 +28,13 @@
     display: flex;
     align-items: center;
     justify-self: flex-end;
-    gap: 16px;
+    gap: var(--cds-spacing-05);
   }
 
   // Error red rather than warning yellow, because this one blocks Save. The inner path is the glyph on the disc, so it is painted back to the layer colour.
   &__tab-warning {
     display: inline-flex;
-    margin-left: 4px;
+    margin-left: var(--cds-spacing-02);
     vertical-align: middle;
     fill: var(--cds-support-error);
 
@@ -40,6 +45,7 @@
   }
 }
 
+// Contained tabs render their panel on the same layer as the config cards, which makes them blend in. Drop it to the background below them, matching other routed editors.
 :host ::ng-deep .cds--tab-content {
-  background-color: #fff;
+  background-color: var(--cds-background);
 }

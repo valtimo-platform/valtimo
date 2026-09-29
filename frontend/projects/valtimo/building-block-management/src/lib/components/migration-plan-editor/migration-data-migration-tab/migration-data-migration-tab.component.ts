@@ -49,7 +49,7 @@ import {
   standalone: true,
   selector: 'valtimo-migration-data-migration-tab',
   templateUrl: './migration-data-migration-tab.component.html',
-  styleUrls: ['./migration-tab.component.scss'],
+  styleUrls: ['../styles/migration-tab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,

@@ -35,13 +35,7 @@ import {
   ValtimoCdsModalDirective,
   ViewType,
 } from '@valtimo/components';
-import {
-  ButtonModule,
-  IconModule,
-  ModalModule,
-  TagModule,
-  TagType,
-} from 'carbon-components-angular';
+import {ButtonModule, IconModule, ModalModule, TagModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -58,13 +52,16 @@ import {
   tap,
 } from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS, BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 import {
-  BuildingBlockMigrationParams,
-  BuildingBlockMigrationStatus,
-  MigrationPlanManagement,
-} from '../../models';
-import {BuildingBlockMigrationApiService, BuildingBlockManagementDetailService} from '../../services';
+  BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_TABS,
+} from '../../constants';
+import {BuildingBlockMigrationParams, MigrationPlanManagement} from '../../models';
+import {
+  BuildingBlockMigrationApiService,
+  BuildingBlockManagementDetailService,
+} from '../../services';
+import {migrationStatusTagType} from '../migration-plan-editor/migration-status.utils';
 
 type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
 
@@ -88,12 +85,8 @@ type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
   ],
 })
 export class BuildingBlockManagementMigrationComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<any>;
-  @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<any>;
-
-  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
-
-  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+  @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<unknown>;
+  @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<unknown>;
 
   // No "start" and no "dry run": a building block plan is applied by the case migration that moves its block.
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -102,13 +95,13 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     {label: 'interface.delete', callback: this.onDeletePlan.bind(this), type: 'danger'},
   ];
 
+  public readonly $fields = signal<ColumnConfig[]>([]);
+  public readonly $loading = signal<boolean>(true);
+  public readonly $showDetailModal = signal<boolean>(false);
   public readonly $planToDelete = signal<MigrationPlanViewModel | null>(null);
 
-  private readonly _showDeleteModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showDeleteModal$ = this._showDeleteModal$.asObservable();
-
-  private readonly _showDetailModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showDetailModal$ = this._showDetailModal$.asObservable();
+  // The confirmation modal takes a Subject, so this one stays a stream.
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
   private readonly _params$: Observable<BuildingBlockMigrationParams> = combineLatest([
     this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$,
@@ -124,8 +117,6 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
 
   private readonly _refresh$ = new Subject<void>();
   private readonly _selectedKey$ = new BehaviorSubject<string | null>(null);
-  private readonly _loading$ = new BehaviorSubject<boolean>(true);
-  public readonly loading$ = this._loading$.asObservable();
 
   // Fetched once on load and re-fetched only on a manual action — no background polling.
   public readonly plans$: Observable<MigrationPlanViewModel[]> = this._params$.pipe(
@@ -135,7 +126,7 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
         switchMap(() => this.fetchPlans(params))
       )
     ),
-    tap(() => this._loading$.next(false)),
+    tap(() => this.$loading.set(false)),
     shareReplay(1)
   );
 
@@ -146,6 +137,8 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     map(([plans, key]) => plans.find(plan => plan.migrationKey === key) ?? null),
     startWith(null)
   );
+
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_MIGRATION_TEST_IDS;
 
   private _params: BuildingBlockMigrationParams | undefined;
   private readonly _subscriptions = new Subscription();
@@ -168,14 +161,16 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     this._subscriptions.unsubscribe();
   }
 
+  public readonly statusTagType = migrationStatusTagType;
+
   public onRowClicked(plan: MigrationPlanViewModel): void {
     // Keeping _selectedKey$ set means the modal keeps reflecting the loaded plan list while it is open.
     this._selectedKey$.next(plan.migrationKey);
-    this._showDetailModal$.next(true);
+    this.$showDetailModal.set(true);
   }
 
   public onCloseDetail(): void {
-    this._showDetailModal$.next(false);
+    this.$showDetailModal.set(false);
     this._selectedKey$.next(null);
   }
 
@@ -211,7 +206,10 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     if (!this._params) return;
     const params = this._params;
 
-    combineLatest([this.buildingBlockMigrationApiService.getPlanJson(params, plan.migrationKey), this.plans$])
+    combineLatest([
+      this.buildingBlockMigrationApiService.getPlanJson(params, plan.migrationKey),
+      this.plans$,
+    ])
       .pipe(
         take(1),
         switchMap(([json, plans]) => {
@@ -234,7 +232,7 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
 
   public onDeletePlan(plan: MigrationPlanViewModel): void {
     this.$planToDelete.set(plan);
-    this._showDeleteModal$.next(true);
+    this.showDeleteModal$.next(true);
   }
 
   public onDeleteConfirm(plan: MigrationPlanViewModel): void {
@@ -244,7 +242,7 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
       .deletePlan(this._params, plan.migrationKey)
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
-        this._showDeleteModal$.next(false);
+        this.showDeleteModal$.next(false);
         if (this._selectedKey$.value === plan.migrationKey) this._selectedKey$.next(null);
         this._refresh$.next();
       });
@@ -257,19 +255,6 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     return candidate;
   }
 
-  public statusTagType(status: BuildingBlockMigrationStatus): TagType {
-    switch (status) {
-      case 'RUNNING':
-        return 'blue';
-      case 'COMPLETED':
-        return 'green';
-      case 'COMPLETED_WITH_ERRORS':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  }
-
   private fetchPlans(params: BuildingBlockMigrationParams): Observable<MigrationPlanViewModel[]> {
     return this.buildingBlockMigrationApiService.getPlans(params).pipe(
       // Ignore a failed fetch so the list keeps its last value instead of flashing empty.
@@ -279,10 +264,22 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
   }
 
   private setFields(): void {
-    this.fields$.next([
-      {key: 'name', label: 'buildingBlockManagement.migration.columns.plan', viewType: ViewType.TEXT},
-      {key: 'source', label: 'buildingBlockManagement.migration.columns.source', viewType: ViewType.TEXT},
-      {key: 'target', label: 'buildingBlockManagement.migration.columns.target', viewType: ViewType.TEXT},
+    this.$fields.set([
+      {
+        key: 'name',
+        label: 'buildingBlockManagement.migration.columns.plan',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'source',
+        label: 'buildingBlockManagement.migration.columns.source',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'target',
+        label: 'buildingBlockManagement.migration.columns.target',
+        viewType: ViewType.TEXT,
+      },
       {
         key: '',
         label: 'buildingBlockManagement.migration.columns.status',

@@ -18,6 +18,7 @@ import {ValueConditionNode} from '@valtimo/components';
 import {
   AddBuildingBlockInstruction,
   BuildingBlockEntryOwner,
+  BuildingBlockEntryOwnerType,
   BuildingBlockEntrySuggestion,
   BuildingBlockInstruction,
   BuildingBlockMode,
@@ -94,6 +95,11 @@ interface MigrationPlanManagement {
   dryRun: DryRunStatus;
 }
 
+/** A management row with the label the list and the detail modal show it under — the plan's title, falling back to its key. */
+interface MigrationPlanViewModel extends MigrationPlanManagement {
+  name: string;
+}
+
 /** The full editable plan, matching the auto-deploy `*.case-migration.json` shape. The target is the version it is deployed under; the required `source` is part of it. */
 interface MigrationPlan extends BlueprintMigrationPlan {
   migrationTriggers?: MigrationTriggers;
@@ -103,6 +109,7 @@ interface MigrationPlan extends BlueprintMigrationPlan {
 export {
   AddBuildingBlockInstruction,
   BuildingBlockEntryOwner,
+  BuildingBlockEntryOwnerType,
   BuildingBlockEntrySuggestion,
   BuildingBlockInstruction,
   BuildingBlockMode,
@@ -119,6 +126,7 @@ export {
   MigrationPlan,
   MigrationPlanManagement,
   MigrationPlanSource,
+  MigrationPlanViewModel,
   MigrationTriggers,
   ProcessMigrationInstruction,
   ProcessVariablePatch,
