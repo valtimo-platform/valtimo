@@ -25,6 +25,8 @@ import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.service.CaseDefinitionGroupService
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.exporter.ExportService
+import com.ritense.importer.ValtimoImportService
 import com.ritense.case.web.rest.dto.AddGroupMemberRequestDto
 import com.ritense.case.web.rest.dto.CaseDefinitionGroupCreateRequestDto
 import com.ritense.case.web.rest.dto.CaseDefinitionGroupUpdateRequestDto
@@ -65,13 +67,17 @@ class CaseDefinitionGroupManagementResourceTest {
     private lateinit var mockMvc: MockMvc
     private lateinit var groupService: CaseDefinitionGroupService
     private lateinit var caseDefinitionService: CaseDefinitionService
+    private lateinit var exportService: ExportService
+    private lateinit var importService: ValtimoImportService
     private lateinit var resource: CaseDefinitionGroupManagementResource
 
     @BeforeEach
     fun setUp() {
         groupService = mock()
         caseDefinitionService = mock()
-        resource = CaseDefinitionGroupManagementResource(groupService, caseDefinitionService)
+        exportService = mock()
+        importService = mock()
+        resource = CaseDefinitionGroupManagementResource(groupService, caseDefinitionService, exportService, importService)
 
         val mapper = MapperSingleton.get()
         val converter = MappingJackson2HttpMessageConverter()

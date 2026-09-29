@@ -339,6 +339,18 @@ class CaseDefinitionGroupService(
         return searchFieldPathMappingRepository.findByIdGroupSearchFieldId(field.id)
     }
 
+    @Transactional(readOnly = true)
+    fun getSearchFieldsWithMappings(groupKey: String): List<Pair<GroupSearchField, List<GroupSearchFieldPathMapping>>> {
+        denyAuthorization()
+        val fields = searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)
+        val allMappings = searchFieldPathMappingRepository.findByIdGroupSearchFieldIdIn(fields.map { it.id })
+        val mappingsByField = allMappings.groupBy { it.id.groupSearchFieldId }
+
+        return fields.map { field ->
+            field to (mappingsByField[field.id] ?: emptyList())
+        }
+    }
+
     fun updateSearchFieldPathMappings(
         groupKey: String,
         fieldKey: String,

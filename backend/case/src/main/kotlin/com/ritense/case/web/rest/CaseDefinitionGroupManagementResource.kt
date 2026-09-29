@@ -19,6 +19,13 @@ package com.ritense.case.web.rest
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionGroupService
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.exporter.ExportService
+import com.ritense.exporter.request.CaseDefinitionGroupExportRequest
+import com.ritense.importer.ValtimoImportService
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.web.multipart.MultipartFile
 import com.ritense.case.web.rest.dto.AddGroupMemberRequestDto
 import com.ritense.case.web.rest.dto.CaseDefinitionGroupCreateRequestDto
 import com.ritense.case.web.rest.dto.CaseDefinitionGroupResponseDto
@@ -42,13 +49,16 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @SkipComponentScan
 @RequestMapping("/api/management/v1/case-definition-group", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseDefinitionGroupManagementResource(
     private val groupService: CaseDefinitionGroupService,
-    private val caseDefinitionService: CaseDefinitionService
+    private val caseDefinitionService: CaseDefinitionService,
+    private val exportService: ExportService,
+    private val importService: ValtimoImportService
 ) {
 
     @RunWithoutAuthorization
@@ -234,5 +244,35 @@ class CaseDefinitionGroupManagementResource(
         val updated = groupService.updateSearchFieldPathMappings(groupKey, fieldKey, mappings)
             .map { GroupSearchFieldPathMappingDto.of(it) }
         return ResponseEntity.ok(updated)
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping("/{groupKey}/export", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    fun exportGroup(
+        @PathVariable groupKey: String
+    ): ResponseEntity<ByteArray> {
+        val exportResult = exportService.export(CaseDefinitionGroupExportRequest(groupKey))
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$groupKey.case-group.zip\"")
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(exportResult.toByteArray())
+    }
+
+    @RunWithoutAuthorization
+    @PostMapping("/import", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun importGroup(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<Unit> {
+        try {
+            importService.importGlobal(file.inputStream)
+            return ResponseEntity.ok().build()
+        } catch (e: Exception) {
+            logger.info(e) { "Import failed" }
+            return ResponseEntity.badRequest().build()
+        }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
