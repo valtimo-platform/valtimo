@@ -45,7 +45,7 @@
   }
 }
 
-// Contained tabs render their panel on the same layer as the config cards, which makes them blend in. Drop it to the background below them, matching other routed editors.
+// Carbon paints a contained tab's panel with `$layer` via `.cds--tabs--contained ~ .cds--tab-content`, a sibling rule the Angular markup never matches (the panel sits inside `cds-tab`). Restore it, so the panel joins the selected tab. Same as the other routed editors.
 :host ::ng-deep .cds--tab-content {
-  background-color: var(--cds-background);
+  background-color: var(--cds-layer);
 }

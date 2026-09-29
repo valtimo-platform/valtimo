@@ -97,6 +97,12 @@ export class BuildingBlockEntryLookupService {
     return this._latestVersion.get(key) ?? null;
   }
 
+  /** Version to resolve an entry's processes and value paths at: its own, else the block's latest, since a `remove` entry may leave it open. */
+  public resolvedVersionOf(key: string | null, versionTag: string | null): string | null {
+    if (!key) return null;
+    return versionTag || this.latestVersionOf(key);
+  }
+
   /** Fetch (once, cached) every deployed version of [key] — a plan regularly names an older block version than the newest deployed. */
   public ensureVersionItems(key: string | null | undefined): void {
     if (!key || this._versionsByKey.has(key) || this._versionsInFlight.has(key)) return;

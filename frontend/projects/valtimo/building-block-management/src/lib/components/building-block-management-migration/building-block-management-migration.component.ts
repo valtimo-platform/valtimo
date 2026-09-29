@@ -34,10 +34,9 @@ import {
   CarbonListModule,
   ColumnConfig,
   ConfirmationModalModule,
-  ValtimoCdsModalDirective,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, IconModule, ModalModule, TagModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -64,8 +63,10 @@ import {
   BuildingBlockManagementDetailService,
 } from '../../services';
 import {migrationStatusTagType} from '../../utils';
-
-type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
+import {
+  BuildingBlockMigrationDetailModalComponent,
+  BuildingBlockMigrationPlanViewModel,
+} from './building-block-migration-detail-modal/building-block-migration-detail-modal.component';
 
 @Component({
   standalone: true,
@@ -81,9 +82,8 @@ type MigrationPlanViewModel = MigrationPlanManagement & {name: string};
     ButtonModule,
     IconModule,
     TagModule,
-    ModalModule,
-    ValtimoCdsModalDirective,
     ConfirmationModalModule,
+    BuildingBlockMigrationDetailModalComponent,
   ],
 })
 export class BuildingBlockManagementMigrationComponent implements AfterViewInit, OnDestroy {
@@ -100,7 +100,7 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
   public readonly $fields = signal<ColumnConfig[]>([]);
   public readonly $loading = signal<boolean>(true);
   public readonly $showDetailModal = signal<boolean>(false);
-  public readonly $planToDelete = signal<MigrationPlanViewModel | null>(null);
+  public readonly $planToDelete = signal<BuildingBlockMigrationPlanViewModel | null>(null);
 
   // A stream, not a signal: Cancel never resets it, so reopening relies on re-emitting `true`, which a signal drops.
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
@@ -121,7 +121,7 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
   private readonly _$selectedKey = signal<string | null>(null);
 
   // Fetched once on load and re-fetched only on a manual action — no background polling.
-  public readonly plans$: Observable<MigrationPlanViewModel[]> = this._params$.pipe(
+  public readonly plans$: Observable<BuildingBlockMigrationPlanViewModel[]> = this._params$.pipe(
     switchMap(params =>
       this._refresh$.pipe(
         startWith(undefined),
@@ -163,7 +163,7 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     this._subscriptions.unsubscribe();
   }
 
-  public onRowClicked(plan: MigrationPlanViewModel): void {
+  public onRowClicked(plan: BuildingBlockMigrationPlanViewModel): void {
     // Keeping _$selectedKey set means the modal keeps reflecting the loaded plan list while it is open.
     this._$selectedKey.set(plan.migrationKey);
     this.$showDetailModal.set(true);
@@ -202,7 +202,7 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     ]);
   }
 
-  public onDuplicatePlan(plan: MigrationPlanViewModel): void {
+  public onDuplicatePlan(plan: BuildingBlockMigrationPlanViewModel): void {
     if (!this._params) return;
     const params = this._params;
 
@@ -230,12 +230,12 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
       .subscribe(() => this._refresh$.next());
   }
 
-  public onDeletePlan(plan: MigrationPlanViewModel): void {
+  public onDeletePlan(plan: BuildingBlockMigrationPlanViewModel): void {
     this.$planToDelete.set(plan);
     this.showDeleteModal$.next(true);
   }
 
-  public onDeleteConfirm(plan: MigrationPlanViewModel): void {
+  public onDeleteConfirm(plan: BuildingBlockMigrationPlanViewModel): void {
     if (!this._params || !plan) return;
 
     this.buildingBlockMigrationApiService
@@ -255,7 +255,9 @@ export class BuildingBlockManagementMigrationComponent implements AfterViewInit,
     return candidate;
   }
 
-  private fetchPlans(params: BuildingBlockMigrationParams): Observable<MigrationPlanViewModel[]> {
+  private fetchPlans(
+    params: BuildingBlockMigrationParams
+  ): Observable<BuildingBlockMigrationPlanViewModel[]> {
     return this.buildingBlockMigrationApiService.getPlans(params).pipe(
       // Ignore a failed fetch so the list keeps its last value instead of flashing empty.
       catchError(() => EMPTY),

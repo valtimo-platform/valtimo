@@ -42,54 +42,11 @@
   (confirmEvent)="onDeleteConfirm($event)"
 ></valtimo-confirmation-modal>
 
-<cds-modal valtimoCdsModal size="md" [open]="$showDetailModal()" (close)="onCloseDetail()">
-  @if ($selectedPlan(); as plan) {
-    <cds-modal-header [cdsLayer]="1" (closeSelect)="onCloseDetail()">
-      <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
-    </cds-modal-header>
-
-    <section cdsModalContent [cdsLayer]="1">
-      <p class="migration-detail__hint">
-        {{
-          'buildingBlockManagement.migration.detailHint'
-            | translate: {source: plan.source, target: plan.target}
-        }}
-      </p>
-
-      <dl class="migration-metrics">
-        <div class="migration-metric">
-          <dt class="migration-metric__label">
-            {{ 'buildingBlockManagement.migration.fields.status' | translate }}
-          </dt>
-          <dd class="migration-metric__value">
-            <cds-tag class="cds-tag--no-margin" [type]="statusTagType(plan.status.status)">
-              {{ 'buildingBlockManagement.migration.status.' + plan.status.status | translate }}
-            </cds-tag>
-          </dd>
-        </div>
-
-        <div class="migration-metric">
-          <dt class="migration-metric__label">
-            {{ 'buildingBlockManagement.migration.fields.instancesMigrated' | translate }}
-          </dt>
-          <dd class="migration-metric__value migration-metric__value--number">
-            {{ plan.status.casesMigrated }}
-          </dd>
-        </div>
-      </dl>
-    </section>
-
-    <cds-modal-footer [cdsLayer]="1">
-      <button
-        cdsButton="ghost"
-        [attr.data-test-id]="testIds.detailModalCloseButton"
-        (click)="onCloseDetail()"
-      >
-        {{ 'interface.close' | translate }}
-      </button>
-    </cds-modal-footer>
-  }
-</cds-modal>
+<valtimo-building-block-migration-detail-modal
+  [open]="$showDetailModal()"
+  [plan]="$selectedPlan()"
+  (closeEvent)="onCloseDetail()"
+></valtimo-building-block-migration-detail-modal>
 
 <ng-template #statusColumn let-data="data">
   <cds-tag class="cds-tag--no-margin" [type]="statusTagType(data.item.status.status)">

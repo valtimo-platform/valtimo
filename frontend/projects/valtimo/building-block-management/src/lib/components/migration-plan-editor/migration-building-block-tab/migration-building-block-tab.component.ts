@@ -27,15 +27,11 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {FormArray, FormBuilder, FormGroup} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {Add16, ChevronDown16, ChevronUp16, TrashCan16} from '@carbon/icons';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {
-  SelectItem,
-  SelectModule as ValtimoSelectModule,
-  ValuePathSelectorPrefix,
-} from '@valtimo/components';
+import {SelectItem, ValuePathSelectorPrefix} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {
   BuildingBlockEntryOwner,
@@ -46,10 +42,11 @@ import {
   MigrationEditorTestIds,
   MigrationPlanSource,
   ProcessMigrationInstruction,
-  ValuePathContext,
 } from '../../../models';
-import {MigrationDataMigrationTabComponent} from '../migration-data-migration-tab/migration-data-migration-tab.component';
-import {MigrationProcessMigrationTabComponent} from '../migration-process-migration-tab/migration-process-migration-tab.component';
+import {
+  BuildingBlockEntryContext,
+  MigrationBuildingBlockEntryComponent,
+} from '../migration-building-block-entry/migration-building-block-entry.component';
 import {BuildingBlockEntryLookupService} from './building-block-entry-lookup.service';
 
 /** Editor for the `addBuildingBlock` / `removeBuildingBlock` plan components. The two differ only in which direction data and processes move; [owner] is the default counterparty of every entry. What a named block resolves to is [BuildingBlockEntryLookupService]'s. */
@@ -62,13 +59,10 @@ import {BuildingBlockEntryLookupService} from './building-block-entry-lookup.ser
   providers: [BuildingBlockEntryLookupService],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     TranslateModule,
     ButtonModule,
     IconModule,
-    ValtimoSelectModule,
-    MigrationDataMigrationTabComponent,
-    MigrationProcessMigrationTabComponent,
+    MigrationBuildingBlockEntryComponent,
   ],
 })
 export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, OnDestroy {
@@ -101,6 +95,9 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
 
   /** The keys this tab offers. Not every deployed one on the remove tab — see [applyKeyFilter]. */
   public keyItems: SelectItem[] = [];
+
+  /** What every open entry card reads; see [BuildingBlockEntryContext]. */
+  public entryContext!: BuildingBlockEntryContext;
 
   // Index-aligned with the form array; owned by the reused child migration tab components.
   private _dataMigrations: DataMigrationPatch[][] = [];
@@ -154,6 +151,11 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+    // Never on [instructions] alone: every keystroke echoes through it, and a new context re-renders every open card.
+    if (!this.entryContext || Object.keys(changes).some(name => name !== 'instructions')) {
+      this.entryContext = this.buildEntryContext();
+    }
+
     // [api] resolves after ngOnInit, and the remove tab's [planSource] arrives separately and can change again — without both, the list answers for the target or goes stale on a source switch.
     if (changes['planSource'] && !this.isAdd) {
       this._linkedVersionsLoaded = false;
@@ -173,11 +175,7 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
   }
 
   public toggleExpanded(group: FormGroup): void {
-    if (!this._expanded.delete(group)) {
-      this._expanded.add(group);
-      // Only an open entry renders pickers, and only then does whose document they list matter.
-      this.ensureEntryOwner(group);
-    }
+    if (!this._expanded.delete(group)) this._expanded.add(group);
     this.cdr.markForCheck();
   }
 
@@ -190,10 +188,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
     const version = group.get('buildingBlockVersionTag')?.value || '';
     if (!key) return '';
     return version ? `${key}:${version}` : key;
-  }
-
-  public versionItemsFor(group: FormGroup): SelectItem[] {
-    return this.lookup.versionItemsFor(group.get('buildingBlockKey')?.value);
   }
 
   public addInstruction(): void {
@@ -233,25 +227,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
   ): void {
     this._processMigrations[index] = instructions;
     this.emit();
-  }
-
-  /** Add: source = what the entry owner is running when the hijack happens. Remove: source = the building block's processes. */
-  public sourceProcessDefinitionsOf(group: FormGroup): Record<string, string> {
-    return this.isAdd ? this.runningOwnerProcessDefs(group) : this.buildingBlockProcessDefs(group);
-  }
-
-  /** Add: target = the building block's processes. Remove: target = the entry owner's processes. */
-  public targetProcessDefinitionsOf(group: FormGroup): Record<string, string> {
-    return this.isAdd ? this.buildingBlockProcessDefs(group) : this.ownerProcessDefs(group);
-  }
-
-  /** Value-path context for the dataMigration selectors — add: source = owner, target = block; remove: the reverse. */
-  public sourceContextOf(group: FormGroup): ValuePathContext {
-    return this.isAdd ? this.ownerContextOf(group) : this.buildingBlockContextOf(group);
-  }
-
-  public targetContextOf(group: FormGroup): ValuePathContext {
-    return this.isAdd ? this.buildingBlockContextOf(group) : this.ownerContextOf(group);
   }
 
   /** Fetch (once) which version of each block this plan's target links, so a new entry starts on a version the save path accepts rather than on the newest deployed. */
@@ -361,13 +336,6 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
     });
   }
 
-  /** Version to resolve processes and value paths at: the entry's own, else the block's latest, since a `remove` entry may leave it open. */
-  private versionOf(group: FormGroup): string | null {
-    const key = group.get('buildingBlockKey')?.value;
-    if (!key) return null;
-    return group.get('buildingBlockVersionTag')?.value || this.lookup.latestVersionOf(key);
-  }
-
   private ensureProcessDefinitions(group: FormGroup): void {
     this.lookup.ensureProcessDefinitions(
       group.get('buildingBlockKey')?.value || null,
@@ -375,58 +343,26 @@ export class MigrationBuildingBlockTabComponent implements OnInit, OnChanges, On
     );
   }
 
-  private ensureEntryOwner(group: FormGroup): void {
-    const key = group.get('buildingBlockKey')?.value;
-    const version = this.versionOf(group);
-    if (!key || !version || !this.api) return;
-    this.lookup.ensureEntryOwner(this.api, key, version, this.mode, this.planSource);
-  }
-
-  private entryOwnerOf(group: FormGroup): BuildingBlockEntryOwner | null {
-    return this.lookup.entryOwnerOf(group.get('buildingBlockKey')?.value, this.versionOf(group));
-  }
-
-  /** Whether the counterparty is a building block other than the one this plan targets — the only case where the pickers must be re-scoped away from [owner]. Key alone, not key and version: a `remove` entry's owner is read off the plan's source tree, so this plan's own blueprint comes back at the source version, while what the entry moves lands on the target's. */
-  private isNestedOwner(owner: BuildingBlockEntryOwner | null): owner is BuildingBlockEntryOwner {
-    return (
-      owner?.type === 'BUILDING_BLOCK' &&
-      !(this.owner?.type === 'BUILDING_BLOCK' && owner.key === this.owner.key)
-    );
-  }
-
-  private buildingBlockProcessDefs(group: FormGroup): Record<string, string> {
-    return this.lookup.processDefinitionsOf(
+  private versionOf(group: FormGroup): string | null {
+    return this.lookup.resolvedVersionOf(
       group.get('buildingBlockKey')?.value || null,
-      this.versionOf(group)
+      group.get('buildingBlockVersionTag')?.value || null
     );
   }
 
-  private ownerProcessDefs(group: FormGroup): Record<string, string> {
-    const owner = this.entryOwnerOf(group);
-    if (!this.isNestedOwner(owner)) return this.ownerProcessDefinitions;
-    return this.lookup.processDefinitionsOf(owner.key, owner.versionTag);
-  }
-
-  /** What the owner still runs when an `add` entry executes, at the version its instances still have — the same end AddBuildingBlockProcessChecker resolves, so what is offered here the save path accepts. */
-  private runningOwnerProcessDefs(group: FormGroup): Record<string, string> {
-    const owner = this.entryOwnerOf(group);
-    if (this.isNestedOwner(owner)) {
-      return this.lookup.processDefinitionsOf(owner.key, owner.versionTag);
-    }
-    return this.ownerSourceProcessDefinitions;
-  }
-
-  private buildingBlockContextOf(group: FormGroup): ValuePathContext {
-    return this.lookup.buildingBlockContext(
-      group.get('buildingBlockKey')?.value || null,
-      this.versionOf(group)
-    );
-  }
-
-  /** The document the entry's patches address on the owner side; falls back to [owner] until the entry's own owner is known. */
-  private ownerContextOf(group: FormGroup): ValuePathContext {
-    const entryOwner = this.entryOwnerOf(group);
-    return this.lookup.ownerContext(this.isNestedOwner(entryOwner) ? entryOwner : this.owner);
+  private buildEntryContext(): BuildingBlockEntryContext {
+    return {
+      mode: this.mode,
+      api: this.api,
+      owner: this.owner,
+      ownerProcessDefinitions: this.ownerProcessDefinitions,
+      ownerSourceProcessDefinitions: this.ownerSourceProcessDefinitions,
+      planSource: this.planSource,
+      dataMigrationHintKey: this.dataMigrationHintKey,
+      processMigrationHintKey: this.processMigrationHintKey,
+      sourcePrefixes: this.sourcePrefixes,
+      testIds: this.testIds,
+    };
   }
 
   private emit(): void {

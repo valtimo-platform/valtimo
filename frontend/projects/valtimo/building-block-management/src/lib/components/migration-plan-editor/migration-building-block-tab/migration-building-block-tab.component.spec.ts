@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {FormBuilder, FormGroup} from '@angular/forms';
+import {FormBuilder} from '@angular/forms';
 import {of} from 'rxjs';
 import {MigrationBuildingBlockTabComponent} from './migration-building-block-tab.component';
 import {BuildingBlockEntryLookupService} from './building-block-entry-lookup.service';
@@ -22,21 +22,6 @@ import {BuildingBlockEntryLookupService} from './building-block-entry-lookup.ser
 describe('MigrationBuildingBlockTabComponent', () => {
   let component: MigrationBuildingBlockTabComponent;
   let lookup: BuildingBlockEntryLookupService;
-
-  // The case still runs 'aanvraag-behandelen' — the target version handed it to the block, so it links only 'aanvraag-start'.
-  const SOURCE_DEFS = {
-    'aanvraag-start': 'aanvraag-start:1:aaa',
-    'aanvraag-behandelen': 'aanvraag-behandelen:1:bbb',
-  };
-  const TARGET_DEFS = {
-    'aanvraag-start': 'aanvraag-start:2:ccc',
-    'aanvraag-afronden': 'aanvraag-afronden:1:ddd',
-  };
-
-  const firstInstruction = (): FormGroup => {
-    component.addInstruction();
-    return component.instructionsArray.at(0) as FormGroup;
-  };
 
   beforeEach(() => {
     lookup = new BuildingBlockEntryLookupService({
@@ -51,54 +36,6 @@ describe('MigrationBuildingBlockTabComponent', () => {
       {registerAll: () => {}} as any,
       lookup
     );
-    component.ownerProcessDefinitions = TARGET_DEFS;
-    component.ownerSourceProcessDefinitions = SOURCE_DEFS;
-  });
-
-  it('offers an add entry the source version processes only — the target version adds none it can hijack', () => {
-    component.mode = 'add';
-
-    expect(Object.keys(component.sourceProcessDefinitionsOf(firstInstruction()))).toEqual(
-      jasmine.arrayWithExactContents(['aanvraag-start', 'aanvraag-behandelen'])
-    );
-  });
-
-  // The version the instances still have — the same end AddBuildingBlockProcessChecker resolves.
-  it('resolves a process both versions link against the source version', () => {
-    component.mode = 'add';
-
-    expect(component.sourceProcessDefinitionsOf(firstInstruction())['aanvraag-start']).toBe(
-      SOURCE_DEFS['aanvraag-start']
-    );
-  });
-
-  it('hands a removed block its process back at the target version only', () => {
-    component.mode = 'remove';
-    const group = firstInstruction();
-
-    // Source is the block's own map — empty until an entry names a block — never the owner's.
-    expect(component.sourceProcessDefinitionsOf(group)).toEqual({});
-    expect(component.targetProcessDefinitionsOf(group)).toEqual(TARGET_DEFS);
-  });
-
-  // A remove entry's owner is read off the plan's source tree, so this plan's own block comes back at the source version — while what the entry hands back lands on the target's.
-  it('keeps a remove entry on the target version when the owner is this plan own block', () => {
-    component.mode = 'remove';
-    component.owner = {type: 'BUILDING_BLOCK', key: 'inspectie', versionTag: '1.0.6'};
-    component.api = {
-      suggestBuildingBlockEntry: () =>
-        of({owner: {type: 'BUILDING_BLOCK', key: 'inspectie', versionTag: '1.0.5'}}),
-    } as any;
-    const group = firstInstruction();
-
-    group.get('buildingBlockKey')!.setValue('dossier');
-    group.get('buildingBlockVersionTag')!.setValue('1.0.0');
-
-    expect(component.targetProcessDefinitionsOf(group)).toEqual(TARGET_DEFS);
-    expect(component.targetContextOf(group)).toEqual({
-      buildingBlockKey: 'inspectie',
-      buildingBlockVersionTag: '1.0.6',
-    });
   });
 
   // The newest deployed version is the one the save path refuses when the target links an older one.
@@ -109,21 +46,12 @@ describe('MigrationBuildingBlockTabComponent', () => {
       suggestBuildingBlockEntry: () => of({}),
     } as any;
     component.ngOnChanges({api: {} as any});
-    const group = firstInstruction();
+    component.addInstruction();
+    const group = component.instructionsArray.at(0);
 
     group.get('buildingBlockKey')!.setValue('fotos');
 
     expect(group.get('buildingBlockVersionTag')!.value).toBe('1.0.0');
-  });
-
-  // A new object per call would re-trigger the nested tab's ngOnChanges on every change detection.
-  it('keeps one reference for the running-process map', () => {
-    component.mode = 'add';
-    const group = firstInstruction();
-
-    expect(component.sourceProcessDefinitionsOf(group)).toBe(
-      component.sourceProcessDefinitionsOf(group)
-    );
   });
 
   // A new [items] array re-renders every open key select, which can reset an open dropdown.
@@ -141,5 +69,19 @@ describe('MigrationBuildingBlockTabComponent', () => {
 
     expect(component.keyItems.map(item => item.id)).toEqual(['fotos']);
     expect(component.keyItems).toBe(keyItems);
+  });
+
+  // The instructions echo back on every keystroke; a new context each time would re-render every open card.
+  it('rebuilds the entry context on an input change and keeps it on an instructions change', () => {
+    component.ngOnChanges({mode: {} as any});
+    const context = component.entryContext;
+
+    component.ngOnChanges({instructions: {} as any});
+    expect(component.entryContext).toBe(context);
+
+    component.mode = 'remove';
+    component.ngOnChanges({mode: {} as any});
+    expect(component.entryContext).not.toBe(context);
+    expect(component.entryContext.mode).toBe('remove');
   });
 });

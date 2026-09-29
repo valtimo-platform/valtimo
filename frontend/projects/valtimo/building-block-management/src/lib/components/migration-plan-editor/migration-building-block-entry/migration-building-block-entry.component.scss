@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-::ng-deep .cds-tag--no-margin {
-  margin: 0;
+// `contents` on both — the host and the form wrapper stay out of the card's flex column, so its gap still falls between the blocks.
+:host {
+  display: contents;
 }
 
-.migration-progress {
-  margin-right: var(--cds-spacing-03);
-  font-variant-numeric: tabular-nums;
+.migration-building-block-entry {
+  display: contents;
 }

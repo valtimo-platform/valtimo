@@ -26,38 +26,19 @@ describe('CaseMigrationDetailModalComponent', () => {
   } as any;
 
   beforeEach(() => {
-    component = new CaseMigrationDetailModalComponent(
-      {showToast: () => {}} as any,
-      {registerAll: () => {}} as any,
-      {instant: (key: string) => key} as any
-    );
+    component = new CaseMigrationDetailModalComponent();
   });
 
   // Start and Dry run close the modal without deselecting, so the same plan comes back on the next open.
-  it('resets paging and expanded stacktraces when the same plan is reopened', () => {
+  it('keeps the plan across a close and reopen', () => {
     component.open = true;
     component.plan = PLAN;
-    component.onErrorPageChange(3);
-    component.onDryRunPageChange(2);
-    component.onToggleError(new Event('click'), 'case-1');
 
     component.open = false;
+    expect(component.$open()).toBeFalse();
+
     component.open = true;
-    component.plan = PLAN;
-
-    expect(component.$errorPage()).toBe(1);
-    expect(component.$dryRunErrorPage()).toBe(1);
-    expect(component.isErrorExpanded('case-1')).toBeFalse();
-  });
-
-  // The list's poll re-sets the plan while the modal is open; that must not throw the author back to page 1.
-  it('keeps the page while the open plan is refreshed', () => {
-    component.open = true;
-    component.plan = PLAN;
-    component.onErrorPageChange(3);
-
-    component.plan = {...PLAN};
-
-    expect(component.$errorPage()).toBe(3);
+    expect(component.$open()).toBeTrue();
+    expect(component.$plan()).toBe(PLAN);
   });
 });

@@ -35,23 +35,21 @@ import {
   CheckboxModule,
   IconModule,
   IconService,
-  InputModule,
   SelectModule,
 } from 'carbon-components-angular';
 import {ProcessService} from '@valtimo/process';
-import {ValuePathSelectorComponent, ValuePathSelectorPrefix} from '@valtimo/components';
+import {ValuePathSelectorPrefix} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {
   ActivityMappingRequest,
-  DataMigrationTargetType,
   MigrationEditorApi,
   MigrationEditorTestIds,
-  PatchMode,
   ProcessMigrationInstruction,
-  ProcessVariablePatch,
   ValuePathContext,
 } from '../../../models';
+import {createProcessVariableGroup, serializeProcessVariables} from '../../../utils';
 import {MigrationActivityMappingComponent} from '../migration-activity-mapping/migration-activity-mapping.component';
+import {MigrationProcessVariablesComponent} from '../migration-process-variables/migration-process-variables.component';
 import {MigrationFlowNodeCacheService} from './migration-flow-node-cache.service';
 
 /** The `processMigration` component of a plan, for either blueprint type — the blueprint reaches it only through [api] and the two process maps. */
@@ -69,10 +67,9 @@ import {MigrationFlowNodeCacheService} from './migration-flow-node-cache.service
     ButtonModule,
     CheckboxModule,
     IconModule,
-    InputModule,
     SelectModule,
-    ValuePathSelectorComponent,
     MigrationActivityMappingComponent,
+    MigrationProcessVariablesComponent,
   ],
 })
 export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges, OnDestroy {
@@ -99,17 +96,6 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
 
   @Output() public readonly instructionsChange = new EventEmitter<ProcessMigrationInstruction[]>();
 
-  public readonly MODES: PatchMode[] = ['path', 'value', 'null'];
-
-  public readonly TARGET_TYPES: DataMigrationTargetType[] = [
-    'string',
-    'integer',
-    'long',
-    'number',
-    'double',
-    'boolean',
-  ];
-
   public processDefinitionKeys: string[] = [];
 
   public readonly form = this.fb.group({
@@ -127,6 +113,11 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
 
   public get instructionsArray(): FormArray {
     return this.form.get('instructions') as FormArray;
+  }
+
+  /** Handed to the variables child: its rows outlive it, since it is rebuilt on every expand. */
+  public get subscriptions(): Subscription {
+    return this._subscriptions;
   }
 
   constructor(
@@ -185,7 +176,7 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     return group.get('mapActivities') as FormArray;
   }
 
-  public setProcessVariablesArray(group: FormGroup): FormArray {
+  public setProcessVariablesOf(group: FormGroup): FormArray {
     return group.get('setProcessVariables') as FormArray;
   }
 
@@ -237,14 +228,6 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     this.instructionsArray.removeAt(index);
   }
 
-  public addVariable(group: FormGroup): void {
-    this.setProcessVariablesArray(group).push(this.createVariableGroup());
-  }
-
-  public removeVariable(group: FormGroup, index: number): void {
-    this.setProcessVariablesArray(group).removeAt(index);
-  }
-
   /** The mapping child applied a suggestion, which its `emitEvent: false` writes kept from the form's own `valueChanges`. */
   public onMappingsChange(): void {
     this.emit();
@@ -265,7 +248,9 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
         )
       ),
       setProcessVariables: this.fb.array<FormGroup>(
-        (instruction?.setProcessVariables ?? []).map(patch => this.createVariableGroup(patch))
+        (instruction?.setProcessVariables ?? []).map(patch =>
+          createProcessVariableGroup(this.fb, this._subscriptions, patch)
+        )
       ),
       skipCustomListeners: this.fb.control(instruction?.skipCustomListeners ?? false),
       skipIoMappings: this.fb.control(instruction?.skipIoMappings ?? false),
@@ -292,34 +277,6 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
     );
 
     return group;
-  }
-
-  private createVariableGroup(patch?: ProcessVariablePatch): FormGroup {
-    const group = this.fb.group({
-      mode: this.fb.control<PatchMode>(this.modeOf(patch)),
-      source: this.fb.control(patch?.source ?? ''),
-      value: this.fb.control(patch?.value != null ? String(patch.value) : ''),
-      target: this.fb.control(patch?.target ?? ''),
-      targetType: this.fb.control(patch?.targetType ?? ''),
-    });
-
-    // Clear the now-irrelevant input(s) when the mode switches, so the serialized patch stays clean.
-    this._subscriptions.add(
-      group.get('mode')!.valueChanges.subscribe(mode => {
-        if (mode !== 'path') group.get('source')!.setValue('', {emitEvent: false});
-        if (mode !== 'value') group.get('value')!.setValue('', {emitEvent: false});
-      })
-    );
-
-    return group;
-  }
-
-  /** Derive the edit mode from a stored patch. No source and no value clears the target, so it is 'null'; only a brand-new patch defaults to 'path'. */
-  private modeOf(patch?: ProcessVariablePatch): PatchMode {
-    if (!patch) return 'path';
-    if (patch.source) return 'path';
-    if (patch.value !== undefined && patch.value !== null) return 'value';
-    return 'null';
   }
 
   /** Hand the mapping child a fresh request when the ids changed. [suggest] separates the author picking another process, which replaces the rows, from a plan being restored, which keeps them. */
@@ -387,24 +344,11 @@ export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges,
         if (source && target) mapActivities[source] = target;
       });
 
-      const setProcessVariables: ProcessVariablePatch[] = this.setProcessVariablesArray(group)
-        .controls.map(row => {
-          const {mode, source, value, target, targetType} = (row as FormGroup).getRawValue();
-          const patch: ProcessVariablePatch = {target: target ?? ''};
-          // 'null' writes neither key: that is the clear shape, and the only one a save keeps.
-          if (mode === 'path') {
-            if (source) patch.source = source;
-          } else if (mode === 'value' && value !== '' && value != null) patch.value = value;
-          if (mode !== 'null' && targetType) patch.targetType = targetType;
-          return patch;
-        })
-        .filter(patch => !!patch.target);
-
       return {
         sourceProcessDefinitionKey: group.get('sourceProcessDefinitionKey')?.value ?? '',
         targetProcessDefinitionKey: group.get('targetProcessDefinitionKey')?.value ?? '',
         mapActivities,
-        setProcessVariables,
+        setProcessVariables: serializeProcessVariables(this.setProcessVariablesOf(group)),
         skipCustomListeners: !!group.get('skipCustomListeners')?.value,
         skipIoMappings: !!group.get('skipIoMappings')?.value,
       };

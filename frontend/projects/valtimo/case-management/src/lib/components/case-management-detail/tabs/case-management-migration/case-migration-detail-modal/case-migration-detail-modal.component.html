@@ -16,7 +16,8 @@
 
 <!-- Wait for a plan: Carbon focuses the modal's first focusable element on open, and `[open]` binds before `[plan]`. -->
 <cds-modal valtimoCdsModal size="md" [open]="$open() && !!$plan()" (close)="onClose()">
-  @if ($plan(); as plan) {
+  <!-- Only while open: each open builds fresh tables, so paging and expanded stacktraces start over. -->
+  @if ($open() && $plan(); as plan) {
     <cds-modal-header [cdsLayer]="1" (closeSelect)="onClose()">
       <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
     </cds-modal-header>
@@ -101,13 +102,11 @@
           <h5 class="migration-detail__config-heading">
             {{ 'caseManagement.migration.errors.heading' | translate }}
           </h5>
-          <valtimo-carbon-list
-            [fields]="$errorFields()"
-            [items]="$errorsView().items"
-            [pagination]="$errorsView().pagination"
-            [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
-            (paginationClicked)="onErrorPageChange($event)"
-          ></valtimo-carbon-list>
+          <valtimo-case-migration-case-table
+            kind="error"
+            [caseDefinitionKey]="caseDefinitionKey"
+            [items]="plan.status.errors"
+          ></valtimo-case-migration-case-table>
         </div>
       }
 
@@ -120,13 +119,11 @@
           <p class="migration-detail__hint">
             {{ 'caseManagement.migration.warnings.description' | translate }}
           </p>
-          <valtimo-carbon-list
-            [fields]="$warningFields()"
-            [items]="$warningsView().items"
-            [pagination]="$warningsView().pagination"
-            [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
-            (paginationClicked)="onWarningPageChange($event)"
-          ></valtimo-carbon-list>
+          <valtimo-case-migration-case-table
+            kind="warning"
+            [caseDefinitionKey]="caseDefinitionKey"
+            [items]="plan.status.warnings"
+          ></valtimo-case-migration-case-table>
         </div>
       }
 
@@ -196,13 +193,11 @@
               <h5 class="migration-detail__config-heading">
                 {{ 'caseManagement.migration.dryRunResults.errorsHeading' | translate }}
               </h5>
-              <valtimo-carbon-list
-                [fields]="$errorFields()"
-                [items]="$dryRunErrorsView().items"
-                [pagination]="$dryRunErrorsView().pagination"
-                [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
-                (paginationClicked)="onDryRunPageChange($event)"
-              ></valtimo-carbon-list>
+              <valtimo-case-migration-case-table
+                kind="error"
+                [caseDefinitionKey]="caseDefinitionKey"
+                [items]="plan.dryRun.errors"
+              ></valtimo-case-migration-case-table>
             </div>
           }
 
@@ -214,13 +209,11 @@
               <p class="migration-detail__hint">
                 {{ 'caseManagement.migration.warnings.description' | translate }}
               </p>
-              <valtimo-carbon-list
-                [fields]="$warningFields()"
-                [items]="$dryRunWarningsView().items"
-                [pagination]="$dryRunWarningsView().pagination"
-                [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
-                (paginationClicked)="onDryRunWarningPageChange($event)"
-              ></valtimo-carbon-list>
+              <valtimo-case-migration-case-table
+                kind="warning"
+                [caseDefinitionKey]="caseDefinitionKey"
+                [items]="plan.dryRun.warnings"
+              ></valtimo-case-migration-case-table>
             </div>
           }
         </div>
@@ -255,64 +248,3 @@
     </cds-modal-footer>
   }
 </cds-modal>
-
-<ng-template #caseIdColumn let-data="data">
-  @if (caseDetailLink(data.item.caseId); as link) {
-    <a
-      class="migration-error__case-link"
-      [routerLink]="link"
-      [title]="data.item.caseId"
-      target="_blank"
-    >
-      {{ shortId(data.item.caseId) }}
-    </a>
-  } @else {
-    <span [title]="data.item.caseId">{{ shortId(data.item.caseId) }}</span>
-  }
-</ng-template>
-
-<ng-template #errorColumn let-data="data">
-  <div class="migration-error">
-    <div class="migration-error__cell">
-      <span class="migration-error__message" [title]="errorSummary(data.item)">
-        {{ errorSummary(data.item) }}
-      </span>
-
-      <div class="migration-error__actions">
-        <button
-          cdsButton="ghost"
-          size="sm"
-          [iconOnly]="true"
-          [title]="
-            (isErrorExpanded(data.item.caseId)
-              ? 'caseManagement.migration.errors.hideStacktrace'
-              : 'caseManagement.migration.errors.showStacktrace'
-            ) | translate
-          "
-          [attr.data-test-id]="testIds.toggleErrorButton"
-          (click)="onToggleError($event, data.item.caseId)"
-        >
-          <svg
-            [cdsIcon]="isErrorExpanded(data.item.caseId) ? 'chevron--up' : 'chevron--down'"
-            size="16"
-          ></svg>
-        </button>
-
-        <button
-          cdsButton="ghost"
-          size="sm"
-          [iconOnly]="true"
-          [title]="'caseManagement.migration.errors.copyFullError' | translate"
-          [attr.data-test-id]="testIds.copyErrorButton"
-          (click)="onCopyError($event, data.item.message)"
-        >
-          <svg cdsIcon="copy" size="16"></svg>
-        </button>
-      </div>
-    </div>
-
-    @if (isErrorExpanded(data.item.caseId)) {
-      <pre class="migration-error__trace">{{ data.item.message }}</pre>
-    }
-  </div>
-</ng-template>

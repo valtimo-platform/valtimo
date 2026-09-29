@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-::ng-deep .cds-tag--no-margin {
-  margin: 0;
-}
-
-.migration-progress {
-  margin-right: var(--cds-spacing-03);
-  font-variant-numeric: tabular-nums;
+// `contents` — stay a child of the card's flex column so its gap still falls between the blocks.
+:host {
+  display: contents;
 }
