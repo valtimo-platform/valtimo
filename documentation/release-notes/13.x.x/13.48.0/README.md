@@ -90,4 +90,3 @@ Widget tabs with multiple widgets now load faster.
 |------|-----|
 | Area name | New bugfix. |
 | Cases | Choosing one of several start processes for a case opens its start form again, instead of sending the user back to the dashboard |
-| Notificaties API | Notifications are received again when the plugin's Authentication header starts with "Bearer", as long as it matches the header registered with the subscription. Until now every notification sent with such a header was refused |
