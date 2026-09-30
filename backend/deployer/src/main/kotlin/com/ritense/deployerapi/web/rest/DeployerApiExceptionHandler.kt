@@ -36,23 +36,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.zalando.problem.Problem
 
-/**
- * Turns failures on the deployer endpoints into the [ErrorResponseDto] shape the published OpenAPI
- * spec promises. Takes precedence over the global problem+json translator, which the deployer's
- * generated client cannot parse.
- *
- * Winning the advice means the global translator's
- * [com.ritense.valtimo.contract.web.rest.error.ExceptionMapper] chain does not run for these
- * endpoints. Two consequences are handled here: statuses are derived locally (see [statusOf]) so
- * framework failures are not flattened into a 500, and messages are only echoed for exceptions
- * whose message Valtimo authors itself — there is no HardeningService to scrub them.
- *
- * Two gaps this cannot close, both because [RestControllerAdvice.assignableTypes] needs a resolved
- * handler method:
- * - Failures raised by request mapping itself (415, 406) still render as problem+json.
- * - Another unrestricted advice at [Ordered.HIGHEST_PRECEDENCE] would tie on order, leaving bean
- *   registration order to decide. Nothing on a deployer path hits one today.
- */
 @Hidden
 @SkipComponentScan
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -77,7 +60,6 @@ class DeployerApiExceptionHandler {
         return errorResponse(HttpStatus.BAD_REQUEST, exception.messageOr("Invalid request"))
     }
 
-    // Jackson detail leaks internal types and request content — never echo it
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleUnreadableRequest(exception: HttpMessageNotReadableException): ResponseEntity<ErrorResponseDto> {
         logger.info(exception) { "Deployer request body could not be read" }
@@ -102,12 +84,8 @@ class DeployerApiExceptionHandler {
         }
     }
 
-    /**
-     * Mirrors the status the global translator would have produced for framework failures.
-     */
     private fun statusOf(exception: Exception): HttpStatus = when {
         exception is ErrorResponse -> HttpStatus.resolve(exception.statusCode.value())
-        // Valtimo carries status on its own exceptions as a zalando Problem
         exception is Problem -> exception.status?.statusCode?.let { HttpStatus.resolve(it) }
         exception is TypeMismatchException -> HttpStatus.BAD_REQUEST
         else -> AnnotatedElementUtils
@@ -115,7 +93,6 @@ class DeployerApiExceptionHandler {
             ?.code
     } ?: HttpStatus.INTERNAL_SERVER_ERROR
 
-    // A Problem's detail is Valtimo-authored; anything else falls back to the bare status
     private fun messageOf(exception: Exception, status: HttpStatus): String =
         (exception as? Problem)?.detail?.takeIf { it.isNotBlank() } ?: status.reasonPhrase
 

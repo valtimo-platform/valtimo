@@ -49,7 +49,6 @@ class DeployerCaseDefinitionResourceIntTest @Autowired constructor(
             .andExpect(jsonPath("$[0].caseDefinitionVersionTag").value(VERSION_TAG))
     }
 
-    // Resolved before the controller, so only a full context proves the advice still catches it
     @Test
     fun `should report bad request with an error body for an unparsable query parameter`() {
         val response = mockMvc.perform(get("$BASE_PATH/case-definition").param("active", "not-a-boolean"))
@@ -105,7 +104,6 @@ class DeployerCaseDefinitionResourceIntTest @Autowired constructor(
         assertContains(response.contentAsString, "\"message\"")
     }
 
-    // The security config lists method+path pairs; anything else must fall through to deny, not permit
     @Test
     fun `should deny a method the security config does not list`() {
         mockMvc.perform(post("$BASE_PATH/case-definition"))
@@ -121,7 +119,6 @@ class DeployerCaseDefinitionResourceIntTest @Autowired constructor(
             .andExpect(jsonPath("$.components.schemas.FieldErrorVM").doesNotExist())
             .andReturn().response.contentAsString
 
-        // A dangling $ref makes the document unusable for the generated client
         val declared = jacksonObjectMapper().readTree(document)
             .path("components").path("schemas").fieldNames().asSequence().toSet()
         val referenced = REF_PATTERN.findAll(document).map { it.groupValues[1] }.toSet()

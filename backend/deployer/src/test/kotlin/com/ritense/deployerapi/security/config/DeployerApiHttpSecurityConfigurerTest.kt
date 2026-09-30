@@ -126,13 +126,11 @@ class DeployerApiHttpSecurityConfigurerTest {
         @Bean
         fun importService(): ImportService = mock()
 
-        // Existing case definition — otherwise the dangling endpoint answers 404 and hides the 200
         @Bean
         fun caseDefinitionRepository(): CaseDefinitionRepository = mock {
             on { existsById(any()) } doReturn true
         }
 
-        // Mirrors how the host application composes HttpSecurityConfigurer beans
         @Bean
         fun securityFilterChain(
             http: HttpSecurity,

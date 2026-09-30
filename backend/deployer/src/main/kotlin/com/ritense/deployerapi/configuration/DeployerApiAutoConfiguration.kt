@@ -77,7 +77,6 @@ class DeployerApiAutoConfiguration {
             .group("deployer")
             .pathsToMatch("/api/deployer/v1/**")
             .addOpenApiCustomizer { openApi ->
-                // Injected by the global exception handler, not part of this API
                 openApi.components?.schemas?.remove("FieldErrorVM")
             }
             .build()

@@ -67,7 +67,6 @@ dependencies {
     }
 }
 
-// Handle duplicate liquibase files from circular test dependency (building-block -> form)
 tasks.named("integrationTestingPostgresql") {
     systemProperty("liquibase.duplicateFileMode", "WARN")
 }

@@ -20,10 +20,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 
 class ImportRequestDto(
-    // Base64-encoded .case.zip
     @Schema(type = "string", format = "byte")
     val file: ByteArray,
-    // Source plugin configuration id -> target id. A null target leaves the reference dangling.
     @Schema(description = "Maps plugin configuration ids from the source environment onto this environment")
     val pluginConfigurationMappings: Map<UUID, UUID?>? = null,
 )

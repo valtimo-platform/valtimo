@@ -185,7 +185,6 @@ class DeployerCaseDefinitionResource(
         return ResponseEntity.noContent().build()
     }
 
-    // Without this the resolvers answer "nothing to map" for a case definition that isn't there
     private fun requireExistingCaseDefinition(key: String, versionTag: String): CaseDefinitionId {
         val caseDefinitionId = CaseDefinitionId.of(key, versionTag)
         if (!caseDefinitionRepository.existsById(caseDefinitionId)) {
