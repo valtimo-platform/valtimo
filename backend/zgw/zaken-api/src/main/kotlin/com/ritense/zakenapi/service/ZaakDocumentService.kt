@@ -84,6 +84,19 @@ class ZaakDocumentService(
     fun getInformatieObjectenAsRelatedFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) caseDocumentId: UUID,
     ): List<RelatedFileDto> {
+        if (authorizationEnabled) {
+            if (!authorizationService.hasPermission(
+                    EntityAuthorizationRequest(
+                        ZgwDocument::class.java,
+                        ZgwDocumentActionProvider.VIEW_LIST,
+                        ZgwDocument(caseDocumentId = caseDocumentId)
+                    )
+                )
+            ) {
+                return emptyList()
+            }
+        }
+
         val zaakUri = zaakUrlProvider.getZaakUrl(caseDocumentId)
 
         val zakenApiPlugin = checkNotNull(
