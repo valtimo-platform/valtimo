@@ -26,8 +26,6 @@ import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.contract.plugin.DanglingPluginConfigurationDto
-import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import org.hamcrest.Matchers.startsWith
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -46,7 +44,6 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -67,7 +64,6 @@ class DeployerCaseDefinitionResourceTest {
     lateinit var exportService: ExportService
     lateinit var importService: ImportService
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
-    lateinit var pluginConfigurationMappingResolver: PluginConfigurationMappingResolver
 
     @BeforeEach
     fun setUp() {
@@ -75,41 +71,35 @@ class DeployerCaseDefinitionResourceTest {
         exportService = mock()
         importService = mock()
         caseDefinitionRepository = mock()
-        pluginConfigurationMappingResolver = mock()
 
         val converter = MappingJackson2HttpMessageConverter()
         converter.objectMapper = MapperSingleton.get()
 
-        mockMvc = mockMvcFor(listOf(pluginConfigurationMappingResolver), converter)
+        mockMvc = MockMvcBuilders
+            .standaloneSetup(
+                DeployerCaseDefinitionResource(
+                    caseDefinitionService,
+                    exportService,
+                    importService,
+                    caseDefinitionRepository,
+                )
+            )
+            .setControllerAdvice(DeployerApiExceptionHandler())
+            .setMessageConverters(converter, ByteArrayHttpMessageConverter())
+            .build()
     }
 
-    private fun mockMvcFor(
-        resolvers: List<PluginConfigurationMappingResolver>,
-        converter: MappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
-            .apply { objectMapper = MapperSingleton.get() },
-    ): MockMvc = MockMvcBuilders
-        .standaloneSetup(
-            DeployerCaseDefinitionResource(
-                caseDefinitionService,
-                exportService,
-                importService,
-                caseDefinitionRepository,
-                resolvers,
-            )
-        )
-        .setControllerAdvice(DeployerApiExceptionHandler())
-        .setMessageConverters(converter, ByteArrayHttpMessageConverter())
-        .build()
-
     @Test
-    fun `should list case definitions`() {
-        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), isNull(), isNull()))
+    fun `should list only active case definitions by default`() {
+        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
             .thenReturn(listOf(caseDefinition("my-case", "1.0.0")))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$[0].caseDefinitionKey").value("my-case"))
             .andExpect(jsonPath("$[0].caseDefinitionVersionTag").value("1.0.0"))
+
+        verify(caseDefinitionService).getCaseDefinitions(isNull(), isNull(), eq(true), isNull())
     }
 
     @Test
@@ -161,7 +151,7 @@ class DeployerCaseDefinitionResourceTest {
 
     @Test
     fun `should return an error body instead of problem json for an unexpected failure`() {
-        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), isNull(), isNull()))
+        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
             .thenThrow(IllegalStateException("connection reset"))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
@@ -191,7 +181,7 @@ class DeployerCaseDefinitionResourceTest {
 
     @Test
     fun `should return forbidden instead of server error when access is denied`() {
-        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), isNull(), isNull()))
+        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
             .thenThrow(AccessDeniedException("denied"))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
@@ -201,7 +191,7 @@ class DeployerCaseDefinitionResourceTest {
 
     @Test
     fun `should keep the status of an exception that carries one`() {
-        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), isNull(), isNull()))
+        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
             .thenThrow(ResponseStatusException(HttpStatus.CONFLICT))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
@@ -211,7 +201,7 @@ class DeployerCaseDefinitionResourceTest {
 
     @Test
     fun `should keep the status and detail of a problem`() {
-        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), isNull(), isNull()))
+        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
             .thenThrow(Problem.valueOf(Status.BAD_REQUEST, "Column 'foo' is not valid"))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
@@ -221,7 +211,7 @@ class DeployerCaseDefinitionResourceTest {
 
     @Test
     fun `should not echo the detail of a problem that carries a server error status`() {
-        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), isNull(), isNull()))
+        whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
             .thenThrow(Problem.valueOf(Status.INTERNAL_SERVER_ERROR, "jdbc url jdbc:postgresql://db/gzac"))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
@@ -315,85 +305,6 @@ class DeployerCaseDefinitionResourceTest {
             .andExpect(jsonPath("$.message").value("Invalid zip"))
 
         verify(caseDefinitionService, never()).setLatestToActiveIfNoneIsActive()
-    }
-
-    @Test
-    fun `should list dangling plugin configurations`() {
-        val caseDefinitionId = CaseDefinitionId.of("my-case", "1.0.0")
-        val dangling = DanglingPluginConfigurationDto(
-            pluginDefinitionKey = "objectenapi",
-            sourcePluginConfigurationIds = setOf(UUID.randomUUID()),
-        )
-        whenever(caseDefinitionRepository.existsById(caseDefinitionId)).thenReturn(true)
-        whenever(pluginConfigurationMappingResolver.getDanglingPluginConfigurations(caseDefinitionId))
-            .thenReturn(listOf(dangling))
-
-        mockMvc.perform(
-            get("/api/deployer/v1/case-definition/my-case/version/1.0.0/dangling-plugin-configurations")
-        )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$[0].pluginDefinitionKey").value("objectenapi"))
-    }
-
-    @Test
-    fun `should return an empty list of dangling plugin configurations when no resolver is present`() {
-        whenever(caseDefinitionRepository.existsById(CaseDefinitionId.of("my-case", "1.0.0"))).thenReturn(true)
-
-        mockMvcFor(emptyList())
-            .perform(get("/api/deployer/v1/case-definition/my-case/version/1.0.0/dangling-plugin-configurations"))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$").isEmpty)
-    }
-
-    @Test
-    fun `should return not found instead of an empty list when the case definition does not exist`() {
-        mockMvc.perform(
-            get("/api/deployer/v1/case-definition/my-case/version/1.0.0/dangling-plugin-configurations")
-        )
-            .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.message").value(startsWith("Case definition with id my-case:1.0.0")))
-
-        verify(pluginConfigurationMappingResolver, never()).getDanglingPluginConfigurations(any())
-    }
-
-    @Test
-    fun `should resolve plugin configuration mappings`() {
-        val source = UUID.randomUUID()
-        val target = UUID.randomUUID()
-        whenever(caseDefinitionRepository.existsById(CaseDefinitionId.of("my-case", "1.0.0"))).thenReturn(true)
-
-        mockMvc.perform(
-            put("/api/deployer/v1/case-definition/my-case/version/1.0.0/plugin-configuration-mappings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"$source":"$target"}""")
-        ).andExpect(status().isNoContent)
-
-        verify(pluginConfigurationMappingResolver)
-            .resolve(CaseDefinitionId.of("my-case", "1.0.0"), mapOf(source to target))
-    }
-
-    @Test
-    fun `should report not implemented when no plugin configuration resolver is present`() {
-        whenever(caseDefinitionRepository.existsById(CaseDefinitionId.of("my-case", "1.0.0"))).thenReturn(true)
-
-        mockMvcFor(emptyList()).perform(
-            put("/api/deployer/v1/case-definition/my-case/version/1.0.0/plugin-configuration-mappings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"${UUID.randomUUID()}":"${UUID.randomUUID()}"}""")
-        ).andExpect(status().isNotImplemented)
-    }
-
-    @Test
-    fun `should return not found instead of server error when mapping an unknown case definition`() {
-        mockMvc.perform(
-            put("/api/deployer/v1/case-definition/my-case/version/1.0.0/plugin-configuration-mappings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"${UUID.randomUUID()}":"${UUID.randomUUID()}"}""")
-        )
-            .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.message").value(startsWith("Case definition with id my-case:1.0.0")))
-
-        verify(pluginConfigurationMappingResolver, never()).resolve(any(), any())
     }
 
     @Test

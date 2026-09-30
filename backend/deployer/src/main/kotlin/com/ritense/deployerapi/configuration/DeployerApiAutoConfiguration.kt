@@ -24,7 +24,6 @@ import com.ritense.deployerapi.web.rest.DeployerCaseDefinitionResource
 import com.ritense.deployerapi.web.rest.DeployerOpenApiResource
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
-import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -41,14 +40,12 @@ class DeployerApiAutoConfiguration {
         exportService: ExportService,
         importService: ImportService,
         caseDefinitionRepository: CaseDefinitionRepository,
-        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
     ): DeployerCaseDefinitionResource {
         return DeployerCaseDefinitionResource(
             caseDefinitionService,
             exportService,
             importService,
             caseDefinitionRepository,
-            pluginConfigurationMappingResolvers,
         )
     }
 

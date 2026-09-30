@@ -22,7 +22,6 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
-import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -37,14 +36,6 @@ class DeployerApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/deployer/v1/case-definition/*/version/*/export"))
                     .hasAnyAuthority(ADMIN, DEPLOYER)
                     .requestMatchers(antMatcher(POST, "/api/deployer/v1/case-definition/import"))
-                    .hasAnyAuthority(ADMIN, DEPLOYER)
-                    .requestMatchers(
-                        antMatcher(GET, "/api/deployer/v1/case-definition/*/version/*/dangling-plugin-configurations")
-                    )
-                    .hasAnyAuthority(ADMIN, DEPLOYER)
-                    .requestMatchers(
-                        antMatcher(PUT, "/api/deployer/v1/case-definition/*/version/*/plugin-configuration-mappings")
-                    )
                     .hasAnyAuthority(ADMIN, DEPLOYER)
                     .requestMatchers(antMatcher(GET, "/api/deployer/v1/openapi.json"))
                     .hasAnyAuthority(ADMIN, DEPLOYER)

@@ -19,7 +19,7 @@ package com.ritense.deployerapi.web.rest.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 
-class ImportRequestDto(
+data class ImportRequestDto(
     @Schema(type = "string", format = "byte")
     val file: ByteArray,
     @Schema(description = "Maps plugin configuration ids from the source environment onto this environment")
