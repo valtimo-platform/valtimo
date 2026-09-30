@@ -202,6 +202,37 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
       return changed;
     }
 
+    // Lets a custom component reject a value through customValidator, instead of having to encode
+    // the invalidity into the value itself.
+    // @ts-ignore
+    checkComponentValidity(data: any, dirty: boolean, row: any, options: any = {}) {
+      // @ts-ignore
+      const result = super.checkComponentValidity(data, dirty, row, options);
+      const customValidator = customComponentOptions.customValidator;
+
+      if (
+        !customValidator ||
+        this.shouldSkipValidation(data, dirty, row) ||
+        this.isEmpty(this.dataValue)
+      ) {
+        return result;
+      }
+
+      const applyCustomValidator = (valid: boolean) => {
+        if (!valid) return false;
+
+        const message = customValidator(this.dataValue);
+        if (!message) return true;
+
+        if (!options.silentCheck) this.setCustomValidity(message, dirty);
+        return false;
+      };
+
+      return typeof result?.then === 'function'
+        ? Promise.resolve(result).then(applyCustomValidator)
+        : applyCustomValidator(result);
+    }
+
     // Add extra option to support multiple value (e.g. datagrid) with single angular component (disableMultiValueWrapper)
     useWrapper() {
       return (
