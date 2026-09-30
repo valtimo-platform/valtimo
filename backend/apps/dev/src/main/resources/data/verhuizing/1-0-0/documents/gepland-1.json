@@ -1,0 +1,15 @@
+{
+    "scenario": "gepland",
+    "aanvrager": {
+        "naam": "Gepland Geval 1",
+        "emailadres": "gepland1@example.com"
+    },
+    "nieuwAdres": "Planstraat 1, 2222 BB Testdorp",
+    "status": "ingediend",
+    "spoed": true,
+    "aantalPersonen": 2,
+    "oppervlakte": 55,
+    "documenten": [
+        "paspoort"
+    ]
+}
