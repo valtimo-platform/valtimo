@@ -33,6 +33,7 @@
     <section cdsModalContent class="start-modal-content" [cdsLayer]="1">
       <cds-clickable-tile
         *ngIf="obs.caseSettings?.hasExternalStartForm"
+        [href]="null"
         (click)="openExternalCaseStartForm(true)"
       >
         {{ obs?.caseSettings.externalStartFormDescription || '-' }}
@@ -40,6 +41,7 @@
 
       <cds-clickable-tile
         *ngFor="let processDocumentDefinition of obs.associatedProcessDocumentDefinitions"
+        [href]="null"
         (click)="selectProcess(processDocumentDefinition)"
       >
         {{ processDocumentDefinition.processDefinitionName }}

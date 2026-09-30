@@ -1,0 +1,14 @@
+[
+    {
+        "activityId": "nazorg_start",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-verhuizing-nazorg"
+    },
+    {
+        "activityId": "nazorg_uitvoeren",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "nazorg-uitvoeren"
+    }
+]

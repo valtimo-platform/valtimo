@@ -37,6 +37,7 @@ import {BuildingBlockManagementDetailActionsComponent} from '../building-block-m
 import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
 import {BuildingBlockManagementFormFlowsComponent} from '../building-block-management-form-flows/building-block-management-form-flows.component';
 import {BuildingBlockManagementDecisionsComponent} from '../building-block-management-decisions/building-block-management-decisions.component';
+import {BuildingBlockManagementMigrationComponent} from '../building-block-management-migration/building-block-management-migration.component';
 
 /**
  * How long to wait for a custom tab to report whether it is enabled. The tab bar - and with it the page
@@ -65,6 +66,7 @@ export const CUSTOM_TAB_ENABLED_TIMEOUT_MS = 5000;
     BuildingBlockManagementFormsComponent,
     BuildingBlockManagementFormFlowsComponent,
     BuildingBlockManagementDecisionsComponent,
+    BuildingBlockManagementMigrationComponent,
     RenderInPageHeaderDirective,
     BuildingBlockManagementDetailActionsComponent,
     DialogModule,
@@ -73,9 +75,16 @@ export const CUSTOM_TAB_ENABLED_TIMEOUT_MS = 5000;
 })
 export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy {
   public readonly BUILDING_BLOCK_MANAGEMENT_TABS = BUILDING_BLOCK_MANAGEMENT_TABS;
+  public readonly activeTabKey$ = this.buildingBlockManagementDetailService.activeTabKey$;
 
   protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS;
-  public readonly activeTabKey$ = this.buildingBlockManagementDetailService.activeTabKey$;
+
+  public get customTabs(): BuildingBlockManagementTabConfig[] {
+    return this.toArray(this.buildingBlockManagementTabConfig).map(tab => ({
+      ...tab,
+      enabled$: tab.enabled$ ?? of(true),
+    }));
+  }
 
   private readonly _customTabs: BuildingBlockManagementTabConfig[] = this.toArray(
     this.buildingBlockManagementTabConfig
@@ -114,11 +123,11 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
     this.buildingBlockManagementDetailService.setRoute(this.route);
   }
 
-  public ngOnInit() {
+  public ngOnInit(): void {
     this.pageTitleService.disableReset();
   }
 
-  public ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
   }
 
