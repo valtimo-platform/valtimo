@@ -2,34 +2,7 @@ name: Relocate release notes
 run-name: >-
   Relocate release notes${{ inputs.only_pr && format(' for PR #{0}', inputs.only_pr) || '' }}
 
-# After a release cut, `prepare_next` (publish_release.yml) opens a new version folder. Every open
-# PR whose note still sits in the previous folder now writes into a version that already shipped, so
-# the note never reaches users. This moves those notes forward.
-#
-# Three lines are swept, and they differ in more than the branch name:
-#
-# - `next-minor` -- the development line. A push to it is the trigger; the note moves between
-#   folders and the PR's base branch never changes.
-# - `rc/<semver>` -- the maintenance lines (12.x today). A *new branch* is the cut, so moving the
-#   note is only half of it: the PR has to be retargeted at the new rc branch as well, exactly as
-#   https://github.com/valtimo-platform/valtimo/pull/1078 did by hand. These branches also still
-#   carry the pre-GHi-666 layout -- bullets in every section, no `Release date:` line, no `---`
-#   dividers -- so the target file is a different shape from next-minor's.
-# - `next-major` -- no cut at all: one `<major>.0.0` folder accumulates until the major ships
-#   (https://github.com/valtimo-platform/valtimo/pull/363 is the PR that opens 14's). What goes
-#   stale here is a PR that wrote its note into the minor line it branched from -- sync-next-major.yml
-#   keeps those folders present on next-major, so nothing complains and the note ships under the
-#   wrong major, or never.
-#
-# Shape: a cheap bash `detect` job decides which lines to sweep and which PRs are actually stale;
-# only those reach the Claude job. Every write is fenced by a deterministic guard step -- Claude may
-# edit exactly one file, and the job hard-fails and pushes nothing if anything else moved.
-#
-# Trust boundary: the release-note text is written by whoever opened the PR, and it is fed to a
-# model. Assume it contains instructions aimed at that model and that they land. What bounds the
-# damage is not the prompt but the sandbox around it -- Claude gets no shell, no network, no token,
-# and read/write only under the release-notes root -- and the guard, which re-derives every claim
-# from git rather than from anything the run produced.
+# Moves an open PR's release note out of a shipped folder into the one its base branch is collecting. See .github/prompts/relocate-release-notes.md.
 
 on:
   # The next-minor cut: a push that opens a new version folder.
@@ -38,17 +11,10 @@ on:
       - next-minor
     paths:
       - documentation/release-notes/**
-  # The rc and next-major sweep. Neither has an event to hang off: an rc cut is a *branch creation*,
-  # and a `create` trigger is no use because Actions runs the workflow file from the created ref --
-  # rc branches fork off the maintenance line, which will never carry this file. next-major has no
-  # cut at all, just a standing condition to check for. So both are polled -- midnight UTC at the
-  # end of Wednesday, i.e. Thursday 00:00, a day or so after the usual cut, and always from
-  # next-minor where this file does live.
+  # rc and next-major have no cut event to hang off, so both are polled -- a day after the usual cut.
   schedule:
     - cron: "0 0 * * 4"
-  # Dispatch is the recovery path, not a fourth mode: it sweeps all three lines. A PR skipped for
-  # conflicts is told to re-run this once its branch is mergeable, and without dispatch its next
-  # chance would be the following release cut, a whole cycle later.
+  # Recovery path, not a fourth mode: sweeps all three lines, for PRs skipped on conflicts.
   workflow_dispatch:
     inputs:
       only_pr:
@@ -66,8 +32,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # The tree is a fixed convention; the `<major>.x.x` directory inside it is not, and is resolved
-  # per run -- see the `cut` step.
+  # Fixed convention; the `<major>.x.x` directory inside it is resolved per run.
   NOTES_BASE: documentation/release-notes
   # Cost guard on the Claude calls, not an anomaly threshold -- see the matrix step.
   MAX_PRS: "25"
@@ -94,46 +59,31 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Written to a file rather than repeated in the next step: two definitions of "the newest
-          # version folder" are two things to keep in step.
+          # A file, not a repeat in the next step: two definitions of "newest version folder" drift.
           cat > /tmp/notes-lib.sh <<'LIB'
-          # Highest entry matching a pattern directly under a directory, at a given ref. Trailing
-          # `|| true`: under pipefail an unreachable ref or a non-matching grep would abort the
-          # caller instead of returning empty, making its "no folder" branches unreachable.
+          # Highest entry matching a pattern under a directory, at a ref. `|| true`: empty, not abort.
           newest_in() {
             git ls-tree --name-only "$1" "$2/" 2>/dev/null \
               | sed 's|.*/||' \
               | grep -E "$3" \
               | sort -V | tail -1 || true
           }
-          # The major line, resolved rather than written down. A literal `13.x.x` returns nothing
-          # the day `next-minor` becomes `14.x.x` -- and an empty answer compares older than every
-          # version, so a hardcoded root does not break loudly, it quietly stops finding anything.
+          # Resolved, not hardcoded: a literal `13.x.x` silently finds nothing once next-minor is 14.x.
           major_at()   { newest_in "$1" "${NOTES_BASE}" '^[0-9]+\.x\.x$'; }
-          # Strict, not `^[0-9]+\.`: an rc branch keeps `major12` and `template` directories beside
-          # the versioned ones, and a loose pattern hands one of those back as "the newest version".
+          # Strict: an rc branch keeps `major12` and `template` dirs beside the versioned ones.
           version_at() { newest_in "$1" "$2" '^[0-9]+\.[0-9]+\.[0-9]+$'; }
-          # The newest rc branch on one major line. Strict for a second reason as well: the line
-          # also carries `rc/13.41.0-7` release candidates and one-offs like
-          # `rc/12.34.0-liquibase-stale-lock`, and `sort -V` ranks those above the release they
-          # were cut from -- so a loose pattern retargets PRs at somebody's debugging branch.
+          # Newest rc on one major. Strict: `sort -V` ranks `rc/13.41.0-7` and one-offs above releases.
           newest_rc() {
             git for-each-ref --format='%(refname:strip=3)' 'refs/remotes/origin/rc/*' \
               | grep -E "^rc/$1\.[0-9]+\.[0-9]+$" \
               | sort -V | tail -1 || true
           }
-          # The skeleton `publish_release.yml` seeds into a new version folder, in both layouts,
-          # plus blank lines and `---` dividers. Used to tell "this PR replaced a placeholder" from
-          # "this PR edited someone's shipped note". The guard step in the `relocate` job keeps its
-          # own copy of this set minus the `---`: separate jobs cannot share a function, and there a
-          # removed divider is a real loss.
+          # The release-cut skeleton, both layouts, plus blanks and `---`. The guard keeps its own copy minus the `---`.
           BOILERPLATE_RE='[[:space:]]*|---|### New (feature|enhancement) title|\* \*\*New (feature|enhancement) title\*\*|[[:space:]]*New (feature|enhancement) explanation\.|\| Area name \| New bugfix\. \||\* New bugfix\.'
           LIB
           . /tmp/notes-lib.sh
 
-          # Neither the rc lines nor next-major can trigger this workflow (see the `schedule`
-          # comment), so they are never event-driven: they are swept on the timer, and on dispatch
-          # as a recovery path.
+          # Neither the rc lines nor next-major can trigger this workflow, so both are timer-swept.
           case "${GITHUB_EVENT_NAME}" in
             schedule)
               echo "Scheduled run -- sweeping the rc lines and next-major."
@@ -170,9 +120,7 @@ jobs:
             exit 0
           fi
 
-          # Resolved at `before` too, not reused from HEAD: the cut that opens a new major moves the
-          # root as well as the version, and reading the old ref through the new root would report
-          # "no previous version" for a push that changed nothing.
+          # Resolved at `before` too: a major cut moves the root as well as the version.
           PREV_MAJOR="$(major_at "${BEFORE}")"
           PREVIOUS=""
           if [ -n "${PREV_MAJOR}" ]; then
@@ -197,22 +145,7 @@ jobs:
           set -euo pipefail
           . /tmp/notes-lib.sh
 
-          # One request for both lines; the filtering is local.
-          #
-          # Out of scope: a head on a fork (nothing here can push there) or a `do-not-touch` label.
-          # `do-not-touch` is the only opt-out, and it is checked here rather than assumed from any
-          # other label.
-          #
-          # In particular a PR already being tended by some other automation is NOT skipped. For
-          # release notes this workflow is the authority: it runs once per cut, edits one markdown
-          # file, never force-pushes, and re-checks the state of the branch before each write, so a
-          # second writer costs a retry rather than a wrong result. Skipping those PRs would drop
-          # most of the stale ones on the floor -- they are the PRs that sit open across a cut, which
-          # is the entire population this workflow exists for.
-          #
-          # Oldest first, and deliberately so: both caps below -- this `--limit` and `MAX_PRS` --
-          # truncate the tail, and the PRs worth keeping are the ones that have been open longest.
-          # The default ordering is newest-first, which drops exactly the wrong end.
+          # One request for all lines; filtering is local. Oldest first -- both caps truncate the tail.
           gh pr list --state open --limit 200 --search "sort:created-asc" \
             --json number,headRefName,baseRefName,headRepositoryOwner,labels > /tmp/open-prs.json
 
@@ -224,16 +157,10 @@ jobs:
               | {number, head: .headRefName, base: .baseRefName}' /tmp/open-prs.json
           }
 
-          # /tmp, not the workspace: this step runs inside a checkout of next-minor, and scratch
-          # files dropped there show up as untracked repo content.
+          # /tmp, not the workspace: scratch files there would show up as untracked repo content.
           : > /tmp/matrix.jsonl
 
-          # $1 number, $2 head branch, $3 the base the PR is open against, $4 the base it should end
-          # up on. Those two differ only on the rc lines, where moving the note and retargeting the
-          # PR are one operation -- see PR #1078, which did both by hand.
-          #
-          # Every early exit is `return 0`: a bare `return` carries the failing test's status, and
-          # under `set -e` that aborts the whole step rather than skipping one PR.
+          # $1 number, $2 head, $3 base the PR is open against, $4 base it should end up on. Every early exit is `return 0` -- a bare `return` would abort the step under `set -e`.
           scan_pr() {
             local NUMBER="$1" HEAD="$2" OLD_BASE="$3" NEW_BASE="$4"
             local MAJOR NOTES_ROOT CURRENT FOLDERS STALE V LAYOUT TARGET_README d p REMOVED
@@ -243,8 +170,7 @@ jobs:
               return 0
             fi
 
-            # Read off the branch the PR is moving to, never off next-minor: an rc line has its own
-            # root and its own newest version, and both are older than next-minor's.
+            # Read off the branch the PR is moving to: an rc line has its own root and newest version.
             MAJOR="$(major_at "origin/${NEW_BASE}")"
             if [ -z "${MAJOR}" ]; then
               echo "::warning::PR #${NUMBER}: no <major>.x.x directory under ${NOTES_BASE} on ${NEW_BASE} -- skipping."
@@ -257,41 +183,24 @@ jobs:
               return 0
             fi
 
-            # Three-dot: merge-base..head, i.e. exactly what this PR contributed. Content that
-            # arrived from an earlier base merge is excluded, which is the whole point. Against the
-            # base the PR is *open* against, not the one it is moving to -- on an rc line the new
-            # base is a branch this PR has never seen, and diffing against it would read the whole
-            # divergence of two release branches as this PR's work.
-            #
-            # Scanned over the whole notes tree, not just the current `<major>.x.x`: on the cut that
-            # opens a new major, every stale note is in the *previous* root, so a search confined to
-            # the current one would report nothing wrong on exactly the run that has most to move.
-            # `sed -n …p` keeps only paths shaped `<base>/<major>.x.x/<version>/…`, so a stray file
-            # directly under the root, or an rc branch's `template/`, drops out here.
+            # Three-dot against the *open* base: exactly what this PR contributed, over the whole notes tree. The `sed` keeps only `<base>/<major>.x.x/<version>/…` paths.
             FOLDERS="$(git diff --name-only "origin/${OLD_BASE}...origin/${HEAD}" -- "${NOTES_BASE}/" \
               | sed -nE "s|^(${NOTES_BASE}/[0-9]+\.x\.x/[0-9]+\.[0-9]+\.[0-9]+)/.*|\1|p" \
               | sort -u || true)"
             [ -n "${FOLDERS}" ] || return 0
 
-            # Full paths, not bare versions: with two roots in play a version no longer says where
-            # its folder lives, and every consumer downstream wants the path anyway.
+            # Full paths, not bare versions: with two roots in play a version does not locate a folder.
             STALE=""
             for d in ${FOLDERS}; do
               [ "$d" = "${NOTES_ROOT}/${CURRENT}" ] && continue
-              # A folder newer than the base's newest means this PR is itself cutting a release.
-              # Compared on the version alone -- `sort -V` orders 13.48.0 before 14.0.0 across roots.
+              # Newer than the base's newest means this PR is itself cutting a release.
               V="${d##*/}"
               if [ "$(printf '%s\n%s\n' "${V}" "${CURRENT}" | sort -V | tail -1)" != "${CURRENT}" ]; then
                 echo "::warning::PR #${NUMBER}: writes to ${d}, newer than ${CURRENT} -- looks like a release-cut PR, skipping."
                 STALE=""
                 break
               fi
-              # A folder the base does not have is one this PR *creates*, and a created folder is
-              # never stale however old its version reads. A backported patch release is the case:
-              # #1079 opened 13.47.1 while 13.48.0 was already collecting, and #1039 did the same
-              # with 13.45.1. Both write a folder older than CURRENT, so the check above waves them
-              # through -- and the reset step would then `rm -rf` a folder the base cannot restore,
-              # dropping the patch release's notes into the wrong version.
+              # A folder this PR *creates* is never stale, however old it reads -- backported patch releases (#1079, #1039) land here.
               if ! git cat-file -e "origin/${OLD_BASE}:${d}" 2>/dev/null; then
                 echo "::warning::PR #${NUMBER}: creates ${d}, which ${OLD_BASE} does not have -- a release-cut PR, skipping."
                 STALE=""
@@ -301,20 +210,7 @@ jobs:
             done
             [ -n "${STALE}" ] || return 0
 
-            # A stale note is an *addition* to a shipped folder's `README.md`, and nothing else. Two
-            # other shapes reach this point, and neither is this workflow's to move:
-            #
-            # - a companion file beside the README -- `13.x.x/13.45.0/front-end-migration.md` is the
-            #   precedent. The reset step deletes whatever the base branch does not have and only
-            #   README entries are carried forward, so the file would vanish without trace and the
-            #   relocated entry would link to something that exists nowhere.
-            # - an edit to an already-shipped note: a typo or wording fix (#1068 is precedent). The
-            #   reset reverts it and the prompt then re-inserts the corrected line into the
-            #   *current* release -- so the shipped note keeps its typo and an unrelated version
-            #   gains a stray entry.
-            #
-            # Both are visible in the diff: a path that is not a README, or a removed line that is
-            # not one of the placeholders the release cut seeds.
+            # A stale note is an *addition* to a shipped README, nothing else -- a companion file beside it, or an edit to a shipped note (#1068), is not this workflow's to move.
             for d in ${STALE}; do
               while read -r p; do
                 [ -n "${p}" ] || continue
@@ -327,8 +223,7 @@ jobs:
                 esac
               done < <(git diff --name-only "origin/${OLD_BASE}...origin/${HEAD}" -- "${d}")
 
-              # `^--- ` with the space, not `^---`: that is a diff file header, whereas a removed
-              # markdown `---` divider appears as `----` and has to survive into the filter below.
+              # `^--- ` with the space: a removed markdown `---` divider appears as `----`.
               REMOVED="$(git diff "origin/${OLD_BASE}...origin/${HEAD}" -- "${d}" \
                 | grep '^-' | grep -v '^--- ' | sed 's/^-//' \
                 | grep -vxE "${BOILERPLATE_RE}" || true)"
@@ -338,17 +233,7 @@ jobs:
               fi
             done
 
-            # Which layout the target file uses, read off the file itself rather than guessed from
-            # the major. The GHi-666 standard added the `Release date:` line; the pre-GHi-666 notes
-            # the rc lines still carry have none, and their Bugfixes section is a bullet list rather
-            # than a table. The prompt's placeholder names, the guard's boilerplate filter and its
-            # "is this still a release note" check all fork on this.
-            #
-            # Read into a variable first rather than piping straight into `grep -q`: grep stops at
-            # the first match, and on a README larger than the pipe buffer that leaves `git show`
-            # with SIGPIPE -- which under `pipefail` fails the whole condition and labels a modern
-            # file `legacy`, sending bullets into a table and disabling the guard's `Release date:`
-            # check.
+            # Layout read off the target file, not guessed from the major. Into a variable first, not piped into `grep -q`: an early-exiting grep would SIGPIPE `git show` and fail under pipefail.
             TARGET_README="$(git show "origin/${NEW_BASE}:${NOTES_ROOT}/${CURRENT}/README.md" \
               2>/dev/null || true)"
             LAYOUT=legacy
@@ -376,18 +261,13 @@ jobs:
                 done < <(candidates '^next-minor$')
                 ;;
               rc)
-                # Only a major *older* than next-minor's is a maintenance line. While next-minor is
-                # 13.x, the `rc/13.*` branches are hotfix and preview cuts off the development line
-                # -- rc/13.15.0, rc/13.22.0, rc/13.40.1, rc/13.47.1 -- not a line that continues.
-                # Treating them as one retargets a PR 25 minors sideways onto an unrelated branch.
+                # Only a major *older* than next-minor's is a maintenance line; `rc/13.*` while next-minor is 13.x are one-off cuts.
                 DEV_MAJOR="$(major_at origin/next-minor)"; DEV_MAJOR="${DEV_MAJOR%%.*}"
                 while read -r pr; do
                   NUMBER="$(jq -r .number <<<"$pr")"
                   [ -z "${ONLY_PR}" ] || [ "${NUMBER}" = "${ONLY_PR}" ] || continue
                   OLD_BASE="$(jq -r .base <<<"$pr")"
-                  # The newest rc on the PR's *own* major. Per major, not globally: 12.x and 13.x
-                  # can both be in maintenance at once, and a v12 fix retargeted at an rc/13 branch
-                  # would be a merge conflict at best.
+                  # Per major, not globally: two majors can be in maintenance at once.
                   M="${OLD_BASE#rc/}"; M="${M%%.*}"
                   if [ -z "${DEV_MAJOR}" ] || [ "${M}" -ge "${DEV_MAJOR}" ]; then
                     echo "::warning::PR #${NUMBER}: ${OLD_BASE} is on the development major (next-minor is ${DEV_MAJOR:-unknown}.x), not a maintenance line -- skipping."
@@ -398,9 +278,7 @@ jobs:
                     echo "::warning::PR #${NUMBER}: no rc/${M}.x.y branch on origin -- skipping."
                     continue
                   fi
-                  # The newest rc has to actually *continue* the branch the PR is on. `rc/12.4.3` is
-                  # not an ancestor of `rc/12.49.0` -- it is a one-off that went its own way, and a
-                  # PR on it belongs where it is, not 45 minors forward.
+                  # The newest rc must actually *continue* the PR's branch, not be a one-off beside it.
                   if ! git merge-base --is-ancestor "origin/${OLD_BASE}" "origin/${NEW_BASE}"; then
                     echo "::warning::PR #${NUMBER}: ${NEW_BASE} does not contain ${OLD_BASE} -- not a continuation of that line, skipping."
                     continue
@@ -409,12 +287,7 @@ jobs:
                 done < <(candidates '^rc/[0-9]+\.[0-9]+\.[0-9]+$')
                 ;;
               next-major)
-                # Until the first v14 PR lands, next-major's newest root *is* next-minor's -- it
-                # carries the 13.x folders through sync-next-major.yml and has none of its own. In
-                # that state "move it to the current folder" means moving a breaking change into a
-                # minor release, so the line is left alone. Nothing here opens `14.x.x/14.0.0`; the
-                # PR that does (#363) writes the SUMMARY entries with it, and is skipped by the
-                # release-cut check below because it writes a folder newer than the current one.
+                # While next-major's newest root is still next-minor's, moving a note there would put a breaking change in a minor release -- so leave the line alone.
                 NM_MAJOR="$(major_at origin/next-minor)"
                 MM_MAJOR="$(major_at origin/next-major)"
                 if [ "$(printf '%s\n%s\n' "${NM_MAJOR}" "${MM_MAJOR}" | sort -V | tail -1)" = "${NM_MAJOR}" ]; then
@@ -433,12 +306,7 @@ jobs:
           COUNT="$(wc -l < /tmp/matrix.jsonl | tr -d ' ')"
           echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
 
-          # The cap degrades, it does not abort. After a cut every open PR carrying a note is stale
-          # by definition, so the stale count tracks the open-PR count -- which is the same order as
-          # any cap worth setting. Refusing to run would relocate nothing at all on exactly the
-          # busiest cut, the one this workflow exists for. So the cap only bounds the Claude spend:
-          # the oldest ${MAX_PRS} are handled and the rest are named in the warning below. A PR over
-          # the cap gets no job, so no comment either -- that warning is the only trace of it.
+          # The cap degrades, it does not abort: the oldest ${MAX_PRS} are handled, the rest warned about.
           head -n "${MAX_PRS}" /tmp/matrix.jsonl > /tmp/capped.jsonl
           echo "matrix=$(jq -sc . /tmp/capped.jsonl)" >> "$GITHUB_OUTPUT"
 
@@ -453,9 +321,7 @@ jobs:
     needs: detect
     if: needs.detect.outputs.run == 'true' && needs.detect.outputs.count != '0'
     runs-on: ubuntu-latest
-    # GITHUB_TOKEN stays read-only: every write this job makes -- the push and the skip comment --
-    # goes through the App token. GITHUB_TOKEN is handed to the Claude action, so anything it can do
-    # is something an injected instruction could try to do.
+    # GITHUB_TOKEN stays read-only -- it is handed to the Claude action; every write uses the App token.
     permissions:
       contents: read
       pull-requests: read
@@ -463,39 +329,26 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        # `|| '[]'`: the matrix step is skipped whenever `detect` decides there is nothing to sweep
-        # -- every ordinary note-carrying merge into next-minor -- and its output is then the empty
-        # string. `strategy` is evaluated when the job is created, ahead of the `if` above, so a
-        # bare `fromJson('')` fails the run instead of skipping it.
+        # `|| '[]'`: `strategy` is evaluated ahead of the `if` above, so `fromJson('')` would fail the run.
         include: ${{ fromJson(needs.detect.outputs.matrix || '[]') }}
     env:
       PR_NUMBER: ${{ matrix.number }}
       PR_HEAD: ${{ matrix.head }}
-      # The base the PR is open against, and the base it belongs on. Equal on next-minor and
-      # next-major; different on an rc line, where the PR is retargeted before anything else happens.
+      # The base the PR is open against, and the base it belongs on. Differ only on an rc line.
       OLD_BASE: ${{ matrix.old_base }}
       BASE: ${{ matrix.base }}
       NOTES_ROOT: ${{ matrix.notes_root }}
       CURRENT: ${{ matrix.current }}
-      # `modern` (post-GHi-666: next-minor and next-major) or `legacy` (the rc lines). Resolved in
-      # `detect` by reading the target file, not by guessing from the major.
+      # `modern` (next-minor, next-major) or `legacy` (the rc lines), resolved in `detect`.
       LAYOUT: ${{ matrix.layout }}
-      # Full paths to the stale folders, space-separated -- not bare versions. A cut that opens a
-      # new major puts the stale and the current folder under different roots.
+      # Full paths to the stale folders, space-separated -- a major cut splits them across two roots.
       STALE: ${{ matrix.stale }}
-      # This job checks out a contributor's branch while holding a push-capable token, so no git
-      # invocation here may run a hook. `-c` beats repo config, and unlike `--no-verify` it covers
-      # every hook and every subcommand (cherry-pick and push included) -- a `.git/config` or
-      # `.claude/` written during the run cannot re-enable them.
+      # No git invocation here may run a hook: a contributor's branch is checked out with a push-capable token.
       GIT_CONFIG_COUNT: "1"
       GIT_CONFIG_KEY_0: core.hooksPath
       GIT_CONFIG_VALUE_0: /dev/null
     steps:
-      # The App token, not GITHUB_TOKEN: pushes made with GITHUB_TOKEN do not re-trigger the PR's
-      # required checks. auto_update_pr.yml pushes to PR branches with this same App.
-      #
-      # Scoped down to what this job actually does. The App's installation may carry more; an
-      # unscoped token would sit in `.git/config` of an untrusted checkout for the whole job.
+      # The App token, not GITHUB_TOKEN: GITHUB_TOKEN pushes do not re-trigger the PR's required checks.
       - name: Generate App token
         id: app_token
         uses: actions/create-github-app-token@v2
@@ -505,11 +358,7 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
 
-      # `persist-credentials: false`: by default checkout leaves the token in `.git/config` as an
-      # http.extraheader for the whole job. Claude runs in this workspace and can read files, so a
-      # persisted token is one `Read` away from being written into the release note and pushed to a
-      # public branch. The token is used for this fetch and then gone; the push builds its own
-      # authenticated URL.
+      # `persist-credentials: false`: Claude runs in this workspace, so no token may sit in `.git/config`.
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
@@ -525,17 +374,10 @@ jobs:
           git config user.name "valtimo-platform[bot]"
           git config user.email "valtimo-platform[bot]@users.noreply.github.com"
 
-          # Taken before the merge, while the PR's own additions are still unambiguous, and against
-          # the base the PR is open against rather than the one it is moving to -- on an rc line
-          # those are different branches and the new one has never been in this history.
-          # The whole notes tree, not the current `<major>.x.x`: the entries being rescued are by
-          # definition in a stale folder, and after a major cut that folder is under the old root.
+          # Before the merge, against the *open* base, over the whole notes tree.
           git diff "origin/${OLD_BASE}...HEAD" -- "${NOTES_BASE}/" > /tmp/pr-notes.diff
 
-          # Added lines, not merely a non-empty diff. A PR whose only note change is a *removal*
-          # has nothing to carry over, and the reset below undoes that removal -- which the guard,
-          # finding no added line missing from the target, would read as "already present" and push,
-          # reverting the author under a commit message promising nothing was reworded.
+          # Added lines, not merely a non-empty diff: a removal-only PR has nothing to carry over.
           ADDED="$(grep '^+' /tmp/pr-notes.diff | grep -v '^+++' | sed 's/^+//' \
             | grep -c '[^[:space:]]' || true)"
           if [ "${ADDED}" -eq 0 ]; then
@@ -556,10 +398,7 @@ jobs:
           CONFLICTS="$(git diff --name-only --diff-filter=U)"
           echo "Conflicts:"; echo "${CONFLICTS}"
 
-          # A merge can fail without leaving a single unmerged path -- `refusing to merge unrelated
-          # histories`, a strategy-level abort, a dirty index. The resolution loop below would then
-          # be a no-op and `git commit --no-edit` would fail on its own, reporting "the job failed"
-          # instead of the accurate skip.
+          # A merge can fail with no unmerged path at all -- report that as a skip, not a job failure.
           if [ -z "${CONFLICTS}" ]; then
             git merge --abort || true
             echo "::warning::PR #${PR_NUMBER}: merging ${BASE} failed with no conflicted paths -- skipping."
@@ -567,17 +406,7 @@ jobs:
             exit 0
           fi
 
-          # Conflicts inside a *stale* folder are expected -- a stale folder deleted on the base
-          # branch conflicts with a PR that edited it. Those get reset below anyway.
-          #
-          # Scoped to the stale folders, not to the notes tree as a whole: a PR open across two cuts can
-          # also have entries in the current folder, and that conflict is the author's. Resetting it
-          # to the base would delete entries this PR already wrote into the live folder -- and
-          # nothing downstream would notice, because every later check only looks at ${STALE}.
-          # Anything outside belongs to the PR author too; auto_update_pr.yml already nags about it.
-          #
-          # Case-glob, not `grep -qv`: that idiom silently inverts on some greps (ugrep returns 1
-          # where GNU returns 0), and getting it backwards here would push into a conflicted tree.
+          # Conflicts inside a stale folder are expected and reset below; anything else is the author's. Case-glob, not `grep -qv`, which inverts on some greps.
           OUTSIDE=""
           while read -r path; do
             [ -n "${path}" ] || continue
@@ -609,18 +438,14 @@ jobs:
           git commit --no-edit
           echo "Resolved release-note conflicts in favour of ${BASE}."
 
-      # Deterministic half of the move: every stale folder goes back to exactly what the base branch
-      # has, or stays deleted. Doing this in bash rather than in the prompt means the guard below can
-      # demand that Claude touched precisely one file.
+      # Deterministic half of the move, in bash not the prompt -- so the guard can demand Claude touched one file.
       - name: Reset stale folders to the base branch
         id: reset
         if: steps.capture.outputs.skip == '' && steps.merge.outputs.skip == ''
         run: |
           set -euo pipefail
 
-          # Written to a file and sourced rather than repeated: the guard and the push's replay path
-          # both need "what did this PR add" and "put the stale folders back", and two definitions
-          # of either are two things to keep in step.
+          # Sourced, not repeated: the guard and the push's replay path both need these.
           cat > /tmp/relocate-lib.sh <<'LIB'
           # Every stale folder back to exactly what the base branch has, or left deleted.
           reset_stale() {
@@ -633,20 +458,11 @@ jobs:
                 echo "${BASE} no longer has ${d} -- leaving it deleted."
               fi
             done
-            # Staged once over the whole notes tree, not per folder: `git add -A <dir>` is a fatal
-            # pathspec error when that folder is gone from both the tree and the index, which is
-            # exactly the case for a stale folder the base branch deleted. The tree, not the current
-            # `<major>.x.x`, because a stale folder can sit under the previous major.
+            # Once over the whole tree: `git add -A <dir>` is a fatal pathspec error for a deleted folder.
             git add -A -- "${NOTES_BASE}"
           }
 
-          # Blank lines (a replacement shifts them around) and the skeleton the release cut seeds,
-          # which the prompt tells Claude to replace in place. Both layouts' placeholders are listed
-          # rather than switched on ${LAYOUT}: the set is disjoint, and a stale folder on one layout
-          # can be feeding a target on the other. `---` is *not* exempt here, unlike in the detect
-          # job's copy -- a divider dropped from the target is a real loss.
-          # `|| true`: a file of nothing but blanks and placeholders makes grep exit 1, which
-          # pipefail would turn into a failed step.
+          # Blanks and the release-cut skeleton, both layouts. `---` is *not* exempt here, unlike in detect.
           strip_boilerplate() {
             grep -vxE '[[:space:]]*|### New (feature|enhancement) title|\* \*\*New (feature|enhancement) title\*\*|[[:space:]]*New (feature|enhancement) explanation\.|\| Area name \| New bugfix\. \||\* New bugfix\.' \
               || true
@@ -658,14 +474,7 @@ jobs:
             grep '^+' /tmp/pr-notes.diff | grep -v '^+++' | sed 's/^+//' | strip_boilerplate
           }
 
-          # Is every one of those lines already in $1?
-          # `IFS=`: a note line can be indented, and the default read would strip that, turning an
-          # exact match into a miss.
-          # `-e`: a note line can start with `-` -- a `---` divider, or a markdown bullet -- and as
-          # a bare argument grep parses it as options and exits 2, which would read as "missing".
-          # `seen`: the capture step already skips a PR that adds nothing, but boilerplate is
-          # stripped here and not there, so a PR whose only additions were placeholders arrives with
-          # an empty loop. Zero lines checked proves nothing.
+          # Is every one of those lines already in $1? `IFS=` keeps indentation, `-e` survives a leading `-`, `seen` rejects a vacuous pass.
           entries_present() {
             local line missing="" seen=0
             while IFS= read -r line; do
@@ -689,8 +498,7 @@ jobs:
           git status --porcelain | sed 's/^...//' | sort > /tmp/paths-before.txt
           echo "Reset: $(wc -l < /tmp/paths-before.txt) path(s) changed so far."
 
-          # Snapshot of the one file Claude may write. It holds every other contributor's entries for
-          # this release, and the guard compares against this copy to prove none of them were lost.
+          # Snapshot of the one file Claude may write; the guard diffs against it to prove nothing was lost.
           TARGET="${NOTES_ROOT}/${CURRENT}/README.md"
           if [ ! -f "${TARGET}" ]; then
             echo "::error::${TARGET} does not exist after merging ${BASE}."
@@ -698,11 +506,7 @@ jobs:
           fi
           cp "${TARGET}" /tmp/target-before.md
 
-          # The checkout persists no credentials, so this file holds no secret -- but the push below
-          # puts the App token in a URL, and `url.<other>.insteadOf` or a rewritten
-          # `remote.origin.url` in here would redirect that URL, token and all, to another host.
-          # git reports nothing under `.git/`, so no later check would see it. Snapshot it; the push
-          # restores this copy before touching the remote.
+          # A URL rewrite in here would redirect the push's tokenised remote; the push restores this copy.
           cp .git/config /tmp/git-config-before
 
       - name: Build the prompt
@@ -710,31 +514,18 @@ jobs:
         run: |
           set -euo pipefail
 
-          # The diff is contributor-written prose being fed to a model, i.e. the one untrusted input
-          # in this job. Cap it: the entries of a single PR are a few lines, and anything near this
-          # size is either a mistake or someone using a branch to run up an API bill.
+          # The diff is the job's one untrusted input, and a PR's entries are a few lines. Cap it.
           if [ "$(wc -c < /tmp/pr-notes.diff)" -gt 65536 ]; then
             echo "::error::PR #${PR_NUMBER}: release-note diff exceeds 64 KiB -- refusing to build a prompt from it."
             exit 1
           fi
 
-          # Random delimiter: part of what follows is release-note text an outside contributor
-          # wrote, and a fixed delimiter it could reproduce would let it append arbitrary entries
-          # to GITHUB_ENV. Diff lines always carry a +/-/space prefix so they cannot match anyway,
-          # but the cost of not relying on that is one `openssl rand`.
+          # Random: a fixed delimiter the contributor can reproduce would let them append to GITHUB_ENV.
           DELIM="VALTIMO_PROMPT_$(openssl rand -hex 16)"
-          # Second random token, for the boundary around the untrusted text itself. A fixed fence
-          # (```diff) is one the contributor can close from inside, putting their own words at the
-          # same level as this workflow's instructions.
+          # Likewise for the fence around the untrusted text -- a fixed one can be closed from inside.
           FENCE="UNTRUSTED_RELEASE_NOTE_DIFF_$(openssl rand -hex 16)"
 
-          # The two layouts name their placeholders differently and want the entry in a different
-          # shape, so the per-run rules are built here rather than branched on inside the prompt --
-          # the model is told about one layout, the one it is actually editing.
-          #
-          # SC2016 off for the block: the backticks in PLACEHOLDERS are markdown, and single quotes
-          # are what keeps them that way. Taking shellcheck's advice would run `### New feature
-          # title` as a command.
+          # Built here, not branched inside the prompt: the model is told about one layout, the one it edits.
           # shellcheck disable=SC2016
           if [ "${LAYOUT}" = "modern" ]; then
             PLACEHOLDERS='`### New feature title`, `### New enhancement title`, `| Area name | New bugfix. |`'
@@ -753,13 +544,9 @@ jobs:
               "is, and do not add a \`Release date:\` line, a \`---\` divider or a table the file " \
               "does not already have.")"
           fi
-          # Assembled to a file first, so its total size can be checked before it becomes an
-          # environment variable -- see the cap below.
+          # To a file first, so its size can be checked before it becomes an environment variable.
           {
-            # From origin/next-minor, never the working tree and never the PR's own base: the branch
-            # has been checked out and merged, so the on-disk copy is whatever the contributor put
-            # there, and an rc branch predates this file entirely. next-minor is the one ref in play
-            # whose contents Ritense controls.
+            # From origin/next-minor: the one ref in play whose contents Ritense controls.
             git show origin/next-minor:.github/prompts/relocate-release-notes.md
             cat <<EOF
 
@@ -805,10 +592,7 @@ jobs:
           EOF
           } > /tmp/prompt.md
 
-          # The assembled prompt, not just the diff: it also carries the canonical prompt file and
-          # the per-run section above. A single environment string over MAX_ARG_STRLEN (128 KiB)
-          # cannot be handed to a process at all, so every later step in the job would die with
-          # E2BIG rather than reaching the message here.
+          # The whole prompt, not just the diff: over MAX_ARG_STRLEN every later step dies with E2BIG.
           if [ "$(wc -c < /tmp/prompt.md)" -gt 102400 ]; then
             echo "::error::PR #${PR_NUMBER}: the assembled prompt exceeds 100 KiB -- refusing to run."
             exit 1
@@ -820,27 +604,12 @@ jobs:
             echo "${DELIM}"
           } >> "$GITHUB_ENV"
 
-      # Claude runs with the PR branch as its working directory and picks agent configuration up from
-      # there: `CLAUDE.md` and `AGENTS.md` are loaded as instructions, and `.claude/settings.json`
-      # can define hooks, which are shell commands. `.gitignore` keeps some of these out of a normal
-      # checkout, but ignore rules do not stop a `git add -f`, so a branch can still carry them. The
-      # prompt above is the only instruction set this job accepts.
-      #
-      # Whole tree, not just the root: memory files are loaded per directory, `.gitignore`'s
-      # `/CLAUDE.md` is root-anchored, and `AGENTS.md` is not ignored anywhere -- so a branch can
-      # commit one straight into ${NOTES_ROOT}, which is precisely where this job sends Claude.
-      #
-      # `CLAUDE.md` and `AGENTS.md` are read regardless of `--setting-sources`, so this deletion is
-      # what stops them, not the flag below.
-      #
-      # Normally a no-op; the guard restores whatever this removed before it snapshots, so the
-      # removal stays invisible to it.
+      # The prompt is the only instruction set this job accepts -- and `CLAUDE.md`/`AGENTS.md` are read whatever `--setting-sources` says, so a branch-supplied copy has to go. Whole tree, not just the root. The guard restores these before it snapshots.
       - name: Remove PR-supplied agent configuration
         if: steps.capture.outputs.skip == '' && steps.merge.outputs.skip == ''
         run: |
           set -euo pipefail
-          # Listed first, removed after: find has finished walking before anything is deleted, so
-          # pruning a directory out from under it cannot truncate the list.
+          # Listed first, removed after: pruning a directory mid-walk would truncate the list.
           find . -path ./.git -prune -o \
             \( -name CLAUDE.md -o -name AGENTS.md -o -name .claude -o -name .mcp.json \) -print \
             > /tmp/agent-config.txt
@@ -855,32 +624,10 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.VALTIMO_ANTHROPIC_API_KEY }}
-          # Deliberately the workflow token, not the App token: Claude is given no tool that reaches
-          # GitHub, and the App token can push to every branch in the repo. The push below uses it;
-          # the model never holds it.
+          # The workflow token, not the App token: Claude gets no tool that reaches GitHub anyway.
           github_token: ${{ github.token }}
           prompt: ${{ env.PROMPT }}
-          # Read and write are confined to the release-notes root. Everything this job trusts lives
-          # outside it: the guard's baselines in /tmp (the pre-edit copy of the target file, the
-          # path list, the `.git/config` snapshot, and the shell library the guard and the push
-          # source), `.git` itself, and the process environment --
-          # which holds the API key and GITHUB_TOKEN, and which a plain `Read` of
-          # `/proc/self/environ` would hand over. Unscoped, every one of those is writable or
-          # readable by whatever the prompt injection above talks Claude into.
-          #
-          # No Bash at all. `git diff`/`show`/`log` are read-only subcommands but they accept
-          # `--output=<file>`, which is an arbitrary-write primitive and would reach straight past
-          # the path scoping. Nothing here needs a shell: the diff is in the prompt.
-          #
-          # Glob and Grep are gone for the same reason -- their path arguments are not covered by
-          # permission rules, so they read anywhere. Claude has one file to edit and the prompt
-          # names it.
-          #
-          # `--setting-sources user`: the action otherwise loads `project` and `local` settings,
-          # i.e. `.claude/settings*.json` out of the branch being processed -- which can define
-          # hooks and its own permission rules. The step above deletes those files; this means a
-          # copy the deletion misses still cannot be read. There is no user-level config on a
-          # runner, so in practice this loads nothing.
+          # Read/write confined to the notes root -- the guard's baselines, `.git` and the environment all live outside it. No Bash (`git --output=<file>` writes anywhere), no Glob/Grep (their paths are unscoped), and `--setting-sources user` so the branch's own `.claude/settings*.json` is never loaded.
           claude_args: >-
             --model claude-sonnet-5
             --max-turns 30
@@ -897,10 +644,6 @@ jobs:
           TARGET="${NOTES_ROOT}/${CURRENT}/README.md"
 
           # Undo the agent-config removal before snapshotting, so the two path lists stay comparable.
-          # No-op unless the branch force-added one of these. Restores from the index, which also
-          # reverts any edit Claude made to a tracked one. A file it *created* under .claude/ is
-          # ignored by git and so invisible here -- but nothing outside NOTES_BASE is ever staged,
-          # so it cannot reach the push either.
           while read -r p; do
             [ -n "${p}" ] || continue
             if git ls-files --error-unmatch -- "${p}" >/dev/null 2>&1; then
@@ -947,17 +690,13 @@ jobs:
             echo "::error::${TARGET} lost its '# ${CURRENT}' heading."
             exit 1
           fi
-          # Only the modern layout has one. Asserting it unconditionally would fail every legacy
-          # run, and asserting nothing would let a rewrite strip it from a file that had one.
+          # Only the modern layout has one; asserting it unconditionally would fail every legacy run.
           if [ "${LAYOUT}" = "modern" ] && ! grep -q '^Release date:' "${TARGET}"; then
             echo "::error::${TARGET} lost its 'Release date:' line."
             exit 1
           fi
 
-          # Additions only. The two checks above prove the file is still a release note; they say
-          # nothing about its body, and the body is every other contributor's entries for this
-          # release. A rewrite that dropped someone else's line would otherwise be committed under a
-          # message promising the wording is unchanged.
+          # Additions only: the body is every other contributor's entries for this release.
           LOST="$(comm -23 <(entries_of /tmp/target-before.md) <(entries_of "${TARGET}"))"
           if [ -n "${LOST}" ]; then
             echo "::error::${TARGET} lost lines that were already there:"
@@ -970,12 +709,7 @@ jobs:
             exit 0
           fi
 
-          # Claude wrote nothing, and that means one of two opposite things. Either the entries were
-          # already in ${CURRENT} -- a re-run, or an author who copied the note forward but forgot to
-          # delete the old copy -- in which case the reset has just removed a duplicate and that
-          # removal still has to be pushed, or it could not work out where the entries go, in which
-          # case pushing would commit the reset's deletion of the only copy of the note. Silence does
-          # not say which, so decide it from the diff: are the PR's own added lines in the target?
+          # Claude wrote nothing: either the entries were already there, or it could not place them. Silence does not say which -- the diff does.
           if ! entries_present "${TARGET}"; then
             echo "::warning::PR #${PR_NUMBER}: Claude made no change to ${TARGET}."
             echo "outcome=no-change" >> "$GITHUB_OUTPUT"
@@ -983,8 +717,7 @@ jobs:
             echo "Entries are already in ${TARGET}; pushing the removal of the stale copy."
             echo "outcome=already-present" >> "$GITHUB_OUTPUT"
           else
-            # The merge's own conflict resolution already dropped the stale copy, so this job has no
-            # change of its own left. Pushing a bare base merge is auto_update_pr.yml's business.
+            # The merge already dropped the stale copy; pushing a bare base merge is auto_update_pr.yml's job.
             echo "Nothing to do -- entries are in ${TARGET} and no stale copy is left."
             echo "outcome=already-clean" >> "$GITHUB_OUTPUT"
           fi
@@ -1000,29 +733,23 @@ jobs:
           . /tmp/relocate-lib.sh
           TARGET="${NOTES_ROOT}/${CURRENT}/README.md"
 
-          # Restored, not just compared: the checkout action's version is the only one this job
-          # trusts. Restoring is a no-op on every honest run and cannot fail one, which a comparison
-          # could -- the Claude action is free to write git config of its own.
+          # Restored, not just compared: the Claude action may legitimately write git config of its own.
           if ! cmp -s .git/config /tmp/git-config-before; then
             echo "::warning::.git/config changed during the run -- restoring the checkout's copy."
             cp /tmp/git-config-before .git/config
           fi
 
-          # The remote below is spelled out with the token in it, so a URL rewrite is a token leak.
-          # The restore above already rules that out; this says so out loud rather than leaving it
-          # to be inferred, and fails closed if the checkout action ever starts emitting one.
+          # The remote below carries the token, so a URL rewrite is a token leak. Fail closed.
           if git config --local --get-regexp '^url\..*\.insteadof$' >/dev/null 2>&1; then
             echo "::error::Local git config defines url.*.insteadOf -- refusing to push."
             exit 1
           fi
 
-          # Credentials are passed per invocation, never written to disk: nothing in this workspace
-          # should hold a token while a contributor's branch is checked out in it.
+          # Per invocation, never to disk: a contributor's branch is checked out in this workspace.
           REMOTE="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
           git add -A "${NOTES_BASE}"
-          # Body, not just a subject line: this lands unannounced on someone else's branch, and the
-          # commit is the only place they will look to find out why a bot touched their PR.
+          # A body, not just a subject: this lands unannounced on someone else's branch.
           if [ "${OUTCOME}" = "already-present" ]; then
             DETAIL="$(printf '%s\n' \
               "The entries were already in ${CURRENT}, so only the leftover copy was deleted." \
@@ -1033,8 +760,7 @@ jobs:
               "Moved automatically by .github/workflows/relocate_release_notes.yml; the wording is" \
               "unchanged. Worth a quick read to confirm it landed under the right section.")"
           fi
-          # The base change is the other half of the move on an rc line, and it lands moments after
-          # this push -- so say so here rather than leaving them to spot it in the timeline.
+          # The retarget lands moments after this push -- say so rather than leave it to the timeline.
           if [ "${OLD_BASE}" != "${BASE}" ]; then
             DETAIL="$(printf '%s\n\n%s\n' \
               "This PR is also being retargeted from ${OLD_BASE} to ${BASE}, which is the newest release branch on that line." \
@@ -1045,15 +771,7 @@ jobs:
             "${DETAIL}")"
           NOTES_COMMIT="$(git rev-parse HEAD)"
 
-          # auto_update_pr.yml fires on the same push to next-minor and merges the base into every
-          # open PR, so on that line it races us for these exact branches. A rejection is usually
-          # that race -- replay our release-notes-only commit onto the new head and try again. Plain
-          # push every time; never --force.
-          #
-          # Reset + cherry-pick, not rebase: local history is `merge ${BASE}` + our commit, and a
-          # plain rebase drops the merge and replays every commit it carried. If the base moved
-          # again between auto_update_pr's merge and this checkout, those commits are not yet
-          # upstream and would land on the contributor's branch as duplicates.
+          # auto_update_pr.yml races us for these branches, so a rejection means replay onto the new head -- reset + cherry-pick, never rebase or --force.
           for attempt in 1 2 3; do
             if git push "${REMOTE}" "HEAD:refs/heads/${PR_HEAD}" 2>&1 | tee /tmp/push.log; then
               echo "Pushed to ${PR_HEAD} on attempt ${attempt}."
@@ -1061,27 +779,16 @@ jobs:
               exit 0
             fi
 
-            # Only replay when the remote actually rejected the ref. A network blip, an expired
-            # token or branch protection fails the same way here, and the branch has not moved --
-            # so the reset would throw away the merge commit this job built, and the cherry-pick
-            # would then conflict on ${CURRENT}/README.md, a file only that commit has. A
-            # retryable failure would become a permanent one, on someone else's PR.
+            # Only replay on an actual ref rejection: a blip or an expired token has not moved the branch.
             if grep -qE '\[rejected\]|non-fast-forward|fetch first' /tmp/push.log; then
               echo "Push rejected (attempt ${attempt}/3) -- branch moved; replaying onto it."
               git fetch "${REMOTE}" "${PR_HEAD}"
               git reset --hard FETCH_HEAD
 
-              # The baseline for the post-replay checks: the target as the *moved branch* has it.
-              # /tmp/target-before.md is no use here -- it is the target after this job's own base
-              # merge, and the moved branch may legitimately not have that merge yet.
+              # Baseline for the post-replay checks: the target as the *moved branch* has it.
               git show "HEAD:${TARGET}" > /tmp/target-replay-before.md 2>/dev/null || : > /tmp/target-replay-before.md
 
-              # Whoever moved the branch is not necessarily auto_update_pr.yml -- an author pushing
-              # to their own branch rejects identically, and they may have moved the note by hand.
-              # The guard ran against the pre-replay tree and says nothing about this one, so the
-              # decision is re-derived here. A blind cherry-pick would 3-way-apply our insertion at
-              # a different offset and land a *second* copy of the entry, under a commit message
-              # promising the wording is unchanged.
+              # Re-derived, not inherited from the guard: whoever moved the branch may have moved the note too, and a blind cherry-pick would land a second copy.
               if [ -f "${TARGET}" ] && entries_present "${TARGET}"; then
                 # Only the deterministic half is left to redo, and it may already be done too.
                 reset_stale
@@ -1094,8 +801,7 @@ jobs:
                   "${STALE} has already been released, so a note left there never reaches users." \
                   "${DETAIL}")"
               elif ! git cherry-pick "${NOTES_COMMIT}"; then
-                # A cherry-pick whose whole content is already upstream stops with a clean tree and
-                # "nothing to commit" rather than a conflict. That is a no-op, not a failure.
+                # Already upstream: the cherry-pick stops with a clean tree. A no-op, not a failure.
                 if [ -z "$(git status --porcelain)" ]; then
                   git cherry-pick --quit
                   echo "The notes commit is already on ${PR_HEAD} -- nothing to push."
@@ -1118,9 +824,7 @@ jobs:
                 printf '%s\n' "${LOST}"
                 exit 1
               fi
-              # No entry gained more than one copy. Counted against the moved branch rather than
-              # asserted to be unique, because a line this PR added can legitimately repeat in the
-              # target -- a `|------|-----|` separator appears once per table.
+              # No entry gained a copy. Counted, not asserted unique: a table separator repeats legitimately.
               while IFS= read -r line; do
                 if [ "$(grep -Fxc -e "${line}" "${TARGET}" || true)" \
                      -gt "$(( $(grep -Fxc -e "${line}" /tmp/target-replay-before.md || true) + 1 ))" ]; then
@@ -1128,10 +832,7 @@ jobs:
                   exit 1
                 fi
               done < <(pr_entries)
-              # Still a release-notes-only change, and still only *removing* from the stale folders.
-              # Stated as "adds nothing under ${STALE}" rather than "${STALE} matches ${BASE}": the
-              # moved branch need not carry this job's base merge, and then the stale folder can
-              # differ from ${BASE} for reasons that have nothing to do with the replay.
+              # Still notes-only, and still only *removing* from the stale folders -- the moved branch need not carry this job's base merge.
               while read -r p; do
                 [ -n "${p}" ] || continue
                 case "${p}" in
@@ -1154,14 +855,7 @@ jobs:
           echo "::error::Push to ${PR_HEAD} still rejected after 3 attempts. Nothing pushed."
           exit 1
 
-      # The other half of an rc relocation, and the half a human does first (PR #1078 retargeted at
-      # 08:00 and moved the note at 08:06). Here it goes last, deliberately: a run that dies at any
-      # earlier step must not leave the PR pointing at a branch nothing was ever moved onto, with a
-      # comment telling its author that part stands. The cost of this order is a few seconds in
-      # which the PR's diff claims to create a version folder `${BASE}` already has; the cost of the
-      # other order is a permanently mis-based PR every time the merge conflicts.
-      #
-      # No-op on next-minor and next-major, where OLD_BASE and BASE are the same branch.
+      # The other half of an rc relocation, last on purpose: a run that dies earlier must not leave the PR mis-based. No-op on next-minor and next-major.
       - name: Retarget the PR at the newest rc branch
         id: retarget
         if: >-
@@ -1176,9 +870,7 @@ jobs:
           gh pr edit "${PR_NUMBER}" --base "${BASE}"
           echo "retargeted=true" >> "$GITHUB_OUTPUT"
 
-      # `no-change` is in here deliberately. The guard only warns about it, but it means the note is
-      # still sitting in a shipped folder -- exactly the outcome this workflow exists to prevent, and
-      # the one a green job hides best. Silence is only correct when something was actually moved.
+      # `no-change` belongs here: the guard only warns, but the note is still in a shipped folder.
       - name: Report a skip on the PR
         id: report_skip
         if: >-
@@ -1188,25 +880,16 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           PUSHED: ${{ steps.push.outputs.pushed }}
-          # `moved` reaching here means either the push or the retarget after it failed; PUSHED
-          # tells the two apart below.
+          # `moved` reaching here means the push or the retarget failed; PUSHED tells the two apart.
           SKIP_CODE: ${{ steps.capture.outputs.skip || steps.merge.outputs.skip || steps.guard.outputs.outcome }}
         run: |
           set -euo pipefail
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
-          # Mapped here rather than carried as prose in the step outputs: those double as the
-          # `if:` conditions above, where a short code reads far better than a sentence.
-          #
-          # The lead is per-code too, not a shared "your note is still in ${STALE}" sentence.
-          # `nothing-to-move` means the branch has no release-note change left at all -- typically
-          # the author moved it by hand between detection and this job -- and telling them to go
-          # move a note they have already moved is worse than saying nothing.
+          # Prose mapped here, not carried in the step outputs, which double as the `if:` conditions above.
           STILL_STALE="This PR's release note is still in \`${STALE}\`, which has already shipped, so it will not reach users. Moving it to \`${CURRENT}\` automatically did not work"
           ACTION="Please move it by hand, or re-run [the workflow](${RUN_URL}) once the branch is mergeable."
-          # Also the dedup key below, so it has to name the *outcome* rather than the step that
-          # produced it: two runs that end the same way say the same thing and must not stack, two
-          # that end differently must both be said.
+          # Also the dedup key below, so it names the *outcome*, not the step that produced it.
           REASON="${SKIP_CODE:-failed}"
           case "${SKIP_CODE}" in
             nothing-to-move)
@@ -1220,10 +903,7 @@ jobs:
               LEAD="${STILL_STALE}: the entries could not be carried over without guessing, so nothing was touched."
               ;;
             *)
-              # What is left is a failure somewhere after the guard, and the lead turns on whether
-              # the entries reached `${CURRENT}` -- not on which step reported. `STILL_STALE` is a
-              # lie in every branch but the last, and the loudest one: it tells an author whose
-              # note is fine to go move it, and says nothing about the base branch that is not.
+              # A failure after the guard: the lead turns on whether the entries reached `${CURRENT}`.
               if [ "${PUSHED}" = "true" ] || [ "${PUSHED}" = "redundant" ] \
                 || [ "${SKIP_CODE}" = "already-clean" ]; then
                 # The entries are in place; the only step left to fail after that is the retarget.
@@ -1231,8 +911,7 @@ jobs:
                 LEAD="This PR's release note is in \`${CURRENT}\`, but changing its base branch from \`${OLD_BASE}\` to \`${BASE}\` afterwards failed -- see [the run log](${RUN_URL})."
                 ACTION="\`${OLD_BASE}\` has already shipped; please retarget this PR at \`${BASE}\` by hand."
               elif [ "${SKIP_CODE}" = "already-present" ]; then
-                # The entries were in `${CURRENT}` before this run; what failed was deleting the
-                # copy left behind in `${STALE}`. The note reaches users -- it just ships twice.
+                # The entries were already in place; deleting the leftover copy is what failed.
                 REASON=leftover-copy
                 LEAD="This PR's release note is already in \`${CURRENT}\`, but the copy left behind in \`${STALE}\` could not be removed -- see [the run log](${RUN_URL})."
                 ACTION="\`${STALE}\` has already shipped; please delete the duplicate entries from it by hand."
@@ -1243,11 +922,7 @@ jobs:
               ;;
           esac
 
-          # One comment per PR per target version *per outcome*. A re-run that fails the same way
-          # must not stack an identical comment underneath the first -- but a re-run that fails a
-          # different way has something new to say, and keying on the version alone would swallow
-          # it: the conflict comment from the cut would silence the "retarget by hand" comment from
-          # the dispatch that fixed it, leaving the PR based on a shipped branch and nobody told.
+          # One comment per PR per target version *per outcome*: same failure must not stack, a different one must still be said.
           MARKER="<!-- relocate-release-notes:${CURRENT}:${REASON} -->"
           gh pr view "${PR_NUMBER}" --json comments --jq '.comments[].body' > /tmp/existing.txt \
             || : > /tmp/existing.txt
@@ -1261,8 +936,7 @@ jobs:
             "${ACTION}" \
             "${MARKER}")"
 
-      # Every exit path lands here, so the job log always ends on one line saying what happened --
-      # rather than leaving the reader to infer it from which steps ran and which were skipped.
+      # Every exit path lands here, so the job log always ends on one line saying what happened.
       - name: Log the outcome
         if: ${{ !cancelled() }}
         env:
@@ -1281,8 +955,7 @@ jobs:
           elif [ "${PUSHED}" = "true" ]; then
             STATUS="moved to ${CURRENT}"
           elif [ "${PUSHED}" = "redundant" ]; then
-            # The branch moved under the push and the new head already had the entries -- whoever
-            # moved it got there first. Nothing to push is the right answer, not a failure.
+            # The branch moved and the new head already had the entries -- not a failure.
             STATUS="nothing to push -- ${PR_HEAD} already carries the entries in ${CURRENT}"
           elif [ "${OUTCOME}" = "already-clean" ]; then
             STATUS="nothing to do -- entries are already in ${CURRENT}"
