@@ -48,7 +48,15 @@ export class Keycloak {
       if (attempt > 1) await waitForNextOtp(otpUrl);
 
       await otpInput.fill(generateOtp(otpUrl));
+
+      // Wait for this submit's own page — the previous attempt's error is still in the old DOM
+      const submitted = this.page.waitForResponse(
+        res => res.request().method() === 'POST' && res.request().isNavigationRequest(),
+        {timeout: 30_000}
+      );
       await submit.click();
+      await submitted;
+      await this.page.waitForLoadState('domcontentloaded');
 
       await expect
         .poll(async () => !this.onKeycloak() || (await rejected.isVisible()), {timeout: 30_000})

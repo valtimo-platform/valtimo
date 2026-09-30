@@ -405,8 +405,13 @@ export class PluginPage {
       while (remaining > 0) {
         await this.deletePlugin(identifier);
 
+        // Refetch lands before the table re-renders — wait for the row to go before judging progress
+        const shrunk = await expect(rows)
+          .toHaveCount(remaining - 1, {timeout: 10_000})
+          .then(() => true)
+          .catch(() => false);
         const left = await rows.count();
-        if (left >= remaining) break;
+        if (!shrunk && left >= remaining) break;
         remaining = left;
       }
     }
