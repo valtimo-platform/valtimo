@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.service.OperatonProcessService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.stereotype.Service
@@ -53,20 +54,34 @@ class ProcessDocumentsService(
     fun deleteAllProcessInstancesForThisDocument(execution: DelegateExecution, reason: String) {
         val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
         withLoggingContext(JsonSchemaDocument::class, documentId.toString()) {
-            val processInstanceIds = associationService.findProcessDocumentInstances(documentId)
-                .map { it.processDocumentInstanceId().processInstanceId().toString() }
-            operatonProcessService.findProcessInstancesByIds(processInstanceIds.toSet())
-                .filter { it.rootProcessInstanceId == null || it.rootProcessInstanceId == it.processInstanceId }
-                .mapNotNull { processInstance ->
-                    try {
-                        operatonProcessService.deleteProcessInstanceById(processInstance.id, reason)
-                        null
-                    } catch (exception: Exception) {
-                        exception
-                    }
+            deleteRootProcessInstancesForDocument(documentId, reason, keepRootProcessInstanceId = null)
+        }
+    }
+
+    @ProcessBeanMethod(
+        description = "Deletes all process instances associated with the current document, except the calling one",
+        example = "\${processService.deleteAllOtherProcessInstancesForThisDocument(execution, 'Case cancelled')}"
+    )
+    fun deleteAllOtherProcessInstancesForThisDocument(execution: DelegateExecution, reason: String) {
+        val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
+        withLoggingContext(JsonSchemaDocument::class, documentId.toString()) {
+            val callingProcessInstance = operatonProcessService
+                .findProcessInstanceById(execution.processInstanceId)
+                .orElse(null)
+            if (callingProcessInstance == null) {
+                logger.warn {
+                    "Deleted no process instances. " +
+                        "Calling process instance '${execution.processInstanceId}' could not be found."
                 }
-                .toList()
-                .forEach { throw it }
+            } else {
+                deleteRootProcessInstancesForDocument(
+                    documentId,
+                    reason,
+                    keepRootProcessInstanceId = callingProcessInstance.rootProcessInstanceId
+                        ?.takeIf { it.isNotBlank() }
+                        ?: execution.processInstanceId
+                )
+            }
         }
     }
 
@@ -156,6 +171,29 @@ class ProcessDocumentsService(
         }.distinct()
     }
 
+    private fun deleteRootProcessInstancesForDocument(
+        documentId: JsonSchemaDocumentId,
+        reason: String,
+        keepRootProcessInstanceId: String?
+    ) {
+        val processInstanceIds = associationService.findProcessDocumentInstances(documentId)
+            .map { it.processDocumentInstanceId().processInstanceId().toString() }
+        operatonProcessService.findProcessInstancesByIds(processInstanceIds.toSet())
+            .filter { it.rootProcessInstanceId == null || it.rootProcessInstanceId == it.processInstanceId }
+            .filter { it.id != keepRootProcessInstanceId }
+            .mapNotNull { processInstance ->
+                try {
+                    operatonProcessService.deleteProcessInstanceById(processInstance.id, reason)
+                    null
+                } catch (exception: Exception) {
+                    logger.error(exception) { "Failed to delete process instance '${processInstance.id}'" }
+                    exception
+                }
+            }
+            .firstOrNull()
+            ?.let { throw it }
+    }
+
     private fun associateDocumentToProcess(
         processInstanceId: String?,
         processName: String,
@@ -171,5 +209,9 @@ class ProcessDocumentsService(
                     )
                 }) { throw DocumentNotFoundException("No Document found with id $businessKey") }
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
