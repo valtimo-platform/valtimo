@@ -1,0 +1,48 @@
+{
+    "key": "verhuizing-impliciete-bron",
+    "source": {
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "impliciet"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

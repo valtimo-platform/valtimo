@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_verhuizing_legacy" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="verhuizing" name="Verhuizing" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_1" name="Aanvraag ontvangen">
+      <bpmn:outgoing>Flow_Start_To_Inspectie</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallInspectieActivity" name="Inspectie uitvoeren" camunda:asyncAfter="true" calledElement="verhuizing-inspectie-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:verhuizing-inspectie:1.0.2">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Start_To_Inspectie</bpmn:incoming>
+      <bpmn:outgoing>Flow_Inspectie_To_End</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="Event_end" name="Verhuizing afgehandeld">
+      <bpmn:incoming>Flow_Inspectie_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Inspectie" sourceRef="StartEvent_1" targetRef="CallInspectieActivity"/>
+    <bpmn:sequenceFlow id="Flow_Inspectie_To_End" sourceRef="CallInspectieActivity" targetRef="Event_end"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="verhuizing">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="160" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallInspectieActivity_di" bpmnElement="CallInspectieActivity">
+        <dc:Bounds x="250" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_end_di" bpmnElement="Event_end">
+        <dc:Bounds x="412" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Inspectie_di" bpmnElement="Flow_Start_To_Inspectie">
+        <di:waypoint x="196" y="120"/><di:waypoint x="250" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Inspectie_To_End_di" bpmnElement="Flow_Inspectie_To_End">
+        <di:waypoint x="350" y="120"/><di:waypoint x="412" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
