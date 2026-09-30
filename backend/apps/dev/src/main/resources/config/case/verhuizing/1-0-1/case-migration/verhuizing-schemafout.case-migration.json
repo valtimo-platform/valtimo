@@ -1,0 +1,25 @@
+{
+    "title": "Opzettelijk kapot plan (schemafout) \u2014 alleen voor een testrun",
+    "key": "verhuizing-schemafout",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "schemafout"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aantalKamers",
+            "value": "niet-een-getal"
+        }
+    ],
+    "processMigration": []
+}

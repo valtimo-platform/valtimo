@@ -20,4 +20,11 @@
 
 export * from './lib/building-block-management.module';
 export * from './lib/constants';
+export * from './lib/models';
 export * from './lib/services';
+
+/* Editor extension points — case-management extends the base and projects its General tab; shell tabs stay internal. */
+export * from './lib/components/migration-plan-editor/migration-plan-editor-base/migration-plan-editor-base.component';
+export * from './lib/components/migration-plan-editor/migration-plan-editor-shell/migration-plan-editor-shell.component';
+export * from './lib/components/migration-plan-editor/migration-general-fields/migration-general-fields.component';
+export * from './lib/utils/migration-status.utils';
