@@ -302,6 +302,14 @@ selected case type.
 Valtimo ships with the **Create Zaakdossier** system process, which performs the ZGW side of a
 verzoek. Select it under **Process** in the plugin configuration.
 
+{% hint style="warning" %}
+The process ships with Valtimo, but its process links do not. Each task in the table below that
+names a process link has to be created in your own environment — only you know which plugin
+configurations the zaak, the zaakrol and the documents belong to. Being a system process is no
+obstacle: the diagram is read-only, but its activities can still be linked. See
+[Process links](../building-blocks/processes.md#process-links).
+{% endhint %}
+
 <figure><img src="../../assets/configuration-guides/plugins/verzoek/06-create-zaakdossier-process.png" alt=""><figcaption>Create Zaakdossier</figcaption></figure>
 
 | Task | What it does | Configuration |
