@@ -395,25 +395,34 @@ export class PluginPage {
       }
     }
 
+    // One stuck plugin type must not cost the others their cleanup, so failures are collected
+    // and raised once every type has had its turn.
+    const failures: string[] = [];
+
     for (const type of pluginTypes) {
       if (type === 'Besluiten API') continue;
 
       const identifier = pluginTestConfiguration[type].pluginIdentifier;
       const rows = this.page.locator(`tr:has(td:has-text("${identifier}"))`);
 
-      let remaining = await rows.count();
-      while (remaining > 0) {
-        await this.deletePlugin(identifier);
+      try {
+        let remaining = await rows.count();
+        while (remaining > 0) {
+          await this.deletePlugin(identifier);
 
-        // Refetch lands before the table re-renders — wait for the row to go before judging progress
-        const shrunk = await expect(rows)
-          .toHaveCount(remaining - 1, {timeout: 10_000})
-          .then(() => true)
-          .catch(() => false);
-        const left = await rows.count();
-        if (!shrunk && left >= remaining) break;
-        remaining = left;
+          // The delete response can land before the table redraws, so an immediate read still
+          // shows the old count. Wait for it to drop, and fail rather than leave the plugin
+          // behind for the next run.
+          await expect.poll(() => rows.count(), {timeout: 10_000}).toBeLessThan(remaining);
+          remaining = await rows.count();
+        }
+      } catch (error) {
+        failures.push(`${identifier}: ${(error as Error).message}`);
       }
+    }
+
+    if (failures.length) {
+      throw new Error(`[plugins] Could not delete every configuration:\n${failures.join('\n')}`);
     }
   }
 

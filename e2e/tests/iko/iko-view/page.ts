@@ -23,7 +23,7 @@ import {
   IKO_VIEW_MANAGEMENT_TEST_IDS,
   IKO_VIEW_MODAL_TEST_IDS,
 } from '../../../constants';
-import {apiDelete, apiGet, apiPost} from '../../../utils/api.utils';
+import {apiDelete, apiGet, apiPost, isApiStatus} from '../../../utils/api.utils';
 import {ikoViewConfig} from './iko-view-config';
 
 interface IkoViewListResponse {
@@ -158,6 +158,30 @@ export class IkoViewPage {
     await this.addViewButton.click();
     await expect(this.addModalHeading).toBeVisible();
     await expect(this.titleInput).toBeEnabled();
+    await this.waitForPropertyFormSettled();
+  }
+
+  /**
+   * The property fields are built from definitions the modal fetches after it opens, and the
+   * form is rebuilt once they land. A row added before that rebuild is silently thrown away,
+   * so wait until the field count stops moving before touching the form.
+   */
+  async waitForPropertyFormSettled(): Promise<void> {
+    // Every property control, key-value rows included — a rebuild changes this count.
+    const controls = this.openModal.locator('[data-test-id^="ikoProperty"]');
+
+    let previous = -1;
+    await expect
+      .poll(
+        async () => {
+          const current = await controls.count();
+          const settled = current > 0 && current === previous;
+          previous = current;
+          return settled;
+        },
+        {intervals: [250, 250, 250, 500], timeout: 20_000}
+      )
+      .toBe(true);
   }
 
   async addKeyValueRow(key: string): Promise<void> {
@@ -318,25 +342,26 @@ export class IkoViewPage {
     return res.content ?? [];
   }
 
+  /**
+   * Safe as a pre-clean: the endpoint's `deleteById` is a no-op on Spring Data 3, so a view that
+   * is not there still answers 204 (and a 404 is tolerated in case that ever changes).
+   * Anything else — refused, failed — leaves the key occupied and has to surface.
+   */
   async deleteViewViaApi(viewKey: string): Promise<void> {
     try {
       await apiDelete(`/api/management/v1/iko-view/${viewKey}`);
-    } catch {
-      // View may already be deleted or never created.
+    } catch (error) {
+      if (!isApiStatus(error, 404)) throw error;
     }
   }
 
   /** Delete every view under `repositoryConfigKey` whose title starts with the prefix. */
   async cleanupTestViewsViaApi(repositoryConfigKey: string, titlePrefix: string): Promise<void> {
-    try {
-      const views = await this.getViewsViaApi(repositoryConfigKey);
-      for (const view of views) {
-        if (view.title?.startsWith(titlePrefix)) {
-          await this.deleteViewViaApi(view.key);
-        }
+    const views = await this.getViewsViaApi(repositoryConfigKey);
+    for (const view of views) {
+      if (view.title?.startsWith(titlePrefix)) {
+        await this.deleteViewViaApi(view.key);
       }
-    } catch {
-      // Listing failed — nothing reliable to clean up.
     }
   }
 }

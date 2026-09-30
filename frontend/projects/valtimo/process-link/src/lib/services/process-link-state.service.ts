@@ -101,17 +101,19 @@ export class ProcessLinkStateService implements OnDestroy {
   }
 
   public get hideProgressIndicator$(): Observable<boolean> {
-    return this._availableProcessLinkTypes$
-      .asObservable()
-      .pipe(
-        map(
-          availableTypes =>
-            Array.isArray(availableTypes) &&
-            availableTypes.length === 1 &&
-            (availableTypes[0]?.processLinkType === 'form' ||
-              availableTypes[0]?.processLinkType === 'form-flow')
-        )
-      );
+    return this._availableProcessLinkTypes$.asObservable().pipe(
+      // Count the tiles, matching `setAvailableProcessLinkTypes` — on the raw list an untiled
+      // type such as `url` kept the indicator up for the single-form flow it must suppress.
+      map(availableTypes =>
+        this.chooserProcessLinkTypes(Array.isArray(availableTypes) ? availableTypes : [])
+      ),
+      map(
+        chooserTypes =>
+          chooserTypes.length === 1 &&
+          (chooserTypes[0]?.processLinkType === 'form' ||
+            chooserTypes[0]?.processLinkType === 'form-flow')
+      )
+    );
   }
   public get selectedProcessLinkTypeId$(): Observable<string> {
     return this._selectedProcessLinkTypeId$.asObservable();

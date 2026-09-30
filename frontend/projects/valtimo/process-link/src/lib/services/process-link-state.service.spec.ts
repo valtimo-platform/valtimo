@@ -167,4 +167,36 @@ describe('ProcessLinkStateService', () => {
       expect(stepService.setHasOneProcessLinkType).toHaveBeenCalledWith(true);
     });
   });
+
+  describe('hideProgressIndicator$', () => {
+    const currentlyHidden = (): boolean => {
+      let hidden = false;
+      service.hideProgressIndicator$.pipe(take(1)).subscribe(value => (hidden = value));
+      return hidden;
+    };
+
+    it('hides the indicator when the untiled url type leaves the form tile alone', () => {
+      service.setAvailableProcessLinkTypes([
+        {processLinkType: 'form', enabled: true},
+        {processLinkType: 'url', enabled: true},
+      ]);
+
+      expect(currentlyHidden()).toBe(true);
+    });
+
+    it('keeps the indicator when a second tile renders', () => {
+      service.setAvailableProcessLinkTypes([
+        {processLinkType: 'form', enabled: true},
+        {processLinkType: 'form-flow', enabled: true},
+      ]);
+
+      expect(currentlyHidden()).toBe(false);
+    });
+
+    it('keeps the indicator for a single tile that is not a form', () => {
+      service.setAvailableProcessLinkTypes([{processLinkType: 'plugin', enabled: true}]);
+
+      expect(currentlyHidden()).toBe(false);
+    });
+  });
 });

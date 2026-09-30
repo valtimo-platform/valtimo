@@ -29,6 +29,7 @@ import {
   ikoViewConfig,
   uniqueViewTitle,
 } from './iko-view-config';
+import {runCleanups} from '../../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
 
@@ -60,10 +61,12 @@ test.describe('Feature 15B — IKO View Management', () => {
   });
 
   test.afterAll(async () => {
-    // Children first, then the parent server.
-    await ikoViewPage.cleanupTestViewsViaApi(parentServerKey, IKO_VIEW_TITLE_PREFIX);
-    await ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX);
-    await context.close();
+    // Children first, then the parent server. Every step runs even if an earlier one throws.
+    await runCleanups(
+      () => ikoViewPage.cleanupTestViewsViaApi(parentServerKey, IKO_VIEW_TITLE_PREFIX),
+      () => ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX),
+      () => context.close()
+    );
   });
 
   // ─── Property field tooltips ────────────────────────────────────────

@@ -17,7 +17,7 @@
 import {expect, test} from '@playwright/test';
 import {CaseDetailsManagementPage, CaseHandlerSettings} from './page';
 import {expectNotificationMessage} from '../../utils/ui.utils';
-import {apiGet, apiPut, apiPatch, apiDelete} from '../../utils/api.utils';
+import {apiGet, apiPut, apiPatch, apiDelete, isApiStatus} from '../../utils/api.utils';
 import {
   ensureDraftVersionSelected,
   ensureFinalVersionSelected,
@@ -220,7 +220,8 @@ test.describe('Case management', () => {
       });
 
       test.describe('6.1 — Link upload process', () => {
-        let originalUploadProcessKey: string | null;
+        // `undefined` until the baseline is read: `null` already means "nothing was linked".
+        let originalUploadProcessKey: string | null | undefined;
         let featureProcessUrl: string | null = null;
 
         test.beforeAll(async () => {
@@ -230,13 +231,18 @@ test.describe('Case management', () => {
               `${featureProcessUrl}/DOCUMENT_UPLOAD`
             );
             originalUploadProcessKey = linked?.processDefinitionKey ?? null;
-          } catch {
+          } catch (error) {
+            // Only a 404 means "no link yet". Reading any other failure as one would make the
+            // teardown below delete a link this suite never touched.
+            if (!isApiStatus(error, 404)) throw error;
             originalUploadProcessKey = null;
           }
         });
 
         test.afterAll(async () => {
-          if (!featureProcessUrl) return;
+          // Playwright runs this even when `beforeAll` threw. Without a baseline there is nothing
+          // to restore to, and the delete below would take a link this suite never touched.
+          if (!featureProcessUrl || originalUploadProcessKey === undefined) return;
 
           try {
             if (originalUploadProcessKey) {

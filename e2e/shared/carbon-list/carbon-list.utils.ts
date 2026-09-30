@@ -93,14 +93,40 @@ export class CarbonListRow {
 
   // ─── Selection (Checkboxes) ─────────────────────────────────────
 
+  /** The native input behind Carbon's row checkbox — it carries the checked state. */
+  get selectionCheckbox(): Locator {
+    return this.locator.locator('td.cds--table-column-checkbox input[type="checkbox"]');
+  }
+
+  async isSelected(): Promise<boolean> {
+    return this.selectionCheckbox.isChecked();
+  }
+
   async select() {
-    // Carbon's cds-checkbox uses (checkedChange) not native DOM change.
-    // Click the visible cds-checkbox element to trigger the model update.
-    await this.locator.locator('td.cds--table-column-checkbox cds-checkbox').click();
+    await this.setSelected(true);
   }
 
   async deselect() {
-    await this.locator.locator('td.cds--table-column-checkbox cds-checkbox').click();
+    await this.setSelected(false);
+  }
+
+  /**
+   * Drive this row's checkbox to `selected`. Reads the state first, so a caller that retries
+   * cannot toggle the row back to where it started.
+   */
+  async setSelected(selected: boolean) {
+    await expect(async () => {
+      if ((await this.isSelected()) !== selected) {
+        // Carbon's cds-checkbox uses (checkedChange) not native DOM change.
+        // Click the visible cds-checkbox element to trigger the model update.
+        await this.locator.locator('td.cds--table-column-checkbox cds-checkbox').click();
+      }
+      await expect(this.selectionCheckbox).toBeChecked({checked: selected, timeout: 3_000});
+    }).toPass({timeout: 20_000});
+  }
+
+  async assertSelected(selected: boolean) {
+    await expect(this.selectionCheckbox).toBeChecked({checked: selected});
   }
 
   // ─── Move Row Up/Down ───────────────────────────────────────────
@@ -324,6 +350,31 @@ export class CarbonList {
 
   async deselectAllRows() {
     await this.table.locator('thead input[type="checkbox"]').uncheck();
+  }
+
+  /** Rows whose checkbox is ticked — what a batch action would act on. */
+  get selectedRows(): Locator {
+    return this.rows.filter({
+      has: this.page.locator('td.cds--table-column-checkbox input[type="checkbox"]:checked'),
+    });
+  }
+
+  /**
+   * Untick every selected row. A batch action reads the table's selection, not the row it was
+   * opened from, so a leftover tick from an earlier test would silently redirect it.
+   */
+  async clearSelection() {
+    const selected = this.selectedRows;
+
+    await expect(async () => {
+      // Untick every selected row in this attempt, not just the first: one row per retry would
+      // spend the whole budget on a table where several rows are still ticked.
+      for (let remaining = await selected.count(); remaining > 0; remaining--) {
+        await selected.first().locator('td.cds--table-column-checkbox cds-checkbox').click();
+        await expect(selected).toHaveCount(remaining - 1, {timeout: 3_000});
+      }
+      await expect(selected).toHaveCount(0, {timeout: 3_000});
+    }).toPass({timeout: 20_000});
   }
 
   // ─── Drag and Drop ────────────────────────────────────────────────

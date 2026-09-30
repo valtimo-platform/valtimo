@@ -37,11 +37,47 @@ export interface ConfigureStepResult {
   name: string;
 }
 
+interface VersionCheckTracker {
+  readonly inFlight: number;
+  readonly lastFinishedAt: number;
+}
+
+/** Follow every case-definition version check on `page` from start to finish. */
+function trackVersionChecks(page: Page): VersionCheckTracker {
+  const isVersionCheck = (url: string) =>
+    /\/management\/v1\/case-definition\/[^/?]+\/version/.test(url);
+
+  const tracker = {inFlight: 0, lastFinishedAt: Date.now()};
+
+  const onSettled = (request: Request) => {
+    if (!isVersionCheck(request.url())) return;
+    tracker.inFlight = Math.max(0, tracker.inFlight - 1);
+    tracker.lastFinishedAt = Date.now();
+  };
+
+  page.on('request', request => {
+    if (isVersionCheck(request.url())) tracker.inFlight++;
+  });
+  page.on('requestfinished', onSettled);
+  page.on('requestfailed', onSettled);
+
+  return tracker;
+}
+
 export class CaseManagementPage {
+  /**
+   * Counts version checks from the moment this page object exists. Registering the listeners
+   * inside the wait instead would miss a check that the key change already started, and the
+   * wait would then call the run quiet while that check was still on its way back.
+   */
+  private readonly versionCheckTracker: VersionCheckTracker;
+
   constructor(
     private readonly page: Page,
     private readonly request: APIRequestContext
-  ) {}
+  ) {
+    this.versionCheckTracker = trackVersionChecks(page);
+  }
 
   // UI Elements
   get createSaveButton() {
@@ -309,34 +345,20 @@ export class CaseManagementPage {
   }
 
   private async awaitVersionChecksSettled(quietMs = 1_500, timeout = 20_000) {
-    const isVersionCheck = (url: string) =>
-      /\/management\/v1\/case-definition\/[^/?]+\/version/.test(url);
+    const tracker = this.versionCheckTracker;
+    // Floor the window at "now": the tracker's last check may be minutes old, and without this
+    // the poll passes on its first tick and calls the run quiet before a debounced check has
+    // even been issued.
+    const waitStartedAt = Date.now();
 
-    let inFlight = 0;
-    let lastFinishedAt = Date.now();
-
-    const onRequest = (request: Request) => {
-      if (isVersionCheck(request.url())) inFlight++;
-    };
-    const onSettled = (request: Request) => {
-      if (!isVersionCheck(request.url())) return;
-      inFlight = Math.max(0, inFlight - 1);
-      lastFinishedAt = Date.now();
-    };
-
-    this.page.on('request', onRequest);
-    this.page.on('requestfinished', onSettled);
-    this.page.on('requestfailed', onSettled);
-
-    try {
-      await expect
-        .poll(() => inFlight === 0 && Date.now() - lastFinishedAt >= quietMs, {timeout})
-        .toBe(true);
-    } finally {
-      this.page.off('request', onRequest);
-      this.page.off('requestfinished', onSettled);
-      this.page.off('requestfailed', onSettled);
-    }
+    await expect
+      .poll(
+        () =>
+          tracker.inFlight === 0 &&
+          Date.now() - Math.max(tracker.lastFinishedAt, waitStartedAt) >= quietMs,
+        {timeout}
+      )
+      .toBe(true);
   }
 
   async confirmDraftOverride() {

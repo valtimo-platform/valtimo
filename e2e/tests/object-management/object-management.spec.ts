@@ -23,6 +23,7 @@ import {
   TEST_OBJECT_TYPE,
 } from './object-management-config';
 import {ObjectManagementPage} from './page';
+import {runCleanups} from '../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
 
@@ -57,11 +58,23 @@ test.describe('Feature 12 — Object management', () => {
   });
 
   test.afterAll(async () => {
-    for (const id of createdIds) {
-      await objectManagementPage.deleteConfigurationViaApi(id);
-    }
+    // The sweep reads the API and raises on any failure, so the context is closed by a step that
+    // runs regardless.
+    await runCleanups(
+      async () => {
+        // Every title this run writes carries `uniqueId`, so sweeping on it removes what a test
+        // that died between the POST and the `createdIds.push` left behind — and nothing another
+        // run owns.
+        const leftovers = (await objectManagementPage.getConfigurationsViaApi())
+          .filter(configuration => configuration.title.includes(uniqueId))
+          .map(configuration => configuration.id);
 
-    await context.close();
+        for (const id of new Set([...createdIds, ...leftovers])) {
+          await objectManagementPage.deleteConfigurationViaApi(id);
+        }
+      },
+      () => context.close()
+    );
   });
 
   test.describe('12.1 — Manage object types', () => {
@@ -195,9 +208,7 @@ test.describe('Feature 12 — Object management', () => {
       // The List tab is rendered too: its `*ngIf` is fed an observable that
       // emits an empty array when no list columns are configured, which is
       // truthy.
-      await expect(objectManagementPage.listTab).toHaveText(
-        OBJECT_MANAGEMENT_TEXTS.detailTabs[2]
-      );
+      await expect(objectManagementPage.listTab).toHaveText(OBJECT_MANAGEMENT_TEXTS.detailTabs[2]);
 
       await expect(objectManagementPage.downloadButton).toBeEnabled();
       await expect(objectManagementPage.editButton).toBeEnabled();

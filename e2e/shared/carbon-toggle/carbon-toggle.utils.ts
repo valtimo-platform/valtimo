@@ -19,7 +19,11 @@ import {expect, type Locator} from '@playwright/test';
 export class CarbonToggle {
   constructor(private readonly host: Locator) {}
 
-  /** The visually hidden `role="switch"` input that carries the checked state. */
+  /**
+   * The `role="switch"` button that carries the checked state. Carbon renders it with
+   * `visually-hidden` (1x1px, `clip-path: inset(50%)`), so it can be read but never clicked —
+   * a real click on it always fails hit testing.
+   */
   get switchControl(): Locator {
     return this.host.getByRole('switch');
   }
@@ -62,16 +66,13 @@ export class CarbonToggle {
     // Park the pointer away so a tooltip from the previous interaction closes and stops eating clicks
     await this.host.page().mouse.move(0, 0);
 
-    const targets = [this.host.locator('label').first(), this.switchControl];
+    // Both targets are reachable. The visually hidden `role="switch"` button is not — a click on
+    // it can only ever time out, so it is deliberately absent here.
+    const targets = [this.host.locator('label').first(), this.host];
     const target = targets[attempt % targets.length];
 
-    try {
-      await target.click({timeout: 5_000});
-    } catch (error) {
-      // Still covered — go straight at the control, bypassing hit testing
-      if (attempt < 2) throw error;
-      await this.switchControl.dispatchEvent('click');
-    }
+    // A real click, hit testing included: a control a user cannot reach must fail the test.
+    await target.click({timeout: 5_000});
   }
 
   async enable() {

@@ -18,9 +18,12 @@ import { chromium } from '@playwright/test';
 import { writeFileSync, mkdirSync, unlinkSync, existsSync } from 'fs';
 import { Keycloak } from '../components/keycloak';
 import { pinLanguage } from '../utils/settings';
-import { generateOtp, millisUntilNextOtp } from './otp.utils';
+import { generateOtp, millisUntilNextOtp, waitForNextOtp } from './otp.utils';
+import { acquireRunLock } from './run-lock';
 
 export default async () => {
+  acquireRunLock();
+
   console.log('[GLOBAL SETUP] Launching browser');
 
   const browser = await chromium.launch();
@@ -59,19 +62,34 @@ export default async () => {
     scope: 'openid',
   };
 
-  // ----- Handle OTP (generate from otpauth URL only) -----
-  if (process.env.qa_admin_otp_url) {
-    form.otp = generateOtp(process.env.qa_admin_otp_url);
-    console.log('[GLOBAL SETUP] Generated TOTP from the otpauth URL');
+  const otpUrl = process.env.qa_admin_otp_url;
+
+  const requestToken = async () => {
+    // ----- Handle OTP (generate from otpauth URL only) -----
+    if (otpUrl) {
+      form.otp = generateOtp(otpUrl);
+      console.log('[GLOBAL SETUP] Generated TOTP from the otpauth URL');
+    }
+
+    return page.request.post(
+      `${keycloakUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect/token`,
+      {
+        form,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      },
+    );
+  };
+
+  let tokenResp = await requestToken();
+
+  // Keycloak accepts a TOTP once. A run that follows hard on the heels of another lands in the
+  // same window and is refused, so give it the next code rather than failing the whole suite.
+  if (!tokenResp.ok() && otpUrl && tokenResp.status() === 401) {
+    console.log('[GLOBAL SETUP] TOTP refused — waiting for the next window and retrying');
+    await waitForNextOtp(otpUrl);
+    tokenResp = await requestToken();
   }
 
-  const tokenResp = await page.request.post(
-    `${keycloakUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect/token`,
-    {
-      form,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    },
-  );
   if (!tokenResp.ok()) {
     const errBody = await tokenResp.text();
     throw new Error(`[GLOBAL SETUP] Token request failed (${tokenResp.status()}): ${errBody}`);

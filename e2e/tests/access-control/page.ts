@@ -126,16 +126,18 @@ export class AccessControlPage {
   }
 
   private async selectRowForBatchActions(roleKey: string) {
-    const row = new CarbonList(this.page).row(roleKey);
+    const list = new CarbonList(this.page);
+    const row = list.row(roleKey);
     const batchActions = this.page.locator('.cds--batch-actions').first();
 
-    await expect(async () => {
-      const active = await batchActions.evaluate(el =>
-        el.classList.contains('cds--batch-actions--active')
-      );
-      if (!active) await row.select();
-      await expect(batchActions).toHaveClass(/cds--batch-actions--active/, {timeout: 3_000});
-    }).toPass({timeout: 20_000});
+    // An active batch-action bar only proves that *some* row is ticked. Start from an empty
+    // selection so the action that follows can only reach this role.
+    await list.clearSelection();
+    await row.select();
+
+    await expect(list.selectedRows).toHaveCount(1);
+    await row.assertSelected(true);
+    await expect(batchActions).toHaveClass(/cds--batch-actions--active/, {timeout: 5_000});
   }
 
   private async clickBatchAction(button: Locator) {

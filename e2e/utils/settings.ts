@@ -64,8 +64,10 @@ function isSettingsWriteConflict(error: unknown): boolean {
   return error instanceof ApiError && error.status === 400 && /\/user\/settings/.test(error.message);
 }
 
+// "Target closed" is deliberately absent: a closed page cannot recover on the next attempt,
+// and retrying only buries the real failure under a language error.
 function isNavigationRace(error: unknown): boolean {
-  return /Execution context was destroyed|frame was detached|net::ERR_ABORTED|Target closed|Navigation to/i.test(
+  return /Execution context was destroyed|frame was detached|net::ERR_ABORTED|Navigation to/i.test(
     String(error)
   );
 }

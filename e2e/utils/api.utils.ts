@@ -136,7 +136,7 @@ export async function apiGet<T = unknown>(url: string): Promise<T> {
     res = await send('GET', () => ctx.get(url));
   }
   await assertOk('GET', url, res);
-  return (await res.json()) as T;
+  return parseBody<T>(res);
 }
 
 export async function apiPost<T = unknown>(
@@ -150,7 +150,7 @@ export async function apiPost<T = unknown>(
     res = await send('POST', () => ctx.post(url, { data: body }));
   }
   await assertOk('POST', url, res);
-  return (await res.json()) as T;
+  return parseBody<T>(res);
 }
 
 export async function apiPut<T = unknown>(
@@ -164,11 +164,7 @@ export async function apiPut<T = unknown>(
     res = await send('PUT', () => ctx.put(url, { data: body }));
   }
   await assertOk('PUT', url, res);
-  const text = await res.text();
-  if (!text) {
-    return undefined as unknown as T;
-  }
-  return JSON.parse(text) as T;
+  return parseBody<T>(res);
 }
 
 export async function apiPatch<T = unknown>(
@@ -182,11 +178,7 @@ export async function apiPatch<T = unknown>(
     res = await send('PATCH', () => ctx.patch(url, { data: body }));
   }
   await assertOk('PATCH', url, res);
-  const text = await res.text();
-  if (!text) {
-    return undefined as unknown as T;
-  }
-  return JSON.parse(text) as T;
+  return parseBody<T>(res);
 }
 
 export async function apiDelete(url: string): Promise<void> {
@@ -249,6 +241,19 @@ async function send(
       await new Promise(resolve => setTimeout(resolve, attempt * 1_000));
     }
   }
+}
+
+/**
+ * A 200 with no body is how the backend says "nothing there" for a nullable resource
+ * (`ResponseEntity.ok(null)` writes no body). `res.json()` throws on that, so the caller
+ * would see a parse error where it expects an absent value.
+ */
+async function parseBody<T>(res: APIResponse): Promise<T> {
+  const text = await res.text();
+  if (!text) {
+    return undefined as unknown as T;
+  }
+  return JSON.parse(text) as T;
 }
 
 async function assertOk(method: string, url: string, res: APIResponse) {

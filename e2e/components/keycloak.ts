@@ -43,9 +43,16 @@ export class Keycloak {
       .poll(async () => (await otpInput.isVisible()) || !this.onKeycloak(), {timeout: 60_000})
       .toBe(true);
 
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      if (!(await otpInput.isVisible())) return;
+    for (let attempt = 1; attempt <= 3 && this.onKeycloak(); attempt++) {
+      // Keycloak burns a code on use, so every attempt after the first needs a new window.
       if (attempt > 1) await waitForNextOtp(otpUrl);
+
+      // Re-poll rather than read once: the form re-renders after a rejection, and a single
+      // invisible read used to end the login silently, leaving the caller on the login page.
+      await expect
+        .poll(async () => (await otpInput.isVisible()) || !this.onKeycloak(), {timeout: 30_000})
+        .toBe(true);
+      if (!this.onKeycloak()) return;
 
       await otpInput.fill(generateOtp(otpUrl));
 
@@ -61,11 +68,11 @@ export class Keycloak {
       await expect
         .poll(async () => !this.onKeycloak() || (await rejected.isVisible()), {timeout: 30_000})
         .toBe(true);
-
-      if (!this.onKeycloak()) return;
     }
 
-    throw new Error('[keycloak] The one-time code was rejected on every attempt');
+    if (this.onKeycloak()) {
+      throw new Error('[keycloak] The one-time code was rejected on every attempt');
+    }
   }
 
   private onKeycloak(): boolean {
