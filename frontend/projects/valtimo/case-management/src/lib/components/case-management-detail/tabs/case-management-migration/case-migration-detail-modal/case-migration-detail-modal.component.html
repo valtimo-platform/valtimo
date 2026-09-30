@@ -1,0 +1,250 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!-- Wait for a plan: Carbon focuses the modal's first focusable element on open, and `[open]` binds before `[plan]`. -->
+<cds-modal valtimoCdsModal size="md" [open]="$open() && !!$plan()" (close)="onClose()">
+  <!-- Only while open: each open builds fresh tables, so paging and expanded stacktraces start over. -->
+  @if ($open() && $plan(); as plan) {
+    <cds-modal-header [cdsLayer]="1" (closeSelect)="onClose()">
+      <h3 cdsModalHeaderHeading>{{ plan.name }}</h3>
+    </cds-modal-header>
+
+    <section cdsModalContent [cdsLayer]="1">
+      <!-- Monitoring -->
+      <dl class="migration-metrics">
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.status' | translate }}
+          </dt>
+          <dd class="migration-metric__value">
+            <cds-tag class="cds-tag--no-margin" [type]="statusTagType(plan.status.status)">
+              {{ 'caseManagement.migration.status.' + plan.status.status | translate }}
+            </cds-tag>
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.casesToMigrate' | translate }}
+          </dt>
+          <dd class="migration-metric__value migration-metric__value--number">
+            {{ plan.status.casesToMigrate }}
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.casesMigrated' | translate }}
+          </dt>
+          <dd class="migration-metric__value migration-metric__value--number">
+            {{ plan.status.casesMigrated }}
+          </dd>
+        </div>
+
+        <div class="migration-metric">
+          <dt class="migration-metric__label">
+            {{ 'caseManagement.migration.fields.casesWithErrors' | translate }}
+          </dt>
+          <dd
+            class="migration-metric__value migration-metric__value--number"
+            [class.migration-metric__value--error]="plan.status.casesWithErrors > 0"
+          >
+            {{ plan.status.casesWithErrors }}
+          </dd>
+        </div>
+
+        @if (plan.status.casesWithWarnings > 0) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'caseManagement.migration.fields.casesWithWarnings' | translate }}
+            </dt>
+            <dd class="migration-metric__value migration-metric__value--number">
+              {{ plan.status.casesWithWarnings }}
+            </dd>
+          </div>
+        }
+
+        @if (plan.status.startedOn) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'caseManagement.migration.fields.startedOn' | translate }}
+            </dt>
+            <dd class="migration-metric__value">{{ plan.status.startedOn | date: 'medium' }}</dd>
+          </div>
+        }
+
+        @if (plan.status.finishedOn) {
+          <div class="migration-metric">
+            <dt class="migration-metric__label">
+              {{ 'caseManagement.migration.fields.finishedOn' | translate }}
+            </dt>
+            <dd class="migration-metric__value">{{ plan.status.finishedOn | date: 'medium' }}</dd>
+          </div>
+        }
+      </dl>
+
+      <!-- Errors -->
+      @if (plan.status.errors.length) {
+        <div class="migration-detail__errors">
+          <h5 class="migration-detail__config-heading">
+            {{ 'caseManagement.migration.errors.heading' | translate }}
+          </h5>
+          <valtimo-case-migration-case-table
+            kind="error"
+            [caseDefinitionKey]="caseDefinitionKey"
+            [items]="plan.status.errors"
+          ></valtimo-case-migration-case-table>
+        </div>
+      }
+
+      <!-- Warnings: cases that migrated, but for which a component skipped its work -->
+      @if (plan.status.warnings?.length) {
+        <div class="migration-detail__errors" [attr.data-test-id]="testIds.warnings">
+          <h5 class="migration-detail__config-heading">
+            {{ 'caseManagement.migration.warnings.heading' | translate }}
+          </h5>
+          <p class="migration-detail__hint">
+            {{ 'caseManagement.migration.warnings.description' | translate }}
+          </p>
+          <valtimo-case-migration-case-table
+            kind="warning"
+            [caseDefinitionKey]="caseDefinitionKey"
+            [items]="plan.status.warnings"
+          ></valtimo-case-migration-case-table>
+        </div>
+      }
+
+      <!-- Dry run result -->
+      @if (plan.dryRun.status !== 'NOT_STARTED') {
+        <div class="migration-detail__dry-run" [attr.data-test-id]="testIds.dryRunResults">
+          <h5 class="migration-detail__config-heading">
+            {{ 'caseManagement.migration.dryRunResults.heading' | translate }}
+          </h5>
+
+          <dl class="migration-metrics">
+            <div class="migration-metric">
+              <dt class="migration-metric__label">
+                {{ 'caseManagement.migration.dryRunResults.status' | translate }}
+              </dt>
+              <dd class="migration-metric__value">
+                <cds-tag class="cds-tag--no-margin" [type]="statusTagType(plan.dryRun.status)">
+                  {{ 'caseManagement.migration.status.' + plan.dryRun.status | translate }}
+                </cds-tag>
+              </dd>
+            </div>
+
+            <div class="migration-metric">
+              <dt class="migration-metric__label">
+                {{ 'caseManagement.migration.dryRunResults.casesChecked' | translate }}
+              </dt>
+              <dd class="migration-metric__value migration-metric__value--number">
+                {{ plan.dryRun.casesChecked }}
+              </dd>
+            </div>
+
+            <div class="migration-metric">
+              <dt class="migration-metric__label">
+                {{ 'caseManagement.migration.dryRunResults.casesWouldMigrate' | translate }}
+              </dt>
+              <dd class="migration-metric__value migration-metric__value--number">
+                {{ plan.dryRun.casesWouldMigrate }}
+              </dd>
+            </div>
+
+            <div class="migration-metric">
+              <dt class="migration-metric__label">
+                {{ 'caseManagement.migration.dryRunResults.casesWouldFail' | translate }}
+              </dt>
+              <dd
+                class="migration-metric__value migration-metric__value--number"
+                [class.migration-metric__value--error]="plan.dryRun.casesWouldFail > 0"
+              >
+                {{ plan.dryRun.casesWouldFail }}
+              </dd>
+            </div>
+
+            @if (plan.dryRun.finishedOn) {
+              <div class="migration-metric">
+                <dt class="migration-metric__label">
+                  {{ 'caseManagement.migration.fields.finishedOn' | translate }}
+                </dt>
+                <dd class="migration-metric__value">
+                  {{ plan.dryRun.finishedOn | date: 'medium' }}
+                </dd>
+              </div>
+            }
+          </dl>
+
+          @if (plan.dryRun.errors.length) {
+            <div class="migration-detail__errors">
+              <h5 class="migration-detail__config-heading">
+                {{ 'caseManagement.migration.dryRunResults.errorsHeading' | translate }}
+              </h5>
+              <valtimo-case-migration-case-table
+                kind="error"
+                [caseDefinitionKey]="caseDefinitionKey"
+                [items]="plan.dryRun.errors"
+              ></valtimo-case-migration-case-table>
+            </div>
+          }
+
+          @if (plan.dryRun.warnings?.length) {
+            <div class="migration-detail__errors" [attr.data-test-id]="testIds.dryRunWarnings">
+              <h5 class="migration-detail__config-heading">
+                {{ 'caseManagement.migration.warnings.dryRunHeading' | translate }}
+              </h5>
+              <p class="migration-detail__hint">
+                {{ 'caseManagement.migration.warnings.description' | translate }}
+              </p>
+              <valtimo-case-migration-case-table
+                kind="warning"
+                [caseDefinitionKey]="caseDefinitionKey"
+                [items]="plan.dryRun.warnings"
+              ></valtimo-case-migration-case-table>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <cds-modal-footer [cdsLayer]="1">
+      <button
+        cdsButton="ghost"
+        [attr.data-test-id]="testIds.detailModalCloseButton"
+        (click)="onClose()"
+      >
+        {{ 'interface.close' | translate }}
+      </button>
+
+      <button
+        cdsButton="tertiary"
+        [attr.data-test-id]="testIds.dryRunButton"
+        (click)="dryRunEvent.emit(plan)"
+      >
+        {{ 'caseManagement.migration.dryRun' | translate }}
+      </button>
+
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.startButton"
+        [disabled]="!plan.triggers.triggeredByButton"
+        (click)="startEvent.emit(plan)"
+      >
+        {{ 'caseManagement.migration.startNow' | translate }}
+      </button>
+    </cds-modal-footer>
+  }
+</cds-modal>

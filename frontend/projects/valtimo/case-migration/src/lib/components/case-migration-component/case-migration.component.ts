@@ -48,6 +48,7 @@ const MAX_PAGE_SIZE = 2000;
   selector: 'valtimo-case-migration',
   templateUrl: './case-migration.component.html',
 })
+/** @deprecated 'Case migration (beta)' is replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 export class CaseMigrationComponent implements OnInit, OnDestroy {
   public readonly sourceCaseDefinitionKeySelected$ = new BehaviorSubject<string | null>(null);
   public readonly sourceCaseDefinitionVersionTagSelected$ = new BehaviorSubject<string | null>(
@@ -60,6 +61,8 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
   public readonly patchItems$ = new BehaviorSubject<MultiInputValues>([]);
   public readonly errors$ = new BehaviorSubject<Array<string> | null>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
+
+  protected readonly CARBON_THEME = 'g10';
 
   private readonly _subscriptions = new Subscription();
 
@@ -177,11 +180,11 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  mappingValueChange(patches: MultiInputValues): void {
+  public mappingValueChange(patches: MultiInputValues): void {
     this.patchItems$.next(patches);
   }
 
-  checkPatches() {
+  public checkPatches(): void {
     this.errors$.next(null);
     combineLatest([
       this.sourceCaseDefinitionKeySelected$,
@@ -227,7 +230,7 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
       });
   }
 
-  migrate() {
+  public migrate(): void {
     this.errors$.next(null);
     combineLatest([
       this.sourceCaseDefinitionKeySelected$,
@@ -334,6 +337,4 @@ export class CaseMigrationComponent implements OnInit, OnDestroy {
       )
       .sort((left, right) => left.content.localeCompare(right.content));
   }
-
-  protected readonly CARBON_THEME = 'g10';
 }

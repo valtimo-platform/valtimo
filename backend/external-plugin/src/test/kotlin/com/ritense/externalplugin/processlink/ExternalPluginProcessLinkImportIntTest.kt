@@ -25,6 +25,8 @@ import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
+import com.ritense.externalplugin.processlink.web.dto.ExternalPluginProcessLinkExportResponseDto
+import com.ritense.externalplugin.processlink.web.dto.ExternalPluginProcessLinkResponseDto
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
@@ -33,9 +35,11 @@ import com.ritense.importer.ImportRequest
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.processlink.importer.ProcessLinkImporter
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.UUID
@@ -48,7 +52,42 @@ class ExternalPluginProcessLinkImportIntTest @Autowired constructor(
     private val definitionRepository: ExternalPluginDefinitionRepository,
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val repositoryService: OperatonRepositoryService,
+    private val entityManager: EntityManager,
+    private val jdbcTemplate: JdbcTemplate,
+    private val processLinkMapper: ExternalPluginProcessLinkMapper,
 ) : BaseIntegrationTest() {
+
+    @Test
+    fun `NULL action_result_mappings reads as an empty list`() {
+        val configuration = seedConfiguration()
+        val sourceConfigurationId = UUID.randomUUID()
+        processLinkImporter.import(
+            ImportRequest(
+                "/process-link/$PROCESS_DEFINITION_KEY.process-link.json",
+                fixture(sourceConfigurationId).toByteArray(Charsets.UTF_8),
+                null,
+                null,
+                null,
+                null,
+                mapOf(sourceConfigurationId to configuration.id),
+            )
+        )
+        val processLink = requireNotNull(
+            processLinkRepository.findByProcessDefinitionId(getLatestProcessDefinition()).singleOrNull()
+        )
+        entityManager.flush()
+        jdbcTemplate.update("UPDATE process_link SET action_result_mappings = NULL WHERE id = ?", processLink.id)
+        entityManager.clear()
+
+        val loaded = processLinkRepository.findById(processLink.id).orElseThrow()
+
+        val responseDto = processLinkMapper.toProcessLinkResponseDto(loaded) as ExternalPluginProcessLinkResponseDto
+        val exportDto = processLinkMapper.toProcessLinkExportResponseDto(loaded) as ExternalPluginProcessLinkExportResponseDto
+
+        assertThat(loaded.actionResultMappings).isEmpty()
+        assertThat(responseDto.actionResultMappings).isEmpty()
+        assertThat(exportDto.actionResultMappings).isEmpty()
+    }
 
     @Test
     fun `import maps a FIXED external plugin link to the seeded configuration`() {

@@ -1,0 +1,94 @@
+{
+    "title": "Twee bouwstenen toevoegen \u2014 beide vormen van een overname",
+    "key": "verhuizing-bouwstenen-toevoegen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "bouwstenen"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "verhuizing-inspectie",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/aanvragerNaam",
+                    "source": "doc:/aanvrager/naam"
+                },
+                {
+                    "target": "doc:/nieuwAdres",
+                    "source": "doc:/nieuwAdres"
+                },
+                {
+                    "target": "doc:/inspectieStatus",
+                    "source": "doc:/status"
+                },
+                {
+                    "target": "doc:/aantalKamers",
+                    "source": "doc:/aantalPersonen",
+                    "targetType": "integer"
+                }
+            ],
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing",
+                    "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+                    "mapActivities": {
+                        "beoordelen_verhuizing": "InspectieUitvoerenTask"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        },
+        {
+            "buildingBlockKey": "inspectie-fotos",
+            "buildingBlockVersionTag": "1.0.0",
+            "processMigration": [
+                {
+                    "sourceProcessDefinitionKey": "verhuizing-nazorg",
+                    "targetProcessDefinitionKey": "inspectie-fotos-process",
+                    "mapActivities": {
+                        "nazorg_uitvoeren": "FotosUploadenTask"
+                    },
+                    "setProcessVariables": [],
+                    "skipCustomListeners": false,
+                    "skipIoMappings": false
+                }
+            ]
+        }
+    ]
+}

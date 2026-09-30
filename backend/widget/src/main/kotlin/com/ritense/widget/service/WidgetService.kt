@@ -54,18 +54,19 @@ class WidgetService(
         widgetRepository.findById(id).getOrNull()
 
     fun filterWidgetsOnDisplayConditions(widgets: List<Widget>, properties: Map<String, Any>): List<Widget> {
-        return widgets.filter { widget ->
-            val widgetConditionValuePaths = mutableSetOf<String>()
-            widgets.forEach { widget ->
-                widget.displayConditions.forEach {
-                    it.isValid { valuePath -> widgetConditionValuePaths.add(valuePath) }
-                }
+        val conditionValuePaths = mutableSetOf<String>()
+        widgets.forEach { widget ->
+            widget.displayConditions.forEach {
+                it.isValid { valuePath -> conditionValuePaths.add(valuePath) }
             }
+        }
+
+        return widgets.filter { widget ->
             val resolvedValuePaths = valueResolverService.resolveValues(
                 properties + mapOf(
                     WIDGET_KEY to widget.key,
                 ),
-                widgetConditionValuePaths
+                conditionValuePaths
             )
 
             widget.displayConditions.all {
@@ -78,6 +79,21 @@ class WidgetService(
 
     fun getById(id: UUID): Widget =
         findById(id) ?: error("Widget $id not found")
+
+    /** Widget key to the id of the upstream request it needs. */
+    fun dataGroupIds(widgets: List<Widget>, properties: Map<String, Any>): Map<String, String> {
+        val byKey = widgets.associateBy { it.key }
+        return dataGroupIds(byKey.keys) { widgetKey ->
+            val widget = byKey.getValue(widgetKey)
+            WidgetDataDependencies(
+                dependencies = valueResolverService.resolverDependencies(
+                    properties + mapOf(WIDGET_KEY to widgetKey),
+                    widget.getUnresolvedValues()
+                ),
+                paged = widget.isPaged(),
+            )
+        }
+    }
 
     fun getWidgetData(widget: Widget, properties: Map<String, Any>): Any? {
         return runWithoutAuthorization {
