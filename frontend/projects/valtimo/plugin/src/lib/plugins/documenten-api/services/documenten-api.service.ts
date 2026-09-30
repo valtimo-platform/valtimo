@@ -22,13 +22,19 @@ import {ConfigService} from '@valtimo/shared';
 import {DocumentenApiManagementAllVersions, DocumentenApiVersionDetails} from '../models';
 
 const OBJECT_INFORMATIE_OBJECT_ACTIONS = ['link-document-to-object', 'delete-document-link'];
+const TREFWOORDEN_ACTIONS = ['add-document-trefwoord'];
 
 export function documentenApiActionFilterFunction(
   pluginConfigurationProperties: {[key: string]: any},
   functionKey: string,
   injector: Injector
 ): Observable<boolean> {
-  if (!OBJECT_INFORMATIE_OBJECT_ACTIONS.includes(functionKey)) {
+  const requiredVersionFlag = OBJECT_INFORMATIE_OBJECT_ACTIONS.includes(functionKey)
+    ? 'supportsObjectInformatieObjecten'
+    : TREFWOORDEN_ACTIONS.includes(functionKey)
+      ? 'supportsTrefwoorden'
+      : null;
+  if (!requiredVersionFlag) {
     return of(true);
   }
   const apiVersion = pluginConfigurationProperties['apiVersion'] as string | undefined;
@@ -38,7 +44,7 @@ export function documentenApiActionFilterFunction(
   const documentenApiService = injector.get(DocumentenApiService);
   return documentenApiService
     .getVersionDetails(apiVersion)
-    .pipe(map(details => details?.supportsObjectInformatieObjecten === true));
+    .pipe(map(details => details?.[requiredVersionFlag] === true));
 }
 
 @Injectable({

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_InspectieFotos" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0">
+  <bpmn:collaboration id="Collaboration_InspectieFotos">
+    <bpmn:participant id="InspectieFotosParticipant" name="Inspectiefoto's" processRef="inspectie-fotos-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="inspectie-fotos-process" name="Inspectiefoto's proces" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start foto's">
+      <bpmn:outgoing>Flow_Start_To_Uploaden</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="FotosUploadenTask" name="Foto's uploaden">
+      <bpmn:incoming>Flow_Start_To_Uploaden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Uploaden_To_Registreren</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="RegistreerFotoStatusTask" name="Registreer fotostatus" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/fotoStatus', 'compleet')}">
+      <bpmn:incoming>Flow_Uploaden_To_Registreren</bpmn:incoming>
+      <bpmn:outgoing>Flow_Registreren_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent" name="Foto's afgerond">
+      <bpmn:incoming>Flow_Registreren_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Uploaden" sourceRef="StartEvent" targetRef="FotosUploadenTask" />
+    <bpmn:sequenceFlow id="Flow_Uploaden_To_Registreren" sourceRef="FotosUploadenTask" targetRef="RegistreerFotoStatusTask" />
+    <bpmn:sequenceFlow id="Flow_Registreren_To_End" sourceRef="RegistreerFotoStatusTask" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_InspectieFotos">
+      <bpmndi:BPMNShape id="InspectieFotosParticipant_di" bpmnElement="InspectieFotosParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="620" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="212" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="203" y="175" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FotosUploadenTask_di" bpmnElement="FotosUploadenTask">
+        <dc:Bounds x="300" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RegistreerFotoStatusTask_di" bpmnElement="RegistreerFotoStatusTask">
+        <dc:Bounds x="460" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="622" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="603" y="175" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Uploaden_di" bpmnElement="Flow_Start_To_Uploaden">
+        <di:waypoint x="248" y="150" />
+        <di:waypoint x="300" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Uploaden_To_Registreren_di" bpmnElement="Flow_Uploaden_To_Registreren">
+        <di:waypoint x="400" y="150" />
+        <di:waypoint x="460" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Registreren_To_End_di" bpmnElement="Flow_Registreren_To_End">
+        <di:waypoint x="560" y="150" />
+        <di:waypoint x="622" y="150" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
