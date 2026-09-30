@@ -16,7 +16,6 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
 import {DocumentService} from '@valtimo/document';
 import {TextWidget, WidgetAction, WidgetLayoutService, WidgetTextComponent} from '@valtimo/layout';
 import {ButtonModule} from 'carbon-components-angular';
@@ -49,11 +48,10 @@ export class CaseWidgetTextComponent extends WidgetProcess implements OnInit {
 
   constructor(
     protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
     private readonly widgetsService: WidgetsService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {
-    super(documentService, permissionService);
+    super(documentService);
   }
 
   /**
