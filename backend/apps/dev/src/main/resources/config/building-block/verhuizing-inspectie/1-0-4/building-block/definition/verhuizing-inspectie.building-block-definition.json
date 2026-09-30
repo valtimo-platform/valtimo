@@ -1,0 +1,8 @@
+{
+    "key": "verhuizing-inspectie",
+    "name": "Verhuizing inspectie",
+    "description": "Koppelt de geneste fotobouwsteen op 1.0.1 en heeft bewust GEEN eigen migratieplan, zodat deze ketenstap alleen een verhuizing naar de nieuwe versie is.",
+    "versionTag": "1.0.4",
+    "basedOnVersionTag": "1.0.3",
+    "final": false
+}

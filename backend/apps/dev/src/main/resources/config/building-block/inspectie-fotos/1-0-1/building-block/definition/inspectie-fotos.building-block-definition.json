@@ -1,0 +1,8 @@
+{
+    "key": "inspectie-fotos",
+    "name": "Inspectiefoto's",
+    "description": "Legt de foto's van een woninginspectie vast. Versie 1.0.1 hernoemt de uploadtaak naar een controletaak, zodat de migratie van een geneste bouwsteen een activity mapping nodig heeft.",
+    "versionTag": "1.0.1",
+    "basedOnVersionTag": "1.0.0",
+    "final": false
+}

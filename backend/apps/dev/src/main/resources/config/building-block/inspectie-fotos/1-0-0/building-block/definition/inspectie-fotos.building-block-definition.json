@@ -1,0 +1,7 @@
+{
+    "key": "inspectie-fotos",
+    "name": "Inspectiefoto's",
+    "description": "Legt de foto's van een woninginspectie vast. Wordt als geneste bouwsteen aangeroepen vanuit de inspectiebouwsteen, zodat een zaak met een lopende bouwsteen die zelf weer een lopende bouwsteen heeft getest kan worden.",
+    "versionTag": "1.0.0",
+    "final": false
+}
