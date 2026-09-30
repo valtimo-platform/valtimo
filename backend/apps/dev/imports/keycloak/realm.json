@@ -108,6 +108,15 @@
         "attributes": {}
       },
       {
+        "id": "7e2a6c18-4b35-4d21-9f08-3c5e1a7d9b42",
+        "name": "ROLE_DEPLOYER",
+        "description": "Import and export case definitions through the deployer API",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "valtimo",
+        "attributes": {}
+      },
+      {
         "id": "45d34171-3c2e-45e9-8da2-a093603329ab",
         "name": "ROLE_EXTRA4",
         "description": "",
@@ -887,8 +896,7 @@
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
-        "ROLE_ADMIN",
-        "ROLE_USER",
+        "ROLE_DEPLOYER",
         "default-roles-valtimo"
       ],
       "clientRoles": {},

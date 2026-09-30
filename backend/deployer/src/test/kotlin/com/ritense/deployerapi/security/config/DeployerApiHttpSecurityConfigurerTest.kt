@@ -23,6 +23,8 @@ import com.ritense.deployerapi.web.rest.DeployerOpenApiResource
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
@@ -42,6 +44,7 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest(classes = [DeployerApiHttpSecurityConfigurerTest.TestConfiguration::class])
@@ -63,6 +66,8 @@ class DeployerApiHttpSecurityConfigurerTest {
         mockMvc.perform(get(CASE_DEFINITION_URL)).andExpect(status().isForbidden)
         mockMvc.perform(get(EXPORT_URL)).andExpect(status().isForbidden)
         mockMvc.perform(post(IMPORT_URL)).andExpect(status().isForbidden)
+        mockMvc.perform(get(DANGLING_URL)).andExpect(status().isForbidden)
+        mockMvc.perform(put(MAPPINGS_URL)).andExpect(status().isForbidden)
         mockMvc.perform(get(OPENAPI_URL)).andExpect(status().isForbidden)
     }
 
@@ -70,6 +75,15 @@ class DeployerApiHttpSecurityConfigurerTest {
     @WithMockUser(authorities = ["ROLE_ADMIN"])
     fun `should allow a caller with the admin role`() {
         mockMvc.perform(get(CASE_DEFINITION_URL)).andExpect(status().isOk)
+        mockMvc.perform(get(DANGLING_URL)).andExpect(status().isOk)
+        mockMvc.perform(get(OPENAPI_URL)).andExpect(status().isFound)
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_DEPLOYER"])
+    fun `should allow a caller with only the deployer role`() {
+        mockMvc.perform(get(CASE_DEFINITION_URL)).andExpect(status().isOk)
+        mockMvc.perform(get(DANGLING_URL)).andExpect(status().isOk)
         mockMvc.perform(get(OPENAPI_URL)).andExpect(status().isFound)
     }
 
@@ -97,6 +111,7 @@ class DeployerApiHttpSecurityConfigurerTest {
             exportService,
             importService,
             caseDefinitionRepository,
+            emptyList(),
         )
 
         @Bean
@@ -111,8 +126,11 @@ class DeployerApiHttpSecurityConfigurerTest {
         @Bean
         fun importService(): ImportService = mock()
 
+        // Existing case definition — otherwise the dangling endpoint answers 404 and hides the 200
         @Bean
-        fun caseDefinitionRepository(): CaseDefinitionRepository = mock()
+        fun caseDefinitionRepository(): CaseDefinitionRepository = mock {
+            on { existsById(any()) } doReturn true
+        }
 
         // Mirrors how the host application composes HttpSecurityConfigurer beans
         @Bean
@@ -132,6 +150,10 @@ class DeployerApiHttpSecurityConfigurerTest {
         private const val CASE_DEFINITION_URL = "/api/deployer/v1/case-definition"
         private const val EXPORT_URL = "/api/deployer/v1/case-definition/my-case/version/1.0.0/export"
         private const val IMPORT_URL = "/api/deployer/v1/case-definition/import"
+        private const val DANGLING_URL =
+            "/api/deployer/v1/case-definition/my-case/version/1.0.0/dangling-plugin-configurations"
+        private const val MAPPINGS_URL =
+            "/api/deployer/v1/case-definition/my-case/version/1.0.0/plugin-configuration-mappings"
         private const val OPENAPI_URL = "/api/deployer/v1/openapi.json"
     }
 }

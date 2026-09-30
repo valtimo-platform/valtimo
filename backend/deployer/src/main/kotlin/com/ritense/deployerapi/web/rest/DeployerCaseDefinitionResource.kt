@@ -17,6 +17,7 @@
 package com.ritense.deployerapi.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.CaseDefinitionImportResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
@@ -25,11 +26,11 @@ import com.ritense.deployerapi.web.rest.dto.ImportRequestDto
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.importer.ImportService
-import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.ritense.valtimo.contract.plugin.DanglingPluginConfigurationDto
+import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -39,12 +40,14 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -54,6 +57,7 @@ class DeployerCaseDefinitionResource(
     private val exportService: ExportService,
     private val importService: ImportService,
     private val caseDefinitionRepository: CaseDefinitionRepository,
+    private val pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
 ) {
 
     @GetMapping("/case-definition")
@@ -124,23 +128,69 @@ class DeployerCaseDefinitionResource(
         @RequestParam("key", required = false) key: String?,
         @RequestParam("name", required = false) name: String?,
     ): ResponseEntity<CaseDefinitionImportResponse> {
-        return try {
-            val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
-            val caseDefinitionId = importService.import(
-                body.file.inputStream(),
-                skipImportOfCaseDefinitions,
-                key,
-                name,
-            )
-            caseDefinitionService.setLatestToActiveIfNoneIsActive()
-            ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
-        } catch (exception: ImportServiceException) {
-            logger.info(exception) { "Import failed" }
-            ResponseEntity.badRequest().build()
-        }
+        val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
+        val caseDefinitionId = importService.import(
+            body.file.inputStream(),
+            skipImportOfCaseDefinitions,
+            key,
+            name,
+            body.pluginConfigurationMappings,
+        )
+        caseDefinitionService.setLatestToActiveIfNoneIsActive()
+        return ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
     }
 
-    companion object {
-        private val logger = KotlinLogging.logger {}
+    @GetMapping("/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/dangling-plugin-configurations")
+    @DeployerApiResponses
+    @ApiResponse(
+        responseCode = "200",
+        description = "OK",
+        content = [Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            array = ArraySchema(schema = Schema(implementation = DanglingPluginConfigurationDto::class))
+        )]
+    )
+    @RunWithoutAuthorization
+    fun getDanglingPluginConfigurations(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+    ): ResponseEntity<List<DanglingPluginConfigurationDto>> {
+        val caseDefinitionId = requireExistingCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+        if (pluginConfigurationMappingResolvers.isEmpty()) {
+            return ResponseEntity.ok(emptyList())
+        }
+        val dangling = pluginConfigurationMappingResolvers
+            .flatMap { it.getDanglingPluginConfigurations(caseDefinitionId) }
+        return ResponseEntity.ok(dangling)
+    }
+
+    @PutMapping(
+        "/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/plugin-configuration-mappings",
+        consumes = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    @DeployerApiResponses
+    @ApiResponse(responseCode = "204", description = "No Content")
+    @ApiResponse(responseCode = "501", description = "Not Implemented")
+    @RunWithoutAuthorization
+    fun resolvePluginConfigurationMappings(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @RequestBody mappings: Map<UUID, UUID>,
+    ): ResponseEntity<Void> {
+        val caseDefinitionId = requireExistingCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+        if (pluginConfigurationMappingResolvers.isEmpty()) {
+            return ResponseEntity.status(501).build()
+        }
+        pluginConfigurationMappingResolvers.forEach { it.resolve(caseDefinitionId, mappings) }
+        return ResponseEntity.noContent().build()
+    }
+
+    // Without this the resolvers answer "nothing to map" for a case definition that isn't there
+    private fun requireExistingCaseDefinition(key: String, versionTag: String): CaseDefinitionId {
+        val caseDefinitionId = CaseDefinitionId.of(key, versionTag)
+        if (!caseDefinitionRepository.existsById(caseDefinitionId)) {
+            throw UnknownCaseDefinitionException(caseDefinitionId)
+        }
+        return caseDefinitionId
     }
 }

@@ -34,6 +34,12 @@ import org.springframework.http.MediaType
             schema = Schema(implementation = ErrorResponseDto::class)
         )]
     ),
+    // Written by the security filter chain, which never produces an ErrorResponseDto
+    ApiResponse(
+        responseCode = "403",
+        description = "Forbidden — missing ROLE_DEPLOYER or ROLE_ADMIN. Body is not an ErrorResponseDto.",
+        content = [Content()]
+    ),
     ApiResponse(
         responseCode = "404",
         description = "Not Found",
