@@ -70,6 +70,7 @@
         * [Plugin logs](configuration-guides/plugins/external-plugins/plugin-logs.md)
         * [In cases and processes](configuration-guides/plugins/external-plugins/external-plugins-in-cases-and-processes.md)
         * [Troubleshooting](configuration-guides/plugins/external-plugins/troubleshooting.md)
+    * [Verzoek](configuration-guides/plugins/verzoek.md)
 * [📊 Dashboard](configuration-guides/dashboard/README.md)
     * [Widgets](configuration-guides/dashboard/widgets.md)
 * [🔏 Access control](configuration-guides/access-control/README.md)
