@@ -35,4 +35,6 @@ data class FieldsCaseWidgetDto(
     override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: FieldsWidgetProperties
-) : CaseWidgetTabWidgetDto
+) : CaseWidgetTabWidgetDto {
+    override var dataGroupId: String? = null
+}

@@ -40,6 +40,8 @@ data class FormIoCaseWidgetDto(
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: FormIoWidgetProperties
 ) : CaseWidgetTabWidgetDto {
+    override var dataGroupId: String? = null
+
     override fun validate(caseDefinitionId: CaseDefinitionId) {
         FormDefinitionExistsValidator.isValid(properties.formDefinitionName, caseDefinitionId)
     }

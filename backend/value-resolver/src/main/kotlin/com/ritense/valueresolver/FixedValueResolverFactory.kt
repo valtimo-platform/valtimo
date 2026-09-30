@@ -35,6 +35,9 @@ class FixedValueResolverFactory(
         return prefix
     }
 
+    // No external context — every caller shares one identity
+    override fun resolverCacheKey(properties: Map<String, Any>): Any = prefix
+
     override fun createResolver(
         processInstanceId: String,
         variableScope: VariableScope
