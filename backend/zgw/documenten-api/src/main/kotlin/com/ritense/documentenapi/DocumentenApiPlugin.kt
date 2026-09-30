@@ -221,7 +221,7 @@ class DocumentenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty processVariableName: String? = null
     ): String {
-        val documentUrl = resolveDownloadDocumentUrl(execution)
+        val documentUrl = resolveDocumentUrl(execution)
         val documentId = execution.getJsonSchemaDocumentId()
         val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
         val metaData = client.getInformatieObject(
@@ -249,6 +249,49 @@ class DocumentenApiPlugin(
         execution.setVariable(processVariableName ?: RESOURCE_ID_PROCESS_VAR, tempResourceId)
 
         return tempResourceId
+    }
+
+    @PluginAction(
+        key = "add-document-trefwoord",
+        title = "Add trefwoord to document",
+        description = "Adds a trefwoord (keyword) to an existing document in the Documenten API",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun addTrefwoordToDocument(
+        execution: DelegateExecution,
+        @PluginActionProperty trefwoord: String,
+    ) {
+        require(trefwoord.isNotBlank()) { "Failed to add trefwoord to document. Trefwoord may not be blank." }
+        requireTrefwoordenSupport()
+
+        val documentUrl = resolveDocumentUrl(execution)
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+
+        val informatieObject = getInformatieObject(documentUrl, caseDocumentId)
+        if (informatieObject.trefwoorden?.contains(trefwoord) == true) {
+            logger.info { "Trefwoord '$trefwoord' is already present on document with url '$documentUrl'. Skipping." }
+            return
+        }
+
+        val patchDocumentRequest = PatchDocumentRequest(
+            creatiedatum = informatieObject.creatiedatum,
+            titel = informatieObject.titel,
+            auteur = informatieObject.auteur,
+            status = informatieObject.status,
+            taal = informatieObject.taal,
+            bestandsnaam = informatieObject.bestandsnaam,
+            beschrijving = informatieObject.beschrijving,
+            ontvangstdatum = informatieObject.ontvangstdatum,
+            verzenddatum = informatieObject.verzenddatum,
+            indicatieGebruiksrecht = informatieObject.indicatieGebruiksrecht,
+            vertrouwelijkheidaanduiding = informatieObject.vertrouwelijkheidaanduiding?.key,
+            informatieobjecttype = informatieObject.informatieobjecttype,
+            trefwoorden = (informatieObject.trefwoorden ?: emptyList()) + trefwoord,
+        )
+
+        modifyInformatieObject(caseDocumentId, documentUrl, patchDocumentRequest)
+        logger.info { "Added trefwoord '$trefwoord' to document with url '$documentUrl'." }
     }
 
     @PluginAction(
@@ -428,6 +471,12 @@ class DocumentenApiPlugin(
         }
     }
 
+    private fun requireTrefwoordenSupport() {
+        require(documentenApiVersionService.getVersionByTag(apiVersion).supportsTrefwoorden) {
+            "Documenten API version '$apiVersion' does not support trefwoorden"
+        }
+    }
+
     @PluginEvent(invokedOn = [EventType.CREATE, EventType.UPDATE])
     fun onSave() {
         logger.info { "Documenten API plugin saved" }
@@ -436,12 +485,12 @@ class DocumentenApiPlugin(
         }
     }
 
-    private fun resolveDownloadDocumentUrl(execution: DelegateExecution): URI {
+    private fun resolveDocumentUrl(execution: DelegateExecution): URI {
         val documentUrlString = (execution.getVariable(DOCUMENT_URL_PROCESS_VAR) as String?)
             ?.takeIf { it.isNotBlank() }
         if (documentUrlString != null) {
             check(documentUrlString.startsWith(url.toASCIIString())) {
-                "Failed to download document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'."
+                "Failed to resolve document with url '$documentUrlString'. Document isn't part of Documenten API with url '$url'."
             }
             return URI(documentUrlString)
         }
@@ -451,7 +500,7 @@ class DocumentenApiPlugin(
             return createInformatieObjectUrl(documentId)
         }
         throw IllegalStateException(
-            "Failed to download document. No process variable '$DOCUMENT_URL_PROCESS_VAR' or '$DOCUMENT_ID_PROCESS_VAR' found."
+            "Failed to resolve document. No process variable '$DOCUMENT_URL_PROCESS_VAR' or '$DOCUMENT_ID_PROCESS_VAR' found."
         )
     }
 
