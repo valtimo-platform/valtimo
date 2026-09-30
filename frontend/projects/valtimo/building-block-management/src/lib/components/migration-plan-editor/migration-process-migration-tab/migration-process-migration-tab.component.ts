@@ -1,0 +1,375 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {CommonModule} from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
+import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {TranslateModule} from '@ngx-translate/core';
+import {Add16, ChevronDown16, ChevronUp16, TrashCan16, WarningFilled16} from '@carbon/icons';
+import {
+  ButtonModule,
+  CheckboxModule,
+  IconModule,
+  IconService,
+  SelectModule,
+} from 'carbon-components-angular';
+import {ProcessService} from '@valtimo/process';
+import {ValuePathSelectorPrefix} from '@valtimo/components';
+import {Subscription} from 'rxjs';
+import {
+  ActivityMappingRequest,
+  MigrationEditorApi,
+  MigrationEditorTestIds,
+  ProcessMigrationInstruction,
+  ValuePathContext,
+} from '../../../models';
+import {createProcessVariableGroup, serializeProcessVariables} from '../../../utils';
+import {MigrationActivityMappingComponent} from '../migration-activity-mapping/migration-activity-mapping.component';
+import {MigrationProcessVariablesComponent} from '../migration-process-variables/migration-process-variables.component';
+import {MigrationFlowNodeCacheService} from './migration-flow-node-cache.service';
+
+/** The `processMigration` component of a plan, for either blueprint type — the blueprint reaches it only through [api] and the two process maps. */
+@Component({
+  standalone: true,
+  selector: 'valtimo-migration-process-migration-tab',
+  templateUrl: './migration-process-migration-tab.component.html',
+  styleUrls: ['../styles/migration-tab.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [MigrationFlowNodeCacheService],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    ButtonModule,
+    CheckboxModule,
+    IconModule,
+    SelectModule,
+    MigrationActivityMappingComponent,
+    MigrationProcessVariablesComponent,
+  ],
+})
+export class MigrationProcessMigrationTabComponent implements OnInit, OnChanges, OnDestroy {
+  /** The migration API with this plan's blueprint bound — suggests and validates activity mappings. */
+  @Input() public api: MigrationEditorApi | null = null;
+
+  /** Document context for the `setProcessVariables` source selector — the same context the data-migration tab uses. The target is a plain `pv:` path. */
+  @Input() public sourceContext: ValuePathContext | null = null;
+
+  /** Scopes each side's process picker and drives its activity lookups, so activities come from the correct version's definition. `null` falls back to every deployed process. */
+  @Input() public sourceProcessDefinitions: Record<string, string> | null = null;
+  @Input() public targetProcessDefinitions: Record<string, string> | null = null;
+  /** Intro text above the instructions. Hosts that already explain the direction pass `null` to hide it. */
+  @Input() public descriptionKey: string | null = null;
+  /** What mapping activities means for this blueprint type — the one hint the two hosts word differently. */
+  @Input() public activityMappingHintKey: string | null = null;
+  /** What the `setProcessVariables` source picker may read — `case:` metadata is a case plan's alone. */
+  @Input() public sourcePrefixes: ValuePathSelectorPrefix[] = [ValuePathSelectorPrefix.DOC];
+  @Input() public testIds!: MigrationEditorTestIds;
+
+  @Input() public set instructions(value: ProcessMigrationInstruction[] | null | undefined) {
+    this.writeInstructions(value ?? []);
+  }
+
+  @Output() public readonly instructionsChange = new EventEmitter<ProcessMigrationInstruction[]>();
+
+  public processDefinitionKeys: string[] = [];
+
+  public readonly form = this.fb.group({
+    instructions: this.fb.array<FormGroup>([]),
+  });
+
+  private _lastEmitted = '[]';
+
+  private readonly _subscriptions = new Subscription();
+  private readonly _keyToLatestId = new Map<string, string>();
+  // A suggested plan carries one instruction per process of the blueprint, each with its own mapping, so collapsed is the default.
+  private readonly _expanded = new Set<FormGroup>();
+  private readonly _mappingRequests = new Map<FormGroup, ActivityMappingRequest>();
+  // Instructions whose author picked another process and has not had the suggestion for it yet.
+  private readonly _pendingSuggest = new Set<FormGroup>();
+
+  public get instructionsArray(): FormArray {
+    return this.form.get('instructions') as FormArray;
+  }
+
+  /** Handed to the variables child: its rows outlive it, since it is rebuilt on every expand. */
+  public get subscriptions(): Subscription {
+    return this._subscriptions;
+  }
+
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly iconService: IconService,
+    private readonly processService: ProcessService
+  ) {
+    this.iconService.registerAll([Add16, ChevronDown16, ChevronUp16, TrashCan16, WarningFilled16]);
+  }
+
+  public ngOnInit(): void {
+    this.processService.getProcessDefinitions().subscribe(definitions => {
+      const keys = new Set<string>();
+      definitions.forEach(definition => {
+        keys.add(definition.key);
+        // The endpoint returns the latest deployed version per key; keep its id for activity lookups.
+        this._keyToLatestId.set(definition.key, definition.id);
+      });
+      this.processDefinitionKeys = Array.from(keys).sort();
+      // Resolve instructions that were restored before the definitions were available.
+      this.instructionsArray.controls.forEach(control =>
+        this.requestMapping(control as FormGroup, false)
+      );
+      this.cdr.markForCheck();
+      // The process-definition <option>s only exist now, so re-sync the selects with their values.
+      this.reapplySelections();
+    });
+
+    this._subscriptions.add(this.form.valueChanges.subscribe(() => this.emit()));
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    // The scoping maps arrive asynchronously; re-resolve once the correct definition ids are known.
+    if (changes['sourceProcessDefinitions'] || changes['targetProcessDefinitions']) {
+      this.instructionsArray.controls.forEach(control =>
+        this.requestMapping(control as FormGroup, false)
+      );
+    }
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  /** What the instruction's activity mapping resolves against. A new object only when the ids change, so the child reloads only then. */
+  public mappingRequestFor(group: FormGroup): ActivityMappingRequest | null {
+    return this._mappingRequests.get(group) ?? null;
+  }
+
+  public isSuggestPending(group: FormGroup): boolean {
+    return this._pendingSuggest.has(group);
+  }
+
+  public mapActivitiesArray(group: FormGroup): FormArray {
+    return group.get('mapActivities') as FormArray;
+  }
+
+  public setProcessVariablesOf(group: FormGroup): FormArray {
+    return group.get('setProcessVariables') as FormArray;
+  }
+
+  /** The keys this picker offers: the blueprint-linked ones, plus the instruction's own stored key so a now-unlinked process still shows its selection. */
+  public processKeyOptions(group: FormGroup, side: 'source' | 'target'): string[] {
+    const scoped =
+      side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
+    const base = scoped ? Object.keys(scoped) : this.processDefinitionKeys;
+    const stored = group.get(`${side}ProcessDefinitionKey`)?.value;
+    return stored ? Array.from(new Set([...base, stored])) : Array.from(new Set(base));
+  }
+
+  /** Whether this instruction's body is shown. Collapsed unless the author opened it — see [_expanded]. */
+  public isExpanded(group: FormGroup): boolean {
+    return this._expanded.has(group);
+  }
+
+  public toggleExpanded(group: FormGroup): void {
+    if (!this._expanded.delete(group)) this._expanded.add(group);
+    this.cdr.markForCheck();
+  }
+
+  /** Whether this instruction still names no target process — the single thing holding Save. Reported on the card, which is where the fix is made. */
+  public isIncomplete(group: FormGroup): boolean {
+    return !group.get('targetProcessDefinitionKey')?.value;
+  }
+
+  /** What a collapsed instruction says about itself: a plain key when both sides agree, an arrow only when they differ. */
+  public summaryOf(group: FormGroup): string {
+    const source = group.get('sourceProcessDefinitionKey')?.value || '';
+    const target = group.get('targetProcessDefinitionKey')?.value || '';
+    if (!source && !target) return '';
+    if (source === target) return source;
+    return `${source || '–'} → ${target || '–'}`;
+  }
+
+  public addInstruction(): void {
+    const group = this.createInstructionGroup();
+    // Opened on purpose: a new instruction has no summary, so collapsed it would be an unlabelled empty row.
+    this._expanded.add(group);
+    this.instructionsArray.push(group);
+  }
+
+  public removeInstruction(index: number): void {
+    const group = this.instructionsArray.at(index) as FormGroup;
+    this._expanded.delete(group);
+    this._mappingRequests.delete(group);
+    this._pendingSuggest.delete(group);
+    this.instructionsArray.removeAt(index);
+  }
+
+  /** The mapping child applied a suggestion, which its `emitEvent: false` writes kept from the form's own `valueChanges`. */
+  public onMappingsChange(): void {
+    this.emit();
+  }
+
+  /** Spend the suggestion once tried: the child is rebuilt on every expand, and a still-pending one would overwrite the author's rows. A failed try with no rows to overwrite stays pending, so the next expand retries it. */
+  public onSuggestSettled(group: FormGroup, applied: boolean): void {
+    if (applied || this.mapActivitiesArray(group).length > 0) this._pendingSuggest.delete(group);
+  }
+
+  private createInstructionGroup(instruction?: ProcessMigrationInstruction): FormGroup {
+    const group = this.fb.group({
+      sourceProcessDefinitionKey: this.fb.control(instruction?.sourceProcessDefinitionKey ?? ''),
+      targetProcessDefinitionKey: this.fb.control(instruction?.targetProcessDefinitionKey ?? ''),
+      mapActivities: this.fb.array<FormGroup>(
+        Object.entries(instruction?.mapActivities ?? {}).map(([source, target]) =>
+          this.fb.group({source: this.fb.control(source), target: this.fb.control(target)})
+        )
+      ),
+      setProcessVariables: this.fb.array<FormGroup>(
+        (instruction?.setProcessVariables ?? []).map(patch =>
+          createProcessVariableGroup(this.fb, this._subscriptions, patch)
+        )
+      ),
+      skipCustomListeners: this.fb.control(instruction?.skipCustomListeners ?? false),
+      skipIoMappings: this.fb.control(instruction?.skipIoMappings ?? false),
+    });
+
+    const sourceControl = group.get('sourceProcessDefinitionKey')!;
+    const targetControl = group.get('targetProcessDefinitionKey')!;
+
+    // A new source/target process reloads the selectable activities and re-suggests the mapping.
+    this._subscriptions.add(
+      sourceControl.valueChanges.subscribe(value => {
+        // Migrating a process to a new version of itself is the common case, so mirror the source onto an empty target — but only where the target side offers that key. In a building-block entry the two sides are different blueprints, and mirroring would leave the owner's process in the target picker.
+        if (value && !targetControl.value && this.isTargetProcessKey(value)) {
+          targetControl.setValue(value);
+        } else this.requestMapping(group, true);
+      })
+    );
+    this._subscriptions.add(
+      targetControl.valueChanges.subscribe(() => this.requestMapping(group, true))
+    );
+    // Only the author's edits reach here — suggestions write with `emitEvent: false` — and a pending suggestion must not overwrite them.
+    this._subscriptions.add(
+      group.get('mapActivities')!.valueChanges.subscribe(() => this._pendingSuggest.delete(group))
+    );
+
+    return group;
+  }
+
+  /** Hand the mapping child a fresh request when the ids changed. [suggest] separates the author picking another process, which replaces the rows, from a plan being restored, which keeps them. */
+  private requestMapping(group: FormGroup, suggest: boolean): void {
+    if (suggest) this._pendingSuggest.add(group);
+
+    const request: ActivityMappingRequest = {
+      sourceProcessDefinitionId: this.definitionIdFor(group, 'source') ?? null,
+      targetProcessDefinitionId: this.definitionIdFor(group, 'target') ?? null,
+    };
+    const current = this._mappingRequests.get(group);
+    // Same ids and nothing to suggest: keep the reference, or the child reloads for nothing.
+    if (!suggest && current && this.isSameRequest(current, request)) return;
+
+    this._mappingRequests.set(group, request);
+    this.cdr.markForCheck();
+  }
+
+  private isSameRequest(a: ActivityMappingRequest, b: ActivityMappingRequest): boolean {
+    return (
+      a.sourceProcessDefinitionId === b.sourceProcessDefinitionId &&
+      a.targetProcessDefinitionId === b.targetProcessDefinitionId
+    );
+  }
+
+  private definitionIdFor(group: FormGroup, side: 'source' | 'target'): string | undefined {
+    const key = group.get(`${side}ProcessDefinitionKey`)?.value;
+    const scoped =
+      side === 'source' ? this.sourceProcessDefinitions : this.targetProcessDefinitions;
+    return scoped?.[key] ?? this._keyToLatestId.get(key);
+  }
+
+  /** Whether the target side offers [key]. A null scope is every deployed process, so anything the source offers is a target too. */
+  private isTargetProcessKey(key: string): boolean {
+    return !this.targetProcessDefinitions || key in this.targetProcessDefinitions;
+  }
+
+  /** Carbon's `cds-select` only writes the native value in its setter, so a value set before its options exist is never reflected — re-write it once they have rendered. The mapping selects are the child's own to re-sync. */
+  private reapplySelections(): void {
+    setTimeout(() => {
+      this.instructionsArray.controls.forEach(control => {
+        const group = control as FormGroup;
+        ['sourceProcessDefinitionKey', 'targetProcessDefinitionKey'].forEach(name =>
+          group.get(name)?.setValue(group.get(name)?.value, {emitEvent: false})
+        );
+      });
+      this.cdr.markForCheck();
+    });
+  }
+
+  private emit(): void {
+    const instructions = this.serialize();
+    this._lastEmitted = JSON.stringify(instructions);
+    this.instructionsChange.emit(instructions);
+  }
+
+  private serialize(): ProcessMigrationInstruction[] {
+    return this.instructionsArray.controls.map(control => {
+      const group = control as FormGroup;
+
+      const mapActivities: {[source: string]: string} = {};
+      this.mapActivitiesArray(group).controls.forEach(row => {
+        const source = row.get('source')?.value;
+        const target = row.get('target')?.value;
+        if (source && target) mapActivities[source] = target;
+      });
+
+      return {
+        sourceProcessDefinitionKey: group.get('sourceProcessDefinitionKey')?.value ?? '',
+        targetProcessDefinitionKey: group.get('targetProcessDefinitionKey')?.value ?? '',
+        mapActivities,
+        setProcessVariables: serializeProcessVariables(this.setProcessVariablesOf(group)),
+        skipCustomListeners: !!group.get('skipCustomListeners')?.value,
+        skipIoMappings: !!group.get('skipIoMappings')?.value,
+      };
+    });
+  }
+
+  private writeInstructions(instructions: ProcessMigrationInstruction[]): void {
+    // Ignore the echo of our own emission to avoid rebuilding the form on every keystroke.
+    if (JSON.stringify(instructions) === this._lastEmitted) return;
+
+    // The groups below are new instances, so anything still held here refers to a form that no longer exists.
+    this._expanded.clear();
+    this._mappingRequests.clear();
+    this._pendingSuggest.clear();
+    this.instructionsArray.clear({emitEvent: false});
+    instructions.forEach(instruction => {
+      const group = this.createInstructionGroup(instruction);
+      this.instructionsArray.push(group, {emitEvent: false});
+      this.requestMapping(group, false);
+    });
+    this._lastEmitted = JSON.stringify(this.serialize());
+  }
+}

@@ -270,14 +270,6 @@ const MENU_ITEM_CATALOG: MenuItemCatalogEntry[] = [
     category: 'admin',
   },
   {
-    itemId: 'caseMigration',
-    defaultTitleKey: 'Case migration (beta)',
-    link: '/case-migration',
-    roles: [ROLE_ADMIN],
-    placement: 'admin',
-    category: 'admin',
-  },
-  {
     itemId: 'processMigration',
     defaultTitleKey: 'Process migration',
     link: '/process-migration',

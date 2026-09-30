@@ -166,6 +166,12 @@ interface ProcessDefinitionXml {
   autofilledElements?: AutofilledElement[];
 }
 
+interface FlowNodeMigration {
+  sourceFlowNodeMap: {[activityId: string]: string};
+  targetFlowNodeMap: {[activityId: string]: string};
+  uniqueFlowNodeMap: {[activityId: string]: string};
+}
+
 interface SkippableTimer {
   jobId: string;
   activityId: string | null;
@@ -185,6 +191,7 @@ export {
   ProcessInstanceTaskAssignee,
   IdentityLink,
   ProcessDefinitionXml,
+  FlowNodeMigration,
   SkippableTimer,
   AutofilledElement,
 };
