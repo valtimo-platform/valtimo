@@ -1,0 +1,51 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// `contents` — out of the box tree, so `.migration-plan-editor` still sizes against the routed host.
+:host {
+  display: contents;
+}
+
+.migration-plan-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-self: flex-end;
+    gap: var(--cds-spacing-05);
+  }
+
+  // Error red rather than warning yellow, because this one blocks Save. The inner path is the glyph on the disc, so it is painted back to the layer colour.
+  &__tab-warning {
+    display: inline-flex;
+    margin-left: var(--cds-spacing-02);
+    vertical-align: middle;
+    fill: var(--cds-support-error);
+
+    ::ng-deep [data-icon-path='inner-path'] {
+      fill: var(--cds-layer);
+      opacity: 1;
+    }
+  }
+}
+
+// Carbon paints a contained tab's panel with `$layer` via `.cds--tabs--contained ~ .cds--tab-content`, a sibling rule the Angular markup never matches (the panel sits inside `cds-tab`). Restore it, so the panel joins the selected tab. Same as the other routed editors.
+:host ::ng-deep .cds--tab-content {
+  background-color: var(--cds-layer);
+}

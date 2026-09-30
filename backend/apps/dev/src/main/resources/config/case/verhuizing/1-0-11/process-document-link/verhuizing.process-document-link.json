@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "verhuizing",
+        "canInitializeDocument": true,
+        "startableByUser": false
+    }
+]
