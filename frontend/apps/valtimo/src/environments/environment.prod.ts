@@ -45,8 +45,7 @@ export const environment: ValtimoConfig = {
 
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 18},
           {link: ['/logging'], title: 'Logs', sequence: 19},
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 20},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 21},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 20},
         ],
       },
       {

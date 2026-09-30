@@ -1,0 +1,38 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Foto's uploaden",
+            "content": "Upload de foto's van de inspectie.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aantalFotos",
+            "type": "number",
+            "input": true,
+            "label": "Aantal foto's",
+            "tableView": true,
+            "defaultValue": 3
+        },
+        {
+            "key": "toelichting",
+            "type": "textfield",
+            "input": true,
+            "label": "Toelichting",
+            "tableView": true,
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Foto's afronden",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}
