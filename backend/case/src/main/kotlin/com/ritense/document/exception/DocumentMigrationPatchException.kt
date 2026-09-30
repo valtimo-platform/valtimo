@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.ritense.document.exception
 
 import com.ritense.document.domain.DocumentMigrationConflict
 import com.ritense.document.domain.DocumentMigrationPatch
 
+@Deprecated(
+    "Part of the 'Case migration (beta)' admin screen, which has been replaced by the case " +
+        "definition migration feature. Will be removed in a future release."
+)
 class DocumentMigrationPatchException(
     val patch: DocumentMigrationPatch,
     cause: Throwable

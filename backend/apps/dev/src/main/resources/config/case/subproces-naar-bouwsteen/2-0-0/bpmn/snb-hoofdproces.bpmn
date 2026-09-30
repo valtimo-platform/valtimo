@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  id="Definitions_snb_hoofdproces_2_0_0" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="snb-hoofdproces" name="Hoofdproces" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start">
+      <bpmn:outgoing>Flow_Start_To_Call</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Call" sourceRef="StartEvent" targetRef="CallBehandeling" />
+    <!-- Same activity, same called process key — what changed is who owns the process behind it. -->
+    <bpmn:callActivity id="CallBehandeling" name="Behandeling (bouwsteen)" calledElement="snb-behandeling"
+                       camunda:calledElementBinding="versionTag"
+                       camunda:calledElementVersionTag="BB:snb-behandeling-bouwsteen:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Start_To_Call</bpmn:incoming>
+      <bpmn:outgoing>Flow_Call_To_End</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_Call_To_End" sourceRef="CallBehandeling" targetRef="EndEvent" />
+    <bpmn:endEvent id="EndEvent" name="Klaar">
+      <bpmn:incoming>Flow_Call_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

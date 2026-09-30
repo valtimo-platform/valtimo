@@ -103,25 +103,18 @@ export const devToolRoutes: Routes = [
     path: 'form-io',
     canActivate: [AuthGuardService],
     data: {title: 'Valtimo - Form.io V.3.27.1'},
-    loadComponent: () =>
-      import('./form-io/form-io.component').then(module => module.FormioComponent),
+    component: FormioComponent,
   },
   {
     path: 'upload-showcase',
     canActivate: [AuthGuardService],
     data: {title: 'Upload - Showcase'},
-    loadComponent: () =>
-      import('./upload-showcase/upload-showcase.component').then(
-        module => module.UploadShowcaseComponent
-      ),
+    component: UploadShowcaseComponent,
   },
   {
     path: 'notification-test',
     canActivate: [AuthGuardService],
     data: {title: 'Notification test'},
-    loadComponent: () =>
-      import('./notification-test/notification-test.component').then(
-        module => module.NotificationTestComponent
-      ),
+    component: NotificationTestComponent,
   },
 ];

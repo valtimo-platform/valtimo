@@ -1,0 +1,118 @@
+{
+    "title": "Alle conditie-operatoren en elke vorm van hun waarde",
+    "key": "verhuizing-condities-operators",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.0"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "operators"
+        },
+        {
+            "path": "doc:/migratedFrom",
+            "operator": "!=",
+            "value": "1.0.0"
+        },
+        {
+            "path": "doc:/aanvrager/naam",
+            "operator": "exists"
+        },
+        {
+            "path": "doc:/aanvrager/naam",
+            "operator": "exists",
+            "value": true
+        },
+        {
+            "path": "doc:/aanvrager/emailadres",
+            "operator": "exists",
+            "value": false
+        },
+        {
+            "path": "doc:/status",
+            "operator": "in",
+            "value": [
+                "ingediend",
+                "in_behandeling",
+                "spoed-behandeling"
+            ]
+        },
+        {
+            "path": "doc:/status",
+            "operator": "in",
+            "value": "ingediend, in_behandeling, spoed-behandeling"
+        },
+        {
+            "path": "doc:/aanvrager/naam",
+            "operator": "contains",
+            "value": "e"
+        },
+        {
+            "path": "doc:/documenten",
+            "operator": "contains",
+            "value": "paspoort"
+        },
+        {
+            "path": "doc:/aantalPersonen",
+            "operator": ">=",
+            "value": 0
+        },
+        {
+            "path": "doc:/aantalPersonen",
+            "operator": "<=",
+            "value": 10
+        },
+        {
+            "path": "doc:/oppervlakte",
+            "operator": "<",
+            "value": 1000
+        },
+        {
+            "path": "case:sequence",
+            "operator": ">",
+            "value": 0
+        },
+        {
+            "path": "case:definitionId.versionTag",
+            "operator": "==",
+            "value": "1.0.0"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/aanvrager/email",
+            "source": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/aanvrager/emailadres"
+        },
+        {
+            "target": "doc:/woning/oppervlakte",
+            "source": "doc:/oppervlakte",
+            "targetType": "number"
+        },
+        {
+            "target": "doc:/documenten"
+        },
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.0",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

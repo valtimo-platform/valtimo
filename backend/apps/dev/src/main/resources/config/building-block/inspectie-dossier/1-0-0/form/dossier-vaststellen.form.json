@@ -1,0 +1,59 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Dossier vaststellen",
+            "content": "Controleer het inspectiedossier en stel het vast.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aantalBijlagen",
+            "type": "number",
+            "input": true,
+            "label": "Aantal bijlagen",
+            "tableView": true,
+            "defaultValue": 3
+        },
+        {
+            "key": "dossierKwaliteit",
+            "type": "select",
+            "input": true,
+            "label": "Dossierkwaliteit",
+            "tableView": true,
+            "data": {
+                "values": [
+                    {
+                        "label": "Goed",
+                        "value": "goed"
+                    },
+                    {
+                        "label": "Onvoldoende",
+                        "value": "onvoldoende"
+                    }
+                ]
+            },
+            "dataSrc": "values",
+            "defaultValue": "goed"
+        },
+        {
+            "key": "toelichting",
+            "type": "textfield",
+            "input": true,
+            "label": "Toelichting",
+            "tableView": true,
+            "applyMaskOn": "change"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Dossier vaststellen",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

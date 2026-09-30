@@ -24,6 +24,7 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
 import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
 import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
 import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
+import {AddDocumentTrefwoordConfigurationComponent} from './components/add-document-trefwoord/add-document-trefwoord-configuration.component';
 import {documentenApiActionFilterFunction} from './services';
 
 const documentenApiPluginSpecification: PluginSpecification = {
@@ -38,6 +39,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'link-document-to-object': LinkDocumentToObjectConfigurationComponent,
     'delete-document-link': DeleteDocumentLinkConfigurationComponent,
     'get-audit-trail': GetAuditTrailConfigurationComponent,
+    'add-document-trefwoord': AddDocumentTrefwoordConfigurationComponent,
   },
   functionConfigurationComponentsFilter: documentenApiActionFilterFunction,
   pluginTranslations: {
@@ -150,6 +152,14 @@ const documentenApiPluginSpecification: PluginSpecification = {
       auditTrailProcessVariableName: 'Naam procesvariabele voor audit trail',
       auditTrailProcessVariableNameTooltip:
         'De naam van de procesvariabele waarin het resultaat van de audit trail opgeslagen wordt als JSON',
+      'add-document-trefwoord': 'Trefwoord toevoegen aan document',
+      addDocumentTrefwoordMessage:
+        "Voegt een trefwoord toe aan het document waarvan de URL of het ID is opgeslagen in de " +
+        "procesvariabele 'documentUrl' respectievelijk 'documentId'. Het trefwoord wordt toegevoegd " +
+        "aan eventueel al bestaande trefwoorden; is het trefwoord al aanwezig, dan gebeurt er niets.",
+      trefwoord: 'Trefwoord',
+      trefwoordTooltip:
+        "Het trefwoord dat aan het document toegevoegd moet worden, bijv. 'Printstraat'.",
     },
     en: {
       title: 'Documenten API',
@@ -261,6 +271,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       auditTrailProcessVariableName: 'Process variable name for audit trail',
       auditTrailProcessVariableNameTooltip:
         'The name of the process variable in which the audit trail result will be stored as JSON',
+      'add-document-trefwoord': 'Add trefwoord to document',
+      addDocumentTrefwoordMessage:
+        "Adds a trefwoord (keyword) to the document whose URL or ID is stored in the process variable " +
+        "'documentUrl' or 'documentId' respectively. The trefwoord is added to any trefwoorden that " +
+        "already exist on the document; if the trefwoord is already present, nothing happens.",
+      trefwoord: 'Trefwoord',
+      trefwoordTooltip: "The trefwoord to add to the document, e.g. 'Printstraat'.",
     },
   },
 };

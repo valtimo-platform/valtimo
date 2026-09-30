@@ -1,0 +1,135 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "headerAanvraag",
+            "type": "htmlelement",
+            "tag": "h4",
+            "input": false,
+            "label": "Aanvraag",
+            "content": "Aanvraag",
+            "tableView": false
+        },
+        {
+            "key": "aanvrager.naam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "aanvrager.emailadres",
+            "type": "textfield",
+            "input": true,
+            "label": "E-mailadres",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "nieuwAdres",
+            "type": "textfield",
+            "input": true,
+            "label": "Nieuw adres",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "verhuisdatum",
+            "type": "textfield",
+            "input": true,
+            "label": "Verhuisdatum",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "aantalPersonen",
+            "type": "number",
+            "input": true,
+            "label": "Aantal personen",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "oppervlakte",
+            "type": "number",
+            "input": true,
+            "label": "Oppervlakte (m²)",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "spoed",
+            "type": "checkbox",
+            "input": true,
+            "label": "Spoedbehandeling",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "status",
+            "type": "textfield",
+            "input": true,
+            "label": "Status",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "headerInspectie",
+            "type": "htmlelement",
+            "tag": "h4",
+            "input": false,
+            "label": "Inspectie & migratie",
+            "content": "Inspectie & migratie",
+            "tableView": false
+        },
+        {
+            "key": "inspectieStatus",
+            "type": "textfield",
+            "input": true,
+            "label": "Inspectiestatus",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "inspectieAkkoord",
+            "type": "checkbox",
+            "input": true,
+            "label": "Inspectie akkoord",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "aantalKamers",
+            "type": "number",
+            "input": true,
+            "label": "Aantal kamers",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "geschatteWaarde",
+            "type": "number",
+            "input": true,
+            "label": "Geschatte waarde",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "afgerond",
+            "type": "checkbox",
+            "input": true,
+            "label": "Afgerond",
+            "disabled": true,
+            "tableView": true
+        },
+        {
+            "key": "migratedFrom",
+            "type": "textfield",
+            "input": true,
+            "label": "Gemigreerd vanaf",
+            "disabled": true,
+            "tableView": true
+        }
+    ]
+}
