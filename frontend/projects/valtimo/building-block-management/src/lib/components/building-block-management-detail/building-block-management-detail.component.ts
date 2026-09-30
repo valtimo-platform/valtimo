@@ -31,13 +31,22 @@ import {
   BuildingBlockManagementTabConfig,
 } from '@valtimo/shared';
 import {BuildingBlockManagementTabKey} from '../../models';
-import {of, take} from 'rxjs';
+import {catchError, combineLatest, map, Observable, of, take, timeout} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
 import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
 import {BuildingBlockManagementFormFlowsComponent} from '../building-block-management-form-flows/building-block-management-form-flows.component';
 import {BuildingBlockManagementDecisionsComponent} from '../building-block-management-decisions/building-block-management-decisions.component';
 import {BuildingBlockManagementMigrationComponent} from '../building-block-management-migration/building-block-management-migration.component';
+
+/**
+ * How long to wait for a custom tab to report whether it is enabled. The tab bar - and with it the page
+ * content - is not rendered until every custom tab has reported, so a tab whose `enabled$` never emits would
+ * otherwise leave the page empty for good. After this long such a tab is treated as enabled, which matches
+ * the contract that a tab without an `enabled$` is enabled and keeps the requested tab reachable. A report
+ * arriving after the fallback no longer hides the tab until the page is opened again.
+ */
+export const CUSTOM_TAB_ENABLED_TIMEOUT_MS = 5000;
 
 @Component({
   standalone: true,
@@ -76,6 +85,32 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
       enabled$: tab.enabled$ ?? of(true),
     }));
   }
+
+  private readonly _customTabs: BuildingBlockManagementTabConfig[] = this.toArray(
+    this.buildingBlockManagementTabConfig
+  );
+
+  // Emits only once every custom tab has reported whether it is enabled, so the tab bar is never rendered incomplete.
+  private readonly _enabledCustomTabs$: Observable<BuildingBlockManagementTabConfig[]> =
+    this._customTabs.length === 0
+      ? of<BuildingBlockManagementTabConfig[]>([])
+      : combineLatest(
+          this._customTabs.map((tab: BuildingBlockManagementTabConfig) =>
+            (tab.enabled$ ?? of(true)).pipe(
+              catchError(() => of(false)),
+              timeout({first: CUSTOM_TAB_ENABLED_TIMEOUT_MS, with: () => of(true)})
+            )
+          )
+        ).pipe(
+          map((enabled: boolean[]) => this._customTabs.filter((_, index) => !!enabled[index]))
+        );
+
+  public readonly tabState$: Observable<{
+    activeTabKey: BuildingBlockManagementTabKey;
+    customTabs: BuildingBlockManagementTabConfig[];
+  }> = combineLatest([this.activeTabKey$, this._enabledCustomTabs$]).pipe(
+    map(([activeTabKey, customTabs]) => ({activeTabKey, customTabs}))
+  );
 
   constructor(
     private readonly route: ActivatedRoute,
