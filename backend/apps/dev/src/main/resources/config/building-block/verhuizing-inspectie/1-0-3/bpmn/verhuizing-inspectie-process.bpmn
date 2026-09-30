@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_VerhuizingInspectie" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0">
+  <bpmn:collaboration id="Collaboration_VerhuizingInspectie">
+    <bpmn:participant id="VerhuizingInspectieParticipant" name="Verhuizing inspectie" processRef="verhuizing-inspectie-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="verhuizing-inspectie-process" name="Verhuizing inspectie proces" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start inspectie">
+      <bpmn:outgoing>Flow_Start_To_Voorbereiden</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="VoorbereidenInspectieTask" name="Inspectie voorbereiden" camunda:expression="${execution.setVariable('inspectieVoorbereid', true)}">
+      <bpmn:incoming>Flow_Start_To_Voorbereiden</bpmn:incoming>
+      <bpmn:outgoing>Flow_Voorbereiden_To_Fotos</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="CallInspectieFotosActivity" name="Inspectiefoto's" camunda:asyncAfter="true" calledElement="inspectie-fotos-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:inspectie-fotos:1.0.0">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{buildingBlockDocumentId}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Split_To_Hoofdspoor</bpmn:incoming>
+      <bpmn:outgoing>Flow_Hoofdspoor_To_Join</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:parallelGateway id="Gateway_HerstelSplit" name="Splits">
+      <bpmn:incoming>Flow_Voorbereiden_To_Fotos</bpmn:incoming>
+      <bpmn:outgoing>Flow_Split_To_Herstel</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Split_To_Hoofdspoor</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:callActivity id="CallInspectieHerstelActivity" name="Herstel (eigen subproces)" calledElement="inspectie-herstel-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:verhuizing-inspectie:1.0.3">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Split_To_Herstel</bpmn:incoming>
+      <bpmn:outgoing>Flow_Herstel_To_Join</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:parallelGateway id="Gateway_HerstelJoin" name="Voeg samen">
+      <bpmn:incoming>Flow_Herstel_To_Join</bpmn:incoming>
+      <bpmn:incoming>Flow_Hoofdspoor_To_Join</bpmn:incoming>
+      <bpmn:outgoing>Flow_Fotos_To_Inspectie</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:userTask id="InspectieUitvoerenTask" name="Inspectie uitvoeren">
+      <bpmn:incoming>Flow_Fotos_To_Inspectie</bpmn:incoming>
+      <bpmn:outgoing>Flow_Inspectie_To_ResolveAkkoord</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="ResolveAkkoordTask" name="Bepaal akkoord" camunda:expression="${execution.setVariable('akkoord', valueResolverDelegateService.resolveValue(execution, 'doc:/akkoord'))}">
+      <bpmn:incoming>Flow_Inspectie_To_ResolveAkkoord</bpmn:incoming>
+      <bpmn:outgoing>Flow_ResolveAkkoord_To_Gateway</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_Akkoord" name="Akkoord?" default="Flow_Gateway_To_Afkeuring">
+      <bpmn:incoming>Flow_ResolveAkkoord_To_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_To_Goedkeuring</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_To_Afkeuring</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="RegistreerGoedkeuringTask" name="Registreer goedkeuring" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/inspectieStatus', 'goedgekeurd')}">
+      <bpmn:incoming>Flow_Gateway_To_Goedkeuring</bpmn:incoming>
+      <bpmn:outgoing>Flow_Goedkeuring_To_Join</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="RegistreerAfkeuringTask" name="Registreer afkeuring" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/inspectieStatus', 'afgekeurd')}">
+      <bpmn:incoming>Flow_Gateway_To_Afkeuring</bpmn:incoming>
+      <bpmn:outgoing>Flow_Afkeuring_To_Join</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_Join">
+      <bpmn:incoming>Flow_Goedkeuring_To_Join</bpmn:incoming>
+      <bpmn:incoming>Flow_Afkeuring_To_Join</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_To_End</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent" name="Inspectie afgerond">
+      <bpmn:incoming>Flow_Join_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Voorbereiden" sourceRef="StartEvent" targetRef="VoorbereidenInspectieTask" />
+    <bpmn:sequenceFlow id="Flow_Voorbereiden_To_Fotos" sourceRef="VoorbereidenInspectieTask" targetRef="Gateway_HerstelSplit" />
+    <bpmn:sequenceFlow id="Flow_Split_To_Herstel" sourceRef="Gateway_HerstelSplit" targetRef="CallInspectieHerstelActivity" />
+    <bpmn:sequenceFlow id="Flow_Herstel_To_Join" sourceRef="CallInspectieHerstelActivity" targetRef="Gateway_HerstelJoin" />
+    <bpmn:sequenceFlow id="Flow_Split_To_Hoofdspoor" sourceRef="Gateway_HerstelSplit" targetRef="CallInspectieFotosActivity" />
+    <bpmn:sequenceFlow id="Flow_Hoofdspoor_To_Join" sourceRef="CallInspectieFotosActivity" targetRef="Gateway_HerstelJoin" />
+    <bpmn:sequenceFlow id="Flow_Fotos_To_Inspectie" sourceRef="Gateway_HerstelJoin" targetRef="InspectieUitvoerenTask" />
+    <bpmn:sequenceFlow id="Flow_Inspectie_To_ResolveAkkoord" sourceRef="InspectieUitvoerenTask" targetRef="ResolveAkkoordTask" />
+    <bpmn:sequenceFlow id="Flow_ResolveAkkoord_To_Gateway" sourceRef="ResolveAkkoordTask" targetRef="Gateway_Akkoord" />
+    <bpmn:sequenceFlow id="Flow_Gateway_To_Goedkeuring" name="Ja" sourceRef="Gateway_Akkoord" targetRef="RegistreerGoedkeuringTask">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${akkoord == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Gateway_To_Afkeuring" name="Nee" sourceRef="Gateway_Akkoord" targetRef="RegistreerAfkeuringTask" />
+    <bpmn:sequenceFlow id="Flow_Goedkeuring_To_Join" sourceRef="RegistreerGoedkeuringTask" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_Afkeuring_To_Join" sourceRef="RegistreerAfkeuringTask" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_Join_To_End" sourceRef="Gateway_Join" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_VerhuizingInspectie">
+      <bpmndi:BPMNShape id="VerhuizingInspectieParticipant_di" bpmnElement="VerhuizingInspectieParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="1000" height="280" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="202" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="190" y="175" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="VoorbereidenInspectieTask_di" bpmnElement="VoorbereidenInspectieTask">
+        <dc:Bounds x="290" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallInspectieFotosActivity_di" bpmnElement="CallInspectieFotosActivity">
+        <dc:Bounds x="420" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="InspectieUitvoerenTask_di" bpmnElement="InspectieUitvoerenTask">
+        <dc:Bounds x="580" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ResolveAkkoordTask_di" bpmnElement="ResolveAkkoordTask">
+        <dc:Bounds x="590" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Akkoord_di" bpmnElement="Gateway_Akkoord" isMarkerVisible="true">
+        <dc:Bounds x="745" y="125" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="752" y="101" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RegistreerGoedkeuringTask_di" bpmnElement="RegistreerGoedkeuringTask">
+        <dc:Bounds x="850" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RegistreerAfkeuringTask_di" bpmnElement="RegistreerAfkeuringTask">
+        <dc:Bounds x="850" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Join_di" bpmnElement="Gateway_Join" isMarkerVisible="true">
+        <dc:Bounds x="1005" y="125" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="1102" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1082" y="175" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Voorbereiden_di" bpmnElement="Flow_Start_To_Voorbereiden">
+        <di:waypoint x="238" y="150" />
+        <di:waypoint x="290" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Voorbereiden_To_Fotos_di" bpmnElement="Flow_Voorbereiden_To_Fotos">
+        <di:waypoint x="390" y="150" />
+        <di:waypoint x="420" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Fotos_To_Inspectie_di" bpmnElement="Flow_Fotos_To_Inspectie">
+        <di:waypoint x="520" y="150" />
+        <di:waypoint x="580" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Inspectie_To_ResolveAkkoord_di" bpmnElement="Flow_Inspectie_To_ResolveAkkoord">
+        <di:waypoint x="680" y="150" />
+        <di:waypoint x="590" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ResolveAkkoord_To_Gateway_di" bpmnElement="Flow_ResolveAkkoord_To_Gateway">
+        <di:waypoint x="690" y="150" />
+        <di:waypoint x="745" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Gateway_To_Goedkeuring_di" bpmnElement="Flow_Gateway_To_Goedkeuring">
+        <di:waypoint x="795" y="150" />
+        <di:waypoint x="850" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Gateway_To_Afkeuring_di" bpmnElement="Flow_Gateway_To_Afkeuring">
+        <di:waypoint x="770" y="175" />
+        <di:waypoint x="770" y="280" />
+        <di:waypoint x="850" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Goedkeuring_To_Join_di" bpmnElement="Flow_Goedkeuring_To_Join">
+        <di:waypoint x="950" y="150" />
+        <di:waypoint x="1005" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Afkeuring_To_Join_di" bpmnElement="Flow_Afkeuring_To_Join">
+        <di:waypoint x="950" y="280" />
+        <di:waypoint x="1030" y="280" />
+        <di:waypoint x="1030" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Join_To_End_di" bpmnElement="Flow_Join_To_End">
+        <di:waypoint x="1055" y="150" />
+        <di:waypoint x="1102" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Gateway_HerstelSplit_di" bpmnElement="Gateway_HerstelSplit">
+        <dc:Bounds x="345" y="345" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallInspectieHerstelActivity_di" bpmnElement="CallInspectieHerstelActivity">
+        <dc:Bounds x="430" y="440" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_HerstelJoin_di" bpmnElement="Gateway_HerstelJoin">
+        <dc:Bounds x="600" y="345" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

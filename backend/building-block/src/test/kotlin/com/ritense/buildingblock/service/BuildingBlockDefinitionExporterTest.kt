@@ -25,6 +25,7 @@ import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.exporter.request.BuildingBlockDecisionDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
+import com.ritense.exporter.request.MigrationPlanExportRequest
 import com.ritense.form.repository.FormDefinitionRepository
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -96,8 +97,9 @@ class BuildingBlockDefinitionExporterTest(
         assertThat(exportedJson.get("name").asText()).isEqualTo("Test building block")
         assertThat(exportedJson.get("description").asText()).isEqualTo("Description")
 
-        assertThat(result.relatedRequests).containsExactly(
-            BuildingBlockDocumentDefinitionExportRequest("document-definition", buildingBlockDefinitionId)
+        assertThat(result.relatedRequests).containsExactlyInAnyOrder(
+            BuildingBlockDocumentDefinitionExportRequest("document-definition", buildingBlockDefinitionId),
+            MigrationPlanExportRequest(buildingBlockDefinitionId)
         )
     }
 
