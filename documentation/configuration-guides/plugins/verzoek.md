@@ -43,8 +43,10 @@ the initiator and the documents, starts the handling process, and removes the ve
 The plugin only subscribes to notifications for the objecttypes used by its verzoek types, and only
 to the `create` action. Notifications for other objecttypes or actions are ignored.
 
-Creating the case and starting the process happen together. If any step fails, nothing is created —
-the verzoek object stays in the Objecten API and the notification can be delivered again.
+Creating the case and starting the process happen together. If any step fails, nothing is created and
+the verzoek object stays in the Objecten API. Valtimo keeps the notification and retries it on its
+own — three times by default, with a growing delay between attempts. Notifications that keep failing
+are listed under **Admin** > **Notifications**, where they can also be retried by hand.
 
 <details>
 
@@ -86,8 +88,11 @@ The Verzoek plugin builds on several other configurations. Set these up first.
 | An Objecten API and an Objecttypen API plugin configuration | Used to retrieve the verzoek object and its objecttype |
 | An object management configuration | Ties the objecttype to those two plugin configurations. Configure it under **Admin** > **Objects** |
 | A Notificaties API plugin configuration | Delivers the notification that triggers the plugin |
-| A case type | The case that is created for the verzoek. Its document definition determines which `doc:` targets are valid |
-| A role type in the Catalogi API | The role the requester is given on the zaak, usually the initiator role |
+| A case type | The case that is created for the verzoek. Its [document definition](../cases/document.md) determines which `doc:` targets are valid |
+| A zaak type linked to that case type | Determines the zaaktype of the zaak. Link it on the [ZGW tab](../cases/zgw/general.md) of the case definition. Without it, no verzoek can be handled |
+| A Zaken API plugin configuration | Used by the process links that create the zaak and the zaakrol |
+| A Catalogi API plugin configuration | Used to look up the role types of the zaak type |
+| A role type on that zaak type | The role the requester is given on the zaak, usually the initiator role |
 
 {% hint style="info" %}
 If the Verzoek plugin does not appear in the plugin catalog, the application is missing the Verzoek
@@ -105,13 +110,14 @@ are optional and change what the plugin can do.
 |---|---|---|---|
 | `type` | Yes | Selects which verzoek type configuration handles this request | The verzoek is ignored |
 | `data` | Yes, in practice | The submitted form data. This is what ends up in the case document | The plugin reports that `/record/data/data` cannot be found |
-| `bsn` | No | Citizen service number of the requester. Used as the initiator of the zaak | No initiator is recorded, unless `kvk` is present |
-| `kvk` | No | Chamber of Commerce number of the requester. Takes precedence over `bsn` | The `bsn` field is used instead |
+| `bsn` | No | Citizen service number of the requester. Used as the initiator of the zaak | No initiator is recorded, unless `kvk` has a value |
+| `kvk` | No | Chamber of Commerce number of the requester. Takes precedence over `bsn` | The `bsn` field is used instead. An empty `kvk` counts as missing |
 | `pdf_url` | No | URL of the submission PDF in the Documenten API | The PDF is not linked to the zaak |
 | `attachments` | No | List of document URLs in the Documenten API | No attachments are linked to the zaak |
 
-Every other field at the top level of the verzoek object — except `data` — is passed to the process
-as a process variable under its own name.
+Every field next to `data` is passed to the process as a process variable under its own name: the
+fields in the table above as well as any extra field the verzoek carries. Only `data` itself is left
+out.
 
 <details>
 
@@ -243,7 +249,7 @@ Fill in the fields and click **Save configuration**
 | Case definition | The case type that is created for this verzoek |
 | Case definition version | The version of the case type to create. Choose **Active version** to always use the version that is active at the time the verzoek arrives |
 | Object management configuration | The object management configuration that describes the verzoek object |
-| Role type | The role the requester is given on the zaak, usually the initiator role |
+| Role type | The role the requester is given on the zaak, usually the initiator role. The list is read from the zaak type of the selected case definition, and stays empty when no zaak type is linked to it |
 | Role description | Free text describing that role. Defaults to `Initiator` |
 | Process definition | The handling process that is started after the zaak has been created |
 | Copy strategy | Whether the complete verzoek data or only selected fields end up in the case |
@@ -277,8 +283,10 @@ With **Specified fields**, click **Set mapping** to define the fields.
 are available:
 
 - Leave the source empty to copy the complete `data` object to the target.
-- Prefix the source with `object:` to read from the verzoek object itself instead of from its data,
-  for example `object:/type` for the objecttype URL of the verzoek.
+- Prefix the source with `object:` to read from the object as the Objecten API stores it, instead of
+  from the verzoek data. The path then starts at the object itself: `object:/url` is the URL of the
+  object and `object:/type` its objecttype URL. The fields of the verzoek sit one level down, under
+  `object:/record/data`, so the `type` of the verzoek is `object:/record/data/type`.
 
 **Target** must start with one of two prefixes:
 
@@ -302,15 +310,33 @@ selected case type.
 Valtimo ships with the **Create Zaakdossier** system process, which performs the ZGW side of a
 verzoek. Select it under **Process** in the plugin configuration.
 
+<figure><img src="../../assets/configuration-guides/plugins/verzoek/06-create-zaakdossier-process.png" alt=""><figcaption>Create Zaakdossier</figcaption></figure>
+
 {% hint style="warning" %}
 The process ships with Valtimo, but its process links do not. Each task in the table below that
 names a process link has to be created in your own environment — only you know which plugin
-configurations the zaak, the zaakrol and the documents belong to. Being a system process is no
-obstacle: the diagram is read-only, but its activities can still be linked. See
+configurations the zaak, the zaakrol and the documents belong to. Being a read-only
+[system process](../system-processes/README.md) is no obstacle: the diagram cannot be changed, but
+its activities can still be linked. See
 [Process links](../building-blocks/processes.md#process-links).
+
+A task without a process link does nothing and reports no error. The process then runs to the end
+without creating a zaak, so a verzoek that seems to disappear is usually a missing process link.
 {% endhint %}
 
-<figure><img src="../../assets/configuration-guides/plugins/verzoek/06-create-zaakdossier-process.png" alt=""><figcaption>Create Zaakdossier</figcaption></figure>
+Link each task as follows.
+
+{% stepper %}
+{% step %}
+Go to **Admin** > **System processes** > **Processes** and open **Create Zaakdossier**
+{% endstep %}
+{% step %}
+Select the service task and add a **Plugins & Apps** process link
+{% endstep %}
+{% step %}
+Choose the plugin configuration and the action listed for that task below, and fill in its input
+{% endstep %}
+{% endstepper %}
 
 | Task | What it does | Configuration |
 |---|---|---|
@@ -318,7 +344,7 @@ obstacle: the diagram is read-only, but its activities can still be linked. See
 | Map betrokkene type | Decides whether the initiator is a natural person or a non-natural person | Decision table, no process link needed |
 | Create Initiator ZaakRol BSN | Adds the requester to the zaak as a natural person | Process link to the **Create natuurlijk persoon zaakrol** action |
 | Create Initiator ZaakRol KvK | Adds the requester to the zaak as a non-natural person | Process link to the **Create niet-natuurlijk persoon zaakrol** action |
-| Link Document to Zaak | Links each document of the verzoek to the zaak | Process link to the **Link document to zaak** action. Repeats over the `documentUrls` variable |
+| Link Document to Zaak | Links each document of the verzoek to the zaak | Process link to the **Link Documenten API document to Zaak** action of the Zaken API plugin. The task repeats over `documentUrls`, so use `pv:documentUrl` as the document URL |
 | Start handling process | Starts the process selected under **Process definition** | No process link needed |
 | Delete Verzoek from ObjectsAPI | Removes the verzoek object now that it has been processed | Process link to the **Delete object** action of the Objecten API plugin |
 
@@ -341,7 +367,7 @@ with the same process variables.
 | `rolDescription` | The role description from the verzoek type |
 | `verzoekObjectUrl` | The URL of the verzoek object in the Objecten API |
 | `initiatorType` | `bsn`, `kvk`, or empty when the verzoek has neither |
-| `initiatorValue` | The BSN or KvK number of the requester |
+| `initiatorValue` | The BSN or KvK number of the requester. Absent when the verzoek has neither |
 | `processDefinitionKey` | The handling process from the verzoek type |
 | `documentUrls` | The document URLs from `pdf_url` and `attachments`, in that order. Use it as the collection of a multi-instance task |
 
@@ -354,18 +380,31 @@ its own name, as are all `pv:` mappings.
 
 ## Troubleshooting
 
+A verzoek that fails leaves nothing behind in the case list, so the place to look is **Admin** >
+**Notifications**. It lists the notifications that could not be handled, with the moment they came
+in, how many retries are left, and the error below. Click a row to see the full message and the
+verzoek object that came with it, and to retry the notification once the cause is resolved.
+
+The last two messages below appear when the configuration is saved. The rest appear on this page.
+
 | Message | Cause |
 |---|---|
 | `VerzoekObject /record/data cannot be found!` | The object in the Objecten API has no data at all |
 | `VerzoekObject /record/data/data cannot be found!` | The verzoek has no `data` object holding the submitted form data |
 | `Failed to find verzoek configuration of type <type>.` | No verzoek type in the configuration matches the `type` of the verzoek |
 | `Verzoek plugin failed to create case: No case found with key <key>` | The configured case type does not exist, or has no active version |
+| `No zaak type was found For case definition <case definition>` | The case type has no zaak type linked on its [ZGW tab](../cases/zgw/general.md) |
 | `Could not create document for case <case type>` | The copied data does not fit the document definition of the case type |
 | `Failed to set mapping. Unknown prefix '<prefix>:'.` | A mapping target starts with something other than `doc:` or `pv:` |
 | `JsonPointer '<path>' doesn't point to any property inside document definition '<name>'` | A `doc:` target points at a property the document definition does not have |
 
 {% hint style="info" %}
-Nothing happening at all usually means the notification never reached the plugin. Check that the
-object management configuration points at the right objecttype, and that the Notificaties API has a
-subscription for the `objecten` channel.
+Nothing happening at all — no case, and no entry under **Admin** > **Notifications** — means the
+notification never reached Valtimo. The subscription in the Notificaties API is registered by Valtimo
+itself every time a Verzoek configuration is saved, so there is nothing to set up by hand. Check that
+the object management configuration points at the right objecttype, and that the Notificaties API can
+reach this environment on the callback URL of the Notificaties API configuration.
+
+A case that is created without a zaak points the other way: the tasks of the Create Zaakdossier
+process have no process links. An unlinked task is skipped without an error.
 {% endhint %}
