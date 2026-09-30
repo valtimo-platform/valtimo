@@ -12,11 +12,13 @@ import {FormioCustomComponent} from '../../../modules';
   templateUrl: './iban.component.html',
   styleUrls: ['./iban.component.scss'],
 })
-export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterViewInit, OnDestroy {
+export class FormIoIbanComponent
+  implements FormioCustomComponent<string>, AfterViewInit, OnDestroy
+{
   @Input() public value: string;
   @Input() public disabled = false;
   @Input() public required = false;
-  @Output() public valueChange = new EventEmitter<any>();
+  @Output() public valueChange = new EventEmitter<string>();
   public ibanForm = new FormGroup({
     iban: new FormControl(''),
   });
@@ -29,6 +31,10 @@ export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterVie
         this.required ? [Validators.required, ibanValidator()] : [ibanValidator()]
       );
       this.ibanForm.controls.iban.updateValueAndValidity();
+
+      if (this.value) {
+        this.ibanForm.controls.iban.markAsTouched();
+      }
 
       if (this.disabled) {
         Object.keys(this.ibanForm.controls).forEach(key => {
@@ -49,9 +55,7 @@ export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterVie
   }
 
   private onValueChange(): void {
-    (this.value as any) = this.ibanForm.valid
-      ? this.ibanForm.controls.iban.value
-      : [this.ibanForm.value];
+    this.value = this.ibanForm.controls.iban.value ?? '';
     this.valueChange.emit(this.value);
   }
 }
