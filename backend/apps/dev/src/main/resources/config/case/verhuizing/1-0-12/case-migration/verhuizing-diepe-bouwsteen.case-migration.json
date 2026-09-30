@@ -1,0 +1,47 @@
+{
+    "title": "Bouwsteen achter een gewoon subproces \u2014 de wandeling daalt af langs een hop die zij niet overneemt",
+    "key": "verhuizing-diepe-bouwsteen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.10"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [
+        {
+            "path": "doc:/scenario",
+            "operator": "==",
+            "value": "diep"
+        }
+    ],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.10",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ],
+    "addBuildingBlock": [
+        {
+            "buildingBlockKey": "inspectie-fotos",
+            "buildingBlockVersionTag": "1.0.0",
+            "dataMigration": [
+                {
+                    "target": "doc:/aanvragerNaam",
+                    "source": "doc:/aanvrager/naam"
+                }
+            ]
+        }
+    ]
+}

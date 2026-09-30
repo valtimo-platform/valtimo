@@ -1,0 +1,15 @@
+{
+    "scenario": "keten",
+    "aanvrager": {
+        "naam": "Nuno Fernandes",
+        "email": "keten2@example.com"
+    },
+    "nieuwAdres": "Ketenstraat 2, 1000 AA Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 2,
+    "woning": {
+        "oppervlakte": 80,
+        "energielabel": "B"
+    }
+}

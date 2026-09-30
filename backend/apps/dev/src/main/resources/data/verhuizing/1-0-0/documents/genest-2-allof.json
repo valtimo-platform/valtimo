@@ -1,0 +1,13 @@
+{
+    "scenario": "genest",
+    "aanvrager": {
+        "naam": "Lotte Smit"
+    },
+    "status": "in_behandeling",
+    "spoed": false,
+    "aantalPersonen": 3,
+    "oppervlakte": 95,
+    "documenten": [
+        "paspoort"
+    ]
+}

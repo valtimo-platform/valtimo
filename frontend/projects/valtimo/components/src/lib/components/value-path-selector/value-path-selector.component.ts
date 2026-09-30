@@ -35,7 +35,7 @@ import {
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {
   ComboBox,
@@ -72,6 +72,8 @@ import {InputLabelModule} from '../input-label/input-label.module';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
+
+const NOT_IN_THIS_VERSION_KEY = 'valuePathSelector.notInThisVersion';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -204,6 +206,11 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._buildingBlockDefinitionVersionTag$.next(value);
   }
 
+  /** Extra version tags whose fields are merged into the option list, deduplicated by path — so a migration patch can clear a field that only exists in the source version. */
+  @Input() set additionalVersionTags(value: string[] | null | undefined) {
+    this._additionalVersionTags$.next(value ?? []);
+  }
+
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
   }
@@ -258,6 +265,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   private readonly _buildingBlockDefinitionKey$ = new BehaviorSubject<string | null>(null);
   private readonly _buildingBlockDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
+  private readonly _additionalVersionTags$ = new BehaviorSubject<string[]>([]);
+
   public readonly showToggle$ = combineLatest([
     this._caseDefinitionKeySubject$,
     this._buildingBlockDefinitionKey$,
@@ -293,9 +302,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
             this._caseDefinitionVersionTag$,
             this._buildingBlockDefinitionKey$,
             this._buildingBlockDefinitionVersionTag$,
+            this._additionalVersionTags$,
             this.showToggle$,
           ]).pipe(
-            filter(([, , , , , , , showToggle]) => showToggle),
+            filter(([, , , , , , , , showToggle]) => showToggle),
             switchMap(
               ([
                 caseDefinitionKey,
@@ -305,6 +315,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
                 caseDefinitionVersionTag,
                 buildingBlockKey,
                 buildingBlockVersionTag,
+                additionalVersionTags,
               ]) => {
                 const context = this.buildBlueprintContext(
                   caseDefinitionKey,
@@ -313,12 +324,31 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
                   buildingBlockVersionTag
                 );
                 if (!context) return of([]);
-                return this.valuePathSelectorService.getResolvableKeysForContext(
-                  prefixes,
-                  excludePrefixes,
+                // The primary context plus one per extra version tag, deduped so the primary is never fetched twice.
+                const contexts = [
                   context,
-                  type
-                );
+                  ...additionalVersionTags
+                    .filter(tag => !!tag && tag !== context.versionTag)
+                    .map(tag => ({...context, versionTag: tag})),
+                ];
+                if (contexts.length === 1) {
+                  return this.valuePathSelectorService.getResolvableKeysForContext(
+                    prefixes,
+                    excludePrefixes,
+                    context,
+                    type
+                  );
+                }
+                return combineLatest(
+                  contexts.map(ctx =>
+                    this.valuePathSelectorService.getResolvableKeysForContext(
+                      prefixes,
+                      excludePrefixes,
+                      ctx,
+                      type
+                    )
+                  )
+                ).pipe(map(lists => this.mergeOptionsByPath(lists)));
               }
             )
           )
@@ -358,7 +388,9 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
       return filteredOptions.map(option => {
         const mappedOption = {
-          content: option.formattedPath,
+          content: this.optionLabel(option),
+          // The value, kept apart from the label: a marked option's label is not a path.
+          formattedPath: option.formattedPath,
           selected: option.formattedPath === selectedPath,
           path: option.path,
           ...(!!option.children && {children: option.children}),
@@ -383,7 +415,9 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     private readonly formBuilder: FormBuilder,
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
-    private readonly changeDetectorRef: ChangeDetectorRef
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    // Appended, not inserted: this is a published component and a subclass's super(...) call is positional.
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -448,8 +482,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {content: string} & ValuePathItem): void {
-    const selectedPath = event?.content;
+  public onPathSelected(event: {content: string; formattedPath?: string} & ValuePathItem): void {
+    const selectedPath = event?.formattedPath ?? event?.content;
     if (!selectedPath) return;
 
     if (this.collectionSelected.observed) this.collectionSelected.emit(event);
@@ -515,6 +549,30 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
 
     return `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`;
+  }
+
+  /** Flatten the per-version option lists, keeping the first occurrence of each path so the primary version's entry — with its children — wins. A path only the extra versions declare is flagged: it stays selectable, because clearing a dropped field means naming it, but it is not part of this version's data model and read as though it were. */
+  private mergeOptionsByPath(lists: ValuePathItem[][]): ValuePathItem[] {
+    const primaryPaths = new Set((lists[0] ?? []).map(item => item.path));
+    const byPath = new Map<string, ValuePathItem>();
+    lists.forEach(list =>
+      list.forEach(item => {
+        if (!byPath.has(item.path)) {
+          byPath.set(item.path, {...item, notInThisVersion: !primaryPaths.has(item.path)});
+        }
+      })
+    );
+    return [...byPath.values()];
+  }
+
+  /** The path, plus a marker when the version being configured does not declare it. Falls back to the bare path while translations are still loading, rather than showing the key. */
+  private optionLabel(option: ValuePathItem & {formattedPath: string}): string {
+    if (!option.notInThisVersion) return option.formattedPath;
+    const marker = this.translateService.instant(NOT_IN_THIS_VERSION_KEY);
+
+    return marker === NOT_IN_THIS_VERSION_KEY
+      ? option.formattedPath
+      : `${option.formattedPath} ${marker}`;
   }
 
   private buildBlueprintContext(

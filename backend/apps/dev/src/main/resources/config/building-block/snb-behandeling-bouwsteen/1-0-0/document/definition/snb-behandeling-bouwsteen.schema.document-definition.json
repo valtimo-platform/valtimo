@@ -1,0 +1,12 @@
+{
+    "$id": "snb-behandeling-bouwsteen.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Behandeling (uit subproces)",
+    "type": "object",
+    "properties": {
+        "onderwerp": {
+            "type": "string",
+            "description": "Overgenomen van de zaak die het subproces afstond"
+        }
+    }
+}

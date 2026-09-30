@@ -1,0 +1,35 @@
+{
+    "title": "Geneste fotobouwsteen toevoegen",
+    "key": "verhuizing-inspectie-geneste-fotobouwsteen",
+    "source": {
+        "key": "verhuizing-inspectie",
+        "versionTag": "1.0.1"
+    },
+    "dataMigration": [
+        {
+            "target": "doc:/fotoStatus",
+            "value": "nog-niet-vastgelegd",
+            "targetType": "string"
+        },
+        {
+            "target": "doc:/inspectieStatus",
+            "source": "doc:/inspectieStatus"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing-inspectie-process",
+            "targetProcessDefinitionKey": "verhuizing-inspectie-process",
+            "mapActivities": {},
+            "setProcessVariables": [
+                {
+                    "target": "pv:inspectieGemigreerdVan",
+                    "value": "1.0.1",
+                    "targetType": "string"
+                }
+            ],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}
