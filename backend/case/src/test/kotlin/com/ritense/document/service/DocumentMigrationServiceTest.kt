@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.ritense.document.service
 
 import com.fasterxml.jackson.databind.ObjectMapper

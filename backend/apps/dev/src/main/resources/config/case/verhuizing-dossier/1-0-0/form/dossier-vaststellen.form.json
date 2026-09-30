@@ -1,0 +1,30 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Dossier vaststellen",
+            "content": "Stel het verhuizingdossier vast.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "dossierhouder",
+            "type": "textfield",
+            "input": true,
+            "label": "Dossierhouder",
+            "tableView": true,
+            "disabled": true
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Dossier vaststellen",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

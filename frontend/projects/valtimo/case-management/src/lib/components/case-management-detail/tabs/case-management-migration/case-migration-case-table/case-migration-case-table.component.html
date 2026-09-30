@@ -1,0 +1,84 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-carbon-list
+  [fields]="$fields()"
+  [items]="$view().items"
+  [pagination]="$view().pagination"
+  [paginatorConfig]="ERROR_PAGINATOR_CONFIG"
+  (paginationClicked)="onPageChange($event)"
+></valtimo-carbon-list>
+
+<ng-template #caseIdColumn let-data="data">
+  @if (caseDetailLink(data.item.caseId); as link) {
+    <a
+      class="migration-error__case-link"
+      [routerLink]="link"
+      [title]="data.item.caseId"
+      target="_blank"
+    >
+      {{ shortId(data.item.caseId) }}
+    </a>
+  } @else {
+    <span [title]="data.item.caseId">{{ shortId(data.item.caseId) }}</span>
+  }
+</ng-template>
+
+<ng-template #errorColumn let-data="data">
+  <div class="migration-error">
+    <div class="migration-error__cell">
+      <span class="migration-error__message" [title]="errorSummary(data.item)">
+        {{ errorSummary(data.item) }}
+      </span>
+
+      <div class="migration-error__actions">
+        <button
+          cdsButton="ghost"
+          size="sm"
+          [iconOnly]="true"
+          [title]="
+            (isErrorExpanded(data.item.caseId)
+              ? 'caseManagement.migration.errors.hideStacktrace'
+              : 'caseManagement.migration.errors.showStacktrace'
+            ) | translate
+          "
+          [attr.data-test-id]="testIds.toggleErrorButton"
+          (click)="onToggleError($event, data.item.caseId)"
+        >
+          <svg
+            [cdsIcon]="isErrorExpanded(data.item.caseId) ? 'chevron--up' : 'chevron--down'"
+            size="16"
+          ></svg>
+        </button>
+
+        <button
+          cdsButton="ghost"
+          size="sm"
+          [iconOnly]="true"
+          [title]="'caseManagement.migration.errors.copyFullError' | translate"
+          [attr.data-test-id]="testIds.copyErrorButton"
+          (click)="onCopyError($event, data.item.message)"
+        >
+          <svg cdsIcon="copy" size="16"></svg>
+        </button>
+      </div>
+    </div>
+
+    @if (isErrorExpanded(data.item.caseId)) {
+      <pre class="migration-error__trace">{{ data.item.message }}</pre>
+    }
+  </div>
+</ng-template>
