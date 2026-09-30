@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Availability | An instance whose database has become unreachable now reports itself as unavailable, so it is taken out of service instead of being sent requests that fail |

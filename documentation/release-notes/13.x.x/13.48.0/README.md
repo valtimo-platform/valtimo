@@ -90,4 +90,3 @@ Widget tabs with multiple widgets now load faster.
 |------|-----|
 | Area name | New bugfix. |
 | Cases | Choosing one of several start processes for a case opens its start form again, instead of sending the user back to the dashboard |
-| Availability | An instance whose database has become unreachable now reports itself as unavailable, so it is taken out of service instead of being sent requests that fail |
