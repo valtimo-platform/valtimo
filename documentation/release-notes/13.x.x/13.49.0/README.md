@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Form flows | A step in a form flow shows the value entered in an earlier step, instead of the value still stored in the case |

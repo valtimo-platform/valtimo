@@ -19,7 +19,6 @@ package com.ritense.formflow.handler
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.service.DocumentService
-import com.ritense.form.domain.FormDefinition
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.PrefillFormService
 import com.ritense.form.service.impl.FormIoFormDefinitionService
@@ -67,8 +66,8 @@ class FormFlowStepTypeFormHandler(
         }
     }
 
-    private fun prefillWithSubmissionData(formDefinition: FormDefinition, stepInstance: FormFlowStepInstance) {
-        formDefinition.preFill(objectMapper.readTree(stepInstance.instance.getSubmissionDataContext()))
+    private fun prefillWithSubmissionData(formDefinition: FormIoFormDefinition, stepInstance: FormFlowStepInstance) {
+        formDefinition.preFillWithSubmissionData(objectMapper.readTree(stepInstance.instance.getSubmissionDataContext()))
     }
 
     private fun prefillWithAdditionalData(

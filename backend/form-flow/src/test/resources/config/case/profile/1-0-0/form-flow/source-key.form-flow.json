@@ -1,0 +1,28 @@
+{
+    "startStep": "edit",
+    "steps": [
+        {
+            "key": "edit",
+            "nextSteps": [
+                {
+                    "step": "summary"
+                }
+            ],
+            "type": {
+                "name": "form",
+                "properties": {
+                    "definition": "source-key-form-definition"
+                }
+            }
+        },
+        {
+            "key": "summary",
+            "type": {
+                "name": "form",
+                "properties": {
+                    "definition": "source-key-form-definition"
+                }
+            }
+        }
+    ]
+}

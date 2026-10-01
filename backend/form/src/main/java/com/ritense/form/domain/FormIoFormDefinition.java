@@ -209,6 +209,15 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return this;
     }
 
+    // Unlike preFill, also fills fields with a sourceKey: submission data is keyed by field key, not by source.
+    public FormIoFormDefinition preFillWithSubmissionData(final JsonNode submissionData) {
+        getInputFields().stream()
+            .filter(HAS_PREFILL_ENABLED)
+            .forEach(field -> fillByFieldKey(field, submissionData));
+
+        return this;
+    }
+
     @Override
     public void preFill(@NotNull Map<String, ?> valueMap) {
         getInputFields().stream()
@@ -455,16 +464,20 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     }
 
     private void fill(ObjectNode field, JsonNode content) {
+        if (getSourceKey(field).isEmpty()) { // Only prefill when the properties.sourceKey is not set
+            fillByFieldKey(field, content);
+        }
+    }
+
+    private void fillByFieldKey(ObjectNode field, JsonNode content) {
         assertArgumentNotNull(field, "field is required");
         assertArgumentNotNull(content, "content is required");
-        if (getSourceKey(field).isEmpty()) { // Only prefill when the properties.sourceKey is not set
-            getContentItem(field)
-                .flatMap(
-                    contentItem -> getValueBy(content, contentItem.getJsonPointer())
-                ).ifPresent(
-                    valueNode -> setDefaultValueField(field, valueNode)
-                );
-        }
+        getContentItem(field)
+            .flatMap(
+                contentItem -> getValueBy(content, contentItem.getJsonPointer())
+            ).ifPresent(
+                valueNode -> setDefaultValueField(field, valueNode)
+            );
     }
 
     private void setDefaultValueField(ObjectNode field, JsonNode defaultValue) {

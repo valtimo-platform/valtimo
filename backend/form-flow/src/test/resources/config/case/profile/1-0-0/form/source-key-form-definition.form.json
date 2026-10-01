@@ -1,0 +1,27 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "First name",
+            "key": "firstName",
+            "type": "textfield",
+            "input": true,
+            "properties": {
+                "sourceKey": "doc:/firstName",
+                "targetKey": "doc:/firstName"
+            }
+        },
+        {
+            "label": "Last name",
+            "key": "lastName",
+            "type": "textfield",
+            "input": true
+        },
+        {
+            "type": "button",
+            "label": "Submit",
+            "key": "submit",
+            "input": true
+        }
+    ]
+}
