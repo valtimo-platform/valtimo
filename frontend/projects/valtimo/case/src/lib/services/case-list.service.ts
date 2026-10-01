@@ -71,16 +71,19 @@ export class CaseListService {
       });
     }
 
-    return (documents as SpecifiedDocuments).content.reduce((acc, curr) => {
-      const propsObject: Record<string, any> = {id: curr.id, locked: curr.locked};
-      if (context?.type === 'group' && (curr as any).caseDefinitionKey) {
-        propsObject.caseDefinitionKey = (curr as any).caseDefinitionKey;
-      }
-      curr.items?.forEach(item => {
-        propsObject[item.key] = item.value;
-      });
-      return [...acc, propsObject];
-    }, [] as Record<string, any>[]);
+    return (documents as SpecifiedDocuments).content.reduce(
+      (acc, curr) => {
+        const propsObject: Record<string, any> = {id: curr.id, locked: curr.locked};
+        if (context?.type === 'group' && (curr as any).caseDefinitionKey) {
+          propsObject.caseDefinitionKey = (curr as any).caseDefinitionKey;
+        }
+        curr.items?.forEach(item => {
+          propsObject[item.key] = item.value;
+        });
+        return [...acc, propsObject];
+      },
+      [] as Record<string, any>[]
+    );
   }
 
   public forceRefresh(): void {

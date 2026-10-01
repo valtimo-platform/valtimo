@@ -36,7 +36,6 @@
       "groups": {
         "title": "Case groups",
         "singular": "Case group",
-        "myCases": "My cases in this case group",
         "noResults": "No case groups match your search.",
         "open": "Open {{title}}",
         "pin": "Pin to sidebar"

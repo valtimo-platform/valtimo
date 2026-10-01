@@ -216,3 +216,36 @@
   width: 100%;
   justify-content: center;
 }
+
+// Marks the section a route belongs to, e.g. Cases while on an unpinned group. Carbon's own
+// --active class is recomputed from the child items, so it cannot be driven from the outside.
+::ng-deep cds-sidenav-menu.menu-item--section-active {
+  .cds--side-nav__submenu {
+    background-color: var(--cds-background-selected);
+    color: var(--cds-text-primary);
+  }
+
+  .cds--side-nav__submenu-title {
+    color: var(--cds-text-primary);
+    font-weight: 600;
+  }
+}
+
+// Sortable children, e.g. pinned case groups and case types.
+cds-sidenav-item.cdk-drag:not(.cdk-drag-disabled) {
+  cursor: grab;
+}
+
+cds-sidenav-item.cdk-drag-preview {
+  background-color: var(--cds-layer-hover);
+  box-shadow: 0 2px 6px var(--cds-shadow);
+  cursor: grabbing;
+}
+
+cds-sidenav-item.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+.cdk-drop-list-dragging cds-sidenav-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

@@ -33,6 +33,7 @@ import {
   AuditRecord,
   CaseDefinition,
   CaseDefinitionGroup,
+  CaseDefinitionGroupMember,
   CaseListColumn,
   GroupCaseListRow,
   GroupListColumn,
@@ -160,10 +161,14 @@ export class DocumentService {
 
   public getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
     return this.http
-      .post<Documents>(`${this.valtimoEndpointUri}v1/document-search`, documentSearchRequest.asHttpBody(), {
-        params: documentSearchRequest.asHttpParams(),
-        headers: new HttpHeaders().set(InterceptorSkip, '500'),
-      })
+      .post<Documents>(
+        `${this.valtimoEndpointUri}v1/document-search`,
+        documentSearchRequest.asHttpBody(),
+        {
+          params: documentSearchRequest.asHttpParams(),
+          headers: new HttpHeaders().set(InterceptorSkip, '500'),
+        }
+      )
       .pipe(
         tap(() => this._invalidSearchFields$.next([])),
         catchError((error: HttpErrorResponse) => {
@@ -379,6 +384,13 @@ export class DocumentService {
   public getCaseDefinitionGroups(): Observable<CaseDefinitionGroup[]> {
     return this.http.get<CaseDefinitionGroup[]>(
       `${this.valtimoEndpointUri}v1/case-definition-group`
+    );
+  }
+
+  /** The case types that make up a group, filtered to what the user may see. */
+  public getCaseDefinitionGroupMembers(groupKey: string): Observable<CaseDefinitionGroupMember[]> {
+    return this.http.get<CaseDefinitionGroupMember[]>(
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/member`
     );
   }
 

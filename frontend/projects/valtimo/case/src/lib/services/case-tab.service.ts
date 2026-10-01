@@ -144,14 +144,17 @@ export class CaseTabService implements OnDestroy {
 
   private openCaseDefinitionKeySubscription(): void {
     this._subscriptions.add(
-      combineLatest([this._caseDefinitionKey$, this._documentId$, this._tabManagementEnabled$])
-        .subscribe(([caseDefinitionKey, documentId, tabManagementEnabled]) => {
-          if (tabManagementEnabled) {
-            this.setApiTabs(caseDefinitionKey, documentId);
-          } else {
-            this.setEnvironmentTabs(caseDefinitionKey);
-          }
-        })
+      combineLatest([
+        this._caseDefinitionKey$,
+        this._documentId$,
+        this._tabManagementEnabled$,
+      ]).subscribe(([caseDefinitionKey, documentId, tabManagementEnabled]) => {
+        if (tabManagementEnabled) {
+          this.setApiTabs(caseDefinitionKey, documentId);
+        } else {
+          this.setEnvironmentTabs(caseDefinitionKey);
+        }
+      })
     );
   }
 

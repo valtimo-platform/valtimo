@@ -211,22 +211,21 @@ export class CaseListOrchestrationService {
 
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
 
-  private readonly _columns$: Observable<Array<DefinitionColumn>> =
-    this.listService.context$.pipe(
-      filter((context): context is CaseListContext => !!context),
-      switchMap(context => this.columnService.getColumnsForContext(context)),
-      map(res => {
-        this.hasApiColumnConfig$.next(res.hasApiConfig);
-        return res.columns;
-      }),
-      tap(columns => {
-        this.listService.context$.pipe(take(1)).subscribe(context => {
-          if (context) {
-            this.paginationService.setPagination(columns, context.key);
-          }
-        });
-      })
-    );
+  private readonly _columns$: Observable<Array<DefinitionColumn>> = this.listService.context$.pipe(
+    filter((context): context is CaseListContext => !!context),
+    switchMap(context => this.columnService.getColumnsForContext(context)),
+    map(res => {
+      this.hasApiColumnConfig$.next(res.hasApiConfig);
+      return res.columns;
+    }),
+    tap(columns => {
+      this.listService.context$.pipe(take(1)).subscribe(context => {
+        if (context) {
+          this.paginationService.setPagination(columns, context.key);
+        }
+      });
+    })
+  );
 
   // --- Loading state ---
 
@@ -333,9 +332,7 @@ export class CaseListOrchestrationService {
     request: AdvancedDocumentSearchRequest;
     context: CaseListContext;
   }> = combineLatest([this.pagination$, this.listService.context$]).pipe(
-    filter(
-      (args): args is [Pagination, CaseListContext] => !!args[0] && !!args[1]
-    ),
+    filter((args): args is [Pagination, CaseListContext] => !!args[0] && !!args[1]),
     map(([pagination, context]) => {
       const page = pagination.page - 1;
       return {

@@ -412,6 +412,12 @@ interface CaseDefinitionGroup {
   order: number;
 }
 
+interface CaseDefinitionGroupMember {
+  caseDefinitionKey: string;
+  caseDefinitionName: string;
+  order: number;
+}
+
 interface GroupListColumn {
   key: string;
   title?: string;
@@ -443,6 +449,7 @@ export {
   BlueprintId,
   CaseDefinition,
   CaseDefinitionGroup,
+  CaseDefinitionGroupMember,
   CaseDefinitionId,
   GroupCaseListRow,
   GroupListColumn,

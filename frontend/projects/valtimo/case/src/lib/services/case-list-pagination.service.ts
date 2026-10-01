@@ -136,9 +136,7 @@ export class CaseListPaginationService {
         this._pagination$.next(queryPaginationParams);
       } else {
         const savedSize = userSettings?.caseListPageSizes?.[caseDefinitionKey];
-        const pagination = savedSize
-          ? {...defaultPagination, size: savedSize}
-          : defaultPagination;
+        const pagination = savedSize ? {...defaultPagination, size: savedSize} : defaultPagination;
         this._pagination$.next(pagination);
       }
 
@@ -159,12 +157,18 @@ export class CaseListPaginationService {
     if (!this._caseDefinitionKey) return;
 
     const caseDefinitionKey = this._caseDefinitionKey;
-    this.userSettingsService.getUserSettings().pipe(
-      take(1),
-      switchMap(settings => {
-        const pageSizes = {...(settings?.caseListPageSizes || {}), [caseDefinitionKey]: size};
-        return this.userSettingsService.saveUserSettings({...settings, caseListPageSizes: pageSizes});
-      })
-    ).subscribe();
+    this.userSettingsService
+      .getUserSettings()
+      .pipe(
+        take(1),
+        switchMap(settings => {
+          const pageSizes = {...(settings?.caseListPageSizes || {}), [caseDefinitionKey]: size};
+          return this.userSettingsService.saveUserSettings({
+            ...settings,
+            caseListPageSizes: pageSizes,
+          });
+        })
+      )
+      .subscribe();
   }
 }

@@ -15,7 +15,11 @@
   -->
 
 <cds-tabs [cacheActive]="true" type="contained">
-  <cds-tab [heading]="'caseManagement.listTabs.cases' | translate">
+  <cds-tab
+    [active]="$activeTab() === CASE_MANAGEMENT_LIST_TAB.CASES"
+    [heading]="'caseManagement.listTabs.cases' | translate"
+    (selected)="onTabSelected(CASE_MANAGEMENT_LIST_TAB.CASES)"
+  >
     <valtimo-carbon-list
       [items]="caseListItems$ | async"
       [fields]="fields$ | async"
@@ -35,7 +39,11 @@
     </valtimo-carbon-list>
   </cds-tab>
 
-  <cds-tab [heading]="'caseManagement.listTabs.caseGroups' | translate">
+  <cds-tab
+    [active]="$activeTab() === CASE_MANAGEMENT_LIST_TAB.GROUPS"
+    [heading]="'caseManagement.listTabs.caseGroups' | translate"
+    (selected)="onTabSelected(CASE_MANAGEMENT_LIST_TAB.GROUPS)"
+  >
     <valtimo-case-definition-group-list></valtimo-case-definition-group-list>
   </cds-tab>
 </cds-tabs>

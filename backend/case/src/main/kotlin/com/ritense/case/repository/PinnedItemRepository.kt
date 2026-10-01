@@ -23,7 +23,7 @@ import java.util.UUID
 
 interface PinnedItemRepository : JpaRepository<PinnedItem, UUID> {
 
-    fun findByUserIdOrderByPinnedAtDesc(userId: String): List<PinnedItem>
+    fun findByUserIdOrderBySortOrderAscPinnedAtDesc(userId: String): List<PinnedItem>
 
     fun findByUserIdAndItemTypeAndItemKey(userId: String, itemType: PinnedItemType, itemKey: String): PinnedItem?
 

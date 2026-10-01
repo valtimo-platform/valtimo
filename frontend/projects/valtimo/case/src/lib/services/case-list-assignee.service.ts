@@ -47,16 +47,14 @@ export class CaseListAssigneeService {
       if (context.type === 'group') {
         return of(true);
       }
-      return this.documentService.getCaseSettings(context.key).pipe(
-        map(caseSettings => caseSettings?.canHaveAssignee ?? false)
-      );
+      return this.documentService
+        .getCaseSettings(context.key)
+        .pipe(map(caseSettings => caseSettings?.canHaveAssignee ?? false));
     }),
     tap(canHaveAssignee => {
       const visibleTabs: AssigneeFilter[] = this.configService.config.visibleCaseListTabs ?? [];
 
-      this._defaultAssigneeFilter$.next(
-        !!visibleTabs && canHaveAssignee ? visibleTabs[0] : 'ALL'
-      );
+      this._defaultAssigneeFilter$.next(!!visibleTabs && canHaveAssignee ? visibleTabs[0] : 'ALL');
     })
   );
 

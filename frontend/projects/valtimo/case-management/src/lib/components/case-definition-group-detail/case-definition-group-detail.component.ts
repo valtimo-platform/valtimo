@@ -22,7 +22,8 @@ import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, filter, map, Subscription, switchMap} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../services';
-import {CaseDefinitionGroupWithMembersResponse} from '../../models';
+import {CaseDefinitionGroupWithMembersResponse, CaseManagementListTab} from '../../models';
+import {CASE_MANAGEMENT_LIST_TAB_PARAM} from '../../constants';
 
 enum GroupTabEnum {
   CONFIG = 'config',
@@ -63,6 +64,13 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
+    this.breadcrumbService.setSecondBreadcrumb({
+      route: ['/case-management'],
+      routeExtras: {queryParams: {[CASE_MANAGEMENT_LIST_TAB_PARAM]: CaseManagementListTab.GROUPS}},
+      content: 'caseManagement.listTabs.caseGroups',
+      href: `/case-management?${CASE_MANAGEMENT_LIST_TAB_PARAM}=${CaseManagementListTab.GROUPS}`,
+    });
+
     this._subscriptions.add(
       this.groupKey$
         .pipe(
@@ -82,6 +90,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.breadcrumbService.clearSecondBreadcrumb();
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
     this.breadcrumbService.clearThirdBreadcrumb();

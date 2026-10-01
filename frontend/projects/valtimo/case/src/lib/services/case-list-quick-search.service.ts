@@ -72,10 +72,7 @@ export class CaseListQuickSearchService
     return this.params$.pipe(
       take(1),
       switchMap((params: CaseListQuickSearchParams | null) =>
-        this.httpClient.post<QuickSearchItem>(
-          this.getStoredQuickSearchUrl(params),
-          quickSearchItem
-        )
+        this.httpClient.post<QuickSearchItem>(this.getStoredQuickSearchUrl(params), quickSearchItem)
       )
     );
   }

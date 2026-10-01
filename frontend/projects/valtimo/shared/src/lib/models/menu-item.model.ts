@@ -30,11 +30,15 @@ interface MenuItem {
   id?: string;
   link?: string[] | null;
   titleLink?: string[];
+  // Routes this item owns that have no menu entry of their own; keeps the item highlighted there.
+  sectionLinks?: string[];
   // Tints the item's icon, e.g. the dot of a pinned case group or case type.
   color?: string;
   textClass?: string;
   iconClass?: string;
   children?: MenuItem[];
+  // Set to make the children drag-and-drop sortable; receives the child ids in their new order.
+  onChildrenReorder?: (childIds: string[]) => void;
   roles?: string[];
   show?: boolean;
   count$?: Observable<number>;

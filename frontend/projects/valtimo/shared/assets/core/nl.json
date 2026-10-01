@@ -36,7 +36,6 @@
       "groups": {
         "title": "Zaakgroepen",
         "singular": "Zaakgroep",
-        "myCases": "Mijn dossiers in deze zaakgroep",
         "noResults": "Geen zaakgroepen gevonden voor je zoekopdracht.",
         "open": "{{title}} openen",
         "pin": "Vastzetten in de zijbalk"

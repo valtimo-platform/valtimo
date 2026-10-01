@@ -74,7 +74,9 @@ export class MenuService implements OnDestroy {
     return combineLatest([this.currentRoute$, this.menuItems$]).pipe(
       filter(() => !this.pendingChangesService.pendingChanges),
       map(([currentRoute, menuItems]) => {
-        let closestSequence = '0';
+        // No match means no highlight. Defaulting to '0' marked the first item -- the dashboard --
+        // as active on every route no item owns.
+        let closestSequence = '';
         let highestDiff = 0;
 
         const normalize = (value: string): string =>
@@ -84,8 +86,13 @@ export class MenuService implements OnDestroy {
 
         const checkItemMatch = (rawUrl: string, seq: string, parentSeq?: string): void => {
           const normalizedUrl = normalize(rawUrl);
+          // The root link normalizes to '', which matches every url; only the root route is its own.
           const diff =
-            normalizedCurrent.length - normalizedCurrent.replace(normalizedUrl, '').length;
+            normalizedUrl === ''
+              ? normalizedCurrent === ''
+                ? 1
+                : 0
+              : normalizedCurrent.length - normalizedCurrent.replace(normalizedUrl, '').length;
 
           if (diff > highestDiff) {
             highestDiff = diff;
@@ -101,6 +108,11 @@ export class MenuService implements OnDestroy {
           // Parent sequence is passed as its own parent, so the item shows up as a breadcrumb.
           if (Array.isArray(item.titleLink))
             checkItemMatch(item.titleLink.join('/'), `${item.sequence}`, `${item.sequence}`);
+
+          // Routes the item owns without having a menu entry of their own, e.g. an unpinned group.
+          item.sectionLinks?.forEach(sectionLink =>
+            checkItemMatch(sectionLink, `${item.sequence}`, `${item.sequence}`)
+          );
 
           item.children?.forEach(child => {
             if (Array.isArray(child.link)) {

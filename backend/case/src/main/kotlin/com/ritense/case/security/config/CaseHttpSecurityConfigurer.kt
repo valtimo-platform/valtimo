@@ -158,6 +158,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(DELETE, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/stored-quick-search/{title}")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/pinned-item")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/pinned-item")).authenticated()
+                    .requestMatchers(antMatcher(PUT, "/api/v1/pinned-item/order")).authenticated()
                     .requestMatchers(antMatcher(DELETE, "/api/v1/pinned-item/{itemType}/{itemKey}")).authenticated()
             }
         } catch (e: Exception) {

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {DragDropModule} from '@angular/cdk/drag-drop';
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {LeftSidebarComponent} from './left-sidebar.component';
@@ -28,6 +29,7 @@ import {SubmenuTitleClickDirective} from '../../directives/submenu-title-click/s
   declarations: [LeftSidebarComponent, CaseCountPipe],
   imports: [
     CommonModule,
+    DragDropModule,
     MenuModule,
     PageTitleModule,
     IconModule,
