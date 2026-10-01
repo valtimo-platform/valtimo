@@ -20,15 +20,20 @@ import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.deployerapi.web.filter.DeployerImportSizeLimitFilter
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.hamcrest.Matchers.startsWith
+import jakarta.servlet.Filter
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequestWrapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
@@ -48,6 +53,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
+import org.springframework.util.unit.DataSize
 import org.springframework.web.server.ResponseStatusException
 import org.zalando.problem.Problem
 import org.zalando.problem.Status
@@ -68,21 +75,7 @@ class DeployerCaseDefinitionResourceTest {
         caseDefinitionService = mock()
         exportService = mock()
         caseDefinitionImportService = mock()
-
-        val converter = MappingJackson2HttpMessageConverter()
-        converter.objectMapper = MapperSingleton.get()
-
-        mockMvc = MockMvcBuilders
-            .standaloneSetup(
-                DeployerCaseDefinitionResource(
-                    caseDefinitionService,
-                    exportService,
-                    caseDefinitionImportService,
-                )
-            )
-            .setControllerAdvice(DeployerApiExceptionHandler())
-            .setMessageConverters(converter, ByteArrayHttpMessageConverter())
-            .build()
+        mockMvc = buildMockMvc()
     }
 
     @Test
@@ -291,6 +284,58 @@ class DeployerCaseDefinitionResourceTest {
         assertEquals("/v3/api-docs/deployer", response.getHeader("Location"))
     }
 
+    @Test
+    fun `should reject an import whose declared content length exceeds the limit`() {
+        mockMvc.perform(
+            post(IMPORT_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(importBody(ByteArray(MAX_IMPORT_SIZE.toBytes().toInt())))
+        )
+            .andExpect(status().isPayloadTooLarge)
+            .andExpect(jsonPath("$.message").value(startsWith("Request body exceeds the maximum")))
+
+        verify(caseDefinitionImportService, never()).import(any(), anyOrNull(), anyOrNull(), anyOrNull())
+    }
+
+    @Test
+    fun `should reject an import without content length once the body exceeds the limit`() {
+        val hideContentLength = Filter { request, response, chain ->
+            chain.doFilter(object : HttpServletRequestWrapper(request as HttpServletRequest) {
+                override fun getContentLength() = -1
+                override fun getContentLengthLong() = -1L
+            }, response)
+        }
+
+        buildMockMvc(hideContentLength).perform(
+            post(IMPORT_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(importBody(ByteArray(MAX_IMPORT_SIZE.toBytes().toInt())))
+        )
+            .andExpect(status().isPayloadTooLarge)
+            .andExpect(jsonPath("$.message").value(startsWith("Request body exceeds the maximum")))
+
+        verify(caseDefinitionImportService, never()).import(any(), anyOrNull(), anyOrNull(), anyOrNull())
+    }
+
+    private fun buildMockMvc(vararg leadingFilters: Filter): MockMvc {
+        val converter = MappingJackson2HttpMessageConverter()
+        converter.objectMapper = MapperSingleton.get()
+
+        return MockMvcBuilders
+            .standaloneSetup(
+                DeployerCaseDefinitionResource(
+                    caseDefinitionService,
+                    exportService,
+                    caseDefinitionImportService,
+                )
+            )
+            .setControllerAdvice(DeployerApiExceptionHandler())
+            .setMessageConverters(converter, ByteArrayHttpMessageConverter())
+            .addFilters<StandaloneMockMvcBuilder>(*leadingFilters)
+            .addFilter<StandaloneMockMvcBuilder>(DeployerImportSizeLimitFilter(MAX_IMPORT_SIZE), IMPORT_PATH)
+            .build()
+    }
+
     private fun importBody(file: ByteArray) =
         """{"file":"${Base64.getEncoder().encodeToString(file)}"}"""
 
@@ -299,4 +344,9 @@ class DeployerCaseDefinitionResourceTest {
         name = key,
         createdDate = null,
     )
+
+    companion object {
+        private const val IMPORT_PATH = "/api/deployer/v1/case-definition/import"
+        private val MAX_IMPORT_SIZE = DataSize.ofKilobytes(1)
+    }
 }

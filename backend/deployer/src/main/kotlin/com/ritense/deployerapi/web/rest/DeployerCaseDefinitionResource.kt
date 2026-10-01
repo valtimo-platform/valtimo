@@ -21,6 +21,7 @@ import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.CaseDefinitionImportResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
+import com.ritense.deployerapi.web.rest.dto.ErrorResponseDto
 import com.ritense.deployerapi.web.rest.dto.ImportRequestDto
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
@@ -112,6 +113,14 @@ class DeployerCaseDefinitionResource(
         content = [Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
             schema = Schema(implementation = CaseDefinitionImportResponse::class)
+        )]
+    )
+    @ApiResponse(
+        responseCode = "413",
+        description = "Payload Too Large",
+        content = [Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = Schema(implementation = ErrorResponseDto::class)
         )]
     )
     @RunWithoutAuthorization

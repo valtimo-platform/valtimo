@@ -19,15 +19,19 @@ package com.ritense.deployerapi.configuration
 import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.deployerapi.security.config.DeployerApiHttpSecurityConfigurer
+import com.ritense.deployerapi.web.filter.DeployerImportSizeLimitFilter
 import com.ritense.deployerapi.web.rest.DeployerApiExceptionHandler
 import com.ritense.deployerapi.web.rest.DeployerCaseDefinitionResource
 import com.ritense.deployerapi.web.rest.DeployerOpenApiResource
 import com.ritense.exporter.ExportService
 import org.springdoc.core.models.GroupedOpenApi
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
+import org.springframework.util.unit.DataSize
 
 @AutoConfiguration
 class DeployerApiAutoConfiguration {
@@ -56,6 +60,16 @@ class DeployerApiAutoConfiguration {
     @ConditionalOnMissingBean(DeployerApiExceptionHandler::class)
     fun deployerApiExceptionHandler(): DeployerApiExceptionHandler {
         return DeployerApiExceptionHandler()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = ["deployerImportSizeLimitFilter"])
+    fun deployerImportSizeLimitFilter(
+        @Value("\${valtimo.deployer.import.max-request-size:100MB}") maxRequestSize: DataSize,
+    ): FilterRegistrationBean<DeployerImportSizeLimitFilter> {
+        return FilterRegistrationBean(DeployerImportSizeLimitFilter(maxRequestSize)).apply {
+            addUrlPatterns("/api/deployer/v1/case-definition/import")
+        }
     }
 
     @Order(301)

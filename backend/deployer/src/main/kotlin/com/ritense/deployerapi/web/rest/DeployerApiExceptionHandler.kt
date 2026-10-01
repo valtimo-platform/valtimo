@@ -17,6 +17,7 @@
 package com.ritense.deployerapi.web.rest
 
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.deployerapi.web.filter.RequestBodyTooLargeException
 import com.ritense.deployerapi.web.rest.dto.ErrorResponseDto
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -62,6 +63,13 @@ class DeployerApiExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleUnreadableRequest(exception: HttpMessageNotReadableException): ResponseEntity<ErrorResponseDto> {
+        val tooLarge = generateSequence<Throwable>(exception) { it.cause }
+            .filterIsInstance<RequestBodyTooLargeException>()
+            .firstOrNull()
+        if (tooLarge != null) {
+            logger.info { "Deployer request body was too large: ${tooLarge.message}" }
+            return errorResponse(HttpStatus.PAYLOAD_TOO_LARGE, tooLarge.message!!)
+        }
         logger.info(exception) { "Deployer request body could not be read" }
         return errorResponse(HttpStatus.BAD_REQUEST, "Request could not be read")
     }
