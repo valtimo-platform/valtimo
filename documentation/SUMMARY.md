@@ -83,11 +83,11 @@
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
   * [13.49.0](release-notes/13.x.x/13.49.0/README.md)
-  * [13.47.1](release-notes/13.x.x/13.47.1/README.md)
   * [13.47.0](release-notes/13.x.x/13.47.0/README.md)
+    * [13.47.1](release-notes/13.x.x/13.47.1/README.md)
   * [13.46.0](release-notes/13.x.x/13.46.0/README.md)
-  * [13.45.1](release-notes/13.x.x/13.45.1/README.md)
   * [13.45.0](release-notes/13.x.x/13.45.0/README.md)
+    * [13.45.1](release-notes/13.x.x/13.45.1/README.md)
   * [13.44.0](release-notes/13.x.x/13.44.0/README.md)
   * [13.43.0](release-notes/13.x.x/13.43.0/README.md)
 
