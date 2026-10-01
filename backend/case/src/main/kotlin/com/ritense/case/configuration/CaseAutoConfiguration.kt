@@ -36,6 +36,7 @@ import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.case.service.CaseDefinitionImportPreviewService
+import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionImporter
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseExporter
@@ -155,14 +156,21 @@ class CaseAutoConfiguration {
         importPreviewContributors: List<ImportPreviewContributor>,
     ) = CaseDefinitionImportPreviewService(objectMapper, importPreviewContributors)
 
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionImportService::class)
+    fun caseDefinitionImportService(
+        importService: ImportService,
+        caseDefinitionService: CaseDefinitionService,
+        caseDefinitionRepository: CaseDefinitionRepository,
+    ) = CaseDefinitionImportService(importService, caseDefinitionService, caseDefinitionRepository)
+
     @ConditionalOnMissingBean(name = ["caseDefinitionResource"])
     @Bean
     fun caseDefinitionResource(
         service: CaseDefinitionService,
         exportService: ExportService,
-        importService: ImportService,
+        caseDefinitionImportService: CaseDefinitionImportService,
         activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionRepository: CaseDefinitionRepository,
         caseDefinitionChecker: CaseDefinitionChecker,
         configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
         caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
@@ -172,8 +180,7 @@ class CaseAutoConfiguration {
             service,
             activeCaseDefinitionService,
             exportService,
-            importService,
-            caseDefinitionRepository,
+            caseDefinitionImportService,
             caseDefinitionChecker,
             configurationIssueRepository,
             caseDefinitionImportPreviewService,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.authentication;
+package com.ritense.deployerapi.web.rest.dto
 
-public final class AuthoritiesConstants {
+import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 
-    public static final String DEVELOPER = "ROLE_DEVELOPER";
-    public static final String ADMIN = "ROLE_ADMIN";
-    public static final String DEPLOYER = "ROLE_DEPLOYER";
-    public static final String USER = "ROLE_USER";
-    public static final String ANONYMOUS = "ROLE_ANONYMOUS";
-    public static final String ACTUATOR = "ROLE_ACTUATOR";
-
-    private AuthoritiesConstants() {
-    }
-
-}
+data class ImportRequestDto(
+    @Schema(type = "string", format = "byte")
+    val file: ByteArray,
+    @Schema(description = "Maps plugin configuration ids from the source environment onto this environment")
+    val pluginConfigurationMappings: Map<UUID, UUID?>? = null,
+)
