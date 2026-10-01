@@ -48,6 +48,7 @@ import {
   LayerModule,
   ModalModule,
   NumberModule,
+  TilesModule,
 } from 'carbon-components-angular';
 import {CaseDefinitionGroupManagementService} from '../../../../../services';
 import {GroupMember, GroupPathMapping} from '../../../../../models';
@@ -79,6 +80,7 @@ const DISPLAY_TYPE_ITEMS = [
     LayerModule,
     ModalModule,
     NumberModule,
+    TilesModule,
     TooltipIconModule,
     ValtimoCdsModalDirective,
     ValuePathSelectorComponent,

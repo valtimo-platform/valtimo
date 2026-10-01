@@ -46,6 +46,7 @@ import {
   InputModule,
   LayerModule,
   ModalModule,
+  TilesModule,
 } from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {CaseDefinitionGroupManagementService} from '../../../../../services';
@@ -76,6 +77,7 @@ const MATCH_TYPE_ITEMS = MATCH_TYPES.map(t => ({content: t, value: t}));
     InputModule,
     LayerModule,
     ModalModule,
+    TilesModule,
     TooltipIconModule,
     ValtimoCdsModalDirective,
     ValuePathSelectorComponent,

@@ -52,48 +52,52 @@
         <v-tooltip-icon [tooltip]="'caseManagement.groups.listColumns.pathPerCaseTooltip' | translate"></v-tooltip-icon>
       </p>
 
-      <div class="valtimo-group-column-modal__path-toolbar">
-        <input
-          cdsText
-          [formControl]="pathSearchControl"
-          [placeholder]="'caseManagement.groups.searchCaseTypes' | translate"
-          class="valtimo-group-column-modal__path-search"
-        />
+      <cds-tile class="valtimo-group-column-modal__path-tile" [cdsLayer]="1">
+        <div [cdsLayer]="0">
+          <div class="valtimo-group-column-modal__path-toolbar">
+            <input
+              cdsText
+              [formControl]="pathSearchControl"
+              [placeholder]="'caseManagement.groups.searchCaseTypes' | translate"
+              class="valtimo-group-column-modal__path-search"
+            />
 
-        <span class="valtimo-group-column-modal__path-counter">
-          {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
-        </span>
+            <span class="valtimo-group-column-modal__path-counter">
+              {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
+            </span>
 
-        <cds-checkbox
-          class="valtimo-group-column-modal__show-empty-checkbox"
-          [checked]="showOnlyEmpty"
-          (checkedChange)="onShowOnlyEmptyChange($event)"
-        >
-          {{ 'caseManagement.groups.showOnlyEmpty' | translate }}
-        </cds-checkbox>
-      </div>
+            <cds-checkbox
+              class="valtimo-group-column-modal__show-empty-checkbox"
+              [checked]="showOnlyEmpty"
+              (checkedChange)="onShowOnlyEmptyChange($event)"
+            >
+              {{ 'caseManagement.groups.showOnlyEmpty' | translate }}
+            </cds-checkbox>
+          </div>
 
-      <div
-        *ngFor="let item of displayedMembers; trackBy: trackByMember"
-        class="valtimo-group-column-modal__path-row"
-      >
-        <div class="valtimo-group-column-modal__case-label">
-          <span class="valtimo-group-column-modal__case-name">{{ item.member.caseDefinitionName || item.member.caseDefinitionKey }}</span>
-          <span class="valtimo-group-column-modal__case-key">({{ item.member.caseDefinitionKey }})</span>
+          <div
+            *ngFor="let item of displayedMembers; trackBy: trackByMember"
+            class="valtimo-group-column-modal__path-row"
+          >
+            <div class="valtimo-group-column-modal__case-label">
+              <span class="valtimo-group-column-modal__case-name">{{ item.member.caseDefinitionName || item.member.caseDefinitionKey }}</span>
+              <span class="valtimo-group-column-modal__case-key">({{ item.member.caseDefinitionKey }})</span>
+            </div>
+            <valtimo-value-path-selector
+              [formControl]="pathControls[item.index]"
+              [caseDefinitionKey]="item.member.caseDefinitionKey"
+              [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+            ></valtimo-value-path-selector>
+          </div>
+
+          <div
+            *ngIf="displayedMembers.length === 0 && members.length > 0"
+            class="valtimo-group-column-modal__no-results"
+          >
+            {{ 'caseManagement.groups.noMatchingCaseTypes' | translate }}
+          </div>
         </div>
-        <valtimo-value-path-selector
-          [formControl]="pathControls[item.index]"
-          [caseDefinitionKey]="item.member.caseDefinitionKey"
-          [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
-        ></valtimo-value-path-selector>
-      </div>
-
-      <div
-        *ngIf="displayedMembers.length === 0 && members.length > 0"
-        class="valtimo-group-column-modal__no-results"
-      >
-        {{ 'caseManagement.groups.noMatchingCaseTypes' | translate }}
-      </div>
+      </cds-tile>
     </div>
 
     <div class="valtimo-group-column-modal__dropdown-field">

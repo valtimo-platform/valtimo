@@ -36,7 +36,12 @@
 
 .valtimo-group-search-field-modal {
   &__path-section {
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
+  }
+
+  &__path-tile {
+    padding: 1rem;
   }
 
   &__path-title {
