@@ -55,7 +55,7 @@
   &__path-counter {
     font-size: 0.75rem;
     color: var(--cds-text-secondary);
-    margin: 0 0 0.5rem 0;
+    white-space: nowrap;
   }
 
   &__path-toolbar {
@@ -68,6 +68,10 @@
   &__path-search {
     flex: 1;
     max-width: 300px;
+  }
+
+  &__show-empty-checkbox {
+    margin-left: auto;
   }
 
   &__no-results {

@@ -52,10 +52,6 @@
         <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.pathPerCaseTooltip' | translate"></v-tooltip-icon>
       </p>
 
-      <p class="valtimo-group-search-field-modal__path-counter">
-        {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
-      </p>
-
       <div class="valtimo-group-search-field-modal__path-toolbar">
         <input
           cdsText
@@ -64,7 +60,12 @@
           class="valtimo-group-search-field-modal__path-search"
         />
 
+        <span class="valtimo-group-search-field-modal__path-counter">
+          {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
+        </span>
+
         <cds-checkbox
+          class="valtimo-group-search-field-modal__show-empty-checkbox"
           [checked]="showOnlyEmpty"
           (checkedChange)="onShowOnlyEmptyChange($event)"
         >
