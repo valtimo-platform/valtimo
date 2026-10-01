@@ -675,8 +675,11 @@ class PluginService(
             .filterValues { it != null && it.isTextual }
             .mapValues {
                 it.value.textValue()
-            }.run {
-                // Resolve all string values, which might or might not be placeholders.
+            }
+            // A literal like "mailto:..." has a colon but no resolver for its prefix, so it is passed through as is
+            .filterValues { valueResolverService.supportsValue(it) }
+            .run {
+                // Resolve all string values whose prefix has a resolver.
                 valueResolverService.resolveValues(
                     processInstanceId = execution.processInstanceId,
                     variableScope = execution,
@@ -717,8 +720,11 @@ class PluginService(
                 .filterValues { it != null && it.isTextual }
                 .mapValues {
                     it.value.textValue()
-                }.run {
-                    // Resolve all string values, which might or might not be placeholders.
+                }
+                // A literal like "mailto:..." has a colon but no resolver for its prefix, so it is passed through as is
+                .filterValues { valueResolverService.supportsValue(it) }
+                .run {
+                    // Resolve all string values whose prefix has a resolver.
                     valueResolverService.resolveValues(
                         processInstanceId = task.execution.processInstanceId,
                         variableScope = task.execution,

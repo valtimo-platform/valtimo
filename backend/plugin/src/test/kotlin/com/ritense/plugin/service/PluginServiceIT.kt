@@ -37,6 +37,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito.doReturn
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -336,6 +338,29 @@ internal class PluginServiceIT : BaseIntegrationTest() {
                 pluginService.invoke(mock<DelegateExecution>(), processLink)
             }
         )
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["mailto:info@example.com", "urn:nld:zaak:123", "https://some-website", "2025-05-15T11:31:30.721Z"])
+    @Transactional
+    fun `should pass a literal containing a colon through to the plugin`(literal: String) {
+        val processLink = PluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = UUID.randomUUID().toString(),
+            activityId = "test",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = objectMapper.createObjectNode().put("someString", literal),
+            pluginConfigurationId = pluginConfiguration.id,
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "other-test-action"
+        )
+
+        val execution = mock<DelegateExecution>()
+        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
+
+        val result = pluginService.invoke(execution, processLink)
+
+        assertEquals(literal, result)
     }
 
     @Test

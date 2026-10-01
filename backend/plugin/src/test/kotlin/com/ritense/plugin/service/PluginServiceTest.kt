@@ -47,7 +47,10 @@ import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.FixedValueResolverFactory
+import com.ritense.valueresolver.ProcessVariableValueResolverFactory
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.valueresolver.ValueResolverServiceImpl
 import jakarta.validation.Validation
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -100,7 +103,11 @@ internal class PluginServiceTest {
         environment = mock()
         pluginConfigurationUsageResolver = mock()
         pluginActionResultHandler = mock()
-        pluginService = spy(PluginService(
+        pluginService = newPluginService(valueResolverService)
+    }
+
+    private fun newPluginService(valueResolverService: ValueResolverService): PluginService {
+        return spy(PluginService(
             pluginDefinitionRepository = pluginDefinitionRepository,
             pluginConfigurationRepository = pluginConfigurationRepository,
             pluginActionDefinitionRepository = pluginActionDefinitionRepository,
@@ -545,6 +552,62 @@ internal class PluginServiceTest {
     }
 
     @Test
+    fun `should pass a delegateExecution string property containing a colon through as a literal`() {
+        val execution = mock<DelegateExecution>()
+        val processLink = stringActionProcessLink(ActivityTypeWithEventName.SERVICE_TASK_START, "test-action-string")
+        val testDependency = mock<TestDependency>()
+        val pluginService = pluginServiceWithRealValueResolver(testDependency)
+        whenever(execution.processInstanceId).thenReturn("test")
+        whenever(execution.getVariable("name")).thenReturn("John")
+
+        pluginService.invoke(execution, processLink)
+
+        verify(testDependency).processStrings("mailto:info@example.com", "2025-05-15T11:31:30.721Z", "John")
+    }
+
+    @Test
+    fun `should pass a delegateTask string property containing a colon through as a literal`() {
+        val task = mock<DelegateTask>()
+        val execution = mock<DelegateExecution>()
+        val processLink = stringActionProcessLink(ActivityTypeWithEventName.USER_TASK_CREATE, "test-action-string-task")
+        val testDependency = mock<TestDependency>()
+        val pluginService = pluginServiceWithRealValueResolver(testDependency)
+        whenever(task.execution).thenReturn(execution)
+        whenever(execution.processInstanceId).thenReturn("test")
+        whenever(execution.getVariable("name")).thenReturn("John")
+
+        pluginService.invoke(task, processLink)
+
+        verify(testDependency).processStrings("mailto:info@example.com", "2025-05-15T11:31:30.721Z", "John")
+    }
+
+    private fun stringActionProcessLink(activityType: ActivityTypeWithEventName, actionKey: String) = PluginProcessLink(
+        id = UUID.randomUUID(),
+        processDefinitionId = "process",
+        activityId = "activity",
+        activityType = activityType,
+        actionProperties = MapperSingleton.get().readTree(
+            "{\"address\":\"mailto:info@example.com\",\"timestamp\":\"2025-05-15T11:31:30.721Z\",\"name\":\"pv:name\"}"
+        ) as ObjectNode,
+        pluginConfigurationId = PluginConfigurationId.newId(),
+        pluginConfigurationReference = PluginConfigurationReference(),
+        pluginActionDefinitionKey = actionKey
+    )
+
+    private fun pluginServiceWithRealValueResolver(testDependency: TestDependency): PluginService {
+        val pluginService = newPluginService(
+            ValueResolverServiceImpl(
+                listOf(ProcessVariableValueResolverFactory(mock(), MapperSingleton.get()), FixedValueResolverFactory())
+            )
+        )
+        val pluginConfiguration = newPluginConfiguration(newPluginDefinition())
+        whenever(pluginConfigurationRepository.getReferenceById(any())).thenReturn(pluginConfiguration)
+        whenever(pluginFactory.canCreate(any())).thenReturn(true)
+        whenever(pluginFactory.create(any())).thenReturn(TestPlugin(testDependency))
+        return pluginService
+    }
+
+    @Test
     fun `should apply action result mappings when the link declares them`() {
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
@@ -964,6 +1027,34 @@ internal class PluginServiceTest {
             testDependency.processInt(test)
             return TestActionResult(test)
         }
+
+        @PluginAction(
+            key = "test-action-string",
+            title = "Test action string",
+            description = "This is an action used to verify string property resolution",
+            activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        )
+        fun doThingWithStrings(
+            @PluginActionProperty address: String,
+            @PluginActionProperty timestamp: String,
+            @PluginActionProperty name: String,
+        ) {
+            testDependency.processStrings(address, timestamp, name)
+        }
+
+        @PluginAction(
+            key = "test-action-string-task",
+            title = "Test action string task",
+            description = "This is an action used to verify string property resolution",
+            activityTypes = [ActivityTypeWithEventName.USER_TASK_CREATE]
+        )
+        fun doThingWithStringsTask(
+            @PluginActionProperty address: String,
+            @PluginActionProperty timestamp: String,
+            @PluginActionProperty name: String,
+        ) {
+            testDependency.processStrings(address, timestamp, name)
+        }
     }
 
     data class TestActionResult(val value: Int)
@@ -975,5 +1066,6 @@ internal class PluginServiceTest {
 
     interface TestDependency{
         fun processInt(test: Int?)
+        fun processStrings(address: String, timestamp: String, name: String)
     }
 }

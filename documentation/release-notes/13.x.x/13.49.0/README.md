@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Plugins | A plugin action field filled with a fixed text such as `mailto:info@example.com` no longer makes the process step fail |
