@@ -45,6 +45,7 @@ import com.ritense.valueresolver.ValueResolverService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -298,6 +299,48 @@ class GroupCaseInstanceServiceTest {
         }
 
         verify(quickSearchRepository, never()).deleteByGroupKeyAndUserIdAndTitle(any(), any(), any())
+    }
+
+    @Test
+    fun `hasViewPermission should return false when AccessDeniedException is thrown`() {
+        val groupKey = "test_group"
+        val group = createTestGroup(groupKey)
+        val member = CaseDefinitionGroupMember(
+            id = CaseDefinitionGroupMemberId(groupKey = groupKey, caseDefinitionKey = "test-case"),
+            group = group,
+            order = 0
+        )
+        val caseDefinition = mock<CaseDefinition>()
+
+        whenever(memberRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)).thenReturn(listOf(member))
+        whenever(caseDefinitionService.getActiveCaseDefinition("test-case")).thenReturn(caseDefinition)
+        whenever(authorizationService.hasPermission(any<AuthorizationRequest<CaseDefinition>>()))
+            .thenThrow(AccessDeniedException("Access denied"))
+
+        val result = service.getAccessibleMembers(groupKey)
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `hasViewPermission should propagate non-authorization exceptions`() {
+        val groupKey = "test_group"
+        val group = createTestGroup(groupKey)
+        val member = CaseDefinitionGroupMember(
+            id = CaseDefinitionGroupMemberId(groupKey = groupKey, caseDefinitionKey = "test-case"),
+            group = group,
+            order = 0
+        )
+        val caseDefinition = mock<CaseDefinition>()
+
+        whenever(memberRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)).thenReturn(listOf(member))
+        whenever(caseDefinitionService.getActiveCaseDefinition("test-case")).thenReturn(caseDefinition)
+        whenever(authorizationService.hasPermission(any<AuthorizationRequest<CaseDefinition>>()))
+            .thenThrow(RuntimeException("Database error"))
+
+        assertThrows<RuntimeException> {
+            service.getAccessibleMembers(groupKey)
+        }
     }
 
     private fun createTestGroup(key: String): CaseDefinitionGroup {

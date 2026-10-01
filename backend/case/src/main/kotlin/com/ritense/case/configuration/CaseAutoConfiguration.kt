@@ -54,6 +54,8 @@ import com.ritense.case.service.CaseInstanceService
 import com.ritense.case.service.CaseListExporter
 import com.ritense.case.service.CaseListImporter
 import com.ritense.case.service.CaseListRowMapper
+import com.ritense.case.service.CaseDefinitionGroupExporter
+import com.ritense.case.service.CaseDefinitionGroupImporter
 import com.ritense.case.service.CaseTabExporter
 import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
@@ -571,6 +573,7 @@ class CaseAutoConfiguration {
         listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
         searchFieldRepository: GroupSearchFieldRepository,
         searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+        caseDefinitionRepository: CaseDefinitionRepository,
         authorizationService: AuthorizationService
     ): CaseDefinitionGroupService {
         return CaseDefinitionGroupService(
@@ -580,17 +583,54 @@ class CaseAutoConfiguration {
             listColumnPathMappingRepository,
             searchFieldRepository,
             searchFieldPathMappingRepository,
+            caseDefinitionRepository,
             authorizationService
         )
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseDefinitionGroupExporter::class)
+    fun caseDefinitionGroupExporter(
+        objectMapper: ObjectMapper,
+        groupService: CaseDefinitionGroupService,
+    ) = CaseDefinitionGroupExporter(objectMapper, groupService)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionGroupImporter::class)
+    fun caseDefinitionGroupImporter(
+        objectMapper: ObjectMapper,
+        groupRepository: CaseDefinitionGroupRepository,
+        memberRepository: CaseDefinitionGroupMemberRepository,
+        listColumnRepository: GroupListColumnRepository,
+        listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
+        searchFieldRepository: GroupSearchFieldRepository,
+        searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+        caseDefinitionRepository: CaseDefinitionRepository,
+    ) = CaseDefinitionGroupImporter(
+        objectMapper,
+        groupRepository,
+        memberRepository,
+        listColumnRepository,
+        listColumnPathMappingRepository,
+        searchFieldRepository,
+        searchFieldPathMappingRepository,
+        caseDefinitionRepository
+    )
+
+    @Bean
     @ConditionalOnMissingBean(CaseDefinitionGroupManagementResource::class)
     fun caseDefinitionGroupManagementResource(
         groupService: CaseDefinitionGroupService,
-        caseDefinitionService: CaseDefinitionService
+        caseDefinitionService: CaseDefinitionService,
+        exportService: ExportService,
+        importService: ValtimoImportService,
     ): CaseDefinitionGroupManagementResource {
-    return CaseDefinitionGroupManagementResource(groupService, caseDefinitionService)
+        return CaseDefinitionGroupManagementResource(
+            groupService,
+            caseDefinitionService,
+            exportService,
+            importService
+        )
     }
 
     @Bean

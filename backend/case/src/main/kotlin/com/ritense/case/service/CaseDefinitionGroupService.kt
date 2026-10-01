@@ -36,6 +36,7 @@ import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.GroupListColumnPathMappingDto
 import com.ritense.case.web.rest.dto.GroupSearchFieldDto
@@ -59,6 +60,7 @@ class CaseDefinitionGroupService(
     private val listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
     private val searchFieldRepository: GroupSearchFieldRepository,
     private val searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+    private val caseDefinitionRepository: CaseDefinitionRepository,
     private val authorizationService: AuthorizationService
 ) {
 
@@ -122,6 +124,9 @@ class CaseDefinitionGroupService(
 
     fun addMember(groupKey: String, caseDefinitionKey: String): CaseDefinitionGroupMember {
         denyAuthorization()
+        require(caseDefinitionRepository.existsByIdKey(caseDefinitionKey)) {
+            "Case definition with key '$caseDefinitionKey' does not exist"
+        }
         val group = getGroup(groupKey)
         val order = memberRepository.findMaxOrderByGroupKey(groupKey) + 1
         return memberRepository.save(
@@ -225,6 +230,18 @@ class CaseDefinitionGroupService(
         return listColumnPathMappingRepository.findByIdGroupKeyAndIdColumnKey(groupKey, columnKey)
     }
 
+    @Transactional(readOnly = true)
+    fun getListColumnsWithMappings(groupKey: String): List<Pair<GroupListColumn, List<GroupListColumnPathMapping>>> {
+        denyAuthorization()
+        val columns = listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
+        val allMappings = listColumnPathMappingRepository.findByIdGroupKey(groupKey)
+        val mappingsByColumn = allMappings.groupBy { it.id.columnKey }
+
+        return columns.map { column ->
+            column to (mappingsByColumn[column.id.columnKey] ?: emptyList())
+        }
+    }
+
     fun updateListColumnPathMappings(
         groupKey: String,
         columnKey: String,
@@ -320,6 +337,18 @@ class CaseDefinitionGroupService(
         val field = searchFieldRepository.findByGroupKeyAndKey(groupKey, fieldKey)
             ?: throw IllegalArgumentException("No search field found with key '$fieldKey' in group '$groupKey'")
         return searchFieldPathMappingRepository.findByIdGroupSearchFieldId(field.id)
+    }
+
+    @Transactional(readOnly = true)
+    fun getSearchFieldsWithMappings(groupKey: String): List<Pair<GroupSearchField, List<GroupSearchFieldPathMapping>>> {
+        denyAuthorization()
+        val fields = searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)
+        val allMappings = searchFieldPathMappingRepository.findByIdGroupSearchFieldIdIn(fields.map { it.id })
+        val mappingsByField = allMappings.groupBy { it.id.groupSearchFieldId }
+
+        return fields.map { field ->
+            field to (mappingsByField[field.id] ?: emptyList())
+        }
     }
 
     fun updateSearchFieldPathMappings(

@@ -48,6 +48,7 @@ import {
   LayerModule,
   ModalModule,
   NumberModule,
+  TilesModule,
 } from 'carbon-components-angular';
 import {CaseDefinitionGroupManagementService} from '../../../../../services';
 import {GroupMember, GroupPathMapping} from '../../../../../models';
@@ -57,13 +58,7 @@ const DISPLAY_TYPE_ITEMS = [
   {content: 'date', value: 'date'},
   {content: 'boolean', value: 'boolean'},
   {content: 'enum', value: 'enum'},
-  {content: 'tags', value: 'array'},
-];
-
-const SORT_ITEMS = [
-  {content: '-', value: null},
-  {content: 'ASC', value: 'ASC'},
-  {content: 'DESC', value: 'DESC'},
+  {content: 'tags', value: 'tags'},
 ];
 
 @Component({
@@ -85,6 +80,7 @@ const SORT_ITEMS = [
     LayerModule,
     ModalModule,
     NumberModule,
+    TilesModule,
     TooltipIconModule,
     ValtimoCdsModalDirective,
     ValuePathSelectorComponent,
@@ -98,15 +94,42 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
   @Input() public members: GroupMember[] = [];
   @Input() public column: GroupListColumn | null = null;
   @Input() public usedKeys: string[] = [];
-  @Input() public disableDefaultSort = false;
   @Output() public closeModal = new EventEmitter<boolean>();
 
   public get modalMode(): ModalMode {
     return this.column ? 'edit' : 'add';
   }
 
+  public get filledPathCount(): number {
+    return this.pathControls.filter(c => c.value && c.value.trim() !== '').length;
+  }
+
+  public get totalMemberCount(): number {
+    return this.members.length;
+  }
+
+  public get displayedMembers(): {member: GroupMember; index: number}[] {
+    const searchTerm = (this.pathSearchControl.value || '').toLowerCase().trim();
+
+    return this.members
+      .map((member, index) => ({member, index}))
+      .filter(({member, index}) => {
+        if (this.showOnlyEmpty) {
+          const value = this.pathControls[index]?.value;
+          if (value && value.trim() !== '') return false;
+        }
+
+        if (searchTerm) {
+          const name = (member.caseDefinitionName || '').toLowerCase();
+          const key = member.caseDefinitionKey.toLowerCase();
+          if (!name.includes(searchTerm) && !key.includes(searchTerm)) return false;
+        }
+
+        return true;
+      });
+  }
+
   public readonly DISPLAY_TYPE_ITEMS = DISPLAY_TYPE_ITEMS;
-  public readonly SORT_ITEMS = SORT_ITEMS;
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   public formGroup: FormGroup = this.fb.group({
@@ -114,12 +137,13 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     key: ['', Validators.required],
     displayType: ['text', Validators.required],
     sortable: [true],
-    defaultSort: [null],
     dateFormat: [''],
     tagAmount: [1],
   });
 
   public pathControls: FormControl[] = [];
+  public pathSearchControl = new FormControl('');
+  public showOnlyEmpty = false;
   public showDateFormat = false;
   public showTagAmount = false;
   public showEnum = false;
@@ -150,11 +174,20 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     this.enumValues = values;
   }
 
+  public onShowOnlyEmptyChange(checked: boolean): void {
+    this.showOnlyEmpty = checked;
+    this.cdr.markForCheck();
+  }
+
+  public trackByMember(_index: number, item: {member: GroupMember; index: number}): string {
+    return item.member.caseDefinitionKey;
+  }
+
   private _updateVisibility(): void {
     const displayType = this.formGroup.get('displayType')?.value;
     const typeValue = displayType?.value ?? displayType;
     this.showDateFormat = typeValue === 'date';
-    this.showTagAmount = typeValue === 'array';
+    this.showTagAmount = typeValue === 'tags';
     this.showEnum = typeValue === 'enum' || typeValue === 'boolean';
     this.isYesNo = typeValue === 'boolean';
     this.cdr.markForCheck();
@@ -225,7 +258,6 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
         key: this.column.key,
         displayType: this.column.displayType.type,
         sortable: this.column.sortable,
-        defaultSort: this.column.defaultSort ?? null,
         dateFormat: params.dateFormat ?? '',
         tagAmount: params.tagAmount ?? 1,
       });
@@ -248,7 +280,6 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
         key: '',
         displayType: 'text',
         sortable: true,
-        defaultSort: null,
         dateFormat: '',
         tagAmount: 1,
       });
@@ -258,6 +289,8 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       this._updateVisibility();
       this.pathControls.forEach(c => c.setValue(''));
     }
+    this.pathSearchControl.setValue('');
+    this.showOnlyEmpty = false;
   }
 
   private _loadPathMappings(): void {
@@ -290,7 +323,6 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       title: value.title || undefined,
       displayType: {type: displayTypeValue, displayTypeParameters},
       sortable: value.sortable,
-      defaultSort: value.defaultSort || undefined,
       exportable: true,
       pathMappings: this.members
         .map((member, i) => ({

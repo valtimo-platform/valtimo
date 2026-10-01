@@ -144,6 +144,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}/search-field")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/search-field/{fieldKey}/path-mapping")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}/search-field/{fieldKey}/path-mapping")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/export")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$CASE_DEFINITION_GROUP_URL/import")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, USER_CASE_DEFINITION_GROUP_URL)).authenticated()
                     .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}")).authenticated()
                     .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/member")).authenticated()

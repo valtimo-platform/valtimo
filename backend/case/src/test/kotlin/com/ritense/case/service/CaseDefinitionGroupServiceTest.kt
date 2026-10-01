@@ -26,12 +26,15 @@ import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
+import com.ritense.case_.repository.CaseDefinitionRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.ZonedDateTime
@@ -46,6 +49,7 @@ class CaseDefinitionGroupServiceTest {
     lateinit var listColumnPathMappingRepository: GroupListColumnPathMappingRepository
     lateinit var searchFieldRepository: GroupSearchFieldRepository
     lateinit var searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository
+    lateinit var caseDefinitionRepository: CaseDefinitionRepository
     lateinit var authorizationService: AuthorizationService
     lateinit var service: CaseDefinitionGroupService
 
@@ -57,6 +61,7 @@ class CaseDefinitionGroupServiceTest {
         listColumnPathMappingRepository = mock()
         searchFieldRepository = mock()
         searchFieldPathMappingRepository = mock()
+        caseDefinitionRepository = mock()
         authorizationService = mock()
 
         service = CaseDefinitionGroupService(
@@ -66,6 +71,7 @@ class CaseDefinitionGroupServiceTest {
             listColumnPathMappingRepository,
             searchFieldRepository,
             searchFieldPathMappingRepository,
+            caseDefinitionRepository,
             authorizationService
         )
     }
@@ -138,6 +144,7 @@ class CaseDefinitionGroupServiceTest {
             order = 0
         )
 
+        whenever(caseDefinitionRepository.existsByIdKey(caseDefinitionKey)).thenReturn(true)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
         whenever(memberRepository.findMaxOrderByGroupKey(groupKey)).thenReturn(0)
         whenever(memberRepository.save(any<CaseDefinitionGroupMember>())).thenAnswer { it.arguments[0] }
@@ -150,6 +157,21 @@ class CaseDefinitionGroupServiceTest {
         assertEquals(groupKey, captor.firstValue.id.groupKey)
         assertEquals(caseDefinitionKey, captor.firstValue.id.caseDefinitionKey)
         assertEquals(1, captor.firstValue.order)
+    }
+
+    @Test
+    fun `should throw when adding member with non-existent case definition`() {
+        val groupKey = "test_group"
+        val caseDefinitionKey = "non_existent_case"
+
+        whenever(caseDefinitionRepository.existsByIdKey(caseDefinitionKey)).thenReturn(false)
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.addMember(groupKey, caseDefinitionKey)
+        }
+
+        assertEquals("Case definition with key '$caseDefinitionKey' does not exist", exception.message)
+        verify(memberRepository, never()).save(any())
     }
 
     @Test

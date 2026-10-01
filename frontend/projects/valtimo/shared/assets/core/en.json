@@ -944,7 +944,11 @@
         "namePlaceholder": "Enter a name",
         "description": "Description",
         "descriptionPlaceholder": "Enter a description"
-      }
+      },
+      "pathCounter": "{{filled}} of {{total}} case types filled",
+      "searchCaseTypes": "Search case types...",
+      "noMatchingCaseTypes": "No matching case types found",
+      "showOnlyEmpty": "Show only empty"
     },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",

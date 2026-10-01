@@ -36,7 +36,12 @@
 
 .valtimo-group-search-field-modal {
   &__path-section {
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
+  }
+
+  &__path-tile {
+    padding: 1rem;
   }
 
   &__path-title {
@@ -50,6 +55,35 @@
 
   &__path-row {
     margin-top: 0.5rem;
+  }
+
+  &__path-counter {
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+    white-space: nowrap;
+  }
+
+  &__path-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__path-search {
+    flex: 1;
+    max-width: 300px;
+  }
+
+  &__show-empty-checkbox {
+    margin-left: auto;
+  }
+
+  &__no-results {
+    font-size: 0.875rem;
+    color: var(--cds-text-secondary);
+    padding: 1rem 0;
+    text-align: center;
   }
 
   &__case-label {

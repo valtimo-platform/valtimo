@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ class ValtimoImportTypes {
         const val BUILDING_BLOCK_FORM_FLOW_DEFINITION = "buildingblockformflowdefinition"
         const val CASE_BUILDING_BLOCK_LINK = "casebuildingblocklink"
         const val STARTABLE_ITEM = "startableitem"
+        const val CASE_DEFINITION_GROUP = "casedefinitiongroup"
 
         const val OBJECT_MANAGEMENT = "objectmanagement"
 

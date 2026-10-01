@@ -37,6 +37,7 @@ import com.ritense.case.web.rest.dto.GroupCaseListRowDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
+import org.springframework.security.access.AccessDeniedException
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.SearchWithConfigRequest
@@ -114,9 +115,13 @@ class GroupCaseInstanceService(
         }
 
         val searchFields = searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)
+        val searchFieldIds = searchFields.map { it.id }
+        val allSearchFieldMappings = searchFieldPathMappingRepository
+            .findByIdGroupSearchFieldIdIn(searchFieldIds)
+            .groupBy { it.id.groupSearchFieldId }
+
         val filterPathMappings = searchFields.associate { searchField ->
-            searchField.key to searchFieldPathMappingRepository
-                .findByIdGroupSearchFieldId(searchField.id)
+            searchField.key to (allSearchFieldMappings[searchField.id] ?: emptyList())
                 .associate { it.id.caseDefinitionKey to it.path }
         }
 
@@ -128,9 +133,11 @@ class GroupCaseInstanceService(
         }
 
         val columns = listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
+        val allColumnMappings = listColumnPathMappingRepository.findByIdGroupKey(groupKey)
+        val mappingsByColumn = allColumnMappings.groupBy { it.id.columnKey }
+
         val columnPathMappings = columns.associate { column ->
-            column.id.columnKey to listColumnPathMappingRepository
-                .findByIdGroupKeyAndIdColumnKey(groupKey, column.id.columnKey)
+            column.id.columnKey to (mappingsByColumn[column.id.columnKey] ?: emptyList())
                 .associate { it.id.caseDefinitionKey to it.path }
         }
 
@@ -188,7 +195,7 @@ class GroupCaseInstanceService(
                     caseDefinition
                 )
             )
-        } catch (e: Exception) {
+        } catch (e: AccessDeniedException) {
             false
         }
     }

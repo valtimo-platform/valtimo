@@ -36,6 +36,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -110,8 +111,8 @@ class PinnedItemServiceTest : BaseTest() {
         whenever(pinnedItemRepository.existsByUserIdAndItemTypeAndItemKey(TEST_USER_ID, PinnedItemType.CASE_DEFINITION_GROUP, groupKey))
             .thenReturn(false)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
-        whenever(caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey))
-            .thenReturn(caseDefinition)
+        whenever(caseDefinitionService.getActiveCaseDefinitions(listOf(caseDefinitionKey)))
+            .thenReturn(mapOf(caseDefinitionKey to caseDefinition))
         whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
             .thenReturn(true)
         whenever(pinnedItemRepository.save(any<PinnedItem>())).thenAnswer { it.arguments[0] }
@@ -189,8 +190,8 @@ class PinnedItemServiceTest : BaseTest() {
         whenever(pinnedItemRepository.existsByUserIdAndItemTypeAndItemKey(TEST_USER_ID, PinnedItemType.CASE_DEFINITION_GROUP, groupKey))
             .thenReturn(false)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
-        whenever(caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey))
-            .thenReturn(caseDefinition)
+        whenever(caseDefinitionService.getActiveCaseDefinitions(listOf(caseDefinitionKey)))
+            .thenReturn(mapOf(caseDefinitionKey to caseDefinition))
         whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
             .thenReturn(false)
 
@@ -295,7 +296,8 @@ class PinnedItemServiceTest : BaseTest() {
         whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
-        whenever(caseDefinitionService.getActiveCaseDefinition("restricted-case")).thenReturn(caseDefinition)
+        whenever(caseDefinitionService.getActiveCaseDefinitions(listOf("restricted-case")))
+            .thenReturn(mapOf("restricted-case" to caseDefinition))
         whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
             .thenReturn(false)
 
@@ -370,7 +372,8 @@ class PinnedItemServiceTest : BaseTest() {
         whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
-        whenever(caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)).thenReturn(caseDefinition)
+        whenever(caseDefinitionService.getActiveCaseDefinitions(listOf(caseDefinitionKey)))
+            .thenReturn(mapOf(caseDefinitionKey to caseDefinition))
         whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
             .thenReturn(true)
 
@@ -414,6 +417,48 @@ class PinnedItemServiceTest : BaseTest() {
         val result = service.getPinnedItems()
 
         assertTrue(result.isEmpty())
+    }
+
+    // EXCEPTION HANDLING scenarios
+
+    @Test
+    fun `hasViewPermission should return false when AccessDeniedException is thrown`() {
+        val now = LocalDateTime.now()
+        val caseDefinition = caseDefinition(id = CaseDefinitionId("case-1", "1.0.0"), name = "Case 1")
+
+        val pinnedItems = listOf(
+            PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION, itemKey = "case-1", pinnedAt = now)
+        )
+
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
+            .thenReturn(pinnedItems)
+        whenever(caseDefinitionService.getActiveCaseDefinition("case-1")).thenReturn(caseDefinition)
+        whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
+            .thenThrow(AccessDeniedException("Access denied"))
+
+        val result = service.getPinnedItems()
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `hasViewPermission should propagate non-authorization exceptions`() {
+        val now = LocalDateTime.now()
+        val caseDefinition = caseDefinition(id = CaseDefinitionId("case-1", "1.0.0"), name = "Case 1")
+
+        val pinnedItems = listOf(
+            PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION, itemKey = "case-1", pinnedAt = now)
+        )
+
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
+            .thenReturn(pinnedItems)
+        whenever(caseDefinitionService.getActiveCaseDefinition("case-1")).thenReturn(caseDefinition)
+        whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
+            .thenThrow(RuntimeException("Database error"))
+
+        assertThrows<RuntimeException> {
+            service.getPinnedItems()
+        }
     }
 
     // UNPIN scenarios
