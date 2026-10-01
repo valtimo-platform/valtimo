@@ -62,7 +62,6 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   private readonly _columns$ = new BehaviorSubject<ColumnWithMappings[]>([]);
   public readonly columns$ = this._columns$.asObservable();
   public readonly usedKeys$ = this._columns$.pipe(map(cols => cols.map(c => c.key)));
-  public readonly hasDefaultSort$ = this._columns$.pipe(map(cols => cols.some(c => c.defaultSort)));
 
   public readonly filteredColumns$ = combineLatest([
     this._columns$,

@@ -52,6 +52,31 @@
     margin-top: 0.5rem;
   }
 
+  &__path-counter {
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+    margin: 0 0 0.5rem 0;
+  }
+
+  &__path-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__path-search {
+    flex: 1;
+    max-width: 300px;
+  }
+
+  &__no-results {
+    font-size: 0.875rem;
+    color: var(--cds-text-secondary);
+    padding: 1rem 0;
+    text-align: center;
+  }
+
   &__case-label {
     font-size: 0.75rem;
     line-height: 1rem;

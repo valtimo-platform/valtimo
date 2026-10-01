@@ -41,6 +41,7 @@ import {
 import {ModalMode} from '@valtimo/shared';
 import {
   ButtonModule,
+  CheckboxModule,
   DropdownModule,
   InputModule,
   LayerModule,
@@ -70,6 +71,7 @@ const MATCH_TYPE_ITEMS = MATCH_TYPES.map(t => ({content: t, value: t}));
     TranslateModule,
     AutoKeyInputComponent,
     ButtonModule,
+    CheckboxModule,
     DropdownModule,
     InputModule,
     LayerModule,
@@ -92,6 +94,35 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     return this.field ? 'edit' : 'add';
   }
 
+  public get filledPathCount(): number {
+    return this.pathControls.filter(c => c.value && c.value.trim() !== '').length;
+  }
+
+  public get totalMemberCount(): number {
+    return this.members.length;
+  }
+
+  public get displayedMembers(): {member: GroupMember; index: number}[] {
+    const searchTerm = (this.pathSearchControl.value || '').toLowerCase().trim();
+
+    return this.members
+      .map((member, index) => ({member, index}))
+      .filter(({member, index}) => {
+        if (this.showOnlyEmpty) {
+          const value = this.pathControls[index]?.value;
+          if (value && value.trim() !== '') return false;
+        }
+
+        if (searchTerm) {
+          const name = (member.caseDefinitionName || '').toLowerCase();
+          const key = member.caseDefinitionKey.toLowerCase();
+          if (!name.includes(searchTerm) && !key.includes(searchTerm)) return false;
+        }
+
+        return true;
+      });
+  }
+
   public readonly DATA_TYPE_ITEMS = DATA_TYPE_ITEMS;
   public readonly FIELD_TYPE_ITEMS = FIELD_TYPE_ITEMS;
   public readonly MATCH_TYPE_ITEMS = MATCH_TYPE_ITEMS;
@@ -107,6 +138,8 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
   });
 
   public pathControls: FormControl[] = [];
+  public pathSearchControl = new FormControl('');
+  public showOnlyEmpty = false;
   public showMatchType = false;
   public showDropdownDataProvider = false;
 
@@ -127,6 +160,15 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
   public ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  public onShowOnlyEmptyChange(checked: boolean): void {
+    this.showOnlyEmpty = checked;
+    this.cdr.markForCheck();
+  }
+
+  public trackByMember(_index: number, item: {member: GroupMember; index: number}): string {
+    return item.member.caseDefinitionKey;
   }
 
   private _updateVisibility(): void {
@@ -182,6 +224,8 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       this.formGroup.get('key')?.enable();
       this.pathControls.forEach(c => c.setValue(''));
     }
+    this.pathSearchControl.setValue('');
+    this.showOnlyEmpty = false;
   }
 
   private _loadPathMappings(): void {

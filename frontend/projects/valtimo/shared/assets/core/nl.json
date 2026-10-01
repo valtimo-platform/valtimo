@@ -917,7 +917,11 @@
         "namePlaceholder": "Voer een naam in",
         "description": "Omschrijving",
         "descriptionPlaceholder": "Voer een omschrijving in"
-      }
+      },
+      "pathCounter": "{{filled}} van {{total}} zaaktypen ingevuld",
+      "searchCaseTypes": "Zoek zaaktypen...",
+      "noMatchingCaseTypes": "Geen overeenkomende zaaktypen gevonden",
+      "showOnlyEmpty": "Toon alleen lege"
     },
     "needsConfiguration": "Configuratie vereist",
     "inactive": "Inactief",

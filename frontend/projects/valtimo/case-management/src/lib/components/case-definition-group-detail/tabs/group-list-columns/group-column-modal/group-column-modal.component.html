@@ -52,19 +52,46 @@
         <v-tooltip-icon [tooltip]="'caseManagement.groups.listColumns.pathPerCaseTooltip' | translate"></v-tooltip-icon>
       </p>
 
+      <p class="valtimo-group-column-modal__path-counter">
+        {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
+      </p>
+
+      <div class="valtimo-group-column-modal__path-toolbar">
+        <input
+          cdsText
+          [formControl]="pathSearchControl"
+          [placeholder]="'caseManagement.groups.searchCaseTypes' | translate"
+          class="valtimo-group-column-modal__path-search"
+        />
+
+        <cds-checkbox
+          [checked]="showOnlyEmpty"
+          (checkedChange)="onShowOnlyEmptyChange($event)"
+        >
+          {{ 'caseManagement.groups.showOnlyEmpty' | translate }}
+        </cds-checkbox>
+      </div>
+
       <div
-        *ngFor="let member of members; let i = index"
+        *ngFor="let item of displayedMembers; trackBy: trackByMember"
         class="valtimo-group-column-modal__path-row"
       >
         <div class="valtimo-group-column-modal__case-label">
-          <span class="valtimo-group-column-modal__case-name">{{ member.caseDefinitionName || member.caseDefinitionKey }}</span>
-          <span class="valtimo-group-column-modal__case-key">({{ member.caseDefinitionKey }})</span>
+          <span class="valtimo-group-column-modal__case-name">{{ item.member.caseDefinitionName || item.member.caseDefinitionKey }}</span>
+          <span class="valtimo-group-column-modal__case-key">({{ item.member.caseDefinitionKey }})</span>
         </div>
         <valtimo-value-path-selector
-          [formControl]="pathControls[i]"
-          [caseDefinitionKey]="member.caseDefinitionKey"
+          [formControl]="pathControls[item.index]"
+          [caseDefinitionKey]="item.member.caseDefinitionKey"
           [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
         ></valtimo-value-path-selector>
+      </div>
+
+      <div
+        *ngIf="displayedMembers.length === 0 && members.length > 0"
+        class="valtimo-group-column-modal__no-results"
+      >
+        {{ 'caseManagement.groups.noMatchingCaseTypes' | translate }}
       </div>
     </div>
 
@@ -112,16 +139,6 @@
     <cds-checkbox formControlName="sortable" [disabled]="showTagAmount">
       {{ 'caseManagement.groups.listColumns.sortable' | translate }}
     </cds-checkbox>
-
-    <div class="valtimo-group-column-modal__dropdown-field">
-      <span class="cds--label">
-        {{ 'listColumn.defaultSortTitle' | translate }}
-        <v-tooltip-icon [tooltip]="'listColumn.defaultSortTooltip' | translate"></v-tooltip-icon>
-      </span>
-      <cds-dropdown formControlName="defaultSort" [disabled]="disableDefaultSort || showTagAmount" [itemValueKey]="'value'">
-        <cds-dropdown-list [items]="SORT_ITEMS"></cds-dropdown-list>
-      </cds-dropdown>
-    </div>
   </form>
 
   <cds-modal-footer>
