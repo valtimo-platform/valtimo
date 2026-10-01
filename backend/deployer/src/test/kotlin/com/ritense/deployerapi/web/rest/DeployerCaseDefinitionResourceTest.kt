@@ -17,12 +17,11 @@
 package com.ritense.deployerapi.web.rest
 
 import com.ritense.case.exception.UnknownCaseDefinitionException
+import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.domain.definition.CaseDefinition
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
-import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -62,15 +61,13 @@ class DeployerCaseDefinitionResourceTest {
     lateinit var mockMvc: MockMvc
     lateinit var caseDefinitionService: CaseDefinitionService
     lateinit var exportService: ExportService
-    lateinit var importService: ImportService
-    lateinit var caseDefinitionRepository: CaseDefinitionRepository
+    lateinit var caseDefinitionImportService: CaseDefinitionImportService
 
     @BeforeEach
     fun setUp() {
         caseDefinitionService = mock()
         exportService = mock()
-        importService = mock()
-        caseDefinitionRepository = mock()
+        caseDefinitionImportService = mock()
 
         val converter = MappingJackson2HttpMessageConverter()
         converter.objectMapper = MapperSingleton.get()
@@ -80,8 +77,7 @@ class DeployerCaseDefinitionResourceTest {
                 DeployerCaseDefinitionResource(
                     caseDefinitionService,
                     exportService,
-                    importService,
-                    caseDefinitionRepository,
+                    caseDefinitionImportService,
                 )
             )
             .setControllerAdvice(DeployerApiExceptionHandler())
@@ -222,8 +218,7 @@ class DeployerCaseDefinitionResourceTest {
     @Test
     fun `should import a base64 encoded case definition`() {
         val importedId = CaseDefinitionId("my-case", "1.0.0")
-        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), isNull(), isNull(), isNull())).thenReturn(importedId)
+        whenever(caseDefinitionImportService.import(any(), isNull(), isNull(), isNull())).thenReturn(importedId)
 
         mockMvc.perform(
             post("/api/deployer/v1/case-definition/import")
@@ -233,13 +228,12 @@ class DeployerCaseDefinitionResourceTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.caseDefinitionId.key").value("my-case"))
 
-        verify(caseDefinitionService).setLatestToActiveIfNoneIsActive()
+        verify(caseDefinitionImportService).import(any(), isNull(), isNull(), isNull())
     }
 
     @Test
     fun `should import with key and name overrides`() {
-        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), eq("new-key"), eq("New Name"), isNull()))
+        whenever(caseDefinitionImportService.import(any(), eq("new-key"), eq("New Name"), isNull()))
             .thenReturn(CaseDefinitionId("new-key", "1.0.0"))
 
         mockMvc.perform(
@@ -250,15 +244,14 @@ class DeployerCaseDefinitionResourceTest {
                 .content(importBody(byteArrayOf(1, 2, 3)))
         ).andExpect(status().isOk)
 
-        verify(importService).import(any(), any(), eq("new-key"), eq("New Name"), isNull())
+        verify(caseDefinitionImportService).import(any(), eq("new-key"), eq("New Name"), isNull())
     }
 
     @Test
     fun `should forward plugin configuration mappings to the import service`() {
         val source = UUID.randomUUID()
         val target = UUID.randomUUID()
-        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), isNull(), isNull(), any()))
+        whenever(caseDefinitionImportService.import(any(), isNull(), isNull(), any()))
             .thenReturn(CaseDefinitionId("my-case", "1.0.0"))
 
         mockMvc.perform(
@@ -270,30 +263,12 @@ class DeployerCaseDefinitionResourceTest {
                 )
         ).andExpect(status().isOk)
 
-        verify(importService).import(any(), any(), isNull(), isNull(), eq(mapOf(source to target)))
-    }
-
-    @Test
-    fun `should skip case definitions that are already final`() {
-        val finalId = CaseDefinitionId("existing-case", "1.0.0")
-        whenever(caseDefinitionRepository.findAllByFinalTrue())
-            .thenReturn(listOf(caseDefinition("existing-case", "1.0.0", final = true)))
-        whenever(importService.import(any(), any(), isNull(), isNull(), isNull()))
-            .thenReturn(CaseDefinitionId("my-case", "1.0.0"))
-
-        mockMvc.perform(
-            post("/api/deployer/v1/case-definition/import")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(importBody(byteArrayOf(1, 2, 3)))
-        ).andExpect(status().isOk)
-
-        verify(importService).import(any(), eq(listOf(finalId)), isNull(), isNull(), isNull())
+        verify(caseDefinitionImportService).import(any(), isNull(), isNull(), eq(mapOf(source to target)))
     }
 
     @Test
     fun `should return bad request when the import fails`() {
-        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), isNull(), isNull(), isNull()))
+        whenever(caseDefinitionImportService.import(any(), isNull(), isNull(), isNull()))
             .thenThrow(ImportServiceException("Invalid zip"))
 
         mockMvc.perform(
@@ -303,8 +278,6 @@ class DeployerCaseDefinitionResourceTest {
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.message").value("Invalid zip"))
-
-        verify(caseDefinitionService, never()).setLatestToActiveIfNoneIsActive()
     }
 
     @Test
@@ -321,10 +294,9 @@ class DeployerCaseDefinitionResourceTest {
     private fun importBody(file: ByteArray) =
         """{"file":"${Base64.getEncoder().encodeToString(file)}"}"""
 
-    private fun caseDefinition(key: String, versionTag: String, final: Boolean = false) = CaseDefinition(
+    private fun caseDefinition(key: String, versionTag: String) = CaseDefinition(
         id = CaseDefinitionId(key, versionTag),
         name = key,
         createdDate = null,
-        final = final,
     )
 }

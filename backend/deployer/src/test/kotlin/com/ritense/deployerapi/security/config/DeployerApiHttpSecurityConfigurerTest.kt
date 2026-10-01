@@ -16,12 +16,11 @@
 
 package com.ritense.deployerapi.security.config
 
+import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.deployerapi.web.rest.DeployerCaseDefinitionResource
 import com.ritense.deployerapi.web.rest.DeployerOpenApiResource
 import com.ritense.exporter.ExportService
-import com.ritense.importer.ImportService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
@@ -97,13 +96,11 @@ class DeployerApiHttpSecurityConfigurerTest {
         fun deployerCaseDefinitionResource(
             caseDefinitionService: CaseDefinitionService,
             exportService: ExportService,
-            importService: ImportService,
-            caseDefinitionRepository: CaseDefinitionRepository,
+            caseDefinitionImportService: CaseDefinitionImportService,
         ) = DeployerCaseDefinitionResource(
             caseDefinitionService,
             exportService,
-            importService,
-            caseDefinitionRepository,
+            caseDefinitionImportService,
         )
 
         @Bean
@@ -116,10 +113,7 @@ class DeployerApiHttpSecurityConfigurerTest {
         fun exportService(): ExportService = mock()
 
         @Bean
-        fun importService(): ImportService = mock()
-
-        @Bean
-        fun caseDefinitionRepository(): CaseDefinitionRepository = mock()
+        fun caseDefinitionImportService(): CaseDefinitionImportService = mock()
 
         @Bean
         fun securityFilterChain(

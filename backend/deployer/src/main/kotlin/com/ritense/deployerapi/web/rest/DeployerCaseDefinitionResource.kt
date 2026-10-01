@@ -17,14 +17,13 @@
 package com.ritense.deployerapi.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.CaseDefinitionImportResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.deployerapi.web.rest.dto.ImportRequestDto
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
-import com.ritense.importer.ImportService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -50,8 +49,7 @@ import java.time.format.DateTimeFormatter
 class DeployerCaseDefinitionResource(
     private val caseDefinitionService: CaseDefinitionService,
     private val exportService: ExportService,
-    private val importService: ImportService,
-    private val caseDefinitionRepository: CaseDefinitionRepository,
+    private val caseDefinitionImportService: CaseDefinitionImportService,
 ) {
 
     @GetMapping("/case-definition")
@@ -122,15 +120,12 @@ class DeployerCaseDefinitionResource(
         @RequestParam("key", required = false) key: String?,
         @RequestParam("name", required = false) name: String?,
     ): ResponseEntity<CaseDefinitionImportResponse> {
-        val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
-        val caseDefinitionId = importService.import(
+        val caseDefinitionId = caseDefinitionImportService.import(
             body.file.inputStream(),
-            skipImportOfCaseDefinitions,
             key,
             name,
             body.pluginConfigurationMappings,
         )
-        caseDefinitionService.setLatestToActiveIfNoneIsActive()
         return ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
     }
 }
