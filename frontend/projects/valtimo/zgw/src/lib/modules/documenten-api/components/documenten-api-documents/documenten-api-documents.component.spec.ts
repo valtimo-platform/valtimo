@@ -75,6 +75,8 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
   const uploadedFiles = (): Array<File> =>
     uploadFileWithMetadata.calls.allArgs().map(args => args[0]);
 
+  const save = (metadata: DocumentenApiMetadata): void => component.metadataSet(metadata as any);
+
   const uploadedMetadata = (index: number): DocumentenApiMetadata =>
     uploadFileWithMetadata.calls.argsFor(index)[2];
 
@@ -144,7 +146,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     });
 
     selectFiles(aanvraag, bouwTekening, situatieFoto);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadedFiles()).toEqual([aanvraag]);
 
@@ -163,7 +165,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
 
   it('gives every file its own filename and title and the metadata entered once', () => {
     selectFiles(aanvraag, bouwTekening, situatieFoto);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadFileWithMetadata).toHaveBeenCalledTimes(3);
     expect([0, 1, 2].map(index => uploadedMetadata(index).bestandsnaam)).toEqual([
@@ -194,7 +196,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     );
 
     selectFiles(aanvraag, bouwTekening, situatieFoto);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadedFiles()).toEqual([aanvraag, bouwTekening, situatieFoto]);
     expect(component.showUploadModal$.getValue()).toBeTrue();
@@ -203,7 +205,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
 
     uploadFileWithMetadata.calls.reset();
     uploadFileWithMetadata.and.returnValue(of(null));
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadedFiles()).toEqual([bouwTekening]);
     expect(uploadedMetadata(0).bestandsnaam).toBe('bouw_tekening.pdf');
@@ -218,7 +220,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     );
 
     selectFiles(aanvraag, situatieFoto);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(component.uploadError()).toContain('situatie-foto.jpg');
     expect(component.uploadError()).toContain('document.uploadPermissionDenied');
@@ -228,7 +230,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     prefilledUploadFields = ALL_UPLOAD_FIELD_KEYS.map(key => ({key, visible: false}));
 
     selectFiles(aanvraag, bouwTekening, situatieFoto);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadedFiles()).toEqual([aanvraag, bouwTekening, situatieFoto]);
     expect(showToast).not.toHaveBeenCalled();
@@ -241,7 +243,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     );
 
     selectFiles(aanvraag, bouwTekening, situatieFoto);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(showToast).toHaveBeenCalledTimes(1);
     expect(showToast.calls.argsFor(0)[0]).toEqual(
@@ -252,7 +254,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     );
 
     uploadFileWithMetadata.calls.reset();
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadFileWithMetadata).not.toHaveBeenCalled();
   });
@@ -261,7 +263,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     const metadata = {...sharedMetadata, bestandsnaam: 'hernoemd.pdf', titel: 'Hernoemd'};
 
     selectFiles(aanvraag);
-    component.metadataSet(metadata);
+    save(metadata);
 
     expect(uploadFileWithMetadata).toHaveBeenCalledOnceWith(aanvraag, 'case-document-1', metadata);
     expect(component.showUploadModal$.getValue()).toBeFalse();
@@ -273,7 +275,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     selectFiles(aanvraag, bouwTekening);
     component.closeMetadataModal();
     component.onEditMetadata(existingDocument);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadFileWithMetadata).not.toHaveBeenCalled();
     expect(updateDocument).toHaveBeenCalledOnceWith(
@@ -287,7 +289,7 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     selectFiles(aanvraag, bouwTekening);
     component.closeMetadataModal();
     selectFiles(situatieFoto);
-    component.metadataSet(sharedMetadata);
+    save(sharedMetadata);
 
     expect(uploadFileWithMetadata).toHaveBeenCalledOnceWith(
       situatieFoto,
