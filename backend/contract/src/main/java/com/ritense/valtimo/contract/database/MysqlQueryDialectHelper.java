@@ -103,6 +103,19 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
     }
 
     @Override
+    public Predicate getJsonValueContainsTextExpression(CriteriaBuilder cb, Path column, String path, String value) {
+        var matchPaths = cb.function(
+            "JSON_SEARCH",
+            String.class,
+            cb.function(LOWER_CASE_FUNCTION, String.class, cb.function("JSON_EXTRACT", String.class, column, cb.literal(path))),
+            cb.literal("all"),
+            cb.literal("%" + escapeLikePattern(value.toLowerCase()) + "%")
+        );
+        // Only a match on the value itself ($) or a direct array element ($[n]) counts, never a nested one
+        return cb.isTrue(cb.function("REGEXP_LIKE", Boolean.class, matchPaths, cb.literal("\"\\$(\\[[0-9]+\\])?\"")));
+    }
+
+    @Override
     public Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column) {
         return cb.function("BIN_TO_UUID", String.class, column);
     }

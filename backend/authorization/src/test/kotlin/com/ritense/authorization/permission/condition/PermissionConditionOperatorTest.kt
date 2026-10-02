@@ -145,6 +145,25 @@ class PermissionConditionOperatorTest {
         assertEquals(false, op, "a", "b")
     }
 
+    @Test
+    fun `LIKE should evaluate correctly`() {
+        val op = PermissionConditionOperator.LIKE
+
+        assertEquals(true, op, "Foo street", "foo")
+        assertEquals(true, op, "my FOO", "Foo")
+        assertEquals(true, op, "foo", "foo")
+        assertEquals(false, op, "Bar", "foo")
+        assertEquals(false, op, "100x_off", "0%_")
+        assertEquals(true, op, "100%_off", "0%_")
+        assertEquals(false, op, null, "foo")
+        assertEquals(false, op, "foo", null)
+        assertEquals(false, op, "foo", "")
+        assertEquals(false, op, "foo", " ")
+        assertEquals(false, op, 42, "4")
+        assertEquals(false, op, listOf("foo"), "foo")
+        assertEquals(false, op, "foo", listOf("foo"))
+    }
+
     private fun assertEquals(expected: Boolean, op: PermissionConditionOperator, left: Any?, right: Any?) {
         assertEquals(expected, op.evaluate(left, right), "[ $left ${op.asText} $right ]")
     }

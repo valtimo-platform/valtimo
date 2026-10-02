@@ -30,17 +30,20 @@ import com.ritense.authorization.permission.condition.PermissionConditionOperato
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.IN
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LESS_THAN
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LESS_THAN_OR_EQUAL_TO
+import com.ritense.authorization.permission.condition.PermissionConditionOperator.LIKE
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LIST_CONTAINS
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.NOT_EQUAL_TO
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -54,6 +57,7 @@ import org.opensearch.index.query.QueryBuilders
 import org.opensearch.index.query.RangeQueryBuilder
 import org.opensearch.index.query.TermQueryBuilder
 import org.opensearch.index.query.TermsQueryBuilder
+import org.opensearch.index.query.WildcardQueryBuilder
 import java.util.UUID
 
 class OpenSearchPermissionConditionTranslatorTest {
@@ -371,6 +375,27 @@ class OpenSearchPermissionConditionTranslatorTest {
         }
     }
 
+    @Test
+    fun `applyOperator LIKE returns case-insensitive wildcard query with escaped value`() {
+        val result = OpenSearchPermissionConditionTranslator.applyOperator("field", LIKE, "a*b?c\\d")
+
+        assertThat(result).isInstanceOf(WildcardQueryBuilder::class.java)
+        val wildcardQuery = result as WildcardQueryBuilder
+        assertThat(wildcardQuery.fieldName()).isEqualTo("field")
+        assertThat(wildcardQuery.value()).isEqualTo("*a\\*b\\?c\\\\d*")
+        assertThat(wildcardQuery.caseInsensitive()).isTrue()
+    }
+
+    @Test
+    fun `applyOperator LIKE with a blank, null or non-text value denies all`() {
+        listOf("", " ", null, listOf("a")).forEach { value ->
+            val result = OpenSearchPermissionConditionTranslator.applyOperator("field", LIKE, value)
+
+            assertThat(result).isInstanceOf(IdsQueryBuilder::class.java)
+            assertThat((result as IdsQueryBuilder).ids()).isEmpty()
+        }
+    }
+
     // --- Field and expression translation ---
 
     @Test
@@ -443,6 +468,64 @@ class OpenSearchPermissionConditionTranslatorTest {
         assertThat(result).isInstanceOf(RangeQueryBuilder::class.java)
         val rangeQuery = result as RangeQueryBuilder
         assertThat(rangeQuery.fieldName()).isEqualTo("content.name")
+    }
+
+    @Test
+    fun `translateExpression LIKE uses the keyword sub-field`() {
+        val permission = Permission(
+            resourceType = JsonSchemaDocument::class.java,
+            actions = mutableListOf(Action<JsonSchemaDocument>(Action.VIEW)),
+            conditionContainer = ConditionContainer(listOf(
+                ExpressionPermissionCondition("content", "$.street", LIKE, "foo", String::class.java)
+            )),
+            role = Role(key = "test-role"),
+        )
+
+        val result = translator.toQuery(listOf(permission), Action<JsonSchemaDocument>(Action.VIEW))
+
+        assertThat(result).isInstanceOf(WildcardQueryBuilder::class.java)
+        val wildcardQuery = result as WildcardQueryBuilder
+        assertThat(wildcardQuery.fieldName()).isEqualTo("content.street.keyword")
+        assertThat(wildcardQuery.value()).isEqualTo("*foo*")
+    }
+
+    @Test
+    fun `translateField LIKE resolves the condition through JPA`() {
+        val docId = UUID.randomUUID()
+        val doc = mockDocument(docId)
+        val spec: AuthorizationSpecification<JsonSchemaDocument> = mock()
+        whenever(authorizationService.getAuthorizationSpecification<JsonSchemaDocument>(any(), any()))
+            .thenReturn(spec)
+        whenever(documentRepository.findAll(spec)).thenReturn(listOf(doc))
+        val condition = FieldPermissionCondition("assigneeFullName", LIKE, "jan")
+        val permission = Permission(
+            resourceType = JsonSchemaDocument::class.java,
+            actions = mutableListOf(Action<JsonSchemaDocument>(Action.VIEW)),
+            conditionContainer = ConditionContainer(listOf(condition)),
+            role = Role(key = "test-role"),
+        )
+
+        val result = translator.toQuery(listOf(permission), Action<JsonSchemaDocument>(Action.VIEW))
+
+        assertThat(result).isInstanceOf(IdsQueryBuilder::class.java)
+        assertThat((result as IdsQueryBuilder).ids()).containsExactly(docId.toString())
+        verify(authorizationService).getAuthorizationSpecification<JsonSchemaDocument>(
+            any(),
+            argThat { single().conditionContainer.conditions == listOf(condition) }
+        )
+    }
+
+    @Test
+    fun `definition mapper LIKE uses a wildcard query on the name and denies all on the version`() {
+        val mapper = JsonSchemaDocumentDefinitionOpenSearchMapper()
+
+        val onName = mapper.mapQuery(listOf(FieldPermissionCondition("id.name", LIKE, "loan")))
+        val onVersion = mapper.mapQuery(listOf(FieldPermissionCondition("id.version", LIKE, "1")))
+
+        assertThat(onName).isInstanceOf(WildcardQueryBuilder::class.java)
+        assertThat((onName as WildcardQueryBuilder).fieldName()).isEqualTo("definitionId.name")
+        assertThat(onVersion).isInstanceOf(IdsQueryBuilder::class.java)
+        assertThat((onVersion as IdsQueryBuilder).ids()).isEmpty()
     }
 
     @Test

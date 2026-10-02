@@ -47,6 +47,9 @@ data class ExpressionPermissionCondition<V>(
 ) : ReflectingPermissionCondition(PermissionConditionType.EXPRESSION) {
     init {
         require(value == null || value is Comparable<*> || value is List<*>)
+        require(operator != PermissionConditionOperator.LIKE || clazz == String::class.java) {
+            "PBAC: operator 'like' requires clazz 'java.lang.String', got '$clazz'"
+        }
     }
 
     override fun <E : Any> isValid(entity: E): Boolean {
@@ -77,6 +80,14 @@ data class ExpressionPermissionCondition<V>(
     ): Predicate {
         val path: Path<Any>? = createDatabaseObjectPath(field, root)
         val resolvedValue = CurrentUserExpressionHandler.resolveValue(value)
+
+        if (operator == PermissionConditionOperator.LIKE) {
+            return if (PermissionConditionOperator.isLikeValue(resolvedValue)) {
+                queryDialectHelper.getJsonValueContainsTextExpression(criteriaBuilder, path, this.path, resolvedValue as String)
+            } else {
+                criteriaBuilder.disjunction()
+            }
+        }
 
         // we need an exception for json contains
         if (operator == PermissionConditionOperator.LIST_CONTAINS) {
@@ -110,6 +121,10 @@ data class ExpressionPermissionCondition<V>(
     }
 
     private fun evaluateExpression(pathValue: Any?): Boolean {
+        if (operator == PermissionConditionOperator.LIKE && pathValue is Collection<*>) {
+            val resolvedValue = resolveValue()
+            return pathValue.any { operator.evaluate(it, resolvedValue) }
+        }
         return operator.evaluate(
             pathValue,
             resolveValue()

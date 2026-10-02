@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-type ConditionOperator = '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in' | 'list_contains';
+type ConditionOperator = '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in' | 'list_contains' | 'like';
 
 interface FieldCondition {
   type: 'field';

@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Permissions can match part of a text value
 
-New enhancement explanation.
+Access control conditions have a new "contains the text" operator, so a role can be given access to cases whose value contains a piece of text, ignoring upper and lower case, instead of having to match the whole value.
 
 ---
 

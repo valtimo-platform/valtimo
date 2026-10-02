@@ -82,6 +82,10 @@ class OpenSearchPermissionConditionTranslator(
     }
 
     private fun translateField(cond: FieldPermissionCondition<*>): QueryBuilder {
+        // Field types are only known to JPA, so 'like' is resolved there to agree with the database
+        if (cond.operator == PermissionConditionOperator.LIKE) {
+            return jpaFallback(cond)
+        }
         val baseField = jpaToOsField(cond.field)
         val value = resolveFieldValue(cond)
         val osField = if (isDynamicTextField(baseField, cond.operator, value)) "$baseField.keyword" else baseField
@@ -121,7 +125,7 @@ class OpenSearchPermissionConditionTranslator(
      * [OpenSearchAuthorizationEntityMapper]. Uses JPA to find matching document IDs and
      * returns an `ids` query.
      */
-    private fun jpaFallback(cond: ContainerPermissionCondition<*>): QueryBuilder {
+    private fun jpaFallback(cond: PermissionCondition): QueryBuilder {
         val syntheticPermission = Permission(
             resourceType = JsonSchemaDocument::class.java,
             actions = mutableListOf(Action<Any>(Action.IGNORE)),
@@ -179,7 +183,18 @@ class OpenSearchPermissionConditionTranslator(
                         ?: throw IllegalArgumentException("IN operator requires a Collection value")
                     QueryBuilders.termsQuery(field, collection.toList())
                 }
+                PermissionConditionOperator.LIKE ->
+                    if (PermissionConditionOperator.isLikeValue(value)) {
+                        QueryBuilders.wildcardQuery(field, "*${escapeWildcard(value as String)}*").caseInsensitive(true)
+                    } else {
+                        denyAll()
+                    }
             }
+
+        private fun escapeWildcard(value: String): String = value
+            .replace("\\", "\\\\")
+            .replace("*", "\\*")
+            .replace("?", "\\?")
 
         /**
          * Maps JPA entity field names (as used in [FieldPermissionCondition.field]) to
@@ -212,6 +227,7 @@ class OpenSearchPermissionConditionTranslator(
                 PermissionConditionOperator.NOT_EQUAL_TO,
                 PermissionConditionOperator.LIST_CONTAINS,
                 PermissionConditionOperator.IN,
+                PermissionConditionOperator.LIKE,
             )
             return isStringValue && isTermOp
         }

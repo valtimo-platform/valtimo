@@ -32,6 +32,11 @@ public interface QueryDialectHelper {
 
     Predicate getJsonArrayContainsExpression(CriteriaBuilder cb, Path column, String path, String value);
 
+    /** True when the string at the path, or a string element of the array at the path, contains the value ignoring case. */
+    default Predicate getJsonValueContainsTextExpression(CriteriaBuilder cb, Path column, String path, String value) {
+        return getJsonValueExistsInPathExpression(cb, column, path, value);
+    }
+
     Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column);
 
     Expression<UUID> stringToUuid(CriteriaBuilder cb, Expression<String> expression);
