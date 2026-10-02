@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
@@ -101,7 +102,9 @@ class CaseTabService(
 
     @Transactional
     fun getCaseTabs(documentId: JsonSchemaDocumentId): List<CaseTab> {
-        val document = runWithoutAuthorization { documentService.findByOrNull(documentId) }
+        val document = runWithoutAuthorization { documentService.findByOrNull(documentId) } as JsonSchemaDocument?
+            ?: return emptyList()
+        authorizationService.requireDocumentPermission(document)
 
         val spec = authorizationService.getAuthorizationSpecification(
             EntityAuthorizationRequest(
@@ -110,7 +113,7 @@ class CaseTabService(
             ).withContext(
                 AuthorizationResourceContext(
                     JsonSchemaDocument::class.java,
-                    document as JsonSchemaDocument
+                    document
                 )
             )
         )

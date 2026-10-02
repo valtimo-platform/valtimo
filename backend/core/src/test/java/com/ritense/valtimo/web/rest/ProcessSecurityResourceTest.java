@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package com.ritense.valtimo.web.rest;
 
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -52,6 +55,67 @@ class ProcessSecurityResourceTest extends SecuritySpecificEndpointIntegrationTes
     @WithMockUser(username = USER_EMAIL, authorities = {USER})
     void deleteAsUser() throws Exception {
         assertHttpStatus(POST, "/api/v1/process/processInstanceId/delete", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceHistoryAsUser() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/history", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {ADMIN})
+    void getProcessInstanceHistoryAsAdmin() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/history", OK);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceAsUser() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceXmlAsUser() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/xml", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceVariablesAsUser() throws Exception {
+        assertHttpStatus(POST, "/api/v1/process-instance/processInstanceId/variables", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceActivitiesAsUser() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/activities", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceOperationLogAsUser() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/log", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceActiveTaskAsUser() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/activetask", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceCommentsAsUser() throws Exception {
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/comments", FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {USER})
+    void getProcessInstanceTasksStaysAuthenticatedForUser() throws Exception {
+        // /tasks keeps per-document VIEW_LIST filtering, so it stays reachable for non-admins
+        assertHttpStatus(GET, "/api/v1/process/processInstanceId/tasks", NO_CONTENT);
     }
 
 }

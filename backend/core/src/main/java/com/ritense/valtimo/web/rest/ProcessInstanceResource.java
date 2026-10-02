@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,11 @@ public class ProcessInstanceResource {
         this.runtimeService = runtimeService;
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Get process instance variables",
         nl = "Procesinstantie-variabelen ophalen"

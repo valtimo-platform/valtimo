@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.ritense.objectenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.document.service.DocumentService
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.objectenapi.client.ObjectenApiClient
 import com.ritense.objectenapi.ikorepository.ObjectenApiIkoRepository
@@ -129,9 +130,11 @@ class ObjectenApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ZaakObjectResource::class)
     fun zaakObjectResource(
-        zaakObjectService: ZaakObjectService
+        zaakObjectService: ZaakObjectService,
+        documentService: DocumentService,
+        authorizationService: AuthorizationService
     ): ZaakObjectResource {
-        return ZaakObjectResource(zaakObjectService)
+        return ZaakObjectResource(zaakObjectService, documentService, authorizationService)
     }
 
     @Bean

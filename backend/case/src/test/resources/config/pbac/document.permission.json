@@ -82,6 +82,26 @@
                     ]
                 }
             ]
+        },
+        {
+            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+            "action": "view",
+            "roleKey": "ROLE_ONLY_TEST_WIDGETS_FOR_CONTEXT"
+        },
+        {
+            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+            "action": "view",
+            "roleKey": "ROLE_OWN_DOCUMENT_WIDGETS",
+            "conditions": [
+                {
+                    "type": "expression",
+                    "field": "content.content",
+                    "path": "$.key",
+                    "operator": "==",
+                    "value": "OWN",
+                    "clazz": "java.lang.String"
+                }
+            ]
         }
     ]
 }

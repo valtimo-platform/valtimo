@@ -10,6 +10,11 @@
             "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
             "action": "inspect",
             "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+            "action": "view",
+            "roleKey": "ROLE_CASE_VIEWER"
         }
     ]
 }

@@ -40,7 +40,9 @@ import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.ProcessInstanceDiagramService
 import com.ritense.valtimo.web.rest.dto.IncidentDto
+import com.ritense.valtimo.web.rest.dto.ProcessInstanceDiagramDto
 import com.ritense.valtimo.web.rest.dto.ProcessVariableDto
 import com.ritense.valtimo.web.rest.dto.ProcessVariableMutationRequest
 import jakarta.validation.Valid
@@ -75,6 +77,7 @@ class ProcessInspectionResource(
     private val historyService: HistoryService,
     private val managementService: ManagementService,
     private val operatonTaskService: OperatonTaskService,
+    private val processInstanceDiagramService: ProcessInstanceDiagramService,
     private val buildingBlockProcessLookup: BuildingBlockProcessLookup?,
     private val eventPublisher: ApplicationEventPublisher,
     private val objectMapper: ObjectMapper,
@@ -101,6 +104,25 @@ class ProcessInspectionResource(
         }
 
         return ResponseEntity.ok(rows)
+    }
+
+    @EndpointDescription(
+        en = "Get the BPMN diagram of a process instance belonging to a case (inspection)",
+        nl = "Het BPMN-diagram van een procesinstantie van een zaak ophalen (inspectie)",
+    )
+    @GetMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/xml")
+    fun getProcessInstanceDiagram(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
+        @PathVariable processInstanceId: String,
+    ): ResponseEntity<ProcessInstanceDiagramDto> {
+        loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
+
+        val diagram = runWithoutAuthorization {
+            processInstanceDiagramService.getProcessInstanceDiagram(processInstanceId)
+        }
+
+        return diagram?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
     @EndpointDescription(

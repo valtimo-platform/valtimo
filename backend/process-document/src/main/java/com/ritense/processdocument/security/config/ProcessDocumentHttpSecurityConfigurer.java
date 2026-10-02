@@ -51,6 +51,11 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
                 .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/processes"))
                 .authenticated()
                 .requestMatchers(antMatcher(
+                    GET,
+                    "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/xml"
+                ))
+                .authenticated()
+                .requestMatchers(antMatcher(
                     POST,
                     "/api/management/v1/case/{caseId}/process-instance/{processInstanceId}/variables"
                 ))
@@ -73,6 +78,11 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
                 .requestMatchers(antMatcher(
                     POST,
                     "/api/v1/process-document/case/{caseId}/process-instance/{processInstanceId}/timer/{jobId}/skip"
+                ))
+                .authenticated()
+                .requestMatchers(antMatcher(
+                    GET,
+                    "/api/v1/process-document/case/{caseId}/process-instance/{processInstanceId}/xml"
                 ))
                 .authenticated()
                 .requestMatchers(antMatcher(POST, "/api/management/v1/case/{caseId}/logs"))

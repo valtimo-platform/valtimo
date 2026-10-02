@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,8 +110,25 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated The generic endpoint is restricted to administrators. Use
+   * {@link getCaseProcessInstanceXml} (document VIEW) or {@link getCaseInspectionProcessInstanceXml}
+   * (document INSPECT) for case-related process diagrams.
+   */
   getProcessXml(id: string): Observable<any> {
     return this.http.get(`${this.valtimoEndpointUri}v1/process/${id}/xml`);
+  }
+
+  getCaseProcessInstanceXml(caseId: string, processInstanceId: string): Observable<any> {
+    return this.http.get(
+      `${this.valtimoEndpointUri}v1/process-document/case/${caseId}/process-instance/${processInstanceId}/xml`
+    );
+  }
+
+  getCaseInspectionProcessInstanceXml(caseId: string, processInstanceId: string): Observable<any> {
+    return this.http.get(
+      `${this.valtimoEndpointUri}management/v1/case/${caseId}/process-instance/${processInstanceId}/xml`
+    );
   }
 
   getFlowNodes(
@@ -155,6 +172,9 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated This endpoint is restricted to administrators and will be removed.
+   */
   getProcessInstance(processInstanceId: string): Observable<ProcessInstance> {
     return this.http.get<ProcessInstance>(
       `${this.valtimoEndpointUri}v1/process/${processInstanceId}`,
@@ -162,12 +182,18 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated This endpoint will be removed. Use the authorized task endpoints instead.
+   */
   getProcessInstanceTasks(id: string): Observable<ProcessInstanceTask[]> {
     return this.http
       .get<ProcessInstanceTask[]>(`${this.valtimoEndpointUri}v1/process/${id}/tasks`, {})
       .pipe(map(res => res || []));
   }
 
+  /**
+   * @deprecated This endpoint is restricted to administrators and will be removed.
+   */
   getProcessInstanceVariables(id: string, variableNames: Array<any>): Observable<any> {
     return this.http.post(
       `${this.valtimoEndpointUri}v1/process-instance/${id}/variables`,
