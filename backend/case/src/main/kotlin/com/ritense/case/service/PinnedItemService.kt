@@ -48,7 +48,7 @@ class PinnedItemService(
 
     fun getPinnedItems(): List<PinnedItemResponseDto> {
         val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
-        val pinnedItems = pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(currentUserId)
+        val pinnedItems = pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(currentUserId)
 
         return pinnedItems
             .mapIndexedNotNull { index, pinnedItem ->
@@ -66,35 +66,13 @@ class PinnedItemService(
 
         checkAccess(itemType, itemKey)
 
-        // New pins go first.
-        val firstSortOrder = pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(currentUserId)
-            .firstOrNull()?.sortOrder ?: 0
-
         pinnedItemRepository.save(
             PinnedItem(
                 userId = currentUserId,
                 itemType = itemType,
-                itemKey = itemKey,
-                sortOrder = firstSortOrder - 1
+                itemKey = itemKey
             )
         )
-    }
-
-    /**
-     * Requested items first, in the given order; unknown ones are ignored. Pins missing from the
-     * request, e.g. ones the user can no longer see, follow in their current order.
-     */
-    @Transactional
-    fun reorderItems(items: List<Pair<PinnedItemType, String>>) {
-        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
-        val pinnedItems = pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(currentUserId)
-        val requestedPositions = items.distinct().withIndex().associate { it.value to it.index }
-
-        pinnedItems
-            .sortedBy { requestedPositions[it.itemType to it.itemKey] ?: Int.MAX_VALUE }
-            .forEachIndexed { index, pinnedItem -> pinnedItem.sortOrder = index }
-
-        pinnedItemRepository.saveAll(pinnedItems)
     }
 
     @Transactional

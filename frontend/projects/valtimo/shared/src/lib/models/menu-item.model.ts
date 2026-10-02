@@ -37,8 +37,6 @@ interface MenuItem {
   textClass?: string;
   iconClass?: string;
   children?: MenuItem[];
-  // Set to make the children drag-and-drop sortable; receives the child ids in their new order.
-  onChildrenReorder?: (childIds: string[]) => void;
   roles?: string[];
   show?: boolean;
   count$?: Observable<number>;

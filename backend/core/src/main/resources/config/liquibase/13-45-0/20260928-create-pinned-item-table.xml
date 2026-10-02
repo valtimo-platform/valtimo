@@ -52,12 +52,4 @@
         </createIndex>
     </changeSet>
 
-    <changeSet author="Ritense" id="4">
-        <addColumn tableName="pinned_item">
-            <column name="sort_order" type="INT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-    </changeSet>
-
 </databaseChangeLog>

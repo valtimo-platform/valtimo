@@ -222,7 +222,7 @@ class PinnedItemServiceTest : BaseTest() {
 
     @Test
     fun `getPinnedItems should return empty list when no pins`() {
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(emptyList())
 
         val result = service.getPinnedItems()
@@ -241,7 +241,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION, itemKey = "case-2", pinnedAt = now.minusHours(1))
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(caseDefinitionService.getActiveCaseDefinition("case-1")).thenReturn(caseDefinition1)
         whenever(caseDefinitionService.getActiveCaseDefinition("case-2")).thenReturn(caseDefinition2)
@@ -266,7 +266,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION, itemKey = "case-2", pinnedAt = now.minusHours(1))
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(caseDefinitionService.getActiveCaseDefinition("case-1")).thenReturn(caseDefinition1)
         whenever(caseDefinitionService.getActiveCaseDefinition("case-2")).thenReturn(caseDefinition2)
@@ -293,7 +293,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION_GROUP, itemKey = groupKey, pinnedAt = now)
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
         whenever(caseDefinitionService.getActiveCaseDefinitions(listOf("restricted-case")))
@@ -319,7 +319,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION, itemKey = "case-3", pinnedAt = now.minusHours(2))
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(caseDefinitionService.getActiveCaseDefinition("case-1")).thenReturn(caseDefinition1)
         whenever(caseDefinitionService.getActiveCaseDefinition("case-2")).thenReturn(caseDefinition2)
@@ -344,7 +344,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION, itemKey = "my-case", pinnedAt = now)
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(caseDefinitionService.getActiveCaseDefinition("my-case")).thenReturn(caseDefinition)
         whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
@@ -369,7 +369,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION_GROUP, itemKey = groupKey, pinnedAt = now)
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
         whenever(caseDefinitionService.getActiveCaseDefinitions(listOf(caseDefinitionKey)))
@@ -392,7 +392,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION, itemKey = "deleted-case", pinnedAt = now)
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(caseDefinitionService.getActiveCaseDefinition("deleted-case")).thenReturn(null)
 
@@ -410,7 +410,7 @@ class PinnedItemServiceTest : BaseTest() {
             PinnedItem(userId = TEST_USER_ID, itemType = PinnedItemType.CASE_DEFINITION_GROUP, itemKey = groupKey, pinnedAt = now)
         )
 
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
+        whenever(pinnedItemRepository.findByUserIdOrderByPinnedAtDesc(TEST_USER_ID))
             .thenReturn(pinnedItems)
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.empty())
 
@@ -501,98 +501,6 @@ class PinnedItemServiceTest : BaseTest() {
             groupKey
         )
     }
-
-    @Test
-    fun `pinItem should place new pin before existing pins`() {
-        val caseDefinitionKey = "my-case"
-        val caseDefinition = caseDefinition(id = CaseDefinitionId(caseDefinitionKey, "1.0.0"))
-
-        whenever(pinnedItemRepository.existsByUserIdAndItemTypeAndItemKey(TEST_USER_ID, PinnedItemType.CASE_DEFINITION, caseDefinitionKey))
-            .thenReturn(false)
-        whenever(caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey))
-            .thenReturn(caseDefinition)
-        whenever(authorizationService.hasPermission(any<EntityAuthorizationRequest<CaseDefinition>>()))
-            .thenReturn(true)
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
-            .thenReturn(
-                listOf(
-                    pinnedItem("case-1", sortOrder = 3),
-                    pinnedItem("case-2", sortOrder = 4)
-                )
-            )
-        whenever(pinnedItemRepository.save(any<PinnedItem>())).thenAnswer { it.arguments[0] }
-
-        service.pinItem(PinnedItemType.CASE_DEFINITION, caseDefinitionKey)
-
-        val captor = argumentCaptor<PinnedItem>()
-        verify(pinnedItemRepository).save(captor.capture())
-
-        assertEquals(2, captor.firstValue.sortOrder)
-    }
-
-    @Test
-    fun `reorderItems should apply requested order`() {
-        val first = pinnedItem("case-1", sortOrder = 0)
-        val second = pinnedItem("case-2", sortOrder = 1)
-        val group = pinnedItem("group-1", sortOrder = 2, itemType = PinnedItemType.CASE_DEFINITION_GROUP)
-
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
-            .thenReturn(listOf(first, second, group))
-
-        service.reorderItems(
-            listOf(
-                PinnedItemType.CASE_DEFINITION_GROUP to "group-1",
-                PinnedItemType.CASE_DEFINITION to "case-1",
-                PinnedItemType.CASE_DEFINITION to "case-2"
-            )
-        )
-
-        assertEquals(0, group.sortOrder)
-        assertEquals(1, first.sortOrder)
-        assertEquals(2, second.sortOrder)
-        verify(pinnedItemRepository).saveAll(listOf(first, second, group))
-    }
-
-    @Test
-    fun `reorderItems should ignore unknown items and keep unlisted pins after listed ones`() {
-        val first = pinnedItem("case-1", sortOrder = 0)
-        val second = pinnedItem("case-2", sortOrder = 1)
-        val third = pinnedItem("case-3", sortOrder = 2)
-
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
-            .thenReturn(listOf(first, second, third))
-
-        service.reorderItems(
-            listOf(
-                PinnedItemType.CASE_DEFINITION to "unknown",
-                PinnedItemType.CASE_DEFINITION to "case-3"
-            )
-        )
-
-        assertEquals(0, third.sortOrder)
-        assertEquals(1, first.sortOrder)
-        assertEquals(2, second.sortOrder)
-    }
-
-    @Test
-    fun `reorderItems should not match a group and a case definition sharing a key`() {
-        val caseItem = pinnedItem("shared", sortOrder = 0)
-        val groupItem = pinnedItem("shared", sortOrder = 1, itemType = PinnedItemType.CASE_DEFINITION_GROUP)
-
-        whenever(pinnedItemRepository.findByUserIdOrderBySortOrderAscPinnedAtDesc(TEST_USER_ID))
-            .thenReturn(listOf(caseItem, groupItem))
-
-        service.reorderItems(listOf(PinnedItemType.CASE_DEFINITION_GROUP to "shared"))
-
-        assertEquals(0, groupItem.sortOrder)
-        assertEquals(1, caseItem.sortOrder)
-    }
-
-    private fun pinnedItem(
-        itemKey: String,
-        sortOrder: Int,
-        itemType: PinnedItemType = PinnedItemType.CASE_DEFINITION
-    ) = PinnedItem(userId = TEST_USER_ID, itemType = itemType, itemKey = itemKey, sortOrder = sortOrder)
 
     private fun createGroup(
         key: String,

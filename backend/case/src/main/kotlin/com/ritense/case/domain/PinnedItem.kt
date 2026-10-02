@@ -43,8 +43,5 @@ data class PinnedItem(
     val itemKey: String,
 
     @Column(name = "pinned_at", nullable = false)
-    val pinnedAt: LocalDateTime = LocalDateTime.now(),
-
-    @Column(name = "sort_order", nullable = false)
-    var sortOrder: Int = 0
+    val pinnedAt: LocalDateTime = LocalDateTime.now()
 )

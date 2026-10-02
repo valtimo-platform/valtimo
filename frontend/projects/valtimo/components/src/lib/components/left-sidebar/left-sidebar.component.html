@@ -69,11 +69,6 @@
             [valtimoSubmenuTitleClick]="!!menuItem.titleLink"
             (submenuTitleClickEvent)="onSubmenuTitleClick(menuItem, $event)"
             [attr.data-testid]="'sidenav-item-' + menuItem.title"
-            cdkDropList
-            [cdkDropListData]="menuItem.children"
-            [cdkDropListDisabled]="!menuItem.onChildrenReorder || !obs.sideBarExpanded"
-            cdkDropListLockAxis="y"
-            (cdkDropListDropped)="onChildDropped(menuItem, $event)"
           >
             <ng-container
               *ngFor="let childMenuItem of menuItem.children; trackBy: trackByMenuItem"
@@ -101,12 +96,6 @@
                   }"
                   [active]="vars.sequence === obs.closestSequence"
                   [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
-                  cdkDrag
-                  cdkDragBoundary=".cds--side-nav__menu"
-                  cdkDragPreviewContainer="parent"
-                  [cdkDragDisabled]="!menuItem.onChildrenReorder || !obs.sideBarExpanded"
-                  (cdkDragStarted)="onChildDragStarted()"
-                  (cdkDragEnded)="onChildDragEnded()"
                   (click)="navigateToRoute(childMenuItem.link, $event)"
                   (contextmenu)="onRightClick(vars.sequence)"
                   (ctrl-click)="openInNewTab(childMenuItem.link)"

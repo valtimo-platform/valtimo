@@ -58,27 +58,12 @@ export class CaseMenuService {
           menuItems[index].titleLink = CASES_OVERVIEW_LINK;
           menuItems[index].sectionLinks = CASES_SECTION_LINKS;
           menuItems[index].children = this.toMenuItems(pinnedItems);
-          menuItems[index].onChildrenReorder = pinnedItems.some(item => !!item.displayName)
-            ? childIds => this.onPinnedItemsReorder(pinnedItems, childIds)
-            : undefined;
         }
 
         return menuItems;
       })
     );
   };
-
-  private onPinnedItemsReorder(pinnedItems: PinnedItem[], childIds: string[]): void {
-    this.pinnedItemsService.reorderPinnedItems(
-      childIds
-        .map(childId => pinnedItems.find(pinnedItem => this.getMenuItemId(pinnedItem) === childId))
-        .filter((pinnedItem): pinnedItem is PinnedItem => !!pinnedItem)
-    );
-  }
-
-  private getMenuItemId(pinnedItem: PinnedItem): string {
-    return `${pinnedItem.itemType}:${pinnedItem.itemKey}`;
-  }
 
   private getCasesIndex(menuItems: MenuItem[]): number {
     return menuItems.findIndex(item => item.title === 'Cases' || item.title === 'Dossiers');
@@ -92,7 +77,6 @@ export class CaseMenuService {
     const menuItems: MenuItem[] = pinnedItems
       .filter((pinnedItem: PinnedItem) => !!pinnedItem.displayName)
       .map((pinnedItem: PinnedItem, index: number) => ({
-        id: this.getMenuItemId(pinnedItem),
         link:
           pinnedItem.itemType === PinnedItemType.CASE_DEFINITION_GROUP
             ? ['/groups/' + pinnedItem.itemKey]

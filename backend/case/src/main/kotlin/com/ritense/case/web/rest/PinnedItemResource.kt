@@ -19,7 +19,6 @@ package com.ritense.case.web.rest
 import com.ritense.case.domain.PinnedItemType
 import com.ritense.case.service.PinnedItemService
 import com.ritense.case.web.rest.dto.PinnedItemCreateRequestDto
-import com.ritense.case.web.rest.dto.PinnedItemReorderRequestDto
 import com.ritense.case.web.rest.dto.PinnedItemResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -31,7 +30,6 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 
@@ -54,14 +52,6 @@ class PinnedItemResource(
     ): ResponseEntity<Void> {
         pinnedItemService.pinItem(request.itemType, request.itemKey)
         return ResponseEntity.status(HttpStatus.CREATED).build()
-    }
-
-    @PutMapping("/order")
-    fun reorderItems(
-        @Valid @RequestBody request: PinnedItemReorderRequestDto
-    ): ResponseEntity<Void> {
-        pinnedItemService.reorderItems(request.items.map { it.itemType to it.itemKey })
-        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{itemType}/{itemKey}")

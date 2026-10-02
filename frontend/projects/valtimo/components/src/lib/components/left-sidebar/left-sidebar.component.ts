@@ -22,7 +22,6 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
-import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 import {Router} from '@angular/router';
 import {MenuItem, ConfigService} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
@@ -74,7 +73,6 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   private _breakpointsInitialized = false;
   private _menuCollapsedByDefaultInitialized = false;
   private _lastSmallScreen!: boolean;
-  private _dragging = false;
   private _lastLargeScreen!: boolean;
 
   constructor(
@@ -114,9 +112,6 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   public navigateToRoute(route: Array<string>, event: MouseEvent): void {
     event.preventDefault();
 
-    // The click ending a drag is not a navigation.
-    if (this._dragging) return;
-
     this.overflowMenuSequence$.next('');
 
     if (!event.ctrlKey && !event.metaKey) {
@@ -134,23 +129,6 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
           }
         });
     }
-  }
-
-  public onChildDragStarted(): void {
-    this._dragging = true;
-  }
-
-  public onChildDragEnded(): void {
-    setTimeout(() => (this._dragging = false));
-  }
-
-  public onChildDropped(menuItem: MenuItem, event: CdkDragDrop<MenuItem[]>): void {
-    if (!menuItem.children || event.previousIndex === event.currentIndex) return;
-
-    moveItemInArray(menuItem.children, event.previousIndex, event.currentIndex);
-    menuItem.onChildrenReorder?.(
-      menuItem.children.map(child => child.id).filter((id): id is string => !!id)
-    );
   }
 
   public onSubmenuTitleClick(menuItem: MenuItem, event: MouseEvent): void {
