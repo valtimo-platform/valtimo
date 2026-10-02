@@ -17,6 +17,7 @@ import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {
   Component,
+  computed,
   ElementRef,
   OnDestroy,
   OnInit,
@@ -35,7 +36,6 @@ import {
   ConfirmationModalModule,
   DEFAULT_PAGINATION,
   DEFAULT_PAGINATOR_CONFIG,
-  DocumentenApiMetadata,
   OverflowMenuComponent,
   Pagination,
   SortState,
@@ -49,23 +49,35 @@ import {
   UploadProviderService,
 } from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
-import {ConfigService, Direction} from '@valtimo/shared';
+import {ConfigService, Direction, GlobalNotificationService} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
+  from,
   Observable,
   of,
   ReplaySubject,
   Subject,
   Subscription,
 } from 'rxjs';
-import {catchError, filter, map, shareReplay, switchMap, take, tap} from 'rxjs/operators';
+import {
+  catchError,
+  concatMap,
+  filter,
+  map,
+  shareReplay,
+  switchMap,
+  take,
+  tap,
+  toArray,
+} from 'rxjs/operators';
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
   DOCUMENTEN_COLUMN_KEYS,
   DocumentenApiFilePermissions,
+  DocumentenApiMetadata,
   DocumentenApiFilterModel,
   DocumentenApiRelatedFile,
   SupportedDocumentenApiFeatures,
@@ -83,6 +95,10 @@ import {
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 import {DocumentenApiPreviewModalComponent} from '../documenten-api-preview-modal/documenten-api-preview-modal.component';
+import {
+  areAllUploadFieldsHidden,
+  getBatchFileMetadata,
+} from '../../utils/documenten-api-upload.utils';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-documents',
@@ -209,6 +225,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
 
   public readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
+  public readonly batchFiles = signal<Array<File> | null>(null);
+  public readonly batchFileNames = computed(
+    () => this.batchFiles()?.map((file: File) => file.name) ?? null
+  );
   public readonly documentToPreview$ = new BehaviorSubject<DocumentenApiRelatedFile | null>(null);
   public readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly showModal$ = new Subject<null>();
@@ -255,7 +275,8 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         }),
         {}
       )
-    )
+    ),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   public defaultValues$: Observable<DocumentenApiUploadFieldDefaultValues> =
@@ -360,7 +381,8 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     private readonly router: Router,
     private readonly translateService: TranslateService,
     private readonly uploadProviderService: UploadProviderService,
-    private readonly userProviderService: UserProviderService
+    private readonly userProviderService: UserProviderService,
+    private readonly globalNotificationService: GlobalNotificationService
   ) {
     this.iconService.register(Filter16);
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
@@ -453,6 +475,12 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public metadataSet(metadata: DocumentenApiMetadata): void {
+    const batchFiles = this.batchFiles();
+    if (batchFiles && !this.isEditMode$.getValue()) {
+      this.uploadBatch(batchFiles, metadata);
+      return;
+    }
+
     this.uploadError.set(null);
     this.uploading$.next(true);
 
@@ -518,12 +546,14 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onEditMetadata(file: File): void {
+    this.batchFiles.set(null);
     this.isEditMode$.next(true);
     this.fileToBeUploaded$.next(file);
     this.showUploadModal$.next(true);
   }
 
   public closeMetadataModal(): void {
+    this.batchFiles.set(null);
     this.uploadError.set(null);
     this.showUploadModal$.next(false);
   }
@@ -533,8 +563,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onFileSelected(event: any): void {
+    const files: Array<File> = Array.from(event.target.files ?? []);
     this.isEditMode$.next(false);
-    this.fileToBeUploaded$.next(event.target.files[0]);
+    this.uploadError.set(null);
+    this.batchFiles.set(files.length > 1 ? files : null);
+    this.fileToBeUploaded$.next(files[0]);
     this.showUploadModal$.next(true);
     this.resetFileInput();
   }
@@ -590,6 +623,78 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
 
   public refetchDocuments(): void {
     this._refetch$.next(null);
+  }
+
+  private uploadBatch(files: Array<File>, metadata: DocumentenApiMetadata): void {
+    this.uploadError.set(null);
+    this.uploading$.next(true);
+
+    combineLatest([this.documentId$, this.uploadFields$, this.hideFields$])
+      .pipe(
+        take(1),
+        switchMap(([documentId, uploadFields, hideFields]) =>
+          from(files).pipe(
+            concatMap((file: File) =>
+              this.uploadProviderService
+                .uploadFileWithMetadata(
+                  file,
+                  documentId,
+                  getBatchFileMetadata(file, metadata, uploadFields)
+                )
+                .pipe(
+                  map(() => null),
+                  catchError((error: HttpErrorResponse) => of({file, error}))
+                )
+            ),
+            toArray(),
+            map(results => ({
+              failures: results.filter(result => !!result),
+              autoSaved: areAllUploadFieldsHidden(hideFields),
+            }))
+          )
+        )
+      )
+      .subscribe(({failures, autoSaved}) => {
+        this.uploading$.next(false);
+        this.refetchDocuments();
+        this.filter$.next(null);
+        this.pagination$.next(DEFAULT_PAGINATION);
+
+        if (!failures.length) {
+          this.batchFiles.set(null);
+          this.showUploadModal$.next(false);
+          this.fileToBeUploaded$.next(null);
+          return;
+        }
+
+        const message = this.getBatchUploadErrorMessage(failures);
+
+        if (autoSaved || !this.showUploadModal$.getValue()) {
+          this.batchFiles.set(null);
+          this.fileToBeUploaded$.next(null);
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('document.batchUploadFailedTitle'),
+            caption: message,
+            type: 'error',
+          });
+          return;
+        }
+
+        this.batchFiles.set(failures.map(failure => failure.file));
+        this.uploadError.set(message);
+      });
+  }
+
+  private getBatchUploadErrorMessage(
+    failures: Array<{file: File; error: HttpErrorResponse}>
+  ): string {
+    const message = this.translateService.instant('document.batchUploadFailed', {
+      files: failures.map(failure => failure.file.name).join(', '),
+    });
+
+    return failures.some(failure => failure.error?.status === 403)
+      ? `${message} ${this.translateService.instant('document.uploadPermissionDenied')}`
+      : message;
   }
 
   private previewDisabled(file: DocumentenApiRelatedFile): Observable<boolean> {

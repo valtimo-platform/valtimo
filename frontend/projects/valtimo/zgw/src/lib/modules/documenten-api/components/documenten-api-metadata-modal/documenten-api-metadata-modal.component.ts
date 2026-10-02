@@ -81,6 +81,12 @@ import {
 import {DocumentenApiTagService, DocumentenApiVersionService} from '../../services';
 import moment from 'moment';
 import {DocumentenApiUploadFieldDefaultValues} from '../../models/documenten-api-upload-field.model';
+import {
+  areAllUploadFieldsHidden,
+  filenameToTitle,
+  getFilenameExtension,
+  withFilenameExtension,
+} from '../../utils/documenten-api-upload.utils';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -182,6 +188,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     }
   }
   @Input() isEditMode: boolean;
+  @Input() batchFileNames: Array<string> | null = null;
   @Input() uploadError: string | null = null;
   @Input() uploading = false;
 
@@ -612,10 +619,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       .pipe(
         tap(([file, userEmail]) => {
           const filename = file?.bestandsnaam || this.defaultValues.bestandsnaam || file?.name;
-          this.filenameExtension = file?.name?.split('.')?.pop() || '';
-          if (this.filenameExtension.length === file?.name?.length) {
-            this.filenameExtension = '';
-          }
+          this.filenameExtension = getFilenameExtension(file?.name);
           this.documentenApiMetadataForm.patchValue({
             bestandsnaam: filename,
             auteur: file?.auteur || this.defaultValues.auteur || userEmail,
@@ -623,7 +627,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
             titel:
               file?.titel ||
               this.defaultValues.titel ||
-              this.filenameToTitle(file?.name || this.defaultValues.bestandsnaam),
+              filenameToTitle(file?.name || this.defaultValues.bestandsnaam),
           });
           if (this.areAllFieldsHidden()) {
             this.save();
@@ -631,15 +635,6 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe();
-  }
-
-  private filenameToTitle(filename?: string) {
-    if (!filename) {
-      return null;
-    }
-
-    filename = filename.replace(/\.[^/.]+$/, '').replace(/[._]/g, ' ');
-    return filename.charAt(0).toUpperCase() + filename.slice(1);
   }
 
   private formatDate(controlName: string): void {
@@ -690,8 +685,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.bestandsnaam.valueChanges.subscribe(bestandsnaam => {
         if (bestandsnaam && this.filenameExtension) {
-          let correctBestandsnaam =
-            bestandsnaam.replace(/\.[^/.]+$/, '') + '.' + this.filenameExtension;
+          const correctBestandsnaam = withFilenameExtension(bestandsnaam, this.filenameExtension);
           if (correctBestandsnaam != bestandsnaam) {
             this.documentenApiMetadataForm.patchValue({
               bestandsnaam: correctBestandsnaam,
@@ -719,18 +713,6 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   private areAllFieldsHidden(): boolean {
-    return (
-      this.hideFields.includes('aanvullendeDatum') &&
-      this.hideFields.includes('auteur') &&
-      this.hideFields.includes('vertrouwelijkheidaanduiding') &&
-      this.hideFields.includes('creatiedatum') &&
-      this.hideFields.includes('beschrijving') &&
-      this.hideFields.includes('titel') &&
-      this.hideFields.includes('informatieobjecttype') &&
-      this.hideFields.includes('bestandsnaam') &&
-      this.hideFields.includes('taal') &&
-      this.hideFields.includes('status') &&
-      this.hideFields.includes('trefwoorden')
-    );
+    return areAllUploadFieldsHidden(this.hideFields);
   }
 }

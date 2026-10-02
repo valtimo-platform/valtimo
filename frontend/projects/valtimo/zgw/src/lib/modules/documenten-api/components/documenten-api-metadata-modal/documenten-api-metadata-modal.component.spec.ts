@@ -13,9 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {CommonModule} from '@angular/common';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FormBuilder} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
+import {FormIoStateService, ModalService, ValtimoModalService} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {KeycloakService} from 'keycloak-angular';
 import {of} from 'rxjs';
 import {DocumentenApiMetadata} from '../../models';
+import {DocumentenApiTagService, DocumentenApiVersionService} from '../../services';
 import {DocumentenApiMetadataModalComponent} from './documenten-api-metadata-modal.component';
 
 describe('DocumentenApiMetadataModalComponent', () => {
@@ -64,5 +73,62 @@ describe('DocumentenApiMetadataModalComponent', () => {
     component.save();
 
     expect(emitted.length).toBe(1);
+  });
+});
+
+describe('DocumentenApiMetadataModalComponent template', () => {
+  let fixture: ComponentFixture<DocumentenApiMetadataModalComponent>;
+
+  const renderedText = (): string => fixture.nativeElement.textContent;
+  const fieldRendered = (id: string): boolean => !!fixture.nativeElement.querySelector(`#${id}`);
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [DocumentenApiMetadataModalComponent, TranslateModule.forRoot()],
+      providers: [
+        {provide: ActivatedRoute, useValue: {params: of({}), firstChild: null}},
+        {
+          provide: DocumentService,
+          useValue: {getDocumentTypesForDocument: () => of([]), getCaseSettings: () => of({})},
+        },
+        {provide: DocumentenApiTagService, useValue: {getTags: () => of([])}},
+        {
+          provide: KeycloakService,
+          useValue: {loadUserProfile: () => Promise.resolve({email: 'ambtenaar@example.com'})},
+        },
+        {provide: ModalService, useValue: {openModal: () => {}, closeModal: () => {}}},
+        {
+          provide: ValtimoModalService,
+          useValue: {caseDefinitionKey$: of(null), setCaseDefinitionKey: () => {}},
+        },
+        {provide: DocumentenApiVersionService, useValue: {getSupportedApiFeatures: () => of({})}},
+        {provide: FormIoStateService, useValue: {documentId$: of(null)}},
+      ],
+    }).overrideComponent(DocumentenApiMetadataModalComponent, {
+      set: {imports: [CommonModule, TranslateModule], schemas: [NO_ERRORS_SCHEMA]},
+    });
+
+    fixture = TestBed.createComponent(DocumentenApiMetadataModalComponent);
+    fixture.componentRef.setInput('open', true);
+  });
+
+  it('lists the selected files instead of the Filename and Title fields for several files', () => {
+    fixture.componentRef.setInput('batchFileNames', ['aanvraag.pdf', 'bouw_tekening.pdf']);
+    fixture.detectChanges();
+
+    expect(renderedText()).toContain('aanvraag.pdf');
+    expect(renderedText()).toContain('bouw_tekening.pdf');
+    expect(renderedText()).toContain('document.fillInBatchMetadata');
+    expect(fieldRendered('bestandsnaam')).toBeFalse();
+    expect(fieldRendered('titel')).toBeFalse();
+    expect(fieldRendered('auteur')).toBeTrue();
+  });
+
+  it('shows the Filename and Title fields for a single file, as before', () => {
+    fixture.detectChanges();
+
+    expect(renderedText()).toContain('document.fillInMetadata');
+    expect(fieldRendered('bestandsnaam')).toBeTrue();
+    expect(fieldRendered('titel')).toBeTrue();
   });
 });

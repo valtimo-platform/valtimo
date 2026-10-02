@@ -24,6 +24,16 @@
   margin-right: 1rem;
 }
 
+.documenten-metadata-batch-files {
+  margin-bottom: var(--cds-spacing-06);
+
+  ul {
+    // no Carbon token for a scroll height; keeps a long selection from pushing the form down
+    max-height: 160px;
+    overflow-y: auto;
+  }
+}
+
 .documenten-metada-form-input {
   margin-bottom: 18px !important;
   width: 100% !important;
