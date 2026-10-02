@@ -30,6 +30,7 @@ import com.ritense.formflow.repository.FormFlowAdditionalPropertiesSearchReposit
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.repository.FormFlowInstanceRepository
 import com.ritense.logging.withLoggingContext
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -102,6 +103,10 @@ class FormFlowService(
 
     fun findDefinitionOrNull(formFlowDefinitionKey: String, buildingBlockDefinitionId: BuildingBlockDefinitionId): FormFlowDefinition? {
         return formFlowDefinitionRepository.findByIdOrNull(FormFlowDefinitionId.existingId(formFlowDefinitionKey, buildingBlockDefinitionId))
+    }
+
+    fun findDefinitionOrNull(formFlowDefinitionKey: String, blueprintId: BlueprintId): FormFlowDefinition? {
+        return formFlowDefinitionRepository.findByIdOrNull(FormFlowDefinitionId.existingId(formFlowDefinitionKey, blueprintId))
     }
 
     fun findDefinitionByKey(formFlowDefinitionKey: String): FormFlowDefinition? {

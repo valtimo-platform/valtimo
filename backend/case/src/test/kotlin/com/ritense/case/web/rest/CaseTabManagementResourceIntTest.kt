@@ -32,6 +32,7 @@ import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
+import org.hamcrest.CoreMatchers.nullValue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
@@ -358,5 +359,33 @@ class CaseTabManagementResourceIntTest @Autowired constructor(
             .andExpect(jsonPath("$.contentKey").value(caseTab.contentKey))
             .andExpect(jsonPath("$.createdBy").value("system"))
             .andExpect(jsonPath("$.createdOn").exists())
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should get tabs when the creating user no longer exists`() {
+        whenever(userManagementService.findById("deleted-user-id")).thenReturn(null)
+        val caseDefinitionId = CaseDefinitionId.of("some-case-type", "1.0.0")
+
+        val key = "some-key"
+        caseTabRepository.save(
+            CaseTab(
+                id = CaseTabId(caseDefinitionId, key),
+                name = "Some tab name",
+                type = CaseTabType.STANDARD,
+                tabOrder = Integer.MAX_VALUE,
+                contentKey = "some-content-key",
+                createdBy = "deleted-user-id"
+            )
+        )
+
+        mockMvc.perform(
+            get("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab", caseDefinitionId.key, caseDefinitionId.versionTag.version)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].key").value(key))
+            .andExpect(jsonPath("$[0].createdBy").value(nullValue(String::class.java)))
     }
 }

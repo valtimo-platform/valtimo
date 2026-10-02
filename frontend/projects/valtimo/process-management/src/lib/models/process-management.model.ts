@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {ModalParams, ProcessLink} from '@valtimo/process-link';
-import {ManagementContext} from '@valtimo/shared';
+import {ManagementContext, ProcessDefinitionValidationError} from '@valtimo/shared';
 
 interface OpenProcessLinkModalEvent {
   modalParams: ModalParams;
@@ -40,16 +40,6 @@ interface UpdateProcessDefinitionCaseDefinitionRequest {
   startableByUser?: boolean;
 }
 
-interface ProcessDefinitionValidationError {
-  elementId: string;
-  elementType: string;
-  elementName?: string;
-  reason: string;
-  errorCode?: string;
-  expression?: string;
-  severity?: 'ERROR' | 'WARNING';
-}
-
 interface ProcessDefinitionValidationResult {
   isValid: boolean;
   hasWarnings: boolean;
@@ -59,6 +49,16 @@ interface ProcessDefinitionValidationResult {
 interface ProcessDefinitionValidateRequest {
   bpmnXml: string;
   processLinks: any[];
+  canInitializeDocument?: boolean;
+  startableByUser?: boolean;
+}
+
+interface ActivityMarkerInfo {
+  hasExecutionListener: boolean;
+  hasTaskListener: boolean;
+  hasProcessLink: boolean;
+  executionListenerCount: number;
+  taskListenerCount: number;
 }
 
 export {
@@ -70,4 +70,5 @@ export {
   ProcessDefinitionValidationError,
   ProcessDefinitionValidationResult,
   ProcessDefinitionValidateRequest,
+  ActivityMarkerInfo,
 };

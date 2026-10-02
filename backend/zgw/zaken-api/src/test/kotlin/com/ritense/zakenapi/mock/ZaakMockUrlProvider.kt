@@ -17,6 +17,7 @@
 package com.ritense.zakenapi.mock
 
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
+import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
@@ -27,7 +28,8 @@ import java.util.UUID
 
 @Service
 class ZaakMockUrlProvider(
-    private val zaakInstanceLinkService: ZaakInstanceLinkService
+    private val zaakInstanceLinkService: ZaakInstanceLinkService,
+    private val pluginService: PluginService,
 ) : ZaakUrlProvider, ZaaktypeUrlProvider {
 
     @Throws(ZaakInstanceLinkNotFoundException::class)
@@ -35,11 +37,16 @@ class ZaakMockUrlProvider(
         return zaakInstanceLinkService.getByDocumentId(documentId).zaakInstanceUrl
     }
 
-    override fun getZaaktypeUrl(caseDefinitionId: CaseDefinitionId): URI {
-        return URI("http://localhost:56273/catalogi/api/v1/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002")
-    }
+    override fun getZaaktypeUrl(caseDefinitionId: CaseDefinitionId): URI = zaaktypeUrl()
 
-    override fun getZaaktypeUrl(documentId: UUID): URI {
-        return URI("http://localhost:56273/catalogi/api/v1/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002")
+    override fun getZaaktypeUrl(documentId: UUID): URI = zaaktypeUrl()
+
+    // Derived from the deployed Catalogi API plugin configuration so the URL follows the mock server's
+    // actual (randomly assigned) port instead of a hardcoded one.
+    private fun zaaktypeUrl(): URI {
+        val baseUrl = pluginService.findPluginConfiguration("catalogiapi") { true }
+            ?.properties?.get("url")?.asText()?.trimEnd('/')
+            ?: "http://localhost:16273/catalogi/api/v1"
+        return URI("$baseUrl/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002")
     }
 }

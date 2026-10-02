@@ -51,9 +51,10 @@ export class BarChartDisplayComponent implements DisplayComponent {
   public readonly barChartChartOptions$: Observable<BarChartOptions> =
     this.themeService.currentTheme$.pipe(
       map(currentTheme => ({
-        title: 'Vertical simple bar (discrete)',
         theme: currentTheme,
-        height: '400px',
+        resizable: true,
+        toolbar: {enabled: false},
+        height: '300px',
         axes: {
           left: {
             mapsTo: 'value',

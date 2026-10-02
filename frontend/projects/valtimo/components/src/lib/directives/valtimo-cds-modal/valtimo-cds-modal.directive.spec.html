@@ -32,3 +32,9 @@
     }
   </div>
 </cds-modal>
+
+<!-- Separate host for the min-height behaviour: it needs a `.cds--modal-content` to write to, but
+     not a `cds-modal` element (the ESC handling above is what depends on the real tag). -->
+<div class="min-height-host" valtimoCdsModal [minContentHeight]="600">
+  <div class="cds--modal-content"></div>
+</div>

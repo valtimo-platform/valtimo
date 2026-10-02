@@ -17,6 +17,7 @@
 import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {
+  AUTO_KEY_INPUT_TEST_IDS,
   CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS,
   CONFIRMATION_MODAL_TEST_IDS,
   KEY_VALUE_TEST_IDS,
@@ -60,6 +61,16 @@ export class CaseDetailsManagementCaseListPage {
 
   get keyInput() {
     return this.page.getByTestId(CASE_MANAGEMENT_LIST_COLUMNS_TEST_IDS.key);
+  }
+
+  get keyEditButton() {
+    return this.page.getByTestId(AUTO_KEY_INPUT_TEST_IDS.editButton);
+  }
+
+  // The key auto-fills from the title, so it is read-only until edited by hand
+  async fillKeyManually(key: string) {
+    await this.keyEditButton.click();
+    await this.keyInput.fill(key);
   }
 
   get valuePathSelectorToggle() {
@@ -200,7 +211,7 @@ export class CaseDetailsManagementCaseListPage {
     if (column.title) {
       await this.titleInput.fill(column.title);
     }
-    await this.keyInput.fill(column.key);
+    await this.fillKeyManually(column.key);
 
     await this.valuePathSelectorToggle.click();
 

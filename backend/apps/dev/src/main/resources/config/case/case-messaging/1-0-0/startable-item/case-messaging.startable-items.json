@@ -1,0 +1,15 @@
+[
+    {
+        "type": "BUILDING_BLOCK",
+        "key": "case-review",
+        "versionTag": "1.0.0"
+    },
+    {
+        "type": "PROCESS",
+        "key": "send-review-approved"
+    },
+    {
+        "type": "PROCESS",
+        "key": "request-case-notification"
+    }
+]

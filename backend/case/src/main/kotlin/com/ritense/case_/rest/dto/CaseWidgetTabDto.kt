@@ -21,6 +21,7 @@ import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.WidgetLayout
 import com.ritense.case_.widget.CaseWidgetMapper
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.exporter.request.ExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.conditions.Condition
 import jakarta.validation.Valid
@@ -37,6 +38,12 @@ data class CaseWidgetTabDto(
         widgets.forEach {
             it.validate(caseDefinitionId)
         }
+    }
+
+    fun getRelatedExportRequests(caseDefinitionId: CaseDefinitionId): Set<ExportRequest> {
+        return widgets.flatMap {
+            it.getRelatedExportRequests(caseDefinitionId)
+        }.toSet()
     }
 
     companion object {

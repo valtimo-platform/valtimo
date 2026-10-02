@@ -19,22 +19,71 @@ package com.ritense.buildingblock.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.listener.BuildingBlockCaseAssigneeListener
+import com.ritense.buildingblock.listener.BuildingBlockContinuousSyncListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
+import com.ritense.buildingblock.listener.BuildingBlockDocumentPreDeleteListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
 import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
 import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
 import com.ritense.buildingblock.processlink.mapper.BuildingBlockProcessLinkMapper
 import com.ritense.buildingblock.processlink.service.BuildingBlockCallActivityListener
+import com.ritense.buildingblock.processlink.service.BuildingBlockProcessLinkCopyValidator
 import com.ritense.buildingblock.processlink.service.BuildingBlockSupportedProcessLinksHandler
 import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginConfigurationResolver
+import com.ritense.buildingblock.processlink.service.DefaultBuildingBlockPluginMappingUsageFinder
+import com.ritense.buildingblock.repository.BuildingBlockProcessLinkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionArtworkRepository
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.AddBuildingBlockConfigurationRepository
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.JsonSchemaDocumentCaseDefinitionMapper
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.RemoveBuildingBlockConfigurationRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.migration.AddBuildingBlockLinkChecker
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentDeployer
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentExecutor
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentValidator
+import com.ritense.buildingblock.service.migration.AddBuildingBlockProcessChecker
+import com.ritense.buildingblock.service.migration.BuildingBlockEntryLevel
+import com.ritense.buildingblock.service.migration.CallActivityBuildingBlockEntryOwnership
+import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomeExecutor
+import com.ritense.buildingblock.service.migration.BuildingBlockInstanceRehomer
+import com.ritense.buildingblock.service.migration.BuildingBlockVersionLineage
+import com.ritense.buildingblock.service.migration.BuildingBlockCallActivityRemapExecutor
+import com.ritense.buildingblock.service.migration.BuildingBlockMigrationPathResolver
+import com.ritense.buildingblock.service.migration.BuildingBlockOwnershipResolver
+import com.ritense.buildingblock.service.migration.BuildingBlockVersionAlignmentExecutor
+import com.ritense.buildingblock.service.migration.LinkedBuildingBlockVersionResolver
+import com.ritense.buildingblock.service.migration.BuildingBlockProcessDefinitionBlueprintResolver
+import com.ritense.buildingblock.service.migration.BuildingBlockProcessOwnership
+import com.ritense.buildingblock.service.migration.BuildingBlockProcessMigrationComponentExecutor
+import com.ritense.buildingblock.service.migration.BuildingBlockProcessVersionChecker
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentDeployer
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentExecutor
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentValidator
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockVersionChecker
+import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentSuggester
+import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentSuggester
+import com.ritense.buildingblock.web.rest.BuildingBlockMigrationManagementResource
+import com.ritense.case_.repository.CaseDefinitionMigrationRepository
+import com.ritense.case_.repository.CaseMigrationCaseRepository
+import com.ritense.case_.service.migration.CaseMigrationService
+import com.ritense.case_.service.migration.MigrationPlanApplier
+import com.ritense.case_.service.migration.DataMigrationComponentSuggester
+import com.ritense.case_.service.migration.MigrationDataPatchApplier
+import com.ritense.case_.service.migration.MigrationPlanExporter
+import com.ritense.case_.service.migration.MigrationPlanImporter
+import com.ritense.case_.service.migration.MigrationSuggestionService
+import com.ritense.processdocument.migration.ProcessDefinitionBlueprintResolver
+import com.ritense.processdocument.migration.ProcessMigrationActivityValidator
+import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
+import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
+import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
+import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
+import org.operaton.bpm.engine.RuntimeService
 import com.ritense.buildingblock.service.BuildingBlockCaseDefinitionFinalizationChecker
 import com.ritense.buildingblock.service.BuildingBlockCaseDocumentResolver
 import com.ritense.buildingblock.service.BuildingBlockCaseLogScopeContributor
@@ -52,6 +101,8 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockCaseCorrelationBusinessKeyProvider
+import com.ritense.buildingblock.service.BuildingBlockCaseCorrelationStartTargetProvider
 import com.ritense.buildingblock.service.BuildingBlockFieldService
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionExporter
 import com.ritense.buildingblock.service.BuildingBlockFormDefinitionImporter
@@ -98,8 +149,11 @@ import com.ritense.formflow.service.FormFlowService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
+import com.ritense.plugin.service.BuildingBlockPluginMappingUsageFinder
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.BuildingBlockProcessLookup
+import com.ritense.processdocument.service.CaseCorrelationBusinessKeyProvider
+import com.ritense.processdocument.service.CaseCorrelationStartTargetProvider
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processlink.exporter.BuildingBlockProcessLinkToBuildingBlockMapper
 import com.ritense.processlink.mapper.ProcessLinkMapper
@@ -112,12 +166,15 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
+import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonByteArrayService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.RepositoryService
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -140,7 +197,9 @@ import org.springframework.jdbc.core.JdbcTemplate
         ProcessDefinitionBuildingBlockDefinitionRepository::class,
         BuildingBlockDefinitionArtworkRepository::class,
         BuildingBlockInstanceRepository::class,
-        CaseDefinitionBuildingBlockLinkRepository::class
+        CaseDefinitionBuildingBlockLinkRepository::class,
+        AddBuildingBlockConfigurationRepository::class,
+        RemoveBuildingBlockConfigurationRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain", "com.ritense.buildingblock.processlink.domain"])
@@ -372,6 +431,30 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseCorrelationBusinessKeyProvider::class)
+    fun buildingBlockCaseCorrelationBusinessKeyProvider(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    ): CaseCorrelationBusinessKeyProvider {
+        return BuildingBlockCaseCorrelationBusinessKeyProvider(buildingBlockInstanceRepository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseCorrelationStartTargetProvider::class)
+    fun buildingBlockCaseCorrelationStartTargetProvider(
+        documentService: DocumentService,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        repositoryService: RepositoryService,
+    ): CaseCorrelationStartTargetProvider {
+        return BuildingBlockCaseCorrelationStartTargetProvider(
+            documentService,
+            caseDefinitionBuildingBlockLinkRepository,
+            processDefinitionBuildingBlockDefinitionRepository,
+            repositoryService,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockInstanceResource::class)
     fun buildingBlockInstanceResource(
         buildingBlockInstanceService: BuildingBlockInstanceService,
@@ -477,6 +560,17 @@ class BuildingBlockAutoConfiguration {
         )
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockPluginMappingUsageFinder::class)
+    fun buildingBlockPluginMappingUsageFinder(
+        buildingBlockProcessLinkRepository: BuildingBlockProcessLinkRepository,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+    ): BuildingBlockPluginMappingUsageFinder =
+        DefaultBuildingBlockPluginMappingUsageFinder(
+            buildingBlockProcessLinkRepository,
+            caseDefinitionBuildingBlockLinkRepository,
+        )
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockCaseAssigneeListener::class)
     fun buildingBlockCaseAssigneeListener(
         operatonTaskService: OperatonTaskService,
@@ -531,6 +625,10 @@ class BuildingBlockAutoConfiguration {
     )
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessLinkCopyValidator::class)
+    fun buildingBlockProcessLinkCopyValidator() = BuildingBlockProcessLinkCopyValidator()
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockStartEventListener::class)
     fun buildingBlockStartEventListener(
         buildingBlockInstanceService: BuildingBlockInstanceService,
@@ -566,6 +664,24 @@ class BuildingBlockAutoConfiguration {
         caseDefinitionBuildingBlockLinkService,
         documentService,
         valueResolverService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockContinuousSyncListener::class)
+    fun buildingBlockContinuousSyncListener(
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        processLinkService: ProcessLinkService,
+        caseDefinitionBuildingBlockLinkService: CaseDefinitionBuildingBlockLinkService,
+        documentService: DocumentService,
+        valueResolverService: ValueResolverService,
+        runtimeService: RuntimeService,
+    ) = BuildingBlockContinuousSyncListener(
+        buildingBlockInstanceService,
+        processLinkService,
+        caseDefinitionBuildingBlockLinkService,
+        documentService,
+        valueResolverService,
+        runtimeService,
     )
 
     @Bean
@@ -802,6 +918,18 @@ class BuildingBlockAutoConfiguration {
     ) = CaseDefinitionBuildingBlockLinkCaseEventListener(linkRepository)
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockDocumentPreDeleteListener::class)
+    fun buildingBlockDocumentPreDeleteListener(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        documentService: DocumentService,
+        runtimeService: RuntimeService,
+    ) = BuildingBlockDocumentPreDeleteListener(
+        buildingBlockInstanceRepository,
+        documentService,
+        runtimeService
+    )
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockFormFlowDefinitionService::class)
     fun buildingBlockFormFlowDefinitionService(
         formFlowService: FormFlowService,
@@ -875,4 +1003,340 @@ class BuildingBlockAutoConfiguration {
     ): BuildingBlockDecisionDefinitionExporter {
         return BuildingBlockDecisionDefinitionExporter(repositoryService)
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockVersionLineage::class)
+    fun buildingBlockVersionLineage(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+    ) = BuildingBlockVersionLineage(buildingBlockDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockInstanceRehomer::class)
+    fun buildingBlockInstanceRehomer(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+    ) = BuildingBlockInstanceRehomer(
+        buildingBlockInstanceRepository,
+        buildingBlockDefinitionRepository,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockInstanceRehomeExecutor::class)
+    fun buildingBlockInstanceRehomeExecutor(
+        buildingBlockInstanceRehomer: BuildingBlockInstanceRehomer,
+    ) = BuildingBlockInstanceRehomeExecutor(buildingBlockInstanceRehomer)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockOwnershipResolver::class)
+    fun buildingBlockOwnershipResolver(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    ) = BuildingBlockOwnershipResolver(buildingBlockInstanceRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessVersionChecker::class)
+    fun buildingBlockProcessVersionChecker(
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        runtimeService: RuntimeService,
+        repositoryService: RepositoryService,
+    ) = BuildingBlockProcessVersionChecker(
+        buildingBlockInstanceRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        runtimeService,
+        repositoryService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockCallActivityRemapExecutor::class)
+    fun buildingBlockCallActivityRemapExecutor(
+        processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
+        buildingBlockOwnershipResolver: BuildingBlockOwnershipResolver,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
+        repositoryService: RepositoryService,
+    ) = BuildingBlockCallActivityRemapExecutor(
+        processMigrationConfigurationRepository,
+        buildingBlockOwnershipResolver,
+        buildingBlockInstanceRepository,
+        processDefinitionBlueprintResolvers,
+        repositoryService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockMigrationPathResolver::class)
+    fun buildingBlockMigrationPathResolver(
+        caseDefinitionMigrationRepository: CaseDefinitionMigrationRepository,
+    ) = BuildingBlockMigrationPathResolver(caseDefinitionMigrationRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(LinkedBuildingBlockVersionResolver::class)
+    fun linkedBuildingBlockVersionResolver(
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        processLinkRepository: ProcessLinkRepository,
+        buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
+        repositoryService: RepositoryService,
+    ) = LinkedBuildingBlockVersionResolver(
+        caseDefinitionBuildingBlockLinkRepository,
+        processDefinitionCaseDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        processLinkRepository,
+        buildingBlockMigrationPathResolver,
+        repositoryService,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockVersionAlignmentExecutor::class)
+    fun buildingBlockVersionAlignmentExecutor(
+        buildingBlockOwnershipResolver: BuildingBlockOwnershipResolver,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        buildingBlockMigrationPathResolver: BuildingBlockMigrationPathResolver,
+        buildingBlockProcessVersionChecker: BuildingBlockProcessVersionChecker,
+        caseMigrationCaseRepository: CaseMigrationCaseRepository,
+        runtimeService: RuntimeService,
+        migrationPlanApplier: ObjectProvider<MigrationPlanApplier>,
+    ) = BuildingBlockVersionAlignmentExecutor(
+        buildingBlockOwnershipResolver,
+        linkedBuildingBlockVersionResolver,
+        buildingBlockMigrationPathResolver,
+        buildingBlockProcessVersionChecker,
+        caseMigrationCaseRepository,
+        runtimeService,
+        migrationPlanApplier,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessMigrationComponentExecutor::class)
+    fun buildingBlockProcessMigrationComponentExecutor(
+        processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        runtimeService: RuntimeService,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
+    ) = BuildingBlockProcessMigrationComponentExecutor(
+        processMigrationConfigurationRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        buildingBlockInstanceRepository,
+        runtimeService,
+        processMigrationVariableResolver,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockLinkChecker::class)
+    fun addBuildingBlockLinkChecker(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = AddBuildingBlockLinkChecker(linkedBuildingBlockVersionResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockProcessChecker::class)
+    fun addBuildingBlockProcessChecker(
+        processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
+        processMigrationActivityValidator: ProcessMigrationActivityValidator,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = AddBuildingBlockProcessChecker(
+        processDefinitionBlueprintResolvers,
+        processMigrationActivityValidator,
+        linkedBuildingBlockVersionResolver,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentValidator::class)
+    fun addBuildingBlockMigrationComponentValidator(
+        objectMapper: ObjectMapper,
+        addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
+        addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
+        valueResolverFactories: List<ValueResolverFactory>,
+    ) = AddBuildingBlockMigrationComponentValidator(
+        objectMapper,
+        addBuildingBlockLinkChecker,
+        addBuildingBlockProcessChecker,
+        valueResolverFactories,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentDeployer::class)
+    fun addBuildingBlockMigrationComponentDeployer(
+        objectMapper: ObjectMapper,
+        addBuildingBlockConfigurationRepository: AddBuildingBlockConfigurationRepository,
+    ) = AddBuildingBlockMigrationComponentDeployer(
+        objectMapper,
+        addBuildingBlockConfigurationRepository,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockVersionChecker::class)
+    fun removeBuildingBlockVersionChecker() = RemoveBuildingBlockVersionChecker()
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentValidator::class)
+    fun removeBuildingBlockMigrationComponentValidator(
+        removeBuildingBlockVersionChecker: RemoveBuildingBlockVersionChecker,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        valueResolverFactories: List<ValueResolverFactory>,
+    ) = RemoveBuildingBlockMigrationComponentValidator(
+        removeBuildingBlockVersionChecker,
+        linkedBuildingBlockVersionResolver,
+        valueResolverFactories,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentDeployer::class)
+    fun removeBuildingBlockMigrationComponentDeployer(
+        objectMapper: ObjectMapper,
+        removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,
+        removeBuildingBlockVersionChecker: RemoveBuildingBlockVersionChecker,
+    ) = RemoveBuildingBlockMigrationComponentDeployer(
+        objectMapper,
+        removeBuildingBlockConfigurationRepository,
+        removeBuildingBlockVersionChecker,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentExecutor::class)
+    fun addBuildingBlockMigrationComponentExecutor(
+        objectMapper: ObjectMapper,
+        addBuildingBlockConfigurationRepository: AddBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        processLinkService: ProcessLinkService,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        runtimeService: RuntimeService,
+        repositoryService: RepositoryService,
+        operatonExecutionRepository: OperatonExecutionRepository,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
+        valueResolverService: ValueResolverService,
+        migrationDataPatchApplier: MigrationDataPatchApplier,
+        addBuildingBlockLinkChecker: AddBuildingBlockLinkChecker,
+        addBuildingBlockProcessChecker: AddBuildingBlockProcessChecker,
+        jdbcTemplate: JdbcTemplate,
+    ) = AddBuildingBlockMigrationComponentExecutor(
+        objectMapper,
+        addBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService,
+        buildingBlockInstanceRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        processLinkService,
+        linkedBuildingBlockVersionResolver,
+        runtimeService,
+        repositoryService,
+        operatonExecutionRepository,
+        processMigrationVariableResolver,
+        processDocumentAssociationService,
+        valueResolverService,
+        migrationDataPatchApplier,
+        addBuildingBlockLinkChecker,
+        addBuildingBlockProcessChecker,
+        jdbcTemplate,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentExecutor::class)
+    fun removeBuildingBlockMigrationComponentExecutor(
+        removeBuildingBlockConfigurationRepository: RemoveBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService: BuildingBlockInstanceService,
+        buildingBlockOwnershipResolver: BuildingBlockOwnershipResolver,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        documentService: DocumentService,
+        runtimeService: RuntimeService,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
+        migrationDataPatchApplier: MigrationDataPatchApplier,
+        jdbcTemplate: JdbcTemplate,
+    ) = RemoveBuildingBlockMigrationComponentExecutor(
+        removeBuildingBlockConfigurationRepository,
+        buildingBlockInstanceService,
+        buildingBlockOwnershipResolver,
+        processDefinitionCaseDefinitionRepository,
+        processDefinitionBuildingBlockDefinitionRepository,
+        documentService,
+        runtimeService,
+        processMigrationVariableResolver,
+        processDocumentAssociationService,
+        migrationDataPatchApplier,
+        jdbcTemplate,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(CallActivityBuildingBlockEntryOwnership::class)
+    fun callActivityBuildingBlockEntryOwnership(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = CallActivityBuildingBlockEntryOwnership(linkedBuildingBlockVersionResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockEntryLevel::class)
+    fun buildingBlockEntryLevel(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+    ) = BuildingBlockEntryLevel(linkedBuildingBlockVersionResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(RemoveBuildingBlockMigrationComponentSuggester::class)
+    fun removeBuildingBlockMigrationComponentSuggester(
+        objectMapper: ObjectMapper,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel: BuildingBlockEntryLevel,
+        dataMigrationComponentSuggester: DataMigrationComponentSuggester,
+        processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
+    ) = RemoveBuildingBlockMigrationComponentSuggester(
+        objectMapper,
+        caseDefinitionBuildingBlockLinkRepository,
+        linkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel,
+        dataMigrationComponentSuggester,
+        processMigrationComponentSuggester,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(AddBuildingBlockMigrationComponentSuggester::class)
+    fun addBuildingBlockMigrationComponentSuggester(
+        objectMapper: ObjectMapper,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel: BuildingBlockEntryLevel,
+        dataMigrationComponentSuggester: DataMigrationComponentSuggester,
+        processMigrationComponentSuggester: ProcessMigrationComponentSuggester,
+    ) = AddBuildingBlockMigrationComponentSuggester(
+        objectMapper,
+        caseDefinitionBuildingBlockLinkRepository,
+        linkedBuildingBlockVersionResolver,
+        buildingBlockEntryLevel,
+        dataMigrationComponentSuggester,
+        processMigrationComponentSuggester,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessOwnership::class)
+    fun buildingBlockProcessOwnership(
+        linkedBuildingBlockVersionResolver: LinkedBuildingBlockVersionResolver,
+        buildingBlockProcessDefinitionBlueprintResolver: BuildingBlockProcessDefinitionBlueprintResolver,
+    ) = BuildingBlockProcessOwnership(
+        linkedBuildingBlockVersionResolver,
+        buildingBlockProcessDefinitionBlueprintResolver,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessDefinitionBlueprintResolver::class)
+    fun buildingBlockProcessDefinitionBlueprintResolver(
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    ) = BuildingBlockProcessDefinitionBlueprintResolver(
+        processDefinitionBuildingBlockDefinitionRepository,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockMigrationManagementResource::class)
+    fun buildingBlockMigrationManagementResource(
+        caseMigrationService: CaseMigrationService,
+        migrationPlanImporter: MigrationPlanImporter,
+        migrationPlanExporter: MigrationPlanExporter,
+        migrationSuggestionService: MigrationSuggestionService,
+    ) = BuildingBlockMigrationManagementResource(
+        caseMigrationService,
+        migrationPlanImporter,
+        migrationPlanExporter,
+        migrationSuggestionService,
+    )
 }

@@ -18,4 +18,5 @@
  * Public API Surface of documenten-api
  */
 
+export * from './lib/constants';
 export * from './logging.module';

@@ -31,6 +31,7 @@ import com.ritense.processdocument.event.ProcessVariableInspectionEditedEvent
 import com.ritense.processdocument.service.BuildingBlockProcessLookup
 import com.ritense.processdocument.service.BuildingBlockProcessReference
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.web.rest.dto.ProcessVariableMutationRequest
 import com.ritense.valtimo.web.rest.dto.ProcessVariableType
@@ -95,9 +96,14 @@ class ProcessInspectionResourceTest {
         eventPublisher = mock()
         objectMapper = ObjectMapper()
 
+        val caseAccessService = ProcessInstanceCaseAccessService(
+            processDocumentAssociationService
+        )
+
         resource = ProcessInspectionResource(
             documentService = documentService,
             authorizationService = authorizationService,
+            caseAccessService = caseAccessService,
             processDocumentAssociationService = processDocumentAssociationService,
             runtimeService = runtimeService,
             historyService = historyService,

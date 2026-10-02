@@ -103,7 +103,13 @@ class ObjectManagementDefinitionDeploymentService(
 
     private fun getEnvVariableOrYamlPropertyOrDirectValue(value: String): String {
         return Regex("\\$\\{([^\\}]+)\\}").find(value)?.let { matchResult ->
-            System.getenv(matchResult.groupValues[1]) ?: System.getProperty(matchResult.groupValues[1]) ?: environment.getProperty(matchResult.groupValues[1])
+            val placeholderValue = matchResult.groupValues[1]
+            val name = placeholderValue.substringBefore(':')
+            val default = placeholderValue.substringAfter(':', missingDelimiterValue = "").takeIf { ':' in placeholderValue }
+            System.getenv(name)
+                ?: System.getProperty(name)
+                ?: environment.getProperty(name)
+                ?: default
         } ?: value
     }
 

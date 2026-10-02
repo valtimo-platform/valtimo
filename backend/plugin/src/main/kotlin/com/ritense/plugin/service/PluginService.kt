@@ -44,6 +44,7 @@ import com.ritense.plugin.events.PluginConfigurationCreatedEvent
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
 import com.ritense.plugin.events.PluginConfigurationUpdatedEvent
+import com.ritense.plugin.exception.PluginConfigurationInUseException
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.exception.PluginPropertyParseException
 import com.ritense.plugin.exception.PluginPropertyRequiredException
@@ -52,6 +53,7 @@ import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginConfigurationSearchRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.repository.PluginProcessLinkRepository
+import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
 import com.ritense.plugin.web.rest.result.PluginActionDefinitionDto
@@ -100,7 +102,9 @@ class PluginService(
     private val encryptionService: EncryptionService,
     private val environment: Environment,
     private val caseDefinitionChecker: CaseDefinitionChecker,
-    private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?
+    private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
+    private val pluginConfigurationUsageResolver: PluginConfigurationUsageResolver,
+    private val pluginActionResultHandler: PluginActionResultHandler,
 ) {
 
     fun getObjectMapper(): ObjectMapper {
@@ -236,10 +240,13 @@ class PluginService(
                 Regex("\\$\\{([^\\}]+)\\}").findAll(value)
                     .map { it.groupValues }
                     .forEach { (placeholder, placeholderValue) ->
-                        val resolvedValue = environment.getProperty(placeholderValue)
-                            ?: System.getenv(placeholderValue)
-                            ?: System.getProperty(placeholderValue)
-                            ?: throw IllegalStateException("Failed to find environment variable: '$placeholderValue'")
+                        val name = placeholderValue.substringBefore(':')
+                        val default = placeholderValue.substringAfter(':', missingDelimiterValue = "").takeIf { ':' in placeholderValue }
+                        val resolvedValue = environment.getProperty(name)
+                            ?: System.getenv(name)
+                            ?: System.getProperty(name)
+                            ?: default
+                            ?: throw IllegalStateException("Failed to find environment variable: '$name'")
                         value = value.replace(placeholder, resolvedValue)
                     }
                 return TextNode(value)
@@ -281,21 +288,33 @@ class PluginService(
         return savedPluginConfiguration
     }
 
+    @Transactional(readOnly = true)
+    fun findPluginConfigurationUsages(
+        @LoggableResource(resourceType = PluginConfiguration::class) pluginConfigurationId: PluginConfigurationId
+    ): List<PluginUsageDto> = pluginConfigurationUsageResolver.findUsagesForConfiguration(pluginConfigurationId)
+
     fun deletePluginConfiguration(
         @LoggableResource(resourceType = PluginConfiguration::class) pluginConfigurationId: PluginConfigurationId
     ) {
-        pluginConfigurationRepository.findByIdOrNull(pluginConfigurationId)
-            ?.let {
-                try {
-                    it.runAllPluginEvents(EventType.DELETE)
-                } catch (_: Exception) {
-                    logger.warn { "Failed to run events on plugin ${it.title} with id ${it.id.id}" }
-                }
-
-                pluginConfigurationRepository.deleteById(pluginConfigurationId)
-                applicationEventPublisher.publishEvent(PluginConfigurationDeletedEvent(it))
+        val configuration = pluginConfigurationRepository.findByIdOrNull(pluginConfigurationId)
+            ?: run {
+                logger.warn { "Plugin configuration with Id: [$pluginConfigurationId] was not found." }
+                return
             }
-            ?: logger.warn { "Plugin configuration with Id: [$pluginConfigurationId] was not found." }
+
+        val usages = pluginConfigurationUsageResolver.findUsagesForConfiguration(pluginConfigurationId)
+        if (usages.isNotEmpty()) {
+            throw PluginConfigurationInUseException(pluginConfigurationId.id, usages)
+        }
+
+        try {
+            configuration.runAllPluginEvents(EventType.DELETE)
+        } catch (_: Exception) {
+            logger.warn { "Failed to run events on plugin ${configuration.title} with id ${configuration.id.id}" }
+        }
+
+        pluginConfigurationRepository.deleteById(pluginConfigurationId)
+        applicationEventPublisher.publishEvent(PluginConfigurationDeletedEvent(configuration))
     }
 
     fun getPluginDefinitionActions(
@@ -303,9 +322,9 @@ class PluginService(
         activityType: ActivityTypeWithEventName?
     ): List<PluginActionDefinitionDto> {
         val actions = if (activityType == null)
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKey(pluginDefinitionKey)
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyOrderByTitleAsc(pluginDefinitionKey)
         else
-            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypes(
+            pluginActionDefinitionRepository.findByIdPluginDefinitionKeyAndActivityTypesOrderByTitleAsc(
                 pluginDefinitionKey,
                 activityType
             )
@@ -486,7 +505,9 @@ class PluginService(
 
             logger.debug { "Invoking method ${method.name} of class ${instance.javaClass.simpleName} for activity ${execution.currentActivityId} of process-instance ${execution.processInstanceId}" }
 
-            method.invoke(instance, *methodArguments)
+            val result = method.invoke(instance, *methodArguments)
+            applyActionResultMappings(execution, processLink, result)
+            result
         }
     }
 
@@ -508,8 +529,23 @@ class PluginService(
 
             logger.debug { "Invoking method ${method.name} of class ${instance.javaClass.simpleName} for task ${task.taskDefinitionKey} of process-instance ${task.processInstanceId}" }
 
-            method.invoke(instance, *methodArguments)
+            val result = method.invoke(instance, *methodArguments)
+            applyActionResultMappings(task.execution, processLink, result)
+            result
         }
+    }
+
+    /**
+     * Covers every listener that calls [invoke] (service task, user task create, call activity,
+     * send/receive/intermediate events) with zero listener changes — the return value a
+     * `@PluginAction` method produces was discarded here before result mappings existed.
+     */
+    private fun applyActionResultMappings(execution: DelegateExecution, processLink: PluginProcessLink, result: Any?) {
+        if (processLink.actionResultMappings.isEmpty()) {
+            return
+        }
+        val resultNode = result?.let { objectMapper.valueToTree<JsonNode>(it) }
+        pluginActionResultHandler.handle(execution, resultNode, processLink.actionResultMappings)
     }
 
 
@@ -648,6 +684,8 @@ class PluginService(
                 )
             }
 
+        logUnresolvedActionProperties(resolvedValueMap, method, execution.currentActivityId, execution.processDefinitionId)
+
         return mapActionParamValues(paramValues, resolvedValueMap)
     }
 
@@ -688,7 +726,36 @@ class PluginService(
                     )
                 }
 
+            logUnresolvedActionProperties(resolvedValueMap, method, task.taskDefinitionKey, task.processDefinitionId)
+
             mapActionParamValues(paramValues, resolvedValueMap)
+        }
+    }
+
+    /**
+     * A property that resolves to null is passed to the plugin action as null, which typically makes
+     * the action silently skip the related behaviour (e.g. sending a mail without attachments). Log
+     * it, so misconfigured references are diagnosable. A common cause is referencing a process
+     * variable (pv:) inside a building block: values passed to a building block only exist in the
+     * building block document (doc:), never as process variables.
+     *
+     * Logged at debug: null can be a perfectly valid value for an optional property, so this must
+     * not add noise to operational logs.
+     */
+    private fun logUnresolvedActionProperties(
+        resolvedValueMap: Map<String, Any?>,
+        method: Method,
+        activityId: String?,
+        processDefinitionId: String?
+    ) {
+        val unresolvedKeys = resolvedValueMap.filterValues { it == null }.keys
+        if (unresolvedKeys.isEmpty()) {
+            return
+        }
+        logger.debug {
+            "Plugin action '${method.name}' on activity '$activityId' of process definition " +
+                "'$processDefinitionId': property value(s) ${unresolvedKeys.joinToString { "'$it'" }} " +
+                "resolved to null and will be passed to the action as null."
         }
     }
 
@@ -794,6 +861,12 @@ class PluginService(
     ): PluginConfiguration {
         return pluginConfigurationRepository.findById(id)
             .orElseThrow { IllegalStateException("Plugin configuration with id '$id' does not exist!") }
+    }
+
+    fun findPluginConfiguration(
+        @LoggableResource(resourceType = PluginConfiguration::class) id: PluginConfigurationId
+    ): PluginConfiguration? {
+        return pluginConfigurationRepository.findByIdOrNull(id)
     }
 
     @Throws(ConstraintViolationException::class)

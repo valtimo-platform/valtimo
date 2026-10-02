@@ -16,13 +16,20 @@
 
 package com.ritense.documentgeneration.service
 
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 
+@ProcessBean(description = "Generates documents from templates (local stub)")
 class LocalOperatonProcessDocumentGenerator {
 
     private val logger = KotlinLogging.logger {}
 
+    @ProcessBeanMethod(
+        description = "Generates a document from a template (local stub)",
+        example = "\${processDocumentGenerator.generate(execution, 'application/pdf', 'my-template')}"
+    )
     fun generate(
         delegateExecution: DelegateExecution,
         mediaType: String,

@@ -23,15 +23,20 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PROCESS_INSTANCE_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.VARIABLE_SCOPE
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Function
 
 @Service
 @SkipComponentScan
 class ValueResolverServiceImpl(
     valueResolverFactories: List<ValueResolverFactory>
 ) : ValueResolverService {
+
+    private val loggedKeyOptionsFailures: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
     // This property is lazy because valueResolverFactories can contain Lazy proxy instances
     private val resolverFactoryMap: Map<String, ValueResolverFactory> by lazy {
@@ -61,7 +66,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionKey) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(caseDefinitionKey) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -74,7 +79,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionId) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(caseDefinitionId) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -87,7 +92,7 @@ class ValueResolverServiceImpl(
             resolverFactoryMap.keys.filter { !request.excludePrefixes.contains(it) }
         }
         return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(blueprintId) ?: emptyList()
+            val newOptions = optionsOf(prefix) { it.getResolvableKeyOptions(blueprintId) }
             list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
@@ -115,7 +120,6 @@ class ValueResolverServiceImpl(
             requestedValues = requestedValues
         )
     }
-
 
     /**
      * This method provides a way of validating a propertyName using defined resolvers.
@@ -191,13 +195,55 @@ class ValueResolverServiceImpl(
                         value?.let { key to value }
                     }
                 }.toMap()
-                val resolver = resolverFactory.createResolver(resolvedProperties)
+                val resolver = memoizedResolver(resolverFactory, resolvedProperties)
                 //Create a list of resolved Map entries
                 requestedValues.forEach { requestedValue ->
                     resolvedValues[requestedValue] = resolver.apply(trimPrefix(trimQueryParameters(requestedValue)))
                 }
             }
         return resolvedValues
+    }
+
+    override fun resolverDependencies(
+        properties: Map<String, Any>,
+        requestedValues: Collection<String>
+    ): ValueResolverDependencies {
+        val allRequestedValues =
+            (extractAdditionalRequestedValuesFromQueryParameters(requestedValues) + requestedValues).distinct()
+
+        val keyed = mutableSetOf<Pair<String, Any>>()
+        val unkeyedPrefixes = mutableSetOf<String>()
+        toResolverFactoryGroups(allRequestedValues)
+            .forEach { (resolverFactory, queryParamProperties, _) ->
+                // Nested requested values are unresolvable here — left out of the identity
+                val resolvedProperties = (properties + queryParamProperties).entries.mapNotNull { (key, value) ->
+                    if (isRequestedValue(value)) null else value?.let { key to value }
+                }.toMap()
+                val key = resolverFactory.resolverCacheKey(resolvedProperties)
+                if (key == null) {
+                    unkeyedPrefixes.add(resolverFactory.supportedPrefix())
+                } else {
+                    keyed.add(resolverFactory.supportedPrefix() to key)
+                }
+            }
+        return ValueResolverDependencies(keyed, unkeyedPrefixes)
+    }
+
+    /** No scope — no key computed, so other paths keep their cost. */
+    private fun memoizedResolver(
+        resolverFactory: ValueResolverFactory,
+        resolvedProperties: Map<String, Any>
+    ): Function<String, Any?> {
+        if (!ValueResolverCache.isActive()) {
+            return resolverFactory.createResolver(resolvedProperties)
+        }
+        return resolverFactory.resolverCacheKey(resolvedProperties)
+            ?.let { key ->
+                ValueResolverCache.resolver(resolverFactory.supportedPrefix(), key) {
+                    resolverFactory.createResolver(resolvedProperties)
+                }
+            }
+            ?: resolverFactory.createResolver(resolvedProperties)
     }
 
     /**
@@ -235,6 +281,8 @@ class ValueResolverServiceImpl(
         }
     }
 
+    @Deprecated("Replaced by preProcessValuesForNewDocument", level = DeprecationLevel.WARNING)
+    @Suppress("DEPRECATION")
     override fun preProcessValuesForNewCase(
         values: Map<String, Any?>
     ): Map<String, Any> {
@@ -244,6 +292,46 @@ class ValueResolverServiceImpl(
             )
         }.mapKeys { (resolverFactory, _) ->
             resolverFactory.supportedPrefix()
+        }
+    }
+
+    override fun preProcessValuesForNewDocument(
+        values: Map<String, Any?>,
+        documentDefinitionName: String
+    ): Map<String, Any> {
+        return toResolverFactoryMap(values.keys).mapValues { (resolverFactory, propertyPaths) ->
+            resolverFactory.preProcessValuesForNewDocument(
+                mapPropertyPaths(propertyPaths, values),
+                documentDefinitionName
+            )
+        }.mapKeys { (resolverFactory, _) ->
+            resolverFactory.supportedPrefix()
+        }
+    }
+
+    private fun optionsOf(
+        prefix: String,
+        enumerate: (ValueResolverFactory) -> List<ValueResolverOption>,
+    ): List<ValueResolverOption> {
+        val factory = resolverFactoryMap[prefix] ?: return emptyList()
+        return try {
+            enumerate(factory)
+        } catch (e: Exception) {
+            logKeyOptionsFailure(prefix, e)
+            emptyList()
+        }
+    }
+
+    private fun logKeyOptionsFailure(prefix: String, e: Exception) {
+        val rootCause = generateSequence<Throwable>(e) { it.cause }.take(MAX_CAUSE_CHAIN_LENGTH).last()
+        val message = "Could not getResolvableKeyOptions for prefix '$prefix:'; it is left out of " +
+            "the options. Cause: ${rootCause::class.simpleName}: ${rootCause.message}"
+        val firstOccurrence = loggedKeyOptionsFailures.size < MAX_LOGGED_KEY_OPTIONS_FAILURES
+            && loggedKeyOptionsFailures.add("$prefix|${rootCause::class.qualifiedName}|${rootCause.message}")
+        if (firstOccurrence) {
+            logger.warn(e) { message }
+        } else {
+            logger.debug { message }
         }
     }
 
@@ -329,6 +417,9 @@ class ValueResolverServiceImpl(
 
     companion object {
         const val DELIMITER = ":"
+        private const val MAX_LOGGED_KEY_OPTIONS_FAILURES = 100
+        private const val MAX_CAUSE_CHAIN_LENGTH = 20
         private val prefixRegex = Regex("^[A-Za-z_-]+$") // no numbers allowed
+        private val logger = KotlinLogging.logger {}
     }
 }

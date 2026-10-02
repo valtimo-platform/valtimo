@@ -25,6 +25,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  ViewChild,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -34,9 +35,10 @@ import {
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {
+  ComboBox,
   ComboBoxModule,
   InputModule,
   LayerModule,
@@ -70,6 +72,8 @@ import {InputLabelModule} from '../input-label/input-label.module';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
+
+const NOT_IN_THIS_VERSION_KEY = 'valuePathSelector.notInThisVersion';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -107,6 +111,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   public onBlur(): void {
     this.onBlurEvent();
   }
+
+  @ViewChild(ComboBox) private _comboBox?: ComboBox;
 
   public readonly formGroup = this.formBuilder.group({
     selectedPath: new FormControl(''),
@@ -200,6 +206,11 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._buildingBlockDefinitionVersionTag$.next(value);
   }
 
+  /** Extra version tags whose fields are merged into the option list, deduplicated by path — so a migration patch can clear a field that only exists in the source version. */
+  @Input() set additionalVersionTags(value: string[] | null | undefined) {
+    this._additionalVersionTags$.next(value ?? []);
+  }
+
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
   }
@@ -254,6 +265,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   private readonly _buildingBlockDefinitionKey$ = new BehaviorSubject<string | null>(null);
   private readonly _buildingBlockDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
+  private readonly _additionalVersionTags$ = new BehaviorSubject<string[]>([]);
+
   public readonly showToggle$ = combineLatest([
     this._caseDefinitionKeySubject$,
     this._buildingBlockDefinitionKey$,
@@ -289,9 +302,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
             this._caseDefinitionVersionTag$,
             this._buildingBlockDefinitionKey$,
             this._buildingBlockDefinitionVersionTag$,
+            this._additionalVersionTags$,
             this.showToggle$,
           ]).pipe(
-            filter(([, , , , , , , showToggle]) => showToggle),
+            filter(([, , , , , , , , showToggle]) => showToggle),
             switchMap(
               ([
                 caseDefinitionKey,
@@ -301,6 +315,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
                 caseDefinitionVersionTag,
                 buildingBlockKey,
                 buildingBlockVersionTag,
+                additionalVersionTags,
               ]) => {
                 const context = this.buildBlueprintContext(
                   caseDefinitionKey,
@@ -309,12 +324,31 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
                   buildingBlockVersionTag
                 );
                 if (!context) return of([]);
-                return this.valuePathSelectorService.getResolvableKeysForContext(
-                  prefixes,
-                  excludePrefixes,
+                // The primary context plus one per extra version tag, deduped so the primary is never fetched twice.
+                const contexts = [
                   context,
-                  type
-                );
+                  ...additionalVersionTags
+                    .filter(tag => !!tag && tag !== context.versionTag)
+                    .map(tag => ({...context, versionTag: tag})),
+                ];
+                if (contexts.length === 1) {
+                  return this.valuePathSelectorService.getResolvableKeysForContext(
+                    prefixes,
+                    excludePrefixes,
+                    context,
+                    type
+                  );
+                }
+                return combineLatest(
+                  contexts.map(ctx =>
+                    this.valuePathSelectorService.getResolvableKeysForContext(
+                      prefixes,
+                      excludePrefixes,
+                      ctx,
+                      type
+                    )
+                  )
+                ).pipe(map(lists => this.mergeOptionsByPath(lists)));
               }
             )
           )
@@ -338,7 +372,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
         this._filteredItems$.pipe(startWith(this._filteredItems$.getValue())),
       ])
     ),
-    tap(([options, selectedPath, inputModeIsDropdown]) => {
+    tap(combined => {
+      const [options, selectedPath, inputModeIsDropdown] = combined;
       const formattedOptions = options.map(option => option.formattedPath);
       if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown) {
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
@@ -353,7 +388,9 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
       return filteredOptions.map(option => {
         const mappedOption = {
-          content: option.formattedPath,
+          content: this.optionLabel(option),
+          // The value, kept apart from the label: a marked option's label is not a path.
+          formattedPath: option.formattedPath,
           selected: option.formattedPath === selectedPath,
           path: option.path,
           ...(!!option.children && {children: option.children}),
@@ -363,17 +400,24 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
         return mappedOption;
       });
     }),
-    tap(() => this.loadingValuePathItems$.next(false))
+    tap(() => {
+      this.loadingValuePathItems$.next(false);
+      this.scheduleDisplayFlush();
+    })
   );
 
   private readonly _subscriptions = new Subscription();
+  private _displayFlushTimeoutId?: ReturnType<typeof setTimeout>;
+  private _destroyed = false;
 
   constructor(
     private readonly valuePathSelectorService: ValuePathSelectorService,
     private readonly formBuilder: FormBuilder,
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
-    private readonly changeDetectorRef: ChangeDetectorRef
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    // Appended, not inserted: this is a published component and a subclass's super(...) call is positional.
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -383,6 +427,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   }
 
   public ngOnDestroy(): void {
+    this._destroyed = true;
+    if (this._displayFlushTimeoutId !== undefined) clearTimeout(this._displayFlushTimeoutId);
     this._subscriptions.unsubscribe();
   }
 
@@ -391,7 +437,28 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
     if (!value) {
       this._inputMode$.next(ValuePathSelectorInputMode.DROPDOWN);
+      this.clearComboBoxSearch();
     }
+    this.scheduleDisplayFlush();
+  }
+
+  /**
+   * The Carbon combobox computes its displayed value asynchronously after receiving items with a
+   * `selected` entry. Under an OnPush ancestor that is not marked dirty, neither the items binding
+   * nor Carbon's internal display update is ever flushed to the DOM, so the control's state is
+   * correct while its input renders empty until the user interacts. Flush in two passes after
+   * every options emission or written value: the first detectChanges renders the emission into the
+   * combobox (which then schedules its internal update), the nested one flushes that update.
+   */
+  private scheduleDisplayFlush(): void {
+    if (this._displayFlushTimeoutId !== undefined) clearTimeout(this._displayFlushTimeoutId);
+    this._displayFlushTimeoutId = setTimeout(() => {
+      if (this._destroyed) return;
+      this.changeDetectorRef.detectChanges();
+      this._displayFlushTimeoutId = setTimeout(() => {
+        if (!this._destroyed) this.changeDetectorRef.detectChanges();
+      });
+    });
   }
 
   public registerOnChange(fn: (value: string) => void): void {
@@ -415,8 +482,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {content: string} & ValuePathItem): void {
-    const selectedPath = event?.content;
+  public onPathSelected(event: {content: string; formattedPath?: string} & ValuePathItem): void {
+    const selectedPath = event?.formattedPath ?? event?.content;
     if (!selectedPath) return;
 
     if (this.collectionSelected.observed) this.collectionSelected.emit(event);
@@ -432,6 +499,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     const selectedDef = event?.item?.id;
     if (!selectedDef) return;
     this.selectedPath.setValue('');
+    this.clearComboBoxSearch();
     this._caseDefinitionKeySubject$.next(selectedDef);
   }
 
@@ -450,6 +518,16 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
 
     setTimeout(() => this.changeDetectorRef.detectChanges(), 1);
+  }
+
+  private clearComboBoxSearch(): void {
+    const comboBoxInput = this._comboBox?.input?.nativeElement;
+
+    if (!comboBoxInput || !this._comboBox?.view) return;
+
+    comboBoxInput.value = '';
+    // Resets `selectedValue`, the clear button and the filtered item list, without emitting a search.
+    this._comboBox.onSearch('', false);
   }
 
   private getFormattedPath(unformattedPath: string): string {
@@ -471,6 +549,30 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
 
     return `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`;
+  }
+
+  /** Flatten the per-version option lists, keeping the first occurrence of each path so the primary version's entry — with its children — wins. A path only the extra versions declare is flagged: it stays selectable, because clearing a dropped field means naming it, but it is not part of this version's data model and read as though it were. */
+  private mergeOptionsByPath(lists: ValuePathItem[][]): ValuePathItem[] {
+    const primaryPaths = new Set((lists[0] ?? []).map(item => item.path));
+    const byPath = new Map<string, ValuePathItem>();
+    lists.forEach(list =>
+      list.forEach(item => {
+        if (!byPath.has(item.path)) {
+          byPath.set(item.path, {...item, notInThisVersion: !primaryPaths.has(item.path)});
+        }
+      })
+    );
+    return [...byPath.values()];
+  }
+
+  /** The path, plus a marker when the version being configured does not declare it. Falls back to the bare path while translations are still loading, rather than showing the key. */
+  private optionLabel(option: ValuePathItem & {formattedPath: string}): string {
+    if (!option.notInThisVersion) return option.formattedPath;
+    const marker = this.translateService.instant(NOT_IN_THIS_VERSION_KEY);
+
+    return marker === NOT_IN_THIS_VERSION_KEY
+      ? option.formattedPath
+      : `${option.formattedPath} ${marker}`;
   }
 
   private buildBlueprintContext(

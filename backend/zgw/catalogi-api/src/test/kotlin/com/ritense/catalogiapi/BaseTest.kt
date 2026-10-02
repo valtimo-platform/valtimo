@@ -29,7 +29,9 @@ abstract class BaseTest {
     protected fun newZaaktype(
         url: URI,
         omschrijving: String,
-        omschrijvingGeneriek: String = "omschrijvingGeneriek"
+        omschrijvingGeneriek: String = "omschrijvingGeneriek",
+        beginGeldigheid: LocalDate = LocalDate.now(),
+        eindeGeldigheid: LocalDate? = null
     ): Zaaktype = Zaaktype(
         url = url,
         identificatie = omschrijving,
@@ -55,7 +57,8 @@ abstract class BaseTest {
         besluittypen = listOf("besluittypen"),
         deelzaaktypen = listOf("deelzaaktypen"),
         gerelateerdeZaaktypen = listOf(GerelateerdeZaaktype(URI("ritense.com/gerelateerdeZaaktypen"), "aardRelatie")),
-        beginGeldigheid = LocalDate.now(),
+        beginGeldigheid = beginGeldigheid,
+        eindeGeldigheid = eindeGeldigheid,
         versiedatum = LocalDate.now(),
     )
 }

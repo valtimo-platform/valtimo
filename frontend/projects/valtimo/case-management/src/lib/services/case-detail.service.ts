@@ -17,11 +17,13 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   distinctUntilChanged,
   filter,
   map,
   Observable,
+  of,
   startWith,
   Subject,
   Subscription,
@@ -30,6 +32,8 @@ import {
 } from 'rxjs';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {EditorModel, PageTitleService} from '@valtimo/components';
+import {CaseDefinition} from '../models/case-deployment.model';
+import {CaseManagementService} from './case-management.service';
 
 @Injectable()
 export class CaseDetailService implements OnDestroy {
@@ -40,6 +44,7 @@ export class CaseDetailService implements OnDestroy {
   private readonly _selectedCaseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
   private readonly _selectedCaseDefinitionKey$ = new BehaviorSubject<string>('');
   private readonly _documentDefinition$ = new BehaviorSubject<DocumentDefinition | null>(null);
+  private readonly _caseDefinition$ = new BehaviorSubject<CaseDefinition | null>(null);
   private readonly _documentDefinitionModel$: Observable<EditorModel> =
     this.documentDefinition$.pipe(
       map((definition: DocumentDefinition | null) => ({
@@ -89,13 +94,19 @@ export class CaseDetailService implements OnDestroy {
     return this._documentDefinitionModel$.pipe(distinctUntilChanged());
   }
 
+  public get caseDefinition$(): Observable<CaseDefinition | null> {
+    return this._caseDefinition$.asObservable();
+  }
+
   private _subscriptions = new Subscription();
 
   constructor(
+    private readonly caseManagementService: CaseManagementService,
     private readonly documentService: DocumentService,
     private readonly pageTitleService: PageTitleService
   ) {
     this.openDocumentDefinitionSubscription();
+    this.openCaseDefinitionSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -130,17 +141,32 @@ export class CaseDetailService implements OnDestroy {
         this._reloadDocumentDefinition$.pipe(startWith(null)),
       ])
         .pipe(
-          tap(() => {
-            this.pageTitleService.setCustomPageTitleSet(false);
-            this.setLoadingDocumentDefinition(true);
-          }),
+          tap(() => this.setLoadingDocumentDefinition(true)),
           switchMap(([selectedVersionTag, selectedKey]) =>
             this.documentService.getDocumentDefinitionByVersion(selectedKey, selectedVersionTag)
           ),
           tap(res => {
             this._documentDefinition$.next(res);
-            this.pageTitleService.setCustomPageTitle(res?.schema?.title || '-', true);
             this.setLoadingDocumentDefinition(false);
+          })
+        )
+        .subscribe()
+    );
+  }
+
+  private openCaseDefinitionSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.selectedCaseDefinitionKey$, this.selectedCaseDefinitionVersionTag$])
+        .pipe(
+          tap(() => this.pageTitleService.setCustomPageTitleSet(false)),
+          switchMap(([selectedKey, selectedVersionTag]) =>
+            this.caseManagementService
+              .getCaseDefinition(selectedKey, selectedVersionTag ?? '')
+              .pipe(catchError(() => of(null)))
+          ),
+          tap(caseDefinition => {
+            this._caseDefinition$.next(caseDefinition);
+            this.pageTitleService.setCustomPageTitle(caseDefinition?.name || '-', true);
           })
         )
         .subscribe()

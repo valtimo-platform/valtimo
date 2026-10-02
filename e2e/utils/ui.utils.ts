@@ -1,4 +1,20 @@
-import { Page, expect } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
+
+/**
+ * Fills an input and verifies the value survives.
+ *
+ * Several Carbon modals reset their reactive form on a `setTimeout` tied to the modal
+ * animation (`resetFormAfterTimeout`), so a value typed right after the modal opens is
+ * silently wiped. Re-fill until the value sticks instead of racing the reset.
+ */
+export async function fillStable(input: Locator, value: string, settleMs = 500) {
+  await expect(async () => {
+    await expect(input).toBeEditable();
+    await input.fill(value);
+    await input.page().waitForTimeout(settleMs);
+    await expect(input).toHaveValue(value, {timeout: 1_000});
+  }).toPass({timeout: 20_000});
+}
 
 export async function expectNotificationMessage(
   page: Page,

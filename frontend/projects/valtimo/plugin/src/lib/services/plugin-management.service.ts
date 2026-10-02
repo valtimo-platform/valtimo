@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {combineLatest, Observable} from 'rxjs';
 import {
+  ExternalPluginHostUsage,
   PluginConfiguration,
   PluginConfigurationWithLogo,
   PluginDefinition,
@@ -63,6 +64,12 @@ export class PluginManagementService {
   public getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration`
+    );
+  }
+
+  public getPluginConfiguration(configurationId: string): Observable<PluginConfiguration> {
+    return this.http.get<PluginConfiguration>(
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration/${configurationId}`
     );
   }
 
@@ -128,6 +135,19 @@ export class PluginManagementService {
   deletePluginConfiguration(configurationId: string): Observable<void> {
     return this.http.delete<void>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration/${configurationId}`
+    );
+  }
+
+  /**
+   * Mirrors `ExternalPluginService.getConfigurationUsages` but for embedded plugin
+   * configurations. Empty list = safe to delete. Non-empty = `deletePluginConfiguration`
+   * will return a 409 carrying the same entries.
+   */
+  public getConfigurationUsages(
+    configurationId: string
+  ): Observable<Array<ExternalPluginHostUsage>> {
+    return this.http.get<Array<ExternalPluginHostUsage>>(
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration/${configurationId}/usages`
     );
   }
 

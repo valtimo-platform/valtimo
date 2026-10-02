@@ -74,7 +74,11 @@
     (sortChanged)="sortChanged($event)"
   >
     <ng-container carbonToolbarContent>
-      <button cdsButton="primary" (click)="openModal()">
+      <button
+        [attr.data-test-id]="testIds.createButton"
+        cdsButton="primary"
+        (click)="openModal()"
+      >
         {{ 'object.createObject' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -118,6 +122,7 @@
   <cds-modal-footer>
     <ng-container>
       <button
+        [attr.data-test-id]="testIds.modalCloseButton"
         cdsButton="ghost"
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
@@ -126,6 +131,7 @@
         {{ 'object.close' | translate }}
       </button>
       <button
+        [attr.data-test-id]="testIds.modalSaveButton"
         cdsButton="primary"
         [attr.modal-primary-focus]="true"
         (click)="addObject()"

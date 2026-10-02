@@ -58,6 +58,7 @@ import {
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
+  registerFormioMailPreviewComponent,
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   registerObjectManagementSelectFormioComponent,
@@ -88,6 +89,7 @@ import {
   documentenApiPluginSpecification,
   DocumentenApiPreviewPluginModule,
   documentenApiPreviewPluginSpecification,
+  ExternalPluginPageRoutingModule,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -198,6 +200,7 @@ export function tabsFactory() {
     MigrationModule,
     // management
     PluginManagementModule,
+    ExternalPluginPageRoutingModule,
     ObjectManagementModule,
     ObjectModule,
     AccessControlManagementModule,
@@ -273,5 +276,6 @@ export class AppModule {
     registerDocumentenApiFormioUploadComponent(injector);
     registerIkoSearchFormioComponent(injector);
     registerObjectManagementSelectFormioComponent(injector);
+    registerFormioMailPreviewComponent(injector);
   }
 }

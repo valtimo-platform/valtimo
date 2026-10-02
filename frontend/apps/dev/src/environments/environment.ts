@@ -1,19 +1,17 @@
 /*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  * Copyright 2015-2026 Ritense BV, the Netherlands.
- *  *
- *  * Licensed under EUPL, Version 1.2 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" basis,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {
@@ -124,11 +122,14 @@ export const environment: ValtimoConfig = {
           {link: ['/admin-settings'], title: 'adminSettings.title'},
           {link: ['/building-block-management'], title: 'buildingBlockManagement.title'},
           {link: ['/case-management'], title: 'Cases'},
-          {link: ['/plugins'], title: 'Plugins'},
           {link: ['/dashboard-management'], title: 'Dashboard'},
           {link: ['/access-control'], title: 'Access Control'},
           {link: ['/translation-management'], title: 'Translations'},
           {link: ['/choice-fields'], title: 'Choice fields'},
+          {title: 'Integrations', textClass: 'text-dark font-weight-bold c-default'},
+          {link: ['/plugins'], title: 'Plugins'},
+          {link: ['/plugin-hosts'], title: 'Plugin hosts'},
+          {link: ['/plugin-apps'], title: 'Apps'},
           {title: 'Object management', textClass: 'text-dark font-weight-bold c-default', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {link: ['/object-management'], title: 'Objects', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {link: ['/form-management'], title: 'Forms'},
@@ -143,7 +144,6 @@ export const environment: ValtimoConfig = {
             title: 'adminSettings.opensearch.title',
             includeFunction: IncludeFunction.OpenSearchEnabled,
           },
-          {link: ['/case-migration'], title: 'Case migration (beta)'},
           {link: ['/process-migration'], title: 'Process migration'},
           {link: ['/task-management'], title: 'Tasks (legacy)'},
           {title: 'Valtimo test tools', textClass: 'text-dark font-weight-bold c-default'},
@@ -247,6 +247,7 @@ export const environment: ValtimoConfig = {
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
     enableGenericCaseList: false,
+    enableManualTaskListRefresh: false,
     enableZgwFeatures: true,
   },
   csp: cspHeaderParamsDev,

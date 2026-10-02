@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,4 +18,6 @@ package com.ritense.document.domain.event
 
 import com.ritense.valtimo.web.sse.event.BaseSseEvent
 
-class CaseUnassignedEvent : BaseSseEvent("CASE_UNASSIGNED")
+class CaseUnassignedEvent(
+    val documentId: String
+) : BaseSseEvent("CASE_UNASSIGNED")

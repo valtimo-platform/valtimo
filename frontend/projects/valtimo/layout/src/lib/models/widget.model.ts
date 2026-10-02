@@ -19,14 +19,16 @@ import {
   WidgetCollectionContent,
   WidgetContentProperties,
   WidgetCustomContent,
+  WidgetExternalPluginContent,
   WidgetFieldsContent,
   WidgetHighlightContent,
-  WidgetInteractiveTableContent,
   WidgetImageContent,
+  WidgetInteractiveTableContent,
   WidgetMapContent,
-  WidgetPersonCardContent,
   WidgetMetrolineContent,
+  WidgetPersonCardContent,
   WidgetTableContent,
+  WidgetTextContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
 
@@ -43,6 +45,8 @@ enum WidgetType {
   HIGHLIGHT = 'highlight',
   PERSON_CARD = 'person-card',
   IMAGE = 'image',
+  EXTERNAL_PLUGIN = 'external-plugin',
+  TEXT = 'text',
 }
 
 enum WidgetColor {
@@ -88,6 +92,17 @@ interface BasicWidget {
   isCompact?: boolean;
   actions?: WidgetAction[];
   displayConditions: Array<Condition<string>>;
+  /** Widgets sharing an id need the same upstream request and are served together. */
+  dataGroupId?: string;
+}
+
+interface WidgetDataEnvelope {
+  data?: unknown;
+  error?: {code: string};
+}
+
+interface WidgetDataGroupResponse {
+  [widgetKey: string]: WidgetDataEnvelope;
 }
 
 interface FieldsWidgetValue {
@@ -174,6 +189,16 @@ interface ImageWidget extends BasicWidget {
   properties: WidgetImageContent;
 }
 
+interface ExternalPluginWidget extends BasicWidget {
+  type: WidgetType.EXTERNAL_PLUGIN;
+  properties: WidgetExternalPluginContent;
+}
+
+interface TextWidget extends BasicWidget {
+  type: WidgetType.TEXT;
+  properties: WidgetTextContent;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
@@ -186,7 +211,9 @@ type Widget =
   | MapWidget
   | MetrolineWidget
   | HighlightWidget
-  | ImageWidget;
+  | ImageWidget
+  | ExternalPluginWidget
+  | TextWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -258,10 +285,16 @@ type OptionalWidgets =
   | WidgetType.PERSON_CARD
   | WidgetType.METROLINE
   | WidgetType.HIGHLIGHT
-  | WidgetType.IMAGE;
+  | WidgetType.IMAGE
+  // Only the case surface renders this (as a sandboxed iframe); other surfaces (iko, the layout
+  // default) omit it, so it must be optional in the component map.
+  | WidgetType.EXTERNAL_PLUGIN
+  | WidgetType.TEXT;
 
-type WidgetComponentMap =
-  Record<Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>, Type<any>> &
+type WidgetComponentMap = Record<
+  Exclude<WidgetType, WidgetType.DIVIDER | OptionalWidgets>,
+  Type<any>
+> &
   Partial<Record<OptionalWidgets, Type<any>>>;
 
 type WidgetContext = 'case' | 'iko';
@@ -288,12 +321,14 @@ export {
   CollectionWidget,
   CustomWidgetConfig,
   CustomWidget,
+  ExternalPluginWidget,
   TableWidget,
   InteractiveTableWidget,
   MapWidget,
   PersonCardWidget,
   HighlightWidget,
   ImageWidget,
+  TextWidget,
   MetrolineWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
@@ -304,4 +339,6 @@ export {
   WidgetGroup,
   WidgetColor,
   WidgetColorTile,
+  WidgetDataEnvelope,
+  WidgetDataGroupResponse,
 };

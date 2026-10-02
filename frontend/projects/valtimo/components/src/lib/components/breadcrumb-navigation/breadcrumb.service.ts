@@ -62,12 +62,14 @@ export class BreadcrumbService {
 
         return [
           ...(activeParentSequenceNumber ? [activeParentBreadcrumbItem] : []),
-          ...(!suppressSecondBreadcrumb && manualSecondBreadcrumb ? [manualSecondBreadcrumb] : []),
+          ...(!suppressSecondBreadcrumb && manualSecondBreadcrumb
+            ? [this.translateContent(manualSecondBreadcrumb)]
+            : []),
           ...(!suppressSecondBreadcrumb && secondBreadCrumb && !manualSecondBreadcrumb
             ? [secondBreadCrumb]
             : []),
-          ...(!!manualThirdBreadcrumb ? [manualThirdBreadcrumb] : []),
-          ...(!!manualFourthBreadcrumb ? [manualFourthBreadcrumb] : []),
+          ...(!!manualThirdBreadcrumb ? [this.translateContent(manualThirdBreadcrumb)] : []),
+          ...(!!manualFourthBreadcrumb ? [this.translateContent(manualFourthBreadcrumb)] : []),
         ];
       }
     ),
@@ -121,6 +123,17 @@ export class BreadcrumbService {
     if (routeMatchString && typeof params === 'object' && Object.keys(params).length > 0) {
       this._cachedQueryParams = {...this._cachedQueryParams, [routeMatchString]: params};
     }
+  }
+
+  // Manual breadcrumbs are stored with a translation key (or a plain string) as their content, and
+  // translated here on every emission — including when the language file finishes loading, which the
+  // `translateService.stream('key')` source above triggers, and on a runtime language switch.
+  // Translating at set-time instead (e.g. via `instant`) would freeze the raw key on a direct page
+  // load, before translations are ready. A plain, non-key string is returned unchanged by ngx-translate.
+  private translateContent(breadcrumb: BreadcrumbItem): BreadcrumbItem {
+    return typeof breadcrumb.content === 'string'
+      ? {...breadcrumb, content: this.translateService.instant(breadcrumb.content)}
+      : breadcrumb;
   }
 
   private getSecondBreadcrumb(): BreadcrumbItem | false {

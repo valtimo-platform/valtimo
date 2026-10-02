@@ -35,7 +35,7 @@ data class FormFlowDefinition(
     @Column(name = "start_step")
     val startStep: String,
 
-    @OneToMany(mappedBy = "id.formFlowDefinition", fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "id.formFlowDefinition", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
     val steps: Set<FormFlowStep>,
 ) {
     init {

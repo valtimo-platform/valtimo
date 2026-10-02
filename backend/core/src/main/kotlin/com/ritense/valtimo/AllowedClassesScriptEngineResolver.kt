@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,22 +27,80 @@ class AllowedClassesScriptEngineResolver(
     scriptEngineManager: ScriptEngineManager,
     otherAllowedClasses: Set<String> = emptySet()
 ) : DefaultScriptEngineResolver(scriptEngineManager) {
-    val ALL_ALLOWED = ALLOWED + otherAllowedClasses
+    private val effectiveAllowed = (ALLOWED + otherAllowedClasses) - BLOCKED
 
     override fun getJavaScriptScriptEngine(language: String?): ScriptEngine {
+        val hostAccess = HostAccess.newBuilder()
+            .allowPublicAccess(true)
+            .allowAllImplementations(true)
+            .allowAllClassImplementations(true)
+            .allowArrayAccess(true)
+            .allowListAccess(true)
+            .allowMapAccess(true)
+            .allowIterableAccess(true)
+            .allowIteratorAccess(true)
+            .allowAccessAnnotatedBy(HostAccess.Export::class.java)
+            .denyAccess(Class::class.java)
+            .denyAccess(ClassLoader::class.java)
+            .denyAccess(java.lang.reflect.Method::class.java)
+            .denyAccess(java.lang.reflect.Constructor::class.java)
+            .denyAccess(java.lang.reflect.Field::class.java)
+            .denyAccess(java.lang.reflect.Proxy::class.java)
+            .denyAccess(java.sql.Connection::class.java)
+            .denyAccess(javax.sql.DataSource::class.java)
+            .denyAccess(javax.naming.InitialContext::class.java)
+            .denyAccess(java.io.File::class.java)
+            .denyAccess(java.io.FileInputStream::class.java)
+            .denyAccess(java.io.FileOutputStream::class.java)
+            .denyAccess(java.io.FileReader::class.java)
+            .denyAccess(java.io.FileWriter::class.java)
+            .denyAccess(java.net.URL::class.java)
+            .denyAccess(java.net.URLConnection::class.java)
+            .denyAccess(java.net.Socket::class.java)
+            .denyAccess(java.net.ServerSocket::class.java)
+            .denyAccess(org.operaton.bpm.engine.ProcessEngine::class.java)
+            .denyAccess(org.operaton.bpm.engine.ProcessEngineServices::class.java)
+            .denyAccess(org.operaton.bpm.engine.RuntimeService::class.java)
+            .denyAccess(org.operaton.bpm.engine.RepositoryService::class.java)
+            .denyAccess(org.operaton.bpm.engine.ManagementService::class.java)
+            .denyAccess(org.operaton.bpm.engine.IdentityService::class.java)
+            .denyAccess(org.operaton.bpm.engine.AuthorizationService::class.java)
+            .denyAccess(org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl::class.java)
+            .build()
+
         val ctx = Context.newBuilder("js")
-            .allowHostAccess(HostAccess.ALL)
-            .allowHostClassLookup(ALL_ALLOWED::contains)
+            .allowHostAccess(hostAccess)
+            .allowHostClassLookup(effectiveAllowed::contains)
 
         return GraalJSScriptEngine.create(null, ctx)
     }
 
     companion object {
+        private val BLOCKED = setOf(
+            "java.lang.Class",
+            "java.lang.ClassLoader",
+            "java.lang.Runtime",
+            "java.lang.ProcessBuilder",
+            "java.lang.Process",
+            "java.lang.System",
+            "java.lang.Thread",
+            "java.lang.ThreadGroup",
+            "java.lang.reflect.Method",
+            "java.lang.reflect.Constructor",
+            "java.lang.reflect.Field",
+            "java.lang.reflect.Proxy",
+            "java.security.AccessController",
+            "javax.script.ScriptEngine",
+            "javax.script.ScriptEngineManager",
+        )
+
         private val ALLOWED = mutableSetOf<String?>(
             "java.util.ArrayList",
             "org.joda.time.DateTime",
             "java.util.Date",
             "java.lang.Math",
+            // Spin is auto-bound by operaton-engine-plugin-spin. mapTo() could be dangerous
+            // if operaton-spin-dataformat-json-jackson is on classpath (currently it's not).
             "org.operaton.spin.Spin",
             //java.time classes
             "java.time.Clock",

@@ -52,6 +52,34 @@ class PbacRegistryService(
     @Volatile
     private var cachedScannedActionProviders: List<ResourceActionProvider<*>>? = null
 
+    @Volatile
+    private var cachedResourceTypeAllowlist: Set<String>? = null
+
+    /**
+     * The fully qualified class names that are valid authorization resource types.
+     *
+     * Used to guard reflective resolution of externally supplied resource names, see
+     * [com.ritense.authorization.AuthorizationResourceTypeResolver]. Derived from the application
+     * classpath and Spring configuration, so it is stable for the lifetime of the application.
+     *
+     * Deliberately does not reuse the registry metadata cache. Building that metadata also walks
+     * the fields of every resource class reflectively, which is unnecessary here and too expensive
+     * for a request path that is used on nearly every page.
+     */
+    fun getAllowedResourceTypes(): Set<String> {
+        cachedResourceTypeAllowlist?.let { return it }
+
+        return synchronized(cacheLock) {
+            cachedResourceTypeAllowlist ?: createResourceTypeAllowlist().also {
+                cachedResourceTypeAllowlist = it
+            }
+        }
+    }
+
+    private fun createResourceTypeAllowlist(): Set<String> {
+        return discoverResourceTypes().keys + discoverSpecificationFactoryResourceTypes()
+    }
+
     fun getRegistry(): PbacRegistryDto {
         val metadata = getOrCreateRegistryMetadata()
 

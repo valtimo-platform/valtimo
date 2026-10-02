@@ -22,8 +22,27 @@ import {
   BuildingBlockOutputMapping,
   ProcessLink,
 } from '../models';
+import {PluginRequirementSource, RequiredPlugin} from '../models/plugin.model';
 import {ProcessLinkBuildingBlockApiService} from './process-link-building-block-api.service';
 import {ensureDocPrefix} from '../utils';
+
+const EXTERNAL_PLUGIN_MAPPING_KEY_PREFIX = 'external-plugin:';
+
+/**
+ * The `pluginConfigurationMappings` key a required plugin is stored/looked-up under. Embedded
+ * requirements use the plain `pluginDefinitionKey`; external requirements are namespaced and
+ * versioned (`external-plugin:<pluginId>@<version>`, D2) so the two systems can never collide on
+ * the same map key.
+ */
+function toMappingKey(
+  pluginDefinitionKey: string,
+  source: PluginRequirementSource | undefined,
+  pluginDefinitionVersion: string | null | undefined
+): string {
+  return source === 'EXTERNAL' && pluginDefinitionVersion
+    ? `${EXTERNAL_PLUGIN_MAPPING_KEY_PREFIX}${pluginDefinitionKey}@${pluginDefinitionVersion}`
+    : pluginDefinitionKey;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +52,7 @@ export class BuildingBlockStateService implements OnDestroy {
   private readonly _definitionVersionTag$ = new BehaviorSubject<string | null>(null);
   private readonly _versions$ = new BehaviorSubject<Array<string>>([]);
   private readonly _requiredPluginKeys$ = new BehaviorSubject<Array<string>>([]);
+  private readonly _requiredPlugins$ = new BehaviorSubject<Array<RequiredPlugin>>([]);
   private readonly _pluginMappings$ = new BehaviorSubject<Record<string, string | null>>({});
   private readonly _buildingBlockFields$ = new BehaviorSubject<Array<BuildingBlockField>>([]);
   private readonly _inputMappings$ = new BehaviorSubject<Array<BuildingBlockInputMapping>>([]);
@@ -64,6 +84,10 @@ export class BuildingBlockStateService implements OnDestroy {
 
   public get requiredPluginKeys$(): Observable<Array<string>> {
     return this._requiredPluginKeys$.asObservable();
+  }
+
+  public get requiredPlugins$(): Observable<Array<RequiredPlugin>> {
+    return this._requiredPlugins$.asObservable();
   }
 
   public get pluginMappings$(): Observable<Record<string, string | null>> {
@@ -128,14 +152,10 @@ export class BuildingBlockStateService implements OnDestroy {
     if (!key) return;
 
     this._versionSubscription = this.processLinkBuildingBlockApiService
-      .getVersionsForBuildingBlock(key)
+      .getAllVersionsForBuildingBlock(key)
       .subscribe({
         next: versions => {
-          this._versions$.next(
-            versions.content.map(version => {
-              return version.versionTag;
-            }) ?? []
-          );
+          this._versions$.next(versions.content?.map(version => version.versionTag) ?? []);
           if (initialVersionTag) {
             this.setDefinitionVersionTag(initialVersionTag, true);
           }
@@ -181,6 +201,27 @@ export class BuildingBlockStateService implements OnDestroy {
       this.loadPluginRequirements(key, versionTag);
       this.loadFields(key, versionTag);
     }
+  }
+
+  /**
+   * Switches building block version, keeping the plugin, input and output mappings the user entered;
+   * only the parts absent from the new version are dropped once its requirements and fields load.
+   */
+  public changeDefinitionVersionTag(versionTag: string | null): void {
+    this._definitionVersionTag$.next(versionTag);
+    this.clearFields();
+
+    const key = this._definitionKey$.getValue();
+    if (!key || !versionTag) {
+      // No version means no fields to prune against, so clear the mappings.
+      this.clearPluginRequirements();
+      this.clearMappings();
+      return;
+    }
+
+    this.clearPluginRequirements({preserveMappings: true});
+    this.loadPluginRequirements(key, versionTag);
+    this.loadFields(key, versionTag, {pruneMappingsToFields: true});
   }
 
   public setPluginConfigurationMapping(
@@ -273,43 +314,64 @@ export class BuildingBlockStateService implements OnDestroy {
       .subscribe({
         next: res => {
           const plugins = res?.plugins ?? [];
-          const pluginKeys = plugins.map(plugin => plugin.pluginDefinitionKey).filter(Boolean);
+          const requiredPlugins: Array<RequiredPlugin> = plugins
+            .filter(plugin => !!plugin.pluginDefinitionKey)
+            .map(plugin => ({
+              mappingKey: toMappingKey(
+                plugin.pluginDefinitionKey,
+                plugin.source,
+                plugin.pluginDefinitionVersion
+              ),
+              pluginDefinitionKey: plugin.pluginDefinitionKey,
+              pluginDefinitionVersion: plugin.pluginDefinitionVersion ?? null,
+              source: plugin.source ?? 'EMBEDDED',
+            }));
           const dependencies: string[] = Array.from(
             new Set(plugins.flatMap(p => p.dependencies ?? []).map(d => d.key))
           );
 
-          this.applyPluginKeys(pluginKeys ?? []);
+          this.applyRequiredPlugins(requiredPlugins);
           this._pluginDependencies$.next(dependencies);
           this._loadingRequirements$.next(false);
         },
         error: () => {
-          this.applyPluginKeys([]);
+          this.applyRequiredPlugins([]);
           this._pluginDependencies$.next([]);
           this._loadingRequirements$.next(false);
         },
       });
   }
 
-  private applyPluginKeys(pluginKeys: Array<string>): void {
+  private applyRequiredPlugins(requiredPlugins: Array<RequiredPlugin>): void {
     const currentMappings = this._pluginMappings$.getValue();
     const normalized: Record<string, string | null> = {};
-    pluginKeys.forEach(key => {
-      normalized[key] = currentMappings[key] ?? null;
+    requiredPlugins.forEach(plugin => {
+      normalized[plugin.mappingKey] = currentMappings[plugin.mappingKey] ?? null;
     });
-    this._requiredPluginKeys$.next(pluginKeys);
+    this._requiredPlugins$.next(requiredPlugins);
+    this._requiredPluginKeys$.next(requiredPlugins.map(plugin => plugin.mappingKey));
     this._pluginMappings$.next(normalized);
   }
 
-  private loadFields(key: string, versionTag: string): void {
+  private loadFields(
+    key: string,
+    versionTag: string,
+    options: {pruneMappingsToFields?: boolean} = {}
+  ): void {
     this._loadingFields$.next(true);
     this._fieldsSubscription?.unsubscribe();
     this._fieldsSubscription = this.processLinkBuildingBlockApiService
       .getFieldsForBuildingBlock(key, versionTag)
       .subscribe({
         next: fields => {
-          this._buildingBlockFields$.next(
-            (fields ?? []).map(field => ({...field, name: ensureDocPrefix(field.name)}))
-          );
+          const buildingBlockFields = (fields ?? []).map(field => ({
+            ...field,
+            name: ensureDocPrefix(field.name),
+          }));
+          this._buildingBlockFields$.next(buildingBlockFields);
+          if (options.pruneMappingsToFields) {
+            this.pruneMappingsToFields(buildingBlockFields);
+          }
           this._loadingFields$.next(false);
         },
         error: () => {
@@ -319,9 +381,30 @@ export class BuildingBlockStateService implements OnDestroy {
       });
   }
 
+  /**
+   * Drops mappings pointing at fields outside the given set, so switching between versions with the
+   * same fields keeps the configuration intact.
+   */
+  private pruneMappingsToFields(fields: Array<BuildingBlockField>): void {
+    const fieldNames = new Set(fields.map(field => field.name));
+
+    const inputMappings = this._inputMappings$.getValue();
+    const prunedInputMappings = inputMappings.filter(mapping => fieldNames.has(mapping.target));
+    if (prunedInputMappings.length !== inputMappings.length) {
+      this._inputMappings$.next(prunedInputMappings);
+    }
+
+    const outputMappings = this._outputMappings$.getValue();
+    const prunedOutputMappings = outputMappings.filter(mapping => fieldNames.has(mapping.source));
+    if (prunedOutputMappings.length !== outputMappings.length) {
+      this._outputMappings$.next(prunedOutputMappings);
+    }
+  }
+
   private clearPluginRequirements(options: {preserveMappings?: boolean} = {}): void {
     this._requirementsSubscription?.unsubscribe();
     this._requiredPluginKeys$.next([]);
+    this._requiredPlugins$.next([]);
     if (!options.preserveMappings) {
       this._pluginMappings$.next({});
     }

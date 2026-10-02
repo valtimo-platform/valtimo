@@ -21,6 +21,8 @@ import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.core.env.Environment
+import org.springframework.core.env.StandardEnvironment
 import java.time.LocalDateTime
 import java.util.Optional
 
@@ -46,7 +49,7 @@ class CaseDefinitionCheckerImplTest {
         environment = mock()
         configurationIssueRepository = mock()
 
-        whenever(environment.activeProfiles).thenReturn(arrayOf("dev"))
+        whenever(environment.matchesProfiles("dev", "test")).thenReturn(true)
 
         checker = CaseDefinitionCheckerImpl(
             caseDefinitionRepository,
@@ -102,6 +105,47 @@ class CaseDefinitionCheckerImplTest {
             checker.assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId, "zaak-type-link")
         }
     }
+
+    @Test
+    fun `canUpdateGlobalConfiguration should match a draft profile that is only set as default profile`() {
+        val checker = checkerWith(StandardEnvironment().apply { setDefaultProfiles("dev") })
+
+        assertTrue(checker.canUpdateGlobalConfiguration())
+    }
+
+    @Test
+    fun `canUpdateGlobalConfiguration should not match a default profile that is no draft profile`() {
+        val checker = checkerWith(StandardEnvironment().apply { setDefaultProfiles("prod") })
+
+        assertFalse(checker.canUpdateGlobalConfiguration())
+    }
+
+    @Test
+    fun `canUpdateGlobalConfiguration should ignore default profiles when an active profile is set`() {
+        val checker = checkerWith(
+            StandardEnvironment().apply {
+                setDefaultProfiles("dev")
+                setActiveProfiles("prod")
+            }
+        )
+
+        assertFalse(checker.canUpdateGlobalConfiguration())
+    }
+
+    @Test
+    fun `canUpdateGlobalConfiguration should match an active draft profile`() {
+        val checker = checkerWith(StandardEnvironment().apply { setActiveProfiles("test") })
+
+        assertTrue(checker.canUpdateGlobalConfiguration())
+    }
+
+    private fun checkerWith(environment: Environment) = CaseDefinitionCheckerImpl(
+        caseDefinitionRepository,
+        environment,
+        "dev,test",
+        false,
+        configurationIssueRepository,
+    )
 
     private fun caseDefinition(final: Boolean): CaseDefinition {
         return CaseDefinition(

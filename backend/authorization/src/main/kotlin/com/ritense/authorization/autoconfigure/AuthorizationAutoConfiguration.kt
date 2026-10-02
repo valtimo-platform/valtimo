@@ -19,6 +19,7 @@ package com.ritense.authorization.autoconfigure
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationEntityMapper
+import com.ritense.authorization.AuthorizationResourceTypeResolver
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.AuthorizationServiceHolder
 import com.ritense.authorization.AuthorizationSupportedHelper
@@ -160,9 +161,18 @@ class AuthorizationAutoConfiguration(
     @Bean
     @ConditionalOnMissingBean(PermissionResource::class)
     fun permissionResource(
-        authorizationService: AuthorizationService
+        authorizationService: AuthorizationService,
+        resourceTypeResolver: AuthorizationResourceTypeResolver
     ): PermissionResource {
-        return PermissionResource(authorizationService)
+        return PermissionResource(authorizationService, resourceTypeResolver)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(AuthorizationResourceTypeResolver::class)
+    fun authorizationResourceTypeResolver(
+        pbacRegistryService: PbacRegistryService
+    ): AuthorizationResourceTypeResolver {
+        return AuthorizationResourceTypeResolver(pbacRegistryService)
     }
 
     @Bean

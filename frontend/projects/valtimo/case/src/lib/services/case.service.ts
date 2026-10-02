@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ export class CaseService {
     const defaultColumn = columns.find(column => column.default);
     const isSorting = defaultColumn?.default === 'ASC' || defaultColumn?.default === 'DESC';
     const direction: Direction =
-      typeof !defaultColumn || defaultColumn.default === 'boolean'
+      !defaultColumn || typeof defaultColumn.default === 'boolean'
         ? 'DESC'
         : (defaultColumn.default as any as Direction);
 

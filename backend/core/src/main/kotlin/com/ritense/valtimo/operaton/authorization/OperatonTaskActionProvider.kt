@@ -22,7 +22,7 @@ import com.ritense.valtimo.operaton.domain.OperatonTask
 
 class OperatonTaskActionProvider : ResourceActionProvider<OperatonTask> {
     override fun getAvailableActions(): List<Action<OperatonTask>> {
-        return listOf(ASSIGN, ASSIGNABLE, CLAIM, COMPLETE, VIEW_LIST, VIEW)
+        return listOf(ASSIGN, ASSIGNABLE, CLAIM, COMPLETE, VIEW_LIST, VIEW, MODIFY)
     }
 
     companion object {

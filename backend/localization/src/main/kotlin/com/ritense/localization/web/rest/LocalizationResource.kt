@@ -21,6 +21,7 @@ import com.ritense.localization.service.LocalizationService
 import com.ritense.localization.web.rest.dto.LocalizationResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,6 +35,10 @@ class LocalizationResource(
     private val localizationService: LocalizationService
 ) {
 
+    @EndpointDescription(
+        en = "List localizations",
+        nl = "Lokalisaties ophalen",
+    )
     @GetMapping("/v1/localization")
     fun getLocalizations(): ResponseEntity<List<LocalizationResponseDto>> {
         val localizationResponseDtos = localizationService.getLocalizations()
@@ -41,6 +46,10 @@ class LocalizationResource(
         return ResponseEntity.ok(localizationResponseDtos)
     }
 
+    @EndpointDescription(
+        en = "Get localization by language key",
+        nl = "Lokalisatie ophalen op taalsleutel",
+    )
     @GetMapping("/v1/localization/{languageKey}")
     fun getLocalization(@PathVariable languageKey: String): ResponseEntity<ObjectNode> {
         val data = localizationService.getLocalization(languageKey)

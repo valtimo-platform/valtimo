@@ -1,0 +1,16 @@
+{
+    "$id": "document-upload-in-building-block.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Document upload in building block",
+    "type": "object",
+    "properties": {
+        "subject": {
+            "type": "string",
+            "description": "Subject copied from the case by the input mapping"
+        },
+        "toelichting": {
+            "type": "string",
+            "description": "Why the document is uploaded, entered on the start form"
+        }
+    }
+}

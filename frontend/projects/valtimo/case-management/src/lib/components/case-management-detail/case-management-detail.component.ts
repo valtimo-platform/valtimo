@@ -23,8 +23,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {WarningFilled16} from '@carbon/icons';
-import {PageTitleService} from '@valtimo/components';
-import {DocumentDefinition} from '@valtimo/document';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {
   CaseManagementParams,
   CaseManagementTabConfig,
@@ -74,10 +73,14 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     map(params => params?.caseDefinitionKey ?? '')
   );
 
-  public readonly caseListColumn$ =
-    this.configService.getFeatureToggleObservable('caseListColumn', true);
-  public readonly tabManagementEnabled$ =
-    this.configService.getFeatureToggleObservable('enableTabManagement', true);
+  public readonly caseListColumn$ = this.configService.getFeatureToggleObservable(
+    'caseListColumn',
+    true
+  );
+  public readonly tabManagementEnabled$ = this.configService.getFeatureToggleObservable(
+    'enableTabManagement',
+    true
+  );
 
   public _activeTab: TabEnum | string;
   public pendingTab: TabEnum | null | string;
@@ -104,7 +107,12 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private readonly _refreshConfigurationIssues$ = new BehaviorSubject<null>(null);
 
   public readonly hasPluginProcessLinkIssue$: Observable<boolean> =
-    this.configurationIssueService.hasIssue$('plugin-process-link');
+    this.configurationIssueService.hasAnyOfIssues$([
+      'plugin-process-link',
+      'external-plugin-process-link',
+      'external-plugin-task-form',
+      'external-plugin-case-tab',
+    ]);
 
   private readonly _tabIssueCache = new Map<string, Observable<boolean>>();
 
@@ -123,6 +131,7 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly breadcrumbService: BreadcrumbService,
     private readonly caseDetailService: CaseDetailService,
     private readonly caseManagementService: CaseManagementService,
     private readonly configService: ConfigService,
@@ -137,20 +146,12 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this._subscriptions.add(
-      this.caseDetailService.documentDefinition$.subscribe(
-        (documentDefinition: DocumentDefinition | null) => {
-          if (!documentDefinition) return;
-
-          this.pageTitleService.setCustomPageTitle(documentDefinition.schema.title);
-        }
-      )
-    );
     this.openActiveVersionSubscription();
     this.openConfigurationIssueSseSubscription();
     this.openConfigurationIssueSubscription();
     this.pageTitleService.disableReset();
     this.openParamsSubscription();
+    this.openBreadcrumbSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -158,6 +159,23 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
     this.configurationIssueService.setUnresolvedIssueTypes([]);
+    this.breadcrumbService.clearThirdBreadcrumb();
+  }
+
+  private openBreadcrumbSubscription(): void {
+    this._subscriptions.add(
+      this.caseDetailService.caseDefinition$.subscribe(caseDefinition => {
+        if (!caseDefinition) return;
+
+        const route = `/case-management/case/${caseDefinition.caseDefinitionKey}/version/${caseDefinition.caseDefinitionVersionTag}`;
+
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [route],
+          content: caseDefinition.name,
+          href: route,
+        });
+      })
+    );
   }
 
   public hasTabIssues$(issueTypes: string[]): Observable<boolean> {

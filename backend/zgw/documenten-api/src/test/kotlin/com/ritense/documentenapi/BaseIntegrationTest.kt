@@ -16,14 +16,17 @@
 
 package com.ritense.documentenapi
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.documentenapi.event.DocumentCreated
+import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.ResourceService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
 import okhttp3.mockwebserver.MockResponse
+import java.util.UUID
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -69,5 +72,20 @@ class BaseIntegrationTest {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
             .setBody(body)
+    }
+
+    /**
+     * Points a deployed plugin configuration at the given (typically randomly assigned) mock server URL,
+     * so integration tests do not depend on a fixed port. Returns the previous URL so callers that run
+     * outside a rolled-back transaction (e.g. @BeforeAll) can restore it afterwards.
+     */
+    protected fun setPluginConfigurationUrl(pluginConfigurationId: String, url: String): String {
+        val id = PluginConfigurationId.existingId(UUID.fromString(pluginConfigurationId))
+        val configuration = pluginService.getPluginConfiguration(id)
+        val properties: ObjectNode = configuration.properties!!.deepCopy()
+        val previousUrl = properties.get("url")?.asText() ?: ""
+        properties.put("url", url)
+        pluginService.updatePluginConfiguration(id, configuration.title, properties)
+        return previousUrl
     }
 }

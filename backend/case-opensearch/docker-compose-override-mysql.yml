@@ -10,6 +10,7 @@ services:
             - discovery.type=single-node
             - DISABLE_SECURITY_PLUGIN=true
             - DISABLE_INSTALL_DEMO_CONFIG=true
+            - cluster.routing.allocation.disk.threshold_enabled=false
         ports:
             - "39201:9200"
         healthcheck:

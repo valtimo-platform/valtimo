@@ -30,6 +30,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   Subscription,
   switchMap,
 } from 'rxjs';
@@ -124,10 +125,6 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
     })
   );
 
-  public readonly _caseDefinitionTitle$: Observable<string> = this.globalActiveCase$.pipe(
-    map(result => result?.name ?? '')
-  );
-
   public readonly caseDefinition$: Observable<CaseDefinition> = combineLatest([
     this.caseDefinitionKey$,
     this.caseDefinitionVersionTag$,
@@ -137,7 +134,12 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
     ),
     tap(caseDefinition => {
       this.hasConflictingVersions$.next(!!caseDefinition.conflictingVersions);
-    })
+    }),
+    shareReplay(1)
+  );
+
+  public readonly _caseDefinitionTitle$: Observable<string> = this.caseDefinition$.pipe(
+    map(caseDefinition => caseDefinition?.name ?? '')
   );
 
   public readonly isDraftVersion$: Observable<boolean> = combineLatest([
@@ -303,6 +305,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit,
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.breadcrumbService.clearThirdBreadcrumb();
   }
 
   public ngAfterViewInit(): void {

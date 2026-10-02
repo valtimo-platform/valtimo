@@ -23,6 +23,10 @@ import java.util.UUID
 
 interface ImportService {
     fun importGlobal(inputStream: InputStream)
+    fun importGlobal(
+        inputStream: InputStream,
+        pluginConfigurationMappings: Map<UUID, UUID?>?,
+    ) = importGlobal(inputStream)
     fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>): CaseDefinitionId?
     fun import(
         inputStream: InputStream,
@@ -37,6 +41,12 @@ interface ImportService {
         nameOverride: String?,
         pluginConfigurationMappings: Map<UUID, UUID?>?,
     ): CaseDefinitionId? = import(inputStream, caseDefinitionIdList, keyOverride, nameOverride)
-    fun importBuildingBlockDefinitions(inputStream: InputStream, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
-    fun importBuildingBlockDefinition(entries: List<ZipFileEntry>, buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>)
+    fun importBuildingBlockDefinitions(
+        inputStream: InputStream,
+        buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
+    )
+    fun importBuildingBlockDefinition(
+        entries: List<ZipFileEntry>,
+        buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
+    )
 }

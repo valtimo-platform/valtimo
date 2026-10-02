@@ -22,7 +22,7 @@ import {FormioAppConfig, FormioModule} from '@formio/angular';
 import {getFormioAppConfig} from './formio-config';
 import {FormIoUploaderComponent} from './components/form-io-uploader/form-io-uploader.component';
 import {DropzoneModule} from '../dropzone/dropzone.module';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DocumentModule} from '@valtimo/document';
 import {FormIoDomService} from './services/form-io-dom.service';
 import {FileSizeModule} from '../file-size/file-size.module';
@@ -36,9 +36,11 @@ import {FormioDummyComponent} from './components/form-io-dummy/dummy.component';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './components/form-io-currency/currency.component';
 import {applyDataGridPatch} from './patches/patched-datagrid';
+import {registerFormioFlatpickr, setFormioFlatpickrLocale} from './formio-flatpickr';
+import { FormIoMailPreviewComponent } from './components/form-io-mail-preview/mail-preview.component';
 import {registerSingleClickButtonComponent} from './components/form-io-single-click-button/single-click-button.formio';
 
-// Apply FormIO patches and register custom components before any form renders
+// Apply FormIO patches before any form renders
 applyDataGridPatch();
 registerSingleClickButtonComponent();
 
@@ -63,6 +65,7 @@ registerSingleClickButtonComponent();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   exports: [
@@ -72,6 +75,7 @@ registerSingleClickButtonComponent();
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
     FormIoCurrencyComponent,
+    FormIoMailPreviewComponent,
     FormioDummyComponent,
   ],
   providers: [
@@ -82,4 +86,10 @@ registerSingleClickButtonComponent();
     },
   ],
 })
-export class FormIoModule {}
+export class FormIoModule {
+  constructor(private translateService: TranslateService) {
+    registerFormioFlatpickr();
+    setFormioFlatpickrLocale((this.translateService.currentLang))
+    this.translateService.onLangChange.subscribe(({lang}) => setFormioFlatpickrLocale(lang));
+  }
+}

@@ -40,6 +40,12 @@ export * from './lib/components/menu/menu-routing.module';
 export * from './lib/components/menu/menu.module';
 export * from './lib/components/menu/menu.init';
 export * from './lib/components/menu/menu-item-text.component';
+export * from './lib/components/menu/menu-configuration.model';
+export * from './lib/components/menu/menu-item-catalog';
+export * from './lib/components/menu/menu-configuration.resolver';
+export * from './lib/components/menu/menu-configuration.seed';
+
+export * from './lib/components/drag-drop-list/drag-drop-list.component';
 
 export * from './lib/components/right-sidebar/right-sidebar.component';
 export * from './lib/components/right-sidebar/right-sidebar.module';
@@ -120,6 +126,9 @@ export * from './lib/components/form-io/components/form-io-iban/iban.formio';
 export * from './lib/components/form-io/components/form-io-currency/currency.component';
 export * from './lib/components/form-io/components/form-io-currency/currency.formio';
 
+export * from './lib/components/form-io/components/form-io-mail-preview/mail-preview.component';
+export * from './lib/components/form-io/components/form-io-mail-preview/mail-preview.formio';
+
 export * from './lib/components/form-io/components/form-io-resource-selector/form-io-resource-selector.formio';
 
 export * from './lib/components/form-io/components/object-management-select/object-management-select.component';
@@ -161,6 +170,8 @@ export * from './lib/components/editor/editor.component';
 export * from './lib/components/status-selector/status-selector.component';
 // value path selector
 export * from './lib/components/value-path-selector/value-path-selector.component';
+// value condition tree
+export * from './lib/components/value-condition-tree/value-condition-tree.component';
 // formio value resolver selector
 export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.formio';
 export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.component';

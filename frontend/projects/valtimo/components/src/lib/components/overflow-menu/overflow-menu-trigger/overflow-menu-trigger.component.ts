@@ -28,6 +28,7 @@ import {IconModule, IconService} from 'carbon-components-angular';
 })
 export class OverflowMenuTriggerComponent {
   @Input() public compact = false;
+  @Input() public label = '';
 
   constructor(private readonly _iconService: IconService) {
     this._iconService.registerAll([OverflowMenuVertical16]);

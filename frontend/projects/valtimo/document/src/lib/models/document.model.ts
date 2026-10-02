@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {DisplayType} from '@valtimo/shared';
+import {DisplayType, StartableItemType} from '@valtimo/shared';
 import {CaseTag} from './case-tags.model';
 
 interface SortResult {
@@ -147,8 +147,6 @@ interface ProcessDefinitionCaseDefinition {
   processDefinitionKey: string;
   draft?: boolean;
 }
-
-type StartableItemType = 'PROCESS' | 'BUILDING_BLOCK';
 
 interface StartableItem {
   type: StartableItemType;

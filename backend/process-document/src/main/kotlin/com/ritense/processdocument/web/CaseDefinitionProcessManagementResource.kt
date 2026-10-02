@@ -24,6 +24,7 @@ import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -41,17 +42,25 @@ class CaseDefinitionProcessManagementResource(
     private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
 ) {
 
+    @EndpointDescription(
+        en = "Get case definition feature process",
+        nl = "Functieproces van dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process/{type}")
     fun getDocumentDefinitionProcess(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable("type") type: String,
+        @PathVariable type: String,
     ): ResponseEntity<CaseDefinitionProcess> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val result = caseDefinitionProcessLinkService.getDocumentDefinitionProcess(caseDefinitionId, type)
-        return ResponseEntity.ok<CaseDefinitionProcess>(result)
+        return ResponseEntity.ok(result)
     }
 
+    @EndpointDescription(
+        en = "Save case definition feature process",
+        nl = "Functieproces van dossierdefinitie bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process")
     fun putDocumentDefinitionProcess(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -61,14 +70,18 @@ class CaseDefinitionProcessManagementResource(
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val response: DocumentDefinitionProcessLinkResponse =
             caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(caseDefinitionId, request)
-        return ResponseEntity.ok<DocumentDefinitionProcessLinkResponse>(response)
+        return ResponseEntity.ok(response)
     }
 
+    @EndpointDescription(
+        en = "Delete case definition feature process",
+        nl = "Functieproces van dossierdefinitie verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/feature-process/{type}")
     fun deleteDocumentDefinitionProcess(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable("type") type: String,
+        @PathVariable type: String,
     ): ResponseEntity<Void> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         caseDefinitionProcessLinkService.deleteDocumentDefinitionProcess(caseDefinitionId, type)

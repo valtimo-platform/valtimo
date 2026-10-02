@@ -40,6 +40,26 @@
       </cds-list-row>
 
       <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.metadata.definitionKey' | translate
+        }}</cds-list-column>
+        <cds-list-column
+          ><code>{{
+            document.definitionId?.blueprintId?.blueprintKey || '-'
+          }}</code></cds-list-column
+        >
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>{{
+          'case.inspection.metadata.definitionVersionTag' | translate
+        }}</cds-list-column>
+        <cds-list-column>{{
+          document.definitionId?.blueprintId?.blueprintVersionTag || '-'
+        }}</cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
         <cds-list-column>{{ 'case.inspection.metadata.sequence' | translate }}</cds-list-column>
         <cds-list-column>{{ document.sequence }}</cds-list-column>
       </cds-list-row>

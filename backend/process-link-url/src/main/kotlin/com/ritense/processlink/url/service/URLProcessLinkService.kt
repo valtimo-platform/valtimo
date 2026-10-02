@@ -24,7 +24,6 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.impl.JsonSchemaDocumentService
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest
@@ -74,13 +73,14 @@ class URLProcessLinkService(
         val processDefinition = getProcessDefinition(processLink)
         val documentDefinitionNameToUse = document?.definitionId()?.name()
             ?: documentDefinitionName
-            ?: getProcessDefinitionCaseDefinition(processDefinition).id.caseDefinitionId.key
+            ?: resolveDocumentDefinitionName(processDefinition)
 
         val request = getRequest(
             processLink,
             document,
             taskInstanceId,
             documentDefinitionNameToUse,
+            processDefinition.id,
             processDefinition.key,
             processDefinition.getBlueprintId()
         )
@@ -111,13 +111,24 @@ class URLProcessLinkService(
         }
     }
 
-    private fun getProcessDefinitionCaseDefinition(
+    /**
+     * Derives the document definition name from the blueprint that owns the process definition. A
+     * case-definition link is used when one exists; a building-block-owned process definition has no such
+     * link row, so the blueprint from the process definition's version tag is used instead. The blueprint
+     * key doubles as the document definition name for both kinds.
+     */
+    private fun resolveDocumentDefinitionName(
         processDefinition: OperatonProcessDefinition
-    ): ProcessDefinitionCaseDefinition {
+    ): String {
         val processDefinitionId = ProcessDefinitionId(processDefinition.id)
-        return AuthorizationContext.runWithoutAuthorization {
-            processDefinitionCaseDefinitionService.findByProcessDefinitionId(processDefinitionId)
+        val caseDefinitionLink = AuthorizationContext.runWithoutAuthorization {
+            processDefinitionCaseDefinitionService.findByProcessDefinitionIdOrNull(processDefinitionId)
         }
+        return caseDefinitionLink?.id?.caseDefinitionId?.key
+            ?: processDefinition.getBlueprintId()?.getIdKey()
+            ?: throw IllegalStateException(
+                "Could not determine the document definition name for process definition '${processDefinition.id}'"
+            )
     }
 
     private fun getRequest(
@@ -125,6 +136,7 @@ class URLProcessLinkService(
         document: Document?,
         taskInstanceId: String?,
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?
     ): Request {
@@ -132,12 +144,14 @@ class URLProcessLinkService(
             if (document == null) {
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
+                    processDefinitionId,
                     processDefinitionKey,
                     blueprintId
                 )
             } else {
                 modifyDocumentAndStartProcessRequest(
                     document,
+                    processDefinitionId,
                     processDefinitionKey,
                 )
             }
@@ -153,6 +167,7 @@ class URLProcessLinkService(
 
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?,
     ): NewDocumentAndStartProcessRequest {
@@ -194,11 +209,12 @@ class URLProcessLinkService(
                     )
                 )
             }
-        }
+        }.withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndStartProcessRequest(
         document: Document,
+        processDefinitionId: String,
         processDefinitionKey: String,
     ): ModifyDocumentAndStartProcessRequest {
         return ModifyDocumentAndStartProcessRequest(
@@ -207,7 +223,7 @@ class URLProcessLinkService(
                 document.id().toString(),
                 objectMapper.createObjectNode()
             )
-        )
+        ).withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndCompleteTaskRequest(

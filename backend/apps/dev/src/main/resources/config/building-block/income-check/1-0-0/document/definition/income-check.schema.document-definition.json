@@ -27,6 +27,10 @@
         "zaakEinddatumGeplandBB3": {
             "type": "string",
             "description": "Zaak einddatum gepland gelezen na ZGW patch-zaak actie in BB3"
+        },
+        "bubbleNote": {
+            "type": "string",
+            "description": "Vrije notitie ingevoerd in BB3 (income-check) om multi-level continue sync te bewijzen"
         }
     },
     "required": ["applicantName", "householdSize"]

@@ -1,0 +1,34 @@
+[
+    {
+        "buildingBlockDefinitionKey": "case-review",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:/subject",
+                "target": "doc:/subject"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/approvedBy",
+                "target": "doc:/reviewedBy"
+            }
+        ]
+    },
+    {
+        "buildingBlockDefinitionKey": "case-notification",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:/subject",
+                "target": "doc:/subject"
+            }
+        ],
+        "outputMappings": [
+            {
+                "source": "doc:/handledBy",
+                "target": "doc:/lastNotification"
+            }
+        ]
+    }
+]

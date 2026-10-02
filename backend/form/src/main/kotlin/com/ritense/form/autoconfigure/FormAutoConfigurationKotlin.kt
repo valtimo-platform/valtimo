@@ -33,6 +33,7 @@ import com.ritense.form.service.FormDefinitionImporter
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.FormSubmissionService
 import com.ritense.form.service.FormSupportedProcessLinksHandler
+import com.ritense.form.service.GlobalFormDefinitionExporter
 import com.ritense.form.service.GlobalFormDefinitionImporter
 import com.ritense.form.service.IntermediateSubmissionService
 import com.ritense.form.service.PrefillFormService
@@ -139,6 +140,16 @@ class FormAutoConfigurationKotlin {
         objectMapper: ObjectMapper,
         formDefinitionService: FormDefinitionService
     ) = FormDefinitionExporter(
+        objectMapper,
+        formDefinitionService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(GlobalFormDefinitionExporter::class)
+    fun globalFormDefinitionExporter(
+        objectMapper: ObjectMapper,
+        formDefinitionService: FormDefinitionService
+    ) = GlobalFormDefinitionExporter(
         objectMapper,
         formDefinitionService
     )

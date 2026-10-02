@@ -125,7 +125,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
       const defaultOptions = {
         ...options,
-        ...(formioTranslations === 'object' && {
+        ...(typeof formioTranslations === 'object' && {
           i18n: {
             [language]: this.stateService.flattenTranslationsObject(formioTranslations),
           },
@@ -138,7 +138,22 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     tap(options => this.logger.debug('Form.IO options used', options))
   );
 
-  public readonly tokenSetInLocalStorage$ = this.localStorageService.tokenSetInLocalStorage$;
+  // Only renderOptions reaches form.io itself; getRendererOptions() drops everything else.
+  public readonly renderOptions$: Observable<{language: string}> = this.currentLanguage$.pipe(
+    map(language => ({language}))
+  );
+
+  private readonly _storeTokenInLocalStorage = !this.configService.getFeatureToggle(
+    'disableFormioTokenInLocalStorage'
+  );
+  private readonly _inMemoryTokenSet$ = new BehaviorSubject<boolean>(false);
+
+  // The form is only rendered once a token is available. In the default (legacy) mode the token
+  // is persisted to localStorage, so we wait for that; when disableFormioTokenInLocalStorage is
+  // enabled the token is kept in memory only, so we wait for the in-memory token instead.
+  public readonly tokenReady$: Observable<boolean> = this._storeTokenInLocalStorage
+    ? this.localStorageService.tokenSetInLocalStorage$
+    : this._inMemoryTokenSet$.asObservable();
 
   private _tokenRefreshTimerSubscription!: Subscription;
   private _formRefreshSubscription!: Subscription;
@@ -250,10 +265,19 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private setToken(token: string): void {
-    Formio.setUser(jwtDecode(token));
-    Formio.setToken(token);
+    if (this._storeTokenInLocalStorage) {
+      Formio.setUser(jwtDecode(token));
+      Formio.setToken(token);
+      this.localStorageService.setTokenInLocalStorage(token);
+    } else {
+      // Feature toggle 'disableFormioTokenInLocalStorage': keep the token in memory only, since
+      // Formio.setToken/setUser would persist it (and the decoded user) to localStorage where any
+      // script could read it. Our APIs authenticate via the Keycloak token on the HTTP interceptor.
+      (Formio as unknown as {token: string}).token = token;
+      this._inMemoryTokenSet$.next(true);
+    }
+
     this.setTimerForTokenRefresh(token);
-    this.localStorageService.setTokenInLocalStorage(token);
 
     this.logger.debug('New token set for form.io.');
   }

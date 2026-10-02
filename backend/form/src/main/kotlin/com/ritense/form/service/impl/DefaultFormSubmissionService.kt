@@ -44,8 +44,6 @@ import com.ritense.form.web.rest.dto.FormSubmissionResultFailed
 import com.ritense.form.web.rest.dto.FormSubmissionResultSucceeded
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest
@@ -121,16 +119,13 @@ class DefaultFormSubmissionService(
             val processDefinition = getProcessDefinition(processLink)
             val documentDefinitionNameToUse = document?.definitionId()?.name()
                 ?: documentDefinitionName
-                ?: getProcessDocumentDefinition(processDefinition, document).run {
-                    documentDefinitionService.findByBlueprintId(this.id.caseDefinitionId).orElseThrow().id?.name()
-                        ?: throw ProcessDocumentDefinitionNotFoundException("DocumentDefinition not found for processDefinitionId: ${processDefinition.id}")
-                }
+                ?: resolveDocumentDefinitionName(processDefinition)
             val processVariables = getProcessVariables(taskInstanceId)
             val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
 
             val formFields = getFormFields(formDefinition, formData)
             preProcessFormFields(formFields, document)
-            val categorizedKeyValues = getCategorizedSubmitValues(formDefinition, formData, document)
+            val categorizedKeyValues = getCategorizedSubmitValues(formDefinition, formData, document, documentDefinitionNameToUse)
 
             val modifyDocumentWithJsonPatch = getPreJsonPatch(
                 formDefinition, categorizedKeyValues.modifyDocumentWithJsonPatchValues, processVariables, document
@@ -140,6 +135,7 @@ class DefaultFormSubmissionService(
                 document,
                 taskInstanceId,
                 documentDefinitionNameToUse,
+                processDefinition.id,
                 processDefinition.key,
                 processDefinition.getBlueprintId(),
                 categorizedKeyValues.createDocumentWithContent,
@@ -211,7 +207,8 @@ class DefaultFormSubmissionService(
     private fun getCategorizedSubmitValues(
         formDefinition: FormIoFormDefinition,
         formData: JsonNode,
-        document: Document?
+        document: Document?,
+        documentDefinitionName: String
     ): CategorizedSubmitValues {
         val categorizedMap = formDefinition.inputFields
             .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
@@ -240,12 +237,12 @@ class DefaultFormSubmissionService(
 
         // Preprocess the document paths & values. The result is an ObjectNode.
         val createDocumentWithContent = categorizedMap["createDocumentWithContent"]
-            ?.let { valueResolverService.preProcessValuesForNewCase(it)[DOC_PREFIX] as? ObjectNode }
+            ?.let { valueResolverService.preProcessValuesForNewDocument(it, documentDefinitionName)[DOC_PREFIX] as? ObjectNode }
             ?: objectMapper.createObjectNode()
 
         // After pre-processing process-variables we have a key-value map where the prefix is stripped from the keys.
         val withProcessVars = categorizedMap["withProcessVar"]
-            ?.let { valueResolverService.preProcessValuesForNewCase(it)[PV_PREFIX] as? Map<String, Any> }
+            ?.let { valueResolverService.preProcessValuesForNewDocument(it, documentDefinitionName)[PV_PREFIX] as? Map<String, Any> }
             ?: mapOf()
 
         // Do not process/handle other values yet.
@@ -309,24 +306,27 @@ class DefaultFormSubmissionService(
         }
     }
 
-    private fun getProcessDocumentDefinition(
-        processDefinition: OperatonProcessDefinition,
-        document: Document?
-    ): ProcessDefinitionCaseDefinition {
-        val processDefinitionId =
-            ProcessDefinitionId(processDefinition.id)
-        return runWithoutAuthorization {
-            if (document == null) {
-                processDefinitionCaseDefinitionService.findByProcessDefinitionId(processDefinitionId)
-            } else {
-                processDefinitionCaseDefinitionService.findById(
-                    ProcessDefinitionCaseDefinitionId(
-                        processDefinitionId,
-                        document.definitionId().caseDefinitionId()
-                    )
-                )!!
-            }
-        }
+    /**
+     * Derives the document definition name from the blueprint that owns the process definition. A
+     * case-definition link is used when one exists; a building-block-owned process definition has no such
+     * link row, so the blueprint from the process definition's version tag is used instead.
+     */
+    private fun resolveDocumentDefinitionName(
+        processDefinition: OperatonProcessDefinition
+    ): String {
+        val blueprintId = runWithoutAuthorization {
+            processDefinitionCaseDefinitionService
+                .findByProcessDefinitionIdOrNull(ProcessDefinitionId(processDefinition.id))
+        }?.id?.caseDefinitionId
+            ?: processDefinition.getBlueprintId()
+            ?: throw ProcessDocumentDefinitionNotFoundException(
+                "Blueprint not found for processDefinitionId: ${processDefinition.id}"
+            )
+
+        return documentDefinitionService.findByBlueprintId(blueprintId).orElse(null)?.id?.name()
+            ?: throw ProcessDocumentDefinitionNotFoundException(
+                "DocumentDefinition not found for processDefinitionId: ${processDefinition.id}"
+            )
     }
 
     private fun getDocumentDefinition(documentId: String): Document {
@@ -347,9 +347,7 @@ class DefaultFormSubmissionService(
         formDefinition: FormIoFormDefinition,
         formData: JsonNode
     ): List<FormField> {
-        return formDefinition.inputFields
-            .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
-            .mapNotNull { field -> FormField.getFormField(formData, field, applicationEventPublisher) }
+        return FormField.getFormFields(formDefinition, formData, applicationEventPublisher)
     }
 
     private fun preProcessFormFields(formFields: List<FormField>, document: Document?) {
@@ -399,6 +397,7 @@ class DefaultFormSubmissionService(
         document: Document?,
         taskInstanceId: String?,
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?,
         documentContent: JsonNode,
@@ -413,6 +412,7 @@ class DefaultFormSubmissionService(
             if (document == null) {
                 newDocumentAndStartProcessRequest(
                     documentDefinitionName,
+                    processDefinitionId,
                     processDefinitionKey,
                     blueprintId,
                     documentContent,
@@ -421,6 +421,7 @@ class DefaultFormSubmissionService(
             } else {
                 modifyDocumentAndStartProcessRequest(
                     document,
+                    processDefinitionId,
                     processDefinitionKey,
                     documentContent,
                     withProcessVars,
@@ -445,6 +446,7 @@ class DefaultFormSubmissionService(
 
     private fun newDocumentAndStartProcessRequest(
         documentDefinitionName: String,
+        processDefinitionId: String,
         processDefinitionKey: String,
         blueprintId: BlueprintId?,
         documentContent: JsonNode,
@@ -488,11 +490,12 @@ class DefaultFormSubmissionService(
                     )
                 ).withProcessVars(withProcessVars)
             }
-        }
+        }.withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndStartProcessRequest(
         document: Document,
+        processDefinitionId: String,
         processDefinitionKey: String,
         documentContent: JsonNode,
         withProcessVars: Map<String, Any>,
@@ -505,6 +508,7 @@ class DefaultFormSubmissionService(
                 documentContent
             ).withJsonPatch(withJsonPatch)
         ).withProcessVars(withProcessVars)
+            .withProcessDefinitionId(processDefinitionId)
     }
 
     private fun modifyDocumentAndCompleteTaskRequest(

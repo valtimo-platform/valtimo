@@ -79,9 +79,9 @@ apply from: "${rootProject.projectDir}/backend/gradle/valtimo-app.gradle"
 
 // Generate TypeScript types for the frontend from the backend DTOs. Lives in the
 // dev module because it needs the full runtime classpath and is a dev-only tool.
-def generatedDir = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated")
-def outDtsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.d.ts")
-def outTsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts")
+def generatedDir = rootProject.file("frontend/projects/valtimo/shared/src/lib/generated")
+def outDtsFile = rootProject.file("frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.d.ts")
+def outTsFile = rootProject.file("frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts")
 
 tasks.named("generateTypeScript").configure {
     dependsOn tasks.named("classes")
@@ -93,7 +93,17 @@ tasks.named("generateTypeScript").configure {
 
     excludeClasses = ["com.ritense.search.domain.DisplayType"]
     customTypeMappings = [
-        "com.ritense.search.domain.DisplayType:any"
+        "com.ritense.search.domain.DisplayType:any",
+        // Types with custom Jackson serializers that write plain strings.
+        "java.net.URI:string",
+        "org.semver4j.Semver:string",
+        'com.ritense.document.domain.Document$Id:string',
+    ]
+    // Distinct TypeScript names for classes whose simple names collide.
+    customTypeNaming = [
+        'com.ritense.dashboard.domain.WidgetLayout:DashboardWidgetLayout',
+        'com.ritense.tab.domain.WidgetLayout:TabWidgetLayout',
+        'com.ritense.document.domain.DocumentDefinition$Id:DocumentDefinitionId',
     ]
 
     doFirst {

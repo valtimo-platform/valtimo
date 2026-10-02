@@ -21,6 +21,7 @@ import com.ritense.notificatiesapi.exception.AuthorizationException
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -37,6 +38,10 @@ class NotificatiesApiResource(
     private val notificatiesApiService: NotificatiesApiService
 ) {
 
+    @EndpointDescription(
+        en = "Handle Notificaties API callback",
+        nl = "Notificaties API-callback verwerken",
+    )
     @PostMapping("/v1/notificatiesapi/callback")
     fun handleNotification(
         @Valid @RequestBody notification: NotificatiesApiNotificationReceivedEvent,

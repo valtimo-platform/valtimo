@@ -26,7 +26,7 @@ import {
   SearchOperator,
   TeamResponseDto,
 } from '@valtimo/shared';
-import {BehaviorSubject, catchError, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, catchError, map, Observable, of, switchMap, tap} from 'rxjs';
 
 import {
   AssignHandlerToDocumentResult,
@@ -372,6 +372,25 @@ export class DocumentService {
     });
   }
 
+  /**
+   * The globally active case definition of a key. Its `name` is what the left menu and the
+   * user-facing case pages are labelled with, so it should be preferred over the document
+   * definition schema title, which is not kept in sync with it. Resolves to `null` when there is
+   * no active version, so consumers can fall back to the schema title.
+   */
+  public getActiveCaseDefinition(caseDefinitionKey: string): Observable<CaseDefinition | null> {
+    return this.getCaseDefinitions({caseDefinitionKey, active: true}).pipe(
+      map(
+        (caseDefinitions: CaseDefinition[]) =>
+          caseDefinitions.find(
+            (caseDefinition: CaseDefinition) =>
+              caseDefinition.caseDefinitionKey === caseDefinitionKey
+          ) ?? null
+      ),
+      catchError(() => of(null))
+    );
+  }
+
   public getCaseDefinitionsManagement(params: any): Observable<Page<CaseDefinition>> {
     return this.http.get<Page<CaseDefinition>>(
       `${this.valtimoEndpointUri}management/v1/case-definition`,
@@ -537,14 +556,21 @@ export class DocumentService {
     caseDefinitionKey: string,
     versionTag: string
   ): Observable<DocumentType[]> {
+    // A 403 is expected when the user may open the form but not view the case's document types
+    // (e.g. task access without document access); it is skipped so no error toast is shown and
+    // callers can fall back to an empty list.
     return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`,
+      {headers: new HttpHeaders().set(InterceptorSkip, '403')}
     );
   }
 
   public getDocumentTypesForDocument(documentId: string): Observable<DocumentType[]> {
+    // See getDocumentTypesForCase: a 403 is expected when the user cannot view the document and is
+    // skipped to avoid an error toast.
     return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`
+      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`,
+      {headers: new HttpHeaders().set(InterceptorSkip, '403')}
     );
   }
 

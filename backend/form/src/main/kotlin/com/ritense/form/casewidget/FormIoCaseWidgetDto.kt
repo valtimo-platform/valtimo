@@ -18,6 +18,8 @@ package com.ritense.form.casewidget
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
+import com.ritense.exporter.request.ExportRequest
+import com.ritense.exporter.request.FormDefinitionExportRequest
 import com.ritense.form.validation.FormDefinitionExistsValidator
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.conditions.Condition
@@ -38,7 +40,13 @@ data class FormIoCaseWidgetDto(
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: FormIoWidgetProperties
 ) : CaseWidgetTabWidgetDto {
+    override var dataGroupId: String? = null
+
     override fun validate(caseDefinitionId: CaseDefinitionId) {
         FormDefinitionExistsValidator.isValid(properties.formDefinitionName, caseDefinitionId)
+    }
+
+    override fun getRelatedExportRequests(caseDefinitionId: CaseDefinitionId): Set<ExportRequest> {
+        return setOf(FormDefinitionExportRequest(properties.formDefinitionName, caseDefinitionId))
     }
 }

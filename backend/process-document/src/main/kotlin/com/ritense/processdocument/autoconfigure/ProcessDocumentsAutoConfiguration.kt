@@ -40,12 +40,25 @@ import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepositor
 import com.ritense.processdocument.repository.OperatonExecutionCaseDefinitionMapper
 import com.ritense.processdocument.repository.OperatonExecutionJsonSchemaDocumentMapper
 import com.ritense.processdocument.repository.OperatonProcessDefinitionCaseDefinitionMapper
+import com.ritense.processdocument.migration.CaseProcessDefinitionBlueprintResolver
+import com.ritense.processdocument.migration.ProcessActivityMapper
+import com.ritense.processdocument.migration.ProcessMigrationActivityValidator
+import com.ritense.processdocument.migration.ProcessMigrationComponentValidator
+import com.ritense.processdocument.migration.ProcessDefinitionBlueprintResolver
+import com.ritense.processdocument.migration.ProcessMigrationComponentExecutor
+import com.ritense.processdocument.migration.ProcessMigrationComponentSuggester
+import com.ritense.processdocument.migration.ProcessMigrationVariableResolver
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
+import com.ritense.valtimo.migration.repository.ProcessMigrationConfigurationRepository
+import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.repository.TaskQuickSearchRepository
+import com.ritense.processdocument.service.CaseCorrelationBusinessKeyProvider
+import com.ritense.processdocument.service.CaseCorrelationStartTargetProvider
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
+import com.ritense.processdocument.service.DocumentTaskCaseDefinitionSpecificationFactory
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DefaultProcessDefinitionCaseDefinitionLinker
 import com.ritense.processdocument.service.DocumentDelegateService
@@ -67,6 +80,7 @@ import com.ritense.processdocument.web.TaskListResource
 import com.ritense.search.repository.SearchFieldV2Repository
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.blueprint.migration.BlueprintProcessOwnership
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
@@ -80,6 +94,7 @@ import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import com.ritense.valtimo.service.TaskBusinessKeyResolver
+import com.ritense.valtimo.service.TaskCaseDefinitionSpecificationFactory
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
@@ -97,7 +112,7 @@ import org.springframework.core.annotation.Order
 @AutoConfiguration
 class ProcessDocumentsAutoConfiguration {
 
-    @ProcessBean
+    @ProcessBean(description = "Case document operations (deprecated, use documentDelegateService)")
     @Bean
     @ConditionalOnMissingBean(DocumentDelegate::class)
     fun documentDelegate(
@@ -112,7 +127,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Resolves and sets values using value resolver keys")
     @Bean
     @ConditionalOnMissingBean
     fun valueResolverDelegateService(
@@ -123,7 +138,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Case document metadata, assignments, tags, and status")
     @Bean
     @ConditionalOnMissingBean(DocumentDelegateService::class)
     fun documentDelegateService(
@@ -142,7 +157,7 @@ class ProcessDocumentsAutoConfiguration {
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Sends messages to start or catch events in processes")
     @Bean
     @ConditionalOnMissingBean(CorrelationService::class)
     fun correlationService(
@@ -153,6 +168,9 @@ class ProcessDocumentsAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         repositoryService: RepositoryService,
         operatonRepositoryService: OperatonRepositoryService,
+        caseDocumentResolver: CaseDocumentResolver,
+        caseCorrelationBusinessKeyProviders: List<CaseCorrelationBusinessKeyProvider>,
+        caseCorrelationStartTargetProviders: List<CaseCorrelationStartTargetProvider>,
     ): CorrelationService {
         return CorrelationServiceImpl(
             runtimeService = runtimeService,
@@ -160,11 +178,14 @@ class ProcessDocumentsAutoConfiguration {
             documentService = documentService,
             operatonRepositoryService = operatonRepositoryService,
             repositoryService = repositoryService,
-            associationService = processDocumentAssociationService
+            associationService = processDocumentAssociationService,
+            caseDocumentResolver = caseDocumentResolver,
+            businessKeyProviders = caseCorrelationBusinessKeyProviders,
+            startTargetProviders = caseCorrelationStartTargetProviders,
         )
     }
 
-    @ProcessBean
+    @ProcessBean(description = "Starts processes and manages process-document associations")
     @Bean("processService")
     @ConditionalOnMissingBean(ProcessDocumentsService::class)
     fun processDocumentsService(
@@ -297,10 +318,12 @@ class ProcessDocumentsAutoConfiguration {
     @ConditionalOnMissingBean(CaseDefinitionProcessLinkImporter::class)
     fun caseDefinitionProcessLinkImporter(
         caseDefinitionProcessLinkRepository: CaseDefinitionProcessLinkRepository,
+        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
         objectMapper: ObjectMapper
     ): CaseDefinitionProcessLinkImporter {
         return CaseDefinitionProcessLinkImporter(
             caseDefinitionProcessLinkRepository,
+            caseDefinitionProcessLinkService,
             objectMapper
         )
     }
@@ -331,6 +354,15 @@ class ProcessDocumentsAutoConfiguration {
             taskBusinessKeyResolvers,
             teamManagementService.orElse(null)
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TaskCaseDefinitionSpecificationFactory::class)
+    fun documentTaskCaseDefinitionSpecificationFactory(
+        queryDialectHelper: QueryDialectHelper,
+        taskBusinessKeyResolvers: List<TaskBusinessKeyResolver>
+    ): DocumentTaskCaseDefinitionSpecificationFactory {
+        return DocumentTaskCaseDefinitionSpecificationFactory(queryDialectHelper, taskBusinessKeyResolvers)
     }
 
     @Bean
@@ -405,6 +437,78 @@ class ProcessDocumentsAutoConfiguration {
             caseDefinitionChecker,
             caseDocumentResolver,
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationComponentExecutor::class)
+    fun processMigrationComponentExecutor(
+        processMigrationConfigurationRepository: ProcessMigrationConfigurationRepository,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        runtimeService: RuntimeService,
+        processMigrationVariableResolver: ProcessMigrationVariableResolver,
+    ): ProcessMigrationComponentExecutor {
+        return ProcessMigrationComponentExecutor(
+            processMigrationConfigurationRepository,
+            processDefinitionCaseDefinitionRepository,
+            runtimeService,
+            processMigrationVariableResolver,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationActivityValidator::class)
+    fun processMigrationActivityValidator(
+        runtimeService: RuntimeService,
+    ) = ProcessMigrationActivityValidator(runtimeService)
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessActivityMapper::class)
+    fun processActivityMapper(
+        repositoryService: RepositoryService,
+        processMigrationActivityValidator: ProcessMigrationActivityValidator,
+    ) = ProcessActivityMapper(repositoryService, processMigrationActivityValidator)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseProcessDefinitionBlueprintResolver::class)
+    fun caseProcessDefinitionBlueprintResolver(
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+    ) = CaseProcessDefinitionBlueprintResolver(processDefinitionCaseDefinitionRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationComponentSuggester::class)
+    fun processMigrationComponentSuggester(
+        processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
+        processActivityMapper: ProcessActivityMapper,
+        // Contributed by `building-block` when on the classpath; absent otherwise, which means nothing can have been relocated into a block.
+        blueprintProcessOwnerships: List<BlueprintProcessOwnership>,
+    ): ProcessMigrationComponentSuggester {
+        return ProcessMigrationComponentSuggester(
+            processDefinitionBlueprintResolvers,
+            processActivityMapper,
+            blueprintProcessOwnerships,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationComponentValidator::class)
+    fun processMigrationComponentValidator(
+        processDefinitionBlueprintResolvers: List<ProcessDefinitionBlueprintResolver>,
+        processMigrationActivityValidator: ProcessMigrationActivityValidator,
+        objectMapper: ObjectMapper,
+    ) = ProcessMigrationComponentValidator(
+        processDefinitionBlueprintResolvers,
+        processMigrationActivityValidator,
+        objectMapper,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessMigrationVariableResolver::class)
+    fun processMigrationVariableResolver(
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
+        operatonExecutionRepository: OperatonExecutionRepository,
+    ): ProcessMigrationVariableResolver {
+        return ProcessMigrationVariableResolver(valueResolverService, objectMapper, operatonExecutionRepository)
     }
 
     @Bean

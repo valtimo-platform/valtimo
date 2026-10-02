@@ -1,0 +1,7 @@
+{
+    "key": "verhuizing-dossier",
+    "name": "Verhuizingdossier",
+    "versionTag": "1.0.0",
+    "canHaveAssignee": true,
+    "autoAssignTasks": false
+}

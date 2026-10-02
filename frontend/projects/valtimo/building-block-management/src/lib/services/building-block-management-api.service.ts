@@ -62,6 +62,17 @@ export class BuildingBlockManagementApiService extends BaseApiService {
       );
   }
 
+  public searchBuildingBlockDefinitions(params?: {
+    searchTerm?: string;
+    page?: number;
+    size?: number;
+  }): Observable<Page<BuildingBlockDefinitionDto>> {
+    return this.httpClient.get<Page<BuildingBlockDefinitionDto>>(
+      this.getApiUrl('management/v1/building-block/search'),
+      {params: params as any}
+    );
+  }
+
   public createBuildingBlockDefinition(
     dto: CreateBuildingBlockDefinitionDto
   ): Observable<BuildingBlockDefinitionDto> {

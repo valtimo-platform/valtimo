@@ -1,0 +1,48 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {FormioCustomComponent} from '../../../../modules';
+
+@Component({
+  selector: 'valtimo-mail-preview',
+  templateUrl: './mail-preview.component.html',
+  styleUrls: ['./mail-preview.component.scss'],
+  standalone: false,
+})
+export class FormIoMailPreviewComponent implements FormioCustomComponent<string> {
+  @Input() public disabled = false;
+  @Input() public variableKey = '';
+  @Output() public readonly valueChange = new EventEmitter<string>();
+
+  public safeValue: SafeHtml = '';
+
+  private _value = '';
+
+  @Input() public set value(v: string) {
+    this._value = v;
+    this.safeValue = this.sanitizer.bypassSecurityTrustHtml(
+      v ?? 'Hier wordt het e-mailvoorbeeld getoond.'
+    );
+  }
+
+  public get value(): string {
+    return this._value;
+  }
+
+  constructor(private readonly sanitizer: DomSanitizer) {}
+}

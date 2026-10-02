@@ -29,6 +29,13 @@ public class StartProcessForDocumentRequest implements Request {
     private final String processDefinitionKey;
     private final Map<String, Object> processVars;
 
+    /**
+     * The exact process definition version to start. Resolving by key alone cannot tell versions of a
+     * blueprint-owned process apart, so callers that already know the version should supply it here.
+     */
+    @JsonIgnore
+    private String processDefinitionId;
+
     @JsonIgnore
     private Consumer<? super JsonSchemaDocument> additionalModifications;
 
@@ -54,6 +61,16 @@ public class StartProcessForDocumentRequest implements Request {
         return this.processVars;
     }
 
+    public StartProcessForDocumentRequest withProcessDefinitionId(String processDefinitionId) {
+        this.processDefinitionId = processDefinitionId;
+        return this;
+    }
+
+    @JsonIgnore
+    public String getProcessDefinitionId() {
+        return this.processDefinitionId;
+    }
+
     @Override
     public Request withAdditionalModifications(Consumer<? super JsonSchemaDocument> function) {
         this.additionalModifications = function;
@@ -77,17 +94,19 @@ public class StartProcessForDocumentRequest implements Request {
         StartProcessForDocumentRequest that = (StartProcessForDocumentRequest) o;
         return Objects.equals(getDocumentId(), that.getDocumentId())
             && Objects.equals(getProcessDefinitionKey(), that.getProcessDefinitionKey())
+            && Objects.equals(getProcessDefinitionId(), that.getProcessDefinitionId())
             && Objects.equals(getProcessVars(), that.getProcessVars());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDocumentId(), getProcessDefinitionKey(), getProcessVars());
+        return Objects.hash(getDocumentId(), getProcessDefinitionKey(), getProcessDefinitionId(), getProcessVars());
     }
 
     public String toString() {
         return "StartProcessForDocumentRequest(documentId=" + this.getDocumentId() +
             ", processDefinitionKey=" + this.getProcessDefinitionKey() +
+            ", processDefinitionId=" + this.getProcessDefinitionId() +
             ", processVars=" + this.getProcessVars() + ")";
     }
 }

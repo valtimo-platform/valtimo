@@ -164,6 +164,51 @@ class IndependentProcessBuildingBlockIT @Autowired constructor(
     }
 
     @Test
+    fun `should sync continuous output mappings to process variables while building block is running`() {
+        val processDefinitionId = processDefinitionId()
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
+
+        // Output mappings: beslissingBezwaar -> pv:result, synced continuously
+        val outputMappings = listOf(
+            BuildingBlockOutputMapping(
+                source = "beslissingBezwaar",
+                target = "pv:result",
+                syncTiming = BuildingBlockSyncTiming.CONTINUOUS
+            ),
+        )
+        processLinkRepository.save(
+            BuildingBlockProcessLink(
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = CALL_ACTIVITY_ID,
+                activityType = ActivityTypeWithEventName.CALL_ACTIVITY_START,
+                buildingBlockDefinitionId = buildingBlockDefinitionId,
+                pluginConfigurationMappings = emptyMap(),
+                inputMappings = emptyList(),
+                outputMappings = outputMappings
+            )
+        )
+
+        // Start independent process
+        val processInstance = runtimeService.startProcessInstanceByKey(INDEPENDENT_PROCESS_KEY)
+
+        val instance = buildingBlockInstanceRepository.findAll().single()
+
+        // Update building block document with result mid-flight
+        runWithoutAuthorization {
+            val buildingBlockDocument = documentService.get(instance.documentId.toString()) as JsonSchemaDocument
+            val updatedContent = buildingBlockDocument.content().asJson().deepCopy<ObjectNode>()
+            updatedContent.put("beslissingBezwaar", "approved")
+            documentService.modifyDocument(buildingBlockDocument, updatedContent)
+        }
+
+        // The building block is still running: the value is already synced to the caller process variable.
+        assertThat(runtimeService.getVariable(processInstance.id, "result")).isEqualTo("approved")
+
+        runtimeService.correlateMessage("test-ready", instance.documentId.toString())
+    }
+
+    @Test
     fun `should handle both input from pv and output to pv in independent process`() {
         val processDefinitionId = processDefinitionId()
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)

@@ -36,17 +36,16 @@ import {
   LoadingModule,
   ModalModule,
   NotificationModule,
+  TabsModule,
 } from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {FormFlowEditorComponent} from './components/editor/form-flow-editor.component';
+import {FormFlowJsonEditorTabComponent} from './components/editor/tabs/form-flow-json-editor-tab/form-flow-json-editor-tab.component';
+import {FormFlowUiEditorTabComponent} from './components/editor/tabs/form-flow-ui-editor-tab/form-flow-ui-editor-tab.component';
 import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/delete-form-flow-modal.component';
 
 @NgModule({
-  declarations: [
-    FormFlowOverviewComponent,
-    FormFlowEditorComponent,
-    DeleteFormFlowModalComponent,
-  ],
+  declarations: [FormFlowOverviewComponent, FormFlowEditorComponent, DeleteFormFlowModalComponent],
   imports: [
     CommonModule,
     ButtonModule,
@@ -69,6 +68,9 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
     DropdownModule,
     ConfirmationModalModule,
     NewFormFlowModalComponent,
+    TabsModule,
+    FormFlowJsonEditorTabComponent,
+    FormFlowUiEditorTabComponent,
   ],
 })
 export class FormFlowManagementModule {}

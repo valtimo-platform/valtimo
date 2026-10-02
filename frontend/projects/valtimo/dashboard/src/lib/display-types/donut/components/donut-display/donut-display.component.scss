@@ -49,8 +49,19 @@
 
   &__content {
     display: flex;
+    flex: 1;
+    min-height: 0;
     align-items: flex-end;
     justify-content: center;
     margin-bottom: 12px;
+
+    // Carbon sizes the legend to whatever height it needs and leaves the rest of the chart to
+    // the donut. A legend with many items wraps into so many rows that hardly any height is
+    // left, shrinking the donut until it is no longer visible. Capping the legend guarantees
+    // the donut keeps its space, the remaining legend items can be scrolled to.
+    ::ng-deep .cds--cc--legend {
+      max-height: 140px;
+      overflow-y: auto;
+    }
   }
 }

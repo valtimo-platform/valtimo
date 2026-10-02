@@ -23,6 +23,7 @@ import com.ritense.iko.web.rest.request.IkoRepositoryConfigUpdateRequest
 import com.ritense.iko.web.rest.response.IkoRepositoryConfigResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.iko.PropertyField
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -48,12 +49,20 @@ class IkoRepositoryManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO repository types",
+        nl = "IKO-registertypen ophalen",
+    )
     @GetMapping("/v1/iko-types")
     fun getIkoRepositoriesTypes(): ResponseEntity<Map<String, String>> {
         return ResponseEntity.ok(service.getIkoRepositoryTypes())
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO repository config property fields by type",
+        nl = "Eigenschapsvelden van IKO-registerconfiguratie ophalen per type",
+    )
     @GetMapping("/v1/iko-property-fields/{type}/repository-config")
     fun getIkoRepositoryConfigPropertyFields(
         @PathVariable type: String,
@@ -62,6 +71,10 @@ class IkoRepositoryManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO repository configs for management",
+        nl = "IKO-registerconfiguraties ophalen voor beheer",
+    )
     @GetMapping("/v1/iko")
     fun getIkoRepositoryConfigsForManagement(
         @RequestParam title: String?,
@@ -77,6 +90,10 @@ class IkoRepositoryManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO repository config by key",
+        nl = "IKO-registerconfiguratie ophalen op sleutel",
+    )
     @GetMapping("/v1/iko/{key}")
     fun getIkoRepositoryConfig(
         @PathVariable key: String,
@@ -86,6 +103,10 @@ class IkoRepositoryManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create IKO repository config",
+        nl = "IKO-registerconfiguratie aanmaken",
+    )
     @PostMapping("/v1/iko/{key}")
     fun createIkoRepositoryConfig(
         @PathVariable key: String,
@@ -101,6 +122,10 @@ class IkoRepositoryManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO repository config",
+        nl = "IKO-registerconfiguratie bijwerken",
+    )
     @PutMapping("/v1/iko/{key}")
     fun updateIkoRepositoryConfig(
         @PathVariable key: String,
@@ -116,6 +141,10 @@ class IkoRepositoryManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete IKO repository config",
+        nl = "IKO-registerconfiguratie verwijderen",
+    )
     @DeleteMapping("/v1/iko/{key}")
     fun deleteIkoRepositoryConfig(
         @PathVariable key: String,

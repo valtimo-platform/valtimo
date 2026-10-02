@@ -39,6 +39,13 @@ describe('ValtimoCdsModalDirective', () => {
     return event;
   };
 
+  const minHeightHost = (): HTMLElement => fixture.nativeElement.querySelector('.min-height-host');
+  const minHeightContent = (): HTMLElement =>
+    minHeightHost().querySelector('.cds--modal-content') as HTMLElement;
+
+  // MutationObserver callbacks are delivered as microtasks; a macrotask tick drains them.
+  const flushMutations = () => new Promise(resolve => setTimeout(resolve));
+
   beforeEach(() => {
     TestBed.configureTestingModule({imports: [TestHostComponent]});
     fixture = TestBed.createComponent(TestHostComponent);
@@ -169,5 +176,33 @@ describe('ValtimoCdsModalDirective', () => {
     dispatchEscape();
 
     expect(clickSpy).not.toHaveBeenCalled();
+  });
+
+  it('applies the min-height to the modal content', () => {
+    expect(minHeightContent().style.getPropertyValue('min-height')).toContain('600px');
+  });
+
+  it('does not react to style changes, so its own write cannot feed the observer', async () => {
+    // The directive writes the min-height into the subtree it observes. If it reacted to style
+    // mutations it would answer its own write with another write — a microtask loop that freezes
+    // the page. Clearing the style must therefore go unanswered.
+    const content = minHeightContent();
+
+    // Let the deferred write from ngAfterViewInit land before measuring.
+    await flushMutations();
+    content.style.removeProperty('min-height');
+    await flushMutations();
+
+    expect(content.style.getPropertyValue('min-height')).toBe('');
+  });
+
+  it('applies the min-height to modal content added later', async () => {
+    const added = document.createElement('div');
+    added.classList.add('cds--modal-content');
+    minHeightHost().appendChild(added);
+
+    await flushMutations();
+
+    expect(added.style.getPropertyValue('min-height')).toContain('600px');
   });
 });

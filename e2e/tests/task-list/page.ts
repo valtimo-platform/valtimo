@@ -88,7 +88,16 @@ export class TaskListPage {
   async claimTask() {
     const assignButton = this.page.getByText('Assign this task');
 
-    await expect(assignButton.or(this.assignmentPill)).toBeVisible({timeout: 15_000});
+    // On the shared nightly env — and because the "Auto assign test" process
+    // auto-assigns — the task can already be assigned when the detail opens.
+    // The assignment component always keeps a hidden "Assign this task" button
+    // in the DOM for layout, so `assignButton.or(pill)` trips strict mode once a
+    // pill is present. Wait for either state to settle, then branch on the pill.
+    await expect(async () => {
+      const settled =
+        (await this.assignmentPill.isVisible()) || (await assignButton.isVisible());
+      expect(settled).toBe(true);
+    }).toPass({timeout: 15_000});
 
     // Already assigned — nothing to claim.
     if (await this.assignmentPill.isVisible()) {

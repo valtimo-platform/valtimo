@@ -257,6 +257,15 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
     )
   );
 
+  public readonly columnTitle$ = this.formGroup.valueChanges.pipe(
+    map(formValues => formValues.title ?? ''),
+    startWith('')
+  );
+
+  public readonly usedKeys$ = this.currentModalType$.pipe(
+    map(() => this.cachedCaseListColumns.map(column => column.key))
+  );
+
   public readonly validKey$ = combineLatest([
     this.formGroup.valueChanges,
     this.currentModalType$,

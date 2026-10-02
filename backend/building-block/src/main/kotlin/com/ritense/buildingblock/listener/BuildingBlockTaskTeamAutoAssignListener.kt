@@ -26,6 +26,7 @@ import com.ritense.document.event.DocumentUnassignedEvent
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamManagementService
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKeys
@@ -108,7 +109,12 @@ class BuildingBlockTaskTeamAutoAssignListener(
     }
 
     private fun getEligibleCaseDocument(documentId: UUID): Document? {
-        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+        val caseDocumentId = try {
+            caseDocumentResolver.resolveCaseDocumentId(documentId)
+        } catch (e: CaseDocumentResolutionException) {
+            logger.debug { "Could not resolve case document for document $documentId: ${e.message}" }
+            return null
+        }
 
         val caseDocument = documentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId))
             .orElse(null)

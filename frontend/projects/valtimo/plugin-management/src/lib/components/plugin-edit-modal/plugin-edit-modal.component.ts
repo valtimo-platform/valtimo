@@ -19,6 +19,7 @@ import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {
+  PLUGIN_EDIT_MODAL_TEST_IDS,
   PluginConfiguration,
   PluginConfigurationData,
   PluginManagementService,
@@ -36,11 +37,14 @@ export class PluginEditModalComponent {
   @Input() public readonly saveNewConfiguration = false;
 
   @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
+  @Output() deleteEvent: EventEmitter<{configurationId: string; configurationTitle: string}> =
+    new EventEmitter();
 
   public readonly inputDisabled$ = this.stateService.inputDisabled$;
   public readonly selectedPluginConfiguration$: Observable<PluginConfiguration> =
     this.stateService.selectedPluginConfiguration$;
   public readonly configurationValid$ = new BehaviorSubject<boolean>(false);
+  public readonly testIds = PLUGIN_EDIT_MODAL_TEST_IDS;
 
   constructor(
     private readonly stateService: PluginManagementStateService,
@@ -52,25 +56,19 @@ export class PluginEditModalComponent {
     this.stateService.saveEdit();
   }
 
+  /**
+   * Bubble the delete request up to the parent so the shared usage pre-check +
+   * destructive-confirmation flow runs in one place (mirrors how the external edit modal works).
+   * The parent closes this modal as part of that flow.
+   */
   public delete(): void {
-    this.stateService.delete();
-    this.stateService.disableInput();
-
     this.stateService.selectedPluginConfiguration$
       .pipe(take(1))
       .subscribe(selectedPluginConfiguration => {
-        this.pluginManagementService
-          .deletePluginConfiguration(selectedPluginConfiguration.id)
-          .subscribe(
-            () => {
-              this.stateService.refresh();
-              this.hide();
-            },
-            () => {
-              this.logger.error('Something went wrong with deleting the plugin configuration.');
-              this.stateService.enableInput();
-            }
-          );
+        this.deleteEvent.emit({
+          configurationId: selectedPluginConfiguration.id,
+          configurationTitle: selectedPluginConfiguration.title ?? '',
+        });
       });
   }
 

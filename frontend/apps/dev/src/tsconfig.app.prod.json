@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    // Release builds deliberately drop the @valtimo/* path mappings from
+    // tsconfig.json. The @valtimo-plugins/* packages installed from npm import
+    // '@valtimo/plugin' (and other libs) as bare specifiers, which the bundler
+    // resolves through node_modules -> the file: links into dist/valtimo/*. If
+    // the app itself kept resolving those libraries to projects/valtimo/*
+    // source, the bundle would end up with two compiled copies of every
+    // library: two InjectionToken instances, two PluginService classes. The
+    // plugin config token the app module provides is then not the one the
+    // plugin packages inject, which fails at runtime with
+    //   NullInjectorError: No provider for InjectionToken
+    //   Provide plugin config; an array of plugin specifications.
+    //
+    // Without the mappings the app resolves @valtimo/* the same way the plugin
+    // packages do, so there is exactly one instance of each library. Local dev
+    // (npm start) is unaffected and keeps using the source mappings.
+    "paths": {
+      "@src": ["apps/dev/src"],
+      "@src/*": ["apps/dev/src/*"],
+      "@e2e/constants": ["../e2e/constants"]
+    }
+  }
+}

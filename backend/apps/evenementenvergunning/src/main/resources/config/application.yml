@@ -194,7 +194,7 @@ valtimo:
         zaakdetails:
             linktozaak:
                 enabled: true
-    imports:
+    import:
         whitelistedPaths:
             - "GZAC_.*"
             - "VALTIMO_.*"

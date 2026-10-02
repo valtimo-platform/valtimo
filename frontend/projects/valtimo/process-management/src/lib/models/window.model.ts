@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ import {ValtimoWindow} from '@valtimo/shared';
 import {ProcessManagementEditorService} from '../services';
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '@valtimo/plugin';
+import {ProcessLinkService} from '@valtimo/process-link';
 
 interface ProcessManagementWindow extends ValtimoWindow {
   processManagementEditorService: ProcessManagementEditorService;
   translateService: TranslateService;
   pluginTranslationService: PluginTranslationService;
+  processLinkService: ProcessLinkService;
 }
 
 export {ProcessManagementWindow};

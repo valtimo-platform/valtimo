@@ -29,12 +29,14 @@ import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto
 import com.ritense.processdocument.event.ProcessVariableInspectionEditedEvent
 import com.ritense.processdocument.service.BuildingBlockProcessLookup
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
 import com.ritense.processdocument.web.rest.dto.JobInspectionDto
 import com.ritense.processdocument.web.rest.dto.ProcessInstanceInspectionDto
 import com.ritense.processdocument.web.rest.dto.TaskInspectionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
 import com.ritense.valtimo.service.OperatonTaskService
@@ -67,6 +69,7 @@ import java.util.UUID
 class ProcessInspectionResource(
     private val documentService: DocumentService,
     private val authorizationService: AuthorizationService,
+    private val caseAccessService: ProcessInstanceCaseAccessService,
     private val processDocumentAssociationService: ProcessDocumentAssociationService,
     private val runtimeService: RuntimeService,
     private val historyService: HistoryService,
@@ -77,6 +80,10 @@ class ProcessInspectionResource(
     private val objectMapper: ObjectMapper,
 ) {
 
+    @EndpointDescription(
+        en = "Get case process inspection",
+        nl = "Procesinspectie van dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/processes")
     fun getProcessInspection(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID
@@ -96,6 +103,10 @@ class ProcessInspectionResource(
         return ResponseEntity.ok(rows)
     }
 
+    @EndpointDescription(
+        en = "Create process instance variable",
+        nl = "Procesvariabele aanmaken",
+    )
     @PostMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables")
     fun createVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -103,7 +114,7 @@ class ProcessInspectionResource(
         @RequestBody @Valid request: ProcessVariableMutationRequest,
     ): ResponseEntity<Void> {
         loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
-        requireBelongsToCase(caseId, processInstanceId)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
         requireActive(processInstanceId)
 
         val existing = runWithoutAuthorization {
@@ -129,6 +140,10 @@ class ProcessInspectionResource(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @EndpointDescription(
+        en = "Update process instance variable",
+        nl = "Procesvariabele bijwerken",
+    )
     @PutMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}")
     fun updateVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -137,7 +152,7 @@ class ProcessInspectionResource(
         @RequestBody @Valid request: ProcessVariableMutationRequest,
     ): ResponseEntity<Void> {
         loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
-        requireBelongsToCase(caseId, processInstanceId)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
         requireActive(processInstanceId)
 
         val previousInstance = runWithoutAuthorization {
@@ -161,6 +176,10 @@ class ProcessInspectionResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete process instance variable",
+        nl = "Procesvariabele verwijderen",
+    )
     @DeleteMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}")
     fun deleteVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -168,7 +187,7 @@ class ProcessInspectionResource(
         @PathVariable name: String,
     ): ResponseEntity<Void> {
         loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT_MODIFY)
-        requireBelongsToCase(caseId, processInstanceId)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
         requireActive(processInstanceId)
 
         val previousInstance = runWithoutAuthorization {
@@ -209,21 +228,6 @@ class ProcessInspectionResource(
         )
 
         return document
-    }
-
-    private fun requireBelongsToCase(caseId: UUID, processInstanceId: String) {
-        val belongs = runWithoutAuthorization {
-            processDocumentAssociationService.findProcessDocumentInstanceDtos(
-                JsonSchemaDocumentId.existingId(caseId)
-            )
-        }.any { (it as ProcessDocumentInstanceDto).processDocumentInstanceId().processInstanceId().toString() == processInstanceId }
-
-        if (!belongs) {
-            throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Process instance $processInstanceId is not associated with case $caseId"
-            )
-        }
     }
 
     private fun findVariableInstance(processInstanceId: String, name: String) =

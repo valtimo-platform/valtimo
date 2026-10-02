@@ -165,6 +165,8 @@ abstract class BaseOpenSearchIntegrationTest {
                 mutableListOf(JsonSchemaDocumentActionProvider.ASSIGNABLE), ConditionContainer(emptyList()), role!!),
             Permission(UUID.randomUUID(), com.ritense.document.domain.impl.JsonSchemaDocument::class.java,
                 mutableListOf(JsonSchemaDocumentActionProvider.DELETE), ConditionContainer(emptyList()), role!!),
+            Permission(UUID.randomUUID(), com.ritense.document.domain.impl.JsonSchemaDocument::class.java,
+                mutableListOf(JsonSchemaDocumentActionProvider.EXPORT), ConditionContainer(emptyList()), role!!),
             Permission(UUID.randomUUID(), SearchField::class.java,
                 mutableListOf(SearchFieldActionProvider.VIEW_LIST), ConditionContainer(emptyList()), role!!),
             Permission(UUID.randomUUID(), JsonSchemaDocumentDefinition::class.java,

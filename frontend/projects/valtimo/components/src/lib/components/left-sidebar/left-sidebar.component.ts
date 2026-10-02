@@ -23,7 +23,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {Router} from '@angular/router';
-import {MenuItem, ConfigService} from '@valtimo/shared';
+import {ConfigService, MenuItem} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 
@@ -98,11 +98,27 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     this._menuCollapsedByDefaultSubscription?.unsubscribe();
   }
 
+  /**
+   * Keeps menu item views stable across menu reloads, so that the expanded state of
+   * `cds-sidenav-menu` (which is internal to the Carbon component) survives a reload.
+   * Keyed on the link, since titles are not guaranteed to be unique.
+   */
+  public trackByMenuItem(_index: number, menuItem: MenuItem): string {
+    return Array.isArray(menuItem.link) ? menuItem.link.join('/') : menuItem.title;
+  }
+
   public navigateToRoute(route: Array<string>, event: MouseEvent): void {
     event.preventDefault();
     this.overflowMenuSequence$.next('');
 
     if (!event.ctrlKey && !event.metaKey) {
+      // Custom links may point to an external/absolute URL, which the Angular router cannot
+      // resolve — open those in a new tab instead of attempting (and failing) an internal navigation.
+      if (this.isExternalLink(route)) {
+        window.open(route[0], '_blank', 'noopener');
+        return;
+      }
+
       this.router.navigate(route, {queryParams: {}});
 
       combineLatest([
@@ -134,9 +150,20 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   }
 
   public openInNewTab(link: Array<string> | undefined): void {
+    if (this.isExternalLink(link)) {
+      window.open(link![0], '_blank', 'noopener');
+      return;
+    }
+
     const url = this.router.serializeUrl(this.router.createUrlTree(link || ['/']));
 
     window.open(url, '_blank');
+  }
+
+  /** A custom link whose first segment is an absolute/external URL (`http(s)://`, `//`, `mailto:`). */
+  private isExternalLink(link: Array<string> | undefined | null): boolean {
+    const first = link?.[0] ?? '';
+    return /^(https?:)?\/\//i.test(first) || /^mailto:/i.test(first);
   }
 
   private openBreakpointSubscription(): void {

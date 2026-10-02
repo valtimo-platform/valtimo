@@ -167,16 +167,28 @@ export class IkoWidgetPage {
     return key;
   }
 
-  /** Best-effort dismissal of any open wizard / divider modal. */
+  /**
+   * Best-effort dismissal of any open wizard / divider modal.
+   *
+   * Every wait here is explicitly bounded: this runs from `afterEach`, where an unbounded
+   * `click()` blocks until the whole test times out (a click on a button covered by the modal
+   * overlay never resolves), turning a passing test into a failing one. ESC is the fallback
+   * when the cancel button cannot be clicked.
+   */
   async closeAnyOpenModal(): Promise<void> {
+    const openModal = this.page.locator('cds-modal[open]');
+    if ((await openModal.count().catch(() => 0)) === 0) return;
+
     for (const cancel of [this.wizardCancelButton, this.dividerCancelButton]) {
       if (await cancel.isVisible().catch(() => false)) {
-        await cancel.click().catch(() => undefined);
-        await this.page
-          .locator('cds-modal[open]')
-          .waitFor({state: 'hidden', timeout: 5_000})
-          .catch(() => undefined);
+        await cancel.click({timeout: 3_000}).catch(() => undefined);
+        await openModal.first().waitFor({state: 'hidden', timeout: 3_000}).catch(() => undefined);
       }
+    }
+
+    if (await openModal.first().isVisible().catch(() => false)) {
+      await this.page.keyboard.press('Escape').catch(() => undefined);
+      await openModal.first().waitFor({state: 'hidden', timeout: 3_000}).catch(() => undefined);
     }
   }
 

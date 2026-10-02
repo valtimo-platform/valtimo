@@ -69,7 +69,7 @@ jobs:
               ;;
             evenementenvergunning)
               echo "module=evenementenvergunning" >> "$GITHUB_OUTPUT"
-              echo "image_name=gzac-evenementenvergunning-backend" >> "$GITHUB_OUTPUT"
+              echo "image_name=gzac-evenementenvergunning-demo-backend" >> "$GITHUB_OUTPUT"
               echo "tag_kind=production" >> "$GITHUB_OUTPUT"
               ;;
             *)

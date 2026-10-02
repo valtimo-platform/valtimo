@@ -96,7 +96,7 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="StoreZgwActionSummaryTask" name="Bewaar ZGW Samenvatting" camunda:asyncAfter="true" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/zgwActionSummary', 'Omschrijving (BB1): '.concat(valueResolverDelegateService.resolveValue(execution, 'zaak:omschrijving')).concat(' | Toelichting (BB2): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:toelichting')).concat(' | Einddatum (BB3): ').concat(valueResolverDelegateService.resolveValue(execution, 'zaak:einddatumGepland')))}">
       <bpmn:incoming>Flow_SetVerificationDetails_To_StoreZgwSummary</bpmn:incoming>
-      <bpmn:outgoing>Flow_StoreZgwSummary_To_End</bpmn:outgoing>
+      <bpmn:outgoing>Flow_StoreZgwSummary_To_ConfirmDispatch</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_Summary_To_Calculate" sourceRef="GenerateSummaryTask" targetRef="CalculateFinalAmountDmnTask" />
     <bpmn:sequenceFlow id="Flow_Calculate_To_StoreFinalAmount" sourceRef="CalculateFinalAmountDmnTask" targetRef="StoreFinalAmountTask" />
@@ -108,8 +108,12 @@
     <bpmn:sequenceFlow id="Flow_AddTagGoedgekeurd_To_Unassign" sourceRef="AddTagGoedgekeurdTask" targetRef="UnassignTask" />
     <bpmn:sequenceFlow id="Flow_Unassign_To_SetStatusAfgehandeld" sourceRef="UnassignTask" targetRef="SetStatusAfgehandeldTask" />
     <bpmn:sequenceFlow id="Flow_SetStatusAfgehandeld_To_Complete" sourceRef="SetStatusAfgehandeldTask" targetRef="MarkCalculationCompleteTask" />
+    <bpmn:userTask id="ConfirmDispatchTask" name="Bevestig Afhandeling" camunda:candidateGroups="ROLE_USER">
+      <bpmn:incoming>Flow_StoreZgwSummary_To_ConfirmDispatch</bpmn:incoming>
+      <bpmn:outgoing>Flow_ConfirmDispatch_To_End</bpmn:outgoing>
+    </bpmn:userTask>
     <bpmn:endEvent id="EndEvent" name="Berekening Afgerond">
-      <bpmn:incoming>Flow_StoreZgwSummary_To_End</bpmn:incoming>
+      <bpmn:incoming>Flow_ConfirmDispatch_To_End</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_Start_To_SetStatusBerekening" sourceRef="StartEvent" targetRef="SetStatusBerekeningTask" />
     <bpmn:sequenceFlow id="Flow_SetStatusBerekening_To_AddTagPriority" sourceRef="SetStatusBerekeningTask" targetRef="AddTagPriorityTask" />
@@ -121,7 +125,8 @@
     <bpmn:sequenceFlow id="Flow_Complete_To_SetVerificationResult" sourceRef="MarkCalculationCompleteTask" targetRef="SetVerificationResultStatusTask" />
     <bpmn:sequenceFlow id="Flow_SetVerificationResult_To_SetVerificationDetails" sourceRef="SetVerificationResultStatusTask" targetRef="SetVerificationResultDetailsTask" />
     <bpmn:sequenceFlow id="Flow_SetVerificationDetails_To_StoreZgwSummary" sourceRef="SetVerificationResultDetailsTask" targetRef="StoreZgwActionSummaryTask" />
-    <bpmn:sequenceFlow id="Flow_StoreZgwSummary_To_End" sourceRef="StoreZgwActionSummaryTask" targetRef="EndEvent" />
+    <bpmn:sequenceFlow id="Flow_StoreZgwSummary_To_ConfirmDispatch" sourceRef="StoreZgwActionSummaryTask" targetRef="ConfirmDispatchTask" />
+    <bpmn:sequenceFlow id="Flow_ConfirmDispatch_To_End" sourceRef="ConfirmDispatchTask" targetRef="EndEvent" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_SubsidyCalculator">
@@ -215,10 +220,14 @@
         <dc:Bounds x="2760" y="137" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ConfirmDispatchTask_di" bpmnElement="ConfirmDispatchTask">
+        <dc:Bounds x="2890" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="2922" y="159" width="36" height="36" />
+        <dc:Bounds x="3060" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2902" y="202" width="77" height="27" />
+          <dc:Bounds x="3040" y="202" width="77" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_Start_To_SetStatusBerekening_di" bpmnElement="Flow_Start_To_SetStatusBerekening">
@@ -301,9 +310,13 @@
         <di:waypoint x="2730" y="177" />
         <di:waypoint x="2760" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_End_di" bpmnElement="Flow_StoreZgwSummary_To_End">
+      <bpmndi:BPMNEdge id="Flow_StoreZgwSummary_To_ConfirmDispatch_di" bpmnElement="Flow_StoreZgwSummary_To_ConfirmDispatch">
         <di:waypoint x="2860" y="177" />
-        <di:waypoint x="2922" y="177" />
+        <di:waypoint x="2890" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ConfirmDispatch_To_End_di" bpmnElement="Flow_ConfirmDispatch_To_End">
+        <di:waypoint x="2990" y="177" />
+        <di:waypoint x="3060" y="177" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

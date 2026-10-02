@@ -34,6 +34,7 @@
     <v-form (valueChange)="onFormValueChanged($event)">
       <v-input
         name="rsin"
+        [attr.data-test-id]="testIds.rsin"
         [title]="'rsin' | pluginTranslate: pluginId | async"
         [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
         [defaultValue]="obs.prefill?.rsin"
@@ -59,6 +60,7 @@
       <v-input
         *ngIf="obs.selectedInputOption === 'text'"
         name="zaaktypeUrl"
+        [attr.data-test-id]="testIds.zaaktypeUrl"
         [title]="'zaakTypeUrl' | pluginTranslate: pluginId | async"
         [tooltip]="'zaakTypeTooltip' | pluginTranslate: pluginId | async"
         [defaultValue]="obs.prefill?.zaaktypeUrl"

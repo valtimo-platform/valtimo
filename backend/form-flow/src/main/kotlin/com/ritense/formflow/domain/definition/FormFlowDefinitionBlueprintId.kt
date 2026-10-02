@@ -16,6 +16,7 @@
 
 package com.ritense.formflow.domain.definition
 
+import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.BlueprintOwner
 import com.ritense.valtimo.contract.blueprint.BlueprintOwnerHelper
 import com.ritense.valtimo.contract.blueprint.BlueprintType
@@ -67,6 +68,20 @@ class FormFlowDefinitionBlueprintId(
             return BlueprintOwnerHelper.createForBuildingBlock(buildingBlockDefinitionId) { type, key, version ->
                 FormFlowDefinitionBlueprintId(type, key, version)
             }
+        }
+
+        /**
+         * The single place that dispatches on the concrete blueprint type, so callers can work with a
+         * [BlueprintId] instead of repeating a `when` over [CaseDefinitionId] / [BuildingBlockDefinitionId].
+         */
+        @JvmStatic
+        fun of(blueprintId: BlueprintId): FormFlowDefinitionBlueprintId = when (blueprintId) {
+            is CaseDefinitionId -> forCase(blueprintId)
+            is BuildingBlockDefinitionId -> forBuildingBlock(blueprintId)
+            else -> throw IllegalArgumentException(
+                "Cannot derive a form flow blueprint id from '${blueprintId::class.simpleName}'; " +
+                    "expected a case or building block definition id"
+            )
         }
     }
 }

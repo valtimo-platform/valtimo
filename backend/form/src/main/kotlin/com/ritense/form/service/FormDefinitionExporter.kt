@@ -34,7 +34,12 @@ class FormDefinitionExporter(
     override fun export(request: FormDefinitionExportRequest): ExportResult {
         val formDefinition =
             formDefinitionService.getFormDefinitionByName(request.formDefinitionName, request.caseDefinitionId)
-                .orElseThrow()
+                .orElseThrow {
+                    NoSuchElementException(
+                        "Form definition with name '${request.formDefinitionName}' " +
+                            "not found for case definition '${request.caseDefinitionId}'"
+                    )
+                }
 
         val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
             "${it.major}-${it.minor}-${it.patch}"

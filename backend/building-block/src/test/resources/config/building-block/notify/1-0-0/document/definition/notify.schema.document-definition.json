@@ -1,0 +1,12 @@
+{
+    "$id": "notify.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Notify",
+    "type": "object",
+    "properties": {
+        "notificationText": {
+            "type": "string",
+            "description": "Text of the notification"
+        }
+    }
+}

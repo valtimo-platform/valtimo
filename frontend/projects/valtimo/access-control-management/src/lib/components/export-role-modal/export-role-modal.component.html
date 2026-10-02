@@ -31,13 +31,23 @@
 
   <section cdsModalContent [cdsLayer]="1">
     <div class="export-buttons">
-      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('unified')">
+      <button
+        [disabled]="disabled"
+        cdsButton="secondary"
+        [attr.data-test-id]="testIds.exportModalSingleFile"
+        (click)="selectType('unified')"
+      >
         {{ 'accessControl.roles.singleExport' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="document" size="16"></svg>
       </button>
 
-      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('separate')">
+      <button
+        [disabled]="disabled"
+        cdsButton="secondary"
+        [attr.data-test-id]="testIds.exportModalSeparateFiles"
+        (click)="selectType('separate')"
+      >
         {{ 'accessControl.roles.multipleExport' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="copy--file" size="16"></svg>
@@ -53,6 +63,7 @@
     <button
       [disabled]="!vars.selectedType || disabled"
       cdsButton="primary"
+      [attr.data-test-id]="testIds.exportModalConfirmButton"
       (click)="onConfirm(vars.selectedType)"
     >
       {{ vars.title }}

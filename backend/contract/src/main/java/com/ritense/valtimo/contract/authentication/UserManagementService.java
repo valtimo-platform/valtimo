@@ -52,10 +52,26 @@ public interface UserManagementService {
 
     Optional<ManageableUser> findByEmail(String email);
 
+    /**
+     * Looks up a user by username.
+     *
+     * @param username the username to look up
+     * @return the user, or {@code null} when no (enabled) user exists with this username. Callers that only need
+     *     the user to render or log a display name should handle {@code null} gracefully, since a user may have
+     *     been removed from the identity provider while it is still referenced by Valtimo data.
+     */
     default ManageableUser findByUsername(String username) {
         throw new NotImplementedException("Failed to get current user because method is not implemented.");
     }
 
+    /**
+     * Looks up a user by its identity provider ID.
+     *
+     * @param userId the ID to look up
+     * @return the user, or {@code null} when no (enabled) user exists with this ID. Callers that only need
+     *     the user to render or log a display name should handle {@code null} gracefully, since a user may have
+     *     been removed from the identity provider while it is still referenced by Valtimo data.
+     */
     ManageableUser findById(String userId);
 
     List<ManageableUser> findByRole(String authority);

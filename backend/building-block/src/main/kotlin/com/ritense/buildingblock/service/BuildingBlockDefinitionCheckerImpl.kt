@@ -89,8 +89,10 @@ class BuildingBlockDefinitionCheckerImpl(
     }
 
     private fun isDraftEnvironment(): Boolean {
-        return draftsEnabled || draftEnvironments.split(',').any { draftEnvironment ->
-            environment.activeProfiles.any { it == draftEnvironment }
+        if (draftsEnabled) {
+            return true
         }
+        val draftProfiles = draftEnvironments.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+        return draftProfiles.isNotEmpty() && environment.matchesProfiles(*draftProfiles.toTypedArray())
     }
 }

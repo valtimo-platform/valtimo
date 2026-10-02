@@ -16,21 +16,32 @@
 
 package com.ritense.processdocument.service
 
+import com.ritense.valtimo.contract.annotation.ProcessBean
+import com.ritense.valtimo.contract.annotation.ProcessBeanMethod
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valueresolver.ValueResolverService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.stereotype.Service
 
+@ProcessBean(description = "Resolves and sets values using value resolver keys")
 @Service
 @SkipComponentScan
 class ValueResolverDelegateService(
     private val valueResolverService: ValueResolverService,
 ) {
 
+    @ProcessBeanMethod(
+        description = "Resolves a value using a value resolver key",
+        example = "\${valueResolverDelegateService.resolveValue(execution, 'doc:/customer/name')}"
+    )
     fun resolveValue(execution: DelegateExecution, key: String): Any? {
         return valueResolverService.resolveValues(execution.processInstanceId, execution, listOf(key))[key]
     }
 
+    @ProcessBeanMethod(
+        description = "Sets a value using a value resolver key",
+        example = "\${valueResolverDelegateService.handleValue(execution, 'doc:/customer/name', 'John')}"
+    )
     fun handleValue(execution: DelegateExecution, key: String, value: Any?) {
         valueResolverService.handleValues(execution.processInstanceId, execution, mapOf(key to value))
     }

@@ -25,6 +25,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
@@ -43,6 +44,10 @@ class CaseHeaderWidgetResource(
     private val caseWidgetService: CaseWidgetService
 ) {
 
+    @EndpointDescription(
+        en = "Get case header widget",
+        nl = "Dossierheaderwidget ophalen",
+    )
     @GetMapping("/v1/case/{documentId}/header-widget")
     fun getCaseHeaderWidget(
         @PathVariable documentId: String
@@ -61,6 +66,10 @@ class CaseHeaderWidgetResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Get case header widget data",
+        nl = "Gegevens van dossierheaderwidget ophalen",
+    )
     @GetMapping("/v1/case/{documentId}/header-widget/data")
     fun getCaseHeaderWidgetData(
         @PathVariable documentId: UUID,

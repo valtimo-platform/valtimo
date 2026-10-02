@@ -17,6 +17,9 @@
 package com.ritense.processlink.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.exporter.manifest.ArtifactDependency
+import com.ritense.exporter.manifest.DependencyType
+import com.ritense.exporter.manifest.ResolvableValue
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.TestProcessLink.Companion.PROCESS_LINK_TYPE_TEST
@@ -119,5 +122,19 @@ class TestProcessLinkMapper(
         return setOf(CustomProcessLinkNestedExportRequest())
     }
 
+    override fun toManifestDependencies(processLink: ProcessLink): Set<ArtifactDependency> {
+        return setOf(
+            ArtifactDependency(
+                type = DependencyType.PLUGIN,
+                key = ResolvableValue.of(TEST_DEPENDENCY_KEY),
+                title = ResolvableValue.of("Test Plugin"),
+            )
+        )
+    }
+
     override fun getImporterType() = PROCESS_LINK_TYPE_TEST
+
+    companion object {
+        const val TEST_DEPENDENCY_KEY = "test-plugin"
+    }
 }

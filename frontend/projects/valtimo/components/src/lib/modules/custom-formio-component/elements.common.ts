@@ -28,6 +28,11 @@ export interface FormioCustomComponentInfo extends BuilderInfo {
   template?: string;
   changeEvent?: string; // Default: valueChange
   editForm?: () => {components: ExtendedComponentSchema[]};
+  /**
+   * Validates the value within form.io itself. Returns an error message to reject the value, or
+   * null to accept it. Empty values are not passed in; use the `required` validation for those.
+   */
+  customValidator?: (value: any) => string | null;
 }
 
 export type FormioCustomElement = NgElement &

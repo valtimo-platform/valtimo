@@ -47,11 +47,18 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
 
     lateinit var server: MockWebServer
 
+    // Derived from the mock server's actual (randomly assigned) address so the test does not depend on a fixed port.
+    private val zakenApiUrl get() = server.url(ZAKEN_API_PATH).toString()
+    private val catalogiApiUrl get() = server.url(CATALOGI_API_PATH).toString()
+
     @BeforeEach
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
+        server.start()
+
+        setPluginConfigurationUrl(ZAKEN_API_PLUGIN_ID, server.url("$ZAKEN_API_PATH/").toString())
+        setPluginConfigurationUrl(CATALOGI_API_PLUGIN_ID, server.url("$CATALOGI_API_PATH/").toString())
     }
 
     @AfterEach
@@ -74,10 +81,10 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
 
             // Create zaak instance link so the resolver can find the zaak URL
             zaakInstanceLinkService.createZaakInstanceLink(
-                URI("$ZAKEN_API_URL/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
+                URI("$zakenApiUrl/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 java.util.UUID.fromString("57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 documentId,
-                URI("$CATALOGI_API_URL/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002")
+                URI("$catalogiApiUrl/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002")
             )
 
             val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-with-zaakresultaat-fields", caseDefinitionId).get()
@@ -114,13 +121,13 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
     private fun getZaakRequest(): MockResponse {
         val body = """
             {
-                "url": "${ZAKEN_API_URL}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+                "url": "${zakenApiUrl}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "uuid": "a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "identificatie": "ZK2023-00001",
                 "bronorganisatie": "104978119",
                 "omschrijving": "Test",
                 "toelichting": "",
-                "zaaktype": "${CATALOGI_API_URL}/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002",
+                "zaaktype": "${catalogiApiUrl}/zaaktypen/e02753ba-9055-11ee-b9d1-0242ac120002",
                 "registratiedatum": "2023-03-22",
                 "verantwoordelijkeOrganisatie": "104978119",
                 "startdatum": "2023-03-22",
@@ -146,14 +153,14 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
                 "relevanteAndereZaken": [],
                 "eigenschappen": [],
                 "rollen": [],
-                "status": "${ZAKEN_API_URL}/zaken/statussen/f0ca7629-115d-4231-b684-7eaa130ac1af",
+                "status": "${zakenApiUrl}/zaken/statussen/f0ca7629-115d-4231-b684-7eaa130ac1af",
                 "zaakinformatieobjecten": [],
                 "zaakobjecten": [],
                 "kenmerken": [],
                 "archiefnominatie": "blijvend_bewaren",
                 "archiefstatus": "nog_te_archiveren",
                 "archiefactiedatum": null,
-                "resultaat": "${ZAKEN_API_URL}/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
+                "resultaat": "${zakenApiUrl}/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
                 "opdrachtgevendeOrganisatie": "",
                 "processobjectaard": "",
                 "resultaattoelichting": "",
@@ -166,10 +173,10 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
     private fun getZaakResultaatRequest(): MockResponse {
         val body = """
         {
-            "url": "${ZAKEN_API_URL}/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
+            "url": "${zakenApiUrl}/zaken/resultaten/2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
             "uuid": "2a43ac32-0c7e-45ac-bca5-7621d952ccf9",
-            "zaak": "${ZAKEN_API_URL}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
-            "resultaattype": "${CATALOGI_API_URL}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
+            "zaak": "${zakenApiUrl}/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+            "resultaattype": "${catalogiApiUrl}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
             "toelichting": "Toelichting"
         }
         """.trimIndent()
@@ -179,10 +186,10 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
     private fun getResultaatTypeRequest(): MockResponse {
         val body = """
         {
-            "url": "${CATALOGI_API_URL}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
+            "url": "${catalogiApiUrl}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
             "omschrijving": "Toegekend",
-            "resultaattypeomschrijving": "${CATALOGI_API_URL}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
-            "zaaktype": "${CATALOGI_API_URL}/zaaktypen/01afac88-36e0-466b-b233-b8e2301c57e2",
+            "resultaattypeomschrijving": "${catalogiApiUrl}/resultaattypen/82576fa3-0832-4301-8744-f72fc49f6381",
+            "zaaktype": "${catalogiApiUrl}/zaaktypen/01afac88-36e0-466b-b233-b8e2301c57e2",
             "selectielijstklasse": ""
         }
         """.trimIndent()
@@ -191,8 +198,8 @@ class ZaakResultaatValueResolverValueIT @Autowired constructor(
 
     companion object {
         private const val CATALOGI_API_PATH = "/catalogi/api/v1"
-        private const val CATALOGI_API_URL = "http://localhost:56273$CATALOGI_API_PATH"
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
+        private const val ZAKEN_API_PLUGIN_ID = "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
+        private const val CATALOGI_API_PLUGIN_ID = "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec"
     }
 }

@@ -1,0 +1,16 @@
+{
+    "$id": "case-notification.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Case notification",
+    "type": "object",
+    "properties": {
+        "subject": {
+            "type": "string",
+            "description": "Subject copied from the case by the input mapping of the case definition link"
+        },
+        "handledBy": {
+            "type": "string",
+            "description": "Who acknowledged the notification"
+        }
+    }
+}

@@ -22,6 +22,13 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {WidgetModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
+import {
+  ButtonModule,
+  ComboBoxModule,
+  NotificationModule,
+  StructuredListModule,
+  TagModule,
+} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [MigrationComponent, MigrationProcessDiagramComponent],
@@ -32,6 +39,11 @@ import {TranslateModule} from '@ngx-translate/core';
     WidgetModule,
     FormsModule,
     TranslateModule,
+    ButtonModule,
+    ComboBoxModule,
+    NotificationModule,
+    StructuredListModule,
+    TagModule,
   ],
   exports: [MigrationComponent],
 })

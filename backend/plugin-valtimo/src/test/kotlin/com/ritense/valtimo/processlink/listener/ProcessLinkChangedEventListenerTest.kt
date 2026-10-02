@@ -19,6 +19,8 @@ package com.ritense.valtimo.processlink.listener
 import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkDeletedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
+import com.ritense.processlink.event.ProcessLinksDeployedEvent
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
@@ -26,7 +28,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -40,7 +45,7 @@ class ProcessLinkChangedEventListenerTest {
 
     @BeforeEach
     fun before() {
-        listener = ProcessLinkChangedEventListener(pluginConfigurationMappingResolver)
+        listener = ProcessLinkChangedEventListener(listOf(pluginConfigurationMappingResolver))
     }
 
     @Test
@@ -65,6 +70,43 @@ class ProcessLinkChangedEventListenerTest {
     }
 
     @Test
+    fun `ignores a created event whose recheck is deferred`() {
+        listener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1", true))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForProcessDefinition(any())
+    }
+
+    @Test
+    fun `ignores an updated event whose recheck is deferred`() {
+        listener.onProcessLinkUpdated(ProcessLinkUpdatedEvent("plugin", "pd-1", true))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForProcessDefinition(any())
+    }
+
+    @Test
+    fun `ignores a deleted event whose recheck is deferred`() {
+        listener.onProcessLinkDeleted(ProcessLinkDeletedEvent("plugin", "pd-1", true))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForProcessDefinition(any())
+    }
+
+    @Test
+    fun `rechecks the case definition on process links deployed`() {
+        val caseDefinitionId = CaseDefinitionId("my-case", "1.0.0")
+
+        listener.onProcessLinksDeployed(ProcessLinksDeployedEvent("pd-1", caseDefinitionId))
+
+        verify(pluginConfigurationMappingResolver).recheckIssuesForCaseDefinition(caseDefinitionId)
+    }
+
+    @Test
+    fun `ignores process links deployed without a case definition blueprint`() {
+        listener.onProcessLinksDeployed(ProcessLinksDeployedEvent("pd-1", null))
+
+        verify(pluginConfigurationMappingResolver, never()).recheckIssuesForCaseDefinition(any())
+    }
+
+    @Test
     fun `swallows exceptions from the resolver`() {
         doThrow(RuntimeException("boom"))
             .whenever(pluginConfigurationMappingResolver)
@@ -72,5 +114,21 @@ class ProcessLinkChangedEventListenerTest {
 
         assertThatCode { listener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1")) }
             .doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `delegates to every registered resolver, one throwing does not block the others`() {
+        val secondResolver: PluginConfigurationMappingResolver = mock()
+        doThrow(RuntimeException("boom"))
+            .whenever(pluginConfigurationMappingResolver)
+            .recheckIssuesForProcessDefinition("pd-1")
+        val multiResolverListener =
+            ProcessLinkChangedEventListener(listOf(pluginConfigurationMappingResolver, secondResolver))
+
+        assertThatCode { multiResolverListener.onProcessLinkCreated(ProcessLinkCreatedEvent("plugin", "pd-1")) }
+            .doesNotThrowAnyException()
+
+        verify(pluginConfigurationMappingResolver).recheckIssuesForProcessDefinition("pd-1")
+        verify(secondResolver).recheckIssuesForProcessDefinition("pd-1")
     }
 }

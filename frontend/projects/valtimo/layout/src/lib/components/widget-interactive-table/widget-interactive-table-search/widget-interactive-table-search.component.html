@@ -141,6 +141,7 @@
             [clear$]="clear$"
             [enableTime]="false"
             [showFieldLabel]="false"
+            valueFormat="iso"
             (valueChange)="singleValueChange(filter.key, $event)"
           ></valtimo-date-time-picker>
         }
@@ -151,6 +152,7 @@
               [clear$]="clear$"
               [enableTime]="false"
               [showFieldLabel]="false"
+              valueFormat="iso"
               (valueChange)="singleValueChange(filter.key + '_start', $event)"
             ></valtimo-date-time-picker>
 
@@ -163,6 +165,7 @@
               [clear$]="clear$"
               [enableTime]="false"
               [showFieldLabel]="false"
+              valueFormat="iso"
               (valueChange)="singleValueChange(filter.key + '_end', $event)"
             ></valtimo-date-time-picker>
           </div>
@@ -173,6 +176,7 @@
             [clear$]="clear$"
             [enableTime]="true"
             [showFieldLabel]="false"
+            valueFormat="iso"
             (valueChange)="singleValueChange(filter.key, $event)"
           ></valtimo-date-time-picker>
         }
@@ -183,6 +187,7 @@
               [clear$]="clear$"
               [enableTime]="true"
               [showFieldLabel]="false"
+              valueFormat="iso"
               (valueChange)="singleValueChange(filter.key + '_start', $event)"
             ></valtimo-date-time-picker>
 
@@ -195,6 +200,7 @@
               [clear$]="clear$"
               [enableTime]="true"
               [showFieldLabel]="false"
+              valueFormat="iso"
               (valueChange)="singleValueChange(filter.key + '_end', $event)"
             ></valtimo-date-time-picker>
           </div>

@@ -126,6 +126,10 @@ export class ChoiceFieldManagementPage {
   // ─── Choice Field Value Actions ───────────────────────────────────
 
   async createChoiceFieldValue(name: string, value: string, sortOrder: string) {
+    // The toolbar button renders with the value list. Waiting for it explicitly turns a slow
+    // render into a clear assertion instead of a click that silently blocks until the test
+    // times out (which is how this failed on the nightly environment).
+    await expect(this.createValueButton).toBeVisible({timeout: 15_000});
     await this.createValueButton.click();
     await expect(this.nameInput).toBeVisible();
 

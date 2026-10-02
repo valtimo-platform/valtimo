@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
 import {Injectable, Signal, signal} from '@angular/core';
 import {
   BaseApiService,
   BuildingBlockProcessDefinitionWithLinksDto,
   ConfigService,
+  InterceptorSkip,
+  InterceptorSkipHeader,
   ManagementContext,
 } from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
@@ -27,6 +29,8 @@ import {toObservable} from '@angular/core/rxjs-interop';
 
 import {
   PROCESS_MANAGEMENT_ENDPOINTS,
+  ProcessDefinitionImportPreview,
+  ProcessDefinitionImportResult,
   ProcessDefinitionResult,
   ProcessDefinitionValidateRequest,
   ProcessDefinitionValidationResult,
@@ -165,6 +169,41 @@ export class ProcessManagementService extends BaseApiService {
         `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process/${processDefinitionId}/properties`
       ),
       body
+    );
+  }
+
+  public exportProcessDefinition(processDefinitionId: string): Observable<HttpResponse<Blob>> {
+    return this.httpClient.get<Blob>(
+      this.getApiUrl(`/management/v1/process-definition/${processDefinitionId}/export`),
+      {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
+    );
+  }
+
+  public previewProcessDefinitionImport(
+    file: FormData
+  ): Observable<ProcessDefinitionImportPreview> {
+    return this.httpClient.post<ProcessDefinitionImportPreview>(
+      this.getApiUrl('/management/v1/process-definition/import/preview'),
+      file,
+      {headers: new HttpHeaders().set(InterceptorSkip, '400')}
+    );
+  }
+
+  public importProcessDefinition(
+    file: FormData,
+    pluginConfigurationMappings?: Record<string, string | null>
+  ): Observable<ProcessDefinitionImportResult> {
+    if (pluginConfigurationMappings) {
+      file.set(
+        'pluginConfigurationMappings',
+        new Blob([JSON.stringify(pluginConfigurationMappings)], {type: 'application/json'})
+      );
+    }
+
+    return this.httpClient.post<ProcessDefinitionImportResult>(
+      this.getApiUrl('/management/v1/process-definition/import'),
+      file,
+      {headers: new HttpHeaders().set(InterceptorSkip, '400')}
     );
   }
 

@@ -31,7 +31,9 @@ import jakarta.persistence.Embeddable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import org.everit.json.schema.ReadWriteContext;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.Validator;
@@ -54,6 +56,12 @@ public final class JsonSchema {
     private static final Validator VALIDATOR = Validator.builder()
         .readWriteContext(ReadWriteContext.WRITE)
         .build();
+
+    @Transient
+    private static final Map<String, Schema> BUILT_SCHEMAS = new ConcurrentHashMap<>();
+
+    @Transient
+    private static final int MAX_BUILT_SCHEMAS = 100;
 
     @Type(value = JsonType.class)
     @Column(name = "json_schema", columnDefinition = "json")
@@ -105,6 +113,17 @@ public final class JsonSchema {
 
     @JsonIgnore
     public Schema getSchema() {
+        final Schema cached = BUILT_SCHEMAS.get(schema);
+        if (cached != null) {
+            return cached;
+        }
+        if (BUILT_SCHEMAS.size() >= MAX_BUILT_SCHEMAS) {
+            BUILT_SCHEMAS.clear();
+        }
+        return BUILT_SCHEMAS.computeIfAbsent(schema, ignored -> buildSchema());
+    }
+
+    private Schema buildSchema() {
         final SchemaLoader schemaLoader = getSchemaLoaderBuilder()
             .schemaJson(new JSONObject(new JSONTokener(schema)))
             .build();

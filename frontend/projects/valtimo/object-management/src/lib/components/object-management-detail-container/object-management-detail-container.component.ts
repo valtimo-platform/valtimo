@@ -24,6 +24,7 @@ import {ObjectManagementService} from '../../services/object-management.service'
 import {ObjectManagementStateService} from '../../services/object-management-state.service';
 import {PageTitleService} from '@valtimo/components';
 import {tap} from 'rxjs/operators';
+import {OBJECT_MANAGEMENT_DETAIL_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -32,6 +33,8 @@ import {tap} from 'rxjs/operators';
   styleUrls: ['./object-management-detail-container.component.css'],
 })
 export class ObjectManagementDetailContainerComponent implements OnInit, OnDestroy {
+  protected readonly testIds = OBJECT_MANAGEMENT_DETAIL_TEST_IDS;
+
   public currentTab: TabEnum;
   public readonly caseListColumn$ =
     this.configService.getFeatureToggleObservable('caseListColumn', true);

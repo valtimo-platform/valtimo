@@ -53,7 +53,7 @@ export class DonutDisplayComponent implements DisplayComponent {
       map(currentTheme => ({
         resizable: true,
         toolbar: {enabled: false},
-        height: '300px',
+        height: '100%',
         theme: currentTheme,
         donut: {
           alignment: 'center',

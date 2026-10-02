@@ -40,7 +40,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -78,16 +78,12 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/components-jqueryui/jquery-ui.min.js",
               "node_modules/popper.js/dist/umd/popper.js",
               "node_modules/bootstrap/dist/js/bootstrap.js",
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
-              "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/dev/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -105,6 +101,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/dev/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/dev/src/environments/environment.ts",
@@ -126,20 +123,26 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "11mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
+              "namedChunks": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "11mb",
+                  "maximumError": "13mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -234,7 +237,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -272,16 +275,12 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/components-jqueryui/jquery-ui.min.js",
               "node_modules/popper.js/dist/umd/popper.js",
               "node_modules/bootstrap/dist/js/bootstrap.js",
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
-              "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/gzac/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -299,6 +298,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/gzac/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/gzac/src/environments/environment.ts",
@@ -316,20 +316,26 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "11mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
+              "namedChunks": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "11mb",
+                  "maximumError": "13mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -424,7 +430,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -462,16 +468,12 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/components-jqueryui/jquery-ui.min.js",
               "node_modules/popper.js/dist/umd/popper.js",
               "node_modules/bootstrap/dist/js/bootstrap.js",
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
-              "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/valtimo/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -489,6 +491,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/valtimo/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/valtimo/src/environments/environment.ts",
@@ -502,20 +505,26 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "11mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
+              "namedChunks": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "11mb",
+                  "maximumError": "13mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -610,7 +619,7 @@
                 "output": "./valtimo-translation/core/"
               },
               {
-                "glob": "**/*",
+                "glob": "min/**/*",
                 "input": "node_modules/monaco-editor",
                 "output": "assets/monaco-editor"
               }
@@ -648,16 +657,12 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/components-jqueryui/jquery-ui.min.js",
               "node_modules/popper.js/dist/umd/popper.js",
               "node_modules/bootstrap/dist/js/bootstrap.js",
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
-              "node_modules/select2/dist/js/select2.min.js",
               "node_modules/@valtimo/layout/assets/js/app.js",
-              "apps/evenementenvergunning/src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
-              "node_modules/dmn-js/dist/dmn-modeler.development.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",
@@ -675,6 +680,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "apps/evenementenvergunning/src/tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "apps/evenementenvergunning/src/environments/environment.ts",
@@ -692,20 +698,26 @@
               "extractLicenses": true,
               "budgets": [
                 {
+                  "type": "initial",
+                  "maximumWarning": "11mb"
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb"
                 }
               ]
             },
             "test": {
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
+              "namedChunks": false,
               "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "11mb",
+                  "maximumError": "13mb"
                 },
                 {
                   "type": "anyComponentStyle",

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {FormioForm} from '@formio/angular';
 import {
@@ -37,16 +37,23 @@ import {map} from 'rxjs/operators';
   templateUrl: './form-flow.component.html',
   styleUrls: ['./form-flow.component.scss'],
 })
-export class FormFlowComponent implements OnInit, OnDestroy {
+export class FormFlowComponent implements OnDestroy {
   @ViewChild('form') public readonly form: FormioComponent;
 
   @Input() public readonly formIoFormData: BehaviorSubject<any | null> = new BehaviorSubject<any>(
     null
   );
   @Input() public set formFlowInstanceId(value: string | null) {
-    this.formFlowInstanceId$.next(value);
+    if (this.formFlowInstanceId$.getValue() === value) return;
 
-    if (value) this.getBreadcrumbs();
+    this.formFlowInstanceId$.next(value);
+    // Hide the step of the previous instance until the new one has been loaded.
+    this.formFlowStepType$.next(null);
+
+    if (!value) return;
+
+    this.getBreadcrumbs();
+    this.getFormFlowStep();
   }
 
   @Output() public readonly formFlowComplete = new EventEmitter();
@@ -77,10 +84,6 @@ export class FormFlowComponent implements OnInit, OnDestroy {
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
-  }
-
-  public ngOnInit() {
-    this.getFormFlowStep();
   }
 
   public ngOnDestroy(): void {
@@ -189,15 +192,20 @@ export class FormFlowComponent implements OnInit, OnDestroy {
         this.currentStepIndex$.next(breadcrumbs.currentStepIndex);
 
         this.breadcrumbs$.next(
-          breadcrumbs.breadcrumbs.map(breadcrumb => ({
-            label:
-              breadcrumb.title ??
-              this.translateService.instant(`formFlow.step.${breadcrumb.key}.title`) ??
-              breadcrumb.key,
-            disabled: breadcrumb.stepInstanceId === null,
-            complete: breadcrumb.completed,
-            stepInstanceId: breadcrumb.stepInstanceId,
-          }))
+          breadcrumbs.breadcrumbs.map(breadcrumb => {
+            const translationKey = `formFlow.step.${breadcrumb.key}.title`;
+            // instant() returns the key itself when no translation exists
+            const translatedTitle = this.translateService.instant(translationKey);
+
+            return {
+              label:
+                breadcrumb.title ??
+                (translatedTitle !== translationKey ? translatedTitle : breadcrumb.key),
+              disabled: breadcrumb.stepInstanceId === null,
+              complete: breadcrumb.completed,
+              stepInstanceId: breadcrumb.stepInstanceId,
+            };
+          })
         );
 
         if (classElement.length > 0) {

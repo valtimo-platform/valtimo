@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,4 +37,6 @@ public interface ChoiceFieldValueRepository extends JpaRepository<ChoiceFieldVal
     ChoiceFieldValue findTop1ByChoiceField_KeyNameAndValue(@Param("key_name") String choiceFieldName, @Param("value") String value);
 
     List<ChoiceFieldValue> findByChoiceField_IdAndDeprecatedIsFalse(@Param("choice_field_id") Long choiceFieldId);
+
+    Page<ChoiceFieldValue> findByChoiceField_KeyNameAndDeprecatedIsFalse(Pageable pageable, @Param("choice_field_name") String choiceFieldName);
 }

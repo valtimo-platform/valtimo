@@ -19,6 +19,9 @@ import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
+import {ComboBox, ListItem} from 'carbon-components-angular';
+import {MIGRATION_TEST_IDS} from './constants';
 
 @Component({
   standalone: false,
@@ -26,7 +29,7 @@ import {AlertService} from '@valtimo/components';
   templateUrl: './migration.component.html',
   styleUrls: ['./migration.component.scss'],
 })
-export class MigrationComponent implements AfterViewInit, AfterViewInit {
+export class MigrationComponent implements AfterViewInit {
   public processDefinitions: ProcessDefinition[] = [];
   public selectedVersions = {
     source: [],
@@ -57,13 +60,18 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
 
   @ViewChild('sourceDiagram') sourceDiagram: MigrationProcessDiagramComponent;
   @ViewChild('targetDiagram') targetDiagram: MigrationProcessDiagramComponent;
-
+  @ViewChild('sourceVersionCombobox') sourceVersionCombobox: ComboBox;
+  @ViewChild('targetDefinitionComboBox') targetDefinitionComboBox: ComboBox;
+  @ViewChild('targetVersionCombobox') targetVersionCombobox: ComboBox;
   public diagram: any = null;
 
+  protected readonly testIds = MIGRATION_TEST_IDS;
+
   constructor(
-    private processService: ProcessService,
-    private logger: NGXLogger,
-    private alertService: AlertService
+    private readonly processService: ProcessService,
+    private readonly logger: NGXLogger,
+    private readonly alertService: AlertService,
+    private readonly translateService: TranslateService
   ) {}
 
   ngAfterViewInit() {
@@ -78,30 +86,108 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
     return Object.keys(this.taskMapping).length;
   }
 
+  public sourceDefinitionItems: ListItem[] = [];
+  public targetDefinitionItems: ListItem[] = [];
+  public sourceVersionItems: ListItem[] = [];
+  public targetVersionItems: ListItem[] = [];
+  private readonly targetFlowNodeItemsMap = new Map<string, ListItem[]>();
+
+  private refreshDefinitionItems(): void {
+    this.sourceDefinitionItems = this.processDefinitions.map(processDef => ({
+      key: processDef.key,
+      content: processDef.name || processDef.key,
+      selected: this.fields.source.definition === processDef.key,
+    }));
+    this.targetDefinitionItems = this.processDefinitions.map(processDef => ({
+      key: processDef.key,
+      content: processDef.name || processDef.key,
+      selected: this.fields.target.definition === processDef.key,
+    }));
+  }
+
+  private refreshVersionItems(type: string): void {
+    const items = this.selectedVersions[type].map(processVer => ({
+      id: processVer.id,
+      content: `${processVer.version}`,
+      selected: this.fields[type].version === processVer.id,
+    }));
+    if (type === 'source') {
+      this.sourceVersionItems = items;
+    } else {
+      this.targetVersionItems = items;
+    }
+  }
+
   loadProcessDefinitions() {
     this.processService
-      .getProcessDefinitions()
+      .getProcessDefinitions(true)
       .subscribe((processDefinitions: ProcessDefinition[]) => {
         this.processDefinitions = processDefinitions;
+        this.refreshDefinitionItems();
       });
   }
 
-  loadProcessDefinitionVersions(key: string | null, type: string) {
+  public onDefinitionSelected(selection: ListItem | ListItem[], type: string) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    const key = item?.key ?? null;
+
+    this.loadProcessDefinitionVersions(key, type);
+    if (type === 'source') {
+      // Prefilled to the latest version, this screen's usual case; only the user knows the source.
+      this.loadProcessDefinitionVersions(key, 'target', true);
+    }
+  }
+
+  public onVersionSelected(selection: ListItem | ListItem[], type: string) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    this.loadProcess(item?.id ?? null, type);
+  }
+
+  public onSourceDefinitionClear(event: Event): void {
+    this.sourceVersionCombobox.clearInput(event);
+    this.targetDefinitionComboBox.clearInput(event);
+    this.targetVersionCombobox.clearInput(event);
+  }
+
+  public onTaskMappingSelected(selection: ListItem | ListItem[], nodeId: string) {
+    const item = Array.isArray(selection) ? selection[0] : selection;
+    this.taskMapping[nodeId] = item?.id ?? null;
+  }
+
+  loadProcessDefinitionVersions(key: string | null, type: string, selectLatestVersion = false) {
     this.fields[type].definition = key;
     this.selectedVersions[type] = [];
     this.clearProcess(type);
+    this.refreshDefinitionItems();
+    this.refreshVersionItems(type);
     if (key) {
       this.processService
         .getProcessDefinitionVersions(key)
         .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
+          if (this.fields[type].definition !== key) {
+            return;
+          }
           this.selectedVersions[type] = processDefinitionVersions;
+          this.refreshVersionItems(type);
+          if (selectLatestVersion) this.loadProcess(this.latestVersionIdOf(type), type);
         });
     }
+  }
+
+  private latestVersionIdOf(type: string): string | null {
+    return (
+      this.selectedVersions[type].reduce(
+        (latest, processVer) =>
+          !latest || processVer.version > latest.version ? processVer : latest,
+        null
+      )?.id ?? null
+    );
   }
 
   loadProcess(id: string | null, type: string) {
     this.fields[type].version = id;
     this.clearProcess(type);
+    this.refreshVersionItems(type);
     if (id) {
       this.loadProcessDefinitionXML(id, type);
       if (type === 'source') {
@@ -121,6 +207,9 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
 
   loadProcessDefinitionXML(id: string, type: string) {
     this.processService.getProcessDefinitionXml(id).subscribe(xml => {
+      // Guards against the in-flight latest-version load winning the race and leaving migrateProcess()
+      // on a version the user never picked.
+      if (this.fields[type].version !== id) return;
       if (!xml.bpmn20Xml) return;
       this.diagram[type].loadXml(xml['bpmn20Xml']);
       this.selectedId[type] = id;
@@ -157,10 +246,25 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
     });
   }
 
+  public getFilteredTargetFlowNodeMapItems(node): ListItem[] {
+    if (!this.targetFlowNodeItemsMap.has(node.id)) {
+      this.targetFlowNodeItemsMap.set(
+        node.id,
+        this.getFilteredTargetFlowNodeMap(node.$type).map(targetFlowNode => ({
+          id: targetFlowNode.id,
+          content: targetFlowNode.name || targetFlowNode.id,
+          selected: this.taskMapping[node.id] === targetFlowNode.id,
+        }))
+      );
+    }
+    return this.targetFlowNodeItemsMap.get(node.id);
+  }
+
   diagramLoaded(diagramName: string) {
     this.loaded[diagramName] = true;
     if (this.loaded.source && this.loaded.target) {
       this.taskMapping = {};
+      this.targetFlowNodeItemsMap.clear();
       this.setUniqueFlowNodeMap();
     }
   }
@@ -170,7 +274,7 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
       .migrateProcess(this.selectedId.source, this.selectedId.target, this.taskMapping)
       .subscribe(
         res => {
-          this.alertService.success('Process successfully migrated!');
+          this.alertService.success(this.translateService.instant('processMigration.success'));
           this.clearProcess('source');
           this.clearProcess('target');
           this.fields = {
@@ -183,9 +287,12 @@ export class MigrationComponent implements AfterViewInit, AfterViewInit {
               version: null,
             },
           };
+          this.refreshDefinitionItems();
+          this.refreshVersionItems('source');
+          this.refreshVersionItems('target');
         },
         err => {
-          this.alertService.error('Process migration failed!');
+          this.alertService.error(this.translateService.instant('processMigration.failure'));
           this.logger.debug(err);
         }
       );

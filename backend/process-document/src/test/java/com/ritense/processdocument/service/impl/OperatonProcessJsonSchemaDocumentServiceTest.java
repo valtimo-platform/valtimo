@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,7 @@ import com.ritense.processdocument.service.impl.result.StartProcessForDocumentRe
 import com.ritense.processdocument.service.result.StartProcessForDocumentResult;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
@@ -150,6 +152,79 @@ class OperatonProcessJsonSchemaDocumentServiceTest {
             processInstanceId,
             documentUuid,
             "test-name"
+        );
+    }
+
+    @Test
+    void startProcessForDocument_shouldStartTheExactVersionWhenAProcessDefinitionIdIsSupplied() {
+        CaseDefinitionId caseDefinitionId = new CaseDefinitionId("house", "1.0.0");
+        JsonSchemaDocumentDefinitionId documentDefinitionId =
+            JsonSchemaDocumentDefinitionId.existingId("testdef", caseDefinitionId);
+        String processDefinitionId = "test-name:2:cf1b5e21";
+
+        JsonSchemaDocument document = mock(JsonSchemaDocument.class);
+        UUID documentUuid = UUID.randomUUID();
+        JsonSchemaDocumentId id = JsonSchemaDocumentId.existingId(documentUuid);
+        when(document.id()).thenReturn(id);
+        when(document.definitionId()).thenReturn(documentDefinitionId);
+        doReturn(Optional.of(document)).when(documentService).findBy(id);
+
+        ProcessInstance processInstance = mock(ProcessInstance.class);
+        when(processInstance.getId()).thenReturn(UUID.randomUUID().toString());
+        OperatonProcessDefinition processDefinition = mock(OperatonProcessDefinition.class);
+        when(processDefinition.getName()).thenReturn("test-name");
+
+        Map<String, Object> processVars = new HashMap<>();
+        ProcessInstanceWithDefinition processInstanceWithDefinition =
+            new ProcessInstanceWithDefinition(processInstance, processDefinition);
+        when(operatonProcessService.startProcessById(processDefinitionId, documentUuid.toString(), processVars))
+            .thenReturn(processInstanceWithDefinition);
+
+        StartProcessForDocumentResult result = processDocumentService.startProcessForDocument(
+            new StartProcessForDocumentRequest(id, "test-name", processVars)
+                .withProcessDefinitionId(processDefinitionId)
+        );
+
+        assertTrue(result instanceof StartProcessForDocumentResultSucceeded);
+        verify(operatonProcessService).startProcessById(processDefinitionId, documentUuid.toString(), processVars);
+        // Resolving by key cannot tell versions apart, so it must not be consulted at all.
+        verify(operatonProcessService, never()).startProcess(any(), any(), any(), any());
+    }
+
+    @Test
+    void startProcessForDocument_shouldResolveABuildingBlockDocumentByItsBuildingBlockBlueprint() {
+        BuildingBlockDefinitionId buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bezwaar", "1.0.0");
+        JsonSchemaDocumentDefinitionId documentDefinitionId =
+            JsonSchemaDocumentDefinitionId.forBuildingBlock("testdef", buildingBlockDefinitionId);
+
+        JsonSchemaDocument document = mock(JsonSchemaDocument.class);
+        UUID documentUuid = UUID.randomUUID();
+        JsonSchemaDocumentId id = JsonSchemaDocumentId.existingId(documentUuid);
+        when(document.id()).thenReturn(id);
+        when(document.definitionId()).thenReturn(documentDefinitionId);
+        doReturn(Optional.of(document)).when(documentService).findBy(id);
+
+        ProcessInstance processInstance = mock(ProcessInstance.class);
+        when(processInstance.getId()).thenReturn(UUID.randomUUID().toString());
+        OperatonProcessDefinition processDefinition = mock(OperatonProcessDefinition.class);
+        when(processDefinition.getName()).thenReturn("test-name");
+
+        Map<String, Object> processVars = new HashMap<>();
+        ProcessInstanceWithDefinition processInstanceWithDefinition =
+            new ProcessInstanceWithDefinition(processInstance, processDefinition);
+        when(operatonProcessService.startProcess(
+            "test-name", documentUuid.toString(), buildingBlockDefinitionId, processVars
+        )).thenReturn(processInstanceWithDefinition);
+
+        StartProcessForDocumentResult result = processDocumentService.startProcessForDocument(
+            new StartProcessForDocumentRequest(id, "test-name", processVars)
+        );
+
+        assertTrue(result instanceof StartProcessForDocumentResultSucceeded);
+        // Previously the case definition id was passed, which is null for a building block document and
+        // therefore degraded to "latest version of this key".
+        verify(operatonProcessService).startProcess(
+            "test-name", documentUuid.toString(), buildingBlockDefinitionId, processVars
         );
     }
 }

@@ -123,13 +123,13 @@ class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void getUserAsAdmin() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), OK);
+        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), NOT_FOUND);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getUserAsUser() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), OK);
+        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), NOT_FOUND);
     }
 
     @Test

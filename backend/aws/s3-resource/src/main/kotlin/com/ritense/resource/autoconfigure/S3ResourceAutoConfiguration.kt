@@ -35,7 +35,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import java.net.URI
 
 @Configuration
 @AutoConfigureAfter(name = ["com.ritense.resource.autoconfigure.TemporaryResourceStorageAutoConfiguration"])
@@ -47,24 +49,46 @@ class S3ResourceAutoConfiguration {
     @ConditionalOnMissingBean(name = ["s3Presigner"])
     fun s3Presigner(
         @Value("\${aws.s3.bucketRegion}") bucketRegion: String,
+        @Value("\${aws.s3.endpoint:}") endpoint: String,
         awsCredentialsProviderChain: AwsCredentialsProviderChain
     ): S3Presigner {
-        return S3Presigner.builder()
+        val builder = S3Presigner.builder()
             .credentialsProvider(awsCredentialsProviderChain)
             .region(Region.of(bucketRegion))
-            .build()
+
+        // A custom endpoint targets a non-AWS S3-compatible store (e.g. OVHcloud), which
+        // needs path-style addressing. Unset, the presigner uses native AWS (virtual-hosted).
+        if (endpoint.isNotBlank()) {
+            builder
+                .endpointOverride(URI.create(endpoint))
+                .serviceConfiguration(
+                    S3Configuration.builder()
+                        .pathStyleAccessEnabled(true)
+                        .build()
+                )
+        }
+
+        return builder.build()
     }
 
     @Bean
     @ConditionalOnMissingBean(name = ["s3Client"])
     fun s3Client(
         @Value("\${aws.s3.bucketRegion}") bucketRegion: String,
+        @Value("\${aws.s3.endpoint:}") endpoint: String,
         awsCredentialsProviderChain: AwsCredentialsProviderChain
     ): S3Client {
-        return S3Client.builder()
+        val builder = S3Client.builder()
             .credentialsProvider(awsCredentialsProviderChain)
             .region(Region.of(bucketRegion))
-            .build()
+
+        if (endpoint.isNotBlank()) {
+            builder
+                .endpointOverride(URI.create(endpoint))
+                .forcePathStyle(true)
+        }
+
+        return builder.build()
     }
 
     @Bean

@@ -12,8 +12,7 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byBlueprintId
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.maxVersionOf
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byNotLinkedToCaseDefinition
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKeyOfUnlinkedProcess
 import org.springframework.stereotype.Service
 
 @Service
@@ -27,16 +26,13 @@ class ProcessAuthorizationService(
         processDefinitionKey: String,
         document: JsonSchemaDocument? = null,
     ) {
+        // Authorization has to be checked against the definition that will actually be started, so this
+        // mirrors how OperatonProcessService resolves one: by version tag when the document belongs to a
+        // blueprint, and otherwise the latest version of the key among processes without a blueprint.
         val processDefinition = runWithoutAuthorization {
-            operatonRepositoryService.findProcessDefinition(
-                byKey(processDefinitionKey)
-                    .and(byBlueprintId(document?.definitionId()?.caseDefinitionId()))
-            )
-                // Needed by form-view-model
-                ?: operatonRepositoryService.findProcessDefinition(
-                    byKey(processDefinitionKey)
-                        .and(maxVersionOf(byNotLinkedToCaseDefinition()))
-                )
+            document?.definitionId()?.asBlueprintId()?.let {
+                operatonRepositoryService.findProcessDefinition(byKey(processDefinitionKey).and(byBlueprintId(it)))
+            } ?: operatonRepositoryService.findProcessDefinition(byKeyOfUnlinkedProcess(processDefinitionKey))
         }
         require(processDefinition != null)
 

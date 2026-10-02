@@ -229,6 +229,8 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
 
   public searchFieldActionTypeIsAdd: boolean;
 
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
+
   private readonly refreshSearchFields$ = new BehaviorSubject<null>(null);
 
   private readonly searchFields$: Observable<Array<SearchField>> = combineLatest([
@@ -400,6 +402,7 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
       )
       .subscribe(() => {
         this.searchFieldActionTypeIsAdd = searchFieldActionTypeIsAdd;
+        this.usedKeys$.next((this.cachedSearchFields ?? []).map(field => field.key));
         const searchFieldToSelect = this.cachedSearchFields.find(
           field => field.key === searchField.key
         );

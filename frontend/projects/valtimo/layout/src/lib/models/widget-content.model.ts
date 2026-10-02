@@ -86,6 +86,11 @@ interface WidgetCustomContent {
   componentValue: {[key: string]: string};
 }
 
+interface WidgetExternalPluginContent {
+  configurationId: string;
+  bundleKey?: string;
+}
+
 interface WidgetFormioContent {
   formDefinitionName: string;
 }
@@ -187,6 +192,11 @@ interface WidgetImageContent {
   displayAsCarousel?: boolean;
 }
 
+/** Free-form content of a text widget, authored as markdown. */
+interface WidgetTextContent {
+  content: string;
+}
+
 interface WidgetImageItem {
   resourceId: string;
   fileName?: string;
@@ -213,6 +223,7 @@ type WidgetContentProperties =
   | WidgetTableContent
   | WidgetInteractiveTableContent
   | WidgetCustomContent
+  | WidgetExternalPluginContent
   | WidgetFormioContent
   | WidgetCollectionContent
   | WidgetMapContent
@@ -220,11 +231,13 @@ type WidgetContentProperties =
   | WidgetIkoMetrolineContent
   | WidgetPersonCardContent
   | WidgetHighlightContent
-  | WidgetImageContent;
+  | WidgetImageContent
+  | WidgetTextContent;
 
 export {
   WidgetContentProperties,
   WidgetCustomContent,
+  WidgetExternalPluginContent,
   WidgetFieldsContent,
   WidgetFormioContent,
   WidgetTableContent,
@@ -245,6 +258,7 @@ export {
   WidgetImageItem,
   WidgetImageData,
   WidgetImageResolved,
+  WidgetTextContent,
   WidgetPersonCardContent,
   WidgetInteractiveTableEventSearchRequest,
   WidgetFilter,

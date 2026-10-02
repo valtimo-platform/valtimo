@@ -621,7 +621,7 @@ class CaseTaskListSearchService(
         sort: Sort,
         sortTypeMap: Map<String, Class<*>>
     ): List<Order> {
-        return sort.stream()
+        val orders = sort.stream()
             .map { order: Sort.Order ->
                 val expression: Expression<*>
                 val property = order.property
@@ -689,6 +689,9 @@ class CaseTaskListSearchService(
                 if (order.direction.isAscending) cb.asc(expression) else cb.desc(expression)
             }
             .collect(Collectors.toList())
+
+        // Paging is only reproducible when the ORDER BY ends on a unique column, so ties never reshuffle
+        return orders + cb.asc(taskRoot.get<String>("id"))
     }
 
     private fun buildSortTypeMap(caseDefinitionName: String): Map<String, Class<*>> {

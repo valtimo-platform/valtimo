@@ -22,12 +22,16 @@ import com.ritense.case.service.CaseTabService
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.service.CaseWidgetService
+import com.ritense.case_.service.CaseWidgetTabExporter
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.impl.JsonSchemaDocumentService
+import com.ritense.exporter.request.DocumentDefinitionExportRequest
+import com.ritense.exporter.request.FormDefinitionExportRequest
 import com.ritense.form.BaseIntegrationTest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,7 +51,8 @@ class FormIoWidgetIntTest @Autowired constructor(
     private val webApplicationContext: WebApplicationContext,
     private val tabService: CaseTabService,
     private val widgetTabService: CaseWidgetService,
-    private val documentService: JsonSchemaDocumentService
+    private val documentService: JsonSchemaDocumentService,
+    private val caseWidgetTabExporter: CaseWidgetTabExporter
 ) : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
@@ -108,6 +113,21 @@ class FormIoWidgetIntTest @Autowired constructor(
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.display").value("form"))
             .andExpect(jsonPath("$.components").isArray())
+    }
+
+    @Test
+    fun `should export the form definition referenced by a formio widget`(): Unit = runWithoutAuthorization {
+        val caseDefinitionName = "person"
+        val caseDefinitionId = CaseDefinitionId.of(caseDefinitionName, "1.0.0")
+        createCaseWidgetTab(caseDefinitionName, "my-tab", "my-widget")
+
+        val exportResult = caseWidgetTabExporter.export(
+            DocumentDefinitionExportRequest(caseDefinitionName, caseDefinitionId)
+        )
+
+        assertThat(exportResult.relatedRequests).contains(
+            FormDefinitionExportRequest("form-example", caseDefinitionId)
+        )
     }
 
     private fun createCaseWidgetTab(

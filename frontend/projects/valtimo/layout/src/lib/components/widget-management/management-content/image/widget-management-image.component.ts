@@ -29,6 +29,7 @@ import {
   InputLabelModule,
   MdiIconSelectorComponent,
   ValuePathSelectorComponent,
+  ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
@@ -72,6 +73,8 @@ export class WidgetManagementImageComponent implements OnInit, OnDestroy {
 
   public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly params$ = this.widgetManagementService.params$;
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   private readonly _subscriptions = new Subscription();
 

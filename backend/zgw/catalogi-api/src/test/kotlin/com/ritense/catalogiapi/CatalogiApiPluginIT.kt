@@ -86,13 +86,20 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
     lateinit var pluginConfigurationId: PluginConfigurationId
     private var executedRequests: MutableList<RecordedRequest> = mutableListOf()
 
+    // Derived from the mock server's actual (randomly assigned) address so the test does not depend on a fixed port.
+    private val apiBaseUrl get() = server.url(CATALOGI_API_PATH).toString()
+    private val catalogusUrl get() = "$apiBaseUrl/catalogussen/8225508a-6840-413e-acc9-6422af120db1"
+    private val zaaktypeUrl get() = "$apiBaseUrl/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002"
+    private val zaaktypeInformatieobjecttypeUrl get() = "$apiBaseUrl/zaaktype-informatieobjecttypen/f1234567-1234-1234-1234-123456789012"
+    private val informatieobjecttypeUrl get() = "$apiBaseUrl/informatieobjecttypen/$INFORMATIEOBJECTTYPE_ID"
+    private val roltypeUrl get() = "$apiBaseUrl/roltypen/$ROLTYPE_ID"
+
     @BeforeEach
     internal fun setUp() {
         executedRequests.clear()
         server = MockWebServer()
         setupMockCatalogiApiServer()
-        server.start(port = 56274)
-        Thread.sleep(2000)
+        server.start()
 
         val mockedId = PluginConfigurationId.existingId(UUID.fromString(AUTHENTICATION_PLUGIN_ID))
         doReturn(Optional.of(mock<PluginConfiguration>()))
@@ -117,7 +124,7 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         pluginConfigurationId = configuration.id
 
         processDefinitionId = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionKey("catalogi-api-plugin")
+            .processDefinitionKey(PROCESS_DEFINITION_KEY)
             .latestVersion()
             .singleResult()
             .id
@@ -141,13 +148,53 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         val processInstanceId = response.resultingProcessInstanceId().get().toString()
         val processVariable = getHistoricProcessVariable(processInstanceId, PROCESS_VARIABLE_NAME)
 
-        assertEquals(INFORMATIEOBJECTTYPE_URL, processVariable)
+        assertEquals(informatieobjecttypeUrl, processVariable)
 
         val zaaktypeInformatieobjecttypesRequest = executedRequests.find {
             it.path?.contains("zaaktype-informatieobjecttypen") == true
         }
         assertNotNull(zaaktypeInformatieobjecttypesRequest)
-        assertTrue(zaaktypeInformatieobjecttypesRequest.path?.contains("zaaktype=$ZAAKTYPE_URL") == true)
+        assertTrue(zaaktypeInformatieobjecttypesRequest.path?.contains("zaaktype=$zaaktypeUrl") == true)
+    }
+
+    @Test
+    fun `should get roltype url by omschrijving through process execution`() {
+        createRoltypeProcessLink(ROLTYPE_OMSCHRIJVING)
+        setupZaaktypeUrlProviderMock()
+
+        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest())
+        val response = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
+
+        assertTrue(response is NewDocumentAndStartProcessResultSucceeded)
+
+        val processInstanceId = response.resultingProcessInstanceId().get().toString()
+        val processVariable = getHistoricProcessVariable(processInstanceId, ROLTYPE_PROCESS_VARIABLE_NAME)
+
+        assertEquals(roltypeUrl, processVariable)
+
+        val roltypenRequest = executedRequests.find { it.path?.contains("roltypen") == true }
+        assertNotNull(roltypenRequest)
+        assertTrue(roltypenRequest.path?.contains("zaaktype=$zaaktypeUrl") == true)
+    }
+
+    private fun createRoltypeProcessLink(roltype: String) {
+        pluginProcessLinkRepository.save(
+            PluginProcessLink(
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = "GetRoltype",
+                activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+                actionProperties = objectMapper.readTree("""
+                    {
+                        "roltype": "$roltype",
+                        "processVariable": "$ROLTYPE_PROCESS_VARIABLE_NAME"
+                    }
+                """) as ObjectNode,
+                pluginConfigurationId = pluginConfigurationId,
+                pluginConfigurationReference = PluginConfigurationReference(),
+                pluginActionDefinitionKey = "get-roltype"
+            )
+        )
     }
 
     private fun createProcessLink(informatieobjecttype: String) {
@@ -171,7 +218,7 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
     }
 
     private fun setupZaaktypeUrlProviderMock() {
-        doReturn(URI.create(ZAAKTYPE_URL))
+        doReturn(URI.create(zaaktypeUrl))
             .whenever(zaaktypeUrlProvider).getZaaktypeUrl(any<UUID>())
     }
 
@@ -199,6 +246,8 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
                         zaaktypeInformatieobjecttypesResponse()
                     request.path?.contains("informatieobjecttypen/$INFORMATIEOBJECTTYPE_ID") == true ->
                         informatieobjecttypeResponse()
+                    request.path?.contains("roltypen") == true ->
+                        roltypenResponse()
                     else -> MockResponse().setResponseCode(404)
                 }
             }
@@ -213,9 +262,9 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
                 "next": null,
                 "previous": null,
                 "results": [{
-                    "url": "$ZAAKTYPE_INFORMATIEOBJECTTYPE_URL",
-                    "zaaktype": "$ZAAKTYPE_URL",
-                    "informatieobjecttype": "$INFORMATIEOBJECTTYPE_URL",
+                    "url": "$zaaktypeInformatieobjecttypeUrl",
+                    "zaaktype": "$zaaktypeUrl",
+                    "informatieobjecttype": "$informatieobjecttypeUrl",
                     "volgnummer": 1,
                     "richting": "inkomend",
                     "statustype": null
@@ -225,11 +274,33 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         return mockResponse(body)
     }
 
+    private fun roltypenResponse(): MockResponse {
+        val body = """
+            {
+                "count": 2,
+                "next": null,
+                "previous": null,
+                "results": [{
+                    "url": "$roltypeUrl",
+                    "zaaktype": "$zaaktypeUrl",
+                    "omschrijving": "$ROLTYPE_OMSCHRIJVING",
+                    "omschrijvingGeneriek": "behandelaar"
+                }, {
+                    "url": "$apiBaseUrl/roltypen/9e1cb0a2-1f4b-4a51-9a2c-3f1d8b7c6e50",
+                    "zaaktype": "$zaaktypeUrl",
+                    "omschrijving": "Adviseur",
+                    "omschrijvingGeneriek": "adviseur"
+                }]
+            }
+        """.trimIndent()
+        return mockResponse(body)
+    }
+
     private fun informatieobjecttypeResponse(): MockResponse {
         val body = """
             {
-                "url": "$INFORMATIEOBJECTTYPE_URL",
-                "catalogus": "$CATALOGUS_URL",
+                "url": "$informatieobjecttypeUrl",
+                "catalogus": "$catalogusUrl",
                 "omschrijving": "$INFORMATIEOBJECTTYPE_OMSCHRIJVING",
                 "vertrouwelijkheidaanduiding": "openbaar",
                 "beginGeldigheid": "${LocalDate.now().minusDays(1)}",
@@ -260,12 +331,11 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         private const val AUTHENTICATION_PLUGIN_ID = "27a399c7-9d70-4833-a651-57664e2e9e09"
 
         private const val CATALOGI_API_PATH = "/catalogi/api/v1"
-        private const val CATALOGUS_URL = "http://localhost:56274$CATALOGI_API_PATH/catalogussen/8225508a-6840-413e-acc9-6422af120db1"
-        private const val ZAAKTYPE_URL = "http://localhost:56274$CATALOGI_API_PATH/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002"
-        private const val ZAAKTYPE_INFORMATIEOBJECTTYPE_URL = "http://localhost:56274$CATALOGI_API_PATH/zaaktype-informatieobjecttypen/f1234567-1234-1234-1234-123456789012"
         private const val INFORMATIEOBJECTTYPE_ID = "12345678-be3b-4bad-9e3c-49a6219c92ad"
-        private const val INFORMATIEOBJECTTYPE_URL = "http://localhost:56274$CATALOGI_API_PATH/informatieobjecttypen/$INFORMATIEOBJECTTYPE_ID"
         private const val INFORMATIEOBJECTTYPE_OMSCHRIJVING = "Bijlage"
         private const val PROCESS_VARIABLE_NAME = "informatieobjecttypeUrl"
+        private const val ROLTYPE_ID = "8f2e4c17-3a5d-4b8e-9c1f-2d6a7b3e4f50"
+        private const val ROLTYPE_OMSCHRIJVING = "Behandelaar"
+        private const val ROLTYPE_PROCESS_VARIABLE_NAME = "roltypeUrl"
     }
 }

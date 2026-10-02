@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessLink} from '@valtimo/process-link';
+import {AutofilledElement} from '@valtimo/process';
 import {ProcessDefinitionWithPropertiesDto} from '@valtimo/shared';
 
 interface ProcessDefinitionResult {
@@ -24,6 +25,7 @@ interface ProcessDefinitionResult {
   processDefinition: ProcessDefinitionWithPropertiesDto;
   processLinks: ProcessLink[];
   draft?: boolean;
+  autofilledElements?: AutofilledElement[];
 }
 
 export {ProcessDefinitionResult};

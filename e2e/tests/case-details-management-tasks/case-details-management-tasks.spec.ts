@@ -25,6 +25,12 @@ import {CaseDetailsManagementTasksPage} from './page';
 
 test.use({storageState: undefined});
 
+// Tests share a single context/page created in beforeAll and depend on each other
+// (add → delete, add two → reorder → clean up). Serial mode keeps them in one group
+// (so beforeAll/afterAll run exactly once despite fullyParallel) and skips the
+// remaining tests when one fails, instead of cascading "context closed" errors.
+test.describe.configure({mode: 'serial'});
+
 test.describe('Case details management — Tasks', () => {
   let context;
   let page;
@@ -56,7 +62,7 @@ test.describe('Case details management — Tasks', () => {
     await tasksPage.deleteColumnViaApi(CASE_IDENTIFIER, taskColumnReorderTestData.keyB);
     await tasksPage.deleteSearchFieldViaApi(CASE_IDENTIFIER, taskSearchFieldTestData.key);
 
-    await context.close();
+    if (context) await context.close();
   });
 
   // ─── 6.62 View task list columns ──────────────────────────────────

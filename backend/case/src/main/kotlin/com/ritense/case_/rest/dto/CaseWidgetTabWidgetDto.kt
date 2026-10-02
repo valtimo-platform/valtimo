@@ -16,7 +16,10 @@
 
 package com.ritense.case_.rest.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.ritense.exporter.request.ExportRequest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
@@ -40,9 +43,25 @@ interface CaseWidgetTabWidgetDto {
     val displayConditions: List<Condition<*>>?
 
     /**
+     * Widgets sharing an id can be served together. Set per request by the REST layer; null
+     * everywhere else, so it stays out of export bundles.
+     */
+    @get:JsonInclude(JsonInclude.Include.NON_NULL)
+    @get:JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    var dataGroupId: String?
+
+    /**
      * @param caseDefinitionId the id of the case definition that this widget is configured for
      *
      * This method is used to validate the widget configuration when the case definition context is required.
      */
     fun validate(caseDefinitionId: CaseDefinitionId) {}
+
+    /**
+     * @param caseDefinitionId the id of the case definition that this widget is configured for
+     *
+     * This method is used to export the resources this widget refers to, like a form definition. Without them, the
+     * exported widget tab cannot be imported again.
+     */
+    fun getRelatedExportRequests(caseDefinitionId: CaseDefinitionId): Set<ExportRequest> = emptySet()
 }

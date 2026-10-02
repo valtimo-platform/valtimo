@@ -16,6 +16,11 @@
 
 const ACCESS_CONTROL_EDITOR_TEST_IDS = {
   addPermissionButton: 'accessControlEditorAddPermission',
+  // Accordion sections of a permission card; only one is expanded at a time, so the
+  // controls inside a collapsed section are present but not visible.
+  sectionResourceActions: 'accessControlEditorSectionResourceActions',
+  sectionConditions: 'accessControlEditorSectionConditions',
+  sectionContext: 'accessControlEditorSectionContext',
   permissionListItem: 'accessControlEditorPermissionListItem',
   permissionCard: 'accessControlEditorPermissionCard',
   removePermissionButton: 'accessControlEditorRemovePermission',

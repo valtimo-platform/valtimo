@@ -81,6 +81,6 @@ class PluginConfigurationImportPreviewContributor(
 
     private companion object {
         val PROCESS_LINK_REGEX =
-            """.*/?process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
+            """.*/?global/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
     }
 }

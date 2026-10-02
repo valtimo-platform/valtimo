@@ -15,7 +15,9 @@
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
-    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
+    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
+    "CaseMigratedEvent": "Zaak gemigreerd van {{fromVersionTag}} naar {{toVersionTag}}",
+    "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
     "allCases": "Alle dossiers",
@@ -53,8 +55,14 @@
       "cancel": "Annuleren"
     },
     "noResults": {
-      "ALL": {"description": "Er is hier niets te doen.", "title": "Er zijn geen dossiers"},
-      "MINE": {"description": "Even pauze.", "title": "Er zijn geen dossiers aan jou toegewezen"},
+      "ALL": {
+        "description": "Er is hier niets te doen.",
+        "title": "Er zijn geen dossiers"
+      },
+      "MINE": {
+        "description": "Even pauze.",
+        "title": "Er zijn geen dossiers aan jou toegewezen"
+      },
       "OPEN": {
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
@@ -68,14 +76,23 @@
         "title": "Geen dossiers gevonden"
       }
     },
-    "noAccess": {"description": "Je hebt geen toegang tot dit dossier", "title": "Geen toegang"},
+    "noAccess": {
+      "description": "Je hebt geen toegang tot dit dossier",
+      "title": "Geen toegang"
+    },
     "pagination": {
       "itemsPerPage": "Dossiers per pagina",
       "totalItem": "{{start}}-{{end}} van {{total}} dossier",
       "totalItems": "{{start}}-{{end}} van {{total}} dossiers"
     },
-    "select": {"single": "1 dossier geselecteerd", "multiple": "{{count}} dossiers geselecteerd"},
-    "title": {"single": "Dossier", "plural": "Dossiers"},
+    "select": {
+      "single": "1 dossier geselecteerd",
+      "multiple": "{{count}} dossiers geselecteerd"
+    },
+    "title": {
+      "single": "Dossier",
+      "plural": "Dossiers"
+    },
     "tabs": {
       "noResults": "Geen tabbladen geconfigureerd",
       "noResultsDescription": "Er zijn geen tabbladen geconfigureerd voor dit dossiertype.",
@@ -96,7 +113,10 @@
       "componentNotFound": "Tab-component niet gevonden",
       "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },
-    "forms": {"globalSearchPlaceHolder": "Alles", "referenceNumberPlaceHolder": "Referentienummer"},
+    "forms": {
+      "globalSearchPlaceHolder": "Alles",
+      "referenceNumberPlaceHolder": "Referentienummer"
+    },
     "sendEmailExtension": {
       "buttonText": "Verstuur e-mail",
       "title": "Een e-mail versturen",
@@ -122,13 +142,17 @@
       "title": "Titel",
       "noFormDefinitionComponent": "Geen formulierdefinitie voor dit object gevonden.",
       "noObjectType": "Geen objecten gevonden voor dit objecttype.",
-      "objectType": {"viewObject": "Object bekijken"}
+      "objectType": {
+        "viewObject": "Object bekijken"
+      }
     },
     "notes": {
       "addNote": "Notitie toevoegen",
       "modifyNote": "Notitie bewerken",
       "tableItemsText": "Notities",
-      "input": {"content": "Notitie"},
+      "input": {
+        "content": "Notitie"
+      },
       "deleteConfirmation": {
         "title": "Notitie verwijderen",
         "description": "Weet je zeker dat je deze notitie wilt verwijderen?",
@@ -324,6 +348,8 @@
         "loading": "Metadata laden...",
         "documentId": "Document ID",
         "definitionName": "Definitie",
+        "definitionKey": "Dossier definitiesleutel",
+        "definitionVersionTag": "Dossier definitieversie",
         "sequence": "Volgnummer",
         "version": "Versie",
         "createdBy": "Aangemaakt door",
@@ -448,7 +474,10 @@
     }
   },
   "document": {
-    "title": {"single": "Document", "plural": "Document's"},
+    "title": {
+      "single": "Document",
+      "plural": "Document's"
+    },
     "id": "Referentie ID",
     "createdBy": "Aangemaakt door",
     "createdOn": "Aanmaakdatum",
@@ -555,26 +584,60 @@
     "startedBy": "Gestart door",
     "startedOn": "Gestart op",
     "system": "Systeem",
-    "of": "van"
+    "of": "van",
+    "skipTimer": {
+      "action": "Timer overslaan",
+      "confirmTitle": "Timer overslaan",
+      "confirmContent": "Weet je zeker dat je deze timer wilt overslaan? Het proces gaat verder alsof de timer is verlopen. Dit kan niet ongedaan worden gemaakt.",
+      "confirmButton": "Overslaan",
+      "successToast": "Timer overgeslagen"
+    }
   },
   "dashboard": {
-    "openTasks": {"title": "Alle taken"},
-    "openTask": {"title": "Open taak"},
-    "activeProcess": {"title": "Actieve proces"},
-    "activeProcesses": {"title": "Actieve processen"},
-    "tasksCompleted": {"title": "Afgeronde taken"},
-    "taskCompleted": {"title": "Afgeronde taak"},
-    "statistics": {"title": "Statistieken"},
-    "processes": {"title": "Processen"},
-    "process": {"title": "Proces", "details": "Proces details"},
-    "startProcess": {"title": "Start"},
-    "version": {"title": "Versie"},
+    "openTasks": {
+      "title": "Alle taken"
+    },
+    "openTask": {
+      "title": "Open taak"
+    },
+    "activeProcess": {
+      "title": "Actieve proces"
+    },
+    "activeProcesses": {
+      "title": "Actieve processen"
+    },
+    "tasksCompleted": {
+      "title": "Afgeronde taken"
+    },
+    "taskCompleted": {
+      "title": "Afgeronde taak"
+    },
+    "statistics": {
+      "title": "Statistieken"
+    },
+    "processes": {
+      "title": "Processen"
+    },
+    "process": {
+      "title": "Proces",
+      "details": "Proces details"
+    },
+    "startProcess": {
+      "title": "Start"
+    },
+    "version": {
+      "title": "Versie"
+    },
     "processingLeadTime": {
       "title": "Doorlooptijd verwerken",
       "description": "gemiddeld over de laatste 30 dagen"
     },
-    "tasks": {"title": "Taken"},
-    "task": {"title": "Taak"},
+    "tasks": {
+      "title": "Taken"
+    },
+    "task": {
+      "title": "Taak"
+    },
     "noDashboards": "Geen dashboards",
     "noDashboardsDescription": "Het kan zijn dat de systeembeheerder nog geen dashboards heeft geconfigureerd, of je hebt niet de juiste rechten om dashboards te zien.",
     "noWidgets": "Geen widgets",
@@ -662,11 +725,17 @@
     "title": "Instellingen",
     "language": {
       "title": "Taal",
-      "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
+      "options": {
+        "nl": "Nederlands",
+        "en": "English",
+        "de": "Deutsch"
+      }
     },
     "notification": {
       "title": "Notificaties",
-      "frequency": {"title": "Frequentie van notificaties"},
+      "frequency": {
+        "title": "Frequentie van notificaties"
+      },
       "taskNotifications": "Taakmeldingen",
       "taskNotificationsIntro": "Ontvang een e-mail wanneer een taak aan jou is toegewezen",
       "emailNotifications": "Dagelijks taakoverzicht",
@@ -679,11 +748,17 @@
       "emailNotificationOnSaturday": "Zaterdag",
       "emailNotificationOnSunday": "Zondag"
     },
-    "version": {"title": "Versie-informatie"},
+    "version": {
+      "title": "Versie-informatie"
+    },
     "interface": {
       "title": "Interface",
       "themePreference": "Thema",
-      "themes": {"light": "Licht", "dark": "Donker (Beta)", "system": "Systeem (Beta)"},
+      "themes": {
+        "light": "Licht",
+        "dark": "Donker (Beta)",
+        "system": "Systeem (Beta)"
+      },
       "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
       "compactMode": "Compacte modus",
       "showUserName": "Toon naam van gebruiker"
@@ -726,10 +801,22 @@
       "content": "Weet u zeker dat u deze beslistabel wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     }
   },
-  "message": {"empty": "Geen resultaat gevonden"},
-  "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
-  "carousel": {"previous": "Vorige", "next": "Volgende", "goToSlide": "Ga naar dia"},
+  "message": {
+    "empty": "Geen resultaat gevonden"
+  },
+  "cta": {
+    "close": "Sluiten",
+    "moreDetails": "Meer details"
+  },
+  "carousel": {
+    "previous": "Vorige",
+    "next": "Volgende",
+    "goToSlide": "Ga naar dia"
+  },
   "formManagement": {
+    "edit": {
+      "title": "Formulier bewerken"
+    },
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Druk op de knop om deze te configureren.",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
     "gotoProcessLinksButton": "Configureer nu",
@@ -783,6 +870,116 @@
     }
   },
   "caseManagement": {
+    "migration": {
+      "addPlan": "Migratieplan toevoegen",
+      "startNow": "Migratie nu starten",
+      "errorCount": "{{count}} fouten",
+      "warningCount": "{{count}} waarschuwingen",
+      "editor": {
+        "saveFailed": {
+          "title": "Het migratieplan kon niet worden opgeslagen",
+          "fallback": "De server heeft het plan geweigerd zonder reden op te geven. Bekijk de browserconsole voor details."
+        },
+        "general": {
+          "titlePlaceholder": "Migreer dossiers met status 'aanvraag-ontvangen'",
+          "sourceHint": "De versie van de dossierdefinitie waarvan dit plan de dossiers migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die dossiers in één stap hierheen, en een andere sleutel kiezen brengt dossiers van die dossierdefinitie over naar deze.",
+          "sourceKey": "Brondossierdefinitie",
+          "sourceKeyPlaceholder": "Kies een dossierdefinitie",
+          "targetKey": "Doeldossierdefinitie",
+          "triggers": "Triggers",
+          "triggersHint": "Bepaal wanneer dit plan draait: handmatig via de UI-knop, op een ingepland moment, of nadat een ander plan is voltooid.",
+          "triggeredByButton": "Handmatig starten via de UI-knop",
+          "scheduledAtDate": "Ingepland op",
+          "runAfter": "Draai na plan",
+          "runAfterPlaceholder": "Kies een migratieplan",
+          "runAfterEmpty": "Geen andere migratieplannen in deze versie",
+          "conditions": "Condities",
+          "conditionsHint": "Het plan migreert alleen dossiers die aan alle condities voldoen. Laat leeg om op alle dossiers toe te passen. Voeg een groep toe om condities te combineren met 'één van' (OR) of 'alle van' (AND); groepen mogen genest worden. Voer bij 'in' de waarden gescheiden door komma's in. Laat bij 'exists' de waarde leeg — of vul 'false' in om te eisen dat het veld leeg is.",
+          "noConditions": "Geen condities — van toepassing op alle dossiers."
+        },
+        "dataMigration": {
+          "description": "Herstructureer dossiergegevens tijdens de migratie. Elke regel vult één doelveld (rechts) vanuit een bron (links): kopieer de waarde van een bestaand veld ('Pad'), zet een vaste 'Waarde', of maak het leeg ('Null'). De bron leest een waarde uit het dossierdocument; het doel is het veld waar die waarde naartoe wordt geschreven. Het doelveld is altijd verplicht."
+        },
+        "processMigration": {
+          "description": "Migreer lopende procesinstanties naar de procesdefinities van deze dossierversie. Kies per instructie het bronproces — de definitie die de lopende instanties nu gebruiken, uit de versie waarvandaan wordt gemigreerd — en het doelproces — de definitie in deze versie waar ze naartoe gaan — en koppel vervolgens elke bronactiviteit aan een doelactiviteit.",
+          "activityMappingHint": "Koppel elke activiteit van het bronproces aan een activiteit van het doelproces — dit vertelt de engine waar elke lopende token naartoe gaat. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn."
+        },
+        "addBuildingBlock": {
+          "description": "Maak één of meer bouwblokken aan op elk gemigreerd dossier. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de dossierproces(sen) over in het bouwblok.",
+          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het dossierdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een dossierproces; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde dossierproces(sen) worden overgenomen in het bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
+        },
+        "removeBuildingBlock": {
+          "description": "Verwijder één of meer bouwblokken van elk gemigreerd dossier. Alle direct aan het dossier gekoppelde bouwblokken met de opgegeven sleutel worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar het dossier.",
+          "dataMigrationHint": "Zet data terug naar het dossier voordat het bouwblok wordt verwijderd: elke bron leest uit het bouwblokdocument, elk doel schrijft naar het dossierdocument.",
+          "processMigrationHint": "Het bronproces is een bouwblokproces; het doelproces is een dossierproces. Het/de bouwblokproces(sen) worden teruggegeven aan het dossier en de business key wordt altijd teruggezet op de document-id van het dossier."
+        },
+        "sourceNotDeployed": "{{versionTag}} (hier niet gedeployed)"
+      },
+      "deleteModal": {
+        "title": "Migratieplan verwijderen",
+        "content": "Weet je zeker dat je dit migratieplan wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
+      "startModal": {
+        "title": "Migratie starten",
+        "content": "Weet je zeker dat je deze migratie nu wilt starten? De overeenkomende dossiers worden gemigreerd."
+      },
+      "dryRun": "Testrun",
+      "dryRunModal": {
+        "title": "Testrun starten",
+        "content": "Simuleer dit migratieplan voor alle overeenkomende dossiers zonder er ook maar één te migreren? Er wordt niets gewijzigd; je krijgt een overzicht van welke dossiers zouden migreren en welke zouden mislukken."
+      },
+      "dryRunResults": {
+        "status": "Status testrun",
+        "heading": "Laatste testrun",
+        "casesChecked": "Gecontroleerde dossiers",
+        "casesWouldMigrate": "Zouden migreren",
+        "casesWouldFail": "Zouden mislukken",
+        "errorsHeading": "Dossiers die zouden mislukken"
+      },
+      "duplicateSuffix": "kopie",
+      "columns": {
+        "plan": "Migratieplan",
+        "source": "Bron",
+        "target": "Doel",
+        "status": "Status",
+        "progress": "Voortgang"
+      },
+      "noResults": {
+        "title": "Geen migratieplannen",
+        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit dossiertype."
+      },
+      "status": {
+        "NOT_STARTED": "Niet gestart",
+        "RUNNING": "Bezig",
+        "COMPLETED": "Voltooid",
+        "COMPLETED_WITH_ERRORS": "Voltooid met fouten"
+      },
+      "fields": {
+        "status": "Migratiestatus",
+        "casesToMigrate": "Te migreren dossiers",
+        "casesMigrated": "Gemigreerde dossiers",
+        "casesWithErrors": "Dossiers met fouten",
+        "casesWithWarnings": "Dossiers met waarschuwingen",
+        "startedOn": "Gestart op",
+        "finishedOn": "Voltooid op"
+      },
+      "errors": {
+        "heading": "Dossiers met fouten",
+        "caseId": "Dossier",
+        "message": "Fout",
+        "copyFullError": "Volledige stacktrace kopiëren",
+        "copied": "Stacktrace gekopieerd naar klembord",
+        "showStacktrace": "Volledige stacktrace tonen",
+        "hideStacktrace": "Stacktrace verbergen"
+      },
+      "warnings": {
+        "heading": "Dossiers met waarschuwingen",
+        "dryRunHeading": "Waarschuwingen bij de proefmigratie",
+        "description": "Deze dossiers zijn gemigreerd, maar het plan heeft niet alles gedaan wat erin staat. Meestal was er geen lopend proces om over te nemen.",
+        "message": "Waarschuwing"
+      }
+    },
     "version": "Versie: ",
     "preparingDownload": "Download aan het voorbereiden",
     "more": "Meer",
@@ -829,7 +1026,11 @@
     "allVersionsModal": {
       "title": "Alle {{value}} versies",
       "closeButton": "Sluiten",
-      "columns": {"version": "Versie", "release": "Uitgebracht op", "description": "Beschrijving"},
+      "columns": {
+        "version": "Versie",
+        "release": "Uitgebracht op",
+        "description": "Beschrijving"
+      },
       "noResults": {
         "title": "Er zijn geen dossierversies",
         "description": "Er is geen versie geconfigureerd voor dit dossier"
@@ -874,7 +1075,10 @@
       },
       "releaseVersion": {
         "title": "Releaseversie",
-        "fields": {"caseDefinitionVersionTag": "Versie", "basedOnVersionTag": "Gebaseerd op"},
+        "fields": {
+          "caseDefinitionVersionTag": "Versie",
+          "basedOnVersionTag": "Gebaseerd op"
+        },
         "warning": {
           "title": "Waarschuwing",
           "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} concept, met de versie {{ conflictingVersions }}"
@@ -955,6 +1159,7 @@
       "decision": "Beslistabellen",
       "formFlows": "Form flows",
       "tasks": "Taken",
+      "migration": "Migratie",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
@@ -970,7 +1175,10 @@
           "canHaveHandler": "Dossiertype kan een behandelaar hebben",
           "assignUser": "Gebruikerstaken automatisch toewijzen aan dossierbehandelaar",
           "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de dossierbehandelaar kan alleen worden ingeschakeld als de dossier zelf een behandelaar kan hebben.",
-          "toggle": {"onText": "Ja", "offText": "Nee"}
+          "toggle": {
+            "onText": "Ja",
+            "offText": "Nee"
+          }
         }
       },
       "caseListTab": {
@@ -1010,38 +1218,58 @@
         "uniqueKeyError": "De key voor deze tab moet uniek zijn.",
         "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
+        "externalPlugin": "Plugins & Apps",
+        "externalPluginDisabled": "Er zijn geen geactiveerde plugins of apps met een dossiertabblad, of ze zijn allemaal al toegevoegd.",
         "visibleTitle": "Takenlijst zichtbaar op tabblad",
         "visible": "Zichtbaar",
         "invisible": "Niet zichtbaar"
+      },
+      "externalPlugin": {
+        "loadError": "Het externe plugin-tabblad kon niet worden geladen. De plugin-host is mogelijk onbereikbaar of de bundle is niet beschikbaar.",
+        "widgetLoadError": "De externe pluginwidget kon niet worden geladen. De plugin-host is mogelijk onbereikbaar of de bundle is niet beschikbaar.",
+        "unavailable": "Deze pluginwidget is niet beschikbaar. Mogelijk ontbreekt de configuratie of kon de bundle niet worden gevonden."
       },
       "titles": {
         "custom": "Nieuw tabblad aanmaken met aangepaste component",
         "formio": "Nieuw tabblad aanmaken met FormIO component",
         "standard": "Nieuw tabblad aanmaken met standaard inhoud",
-        "widgets": "Nieuw tabblad met widgets aanmaken"
+        "widgets": "Nieuw tabblad met widgets aanmaken",
+        "external_plugin": "Nieuw tabblad aanmaken met een plugin of app"
       },
       "contentLabels": {
         "custom": "Kies aangepaste component",
         "formio": "Kies FormIO component",
-        "standard": "Kies standaard inhoud"
+        "standard": "Kies standaard inhoud",
+        "external_plugin_config": "Kies plugin- of app-configuratie",
+        "external_plugin_bundle": "Kies tabblad"
       },
-      "editModal": {"title": "Tabblad bewerken {{name}}", "updateTab": "Tabblad updaten"},
+      "editModal": {
+        "title": "Tabblad bewerken {{name}}",
+        "updateTab": "Tabblad updaten"
+      },
       "deleteModal": {
         "title": "Tabblad verwijderen?",
         "description": "Weet u zeker dat u dit tabblad wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
       }
     },
-    "tabType": {"custom": "Inhoud", "formio": "FormIO", "standard": "Standaard"},
+    "tabType": {
+      "custom": "Inhoud",
+      "formio": "FormIO",
+      "standard": "Standaard",
+      "external_plugin": "Plugins & Apps"
+    },
     "actions": {
       "columns": {
         "name": "Naam",
-        "type": "Type"
+        "type": "Type",
+        "startableByUser": "Zichtbaarheid"
       },
+      "visibleInStartMenu": "Zichtbaar in startmenu",
       "addItem": "Actie aanmaken",
       "noResults": "Geen acties geconfigureerd",
       "noResultsDescription": "Er zijn geen acties geconfigureerd voor dit dossiertype.",
       "infoNotification": {
-        "message": "Acties verschijnen onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
+        "message": "Acties verschijnen standaard onder de startknop van een bestaand dossier en kunnen op elk moment door de gebruiker gestart worden."
       },
       "type": {
         "PROCESS": "Proces",
@@ -1134,6 +1362,7 @@
         "noPluginsTitle": "Geen plugins te configureren",
         "notInstalled": "Plugintype niet geïnstalleerd",
         "noConfigurations": "Geen configuraties beschikbaar",
+        "externalVersionMismatchWarning": "De pluginversie van deze configuratie ({{selectedVersion}}) komt niet overeen met de geëxporteerde versie ({{requiredVersion}}). Mogelijk worden niet dezelfde acties ondersteund.",
         "unidentifiable": {
           "title": "Niet-identificeerbare pluginconfiguraties",
           "message": "Sommige pluginconfiguraties konden niet worden herleid uit het exportbestand. De import kan doorgaan, maar de betreffende process links moeten achteraf handmatig worden geconfigureerd."
@@ -1147,6 +1376,7 @@
       "unknownPlugin": "Onbekende plugin",
       "notInstalled": "Plugintype niet geïnstalleerd",
       "noConfigurations": "Geen configuraties beschikbaar",
+      "externalVersionMismatchWarning": "De pluginversie van deze configuratie ({{selectedVersion}}) komt niet overeen met de vereiste versie ({{requiredVersion}}). Mogelijk worden niet dezelfde acties ondersteund.",
       "saveSuccess": "Pluginconfiguratie-koppelingen succesvol opgeslagen",
       "saveError": "Kon pluginconfiguratie-koppelingen niet opslaan",
       "legacyExport": {
@@ -1192,7 +1422,7 @@
       "keyDuplicated": "Deze sleutel is al in gebruik. Kies een unieke sleutel.",
       "colorPlaceholder": "Kies een kleur",
       "showRetentionPeriod": "Bewaartermijn instellen",
-      "retentionPeriodExistingCasesWarning": "Reeds aangemaakte zaken met deze status worden niet automatisch bijgewerkt met een nieuwe bewaartermijn.",
+      "retentionPeriodExistingCasesWarning": "Reeds aangemaakte dossiers met deze status worden niet automatisch bijgewerkt met een nieuwe bewaartermijn.",
       "columns": {
         "title": "Statusnaam",
         "retentionPeriod": "Bewaartermijn in dagen",
@@ -1207,7 +1437,9 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit dossiertype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit dossiertype."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -1228,7 +1460,9 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit dossiertype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen tags aangemaakt voor dit dossiertype."
+      }
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -1242,7 +1476,9 @@
       "editWidgetTab": "Bewerk widget tab",
       "cancel": "Annuleren",
       "save": "Opslaan",
-      "form": {"tabName": "Tab naam"}
+      "form": {
+        "tabName": "Tab naam"
+      }
     },
     "columns": {
       "highContrast": "Hoog contrast",
@@ -1295,17 +1531,37 @@
     },
     "type": {
       "description": "Kies het widget-type dat je wilt configureren.",
-      "fields": {"title": "Velden", "description": "Tekstgegevens met inhoud en een label"},
-      "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
-      "formio": {"title": "Form.io", "description": "Ingevuld Form.io-formulier"},
-      "table": {"title": "Tabel", "description": "Maak een tabel aan"},
+      "fields": {
+        "title": "Velden",
+        "description": "Tekstgegevens met inhoud en een label"
+      },
+      "custom": {
+        "title": "Eigen component",
+        "description": "Voor complexe inhoud"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Ingevuld Form.io-formulier"
+      },
+      "table": {
+        "title": "Tabel",
+        "description": "Maak een tabel aan"
+      },
       "interactive-table": {
         "title": "Interactieve tabel",
         "description": "Maak een interactieve tabel"
       },
-      "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
-      "divider": {"title": "Scheidingslijn"},
-      "map": {"title": "Kaart", "description": "Maak een kaart widget aan"},
+      "collection": {
+        "title": "Collectie",
+        "description": "Maak een collectie aan"
+      },
+      "divider": {
+        "title": "Scheidingslijn"
+      },
+      "map": {
+        "title": "Kaart",
+        "description": "Maak een kaart widget aan"
+      },
       "person-card": {
         "title": "Persoonskaart",
         "description": "Een persoon met de belangrijkste gegevens en contactinformatie"
@@ -1322,6 +1578,14 @@
         "title": "Afbeelding",
         "description": "Toon een geüploade afbeelding"
       },
+      "external-plugin": {
+        "title": "Plugins & Apps",
+        "description": "Toon een kaart uit de case-widget-bundle van een plugin of app"
+      },
+      "text": {
+        "title": "Tekst",
+        "description": "Toon een vaste toelichting"
+      },
       "generic": {
         "title": "Generieke widgets",
         "description": "Breed toepasbaar — koppel ze aan elke gegevensstructuur (velden, tabellen, collecties). Meer configuratie, maar geen beperkingen op wat ze kunnen tonen."
@@ -1335,10 +1599,22 @@
       "description": "Selecteer de gewenste breedte voor de widget.",
       "fullWidth": "Volle-breedte",
       "half": "Half",
-      "small": {"title": "Klein", "subtitle": "Bevat 1 kolom met inhoud"},
-      "medium": {"title": "Medium", "subtitle": "Bevat maximaal 2 kolommen met inhoud"},
-      "large": {"title": "Groot", "subtitle": "Bevat maximaal 3 kolommen met inhoud"},
-      "xtraLarge": {"title": "Xtra Groot", "subtitle": "Bevat maximaal 4 kolommen met inhoud"}
+      "small": {
+        "title": "Klein",
+        "subtitle": "Bevat 1 kolom met inhoud"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Bevat maximaal 2 kolommen met inhoud"
+      },
+      "large": {
+        "title": "Groot",
+        "subtitle": "Bevat maximaal 3 kolommen met inhoud"
+      },
+      "xtraLarge": {
+        "title": "Xtra Groot",
+        "subtitle": "Bevat maximaal 4 kolommen met inhoud"
+      }
     },
     "appearance": {
       "description": "Selecteer het uiterlijk voor de widget.",
@@ -1361,7 +1637,10 @@
     },
     "density": {
       "description": "Selecteer de gewenste dichtheid voor de widget",
-      "default": {"title": "Standaard", "description": "Voor reguliere inhoud"},
+      "default": {
+        "title": "Standaard",
+        "description": "Voor reguliere inhoud"
+      },
       "compact": {
         "title": "Compact",
         "description": "Voor een overzicht met hogere gegevensdichtheid"
@@ -1374,6 +1653,14 @@
       "widgetTitleTooltip": "Titel die bovenaan de widget wordt weergegeven",
       "hideWhenEmpty": "Verbergen indien leeg",
       "column": "Kolom {{number}}",
+      "externalPlugin": {
+        "configLabel": "Plugin- of app-configuratie",
+        "configPlaceholder": "Kies een plugin- of app-configuratie",
+        "bundleLabel": "Widget",
+        "bundlePlaceholder": "Kies een widget",
+        "unavailableTitle": "Plugins & Apps niet beschikbaar",
+        "unavailableMessage": "Er is geen plugin of app met een case-widget-bundle beschikbaar."
+      },
       "fields": {
         "add": "Veld toevoegen",
         "addEnum": "Enum-waarde toevoegen",
@@ -1523,6 +1810,14 @@
         "valuePlaceholder": "Selecteer of typ een pad",
         "valueHelper": "Toont de afbeelding op dit pad. Het pad moet verwijzen naar een geüploade bestandsresource.",
         "displayAsCarousel": "Weergeven als carrousel"
+      },
+      "text": {
+        "description": "",
+        "content": "Tekst",
+        "contentTooltip": "De tekst die in de widget wordt getoond. Markdown wordt ondersteund.",
+        "contentPlaceholder": "## Kop\n\nEen toelichting, met een [link](https://example.org) en een lijst:\n\n- eerste item\n- tweede item",
+        "contentHelper": "Opmaak met markdown wordt ondersteund: # voor koppen, - voor een lijst met opsommingstekens, **vet**, *cursief* en [linktekst](https://example.org). Sterretjes moeten direct tegen de tekst staan: **vet** werkt, ** vet ** niet. Links openen in een nieuw tabblad.",
+        "accentColor": "Accentkleur"
       }
     },
     "filters": {
@@ -1571,9 +1866,9 @@
     "actionButtonLabel": "Type actieknop",
     "externalLink": {
       "linkLabel": "Link-URL (met variabelen)",
-      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "linkPlaceholder": "https://ritense.nl/dossier/${doc:/dossier/id}",
       "buttonTextLabel": "Knoptekst",
-      "buttonTextPlaceholder": "'Ga naar zaak'",
+      "buttonTextPlaceholder": "'Ga naar dossier'",
       "openInNewTabLabel": "Open in nieuw tabblad"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
@@ -1662,7 +1957,9 @@
       "add": "Trefwoord aanmaken",
       "deleteText": "Weet je zeker dat je dit trefwoord wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze trefwoorden wilt verwijderen?",
-      "addModal": {"header": "Trefwoord aanmaken"},
+      "addModal": {
+        "header": "Trefwoord aanmaken"
+      },
       "list": {
         "noResultsTitle": "Geen trefwoorden",
         "noResultsDescription": "Voeg een trefwoord toe om te beginnen"
@@ -1682,8 +1979,12 @@
       "add": "Uploadveld toevoegen",
       "deleteText": "Weet je zeker dat je dit uploadveld wilt verwijderen?",
       "deleteMultipleText": "Weet je zeker dat je deze upload-velden wilt verwijderen?",
-      "addModal": {"header": "Uploadveld toevoegen"},
-      "editModal": {"header": "Uploadveld bewerken"},
+      "addModal": {
+        "header": "Uploadveld toevoegen"
+      },
+      "editModal": {
+        "header": "Uploadveld bewerken"
+      },
       "list": {
         "noResultsTitle": "Geen upload-velden",
         "noResultsDescription": "Voeg een uploadveld toe om te beginnen"
@@ -1758,7 +2059,8 @@
     "rowLocked": "Je hebt geen toegang tot deze taak",
     "allCases": "Alle dossiers",
     "noSearchResultsTitle": "Geen taken gevonden",
-    "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen."
+    "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen.",
+    "refreshTasks": "Taken verversen"
   },
   "Task": "Taak",
   "Tasks": "Taken",
@@ -1790,7 +2092,23 @@
   "Translations": "Vertalingen",
   "uploadFormDefinition": "Upload formulier-definitie",
   "Process migration": "Procesmigratie",
-  "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestarte processen krijgen de nieuwe candidate group)",
+  "processMigration": {
+    "warning": {
+      "title": "Candidate groups worden niet gemigreerd",
+      "message": "Bij het migreren van een proces worden de candidate groups van lopende procesinstanties niet bijgewerkt. Dit kan indien nodig in de database gedaan worden. Voorbeeld: staat een gebruikerstaak open voor ROLE_USER en wordt de candidate group in het proces gewijzigd naar ROLE_ADMIN, dan blijft de taak beschikbaar voor ROLE_USER. Alleen nieuw gestarte processen gebruiken de nieuwe candidate group."
+    },
+    "sourceDefinition": "Bronproces",
+    "sourceVersion": "Bronversie",
+    "targetDefinition": "Doelproces",
+    "targetVersion": "Doelversie",
+    "sourceActivity": "Activiteit in de bronversie",
+    "targetActivity": "Activiteit in de doelversie",
+    "selectPlaceholder": "Selecteer...",
+    "migrate": "Migreren",
+    "instanceCount": "{{count}} lopende procesinstantie(s)",
+    "success": "Het proces is gemigreerd.",
+    "failure": "Het proces kon niet gemigreerd worden."
+  },
   "Case": "Dossier",
   "Cases": "Dossiers",
   "Deployment": "Versiebeheer",
@@ -1840,6 +2158,7 @@
     },
     "successNotification": "Proces succesvol gepubliceerd",
     "errorNotification": "Er ging iets mis bij het publiceren van het proces",
+    "exportErrorNotification": "Het exporteren van het proces is mislukt. Controleer of de subprocessen, beslistabellen en formulieren waarnaar het verwijst beschikbaar zijn op deze omgeving.",
     "validate": "Valideren",
     "validationSuccessNotification": "Procesdefinitie is geldig",
     "validationWarningNotification": "Procesdefinitie bevat waarschuwingen",
@@ -1849,12 +2168,13 @@
     "validationErrors": "Validatiefouten",
     "validationErrorsCount": "Validatiefouten ({{count}})",
     "validationErrorNotification": "Procesdefinitie bevat validatiefouten. Controleer de gemarkeerde elementen.",
+    "idTooLong": "Het ID mag niet langer zijn dan {{max}} tekens.",
     "alreadyExistsNotification": "Procesdefinitie bestaat al",
     "deleteNotification": "Proces succesvol verwijderd",
     "upload": {
       "modalTitle": "Upload procesdefinitie",
       "title": "Upload bestand",
-      "description": "Alleen BPMN-bestanden worden ondersteund.",
+      "description": "BPMN-bestanden en geëxporteerde procespakketten (.zip) worden ondersteund.",
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
       "failure": "Deployment mislukt",
@@ -1862,24 +2182,103 @@
       "replaceTitle": "Bestaand proces vervangen?",
       "replaceContent": "Er bestaat al een proces met dezelfde sleutel. Wilt u dit vervangen?",
       "replaceContentWithDuplicates": "Er bestaat al een proces met dezelfde sleutel: {{duplicates}}. Wilt u dit vervangen?",
-      "replaceConfirm": "Vervangen"
+      "replaceConfirm": "Vervangen",
+      "invalidZip": {
+        "title": "Ongeldig bestand",
+        "text": "Dit bestand is geen geldig procespakket."
+      },
+      "pluginsDescription": "Kies per pluginconfiguratie uit het pakket de configuratie van deze omgeving.",
+      "summaryDescription": "De volgende onderdelen waarnaar het proces verwijst, ontbreken op deze omgeving. Importeer deze apart.",
+      "missingReference": {
+        "SUB_PROCESS": {
+          "title": "Subprocessen niet meegenomen",
+          "message": "Deze aangeroepen processen konden niet in het pakket worden meegenomen en bestaan niet op deze omgeving. Ze gebruiken een dynamische of deployment-binding, importeer ze daarom apart:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Beslistabellen niet meegenomen",
+          "message": "Deze beslistabellen konden niet in het pakket worden meegenomen en bestaan niet op deze omgeving. Ze gebruiken een dynamische of deployment-binding, importeer ze daarom apart:"
+        },
+        "FORM": {
+          "title": "Ontbrekende formulieren",
+          "message": "Importeer deze formulieren eerst:"
+        },
+        "FORM_FLOW": {
+          "title": "Formulierstromen niet ondersteund",
+          "message": "Formulierstromen kunnen niet worden gekoppeld aan een proces buiten een dossierdefinitie:"
+        },
+        "READ_ONLY_SYSTEM_PROCESS": {
+          "title": "Proces wordt beheerd via configuratie",
+          "message": "Dit proces kan niet worden overschreven, omdat het via de applicatieconfiguratie wordt beheerd:"
+        }
+      },
+      "willBeReplaced": {
+        "PROCESS_DEFINITION": {
+          "title": "Processen worden vervangen",
+          "message": "Deze processen bestaan al op deze omgeving en worden vervangen door de import:"
+        },
+        "DECISION_DEFINITION": {
+          "title": "Beslistabellen worden vervangen",
+          "message": "Deze beslistabellen bestaan al op deze omgeving en worden vervangen door de import:"
+        },
+        "FORM": {
+          "title": "Formulieren worden vervangen",
+          "message": "Deze formulieren bestaan al op deze omgeving en worden vervangen door de import:"
+        }
+      }
     },
+    "exportBpmn": "BPMN-definitie exporteren",
     "canInitializeDocument": "Start een dossier",
     "startableByUser": "Door gebruiker te starten",
-    "expressionErrors": {
-      "MISSING_EL_MARKERS": "Expressie {{expression}} moet ${...} of #{...} syntax gebruiken",
-      "UNCLOSED_PARENTHESIS": "Expressie {{expression}} heeft een niet-gesloten haakje '('",
-      "UNCLOSED_BRACE": "Expressie {{expression}} mist een sluitende accolade '}'",
-      "UNCLOSED_BRACKET": "Expressie {{expression}} heeft een niet-gesloten blokhaak '['",
-      "MISMATCHED_DELIMITER": "Expressie {{expression}} heeft niet-overeenkomende haakjes of accolades",
-      "INCOMPLETE_EXPRESSION": "Expressie {{expression}} is onvolledig",
-      "INVALID_SYNTAX": "Expressie {{expression}} heeft ongeldige syntax",
-      "BEAN_NOT_FOUND": "Geen bean gevonden met deze naam: {{expression}}. Als u een procesvariabele gebruikt, zorg dat deze tijdens runtime bestaat"
+    "validationErrorCodes": {
+      "NO_START_EVENT": "Proces heeft geen start event",
+      "NO_END_EVENT": "Proces heeft geen end event",
+      "MULTIPLE_NONE_START_EVENTS": "Proces heeft meerdere lege start events",
+      "NO_OUTGOING_FLOW": "Element heeft geen uitgaande flow",
+      "NO_INCOMING_FLOW": "Element heeft geen inkomende flow",
+      "UNREACHABLE_ELEMENT": "Element is niet bereikbaar vanaf een start event",
+      "NO_PATH_TO_END_EVENT": "Start event heeft geen pad naar een end event",
+      "SERVICE_TASK_NO_IMPLEMENTATION": "Service task heeft geen process link, implementatie of execution listener",
+      "USER_TASK_NO_FORM": "User task heeft geen process link of formulier",
+      "SEND_TASK_NO_IMPLEMENTATION": "Send task heeft geen process link of implementatie",
+      "RECEIVE_TASK_NO_MESSAGE": "Receive task heeft geen process link of message referentie",
+      "BUSINESS_RULE_TASK_NO_IMPLEMENTATION": "Business rule task heeft geen DMN decision referentie",
+      "CALL_ACTIVITY_NO_CALLED_ELEMENT": "Call activity heeft geen process link of called element",
+      "SEQUENCE_FLOW_NO_CONDITION": "Sequence flow van exclusive gateway heeft geen conditie",
+      "MESSAGE_EVENT_NO_MESSAGE": "Message event heeft geen process link of message referentie",
+      "TIMER_EVENT_NO_CONFIG": "Timer event heeft geen timer configuratie",
+      "SIGNAL_EVENT_NO_SIGNAL": "Signal event heeft geen signal referentie",
+      "CONDITIONAL_EVENT_NO_CONDITION": "Conditional event heeft geen condition",
+      "ERROR_EVENT_NO_ERROR": "Error event heeft geen error referentie",
+      "ESCALATION_EVENT_NO_ESCALATION": "Escalation event heeft geen escalation referentie",
+      "START_EVENT_NO_FORM": "Start event heeft geen process link of formulier",
+      "EXPRESSION_MISSING_EL_MARKERS": "Expression {{expression}} moet ${...} of #{...} syntax gebruiken",
+      "EXPRESSION_UNCLOSED_PARENTHESIS": "Expression {{expression}} heeft een niet-gesloten haakje",
+      "EXPRESSION_UNCLOSED_BRACE": "Expression {{expression}} mist een sluitende accolade",
+      "EXPRESSION_UNCLOSED_BRACKET": "Expression {{expression}} heeft een niet-gesloten blokhaak",
+      "EXPRESSION_MISMATCHED_DELIMITER": "Expression {{expression}} heeft niet-overeenkomende haakjes of accolades",
+      "EXPRESSION_INCOMPLETE": "Expression {{expression}} is onvolledig",
+      "EXPRESSION_INVALID_SYNTAX": "Expression {{expression}} heeft ongeldige syntax",
+      "EXPRESSION_BEAN_NOT_FOUND": "Geen bean '{{expression}}' gevonden. Als u een process variable gebruikt, zorg dat deze tijdens runtime bestaat",
+      "EXPRESSION_METHOD_NOT_FOUND": "Methode niet gevonden op bean. Controleer de expression {{expression}}",
+      "EXPRESSION_ARGUMENT_COUNT_MISMATCH": "Verkeerd aantal argumenten in expression",
+      "EXPRESSION_EMPTY_ARGUMENTS": "Een of meer argumenten zijn leeg in expression"
     },
     "warningConfirmation": {
       "title": "Proces bevat waarschuwingen",
       "content": "De procesdefinitie bevat waarschuwingen. Weet u zeker dat u wilt opslaan zonder de waarschuwingen op te lossen?",
       "confirm": "Toch opslaan"
+    },
+    "markers": {
+      "processLink": "Proceskoppeling",
+      "executionListener": "Uitvoeringslistener",
+      "taskListener": "Taaklistener",
+      "toggleTooltip": "Schakel zichtbaarheid van proceskoppeling, uitvoeringslistener en taaklistener markers",
+      "hide": "Markers verbergen",
+      "show": "Markers tonen"
+    },
+    "autofilled": {
+      "generic": "Automatisch ingevulde waarde aanwezig",
+      "sidebarMessage": "Dit veld is automatisch ingevuld. Sluit dit bericht om het niet meer te zien."
     }
   },
   "processCaseConnection": {
@@ -1919,6 +2318,7 @@
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
     "selectZaakTypeForCase": "Kies zaaktype voor dossier",
     "selectZaakType": "Kies zaaktype",
+    "present": "heden",
     "selectZakenApiPluginForCase": "Kies Zaken Api plugin voor aanmaken zaak",
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
@@ -1964,6 +2364,7 @@
     "icon": "Icoon",
     "iconPlaceholder": "Selecteer een icoon",
     "iconTooltip": "Selecteer een icoon",
+    "dragToReorder": "Sleep om te herschikken",
     "mainMenu": "Hoofdmenu",
     "toggleMenu": "Menu",
     "typeToSearch": "Typ hier om te zoeken",
@@ -1971,6 +2372,7 @@
     "noResults": "Geen resultaten",
     "loading": "Aan het laden...",
     "edit": "Aanpassen",
+    "view": "Bekijken",
     "noItemsFound": "Geen items gevonden",
     "clearAll": "Alles wissen",
     "clear": "Wissen",
@@ -2011,6 +2413,7 @@
     "create": "Aanmaken",
     "save": "Opslaan",
     "more": "Meer",
+    "options": "Opties",
     "export": "Exporteren",
     "list": {
       "itemsPerPage": "Items per pagina",
@@ -2060,13 +2463,19 @@
       "outline": "Omlijnd",
       "orange": "Oranje"
     },
-    "labels": {"dateCreationFrom": "Aanmaakdatum van", "dateCreationTo": "Aanmaakdatum tot"},
+    "labels": {
+      "dateCreationFrom": "Aanmaakdatum van",
+      "dateCreationTo": "Aanmaakdatum tot"
+    },
     "sorting": {
       "ascending": "Oplopend",
       "descending": "Aflopend",
       "noDefault": "Geen standaardsortering"
     },
-    "editor": {"visualEditor": "Visuele editor", "jsonEditor": "JSON editor"},
+    "editor": {
+      "visualEditor": "Visuele editor",
+      "jsonEditor": "JSON editor"
+    },
     "jsonEditor": {
       "cancelModal": {
         "title": "De editor verlaten",
@@ -2091,7 +2500,12 @@
     "dueDateSetNotificationTitle": "Einddatum ingesteld",
     "dueDateSetNotificationContent": "Einddatum '{{date}}' ingesteld voor taak '{{task}}'",
     "dueDateRemovedNotificationTitle": "Einddatum verwijderd",
-    "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'"
+    "dueDateRemovedNotificationContent": "Einddatum verwijderd voor taak '{{task}}'",
+    "externalPluginTaskForm": {
+      "unavailable": "Het pluginformulier van deze taak kon niet worden geladen. De plugin is mogelijk niet beschikbaar of biedt geen taakformulier meer aan.",
+      "tokenError": "Kon geen beveiligde verbinding met de plugin maken om het formulier van deze taak te laden.",
+      "submitError": "De taak kon niet worden voltooid. Probeer het opnieuw of neem contact op met support."
+    }
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan",
@@ -2174,7 +2588,11 @@
     "globalSearchFilter": "Zoek in geheel document",
     "globalSearchFilterPlaceholder": "Zoek in alle documentvelden..."
   },
-  "webcam": {"takePicture": "Foto maken", "save": "Opslaan", "redo": "Opnieuw"},
+  "webcam": {
+    "takePicture": "Foto maken",
+    "save": "Opslaan",
+    "redo": "Opnieuw"
+  },
   "customers": {
     "name": "Naam",
     "citizenServiceNumber": "Burgerservicenummer",
@@ -2194,7 +2612,16 @@
     "completeButtonText": "Voltooien"
   },
   "pages": {
-    "plugins": {"title": "Plugins", "noResults": "Er zijn geen plugins geconfigureerd"},
+    "plugins": {
+      "title": "Plugins",
+      "noResults": "Er zijn geen plugins geconfigureerd"
+    },
+    "pluginHosts": {
+      "title": "Plugin-hosts"
+    },
+    "pluginApps": {
+      "title": "Apps"
+    },
     "customercases": {
       "title": "Zaken",
       "description": "Op deze pagina kun je de zaken van een specifieke klant inzien."
@@ -2212,33 +2639,303 @@
     "configurationId": "Configuratie ID",
     "configurationIdTooltip": "Onder deze ID zal de plugin worden opgeslagen. Het ID moet het format van een UUID hebben"
   },
+  "pluginConfigurationMapping": {
+    "unknownPlugin": "Onbekende plugin",
+    "source": "Uit het pakket",
+    "target": "Op deze omgeving",
+    "selectPlaceholder": "Selecteer een configuratie",
+    "notInstalled": "Plugin niet geïnstalleerd",
+    "noConfigurations": "Geen configuraties beschikbaar",
+    "unidentifiable": {
+      "title": "Pluginconfiguraties onbekend",
+      "message": "Van sommige pluginconfiguraties kan niet worden vastgesteld om welke plugin het gaat. Deze koppelingen moeten na het importeren handmatig worden ingesteld."
+    }
+  },
   "pluginManagement": {
     "tableItemsText": "plugin-configuraties",
     "add": "Plugin configureren",
+    "addHost": "Plugin-host toevoegen",
+    "addApp": "App toevoegen",
+    "appAdd": {
+      "steps": {
+        "connection": "Verbinden",
+        "configuration": "Gegevens invullen",
+        "permissions": "Rechten"
+      },
+      "connect": "Verbinden",
+      "connecting": "Verbinding maken met de app…",
+      "connectedTitle": "App verbonden",
+      "connectedDescription": "De app is succesvol verbonden. Ga verder om de app te configureren.",
+      "connectFailed": "Er kon geen verbinding met de app worden gemaakt. Controleer de verbindingsgegevens en probeer het opnieuw.",
+      "conflictTitle": "App is al geregistreerd",
+      "conflictDescription": "De integratie die deze app aanbiedt ({{pluginId}}) is al geregistreerd door '{{hostName}}'. Verbind een app maar één keer, of verwijder eerst de bestaande registratie.",
+      "conflictUnknownHost": "een andere registratie",
+      "discoveryTimeoutTitle": "App toegevoegd, maar nog niet gereed",
+      "discoveryTimeoutDescription": "De app is toegevoegd, maar is nog niet gereed om te configureren. Mogelijk is de app onbereikbaar. Probeer het opnieuw, of sluit dit venster en configureer de app later vanuit de lijst.",
+      "retry": "Opnieuw proberen",
+      "preparing": "Appgegevens ophalen…",
+      "continue": "Doorgaan",
+      "complete": "Configuratie opslaan",
+      "resumeLoadFailed": "De app kon niet worden geladen. Mogelijk is deze verwijderd.",
+      "refreshModal": {
+        "title": "Vernieuwen vereist",
+        "description": "Voordat deze app geconfigureerd kan worden, moet de pagina worden vernieuwd zodat het beveiligingsbeleid kan worden bijgewerkt. Na het vernieuwen ga je automatisch verder met de configuratiestap.",
+        "confirm": "Vernieuwen en doorgaan",
+        "cancel": "Later"
+      }
+    },
+    "editConfiguration": "Configuratie bewerken",
+    "notConfigured": "Niet geconfigureerd",
+    "uploadPlugin": "Plugin uploaden",
+    "selectHost": "Selecteer een plugin-host",
+    "upload": {
+      "title": "Plugin-bundel",
+      "buttonText": "Bestand kiezen",
+      "description": "Alleen .zip-bestanden worden geaccepteerd",
+      "failedTitle": "Uploaden mislukt",
+      "rejected": "De plugin-host heeft de upload geweigerd.",
+      "tooLargeTitle": "Pakket te groot",
+      "tooLarge": "Dit pluginpakket is {{sizeMb}} MB. De maximaal geaccepteerde grootte is {{maxMb}} MB.",
+      "identicalTitle": "Al up-to-date",
+      "identicalMessage": "Exact dit pakket staat al op de host — de inhoud is identiek, dus er valt niets te overschrijven.",
+      "overwriteTitle": "Bestaande pluginversie overschrijven?",
+      "overwriteWarningTitle": "Dit overschrijft de huidige pluginversie",
+      "overwriteWarning": "Versie {{version}} van '{{pluginId}}' bestaat al op de host met andere inhoud. Overschrijven kan tot onverwacht gedrag leiden voor configuraties en processen die deze versie al gebruiken. Omdat de inhoud verschilt: beoordeel hieronder de permissies die het geüploade pakket vraagt en bevestig om door te gaan — alle bestaande configuraties van deze versie worden opnieuw ingesteld op exact deze permissies.",
+      "overwriteConfirm": "Versie overschrijven",
+      "successTitle": "Plugin geïnstalleerd",
+      "successMessage": "{{pluginId}} {{version}} is geïnstalleerd en kan nu geconfigureerd worden.",
+      "configureAction": "Plugin configureren"
+    },
     "noDefinitions": "Geen plugin-definities gevonden.",
+    "noHosts": "Geen plugin-hosts geconfigureerd.",
+    "noApps": "Geen apps geconfigureerd.",
+    "uploadDisabledTooltip": "Een verbonden plugin-host is vereist om plugins te kunnen uploaden.",
     "save": "Configuratie opslaan",
     "remove": "Configuratie verwijderen",
+    "tabs": {
+      "configurations": "Configuraties",
+      "pluginHosts": "Plugin-hosts",
+      "integrations": "Integraties"
+    },
     "labels": {
       "pluginName": "Plugin naam",
       "identifier": "Identifier",
-      "configurationName": "Configuratienaam"
+      "configurationName": "Configuratienaam",
+      "name": "Naam",
+      "baseUrl": "Basis-URL",
+      "kind": "Type",
+      "status": "Status",
+      "lastHealthCheck": "Laatste health check",
+      "secret": "Geheim",
+      "source": "Bron",
+      "properties": "Eigenschappen (JSON)",
+      "pluginHost": "Plugin-host",
+      "gzacCallbackBaseUrl": "GZAC callback-URL",
+      "eventBrokerAmqpUrl": "Event broker-URL (optioneel)",
+      "eventBrokerExchange": "Event broker exchange (optioneel)",
+      "eventQueueMode": "Event queue-modus",
+      "eventQueueTtlMs": "Event queue inactiviteits-TTL (ms)",
+      "frontendOrigins": "Toegestane frontend-origins",
+      "host": "Host",
+      "configuration": "Configuratie"
     },
+    "eventQueueMode": {
+      "live": "Live (events gaan verloren als de host uitstaat)",
+      "durable": "Duurzaam (bewaart events gedurende de TTL als de host uitstaat)",
+      "liveApp": "Live (events gaan verloren als de app uitstaat)",
+      "durableApp": "Duurzaam (bewaart events gedurende de TTL als de app uitstaat)"
+    },
+    "hints": {
+      "eventQueueTtlMs": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden host. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
+      "eventQueueTtlMsApp": "De duurzame queue wordt verwijderd na dit aantal ms zonder verbonden app. Min 1u (3600000), max 30d (2592000000), standaard 72u (259200000).",
+      "frontendOrigins": "Browser-origins (scheme://host[:poort], zonder pad) die pluginschermen van deze host mogen tonen. Voeg elke Valtimo-frontend-URL toe waarvandaan gebruikers plugins openen, inclusief een eventuele proxy-alias.",
+      "noFrontendOrigins": "Zonder origins kan geen enkele pagina de pluginschermen van deze host tonen.",
+      "secretMinLength": "De secret moet minimaal {{min}} tekens bevatten — de host start niet met een kortere waarde.",
+      "secretUnchanged": "Laat leeg om de huidige secret te behouden."
+    },
+    "editConnection": "Verbinding bewerken",
+    "editHost": {
+      "modalTitle": "Verbinding bewerken",
+      "modalTitleApp": "App-verbinding bewerken",
+      "updateFailedTitle": "Bijwerken mislukt",
+      "secretWarningTitle": "Secret gewijzigd",
+      "secretWarningMessage": "De host moet opnieuw worden gestart met de bijbehorende ADMIN_TOKEN. Tot die tijd kan GZAC de host niet bereiken en wordt deze als niet-bereikbaar getoond.",
+      "brokerNoteTitle": "Event-broker gewijzigd",
+      "brokerNoteMessage": "Event-consumers verbinden na het opslaan opnieuw met de nieuwe broker. Een achtergebleven durable queue op de oude broker verloopt vanzelf."
+    },
+    "editEventQueue": "Event queue bewerken",
+    "editHostEventQueueModalTitle": "Event queue bewerken voor {{name}}",
+    "saveEventQueue": "Opslaan",
+    "addFrontendOrigin": "Origin toevoegen",
+    "editFrontendOrigins": "Frontend-origins bewerken",
+    "editHostFrontendOriginsModalTitle": "Frontend-origins voor {{name}}",
+    "saveFrontendOrigins": "Origins opslaan",
+    "host": {
+      "createFailedTitle": "Opslaan mislukt",
+      "createFailedFallback": "De host kon niet worden opgeslagen. Controleer de ingevulde waarden en probeer het opnieuw."
+    },
+    "source": {
+      "embedded": "Ingebed",
+      "external": "Extern"
+    },
+    "hostStatus": {
+      "CONNECTED": "Verbonden",
+      "UNREACHABLE": "Onbereikbaar"
+    },
+    "kind": {
+      "PLUGIN_HOST": "Plugin-host",
+      "APP": "App"
+    },
+    "editExternalConfiguration": "Externe plugin-configuratie bewerken",
+    "invalidJson": "Ongeldige JSON",
     "addSteps": {
       "step0": "Kies je plugin",
       "step1": "Gegevens invullen",
+      "step2": "Rechten",
       "complete": "Configuratie opslaan"
+    },
+    "editSteps": {
+      "step0": "Gegevens invullen",
+      "step1": "Rechten",
+      "save": "Configuratie opslaan"
+    },
+    "permissions": {
+      "description": "Door deze rechten te accepteren vertrouwt u deze plugin om binnen uw omgeving te handelen. Een toegekende capaciteit, endpoint of event geeft de plugin toegang tot platformgegevens en -diensten — ga alleen akkoord als u de bron van de plugin vertrouwt en heeft beoordeeld wat deze aanvraagt.",
+      "descriptionReadonly": "De volgende rechten zijn geaccepteerd bij het activeren van deze configuratie. Ze bepalen wat de plugin mag doen binnen uw omgeving.",
+      "noEndpoints": "Deze plugin heeft geen rechten nodig.",
+      "capabilitiesHeading": "Hostcapaciteiten",
+      "capabilityHeading": "Capaciteit",
+      "capability": {
+        "gzac_api": "Geauthenticeerde API-aanroepen doen naar de GZAC-instantie (dossiergegevens, taken, documenten lezen en schrijven, enz.)",
+        "http_request": "Uitgaande HTTP-verzoeken doen naar externe diensten",
+        "kv": "Persistente sleutel-waardeparen opslaan en ophalen, beperkt tot deze configuratie",
+        "log": "Gestructureerde logboekregels schrijven die zichtbaar zijn voor beheerders",
+        "frontend_data": "Dataverzoeken vanuit de eigen gebruikersinterface van de plugin afhandelen"
+      },
+      "endpointsHeading": "API-endpoints",
+      "eventsHeading": "Events",
+      "methodHeading": "Methode",
+      "endpointHeading": "Endpoint",
+      "descriptionHeading": "Omschrijving",
+      "egressHeading": "Externe verbindingen",
+      "egressDescription": "Deze plugin kan verbinding maken met de onderstaande adressen, en met niets anders. Controleer of u elk adres herkent en of u verwacht dat de plugin daarmee communiceert.",
+      "egressTargetHeading": "Adres",
+      "egressSourceHeading": "Herkomst",
+      "egressWildcard": "Elk adres onder dit domein — de plugin bepaalt zelf met welk adres verbinding wordt gemaakt",
+      "egressFromManifest": "Vereist door de plugin",
+      "egressFromConfiguration": "Uit een URL die u in deze configuratie heeft ingevuld",
+      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten"
+    },
+    "logs": {
+      "menuItem": "Logs",
+      "title": "Pluginlogs",
+      "columns": {
+        "timestamp": "Tijdstip",
+        "level": "Niveau",
+        "source": "Bron",
+        "message": "Bericht"
+      },
+      "data": "Gegevens",
+      "filterAll": "Alle",
+      "levels": {
+        "info": "Info",
+        "warn": "Waarschuwing",
+        "error": "Fout",
+        "debug": "Debug"
+      },
+      "sources": {
+        "plugin": "Plugin",
+        "gzacApi": "GZAC API",
+        "httpRequest": "HTTP-verzoek"
+      },
+      "empty": "Geen logboekregels gevonden.",
+      "close": "Sluiten"
+    },
+    "reloadModal": {
+      "title": "Herladen vereist",
+      "description": "De plugin-host is succesvol toegevoegd. Om plugins van deze host te configureren, moet de pagina opnieuw worden geladen zodat beveiligingsbeleid kan worden bijgewerkt.",
+      "reload": "Nu herladen",
+      "later": "Later"
+    },
+    "deleteHostModal": {
+      "title": "Plugin-host verwijderen",
+      "description": "Weet je zeker dat je deze plugin-host wilt verwijderen? Alle plugin-definities en configuraties van deze host worden ook verwijderd. Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "deleteConfigurationModal": {
+      "title": "Plugin-configuratie verwijderen",
+      "description": "Weet je zeker dat je deze plugin-configuratie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    },
+    "hostInUseModal": {
+      "title": "Plugin-host is in gebruik",
+      "thisHost": "deze plugin-host",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, dossiertabbladen, dossierwidgets of bouwblokken nog gebruikmaken van een plugin of configuratie van deze host. Verwijder eerst deze verwijzingen."
+    },
+    "configurationInUseModal": {
+      "title": "Plugin-configuratie is in gebruik",
+      "thisConfiguration": "deze plugin-configuratie",
+      "description": "{{ entityName }} kan niet worden verwijderd omdat de volgende proceskoppelingen, dossiertabbladen, dossierwidgets of bouwblokken er nog naar verwijzen. Verwijder eerst deze verwijzingen."
+    },
+    "usageModal": {
+      "headers": {
+        "activity": "Activiteit",
+        "configuration": "Plugin-configuratie",
+        "type": "Type",
+        "linkedTo": "Gekoppeld aan",
+        "processDefinition": "Procesdefinitie"
+      },
+      "parentType": {
+        "CASE": "Dossier",
+        "BUILDING_BLOCK": "Bouwblok",
+        "GLOBAL": "Globaal"
+      },
+      "caseTab": "Dossiertabblad",
+      "caseWidget": "Dossierwidget",
+      "buildingBlockMapping": "Plugin-koppeling van bouwblok",
+      "menuPage": "Menupagina"
+    },
+    "reviewRequired": {
+      "tag": "Beoordeling vereist",
+      "permissionsChanged": "Het pluginpakket op de host is gewijzigd en vraagt nu andere rechten dan de rechten die zijn geaccepteerd. Er wordt niets naar de host gestuurd totdat een beheerder de nieuwe rechten beoordeelt en accepteert.",
+      "codeChanged": "Het pluginpakket op de host is gewijzigd. Het vraagt dezelfde rechten als voorheen, maar de code is niet de code die is geaccepteerd. Er wordt niets naar de host gestuurd totdat een beheerder het nieuwe pakket bevestigt."
+    },
+    "review": {
+      "menuItem": "Wijzigingen beoordelen",
+      "modalTitle": "Gewijzigde app beoordelen",
+      "accept": "Wijzigingen accepteren",
+      "failed": "Accepteren van de wijzigingen is mislukt"
+    },
+    "awaitingHost": {
+      "modalTitle": "Pluginhost nog niet beschikbaar",
+      "modalMessage": "Deze configuratie is aangemaakt vanuit een deployment-descriptor, maar de pluginhost heeft de plugin nog niet aangeboden — de instellingen en rechten zijn daardoor onbekend en niet te bewerken. Zodra de host beschikbaar is, wordt bewerken automatisch mogelijk. Verwijderen kan wel.",
+      "tag": "Wacht op host",
+      "tooltip": "Deze plugin is gedeclareerd door een deployment-descriptor, maar de host heeft hem nog niet aangeboden. De configuratie bestaat en alles wat ernaar verwijst werkt, maar de plugin kan pas draaien als de host beschikbaar is."
+    },
+    "compatibility": {
+      "incompatibleTag": "Incompatibel",
+      "warningTitle": "Mogelijk compatibiliteitsprobleem",
+      "uploadWarningTitle": "Een incompatibele plugin uploaden?",
+      "uploadAnyway": "Toch uploaden",
+      "intro": "Jouw GZAC-versie is mogelijk incompatibel met deze plugin.",
+      "current": "Je gebruikt momenteel {{current}}.",
+      "minimum": "Minimaal compatibele versie: {{min}}.",
+      "maximum": "Maximaal compatibele versie: {{max}}."
     }
   },
   "customerCases": {
     "tableItemsText": "zaken",
-    "labels": {"zaakNummer": "Zaaknummer", "zaakStatus": "Status", "zaakType": "Type"}
+    "labels": {
+      "zaakNummer": "Zaaknummer",
+      "zaakStatus": "Status",
+      "zaakType": "Type"
+    }
   },
   "processLink": {
     "create": "Proceskoppeling aanmaken",
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
     "unlink": "Ontkoppelen",
-    "noPluginFunctions": "Deze plugin ondersteunt geen plugin-acties."
+    "noPluginFunctions": "Deze plugin ondersteunt geen plugin-acties.",
+    "pluginForm": "Pluginformulier"
   },
   "keycloak": {
     "expiryPromptTitle": "De sessie verloopt bijna",
@@ -2337,8 +3034,12 @@
     "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten.",
     "required": "Bepaalt of de gebruiker een waarde moet invullen voordat er gezocht kan worden."
   },
-  "searchFieldDataType": {"select": "Selecteer een datatype"},
-  "searchFieldFieldType": {"select": "Selecteer een veldtype"},
+  "searchFieldDataType": {
+    "select": "Selecteer een datatype"
+  },
+  "searchFieldFieldType": {
+    "select": "Selecteer een veldtype"
+  },
   "listColumn": {
     "title": "Titel",
     "titleTitle": "Titel (optioneel)",
@@ -2400,9 +3101,14 @@
     "createObject": "Nieuw object",
     "editObject": "Wijzig object",
     "deleteObject": "Verwijder object",
-    "labels": {"recordIndex": "Record index", "objectUrl": "Object URL"},
+    "labels": {
+      "recordIndex": "Record index",
+      "objectUrl": "Object URL"
+    },
     "header": "Object informatie",
-    "tabs": {"general": "Algemeen"},
+    "tabs": {
+      "general": "Algemeen"
+    },
     "close": "Sluiten",
     "save": "Object opslaan",
     "delete": "Object verwijderen",
@@ -2447,7 +3153,11 @@
     "edit": "Object wijzigen",
     "download": "Download",
     "visibleInMenu": "Zichtbaar in het menu",
-    "tabs": {"general": "Algemeen", "searchFields": "Zoekvelden", "list": "Lijst"},
+    "tabs": {
+      "general": "Algemeen",
+      "searchFields": "Zoekvelden",
+      "list": "Lijst"
+    },
     "underscoresToSpaces": "Lage streepjes naar spaties",
     "select": "Selecteer een weergavetype"
   },
@@ -2462,11 +3172,15 @@
     "Value Resolver": "Value Resolver",
     "Source key": "Bronsleutel",
     "Target key": "Doelsleutel",
-    "formioIbanComponent": {"errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."},
+    "formioIbanComponent": {
+      "errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."
+    },
     "formioCurrencyComponent": {
       "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
     },
-    "formioFormViewModelComponent": {"submitError": "Ongeldige submissie"}
+    "formioFormViewModelComponent": {
+      "submitError": "Ongeldige submissie"
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",
@@ -2481,6 +3195,10 @@
     "buildingBlockActionTitle": "Bouwblokactie: {{buildingBlockName}}",
     "modalTitle": "Processtap: {{processStepName}}",
     "pluginConfiguration": "Plugin configuratie: {{pluginConfigTitle}}",
+    "externalPluginTaskForm": {
+      "defaultTitle": "Formulier",
+      "description": "De geselecteerde plugin toont het formulier voor deze gebruikerstaak en voltooit de taak zelf, met de rechten van de huidige gebruiker. Er is hier niets meer te configureren — sla op om te koppelen."
+    },
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
@@ -2499,6 +3217,18 @@
       "checkboxDescription": "Activeert Form View Model form afhandeling"
     },
     "importConfiguration": "Configuratie importeren",
+    "externalPlugin": "Externe plugin",
+    "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe plugin actie als JSON. Klik op opslaan wanneer gereed.",
+    "actionPropertiesJson": "Actie-eigenschappen (JSON)",
+    "invalidJson": "Ongeldige JSON",
+    "resultMappings": {
+      "description": "Koppel waarden uit het resultaat van de actie aan het dossierdocument of een procesvariabele.",
+      "source": "Pad in resultaat",
+      "target": "Bestemming",
+      "sourcePlaceholder": "/pad/in/resultaat",
+      "sourceSelectPlaceholder": "Selecteer een resultaatveld...",
+      "addRow": "Mapping toevoegen"
+    },
     "selectProcess": "Selecteer een proces",
     "process": "Proces",
     "version": "Versie",
@@ -2539,16 +3269,54 @@
         "zaakInstanceAndTypeLink": "Dit bouwblok heeft mogelijk zowel een zaakinstantiekoppeling als een zaaktypekoppeling nodig, die zijn geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
         "zaakInstanceLink": "Dit bouwblok heeft mogelijk een zaakinstantiekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok wordt geconfigureerd, om correct te functioneren.",
         "zaakTypeLink": "Dit bouwblok heeft mogelijk een zaaktypekoppeling nodig, die is geconfigureerd voor de dossierdefinitie waaronder dit bouwblok is geconfigureerd, om correct te functioneren."
-      }
+      },
+      "externalPluginVersionMismatchWarning": "De pluginversie van de geselecteerde configuratie ({{selectedVersion}}) komt niet overeen met de versie ({{requiredVersion}}) waaraan dit bouwblok is gekoppeld. Deze actie wordt mogelijk niet ondersteund."
     }
   },
   "processLinkType": {
-    "plugin": "Plugin",
+    "plugin": "Plugins & Apps",
     "form": "Formulier",
     "form-flow": "FormFlow",
     "url": "URL",
     "ui-component": "UI Component",
     "building-block": "Bouwblok"
+  },
+  "externalPlugin": {
+    "menuTitle": "Externe Plugins",
+    "host": {
+      "title": "Hosts",
+      "add": "Host toevoegen",
+      "name": "Naam",
+      "baseUrl": "Basis-URL",
+      "status": "Status",
+      "lastHealthCheck": "Laatste health check"
+    },
+    "definition": {
+      "title": "Plugin-definities",
+      "pluginId": "Plugin-ID",
+      "version": "Versie",
+      "name": "Naam",
+      "provider": "Leverancier",
+      "status": "Status"
+    },
+    "configuration": {
+      "title": "Configuraties",
+      "titleField": "Titel",
+      "add": "Configuratie toevoegen",
+      "definition": "Plugin-definitie",
+      "definitionPlaceholder": "Selecteer een plugin",
+      "definitionId": "Definitie",
+      "createdAt": "Aangemaakt op",
+      "properties": "Eigenschappen (JSON)",
+      "propertiesInvalidJson": "Eigenschappen moeten geldige JSON zijn"
+    },
+    "processLink": {
+      "configuration": "Plugin-configuratie",
+      "configurationPlaceholder": "Selecteer een configuratie",
+      "actionKey": "Actiesleutel",
+      "actionProperties": "Actie-eigenschappen (JSON)",
+      "actionPropertiesInvalidJson": "Actie-eigenschappen moeten geldige JSON zijn"
+    }
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
@@ -2558,7 +3326,10 @@
     "displayType": {
       "label": "Selecteer het weergavetype van het formulier",
       "placeholder": "Selecteer hoe het formulier moet worden weergegeven",
-      "options": {"modal": "Modaal", "panel": "Panel"}
+      "options": {
+        "modal": "Modaal",
+        "panel": "Panel"
+      }
     },
     "formSize": {
       "label": "Selecteer formuliergrootte",
@@ -2575,6 +3346,7 @@
     "choosePluginDefinition": "Kies plugin-definitie",
     "choosePluginAction": "Kies je actie",
     "configurePluginAction": "Configureer je actie",
+    "configurePluginActionResultMappings": "Uitvoer koppelen",
     "selectURL": "Configureer je URL",
     "subtitles": "Ondertitels",
     "addSubtitle": "Ondertitel toevoegen",
@@ -2584,7 +3356,7 @@
     "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
-    "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",
+    "plugin": "Er zijn geen plugin- of app-configuraties beschikbaar. Maak een plugin-configuratie aan of verbind een app om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
     "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap.",
     "ui-component": "Er zijn geen maatwerkcomponenten geregistreerd. Maak er een aan om deze optie te kunnen gebruiken.",
@@ -2618,10 +3390,10 @@
       }
     },
     "resourceTypes": {
-      "caseDefinition": "Zaakdossier-definitie",
-      "caseTab": "Zaakdossier-tab",
-      "caseWidget": "Zaakdossier-widget",
-      "caseWidgetTabWidget": "Zaakdossier-tab-widget",
+      "caseDefinition": "Dossierdefinitie",
+      "caseTab": "Dossiertabblad",
+      "caseWidget": "Dossierwidget",
+      "caseWidgetTabWidget": "Dossiertabblad-widget",
       "dashboard": "Dashboard",
       "jsonSchemaDocument": "Document",
       "jsonSchemaDocumentDefinition": "Documentdefinitie",
@@ -2734,14 +3506,14 @@
       "tooltips": {
         "resourceType": "Het type resource waarvoor deze permissie toegang geeft. Bijvoorbeeld: een dossierdefinitie, document of taak.",
         "actions": "Wat deze rol met de resource mag doen. Bijvoorbeeld: bekijken, wijzigen of verwijderen. Er moet minstens één geselecteerd zijn.",
-        "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een zaak).",
+        "conditionType": "Veld vergelijkt een eigenschap van de resource. JSON-veld leest een waarde op een JSON-pad in de JSON-inhoud van het veld. Gerelateerde resource controleert een gekoppelde resource (bijv. het document van een dossier).",
         "field": "Een eigenschap van de resource om te controleren. Bijvoorbeeld: name, createdBy of active.",
         "operator": "Hoe het veld met de waarde wordt vergeleken. Bijvoorbeeld: is gelijk aan, is een van, of bevat.",
         "value": "De waarde om mee te vergelijken — bijv. tekst zoals OPEN, een getal zoals 42, true/false, of een van de ondersteunde placeholders: ${currentUserId}, ${currentUsername}, ${currentUserEmail}, ${currentUserRoles}, ${currentUserTeams}. Voor de operatoren 'is een van' en 'bevat' voer je een JSON-array in, zoals [\"OPEN\", \"CLOSED\"]. Typ null voor geen waarde — het veld mag niet leeg zijn.",
         "path": "Een JSON-pad in de inhoud van het veld dat is gekozen bij 'Veld om uit te lezen'. Bijvoorbeeld: /root/status of /aanvrager/bsn.",
         "clazz": "Het volledige Java-type van de waarde. Bijvoorbeeld: java.lang.String of java.lang.Boolean.",
-        "relatedResource": "De gekoppelde resource waartegen de geneste voorwaarden worden geëvalueerd. Bijvoorbeeld: het document dat aan een zaak hangt.",
-        "contextResourceType": "Verleen deze permissie alleen wanneer de resource binnen een andere resource wordt benaderd. Bijvoorbeeld: documenten binnen een specifieke zaakdefinitie."
+        "relatedResource": "De gekoppelde resource waartegen de geneste voorwaarden worden geëvalueerd. Bijvoorbeeld: het document dat aan een dossier hangt.",
+        "contextResourceType": "Verleen deze permissie alleen wanneer de resource binnen een andere resource wordt benaderd. Bijvoorbeeld: documenten binnen een specifieke dossierdefinitie."
       }
     },
     "overview": {
@@ -2785,9 +3557,9 @@
       },
       "fields": {
         "caseDefinition": {
-          "idKey": "zaakdossier-definitie-sleutel",
-          "idVersionTag": "zaakdossier-definitie-versie",
-          "name": "zaakdossier-definitie-naam",
+          "idKey": "dossierdefinitie-sleutel",
+          "idVersionTag": "dossierdefinitie-versie",
+          "name": "dossierdefinitie-naam",
           "description": "omschrijving",
           "basedOnVersionTag": "gebaseerd op versie",
           "final": "is definitief",
@@ -2804,8 +3576,8 @@
           "createdDate": "aanmaakdatum"
         },
         "caseTab": {
-          "idCaseDefinitionIdKey": "zaakdossier-definitie-sleutel",
-          "idCaseDefinitionIdVersionTag": "zaakdossier-definitie-versie",
+          "idCaseDefinitionIdKey": "dossierdefinitie-sleutel",
+          "idCaseDefinitionIdVersionTag": "dossierdefinitie-versie",
           "idKey": "tab-sleutel",
           "name": "tab-naam",
           "tabOrder": "tab-volgorde",
@@ -2841,8 +3613,8 @@
           "assignedTeamTitle": "toegewezen team-titel",
           "documentDefinitionIdName": "documentdefinitie-naam",
           "documentDefinitionIdVersion": "documentdefinitie-versie",
-          "documentDefinitionIdCaseDefinitionIdKey": "zaakdossier-definitie-sleutel (via documentdefinitie)",
-          "documentDefinitionIdCaseDefinitionIdVersionTag": "zaakdossier-definitie-versie (via documentdefinitie)",
+          "documentDefinitionIdCaseDefinitionIdKey": "dossierdefinitie-sleutel (via documentdefinitie)",
+          "documentDefinitionIdCaseDefinitionIdVersionTag": "dossierdefinitie-versie (via documentdefinitie)",
           "version": "versie",
           "createdOn": "aangemaakt op",
           "modifiedOn": "gewijzigd op",
@@ -2871,7 +3643,7 @@
           "order": "volgorde"
         },
         "zgwDocument": {
-          "caseDocumentId": "zaakdocument-ID",
+          "caseDocumentId": "dossierdocument-ID",
           "vertrouwelijkheidaanduiding": "vertrouwelijkheidaanduiding",
           "status": "status",
           "informatieobjecttypeUrl": "informatieobjecttype-URL",
@@ -2903,7 +3675,7 @@
           "activityId": "huidige activiteit",
           "activityInstanceId": "activiteit-instantie-ID",
           "active": "is actief",
-          "caseInstanceId": "zaakinstantie-ID",
+          "caseInstanceId": "dossierinstantie-ID",
           "processInstanceId": "procesinstantie-ID",
           "processDefinitionId": "procesdefinitie-ID",
           "processDefinitionKey": "procesdefinitie-sleutel",
@@ -2940,8 +3712,8 @@
           "lastUpdated": "laatst bijgewerkt",
           "dueDate": "vervaldatum",
           "followUpDate": "opvolgdatum",
-          "caseInstanceId": "zaakinstantie-ID",
-          "caseDefinitionId": "zaakdefinitie-ID",
+          "caseInstanceId": "dossierinstantie-ID",
+          "caseDefinitionId": "dossierdefinitie-ID",
           "processInstanceId": "procesinstantie-ID",
           "processDefinitionId": "procesdefinitie-ID",
           "processDefinitionKey": "procesdefinitie-sleutel",
@@ -2988,6 +3760,103 @@
     "noResults": {
       "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
       "title": "Geen form flows toegevoegd"
+    },
+    "tabs": {
+      "editor": "Editor (bèta)",
+      "jsonEditor": "JSON-editor"
+    },
+    "uiEditor": {
+      "stepsTitle": "Stappen",
+      "startStep": "Startstap",
+      "stepType": "Type",
+      "addStep": "Stap toevoegen",
+      "deleteStep": "Stap verwijderen",
+      "makeStartStep": "Maak startstap",
+      "selectForm": "Kies een formulier",
+      "selectComponent": "Kies een component",
+      "fieldTooltips": {
+        "key": "Identificeert deze stap. De startstap en overgangen verwijzen ernaar; bij hernoemen worden die verwijzingen automatisch bijgewerkt.",
+        "title": "Optioneel. Wordt getoond in het kruimelpad terwijl een gebruiker de form flow doorloopt.",
+        "type": "Wat deze stap toont: \"form\" toont een Form.io-formulier, \"custom-component\" toont een Angular-component die door deze implementatie is geregistreerd. Andere waarden worden afgehandeld door een bijpassende staptype-handler in de backend.",
+        "typeNoComponents": "\"custom-component\" is niet beschikbaar omdat deze implementatie geen custom componenten heeft geregistreerd.",
+        "definition": "Het formulier van deze zaakdefinitie of building block dat voor deze stap wordt getoond.",
+        "componentId": "De geregistreerde Angular-component die voor deze stap wordt getoond.",
+        "targetStep": "De stap waar de gebruiker naartoe gaat wanneer deze overgang wordt gekozen.",
+        "condition": "Optionele SpEL-expressie tussen ${ en }. Overgangen worden van boven naar beneden geëvalueerd; laat leeg om dit de standaardroute te maken."
+      },
+      "stepDetails": "Stapdetails",
+      "title": "Titel",
+      "titlePlaceholder": "Wordt getoond in het kruimelpad",
+      "keyPlaceholder": "Bijvoorbeeld persoonsgegevensStap",
+      "duplicateKey": "Deze key wordt al gebruikt door een andere stap",
+      "required": "Dit veld is verplicht",
+      "navigation": "Navigatie",
+      "navigationDescription": "Waar de gebruiker naartoe kan na het afronden van deze stap. Overgangen worden van boven naar beneden geëvalueerd; de eerste waarvan de conditie waar is wordt gekozen en een overgang zonder conditie is de standaard.",
+      "targetStep": "Volgende stap",
+      "selectStep": "Kies een stap",
+      "condition": "Conditie",
+      "conditionPlaceholder": "${step.submissionData.leeftijd >= 21} (leeg = standaard)",
+      "moveUp": "Omhoog",
+      "moveDown": "Omlaag",
+      "addTransition": "Overgang toevoegen",
+      "noTransitions": "Geen overgangen — de form flow eindigt na deze stap.",
+      "multipleDefaultTransitions": "Slechts één overgang mag zonder conditie zijn; die overgang is de standaard.",
+      "conditionExamplesTitle": "Condities zijn Spring Expression Language (SpEL)-expressies tussen ${ en }. Ze kunnen gebruikmaken van:",
+      "conditionExampleSubmission": "waarden die de gebruiker in deze stap heeft ingevuld, via step.submissionData",
+      "conditionExampleContext": "zaak- en procescontext, via additionalProperties (de exacte waarden staan hieronder)",
+      "conditionExampleDefault": "Vergelijkingsoperatoren zoals ==, !=, >, >= en booleaanse operatoren zoals && en || worden ondersteund. Een overgang zonder conditie is de standaardroute.",
+      "additionalPropertiesTitle": "Beschikbaar in additionalProperties:",
+      "additionalPropertiesUserTask": "Wanneer de form flow gekoppeld is aan een gebruikerstaak:",
+      "additionalPropertiesStartEvent": "Wanneer de form flow gekoppeld is aan een startgebeurtenis:",
+      "additionalPropertiesOptional": "(indien beschikbaar)",
+      "additionalProperties": {
+        "processInstanceId": "het id van de procesinstantie waar de taak bij hoort",
+        "processInstanceBusinessKey": "de business key van die procesinstantie",
+        "taskInstanceId": "het id van de gebruikerstaak die deze form flow heeft geopend",
+        "documentId": "het id van de zaak, wanneer het proces bij een zaak hoort",
+        "processDefinitionKey": "de key van de procesdefinitie die gestart wordt",
+        "documentDefinitionName": "de documentdefinitie van de nieuwe zaak, bij het starten van een nieuwe zaak"
+      },
+      "actions": "Acties",
+      "actionsDescription": "Acties worden op de server uitgevoerd op vaste momenten in de levenscyclus van de stap, bijvoorbeeld om formulieren vooraf in te vullen, inzendingen op te slaan, taken af te ronden of processen te starten.",
+      "help": {
+        "title": "Hoe expressies werken",
+        "button": "Hoe werken expressies?",
+        "intro": "Condities en acties zijn Spring Expression Language (SpEL)-expressies tussen ${ en }. Ze worden op de server geëvalueerd terwijl de form flow draait.",
+        "conditionsHeading": "Condities",
+        "actionsHeading": "Acties",
+        "actionsBody": "Acties worden uitgevoerd op vaste momenten in de levenscyclus van een stap: bij het openen, bij het afronden en wanneer de gebruiker teruggaat. Ze kunnen de geregistreerde form flow-functies aanroepen uit het menu \"Actie toevoegen\", en kunnen de ingevulde gegevens lezen via step.submissionData en de zaak- en procescontext via additionalProperties. Gebruik ze om formulieren vooraf in te vullen, inzendingen op te slaan, taken af te ronden of processen te starten.",
+        "dataHeading": "Beschikbare gegevens",
+        "conditionsInlineTitle": "Condities zijn expressies.",
+        "conditionsInlineMessage": "Bijvoorbeeld ${step.submissionData.leeftijd >= 21}. Laat de conditie leeg voor de standaardroute.",
+        "actionsInlineTitle": "Acties zijn expressies.",
+        "actionsInlineMessage": "Ze kunnen geregistreerde functies aanroepen en ingevulde gegevens en zaakcontext lezen."
+      },
+      "onOpen": "Bij openen van de stap",
+      "onOpenDescription": "Wordt uitgevoerd wanneer de gebruiker deze stap opent, bijvoorbeeld om het formulier vooraf in te vullen.",
+      "onComplete": "Bij afronden van de stap",
+      "onCompleteDescription": "Wordt uitgevoerd wanneer de gebruiker deze stap indient, bijvoorbeeld om gegevens op te slaan of een taak af te ronden.",
+      "onBack": "Bij teruggaan",
+      "onBackDescription": "Wordt uitgevoerd wanneer de gebruiker teruggaat naar de vorige stap, bijvoorbeeld om gegevens op te schonen.",
+      "addExpression": "Actie toevoegen",
+      "blankExpression": "Lege expressie",
+      "noExpressions": "Geen acties geconfigureerd.",
+      "stepInvalid": "Deze stap bevat configuratiefouten",
+      "noStepsTitle": "Nog geen stappen",
+      "noStepsDescription": "Voeg een stap toe om deze form flow te ontwerpen.",
+      "parseFailedTitle": "De visuele editor kan niet worden geopend",
+      "parseFailedMessage": "De definitie bevat ongeldige JSON. Herstel dit eerst in de JSON-editor.",
+      "properties": {
+        "definition": "Formulier",
+        "componentId": "Component-ID"
+      },
+      "errors": {
+        "title": "De definitie bevat fouten",
+        "duplicateKeys": "Dubbele stap-keys: {{keys}}.",
+        "startStepMissing": "De startstap \"{{startStep}}\" bestaat niet.",
+        "unknownTargets": "Overgangen verwijzen naar onbekende stappen: {{targets}}.",
+        "stepIncomplete": "Stap \"{{step}}\" heeft ontbrekende of ongeldige velden."
+      }
     }
   },
   "taskManagement": {
@@ -2999,10 +3868,26 @@
     "placeholder": "Kies een pad",
     "dropdown": "Dropdown",
     "manual": "Handmatig",
-    "selectCaseDefPlaceholder": "Kies een dossier"
+    "selectCaseDefPlaceholder": "Kies een dossier",
+    "notInThisVersion": "(niet in deze versie)"
+  },
+  "valueConditionTree": {
+    "path": "Veld",
+    "operator": "Operator",
+    "value": "Waarde",
+    "addCondition": "Conditie toevoegen",
+    "addGroup": "Groep toevoegen",
+    "groupMode": "De groep geldt wanneer",
+    "anyOf": "Aan één van deze wordt voldaan",
+    "allOf": "Aan alle van deze wordt voldaan",
+    "emptyGroup": "Lege groep — voeg een conditie toe of verwijder de groep."
   },
   "logging": {
-    "columns": {"timestamp": "Tijd", "formattedMessage": "Bericht", "level": "Log-niveau"},
+    "columns": {
+      "timestamp": "Tijd",
+      "formattedMessage": "Bericht",
+      "level": "Log-niveau"
+    },
     "search": {
       "addProperty": "Eigenschap toevoegen",
       "afterTimestamp": "Van tijd",
@@ -3087,8 +3972,12 @@
     "configureIkoServer": "IKO-server configureren",
     "dataUrl": "Gegevens-URL",
     "list": "Lijst",
-    "tabs": {"title": "Tabbladen"},
-    "widgets": {"title": "Widgets"},
+    "tabs": {
+      "title": "Tabbladen"
+    },
+    "widgets": {
+      "title": "Widgets"
+    },
     "importDefinition": {
       "title": "Importeer IKO-definitie",
       "overwriteWarning": "Als je IKO-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
@@ -3203,12 +4092,67 @@
     "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
   },
+  "externalPluginPage": {
+    "loadError": "Deze pluginpagina kon niet worden geladen."
+  },
   "adminSettings": {
     "title": "Instellingen",
     "tabs": {
       "appearance": "Weergave",
+      "menuConfiguration": "Menuconfiguratie",
       "featureToggles": "Functie-instellingen",
       "opensearch": "OpenSearch"
+    },
+    "menuConfiguration": {
+      "intro": "Stel het linkermenu van de applicatie samen. Sleep items tussen de beschikbare items en de menustructuur, wijzig de volgorde en bewerk de titel, link of het pictogram van een item. Toegang tot elk item wordt beheerd via PBAC.",
+      "structureTitle": "Menustructuur",
+      "availableTitle": "Beschikbare items",
+      "save": "Menu opslaan",
+      "reset": "Herstellen",
+      "resetTooltip": "Maak niet-opgeslagen wijzigingen ongedaan en herstel de laatst opgeslagen menuconfiguratie.",
+      "savedTitle": "Menu opgeslagen",
+      "savedSubtitle": "De menuconfiguratie is opgeslagen en wordt toegepast na de volgende herlaadbeurt.",
+      "reloadModal": {
+        "title": "Menu opgeslagen",
+        "content": "De nieuwe menuconfiguratie is opgeslagen. Herlaad de applicatie om de wijzigingen meteen te zien, of sluit dit venster om verder te werken en later te herladen.",
+        "confirm": "Nu herladen",
+        "dismiss": "Sluiten"
+      },
+      "required": "Vereist",
+      "runtimeSubmenu": "Dynamisch submenu",
+      "runtimeSubmenuNote": "Het submenu van dit item wordt tijdens runtime gevuld (bijvoorbeeld vastgezette dossiers) en kan hier niet worden bewerkt.",
+      "allPlaced": "Alle items staan al in het menu.",
+      "emptyStructure": "Sleep items hierheen om het menu samen te stellen.",
+      "emptySection": "Sleep items hierheen",
+      "add": "Toevoegen aan menu",
+      "dragHandle": "Sleep om te herordenen",
+      "categories": {
+        "generic": "Generiek",
+        "main": "Hoofdmenu-items",
+        "admin": "Beheerpagina's",
+        "development": "Ontwikkelpagina's",
+        "pluginPages": "Plugins & Apps"
+      },
+      "generic": {
+        "group": "Sectie",
+        "sectionHeader": "Sectiekop",
+        "customLink": "Aangepaste link"
+      },
+      "defaults": {
+        "group": "Nieuwe sectie",
+        "sectionHeader": "Nieuwe kop",
+        "customLink": "Nieuwe link"
+      },
+      "editor": {
+        "title": "Menu-item bewerken",
+        "titleHelper": "Voer een vertaalsleutel in om een vertaalde titel te tonen, of typ een vaste titel als er geen vertaalsleutel bestaat.",
+        "link": "Link (route of externe URL)",
+        "section": "Sectie",
+        "sectionRoot": "Hoofdniveau",
+        "includeFunction": "Include-functie",
+        "includeFunctionNone": "Geen",
+        "pbacNote": "Toegang tot dit item wordt beheerd via PBAC, niet hier."
+      }
     },
     "appearance": {
       "logo": {
@@ -3255,6 +4199,10 @@
       "refreshModalText": "Deze instelling vereist een paginavernieuwing om effect te hebben. Wilt u nu vernieuwen?",
       "refreshNow": "Nu vernieuwen",
       "toggles": {
+        "disableFormioTokenInLocalStorage": {
+          "title": "Form.io-token alleen in geheugen bewaren",
+          "description": "Houd het form.io-token in het geheugen in plaats van in localStorage. Schakel dit alleen in als formulieren uitsluitend het Keycloak-token gebruiken."
+        },
         "allowUserThemeSwitching": {
           "title": "Thema wisselen toestaan",
           "description": "Gebruikers laten schakelen tussen lichte en donkere modus via de bovenbalk."
@@ -3346,6 +4294,10 @@
         "enableGenericCaseList": {
           "title": "Generieke dossierlijst inschakelen",
           "description": "Toon één dossierlijstweergave met een dropdown om tussen dossierdefinities te wisselen."
+        },
+        "enableManualTaskListRefresh": {
+          "title": "Handmatig verversen takenlijst inschakelen",
+          "description": "Toon een verversknop in de takenlijst in plaats van de lijst automatisch te verversen bij wijzigingen."
         }
       }
     },
@@ -3456,7 +4408,71 @@
       "processes": "Processen",
       "forms": "Formulieren",
       "formFlows": "Form flows",
-      "decisions": "Beslistabellen"
+      "decisions": "Beslistabellen",
+      "migration": "Migratie"
+    },
+    "migration": {
+      "addPlan": "Migratieplan toevoegen",
+      "duplicateSuffix": "kopie",
+      "editor": {
+        "saveFailed": {
+          "title": "Het migratieplan kon niet worden opgeslagen",
+          "fallback": "De server heeft het plan geweigerd zonder reden op te geven. Bekijk de browserconsole voor details."
+        },
+        "general": {
+          "titlePlaceholder": "Migreer bouwblokken met status 'aanvraag-ontvangen'",
+          "sourceHint": "De bouwsteenversie waarvan dit plan de instanties migreert. Dat hoeft niet de direct voorgaande versie te zijn: een oudere versie kiezen migreert die instanties in één stap hierheen. Een andere bouwsteen kiezen maakt dit plan de brug die de lopende instanties daarvan hierheen brengt — en dat is het enige dat dat kan, want niets anders verbindt twee verschillende bouwstenen.",
+          "sourceKey": "Bronbouwsteen",
+          "sourceKeyPlaceholder": "Kies een bouwsteen",
+          "targetKey": "Doelbouwsteen",
+          "whenItRuns": "Wanneer dit plan draait",
+          "whenItRunsHint": "Dit plan heeft geen eigen trigger en geen eigen condities. Het draait automatisch wanneer een dossier migreert naar een dossierdefinitieversie die {{key}} op versie {{versionTag}} koppelt, en wordt toegepast op elke bouwblokinstantie die die dossiermigratie naar deze versie brengt. Het wordt gesimuleerd als onderdeel van de dry run van die dossiermigratie.",
+          "chainOfPlansHint": "Een keten van migratieplannen moet de versie waarop een bouwblokinstantie staat verbinden met de versie die een dossier koppelt. Eén plan kan de hele sprong dekken — de source is dan de versie waarop de instantie werkelijk staat — of er is een plan per stap, ook een stap die niets wijzigt: elke versie van {{key}} publiceert zijn eigen procesmodel, dus een lopend bouwblok moet er expliciet naartoe worden verplaatst. Verbindt niets de twee, of verbindt meer dan één keten ze, dan mislukt de dossiermigratie in plaats van te gokken. Draai de dossiermigratie eerst als dry run om de hele keten te controleren."
+        },
+        "dataMigration": {
+          "description": "Verplaats of stel bouwblokgegevens in tijdens de migratie. Elke patch kopieert een waarde van een bronlocatie naar de doellocatie, zet een vaste waarde op het doel, of zet het doel op null. Het doelveld is verplicht."
+        },
+        "processMigration": {
+          "description": "Migreer lopende procesinstanties naar de doel-procesdefinitie. Koppel de activiteiten van het bronproces aan die van het doelproces.",
+          "activityMappingHint": "Koppel elke bronactiviteit aan een doelactiviteit. Zowel de naam als de technische id worden getoond, zodat activiteiten met dezelfde naam te onderscheiden zijn."
+        },
+        "addBuildingBlock": {
+          "description": "Maak één of meer geneste bouwblokken aan binnen elk gemigreerd bouwblok. Elke regel maakt een (in eerste instantie leeg) bouwblokdocument aan, vult dit met de onderstaande datamigratie en neemt het/de proces(sen) van het bovenliggende bouwblok over in het nieuwe bouwblok.",
+          "dataMigrationHint": "Vult het nieuwe bouwblokdocument: elke bron leest uit het bovenliggende bouwblokdocument, elk doel schrijft naar het nieuwe bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een proces van het bovenliggende bouwblok; het doelproces is een proces van het nieuwe bouwblok. Het/de vermelde proces(sen) worden overgenomen in het nieuwe bouwblok en de business key wordt altijd op de document-id van het nieuwe bouwblok gezet."
+        },
+        "removeBuildingBlock": {
+          "description": "Verwijder één of meer geneste bouwblokken uit elk gemigreerd bouwblok. Alle bouwblokken met de opgegeven sleutel die direct onder het migrerende bouwblok hangen worden opgeheven nadat hun data en proces(sen) zijn teruggezet naar dat bouwblok.",
+          "dataMigrationHint": "Zet data terug naar het bovenliggende bouwblok voordat het geneste bouwblok wordt verwijderd: elke bron leest uit het geneste bouwblokdocument, elk doel schrijft naar het bovenliggende bouwblokdocument.",
+          "processMigrationHint": "Het bronproces is een proces van het geneste bouwblok; het doelproces is een proces van het bovenliggende bouwblok. Het/de proces(sen) van het geneste bouwblok worden teruggegeven en de business key wordt altijd teruggezet op de document-id van het bovenliggende bouwblok."
+        }
+      },
+      "deleteModal": {
+        "title": "Migratieplan verwijderen",
+        "content": "Weet je zeker dat je dit migratieplan wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
+      "columns": {
+        "plan": "Migratieplan",
+        "source": "Bron",
+        "target": "Doel",
+        "status": "Status",
+        "instancesMigrated": "Instanties gemigreerd"
+      },
+      "noResults": {
+        "title": "Geen migratieplannen",
+        "description": "Er zijn geen migratieplannen uitgerold voor deze versie van dit bouwblok."
+      },
+      "status": {
+        "NOT_STARTED": "Niet gestart",
+        "RUNNING": "Bezig",
+        "COMPLETED": "Voltooid",
+        "COMPLETED_WITH_ERRORS": "Voltooid met fouten"
+      },
+      "fields": {
+        "status": "Migratiestatus",
+        "instancesMigrated": "Instanties gemigreerd"
+      },
+      "detailHint": "Wordt toegepast op een bouwblokinstantie zodra een dossiermigratie deze van {{source}} naar {{target}} verplaatst."
     },
     "formDefinition": {
       "name": "Naam"
@@ -3522,6 +4538,86 @@
       "preparingDownload": "Download aan het voorbereiden"
     }
   },
+  "migrationEditor": {
+    "createTitle": "Nieuw migratieplan",
+    "card": {
+      "unnamed": "Nieuwe regel"
+    },
+    "tabs": {
+      "general": "Algemeen",
+      "dataMigration": "Datamigratie",
+      "processMigration": "Procesmigratie",
+      "addBuildingBlock": "Bouwblok toevoegen",
+      "removeBuildingBlock": "Bouwblok verwijderen",
+      "jsonEditor": "JSON-editor"
+    },
+    "general": {
+      "title": "Titel",
+      "titleSuggestion": "Migratieplan {{source}} naar {{target}}",
+      "key": "Sleutel",
+      "keyPlaceholder": "migration-plan-aanvraag-indienen",
+      "sourceAndTarget": "Bron en doel",
+      "sourceVersion": "Bronversie",
+      "sourceVersionPlaceholder": "Kies een versie",
+      "targetHint": "Het doel staat vast — dat is de versie waar dit plan bij hoort, rechts weergegeven. Alles wat het plan migreert komt daar terecht.",
+      "suggesting": "Bezig met het samenstellen van een voorgesteld plan op basis van deze versie en de versie waarvan gemigreerd wordt…"
+    },
+    "dataMigration": {
+      "empty": "Nog geen datapatches geconfigureerd.",
+      "addPatch": "Patch toevoegen",
+      "mode": "Bron",
+      "mode_path": "Pad",
+      "mode_value": "Waarde",
+      "mode_null": "Null",
+      "nullHint": "Het doel wordt leeggemaakt.",
+      "source": "Bronveld",
+      "value": "Vaste waarde",
+      "valuePlaceholder": "Henk",
+      "target": "Doelveld",
+      "targetType": "Doeltype",
+      "targetTypeAuto": "Auto"
+    },
+    "processMigration": {
+      "empty": "Nog geen procesmigraties geconfigureerd.",
+      "addInstruction": "Procesmigratie toevoegen",
+      "missingTarget": "Kies een doelproces, of verwijder deze instructie, voordat je opslaat.",
+      "missingTargetTab": "Een of meer instructies hebben nog geen doelproces.",
+      "sourceProcess": "Bronproces",
+      "targetProcess": "Doelproces",
+      "selectProcess": "Kies een proces",
+      "activityMapping": "Activiteitkoppeling",
+      "incompatibleMapping": "Deze activiteitstypen kunnen niet naar elkaar gemigreerd worden. Kies een doelactiviteit van een compatibel type.",
+      "sourceActivity": "Bronactiviteit",
+      "targetActivity": "Doelactiviteit",
+      "addMapping": "Koppeling toevoegen",
+      "setProcessVariables": "Procesvariabelen instellen",
+      "setProcessVariablesHint": "Stel procesvariabelen in op de gemigreerde instantie. Elke patch kopieert een waarde van een bronpad of zet een vaste waarde. Het doel is de procesvariabele waarnaar wordt geschreven (bijv. pv:naam of een geneste pv:/config/enabled).",
+      "variableMode": "Bron",
+      "variableSource": "Bronpad",
+      "variableValue": "Vaste waarde",
+      "variableValuePlaceholder": "Henk",
+      "variableTarget": "Doelvariabele",
+      "variableTargetPlaceholder": "pv:aanvragerNaam",
+      "variableTargetType": "Doeltype",
+      "addVariable": "Variabele toevoegen",
+      "skipCustomListeners": "Custom listeners overslaan",
+      "skipIoMappings": "Input/output-mappings overslaan"
+    },
+    "buildingBlock": {
+      "buildingBlockKey": "Bouwblok",
+      "buildingBlockKeyPlaceholder": "Kies een bouwblok",
+      "buildingBlockVersionTag": "Versie",
+      "buildingBlockVersionTagPlaceholder": "Kies een versie"
+    },
+    "addBuildingBlock": {
+      "empty": "Nog geen toe te voegen bouwblokken geconfigureerd.",
+      "addEntry": "Bouwblok toevoegen"
+    },
+    "removeBuildingBlock": {
+      "empty": "Nog geen te verwijderen bouwblokken geconfigureerd.",
+      "addEntry": "Bouwblok toevoegen"
+    }
+  },
   "mdiIcons": {
     "mdi-home": "Home",
     "mdi-home-city": "Woonplaats",
@@ -3557,6 +4653,7 @@
     "mdi-folder-account": "Map Account",
     "mdi-folder-multiple": "Meerdere Mappen",
     "mdi-folder-star": "Map Ster",
+    "mdi-archive": "Archief",
     "mdi-file": "Bestand",
     "mdi-file-document": "Documentbestand",
     "mdi-file-cog": "Bestand Instellingen",
@@ -3604,7 +4701,9 @@
     "mdi-lightbulb": "Gloeilamp",
     "mdi-check": "Check",
     "mdi-check-circle": "Check Cirkel",
+    "mdi-check-all": "Alles Aangevinkt",
     "mdi-close": "Sluiten",
+    "mdi-dot-circle": "Punt Cirkel",
     "mdi-lock": "Slot",
     "mdi-lock-open": "Slot Open",
     "mdi-lock-check": "Slot Check",
@@ -3622,6 +4721,7 @@
     "mdi-view-dashboard": "Dashboard",
     "mdi-view-list": "Lijstweergave",
     "mdi-view-grid": "Rasterweergave",
+    "mdi-layers": "Lagen",
     "mdi-table": "Tafel",
     "mdi-chart-bar": "Staafdiagram",
     "mdi-chart-line": "Lijngrafiek",
@@ -3646,6 +4746,8 @@
     "mdi-lan": "LAN",
     "mdi-api": "API",
     "mdi-application-braces": "Applicatie Haakjes",
+    "mdi-xml": "XML",
+    "mdi-code": "Code",
     "mdi-cube": "Kubus",
     "mdi-view-module": "Moduleweergave",
     "mdi-puzzle": "Puzzel",

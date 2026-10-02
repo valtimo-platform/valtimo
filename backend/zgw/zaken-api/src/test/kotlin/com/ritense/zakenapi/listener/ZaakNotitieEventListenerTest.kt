@@ -20,6 +20,7 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.CaseDocumentResolutionException
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.event.NoteCreatedEvent
 import com.ritense.valtimo.contract.event.NoteDeletedEvent
@@ -127,6 +128,18 @@ internal class ZaakNotitieEventListenerTest {
         zaakNotitieEventListener.handleNoteDeletedEvent(noteDeletedEvent())
 
         verify(zaakNotitieService).deleteZaakNotitieFrom(any())
+    }
+
+    @Test
+    fun `should not sync ZaakNotitie when the case document cannot be resolved`() {
+        whenever(caseDocumentResolver.resolveCaseDocumentId(eq(noteDocumentId)))
+            .thenThrow(CaseDocumentResolutionException("No building block instance found for document id $noteDocumentId"))
+
+        zaakNotitieEventListener.handleNoteCreatedEvent(noteCreatedEvent())
+        zaakNotitieEventListener.handleNoteUpdatedEvent(noteUpdatedEvent())
+        zaakNotitieEventListener.handleNoteDeletedEvent(noteDeletedEvent())
+
+        verifyNoInteractions(zaakNotitieService)
     }
 
     private fun noteCreatedEvent(): NoteCreatedEvent = mock {

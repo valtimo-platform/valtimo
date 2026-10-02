@@ -43,6 +43,10 @@
         "zaakEinddatumGeplandBB3": {
             "type": "string",
             "description": "Zaak einddatum gepland gelezen na ZGW patch-zaak actie in BB3"
+        },
+        "bubbleNote": {
+            "type": "string",
+            "description": "Bubbel-notitie doorgegeven vanuit BB3 (income-check) naar deze parent BB"
         }
     },
     "required": ["applicantName", "householdSize"]

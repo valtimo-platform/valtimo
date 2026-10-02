@@ -23,6 +23,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
+import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.result.DocumentFunctionResult
@@ -30,16 +31,19 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.url.domain.URLProcessLink
 import com.ritense.processlink.url.domain.URLVariables
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonTaskService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -118,5 +122,50 @@ class URLProcessLinkServiceTest {
         )
 
         verify(processDocumentService).dispatch(any<ModifyDocumentAndCompleteTaskRequest>())
+    }
+
+    @Test
+    fun `should resolve the document definition name from the building block blueprint when there is no case definition link`() {
+        val processLinkId = UUID.randomUUID()
+        val processDefinitionId = UUID.randomUUID().toString()
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of("bezwaar", "1.0.0")
+
+        val processLink = mock<URLProcessLink>()
+        whenever(processLink.processDefinitionId).thenReturn(processDefinitionId)
+        whenever(processLink.activityType).thenReturn(ActivityTypeWithEventName.START_EVENT_START)
+        whenever(processLinkService.getProcessLink(processLinkId, URLProcessLink::class.java))
+            .thenReturn(processLink)
+
+        val operatonProcessDefinition = mock<OperatonProcessDefinition>()
+        whenever(operatonProcessDefinition.id).thenReturn(processDefinitionId)
+        whenever(operatonProcessDefinition.key).thenReturn("building-block-process")
+        whenever(operatonProcessDefinition.getBlueprintId()).thenReturn(buildingBlockDefinitionId)
+        whenever(repositoryService.findProcessDefinitionById(processDefinitionId))
+            .thenReturn(operatonProcessDefinition)
+
+        // A building-block-owned process definition has no case-definition link row.
+        whenever(processDefinitionCaseDefinitionService.findByProcessDefinitionIdOrNull(any()))
+            .thenReturn(null)
+
+        whenever(objectMapper.createObjectNode()).thenReturn(ObjectMapper().createObjectNode())
+
+        val document = mock<JsonSchemaDocument>()
+        whenever(document.id()).thenReturn(JsonSchemaDocumentId.existingId(UUID.randomUUID()))
+        val resultSucceeded = mock<DocumentFunctionResult<JsonSchemaDocument>>()
+        whenever(resultSucceeded.errors()).thenReturn(emptyList())
+        whenever(resultSucceeded.resultingDocument()).thenReturn(Optional.of(document))
+        whenever(processDocumentService.dispatch(any())).thenReturn(resultSucceeded)
+
+        urlProcessLinkService.submit(processLinkId, null, null, null)
+
+        val requestCaptor = argumentCaptor<NewDocumentAndStartProcessRequest>()
+        verify(processDocumentService).dispatch(requestCaptor.capture())
+        assertThat(requestCaptor.firstValue.newDocumentRequest().documentDefinitionName())
+            .isEqualTo("bezwaar")
+        assertThat(requestCaptor.firstValue.newDocumentRequest().buildingBlockDefinitionKey())
+            .isEqualTo("bezwaar")
+        assertThat(requestCaptor.firstValue.newDocumentRequest().buildingBlockDefinitionVersionTag())
+            .isEqualTo("1.0.0")
+        assertThat(requestCaptor.firstValue.processDefinitionId()).isEqualTo(processDefinitionId)
     }
 }

@@ -38,6 +38,14 @@ public class NewDocumentAndStartProcessRequest implements Request {
     @JsonProperty
     private String processInstanceId;
 
+    /**
+     * The exact process definition version to start. Deliberately {@link JsonIgnore}: this request is
+     * bound from client JSON by ProcessDocumentResource, and letting a caller supply a process
+     * definition id would bypass resolution by key and blueprint entirely.
+     */
+    @JsonIgnore
+    private String processDefinitionId;
+
     @JsonIgnore
     private Map<String, Object> processVars;
 
@@ -64,6 +72,16 @@ public class NewDocumentAndStartProcessRequest implements Request {
     public NewDocumentAndStartProcessRequest withProcessVars(Map<String, Object> processVars) {
         this.processVars = processVars;
         return this;
+    }
+
+    public NewDocumentAndStartProcessRequest withProcessDefinitionId(String processDefinitionId) {
+        this.processDefinitionId = processDefinitionId;
+        return this;
+    }
+
+    @JsonIgnore
+    public String processDefinitionId() {
+        return processDefinitionId;
     }
 
     public void setProcessInstanceId(String processInstanceId) {

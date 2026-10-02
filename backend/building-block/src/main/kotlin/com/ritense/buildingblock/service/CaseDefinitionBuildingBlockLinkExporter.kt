@@ -55,7 +55,8 @@ class CaseDefinitionBuildingBlockLinkExporter(
                 buildingBlockDefinitionVersionTag = it.buildingBlockDefinitionId.versionTag.toString(),
                 inputMappings = it.inputMappings,
                 outputMappings = it.outputMappings,
-                pluginConfigurationMappings = it.pluginConfigurationMappings
+                pluginConfigurationMappings = it.pluginConfigurationMappings,
+                startableByUser = it.startableByUser
             )
         }
 

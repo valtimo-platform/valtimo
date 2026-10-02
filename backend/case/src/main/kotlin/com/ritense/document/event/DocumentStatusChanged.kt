@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.outbox.domain.BaseEvent
 
 class DocumentStatusChanged(documentId: String, documentContent: ObjectNode) : BaseEvent(
-    type = "com.ritense.valtimo.document.status.changed",
+    type = TYPE,
     resultType = "com.ritense.document.domain.impl.JsonSchemaDocument",
     resultId = documentId,
     result = documentContent
-)
+) {
+    companion object {
+        const val TYPE = "com.ritense.valtimo.document.status.changed"
+    }
+}

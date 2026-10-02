@@ -22,6 +22,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
+import com.ritense.valtimo.contract.authentication.SystemPrincipal;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.User;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -67,7 +68,7 @@ public class KeycloakUserManagementService implements UserManagementService {
     private static final Logger logger = LoggerFactory.getLogger(KeycloakUserManagementService.class);
     protected static final int MAX_USERS = 100000;
     private static final String MAX_USERS_WARNING_MESSAGE = "Maximum number of users retrieved from keycloak: " + MAX_USERS + ".";
-    private static final ValtimoUser SYSTEM_VALTIMO_USER = new ValtimoUserBuilder().id(SYSTEM_ACCOUNT).lastName(SYSTEM_ACCOUNT).build();
+    private static final ValtimoUser SYSTEM_VALTIMO_USER = new ValtimoUserBuilder().id(SYSTEM_ACCOUNT).username(SYSTEM_ACCOUNT).lastName(SYSTEM_ACCOUNT).build();
 
     private final KeycloakService keycloakService;
     private final String clientName;
@@ -195,12 +196,18 @@ public class KeycloakUserManagementService implements UserManagementService {
     @Override
     public ValtimoUser findById(String userId) {
         UserRepresentation user;
-        if (userId.equals(SYSTEM_ACCOUNT)) {
+        if (userId == null || userId.isBlank()) {
+            return null;
+        } else if (userId.equals(SYSTEM_ACCOUNT)) {
             requireUserPermission(VIEW, SYSTEM_VALTIMO_USER);
             return SYSTEM_VALTIMO_USER;
         } else {
             try (Keycloak keycloak = keycloakService.keycloak()) {
                 user = keycloakService.usersResource(keycloak).get(userId).toRepresentation();
+            } catch (NotFoundException e) {
+                // The user no longer exists in Keycloak, for instance because it was deleted.
+                logger.debug("No user found in Keycloak with id {}. Error: {}", userId, e.getMessage());
+                return null;
             }
             ValtimoUser valtimoUser = Boolean.TRUE.equals(user.isEnabled()) ? toValtimoUserByRetrievingRolesWithoutAuthorization(user) : null;
             requireUserPermission(VIEW, valtimoUser);
@@ -250,20 +257,25 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     @Override
     public ManageableUser getCurrentUser() {
-        if (SecurityUtils.getCurrentUserAuthentication() == null) {
+        Authentication authentication = SecurityUtils.getCurrentUserAuthentication();
+        if (authentication == null) {
             return SYSTEM_VALTIMO_USER;
-        } else if (SecurityUtils.getCurrentUserAuthentication() instanceof AnonymousAuthenticationToken) {
+        } else if (authentication instanceof AnonymousAuthenticationToken) {
             return null;
+        } else if (authentication.getPrincipal() instanceof SystemPrincipal) {
+            // Authenticated non-human actor (e.g. an external plugin service token) — no user account.
+            return SYSTEM_VALTIMO_USER;
         } else {
             return runWithoutAuthorization(() -> findByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
-                new IllegalStateException("No user found for email: ${currentUserService.currentUser.email}")
+                new IllegalStateException("No user found for email: " + SecurityUtils.getCurrentUserLogin())
             ));
         }
     }
 
     @Override
     public String getCurrentUserId() {
-        if (SecurityUtils.getCurrentUserAuthentication() != null) {
+        Authentication authentication = SecurityUtils.getCurrentUserAuthentication();
+        if (authentication != null && !(authentication.getPrincipal() instanceof SystemPrincipal)) {
             return runWithoutAuthorization(() -> findUserRepresentationByEmail(SecurityUtils.getCurrentUserLogin()).orElseThrow(() ->
                 new IllegalStateException("No user found for email: " + SecurityUtils.getCurrentUserLogin())
             ).getId());
@@ -276,6 +288,10 @@ public class KeycloakUserManagementService implements UserManagementService {
     public List<String> getCurrentUserTeams() {
         ManageableUser user = getCurrentUser();
         if (user == null || user.getUsername() == null || teamManagementService == null) {
+            return List.of();
+        } else if (SYSTEM_ACCOUNT.equals(user.getId())) {
+            // The system account is not a Keycloak user and is never a team member; don't query
+            // teams for its (synthetic) username in every system context.
             return List.of();
         } else {
             return teamManagementService.findTeamKeysByUsername(user.getUsername());
@@ -418,6 +434,11 @@ public class KeycloakUserManagementService implements UserManagementService {
                 roles.addAll(clientRoles);
             }
             return roles;
+        } catch (NotFoundException e) {
+            // The user was removed from Keycloak while its roles were being retrieved. Fail closed by
+            // reporting no roles at all, rather than breaking the request this user is part of.
+            logger.warn("No roles found in Keycloak for user with id {}. Error: {}", userRepresentation.getId(), e.getMessage());
+            return List.of();
         }
     }
 

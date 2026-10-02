@@ -24,6 +24,7 @@ import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_LINK
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.repository.PluginConfigurationRepository
+import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.processlink.domain.ProcessLink
@@ -63,13 +64,16 @@ class BuildingBlockProcessLinkImporterTest {
     @Mock
     lateinit var pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository
 
+    @Mock
+    lateinit var pluginDefinitionRepository: PluginDefinitionRepository
+
     private lateinit var objectMapper: ObjectMapper
     private lateinit var importer: BuildingBlockProcessLinkImporter
 
     @BeforeEach
     fun setUp() {
         objectMapper = jacksonObjectMapper()
-        PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository)
+        PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository)
 
         importer = BuildingBlockProcessLinkImporter(
             processLinkService = processLinkService,
@@ -134,7 +138,7 @@ class BuildingBlockProcessLinkImporterTest {
             )
         )
 
-        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository)
+        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository)
         whenever(processLinkService.getProcessLinkMapper(eq(PROCESS_LINK_TYPE_PLUGIN))).thenReturn(pluginMapper)
 
         doReturn(mock<ProcessLink>()).whenever(processLinkService).createProcessLink(any(), anyOrNull())

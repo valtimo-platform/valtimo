@@ -72,6 +72,10 @@ class BuildingBlockCaseAssigneeListener(
                 val assigneeUsername = caseDocument.assigneeId()
                 if (assigneeUsername != null) {
                     val assignee = runWithoutAuthorization { userManagementService.findByUsername(assigneeUsername) }
+                    if (assignee == null) {
+                        logger.warn { "Not auto assigning tasks. User '$assigneeUsername' could not be found." }
+                        return
+                    }
                     val tasks = runWithoutAuthorization {
                         operatonTaskService.findTasks(
                             byRootProcessInstanceBusinessKeys(businessKeys)

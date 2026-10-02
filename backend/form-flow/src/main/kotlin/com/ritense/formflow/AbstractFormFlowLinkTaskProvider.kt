@@ -20,11 +20,12 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.exception.DocumentNotFoundException
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
+import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentIdOrNull
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import org.operaton.bpm.engine.RuntimeService
 
 abstract class AbstractFormFlowLinkTaskProvider(
-    private val documentService: DocumentService,
+    protected val documentService: DocumentService,
     private val runtimeService: RuntimeService,
 ) {
 
@@ -35,18 +36,23 @@ abstract class AbstractFormFlowLinkTaskProvider(
                 .singleResult()
 
             val additionalProperties = mutableMapOf(
-                "processInstanceId" to task.getProcessInstanceId(),
-                "processInstanceBusinessKey" to processInstance.businessKey,
-                "taskInstanceId" to task.id
+                PROCESS_INSTANCE_ID to task.getProcessInstanceId(),
+                PROCESS_INSTANCE_BUSINESS_KEY to processInstance.businessKey,
+                TASK_INSTANCE_ID to task.id
             )
 
-            try {
-                val document = AuthorizationContext.runWithoutAuthorization { documentService[processInstance.businessKey] }
-                if (document != null) {
-                    additionalProperties["documentId"] = processInstance.businessKey
+            val documentId = task.getJsonSchemaDocumentIdOrNull()
+            if (documentId != null) {
+                try {
+                    val document = AuthorizationContext.runWithoutAuthorization {
+                        documentService[documentId.toString()]
+                    }
+                    if (document != null) {
+                        additionalProperties[DOCUMENT_ID] = documentId.toString()
+                    }
+                } catch (_: DocumentNotFoundException) {
+                    // we do nothing here, intentional
                 }
-            } catch (e: DocumentNotFoundException) {
-                // we do nothing here, intentional
             }
 
             additionalProperties
@@ -55,6 +61,17 @@ abstract class AbstractFormFlowLinkTaskProvider(
 
     companion object {
         const val FORM_FLOW_TASK_TYPE_KEY = "form-flow"
+
+        // The keys of the additional properties that are available to SpEL expressions in a form
+        // flow. These are also published through the form flow registry, so the editor can show
+        // which context data a definition can rely on.
+        const val PROCESS_INSTANCE_ID = "processInstanceId"
+        const val PROCESS_INSTANCE_BUSINESS_KEY = "processInstanceBusinessKey"
+        const val TASK_INSTANCE_ID = "taskInstanceId"
+        const val DOCUMENT_ID = "documentId"
+        const val PROCESS_DEFINITION_KEY = "processDefinitionKey"
+        const val PROCESS_DEFINITION_ID = "processDefinitionId"
+        const val DOCUMENT_DEFINITION_NAME = "documentDefinitionName"
     }
 
 }

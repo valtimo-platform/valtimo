@@ -16,9 +16,11 @@
 
 package com.ritense.document.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ritense.document.domain.validation.DocumentContentValidationResult;
+import com.ritense.valtimo.contract.BlueprintId;
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.time.temporal.Temporal;
@@ -46,6 +48,18 @@ public interface DocumentDefinition {
 
         @JsonProperty
         default BuildingBlockDefinitionId buildingBlockDefinitionId() { return null; }
+
+        /**
+         * The blueprint this document definition belongs to, regardless of its type. A document
+         * definition is owned by either a case definition or a building block definition, so use
+         * this whenever the caller does not care which of the two it is - {@link #caseDefinitionId()}
+         * on its own returns {@code null} for building block documents.
+         */
+        @JsonIgnore
+        default BlueprintId asBlueprintId() {
+            CaseDefinitionId caseDefinitionId = caseDefinitionId();
+            return caseDefinitionId != null ? caseDefinitionId : buildingBlockDefinitionId();
+        }
     }
 
 }

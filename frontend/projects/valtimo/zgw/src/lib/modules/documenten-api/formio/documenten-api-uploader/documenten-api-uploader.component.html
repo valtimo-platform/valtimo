@@ -88,5 +88,6 @@
   [open]="showModal()"
   [supportsTrefwoorden]="(supportedDocumentenApiFeatures$ | async)?.supportsTrefwoorden"
   [uploadError]="uploadError()"
+  [uploading]="uploading$ | async"
   (uploadErrorDismiss)="uploadError.set(null)"
 ></valtimo-documenten-api-metadata-modal>

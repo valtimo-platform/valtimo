@@ -25,10 +25,10 @@
 <section class="valtimo-donut-widget__content">
   <ng-container *ngIf="barChartData$ | async as barChartData">
     @if (barChartData.length > 0) {
-      <ibm-bar-chart
+      <ibm-simple-bar-chart
         [data]="barChartData"
         [options]="barChartChartOptions$ | async"
-      ></ibm-bar-chart>
+      ></ibm-simple-bar-chart>
     } @else {
       <valtimo-no-results
         [collapseVertically]="true"

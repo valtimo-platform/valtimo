@@ -16,7 +16,6 @@
 
 import {AfterViewInit, Component, ElementRef, ViewEncapsulation} from '@angular/core';
 import {UserProviderService} from '@valtimo/security';
-import SwaggerUI from 'swagger-ui';
 import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/shared';
 
@@ -39,19 +38,23 @@ export class SwaggerComponent implements AfterViewInit {
     this.valtimoSwaggerConfig = configService.config.swagger;
   }
 
-  ngAfterViewInit() {
-    this.userProviderService.getToken().then((authToken: string) => {
-      this.logger.debug(`swagger ngAfterViewInit token: ${authToken}`);
-      SwaggerUI({
-        url: this.valtimoSwaggerConfig.endpointUri,
-        domNode: this.el.nativeElement.querySelector('.swagger-container'),
-        deepLinking: true,
-        presets: [SwaggerUI.presets.apis],
-        requestInterceptor(request) {
-          request.headers.Authorization = `Bearer ${authToken}`;
-          return request;
-        },
-      });
+  async ngAfterViewInit(): Promise<void> {
+    const authToken = await this.userProviderService.getToken();
+    this.logger.debug(`swagger ngAfterViewInit token: ${authToken}`);
+
+    // Loaded on demand: swagger-ui pulls in React and the whole OpenAPI toolchain, which would
+    // otherwise sit in the initial bundle for every user that never opens this page.
+    const {default: SwaggerUI} = await import('swagger-ui');
+
+    SwaggerUI({
+      url: this.valtimoSwaggerConfig.endpointUri,
+      domNode: this.el.nativeElement.querySelector('.swagger-container'),
+      deepLinking: true,
+      presets: [SwaggerUI.presets.apis],
+      requestInterceptor(request) {
+        request.headers.Authorization = `Bearer ${authToken}`;
+        return request;
+      },
     });
   }
 }

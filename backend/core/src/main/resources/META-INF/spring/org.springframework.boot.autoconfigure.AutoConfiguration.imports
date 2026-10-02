@@ -11,6 +11,7 @@ com.ritense.valtimo.autoconfigure.SchedulerAutoConfiguration
 com.ritense.valtimo.contract.config.LiquibaseRunnerAutoConfiguration
 com.ritense.valtimo.autoconfigure.OperatonContextConfiguration
 com.ritense.valtimo.autoconfiguration.ProcessBeanAutoConfiguration
+com.ritense.valtimo.autoconfiguration.ProcessBeanServiceAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ExportAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ImportAutoConfiguration
@@ -22,3 +23,4 @@ com.ritense.valtimo.config.JacksonConfiguration
 com.ritense.valtimo.config.ValtimoDatabaseConfiguration
 com.ritense.valtimo.logging.OperatonLoggingAutoConfiguration
 com.ritense.valtimo.autoconfiguration.TaskWidgetAutoConfiguration
+com.ritense.valtimo.migration.MigrationAutoConfiguration

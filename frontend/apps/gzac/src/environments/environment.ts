@@ -1,19 +1,17 @@
 /*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  * Copyright 2015-2026 Ritense BV, the Netherlands.
- *  *
- *  * Licensed under EUPL, Version 1.2 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" basis,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 // This file can be replaced during build by using the `fileReplacements` array.
@@ -97,43 +95,45 @@ export const environment: ValtimoConfig = {
             sequence: 2,
           },
           {link: ['/case-management'], title: 'Cases', sequence: 3},
-          {link: ['/plugins'], title: 'Plugins', sequence: 4},
-          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 5},
-          {link: ['/access-control'], title: 'Access Control', sequence: 6},
-          {link: ['/translation-management'], title: 'Translations', sequence: 7},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 8},
+          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 4},
+          {link: ['/access-control'], title: 'Access Control', sequence: 5},
+          {link: ['/translation-management'], title: 'Translations', sequence: 6},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 7},
+          {title: 'Integrations', textClass: 'text-dark font-weight-bold c-default', sequence: 8},
+          {link: ['/plugins'], title: 'Plugins', sequence: 9},
+          {link: ['/plugin-hosts'], title: 'Plugin hosts', sequence: 10},
+          {link: ['/plugin-apps'], title: 'Apps', sequence: 11},
 
           {
             title: 'Object management',
             textClass: 'text-dark font-weight-bold c-default',
-            sequence: 9,
+            sequence: 12,
           },
-          {link: ['/object-management'], title: 'Objects', sequence: 10},
-          {link: ['/form-management'], title: 'Forms', sequence: 11},
+          {link: ['/object-management'], title: 'Objects', sequence: 13},
+          {link: ['/form-management'], title: 'Forms', sequence: 14},
           {
             link: ['/notifications-api/notifications/failed'],
             title: 'Failed notifications',
-            sequence: 12,
+            sequence: 15,
           },
 
           {
             title: 'System processes',
             textClass: 'text-dark font-weight-bold c-default',
-            sequence: 13,
+            sequence: 16,
           },
-          {link: ['/processes'], title: 'Processes', sequence: 14},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 15},
+          {link: ['/processes'], title: 'Processes', sequence: 17},
+          {link: ['/decision-tables'], title: 'Decision tables', sequence: 18},
 
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 16},
-          {link: ['/logging'], title: 'Logs', sequence: 17},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 19},
+          {link: ['/logging'], title: 'Logs', sequence: 20},
           {
             link: ['/opensearch'],
             title: 'adminSettings.opensearch.title',
-            sequence: 18,
+            sequence: 21,
             includeFunction: IncludeFunction.OpenSearchEnabled,
           },
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 19},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 20},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 22},
         ],
       },
       {

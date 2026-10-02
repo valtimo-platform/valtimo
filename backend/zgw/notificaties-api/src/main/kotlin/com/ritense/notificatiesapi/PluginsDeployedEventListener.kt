@@ -16,45 +16,123 @@
 
 package com.ritense.notificatiesapi
 
+import com.ritense.logging.withLoggingContext
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
+import com.ritense.notificatiesapi.config.NotificatiesApiAbonnementRegistrationProperties
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.exception.NotificatiesApiAbonnementException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
-import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.events.PluginConfigurationCreatedEvent
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationUpdatedEvent
-import com.ritense.processlink.event.ProcessLinkCreatedEvent
-import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.plugin.service.PluginConfigurationSearchParameters
 import com.ritense.plugin.service.PluginService
+import com.ritense.processlink.event.ProcessLinkCreatedEvent
+import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT
 import org.springframework.transaction.event.TransactionalEventListener
+import org.springframework.transaction.support.TransactionTemplate
 import java.net.URI
 import java.security.SecureRandom
+import java.time.Duration
 import java.util.Base64
+import java.util.concurrent.Executor
 
+/**
+ * @param registrationExecutor executor the startup registration is handed off to. Defaults to
+ * running inline; the auto-configuration supplies a dedicated single-threaded executor so the
+ * retry loop never blocks the event thread.
+ */
 class PluginsDeployedEventListener(
     private val client: NotificatiesApiClient,
     private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
     private val pluginService: PluginService,
-    private val registerAbonnementen: Boolean
+    private val registerAbonnementen: Boolean,
+    transactionManager: PlatformTransactionManager,
+    private val registrationProperties: NotificatiesApiAbonnementRegistrationProperties =
+        NotificatiesApiAbonnementRegistrationProperties(),
+    private val registrationExecutor: Executor = Executor { it.run() }
 ) {
+
+    /**
+     * The listeners below run during `afterCommit`, where resources are still bound but the
+     * transaction has already committed. A REQUIRED write joins that dead transaction and is
+     * discarded on cleanup, silently. REQUIRES_NEW is also the right semantics: the abonnement
+     * already exists remotely by then, so a rollback could not undo it. Only writes are wrapped,
+     * keeping the Open Notificaties calls off a pooled connection.
+     */
+    private val requiresNewTransactionTemplate = TransactionTemplate(transactionManager).apply {
+        propagationBehavior = TransactionDefinition.PROPAGATION_REQUIRES_NEW
+    }
 
     private var applicationFullyReady = false
 
     @EventListener(ApplicationFullyReadyEvent::class)
     fun handleApplicationFullyReadyEvent() {
         applicationFullyReady = true
-        registerAbonnementenForNotificatiesApiPlugins()
+        registrationExecutor.execute { registerAbonnementenWithBackoff() }
     }
+
+    /**
+     * Registers abonnementen with exponential backoff until it succeeds, or until
+     * [NotificatiesApiAbonnementRegistrationProperties.maxDuration] has elapsed.
+     *
+     * Open Notificaties validates a new abonnement by immediately calling back to the configured
+     * `callbackUrl`. On Kubernetes that callback cannot succeed before the pod is routable, and the
+     * pod only becomes routable after kubelet has observed the readiness probe turn UP -- which
+     * happens because of the very same [ApplicationFullyReadyEvent] that triggers this method.
+     * Retrying inline within milliseconds therefore could never work; the retries have to outlive
+     * the probe interval, and a pod that has not managed to subscribe yet must stay up rather than
+     * crash-loop.
+     */
+    fun registerAbonnementenWithBackoff() {
+        val deadline = System.nanoTime() + registrationProperties.maxDuration.toNanos()
+        var backoff = registrationProperties.initialBackoff
+        var attempt = 1
+
+        while (true) {
+            try {
+                registerAbonnementenForNotificatiesApiPlugins(attemptsPerConfiguration = 1)
+                if (attempt > 1) {
+                    logger.info { "Successfully registered abonnementen on attempt $attempt" }
+                }
+                return
+            } catch (e: Exception) {
+                val remaining = Duration.ofNanos(deadline - System.nanoTime())
+                if (remaining <= backoff) {
+                    logger.error(e) {
+                        "Giving up on registering abonnementen after $attempt attempt(s) within " +
+                            "${registrationProperties.maxDuration}. The application stays up, but no " +
+                            "notifications will be received until registration succeeds."
+                    }
+                    return
+                }
+                logger.warn(e) { "Attempt $attempt to register abonnementen failed; retrying in $backoff" }
+                if (!sleep(backoff)) return
+                backoff = minOf(backoff.multipliedBy(2), registrationProperties.maxBackoff)
+                attempt++
+            }
+        }
+    }
+
+    private fun sleep(duration: Duration): Boolean =
+        try {
+            Thread.sleep(duration.toMillis().coerceAtLeast(1))
+            true
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            logger.info { "Abonnement registration was interrupted; not retrying" }
+            false
+        }
 
     @TransactionalEventListener(phase = AFTER_COMMIT)
     fun handlePluginConfigurationCreatedEvent(event: PluginConfigurationCreatedEvent) {
@@ -69,7 +147,13 @@ class PluginsDeployedEventListener(
     @TransactionalEventListener(phase = AFTER_COMMIT)
     fun handlePluginConfigurationDeletedEvent(event: PluginConfigurationDeletedEvent) {
         if (!applicationFullyReady || !isNotificatiesApiListener(event.pluginConfiguration)) return
-        removeAbonnementForDeletedConfiguration(event.pluginConfiguration)
+        try {
+            removeAbonnementForDeletedConfiguration(event.pluginConfiguration)
+        } catch (e: NotificatiesApiAbonnementException) {
+            // Configuration is already committed as deleted; throwing out of afterCommit reports a
+            // failure the admin cannot act on, and skips the sweep below that is the retry.
+            logger.error(e) { "Could not delete the abonnement for the removed plugin configuration" }
+        }
         registerAbonnementenForNotificatiesApiPlugins()
     }
 
@@ -101,7 +185,8 @@ class PluginsDeployedEventListener(
         registerAbonnementenForNotificatiesApiPlugins()
     }
 
-    fun registerAbonnementenForNotificatiesApiPlugins() {
+    @JvmOverloads
+    fun registerAbonnementenForNotificatiesApiPlugins(attemptsPerConfiguration: Int = DEFAULT_ATTEMPTS) {
         if (!registerAbonnementen) {
             logger.info { "Notificaties API abonnement registration is disabled (valtimo.zgw.register-abonnementen=false); skipping" }
             return
@@ -121,7 +206,7 @@ class PluginsDeployedEventListener(
                 PluginConfiguration::class.java.canonicalName to
                     notificatiesApiPluginInstance.notificatiesApiConfigurationId.id.toString()
             ) {
-                retry {
+                retry(times = attemptsPerConfiguration) {
                     registerAbonnementenForPluginNotificatiesApiPlugins(
                         notificatiesApiPluginInstance, knownNotificatiesApiAbonnementLinks, configurations
                     )
@@ -155,7 +240,9 @@ class PluginsDeployedEventListener(
                     baseUrl = notificatiesApiPluginInstance.url,
                     abonnementId = abonnementLink.getAbonnementId()
                 )
-                notificatiesApiAbonnementLinkRepository.delete(abonnementLink)
+                requiresNewTransactionTemplate.executeWithoutResult {
+                    notificatiesApiAbonnementLinkRepository.delete(abonnementLink)
+                }
                 logger.info {
                     "Successfully deleted abonnement with id '${abonnementLink.getAbonnementId()}' for removed plugin configuration"
                 }
@@ -260,22 +347,25 @@ class PluginsDeployedEventListener(
         }
 
         if (currentNotificatiesApiAbonnement == null && currentNotificatiesApiAbonnementLink != null) {
+            // No delete needed: the stale link keys on the same plugin configuration id, so the
+            // save below overwrites it.
             logger.debug {
-                "Removing existing Notificaties API abonnement link with " +
+                "Replacing existing Notificaties API abonnement link with " +
                     "abonnement id '${currentNotificatiesApiAbonnementLink.getAbonnementId()}' for " +
                     "plugin configuration with id '${notificatiesApiPluginInstance.notificatiesApiConfigurationId.id}' " +
                     "because it is not known in the API"
             }
-            notificatiesApiAbonnementLinkRepository.delete(currentNotificatiesApiAbonnementLink)
         }
 
-        notificatiesApiAbonnementLinkRepository.save(
-            NotificatiesApiAbonnementLink(
-                notificatiesApiConfigurationId = notificatiesApiPluginInstance.notificatiesApiConfigurationId,
-                url = abonnement.url!!,
-                auth = abonnement.auth ?: authKey
+        requiresNewTransactionTemplate.executeWithoutResult {
+            notificatiesApiAbonnementLinkRepository.save(
+                NotificatiesApiAbonnementLink(
+                    notificatiesApiConfigurationId = notificatiesApiPluginInstance.notificatiesApiConfigurationId,
+                    url = abonnement.url!!,
+                    auth = abonnement.auth ?: authKey
+                )
             )
-        )
+        }
     }
 
     private fun ensureKanalenExist(
@@ -307,7 +397,7 @@ class PluginsDeployedEventListener(
             }
     }
 
-    private fun <T> retry(times: Int = 3, block: () -> T): T {
+    private fun <T> retry(times: Int = DEFAULT_ATTEMPTS, block: () -> T): T {
         var lastException: Exception? = null
         repeat(times) {
             try {
@@ -317,7 +407,11 @@ class PluginsDeployedEventListener(
                 logger.warn(e) { "Attempt ${it + 1} of $times to register abonnementen failed" }
             }
         }
-        logger.error(lastException) { "Failed to register abonnementen after $times attempts" }
+        // With a single attempt the caller is [registerAbonnementenWithBackoff], which reports the
+        // failure itself along with the retry it is about to schedule.
+        if (times > 1) {
+            logger.error(lastException) { "Failed to register abonnementen after $times attempts" }
+        }
         throw NotificatiesApiAbonnementException(lastException)
     }
 
@@ -329,6 +423,7 @@ class PluginsDeployedEventListener(
     }
 
     companion object {
+        private const val DEFAULT_ATTEMPTS = 3
         private val logger = KotlinLogging.logger {}
     }
 }

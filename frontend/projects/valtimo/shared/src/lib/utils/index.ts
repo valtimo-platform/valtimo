@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+export * from './http-error.utils';
 export * from './router.utils';
 export * from './url.utils';
 export * from './global-notification.utils';
 export * from './route-params.utils';
 export * from './display-type.utils';
 export * from './validate-bsn.utils';
+export * from './kebab-case.utils';

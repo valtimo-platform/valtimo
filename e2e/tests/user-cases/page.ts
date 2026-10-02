@@ -169,14 +169,19 @@ export class UserCasesPage {
     return this.page.locator('valtimo-case-detail-tab-progress');
   }
 
-  get progressProcessDropdown(): Locator {
-    return this.progressTabContent.locator('cds-dropdown').first();
+  // The process selector on the progress tab is a Carbon `cds-combo-box` (it used
+  // to be a `cds-dropdown`), so it exposes an input with role="combobox" labelled
+  // by "Process". Matching on the role instead of the Carbon tag keeps this
+  // assertion tied to what the user sees rather than to the widget Carbon happens
+  // to render.
+  get progressProcessComboBox(): Locator {
+    return this.progressTabContent.getByRole('combobox', {name: 'Process'});
   }
 
+  // bpmn-js renders its <svg> inside `.diagram-container`. Scoping to that element
+  // avoids matching the combo-box chevron/clear icons, which are also <svg>.
   get progressBpmnSvg(): Locator {
-    return this.progressTabContent.locator('svg.djs-container').or(
-      this.progressTabContent.locator('.process-history svg')
-    );
+    return this.progressTabContent.locator('valtimo-process-diagram .diagram-container svg');
   }
 
   get documentsTabContainer(): Locator {

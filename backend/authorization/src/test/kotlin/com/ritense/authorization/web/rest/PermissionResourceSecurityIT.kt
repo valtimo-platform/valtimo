@@ -85,6 +85,37 @@ class PermissionResourceSecurityIT : SecuritySpecificEndpointIntegrationTest() {
         assertHttpStatus(request, HttpStatus.OK)
     }
 
+    /**
+     * A resource type that is not a known authorization resource must be answered with a plain
+     * "no permission", exactly like a known resource the user has no permission for. Not an error,
+     * and not a stack trace, because that would tell the caller which classes are present.
+     */
+    @Test
+    @WithMockUser(authorities = ["test-role"])
+    fun `should report no permission for an unknown resource type when authenticated`() {
+
+        val permissionRequests = listOf(
+            PermissionAvailableRequest(
+                "java.lang.System",
+                "view",
+                PermissionContext(
+                    "java.lang.Runtime",
+                    "123"
+                )
+            )
+        )
+
+        val request = MockMvcRequestBuilders.request(HttpMethod.POST, "/api/v1/permissions")
+        request.content(TestUtil.convertObjectToJsonBytes(permissionRequests))
+        request.contentType(MediaType.APPLICATION_JSON)
+        request.accept(MediaType.APPLICATION_JSON)
+        request.with { r: MockHttpServletRequest ->
+            r.remoteAddr = "8.8.8.8"
+            r
+        }
+        assertHttpStatus(request, HttpStatus.OK)
+    }
+
     @Test
     fun `should not be able to request permissions when not authenticated`() {
 

@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="plugin-configuration-mapping" [formGroup]="form">
+  <cds-inline-notification
+    *ngIf="hasUnidentifiablePlugins$ | async"
+    [notificationObj]="{
+      type: 'warning',
+      title: 'pluginConfigurationMapping.unidentifiable.title' | translate,
+      message: 'pluginConfigurationMapping.unidentifiable.message' | translate,
+      showClose: false,
+      lowContrast: true,
+    }"
+  ></cds-inline-notification>
+
+  <ng-container *ngIf="(rows$ | async)?.length">
+    <div class="plugin-configuration-mapping__header">
+      <span>{{ 'pluginConfigurationMapping.source' | translate }}</span>
+      <span></span>
+      <span>{{ 'pluginConfigurationMapping.target' | translate }}</span>
+    </div>
+
+    <div
+      *ngFor="let row of rows$ | async; trackBy: trackBySourceId"
+      class="plugin-configuration-mapping__row"
+      [cdsLayer]="1"
+    >
+      <div class="plugin-configuration-mapping__source">{{ row.pluginDefinitionTitle }}</div>
+
+      <svg
+        aria-hidden="true"
+        class="plugin-configuration-mapping__arrow"
+        height="16"
+        viewBox="0 0 32 32"
+        width="16"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M18 6l-1.4 1.4L24.2 15H4v2h20.2l-7.6 7.6L18 26l10-10z" />
+      </svg>
+
+      <cds-combo-box
+        *ngIf="row.status === 'available'"
+        itemValueKey="id"
+        [appendInline]="true"
+        [cdsLayer]="2"
+        [dropUp]="false"
+        [formControlName]="row.sourcePluginConfigurationId"
+        [items]="row.listItems"
+        [placeholder]="'pluginConfigurationMapping.selectPlaceholder' | translate"
+        (clear)="onClear(row.sourcePluginConfigurationId)"
+      >
+        <cds-dropdown-list></cds-dropdown-list>
+      </cds-combo-box>
+
+      <div
+        *ngIf="row.status === 'not-installed'"
+        class="plugin-configuration-mapping__unavailable plugin-configuration-mapping__unavailable--error"
+      >
+        {{ 'pluginConfigurationMapping.notInstalled' | translate }}
+      </div>
+
+      <div
+        *ngIf="row.status === 'no-configurations'"
+        class="plugin-configuration-mapping__unavailable"
+      >
+        {{ 'pluginConfigurationMapping.noConfigurations' | translate }}
+      </div>
+    </div>
+  </ng-container>
+</div>

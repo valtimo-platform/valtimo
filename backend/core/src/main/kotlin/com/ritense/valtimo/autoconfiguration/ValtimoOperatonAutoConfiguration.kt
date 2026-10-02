@@ -1,18 +1,17 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  Licensed under EUPL, Version 1.2 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" basis,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.ritense.valtimo.autoconfiguration
@@ -24,6 +23,8 @@ import com.ritense.valtimo.operaton.authorization.OperatonExecutionSpecification
 import com.ritense.valtimo.operaton.authorization.OperatonIdentityLinkSpecificationFactory
 import com.ritense.valtimo.operaton.authorization.OperatonProcessDefinitionSpecificationFactory
 import com.ritense.valtimo.operaton.authorization.OperatonTaskSpecificationFactory
+import com.ritense.valtimo.operaton.authorization.OperatonTimerExecutionMapper
+import com.ritense.valtimo.operaton.authorization.OperatonTimerSpecificationFactory
 import com.ritense.valtimo.operaton.repository.OperatonBytearrayRepository
 import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionRepository
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
@@ -35,6 +36,8 @@ import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionReposito
 import com.ritense.valtimo.operaton.repository.OperatonTaskIdentityLinkMapper
 import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import com.ritense.valtimo.operaton.repository.OperatonVariableInstanceRepository
+import com.ritense.valtimo.processautofill.repository.ProcessDefinitionAutofillRepository
+import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService
 import com.ritense.valtimo.task.repository.TaskTeamRepository
 import com.ritense.valtimo.task.repository.UserTaskOpenedStatusRepository
 import com.ritense.valtimo.operaton.service.OperatonContextService
@@ -78,14 +81,16 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
         OperatonTaskRepository::class,
         OperatonVariableInstanceRepository::class,
         TaskTeamRepository::class,
-        UserTaskOpenedStatusRepository::class
+        UserTaskOpenedStatusRepository::class,
+        ProcessDefinitionAutofillRepository::class
     ]
 )
 @EntityScan(
     basePackages = [
         "com.ritense.valtimo.operaton.domain",
         "com.ritense.valtimo.domain",
-        "com.ritense.valtimo.task.domain"
+        "com.ritense.valtimo.task.domain",
+        "com.ritense.valtimo.processautofill.domain"
     ]
 )
 class ValtimoOperatonAutoConfiguration {
@@ -175,6 +180,13 @@ class ValtimoOperatonAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(OperatonTimerSpecificationFactory::class)
+    @ConditionalOnBean(AuthorizationService::class)
+    fun operatonTimerSpecificationFactory(): OperatonTimerSpecificationFactory {
+        return OperatonTimerSpecificationFactory()
+    }
+
+    @Bean
     @ConditionalOnMissingBean(OperatonProcessDefinitionSpecificationFactory::class)
     @ConditionalOnBean(AuthorizationService::class)
     fun operatonProcessDefinitionSpecificationFactory(
@@ -189,6 +201,14 @@ class ValtimoOperatonAutoConfiguration {
     @ConditionalOnBean(AuthorizationService::class)
     fun operatonExecutionProcessDefinitionMapper() = OperatonExecutionProcessDefinitionMapper()
 
+    @Bean
+    @ConditionalOnMissingBean(OperatonTimerExecutionMapper::class)
+    @ConditionalOnBean(AuthorizationService::class)
+    fun operatonTimerExecutionMapper(
+        operatonExecutionRepository: OperatonExecutionRepository
+    ): OperatonTimerExecutionMapper {
+        return OperatonTimerExecutionMapper(operatonExecutionRepository)
+    }
 
     @Bean
     @ConditionalOnMissingBean(OperatonTaskIdentityLinkMapper::class)
@@ -241,5 +261,13 @@ class ValtimoOperatonAutoConfiguration {
     @ConditionalOnMissingBean(OperatonDeploymentSourceHelper::class)
     fun operatonDeploymentSourceHelper(): OperatonDeploymentSourceHelper {
         return OperatonDeploymentSourceHelper()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionAutofillService::class)
+    fun processDefinitionAutofillService(
+        processDefinitionAutofillRepository: ProcessDefinitionAutofillRepository
+    ): ProcessDefinitionAutofillService {
+        return ProcessDefinitionAutofillService(processDefinitionAutofillRepository)
     }
 }

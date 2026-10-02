@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -38,7 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
 import java.util.function.Function
@@ -95,6 +97,53 @@ class CaseInstanceServiceIntTest @Autowired constructor(
         assertEquals(1, result.totalElements)
         val row = result.content.first { it.id == document.id().toString() }
         assertEquals("dummy-permission-value", row.items.first { it.key == caseListColumn.id.key }.value)
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = USERNAME, authorities = [FULL_ACCESS_ROLE])
+    fun `should sort by column path when sort property is column key`() {
+        documentRepository.deleteAll()
+        caseDefinitionListColumnRepository.deleteByIdCaseDefinitionKey(CASE_DEFINITION_NAME)
+
+        caseDefinitionListColumnRepository.save(
+            CaseListColumn(
+                id = CaseListColumnId(CASE_DEFINITION_NAME, "street"),
+                title = "Street",
+                path = "doc:street",
+                displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+                sortable = true,
+                defaultSort = null,
+                order = 0,
+                exportable = false
+            )
+        )
+
+        val doc1 = createDocument(definition(), """{"street": "Zebra Lane"}""")
+        val doc2 = createDocument(definition(), """{"street": "Apple Street"}""")
+        val doc3 = createDocument(definition(), """{"street": "Maple Avenue"}""")
+
+        val resultAsc = caseInstanceService.search(
+            CASE_DEFINITION_NAME,
+            SearchWithConfigRequest(),
+            PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "street"))
+        )
+
+        assertEquals(3, resultAsc.totalElements)
+        assertEquals(doc2.id().toString(), resultAsc.content[0].id)
+        assertEquals(doc3.id().toString(), resultAsc.content[1].id)
+        assertEquals(doc1.id().toString(), resultAsc.content[2].id)
+
+        val resultDesc = caseInstanceService.search(
+            CASE_DEFINITION_NAME,
+            SearchWithConfigRequest(),
+            PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "street"))
+        )
+
+        assertEquals(3, resultDesc.totalElements)
+        assertEquals(doc1.id().toString(), resultDesc.content[0].id)
+        assertEquals(doc3.id().toString(), resultDesc.content[1].id)
+        assertEquals(doc2.id().toString(), resultDesc.content[2].id)
     }
 
     companion object {

@@ -28,6 +28,11 @@ jobs:
       PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      # Required: backend/gradle/publishing-module.gradle only applies the 'signing'
+      # plugin when both of these are set. Without them nothing produces .asc files
+      # and Sonatype rejects every component with "Missing signature for file".
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
       JRELEASER_MAVENCENTRAL_sonatype_STAGE: UPLOAD
 
     steps:
@@ -95,3 +100,19 @@ jobs:
         with:
           name: build-reports
           path: backend/build/reports
+
+  # Second leg of the dual publish: push the same RC artifacts to the AWS S3 bucket
+  # (RCs share the valtimo-releases bucket with releases).
+  publish_s3:
+    name: Publish to S3
+    needs:
+      - build_run_tests
+    if: ${{ startsWith(github.ref_name, 'rc/') }}
+    uses: ./.github/workflows/backend_publish_to_s3.yml
+    with:
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}
+      s3_bucket: valtimo-releases
+      build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+    secrets:
+      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_ID }}
+      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_SECRET }}

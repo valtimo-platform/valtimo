@@ -103,7 +103,7 @@ jobs:
       packages: read
     uses: ./.github/workflows/backend_smoke_and_promote.yml
     with:
-      image_name: gzac-evenementenvergunning-backend
+      image_name: gzac-evenementenvergunning-demo-backend
       release_image_tag: ${{ inputs.project_version || github.event.inputs.project_version }}
     secrets: inherit
 
@@ -189,3 +189,18 @@ jobs:
         with:
           name: build-reports
           path: backend/build/reports
+
+  # Second leg of the dual publish: push the same release artifacts to the AWS S3
+  # bucket.
+  publish_s3:
+    name: Publish to S3
+    needs:
+      - build_run_tests
+    uses: ./.github/workflows/backend_publish_to_s3.yml
+    with:
+      project_version: ${{ inputs.project_version || github.event.inputs.project_version }}.RELEASE
+      s3_bucket: valtimo-releases
+      build_artifact_name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+    secrets:
+      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_ID }}
+      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_SECRET }}

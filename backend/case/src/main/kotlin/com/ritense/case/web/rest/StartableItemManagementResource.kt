@@ -28,6 +28,7 @@ import com.ritense.case.web.rest.dto.UpdateStartableItemRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -51,6 +52,10 @@ class StartableItemManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List startable items (management)",
+        nl = "Startbare items ophalen (beheer)",
+    )
     @GetMapping
     fun getStartableItems(
         @PathVariable caseDefinitionKey: String,
@@ -61,6 +66,10 @@ class StartableItemManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create startable item",
+        nl = "Startbaar item aanmaken",
+    )
     @PostMapping
     fun createStartableItem(
         @PathVariable caseDefinitionKey: String,
@@ -77,6 +86,10 @@ class StartableItemManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update startable item by version",
+        nl = "Startbaar item bijwerken op versie",
+    )
     @PutMapping("/{itemKey}/version/{versionTag}")
     fun updateStartableItem(
         @PathVariable caseDefinitionKey: String,
@@ -89,6 +102,10 @@ class StartableItemManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update startable item",
+        nl = "Startbaar item bijwerken",
+    )
     @PutMapping("/{itemKey}")
     fun updateStartableItemWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
@@ -100,6 +117,10 @@ class StartableItemManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get startable item properties by version",
+        nl = "Eigenschappen startbaar item ophalen op versie",
+    )
     @GetMapping("/{itemKey}/version/{versionTag}/properties")
     fun getStartableItemProperties(
         @PathVariable caseDefinitionKey: String,
@@ -112,6 +133,10 @@ class StartableItemManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get startable item properties",
+        nl = "Eigenschappen startbaar item ophalen",
+    )
     @GetMapping("/{itemKey}/properties")
     fun getStartableItemPropertiesWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
@@ -123,6 +148,10 @@ class StartableItemManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete startable item by version",
+        nl = "Startbaar item verwijderen op versie",
+    )
     @DeleteMapping("/{itemKey}/version/{versionTag}")
     fun deleteStartableItem(
         @PathVariable caseDefinitionKey: String,
@@ -134,6 +163,10 @@ class StartableItemManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete startable item",
+        nl = "Startbaar item verwijderen",
+    )
     @DeleteMapping("/{itemKey}")
     fun deleteStartableItemWithoutVersionTag(
         @PathVariable caseDefinitionKey: String,
@@ -189,6 +222,10 @@ class StartableItemManagementResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Update startable item order",
+        nl = "Volgorde startbare items bijwerken",
+    )
     @PutMapping("/order")
     fun updateOrder(
         @PathVariable caseDefinitionKey: String,

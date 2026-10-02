@@ -1,6 +1,7 @@
 package com.ritense.valtimo.operaton.repository
 
 import com.ritense.valtimo.BaseIntegrationTest
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKeyOfUnlinkedProcess
 import org.assertj.core.api.Assertions
 import org.operaton.bpm.engine.RepositoryService
 import org.junit.jupiter.api.Test
@@ -107,6 +108,42 @@ class OperatonProcessDefinitionSpecificationHelperIntTest @Autowired constructor
 
         Assertions.assertThat(resultIds).contains(deployedProcessDefinition.id)
         Assertions.assertThat(resultIds).doesNotContain(version1Id)
+    }
+
+    @Test
+    @Transactional
+    fun `unlinked spec should prefer an untagged definition over a higher versioned building block one`() {
+        // Version 1 of this key is deployed by the case fixture and therefore carries a CD: version tag,
+        // so deploy two more: one that stays untagged and a higher one standing in for a building block.
+        val untaggedId = deployUserTaskProcess()
+        val buildingBlockDefinitionId = deployUserTaskProcess()
+        definitionRepository.setVersionTag(buildingBlockDefinitionId, "BB:bezwaar:1.0.1")
+
+        val resultIds = definitionRepository.findAll(byKeyOfUnlinkedProcess(USER_TASK_PROCESS)).map { it.id }
+
+        Assertions.assertThat(resultIds).containsExactly(untaggedId)
+        Assertions.assertThat(resultIds).doesNotContain(buildingBlockDefinitionId)
+    }
+
+    private fun deployUserTaskProcess(): String {
+        return repositoryService.createDeployment()
+            .addClasspathResource("config/case/everything/1-0-0/bpmn/$USER_TASK_PROCESS.bpmn")
+            .deployWithResult()
+            .deployedProcessDefinitions.first()
+            .id
+    }
+
+    @Test
+    @Transactional
+    fun `unlinked spec should match nothing when every version of the key belongs to a building block`() {
+        repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey(USER_TASK_PROCESS)
+            .list()
+            .forEach { definitionRepository.setVersionTag(it.id, "BB:bezwaar:1.0.0") }
+
+        val resultIds = definitionRepository.findAll(byKeyOfUnlinkedProcess(USER_TASK_PROCESS)).map { it.id }
+
+        Assertions.assertThat(resultIds).isEmpty()
     }
 
     companion object {

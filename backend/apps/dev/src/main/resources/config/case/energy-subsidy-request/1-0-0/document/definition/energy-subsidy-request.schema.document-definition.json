@@ -71,6 +71,10 @@
         "approvalDecision": {
             "type": "string",
             "description": "Besluit van de beoordelaar (GOEDGEKEURD of AFGEKEURD)"
+        },
+        "bubbleNote": {
+            "type": "string",
+            "description": "Bubbel-notitie die vanuit BB3 via BB2 en BB1 naar de zaak is doorgeborreld (multi-level continue sync)"
         }
     },
     "required": ["applicantName", "householdSize"]

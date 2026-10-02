@@ -26,6 +26,11 @@ export class ViewContentService {
       definition.viewType = typeof value;
     }
 
+    // converters render '-' for an empty value, which a definition can opt out of
+    if (!value && definition.emptyPlaceholder !== undefined) {
+      return definition.emptyPlaceholder;
+    }
+
     if (definition.viewType.includes(separator)) {
       // Get the substring of the string after the separator (:) and assign it to a new key
       definition.format = definition.viewType.slice(

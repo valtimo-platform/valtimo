@@ -127,6 +127,7 @@ class ProcessVariableValueResolverFactory(
         runtimeService.setVariables(processInstanceId, newValues)
     }
 
+    @Deprecated("Replaced by preProcessValuesForNewDocument", level = DeprecationLevel.WARNING)
     override fun preProcessValuesForNewCase(values: Map<String, Any?>): Map<String, Any> {
         val jsonNode = objectMapper.createObjectNode()
         buildJsonPatch(jsonNode, values)

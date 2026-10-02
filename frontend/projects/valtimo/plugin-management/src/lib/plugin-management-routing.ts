@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ROLE_ADMIN} from '@valtimo/shared';
 import {PluginManagementComponent} from './components/plugin-management/plugin-management.component';
+import {PluginHostsPageComponent} from './components/plugin-hosts-page/plugin-hosts-page.component';
+import {PluginAppsPageComponent} from './components/plugin-apps-page/plugin-apps-page.component';
 
 const routes: Routes = [
   {
@@ -27,6 +29,18 @@ const routes: Routes = [
     component: PluginManagementComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Plugins', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'plugin-hosts',
+    component: PluginHostsPageComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Plugin hosts', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'plugin-apps',
+    component: PluginAppsPageComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Apps', roles: [ROLE_ADMIN]},
   },
 ];
 

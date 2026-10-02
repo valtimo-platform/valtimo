@@ -18,5 +18,7 @@ package com.ritense.processlink.web.rest.dto
 
 data class ProcessDefinitionValidateRequestDto(
     val bpmnXml: String,
-    val processLinks: List<ProcessLinkCreateRequestDto> = emptyList()
+    val processLinks: List<ProcessLinkCreateRequestDto> = emptyList(),
+    val canInitializeDocument: Boolean = true,
+    val startableByUser: Boolean = true
 )

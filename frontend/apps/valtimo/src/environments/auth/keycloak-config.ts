@@ -30,7 +30,9 @@ const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
     initOptions: keycloakInitOptions,
     enableBearerInterceptor: true,
     bearerExcludedUrls: [
-      '/assets'
+      '/assets',
+      '^https?://[^/]+\\.amazonaws\\.com/',
+      '^https?://[^/]+\\.io\\.cloud\\.ovh\\.net/'
     ]
   },
   logoutRedirectUri: window['env']['keycloakLogoutRedirectUri'] || 'http://localhost:4200'

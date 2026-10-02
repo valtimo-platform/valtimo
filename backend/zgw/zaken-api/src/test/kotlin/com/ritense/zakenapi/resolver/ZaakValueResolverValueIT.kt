@@ -55,11 +55,16 @@ class ZaakValueResolverValueIT @Autowired constructor(
 
     lateinit var server: MockWebServer
 
+    // Derived from the mock server's actual (randomly assigned) address so the test does not depend on a fixed port.
+    private val baseUrl get() = server.url("").toString().removeSuffix("/")
+
     @BeforeEach
     internal fun setUp() {
         server = MockWebServer()
         setupMockZakenApiServer()
-        server.start(port = 56273)
+        server.start()
+
+        setPluginConfigurationUrl(ZAKEN_API_PLUGIN_ID, server.url("$ZAKEN_API_PATH/").toString())
     }
 
     @AfterEach
@@ -82,10 +87,10 @@ class ZaakValueResolverValueIT @Autowired constructor(
 
             // Create zaak instance link so the resolver can find the zaak URL
             zaakInstanceLinkService.createZaakInstanceLink(
-                URI("http://localhost:56273$ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
+                URI("$baseUrl$ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 java.util.UUID.fromString("57f66ff6-db7f-43bc-84ef-6847640d3609"),
                 documentId,
-                URI("http://localhost:56273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002")
+                URI("$baseUrl/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002")
             )
 
             val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-with-zaak-fields", caseDefinitionId).get()
@@ -118,13 +123,13 @@ class ZaakValueResolverValueIT @Autowired constructor(
     private fun getZaakRequest(): MockResponse {
         val body = """
             {
-                "url": "http://localhost:56273/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
+                "url": "$baseUrl/zaken/a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "uuid": "a6b63eb5-cc92-4f4b-ba53-9c145133166b",
                 "identificatie": "ZK2023-00001",
                 "bronorganisatie": "104978119",
                 "omschrijving": "Test",
                 "toelichting": "",
-                "zaaktype": "http://localhost:56273/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002",
+                "zaaktype": "$baseUrl/catalogi/e02753ba-9055-11ee-b9d1-0242ac120002",
                 "registratiedatum": "2023-03-22",
                 "verantwoordelijkeOrganisatie": "104978119",
                 "startdatum": "2023-03-22",
@@ -169,5 +174,6 @@ class ZaakValueResolverValueIT @Autowired constructor(
 
     companion object {
         private const val ZAKEN_API_PATH = "/zaken/api/v1"
+        private const val ZAKEN_API_PLUGIN_ID = "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
     }
 }

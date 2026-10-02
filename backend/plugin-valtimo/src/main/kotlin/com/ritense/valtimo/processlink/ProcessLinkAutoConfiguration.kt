@@ -19,6 +19,7 @@ package com.ritense.valtimo.processlink
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.repository.PluginConfigurationRepository
+import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -27,6 +28,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.plugin.PluginConfigurationExistenceChecker
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
+import com.ritense.valtimo.processlink.listener.ProcessDefinitionChangedEventListener
 import com.ritense.valtimo.processlink.listener.ProcessLinkChangedEventListener
 import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
 import com.ritense.valtimo.processlink.preview.PluginConfigurationImportPreviewContributor
@@ -147,8 +149,14 @@ class ProcessLinkAutoConfiguration {
         objectMapper: ObjectMapper,
         pluginConfigurationRepository: PluginConfigurationRepository,
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
+        pluginDefinitionRepository: PluginDefinitionRepository,
     ): PluginProcessLinkMapper {
-        return PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository)
+        return PluginProcessLinkMapper(
+            objectMapper,
+            pluginConfigurationRepository,
+            pluginProcessLinkRepository,
+            pluginDefinitionRepository,
+        )
     }
 
     @Bean
@@ -211,13 +219,21 @@ class ProcessLinkAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessLinkChangedEventListener::class)
     fun processLinkChangedEventListener(
-        pluginConfigurationMappingResolver: PluginConfigurationMappingResolver,
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
     ): ProcessLinkChangedEventListener {
-        return ProcessLinkChangedEventListener(pluginConfigurationMappingResolver)
+        return ProcessLinkChangedEventListener(pluginConfigurationMappingResolvers)
     }
 
     @Bean
-    @ConditionalOnMissingBean(PluginConfigurationMappingResolver::class)
+    @ConditionalOnMissingBean(ProcessDefinitionChangedEventListener::class)
+    fun processDefinitionChangedEventListener(
+        pluginConfigurationMappingResolvers: List<PluginConfigurationMappingResolver>,
+    ): ProcessDefinitionChangedEventListener {
+        return ProcessDefinitionChangedEventListener(pluginConfigurationMappingResolvers)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PluginConfigurationMappingResolverImpl::class)
     fun pluginConfigurationMappingResolver(
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
         pluginConfigurationRepository: PluginConfigurationRepository,

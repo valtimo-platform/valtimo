@@ -15,11 +15,15 @@
   -->
 
 <ng-container *ngIf="listItems$ | async as items; else loading">
-  <p class="step-description">
+  <p class="step-description" [attr.data-test-id]="testIds.container">
     {{ pageHeaderText$ | async | translate }}
   </p>
   <div class="list-container">
-    <cds-structured-list (selected)="selected($event)" selection="true">
+    <cds-structured-list
+      [attr.data-test-id]="testIds.list"
+      (selected)="selected($event)"
+      selection="true"
+    >
       <cds-list-header>
         <cds-list-column nowrap="true"></cds-list-column>
         <cds-list-column nowrap="true">
@@ -29,7 +33,11 @@
           {{ 'processLinkConfiguration.pluginDescription' | translate }}
         </cds-list-column>
       </cds-list-header>
-      <cds-list-row *ngFor="let item of items" [value]="item.payload">
+      <cds-list-row
+        *ngFor="let item of items"
+        [attr.data-test-id]="rowTestIdPrefix + item.id"
+        [value]="item.payload"
+      >
         <cds-list-column>
           <div *ngIf="item.logo">
             <img [src]="item.logo" [title]="item.title" class="plugin-configuration-logo" />

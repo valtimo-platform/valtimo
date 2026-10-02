@@ -19,6 +19,7 @@ package com.ritense.valtimo.processlink.service
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -31,6 +32,7 @@ import com.ritense.valtimo.contract.plugin.DanglingPluginConfigurationDto
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valtimo.processlink.mapper.PluginProcessLinkMapper
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
@@ -52,9 +54,9 @@ open class PluginConfigurationMappingResolverImpl(
             .findProcessDefinitionCaseDefinitions(caseDefinitionId)
             .map { it.id.processDefinitionId.id }
 
-        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
-            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
-        }.filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
+        val allPluginLinks = pluginProcessLinkRepository
+            .findByProcessDefinitionIdIn(processDefinitionIds)
+            .filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
 
         for (link in allPluginLinks) {
             // Match by pluginConfigurationId if present, otherwise by process link id
@@ -81,14 +83,11 @@ open class PluginConfigurationMappingResolverImpl(
             .findProcessDefinitionCaseDefinitions(caseDefinitionId)
             .map { it.id.processDefinitionId.id }
 
-        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
-            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
-        }.filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
+        val allPluginLinks = pluginProcessLinkRepository
+            .findByProcessDefinitionIdIn(processDefinitionIds)
+            .filter { it.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED }
 
-        val danglingLinks = allPluginLinks.filter { link ->
-            link.pluginConfigurationId == null ||
-                !pluginConfigurationRepository.existsById(link.pluginConfigurationId!!)
-        }
+        val danglingLinks = allPluginLinks.filter { isDangling(it) }
 
         return danglingLinks
             .groupBy { it.pluginConfigurationReference.pluginDefinitionKey }
@@ -100,31 +99,50 @@ open class PluginConfigurationMappingResolverImpl(
             }
     }
 
+    /**
+     * Runs in its own transaction: this is called from an `AFTER_COMMIT` event listener, where the
+     * transaction of the original request has already been committed while still being bound to the thread.
+     * Joining that transaction would mean the writes done by the listeners of the events published below are
+     * flushed into a transaction that is never committed again, silently losing them.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     override fun recheckIssuesForProcessDefinition(processDefinitionId: String) {
         val link = processDefinitionCaseDefinitionService
             .findByProcessDefinitionIdOrNull(ProcessDefinitionId.of(processDefinitionId))
             ?: return
-        val caseDefinitionId = link.id.caseDefinitionId
+        recheckIssuesForCaseDefinition(link.id.caseDefinitionId)
+    }
 
+    /**
+     * See [recheckIssuesForProcessDefinition] for why this needs its own transaction. Note that the call from
+     * [recheckIssuesForProcessDefinition] bypasses the proxy, which is harmless: that method already opened a
+     * new transaction.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    override fun recheckIssuesForCaseDefinition(caseDefinitionId: CaseDefinitionId) {
         val processDefinitionIds = processDefinitionCaseDefinitionService
             .findProcessDefinitionCaseDefinitions(caseDefinitionId)
             .map { it.id.processDefinitionId.id }
         checkForRemainingIssues(caseDefinitionId, processDefinitionIds)
     }
 
+    /**
+     * Same rule as `ValtimoPluginProcessLinkRepository.existsDanglingFixedLink`, per link: the mapping dialog
+     * offers exactly what the issue check flags.
+     */
+    private fun isDangling(link: PluginProcessLink): Boolean {
+        val configurationId = link.pluginConfigurationId ?: return true
+        val configuration = pluginConfigurationRepository.findById(configurationId).orElse(null) ?: return true
+        val expectedDefinitionKey = link.pluginConfigurationReference.pluginDefinitionKey
+        return expectedDefinitionKey != null && configuration.pluginDefinition.key != expectedDefinitionKey
+    }
+
     private fun checkForRemainingIssues(
         caseDefinitionId: CaseDefinitionId,
         processDefinitionIds: List<String>,
     ) {
-        val allPluginLinks = processDefinitionIds.flatMap { pdId ->
-            pluginProcessLinkRepository.findByProcessDefinitionId(pdId)
-        }
-
-        val hasIssue = allPluginLinks.any { link ->
-            link.pluginConfigurationReference.type == PluginConfigurationReferenceType.FIXED &&
-                (link.pluginConfigurationId == null ||
-                    !pluginConfigurationRepository.existsById(link.pluginConfigurationId!!))
-        }
+        val hasIssue = processDefinitionIds.isNotEmpty() &&
+            pluginProcessLinkRepository.existsDanglingFixedLink(processDefinitionIds)
 
         if (hasIssue) {
             applicationEventPublisher.publishEvent(

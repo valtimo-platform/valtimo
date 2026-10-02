@@ -25,7 +25,9 @@ export function createWidgetTestData() {
     tabKey: `e2e-widget-tab-${id}`,
     widgetTitle: `E2e Test Widget ${id}`,
     fieldTitle: 'Test Field',
-    valuePath: 'case:definitionId.name',
+    // `case:definitionId.name` no longer exists: the case definition id is exposed as
+    // key + versionTag since case definition versioning was introduced.
+    valuePath: 'case:definitionId.key',
   };
 }
 
@@ -41,6 +43,25 @@ export function createJsonEditorDividerData() {
   return {
     dividerTitle: `E2e JSON Divider ${id}`,
     dividerKey: `e2e-json-divider-${id}`,
+  };
+}
+
+/**
+ * Data for the display-conditions test (6.94).
+ *
+ * `operatorLabel` is what the dropdown shows; `operator` is what the backend stores for it —
+ * the test asserts the stored value, so both are needed.
+ */
+export function createConditionWidgetTestData() {
+  const id = generateId();
+  return {
+    widgetTitle: `E2e Condition Widget ${id}`,
+    fieldTitle: 'Condition Field',
+    valuePath: 'case:definitionId.key',
+    conditionPath: 'case:createdBy',
+    operatorLabel: 'Equal to',
+    operator: '==',
+    conditionValue: 'admin',
   };
 }
 

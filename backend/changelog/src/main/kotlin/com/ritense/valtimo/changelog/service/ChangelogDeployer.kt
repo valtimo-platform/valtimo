@@ -82,20 +82,14 @@ class ChangelogDeployer(
     }
 
     fun resolveProperties(content: String): String {
-        var resolvedContent = content
-        Regex("\\$\\{([^\\}]+)\\}").findAll(content)
-            .map { it.groupValues }
-            .forEach { (placeholder, placeholderValue) ->
-                try {
-                    val resolvedValue = environment.getProperty(placeholderValue)
-                    if (!resolvedValue.isNullOrBlank()) {
-                        resolvedContent = resolvedContent.replace(placeholder, resolvedValue)
-                    }
-                } catch (e: Exception) {
-                    // ignored
-                }
-            }
-        return resolvedContent
+        return PROPERTY_PLACEHOLDER_PATTERN.replace(content) { match ->
+            val name = match.groupValues[1]
+            // Only present when the placeholder actually contained a ':'
+            val default = match.groups[2]?.value
+            environment.getProperty(name)?.takeIf { it.isNotBlank() }
+                ?: default
+                ?: match.value
+        }
     }
 
     // Uses TreeMap when parsing to ObjectNode. Will sort keys alphabetically when serialized
@@ -107,6 +101,13 @@ class ChangelogDeployer(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
+        /**
+         * Matches Spring-style property placeholders only: `${name}` or `${name:default}`, where the name is
+         * limited to property key characters. Expressions that happen to use the same delimiters, like
+         * `${someBean.call('doc:/a', 'pv:b')}`, are left untouched.
+         */
+        private val PROPERTY_PLACEHOLDER_PATTERN = Regex("""\$\{([A-Za-z0-9_.\-\[\]]+)(?::([^{}]*))?}""")
     }
 
 }

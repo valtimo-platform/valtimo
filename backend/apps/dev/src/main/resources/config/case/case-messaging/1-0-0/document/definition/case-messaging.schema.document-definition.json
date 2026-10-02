@@ -1,0 +1,21 @@
+{
+    "$id": "case-messaging.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Case messaging",
+    "type": "object",
+    "properties": {
+        "subject": {
+            "type": "string",
+            "description": "Subject of the case, passed on to the building blocks"
+        },
+        "reviewedBy": {
+            "type": "string",
+            "description": "Written back by the Case review building block after it received the message"
+        },
+        "lastNotification": {
+            "type": "string",
+            "description": "Written back by the Case notification building block that was started by a message"
+        }
+    },
+    "required": ["subject"]
+}

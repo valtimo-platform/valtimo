@@ -65,7 +65,9 @@ export class IkoSearchFieldPage {
   // ─── Search field modal ─────────────────────────────────────────────
 
   get addModalHeading(): Locator {
-    return this.page.getByRole('heading', {name: 'Add search field'});
+    // Heading comes from `searchFieldsOverview.add`, renamed "Add search field" →
+    // "Create search field"; accept both so the test also passes on older builds.
+    return this.page.getByRole('heading', {name: /^(Create|Add) search field$/i});
   }
 
   get editModalHeading(): Locator {

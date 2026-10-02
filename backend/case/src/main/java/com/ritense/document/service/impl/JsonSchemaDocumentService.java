@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ import com.ritense.valtimo.contract.authentication.Team;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
+import com.ritense.valtimo.contract.event.DocumentPreDeleteEvent;
 import com.ritense.valtimo.contract.resource.Resource;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
@@ -600,6 +601,7 @@ public class JsonSchemaDocumentService implements DocumentService {
                     )
                 );
                 document.removeAllRelatedFiles();
+                applicationEventPublisher.publishEvent(new DocumentPreDeleteEvent(document.id().getId()));
             });
             documentRepository.saveAll(documents);
             documentRepository.deleteAll(documents);
@@ -627,6 +629,14 @@ public class JsonSchemaDocumentService implements DocumentService {
                 JsonSchemaDocument.class,
                 DELETE,
                 document
+            )
+        );
+
+        // Gives modules owning rows that reference this document the chance to remove them before the document itself
+        // is deleted, so the delete isn't refused by a foreign key constraint. Fires inside this transaction.
+        applicationEventPublisher.publishEvent(
+            new DocumentPreDeleteEvent(
+                documentId.getId()
             )
         );
 
@@ -844,7 +854,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         publishDocumentAssigneeChangedEvent(documentId, null, null, teamTitle, formerAssigneeId, formerTeamKey);
 
         outboxService.send(() ->
-            new DocumentUpdated(
+            new DocumentAssigned(
                 document.id().toString(),
                 objectMapper.valueToTree(document)
             )
@@ -895,7 +905,7 @@ public class JsonSchemaDocumentService implements DocumentService {
             );
 
             outboxService.send(() ->
-                new DocumentUpdated(
+                new DocumentAssigned(
                     document.id().toString(),
                     objectMapper.valueToTree(document)
                 )
@@ -937,7 +947,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         );
 
         outboxService.send(() ->
-            new DocumentUpdated(
+            new DocumentUnassigned(
                 document.id().toString(),
                 objectMapper.valueToTree(document)
             )

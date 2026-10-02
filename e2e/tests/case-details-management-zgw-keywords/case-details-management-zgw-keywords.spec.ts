@@ -35,6 +35,9 @@ test.describe('Case details management — ZGW Keywords (6S)', () => {
   const createdKeywords: string[] = [];
 
   test.beforeAll(async ({browser, baseURL}) => {
+    // Navigating to the case, selecting the draft version and loading the ZGW tab does not
+    // fit in the default 30s budget on a slower environment.
+    test.setTimeout(60_000);
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     request = context.request;

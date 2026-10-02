@@ -26,7 +26,7 @@
   [expanded]="obs.sideBarExpanded"
 >
   <ng-container *ngIf="obs.menuItemsLoaded; else loadingTemplate">
-    <ng-container *ngFor="let menuItem of obs.menuItems">
+    <ng-container *ngFor="let menuItem of obs.menuItems; trackBy: trackByMenuItem">
       <ng-container *ngIf="!menuItem.children">
         <ng-container
           *ngTemplateOutlet="
@@ -64,7 +64,9 @@
             [title]="menuItem | menuItemTranslate | async"
             [attr.data-testid]="'sidenav-item-' + menuItem.title"
           >
-            <ng-container *ngFor="let childMenuItem of menuItem.children">
+            <ng-container
+              *ngFor="let childMenuItem of menuItem.children; trackBy: trackByMenuItem"
+            >
               <ng-container
                 *ngIf="{
                   disableCaseCount: disableCaseCount$ | async,

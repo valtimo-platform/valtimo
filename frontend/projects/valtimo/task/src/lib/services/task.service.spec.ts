@@ -15,13 +15,16 @@
  */
 
 import {TestBed} from '@angular/core/testing';
-import {provideHttpClientTesting} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {TaskService} from './task.service';
-import {VALTIMO_CONFIG} from '@valtimo/shared';
+import {InterceptorSkip, VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
 import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
 describe('TaskService', () => {
+  let service: TaskService;
+  let httpMock: HttpTestingController;
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [],
@@ -32,10 +35,50 @@ describe('TaskService', () => {
         provideHttpClientTesting(),
       ],
     });
+
+    service = TestBed.inject(TaskService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should be created', () => {
-    const service: TaskService = TestBed.inject(TaskService);
     expect(service).toBeTruthy();
+  });
+
+  it('getTask does not set the interceptor skip header when no status codes are provided', () => {
+    service.getTask('task-id').subscribe();
+
+    const req = httpMock.expectOne(request => request.url.endsWith('/v1/task/task-id'));
+    expect(req.request.headers.has(InterceptorSkip)).toBeFalse();
+    req.flush({});
+  });
+
+  it('getTask sets the interceptor skip header for the provided status codes', () => {
+    service.getTask('task-id', ['403', '404']).subscribe();
+
+    const req = httpMock.expectOne(request => request.url.endsWith('/v1/task/task-id'));
+    expect(req.request.headers.get(InterceptorSkip)).toBe('403,404');
+    req.flush({});
+  });
+
+  it('getCandidateUsers skips the 403 status so the expected access loss is not toasted', () => {
+    service.getCandidateUsers('task-id').subscribe();
+
+    const req = httpMock.expectOne(request => request.url.endsWith('/v2/task/task-id/candidate-user'));
+    expect(req.request.headers.get(InterceptorSkip)).toBe('403');
+    req.flush([]);
+  });
+
+  it('getCandidateTeams skips the 403 status so the expected access loss is not toasted', () => {
+    service.getCandidateTeams('task-id').subscribe();
+
+    const req = httpMock.expectOne(request =>
+      request.url.endsWith('/v1/task/task-id/candidate-team')
+    );
+    expect(req.request.headers.get(InterceptorSkip)).toBe('403');
+    req.flush({content: []});
   });
 });

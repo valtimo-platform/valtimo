@@ -35,6 +35,7 @@ import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -99,8 +100,9 @@ class BuildingBlockCallActivityListenerTest {
                 eq(inputMappings.map { it.source })
             )
         ).thenReturn(mapOf("doc:/person/name" to "Ada Lovelace"))
-        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:name" to "Ada Lovelace")))
-            .thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
+        whenever(
+            valueResolverService.preProcessValuesForNewDocument(eq(mapOf("doc:name" to "Ada Lovelace")), any())
+        ).thenReturn(mapOf("doc" to mapOf("name" to "Ada Lovelace")))
 
         whenever(buildingBlockInstance.documentId).thenReturn(UUID.randomUUID())
 
@@ -191,8 +193,9 @@ class BuildingBlockCallActivityListenerTest {
                 eq(inputMappings.map { it.source })
             )
         ).thenReturn(mapOf("doc:/data" to "parent data"))
-        whenever(valueResolverService.preProcessValuesForNewCase(mapOf("doc:input" to "parent data")))
-            .thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
+        whenever(
+            valueResolverService.preProcessValuesForNewDocument(eq(mapOf("doc:input" to "parent data")), any())
+        ).thenReturn(mapOf("doc" to mapOf("input" to "parent data")))
 
         // Parent BB instance is found because we're calling from a BB process
         whenever(buildingBlockInstanceService.getByDocumentId(parentBBDocumentId)).thenReturn(parentBBInstance)
@@ -296,5 +299,51 @@ class BuildingBlockCallActivityListenerTest {
         listener.onCallActivityEnd(OperatonExecutionEvent(execution))
 
         verify(valueResolverService).handleValues(caseDocumentId, mapOf("doc:/result" to "value"))
+    }
+
+    /** G24: the variable can point at a block whose governing link the owner's new version dropped, so there is nothing to sync — and throwing would break a running process weeks later. */
+    @Test
+    fun `should skip the output mappings when the new version no longer declares a block on the activity`() {
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val caseDocumentId = UUID.randomUUID()
+        val activityId = "callActivity"
+        val testProcessDefinitionId = "case-process"
+        val execution = mock<DelegateExecution> {
+            on { processDefinitionId } doReturn testProcessDefinitionId
+            on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
+            on { this.eventName } doReturn "end"
+        }
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(
+            BuildingBlockInstance(
+                documentId = buildingBlockDocumentId,
+                caseDocumentId = caseDocumentId,
+                activityId = activityId,
+                definition = BuildingBlockDefinition(
+                    BuildingBlockDefinitionId.of("bb", "1.0.0"),
+                    "Test block", "desc", "tester", LocalDateTime.now(), null, false
+                )
+            )
+        )
+        whenever(processLinkService.getProcessLinks(testProcessDefinitionId, activityId)).thenReturn(emptyList())
+
+        assertDoesNotThrow { listener.onCallActivityEnd(OperatonExecutionEvent(execution)) }
+
+        verify(valueResolverService, never()).handleValues(any<UUID>(), any())
+    }
+
+    /** The same, for a block a `removeBuildingBlock` dissolved while this call activity was still open. */
+    @Test
+    fun `should skip the output mappings when the building block instance no longer exists`() {
+        val buildingBlockDocumentId = UUID.randomUUID()
+        val execution = mock<DelegateExecution> {
+            on { processDefinitionId } doReturn "case-process"
+            on { getVariableLocal("buildingBlockDocumentId") } doReturn buildingBlockDocumentId.toString()
+            on { this.eventName } doReturn "end"
+        }
+        whenever(buildingBlockInstanceService.getByDocumentId(buildingBlockDocumentId)).thenReturn(null)
+
+        assertDoesNotThrow { listener.onCallActivityEnd(OperatonExecutionEvent(execution)) }
+
+        verify(valueResolverService, never()).handleValues(any<UUID>(), any())
     }
 }
