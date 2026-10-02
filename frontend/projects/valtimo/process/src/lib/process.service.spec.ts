@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,30 @@ describe('ProcessService', () => {
         formLocation: 'formLocation',
         genericForm: 'genericForm',
       });
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getCaseProcessInstanceXml', () => {
+    it('should call GET on the document-scoped process diagram endpoint', () => {
+      service.getCaseProcessInstanceXml('case-1', 'pi-1').subscribe();
+      const req = httpTestingController.expectOne(req =>
+        req.url.endsWith('v1/process-document/case/case-1/process-instance/pi-1/xml')
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush({});
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getCaseInspectionProcessInstanceXml', () => {
+    it('should call GET on the inspection process diagram endpoint', () => {
+      service.getCaseInspectionProcessInstanceXml('case-1', 'pi-1').subscribe();
+      const req = httpTestingController.expectOne(req =>
+        req.url.endsWith('management/v1/case/case-1/process-instance/pi-1/xml')
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush({});
       httpTestingController.verify();
     });
   });

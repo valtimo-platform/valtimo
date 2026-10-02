@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.DEVELOPER
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.valtimo.contract.repository.ExpressionOperator
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.widget.displayproperties.CurrencyFieldDisplayProperties
 import org.junit.jupiter.api.BeforeEach
@@ -180,10 +182,97 @@ class CaseWidgetTabResourceIntTest @Autowired constructor(
             .andExpect(jsonPath("$.test").value("test123"))
     }
 
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = ["ROLE_ALL_WIDGETS"])
+    fun `should deny widget endpoints without document view permission`() {
+        val documentId = createDocumentWithWidgetTab()
+        val groupId = runWithoutAuthorization { widgetTabService.dataGroupIds(documentId, "my-tab") }["my-widget"]
+
+        mockMvc.perform(get("/api/v1/document/{documentId}/widget-tab/{tabKey}", documentId, "my-tab"))
+            .andExpect(status().isForbidden)
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}", documentId, "my-tab", "my-widget")
+        ).andExpect(status().isForbidden)
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/widget-tab/{tabKey}/data", documentId, "my-tab")
+                .param("group", groupId ?: "group")
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = ["ROLE_OWN_DOCUMENT_WIDGETS"])
+    fun `should only allow widget endpoints for documents the user may view`() {
+        val ownDocumentId = createDocumentWithWidgetTab("""{"key": "OWN"}""")
+        val otherDocumentId = createDocumentOnly("""{"key": "OTHER"}""")
+
+        mockMvc.perform(get("/api/v1/document/{documentId}/widget-tab/{tabKey}", ownDocumentId, "my-tab"))
+            .andExpect(status().isOk)
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}", ownDocumentId, "my-tab", "my-widget")
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.test").value("test123"))
+
+        mockMvc.perform(get("/api/v1/document/{documentId}/widget-tab/{tabKey}", otherDocumentId, "my-tab"))
+            .andExpect(status().isForbidden)
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}", otherDocumentId, "my-tab", "my-widget")
+        ).andExpect(status().isForbidden)
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/widget-tab/{tabKey}/data", otherDocumentId, "my-tab")
+                .param("group", "group")
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [USER])
+    fun `should not find hidden case widget data`() {
+        val documentId = createDocumentWithWidgetTab(
+            displayConditions = listOf(Condition("test:test", ExpressionOperator.EQUAL_TO, "not test"))
+        )
+
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}", documentId, "my-tab", "my-widget")
+        ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [USER])
+    fun `should not find case widget data for unknown document`() {
+        mockMvc.perform(
+            get(
+                "/api/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}",
+                UUID.randomUUID(), "my-tab", "my-widget"
+            )
+        ).andExpect(status().isNotFound)
+    }
+
+    private fun createDocumentWithWidgetTab(
+        content: String = "{}",
+        displayConditions: List<Condition<*>> = emptyList()
+    ): UUID = runWithoutAuthorization {
+        val document = documentService.createDocument(
+            NewDocumentRequest(
+                "some-case-type",
+                "some-case-type",
+                "1.2.3",
+                MapperSingleton.get().readTree(content)
+            )
+        ).resultingDocument().get()
+        createCaseWidgetTab(document.definitionId().caseDefinitionId(), "my-tab", "my-widget", displayConditions)
+        document.id().id
+    }
+
+    private fun createDocumentOnly(content: String): UUID = runWithoutAuthorization {
+        documentService.createDocument(
+            NewDocumentRequest("some-case-type", "some-case-type", "1.2.3", MapperSingleton.get().readTree(content))
+        ).resultingDocument().get().id().id
+    }
+
     private fun createCaseWidgetTab(
         caseDefinitionId: CaseDefinitionId,
         tabKey: String,
-        widgetKey: String
+        widgetKey: String,
+        displayConditions: List<Condition<*>> = emptyList()
     ): CaseWidgetTabDto {
         tabService.createCaseTab(
             caseDefinitionId,
@@ -207,7 +296,8 @@ class CaseWidgetTabResourceIntTest @Autowired constructor(
                             displayProperties = CurrencyFieldDisplayProperties(
                                 currencyCode = "EUR"
                             )
-                        )
+                        ),
+                        displayConditions = displayConditions
                     )
                 )
             )
