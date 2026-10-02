@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| IKO | A widget or search result list that could not retrieve its data now says so and offers a retry, instead of looking the same as one that has no data to show |

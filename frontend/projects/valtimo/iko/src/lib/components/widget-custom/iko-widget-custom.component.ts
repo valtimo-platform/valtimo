@@ -22,6 +22,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule} from 'carbon-components-angular';
 import {
   CustomWidget,
+  groupWidgetData,
   WidgetCustomComponent,
   WidgetDataGroupService,
   WidgetLayoutService,
@@ -50,7 +51,14 @@ export class IkoWidgetCustomComponent {
 
   public readonly widgetData$ = this._widgetConfigSubject$.pipe(
     switchMap(widgetConfiguration =>
-      !widgetConfiguration ? of(null) : this.widgetDataGroupService.dataFor(widgetConfiguration.key)
+      !widgetConfiguration
+        ? of(null)
+        : groupWidgetData(
+            this.widgetDataGroupService,
+            this.widgetLayoutService,
+            widgetConfiguration.key,
+            () => this.widgetUuid
+          )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );

@@ -15,7 +15,8 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {FitPageDirective, WidgetLayout} from '@valtimo/components';
+import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule, FitPageDirective, WidgetLayout} from '@valtimo/components';
 import {
   BasicWidget,
   WidgetComponentMap,
@@ -23,14 +24,17 @@ import {
   WidgetDataGroupService,
   WidgetType,
 } from '@valtimo/layout';
+import {ButtonModule} from 'carbon-components-angular';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   distinctUntilChanged,
   filter,
   map,
   Observable,
+  of,
   switchMap,
   tap,
 } from 'rxjs';
@@ -50,7 +54,14 @@ import {IkoWidgetMetrolineComponent} from '../../widget-metroline';
   styleUrl: './iko-widget.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, WidgetContainerComponent, FitPageDirective],
+  imports: [
+    ButtonModule,
+    CarbonListModule,
+    CommonModule,
+    FitPageDirective,
+    TranslateModule,
+    WidgetContainerComponent,
+  ],
   providers: [WidgetDataGroupService],
 })
 export class IkoWidgetComponent {
@@ -68,6 +79,10 @@ export class IkoWidgetComponent {
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
+  public readonly widgetsError$ = new BehaviorSubject<boolean>(false);
+
+  private readonly _reloadWidgets$ = new BehaviorSubject<null>(null);
+
   private readonly _context$: Observable<[string, string, string]> = combineLatest([
     this.ikoViewKey$,
     this.key$,
@@ -79,9 +94,23 @@ export class IkoWidgetComponent {
   );
 
   // Source and widget list are set before the container renders, so widgets find their group
-  public widgets$: Observable<BasicWidget[]> = this._context$.pipe(
-    tap(([ikoViewKey, tabKey, entryId]) => this.setDataSource(ikoViewKey, tabKey, entryId)),
-    switchMap(([ikoViewKey, tabKey]) => this.ikoApiService.getIkoWidget(ikoViewKey, tabKey)),
+  public widgets$: Observable<BasicWidget[]> = combineLatest([
+    this._context$,
+    this._reloadWidgets$,
+  ]).pipe(
+    map(([context]) => context),
+    tap(([ikoViewKey, tabKey, entryId]) => {
+      this.widgetsError$.next(false);
+      this.setDataSource(ikoViewKey, tabKey, entryId);
+    }),
+    switchMap(([ikoViewKey, tabKey]) =>
+      this.ikoApiService.getIkoWidget(ikoViewKey, tabKey).pipe(
+        catchError(() => {
+          this.widgetsError$.next(true);
+          return of([]);
+        })
+      )
+    ),
     tap((widgets: BasicWidget[]) => this.widgetDataGroupService.setWidgets(widgets))
   );
 
@@ -124,6 +153,10 @@ export class IkoWidgetComponent {
     private readonly widgetDataGroupService: WidgetDataGroupService,
     private readonly logger: NGXLogger
   ) {}
+
+  public onRetryWidgets(): void {
+    this._reloadWidgets$.next(null);
+  }
 
   private setDataSource(ikoViewKey: string, tabKey: string, entryId: string): void {
     this.widgetDataGroupService.setSource({
