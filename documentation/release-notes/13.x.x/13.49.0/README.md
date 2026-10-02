@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Building blocks | A final building block can be deployed to an environment that does not allow drafts, such as production |
