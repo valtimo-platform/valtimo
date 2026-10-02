@@ -37,6 +37,7 @@ import com.ritense.authorization.role.Role
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCaseDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -526,6 +527,24 @@ class OpenSearchPermissionConditionTranslatorTest {
         assertThat((onName as WildcardQueryBuilder).fieldName()).isEqualTo("definitionId.name")
         assertThat(onVersion).isInstanceOf(IdsQueryBuilder::class.java)
         assertThat((onVersion as IdsQueryBuilder).ids()).isEmpty()
+    }
+
+    @Test
+    fun `case definition mapper LIKE uses a wildcard query on the key and denies all on the version tag`() {
+        val mapper = JsonSchemaDocumentCaseDefinitionOpenSearchMapper()
+
+        val onKey = mapper.mapQuery(listOf(FieldPermissionCondition("id.key", LIKE, "loan"))) as BoolQueryBuilder
+        val onVersionTag = mapper.mapQuery(listOf(FieldPermissionCondition("id.versionTag", LIKE, "1"))) as BoolQueryBuilder
+
+        assertThat(onKey.must()).anySatisfy {
+            assertThat(it).isInstanceOf(WildcardQueryBuilder::class.java)
+            assertThat((it as WildcardQueryBuilder).fieldName()).isEqualTo("definitionId.blueprintId.blueprintKey")
+        }
+        assertThat(onVersionTag.must()).noneMatch { it is WildcardQueryBuilder }
+        assertThat(onVersionTag.must()).anySatisfy {
+            assertThat(it).isInstanceOf(IdsQueryBuilder::class.java)
+            assertThat((it as IdsQueryBuilder).ids()).isEmpty()
+        }
     }
 
     @Test
