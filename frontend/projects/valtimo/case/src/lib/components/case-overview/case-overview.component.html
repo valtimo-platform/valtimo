@@ -1,0 +1,164 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="case-overview">
+  <cds-search
+    class="case-overview__search"
+    [label]="'case.overview.search.label' | translate"
+    [placeholder]="'case.overview.search.placeholder' | translate"
+    size="lg"
+    (clear)="onSearch('')"
+    (valueChange)="onSearch($event)"
+  ></cds-search>
+
+  @if (pinInfoNotification$ | async; as pinInfoNotification) {
+    @if ($pinInfoVisible()) {
+      <cds-inline-notification
+        class="case-overview__pin-info"
+        [notificationObj]="pinInfoNotification"
+        (close)="onPinInfoClose()"
+      ></cds-inline-notification>
+    }
+  }
+
+  <div class="case-overview__columns">
+    @if ($filteredGroups(); as caseDefinitionGroups) {
+      <section class="case-overview__section">
+        <header class="case-overview__section-header">
+          <h3 class="case-overview__section-title">
+            {{ 'case.overview.groups.title' | translate }}
+          </h3>
+
+          <span class="case-overview__count">{{ caseDefinitionGroups.length }}</span>
+        </header>
+
+        <div class="case-overview__groups">
+          @for (group of caseDefinitionGroups; track group.key) {
+            @let groupPinned = isPinned(PINNED_ITEM_TYPE.CASE_DEFINITION_GROUP, group.key);
+
+            <cds-tile
+              class="case-overview__group"
+              [ngClass]="{'case-overview__group--pinned': groupPinned}"
+              [style.--case-overview-pin-color]="group.color"
+            >
+              <div class="case-overview__group-header">
+                <h4 class="case-overview__group-title">{{ group.title }}</h4>
+
+                <div class="case-overview__group-meta">
+                  <button
+                    class="case-overview__pin"
+                    [attr.aria-label]="
+                      (groupPinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
+                    "
+                    [attr.aria-pressed]="groupPinned"
+                    [ngClass]="{'case-overview__pin--active': groupPinned}"
+                    [title]="
+                      (groupPinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
+                    "
+                    type="button"
+                    (click)="
+                      onTogglePin(PINNED_ITEM_TYPE.CASE_DEFINITION_GROUP, group.key, group.title)
+                    "
+                  >
+                    <svg [cdsIcon]="groupPinned ? 'pin--filled' : 'pin'" size="16"></svg>
+                  </button>
+                </div>
+              </div>
+
+              @if (group.description) {
+                <p class="case-overview__group-description">{{ group.description }}</p>
+              }
+
+              <a
+                class="case-overview__group-link"
+                [attr.aria-label]="'case.overview.groups.open' | translate: {title: group.title}"
+                [routerLink]="['/groups', group.key]"
+                [title]="'case.overview.groups.open' | translate: {title: group.title}"
+              >
+                <svg cdsIcon="chevron--right" size="16"></svg>
+              </a>
+            </cds-tile>
+          } @empty {
+            <p class="case-overview__no-results">
+              {{ 'case.overview.groups.noResults' | translate }}
+            </p>
+          }
+        </div>
+      </section>
+    }
+
+    @if ($filteredCaseTypes(); as caseTypes) {
+      <section class="case-overview__section">
+        <header class="case-overview__section-header">
+          <h3 class="case-overview__section-title">
+            {{ 'case.overview.types.title' | translate }}
+          </h3>
+
+          <span class="case-overview__count">{{ caseTypes.length }}</span>
+        </header>
+
+        <div class="case-overview__types">
+          <div class="case-overview__types-header">
+            {{ 'case.overview.types.name' | translate }}
+          </div>
+
+          @for (caseType of caseTypes; track caseType.caseDefinitionKey) {
+            <div class="case-overview__type">
+              <a
+                class="case-overview__type-link"
+                [routerLink]="['/cases', caseType.caseDefinitionKey]"
+                [title]="'case.overview.types.open' | translate: {name: caseType.name}"
+              >
+                <span class="case-overview__type-dot" [style.background-color]="caseType.color">
+                </span>
+
+                <span class="case-overview__type-name">{{ caseType.name }}</span>
+              </a>
+
+              @let caseTypePinned =
+                isPinned(PINNED_ITEM_TYPE.CASE_DEFINITION, caseType.caseDefinitionKey);
+
+              <button
+                class="case-overview__pin"
+                [attr.aria-label]="
+                  (caseTypePinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
+                "
+                [attr.aria-pressed]="caseTypePinned"
+                [ngClass]="{'case-overview__pin--active': caseTypePinned}"
+                [style.--case-overview-pin-color]="caseType.color"
+                [title]="(caseTypePinned ? 'case.overview.unpin' : 'case.overview.pin') | translate"
+                type="button"
+                (click)="
+                  onTogglePin(
+                    PINNED_ITEM_TYPE.CASE_DEFINITION,
+                    caseType.caseDefinitionKey,
+                    caseType.name
+                  )
+                "
+              >
+                <svg [cdsIcon]="caseTypePinned ? 'pin--filled' : 'pin'" size="16"></svg>
+              </button>
+            </div>
+          } @empty {
+            <p class="case-overview__no-results case-overview__no-results--in-list">
+              {{ 'case.overview.types.noResults' | translate }}
+            </p>
+          }
+        </div>
+      </section>
+    }
+  </div>
+</div>

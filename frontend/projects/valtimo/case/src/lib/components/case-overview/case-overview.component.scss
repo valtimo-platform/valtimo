@@ -1,0 +1,263 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.case-overview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+
+  &__search {
+    width: 100%;
+  }
+
+  &__pin-info {
+    max-width: 48rem;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    // Query container for the tile grid: it has to react to the column it sits in, not the viewport.
+    container-type: inline-size;
+  }
+
+  &__section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.125rem;
+    letter-spacing: 0.16px;
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.375rem;
+    border-radius: 0.625rem;
+    background-color: var(--cds-layer-accent-01);
+    color: var(--cds-text-secondary);
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1rem;
+  }
+
+  &__columns {
+    display: grid;
+    // The case type list keeps its own space on the right and only narrows with the viewport;
+    // the group tiles take everything that is left over.
+    grid-template-columns: minmax(0, 1fr) clamp(18rem, 34%, 32rem);
+    align-items: start;
+    gap: 1.5rem;
+    width: 100%;
+
+    // Only on phone-sized screens is there no room to keep them side by side.
+    @media (max-width: 672px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__groups {
+    display: grid;
+    // Three per row by default; the tracks are fractions, so the tiles always fill the column.
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+
+    // Below three tiles of ~15rem plus their gaps, step down rather than squeeze.
+    @container (max-width: 47rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @container (max-width: 31rem) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__no-results {
+    grid-column: 1 / -1;
+    font-size: 0.875rem;
+    color: var(--cds-text-secondary);
+
+    &--in-list {
+      padding: 0.75rem 1rem;
+    }
+  }
+
+  &__group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 8.5rem;
+    border: 1px solid var(--cds-border-subtle-01);
+    cursor: pointer;
+
+    // Outline rather than a border change: it takes no space, so nothing reflows on hover.
+    &:hover {
+      outline: 1px solid var(--cds-focus);
+    }
+
+    // Inset shadow rather than a border, so pinning does not resize the tile or shift its content.
+    &--pinned {
+      box-shadow: inset 0.25rem 0 0 0 var(--case-overview-pin-color, var(--cds-border-interactive));
+    }
+  }
+
+  // Deliberately not positioned: its ::after has to resolve against the tile, not against itself.
+  &__group-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    margin-top: auto;
+    padding: 0.25rem;
+
+    svg,
+    path {
+      fill: var(--cds-link-primary);
+    }
+
+    // Stretches the link over the whole tile, so a click anywhere opens the group.
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+  }
+
+  &__group-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  &__group-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__pin {
+    // Above the stretched tile link, so pinning does not navigate.
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0.25rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+
+    // Carbon icon paths carry their own fill, so the override has to reach them.
+    svg,
+    path {
+      fill: var(--cds-icon-secondary);
+    }
+
+    // Both states fall back to a neutral icon colour for items without a colour of their own.
+    // Hover keeps the item colour: on an unpinned item it previews the colour it will get.
+    &:hover svg,
+    &:hover path,
+    &--active svg,
+    &--active path {
+      fill: var(--case-overview-pin-color, var(--cds-icon-primary));
+    }
+  }
+
+  &__group-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.125rem;
+    letter-spacing: 0.16px;
+  }
+
+  &__group-description {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--cds-text-secondary);
+  }
+
+  &__types {
+    background-color: var(--cds-layer-01);
+    border: 1px solid var(--cds-border-subtle-01);
+  }
+
+  &__types-header {
+    padding: 0.75rem 1rem;
+    background-color: var(--cds-layer-accent-01);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.125rem;
+    letter-spacing: 0.16px;
+  }
+
+  &__type {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-right: 0.75rem;
+    border-top: 1px solid var(--cds-border-subtle-01);
+    font-size: 0.875rem;
+    line-height: 1.125rem;
+
+    &:hover {
+      background-color: var(--cds-layer-hover-01);
+    }
+  }
+
+  // Padding lives on the link, so the whole row except the pin button navigates.
+  &__type-link {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex: 1;
+    min-width: 0;
+    padding: 0.625rem 1rem;
+    color: var(--cds-text-primary);
+    text-decoration: none;
+  }
+
+  &__type-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--cds-icon-secondary);
+  }
+
+  &__type-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
