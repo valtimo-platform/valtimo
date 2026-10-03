@@ -19,6 +19,7 @@ package com.ritense.processdocument.service
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.classic.spi.ThrowableProxy
 import ch.qos.logback.core.read.ListAppender
 import com.ritense.processdocument.domain.ProcessDocumentInstance
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId
@@ -27,8 +28,10 @@ import com.ritense.valtimo.service.OperatonProcessService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -39,6 +42,7 @@ import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.slf4j.LoggerFactory
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 
 internal class ProcessDocumentsServiceTest {
 
@@ -102,6 +106,72 @@ internal class ProcessDocumentsServiceTest {
         assertEquals(1, logEvents.list.count { it.level == Level.WARN })
     }
 
+    @Test
+    fun `should delete only root process instances of the document`() {
+        val execution = executionIn(CALLING_ROOT_ID, superProcessInstanceId = null)
+        val instances = listOf(
+            processInstance(CALLING_ROOT_ID, CALLING_ROOT_ID),
+            processInstance(OTHER_ROOT_ID, OTHER_ROOT_ID),
+            processInstance(OTHER_CHILD_ID, OTHER_ROOT_ID)
+        )
+        stubDocument(instances)
+
+        processDocumentsService.deleteAllOtherProcessInstancesForThisDocument(execution, REASON)
+
+        verify(operatonProcessService).deleteProcessInstanceById(OTHER_ROOT_ID, REASON)
+        verify(operatonProcessService, never()).deleteProcessInstanceById(eq(OTHER_CHILD_ID), any())
+        verify(operatonProcessService, never()).deleteProcessInstanceById(eq(CALLING_ROOT_ID), any())
+    }
+
+    @Test
+    fun `should try every deletion, log each failure and rethrow the first`() {
+        val execution = executionIn(CALLING_ROOT_ID, superProcessInstanceId = null)
+        val instances = listOf(
+            processInstance(CALLING_ROOT_ID, CALLING_ROOT_ID),
+            processInstance(OTHER_ROOT_ID, OTHER_ROOT_ID),
+            processInstance(SECOND_ROOT_ID, SECOND_ROOT_ID),
+            processInstance(THIRD_ROOT_ID, THIRD_ROOT_ID)
+        )
+        stubDocument(instances)
+        val firstFailure = IllegalStateException("first")
+        val secondFailure = IllegalStateException("second")
+        doThrow(firstFailure).whenever(operatonProcessService).deleteProcessInstanceById(OTHER_ROOT_ID, REASON)
+        doThrow(secondFailure).whenever(operatonProcessService).deleteProcessInstanceById(SECOND_ROOT_ID, REASON)
+
+        val thrown = assertThrows<IllegalStateException> {
+            processDocumentsService.deleteAllOtherProcessInstancesForThisDocument(execution, REASON)
+        }
+
+        assertSame(firstFailure, thrown)
+        verify(operatonProcessService).deleteProcessInstanceById(THIRD_ROOT_ID, REASON)
+        val errors = logEvents.list.filter { it.level == Level.ERROR }
+        assertEquals(2, errors.size)
+        assertSame(firstFailure, (errors[0].throwableProxy as ThrowableProxy).throwable)
+        assertSame(secondFailure, (errors[1].throwableProxy as ThrowableProxy).throwable)
+    }
+
+    @Test
+    fun `should still delete the calling process itself with deleteAllProcessInstancesForThisDocument`() {
+        val execution = executionIn(CALLING_ROOT_ID, superProcessInstanceId = null)
+        val instances = listOf(
+            processInstance(CALLING_ROOT_ID, CALLING_ROOT_ID),
+            processInstance(OTHER_ROOT_ID, OTHER_ROOT_ID),
+            processInstance(SECOND_ROOT_ID, SECOND_ROOT_ID)
+        )
+        stubDocument(instances)
+        val firstFailure = IllegalStateException("first")
+        doThrow(firstFailure).whenever(operatonProcessService).deleteProcessInstanceById(CALLING_ROOT_ID, REASON)
+
+        val thrown = assertThrows<IllegalStateException> {
+            processDocumentsService.deleteAllProcessInstancesForThisDocument(execution, REASON)
+        }
+
+        assertSame(firstFailure, thrown)
+        verify(operatonProcessService).deleteProcessInstanceById(CALLING_ROOT_ID, REASON)
+        verify(operatonProcessService).deleteProcessInstanceById(OTHER_ROOT_ID, REASON)
+        verify(operatonProcessService).deleteProcessInstanceById(SECOND_ROOT_ID, REASON)
+    }
+
     private fun stubDocument(instances: List<ProcessInstance>) {
         val associations = instances.map { processDocumentInstance(it.id) }
         whenever(associationService.findProcessDocumentInstances(any())).thenReturn(associations)
@@ -149,5 +219,8 @@ internal class ProcessDocumentsServiceTest {
         private const val CALLING_ROOT_ID = "22222222-2222-2222-2222-222222222222"
         private const val SUB_PROCESS_INSTANCE_ID = "33333333-3333-3333-3333-333333333333"
         private const val OTHER_ROOT_ID = "44444444-4444-4444-4444-444444444444"
+        private const val OTHER_CHILD_ID = "55555555-5555-5555-5555-555555555555"
+        private const val SECOND_ROOT_ID = "66666666-6666-6666-6666-666666666666"
+        private const val THIRD_ROOT_ID = "77777777-7777-7777-7777-777777777777"
     }
 }

@@ -28,6 +28,7 @@ import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProces
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byName
+import com.ritense.valtimo.processbean.ProcessBeanService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import org.operaton.bpm.engine.ProcessEngineException
@@ -68,6 +69,9 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var operatonProcessService: OperatonProcessService
+
+    @Autowired
+    lateinit var processBeanService: ProcessBeanService
 
     lateinit var documentJson: String
     lateinit var document: Document
@@ -171,6 +175,14 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
         assertNotNull(
             runWithoutAuthorization { taskService.findTask(byName("delete other processes at start user task")) }
         )
+    }
+
+    @Test
+    fun `should list the new method as a process bean method of processService`() {
+        val methodNames = processBeanService.getProcessBean("processService")!!.methods.map { it.name }
+
+        assertTrue("deleteAllOtherProcessInstancesForThisDocument" in methodNames)
+        assertTrue("deleteAllProcessInstancesForThisDocument" in methodNames)
     }
 
     @Test
