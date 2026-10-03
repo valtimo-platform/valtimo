@@ -16,10 +16,15 @@
 
 package com.ritense.processdocument.service
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.ritense.processdocument.domain.ProcessDocumentInstance
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.valtimo.service.OperatonProcessService
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -32,13 +37,16 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.runtime.ProcessInstance
-import java.util.Optional
+import org.slf4j.LoggerFactory
+import kotlin.test.assertEquals
 
 internal class ProcessDocumentsServiceTest {
 
     lateinit var operatonProcessService: OperatonProcessService
     lateinit var associationService: ProcessDocumentAssociationService
     lateinit var processDocumentsService: ProcessDocumentsService
+    lateinit var logger: Logger
+    lateinit var logEvents: ListAppender<ILoggingEvent>
 
     @BeforeEach
     fun beforeEach() {
@@ -51,50 +59,75 @@ internal class ProcessDocumentsServiceTest {
             mock(),
             mock(),
         )
+        logger = LoggerFactory.getLogger(ProcessDocumentsService::class.java) as Logger
+        logEvents = ListAppender<ILoggingEvent>().apply { start() }
+        logger.addAppender(logEvents)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        logger.detachAppender(logEvents)
+        logEvents.stop()
     }
 
     @Test
-    fun `should keep the root of the calling execution rather than its own process instance`() {
+    fun `should keep the root process of the calling execution when called from a called subprocess`() {
         // Every mock is built before any stubbing starts: creating a mock inside a whenever() chain leaves
         // Mockito with an unfinished stubbing.
-        val execution = mock<DelegateExecution>()
-        val callingExecutionInstance = processInstance(SUB_PROCESS_INSTANCE_ID, CALLING_ROOT_ID)
-        val roots = listOf(
+        val execution = executionIn(SUB_PROCESS_INSTANCE_ID, superProcessInstanceId = CALLING_ROOT_ID)
+        val instances = listOf(
             processInstance(CALLING_ROOT_ID, CALLING_ROOT_ID),
             processInstance(OTHER_ROOT_ID, OTHER_ROOT_ID)
         )
-        val associations = listOf(
-            processDocumentInstance(CALLING_ROOT_ID),
-            processDocumentInstance(OTHER_ROOT_ID)
-        )
+        stubDocument(instances)
 
-        whenever(execution.businessKey).thenReturn(DOCUMENT_ID)
-        whenever(execution.processInstanceId).thenReturn(SUB_PROCESS_INSTANCE_ID)
-        whenever(operatonProcessService.findProcessInstanceById(SUB_PROCESS_INSTANCE_ID))
-            .thenReturn(Optional.of(callingExecutionInstance))
-        whenever(associationService.findProcessDocumentInstances(any())).thenReturn(associations)
-        whenever(operatonProcessService.findProcessInstancesByIds(setOf(CALLING_ROOT_ID, OTHER_ROOT_ID)))
-            .thenReturn(roots)
+        processDocumentsService.deleteAllOtherProcessInstancesForThisDocument(execution, REASON)
 
-        processDocumentsService.deleteAllOtherProcessInstancesForThisDocument(execution, "Case cancelled")
-
-        verify(operatonProcessService).deleteProcessInstanceById(OTHER_ROOT_ID, "Case cancelled")
+        verify(operatonProcessService).deleteProcessInstanceById(OTHER_ROOT_ID, REASON)
         verify(operatonProcessService, never()).deleteProcessInstanceById(eq(CALLING_ROOT_ID), any())
         verify(operatonProcessService, never()).deleteProcessInstanceById(eq(SUB_PROCESS_INSTANCE_ID), any())
     }
 
     @Test
-    fun `should delete nothing when the calling process instance cannot be found`() {
+    fun `should delete nothing and warn when the calling process instance cannot be determined`() {
         val execution = mock<DelegateExecution>()
         whenever(execution.businessKey).thenReturn(DOCUMENT_ID)
-        whenever(execution.processInstanceId).thenReturn(PROCESS_INSTANCE_ID)
-        whenever(operatonProcessService.findProcessInstanceById(PROCESS_INSTANCE_ID)).thenReturn(Optional.empty())
+        whenever(execution.processInstanceId).thenReturn(CALLING_ROOT_ID)
+        whenever(execution.processInstance).thenReturn(null)
 
-        processDocumentsService.deleteAllOtherProcessInstancesForThisDocument(execution, "Case cancelled")
+        processDocumentsService.deleteAllOtherProcessInstancesForThisDocument(execution, REASON)
 
         verify(operatonProcessService, never()).deleteProcessInstanceById(any(), any())
         verifyNoInteractions(associationService)
+        assertEquals(1, logEvents.list.count { it.level == Level.WARN })
     }
+
+    private fun stubDocument(instances: List<ProcessInstance>) {
+        val associations = instances.map { processDocumentInstance(it.id) }
+        whenever(associationService.findProcessDocumentInstances(any())).thenReturn(associations)
+        whenever(operatonProcessService.findProcessInstancesByIds(instances.map { it.id }.toSet()))
+            .thenReturn(instances)
+    }
+
+    private fun executionIn(processInstanceId: String, superProcessInstanceId: String?): DelegateExecution {
+        val superProcessInstance = superProcessInstanceId?.let { delegateProcessInstance(it, superExecution = null) }
+        val superExecution = superProcessInstance?.let { parent ->
+            mock<DelegateExecution> { on { this.processInstance } doReturn parent }
+        }
+        val processInstance = delegateProcessInstance(processInstanceId, superExecution)
+        return mock {
+            on { businessKey } doReturn DOCUMENT_ID
+            on { this.processInstanceId } doReturn processInstanceId
+            on { this.processInstance } doReturn processInstance
+        }
+    }
+
+    private fun delegateProcessInstance(id: String, superExecution: DelegateExecution?): DelegateExecution =
+        mock {
+            on { this.id } doReturn id
+            on { this.processInstanceId } doReturn id
+            on { this.superExecution } doReturn superExecution
+        }
 
     private fun processInstance(processInstanceId: String, rootProcessInstanceId: String?): ProcessInstance =
         mock {
@@ -111,8 +144,8 @@ internal class ProcessDocumentsServiceTest {
     }
 
     companion object {
+        private const val REASON = "Case cancelled"
         private const val DOCUMENT_ID = "11111111-1111-1111-1111-111111111111"
-        private const val PROCESS_INSTANCE_ID = "00000000-0000-0000-0000-000000000000"
         private const val CALLING_ROOT_ID = "22222222-2222-2222-2222-222222222222"
         private const val SUB_PROCESS_INSTANCE_ID = "33333333-3333-3333-3333-333333333333"
         private const val OTHER_ROOT_ID = "44444444-4444-4444-4444-444444444444"

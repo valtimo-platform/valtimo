@@ -48,5 +48,10 @@
         "processDefinitionKey" : "delete-other-processes",
         "canInitializeDocument" : true,
         "startableByUser" : true
+    },
+    {
+        "processDefinitionKey" : "delete-other-processes-at-start",
+        "canInitializeDocument" : false,
+        "startableByUser" : true
     }
 ]

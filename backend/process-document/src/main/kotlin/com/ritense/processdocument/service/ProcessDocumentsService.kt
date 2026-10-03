@@ -65,24 +65,29 @@ class ProcessDocumentsService(
     fun deleteAllOtherProcessInstancesForThisDocument(execution: DelegateExecution, reason: String) {
         val documentId = JsonSchemaDocumentId.existingId(execution.getJsonSchemaDocumentId())
         withLoggingContext(JsonSchemaDocument::class, documentId.toString()) {
-            val callingProcessInstance = operatonProcessService
-                .findProcessInstanceById(execution.processInstanceId)
-                .orElse(null)
-            if (callingProcessInstance == null) {
+            val callingRootProcessInstanceId = rootProcessInstanceIdOf(execution)
+            if (callingRootProcessInstanceId == null) {
                 logger.warn {
                     "Deleted no process instances. " +
-                        "Calling process instance '${execution.processInstanceId}' could not be found."
+                        "Calling process instance '${execution.processInstanceId}' could not be determined."
                 }
             } else {
                 deleteRootProcessInstancesForDocument(
                     documentId,
                     reason,
-                    keepRootProcessInstanceId = callingProcessInstance.rootProcessInstanceId
-                        ?.takeIf { it.isNotBlank() }
-                        ?: execution.processInstanceId
+                    keepRootProcessInstanceId = callingRootProcessInstanceId
                 )
             }
         }
+    }
+
+    // Read from the execution, not queried: a caller that has not reached a wait state is not saved yet
+    private fun rootProcessInstanceIdOf(execution: DelegateExecution): String? {
+        val processInstance = execution.processInstance ?: return null
+        return generateSequence(processInstance) { it.superExecution?.processInstance }
+            .last()
+            .id
+            ?.takeIf { it.isNotBlank() }
     }
 
     @ProcessBeanMethod(

@@ -25,6 +25,7 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.BaseIntegrationTest
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
+import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byName
 import com.ritense.valtimo.service.OperatonProcessService
@@ -138,6 +139,38 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
             assertTrue(operatonProcessService.findProcessInstanceById(otherProcessInstanceIds.first()).isEmpty)
         }
         assertNotNull(runWithoutAuthorization { taskService.findTask(byName("delete other processes user task")) })
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should delete other processes when the calling process makes the call before its first wait state`() {
+        val first = runWithoutAuthorization {
+            processDocumentService.newDocumentAndStartProcess(
+                NewDocumentAndStartProcessRequest(
+                    "single-user-task-process",
+                    NewDocumentRequest("house", "house", "1.0.0", objectMapper.readTree(documentJson))
+                )
+            )
+        }
+        assertEquals(0, first.errors().size)
+        val documentId = JsonSchemaDocumentId.existingId(first.resultingDocument().orElseThrow().id().id)
+        val otherProcessInstanceId = first.resultingProcessInstanceId().orElseThrow().toString()
+
+        val calling = runWithoutAuthorization {
+            processDocumentService.startProcessForDocument(
+                StartProcessForDocumentRequest(documentId, "delete-other-processes-at-start", emptyMap())
+            )
+        }
+
+        assertEquals(0, calling.errors().size)
+        val callingProcessInstanceId = calling.processInstanceId().orElseThrow().toString()
+        runWithoutAuthorization {
+            assertTrue(operatonProcessService.findProcessInstanceById(otherProcessInstanceId).isEmpty)
+            assertTrue(operatonProcessService.findProcessInstanceById(callingProcessInstanceId).isPresent)
+        }
+        assertNotNull(
+            runWithoutAuthorization { taskService.findTask(byName("delete other processes at start user task")) }
+        )
     }
 
     @Test
