@@ -94,14 +94,16 @@ class FieldsWidget(
     @JsonIgnore
     override fun getUnresolvedValues(): List<String> {
         return (actions.flatMap { it.getUnresolvedValues() } +
-            properties.columns.flatMap { column -> column.map { field -> field.value } }).distinct()
+            properties.columns.flatMap { column ->
+                column.flatMap { field -> FieldValueTemplate.getUnresolvedValues(field.value) }
+            }).distinct()
     }
 
     @JsonIgnore
     override fun getExposedValues(resolveValue: (String) -> Any?): Map<String, Any?> {
         return properties.columns.flatMap { column ->
             column.map { field ->
-                field.key to resolveValue(field.value)
+                field.key to FieldValueTemplate.resolve(field.value, resolveValue)
             }
         }.toMap() + actions
             .flatMap { action -> action.getExposedValues(resolveValue).map { it.key to it.value } }

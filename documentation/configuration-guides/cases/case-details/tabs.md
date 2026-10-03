@@ -205,6 +205,14 @@ For each field:
 | Ellipsis char limit | Truncate long text values after this many characters                                   |
 | Hide when empty     | Hide the field if its resolved value is empty                                          |
 
+To show several values in one field, write the value as a template: wrap each path in `${...}` and put the text that
+should appear between them around it. For example, `${doc:/street} ${doc:/houseNumber}${doc:/houseLetter}` shows
+`Kerkstraat 12a` under a single **Address** field. Every value prefix can be used, and a list is shown comma-separated.
+
+- An empty placeholder is left out, and the extra spaces it leaves are removed. Other separators, such as `, `, stay.
+- When every placeholder is empty, the field counts as empty, so **Hide when empty** hides it.
+- A template always shows as text. The number, date and currency display types do not format the parts inside it.
+
 </details>
 
 <details>

@@ -121,10 +121,56 @@ class FieldsWidgetIntTest @Autowired constructor(
             .andExpect(jsonPath("$.nullValue").doesNotExist())
     }
 
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [USER])
+    fun `should combine template placeholders into one field value`() {
+        val caseDefinitionName = "some-case-type"
+        val tabKey = "my-template-tab"
+        val widgetKey = "my-template-widget"
+        val documentId = runWithoutAuthorization {
+            val document = documentService.createDocument(
+                NewDocumentRequest(
+                    caseDefinitionName,
+                    caseDefinitionName,
+                    "1.2.3",
+                    MapperSingleton.get().createObjectNode()
+                )
+            ).resultingDocument().get()
+            createCaseWidgetTab(
+                document.definitionId().caseDefinitionId(),
+                tabKey,
+                widgetKey,
+                listOf(
+                    listOf(
+                        FieldsWidgetProperties.Field(
+                            "fullName",
+                            "Full name",
+                            "\${test:Jan} \${test:null} \${test:Jansen}"
+                        ),
+                        FieldsWidgetProperties.Field(
+                            "emptyTemplate",
+                            "Empty template",
+                            "\${test:null}, \${test:null}"
+                        )
+                    )
+                )
+            )
+            document.id
+        }
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}", documentId, tabKey, widgetKey)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        ).andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.fullName").value("test:Jan test:Jansen"))
+            .andExpect(jsonPath("$.emptyTemplate").doesNotExist())
+    }
+
     private fun createCaseWidgetTab(
         caseDefinitionId: CaseDefinitionId,
         tabKey: String,
-        widgetKey: String
+        widgetKey: String,
+        columns: List<List<FieldsWidgetProperties.Field>> = defaultColumns()
     ): CaseWidgetTabDto {
         tabService.createCaseTab(
             caseDefinitionId,
@@ -146,32 +192,32 @@ class FieldsWidgetIntTest @Autowired constructor(
                         isCompact = true,
                         actions = null,
                         displayConditions = emptyList(),
-                        properties = FieldsWidgetProperties(
-                            columns = listOf(
-                                listOf(
-                                    FieldsWidgetProperties.Field(
-                                        "someKey", "Some key", "test:/myKey"
-                                    )
-                                ),
-                                listOf(
-                                    FieldsWidgetProperties.Field(
-                                        "someOtherKey",
-                                        "Some other key",
-                                        "test:/myOtherKey",
-                                        displayProperties = BooleanFieldDisplayProperties()
-                                    ),
-                                    FieldsWidgetProperties.Field(
-                                        "nullValue",
-                                        "nullValue",
-                                        "test:null",
-                                        displayProperties = BooleanFieldDisplayProperties()
-                                    )
-                                )
-                            )
-                        )
+                        properties = FieldsWidgetProperties(columns)
                     )
                 )
             )
         )
     }
+
+    private fun defaultColumns() = listOf(
+        listOf(
+            FieldsWidgetProperties.Field(
+                "someKey", "Some key", "test:/myKey"
+            )
+        ),
+        listOf(
+            FieldsWidgetProperties.Field(
+                "someOtherKey",
+                "Some other key",
+                "test:/myOtherKey",
+                displayProperties = BooleanFieldDisplayProperties()
+            ),
+            FieldsWidgetProperties.Field(
+                "nullValue",
+                "nullValue",
+                "test:null",
+                displayProperties = BooleanFieldDisplayProperties()
+            )
+        )
+    )
 }
