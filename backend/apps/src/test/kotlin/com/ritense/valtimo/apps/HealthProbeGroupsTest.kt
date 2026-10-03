@@ -39,6 +39,16 @@ class HealthProbeGroupsTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["gzac", "valtimo", "evenementenvergunning", "dev"])
+    fun `liveness does not depend on the database`(app: String) {
+        val liveness = healthGroupsOf(app)["liveness"] as Map<*, *>?
+
+        assertThat(liveness?.get("include")?.toString()?.split(",")?.map { it.trim() }.orEmpty())
+            .describedAs("liveness group of the %s app", app)
+            .doesNotContain("db")
+    }
+
     private fun healthGroupsOf(app: String): Map<String, Any> {
         val config = Path.of(app, "src/main/resources/config/application.yml")
         assertThat(config).exists()
