@@ -32,12 +32,18 @@ import {FormFlowEditorComponent} from '@valtimo/form-flow-management';
 import {DecisionModelerComponent} from '@valtimo/decision';
 import {BuildingBlockManagementMigrationPlanEditorComponent} from './components/building-block-management-migration-plan-editor/building-block-management-migration-plan-editor.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: 'building-block-management',
     component: BuildingBlockManagementListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'buildingBlockManagement.title', roles: [ROLE_ADMIN]},
+  },
+  {
+    // A building block url without a tab - the breadcrumb back to the building block points at one - would otherwise match no route.
+    path: 'building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag',
+    redirectTo: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL}`,
+    pathMatch: 'full',
   },
   {
     path: 'building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/:tabKey',
