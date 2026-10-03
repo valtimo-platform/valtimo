@@ -42,7 +42,7 @@ public interface JsonPatchFilter {
     }
 
     static Pattern arrayPattern() {
-        return Pattern.compile(".*/[0-9]");
+        return Pattern.compile(".*/[0-9]+");
     }
 
 }

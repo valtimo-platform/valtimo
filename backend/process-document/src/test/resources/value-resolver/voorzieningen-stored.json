@@ -1,0 +1,263 @@
+[
+    {
+        "signalering": true,
+        "toelichting": "12347",
+        "voorziening": "TW",
+        "mogelijkRecht": "mogelijk recht",
+        "vanToepassing": true,
+        "geimplementeerd": true,
+        "verantwoordingVaststelling": "Laatstgenoten ziekte  uitkering"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "BBZ",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "IOAZ",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "IOW",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "WW",
+        "mogelijkRecht": "geen recht",
+        "vanToepassing": false,
+        "geimplementeerd": true,
+        "verantwoordingVaststelling": "Voldoet niet aan wekeneis"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "ZW",
+        "mogelijkRecht": "geen recht",
+        "vanToepassing": false,
+        "geimplementeerd": true,
+        "verantwoordingVaststelling": "Geen arbeidsverleden"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "IOAW",
+        "mogelijkRecht": "geen recht",
+        "vanToepassing": false,
+        "geimplementeerd": true,
+        "verantwoordingVaststelling": "Geen WW of WGA  na 50e verjaardag"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Alimentatie",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "ANW",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "AOV",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "test",
+        "voorziening": "BBZ",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "test",
+        "voorziening": "IOAZ",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "test",
+        "voorziening": "IOW",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Loondoorbetaling bij ziekte",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Pensioen verzekerin buitenland",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Wajong",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "WAO",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "WAZ",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "WAZO",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "WIA",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "WSF",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "WTOS",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "ZEZ",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "AHK",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "AHK minstverdienende partner",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Arbeidskorting",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Inkomensafhankelijke combinatiekorting",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Ouderenkorting",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    },
+    {
+        "signalering": false,
+        "toelichting": "",
+        "voorziening": "Alleenstaande ouderenkorting",
+        "mogelijkRecht": "Niet beoordeeld",
+        "vanToepassing": false,
+        "geimplementeerd": false,
+        "verantwoordingVaststelling": "Geen automatische controle"
+    }
+]

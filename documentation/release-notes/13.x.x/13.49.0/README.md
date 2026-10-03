@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Case data | Shortening a list of more than ten entries in the case data, from a process or a form, now removes the dropped entries instead of keeping them |

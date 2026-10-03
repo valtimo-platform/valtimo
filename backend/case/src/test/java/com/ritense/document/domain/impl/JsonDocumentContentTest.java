@@ -87,6 +87,35 @@ class JsonDocumentContentTest {
     }
 
     @Test
+    void shouldRemoveArrayItemsBeyondTheTenthWithBuild() {
+        ArrayNode stored = JsonNodeFactory.instance.arrayNode();
+        ArrayNode shorter = JsonNodeFactory.instance.arrayNode();
+        for (int i = 0; i < 13; i++) {
+            stored.add("item-" + i);
+            if (i < 10) {
+                shorter.add("item-" + i);
+            }
+        }
+        source.set(FAVOURITES_KEY, stored);
+        ObjectNode modifiedContent = JsonNodeFactory.instance.objectNode();
+        modifiedContent.set(FAVOURITES_KEY, shorter);
+
+        JsonDocumentContent.build(source, modifiedContent);
+
+        assertThat(source.get(FAVOURITES_KEY)).isEqualTo(shorter);
+    }
+
+    @Test
+    void shouldKeepOmittedPropertyInsideArrayItemWithBuild() {
+        ObjectNode modifiedContent = source.deepCopy();
+        ((ObjectNode) modifiedContent.at("/" + FAVOURITES_KEY + "/1")).remove(SIZE_KEY);
+
+        JsonDocumentContent.build(source, modifiedContent);
+
+        assertThat(source.at("/" + FAVOURITES_KEY + "/1/" + SIZE_KEY).textValue()).isEqualTo("large");
+    }
+
+    @Test
     void shouldRemoveItemViaPrePatchOnlyWithBuild() {
         // try to remove name from identity the normal way, it should fail
         ObjectNode modifiedIdentityContent = JsonNodeFactory.instance.objectNode();
