@@ -16,12 +16,13 @@
 import {CommonModule} from '@angular/common';
 import {Component, NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, fakeAsync, TestBed, tick, waitForAsync} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
 import {PageTitleService} from '@valtimo/components';
 import {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN} from '@valtimo/shared';
-import {TabsModule} from 'carbon-components-angular';
-import {of, Subject} from 'rxjs';
+import {Tab, TabsModule} from 'carbon-components-angular';
+import {Observable, of, Subject, throwError} from 'rxjs';
 import {BuildingBlockManagementDetailService} from '../../services';
 import {
   BuildingBlockManagementDetailComponent,
@@ -36,7 +37,10 @@ describe('BuildingBlockManagementDetailComponent', () => {
   let detailService: jasmine.SpyObj<BuildingBlockManagementDetailService>;
   let mailTemplateEnabled$: Subject<boolean>;
 
-  const configureTestBed = (activeTabKey: string): void => {
+  const configureTestBed = (
+    activeTabKey: string,
+    enabled$: Observable<boolean> = mailTemplateEnabled$
+  ): void => {
     detailService = jasmine.createSpyObj<BuildingBlockManagementDetailService>(
       'BuildingBlockManagementDetailService',
       ['navigateToTab', 'setRoute'],
@@ -55,7 +59,7 @@ describe('BuildingBlockManagementDetailComponent', () => {
               translationKey: 'Mail template',
               component: MailTemplateListStubComponent,
               tabRoute: 'mail-template',
-              enabled$: mailTemplateEnabled$,
+              enabled$,
             },
           ],
         },
@@ -70,6 +74,11 @@ describe('BuildingBlockManagementDetailComponent', () => {
 
     fixture = TestBed.createComponent(BuildingBlockManagementDetailComponent);
   };
+
+  const renderedTabHeadings = (): string[] =>
+    fixture.debugElement
+      .queryAll(By.directive(Tab))
+      .map(tab => `${(tab.componentInstance as Tab).heading}`);
 
   beforeEach(waitForAsync(() => {
     mailTemplateEnabled$ = new Subject<boolean>();
@@ -109,5 +118,32 @@ describe('BuildingBlockManagementDetailComponent', () => {
 
     expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
     expect(detailService.navigateToTab).not.toHaveBeenCalled();
+  }));
+
+  it('leaves out a custom tab that reports it is not available', fakeAsync(() => {
+    configureTestBed('general');
+    fixture.detectChanges();
+
+    mailTemplateEnabled$.next(false);
+    fixture.detectChanges();
+    tick();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(renderedTabHeadings().length).toBeGreaterThan(0);
+    expect(renderedTabHeadings()).not.toContain('Mail template');
+  }));
+
+  it('leaves out a custom tab whose availability check fails', fakeAsync(() => {
+    configureTestBed(
+      'general',
+      throwError(() => new Error('plugin configurations unavailable'))
+    );
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(renderedTabHeadings().length).toBeGreaterThan(0);
+    expect(renderedTabHeadings()).not.toContain('Mail template');
   }));
 });

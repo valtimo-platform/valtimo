@@ -15,14 +15,15 @@
  */
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, fakeAsync, TestBed, tick, waitForAsync} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {ActivatedRoute, Router} from '@angular/router';
 import {RouterTestingModule} from '@angular/router/testing';
 import {TranslateModule} from '@ngx-translate/core';
 import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {CaseManagementTabConfig, ConfigService, ConfigurationIssueService} from '@valtimo/shared';
 import {SseService} from '@valtimo/sse';
-import {IconService, TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, of, Subject} from 'rxjs';
+import {IconService, Tab, TabsModule} from 'carbon-components-angular';
+import {BehaviorSubject, of, Subject, throwError} from 'rxjs';
 import {CaseDetailService, CaseManagementService, TabService} from '../../services';
 import {
   CaseManagementDetailComponent,
@@ -108,6 +109,9 @@ describe('CaseManagementDetailComponent', () => {
     fixture = TestBed.createComponent(CaseManagementDetailComponent);
   };
 
+  const renderedTabTitles = (): string[] =>
+    fixture.debugElement.queryAll(By.directive(Tab)).map(tab => `${(tab.componentInstance as Tab).title}`);
+
   const navigatedTo = (): string[] =>
     (router.navigateByUrl as jasmine.Spy).calls.allArgs().map(args => `${args[0]}`);
 
@@ -157,6 +161,38 @@ describe('CaseManagementDetailComponent', () => {
 
     expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
     expect(navigatedTo().filter((url: string) => url === `${CASE_ROUTE}/general`)).toEqual([]);
+  }));
+
+  it('leaves out an injected tab that reports it is not available', fakeAsync(() => {
+    configureTestBed('general');
+    fixture.detectChanges();
+
+    mailTemplateEnabled$.next(false);
+    fixture.detectChanges();
+    tick();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(renderedTabTitles().length).toBeGreaterThan(0);
+    expect(renderedTabTitles()).not.toContain('Mail template');
+  }));
+
+  it('leaves out an injected tab whose availability check fails', fakeAsync(() => {
+    injectedTabs$.next([
+      {
+        translationKey: 'Mail template',
+        component: {} as any,
+        tabRoute: 'mail-template',
+        enabled$: throwError(() => new Error('plugin configurations unavailable')),
+      },
+    ]);
+    configureTestBed('general');
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(renderedTabTitles().length).toBeGreaterThan(0);
+    expect(renderedTabTitles()).not.toContain('Mail template');
   }));
 
   it('falls back to the general tab when the url names no tab', fakeAsync(() => {
