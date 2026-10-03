@@ -31,7 +31,7 @@ import {
   BuildingBlockManagementTabConfig,
 } from '@valtimo/shared';
 import {BuildingBlockManagementTabKey} from '../../models';
-import {catchError, combineLatest, map, Observable, of, take, timeout} from 'rxjs';
+import {catchError, combineLatest, defaultIfEmpty, map, Observable, of, take, timeout} from 'rxjs';
 import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 import {BuildingBlockManagementDetailActionsComponent} from '../building-block-management-detail-actions/building-block-management-detail-actions.component';
 import {BuildingBlockManagementFormsComponent} from '../building-block-management-forms/building-block-management-forms.component';
@@ -98,6 +98,8 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
           this._customTabs.map((tab: BuildingBlockManagementTabConfig) =>
             (tab.enabled$ ?? of(true)).pipe(
               catchError(() => of(false)),
+              // A check that ends without answering hides its tab, as it did before, instead of holding the page back for good.
+              defaultIfEmpty(false),
               timeout({first: CUSTOM_TAB_ENABLED_TIMEOUT_MS, with: () => of(true)})
             )
           )

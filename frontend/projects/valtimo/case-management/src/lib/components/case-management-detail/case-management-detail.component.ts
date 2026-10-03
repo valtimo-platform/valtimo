@@ -37,6 +37,7 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  defaultIfEmpty,
   filter,
   map,
   Observable,
@@ -120,6 +121,8 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
               tabs.map((tab: CaseManagementTabConfig) =>
                 (tab.enabled$ ?? of(true)).pipe(
                   catchError(() => of(false)),
+                  // A check that ends without answering hides its tab, as it did before, instead of holding the tab bar back for good.
+                  defaultIfEmpty(false),
                   timeout({first: INJECTED_TAB_ENABLED_TIMEOUT_MS, with: () => of(true)})
                 )
               )
