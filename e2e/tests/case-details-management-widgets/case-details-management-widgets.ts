@@ -89,6 +89,6 @@ export function createEmptyTableWidgetTestData() {
     columnTitles: ['Name', 'Relation'],
     child: {name: 'Anna', relation: 'Daughter'},
     defaultMessage: 'No data found',
-    configuredMessage: `No children registered ${id}`,
+    configuredMessage: `No children have been registered for this applicant yet; add them from the intake form ${id}`,
   };
 }

@@ -39,7 +39,7 @@ test.describe('Table widget empty state', () => {
     key: data.widgetKey,
     title: data.widgetTitle,
     icon: null,
-    width: 2,
+    width: 1,
     highContrast: false,
     isCompact: null,
     displayConditions: [],
@@ -168,6 +168,11 @@ test.describe('Table widget empty state', () => {
     const emptyTile = await openTableWidget(emptyCaseId);
     await expect(messageCell(emptyTile)).toHaveText(data.configuredMessage);
     await expect(emptyTile.locator('thead th')).toHaveText(data.columnTitles);
+    const tileBox = (await emptyTile.boundingBox())!;
+    const cellBox = (await messageCell(emptyTile).boundingBox())!;
+    expect(cellBox.x + cellBox.width).toBeLessThanOrEqual(tileBox.x + tileBox.width);
+    const lastHeaderBox = (await emptyTile.locator('thead th').last().boundingBox())!;
+    expect(lastHeaderBox.x + lastHeaderBox.width).toBeLessThanOrEqual(tileBox.x + tileBox.width);
   });
 
   test('The saved message is prefilled when the widget is edited, and clearing it removes it', async () => {
