@@ -16,6 +16,10 @@
 
 package com.ritense.plugin
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
@@ -23,6 +27,7 @@ import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -31,6 +36,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.slf4j.LoggerFactory
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 internal class PluginFactoryTest {
     lateinit var pluginFactory: PluginFactory<*>
@@ -149,5 +158,86 @@ internal class PluginFactoryTest {
         assertNull(pluginInstance.property2)
         assertEquals(2, pluginInstance.property3)
         assertEquals(pluginCategory, pluginInstance.property4)
+    }
+
+    @Test
+    fun `should warn once about a property the plugin no longer defines`() {
+        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        val pluginConfiguration = configurationWithUnknownProperty()
+
+        val events = eventsLoggedWhile { repeat(5) { pluginFactory.create(pluginConfiguration) } }
+
+        assertThat(events.filter { it.level == Level.ERROR }).isEmpty()
+        assertThat(events.filter { it.level == Level.WARN }).singleElement().asString()
+            .contains("Ignoring unknown property 'noteSubject' on plugin 'Zaken API'")
+        assertThat(events.filter { it.level == Level.DEBUG }).hasSize(4)
+    }
+
+    @Test
+    fun `should warn separately for each configuration that has the same unknown property`() {
+        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+
+        val events = eventsLoggedWhile {
+            pluginFactory.create(configurationWithUnknownProperty())
+            pluginFactory.create(configurationWithUnknownProperty())
+        }
+
+        assertThat(events.filter { it.level == Level.WARN }).hasSize(2)
+    }
+
+    @Test
+    fun `should warn no more than the cap when plugins are created concurrently`() {
+        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        val configurations = List(WARNING_CAP + 50) { configurationWithUnknownProperty() }
+        val startLine = CountDownLatch(1)
+        val pool = Executors.newFixedThreadPool(16)
+
+        val events = try {
+            eventsLoggedWhile {
+                val running = configurations.map { configuration ->
+                    pool.submit {
+                        startLine.await()
+                        pluginFactory.create(configuration)
+                    }
+                }
+                startLine.countDown()
+                running.forEach { it.get(30, TimeUnit.SECONDS) }
+            }
+        } finally {
+            pool.shutdownNow()
+        }
+
+        assertThat(events.filter { it.level == Level.ERROR }).isEmpty()
+        assertThat(events.filter { it.level == Level.WARN }).hasSize(WARNING_CAP)
+    }
+
+    private fun configurationWithUnknownProperty() = PluginConfiguration(
+        PluginConfigurationId.newId(),
+        "Zaken API",
+        MapperSingleton.get().readTree("""{"noteSubject": "Zaaknotitie"}""") as ObjectNode,
+        PluginDefinition("zakenapi", "title", "description", TestPlugin::class.java.name)
+    )
+
+    private fun eventsLoggedWhile(block: () -> Unit): List<ILoggingEvent> {
+        val targetLogger = LoggerFactory.getLogger(PluginFactory::class.java) as Logger
+        val listAppender = ListAppender<ILoggingEvent>().apply { start() }
+        val originalLevel = targetLogger.level
+        targetLogger.level = Level.DEBUG
+        targetLogger.addAppender(listAppender)
+
+        try {
+            block()
+        } finally {
+            targetLogger.detachAppender(listAppender)
+            targetLogger.level = originalLevel
+            listAppender.stop()
+        }
+
+        return listAppender.list.toList()
+    }
+
+    private companion object {
+        /** Mirrors PluginFactory.MAX_LOGGED_UNKNOWN_PROPERTIES, which is private. */
+        private const val WARNING_CAP = 100
     }
 }

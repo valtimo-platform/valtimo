@@ -28,6 +28,7 @@ import com.ritense.plugin.service.PluginService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.lang3.reflect.FieldUtils
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaType
@@ -40,6 +41,7 @@ abstract class PluginFactory<T : Any>(
     protected var pluginService: PluginService,
 ) {
     private var fullyQualifiedClassName: String = ""
+    private val loggedUnknownProperties: MutableSet<String> = ConcurrentHashMap.newKeySet()
     lateinit var pluginConfigurationId: PluginConfigurationId
 
     /**
@@ -92,15 +94,30 @@ abstract class PluginFactory<T : Any>(
 
             val propertyDefinition = pluginDefinition.findPluginProperty(configuredPropertyEntry.key)
             if (propertyDefinition == null) {
-                logger.error {
-                    "Ignoring unknown property '${configuredPropertyEntry.key}' on plugin '${configuration.title}'. " +
-                        "It is no longer defined by plugin '${pluginDefinition.key}' and can be removed from the configuration."
-                }
+                logUnknownProperty(configuration, configuredPropertyEntry.key)
                 continue
             }
 
             setProperty(instance, propertyDefinition, configuredPropertyEntry.value, mapper)
         }
+    }
+
+    private fun logUnknownProperty(configuration: PluginConfiguration, propertyKey: String) {
+        val message = "Ignoring unknown property '$propertyKey' on plugin '${configuration.title}'. " +
+            "It is no longer defined by plugin '${configuration.pluginDefinition.key}' and can be removed from the configuration."
+        if (admitWarning("${configuration.id.id}|$propertyKey")) {
+            logger.warn { message }
+        } else {
+            logger.debug { message }
+        }
+    }
+
+    /**
+     * The size check and the insert have to happen under one lock, or plugins being created in parallel can all
+     * pass the check before any of them inserts and the cap is exceeded. The set being concurrent is not enough.
+     */
+    private fun admitWarning(unknownProperty: String): Boolean = synchronized(loggedUnknownProperties) {
+        loggedUnknownProperties.size < MAX_LOGGED_UNKNOWN_PROPERTIES && loggedUnknownProperties.add(unknownProperty)
     }
 
     private fun setProperty(
@@ -150,6 +167,7 @@ abstract class PluginFactory<T : Any>(
     }
 
     private companion object {
+        private const val MAX_LOGGED_UNKNOWN_PROPERTIES = 100
         private val logger = KotlinLogging.logger {}
     }
 }
