@@ -293,14 +293,21 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
       firstUpload.complete();
     };
 
+    const filesTheNextSaveUploads = (): Array<File> => {
+      uploadFileWithMetadata.calls.reset();
+      uploadFileWithMetadata.and.returnValue(of(null));
+      save(sharedMetadata);
+      return uploadedFiles();
+    };
+
     it('leaves the newer selection open when the earlier batch succeeds', () => {
       uploadFileWithMetadata.and.returnValues(firstUpload, of(null));
 
       finishFirstBatch();
 
-      expect(component.batchFileNames()).toEqual(['situatie-foto.jpg', 'bijlage.pdf']);
       expect(component.showUploadModal$.getValue()).toBeTrue();
       expect(component.fileToBeUploaded$.getValue()).toBe(situatieFoto);
+      expect(filesTheNextSaveUploads()).toEqual([situatieFoto, bijlage]);
     });
 
     it('reports the earlier batch failures on the page and leaves the newer selection alone', () => {
@@ -311,12 +318,12 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
 
       finishFirstBatch();
 
-      expect(component.batchFileNames()).toEqual(['situatie-foto.jpg', 'bijlage.pdf']);
       expect(component.showUploadModal$.getValue()).toBeTrue();
       expect(component.uploadError()).toBeNull();
       expect(showToast).toHaveBeenCalledOnceWith(
         jasmine.objectContaining({caption: 'document.batchUploadFailed: bouw_tekening.pdf'})
       );
+      expect(filesTheNextSaveUploads()).toEqual([situatieFoto, bijlage]);
     });
   });
 
