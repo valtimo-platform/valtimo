@@ -116,6 +116,20 @@ class JsonDocumentContentTest {
     }
 
     @Test
+    void shouldKeepOmittedNumericObjectKeyWithBuild() {
+        ObjectNode scores = JsonNodeFactory.instance.objectNode();
+        scores.put("2024", 1);
+        scores.put("2025", 2);
+        source.set("scores", scores);
+        ObjectNode modifiedContent = source.deepCopy();
+        ((ObjectNode) modifiedContent.get("scores")).remove("2025");
+
+        JsonDocumentContent.build(source, modifiedContent);
+
+        assertThat(source.at("/scores/2025").intValue()).isEqualTo(2);
+    }
+
+    @Test
     void shouldRemoveItemViaPrePatchOnlyWithBuild() {
         // try to remove name from identity the normal way, it should fail
         ObjectNode modifiedIdentityContent = JsonNodeFactory.instance.objectNode();

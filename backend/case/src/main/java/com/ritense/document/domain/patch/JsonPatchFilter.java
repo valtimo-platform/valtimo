@@ -24,6 +24,10 @@ import java.util.regex.Pattern;
 public interface JsonPatchFilter {
 
     static void filter(JsonNode patch, EnumSet<JsonPatchFilterFlag> flags) {
+        filter(patch, null, flags);
+    }
+
+    static void filter(JsonNode patch, JsonNode source, EnumSet<JsonPatchFilterFlag> flags) {
         Iterator<JsonNode> item = patch.iterator();
         while (item.hasNext()) {
             JsonNode operation = item.next();
@@ -33,12 +37,20 @@ public interface JsonPatchFilter {
                 }
             } else if (flags.contains(JsonPatchFilterFlag.ALLOW_ARRAY_REMOVAL_ONLY)) {
                 if (operation.get("op").asText().equals("remove")
-                    && !arrayPattern().matcher(operation.get("path").asText()).matches()
+                    && !isArrayElement(operation.get("path").asText(), source)
                 ) {
                     item.remove();
                 }
             }
         }
+    }
+
+    private static boolean isArrayElement(String path, JsonNode source) {
+        if (!arrayPattern().matcher(path).matches()) {
+            return false;
+        }
+        // A numeric last segment is also a valid object key, so the document decides.
+        return source == null || source.at(path.substring(0, path.lastIndexOf('/'))).isArray();
     }
 
     static Pattern arrayPattern() {
