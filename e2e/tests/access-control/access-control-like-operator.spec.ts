@@ -71,6 +71,8 @@ test.describe('Access Control Management — "contains the text" operator', () =
 
     // Assert — the summary renders the operator by its label, not as "like"
     await accessControlPage.summaryTab.click();
-    await expect(accessControlPage.summaryOperators).toHaveText([likeConditionTestData.operatorLabel]);
+    await expect(accessControlPage.summaryOperators).toHaveText([
+      likeConditionTestData.operatorLabel,
+    ]);
   });
 });
