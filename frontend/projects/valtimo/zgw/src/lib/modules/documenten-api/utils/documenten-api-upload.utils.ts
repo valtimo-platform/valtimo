@@ -41,11 +41,9 @@ const filenameToTitle = (filename?: string): string | null => {
   if (!filename) return null;
 
   const title = filename.replace(/\.[^/.]+$/, '').replace(/[._]/g, ' ');
-  return title.charAt(0).toUpperCase() + title.slice(1);
+  // A name that is only an extension (.env) would leave an empty title, which a batch cannot fill in.
+  return title ? title.charAt(0).toUpperCase() + title.slice(1) : filename;
 };
-
-// A name that is only an extension (.env) derives an empty title, and a batch has no Title field to fill one in.
-const getBatchFileTitle = (filename: string): string => filenameToTitle(filename) || filename;
 
 const getFilenameExtension = (filename?: string): string => {
   const extension = filename?.split('.')?.pop() || '';
@@ -71,7 +69,7 @@ const getBatchFileMetadata = (
     bestandsnaam: enforcedFilename
       ? withFilenameExtension(enforcedFilename, getFilenameExtension(file.name))
       : file.name,
-    titel: getEnforcedDefaultValue(uploadFields?.titel) || getBatchFileTitle(file.name),
+    titel: getEnforcedDefaultValue(uploadFields?.titel) || filenameToTitle(file.name),
   };
 };
 
@@ -79,7 +77,6 @@ export {
   areAllUploadFieldsHidden,
   filenameToTitle,
   getBatchFileMetadata,
-  getBatchFileTitle,
   getFilenameExtension,
   withFilenameExtension,
 };

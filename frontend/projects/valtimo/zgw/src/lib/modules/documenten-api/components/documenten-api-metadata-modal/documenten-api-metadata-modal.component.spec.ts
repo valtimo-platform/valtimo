@@ -65,10 +65,9 @@ describe('DocumentenApiMetadataModalComponent', () => {
     expect(emitted.length).toBe(1);
   });
 
-  it('prefills a title for a batch whose first file is named only by an extension', async () => {
+  it('prefills the file name as title for a file named only by an extension', async () => {
     const dotfile = new File(['KEY=value'], '.env', {type: 'text/plain'});
     component.documentenApiMetadataForm.reset();
-    component.batchFileNames = ['.env', 'aanvraag.pdf'];
     component.file$ = of(dotfile);
 
     component.prefillForm(dotfile);

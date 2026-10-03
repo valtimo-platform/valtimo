@@ -131,6 +131,10 @@ describe('documenten-api-upload.utils', () => {
   });
 
   describe('filenameToTitle', () => {
+    it('keeps a name that is only an extension, instead of an empty title', () => {
+      expect(filenameToTitle('.env')).toBe('.env');
+    });
+
     it('derives a title the way a single upload prefills it', () => {
       expect(filenameToTitle('bouw_tekening.v2.pdf')).toBe('Bouw tekening v2');
       expect(filenameToTitle(undefined)).toBeNull();
