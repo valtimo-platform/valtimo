@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Source key and target key on form fields are documented
 
-New enhancement explanation.
+The forms documentation now explains where a field's value is saved when it has a source key. Without a target key the value is written back to the source key, which makes a form fail on submit when that source cannot be changed, such as the case creation date.
 
 ---
 

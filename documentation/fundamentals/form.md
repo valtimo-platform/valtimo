@@ -47,6 +47,46 @@ Forms connect to case data through field keys:
 
 When a form opens, Valtimo automatically pre-fills fields with matching data from the case document or process variables. When the form is submitted, the data flows back to update the document and complete the task.
 
+### Source key and target key
+
+A field can read from and write to a different place than its key suggests. Both are set on the field's **Value Resolver** tab in the form builder, and are stored in the field's `properties`:
+
+- **Source key** (`properties.sourceKey`) — the value the field is pre-filled with when the form opens, for example `case:createdOn`, `doc:/applicant/name` or `pv:approvalDecision`.
+- **Target key** (`properties.targetKey`) — where the submitted value is written, using the same prefixes.
+
+When the form is submitted, Valtimo picks the place to write each field's value in this order:
+
+1. The **target key**, if the field has one.
+2. Otherwise the **source key**, if the field has one.
+3. Otherwise the field key itself: a document path, or a process variable for `pv:` keys.
+
+{% hint style="warning" %}
+**A field with a source key and no target key writes its value back to the source key.** It is not written to the field key.
+
+This makes the submit fail when the source key cannot be written. Most `case:` values are read-only (for example `case:createdOn` and `case:id`); only `case:assigneeId`, `case:internalStatus` and `case:caseTags` can be written. Disabled fields are submitted too, unless the application property `valtimo.form.ignoreDisabledFields` is set to `true`.
+
+Always set a target key on a field that has a source key:
+
+- **The value should be saved:** set the target key to where it belongs, such as the field's own key.
+- **The value is only shown:** set the target key to a process variable that nothing else uses. Alternatively, make the field disabled and set `valtimo.form.ignoreDisabledFields` to `true`. Note that this setting applies to every disabled field in every form.
+{% endhint %}
+
+For example, this field shows the date the case was created and saves it as the process variable `briefCreatedOn`. Without the `targetKey` line, submitting the form would try to change the case's creation date and fail:
+
+```json
+{
+  "label": "Uw brief van",
+  "key": "pv:briefCreatedOn",
+  "type": "datetime",
+  "input": true,
+  "disabled": true,
+  "properties": {
+    "sourceKey": "case:createdOn",
+    "targetKey": "pv:briefCreatedOn"
+  }
+}
+```
+
 ---
 
 ## Form builder
