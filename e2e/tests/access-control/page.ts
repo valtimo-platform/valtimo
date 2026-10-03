@@ -285,6 +285,11 @@ export class AccessControlPage {
     return this.page.getByTestId(ACCESS_CONTROL_EDITOR_TEST_IDS.conditionValueInput);
   }
 
+  /** The operator of each condition on the Summary tab, as the reader sees it. */
+  get summaryOperators() {
+    return this.page.locator('.ac__operator');
+  }
+
   /**
    * Expands one of a permission card's accordion sections. Only one section is open at a time,
    * so controls in the others are in the DOM but not visible.
@@ -396,8 +401,10 @@ export class AccessControlPage {
 
   async deleteRolesViaApi(roleKeys: string[]) {
     try {
+      // The endpoint takes {roles: [...]} and, like every management call, a bearer token.
       await this.request.delete('/api/management/v1/roles', {
-        data: roleKeys,
+        data: {roles: roleKeys},
+        headers: {Authorization: `Bearer ${process.env.PLAYWRIGHT_BEARER_TOKEN}`},
       });
     } catch {
       // roles may already be deleted

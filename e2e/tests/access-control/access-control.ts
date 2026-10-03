@@ -45,3 +45,14 @@ export const permissionTestData = {
   conditionOperatorSymbol: '==',
   conditionValue: 'bezwaar',
 };
+
+/**
+ * The "contains the text" operator (gzac-issues#606). Its label is what the operator select and
+ * the Summary tab show; `like` is what gets stored.
+ */
+export const likeConditionTestData = {
+  roleKey: 'e2e-like-operator-role',
+  operatorLabel: 'contains the text',
+  operator: 'like',
+  value: 'bezw',
+};
