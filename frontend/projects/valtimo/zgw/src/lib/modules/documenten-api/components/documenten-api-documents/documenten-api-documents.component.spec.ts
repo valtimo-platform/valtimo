@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
+import {NO_ERRORS_SCHEMA, Pipe, PipeTransform} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
@@ -33,6 +35,13 @@ import {
   DocumentenApiVersionService,
 } from '../../services';
 import {CaseDetailTabDocumentenApiDocumentsComponent} from './documenten-api-documents.component';
+
+@Pipe({name: 'translate', standalone: true})
+class TranslatePipeStub implements PipeTransform {
+  public transform(key: string): string {
+    return key;
+  }
+}
 
 describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
   const ALL_UPLOAD_FIELD_KEYS = [
@@ -96,7 +105,10 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
             getFeatureToggleObservable: () => of(false),
           },
         },
-        {provide: DocumentenApiColumnService, useValue: {getConfiguredColumns: () => of([])}},
+        {
+          provide: DocumentenApiColumnService,
+          useValue: {getConfiguredColumns: () => of([{key: 'titel'}])},
+        },
         {
           provide: DocumentenApiDocumentService,
           useValue: {
@@ -127,10 +139,15 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
             stream: () => of(''),
           },
         },
-        {provide: UploadProviderService, useValue: {uploadFileWithMetadata}},
-        {provide: UserProviderService, useValue: {}},
+        {
+          provide: UploadProviderService,
+          useValue: {uploadFileWithMetadata, checkUploadProcessLink: () => of(true)},
+        },
+        {provide: UserProviderService, useValue: {getUserSubject: () => of({roles: []})}},
         {provide: GlobalNotificationService, useValue: {showToast}},
       ],
+    }).overrideComponent(CaseDetailTabDocumentenApiDocumentsComponent, {
+      set: {imports: [CommonModule, TranslatePipeStub], schemas: [NO_ERRORS_SCHEMA]},
     });
 
     component = TestBed.inject(CaseDetailTabDocumentenApiDocumentsComponent);
@@ -296,5 +313,16 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
       'case-document-1',
       sharedMetadata
     );
+  });
+
+  it('lets the Upload file picker select several files at once', () => {
+    const fixture = TestBed.createComponent(CaseDetailTabDocumentenApiDocumentsComponent);
+    // The stubbed services answer synchronously, so the loading flag flips within one check.
+    fixture.detectChanges(false);
+    fixture.detectChanges(false);
+
+    const fileInput: HTMLInputElement = fixture.nativeElement.querySelector('input[type="file"]');
+
+    expect(fileInput.multiple).toBeTrue();
   });
 });
