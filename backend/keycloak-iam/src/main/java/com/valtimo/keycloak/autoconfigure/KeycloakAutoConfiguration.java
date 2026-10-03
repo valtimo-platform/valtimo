@@ -18,6 +18,7 @@ package com.valtimo.keycloak.autoconfigure;
 
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.valtimo.contract.authentication.TeamManagementService;
+import com.ritense.valtimo.contract.security.config.SelfAuthenticatingEndpoints;
 import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
 import com.valtimo.keycloak.authorization.UserActionProvider;
 import com.valtimo.keycloak.authorization.UserSpecificationFactory;
@@ -31,6 +32,7 @@ import com.valtimo.keycloak.service.KeycloakService;
 import com.valtimo.keycloak.service.KeycloakUserManagementService;
 import com.valtimo.keycloak.service.UserCache;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -113,10 +115,12 @@ public class KeycloakAutoConfiguration {
     @ConditionalOnMissingBean(KeycloakOAuth2HttpSecurityConfigurer.class)
     @Conditional(ClientsConfiguredCondition.class)
     public KeycloakOAuth2HttpSecurityConfigurer keycloakOAuth2HttpSecurityConfigurer(
-        KeycloakService keycloakService
+        KeycloakService keycloakService,
+        ObjectProvider<SelfAuthenticatingEndpoints> selfAuthenticatingEndpoints
     ) {
         return new KeycloakOAuth2HttpSecurityConfigurer(
-            keycloakService
+            keycloakService,
+            selfAuthenticatingEndpoints.orderedStream().toList()
         );
     }
 

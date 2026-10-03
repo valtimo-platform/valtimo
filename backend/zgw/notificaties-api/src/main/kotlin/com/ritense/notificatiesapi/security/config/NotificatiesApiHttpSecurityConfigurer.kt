@@ -19,16 +19,18 @@ package com.ritense.notificatiesapi.security.config
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import com.ritense.valtimo.contract.security.config.SelfAuthenticatingEndpoints
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import org.springframework.security.web.util.matcher.RequestMatcher
 
-class NotificatiesApiHttpSecurityConfigurer : HttpSecurityConfigurer {
+class NotificatiesApiHttpSecurityConfigurer : HttpSecurityConfigurer, SelfAuthenticatingEndpoints {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/v1/notificatiesapi/callback")).permitAll()
+                requests.requestMatchers(CALLBACK_MATCHER).permitAll()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/notificatiesapi/inbound-events/failed"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/notificatiesapi/inbound-events/failed/count"))
@@ -39,5 +41,11 @@ class NotificatiesApiHttpSecurityConfigurer : HttpSecurityConfigurer {
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }
+    }
+
+    override fun getSelfAuthenticatingEndpoints(): List<RequestMatcher> = listOf(CALLBACK_MATCHER)
+
+    companion object {
+        private val CALLBACK_MATCHER = antMatcher(POST, "/api/v1/notificatiesapi/callback")
     }
 }

@@ -17,6 +17,7 @@
 package com.valtimo.keycloak.security.config
 
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import com.ritense.valtimo.contract.security.config.SelfAuthenticatingEndpoints
 import com.valtimo.keycloak.service.KeycloakService
 import org.springframework.core.convert.converter.Converter
 import org.springframework.security.authentication.AbstractAuthenticationToken
@@ -27,12 +28,18 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 
 class KeycloakOAuth2HttpSecurityConfigurer(
-    private val keycloakService: KeycloakService
+    private val keycloakService: KeycloakService,
+    private val selfAuthenticatingEndpoints: List<SelfAuthenticatingEndpoints>
 ) : HttpSecurityConfigurer, Converter<Jwt, AbstractAuthenticationToken> {
+
+    constructor(keycloakService: KeycloakService) : this(keycloakService, emptyList())
 
     override fun configure(http: HttpSecurity) {
         http
-            .oauth2ResourceServer { oauth2 -> oauth2.jwt { it.jwtAuthenticationConverter(this@KeycloakOAuth2HttpSecurityConfigurer) } }
+            .oauth2ResourceServer { oauth2 ->
+                oauth2.bearerTokenResolver(SelfAuthenticatingEndpointBearerTokenResolver(selfAuthenticatingEndpoints))
+                    .jwt { it.jwtAuthenticationConverter(this@KeycloakOAuth2HttpSecurityConfigurer) }
+            }
             .oauth2Login(withDefaults())
     }
 
