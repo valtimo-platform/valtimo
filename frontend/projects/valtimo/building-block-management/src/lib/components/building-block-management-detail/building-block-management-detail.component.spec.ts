@@ -22,7 +22,7 @@ import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
 import {PageTitleService} from '@valtimo/components';
 import {BUILDING_BLOCK_MANAGEMENT_TAB_TOKEN} from '@valtimo/shared';
 import {Tab, TabsModule} from 'carbon-components-angular';
-import {Observable, of, Subject, throwError} from 'rxjs';
+import {EMPTY, Observable, of, Subject, throwError} from 'rxjs';
 import {BuildingBlockManagementDetailService} from '../../services';
 import {
   BuildingBlockManagementDetailComponent,
@@ -103,8 +103,16 @@ describe('BuildingBlockManagementDetailComponent', () => {
 
     tick(CUSTOM_TAB_ENABLED_TIMEOUT_MS);
     fixture.detectChanges();
+    // Lets the tab bar run its own first-tab fallback, which is what used to send the page to General.
+    tick();
+    fixture.detectChanges();
 
+    const mailTemplateTab = fixture.debugElement
+      .queryAll(By.directive(Tab))
+      .map(tab => tab.componentInstance as Tab)
+      .find((tab: Tab) => tab.heading === 'Mail template');
     expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(mailTemplateTab?.active).toBeTrue();
     expect(detailService.navigateToTab).not.toHaveBeenCalled();
   }));
 
@@ -138,6 +146,17 @@ describe('BuildingBlockManagementDetailComponent', () => {
       'general',
       throwError(() => new Error('plugin configurations unavailable'))
     );
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(renderedTabHeadings().length).toBeGreaterThan(0);
+    expect(renderedTabHeadings()).not.toContain('Mail template');
+  }));
+
+  it('leaves out a custom tab whose availability check ends without answering', fakeAsync(() => {
+    configureTestBed('general', EMPTY);
     fixture.detectChanges();
     tick();
     fixture.detectChanges();

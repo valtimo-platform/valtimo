@@ -23,7 +23,7 @@ import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {CaseManagementTabConfig, ConfigService, ConfigurationIssueService} from '@valtimo/shared';
 import {SseService} from '@valtimo/sse';
 import {IconService, Tab, TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, of, Subject, throwError} from 'rxjs';
+import {BehaviorSubject, EMPTY, of, Subject, throwError} from 'rxjs';
 import {CaseDetailService, CaseManagementService, TabService} from '../../services';
 import {
   CaseManagementDetailComponent,
@@ -110,7 +110,9 @@ describe('CaseManagementDetailComponent', () => {
   };
 
   const renderedTabTitles = (): string[] =>
-    fixture.debugElement.queryAll(By.directive(Tab)).map(tab => `${(tab.componentInstance as Tab).title}`);
+    fixture.debugElement
+      .queryAll(By.directive(Tab))
+      .map(tab => `${(tab.componentInstance as Tab).title}`);
 
   const navigatedTo = (): string[] =>
     (router.navigateByUrl as jasmine.Spy).calls.allArgs().map(args => `${args[0]}`);
@@ -146,8 +148,16 @@ describe('CaseManagementDetailComponent', () => {
 
     tick(INJECTED_TAB_ENABLED_TIMEOUT_MS);
     fixture.detectChanges();
+    // Lets the tab bar run its own first-tab fallback, which is what used to send the page to General.
+    tick();
+    fixture.detectChanges();
 
+    const mailTemplateTab = fixture.debugElement
+      .queryAll(By.directive(Tab))
+      .map(tab => tab.componentInstance as Tab)
+      .find((tab: Tab) => tab.title === 'Mail template');
     expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(mailTemplateTab?.active).toBeTrue();
     expect(navigatedTo().filter((url: string) => url === `${CASE_ROUTE}/general`)).toEqual([]);
   }));
 
@@ -183,6 +193,25 @@ describe('CaseManagementDetailComponent', () => {
         component: {} as any,
         tabRoute: 'mail-template',
         enabled$: throwError(() => new Error('plugin configurations unavailable')),
+      },
+    ]);
+    configureTestBed('general');
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('cds-tabs')).not.toBeNull();
+    expect(renderedTabTitles().length).toBeGreaterThan(0);
+    expect(renderedTabTitles()).not.toContain('Mail template');
+  }));
+
+  it('leaves out an injected tab whose availability check ends without answering', fakeAsync(() => {
+    injectedTabs$.next([
+      {
+        translationKey: 'Mail template',
+        component: {} as any,
+        tabRoute: 'mail-template',
+        enabled$: EMPTY,
       },
     ]);
     configureTestBed('general');
