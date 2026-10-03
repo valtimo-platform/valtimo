@@ -18,6 +18,7 @@ package com.ritense.widget.fields
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.POJONode
+import com.ritense.valtimo.contract.json.MapperSingleton
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
@@ -27,7 +28,6 @@ import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 import java.time.temporal.ChronoUnit.SECONDS
 import java.time.temporal.TemporalAccessor
-import java.util.UUID
 
 /** A field value that is either one path, or a template such as `${doc:/firstName} ${doc:/lastName}`. */
 object FieldValueTemplate {
@@ -61,12 +61,13 @@ object FieldValueTemplate {
         is OffsetDateTime -> value.truncatedTo(SECONDS).format(ISO_OFFSET_DATE_TIME)
         is ZonedDateTime -> value.truncatedTo(SECONDS).format(ISO_OFFSET_DATE_TIME)
         is Instant -> value.truncatedTo(SECONDS).toString()
-        is CharSequence, is Number, is Boolean, is Char, is Enum<*>, is UUID, is TemporalAccessor -> value.toString()
-        // Anything else is an object with no single text form, so it is left out like an empty value
-        else -> ""
+        is CharSequence, is Number, is Boolean, is TemporalAccessor -> value.toString()
+        // Anything else shows as its JSON form: a single value as text, an object not at all
+        else -> asText(runCatching { MapperSingleton.get().valueToTree<JsonNode>(value) }.getOrNull())
     }
 
-    private fun asText(node: JsonNode): String = when {
+    private fun asText(node: JsonNode?): String = when {
+        node == null -> ""
         node.isNumber -> asText(node.decimalValue())
         node is POJONode -> asText(node.pojo)
         node.isValueNode && !node.isNull -> node.asText()

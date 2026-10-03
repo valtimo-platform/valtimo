@@ -16,9 +16,11 @@
 
 package com.ritense.widget.fields
 
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
+import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -53,9 +55,19 @@ class FieldsWidgetTest {
         "doc:/jsonAdres" to ObjectMapper().valueToTree<JsonNode>(adres),
         "case:tag" to Tag("urgent", "Urgent"),
         "case:tags" to listOf(Tag("urgent", "Urgent"), Tag("vip", "VIP")),
+        "zaak:zaaktype" to URI("https://openzaak.local/catalogi/api/v1/zaaktypen/1"),
+        "zaak:bronorganisatie" to Rsin("002564440"),
+        "zaak:vertrouwelijkheidaanduiding" to Vertrouwelijkheid.ZAAKVERTROUWELIJK,
     )
 
     private data class Tag(val key: String, val title: String)
+
+    private class Rsin(private val value: String) {
+        @JsonValue
+        override fun toString() = value
+    }
+
+    private enum class Vertrouwelijkheid(@get:JsonValue val key: String) { ZAAKVERTROUWELIJK("zaakvertrouwelijk") }
 
     @Test
     fun `should resolve each placeholder of a template field`() {
@@ -115,6 +127,19 @@ class FieldsWidgetTest {
         assertThat(values["local"]).isEqualTo("2026-10-03T08:25:04")
         assertThat(values["zoned"]).isEqualTo("2026-10-03T08:25:00+02:00")
         assertThat(values["date"]).isEqualTo("2026-10-03")
+    }
+
+    @Test
+    fun `should render a single value by its JSON form`() {
+        val widget = widget(
+            "zaak" to "\${zaak:bronorganisatie} \${zaak:vertrouwelijkheidaanduiding}",
+            "type" to "\${zaak:zaaktype}",
+        )
+
+        val values = widget.getExposedValues(::resolve)
+
+        assertThat(values["zaak"]).isEqualTo("002564440 zaakvertrouwelijk")
+        assertThat(values["type"]).isEqualTo("https://openzaak.local/catalogi/api/v1/zaaktypen/1")
     }
 
     @Test
