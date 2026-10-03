@@ -24,11 +24,12 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 
-data class TableWidgetProperties (
+data class TableWidgetProperties @JvmOverloads constructor(
     @field:NotBlank val collection: String,
     @field:Min(1) val defaultPageSize: Int,
     @field:NotEmpty val columns: List<@Valid Column>,
-    val firstColumnAsTitle: Boolean = false
+    val firstColumnAsTitle: Boolean = false,
+    @get:JsonInclude(Include.NON_NULL) val noDataMessage: String? = null
 ) {
     @JsonInclude(Include.NON_NULL)
     data class Column (

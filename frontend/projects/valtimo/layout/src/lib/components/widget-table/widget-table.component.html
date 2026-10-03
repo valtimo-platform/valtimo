@@ -41,7 +41,7 @@
     ></valtimo-widget-action-button>
   </section>
 
-  @if (obs.fields && (obs.widgetData === null || obs.widgetData.length > 0)) {
+  @if (obs.fields) {
     <section class="valtimo-widget-table__content">
       <valtimo-carbon-list
         [header]="false"
@@ -51,6 +51,7 @@
         [loading]="obs.widgetData === null"
         [skeletonRowCount]="widgetConfiguration?.properties?.defaultPageSize || 5"
       >
+        {{ widgetConfiguration?.properties?.noDataMessage || 'widgets.noData' | translate }}
       </valtimo-carbon-list>
 
       @if ($paginationModel() && $showPagination()) {
@@ -70,11 +71,5 @@
         </div>
       }
     </section>
-  } @else if (obs.widgetData !== null) {
-    <valtimo-no-results
-      [collapseVertically]="true"
-      [description]="'widgets.noData' | translate"
-      [smallPadding]="true"
-    ></valtimo-no-results>
   }
 </cds-tile>
