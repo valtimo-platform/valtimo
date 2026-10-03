@@ -46,14 +46,14 @@ object FieldValueTemplate {
         }
         var anyPlaceholderFilled = false
         val rendered = PLACEHOLDER.replace(value) { match ->
-            asText(resolveValue(match.groupValues[1])).also { if (it.isNotEmpty()) anyPlaceholderFilled = true }
+            asText(resolveValue(match.groupValues[1])).also { if (it.isNotBlank()) anyPlaceholderFilled = true }
         }
         return if (anyPlaceholderFilled) rendered.replace(REPEATED_SPACES, " ").trim() else null
     }
 
     private fun asText(value: Any?): String = when (value) {
         null -> ""
-        is Collection<*> -> value.map { asText(it) }.filter { it.isNotEmpty() }.joinToString(", ")
+        is Collection<*> -> value.map { asText(it) }.filter { it.isNotBlank() }.joinToString(", ")
         is JsonNode -> asText(value)
         is BigDecimal -> value.stripTrailingZeros().toPlainString()
         is Double, is Float -> if ((value as Number).toDouble().isFinite()) asText(BigDecimal(value.toString())) else ""

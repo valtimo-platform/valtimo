@@ -210,7 +210,7 @@ should appear between them around it. For example, `${doc:/street} ${doc:/houseN
 `Kerkstraat 12a` under a single **Address** field. Every value prefix can be used, and a list is shown comma-separated.
 
 - An empty placeholder is left out, and the extra spaces it leaves are removed. Other separators, such as `, `, stay.
-- When every placeholder is empty, the field counts as empty, so **Hide when empty** hides it.
+- When every placeholder is empty or only spaces, the field counts as empty, so **Hide when empty** hides it.
 - A template always shows as text. The number, date and currency display types do not format the parts inside it.
   Numbers show in plain form (`12`, `12.5`), and dates and times in ISO format to the second (`2026-10-03T08:25:04`).
 - A placeholder that points at an object, such as a whole address, is left out. Point at its separate values instead.

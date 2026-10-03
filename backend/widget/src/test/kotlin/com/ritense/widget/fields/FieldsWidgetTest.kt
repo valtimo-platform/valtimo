@@ -38,6 +38,8 @@ class FieldsWidgetTest {
         "doc:/huisnummer" to 12,
         "doc:/huisletter" to "",
         "doc:/telefoon" to listOf("0612345678", null, "0201234567"),
+        "doc:/spatie" to " ",
+        "doc:/spaties" to listOf(" ", " "),
         "doc:/whole" to 12.0,
         "doc:/fraction" to 12.5,
         "doc:/large" to 10000000.0,
@@ -136,12 +138,18 @@ class FieldsWidgetTest {
 
     @Test
     fun `should resolve a template to null when every placeholder is empty`() {
-        val widget = widget("leeg" to "\${doc:/tussenvoegsel} - \${doc:/huisletter}")
+        val widget = widget(
+            "leeg" to "\${doc:/tussenvoegsel} - \${doc:/huisletter}",
+            "spatie" to "Tel: \${doc:/spatie}",
+            "spaties" to "\${doc:/spaties}",
+        )
 
         val values = widget.getExposedValues(::resolve)
 
         assertThat(values).containsKey("leeg")
         assertThat(values["leeg"]).isNull()
+        assertThat(values["spatie"]).isNull()
+        assertThat(values["spaties"]).isNull()
     }
 
     @Test
