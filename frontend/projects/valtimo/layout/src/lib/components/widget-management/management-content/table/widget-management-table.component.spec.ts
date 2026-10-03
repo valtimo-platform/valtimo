@@ -26,17 +26,17 @@ describe('WidgetManagementTableComponent', () => {
   let fixture: ComponentFixture<WidgetManagementTableComponent>;
   let widgetWizardService: WidgetWizardService;
 
-  const content = (): WidgetTableContent =>
-    widgetWizardService.$widgetContent() as WidgetTableContent;
+  const content = (): Record<string, unknown> =>
+    widgetWizardService.$widgetContent() as unknown as Record<string, unknown>;
 
-  const create = (showFirstColumnOption: boolean, initial: Partial<WidgetTableContent>): void => {
+  const create = (showFirstColumnOption: boolean, initial: Record<string, unknown>): void => {
     widgetWizardService.$widgetContent.set({
       collection: 'doc:children',
       defaultPageSize: 5,
       columns: [],
       firstColumnAsTitle: false,
       ...initial,
-    } as WidgetTableContent);
+    } as unknown as WidgetTableContent);
 
     fixture = TestBed.createComponent(WidgetManagementTableComponent);
     fixture.componentInstance.showFirstColumnOption = showFirstColumnOption;
@@ -63,7 +63,7 @@ describe('WidgetManagementTableComponent', () => {
 
     setMessage('No children registered');
 
-    expect(content().noDataMessage).toBe('No children registered');
+    expect(content()['noDataMessage']).toBe('No children registered');
   }));
 
   it('should start from the saved empty table message when editing', fakeAsync(() => {
