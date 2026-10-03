@@ -67,7 +67,7 @@ This makes the submit fail when the source key cannot be written. Most `case:` v
 
 Always set a target key on a field that has a source key:
 
-- **The value should be saved:** set the target key to where it belongs, such as the field's own key.
+- **The value should be saved:** set the target key to where it belongs, including its prefix, for example `doc:/applicant/name` or `pv:approvalDecision`.
 - **The value is only shown:** set the target key to a process variable that nothing else uses. Alternatively, make the field disabled and set `valtimo.form.ignoreDisabledFields` to `true`. Note that this setting applies to every disabled field in every form.
 {% endhint %}
 
