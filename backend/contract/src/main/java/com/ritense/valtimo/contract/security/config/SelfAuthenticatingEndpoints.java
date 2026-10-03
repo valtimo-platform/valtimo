@@ -19,7 +19,7 @@ package com.ritense.valtimo.contract.security.config;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import java.util.List;
 
-/** Endpoints that validate the Authorization header themselves, so no other authentication filter may consume it. */
+/** Endpoints that validate the Authorization header themselves, so the OAuth2 resource server ignores it on them. */
 public interface SelfAuthenticatingEndpoints {
 
     List<RequestMatcher> getSelfAuthenticatingEndpoints();
