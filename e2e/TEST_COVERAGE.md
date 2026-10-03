@@ -185,6 +185,7 @@
 | 6.54 | Configure component | Form.io builder — configure component properties |    ✅    | case-details-management-forms.spec.ts           |
 | 6.55 | Use JSON editor     | Use Form.io JSON editor                          |    ✅    | case-details-management-forms.spec.ts           |
 | 6.56 | View form preview   | View form preview                                |    ✅    | case-details-management-forms.spec.ts           |
+| 6.56a | Type a currency amount | Typed digits are whole euros · The comma starts the cents |    ✅    | currency-input.spec.ts                          |
 | 6.57 | Save form           | Save form definition                             |    ✅    | case-details-management-forms.spec.ts           |
 
 #### 6H · Form Flows

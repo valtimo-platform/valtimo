@@ -221,6 +221,14 @@ export class CaseDetailsFormsPage {
       .locator('input');
   }
 
+  /** Currency input inside the Output-tab preview, located by its visible label. */
+  previewCurrencyInputByLabel(label: string) {
+    return this.outputPreview
+      .locator('.formio-component-currency')
+      .filter({hasText: label})
+      .locator('valtimo-currency input');
+  }
+
   get outputJsonView() {
     return this.page.locator('.monaco-editor').first();
   }
@@ -280,6 +288,33 @@ export class CaseDetailsFormsPage {
           key: textFieldLabel.toLowerCase().replace(/[^a-z0-9]+/g, ''),
         },
       ],
+    };
+
+    const response = await apiPost<{id: string}>(
+      `/api/management/v1/case-definition/${caseKey}/version/${version}/form`,
+      {
+        name: formName,
+        formDefinition: JSON.stringify(formDefinition),
+      }
+    );
+    return response.id;
+  }
+
+  async createFormWithCurrencyFieldsViaApi(
+    caseKey: string,
+    version: string,
+    formName: string,
+    fields: Array<{label: string; key: string}>
+  ): Promise<string> {
+    const formDefinition = {
+      display: 'form',
+      components: fields.map(({label, key}) => ({
+        type: 'currency',
+        input: true,
+        label,
+        key,
+        customOptions: {currencyLocale: 'nl-NL', currencyCurrency: 'EUR'},
+      })),
     };
 
     const response = await apiPost<{id: string}>(
