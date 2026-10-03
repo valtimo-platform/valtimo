@@ -14,9 +14,24 @@
  * limitations under the License.
  */
 
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
+import {inject} from '@angular/core';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  filter,
+  map,
+  merge,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+} from 'rxjs';
 import {DocumentService, StartableItem} from '@valtimo/document';
 import {BasicWidget} from '@valtimo/layout';
+import {SseService} from '@valtimo/sse';
+import {TaskUpdateSseEvent} from '@valtimo/task';
+import {DocumentUpdatedSseEvent} from '../../../../../../models';
 
 export class WidgetProcess {
   private readonly _baseDocumentId$ = new BehaviorSubject<string | null>(null);
@@ -31,6 +46,14 @@ export class WidgetProcess {
     return this._baseDocumentId$.getValue();
   }
 
+  private readonly _sseService = inject(SseService);
+
+  /** The same case events on which the case's "start" menu reloads its startable items. */
+  private readonly _caseUpdates$: Observable<TaskUpdateSseEvent | DocumentUpdatedSseEvent> = merge(
+    this._sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
+    this._sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
+  );
+
   private readonly _startableItems$ = combineLatest([
     this._baseDocumentId$,
     this._baseWidgetConfiguration$,
@@ -43,7 +66,12 @@ export class WidgetProcess {
       ) {
         return of(null);
       }
-      return this.documentService.getStartableItems({caseDocumentId: documentId});
+      return this._caseUpdates$.pipe(
+        filter(event => event?.documentId === documentId),
+        debounceTime(300),
+        startWith(null),
+        switchMap(() => this.documentService.getStartableItems({caseDocumentId: documentId}))
+      );
     })
   );
 

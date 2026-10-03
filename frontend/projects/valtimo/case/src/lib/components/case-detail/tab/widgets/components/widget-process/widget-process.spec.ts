@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {DocumentService, StartableItem} from '@valtimo/document';
 import {BasicWidget} from '@valtimo/layout';
-import {of} from 'rxjs';
+import {SseService} from '@valtimo/sse';
+import {filter, of, Subject} from 'rxjs';
 
 import {WidgetProcess} from './widget-process';
 
@@ -51,15 +53,33 @@ function widgetConfiguration(processDefinitionKey?: string): BasicWidget {
   } as BasicWidget;
 }
 
-function documentServiceStub(items: StartableItem[]): DocumentService {
+function documentServiceStub(...responses: StartableItem[][]): DocumentService {
+  let call = 0;
   return {
-    getStartableItems: () => of(items),
+    getStartableItems: () => of(responses[Math.min(call++, responses.length - 1)]),
   } as unknown as DocumentService;
 }
 
+const sseEvents$ = new Subject<{eventType: string; documentId: string}>();
+
+const sseServiceStub = {
+  getSseEventObservable: (eventType: string) =>
+    sseEvents$.pipe(filter(event => event.eventType === eventType)),
+};
+
+function createWidget(documentService: DocumentService): TestWidgetProcess {
+  return TestBed.runInInjectionContext(() => new TestWidgetProcess(documentService));
+}
+
 describe('WidgetProcess', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [{provide: SseService, useValue: sseServiceStub}],
+    });
+  });
+
   it('offers the process when it is in the startable items of the case', () => {
-    const widget = new TestWidgetProcess(
+    const widget = createWidget(
       documentServiceStub([startableItem('test-process', 'test-process:1:abc')])
     );
     widget.setDocumentId('a-document-id');
@@ -72,7 +92,7 @@ describe('WidgetProcess', () => {
   });
 
   it('withholds the process when it is absent from the startable items of the case', () => {
-    const widget = new TestWidgetProcess(
+    const widget = createWidget(
       documentServiceStub([startableItem('other-process', 'other-process:1:abc')])
     );
     widget.setDocumentId('a-document-id');
@@ -85,9 +105,7 @@ describe('WidgetProcess', () => {
   });
 
   it('withholds the process when the startable item has no deployed process definition', () => {
-    const widget = new TestWidgetProcess(
-      documentServiceStub([startableItem('test-process', null)])
-    );
+    const widget = createWidget(documentServiceStub([startableItem('test-process', null)]));
     widget.setDocumentId('a-document-id');
     widget.setWidgetConfiguration(widgetConfiguration('test-process'));
 
@@ -98,7 +116,7 @@ describe('WidgetProcess', () => {
   });
 
   it('withholds the process when only a building block carries the configured key', () => {
-    const widget = new TestWidgetProcess(
+    const widget = createWidget(
       documentServiceStub([startableItem('test-process', 'test-process:1:abc', 'BUILDING_BLOCK')])
     );
     widget.setDocumentId('a-document-id');
@@ -111,7 +129,7 @@ describe('WidgetProcess', () => {
   });
 
   it('offers the process when a building block shares its key and the process is startable', () => {
-    const widget = new TestWidgetProcess(
+    const widget = createWidget(
       documentServiceStub([
         startableItem('test-process', 'test-process:1:abc', 'BUILDING_BLOCK'),
         startableItem('test-process', 'test-process:1:abc'),
@@ -127,7 +145,7 @@ describe('WidgetProcess', () => {
   });
 
   it('withholds the process when the widget configures no process at all', () => {
-    const widget = new TestWidgetProcess(
+    const widget = createWidget(
       documentServiceStub([startableItem('test-process', 'test-process:1:abc')])
     );
     widget.setDocumentId('a-document-id');
@@ -138,4 +156,57 @@ describe('WidgetProcess', () => {
 
     expect(canCreate).toBe(false);
   });
+
+  it('checks again when a document update of the case arrives, as the start menu does', fakeAsync(() => {
+    const widget = createWidget(
+      documentServiceStub([], [startableItem('test-process', 'test-process:1:abc')])
+    );
+    widget.setDocumentId('a-document-id');
+    widget.setWidgetConfiguration(widgetConfiguration('test-process'));
+
+    let canCreate: boolean | undefined;
+    const subscription = widget.canCreateCamundaExecution$.subscribe(value => (canCreate = value));
+    expect(canCreate).toBe(false);
+
+    sseEvents$.next({eventType: 'DOCUMENT_UPDATED', documentId: 'a-document-id'});
+    tick(300);
+
+    expect(canCreate).toBe(true);
+    subscription.unsubscribe();
+  }));
+
+  it('checks again when a task update of the case arrives, as the start menu does', fakeAsync(() => {
+    const widget = createWidget(
+      documentServiceStub([startableItem('test-process', 'test-process:1:abc')], [])
+    );
+    widget.setDocumentId('a-document-id');
+    widget.setWidgetConfiguration(widgetConfiguration('test-process'));
+
+    let canCreate: boolean | undefined;
+    const subscription = widget.canCreateCamundaExecution$.subscribe(value => (canCreate = value));
+    expect(canCreate).toBe(true);
+
+    sseEvents$.next({eventType: 'TASK_UPDATE', documentId: 'a-document-id'});
+    tick(300);
+
+    expect(canCreate).toBe(false);
+    subscription.unsubscribe();
+  }));
+
+  it('ignores updates of another case', fakeAsync(() => {
+    const widget = createWidget(
+      documentServiceStub([], [startableItem('test-process', 'test-process:1:abc')])
+    );
+    widget.setDocumentId('a-document-id');
+    widget.setWidgetConfiguration(widgetConfiguration('test-process'));
+
+    let canCreate: boolean | undefined;
+    const subscription = widget.canCreateCamundaExecution$.subscribe(value => (canCreate = value));
+
+    sseEvents$.next({eventType: 'DOCUMENT_UPDATED', documentId: 'another-document-id'});
+    tick(300);
+
+    expect(canCreate).toBe(false);
+    subscription.unsubscribe();
+  }));
 });
