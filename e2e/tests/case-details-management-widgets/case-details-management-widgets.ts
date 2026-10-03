@@ -73,3 +73,22 @@ export function createReorderTestData() {
     titleB: `E2e Reorder Widget B ${idB}`,
   };
 }
+
+/**
+ * Data for the empty table widget tests. `layout-test` is a draft dev case, so its widget tabs can
+ * be changed, and its document has a `children` array to point a table widget at.
+ */
+export function createEmptyTableWidgetTestData() {
+  const id = generateId();
+  return {
+    caseDefinitionKey: 'layout-test',
+    versionTag: '1.0.0',
+    tabKey: 'personal-info',
+    widgetTitle: `E2e Empty Table ${id}`,
+    widgetKey: `e2e-empty-table-${id}`,
+    columnTitles: ['Name', 'Relation'],
+    child: {name: 'Anna', relation: 'Daughter'},
+    defaultMessage: 'No data found',
+    configuredMessage: `No children registered ${id}`,
+  };
+}

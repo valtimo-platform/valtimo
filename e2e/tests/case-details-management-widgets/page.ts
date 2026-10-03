@@ -281,6 +281,31 @@ export class CaseDetailsManagementWidgetsPage {
     }).toPass({timeout: 30_000});
   }
 
+  /** The table widget's optional empty-table message input on the content step. */
+  get tableNoDataMessageInput() {
+    return this.visibleWizard
+      .locator('cds-text-label')
+      .filter({hasText: 'Message when the table is empty'})
+      .locator('input');
+  }
+
+  /** Fills the empty-table message and lets the form's 500 ms debounce hand it to the wizard. */
+  async fillTableNoDataMessage(message: string) {
+    await this.tableNoDataMessageInput.fill(message);
+    // Every field on this step reaches the wizard only after that debounce; leaving sooner drops it.
+    await this.page.waitForTimeout(1_000);
+  }
+
+  /** Jumps to a table widget's content step, retrying the click as for the conditions step. */
+  async goToTableContentStep() {
+    const step = this.visibleWizard.getByRole('button', {name: /Choose widget content/});
+
+    await expect(async () => {
+      await step.click();
+      await expect(this.tableNoDataMessageInput).toBeVisible({timeout: 3_000});
+    }).toPass({timeout: 30_000});
+  }
+
   /**
    * Fills condition row `index`. The path is entered in manual mode via the shared helper: the
    * selector's dropdown renders its options in an overlay outside the modal and the available
