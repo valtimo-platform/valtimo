@@ -11,3 +11,17 @@ repositories {
     mavenLocal()
     gradlePluginPortal()
 }
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.yaml:snakeyaml"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+// HealthProbeGroupsTest reads the app configs from disk, so they have to be inputs or an edit to one leaves the test up-to-date.
+tasks.named("test") {
+    inputs.files(fileTree(projectDir) { include "*/src/main/resources/config/application.yml" })
+        .withPropertyName("appConfigs")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
