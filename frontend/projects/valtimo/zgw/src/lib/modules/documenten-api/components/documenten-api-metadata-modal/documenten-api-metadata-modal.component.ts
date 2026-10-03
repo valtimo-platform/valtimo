@@ -84,6 +84,7 @@ import {DocumentenApiUploadFieldDefaultValues} from '../../models/documenten-api
 import {
   areAllUploadFieldsHidden,
   filenameToTitle,
+  getBatchFileTitle,
   getFilenameExtension,
   withFilenameExtension,
 } from '../../utils/documenten-api-upload.utils';
@@ -627,7 +628,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
             titel:
               file?.titel ||
               this.defaultValues.titel ||
-              filenameToTitle(file?.name || this.defaultValues.bestandsnaam),
+              (this.batchFileNames && file?.name
+                ? getBatchFileTitle(file.name)
+                : filenameToTitle(file?.name || this.defaultValues.bestandsnaam)),
           });
           if (this.areAllFieldsHidden()) {
             this.save();

@@ -49,6 +49,12 @@ describe('documenten-api-upload.utils', () => {
       expect(metadata.titel).toBe('Bouw tekening v2');
     });
 
+    it('titles a batch file whose name is only an extension after its file name', () => {
+      const dotfile = new File(['KEY=value'], '.env', {type: 'text/plain'});
+
+      expect(getBatchFileMetadata(dotfile, sharedMetadata, null).titel).toBe('.env');
+    });
+
     it('applies every shared value to the batch file', () => {
       const metadata = getBatchFileMetadata(file, sharedMetadata, null);
 
