@@ -87,7 +87,7 @@ describe('CaseDetailLayoutService', () => {
 
     layoutAfterContainerWidth(service, layout => {
       expect(layout.widthAdjustable).toBeTrue();
-      expect(layout.rightPanelWidth).toBe(412);
+      expect(layout.rightPanelWidth).toBe(320);
       expect(layout.rightPanelMinWidth).toBe(320);
       done();
     });

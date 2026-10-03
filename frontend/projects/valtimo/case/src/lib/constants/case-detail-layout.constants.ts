@@ -19,7 +19,7 @@ import {RightPanelMinWidths} from '../models';
 
 const CASE_DETAIL_GUTTER_SIZE = 32;
 
-const CASE_DETAIL_TASK_LIST_WIDTH = 412;
+const CASE_DETAIL_TASK_LIST_WIDTH = 320;
 
 const CASE_DETAIL_TASK_LIST_MIN_WIDTH = 320;
 
