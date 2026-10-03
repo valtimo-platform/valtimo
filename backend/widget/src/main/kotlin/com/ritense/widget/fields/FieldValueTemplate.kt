@@ -16,6 +16,16 @@
 
 package com.ritense.widget.fields
 
+import com.fasterxml.jackson.databind.JsonNode
+import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
+import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
+import java.time.temporal.ChronoUnit.SECONDS
+
 /** A field value that is either one path, or a template such as `${doc:/firstName} ${doc:/lastName}`. */
 object FieldValueTemplate {
 
@@ -40,7 +50,23 @@ object FieldValueTemplate {
 
     private fun asText(value: Any?): String = when (value) {
         null -> ""
-        is Collection<*> -> value.filterNotNull().joinToString(", ")
+        is Collection<*> -> value.map { asText(it) }.filter { it.isNotEmpty() }.joinToString(", ")
+        is JsonNode -> asText(value)
+        // An object has no single text form, so it is left out like an empty value
+        is Map<*, *> -> ""
+        is BigDecimal -> value.stripTrailingZeros().toPlainString()
+        is Double, is Float -> if ((value as Number).toDouble().isFinite()) asText(BigDecimal(value.toString())) else ""
+        is LocalDateTime -> value.truncatedTo(SECONDS).format(ISO_LOCAL_DATE_TIME)
+        is OffsetDateTime -> value.truncatedTo(SECONDS).format(ISO_OFFSET_DATE_TIME)
+        is ZonedDateTime -> value.truncatedTo(SECONDS).format(ISO_OFFSET_DATE_TIME)
+        is Instant -> value.truncatedTo(SECONDS).toString()
         else -> value.toString()
+    }
+
+    private fun asText(node: JsonNode): String = when {
+        node.isNumber -> asText(node.decimalValue())
+        node.isValueNode && !node.isNull -> node.asText()
+        node.isArray -> asText(node.toList())
+        else -> ""
     }
 }

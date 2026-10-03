@@ -16,10 +16,19 @@
 
 package com.ritense.widget.fields
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class FieldsWidgetTest {
+
+    private val adres = mapOf("straat" to "Kerkstraat", "huisnummer" to 12)
 
     private val document = mapOf(
         "doc:/voornaam" to "Jan",
@@ -29,6 +38,17 @@ class FieldsWidgetTest {
         "doc:/huisnummer" to 12,
         "doc:/huisletter" to "",
         "doc:/telefoon" to listOf("0612345678", null, "0201234567"),
+        "doc:/whole" to 12.0,
+        "doc:/fraction" to 12.5,
+        "doc:/large" to 10000000.0,
+        "doc:/exact" to BigDecimal("1.50"),
+        "doc:/json" to ObjectMapper().readTree("2.250"),
+        "case:createdOn" to LocalDateTime.of(2026, 10, 3, 8, 25, 4, 123456000),
+        "case:modifiedOn" to ZonedDateTime.of(2026, 10, 3, 8, 25, 0, 0, ZoneOffset.ofHours(2)),
+        "doc:/datum" to LocalDate.of(2026, 10, 3),
+        "doc:/adres" to adres,
+        "doc:/adressen" to listOf(adres, adres),
+        "doc:/jsonAdres" to ObjectMapper().valueToTree<JsonNode>(adres),
     )
 
     @Test
@@ -59,6 +79,51 @@ class FieldsWidgetTest {
         val values = widget.getExposedValues(::resolve)
 
         assertThat(values["telefoon"]).isEqualTo("Tel: 0612345678, 0201234567")
+    }
+
+    @Test
+    fun `should render numbers in plain form`() {
+        val widget = widget(
+            "decimal" to "\${doc:/whole} \${doc:/fraction}",
+            "large" to "\${doc:/large}",
+            "exact" to "\${doc:/exact} \${doc:/json}",
+        )
+
+        val values = widget.getExposedValues(::resolve)
+
+        assertThat(values["decimal"]).isEqualTo("12 12.5")
+        assertThat(values["large"]).isEqualTo("10000000")
+        assertThat(values["exact"]).isEqualTo("1.5 2.25")
+    }
+
+    @Test
+    fun `should render date-times to the second`() {
+        val widget = widget(
+            "local" to "\${case:createdOn}",
+            "zoned" to "\${case:modifiedOn}",
+            "date" to "\${doc:/datum}",
+        )
+
+        val values = widget.getExposedValues(::resolve)
+
+        assertThat(values["local"]).isEqualTo("2026-10-03T08:25:04")
+        assertThat(values["zoned"]).isEqualTo("2026-10-03T08:25:00+02:00")
+        assertThat(values["date"]).isEqualTo("2026-10-03")
+    }
+
+    @Test
+    fun `should leave out a placeholder that resolves to an object`() {
+        val widget = widget(
+            "adres" to "\${doc:/straat} \${doc:/adres}",
+            "lijst" to "\${doc:/adressen}",
+            "json" to "\${doc:/jsonAdres}",
+        )
+
+        val values = widget.getExposedValues(::resolve)
+
+        assertThat(values["adres"]).isEqualTo("Kerkstraat")
+        assertThat(values["lijst"]).isNull()
+        assertThat(values["json"]).isNull()
     }
 
     @Test
