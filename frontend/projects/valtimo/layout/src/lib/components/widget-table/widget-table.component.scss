@@ -79,6 +79,12 @@
       }
     }
 
+    // The empty-table message is free text, so it wraps instead of widening the table.
+    .valtimo-carbon-list__no-results td {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
     th {
       min-width: 0;
     }
