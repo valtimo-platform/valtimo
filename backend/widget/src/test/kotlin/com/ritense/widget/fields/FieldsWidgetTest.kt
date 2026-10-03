@@ -49,7 +49,11 @@ class FieldsWidgetTest {
         "doc:/adres" to adres,
         "doc:/adressen" to listOf(adres, adres),
         "doc:/jsonAdres" to ObjectMapper().valueToTree<JsonNode>(adres),
+        "case:tag" to Tag("urgent", "Urgent"),
+        "case:tags" to listOf(Tag("urgent", "Urgent"), Tag("vip", "VIP")),
     )
+
+    private data class Tag(val key: String, val title: String)
 
     @Test
     fun `should resolve each placeholder of a template field`() {
@@ -117,6 +121,8 @@ class FieldsWidgetTest {
             "adres" to "\${doc:/straat} \${doc:/adres}",
             "lijst" to "\${doc:/adressen}",
             "json" to "\${doc:/jsonAdres}",
+            "tag" to "\${doc:/straat} \${case:tag}",
+            "tags" to "\${case:tags}",
         )
 
         val values = widget.getExposedValues(::resolve)
@@ -124,6 +130,8 @@ class FieldsWidgetTest {
         assertThat(values["adres"]).isEqualTo("Kerkstraat")
         assertThat(values["lijst"]).isNull()
         assertThat(values["json"]).isNull()
+        assertThat(values["tag"]).isEqualTo("Kerkstraat")
+        assertThat(values["tags"]).isNull()
     }
 
     @Test
