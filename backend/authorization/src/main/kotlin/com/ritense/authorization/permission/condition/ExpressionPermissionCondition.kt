@@ -54,7 +54,8 @@ data class ExpressionPermissionCondition<V>(
 
     override fun <E : Any> isValid(entity: E): Boolean {
         val jsonValue = toJsonString(entity)
-            ?: return value == null
+            // 'like' fails closed: a null value never matches, as in the database query
+            ?: return value == null && operator != PermissionConditionOperator.LIKE
         val pathValue = try {
             JsonPath.read<Any?>(jsonValue, path)
         } catch (e: PathNotFoundException) {

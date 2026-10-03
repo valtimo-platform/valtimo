@@ -115,6 +115,8 @@ class LikeIntTest : BaseIntegrationTest() {
 
     @Test
     fun `expression like with a null value matches nothing`() {
+        repository.save(TestEntity(name = "no child").also { entities["noChild"] = it })
+
         assertLike(expressionLike(null))
     }
 
