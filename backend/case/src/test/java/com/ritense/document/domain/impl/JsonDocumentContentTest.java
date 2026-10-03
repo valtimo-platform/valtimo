@@ -19,6 +19,8 @@ package com.ritense.document.domain.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonPointer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -127,6 +129,26 @@ class JsonDocumentContentTest {
         JsonDocumentContent.build(source, modifiedContent);
 
         assertThat(source.at("/scores/2025").intValue()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldShrinkNestedArrayAfterEarlierRowIsRemovedWithBuild() throws Exception {
+        JsonNode stored = new ObjectMapper().readTree("{\"rows\":[{\"k\":1},{\"name\":\"l\"},{\"inner\":[1,2,3]}]}");
+        JsonNode modified = new ObjectMapper().readTree("{\"rows\":[{\"name\":\"l\"},{\"inner\":[1,2]}]}");
+
+        JsonDocumentContent.build(stored, modified);
+
+        assertThat(stored).isEqualTo(modified);
+    }
+
+    @Test
+    void shouldShrinkNestedArrayAfterRowIsInsertedBeforeItWithBuild() throws Exception {
+        JsonNode stored = new ObjectMapper().readTree("{\"rows\":[{\"name\":\"l\"},{\"inner\":[1,2,3]}]}");
+        JsonNode modified = new ObjectMapper().readTree("{\"rows\":[{\"new\":1},{\"name\":\"l\"},{\"inner\":[1,2]}]}");
+
+        JsonDocumentContent.build(stored, modified);
+
+        assertThat(stored).isEqualTo(modified);
     }
 
     @Test
