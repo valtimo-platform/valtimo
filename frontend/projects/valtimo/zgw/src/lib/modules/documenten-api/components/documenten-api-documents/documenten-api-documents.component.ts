@@ -477,7 +477,8 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   public metadataSet(metadata: DocumentenApiMetadata): void {
     const batchFiles = this.batchFiles();
     if (batchFiles && !this.isEditMode$.getValue()) {
-      this.uploadBatch(batchFiles, metadata);
+      // One batch at a time: every batch shares the uploading flag that disables Save.
+      if (!this.uploading$.getValue()) this.uploadBatch(batchFiles, metadata);
       return;
     }
 

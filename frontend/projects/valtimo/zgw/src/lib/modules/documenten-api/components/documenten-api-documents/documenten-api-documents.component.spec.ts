@@ -300,6 +300,17 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
       return uploadedFiles();
     };
 
+    it('does not start the newer batch while the earlier one is still uploading', () => {
+      uploadFileWithMetadata.and.returnValue(firstUpload);
+      save(sharedMetadata);
+      component.closeMetadataModal();
+      selectFiles(situatieFoto, bijlage);
+
+      save(sharedMetadata);
+
+      expect(uploadedFiles()).toEqual([aanvraag]);
+    });
+
     it('leaves the newer selection open when the earlier batch succeeds', () => {
       uploadFileWithMetadata.and.returnValues(firstUpload, of(null));
 
