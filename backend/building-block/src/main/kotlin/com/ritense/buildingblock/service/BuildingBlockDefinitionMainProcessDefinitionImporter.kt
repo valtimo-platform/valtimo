@@ -44,12 +44,12 @@ class BuildingBlockDefinitionMainProcessDefinitionImporter(
             dto.processDefinitionKey
         )
 
-        if (definitionsByKeyAndBlueprint.isNotEmpty()) {
-            val definitionId = definitionsByKeyAndBlueprint.first().id
+        val latestDefinition = definitionsByKeyAndBlueprint.maxByOrNull { it.version }
+        if (latestDefinition != null) {
             buildingBlockDefinitionProcessDefinitionService.setMainLink(
                 request.buildingBlockDefinitionId!!,
                 null,
-                ProcessDefinitionId(definitionId),
+                ProcessDefinitionId(latestDefinition.id),
                 true
             )
         }
