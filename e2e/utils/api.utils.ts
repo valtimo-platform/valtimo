@@ -129,6 +129,20 @@ export async function apiPost<T = unknown>(
   return (await res.json()) as T;
 }
 
+export async function apiPostMultipart<T = unknown>(
+  url: string,
+  multipart: Record<string, string | { name: string; mimeType: string; buffer: Buffer }>,
+): Promise<T> {
+  let ctx = await getContext();
+  let res = await ctx.post(url, { multipart });
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await ctx.post(url, { multipart });
+  }
+  await assertOk('POST', url, res);
+  return (await res.json()) as T;
+}
+
 export async function apiPut<T = unknown>(
   url: string,
   body: unknown,
