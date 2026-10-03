@@ -655,23 +655,30 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         )
       )
       .subscribe(({failures, autoSaved}) => {
+        // The form may have been closed and opened for another pick while this batch was uploading.
+        const replaced = this.showUploadModal$.getValue() && this.batchFiles() !== files;
+
         this.uploading$.next(false);
         this.refetchDocuments();
         this.filter$.next(null);
         this.pagination$.next(DEFAULT_PAGINATION);
 
         if (!failures.length) {
-          this.batchFiles.set(null);
-          this.showUploadModal$.next(false);
-          this.fileToBeUploaded$.next(null);
+          if (!replaced) {
+            this.batchFiles.set(null);
+            this.showUploadModal$.next(false);
+            this.fileToBeUploaded$.next(null);
+          }
           return;
         }
 
         const message = this.getBatchUploadErrorMessage(failures);
 
-        if (autoSaved || !this.showUploadModal$.getValue()) {
-          this.batchFiles.set(null);
-          this.fileToBeUploaded$.next(null);
+        if (replaced || autoSaved || !this.showUploadModal$.getValue()) {
+          if (!replaced) {
+            this.batchFiles.set(null);
+            this.fileToBeUploaded$.next(null);
+          }
           this.globalNotificationService.showToast({
             title: this.translateService.instant('document.batchUploadFailedTitle'),
             caption: message,

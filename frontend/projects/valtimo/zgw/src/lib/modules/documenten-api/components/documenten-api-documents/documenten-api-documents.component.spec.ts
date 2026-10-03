@@ -276,6 +276,50 @@ describe('CaseDetailTabDocumentenApiDocumentsComponent', () => {
     expect(uploadFileWithMetadata).not.toHaveBeenCalled();
   });
 
+  describe('when the form was closed and opened for another pick during a batch', () => {
+    const bijlage = new File(['d'], 'bijlage.pdf', {type: 'application/pdf'});
+    let firstUpload: Subject<null>;
+
+    beforeEach(() => {
+      firstUpload = new Subject<null>();
+      selectFiles(aanvraag, bouwTekening);
+    });
+
+    const finishFirstBatch = (): void => {
+      save(sharedMetadata);
+      component.closeMetadataModal();
+      selectFiles(situatieFoto, bijlage);
+      firstUpload.next(null);
+      firstUpload.complete();
+    };
+
+    it('leaves the newer selection open when the earlier batch succeeds', () => {
+      uploadFileWithMetadata.and.returnValues(firstUpload, of(null));
+
+      finishFirstBatch();
+
+      expect(component.batchFileNames()).toEqual(['situatie-foto.jpg', 'bijlage.pdf']);
+      expect(component.showUploadModal$.getValue()).toBeTrue();
+      expect(component.fileToBeUploaded$.getValue()).toBe(situatieFoto);
+    });
+
+    it('reports the earlier batch failures on the page and leaves the newer selection alone', () => {
+      uploadFileWithMetadata.and.returnValues(
+        firstUpload,
+        throwError(() => new HttpErrorResponse({status: 500}))
+      );
+
+      finishFirstBatch();
+
+      expect(component.batchFileNames()).toEqual(['situatie-foto.jpg', 'bijlage.pdf']);
+      expect(component.showUploadModal$.getValue()).toBeTrue();
+      expect(component.uploadError()).toBeNull();
+      expect(showToast).toHaveBeenCalledOnceWith(
+        jasmine.objectContaining({caption: 'document.batchUploadFailed: bouw_tekening.pdf'})
+      );
+    });
+  });
+
   it('uploads a single selected file with the values from the form, as before', () => {
     const metadata = {...sharedMetadata, bestandsnaam: 'hernoemd.pdf', titel: 'Hernoemd'};
 
