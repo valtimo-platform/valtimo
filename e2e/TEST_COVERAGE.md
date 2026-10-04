@@ -50,6 +50,7 @@
 | 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ✅    | user-cases.spec.ts                              |
 | 2.3 | Search/filter cases                | Search cases by criteria · Filter cases using filters |    ✅    | user-cases.spec.ts                              |
 | 2.4 | View case documents                | Display list of case documents                        |    ✅    | user-cases.spec.ts                              |
+| 2.4a | Upload several documents at once | One pick of several files, one metadata form, all uploaded and listed |    ✅    | upload-multiple-documents.spec.ts               |
 | 2.5 | View case progress/status          | View current case progress and status                 |    ✅    | user-cases.spec.ts                              |
 | 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ✅    | user-cases.spec.ts                              |
 
