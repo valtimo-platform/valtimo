@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.ritense.document.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
@@ -22,6 +24,7 @@ import com.ritense.document.domain.DocumentMigrationRequest
 import com.ritense.document.service.DocumentMigrationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -32,11 +35,19 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
+@Deprecated(
+    "Serves the 'Case migration (beta)' admin screen, which has been removed from the admin menu " +
+        "and replaced by the case definition migration feature. Will be removed in a future release."
+)
 class DocumentMigrationManagementResource(
     private val documentMigrationService: DocumentMigrationService,
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get document migration conflicts",
+        nl = "Documentmigratieconflicten ophalen",
+    )
     @PostMapping("/v1/document-definition/migration/conflicts")
     fun getConflicts(
         @Valid @RequestBody documentMigrationRequest: DocumentMigrationRequest,
@@ -46,6 +57,10 @@ class DocumentMigrationManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Migrate documents",
+        nl = "Documenten migreren",
+    )
     @PostMapping("/v1/document-definition/migrate")
     fun migrateDocuments(
         @Valid @RequestBody documentMigrationRequest: DocumentMigrationRequest,

@@ -69,6 +69,7 @@ dependencies {
     implementation "org.springframework:spring-expression"
 
     testImplementation project(':backend:resource')
+    testImplementation project(':backend:resource:temporary-resource-storage')
     testImplementation project(':backend:process-document')
     testImplementation project(':backend:test-utils-common')
     testImplementation(project(':backend:building-block'))

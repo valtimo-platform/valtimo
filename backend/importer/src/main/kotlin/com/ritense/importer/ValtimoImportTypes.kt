@@ -55,8 +55,11 @@ class ValtimoImportTypes {
         const val CASE_BUILDING_BLOCK_LINK = "casebuildingblocklink"
         const val STARTABLE_ITEM = "startableitem"
         const val CASE_DEFINITION_GROUP = "casedefinitiongroup"
+        const val CASE_DEFINITION_MIGRATION = "casedefinitionmigration"
 
         const val OBJECT_MANAGEMENT = "objectmanagement"
+
+        const val EXTERNAL_PLUGIN = "externalplugin"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"

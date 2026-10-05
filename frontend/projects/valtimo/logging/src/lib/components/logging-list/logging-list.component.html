@@ -38,7 +38,12 @@
     placement="bottom-end"
     [closeOnSelect]="false"
   >
-    <button overflowTrigger cdsButton="ghost" [iconOnly]="true">
+    <button
+      overflowTrigger
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.filterButton"
+      [iconOnly]="true"
+    >
       <svg cdsIcon="filter" size="16"></svg>
     </button>
 
@@ -62,7 +67,11 @@
 </ng-template>
 
 <ng-template #clearSearchButton>
-  <button cdsButton="primary" (click)="onClearFilter()">
+  <button
+    cdsButton="primary"
+    [attr.data-test-id]="testIds.clearSearchButton"
+    (click)="onClearFilter()"
+  >
     {{ 'interface.clear' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>

@@ -41,8 +41,12 @@
   >
   </v-input-label>
 
+  <!-- The test id is emitted twice on purpose: `data-test-id` is the project's Playwright
+       testIdAttribute (so only that form is reachable via getByTestId), while the legacy
+       `data-testid` is kept because several existing e2e page objects still select on it. -->
   <cds-combo-box
     [attr.data-testid]="dataTestId"
+    [attr.data-test-id]="dataTestId"
     [appendInline]="appendInline"
     [clearSelectionTitle]="vars.clearText"
     [clearSelectionsTitle]="vars.clearAllText"

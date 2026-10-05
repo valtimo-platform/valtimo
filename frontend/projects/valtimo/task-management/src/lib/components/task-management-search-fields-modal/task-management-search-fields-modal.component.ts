@@ -113,7 +113,7 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
 
   public readonly form = this.fb.group({
     key: this.fb.control<string>('', Validators.required),
-    title: this.fb.control<string>('', Validators.required),
+    title: this.fb.control<string>(''),
     path: this.fb.control<string>('', Validators.required),
     dataType: this.fb.control<ListItem | null>(null, Validators.required),
     matchType: this.fb.control<ListItem | null>(null, this.matchTypeValidator),

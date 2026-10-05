@@ -80,6 +80,17 @@ class ZaakDocumentService(
     fun getInformatieObjectenAsRelatedFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) caseDocumentId: UUID,
     ): List<RelatedFileDto> {
+        if (!authorizationService.hasPermission(
+                EntityAuthorizationRequest(
+                    ZgwDocument::class.java,
+                    ZgwDocumentActionProvider.VIEW_LIST,
+                    ZgwDocument(caseDocumentId = caseDocumentId)
+                )
+            )
+        ) {
+            return emptyList()
+        }
+
         val zaakUri = zaakUrlProvider.getZaakUrl(caseDocumentId)
 
         val zakenApiPlugin = checkNotNull(
@@ -155,7 +166,21 @@ class ZaakDocumentService(
             )
         ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakInstanceUrl" }
 
-        zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakInstanceUrl).forEach { zaakInformatieobject ->
+        val zaakInformatieObjecten = try {
+            zakenApiPlugin.getZaakInformatieObjecten(caseDocumentId, zaakInstanceUrl)
+        } catch (e: HttpClientErrorException) {
+            if (e.statusCode == HttpStatus.NOT_FOUND) {
+                logger.warn(e) {
+                    "Skipping cleanup of the informatieobjecten of case '$caseDocumentId': " +
+                        "zaak '$zaakInstanceUrl' was not found in the Zaken API"
+                }
+                return
+            } else {
+                throw e
+            }
+        }
+
+        zaakInformatieObjecten.forEach { zaakInformatieobject ->
             if (zakenApiPlugin.getZaakInformatieObjectenByInformatieobjectUrl(
                     caseDocumentId,
                     zaakInformatieobject.informatieobject

@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
@@ -14,11 +14,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <include file="config/liquibase/13-45-0/20260901-add-case-definition-group-tables.xml"/>
-    <include file="config/liquibase/13-45-0/20260915-add-color-to-case-definition-group.xml"/>
-    <include file="config/liquibase/13-45-0/20260928-add-color-to-case-definition.xml"/>
-    <include file="config/liquibase/13-45-0/20260928-create-pinned-item-table.xml"/>
+
+<databaseChangeLog
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <include file="20260826-case-definition-process-link-version.xml" relativeToChangelogFile="true"/>
+    <include file="20260916-add-startable-by-user-to-case-definition-building-block-link.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

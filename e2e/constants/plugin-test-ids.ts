@@ -15,5 +15,9 @@ export {
   SMART_DOCUMENTS_CONFIGURATION_TEST_IDS,
   VERZOEK_CONFIGURATION_TEST_IDS,
   ZAKEN_API_CONFIGURATION_TEST_IDS,
+  ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS,
   PLUGIN_CATALOG_TEST_IDS,
+  PLUGIN_EDIT_MODAL_TEST_IDS,
 } from '../../frontend/projects/valtimo/plugin/src/lib/constants/plugin.test-ids';
+
+export {PLUGIN_ADD_MODAL_TEST_IDS} from '../../frontend/projects/valtimo/plugin-management/src/lib/constants/plugin-add-modal.test-ids';

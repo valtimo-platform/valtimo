@@ -21,6 +21,7 @@ import com.ritense.adminsettings.web.rest.dto.FeatureToggleOverridesDto
 import com.ritense.adminsettings.web.rest.dto.UpdateFeatureToggleDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -38,11 +39,19 @@ class FeatureToggleOverridesResource(
     private val featureToggleOverridesService: FeatureToggleOverridesService
 ) {
 
+    @EndpointDescription(
+        en = "Get feature toggle overrides",
+        nl = "Feature toggle overrides ophalen",
+    )
     @GetMapping("/v1/admin-settings/feature-toggles")
     fun getOverrides(): ResponseEntity<FeatureToggleOverridesDto> {
         return ResponseEntity.ok(featureToggleOverridesService.getOverrides())
     }
 
+    @EndpointDescription(
+        en = "Update feature toggle",
+        nl = "Feature toggle bijwerken",
+    )
     @PutMapping("/management/v1/admin-settings/feature-toggles")
     fun updateToggle(
         @Valid @RequestBody dto: UpdateFeatureToggleDto
@@ -50,6 +59,10 @@ class FeatureToggleOverridesResource(
         return ResponseEntity.ok(featureToggleOverridesService.updateToggle(dto.key, dto.enabled))
     }
 
+    @EndpointDescription(
+        en = "Remove feature toggle by key",
+        nl = "Feature toggle verwijderen op sleutel",
+    )
     @DeleteMapping("/management/v1/admin-settings/feature-toggles/{key}")
     fun removeToggle(
         @PathVariable key: String

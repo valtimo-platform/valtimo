@@ -18,3 +18,30 @@ export const roleTestData = {
   key: 'e2e-test-role',
   updatedKey: 'e2e-updated-role',
 };
+
+/**
+ * A permission written straight through the JSON editor (11.10). Stored permissions have the
+ * shape `{resourceType, actions[], conditions[]}`.
+ */
+export const jsonPermission = {
+  resourceType: 'com.ritense.dashboard.domain.Dashboard',
+  actions: ['view'],
+  conditions: [],
+};
+
+/**
+ * Data for the form editor (11.11–11.13).
+ *
+ * `resourceType` is the dropdown label ("Name (fully.qualified.Name)"), `resourceTypeFqn` is what
+ * gets stored. Operator labels are words in the UI and symbols in the payload ("equals" → `==`).
+ */
+export const permissionTestData = {
+  resourceType: 'CaseDefinition (com.ritense.case_.domain.definition.CaseDefinition)',
+  resourceTypeFqn: 'com.ritense.case_.domain.definition.CaseDefinition',
+  actionLabel: 'View list',
+  action: 'view_list',
+  conditionField: 'id.key',
+  conditionOperator: 'equals',
+  conditionOperatorSymbol: '==',
+  conditionValue: 'bezwaar',
+};

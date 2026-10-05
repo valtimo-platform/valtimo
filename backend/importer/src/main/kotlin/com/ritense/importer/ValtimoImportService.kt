@@ -189,12 +189,16 @@ class ValtimoImportService(
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
                     logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                    importer.import(ImportRequest(entry.fileName, entry.content))
+                    importer.import(
+                        ImportRequest(entry.fileName, entry.content, fromConfiguration = true)
+                    )
                 }
             }
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
-                    importer.afterImport(ImportRequest(entry.fileName, entry.content))
+                    importer.afterImport(
+                        ImportRequest(entry.fileName, entry.content, fromConfiguration = true)
+                    )
                 }
             }
         }

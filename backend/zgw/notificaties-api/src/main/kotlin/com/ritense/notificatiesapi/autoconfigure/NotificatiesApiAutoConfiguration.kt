@@ -17,6 +17,7 @@
 package com.ritense.notificatiesapi.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.case.service.CaseDefinitionService
 import com.ritense.notificatiesapi.NotificatiesApiPluginFactory
 import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
@@ -35,7 +36,6 @@ import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventWorker
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiManagementResource
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
@@ -96,6 +96,7 @@ class NotificatiesApiAutoConfiguration {
         notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
         pluginService: PluginService,
         @Value("\${valtimo.zgw.register-abonnementen:true}") registerAbonnementen: Boolean,
+        transactionManager: PlatformTransactionManager,
         registrationProperties: NotificatiesApiAbonnementRegistrationProperties,
         @Qualifier("notificatiesApiAbonnementRegistrationExecutor") registrationExecutor: TaskExecutor
     ): PluginsDeployedEventListener {
@@ -104,6 +105,7 @@ class NotificatiesApiAutoConfiguration {
             notificatiesApiAbonnementLinkRepository,
             pluginService,
             registerAbonnementen,
+            transactionManager,
             registrationProperties,
             registrationExecutor
         )

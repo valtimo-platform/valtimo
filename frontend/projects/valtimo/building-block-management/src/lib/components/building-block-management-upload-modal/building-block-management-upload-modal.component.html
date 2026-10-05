@@ -58,6 +58,7 @@
 
     <form *ngSwitchCase="UPLOAD_STEP.FILE_SELECT" [formGroup]="form">
       <cds-file-uploader
+        [attr.data-test-id]="testIds.fileUploader"
         [accept]="acceptedFiles"
         [buttonText]="'buildingBlockManagement.importDefinition.upload.buttonText' | translate"
         [description]="'buildingBlockManagement.importDefinition.upload.description' | translate"
@@ -70,10 +71,14 @@
       </cds-file-uploader>
 
       <ng-container *ngIf="obs.activeStep === UPLOAD_STEP.FILE_SELECT">
-        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
+        <cds-inline-notification
+          [attr.data-test-id]="testIds.overwriteWarning"
+          [notificationObj]="obs.notificationObj"
+        ></cds-inline-notification>
 
         <div class="valtimo-uploader__checkbox">
           <cds-checkbox
+            [attr.data-test-id]="testIds.overwriteCheckbox"
             [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
             (checkedChange)="onCheckedChange($event)"
           >
@@ -90,6 +95,7 @@
 
     <cds-progress-bar
       *ngSwitchCase="UPLOAD_STEP.FILE_UPLOAD"
+      [attr.data-test-id]="testIds.progressBar"
       class="valtimo-definition-uploader__progress-bar"
       [label]="'buildingBlockManagement.importDefinition.progressBar.label' | translate"
       [status]="obs.uploadStatus"
@@ -105,6 +111,7 @@
   >
     <button
       *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.FILE_UPLOAD"
+      [attr.data-test-id]="testIds.cancelButton"
       class="valtimo-definition-uploader__cancel"
       cdsButton="ghost"
       (click)="onCloseModal(obs.isStepAfterUpload)"
@@ -115,6 +122,7 @@
     <div class="valtimo-definition-uploader__actions">
       <button
         *ngIf="obs.backButtonEnabled"
+        [attr.data-test-id]="testIds.backButton"
         cdsButton="secondary"
         (click)="onBackClick(obs.activeStep)"
       >
@@ -125,6 +133,7 @@
         *ngIf="
           obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.FILE_UPLOAD
         "
+        [attr.data-test-id]="testIds.nextButton"
         cdsButton="primary"
         [disabled]="obs.nextButtonDisabled"
         (click)="onNextClick(obs.activeStep)"
@@ -141,6 +150,7 @@
         *ngIf="
           obs.uploadStatus === UPLOAD_STATUS.ERROR || obs.activeStep === UPLOAD_STEP.FILE_UPLOAD
         "
+        [attr.data-test-id]="testIds.finishButton"
         class="valtimo-definition-uploader__cancel"
         cdsButton="primary"
         (click)="onCloseModal(true)"

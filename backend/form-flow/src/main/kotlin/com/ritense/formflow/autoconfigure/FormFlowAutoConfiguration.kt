@@ -350,11 +350,15 @@ class FormFlowAutoConfiguration {
     fun formFlowValtimoService(
         formDefinitionService: FormIoFormDefinitionService,
         objectMapper: ObjectMapper,
+        documentService: DocumentService,
+        applicationEventPublisher: ApplicationEventPublisher,
         @Value("\${valtimo.formFlow.doSubmissionDataFiltering:true}") doSubmissionDataFiltering: Boolean
     ): FormFlowValtimoService {
         return FormFlowValtimoService(
             formDefinitionService,
             objectMapper,
+            documentService,
+            applicationEventPublisher,
             doSubmissionDataFiltering
         )
     }

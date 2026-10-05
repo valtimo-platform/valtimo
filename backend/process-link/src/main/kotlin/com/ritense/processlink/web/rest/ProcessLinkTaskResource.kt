@@ -23,6 +23,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResultWithTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService
@@ -41,6 +42,10 @@ class ProcessLinkTaskResource(
     private var processLinkActivityService: ProcessLinkActivityService,
     private val userTaskOpenedStatusService: UserTaskOpenedStatusService
 ) {
+    @EndpointDescription(
+        en = "Open task process link",
+        nl = "Proceskoppeling van taak openen",
+    )
     @GetMapping(value = ["/v2/process-link/task/{taskId}"])
     fun getTask(
         @LoggableResource(resourceType = OperatonTask::class) @PathVariable taskId: UUID
@@ -56,6 +61,10 @@ class ProcessLinkTaskResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Get process start form",
+        nl = "Startformulier van proces ophalen",
+    )
     @GetMapping(value = ["/v1/process-definition/{processDefinitionId}/start-form"])
     fun getFormDefinition(
         @PathVariable processDefinitionId: String,
@@ -71,6 +80,10 @@ class ProcessLinkTaskResource(
         )
     }
 
+    @EndpointDescription(
+        en = "List process tasks with process links",
+        nl = "Procestaken met proceskoppelingen ophalen",
+    )
     @GetMapping("/v1/process/{processInstanceId}/tasks/process-link")
     fun getTasksWithProcessLinks(
         @PathVariable processInstanceId: String

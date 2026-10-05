@@ -38,6 +38,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
@@ -49,6 +50,8 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.SimpleTransactionStatus
 import java.net.URI
 import java.time.Duration
 import java.util.Optional
@@ -60,6 +63,7 @@ class PluginsDeployedEventListenerTest {
     lateinit var client: NotificatiesApiClient
     lateinit var notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
     lateinit var pluginService: PluginService
+    lateinit var transactionManager: PlatformTransactionManager
     lateinit var pluginsDeployedEventListener: PluginsDeployedEventListener
 
     @BeforeEach
@@ -67,12 +71,16 @@ class PluginsDeployedEventListenerTest {
         client = mock()
         notificatiesApiAbonnementLinkRepository = mock()
         pluginService = mock()
+        transactionManager = mock()
+        // Runs the REQUIRES_NEW blocks inline; the real propagation is covered by PluginsDeployedEventListenerIT.
+        whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
 
         pluginsDeployedEventListener = PluginsDeployedEventListener(
             client = client,
             notificatiesApiAbonnementLinkRepository = notificatiesApiAbonnementLinkRepository,
             pluginService = pluginService,
-            registerAbonnementen = true
+            registerAbonnementen = true,
+            transactionManager = transactionManager
         )
     }
 
@@ -113,7 +121,7 @@ class PluginsDeployedEventListenerTest {
 
 
     @Test
-    fun `should delete old abonnement that API does not have`(output: CapturedOutput) {
+    fun `should replace local link when the API does not have its abonnement`(output: CapturedOutput) {
         val listenerInstance: NotificatiesApiListener = mock()
 
         val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
@@ -157,8 +165,12 @@ class PluginsDeployedEventListenerTest {
 
         pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
 
-        verify(notificatiesApiAbonnementLinkRepository).delete(any())
-        verify(notificatiesApiAbonnementLinkRepository).save(any())
+        // The stale link shares its primary key with the new one, so the save replaces it outright.
+        verify(notificatiesApiAbonnementLinkRepository, never()).delete(any())
+        val savedLink = argumentCaptor<NotificatiesApiAbonnementLink>()
+        verify(notificatiesApiAbonnementLinkRepository).save(savedLink.capture())
+        assertThat(savedLink.firstValue.notificatiesApiConfigurationId).isEqualTo(configurationId)
+        assertThat(savedLink.firstValue.url).isEqualTo("http://localhost:9999/nothing/456")
         verify(client).createAbonnement(any(), any(), any<Abonnement>())
 
         assertThat(output).contains("Successfully created abonnement with id '456'")
@@ -166,7 +178,7 @@ class PluginsDeployedEventListenerTest {
     }
 
     @Test
-    fun `should delete old abonnement that API does not have with a random header secret`() {
+    fun `should replace local link when the API does not have its abonnement with a random header secret`() {
         val listenerInstance: NotificatiesApiListener = mock()
 
         val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
@@ -208,8 +220,10 @@ class PluginsDeployedEventListenerTest {
 
         pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
 
-        verify(notificatiesApiAbonnementLinkRepository).delete(any())
-        verify(notificatiesApiAbonnementLinkRepository).save(any())
+        verify(notificatiesApiAbonnementLinkRepository, never()).delete(any())
+        val savedLink = argumentCaptor<NotificatiesApiAbonnementLink>()
+        verify(notificatiesApiAbonnementLinkRepository).save(savedLink.capture())
+        assertThat(savedLink.firstValue.url).isEqualTo("http://localhost:9999/nothing/456")
         verify(client).createAbonnement(
             authentication = any(),
             baseUrl = any(),
@@ -541,7 +555,8 @@ class PluginsDeployedEventListenerTest {
             client = client,
             notificatiesApiAbonnementLinkRepository = notificatiesApiAbonnementLinkRepository,
             pluginService = pluginService,
-            registerAbonnementen = false
+            registerAbonnementen = false,
+            transactionManager = transactionManager
         )
 
         disabledListener.registerAbonnementenForNotificatiesApiPlugins()
@@ -587,6 +602,47 @@ class PluginsDeployedEventListenerTest {
     }
 
     @Test
+    fun `should not throw out of afterCommit when the remote abonnement delete fails`(output: CapturedOutput) {
+        markApplicationFullyReady()
+
+        val pluginConfigurationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
+        val configurationId = NotificatiesApiConfigurationId.existingId(pluginConfigurationId)
+        val abonnementLink = NotificatiesApiAbonnementLink(
+            notificatiesApiConfigurationId = configurationId,
+            url = "http://localhost:9999/nothing/123",
+            auth = "test"
+        )
+        val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
+        whenever(notificatiesApiPlugin.url)
+            .thenReturn(URI("http://localhost:9999/nothing"))
+        whenever(notificatiesApiPlugin.authenticationPluginConfiguration)
+            .thenReturn(mock())
+
+        whenever(notificatiesApiAbonnementLinkRepository.findById(configurationId))
+            .thenReturn(Optional.of(abonnementLink))
+        whenever(pluginService.createInstance(any<PluginConfiguration>()))
+            .thenReturn(notificatiesApiPlugin)
+        doThrow(RuntimeException("Connection refused"))
+            .whenever(client).deleteAbonnement(any(), any(), any())
+
+        // The configuration is already committed as deleted; a throw here would 500 the request.
+        assertDoesNotThrow {
+            pluginsDeployedEventListener.handlePluginConfigurationDeletedEvent(
+                PluginConfigurationDeletedEvent(notificatiesApiPluginConfiguration(pluginConfigurationId))
+            )
+        }
+
+        verify(client, times(3)).deleteAbonnement(any(), any(), eq("123"))
+        // Link stays: it is the only record that the remote abonnement is ours.
+        verify(notificatiesApiAbonnementLinkRepository, never()).delete(any())
+        // Once for markApplicationFullyReady(), once for the refresh the failure must not skip
+        verify(pluginService, times(2)).getPluginConfigurations(any())
+
+        assertThat(output).contains("Could not delete the abonnement for the removed plugin configuration")
+        assertThat(output).contains("123e4567-e89b-12d3-a456-426614174000")
+    }
+
+    @Test
     fun `should not delete any abonnement when the deleted configuration is not tracked`() {
         markApplicationFullyReady()
 
@@ -608,7 +664,8 @@ class PluginsDeployedEventListenerTest {
             client = client,
             notificatiesApiAbonnementLinkRepository = notificatiesApiAbonnementLinkRepository,
             pluginService = pluginService,
-            registerAbonnementen = false
+            registerAbonnementen = false,
+            transactionManager = transactionManager
         )
         disabledListener.handleApplicationFullyReadyEvent()
 
@@ -704,6 +761,7 @@ class PluginsDeployedEventListenerTest {
         notificatiesApiAbonnementLinkRepository = notificatiesApiAbonnementLinkRepository,
         pluginService = pluginService,
         registerAbonnementen = true,
+        transactionManager = transactionManager,
         registrationProperties = registrationProperties,
         registrationExecutor = registrationExecutor
     )

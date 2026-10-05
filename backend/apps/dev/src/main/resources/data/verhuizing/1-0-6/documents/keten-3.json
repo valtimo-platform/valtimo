@@ -1,0 +1,15 @@
+{
+    "scenario": "keten",
+    "aanvrager": {
+        "naam": "Petra Novak",
+        "email": "keten3@example.com"
+    },
+    "nieuwAdres": "Ketenstraat 3, 1000 AA Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 2,
+    "woning": {
+        "oppervlakte": 80,
+        "energielabel": "B"
+    }
+}

@@ -44,7 +44,7 @@ export class IkoServerPage {
   }
 
   get configureServerButton(): Locator {
-    return this.page.getByTestId(IKO_MANAGEMENT_TEST_IDS.configureServerButton);
+    return this.page.getByTestId(IKO_MANAGEMENT_TEST_IDS.configureServerButton).first();
   }
 
   // ─── Repository (server) modal ──────────────────────────────────────
@@ -84,7 +84,7 @@ export class IkoServerPage {
   // ─── Import modal (on the server's views page) ──────────────────────
 
   get uploadButton(): Locator {
-    return this.page.getByTestId(IKO_MANAGEMENT_TEST_IDS.uploadButton);
+    return this.page.getByTestId(IKO_MANAGEMENT_TEST_IDS.uploadButton).first();
   }
 
   get importModalHeading(): Locator {

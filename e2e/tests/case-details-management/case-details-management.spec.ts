@@ -15,9 +15,9 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CaseDetailsManagementPage} from './page';
+import {CaseDetailsManagementPage, CaseHandlerSettings} from './page';
 import {expectNotificationMessage} from '../../utils/ui.utils';
-import {apiGet, apiPut, apiDelete} from '../../utils/api.utils';
+import {apiGet, apiPut, apiPatch, apiDelete, isApiStatus} from '../../utils/api.utils';
 import {
   ensureDraftVersionSelected,
   ensureFinalVersionSelected,
@@ -32,6 +32,8 @@ test.describe('Case management', () => {
   let caseDetailsManagementPage;
   let request;
   let draftVersion: string;
+
+  test.describe.configure({timeout: 90_000});
 
   // Arrange
   test.beforeAll(async ({browser, baseURL}) => {
@@ -66,9 +68,7 @@ test.describe('Case management', () => {
         await caseDetailsManagementPage.switchCaseVersionViaList();
 
         // Assert
-        await expect(page).toHaveURL(
-          /\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/
-        );
+        await expect(page).toHaveURL(/\/case-management\/case\/bezwaar\/version\/[\d.]+\/general/);
       });
 
       test('Set active version', async () => {
@@ -86,102 +86,106 @@ test.describe('Case management', () => {
 
     test.describe('General tab', () => {
       test.beforeEach(async () => {
-        //Arrange
-        draftVersion = await ensureDraftVersionSelected(page);
-        await page.reload();
-        await page.waitForLoadState('load');
-        // Wait for Angular to render the handler section with data from the API and become interactive
-        await expect(
-          caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch')
-        ).toBeEnabled({timeout: 15_000});
+        draftVersion = await caseDetailsManagementPage.openDraftVersionWithSettings();
       });
 
       test.describe('6.2, 6.3 — Case handler', () => {
-        test('Can have handler is false', async () => {
-          // Arrange: ensure toggle starts as true so clicking it sets it to false
-          const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
-          const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
+        let originalHandlerSettings: CaseHandlerSettings | null = null;
+        let settingsUrl: string | null = null;
 
-          //Act: drive the switch to unchecked. The handler section can briefly
-          // re-disable while it (re)binds after the reload, which swallows a single
-          // click and leaves the toggle stuck on "Yes". Retry until the switch
-          // actually reaches the unchecked state (same pattern as the sibling test).
-          await expect(async () => {
-            if (await canHaveHandlerSwitch.isChecked()) {
-              await expect(canHaveHandlerSwitch).toBeEnabled();
-              await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
-            }
-            await expect(canHaveHandlerSwitch).not.toBeChecked({timeout: 2_000});
-          }).toPass({timeout: 15_000});
+        test.beforeAll(async () => {
+          settingsUrl = `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/settings`;
+          originalHandlerSettings = await apiGet<CaseHandlerSettings>(settingsUrl);
+        });
+
+        test.afterAll(async () => {
+          if (!originalHandlerSettings || !settingsUrl) return;
+
+          await apiPatch(settingsUrl, {
+            canHaveAssignee: originalHandlerSettings.canHaveAssignee,
+            autoAssignTasks: originalHandlerSettings.autoAssignTasks,
+          });
+        });
+
+        test('Can have handler is false', async () => {
+          const canHaveHandler = caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle;
+          const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
+
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: true,
+            autoAssignTasks: false,
+          });
+
+          //Act
+          await caseDetailsManagementPage.setCanHaveHandler(false);
 
           //Assert
-          await expect(canHaveHandlerSwitch).not.toBeChecked();
-          await expect(autoAssignSwitch).toBeDisabled();
+          await canHaveHandler.assertChecked(false);
+          await autoAssign.assertDisabled();
         });
 
         test('Can have handler is true & cannot automatically assign', async () => {
-          // Arrange: ensure toggle starts as false so clicking it sets it to true
-          const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
-          const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
+          const canHaveHandler = caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle;
+          const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
 
-          // The toggle can briefly re-disable while the handler section (re)binds after a
-          // reload, which swallows a single click. Retry each transition until the switch
-          // actually reaches the wanted state (same pattern as the sibling tests).
-          const setCanHaveHandler = async (checked: boolean) => {
-            await expect(async () => {
-              if ((await canHaveHandlerSwitch.isChecked()) !== checked) {
-                await expect(canHaveHandlerSwitch).toBeEnabled();
-                await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
-              }
-              await expect(canHaveHandlerSwitch).toBeChecked({checked, timeout: 2_000});
-            }).toPass({timeout: 15_000});
-          };
-
-          await setCanHaveHandler(false);
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: false,
+            autoAssignTasks: false,
+          });
 
           //Act
-          await setCanHaveHandler(true);
+          await caseDetailsManagementPage.setCanHaveHandler(true);
 
           // Assert
-          await expect(canHaveHandlerSwitch).toBeChecked();
-          await expect(autoAssignSwitch).toBeEnabled();
-          await expect(autoAssignSwitch).not.toBeChecked();
+          await canHaveHandler.assertChecked(true);
+          await autoAssign.assertEnabled();
+          await autoAssign.assertChecked(false);
         });
 
         test('Can have handler is true & can automatically assign', async () => {
-          // Arrange: ensure canHaveHandler is true before testing auto-assign
-          const canHaveHandlerSwitch = caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch');
-          const autoAssignSwitch = caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch');
+          const canHaveHandler = caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle;
+          const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
 
-          // The toggle can briefly re-disable while the handler section
-          // (re)binds after a reload, which can swallow a single click. Retry
-          // the click until the switch actually flips to checked.
-          await expect(async () => {
-            if (!(await canHaveHandlerSwitch.isChecked())) {
-              await expect(canHaveHandlerSwitch).toBeEnabled();
-              await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.click();
-            }
-            await expect(canHaveHandlerSwitch).toBeChecked({timeout: 2_000});
-          }).toPass({timeout: 15_000});
+          // Arrange: auto-assign is only editable while the case can have a handler
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: true,
+            autoAssignTasks: false,
+          });
+          await canHaveHandler.assertChecked(true);
+          await autoAssign.assertEnabled();
 
-          // Assert canHaveHandler is true
-          await expect(canHaveHandlerSwitch).toBeChecked({timeout: 10_000});
-          await expect(autoAssignSwitch).toBeEnabled({timeout: 10_000});
+          //Act
+          await caseDetailsManagementPage.setAutomaticallyAssign(true);
 
-          await caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle.click();
+          //Assert
+          await autoAssign.assertChecked(true);
+        });
 
-          await expect(autoAssignSwitch).toBeChecked();
+        test('Turning the handler off also clears auto-assign', async () => {
+          const autoAssign = caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle;
+
+          await caseDetailsManagementPage.setCaseHandlerSettingsViaApi({
+            canHaveAssignee: true,
+            autoAssignTasks: true,
+          });
+          await autoAssign.assertChecked(true);
+
+          //Act
+          await caseDetailsManagementPage.setCanHaveHandler(false);
+
+          await autoAssign.assertDisabled();
+          expect(await caseDetailsManagementPage.getCaseHandlerSettingsViaApi()).toMatchObject({
+            canHaveAssignee: false,
+            autoAssignTasks: false,
+          });
         });
       });
 
       test.describe('6.4, 6.5 — External start form', () => {
         test('Start form enabled', async () => {
           //Arrange
-          await caseDetailsManagementPage.hasExternalFormToggle.click();
-          await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute(
-            'aria-checked',
-            'true'
-          );
+          await caseDetailsManagementPage.setExternalStartForm(false);
+          await caseDetailsManagementPage.setExternalStartForm(true);
 
           //Act
           await caseDetailsManagementPage.fillInExternalForm();
@@ -198,11 +202,7 @@ test.describe('Case management', () => {
 
         test('Start form disabled', async () => {
           //Act
-          await caseDetailsManagementPage.hasExternalFormToggle.click();
-          await expect(caseDetailsManagementPage.hasExternalForm).toHaveAttribute(
-            'aria-checked',
-            'false'
-          );
+          await caseDetailsManagementPage.setExternalStartForm(false);
           await caseDetailsManagementPage.externalFormSave.click();
 
           //Assert
@@ -220,34 +220,44 @@ test.describe('Case management', () => {
       });
 
       test.describe('6.1 — Link upload process', () => {
-        let originalUploadProcessKey: string | null;
-
-        const getFeatureProcessUrl = () =>
-          `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
+        // `undefined` until the baseline is read: `null` already means "nothing was linked".
+        let originalUploadProcessKey: string | null | undefined;
+        let featureProcessUrl: string | null = null;
 
         test.beforeAll(async () => {
+          featureProcessUrl = `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
           try {
             const linked = await apiGet<{processDefinitionKey: string}>(
-              `${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`
+              `${featureProcessUrl}/DOCUMENT_UPLOAD`
             );
             originalUploadProcessKey = linked?.processDefinitionKey ?? null;
-          } catch {
+          } catch (error) {
+            // Only a 404 means "no link yet". Reading any other failure as one would make the
+            // teardown below delete a link this suite never touched.
+            if (!isApiStatus(error, 404)) throw error;
             originalUploadProcessKey = null;
           }
         });
 
         test.afterAll(async () => {
+          // Playwright runs this even when `beforeAll` threw. Without a baseline there is nothing
+          // to restore to, and the delete below would take a link this suite never touched.
+          if (!featureProcessUrl || originalUploadProcessKey === undefined) return;
+
           try {
             if (originalUploadProcessKey) {
-              await apiPut(getFeatureProcessUrl(), {
+              await apiPut(featureProcessUrl, {
                 processDefinitionKey: originalUploadProcessKey,
                 linkType: 'DOCUMENT_UPLOAD',
               });
             } else {
-              await apiDelete(`${getFeatureProcessUrl()}/DOCUMENT_UPLOAD`);
+              await apiDelete(`${featureProcessUrl}/DOCUMENT_UPLOAD`);
             }
-          } catch {
-            // Ignore cleanup errors
+          } catch (error) {
+            console.warn(
+              `[case-details-management] Could not restore the upload process link on ` +
+                `${featureProcessUrl}: ${(error as Error).message}`
+            );
           }
         });
 
@@ -301,8 +311,8 @@ test.describe('Case management', () => {
         await ensureFinalVersionSelected(page);
 
         //Assert
-        await expect(caseDetailsManagementPage.caseHandlerCanHaveHandler.getByRole('switch')).toBeDisabled();
-        await expect(caseDetailsManagementPage.caseHandlerAutomaticallyAssign.getByRole('switch')).toBeDisabled();
+        await caseDetailsManagementPage.caseHandlerCanHaveHandlerToggle.assertDisabled();
+        await caseDetailsManagementPage.caseHandlerAutomaticallyAssignToggle.assertDisabled();
         await expect(caseDetailsManagementPage.hasExternalForm).toBeDisabled();
         await expect(caseDetailsManagementPage.externalFormUrl).toBeDisabled();
         await expect(caseDetailsManagementPage.externalFormDescription).toBeDisabled();

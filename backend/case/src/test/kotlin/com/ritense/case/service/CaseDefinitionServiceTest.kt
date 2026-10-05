@@ -41,6 +41,7 @@ import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EnumDisplayTypeParameter
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.event.CaseDefinitionFinalizedEvent
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.junit.jupiter.api.BeforeEach
@@ -57,6 +58,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.ObjectProvider
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -76,6 +78,7 @@ class CaseDefinitionServiceTest : BaseTest() {
     lateinit var hiddenCaseListColumnRepository: HiddenCaseListColumnRepository
     lateinit var caseDefinitionFinalizationCheckersProvider: ObjectProvider<CaseDefinitionFinalizationChecker>
     lateinit var configurationIssueRepository: CaseDefinitionConfigurationIssueRepository
+    lateinit var applicationEventPublisher: ApplicationEventPublisher
 
     @BeforeEach
     fun setUp() {
@@ -87,6 +90,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         hiddenCaseListColumnRepository = mock()
         caseDefinitionFinalizationCheckersProvider = mock()
         configurationIssueRepository = mock()
+        applicationEventPublisher = mock()
         service = CaseDefinitionService(
             caseDefinitionListColumnRepository,
             documentDefinitionService,
@@ -94,7 +98,7 @@ class CaseDefinitionServiceTest : BaseTest() {
             hiddenCaseListColumnRepository,
             valueResolverService,
             authorizationService,
-            mock(),
+            applicationEventPublisher,
             mock(),
             caseDefinitionFinalizationCheckersProvider,
             configurationIssueRepository
@@ -607,6 +611,8 @@ class CaseDefinitionServiceTest : BaseTest() {
         assertTrue(saved.final)
         assertTrue(captor.firstValue.final)
         assertEquals(caseDefinitionId, captor.firstValue.id)
+        // This event pins the draft's links, so losing it silently unfreezes finalized case definitions.
+        verify(applicationEventPublisher).publishEvent(CaseDefinitionFinalizedEvent(caseDefinitionId))
     }
 
     @Test

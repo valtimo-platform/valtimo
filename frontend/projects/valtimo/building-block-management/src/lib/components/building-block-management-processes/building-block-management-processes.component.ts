@@ -42,7 +42,10 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {BuildingBlockProcessDefinitionItem} from '../../models';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {
+  BUILDING_BLOCK_MANAGEMENT_PROCESSES_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_TABS,
+} from '../../constants';
 import {Router} from '@angular/router';
 import {BuildingBlockManagementProcessUploadComponent} from '../building-block-management-process-upload/building-block-management-process-upload.component';
 
@@ -62,6 +65,8 @@ import {BuildingBlockManagementProcessUploadComponent} from '../building-block-m
   ],
 })
 export class BuildingBlockManagementProcessesComponent implements OnInit, OnDestroy {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_PROCESSES_TEST_IDS;
+
   public readonly $loading = signal<boolean>(true);
 
   private readonly _buildingBlockProcessDefinitions$ = new BehaviorSubject<

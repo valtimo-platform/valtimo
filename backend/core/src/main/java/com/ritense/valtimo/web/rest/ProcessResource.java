@@ -25,7 +25,6 @@ import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationH
 import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byProcessInstanceId;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static java.time.ZoneId.systemDefault;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import com.ritense.logging.LoggableResource;
@@ -40,6 +39,7 @@ import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
 import com.ritense.valtimo.operaton.service.OperatonHistoryService;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.contract.exception.DocumentParserException;
 import com.ritense.valtimo.contract.exception.ProcessNotFoundException;
 import com.ritense.valtimo.exception.BpmnParseException;
@@ -157,19 +157,29 @@ public class ProcessResource extends AbstractProcessResource {
         this.processDefinitionAutofillService = processDefinitionAutofillService;
     }
 
+    @EndpointDescription(
+        en = "List process definitions",
+        nl = "Procesdefinities ophalen"
+    )
     @GetMapping("/v1/process/definition")
-    public ResponseEntity<List<ProcessDefinitionWithPropertiesDto>> getProcessDefinitions() {
+    public ResponseEntity<List<ProcessDefinitionWithPropertiesDto>> getProcessDefinitions(
+        @RequestParam(defaultValue = "false") boolean includeSuspended
+    ) {
         final List<ProcessDefinitionWithPropertiesDto> definitions = runWithoutAuthorization(() -> operatonProcessService
-                .getDeployedDefinitions()
+                .getDeployedDefinitions(includeSuspended)
                 .stream()
                 .map(ProcessDefinitionWithPropertiesDto::fromProcessDefinition)
                 .collect(Collectors.toList()));
         definitions.forEach(definition ->
-                definition.setReadOnly(processPropertyService.isReadOnly(definition.getKey()))
+                definition.setSystemProcess(processPropertyService.isKnownSystemProcess(definition.getKey()))
         );
         return ResponseEntity.ok(definitions);
     }
 
+    @EndpointDescription(
+        en = "Get a process definition by key",
+        nl = "Procesdefinitie op sleutel ophalen"
+    )
     @GetMapping("/v1/process/definition/{processDefinitionKey}")
     public ResponseEntity<OperatonProcessDefinitionDto> getProcessDefinition(
         @LoggableResource(resourceTypeName = "processDefinitionKey") @PathVariable String processDefinitionKey
@@ -184,6 +194,10 @@ public class ProcessResource extends AbstractProcessResource {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @EndpointDescription(
+        en = "List process definition versions",
+        nl = "Versies van procesdefinitie ophalen"
+    )
     @GetMapping("/v1/process/definition/{processDefinitionKey}/versions")
     public ResponseEntity<List<OperatonProcessDefinitionDto>> getProcessDefinitionVersions(
         @LoggableResource(resourceTypeName = "processDefinitionKey") @PathVariable String processDefinitionKey
@@ -198,6 +212,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(result);
     }
 
+    @EndpointDescription(
+        en = "Get process definition XML diagram",
+        nl = "XML-diagram van procesdefinitie ophalen"
+    )
     @GetMapping("/v1/process/definition/{processDefinitionId}/xml")
     public ResponseEntity<ProcessDefinitionDiagramWithPropertyDto> getProcessDefinitionXml(
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String processDefinitionId
@@ -214,7 +232,7 @@ public class ProcessResource extends AbstractProcessResource {
                 .toList();
             final var definitionWithDiagramAndProperties = new ProcessDefinitionDiagramWithPropertyDto(
                     definitionDiagramDto,
-                    processPropertyService.isReadOnlyById(processDefinitionId),
+                    false,
                     processPropertyService.isSystemProcessById(processDefinitionId),
                     autofilledElements
             );
@@ -224,6 +242,10 @@ public class ProcessResource extends AbstractProcessResource {
         }
     }
 
+    @EndpointDescription(
+        en = "Get flow nodes for process migration",
+        nl = "Flow nodes voor procesmigratie ophalen"
+    )
     @GetMapping("/v1/process/definition/{sourceProcessDefinitionId}/{targetProcessDefinitionId}/flownodes")
     public ResponseEntity<FlowNodeMigrationDTO> getFlowNodes(
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String sourceProcessDefinitionId,
@@ -239,6 +261,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(flowNodeMigrationDTO);
     }
 
+    @EndpointDescription(
+        en = "Get process definition task count heatmap",
+        nl = "Heatmap met taakaantallen van procesdefinitie ophalen"
+    )
     @GetMapping("/v1/process/definition/{processDefinitionKey}/heatmap/count")
     public ResponseEntity<Map<String, HeatmapTaskCountDTO>> getProcessDefinitionHeatmap(
         @LoggableResource(resourceTypeName = "processDefinitionKey") @PathVariable String processDefinitionKey,
@@ -299,6 +325,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(activeTasksCount);
     }
 
+    @EndpointDescription(
+        en = "Get process definition task duration heatmap",
+        nl = "Heatmap met taakduur van procesdefinitie ophalen"
+    )
     @GetMapping("/v1/process/definition/{processDefinitionKey}/heatmap/duration")
     public ResponseEntity<Map<String, HeatmapTaskAverageDurationDTO>> getProcessDefinitionDurationBasedHeatmap(
         @LoggableResource(resourceTypeName = "processDefinitionKey") @PathVariable String processDefinitionKey,
@@ -377,6 +407,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(allTasksAverageDuration);
     }
 
+    @EndpointDescription(
+        en = "Start a process instance",
+        nl = "Procesinstantie starten"
+    )
     @PostMapping(value = "/v1/process/definition/{processDefinitionKey}/{businessKey}/start", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProcessInstanceDto> startProcessInstance(
         @LoggableResource(resourceTypeName = "processDefinitionKey") @PathVariable String processDefinitionKey,
@@ -387,6 +421,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(processInstanceWithDefinition.getProcessInstanceDto());
     }
 
+    @EndpointDescription(
+        en = "Get a process instance",
+        nl = "Procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}")
     public ResponseEntity<OperatonHistoricProcessInstanceDto> getProcessInstance(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -400,6 +438,10 @@ public class ProcessResource extends AbstractProcessResource {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @EndpointDescription(
+        en = "Get process instance activity history",
+        nl = "Activiteitenhistorie van procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}/history")
     public ResponseEntity<List<HistoricActivityInstanceDto>> getProcessInstanceHistory(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -420,6 +462,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(result);
     }
 
+    @EndpointDescription(
+        en = "Get process instance operation log",
+        nl = "Bewerkingslogboek van procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}/log")
     public ResponseEntity<List<UserOperationLogEntryDto>> getProcessInstanceOperationLog(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -433,6 +479,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(result);
     }
 
+    @EndpointDescription(
+        en = "List tasks for a process instance",
+        nl = "Taken voor een procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}/tasks")
     public ResponseEntity<List<TaskInstanceWithIdentityLink>> getProcessInstanceTasks(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -446,6 +496,10 @@ public class ProcessResource extends AbstractProcessResource {
             );
     }
 
+    @EndpointDescription(
+        en = "Get the active task of a process instance",
+        nl = "Actieve taak van een procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}/activetask")
     public ResponseEntity<OperatonTaskDto> getProcessInstanceActiveTask(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -461,6 +515,10 @@ public class ProcessResource extends AbstractProcessResource {
                 .orElse(ResponseEntity.noContent().build());
     }
 
+    @EndpointDescription(
+        en = "Get process instance XML diagram",
+        nl = "XML-diagram van procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}/xml")
     public ResponseEntity<ProcessInstanceDiagramDto> getProcessInstanceXml(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -485,6 +543,10 @@ public class ProcessResource extends AbstractProcessResource {
         }
     }
 
+    @EndpointDescription(
+        en = "Get process instance activity tree",
+        nl = "Activiteitenstructuur van procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}/activities")
     public ResponseEntity<ActivityInstanceDto> getProcessInstanceActivity(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -501,6 +563,10 @@ public class ProcessResource extends AbstractProcessResource {
      * @deprecated Task comments will be removed in the future.
      */
     @Deprecated(since = "11.1.0", forRemoval = true)
+    @EndpointDescription(
+        en = "List comments for a process instance",
+        nl = "Opmerkingen voor een procesinstantie ophalen"
+    )
     @GetMapping("/v1/process/{processInstanceId}/comments")
     public ResponseEntity<List<Comment>> getProcessInstanceComments(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
@@ -515,6 +581,10 @@ public class ProcessResource extends AbstractProcessResource {
      *
      * @deprecated since 12.0.0, use v2 instead
      */
+    @EndpointDescription(
+        en = "Search process instances",
+        nl = "Procesinstanties zoeken"
+    )
     @PostMapping("/v1/process/{processDefinitionName}/search")
     @Deprecated(since = "12.0.0", forRemoval = true)
     public ResponseEntity<List<ProcessInstance>> searchProcessInstancesV2(
@@ -532,6 +602,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @EndpointDescription(
+        en = "Search process instances paged",
+        nl = "Procesinstanties gepagineerd zoeken"
+    )
     @PostMapping("/v2/process/{processDefinitionName}/search")
     public ResponseEntity<Page<ProcessInstance>> searchProcessInstancesPaged(
         @LoggableResource(resourceTypeName = "processDefinitionName") @PathVariable String processDefinitionName,
@@ -546,6 +620,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(page);
     }
 
+    @EndpointDescription(
+        en = "Count process instances by definition name",
+        nl = "Procesinstanties op definitienaam tellen"
+    )
     @PostMapping("/v1/process/{processDefinitionName}/count")
     public ResponseEntity<ResultCount> searchProcessInstanceCountV2(
         @LoggableResource(resourceTypeName = "processDefinitionName") @PathVariable String processDefinitionName,
@@ -558,6 +636,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(new ResultCount(count));
     }
 
+    @EndpointDescription(
+        en = "Count process instances by definition id",
+        nl = "Procesinstanties op definitie-id tellen"
+    )
     @PostMapping("/v1/process/definition/{processDefinitionId}/count")
     public ResponseEntity<ResultCount> getProcessInstanceCountForProcessDefinitionIdV2(
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String processDefinitionId,
@@ -568,6 +650,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(new ResultCount(count));
     }
 
+    @EndpointDescription(
+        en = "Migrate process instances between definitions",
+        nl = "Procesinstanties tussen definities migreren"
+    )
     @PostMapping("/v1/process/definition/{sourceProcessDefinitionId}/{targetProcessDefinitionId}/migrate")
     @ResponseBody
     @Transactional
@@ -575,9 +661,6 @@ public class ProcessResource extends AbstractProcessResource {
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String sourceProcessDefinitionId,
         @PathVariable String targetProcessDefinitionId,
         @RequestBody(required = false) Map<String, String> instructions) {
-        if (processPropertyService.isReadOnlyById(targetProcessDefinitionId)) {
-            return ResponseEntity.status(FORBIDDEN).build();
-        }
         MigrationPlanBuilder migrationPlanBuilder = ProcessEngines.getDefaultProcessEngine()
                 .getRuntimeService()
                 .createMigrationPlan(sourceProcessDefinitionId, targetProcessDefinitionId);
@@ -591,6 +674,9 @@ public class ProcessResource extends AbstractProcessResource {
         MigrationPlan migrationPlan = migrationPlanBuilder.build();
         ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery().processDefinitionId(
                 sourceProcessDefinitionId);
+        if (processInstanceQuery.count() == 0) {
+            return ResponseEntity.noContent().build();
+        }
         Batch migrationBatch = runtimeService.newMigration(migrationPlan).processInstanceQuery(
                 processInstanceQuery).executeAsync();
         return new ResponseEntity<>(BatchDto.fromBatch(migrationBatch), HttpStatus.OK);
@@ -601,6 +687,10 @@ public class ProcessResource extends AbstractProcessResource {
      * @deprecated Task comments will be removed in the future.
      */
     @Deprecated(since = "11.1.0", forRemoval = true)
+    @EndpointDescription(
+        en = "Create a comment on a process instance",
+        nl = "Opmerking bij een procesinstantie aanmaken"
+    )
     @PostMapping("/v1/process/{processInstanceId}/comment")
     public ResponseEntity<Void> createComment(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId,
@@ -610,6 +700,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Delete a process instance",
+        nl = "Procesinstantie verwijderen"
+    )
     @PostMapping("/v1/process/{processInstanceId}/delete")
     public ResponseEntity<Void> delete(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId,
@@ -621,17 +715,22 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Deploy short timer version of process definition",
+        nl = "Versie met korte timer van procesdefinitie uitrollen"
+    )
     @PutMapping("/v1/process/definition/{processDefinitionId}/xml/timer")
     public ResponseEntity<Void> modifyProcessDefinitionIntoShortTimerVersionAndDeploy(
         @LoggableResource(resourceType = OperatonProcessDefinition.class) @PathVariable String processDefinitionId
     ) throws ProcessNotFoundException, DocumentParserException {
-        if (processPropertyService.isReadOnlyById(processDefinitionId)) {
-            return ResponseEntity.status(FORBIDDEN).build();
-        }
         processShortTimerService.modifyAndDeployShortTimerVersion(processDefinitionId);
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Deploy a process definition",
+        nl = "Procesdefinitie uitrollen"
+    )
     @PostMapping(value = "/v1/process/definition/deployment", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Object> deployProcessDefinition(
         @RequestPart(name = "file") MultipartFile bpmn) {

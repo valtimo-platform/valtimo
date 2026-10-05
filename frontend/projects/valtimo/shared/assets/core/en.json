@@ -16,6 +16,7 @@
     "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
     "DocumentUnassignedEvent": "The assignee has been unassigned",
     "TaskDueDateSetEvent": "Task due date set > {{taskName}}",
+    "CaseMigratedEvent": "Case migrated from {{fromVersionTag}} to {{toVersionTag}}",
     "ProcessTimerSkippedEvent": "Timer skipped > {{activityId}}"
   },
   "case": {
@@ -87,9 +88,18 @@
       "cancel": "Cancel"
     },
     "noResults": {
-      "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
-      "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
-      "OPEN": {"description": "Come back later.", "title": "All cases have been assigned"},
+      "ALL": {
+        "description": "There is nothing to do here.",
+        "title": "There are no cases"
+      },
+      "MINE": {
+        "description": "Time for a short break.",
+        "title": "No cases assigned to you"
+      },
+      "OPEN": {
+        "description": "Come back later.",
+        "title": "All cases have been assigned"
+      },
       "TEAM": {
         "description": "No cases have been assigned to your teams yet.",
         "title": "No team cases"
@@ -99,14 +109,23 @@
         "title": "No cases found"
       }
     },
-    "noAccess": {"description": "You do not have access to this case", "title": "Access denied"},
+    "noAccess": {
+      "description": "You do not have access to this case",
+      "title": "Access denied"
+    },
     "pagination": {
       "itemsPerPage": "Cases per page",
       "totalItem": "{{start}}-{{end}} of {{total}} case",
       "totalItems": "{{start}}-{{end}} of {{total}} cases"
     },
-    "select": {"single": "1 case selected", "multiple": "{{count}} cases selected"},
-    "title": {"single": "Case", "plural": "Cases"},
+    "select": {
+      "single": "1 case selected",
+      "multiple": "{{count}} cases selected"
+    },
+    "title": {
+      "single": "Case",
+      "plural": "Cases"
+    },
     "tabs": {
       "noResults": "No tabs configured",
       "noResultsDescription": "No tabs are configured for this case type.",
@@ -156,20 +175,27 @@
       "title": "Title",
       "noFormDefinitionComponent": "No form definition for this object could be found.",
       "noObjectType": "No objects found for this object type.",
-      "objectType": {"viewObject": "View object"}
+      "objectType": {
+        "viewObject": "View object"
+      }
     },
     "notes": {
       "addNote": "Add note",
       "modifyNote": "Edit note",
       "tableItemsText": "Notes",
-      "input": {"content": "Note"},
+      "input": {
+        "content": "Note"
+      },
       "deleteConfirmation": {
         "title": "Delete note",
         "description": "Are you sure you want to delete this note?",
         "deletedMessage": "The note was deleted successfully."
       },
       "editedMessage": "The note was edited successfully.",
-      "noResults": {"title": "No notes", "description": "There are no notes in this case."}
+      "noResults": {
+        "title": "No notes",
+        "description": "There are no notes in this case."
+      }
     },
     "documenten": {
       "deleteConfirmationModal": {
@@ -481,7 +507,10 @@
     }
   },
   "document": {
-    "title": {"single": "Document", "plural": "Documents"},
+    "title": {
+      "single": "Document",
+      "plural": "Documents"
+    },
     "id": "Reference ID",
     "createdBy": "Created by",
     "createdOn": "Created on",
@@ -598,23 +627,50 @@
     }
   },
   "dashboard": {
-    "openTasks": {"title": "All tasks"},
-    "openTask": {"title": "Open task"},
-    "activeProcess": {"title": "Active process"},
-    "activeProcesses": {"title": "Active processes"},
-    "tasksCompleted": {"title": "Tasks completed"},
-    "taskCompleted": {"title": "Task completed"},
-    "statistics": {"title": "Statistics"},
-    "processes": {"title": "Processes"},
-    "process": {"title": "Process", "details": "Process details"},
-    "startProcess": {"title": "Start"},
-    "version": {"title": "Version"},
+    "openTasks": {
+      "title": "All tasks"
+    },
+    "openTask": {
+      "title": "Open task"
+    },
+    "activeProcess": {
+      "title": "Active process"
+    },
+    "activeProcesses": {
+      "title": "Active processes"
+    },
+    "tasksCompleted": {
+      "title": "Tasks completed"
+    },
+    "taskCompleted": {
+      "title": "Task completed"
+    },
+    "statistics": {
+      "title": "Statistics"
+    },
+    "processes": {
+      "title": "Processes"
+    },
+    "process": {
+      "title": "Process",
+      "details": "Process details"
+    },
+    "startProcess": {
+      "title": "Start"
+    },
+    "version": {
+      "title": "Version"
+    },
     "processingLeadTime": {
       "title": "Processing lead time",
       "description": "average over the last 30 days"
     },
-    "tasks": {"title": "Tasks"},
-    "task": {"title": "Task"},
+    "tasks": {
+      "title": "Tasks"
+    },
+    "task": {
+      "title": "Task"
+    },
     "noDashboards": "No dashboards",
     "noDashboardsDescription": "It's possible that the system administrator hasn't configured any dashboards yet, or you don't have the rights to view dashboards.",
     "noWidgets": "No widgets",
@@ -702,11 +758,17 @@
     "title": "Settings",
     "language": {
       "title": "Language",
-      "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
+      "options": {
+        "nl": "Nederlands",
+        "en": "English",
+        "de": "Deutsch"
+      }
     },
     "notification": {
       "title": "Notifications",
-      "frequency": {"title": "Notification frequency"},
+      "frequency": {
+        "title": "Notification frequency"
+      },
       "taskNotifications": "Task notifications",
       "taskNotificationsIntro": "Receive an email when a task is assigned to you",
       "emailNotifications": "Daily task overview",
@@ -719,11 +781,17 @@
       "emailNotificationOnSaturday": "Saturday",
       "emailNotificationOnSunday": "Sunday"
     },
-    "version": {"title": "Version information"},
+    "version": {
+      "title": "Version information"
+    },
     "interface": {
       "title": "Interface",
       "themePreference": "Theme",
-      "themes": {"light": "Light", "dark": "Dark (Beta)", "system": "System (Beta)"},
+      "themes": {
+        "light": "Light",
+        "dark": "Dark (Beta)",
+        "system": "System (Beta)"
+      },
       "collapsibleMenu": "Navigation bar always collapsible",
       "compactMode": "Compact mode",
       "showUserName": "Show name of user"
@@ -766,9 +834,18 @@
       "content": "Are you sure you want to delete this decision table? This action cannot be undone."
     }
   },
-  "message": {"empty": "No result found"},
-  "cta": {"close": "Close", "moreDetails": "More details"},
-  "carousel": {"previous": "Previous", "next": "Next", "goToSlide": "Go to slide"},
+  "message": {
+    "empty": "No result found"
+  },
+  "cta": {
+    "close": "Close",
+    "moreDetails": "More details"
+  },
+  "carousel": {
+    "previous": "Previous",
+    "next": "Next",
+    "goToSlide": "Go to slide"
+  },
   "formManagement": {
     "edit": {
       "title": "Edit form"
@@ -789,7 +866,11 @@
     "readOnly": "Read-only",
     "add": "Create form",
     "navigateToRelatedCase": "Go to case (opens in new tab)",
-    "tabs": {"formBuilder": "Form builder", "jsonEditor": "JSON editor", "output": "Output"},
+    "tabs": {
+      "formBuilder": "Form builder",
+      "jsonEditor": "JSON editor",
+      "output": "Output"
+    },
     "intermediateSave": {
       "save": "Save progress",
       "clear": "Undo latest changes",
@@ -822,6 +903,116 @@
     }
   },
   "caseManagement": {
+    "migration": {
+      "addPlan": "Add migration plan",
+      "startNow": "Start migration now",
+      "errorCount": "{{count}} errors",
+      "warningCount": "{{count}} warnings",
+      "editor": {
+        "saveFailed": {
+          "title": "The migration plan could not be saved",
+          "fallback": "The server refused the plan but sent no reason. Check the browser console for details."
+        },
+        "general": {
+          "titlePlaceholder": "Migrate cases with status 'aanvraag-ontvangen'",
+          "sourceHint": "The case definition version whose cases this plan migrates. It need not be the immediately preceding version: naming an older one migrates those cases here in a single step, and naming a different key moves cases of that case definition onto this one.",
+          "sourceKey": "Source case definition",
+          "sourceKeyPlaceholder": "Select a case definition",
+          "targetKey": "Target case definition",
+          "triggers": "Triggers",
+          "triggersHint": "Decide when this plan runs: manually from the UI button, at a scheduled moment, or after another plan finishes.",
+          "triggeredByButton": "Run manually from the UI button",
+          "scheduledAtDate": "Scheduled at",
+          "runAfter": "Run after plan",
+          "runAfterPlaceholder": "Select a migration plan",
+          "runAfterEmpty": "No other migration plans in this version",
+          "conditions": "Conditions",
+          "conditionsHint": "The plan only migrates cases that match all conditions. Leave empty to apply to every case. Add a group to combine conditions with 'any of' (OR) or 'all of' (AND); groups may be nested. With 'in', enter the values separated by commas. With 'exists', leave the value empty — or enter 'false' to require the field to be empty.",
+          "noConditions": "No conditions — applies to all cases."
+        },
+        "dataMigration": {
+          "description": "Reshape case data during migration. Every row writes one target field (on the right) from a source (on the left): copy an existing field's value ('Path'), set a fixed 'Value', or clear it ('Null'). The source reads a value out of the case document; the target is the field that value is written into. The target field is always required."
+        },
+        "processMigration": {
+          "description": "Migrate running process instances onto the process definitions of this case version. For each instruction pick the source process — the definition the running instances currently use, from the version being migrated away from — and the target process — the definition in this version they move onto — then map each source activity onto a target activity.",
+          "activityMappingHint": "Map each activity of the source process onto an activity of the target process — this tells the engine where each in-flight token moves to. Both the name and the technical id are shown so activities that share a name can be told apart."
+        },
+        "addBuildingBlock": {
+          "description": "Create one or more building blocks on each migrated case. Each entry creates an (initially empty) building block document, fills it with the data migration below, and hijacks the case process(es) into the building block.",
+          "dataMigrationHint": "Fills the new building block document: each source reads from the case document, each target writes into the new building block document.",
+          "processMigrationHint": "The source process is a case process; the target process is a process of the new building block. The listed case process(es) are hijacked into the building block, and the business key is always set to the new building block document id."
+        },
+        "removeBuildingBlock": {
+          "description": "Remove one or more building blocks from each migrated case. All building blocks directly linked to the case with the given key are dissolved after their data and process(es) are transferred back to the case.",
+          "dataMigrationHint": "Transfers data back to the case before the building block is deleted: each source reads from the building block document, each target writes into the case document.",
+          "processMigrationHint": "The source process is a building block process; the target process is a case process. The building block process(es) are handed back to the case, and the business key is always set back to the case document id."
+        },
+        "sourceNotDeployed": "{{versionTag}} (not deployed here)"
+      },
+      "deleteModal": {
+        "title": "Delete migration plan",
+        "content": "Are you sure you want to delete this migration plan? This cannot be undone."
+      },
+      "startModal": {
+        "title": "Start migration",
+        "content": "Are you sure you want to start this migration now? Matching cases will be migrated."
+      },
+      "dryRun": "Dry run",
+      "dryRunModal": {
+        "title": "Start dry run",
+        "content": "Simulate this migration plan for all matching cases without migrating any of them? Nothing is changed; you get a report of which cases would migrate and which would fail."
+      },
+      "dryRunResults": {
+        "status": "Dry run status",
+        "heading": "Latest dry run",
+        "casesChecked": "Cases checked",
+        "casesWouldMigrate": "Would migrate",
+        "casesWouldFail": "Would fail",
+        "errorsHeading": "Cases that would fail"
+      },
+      "duplicateSuffix": "copy",
+      "columns": {
+        "plan": "Migration plan",
+        "source": "Source",
+        "target": "Target",
+        "status": "Status",
+        "progress": "Progress"
+      },
+      "noResults": {
+        "title": "No migration plans",
+        "description": "No migration plans are deployed for this case type version."
+      },
+      "status": {
+        "NOT_STARTED": "Not started",
+        "RUNNING": "Running",
+        "COMPLETED": "Completed",
+        "COMPLETED_WITH_ERRORS": "Completed with errors"
+      },
+      "fields": {
+        "status": "Migration status",
+        "casesToMigrate": "Cases to migrate",
+        "casesMigrated": "Cases migrated",
+        "casesWithErrors": "Cases with errors",
+        "casesWithWarnings": "Cases with warnings",
+        "startedOn": "Started on",
+        "finishedOn": "Finished on"
+      },
+      "errors": {
+        "heading": "Cases with errors",
+        "caseId": "Case",
+        "message": "Error",
+        "copyFullError": "Copy full stacktrace",
+        "copied": "Stacktrace copied to clipboard",
+        "showStacktrace": "Show full stacktrace",
+        "hideStacktrace": "Hide stacktrace"
+      },
+      "warnings": {
+        "heading": "Cases with warnings",
+        "dryRunHeading": "Warnings from the dry run",
+        "description": "These cases migrated, but the plan did not do everything it describes. Usually there was no running process to take over.",
+        "message": "Warning"
+      }
+    },
     "version": "Version: ",
     "preparingDownload": "Preparing download",
     "more": "More",
@@ -972,7 +1163,11 @@
     "allVersionsModal": {
       "title": "All {{value}} versions",
       "closeButton": "Close",
-      "columns": {"version": "Version", "release": "Released on", "description": "Description"},
+      "columns": {
+        "version": "Version",
+        "release": "Released on",
+        "description": "Description"
+      },
       "noResults": {
         "title": "There are no case versions",
         "description": "No version has been configured for this case"
@@ -1017,7 +1212,10 @@
       },
       "releaseVersion": {
         "title": "Release version",
-        "fields": {"caseDefinitionVersionTag": "Version", "basedOnVersionTag": "Based on"},
+        "fields": {
+          "caseDefinitionVersionTag": "Version",
+          "basedOnVersionTag": "Based on"
+        },
         "warning": {
           "title": "Warning",
           "description": "There is another draft based on {{ basedOnVersionTag }} with version {{ conflictingVersions }}"
@@ -1098,6 +1296,7 @@
       "decision": "Decision tables",
       "formFlows": "Form Flows",
       "tasks": "Tasks",
+      "migration": "Migration",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",
@@ -1113,7 +1312,10 @@
           "canHaveHandler": "Case type can have a handler",
           "assignUser": "Automatically assign user tasks to case handler",
           "disabledAutoAssignTooltip": "Automatically assigning a user task to the case handler can only be enabled when the case itself can have a handler.",
-          "toggle": {"onText": "Yes", "offText": "No"}
+          "toggle": {
+            "onText": "Yes",
+            "offText": "No"
+          }
         },
         "color": {
           "title": "Case color",
@@ -1159,38 +1361,58 @@
         "uniqueKeyError": "The key for this tab must be unique.",
         "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
+        "externalPlugin": "Plugins & Apps",
+        "externalPluginDisabled": "There are no activated plugins or apps with a case tab, or they have all been added already.",
         "visibleTitle": "Task list visible on tab",
         "visible": "Visible",
         "invisible": "Not visible"
+      },
+      "externalPlugin": {
+        "loadError": "Could not load the external plugin tab. The plugin host may be unreachable or the bundle is unavailable.",
+        "widgetLoadError": "Could not load the external plugin widget. The plugin host may be unreachable or the bundle is unavailable.",
+        "unavailable": "This plugin widget is unavailable. Its configuration may be missing or the bundle could not be resolved."
       },
       "titles": {
         "custom": "Create new tab with custom component",
         "formio": "Create new tab with FormIO component",
         "standard": "Create new tab with standard content",
-        "widgets": "Create a new tab with widgets"
+        "widgets": "Create a new tab with widgets",
+        "external_plugin": "Create a new tab with a plugin or app"
       },
       "contentLabels": {
         "custom": "Choose custom component",
         "formio": "Choose FormIO component",
-        "standard": "Choose standard content"
+        "standard": "Choose standard content",
+        "external_plugin_config": "Choose plugin or app configuration",
+        "external_plugin_bundle": "Choose tab"
       },
-      "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
+      "editModal": {
+        "title": "Edit tab {{name}}",
+        "updateTab": "Update tab"
+      },
       "deleteModal": {
         "title": "Delete tab?",
         "description": "Are you sure you want to delete this tab? This action cannot be undone."
       }
     },
-    "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
+    "tabType": {
+      "custom": "Custom",
+      "formio": "FormIO",
+      "standard": "Standard",
+      "external_plugin": "Plugins & Apps"
+    },
     "actions": {
       "columns": {
         "name": "Name",
-        "type": "Type"
+        "type": "Type",
+        "startableByUser": "Visibility"
       },
+      "visibleInStartMenu": "Visible in start menu",
       "addItem": "Create an action",
       "noResults": "No actions configured",
       "noResultsDescription": "No actions are configured for this case type.",
       "infoNotification": {
-        "message": "Actions appear under the start button of an existing case and can be initiated at any time by the user."
+        "message": "Actions appear under the start button of an existing case by default and can be initiated at any time by the user."
       },
       "type": {
         "PROCESS": "Process",
@@ -1283,6 +1505,7 @@
         "noPluginsTitle": "No plugins to configure",
         "notInstalled": "Plugin type not installed",
         "noConfigurations": "No configurations available",
+        "externalVersionMismatchWarning": "This configuration's plugin version ({{selectedVersion}}) does not match the exported version ({{requiredVersion}}). It may not support the same actions.",
         "unidentifiable": {
           "title": "Unidentified plugin configurations",
           "message": "Some plugin configurations could not be identified from the export. The import can continue, but you will need to manually configure the affected process links afterwards."
@@ -1296,6 +1519,7 @@
       "unknownPlugin": "Unknown plugin",
       "notInstalled": "Plugin type not installed",
       "noConfigurations": "No configurations available",
+      "externalVersionMismatchWarning": "This configuration's plugin version ({{selectedVersion}}) does not match the required version ({{requiredVersion}}). It may not support the same actions.",
       "saveSuccess": "Plugin configuration mappings saved successfully",
       "saveError": "Failed to save plugin configuration mappings",
       "legacyExport": {
@@ -1334,7 +1558,7 @@
       "keyDuplicated": "This key is already in use. Please change to a unique key.",
       "colorPlaceholder": "Choose a color",
       "showRetentionPeriod": "Set retention period",
-      "retentionPeriodExistingCasesWarning": "The retention period for existing cases cases with this status will not be updated automatically.",
+      "retentionPeriodExistingCasesWarning": "The retention period for existing cases with this status will not be updated automatically.",
       "columns": {
         "title": "Status name",
         "retentionPeriod": "Retention period in days",
@@ -1349,7 +1573,9 @@
         "title": "No statuses configured",
         "description": "Click here to configure a status for this case type"
       },
-      "noResultsFinalVersion": {"description": "No statuses have been created for this case type."}
+      "noResultsFinalVersion": {
+        "description": "No statuses have been created for this case type."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -1360,12 +1586,19 @@
       "deleteText": "Are you sure you want to delete this tag? This action cannot be undone.",
       "keyAutoGenerated": "Key will be auto-generated",
       "colorPlaceholder": "Choose a color",
-      "columns": {"title": "Name", "key": "Key", "visible": "Visible by default", "color": "Color"},
+      "columns": {
+        "title": "Name",
+        "key": "Key",
+        "visible": "Visible by default",
+        "color": "Color"
+      },
       "noResults": {
         "title": "No tags configured",
         "description": "Click here to configure a tag for this case type"
       },
-      "noResultsFinalVersion": {"description": "No tags have been created for this case type."}
+      "noResultsFinalVersion": {
+        "description": "No tags have been created for this case type."
+      }
     },
     "draftWarning": {
       "title": "Not linked to a version of the case",
@@ -1379,7 +1612,9 @@
       "editWidgetTab": "Edit widget tab",
       "cancel": "Cancel",
       "save": "Save",
-      "form": {"tabName": "Tab name"}
+      "form": {
+        "tabName": "Tab name"
+      }
     },
     "columns": {
       "highContrast": "High contrast",
@@ -1432,17 +1667,37 @@
     },
     "type": {
       "description": "Choose the widget type you want to configure.",
-      "fields": {"title": "Fields", "description": "Text data with content and a label"},
-      "custom": {"title": "Custom component", "description": "For complex content"},
-      "formio": {"title": "Form.io", "description": "Prefilled Form.io form"},
-      "table": {"title": "Table", "description": "Create a table"},
+      "fields": {
+        "title": "Fields",
+        "description": "Text data with content and a label"
+      },
+      "custom": {
+        "title": "Custom component",
+        "description": "For complex content"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Prefilled Form.io form"
+      },
+      "table": {
+        "title": "Table",
+        "description": "Create a table"
+      },
       "interactive-table": {
         "title": "Interactive table",
         "description": "Create an interactive table"
       },
-      "collection": {"title": "Collection", "description": "Create a collection"},
-      "divider": {"title": "Divider"},
-      "map": {"title": "Map", "description": "Create a map widget"},
+      "collection": {
+        "title": "Collection",
+        "description": "Create a collection"
+      },
+      "divider": {
+        "title": "Divider"
+      },
+      "map": {
+        "title": "Map",
+        "description": "Create a map widget"
+      },
       "person-card": {
         "title": "Person card",
         "description": "A person with their key details and contact info"
@@ -1458,6 +1713,10 @@
       "image": {
         "title": "Image",
         "description": "Show an uploaded image"
+      },
+      "external-plugin": {
+        "title": "Plugins & Apps",
+        "description": "Render a card from a plugin or app's case-widget bundle"
       },
       "text": {
         "title": "Text",
@@ -1476,10 +1735,22 @@
       "description": "Select the desired width for the widget.",
       "fullWidth": "Full-width",
       "half": "Half",
-      "small": {"title": "Small", "subtitle": "Contains 1 column of content"},
-      "medium": {"title": "Medium", "subtitle": "Contains up to 2 columns of content"},
-      "large": {"title": "Large", "subtitle": "Contains up to 3 columns of content"},
-      "xtraLarge": {"title": "Xtra large", "subtitle": "Contains up to 4 columns of content"}
+      "small": {
+        "title": "Small",
+        "subtitle": "Contains 1 column of content"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Contains up to 2 columns of content"
+      },
+      "large": {
+        "title": "Large",
+        "subtitle": "Contains up to 3 columns of content"
+      },
+      "xtraLarge": {
+        "title": "Xtra large",
+        "subtitle": "Contains up to 4 columns of content"
+      }
     },
     "appearance": {
       "description": "Select the appearance for the widget.",
@@ -1502,8 +1773,14 @@
     },
     "density": {
       "description": "Select the desired density for the widget",
-      "default": {"title": "Default", "description": "For regular content"},
-      "compact": {"title": "Compact", "description": "For higher density data overview"}
+      "default": {
+        "title": "Default",
+        "description": "For regular content"
+      },
+      "compact": {
+        "title": "Compact",
+        "description": "For higher density data overview"
+      }
     },
     "content": {
       "description": "Enter the content for each column. Keep in mind that not all fields are the same height. For the best result make sure items are properly distributed.",
@@ -1512,6 +1789,14 @@
       "widgetTitleTooltip": "Title that displays at the top of the widget",
       "hideWhenEmpty": "Hide when empty",
       "column": "Column {{number}}",
+      "externalPlugin": {
+        "configLabel": "Plugin or app configuration",
+        "configPlaceholder": "Choose a plugin or app configuration",
+        "bundleLabel": "Widget",
+        "bundlePlaceholder": "Choose a widget",
+        "unavailableTitle": "Plugins & Apps unavailable",
+        "unavailableMessage": "No plugin or app exposing a case-widget bundle is available."
+      },
       "fields": {
         "add": "Add field",
         "addEnum": "Add enum value",
@@ -1581,7 +1866,10 @@
         "placeholder": "Select a component",
         "addCustomKeyValue": "Add custom key value pair"
       },
-      "formio": {"selectForm": "Form definition", "placeholder": "Select a form definition"},
+      "formio": {
+        "selectForm": "Form definition",
+        "placeholder": "Select a form definition"
+      },
       "table": {
         "addColumn": "Add column",
         "defaultPageSize": "Rows per page",
@@ -1714,9 +2002,9 @@
     "actionButtonLabel": "Action button type",
     "externalLink": {
       "linkLabel": "Target URL (with placeholders)",
-      "linkPlaceholder": "https://ritense.nl/zaak/${doc:/zaak/id}",
+      "linkPlaceholder": "https://ritense.nl/case/${doc:/case/id}",
       "buttonTextLabel": "Button label",
-      "buttonTextPlaceholder": "'Go to zaak'",
+      "buttonTextPlaceholder": "'Go to case'",
       "openInNewTabLabel": "Open in new tab"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
@@ -1805,8 +2093,13 @@
       "add": "Create tag",
       "deleteText": "Are you sure you want to delete this tag?",
       "deleteMultipleText": "Are you sure you want to delete these tags?",
-      "addModal": {"header": "Create tag"},
-      "list": {"noResultsTitle": "No tags", "noResultsDescription": "Add a tag to start"},
+      "addModal": {
+        "header": "Create tag"
+      },
+      "list": {
+        "noResultsTitle": "No tags",
+        "noResultsDescription": "Add a tag to start"
+      },
       "search": {
         "noResultsTitle": "No results",
         "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
@@ -1822,8 +2115,12 @@
       "add": "Add upload field",
       "deleteText": "Are you sure you want to delete this upload field?",
       "deleteMultipleText": "Are you sure you want to delete these upload fields?",
-      "addModal": {"header": "Add upload field"},
-      "editModal": {"header": "Edit upload field"},
+      "addModal": {
+        "header": "Add upload field"
+      },
+      "editModal": {
+        "header": "Edit upload field"
+      },
       "list": {
         "noResultsTitle": "No upload fields",
         "noResultsDescription": "Add a upload field to start"
@@ -1898,7 +2195,8 @@
     "rowLocked": "You don't have access to this task",
     "allCases": "All cases",
     "noSearchResultsTitle": "No tasks found",
-    "noSearchResultsDescription": "There are no tasks that match your search criteria."
+    "noSearchResultsDescription": "There are no tasks that match your search criteria.",
+    "refreshTasks": "Refresh tasks"
   },
   "Task": "Task",
   "Tasks": "Tasks",
@@ -1930,12 +2228,23 @@
   "Translations": "Translations",
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
-  "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
-  "Source Definition": "Source Definition",
-  "Source Version": "Source Version",
-  "Target Definition": "Target Definition",
-  "Target Version": "Target Version",
-  "Choose Target": "Choose Target",
+  "processMigration": {
+    "warning": {
+      "title": "Candidate groups are not migrated",
+      "message": "When migrating a process, the candidate groups of running instances are not updated. This can be done in the database if necessary. For example, if a specific user task is open for ROLE_USER and the candidate group for that user task is changed to ROLE_ADMIN in the process, the task stays accessible for ROLE_USER. Only newly started processes use the updated candidate group."
+    },
+    "sourceDefinition": "Source process",
+    "sourceVersion": "Source version",
+    "targetDefinition": "Target process",
+    "targetVersion": "Target version",
+    "sourceActivity": "Activity in the source version",
+    "targetActivity": "Activity in the target version",
+    "selectPlaceholder": "Select...",
+    "migrate": "Migrate",
+    "instanceCount": "{{count}} running process instance(s)",
+    "success": "The process was migrated.",
+    "failure": "The process could not be migrated."
+  },
   "Case": "Case",
   "Cases": "Cases",
   "Deployment": "Version management",
@@ -1995,6 +2304,7 @@
     "validationErrors": "Validation errors",
     "validationErrorsCount": "Validation errors ({{count}})",
     "validationErrorNotification": "Process definition has validation errors. Check the highlighted elements.",
+    "idTooLong": "The ID may not be longer than {{max}} characters.",
     "alreadyExistsNotification": "Process definition already exists",
     "deleteNotification": "Process deleted successfully",
     "upload": {
@@ -2190,6 +2500,7 @@
     "icon": "Icon",
     "iconPlaceholder": "Select an icon",
     "iconTooltip": "Select an icon",
+    "dragToReorder": "Drag to reorder",
     "mainMenu": "Main menu",
     "toggleMenu": "Menu",
     "typeToSearch": "Type here to search",
@@ -2289,13 +2600,19 @@
       "outline": "Outline",
       "orange": "Orange"
     },
-    "labels": {"dateCreationFrom": "Date creation from", "dateCreationTo": "Date creation to"},
+    "labels": {
+      "dateCreationFrom": "Date creation from",
+      "dateCreationTo": "Date creation to"
+    },
     "sorting": {
       "ascending": "Ascending",
       "descending": "Descending",
       "noDefault": "No default sort"
     },
-    "editor": {"visualEditor": "Visual editor", "jsonEditor": "JSON editor"},
+    "editor": {
+      "visualEditor": "Visual editor",
+      "jsonEditor": "JSON editor"
+    },
     "jsonEditor": {
       "cancelModal": {
         "title": "Leaving the editor",
@@ -2320,7 +2637,12 @@
     "dueDateSetNotificationTitle": "Due date set",
     "dueDateSetNotificationContent": "Due date '{{date}}' set for task '{{task}}'",
     "dueDateRemovedNotificationTitle": "Due date removed",
-    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'"
+    "dueDateRemovedNotificationContent": "Due date removed for task '{{task}}'",
+    "externalPluginTaskForm": {
+      "unavailable": "This task's plugin form could not be loaded. The plugin may be unavailable or no longer exposes a task-form.",
+      "tokenError": "Could not securely connect to the plugin to load this task's form.",
+      "submitError": "The task could not be completed. Please try again or contact support."
+    }
   },
   "assignTask": {
     "assignedTo": "Assigned to",
@@ -2403,7 +2725,11 @@
     "globalSearchFilter": "Search entire document",
     "globalSearchFilterPlaceholder": "Search across all document fields..."
   },
-  "webcam": {"takePicture": "Take picture", "save": "Save", "redo": "Redo"},
+  "webcam": {
+    "takePicture": "Take picture",
+    "save": "Save",
+    "redo": "Redo"
+  },
   "customers": {
     "name": "Name",
     "citizenServiceNumber": "Citizen service number",
@@ -2423,7 +2749,16 @@
     "completeButtonText": "Complete"
   },
   "pages": {
-    "plugins": {"title": "Plugins", "noResults": "There are no plugins configured yet"},
+    "plugins": {
+      "title": "Plugins",
+      "noResults": "There are no plugins configured yet"
+    },
+    "pluginHosts": {
+      "title": "Plugin hosts"
+    },
+    "pluginApps": {
+      "title": "Apps"
+    },
     "customercases": {
       "title": "Cases",
       "description": "On this page you can view the cases of a specific customer."
@@ -2456,30 +2791,288 @@
   "pluginManagement": {
     "tableItemsText": "plugin configurations",
     "add": "Configure plugin",
+    "addHost": "Add plugin host",
+    "addApp": "Add app",
+    "appAdd": {
+      "steps": {
+        "connection": "Connect",
+        "configuration": "Enter data",
+        "permissions": "Permissions"
+      },
+      "connect": "Connect",
+      "connecting": "Connecting to the app…",
+      "connectedTitle": "App connected",
+      "connectedDescription": "The app was connected successfully. Continue to configure it.",
+      "connectFailed": "The app could not be connected. Check the connection details and try again.",
+      "conflictTitle": "App already registered",
+      "conflictDescription": "The integration this app provides ({{pluginId}}) is already registered by '{{hostName}}'. Connect an app only once, or remove the existing registration first.",
+      "conflictUnknownHost": "another registration",
+      "discoveryTimeoutTitle": "App added, but not ready yet",
+      "discoveryTimeoutDescription": "The app was added, but it is not ready to be configured yet. It may be unreachable. You can retry now, or close this dialog and configure the app later from the list.",
+      "retry": "Retry",
+      "preparing": "Retrieving app details…",
+      "continue": "Continue",
+      "complete": "Save configuration",
+      "resumeLoadFailed": "The app could not be loaded. It may have been removed.",
+      "refreshModal": {
+        "title": "Refresh required",
+        "description": "Before this app can be configured, the page needs to be refreshed so that security policies can be updated. After the refresh, you will automatically continue with the configuration step.",
+        "confirm": "Refresh and continue",
+        "cancel": "Later"
+      }
+    },
+    "editConfiguration": "Edit configuration",
+    "notConfigured": "Not configured",
+    "uploadPlugin": "Upload plugin",
+    "selectHost": "Select a plugin host",
+    "upload": {
+      "title": "Plugin bundle",
+      "buttonText": "Choose file",
+      "description": "Only .zip files are accepted",
+      "failedTitle": "Upload failed",
+      "rejected": "The plugin host rejected the upload.",
+      "tooLargeTitle": "Package too large",
+      "tooLarge": "This plugin package is {{sizeMb}} MB. The maximum accepted size is {{maxMb}} MB.",
+      "identicalTitle": "Already up to date",
+      "identicalMessage": "This exact package already exists on the host — the content is identical, so there is nothing to overwrite.",
+      "overwriteTitle": "Overwrite existing plugin version?",
+      "overwriteWarningTitle": "This will overwrite the current plugin version",
+      "overwriteWarning": "Version {{version}} of '{{pluginId}}' already exists on the host with different content. Overwriting it can lead to unexpected behavior for configurations and processes that already use this version. Since the content differs, review the permissions the uploaded package requests below and confirm to proceed — all existing configurations of this version will be reset to exactly these permissions.",
+      "overwriteConfirm": "Overwrite version",
+      "successTitle": "Plugin installed",
+      "successMessage": "{{pluginId}} {{version}} was installed and can now be configured.",
+      "configureAction": "Configure plugin"
+    },
     "noDefinitions": "No plugin definitions found.",
+    "noHosts": "No plugin hosts configured.",
+    "noApps": "No apps configured.",
+    "uploadDisabledTooltip": "A connected plugin host is required before plugins can be uploaded.",
     "save": "Save configuration",
     "remove": "Delete configuration",
+    "tabs": {
+      "configurations": "Configurations",
+      "pluginHosts": "Plugin hosts",
+      "integrations": "Integrations"
+    },
     "labels": {
       "pluginName": "Plugin name",
       "identifier": "Identifier",
-      "configurationName": "Configuration name"
+      "configurationName": "Configuration name",
+      "name": "Name",
+      "baseUrl": "Base URL",
+      "kind": "Type",
+      "status": "Status",
+      "lastHealthCheck": "Last health check",
+      "secret": "Secret",
+      "source": "Source",
+      "properties": "Properties (JSON)",
+      "pluginHost": "Plugin host",
+      "gzacCallbackBaseUrl": "GZAC callback URL",
+      "eventBrokerAmqpUrl": "Event broker URL (optional)",
+      "eventBrokerExchange": "Event broker exchange (optional)",
+      "eventQueueMode": "Event queue mode",
+      "eventQueueTtlMs": "Event queue inactivity TTL (ms)",
+      "frontendOrigins": "Allowed frontend origins",
+      "host": "Host",
+      "configuration": "Configuration"
     },
+    "eventQueueMode": {
+      "live": "Live (events lost while host is down)",
+      "durable": "Durable (retains events for the TTL while host is down)",
+      "liveApp": "Live (events lost while app is down)",
+      "durableApp": "Durable (retains events for the TTL while app is down)"
+    },
+    "hints": {
+      "eventQueueTtlMs": "The durable queue is deleted after this many ms with no connected host. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
+      "eventQueueTtlMsApp": "The durable queue is deleted after this many ms with no connected app. Min 1h (3600000), max 30d (2592000000), default 72h (259200000).",
+      "frontendOrigins": "Browser origins (scheme://host[:port], no path) allowed to embed this host's plugin screens. Add every Valtimo frontend URL users open plugins from, including any proxy alias.",
+      "noFrontendOrigins": "With no origins listed, no page can embed this host's plugin screens.",
+      "secretMinLength": "The secret must be at least {{min}} characters — the host refuses to start below that.",
+      "secretUnchanged": "Leave blank to keep the current secret."
+    },
+    "editConnection": "Edit connection",
+    "editHost": {
+      "modalTitle": "Edit connection",
+      "modalTitleApp": "Edit app connection",
+      "updateFailedTitle": "Could not update",
+      "secretWarningTitle": "Secret changed",
+      "secretWarningMessage": "The host must be restarted with the matching ADMIN_TOKEN. Until then GZAC cannot reach it and it will show as unreachable.",
+      "brokerNoteTitle": "Event broker changed",
+      "brokerNoteMessage": "Event consumers reconnect to the new broker after saving. A durable queue left behind on the old broker expires on its own."
+    },
+    "editEventQueue": "Edit event queue",
+    "editHostEventQueueModalTitle": "Edit event queue for {{name}}",
+    "saveEventQueue": "Save",
+    "addFrontendOrigin": "Add origin",
+    "editFrontendOrigins": "Edit frontend origins",
+    "editHostFrontendOriginsModalTitle": "Frontend origins for {{name}}",
+    "saveFrontendOrigins": "Save origins",
+    "host": {
+      "createFailedTitle": "Could not save",
+      "createFailedFallback": "The host could not be saved. Check the entered values and try again."
+    },
+    "source": {
+      "embedded": "Embedded",
+      "external": "External"
+    },
+    "hostStatus": {
+      "CONNECTED": "Connected",
+      "UNREACHABLE": "Unreachable"
+    },
+    "kind": {
+      "PLUGIN_HOST": "Plugin host",
+      "APP": "App"
+    },
+    "editExternalConfiguration": "Edit external plugin configuration",
+    "invalidJson": "Invalid JSON",
     "addSteps": {
       "step0": "Choose your plugin",
       "step1": "Enter data",
+      "step2": "Permissions",
       "complete": "Save configuration"
+    },
+    "editSteps": {
+      "step0": "Enter data",
+      "step1": "Permissions",
+      "save": "Save configuration"
+    },
+    "permissions": {
+      "description": "By accepting these permissions you trust this plugin to act within your environment. A granted capability, endpoint, or event gives the plugin access to platform data and services — only proceed if you trust the plugin's source and have reviewed what it requests.",
+      "descriptionReadonly": "The following permissions were accepted when this configuration was activated. They define what the plugin is allowed to do within your environment.",
+      "noEndpoints": "This plugin does not require any permissions.",
+      "capabilitiesHeading": "Host capabilities",
+      "capabilityHeading": "Capability",
+      "capability": {
+        "gzac_api": "Make authenticated API calls to the GZAC instance (read and write case data, tasks, documents, etc.)",
+        "http_request": "Make outbound HTTP requests to external services",
+        "kv": "Store and retrieve persistent key–value data scoped to this configuration",
+        "log": "Write structured log entries visible to administrators",
+        "frontend_data": "Serve data requests from the plugin's own user interface"
+      },
+      "endpointsHeading": "API endpoints",
+      "eventsHeading": "Events",
+      "methodHeading": "Method",
+      "endpointHeading": "Endpoint",
+      "descriptionHeading": "Description",
+      "egressHeading": "External connections",
+      "egressDescription": "This plugin can connect to the addresses listed below, and to nothing else. Check that you recognise each one and expect the plugin to communicate with it.",
+      "egressTargetHeading": "Address",
+      "egressSourceHeading": "Source",
+      "egressWildcard": "Any address under this domain — the plugin chooses which one it connects to",
+      "egressFromManifest": "Required by the plugin",
+      "egressFromConfiguration": "From a URL you entered in this configuration",
+      "accept": "I trust this plugin and accept the requested permissions"
+    },
+    "logs": {
+      "menuItem": "Logs",
+      "title": "Plugin logs",
+      "columns": {
+        "timestamp": "Timestamp",
+        "level": "Level",
+        "source": "Source",
+        "message": "Message"
+      },
+      "data": "Data",
+      "filterAll": "All",
+      "levels": {
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error",
+        "debug": "Debug"
+      },
+      "sources": {
+        "plugin": "Plugin",
+        "gzacApi": "GZAC API",
+        "httpRequest": "HTTP Request"
+      },
+      "empty": "No log entries found.",
+      "close": "Close"
+    },
+    "reloadModal": {
+      "title": "Reload required",
+      "description": "The plugin host was added successfully. To configure plugins from this host, the page needs to be reloaded so that security policies can be updated.",
+      "reload": "Reload now",
+      "later": "Later"
+    },
+    "deleteHostModal": {
+      "title": "Delete plugin host",
+      "description": "Are you sure you want to delete this plugin host? All plugin definitions and configurations from this host will also be deleted. This action cannot be undone."
+    },
+    "deleteConfigurationModal": {
+      "title": "Delete plugin configuration",
+      "description": "Are you sure you want to delete this plugin configuration? This action cannot be undone."
+    },
+    "hostInUseModal": {
+      "title": "Plugin host is in use",
+      "thisHost": "this plugin host",
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still use a plugin or configuration from this host. Remove these usages first."
+    },
+    "configurationInUseModal": {
+      "title": "Plugin configuration is in use",
+      "thisConfiguration": "this plugin configuration",
+      "description": "{{ entityName }} cannot be deleted because the following process links, case tabs, case widgets or building blocks still reference it. Remove these usages first."
+    },
+    "usageModal": {
+      "headers": {
+        "activity": "Activity",
+        "configuration": "Plugin configuration",
+        "type": "Type",
+        "linkedTo": "Linked to",
+        "processDefinition": "Process definition"
+      },
+      "parentType": {
+        "CASE": "Case",
+        "BUILDING_BLOCK": "Building block",
+        "GLOBAL": "Global"
+      },
+      "caseTab": "Case tab",
+      "caseWidget": "Case widget",
+      "buildingBlockMapping": "Building block plugin mapping",
+      "menuPage": "Menu page"
+    },
+    "reviewRequired": {
+      "tag": "Review required",
+      "permissionsChanged": "The plugin package on the host changed and now requests different permissions than the ones that were accepted. Nothing is sent to the host until an administrator reviews and accepts the new permissions.",
+      "codeChanged": "The plugin package on the host changed. It requests the same permissions as before, but the code is not the one that was accepted. Nothing is sent to the host until an administrator confirms the new package."
+    },
+    "review": {
+      "menuItem": "Review changes",
+      "modalTitle": "Review changed app",
+      "accept": "Accept changes",
+      "failed": "Accepting the changes failed"
+    },
+    "awaitingHost": {
+      "modalTitle": "Plugin host not available yet",
+      "modalMessage": "This configuration was created from a deployment descriptor, but its plugin host has not served the plugin yet — so its settings and permissions are not known and cannot be edited. It becomes editable automatically once the host is available. You can still delete it.",
+      "tag": "Awaiting host",
+      "tooltip": "This plugin was declared by a deployment descriptor but its host has not served it yet. The configuration exists and everything referencing it resolves, but the plugin cannot run until its host is available."
+    },
+    "compatibility": {
+      "incompatibleTag": "Incompatible",
+      "warningTitle": "Possible compatibility issue",
+      "uploadWarningTitle": "Upload an incompatible plugin?",
+      "uploadAnyway": "Upload anyway",
+      "intro": "Your GZAC version might be incompatible with this plugin.",
+      "current": "You're currently running {{current}}.",
+      "minimum": "Minimum compatible version: {{min}}.",
+      "maximum": "Maximum compatible version: {{max}}."
     }
   },
   "customerCases": {
     "tableItemsText": "cases",
-    "labels": {"zaakNummer": "Case number", "zaakStatus": "Status", "zaakType": "Type"}
+    "labels": {
+      "zaakNummer": "Case number",
+      "zaakStatus": "Status",
+      "zaakType": "Type"
+    }
   },
   "processLink": {
     "create": "Create process link",
     "edit": "Edit process link",
     "saveChanges": "Save changes",
     "unlink": "Unlink",
-    "noPluginFunctions": "This plugin does not support any plugin actions."
+    "noPluginFunctions": "This plugin does not support any plugin actions.",
+    "pluginForm": "Plugin form"
   },
   "keycloak": {
     "expiryPromptTitle": "The session is about to expire",
@@ -2578,8 +3171,12 @@
     "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value.",
     "required": "Decides whether the user must enter a value before a search can be executed."
   },
-  "searchFieldDataType": {"select": "Select a data type"},
-  "searchFieldFieldType": {"select": "Select a field type"},
+  "searchFieldDataType": {
+    "select": "Select a data type"
+  },
+  "searchFieldFieldType": {
+    "select": "Select a field type"
+  },
   "listColumn": {
     "title": "Title",
     "titleTitle": "Title (optional)",
@@ -2641,9 +3238,14 @@
     "createObject": "New object",
     "editObject": "Edit object",
     "deleteObject": "Delete object",
-    "labels": {"recordIndex": "Record index", "objectUrl": "Object URL"},
+    "labels": {
+      "recordIndex": "Record index",
+      "objectUrl": "Object URL"
+    },
     "header": "Object details",
-    "tabs": {"general": "General"},
+    "tabs": {
+      "general": "General"
+    },
     "close": "Close",
     "save": "Save object",
     "delete": "Delete object",
@@ -2688,7 +3290,11 @@
     "edit": "Change object",
     "download": "Download",
     "visibleInMenu": "Visible in menu",
-    "tabs": {"general": "General", "list": "List", "searchFields": "Search Fields"}
+    "tabs": {
+      "general": "General",
+      "list": "List",
+      "searchFields": "Search Fields"
+    }
   },
   "formioTranslations": {
     "Submit": "Submit",
@@ -2700,22 +3306,33 @@
     "Value Resolver": "Value Resolver",
     "Source key": "Source key",
     "Target key": "Target key",
-    "formioIbanComponent": {"errorMessage": "Not a valid IBAN. Please enter a valid IBAN."},
+    "formioIbanComponent": {
+      "errorMessage": "Not a valid IBAN. Please enter a valid IBAN."
+    },
     "formioCurrencyComponent": {
       "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
     },
-    "formioFormViewModelComponent": {"submitError": "Invalid submissions"}
+    "formioFormViewModelComponent": {
+      "submitError": "Invalid submissions"
+    }
   },
   "viewTypeConverter": {
     "Yes": "Yes",
     "No": "No",
-    "errors": {"boolean": "Value is not a valid boolean", "number": "Value is not a valid number"}
+    "errors": {
+      "boolean": "Value is not a valid boolean",
+      "number": "Value is not a valid number"
+    }
   },
   "processLinkConfiguration": {
     "configureStep": "Configure process step",
     "buildingBlockActionTitle": "Building block action: {{buildingBlockName}}",
     "modalTitle": "Process step: {{processStepName}}",
     "pluginConfiguration": "Plugin configuration: {{pluginConfigTitle}}",
+    "externalPluginTaskForm": {
+      "defaultTitle": "Form",
+      "description": "The selected plugin renders the form for this user task and completes the task itself, using the current user's permissions. There's nothing more to configure here — save to link it."
+    },
     "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
     "chooseFormDescription": "Choose the form that you want to link to the process step.",
     "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",
@@ -2734,6 +3351,18 @@
       "checkboxDescription": "Enables Form View Model form processing"
     },
     "importConfiguration": "Import configuration",
+    "externalPlugin": "External plugin",
+    "externalPluginActionProperties": "Configure the action properties for this external plugin action as JSON. Click save when done.",
+    "actionPropertiesJson": "Action properties (JSON)",
+    "invalidJson": "Invalid JSON",
+    "resultMappings": {
+      "description": "Map values from the action's result onto the case document or a process variable.",
+      "source": "Result path",
+      "target": "Destination",
+      "sourcePlaceholder": "/path/in/result",
+      "sourceSelectPlaceholder": "Select a result field...",
+      "addRow": "Add mapping"
+    },
     "selectProcess": "Select process",
     "process": "Process",
     "version": "Version",
@@ -2774,16 +3403,54 @@
         "zaakInstanceAndTypeLink": "This building block may need both a zaak instance link and a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakInstanceLink": "This building block may need a zaak instance link to be configured for the case definition under which this building block is used, in order to function correctly.",
         "zaakTypeLink": "This building block may need a zaak type link to be configured for the case definition under which this building block is used, in order to function correctly."
-      }
+      },
+      "externalPluginVersionMismatchWarning": "The selected configuration's plugin version ({{selectedVersion}}) does not match the version ({{requiredVersion}}) this building block was linked against. It may not support this action."
     }
   },
   "processLinkType": {
-    "plugin": "Plugin",
+    "plugin": "Plugins & Apps",
     "form": "Form",
     "form-flow": "FormFlow",
     "url": "URL",
     "ui-component": "UI Component",
     "building-block": "Building block"
+  },
+  "externalPlugin": {
+    "menuTitle": "External Plugins",
+    "host": {
+      "title": "Hosts",
+      "add": "Add host",
+      "name": "Name",
+      "baseUrl": "Base URL",
+      "status": "Status",
+      "lastHealthCheck": "Last health check"
+    },
+    "definition": {
+      "title": "Plugin definitions",
+      "pluginId": "Plugin ID",
+      "version": "Version",
+      "name": "Name",
+      "provider": "Provider",
+      "status": "Status"
+    },
+    "configuration": {
+      "title": "Configurations",
+      "titleField": "Title",
+      "add": "Add configuration",
+      "definition": "Plugin definition",
+      "definitionPlaceholder": "Select a plugin",
+      "definitionId": "Definition",
+      "createdAt": "Created at",
+      "properties": "Properties (JSON)",
+      "propertiesInvalidJson": "Properties must be valid JSON"
+    },
+    "processLink": {
+      "configuration": "Plugin configuration",
+      "configurationPlaceholder": "Select a configuration",
+      "actionKey": "Action key",
+      "actionProperties": "Action properties (JSON)",
+      "actionPropertiesInvalidJson": "Action properties must be valid JSON"
+    }
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Choose link type",
@@ -2793,7 +3460,10 @@
     "displayType": {
       "label": "Select form display type",
       "placeholder": "Select how to display the form",
-      "options": {"modal": "Modal", "panel": "Panel"}
+      "options": {
+        "modal": "Modal",
+        "panel": "Panel"
+      }
     },
     "formSize": {
       "label": "Select form size",
@@ -2810,6 +3480,7 @@
     "choosePluginDefinition": "Select plugin definition",
     "choosePluginAction": "Choose your action",
     "configurePluginAction": "Configure your action",
+    "configurePluginActionResultMappings": "Output mapping",
     "selectURL": "Configure your URL",
     "subtitles": "Subtitles",
     "addSubtitle": "Add subtitle",
@@ -2819,7 +3490,7 @@
     "configureBuildingBlockMappings": "Input & Sync"
   },
   "processLinkTypeDisabledTooltip": {
-    "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
+    "plugin": "No plugin or app configurations are available. Create a plugin configuration or connect an app to be able to link it to a process step.",
     "form": "There are no forms available. Create a form to be able to link it to a process step.",
     "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step.",
     "ui-component": "There are no custom components registered. Please create one if you wish to use this option.",
@@ -3216,7 +3887,7 @@
     "version": "Version",
     "readOnly": "Read only",
     "add": "Create new form flow",
-    "deleteModalContent": "Are you sure you want to delete this form flow?",
+    "deleteModalContent": "Are you sure you want to delete this form flow? All form flow instances of this definition, including unfinished ones, will also be deleted. This action cannot be undone.",
     "deletedSuccessfully": "{{key}} was deleted successfully",
     "savedSuccessTitle": "Saved successfully",
     "savedSuccessTitleMessage": "{{key}} was saved successfully",
@@ -3331,10 +4002,26 @@
     "placeholder": "Select a path",
     "dropdown": "Dropdown",
     "manual": "Manual",
-    "selectCaseDefPlaceholder": "Select a case"
+    "selectCaseDefPlaceholder": "Select a case",
+    "notInThisVersion": "(not in this version)"
+  },
+  "valueConditionTree": {
+    "path": "Field",
+    "operator": "Operator",
+    "value": "Value",
+    "addCondition": "Add condition",
+    "addGroup": "Add group",
+    "groupMode": "The group holds when",
+    "anyOf": "Any of these hold",
+    "allOf": "All of these hold",
+    "emptyGroup": "Empty group — add a condition, or remove the group."
   },
   "logging": {
-    "columns": {"timestamp": "Timestamp", "formattedMessage": "Message", "level": "Log level"},
+    "columns": {
+      "timestamp": "Timestamp",
+      "formattedMessage": "Message",
+      "level": "Log level"
+    },
     "search": {
       "addProperty": "Add property",
       "afterTimestamp": "From timestamp",
@@ -3419,8 +4106,12 @@
     "dataUrl": "Data URL",
     "title": "Configuration",
     "list": "List",
-    "tabs": {"title": "Tabs"},
-    "widgets": {"title": "Widgets"},
+    "tabs": {
+      "title": "Tabs"
+    },
+    "widgets": {
+      "title": "Widgets"
+    },
     "importDefinition": {
       "title": "Import IKO definition",
       "overwriteWarning": "If your IKO definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
@@ -3535,12 +4226,67 @@
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
   },
+  "externalPluginPage": {
+    "loadError": "This plugin page could not be loaded."
+  },
   "adminSettings": {
     "title": "Settings",
     "tabs": {
       "appearance": "Appearance",
+      "menuConfiguration": "Menu configuration",
       "featureToggles": "Feature toggles",
       "opensearch": "OpenSearch"
+    },
+    "menuConfiguration": {
+      "intro": "Build the application's left-hand menu. Drag items between the available items and the menu structure, reorder them, and edit an item's title, link or icon. Access to each item is managed via PBAC.",
+      "structureTitle": "Menu structure",
+      "availableTitle": "Available items",
+      "save": "Save menu",
+      "reset": "Reset",
+      "resetTooltip": "Discard unsaved changes and restore the last saved menu configuration.",
+      "savedTitle": "Menu saved",
+      "savedSubtitle": "The menu configuration has been saved and applies on the next reload.",
+      "reloadModal": {
+        "title": "Menu saved",
+        "content": "The new menu configuration has been saved. Reload the application to see the changes right away, or dismiss this dialog to keep working and reload later.",
+        "confirm": "Reload now",
+        "dismiss": "Dismiss"
+      },
+      "required": "Required",
+      "runtimeSubmenu": "Dynamic submenu",
+      "runtimeSubmenuNote": "This item's submenu is filled at runtime (for example pinned cases) and cannot be edited here.",
+      "allPlaced": "All items are already in the menu.",
+      "emptyStructure": "Drag items here to build the menu.",
+      "emptySection": "Drop items here",
+      "add": "Add to menu",
+      "dragHandle": "Drag to reorder",
+      "categories": {
+        "generic": "Generic",
+        "main": "Main menu items",
+        "admin": "Admin pages",
+        "development": "Development pages",
+        "pluginPages": "Plugins & Apps"
+      },
+      "generic": {
+        "group": "Section",
+        "sectionHeader": "Section header",
+        "customLink": "Custom link"
+      },
+      "defaults": {
+        "group": "New section",
+        "sectionHeader": "New header",
+        "customLink": "New link"
+      },
+      "editor": {
+        "title": "Edit menu item",
+        "titleHelper": "Enter a translation key to show a translated title, or type a fixed title if no translation key exists.",
+        "link": "Link (route or external URL)",
+        "section": "Section",
+        "sectionRoot": "Top level",
+        "includeFunction": "Include function",
+        "includeFunctionNone": "None",
+        "pbacNote": "Access to this item is managed via PBAC, not here."
+      }
     },
     "appearance": {
       "logo": {
@@ -3682,6 +4428,10 @@
         "enableGenericCaseList": {
           "title": "Enable generic case list",
           "description": "Show a single case list view with a dropdown to switch between case definitions."
+        },
+        "enableManualTaskListRefresh": {
+          "title": "Enable manual task list refresh",
+          "description": "Show a refresh button in the task list instead of refreshing it automatically when tasks change."
         }
       }
     },
@@ -3792,7 +4542,71 @@
       "processes": "Processes",
       "forms": "Forms",
       "formFlows": "Form flows",
-      "decisions": "Decision tables"
+      "decisions": "Decision tables",
+      "migration": "Migration"
+    },
+    "migration": {
+      "addPlan": "Add migration plan",
+      "duplicateSuffix": "copy",
+      "editor": {
+        "saveFailed": {
+          "title": "The migration plan could not be saved",
+          "fallback": "The server refused the plan but sent no reason. Check the browser console for details."
+        },
+        "general": {
+          "titlePlaceholder": "Migrate building blocks with status 'aanvraag-ontvangen'",
+          "sourceHint": "The building block version whose instances this plan migrates. It need not be the immediately preceding version: naming an older one migrates those instances here in a single step. Naming a different building block makes this plan the bridge that carries its running instances over to this one — which is the only thing that can, since nothing else connects two different building blocks.",
+          "sourceKey": "Source building block",
+          "sourceKeyPlaceholder": "Select a building block",
+          "targetKey": "Target building block",
+          "whenItRuns": "When this plan runs",
+          "whenItRunsHint": "This plan has no trigger and no conditions of its own. It runs automatically when a case migrates to a case definition version that links {{key}} at version {{versionTag}}, and it is applied to every building block instance that case migration brings onto this version. It is simulated as part of that case migration’s dry run.",
+          "chainOfPlansHint": "A chain of migration plans has to connect the version a building block instance is on to the version a case links it at. One plan may declare the whole jump — its source is the version the instance is actually on — or there may be one plan per step, including a step that changes nothing: each version of {{key}} publishes its own process model, so a running building block has to be moved onto it explicitly. If nothing connects the two, or if more than one chain does, the case migration fails rather than guess. Run the case migration as a dry run to check the whole chain before starting it."
+        },
+        "dataMigration": {
+          "description": "Move or set building block data during migration. Each patch either copies a value from a source location to the target location, sets a fixed value on the target, or sets the target to null. The target field is required."
+        },
+        "processMigration": {
+          "description": "Migrate running process instances to the target process definition. Map the activities of the source process onto the target process.",
+          "activityMappingHint": "Map each source activity onto a target activity. Both the name and the technical id are shown so activities that share a name can be told apart."
+        },
+        "addBuildingBlock": {
+          "description": "Create one or more nested building blocks inside each migrated building block. Each entry creates an (initially empty) building block document, fills it with the data migration below, and hijacks the owning building block's process(es) into the new building block.",
+          "dataMigrationHint": "Fills the new building block document: each source reads from the owning building block document, each target writes into the new building block document.",
+          "processMigrationHint": "The source process is a process of the owning building block; the target process is a process of the new building block. The listed process(es) are hijacked into the new building block, and the business key is always set to the new building block document id."
+        },
+        "removeBuildingBlock": {
+          "description": "Remove one or more nested building blocks from each migrated building block. All building blocks with the given key that are directly owned by the migrating building block are dissolved after their data and process(es) are transferred back to it.",
+          "dataMigrationHint": "Transfers data back to the owning building block before the nested one is deleted: each source reads from the nested building block document, each target writes into the owning building block document.",
+          "processMigrationHint": "The source process is a process of the nested building block; the target process is a process of the owning building block. The nested building block's process(es) are handed back, and the business key is always set back to the owning building block document id."
+        }
+      },
+      "deleteModal": {
+        "title": "Delete migration plan",
+        "content": "Are you sure you want to delete this migration plan? This cannot be undone."
+      },
+      "columns": {
+        "plan": "Migration plan",
+        "source": "Source",
+        "target": "Target",
+        "status": "Status",
+        "instancesMigrated": "Instances migrated"
+      },
+      "noResults": {
+        "title": "No migration plans",
+        "description": "No migration plans are deployed for this building block version."
+      },
+      "status": {
+        "NOT_STARTED": "Not started",
+        "RUNNING": "Running",
+        "COMPLETED": "Completed",
+        "COMPLETED_WITH_ERRORS": "Completed with errors"
+      },
+      "fields": {
+        "status": "Migration status",
+        "instancesMigrated": "Instances migrated"
+      },
+      "detailHint": "Applied to a building block instance whenever a case migration moves it from {{source}} to {{target}}."
     },
     "formDefinition": {
       "name": "Name"
@@ -3858,6 +4672,86 @@
       "preparingDownload": "Preparing download"
     }
   },
+  "migrationEditor": {
+    "createTitle": "New migration plan",
+    "card": {
+      "unnamed": "New entry"
+    },
+    "tabs": {
+      "general": "General",
+      "dataMigration": "Data migration",
+      "processMigration": "Process migration",
+      "addBuildingBlock": "Add building block",
+      "removeBuildingBlock": "Remove building block",
+      "jsonEditor": "JSON editor"
+    },
+    "general": {
+      "title": "Title",
+      "titleSuggestion": "Migration plan {{source}} to {{target}}",
+      "key": "Key",
+      "keyPlaceholder": "migration-plan-aanvraag-indienen",
+      "sourceAndTarget": "Source and target",
+      "sourceVersion": "Source version",
+      "sourceVersionPlaceholder": "Select a version",
+      "targetHint": "The target is fixed — it is the version this plan belongs to, shown on the right. Everything the plan migrates ends up there.",
+      "suggesting": "Preparing a suggested plan from this version and the one it migrates from…"
+    },
+    "dataMigration": {
+      "empty": "No data patches configured yet.",
+      "addPatch": "Add patch",
+      "mode": "Source",
+      "mode_path": "Path",
+      "mode_value": "Value",
+      "mode_null": "Null",
+      "nullHint": "The target is cleared.",
+      "source": "Source field",
+      "value": "Fixed value",
+      "valuePlaceholder": "Henk",
+      "target": "Target field",
+      "targetType": "Target type",
+      "targetTypeAuto": "Auto"
+    },
+    "processMigration": {
+      "empty": "No process migrations configured yet.",
+      "addInstruction": "Add process migration",
+      "missingTarget": "Pick a target process, or remove this instruction, before saving.",
+      "missingTargetTab": "One or more instructions have no target process yet.",
+      "sourceProcess": "Source process",
+      "targetProcess": "Target process",
+      "selectProcess": "Select a process",
+      "activityMapping": "Activity mapping",
+      "incompatibleMapping": "These activity types cannot be migrated onto each other. Pick a target activity of a compatible type.",
+      "sourceActivity": "Source activity",
+      "targetActivity": "Target activity",
+      "addMapping": "Add mapping",
+      "setProcessVariables": "Set process variables",
+      "setProcessVariablesHint": "Set process variables on the migrated instance. Each patch copies a value from a source path or sets a fixed value. The target is the process variable to write to (e.g. pv:name or a nested pv:/config/enabled).",
+      "variableMode": "Source",
+      "variableSource": "Source path",
+      "variableValue": "Fixed value",
+      "variableValuePlaceholder": "Henk",
+      "variableTarget": "Target variable",
+      "variableTargetPlaceholder": "pv:aanvragerNaam",
+      "variableTargetType": "Target type",
+      "addVariable": "Add variable",
+      "skipCustomListeners": "Skip custom listeners",
+      "skipIoMappings": "Skip input/output mappings"
+    },
+    "buildingBlock": {
+      "buildingBlockKey": "Building block",
+      "buildingBlockKeyPlaceholder": "Select a building block",
+      "buildingBlockVersionTag": "Version",
+      "buildingBlockVersionTagPlaceholder": "Select a version"
+    },
+    "addBuildingBlock": {
+      "empty": "No building blocks to add configured yet.",
+      "addEntry": "Add building block"
+    },
+    "removeBuildingBlock": {
+      "empty": "No building blocks to remove configured yet.",
+      "addEntry": "Add building block"
+    }
+  },
   "mdiIcons": {
     "mdi-home": "Home",
     "mdi-home-city": "Home City",
@@ -3893,6 +4787,7 @@
     "mdi-folder-account": "Folder Account",
     "mdi-folder-multiple": "Folder Multiple",
     "mdi-folder-star": "Folder Star",
+    "mdi-archive": "Archive",
     "mdi-file": "File",
     "mdi-file-document": "File Document",
     "mdi-file-cog": "File Cog",
@@ -3940,7 +4835,9 @@
     "mdi-lightbulb": "Lightbulb",
     "mdi-check": "Check",
     "mdi-check-circle": "Check Circle",
+    "mdi-check-all": "Check All",
     "mdi-close": "Close",
+    "mdi-dot-circle": "Dot Circle",
     "mdi-lock": "Lock",
     "mdi-lock-open": "Lock Open",
     "mdi-lock-check": "Lock Check",
@@ -3958,6 +4855,7 @@
     "mdi-view-dashboard": "View Dashboard",
     "mdi-view-list": "View List",
     "mdi-view-grid": "View Grid",
+    "mdi-layers": "Layers",
     "mdi-table": "Table",
     "mdi-chart-bar": "Chart Bar",
     "mdi-chart-line": "Chart Line",
@@ -3982,6 +4880,8 @@
     "mdi-lan": "LAN",
     "mdi-api": "API",
     "mdi-application-braces": "Application Braces",
+    "mdi-xml": "XML",
+    "mdi-code": "Code",
     "mdi-cube": "Cube",
     "mdi-view-module": "View Module",
     "mdi-puzzle": "Puzzle",

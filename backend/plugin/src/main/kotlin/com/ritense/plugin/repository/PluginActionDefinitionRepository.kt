@@ -22,7 +22,7 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface PluginActionDefinitionRepository: JpaRepository<PluginActionDefinition, PluginActionDefinitionId> {
-    fun findByIdPluginDefinitionKey(pluginDefinitionKey: String): List<PluginActionDefinition>
-    fun findByIdPluginDefinitionKeyAndActivityTypes(pluginDefinitionKey: String, activityType: ActivityTypeWithEventName?): List<PluginActionDefinition>
+    fun findByIdPluginDefinitionKeyOrderByTitleAsc(pluginDefinitionKey: String): List<PluginActionDefinition>
+    fun findByIdPluginDefinitionKeyAndActivityTypesOrderByTitleAsc(pluginDefinitionKey: String, activityType: ActivityTypeWithEventName?): List<PluginActionDefinition>
     fun findByActivityTypes(activityType: ActivityTypeWithEventName): List<PluginActionDefinition>
 }

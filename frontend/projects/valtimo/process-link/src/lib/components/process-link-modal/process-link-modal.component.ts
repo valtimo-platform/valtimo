@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import {
 } from '../../services';
 import {take} from 'rxjs/operators';
 import {ConfigService} from '@valtimo/shared';
+import {PROCESS_LINK_MODAL_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -31,6 +32,8 @@ import {ConfigService} from '@valtimo/shared';
   styleUrls: ['./process-link-modal.component.scss'],
 })
 export class ProcessLinkModalComponent {
+  protected readonly testIds = PROCESS_LINK_MODAL_TEST_IDS;
+
   public readonly showModal$ = this.stateService.showModal$;
   public readonly processStepName$ = this.stateService.elementName$;
   public readonly steps$ = this.stepService.steps$;

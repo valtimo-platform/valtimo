@@ -24,6 +24,7 @@ import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} fr
 import {ReadOnlyDirective, TooltipIconModule} from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
 import {combineLatest, Subscription} from 'rxjs';
+import {BUILDING_BLOCK_MANAGEMENT_METADATA_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: true,
@@ -42,6 +43,8 @@ import {combineLatest, Subscription} from 'rxjs';
   ],
 })
 export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestroy {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_METADATA_TEST_IDS;
+
   public formGroup: FormGroup = this.fb.group({
     name: this.fb.control('', Validators.required),
     key: this.fb.control('', Validators.required),

@@ -15,8 +15,10 @@
  */
 
 import {useService} from 'bpmn-js-properties-panel';
+import {TextFieldEntry} from '@bpmn-io/properties-panel';
 import {html} from 'htm/preact';
-import {is} from 'bpmn-js/lib/util/ModelUtil';
+import {getBusinessObject, is} from 'bpmn-js/lib/util/ModelUtil';
+import {MAX_ACTIVITY_ID_LENGTH, PROCESS_LINK_PANEL_TEST_IDS} from '../../../constants';
 import {ProcessManagementEditorService} from '../../../services';
 import {
   BpmnElement,
@@ -29,6 +31,25 @@ import {TranslateService} from '@ngx-translate/core';
 import {mapActivityTypeToActivityListenerType} from '../../../utils';
 import {VNode} from 'preact';
 import {PluginTranslationService} from '@valtimo/plugin';
+
+// Mirrors the QName rules of bpmn-js-properties-panel, which does not expose them
+const SPACE_REGEX = /\s/;
+const QNAME_REGEX = /^([a-z][\w-.]*:)?[a-z_][\w-.]*$/i;
+const ID_REGEX = /^[a-z_][\w-.]*$/i;
+
+const PROCESS_LINKABLE_TYPES = [
+  'bpmn:UserTask',
+  'bpmn:StartEvent',
+  'bpmn:ServiceTask',
+  'bpmn:SendTask',
+  'bpmn:ReceiveTask',
+  'bpmn:IntermediateThrowEvent',
+  'bpmn:IntermediateCatchEvent',
+  'bpmn:CallActivity',
+];
+
+const isProcessLinkable = (element: BpmnElement): boolean =>
+  PROCESS_LINKABLE_TYPES.some(type => is(element, type));
 
 class ValtimoPropertiesProvider {
   static $inject = ['propertiesPanel', 'translate'];
@@ -81,6 +102,15 @@ class ValtimoPropertiesProvider {
         generalGroup.entries = generalGroup.entries.filter(
           (entry: any) => entry.id !== 'isExecutable'
         );
+
+        // Same scope as the auto-filled id, so typing and generating share one limit
+        if (is(element, 'bpmn:FlowNode')) {
+          const idEntry = generalGroup.entries.find((entry: any) => entry.id === 'id');
+          if (idEntry) {
+            idEntry.component = LengthLimitedIdElement;
+            idEntry.translateService = this.translateService;
+          }
+        }
       }
 
       if (elementErrors.length > 0) {
@@ -118,16 +148,7 @@ class ValtimoPropertiesProvider {
         }
       }
 
-      if (
-        is(element, 'bpmn:UserTask') ||
-        is(element, 'bpmn:StartEvent') ||
-        is(element, 'bpmn:ServiceTask') ||
-        is(element, 'bpmn:SendTask') ||
-        is(element, 'bpmn:ReceiveTask') ||
-        is(element, 'bpmn:IntermediateThrowEvent') ||
-        is(element, 'bpmn:IntermediateCatchEvent') ||
-        is(element, 'bpmn:CallActivity')
-      ) {
+      if (isProcessLinkable(element)) {
         const editingAllowed = this.processManagementEditorService.editingAllowed;
 
         if (editingAllowed || processLink) {
@@ -206,7 +227,10 @@ const CustomRootElement = (props: {
       element: {
         id: currentElement.id,
         type: currentElement.type,
-        activityListenerType: mapActivityTypeToActivityListenerType(currentElement.type, currentElement),
+        activityListenerType: mapActivityTypeToActivityListenerType(
+          currentElement.type,
+          currentElement
+        ),
         name: currentElement.di?.bpmnElement?.name,
       },
     };
@@ -250,19 +274,126 @@ const CustomRootElement = (props: {
     option => option.id === processLinkFormDefinitionId
   )?.name;
 
-  const hiddenInput = html`<input type="hidden" class="bio-properties-panel-input" value=${processLink ? 'configured' : ''} />`;
-  const wrapEntry = (content: any) => html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
+  const hiddenInput = html`<input
+    type="hidden"
+    class="bio-properties-panel-input"
+    value=${processLink ? 'configured' : ''}
+  />`;
+  const wrapEntry = (content: any) =>
+    html`<div data-entry-id=${props.id}>${hiddenInput}${content}</div>`;
 
   const linkedButtons = !editingAllowed
     ? html`<div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
           onClick=${handleEditClick}
         >
           ${viewText}
         </button>
       </div>`
     : html`<div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.unlinkButton}
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.editButton}
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>`;
+
+  if (processLinkFormDefinitionName) {
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
+
+          <cds-tag
+            class="cds--tag cds--tag--blue cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.form')}
+            </span>
+          </cds-tag>
+        </div>
+
+        ${linkedButtons}
+      </div>`
+    );
+  }
+
+  const processLinkFormFlowDefinitionKey = processLink?.formFlowDefinitionKey;
+
+  if (processLinkFormFlowDefinitionKey) {
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title"
+            >${processLinkFormFlowDefinitionKey}</span
+          >
+
+          <cds-tag
+            class="cds--tag cds--tag--teal cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.form-flow')}
+            </span>
+          </cds-tag>
+        </div>
+
+        ${linkedButtons}
+      </div>`
+    );
+  }
+
+  const buildingBlockDefinitionKey = processLink?.buildingBlockDefinitionKey;
+  const buildingBlockDefinitionVersion = processLink?.buildingBlockDefinitionVersionTag;
+
+  if (buildingBlockDefinitionKey) {
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title"
+            >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
+          >
+
+          <cds-tag
+            class="cds--tag cds--tag--green cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.building-block')}
+            </span>
+          </cds-tag>
+        </div>
+
+        ${linkedButtons}
+      </div>`
+    );
+  }
+
+  const externalActionKey = processLink?.actionKey;
+
+  if (processLink?.processLinkType === 'external_plugin' && externalActionKey) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title-container">
+          <span class="process-link-properties-panel__title">${externalActionKey}</span>
+        </span>
+
+        <cds-tag
+          class="cds--tag cds--tag--purple cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.plugin')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
         <button
           class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
           onClick=${handleUnlinkClick}
@@ -276,81 +407,20 @@ const CustomRootElement = (props: {
         >
           ${editProcessLinkText}
         </button>
-      </div>`;
-
-  if (processLinkFormDefinitionName) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
-
-        <cds-tag
-          class="cds--tag cds--tag--blue cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.form')}
-          </span>
-        </cds-tag>
       </div>
-
-      ${linkedButtons}
-    </div>`);
+    </div>`;
   }
 
-  const processLinkFormFlowDefinitionKey = processLink?.formFlowDefinitionKey;
-
-  if (processLinkFormFlowDefinitionKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title"
-          >${processLinkFormFlowDefinitionKey}</span
-        >
-
-        <cds-tag
-          class="cds--tag cds--tag--teal cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.form-flow')}
-          </span>
-        </cds-tag>
-      </div>
-
-      ${linkedButtons}
-    </div>`);
-  }
-
-  const buildingBlockDefinitionKey = processLink?.buildingBlockDefinitionKey;
-  const buildingBlockDefinitionVersion = processLink?.buildingBlockDefinitionVersionTag;
-
-  if (buildingBlockDefinitionKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title"
-          >${buildingBlockDefinitionKey} (${buildingBlockDefinitionVersion})</span
-        >
-
-        <cds-tag
-          class="cds--tag cds--tag--green cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.building-block')}
-          </span>
-        </cds-tag>
-      </div>
-
-      ${linkedButtons}
-    </div>`);
-  }
-
-  const pluginActionKey = processLink?.pluginActionDefinitionKey;
-  const pluginActionTranslation =
-    pluginTranslationService.instantByPluginActionKey(pluginActionKey);
-  const pluginTitleTranslation =
-    pluginTranslationService.instantPluginTitleByPluginActionKey(pluginActionKey);
-
-  if (pluginActionKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
+  if (processLink?.processLinkType === 'external_plugin_task_form') {
+    // A task-form's name is its bundle key (the form identifier), mirroring how the external-plugin
+    // action panel shows its action key; fall back to a generic label for a plugin's sole, unkeyed
+    // task-form bundle.
+    const taskFormName =
+      processLink?.bundleKey || translateService.instant('processLink.pluginForm');
+    return html`<div class="process-link-properties-panel">
       <div class="process-link-properties-panel__header">
         <span class="process-link-properties-panel__title-container">
-          <span class="process-link-properties-panel__title">${pluginTitleTranslation}</span>
-
-          <span class="process-link-properties-panel__title">${pluginActionTranslation}</span>
+          <span class="process-link-properties-panel__title">${taskFormName}</span>
         </span>
 
         <cds-tag
@@ -361,27 +431,72 @@ const CustomRootElement = (props: {
         </cds-tag>
       </div>
 
-      ${linkedButtons}
-    </div>`);
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
+  const pluginActionKey = processLink?.pluginActionDefinitionKey;
+  const pluginActionTranslation =
+    pluginTranslationService.instantByPluginActionKey(pluginActionKey);
+  const pluginTitleTranslation =
+    pluginTranslationService.instantPluginTitleByPluginActionKey(pluginActionKey);
+
+  if (pluginActionKey) {
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title-container">
+            <span class="process-link-properties-panel__title">${pluginTitleTranslation}</span>
+
+            <span class="process-link-properties-panel__title">${pluginActionTranslation}</span>
+          </span>
+
+          <cds-tag
+            class="cds--tag cds--tag--purple cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.plugin')}
+            </span>
+          </cds-tag>
+        </div>
+
+        ${linkedButtons}
+      </div>`
+    );
   }
 
   const uiComponentKey = processLink?.componentKey;
 
   if (uiComponentKey) {
-    return wrapEntry(html`<div class="process-link-properties-panel">
-      <div class="process-link-properties-panel__header">
-        <span class="process-link-properties-panel__title">${uiComponentKey}</span>
+    return wrapEntry(
+      html`<div class="process-link-properties-panel">
+        <div class="process-link-properties-panel__header">
+          <span class="process-link-properties-panel__title">${uiComponentKey}</span>
 
-        <cds-tag
-          class="cds--tag cds--tag--magenta cds--tag--md cds--layout--size-md  cds-tag--no-margin"
-          ><span class="cds--tag__label">
-            ${translateService.instant('processLinkType.ui-component')}
-          </span>
-        </cds-tag>
-      </div>
+          <cds-tag
+            class="cds--tag cds--tag--magenta cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+            ><span class="cds--tag__label">
+              ${translateService.instant('processLinkType.ui-component')}
+            </span>
+          </cds-tag>
+        </div>
 
-      ${linkedButtons}
-    </div>`);
+        ${linkedButtons}
+      </div>`
+    );
   }
 
   const genericLinkedPanel = html`<div class="process-link-properties-panel">
@@ -392,6 +507,7 @@ const CustomRootElement = (props: {
     <div class="process-link-properties-panel__buttons">
       <button
         class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+        data-test-id=${PROCESS_LINK_PANEL_TEST_IDS.createButton}
         onClick=${handleCreateClick}
       >
         ${createText}
@@ -402,6 +518,67 @@ const CustomRootElement = (props: {
   return wrapEntry(processLink ? genericLinkedPanel : genericCreatePanel);
 };
 
+const LengthLimitedIdElement = (props: {
+  element: BpmnElement;
+  translateService: TranslateService;
+}): VNode => {
+  const {element, translateService} = props;
+  const modeling = useService('modeling');
+  const debounce = useService('debounceInput');
+  const translate = useService('translate');
+
+  const getValue = (): string => getBusinessObject(element).id;
+
+  const setValue = (value: string, error: string): void => {
+    if (error) return;
+
+    modeling.updateProperties(element, {id: value});
+  };
+
+  const validate = (value: string): string | undefined => {
+    const businessObject = getBusinessObject(element);
+    const assigned = businessObject.$model.ids.assigned(value);
+
+    if (!value) return translate('ID must not be empty.');
+
+    if (assigned && assigned !== businessObject) return translate('ID must be unique.');
+
+    if (SPACE_REGEX.test(value)) return translate('ID must not contain spaces.');
+
+    if (!ID_REGEX.test(value)) {
+      return QNAME_REGEX.test(value)
+        ? translate('ID must not contain prefix.')
+        : translate('ID must be a valid QName.');
+    }
+
+    if (value.length > MAX_ACTIVITY_ID_LENGTH) {
+      return translateService.instant('processManagement.idTooLong', {
+        max: MAX_ACTIVITY_ID_LENGTH,
+      });
+    }
+
+    return undefined;
+  };
+
+  // The panel's text field has no maxLength prop, so cap the rendered input directly
+  const capInputLength = (node: HTMLElement | null): void => {
+    const input = node?.querySelector('input');
+    if (input) input.maxLength = MAX_ACTIVITY_ID_LENGTH;
+  };
+
+  return html`<div ref=${capInputLength}>
+    ${TextFieldEntry({
+      element,
+      id: 'id',
+      label: translate('ID'),
+      getValue,
+      setValue,
+      debounce,
+      validate,
+    })}
+  </div>`;
+};
+
 const ValidationErrorsElement = (props: {
   errors: ProcessDefinitionValidationError[];
   translateService: TranslateService;
@@ -409,7 +586,9 @@ const ValidationErrorsElement = (props: {
   const getErrorMessage = (error: ProcessDefinitionValidationError): string => {
     if (error.errorCode) {
       const translationKey = `processManagement.validationErrorCodes.${error.errorCode}`;
-      const translated = props.translateService.instant(translationKey, {expression: error.expression ?? ''});
+      const translated = props.translateService.instant(translationKey, {
+        expression: error.expression ?? '',
+      });
       if (translated !== translationKey) {
         return translated;
       }
@@ -420,9 +599,17 @@ const ValidationErrorsElement = (props: {
   return html`<div class="validation-errors-panel">
     ${props.errors.map(
       error =>
-        html`<div class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}">
-          <span class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}">!</span>
-          <span class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}">${getErrorMessage(error)}</span>
+        html`<div
+          class="validation-errors-panel__item${error.severity === 'WARNING' ? ' warning' : ''}"
+        >
+          <span
+            class="validation-errors-panel__icon${error.severity === 'WARNING' ? ' warning' : ''}"
+            >!</span
+          >
+          <span
+            class="validation-errors-panel__reason${error.severity === 'WARNING' ? ' warning' : ''}"
+            >${getErrorMessage(error)}</span
+          >
         </div>`
     )}
   </div>`;

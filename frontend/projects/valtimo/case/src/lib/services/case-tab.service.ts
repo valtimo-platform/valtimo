@@ -39,6 +39,7 @@ import {
 import {CaseDetailTabFormioComponent} from '../components/case-detail/tab/formio/formio.component';
 import {CaseDetailTabNotFoundComponent} from '../components/case-detail/tab/not-found/not-found.component';
 import {CaseDetailWidgetsComponent} from '../components/case-detail/tab/widgets/widgets.component';
+import {CaseDetailExternalPluginTabComponent} from '../components/case-detail/tab/external-plugin/external-plugin.component';
 
 @Injectable()
 export class CaseTabService implements OnDestroy {
@@ -222,6 +223,15 @@ export class CaseTabService implements OnDestroy {
           tab.key,
           index,
           CaseDetailWidgetsComponent,
+          tab.contentKey,
+          tab.name ?? '',
+          tab.showTasks
+        );
+      case ApiTabType.EXTERNAL_PLUGIN:
+        return new TabImpl(
+          tab.key,
+          index,
+          CaseDetailExternalPluginTabComponent,
           tab.contentKey,
           tab.name ?? '',
           tab.showTasks

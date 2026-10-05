@@ -22,9 +22,15 @@ export * from './lib/services';
 export * from './lib/models';
 export * from './lib/pipes';
 export * from './lib/constants';
+export * from './lib/utils';
 /* plugin configuration container */
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.component';
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.module';
+/* external plugin iframe */
+export * from './lib/components/external-plugin-iframe/external-plugin-iframe.component';
+/* external plugin routed page */
+export * from './lib/components/external-plugin-page/external-plugin-page.component';
+export * from './lib/external-plugin-page-routing.module';
 /* plugin configuration mapping */
 export * from './lib/components/plugin-configuration-mapping/plugin-configuration-mapping.component';
 /* open-zaak plugin */
@@ -53,6 +59,7 @@ export * from './lib/plugins/documenten-api/components/store-uploaded-document-i
 export * from './lib/plugins/documenten-api/components/link-document-to-object/link-document-to-object-configuration.component';
 export * from './lib/plugins/documenten-api/components/delete-document-link/delete-document-link-configuration.component';
 export * from './lib/plugins/documenten-api/components/get-audit-trail/get-audit-trail-configuration.component';
+export * from './lib/plugins/documenten-api/components/add-document-trefwoord/add-document-trefwoord-configuration.component';
 /* documenten api preview plugin */
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.module';
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.specification';
@@ -118,6 +125,8 @@ export * from './lib/plugins/catalogi-api/components/get-statustype/get-statusty
 export * from './lib/plugins/catalogi-api/components/get-eigenschap/get-eigenschap-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-informatieobjecttypen/get-informatieobjecttypen-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-roltypen/get-roltypen-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-roltype/get-roltype-configuration.component';
 /* notificaties api plugin */
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.module';
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.specification';

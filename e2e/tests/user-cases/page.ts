@@ -18,6 +18,7 @@ import {expect, Locator, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {apiDelete, apiPost} from '../../utils/api.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
+import {openAndSelectOption} from '../../utils/ui.utils';
 
 export interface CreatedCase {
   documentId: string;
@@ -62,11 +63,31 @@ export class UserCasesPage {
 
   async goToCaseList() {
     await this.page.goto(`/cases/${USER_CASES_CONFIG.caseDefinitionKey}`);
+
+    await this.page.waitForURL(new RegExp(`/cases/${USER_CASES_CONFIG.caseDefinitionKey}(\\?|$)`), {
+      timeout: 30_000,
+    });
     await this.caseList.waitForLoaded();
   }
 
+  async waitForCaseRows(tabName: 'All cases' | 'My cases' | 'Unassigned cases' | 'Team cases') {
+    await expect(async () => {
+      if ((await this.caseList.rows.count()) === 0) {
+        await this.goToCaseList();
+        await this.selectCaseListTab(tabName);
+      }
+      await expect(this.caseList.rows).not.toHaveCount(0, {timeout: 8_000});
+    }).toPass({timeout: 60_000});
+  }
+
   async selectCaseListTab(tabName: 'All cases' | 'My cases' | 'Unassigned cases' | 'Team cases') {
-    await this.page.getByRole('tab', {name: tabName, exact: true}).click();
+    const tab = this.page.getByRole('tab', {name: tabName, exact: true});
+
+    await expect(async () => {
+      await tab.click({timeout: 5_000});
+      await expect(tab).toHaveAttribute('aria-selected', 'true', {timeout: 3_000});
+    }).toPass({timeout: 25_000});
+
     await this.caseList.waitForLoaded();
   }
 
@@ -169,14 +190,19 @@ export class UserCasesPage {
     return this.page.locator('valtimo-case-detail-tab-progress');
   }
 
-  get progressProcessDropdown(): Locator {
-    return this.progressTabContent.locator('cds-dropdown').first();
+  // The process selector on the progress tab is a Carbon `cds-combo-box` (it used
+  // to be a `cds-dropdown`), so it exposes an input with role="combobox" labelled
+  // by "Process". Matching on the role instead of the Carbon tag keeps this
+  // assertion tied to what the user sees rather than to the widget Carbon happens
+  // to render.
+  get progressProcessComboBox(): Locator {
+    return this.progressTabContent.getByRole('combobox', {name: 'Process'});
   }
 
+  // bpmn-js renders its <svg> inside `.diagram-container`. Scoping to that element
+  // avoids matching the combo-box chevron/clear icons, which are also <svg>.
   get progressBpmnSvg(): Locator {
-    return this.progressTabContent.locator('svg.djs-container').or(
-      this.progressTabContent.locator('.process-history svg')
-    );
+    return this.progressTabContent.locator('valtimo-process-diagram .diagram-container svg');
   }
 
   get documentsTabContainer(): Locator {
@@ -233,23 +259,32 @@ export class UserCasesPage {
   // ─── Actions ─────────────────────────────────────────────────────
 
   async openStartProcessMenu() {
+    await expect(this.startCaseProcessButton).toBeEnabled({timeout: 30_000});
     await this.startCaseProcessButton.click();
   }
 
   async startSubProcess(displayName: string) {
-    await this.openStartProcessMenu();
     const item = this.startableMenuItem(displayName);
-    await expect(item).toBeVisible();
+
+    await expect(async () => {
+      if (!(await item.isVisible())) await this.openStartProcessMenu();
+      await expect(item).toBeVisible({timeout: 5_000});
+    }).toPass({timeout: 30_000});
+
     await item.click();
   }
 
   async assignTaskToSelf() {
     await expect(this.page.getByText('Assign this task')).toBeVisible({timeout: 15_000});
     await this.page.getByText('Assign this task').click();
-    await this.page.getByRole('combobox', {name: 'Select user'}).click();
-    await this.page.getByRole('listbox').getByText('(me)').first().click();
-    await this.page.getByRole('combobox', {name: 'Select team'}).click();
-    await this.page.getByRole('listbox').getByRole('option').first().click();
+    await openAndSelectOption(
+      this.page.getByRole('combobox', {name: 'Select user'}),
+      this.page.getByRole('listbox').getByText('(me)').first()
+    );
+    await openAndSelectOption(
+      this.page.getByRole('combobox', {name: 'Select team'}),
+      this.page.getByRole('listbox').getByRole('option').first()
+    );
 
     // Confirm the assignment and wait for the backend call to succeed rather than
     // for the "Task assigned" pop-up: that pop-up is a transient toast

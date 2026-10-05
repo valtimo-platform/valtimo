@@ -12,8 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  delete_test_env_if_labeled:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test env') }}
+  delete_test_env:
     uses: ./.github/workflows/delete_test_env.yml
     secrets: inherit
     with:

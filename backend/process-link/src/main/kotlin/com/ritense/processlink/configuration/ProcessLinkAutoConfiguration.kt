@@ -266,13 +266,11 @@ class ProcessLinkAutoConfiguration {
         importPreviewContributors: List<ImportPreviewContributor>,
         processLinkService: ProcessLinkService,
         repositoryService: OperatonRepositoryService,
-        processPropertyService: ProcessPropertyService,
     ) = ProcessDefinitionImportPreviewService(
         objectMapper,
         importPreviewContributors,
         processLinkService,
         repositoryService,
-        processPropertyService,
     )
 
     @Bean

@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+export const TRANSLATION_MANAGEMENT_TEST_IDS = {
+  /** Rendered into the page header, not into the component's own template. */
+  saveButton: 'translationManagementSaveButton',
+} as const;
+
 export const WIDGET_EDITOR_TEST_IDS = {
   addWidgetButton: 'widgetEditorAddWidgetButton',
   addDividerButton: 'widgetEditorAddDividerButton',
@@ -24,6 +29,8 @@ export const WIDGET_WIZARD_TEST_IDS = {
   saveButton: 'widgetWizardSaveButton',
   cancelButton: 'widgetWizardCancelButton',
   backButton: 'widgetWizardBackButton',
+  /** Reads "Create widget" or "Edit widget" — lets tests tell the two modes apart. */
+  heading: 'widgetWizardHeading',
 } as const;
 
 export const WIDGET_WIZARD_TYPE_TEST_IDS = {

@@ -20,15 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.BaseTest
 import com.ritense.case.service.CaseDefinitionImportPreviewService
+import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
 import com.ritense.case.web.rest.dto.CaseDefinitionImportPreviewResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionUpdateRequest
 import com.ritense.case.web.rest.dto.CaseSettingsDto
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.exporter.ExportService
-import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -67,8 +66,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     lateinit var service: CaseDefinitionService
     lateinit var activeCaseDefinitionService: ActiveCaseDefinitionService
     lateinit var exportService: ExportService
-    lateinit var importService: ImportService
-    lateinit var caseDefinitionRepository: CaseDefinitionRepository
+    lateinit var caseDefinitionImportService: CaseDefinitionImportService
     lateinit var caseDefinitionChecker: CaseDefinitionChecker
     lateinit var configurationIssueRepository: com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
     lateinit var caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService
@@ -79,8 +77,7 @@ class CaseDefinitionResourceTest : BaseTest() {
         service = mock()
         activeCaseDefinitionService = mock()
         exportService = mock()
-        importService = mock()
-        caseDefinitionRepository = mock()
+        caseDefinitionImportService = mock()
         caseDefinitionChecker = mock()
         configurationIssueRepository = mock()
         caseDefinitionImportPreviewService = mock()
@@ -88,12 +85,11 @@ class CaseDefinitionResourceTest : BaseTest() {
             service,
             activeCaseDefinitionService,
             exportService,
-            importService,
-            caseDefinitionRepository,
+            caseDefinitionImportService,
             caseDefinitionChecker,
             configurationIssueRepository,
             caseDefinitionImportPreviewService,
-            null,
+            emptyList(),
         )
 
         mapper = MapperSingleton.get()
@@ -349,7 +345,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should get case definitions for management with configuration issues`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), isNull(), any(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
         whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(any())).thenReturn(setOf(caseDefinitionId))
 
         mockMvc.perform(
@@ -372,7 +368,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should get case definitions for management without configuration issues`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        whenever(service.getCaseDefinitionsForManagement(isNull(), isNull(), isNull(), any(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
         whenever(configurationIssueRepository.findCaseDefinitionIdsWithUnresolvedIssues(any())).thenReturn(emptySet())
 
         mockMvc.perform(
@@ -529,8 +525,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     @Test
     fun `should import with key and name overrides`() {
         val caseDefinitionId = CaseDefinitionId("new-key", "1.0.0")
-        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), eq("new-key"), eq("New Name"), isNull()))
+        whenever(caseDefinitionImportService.import(any(), eq("new-key"), eq("New Name"), isNull()))
             .thenReturn(caseDefinitionId)
 
         val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
@@ -544,14 +539,13 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andDo(print())
             .andExpect(status().isOk)
 
-        verify(importService).import(any(), any(), eq("new-key"), eq("New Name"), isNull())
+        verify(caseDefinitionImportService).import(any(), eq("new-key"), eq("New Name"), isNull())
     }
 
     @Test
     fun `should import without overrides`() {
         val caseDefinitionId = CaseDefinitionId("original-key", "1.0.0")
-        whenever(caseDefinitionRepository.findAllByFinalTrue()).thenReturn(emptyList())
-        whenever(importService.import(any(), any(), isNull(), isNull(), isNull()))
+        whenever(caseDefinitionImportService.import(any(), isNull(), isNull(), isNull()))
             .thenReturn(caseDefinitionId)
 
         val file = MockMultipartFile("file", "test.zip", "application/zip", byteArrayOf(1, 2, 3))
@@ -562,7 +556,7 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andDo(print())
             .andExpect(status().isOk)
 
-        verify(importService).import(any(), any(), isNull(), isNull(), isNull())
+        verify(caseDefinitionImportService).import(any(), isNull(), isNull(), isNull())
     }
 
     companion object {

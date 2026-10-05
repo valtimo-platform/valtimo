@@ -20,6 +20,7 @@
   *ngIf="{
     currentLanguage: currentLanguage$ | async,
     formioOptions: formioOptions$ | async,
+    renderOptions: renderOptions$ | async,
     submission: submission$ | async,
     readOnly: readOnly$ | async,
     form: form$ | async,
@@ -42,6 +43,7 @@
     [options]="obs.formioOptions"
     [readOnly]="obs.readOnly"
     [refresh]="refreshForm"
+    [renderOptions]="obs.renderOptions"
     [submission]="obs.submission"
     (change)="onChange($event)"
     (nextPage)="nextPage()"

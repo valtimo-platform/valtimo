@@ -35,10 +35,13 @@ import {
   uniqueWidgetTitle,
 } from './iko-widget-config';
 import {generateId} from '../../../utils/dataGenerator';
+import {runCleanups} from '../../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
 
 test.describe('Feature 15G — IKO Widgets', () => {
+  test.describe.configure({timeout: 120_000});
+
   let context: BrowserContext;
   let page: Page;
   let ikoServerPage: IkoServerPage;
@@ -79,14 +82,17 @@ test.describe('Feature 15G — IKO Widgets', () => {
   test.afterAll(async () => {
     // Widgets cascade with the tab, but clean any UI-created leftovers
     // explicitly so a partial failure doesn't poison the next suite.
-    await widgetPage.cleanupTestWidgetsViaApi(parentViewKey, widgetTabKey, [
-      IKO_WIDGET_TITLE_PREFIX,
-      IKO_WIDGET_DIVIDER_TITLE_PREFIX,
-    ]);
-    await tabPage.deleteTabViaApi(parentViewKey, widgetTabKey);
-    await ikoViewPage.deleteViewViaApi(parentViewKey);
-    await ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX);
-    await context.close();
+    await runCleanups(
+      () =>
+        widgetPage.cleanupTestWidgetsViaApi(parentViewKey, widgetTabKey, [
+          IKO_WIDGET_TITLE_PREFIX,
+          IKO_WIDGET_DIVIDER_TITLE_PREFIX,
+        ]),
+      () => tabPage.deleteTabViaApi(parentViewKey, widgetTabKey),
+      () => ikoViewPage.deleteViewViaApi(parentViewKey),
+      () => ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX),
+      () => context.close()
+    );
   });
 
   test.afterEach(async () => {

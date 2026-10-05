@@ -37,6 +37,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, Subscription, switchMap, tap} from 'rxjs';
 import {TrashCan16, Upload16} from '@carbon/icons';
+import {BUILDING_BLOCK_MANAGEMENT_ARTWORK_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: true,
@@ -59,6 +60,8 @@ import {TrashCan16, Upload16} from '@carbon/icons';
   ],
 })
 export class BuildingBlockManagementArtworkComponent implements OnInit, OnDestroy {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_ARTWORK_TEST_IDS;
+
   public readonly ACCEPTED_FILES: string[] = ['png'];
 
   public readonly formGroup = this.formBuilder.group({

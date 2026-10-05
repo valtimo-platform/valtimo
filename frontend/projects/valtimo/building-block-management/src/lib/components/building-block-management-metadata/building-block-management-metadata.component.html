@@ -31,6 +31,7 @@
       </span>
 
       <input
+        [attr.data-test-id]="testIds.nameInput"
         formControlName="name"
         cdsText
         placeholder="{{ 'buildingBlockManagement.createDefinition.namePlaceholder' | translate }}"
@@ -44,7 +45,13 @@
         {{ 'buildingBlockManagement.createDefinition.keyTitle' | translate }}
       </span>
 
-      <input formControlName="key" cdsText valtimoReadOnly [isReadOnly]="true" />
+      <input
+        [attr.data-test-id]="testIds.keyInput"
+        formControlName="key"
+        cdsText
+        valtimoReadOnly
+        [isReadOnly]="true"
+      />
     </cds-label>
   </div>
 
@@ -63,6 +70,7 @@
       </span>
 
       <textarea
+        [attr.data-test-id]="testIds.descriptionInput"
         cdsTextArea
         formControlName="description"
         placeholder="{{
@@ -76,6 +84,7 @@
 
   <div class="building-block-management-metadata__buttons">
     <button
+      [attr.data-test-id]="testIds.saveButton"
       cdsButton="primary"
       [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
       (click)="onSave()"

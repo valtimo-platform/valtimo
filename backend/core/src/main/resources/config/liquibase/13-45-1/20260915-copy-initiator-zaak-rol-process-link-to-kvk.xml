@@ -1,0 +1,143 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <!--
+      13.45.0 split 'create-initiator-zaak-rol' into a BSN branch (same id) and a new KvK branch
+      'create-initiator-zaak-rol-kvk'. Existing configurations only link the old id, so a KvK verzoek
+      now reaches an unlinked activity and creates no zaakrol at all. Copying the link onto the KvK
+      activity makes both branches behave as the single pre-13.45 task did, whichever action is linked.
+
+      Skipped where a KvK link already exists, so re-running and already-migrated environments are no-ops.
+    -->
+
+    <changeSet author="Ritense" id="1">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            INSERT INTO process_link (
+                id,
+                process_definition_id,
+                activity_id,
+                activity_type,
+                process_link_type,
+                component_key,
+                form_definition_id,
+                view_model_enabled,
+                form_display_type,
+                form_size,
+                subtitles,
+                process_link_url,
+                action_properties,
+                plugin_configuration_id,
+                plugin_action_definition_key,
+                reference_type,
+                plugin_definition_key,
+                form_flow_definition_key
+            )
+            SELECT
+                gen_random_uuid(),
+                bsn.process_definition_id,
+                'create-initiator-zaak-rol-kvk',
+                bsn.activity_type,
+                bsn.process_link_type,
+                bsn.component_key,
+                bsn.form_definition_id,
+                bsn.view_model_enabled,
+                bsn.form_display_type,
+                bsn.form_size,
+                bsn.subtitles,
+                bsn.process_link_url,
+                bsn.action_properties,
+                bsn.plugin_configuration_id,
+                bsn.plugin_action_definition_key,
+                bsn.reference_type,
+                bsn.plugin_definition_key,
+                bsn.form_flow_definition_key
+            FROM process_link bsn
+            JOIN act_re_procdef pd
+                ON pd.id_ = bsn.process_definition_id
+            LEFT JOIN process_link kvk
+                ON kvk.process_definition_id = bsn.process_definition_id
+                AND kvk.activity_id = 'create-initiator-zaak-rol-kvk'
+            WHERE pd.key_ = 'create-zaakdossier'
+                AND bsn.activity_id = 'create-initiator-zaak-rol'
+                AND kvk.id IS NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            INSERT INTO process_link (
+                id,
+                process_definition_id,
+                activity_id,
+                activity_type,
+                process_link_type,
+                component_key,
+                form_definition_id,
+                view_model_enabled,
+                form_display_type,
+                form_size,
+                subtitles,
+                process_link_url,
+                action_properties,
+                plugin_configuration_id,
+                plugin_action_definition_key,
+                reference_type,
+                plugin_definition_key,
+                form_flow_definition_key
+            )
+            SELECT
+                UUID_TO_BIN(UUID()),
+                bsn.process_definition_id,
+                'create-initiator-zaak-rol-kvk',
+                bsn.activity_type,
+                bsn.process_link_type,
+                bsn.component_key,
+                bsn.form_definition_id,
+                bsn.view_model_enabled,
+                bsn.form_display_type,
+                bsn.form_size,
+                bsn.subtitles,
+                bsn.process_link_url,
+                bsn.action_properties,
+                bsn.plugin_configuration_id,
+                bsn.plugin_action_definition_key,
+                bsn.reference_type,
+                bsn.plugin_definition_key,
+                bsn.form_flow_definition_key
+            FROM process_link bsn
+            JOIN act_re_procdef pd
+                ON pd.id_ = bsn.process_definition_id
+            LEFT JOIN process_link kvk
+                ON kvk.process_definition_id = bsn.process_definition_id
+                AND kvk.activity_id = 'create-initiator-zaak-rol-kvk'
+            WHERE pd.key_ = 'create-zaakdossier'
+                AND bsn.activity_id = 'create-initiator-zaak-rol'
+                AND kvk.id IS NULL
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

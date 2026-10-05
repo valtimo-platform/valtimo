@@ -27,7 +27,7 @@
   }
 
   @if (!obs.loading && obs.usedPluginTitles.length > 0) {
-    <div class="building-block-management-plugins__tags">
+    <div [attr.data-test-id]="testIds.usedPlugins" class="building-block-management-plugins__tags">
       @for (pluginTitle of obs.usedPluginTitles; track pluginTitle) {
         <cds-tag type="blue">{{ pluginTitle }}</cds-tag>
       }
@@ -35,7 +35,10 @@
   }
 
   @if (!obs.loading && obs.usedPluginTitles.length === 0) {
-    <p class="building-block-management-plugins__description cds--label-description">
+    <p
+      [attr.data-test-id]="testIds.noPluginsUsed"
+      class="building-block-management-plugins__description cds--label-description"
+    >
       {{ 'buildingBlockManagement.plugins.noPluginsUsed' | translate }}
     </p>
   }

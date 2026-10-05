@@ -44,6 +44,7 @@ import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 import {CONFIDENTIALITY_TYPES} from '../../models/confidentiality-types';
 import {ARCHIVE_NOMINATION_TYPES} from '../../models/archive-nomination-types';
 import {ARCHIVE_STATUS_TYPES} from '../../models/archive-status-types';
+import {ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: false,
@@ -55,6 +56,8 @@ import {ARCHIVE_STATUS_TYPES} from '../../models/archive-status-types';
 export class CreateZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
+  protected readonly testIds = ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS;
+
   @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

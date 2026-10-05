@@ -134,7 +134,9 @@ export class SelectComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   );
   private _selectedSubscription!: Subscription;
   private _clearSubjectSubscription!: Subscription;
+  private _displayFlushSubscription!: Subscription;
   private _displayFlushTimeoutId?: ReturnType<typeof setTimeout>;
+  private _destroyed = false;
 
   private _onChange: (value: SelectedValue) => void = () => {};
   private _onTouched: () => void = () => {};
@@ -164,18 +166,11 @@ export class SelectComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     this.setDefaultSelection();
     this.openSelectedSubscription();
     this.openClearSubjectSubscription();
+    this.openDisplayFlushSubscription();
   }
 
   public ngAfterViewInit(): void {
-    // The underlying Carbon combobox computes its displayed value asynchronously, in a setTimeout
-    // scheduled during its own view initialization. When this component lives under an OnPush
-    // ancestor that is not marked dirty, that update is never flushed to the DOM, so a preselected
-    // value only becomes visible after the user interacts with the control. Because this setTimeout
-    // is scheduled after the combobox's (lifecycle hooks of child views run first), it runs once
-    // the combobox has set its display value, and detectChanges() flushes it to the DOM. A
-    // setTimeout is used instead of NgZone.onStable so the flush also works in apps with
-    // long-running background tasks that keep the zone from ever stabilizing.
-    this._displayFlushTimeoutId = setTimeout(() => this.changeDetectorRef.detectChanges());
+    this.scheduleDisplayFlush();
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -190,8 +185,10 @@ export class SelectComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   public ngOnDestroy(): void {
+    this._destroyed = true;
     this._selectedSubscription?.unsubscribe();
     this._clearSubjectSubscription?.unsubscribe();
+    this._displayFlushSubscription?.unsubscribe();
     if (this._displayFlushTimeoutId !== undefined) clearTimeout(this._displayFlushTimeoutId);
   }
 
@@ -262,5 +259,35 @@ export class SelectComponent implements OnInit, AfterViewInit, OnChanges, OnDest
         this.clear();
       });
     }
+  }
+
+  /**
+   * The underlying Carbon combobox computes its displayed value asynchronously, in a setTimeout it
+   * schedules while processing an items change. When this component lives under an OnPush ancestor
+   * that is not marked dirty, that update is never flushed to the DOM, so a (pre)selected value
+   * only becomes visible after the user interacts with the control. This applies to every items or
+   * selection change — not only the first render: a value written or items arriving after view
+   * init (prefill, late-loaded options, wizard step switches) hit the same race. Hence a flush is
+   * scheduled on every emission, in two passes: the first detectChanges renders the emission into
+   * the combobox (which then schedules its own internal display update), the nested one flushes
+   * that internal update — covering both orderings of the competing timeouts. setTimeout is used
+   * instead of NgZone.onStable so the flush also works in apps with long-running background tasks
+   * that keep the zone from ever stabilizing.
+   */
+  private openDisplayFlushSubscription(): void {
+    this._displayFlushSubscription = combineLatest([this._listItems$, this.selected$]).subscribe(
+      () => this.scheduleDisplayFlush()
+    );
+  }
+
+  private scheduleDisplayFlush(): void {
+    if (this._displayFlushTimeoutId !== undefined) clearTimeout(this._displayFlushTimeoutId);
+    this._displayFlushTimeoutId = setTimeout(() => {
+      if (this._destroyed) return;
+      this.changeDetectorRef.detectChanges();
+      this._displayFlushTimeoutId = setTimeout(() => {
+        if (!this._destroyed) this.changeDetectorRef.detectChanges();
+      });
+    });
   }
 }

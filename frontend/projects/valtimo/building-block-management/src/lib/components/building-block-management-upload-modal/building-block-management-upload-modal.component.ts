@@ -40,7 +40,12 @@ import {
   ProgressBarModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
-import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from '../../constants';
+import {
+  BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS,
+  STEPS,
+  UPLOAD_STATUS,
+  UPLOAD_STEP,
+} from '../../constants';
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
 import {CommonModule} from '@angular/common';
 import {BuildingBlockManagementUploadStepComponent} from './step/building-block-management-upload-step.component';
@@ -67,6 +72,8 @@ import {toObservable} from '@angular/core/rxjs-interop';
   ],
 })
 export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDestroy {
+  protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS;
+
   public readonly acceptedFiles: string[] = ['.zip'];
   public readonly showUploadModal$ = this.buildingBlockManagementService.showUploadModal$;
 

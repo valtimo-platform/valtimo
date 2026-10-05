@@ -117,6 +117,38 @@ class StartableBuildingBlockItemProviderTest {
         assertThat(result[0].key).isEqualTo("income-check")
         assertThat(result[0].versionTag).isEqualTo("1.0.0")
         assertThat(result[0].processDefinitionId).isEqualTo("bb-process:1")
+        assertThat(result[0].startableByUser).isTrue()
+    }
+
+    @Test
+    fun `should include links that are not startable by user with the flag set`() {
+        // Hidden links must stay visible to the management API; the runtime
+        // start menu filters on the flag in StartableItemService.
+        val link = CaseDefinitionBuildingBlockLink(
+            caseDefinitionId = caseDefinitionId,
+            buildingBlockDefinitionId = buildingBlockDefinitionId,
+            startableByUser = false
+        )
+        whenever(linkRepository.findAllByCaseDefinitionId(caseDefinitionId)).thenReturn(listOf(link))
+
+        val processDefBBDefId = ProcessDefinitionBuildingBlockDefinitionId(
+            processDefinitionId = ProcessDefinitionId("bb-process:1"),
+            buildingBlockDefinitionId = buildingBlockDefinitionId
+        )
+        val mainProcessLink = ProcessDefinitionBuildingBlockDefinition(
+            id = processDefBBDefId,
+            main = true
+        ).apply {
+            processDefinitionName = "Income Check Process"
+        }
+
+        whenever(processDefBBDefRepository.findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true))
+            .thenReturn(mainProcessLink)
+
+        val result = provider.getStartableItems(caseDefinitionId)
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].startableByUser).isFalse()
     }
 
     @Test
@@ -204,7 +236,8 @@ class StartableBuildingBlockItemProviderTest {
             buildingBlockDefinitionVersionTag = "1.0.0",
             inputMappings = emptyList(),
             outputMappings = emptyList(),
-            pluginConfigurationMappings = emptyMap()
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
         )
         whenever(linkService.createLink(eq(caseDefinitionId), any())).thenReturn(linkDto)
 
@@ -233,7 +266,8 @@ class StartableBuildingBlockItemProviderTest {
             buildingBlockDefinitionVersionTag = "1.0.0",
             inputMappings = emptyList(),
             outputMappings = emptyList(),
-            pluginConfigurationMappings = emptyMap()
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
         )
         whenever(linkService.getLink(caseDefinitionId, buildingBlockDefinitionId)).thenReturn(linkDto)
 
@@ -260,7 +294,8 @@ class StartableBuildingBlockItemProviderTest {
             buildingBlockDefinitionVersionTag = "1.0.0",
             inputMappings = emptyList(),
             outputMappings = emptyList(),
-            pluginConfigurationMappings = emptyMap()
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
         )
         whenever(linkService.updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any()))
             .thenReturn(linkDto)
@@ -269,6 +304,51 @@ class StartableBuildingBlockItemProviderTest {
 
         assertThat(result.type).isEqualTo(StartableItemType.BUILDING_BLOCK)
         assertThat(result.key).isEqualTo("income-check")
+        verify(linkService).updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any())
+    }
+
+    @Test
+    fun `should return the new version when the item is updated to another version`() {
+        val newBuildingBlockDefinitionId = BuildingBlockDefinitionId.of("income-check", "2.0.0")
+        val properties = objectMapper.readTree("""{
+            "buildingBlockDefinitionKey": "income-check",
+            "buildingBlockDefinitionVersionTag": "2.0.0",
+            "inputMappings": [],
+            "outputMappings": [],
+            "pluginConfigurationMappings": {}
+        }""")
+
+        val linkDto = CaseDefinitionBuildingBlockLinkDto(
+            id = UUID.randomUUID(),
+            caseDefinitionKey = "my-case",
+            caseDefinitionVersionTag = "1.0.0",
+            buildingBlockDefinitionKey = "income-check",
+            buildingBlockDefinitionVersionTag = "2.0.0",
+            inputMappings = emptyList(),
+            outputMappings = emptyList(),
+            pluginConfigurationMappings = emptyMap(),
+            startableByUser = true
+        )
+        whenever(linkService.updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any()))
+            .thenReturn(linkDto)
+
+        val processDefBBDefId = ProcessDefinitionBuildingBlockDefinitionId(
+            processDefinitionId = ProcessDefinitionId("bb-process:2"),
+            buildingBlockDefinitionId = newBuildingBlockDefinitionId
+        )
+        whenever(
+            processDefBBDefRepository.findByIdBuildingBlockDefinitionIdAndMain(newBuildingBlockDefinitionId, true)
+        ).thenReturn(
+            ProcessDefinitionBuildingBlockDefinition(id = processDefBBDefId, main = true).apply {
+                processDefinitionName = "Income Check Process v2"
+            }
+        )
+
+        val result = provider.updateItem(caseDefinitionId, "income-check", "1.0.0", properties)
+
+        assertThat(result.versionTag).isEqualTo("2.0.0")
+        assertThat(result.name).isEqualTo("Income Check Process v2")
+        assertThat(result.processDefinitionId).isEqualTo("bb-process:2")
         verify(linkService).updateLink(eq(caseDefinitionId), eq(buildingBlockDefinitionId), any())
     }
 }

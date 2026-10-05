@@ -22,6 +22,7 @@ import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.hamcrest.Matchers.greaterThan
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -78,22 +79,167 @@ class CaseDefinitionVersionListingIntTest : BaseIntegrationTest() {
             .andExpect(jsonPath("$[0].versionTag").value("1.0.9"))
     }
 
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should list every version of a key when the management list is asked for all versions`() {
+        val key = "management-list-all-versions"
+        deployVersions(key, count = 9)
+
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("caseDefinitionKey", key)
+                    .param("allVersions", "true")
+                    .param("size", "100")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.totalElements").value(9))
+            .andExpect(jsonPath("$.content.length()").value(9))
+            .andExpect(jsonPath("$.content[0].caseDefinitionVersionTag").value("1.0.9"))
+            .andExpect(jsonPath("$.content[8].caseDefinitionVersionTag").value("1.0.1"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should list only the active version of a key by default`() {
+        val key = "management-list-latest-only"
+        deployVersions(key, count = 9)
+
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("caseDefinitionKey", key)
+                    .param("size", "100")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.content[0].caseDefinitionVersionTag").value("1.0.9"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should order the management list by the requested version tag rather than the default`() {
+        val key = "management-list-sorted-asc"
+        deployVersions(key, count = 10)
+
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("caseDefinitionKey", key)
+                    .param("allVersions", "true")
+                    .param("sort", "id.versionTag,asc")
+                    .param("size", "100")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(10))
+            // Ordering the version tag as a string would end on 1.0.9 and put 1.0.10 second.
+            .andExpect(jsonPath("$.content[0].caseDefinitionVersionTag").value("1.0.1"))
+            .andExpect(jsonPath("$.content[1].caseDefinitionVersionTag").value("1.0.2"))
+            .andExpect(jsonPath("$.content[9].caseDefinitionVersionTag").value("1.0.10"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should order the management list by name without regard for casing`() {
+        val key = "management-list-sorted-name"
+        deployVersion(key, versionTag = "1.0.1", name = "gamma")
+        deployVersion(key, versionTag = "1.0.2", name = "alpha")
+        deployVersion(key, versionTag = "1.0.3", name = "Beta")
+
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("caseDefinitionKey", key)
+                    .param("allVersions", "true")
+                    .param("sort", "name,asc")
+                    .param("size", "100")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(3))
+            // A case-sensitive sort would put 'Beta' first.
+            .andExpect(jsonPath("$.content[0].name").value("alpha"))
+            .andExpect(jsonPath("$.content[1].name").value("Beta"))
+            .andExpect(jsonPath("$.content[2].name").value("gamma"))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should order the management list by the requested direction`() {
+        val key = "management-list-sorted-active"
+        deployVersions(key, count = 3)
+
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("caseDefinitionKey", key)
+                    .param("allVersions", "true")
+                    .param("sort", "active,asc")
+                    .param("size", "100")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(3))
+            // Ascending on a boolean puts the one active version last.
+            .andExpect(jsonPath("$.content[0].active").value(false))
+            .andExpect(jsonPath("$.content[2].caseDefinitionVersionTag").value("1.0.3"))
+            .andExpect(jsonPath("$.content[2].active").value(true))
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should refuse a management list sort on a property that is not sortable`() {
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("sort", "description,desc")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `should return an empty page for a page index beyond the result set`() {
+        deployVersions("management-list-beyond-end", count = 2)
+
+        // An offset past Int.MAX_VALUE used to wrap negative and throw out of subList instead of paging past the end.
+        mockMvc
+            .perform(
+                get(MANAGEMENT_LIST_PATH)
+                    .param("page", "3000000")
+                    .param("size", "1000")
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content.length()").value(0))
+            .andExpect(jsonPath("$.totalElements").value(greaterThan(0)))
+    }
+
     private fun deployVersions(key: String, count: Int) {
+        (1..count).forEach { minor ->
+            deployVersion(key, versionTag = "1.0.$minor", name = key, active = minor == count)
+        }
+    }
+
+    private fun deployVersion(key: String, versionTag: String, name: String, active: Boolean = false) {
         runWithoutAuthorization {
-            (1..count).forEach { minor ->
-                caseDefinitionRepository.saveAndFlush(
-                    CaseDefinition(
-                        id = CaseDefinitionId(key, "1.0.$minor"),
-                        name = key,
-                        createdDate = null,
-                        active = minor == count,
-                    )
+            caseDefinitionRepository.saveAndFlush(
+                CaseDefinition(
+                    id = CaseDefinitionId(key, versionTag),
+                    name = name,
+                    createdDate = null,
+                    active = active,
                 )
-            }
+            )
         }
     }
 
     private companion object {
         const val VERSIONS_PATH = "/api/management/v1/case-definition/{caseDefinitionKey}/version"
+        const val MANAGEMENT_LIST_PATH = "/api/management/v1/case-definition"
     }
 }

@@ -106,7 +106,10 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, METROLINE_AVAILABLE_MODES_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/widget/{widgetKey}"))
                     .hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/data"))
+                    .hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$DOCUMENT_EXTERNAL_PLUGIN_TAB_URL/{tabKey}")).hasAuthority(USER)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
@@ -159,6 +162,18 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/v1/pinned-item")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/pinned-item")).authenticated()
                     .requestMatchers(antMatcher(DELETE, "/api/v1/pinned-item/{itemType}/{itemKey}")).authenticated()
+                    .requestMatchers(antMatcher(GET, MANAGEMENT_MIGRATION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, MANAGEMENT_MIGRATION_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/activity-mapping")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/suggestion/activity-mapping/validate")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/building-block")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/building-block/linked")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_MIGRATION_URL/{migrationKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/status")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/start")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/dry-run")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/{migrationKey}/dry-run/status")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -179,6 +194,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
         private const val MANAGEMENT_WIDGET_TAB_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab"
         private const val DOCUMENT_WIDGET_TAB_URL = "/api/v1/document/{documentId}/widget-tab"
+        private const val DOCUMENT_EXTERNAL_PLUGIN_TAB_URL =
+            "/api/v1/document/{documentId}/external-plugin-tab"
         private const val MANAGEMENT_HEADER_WIDGET_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget"
         private const val HEADER_WIDGET_URL =
@@ -186,6 +203,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
         private const val STARTABLE_ITEMS_PATH = "/api/v1/case/startable-item"
         private const val MANAGEMENT_STARTABLE_ITEMS_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/startable-item"
+        private const val MANAGEMENT_MIGRATION_URL =
+            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/migration"
         private const val METROLINE_AVAILABLE_MODES_URL = "/api/management/v1/metroline/available-modes"
         private const val CASE_DEFINITION_GROUP_URL = "/api/management/v1/case-definition-group"
         private const val USER_CASE_DEFINITION_GROUP_URL = "/api/v1/case-definition-group"

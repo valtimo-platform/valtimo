@@ -1,0 +1,7 @@
+{
+    "key": "verhuizing",
+    "name": "Verhuizing",
+    "versionTag": "1.0.0",
+    "canHaveAssignee": true,
+    "autoAssignTasks": false
+}

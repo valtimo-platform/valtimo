@@ -22,3 +22,4 @@ export * from './case-management.service';
 export * from './startable-item-api.service';
 export * from './startable-item-management.service';
 export * from './case-definition-group-management.service';
+export * from './case-migration-api.service';
