@@ -278,6 +278,29 @@ class PlacementTest(unittest.TestCase):
         self.assertEqual("rejected", self.guard_feature(after))
 
 
+class BlankLineTest(unittest.TestCase):
+    """Blank lines decide how Markdown renders, so an edit may not take one away or leave one out."""
+
+    MIGRATION = [entry("Migration", "Stop the service first.")]
+
+    def test_divider_straight_under_a_paragraph_is_rejected(self):
+        # "Stop the service first." directly above "---" renders as a heading.
+        after = FILLED.replace("---\n\n## Enhancements", "---\n\n## Migration\n\nStop the service first.\n---\n\n## Enhancements")
+        self.assertEqual("rejected", guard(FILLED, after, self.MIGRATION, "13.49.0")[0])
+
+    def test_removed_blank_line_after_a_table_is_rejected(self):
+        before = FILLED + "\n---\n\n## Security\n\nNothing this time.\n"
+        row = "| Forms | Fixed the thing |"
+        after = before.replace("| Zaken | Existing zaken fix |\n\n---", f"| Zaken | Existing zaken fix |\n{row}\n---")
+        self.assertEqual("rejected", guard(before, after, [entry("Bugfixes", row)], "13.49.0")[0])
+
+    def test_row_appended_before_the_blank_line_is_accepted(self):
+        before = FILLED + "\n---\n\n## Security\n\nNothing this time.\n"
+        row = "| Forms | Fixed the thing |"
+        after = before.replace("| Zaken | Existing zaken fix |\n", f"| Zaken | Existing zaken fix |\n{row}\n")
+        self.assertEqual("moved", guard(before, after, [entry("Bugfixes", row)], "13.49.0")[0])
+
+
 class SectionTest(unittest.TestCase):
 
     ROW = "| Forms | Fixed the thing |"
