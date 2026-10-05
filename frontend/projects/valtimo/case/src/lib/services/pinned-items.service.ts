@@ -22,7 +22,7 @@ import {PinnedItem, PinnedItemType} from '../models';
 
 /**
  * Case groups and case types the user pinned to the menu. The backend owns the list: it resolves
- * the display name and colour, leaves out what the user may no longer see, and decides the order.
+ * the display name and colour, and leaves out what the user may no longer see.
  */
 @Injectable({providedIn: 'root'})
 export class PinnedItemsService {

@@ -71,11 +71,16 @@ export class CaseMenuService {
 
   /**
    * Built straight from the pinned items: the backend already resolved the name and colour, and
-   * left out what the user may no longer see.
+   * left out what the user may no longer see. Sorted alphabetically by name.
    */
   private toMenuItems(pinnedItems: PinnedItem[]): MenuItem[] {
     const menuItems: MenuItem[] = pinnedItems
       .filter((pinnedItem: PinnedItem) => !!pinnedItem.displayName)
+      .sort((left: PinnedItem, right: PinnedItem) =>
+        (left.displayName as string).localeCompare(right.displayName as string, undefined, {
+          sensitivity: 'base',
+        })
+      )
       .map((pinnedItem: PinnedItem, index: number) => ({
         link:
           pinnedItem.itemType === PinnedItemType.CASE_DEFINITION_GROUP
