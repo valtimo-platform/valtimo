@@ -315,6 +315,11 @@ class ReshapeTest(unittest.TestCase):
         after = self.reshaped("Then drop the table.", "First stop the old service.")
         self.assertEqual("rejected", guard(FILLED, after, self.STEPS, "13.49.0")[0])
 
+    def test_reshaped_entry_already_in_the_target_is_already_present(self):
+        before = FILLED.replace("| Case | Existing case fix |", "| Case | Fixed the empty case list. |")
+        outcome = guard(before, before, [entry("Bugfixes", "* Fixed the empty case list.", "legacy")], "13.49.0")
+        self.assertEqual(("already-present", []), outcome)
+
     def test_extra_row_made_of_the_entry_s_own_words_is_rejected(self):
         after = FILLED + "| Forms | Fixed the form |\n| Case | the form |\n"
         self.assertEqual("rejected", guard(FILLED, after, [entry("Bugfixes", "* Fixed the form.", "legacy")], "13.49.0")[0])
