@@ -15,7 +15,7 @@ on:
       - next-minor
     paths:
       - documentation/release-notes/**
-  # rc and next-major have no cut event to hang off.
+  # rc and next-major have no cut event to hang off; the weekly sweep covers them.
   schedule:
     - cron: "0 0 * * 4"
   # Push and retry path: sweeps all lines, and with only_pr ignores earlier attempts.
@@ -30,9 +30,9 @@ permissions:
   contents: read
   pull-requests: read
 
-# A queued run replacing another is harmless: every run sweeps everything.
+# A queued sweep replacing another is harmless: every sweep covers every line. A single-PR retry queues apart, so it never replaces one.
 concurrency:
-  group: relocate-release-notes
+  group: relocate-release-notes${{ inputs.only_pr && format('-pr-{0}', inputs.only_pr) || '' }}
   cancel-in-progress: false
 
 env:
@@ -82,10 +82,8 @@ jobs:
           ONLY_PR: ${{ inputs.only_pr }}
         run: |
           set -euo pipefail
-          case "${GITHUB_EVENT_NAME}" in
-            schedule) LINES="rc next-major" ;;
-            *) LINES="next-minor rc next-major" ;;
-          esac
+          # Every line on every run: the weekly run may be what replaced a queued post-cut sweep.
+          LINES="next-minor rc next-major"
           # Oldest first: the cap truncates the tail.
           gh pr list --state open --limit 200 --search "sort:created-asc" \
             --json number,headRefName,headRefOid,baseRefName,headRepositoryOwner,labels > "${RUNNER_TEMP}/prs.json"
