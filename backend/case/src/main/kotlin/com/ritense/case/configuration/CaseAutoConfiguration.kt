@@ -44,6 +44,7 @@ import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.case.service.CaseDefinitionGroupService
+import com.ritense.case.web.rest.error.InvalidGroupListColumnSortExceptionMapper
 import com.ritense.case.service.GroupCaseInstanceService
 import com.ritense.case.service.PinnedItemService
 import com.ritense.case.service.CaseDefinitionImportPreviewService
@@ -563,6 +564,10 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         startableItemRepository: StartableItemRepository,
     ) = StartableItemImporter(objectMapper, startableItemRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(InvalidGroupListColumnSortExceptionMapper::class)
+    fun invalidGroupListColumnSortExceptionMapper() = InvalidGroupListColumnSortExceptionMapper()
 
     @Bean
     @ConditionalOnMissingBean(CaseDefinitionGroupService::class)

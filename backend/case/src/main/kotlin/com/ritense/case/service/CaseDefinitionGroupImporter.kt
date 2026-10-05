@@ -29,6 +29,7 @@ import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupListColumnPathMapping
 import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupSearchField
+import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.domain.group.GroupSearchFieldPathMapping
 import com.ritense.case.domain.group.GroupSearchFieldPathMappingId
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
@@ -128,15 +129,30 @@ class CaseDefinitionGroupImporter(
     ) {
         listColumnRepository.deleteByIdGroupKey(dto.key)
 
+        var defaultSortAssigned = false
+
         dto.listColumns.forEach { columnDto ->
+            val sortable = columnDto.sortable && hasSortablePath(dto.key, columnDto)
+            var defaultSort = columnDto.defaultSort.takeIf { sortable }
+            if (defaultSort != null) {
+                if (defaultSortAssigned) {
+                    logger.warn {
+                        "Ignoring default sort for column '${columnDto.key}' in group '${dto.key}': " +
+                            "another column already has a default sort"
+                    }
+                    defaultSort = null
+                } else {
+                    defaultSortAssigned = true
+                }
+            }
             val column = listColumnRepository.save(
                 GroupListColumn(
                     id = GroupListColumnId(groupKey = dto.key, columnKey = columnDto.key),
                     group = group,
                     title = columnDto.title,
                     displayType = columnDto.displayType,
-                    sortable = columnDto.sortable,
-                    defaultSort = columnDto.defaultSort,
+                    sortable = sortable,
+                    defaultSort = defaultSort,
                     order = columnDto.order,
                     exportable = columnDto.exportable
                 )
@@ -144,6 +160,17 @@ class CaseDefinitionGroupImporter(
 
             importColumnPathMappings(dto.key, columnDto, column, existingCaseDefinitionKeys)
         }
+    }
+
+    private fun hasSortablePath(groupKey: String, columnDto: GroupListColumnExportDto): Boolean {
+        val valid = SortableCaseField.sortPathOf(columnDto.pathMappings.map { it.path }) != null
+        if (!valid) {
+            logger.warn {
+                "Column '${columnDto.key}' in group '$groupKey' cannot be sortable: " +
+                    "all path mappings must reference the same sortable case field. Sorting is disabled."
+            }
+        }
+        return valid
     }
 
     private fun importColumnPathMappings(

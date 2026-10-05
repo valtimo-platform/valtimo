@@ -34,6 +34,10 @@ import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.domain.InternalCaseStatus
+import com.ritense.document.domain.InternalCaseStatusColor
+import com.ritense.document.domain.InternalCaseStatusId
+import com.ritense.document.repository.InternalCaseStatusRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.SearchFieldService
@@ -50,7 +54,14 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.opensearch.search.sort.FieldSortBuilder
+import org.opensearch.search.sort.ScriptSortBuilder
+import org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType
+import org.opensearch.search.sort.SortOrder
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.SearchHits
 import org.opensearch.data.client.orhlc.NativeSearchQuery
@@ -69,6 +80,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
     private val outboxService: OutboxService = mock()
     private val objectMapper: ObjectMapper = ObjectMapper()
     private val caseDefinitionService: CaseDefinitionService = mock()
+    private val internalCaseStatusRepository: InternalCaseStatusRepository = mock()
 
     private lateinit var service: JsonSchemaDocumentOpenSearchService
 
@@ -89,6 +101,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
             outboxService = outboxService,
             objectMapper = objectMapper,
             caseDefinitionService = caseDefinitionService,
+            internalCaseStatusRepository = internalCaseStatusRepository,
         )
 
         val auth = UsernamePasswordAuthenticationToken(
@@ -495,6 +508,77 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         assertThat(capturedQuery.query.toString()).contains("must_not")
         assertThat(capturedQuery.query.toString()).contains("match_all")
     }
+
+    @Test
+    fun `buildSorts maps doc property to content keyword field with missing placement`() {
+        val sorts = service.buildSorts(Sort.by(Sort.Order.asc("doc:street"), Sort.Order.desc("doc:city")))
+
+        val asc = sorts[0] as FieldSortBuilder
+        assertThat(asc.fieldName).isEqualTo("content.street.keyword")
+        assertThat(asc.order()).isEqualTo(SortOrder.ASC)
+        assertThat(asc.missing()).isEqualTo("_last")
+        val desc = sorts[1] as FieldSortBuilder
+        assertThat(desc.fieldName).isEqualTo("content.city.keyword")
+        assertThat(desc.missing()).isEqualTo("_first")
+        verify(internalCaseStatusRepository, never()).findAll()
+    }
+
+    @Test
+    fun `buildSorts strips case prefix and keeps prefixless whitelisted fields`() {
+        val sorts = service.buildSorts(Sort.by(Sort.Order.asc("case:createdOn"), Sort.Order.desc("sequence")))
+
+        assertThat((sorts[0] as FieldSortBuilder).fieldName).isEqualTo("createdOn")
+        assertThat((sorts[1] as FieldSortBuilder).fieldName).isEqualTo("sequence")
+        assertThat((sorts[1] as FieldSortBuilder).missing()).isEqualTo("_first")
+        verify(internalCaseStatusRepository, never()).findAll()
+    }
+
+    @Test
+    fun `buildSorts maps document definition name to definitionId name`() {
+        val sorts = service.buildSorts(
+            Sort.by(Sort.Order.asc("case:documentDefinitionId.name"), Sort.Order.asc("definitionId.name"))
+        )
+
+        assertThat((sorts[0] as FieldSortBuilder).fieldName).isEqualTo("definitionId.name")
+        assertThat((sorts[1] as FieldSortBuilder).fieldName).isEqualTo("definitionId.name")
+    }
+
+    @Test
+    fun `buildSorts uses script sort for internal status with and without case prefix`() {
+        whenever(internalCaseStatusRepository.findAll()).thenReturn(
+            listOf(
+                status("house", "open", 0),
+                status("house", "closed", 1),
+                status("person", "closed", 0),
+            )
+        )
+
+        val sorts = service.buildSorts(Sort.by(Sort.Order.asc("case:internalStatus"), Sort.Order.desc("internalStatus")))
+
+        sorts.forEachIndexed { index, sort ->
+            val script = sort as ScriptSortBuilder
+            assertThat(script.type()).isEqualTo(ScriptSortType.NUMBER)
+            assertThat(script.script().params["orders"])
+                .isEqualTo(mapOf("house|open" to 0, "house|closed" to 1, "person|closed" to 0))
+            assertThat(script.order()).isEqualTo(if (index == 0) SortOrder.ASC else SortOrder.DESC)
+        }
+    }
+
+    @Test
+    fun `buildSorts passes unknown properties through as field sorts`() {
+        val sorts = service.buildSorts(Sort.by("foo"))
+
+        assertThat((sorts[0] as FieldSortBuilder).fieldName).isEqualTo("foo")
+    }
+
+    private fun status(definitionKey: String, key: String, order: Int) = InternalCaseStatus(
+        id = InternalCaseStatusId(definitionKey, key),
+        title = key,
+        visibleInCaseListByDefault = true,
+        order = order,
+        retentionPeriodInDays = 0,
+        color = InternalCaseStatusColor.values().first(),
+    )
 
     companion object {
         private const val FULL_ACCESS_ROLE = "full access role"

@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
-export * from './case-management.test-ids';
-export * from './case-management-list.constants';
-export * from './group-list-column-sort.constants';
+
+package com.ritense.case.web.rest.error
+
+import com.ritense.case.exception.InvalidGroupListColumnSortException
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.springframework.http.HttpStatus
+import kotlin.test.assertEquals
+
+class InvalidGroupListColumnSortExceptionMapperTest {
+
+    @Test
+    fun `maps exception to bad request`() {
+        val response = InvalidGroupListColumnSortExceptionMapper()
+            .toResponse(InvalidGroupListColumnSortException("not sortable"), mock())
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
+    }
+}

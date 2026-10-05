@@ -19,7 +19,17 @@ package com.ritense.case.service
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
+import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
+import com.ritense.case.domain.group.GroupListColumn
+import com.ritense.case.domain.group.GroupListColumnId
+import com.ritense.case.domain.group.GroupListColumnPathMapping
+import com.ritense.case.domain.group.GroupListColumnPathMappingId
+import com.ritense.case.exception.InvalidGroupListColumnSortException
+import com.ritense.case.web.rest.dto.GroupListColumnDto
+import com.ritense.case.web.rest.dto.GroupListColumnPathMappingDto
+import com.ritense.search.domain.DisplayType
+import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
@@ -207,5 +217,171 @@ class CaseDefinitionGroupServiceTest {
 
         assertEquals(newTitle, captor.firstValue.title)
         assertEquals(newDescription, captor.firstValue.description)
+    }
+
+    @Test
+    fun `should reject sortable column with document path`() {
+        mockGroup()
+
+        assertThrows<InvalidGroupListColumnSortException> {
+            service.updateListColumns(GROUP_KEY, listOf(dto("a", true, null, mapping("doc:street"))))
+        }
+        verify(listColumnRepository, never()).deleteByIdGroupKey(any())
+    }
+
+    @Test
+    fun `should reject sortable column with mixed case paths`() {
+        mockGroup()
+
+        assertThrows<InvalidGroupListColumnSortException> {
+            service.updateListColumns(
+                GROUP_KEY,
+                listOf(dto("a", true, null, mapping("case:createdOn", "x"), mapping("case:modifiedOn", "y")))
+            )
+        }
+    }
+
+    @Test
+    fun `should reject sortable column with non whitelisted case field`() {
+        mockGroup()
+
+        assertThrows<InvalidGroupListColumnSortException> {
+            service.updateListColumns(GROUP_KEY, listOf(dto("a", true, null, mapping("case:assignedTeamKey"))))
+        }
+    }
+
+    @Test
+    fun `should reject default sort without sortable`() {
+        mockGroup()
+
+        assertThrows<InvalidGroupListColumnSortException> {
+            service.updateListColumns(
+                GROUP_KEY,
+                listOf(dto("a", false, ColumnDefaultSort.ASC, mapping("case:createdOn")))
+            )
+        }
+    }
+
+    @Test
+    fun `should reject two default sorts`() {
+        mockGroup()
+
+        assertThrows<InvalidGroupListColumnSortException> {
+            service.updateListColumns(
+                GROUP_KEY,
+                listOf(
+                    dto("a", true, ColumnDefaultSort.ASC, mapping("case:createdOn")),
+                    dto("b", true, ColumnDefaultSort.DESC, mapping("case:modifiedOn"))
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should accept valid sortable case column`() {
+        mockGroup()
+        whenever(listColumnRepository.save(any<GroupListColumn>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateListColumns(
+            GROUP_KEY,
+            listOf(
+                dto("a", true, ColumnDefaultSort.ASC, mapping("case:createdOn", "x"), mapping("case:createdOn", "y")),
+                dto("b", false, null, mapping("doc:street"))
+            )
+        )
+
+        assertEquals(2, result.size)
+    }
+
+    @Test
+    fun `should validate against existing mappings when path mappings are null`() {
+        mockGroup()
+        val existing = column("a", false)
+        whenever(listColumnRepository.findByIdGroupKeyOrderByOrderAsc(GROUP_KEY)).thenReturn(listOf(existing))
+        whenever(listColumnPathMappingRepository.findByIdGroupKeyAndIdColumnKey(GROUP_KEY, "a"))
+            .thenReturn(listOf(storedMapping("a", "x", "doc:street")))
+
+        assertThrows<InvalidGroupListColumnSortException> {
+            service.updateListColumns(GROUP_KEY, listOf(dto("a", true, null)))
+        }
+    }
+
+    @Test
+    fun `should accept sortable column when existing mappings are valid and path mappings are null`() {
+        mockGroup()
+        val existing = column("a", false)
+        whenever(listColumnRepository.findByIdGroupKeyOrderByOrderAsc(GROUP_KEY)).thenReturn(listOf(existing))
+        whenever(listColumnPathMappingRepository.findByIdGroupKeyAndIdColumnKey(GROUP_KEY, "a"))
+            .thenReturn(listOf(storedMapping("a", "x", "case:sequence")))
+        whenever(listColumnRepository.save(any<GroupListColumn>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateListColumns(GROUP_KEY, listOf(dto("a", true, null)))
+
+        assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `should reject path mapping change that breaks sortable column`() {
+        whenever(listColumnRepository.findById(GroupListColumnId(GROUP_KEY, "a"))).thenReturn(Optional.of(column("a", true)))
+
+        assertThrows<InvalidGroupListColumnSortException> {
+            service.updateListColumnPathMappings(GROUP_KEY, "a", listOf(mapping("doc:street")))
+        }
+        verify(listColumnPathMappingRepository, never()).deleteByIdGroupKeyAndIdColumnKey(any(), any())
+    }
+
+    @Test
+    fun `should accept any path mapping for non sortable column`() {
+        whenever(listColumnRepository.findById(GroupListColumnId(GROUP_KEY, "a"))).thenReturn(Optional.of(column("a", false)))
+        whenever(listColumnPathMappingRepository.save(any<GroupListColumnPathMapping>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateListColumnPathMappings(
+            GROUP_KEY, "a", listOf(mapping("doc:street", "x"), mapping("case:createdOn", "y"))
+        )
+
+        assertEquals(2, result.size)
+    }
+
+    private fun mockGroup() {
+        whenever(groupRepository.findById(GROUP_KEY)).thenReturn(
+            Optional.of(CaseDefinitionGroup(key = GROUP_KEY, title = "Test Group", description = null, order = 0))
+        )
+    }
+
+    private fun mapping(path: String, caseDefinitionKey: String = "case") =
+        GroupListColumnPathMappingDto(caseDefinitionKey, path)
+
+    private fun dto(
+        key: String,
+        sortable: Boolean,
+        defaultSort: ColumnDefaultSort?,
+        vararg mappings: GroupListColumnPathMappingDto
+    ) = GroupListColumnDto(
+        key = key,
+        title = key,
+        displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+        sortable = sortable,
+        defaultSort = defaultSort,
+        order = null,
+        pathMappings = mappings.takeIf { it.isNotEmpty() }?.toList()
+    )
+
+    private fun column(key: String, sortable: Boolean) = GroupListColumn(
+        id = GroupListColumnId(GROUP_KEY, key),
+        title = key,
+        displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+        sortable = sortable,
+        defaultSort = null,
+        order = 0,
+        exportable = false
+    )
+
+    private fun storedMapping(columnKey: String, caseDefinitionKey: String, path: String) = GroupListColumnPathMapping(
+        id = GroupListColumnPathMappingId(GROUP_KEY, columnKey, caseDefinitionKey),
+        path = path
+    )
+
+    companion object {
+        private const val GROUP_KEY = "test_group"
     }
 }

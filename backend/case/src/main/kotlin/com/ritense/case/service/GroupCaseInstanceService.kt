@@ -23,6 +23,7 @@ import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupSearchField
+import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.domain.group.GroupQuickSearch
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
@@ -33,6 +34,7 @@ import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
 import com.ritense.case.web.rest.dto.CaseDefinitionQuickSearchDto
 import com.ritense.case.web.rest.dto.CaseListRowDto
+import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.GroupCaseListRowDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
@@ -48,9 +50,12 @@ import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valueresolver.ValueResolverService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -91,8 +96,21 @@ class GroupCaseInstanceService(
         }
     }
 
-    fun getListColumns(groupKey: String): List<GroupListColumn> {
-        return listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
+    fun getListColumns(groupKey: String): List<GroupListColumnDto> {
+        val columns = listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
+        val mappingsByColumn = listColumnPathMappingRepository.findByIdGroupKey(groupKey)
+            .groupBy { it.id.columnKey }
+        return columns.map { column ->
+            val sortPath = SortableCaseField.sortPathOf(
+                (mappingsByColumn[column.id.columnKey] ?: emptyList()).map { it.path }
+            )
+            val dto = GroupListColumnDto.of(column)
+            if (column.sortable && sortPath != null) {
+                dto
+            } else {
+                dto.copy(sortable = false, defaultSort = null)
+            }
+        }
     }
 
     fun getSearchFields(groupKey: String): List<GroupSearchField> {
@@ -141,19 +159,43 @@ class GroupCaseInstanceService(
                 .associate { it.id.caseDefinitionKey to it.path }
         }
 
+        val sortPathByColumnKey = columns
+            .filter { it.sortable }
+            .mapNotNull { column ->
+                SortableCaseField.sortPathOf(columnPathMappings[column.id.columnKey]?.values ?: emptyList())
+                    ?.let { column.id.columnKey to it }
+            }
+            .toMap()
+
         val searchResults = documentSearchService.search(
             accessibleMemberKeys,
             BlueprintType.CASE,
             searchRequest,
             filterPathMappings,
             globalSearchFields,
-            pageable
+            translateSort(pageable, sortPathByColumnKey)
         )
 
         return searchResults.map { document ->
             val caseDefinitionKey = document.definitionId().name()
             toGroupCaseListRowDto(document, caseDefinitionKey, columns, columnPathMappings)
         }
+    }
+
+    private fun translateSort(pageable: Pageable, sortPathByColumnKey: Map<String, String>): Pageable {
+        if (pageable.isUnpaged) {
+            return pageable
+        }
+        val orders = pageable.sort.mapNotNull { order ->
+            val sortPath = sortPathByColumnKey[order.property]
+            if (sortPath == null) {
+                logger.debug { "Ignoring sort on non-sortable group column '${order.property}'" }
+                null
+            } else {
+                order.withProperty(sortPath)
+            }
+        }.toList()
+        return PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by(orders))
     }
 
     private fun toGroupCaseListRowDto(
@@ -239,5 +281,9 @@ class GroupCaseInstanceService(
         require(getAccessibleMembers(groupKey).isNotEmpty()) {
             "Access denied to group '$groupKey'"
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

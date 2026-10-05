@@ -28,6 +28,7 @@ import {GlobalNotificationService} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, filter, map, startWith, Subscription, switchMap} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
 import {GroupPathMapping, CaseDefinitionGroupWithMembersResponse} from '../../../../models';
+import {canSortOnPaths} from '../../../../constants';
 import {GroupColumnModalComponent} from './group-column-modal/group-column-modal.component';
 import {GroupPathMappingEditorComponent} from '../../shared/group-path-mapping-editor/group-path-mapping-editor.component';
 
@@ -193,14 +194,19 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
     const groupKey = this.route.parent?.snapshot.params['groupKey'];
     if (!groupKey) return;
 
-    const requests = columns.map(c => ({
-      key: c.key,
-      title: c.title,
-      displayType: c.displayType,
-      sortable: c.sortable,
-      defaultSort: c.defaultSort,
-      exportable: c.exportable,
-    }));
+    const requests = columns.map(c => {
+      const sortable =
+        c.sortable && (!c.pathMappings || canSortOnPaths(c.pathMappings.map(m => m.path)));
+
+      return {
+        key: c.key,
+        title: c.title,
+        displayType: c.displayType,
+        sortable,
+        defaultSort: sortable ? c.defaultSort : undefined,
+        exportable: c.exportable,
+      };
+    });
 
     this.groupService.updateListColumns(groupKey, requests).subscribe({
       error: () => {

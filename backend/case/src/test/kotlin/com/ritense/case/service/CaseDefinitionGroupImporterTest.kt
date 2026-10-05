@@ -16,6 +16,7 @@
 
 package com.ritense.case.service
 
+import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.GroupListColumn
@@ -39,6 +40,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.times
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -392,6 +395,80 @@ class CaseDefinitionGroupImporterTest {
                 group.createdBy == "original-user" &&
                 group.createdOn == existingGroup.createdOn
         })
+    }
+
+    @Test
+    fun `should downgrade sortable column with document path`() {
+        val columns = importColumns(
+            column("legacy", true, "ASC", """{"caseDefinitionKey": "existing-case", "path": "doc:status"}""")
+        )
+
+        assertThat(columns).hasSize(1)
+        assertThat(columns[0].sortable).isFalse()
+        assertThat(columns[0].defaultSort).isNull()
+    }
+
+    @Test
+    fun `should keep valid sortable case column`() {
+        val columns = importColumns(
+            column("created", true, "DESC", """{"caseDefinitionKey": "existing-case", "path": "case:createdOn"}""")
+        )
+
+        assertThat(columns[0].sortable).isTrue()
+        assertThat(columns[0].defaultSort).isEqualTo(ColumnDefaultSort.DESC)
+    }
+
+    @Test
+    fun `should keep only first default sort`() {
+        val mapping = """{"caseDefinitionKey": "existing-case", "path": "case:createdOn"}"""
+        val columns = importColumns(
+            column("a", true, "ASC", mapping),
+            column("b", true, "DESC", mapping)
+        )
+
+        assertThat(columns[0].defaultSort).isEqualTo(ColumnDefaultSort.ASC)
+        assertThat(columns[1].sortable).isTrue()
+        assertThat(columns[1].defaultSort).isNull()
+    }
+
+    private fun column(key: String, sortable: Boolean, defaultSort: String?, mapping: String) = """
+        {
+            "key": "$key",
+            "title": "$key",
+            "displayType": {"type": "text", "displayTypeParameters": {}},
+            "sortable": $sortable,
+            "defaultSort": ${defaultSort?.let { "\"$it\"" }},
+            "order": 0,
+            "exportable": true,
+            "pathMappings": [$mapping]
+        }
+    """.trimIndent()
+
+    private fun importColumns(vararg columnJson: String): List<GroupListColumn> {
+        val json = """
+            {
+                "key": "my-group",
+                "title": "My Group",
+                "description": null,
+                "order": 0,
+                "color": null,
+                "members": [],
+                "listColumns": [${columnJson.joinToString(",")}],
+                "searchFields": []
+            }
+        """.trimIndent()
+        val existingCaseDef = createCaseDefinition("existing-case")
+        whenever(caseDefinitionRepository.findAll()).thenReturn(listOf(existingCaseDef))
+        whenever(groupRepository.findById("my-group")).thenReturn(Optional.empty())
+        whenever(groupRepository.save(any<CaseDefinitionGroup>())).thenAnswer { it.arguments[0] }
+        whenever(listColumnRepository.save(any<GroupListColumn>())).thenAnswer { it.arguments[0] }
+        whenever(listColumnPathMappingRepository.save(any<GroupListColumnPathMapping>())).thenAnswer { it.arguments[0] }
+
+        importer.import(createImportRequest(json))
+
+        val captor = argumentCaptor<GroupListColumn>()
+        verify(listColumnRepository, times(columnJson.size)).save(captor.capture())
+        return captor.allValues
     }
 
     private fun createImportRequest(json: String) = ImportRequest(

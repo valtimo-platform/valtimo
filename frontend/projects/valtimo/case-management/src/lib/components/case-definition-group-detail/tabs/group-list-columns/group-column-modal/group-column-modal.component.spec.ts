@@ -15,6 +15,7 @@
  */
 
 import {FormBuilder} from '@angular/forms';
+import {of} from 'rxjs';
 import {GroupColumnModalComponent} from './group-column-modal.component';
 import {GroupMember} from '../../../../../models';
 
@@ -34,7 +35,7 @@ describe('GroupColumnModalComponent', () => {
         'getListColumns',
         'updateListColumns',
       ]),
-      jasmine.createSpyObj('TranslateService', ['instant']),
+      jasmine.createSpyObj('TranslateService', {instant: '', stream: of({})}),
       jasmine.createSpyObj('GlobalNotificationService', ['showToast']),
       jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck'])
     );
@@ -151,9 +152,7 @@ describe('GroupColumnModalComponent', () => {
     it('returns the case definition key of the item', () => {
       setMembers();
 
-      expect(component.trackByMember(0, component.displayedMembers[1])).toBe(
-        'auto-assign-test'
-      );
+      expect(component.trackByMember(0, component.displayedMembers[1])).toBe('auto-assign-test');
     });
 
     it('returns a stable value for the same member across recomputed arrays', () => {
@@ -165,19 +164,222 @@ describe('GroupColumnModalComponent', () => {
     });
   });
 
-  describe('default sort removal', () => {
-    it('does not include a defaultSort control in the form group', () => {
-      expect(component.formGroup.get('defaultSort')).toBeNull();
+  describe('sorting', () => {
+    const groupService = (): jasmine.SpyObj<any> => (component as any).groupService;
+
+    beforeEach(() => {
+      setMembers();
+      component.ngOnInit();
     });
 
-    it('does not include defaultSort in the built save request', () => {
-      setMembers();
+    it('cannot sort when no path is filled', () => {
+      expect(component.canSort).toBe(false);
+    });
+
+    it('can sort when all paths are the same whitelisted case field', () => {
+      component.pathControls[0].setValue('case:createdOn');
+      component.pathControls[1].setValue('case:createdOn');
+
+      expect(component.canSort).toBe(true);
+      expect(component.formGroup.get('sortable')?.enabled).toBe(true);
+    });
+
+    it('cannot sort on document paths', () => {
+      component.pathControls[0].setValue('doc:/street');
+
+      expect(component.canSort).toBe(false);
+      expect(component.formGroup.get('sortable')?.disabled).toBe(true);
+    });
+
+    it('cannot sort on mixed case paths', () => {
+      component.pathControls[0].setValue('case:createdOn');
+      component.pathControls[1].setValue('case:modifiedOn');
+
+      expect(component.canSort).toBe(false);
+    });
+
+    it('cannot sort on a case field that is not whitelisted', () => {
+      component.pathControls[0].setValue('case:assignedTeamKey');
+
+      expect(component.canSort).toBe(false);
+    });
+
+    it('unchecks sortable when the paths stop being sortable', () => {
+      component.pathControls[0].setValue('case:createdOn');
+      component.formGroup.get('sortable')?.setValue(true);
+      component.pathControls[1].setValue('doc:/street');
+
+      expect(component.formGroup.get('sortable')?.value).toBe(false);
+    });
+
+    it('enables the default sort only when sortable', () => {
+      component.pathControls[0].setValue('case:createdOn');
+      component.formGroup.get('sortable')?.setValue(false);
+
+      expect(component.formGroup.get('defaultSort')?.disabled).toBe(true);
+
+      component.formGroup.get('sortable')?.setValue(true);
+
+      expect(component.formGroup.get('defaultSort')?.enabled).toBe(true);
+    });
+
+    it('disables the default sort when another column already has one', () => {
+      groupService().getListColumns.and.returnValue(
+        of([{key: 'other', defaultSort: 'ASC', sortable: true}])
+      );
       component.groupKey = 'group-1';
+      component.open = true;
+      component.ngOnChanges({open: {} as any});
+      component.pathControls[0].setValue('case:createdOn');
+      component.formGroup.get('sortable')?.setValue(true);
+
+      expect(component.otherColumnHasDefaultSort).toBe(true);
+      expect(component.formGroup.get('defaultSort')?.disabled).toBe(true);
+    });
+
+    it('includes the selected default sort in the save request', () => {
+      component.pathControls[0].setValue('case:createdOn');
+      component.formGroup.patchValue({key: 'my-key', displayType: 'text', sortable: true});
+      component.formGroup.get('defaultSort')?.setValue('DESC');
+
+      const request = (component as any)._buildRequest();
+
+      expect(request.sortable).toBe(true);
+      expect(request.defaultSort).toBe('DESC');
+    });
+
+    it('sends no default sort or sortable for non sortable paths', () => {
+      component.pathControls[0].setValue('doc:/street');
       component.formGroup.patchValue({key: 'my-key', displayType: 'text'});
 
       const request = (component as any)._buildRequest();
 
-      expect(request.hasOwnProperty('defaultSort')).toBe(false);
+      expect(request.sortable).toBe(false);
+      expect(request.defaultSort).toBeUndefined();
+    });
+
+    it('sends the default sort of every column when saving', () => {
+      groupService().getListColumns.and.returnValue(
+        of([
+          {
+            key: 'a',
+            displayType: {type: 'text'},
+            sortable: true,
+            defaultSort: 'ASC',
+            pathMappings: [{caseDefinitionKey: 'bezwaar', path: 'case:createdOn'}],
+          },
+          {
+            key: 'b',
+            displayType: {type: 'text'},
+            sortable: true,
+            defaultSort: 'DESC',
+            pathMappings: [{caseDefinitionKey: 'bezwaar', path: 'doc:/street'}],
+          },
+          {key: 'c', displayType: {type: 'text'}, sortable: false, exportable: true},
+        ])
+      );
+      groupService().updateListColumns.and.returnValue(of([]));
+      component.groupKey = 'group-1';
+      component.column = {key: 'c', displayType: {type: 'text'}, sortable: false, exportable: true};
+      component.pathControls[0].setValue('doc:/other');
+      component.formGroup.patchValue({key: 'c', displayType: 'text'});
+
+      component.onCloseModal(true);
+
+      const sent = groupService().updateListColumns.calls.mostRecent().args[1];
+      expect(sent.map((c: any) => c.defaultSort)).toEqual(['ASC', undefined, undefined]);
+      expect(sent.map((c: any) => c.sortable)).toEqual([true, false, false]);
+    });
+
+    describe('reopening the modal', () => {
+      const pathMappings = (...paths: string[]) =>
+        paths.map((path, index) => ({caseDefinitionKey: members[index].caseDefinitionKey, path}));
+
+      const docColumn = {
+        key: 'doc',
+        displayType: {type: 'text'},
+        sortable: false,
+        exportable: true,
+        pathMappings: pathMappings('doc:/a', 'doc:/b', 'doc:/c'),
+      } as any;
+
+      const sortableColumn = {
+        key: 'sortable',
+        displayType: {type: 'text'},
+        sortable: true,
+        defaultSort: 'ASC',
+        exportable: true,
+        pathMappings: pathMappings('case:createdOn', 'case:createdOn', 'case:createdOn'),
+      } as any;
+
+      const openModal = (column: any): void => {
+        component.column = column;
+        component.open = true;
+        component.ngOnChanges({open: {} as any, column: {} as any});
+      };
+
+      const closeModal = (): void => {
+        component.open = false;
+        component.column = null;
+        component.ngOnChanges({open: {} as any, column: {} as any});
+      };
+
+      const echoPathsInOrder = (column: any): void => {
+        column.pathMappings.forEach((mapping: any, index: number) =>
+          component.pathControls[index].setValue(mapping.path)
+        );
+      };
+
+      it('keeps sortable and default sort when paths are applied one by one after a document column', () => {
+        openModal(docColumn);
+        closeModal();
+        openModal(sortableColumn);
+        component.pathControls.forEach((control, index) =>
+          control.setValue(docColumn.pathMappings[index].path)
+        );
+        echoPathsInOrder(sortableColumn);
+
+        expect(component.canSort).toBe(true);
+        expect(component.formGroup.get('sortable')?.enabled).toBe(true);
+        expect(component.formGroup.get('sortable')?.value).toBe(true);
+        expect(component.formGroup.get('defaultSort')?.value).toBe('ASC');
+      });
+
+      it('keeps sortable and default sort when the same column is opened twice', () => {
+        openModal(sortableColumn);
+        closeModal();
+        openModal(sortableColumn);
+
+        expect(component.formGroup.get('sortable')?.value).toBe(true);
+        expect(component.formGroup.get('defaultSort')?.value).toBe('ASC');
+      });
+
+      it('restores the chosen sort once the paths become sortable again', () => {
+        openModal(sortableColumn);
+        component.formGroup.get('defaultSort')?.setValue('DESC');
+
+        component.pathControls[1].setValue('doc:/x');
+
+        expect(component.formGroup.get('sortable')?.value).toBe(false);
+        expect(component.formGroup.get('sortable')?.disabled).toBe(true);
+        expect((component as any)._buildRequest().sortable).toBe(false);
+
+        component.pathControls[1].setValue('case:createdOn');
+
+        expect(component.formGroup.get('sortable')?.value).toBe(true);
+        expect(component.formGroup.get('defaultSort')?.value).toBe('DESC');
+      });
+
+      it('keeps the same default sort items between openings', () => {
+        const items = component.defaultSortItems;
+
+        openModal(sortableColumn);
+        closeModal();
+        openModal(docColumn);
+
+        expect(component.defaultSortItems).toBe(items);
+        expect(items.map(item => item.value)).toEqual(['none', 'ASC', 'DESC']);
+      });
     });
   });
 });

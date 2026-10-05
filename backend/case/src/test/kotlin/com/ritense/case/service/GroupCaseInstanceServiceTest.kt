@@ -24,7 +24,10 @@ import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupListColumnId
+import com.ritense.case.domain.group.GroupListColumnPathMapping
+import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupQuickSearch
+import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
@@ -52,11 +55,17 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Pageable
 import java.util.Optional
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GroupCaseInstanceServiceTest {
@@ -148,7 +157,7 @@ class GroupCaseInstanceServiceTest {
         val result = service.getListColumns(groupKey)
 
         assertEquals(1, result.size)
-        assertEquals("name", result[0].id.columnKey)
+        assertEquals("name", result[0].key)
     }
 
     @Test
@@ -341,6 +350,108 @@ class GroupCaseInstanceServiceTest {
         assertThrows<RuntimeException> {
             service.getAccessibleMembers(groupKey)
         }
+    }
+
+    @Test
+    fun `getListColumns returns effective sortable and default sort`() {
+        val groupKey = "test_group"
+        mockColumns(
+            groupKey,
+            column(groupKey, "created", true, ColumnDefaultSort.ASC) to listOf("a" to "case:createdOn", "b" to "case:createdOn"),
+            column(groupKey, "legacy", true, ColumnDefaultSort.DESC) to listOf("a" to "doc:street"),
+            column(groupKey, "mixed", true, null) to listOf("a" to "case:createdOn", "b" to "case:modifiedOn"),
+            column(groupKey, "plain", false, null) to listOf("a" to "doc:street"),
+        )
+
+        val result = service.getListColumns(groupKey).associateBy { it.key }
+
+        assertTrue(result.getValue("created").sortable)
+        assertEquals(ColumnDefaultSort.ASC, result.getValue("created").defaultSort)
+        assertFalse(result.getValue("legacy").sortable)
+        assertNull(result.getValue("legacy").defaultSort)
+        assertFalse(result.getValue("mixed").sortable)
+        assertFalse(result.getValue("plain").sortable)
+    }
+
+    @Test
+    fun `search rewrites column keys to case paths and drops non-sortable keys`() {
+        val groupKey = "test_group"
+        mockAccessibleGroup(groupKey)
+        mockColumns(
+            groupKey,
+            column(groupKey, "created", true, null) to listOf("test-case" to "case:createdOn"),
+            column(groupKey, "status", true, null) to listOf("test-case" to "case:internalStatus"),
+            column(groupKey, "legacy", true, null) to listOf("test-case" to "doc:street"),
+            column(groupKey, "plain", false, null) to listOf("test-case" to "case:createdOn"),
+        )
+        whenever(searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)).thenReturn(emptyList())
+        whenever(searchFieldPathMappingRepository.findByIdGroupSearchFieldIdIn(any())).thenReturn(emptyList())
+        val captor = argumentCaptor<Pageable>()
+        whenever(documentSearchService.search(any(), any(), any(), any(), any(), captor.capture()))
+            .thenReturn(PageImpl(emptyList()))
+
+        service.search(
+            groupKey,
+            SearchWithConfigRequest(),
+            PageRequest.of(
+                1, 5,
+                Sort.by(
+                    Sort.Order.desc("status"), Sort.Order.asc("legacy"), Sort.Order.asc("plain"),
+                    Sort.Order.asc("unknown"), Sort.Order.asc("created")
+                )
+            )
+        )
+
+        val pageable = captor.firstValue
+        assertEquals(1, pageable.pageNumber)
+        assertEquals(5, pageable.pageSize)
+        assertEquals(
+            listOf(Sort.Order.desc("case:internalStatus"), Sort.Order.asc("case:createdOn")),
+            pageable.sort.toList()
+        )
+    }
+
+    @Test
+    fun `search keeps unpaged and unsorted pageables`() {
+        val groupKey = "test_group"
+        mockAccessibleGroup(groupKey)
+        mockColumns(groupKey, column(groupKey, "created", true, null) to listOf("test-case" to "case:createdOn"))
+        whenever(searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)).thenReturn(emptyList())
+        whenever(searchFieldPathMappingRepository.findByIdGroupSearchFieldIdIn(any())).thenReturn(emptyList())
+        val captor = argumentCaptor<Pageable>()
+        whenever(documentSearchService.search(any(), any(), any(), any(), any(), captor.capture()))
+            .thenReturn(PageImpl(emptyList()))
+
+        service.search(groupKey, SearchWithConfigRequest(), Pageable.unpaged())
+        service.search(groupKey, SearchWithConfigRequest(), PageRequest.of(0, 10))
+
+        assertTrue(captor.firstValue.isUnpaged)
+        assertTrue(captor.secondValue.sort.isUnsorted)
+    }
+
+    private fun column(groupKey: String, key: String, sortable: Boolean, defaultSort: ColumnDefaultSort?) =
+        GroupListColumn(
+            id = GroupListColumnId(groupKey = groupKey, columnKey = key),
+            title = key,
+            displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+            sortable = sortable,
+            defaultSort = defaultSort,
+            order = 0,
+            exportable = false
+        )
+
+    private fun mockColumns(groupKey: String, vararg columns: Pair<GroupListColumn, List<Pair<String, String>>>) {
+        whenever(listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)).thenReturn(columns.map { it.first })
+        whenever(listColumnPathMappingRepository.findByIdGroupKey(groupKey)).thenReturn(
+            columns.flatMap { (column, mappings) ->
+                mappings.map { (definitionKey, path) ->
+                    GroupListColumnPathMapping(
+                        id = GroupListColumnPathMappingId(groupKey, column.id.columnKey, definitionKey),
+                        path = path
+                    )
+                }
+            }
+        )
     }
 
     private fun createTestGroup(key: String): CaseDefinitionGroup {

@@ -28,6 +28,8 @@ import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupListColumnPathMapping
 import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupSearchField
+import com.ritense.case.domain.group.SortableCaseField
+import com.ritense.case.exception.InvalidGroupListColumnSortException
 import com.ritense.case.domain.group.GroupSearchFieldPathMapping
 import com.ritense.case.domain.group.GroupSearchFieldPathMappingId
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
@@ -174,6 +176,8 @@ class CaseDefinitionGroupService(
                 .findByIdGroupKeyAndIdColumnKey(groupKey, column.id.columnKey)
         }
 
+        validateListColumnSorting(columns, existingMappings)
+
         listColumnRepository.deleteByIdGroupKey(groupKey)
 
         val savedColumns = columns.mapIndexed { index, dto ->
@@ -250,6 +254,12 @@ class CaseDefinitionGroupService(
         denyAuthorization()
         val column = listColumnRepository.findById(GroupListColumnId(groupKey, columnKey))
             .orElseThrow { IllegalArgumentException("No column found with key '$columnKey' in group '$groupKey'") }
+
+        if (column.sortable && SortableCaseField.sortPathOf(mappings.map { it.path }) == null) {
+            throw InvalidGroupListColumnSortException(
+                "Column '$columnKey' is sortable, so all path mappings must reference the same sortable case field"
+            )
+        }
 
         listColumnPathMappingRepository.deleteByIdGroupKeyAndIdColumnKey(groupKey, columnKey)
 
@@ -373,6 +383,33 @@ class CaseDefinitionGroupService(
                     path = dto.path
                 )
             )
+        }
+    }
+
+    private fun validateListColumnSorting(
+        columns: List<GroupListColumnDto>,
+        existingMappings: Map<String, List<GroupListColumnPathMapping>>
+    ) {
+        columns.forEach { dto ->
+            if (dto.defaultSort != null && !dto.sortable) {
+                throw InvalidGroupListColumnSortException(
+                    "Column '${dto.key}' has a default sort but is not sortable"
+                )
+            }
+            if (dto.sortable) {
+                val paths = dto.pathMappings?.map { it.path }
+                    ?: existingMappings[dto.key]?.map { it.path }
+                    ?: emptyList()
+                if (SortableCaseField.sortPathOf(paths) == null) {
+                    throw InvalidGroupListColumnSortException(
+                        "Column '${dto.key}' can only be sortable when all path mappings reference the same " +
+                            "sortable case field"
+                    )
+                }
+            }
+        }
+        if (columns.count { it.defaultSort != null } > 1) {
+            throw InvalidGroupListColumnSortException("Only one column can have a default sort")
         }
     }
 

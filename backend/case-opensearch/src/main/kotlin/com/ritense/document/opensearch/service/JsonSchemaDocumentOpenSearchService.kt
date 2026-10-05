@@ -35,6 +35,7 @@ import com.ritense.document.event.DocumentsListed
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.andAll
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.repository.InternalCaseStatusRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.GlobalSearchFieldMeta
@@ -54,6 +55,10 @@ import org.apache.commons.lang3.NotImplementedException
 import org.opensearch.index.query.Operator
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
+import org.opensearch.script.Script
+import org.opensearch.script.ScriptType
+import org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType
+import org.opensearch.search.sort.SortBuilder
 import org.opensearch.search.sort.SortBuilders
 import org.opensearch.search.sort.SortOrder
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
@@ -84,6 +89,7 @@ class JsonSchemaDocumentOpenSearchService(
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
     private val caseDefinitionService: CaseDefinitionService,
+    private val internalCaseStatusRepository: InternalCaseStatusRepository,
 ) : DocumentSearchService {
 
     override fun search(
@@ -621,6 +627,38 @@ class JsonSchemaDocumentOpenSearchService(
         )
     }
 
+    internal fun buildSorts(sort: Sort): List<SortBuilder<*>> {
+        val statusOrders: Map<String, Int> by lazy { loadInternalStatusOrders() }
+        return sort.toList().map { order ->
+            val sortOrder = if (order.isAscending) SortOrder.ASC else SortOrder.DESC
+            val property = order.property
+            if (property.startsWith(DOC_PREFIX)) {
+                fieldSort("content.${property.removePrefix(DOC_PREFIX)}.keyword", order.isAscending)
+            } else {
+                when (val caseField = property.removePrefix(CASE_PREFIX)) {
+                    INTERNAL_STATUS_FIELD -> SortBuilders
+                        .scriptSort(
+                            Script(ScriptType.INLINE, "painless", INTERNAL_STATUS_SCRIPT, mapOf("orders" to statusOrders)),
+                            ScriptSortType.NUMBER
+                        )
+                        .order(sortOrder)
+                    "documentDefinitionId.name", DEFINITION_NAME_FIELD -> fieldSort(DEFINITION_NAME_FIELD, order.isAscending)
+                    else -> fieldSort(caseField, order.isAscending)
+                }
+            }
+        }
+    }
+
+    private fun fieldSort(field: String, ascending: Boolean): SortBuilder<*> =
+        SortBuilders.fieldSort(field)
+            .order(if (ascending) SortOrder.ASC else SortOrder.DESC)
+            .missing(if (ascending) "_last" else "_first")
+            .unmappedType("keyword")
+
+    private fun loadInternalStatusOrders(): Map<String, Int> =
+        runWithoutAuthorization { internalCaseStatusRepository.findAll() }
+            .associate { "${it.id.caseDefinitionKey}|${it.id.key}" to it.order }
+
     private fun executeSearch(combinedQuery: QueryBuilder, pageable: Pageable): Page<JsonSchemaDocument> {
         val queryBuilder = NativeSearchQueryBuilder()
             .withQuery(combinedQuery)
@@ -631,18 +669,7 @@ class JsonSchemaDocumentOpenSearchService(
         }
 
         if (pageable.sort.isSorted) {
-            pageable.sort.forEach { order ->
-                val osField = when {
-                    order.property.startsWith(DOC_PREFIX) -> "content.${order.property.removePrefix(DOC_PREFIX)}.keyword"
-                    order.property.startsWith(CASE_PREFIX) -> order.property.removePrefix(CASE_PREFIX)
-                    else -> order.property
-                }
-                val sortOrder = if (order.isAscending) SortOrder.ASC else SortOrder.DESC
-                val sortBuilder = SortBuilders.fieldSort(osField)
-                    .order(sortOrder)
-                    .unmappedType("keyword")
-                queryBuilder.withSorts(sortBuilder)
-            }
+            buildSorts(pageable.sort).forEach { queryBuilder.withSorts(it) }
         }
 
         val dataQuery = queryBuilder.build()
@@ -973,6 +1000,12 @@ class JsonSchemaDocumentOpenSearchService(
 
     companion object {
         private const val DOC_PREFIX = "doc:"
+        private const val INTERNAL_STATUS_FIELD = "internalStatus"
+        private const val INTERNAL_STATUS_SCRIPT =
+            "def d = doc['definitionId.name']; def s = doc['internalStatus']; " +
+                "if (d.size() == 0 || s.size() == 0) { return Integer.MAX_VALUE; } " +
+                "def v = params.orders.get(d.value + '|' + s.value); " +
+                "return v == null ? Integer.MAX_VALUE : v;"
         private const val CASE_PREFIX = "case:"
         private const val DEFINITION_NAME_FIELD = "definitionId.name"
         private const val BLUEPRINT_TYPE_FIELD = "definitionId.blueprintId.blueprintType"

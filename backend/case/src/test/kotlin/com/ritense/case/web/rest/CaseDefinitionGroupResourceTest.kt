@@ -25,6 +25,7 @@ import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.GroupCaseInstanceService
+import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case.web.rest.dto.GroupCaseListRowDto
 import com.ritense.document.domain.InternalCaseStatus
@@ -163,7 +164,7 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
             exportable = false
         )
 
-        whenever(groupCaseInstanceService.getListColumns("my-group")).thenReturn(listOf(column))
+        whenever(groupCaseInstanceService.getListColumns("my-group")).thenReturn(listOf(GroupListColumnDto.of(column)))
 
         mockMvc.perform(get("/api/v1/case-definition-group/{groupKey}/list-column", "my-group"))
             .andDo(print())

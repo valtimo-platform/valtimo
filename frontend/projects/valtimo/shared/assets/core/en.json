@@ -867,6 +867,7 @@
         "columnTitlePlaceholder": "Enter a display title",
         "displayType": "Display type",
         "sortable": "Sortable",
+        "sortableCaseFieldsOnly": "Only columns that map to a single shared case field (for example case:createdOn) can be sortable.",
         "exportable": "Exportable",
         "pathPerCase": "Path (per case)",
         "pathPerCaseTooltip": "Path to the property to display for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties.",

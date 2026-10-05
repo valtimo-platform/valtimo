@@ -874,6 +874,7 @@
         "columnTitlePlaceholder": "Voer een weergavetitel in",
         "displayType": "Weergavetype",
         "sortable": "Sorteerbaar",
+        "sortableCaseFieldsOnly": "Alleen kolommen die naar één gedeeld zaakveld verwijzen (bijvoorbeeld case:createdOn) kunnen sorteerbaar zijn.",
         "exportable": "Exporteerbaar",
         "pathPerCase": "Pad (per zaaktype)",
         "pathPerCaseTooltip": "Pad naar de eigenschap om weer te geven voor elke zaakdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor zaakeigenschappen.",

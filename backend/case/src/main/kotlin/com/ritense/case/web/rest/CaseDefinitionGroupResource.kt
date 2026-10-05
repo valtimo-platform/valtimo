@@ -81,7 +81,6 @@ class CaseDefinitionGroupResource(
         @PathVariable groupKey: String
     ): ResponseEntity<List<GroupListColumnDto>> {
         val columns = groupCaseInstanceService.getListColumns(groupKey)
-            .map { GroupListColumnDto.of(it) }
         return ResponseEntity.ok(columns)
     }
 

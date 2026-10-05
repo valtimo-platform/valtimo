@@ -141,9 +141,31 @@
       ></valtimo-carbon-multi-input>
     </cds-label>
 
-    <cds-checkbox formControlName="sortable" [disabled]="showTagAmount">
+    <cds-checkbox formControlName="sortable" data-test-id="group-column-sortable-checkbox">
       {{ 'caseManagement.groups.listColumns.sortable' | translate }}
     </cds-checkbox>
+
+    <p
+      *ngIf="!canSort"
+      class="cds--label valtimo-group-column-modal__sortable-hint"
+      data-test-id="group-column-sortable-hint"
+    >
+      {{ 'caseManagement.groups.listColumns.sortableCaseFieldsOnly' | translate }}
+    </p>
+
+    <div class="valtimo-group-column-modal__dropdown-field">
+      <span class="cds--label">
+        {{ 'listColumn.defaultSortTitle' | translate }}
+        <v-tooltip-icon [tooltip]="'listColumn.defaultSortTooltip' | translate"></v-tooltip-icon>
+      </span>
+      <cds-dropdown
+        formControlName="defaultSort"
+        [itemValueKey]="'value'"
+        data-test-id="group-column-default-sort-dropdown"
+      >
+        <cds-dropdown-list [items]="defaultSortItems"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
   </form>
 
   <cds-modal-footer>

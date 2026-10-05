@@ -254,9 +254,10 @@ export class CaseListOrchestrationService {
     this._columns$,
     this.hasApiColumnConfig$,
     this.statuses$,
+    this.listService.context$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([canHaveAssignee, columns, hasApiConfig, statuses]) => {
+    map(([canHaveAssignee, columns, hasApiConfig, statuses, context]) => {
       this._internalStatusKeys$.next([
         ...this._internalStatusKeys$.getValue(),
         ...columns.reduce(
@@ -284,7 +285,7 @@ export class CaseListOrchestrationService {
       const fieldsToReturn = this.assigneeService.addAssigneeListField(
         columns,
         listFields,
-        canHaveAssignee
+        canHaveAssignee && context?.type !== 'group'
       );
 
       return statuses.some(

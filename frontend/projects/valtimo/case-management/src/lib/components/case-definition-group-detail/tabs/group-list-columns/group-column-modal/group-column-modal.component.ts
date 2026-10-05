@@ -28,7 +28,7 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Subject, takeUntil} from 'rxjs';
+import {merge, Subject, takeUntil} from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {GroupListColumn} from '@valtimo/document';
 import {
@@ -52,6 +52,7 @@ import {
 } from 'carbon-components-angular';
 import {CaseDefinitionGroupManagementService} from '../../../../../services';
 import {GroupMember, GroupPathMapping} from '../../../../../models';
+import {canSortOnPaths} from '../../../../../constants';
 
 const DISPLAY_TYPE_ITEMS = [
   {content: 'text', value: 'text'},
@@ -59,6 +60,14 @@ const DISPLAY_TYPE_ITEMS = [
   {content: 'boolean', value: 'boolean'},
   {content: 'enum', value: 'enum'},
   {content: 'tags', value: 'tags'},
+];
+
+const NO_DEFAULT_SORT = 'none';
+
+const DEFAULT_SORT_ITEMS = [
+  {content: 'listColumn.selectDefaultSort', value: NO_DEFAULT_SORT},
+  {content: 'listColumn.sortableAsc', value: 'ASC'},
+  {content: 'listColumn.sortableDesc', value: 'DESC'},
 ];
 
 @Component({
@@ -88,6 +97,7 @@ const DISPLAY_TYPE_ITEMS = [
 })
 export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
+  private readonly _pathControlsChanged$ = new Subject<void>();
 
   @Input() public open = false;
   @Input() public groupKey: string | undefined;
@@ -137,11 +147,15 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     key: ['', Validators.required],
     displayType: ['text', Validators.required],
     sortable: [true],
+    defaultSort: [NO_DEFAULT_SORT],
     dateFormat: [''],
     tagAmount: [1],
   });
 
   public pathControls: FormControl[] = [];
+  public defaultSortItems: {content: string; value: string; selected: boolean}[] = [];
+  public canSort = false;
+  public otherColumnHasDefaultSort = false;
   public pathSearchControl = new FormControl('');
   public showOnlyEmpty = false;
   public showDateFormat = false;
@@ -150,6 +164,9 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
   public isYesNo = false;
   public defaultEnumValues: {key: string; value: string}[] = [];
   public enumValues: {key: string; value: string}[] = [];
+
+  private _defaultSortIntent = NO_DEFAULT_SORT;
+  private _sortableIntent = true;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -160,9 +177,38 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this.formGroup.get('displayType')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this._updateVisibility();
-    });
+    this.translateService
+      .stream(DEFAULT_SORT_ITEMS.map(item => item.content))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        const control = this.formGroup.get('defaultSort');
+        const selected = control?.value?.value ?? control?.value;
+        this.defaultSortItems = DEFAULT_SORT_ITEMS.map(item => ({
+          ...item,
+          content: translations[item.content],
+          selected: item.value === selected,
+        }));
+        this.cdr.markForCheck();
+      });
+    this.formGroup
+      .get('displayType')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this._updateVisibility();
+      });
+    this.formGroup
+      .get('sortable')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(sortable => {
+        this._sortableIntent = !!sortable;
+        this._updateSortState();
+      });
+    this.formGroup
+      .get('defaultSort')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(defaultSort => {
+        this._defaultSortIntent = defaultSort?.value ?? defaultSort ?? NO_DEFAULT_SORT;
+      });
   }
 
   public ngOnDestroy(): void {
@@ -190,6 +236,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     this.showTagAmount = typeValue === 'tags';
     this.showEnum = typeValue === 'enum' || typeValue === 'boolean';
     this.isYesNo = typeValue === 'boolean';
+    this._updateSortState();
     this.cdr.markForCheck();
   }
 
@@ -212,12 +259,11 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       this.groupService.getListColumns(this.groupKey).subscribe(columns => {
         let updatedColumns;
         if (this.column) {
-          updatedColumns = columns.map(c =>
-            c.key === this.column!.key ? {...c, ...request} : c
-          );
+          updatedColumns = columns.map(c => (c.key === this.column!.key ? {...c, ...request} : c));
         } else {
           updatedColumns = [...columns, request];
         }
+        updatedColumns = updatedColumns.map(c => this._withEffectiveSort(c, request.key));
 
         this.groupService
           .updateListColumns(
@@ -227,6 +273,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
               title: c.title,
               displayType: c.displayType,
               sortable: c.sortable,
+              defaultSort: c.defaultSort,
               exportable: c.exportable ?? true,
               pathMappings: c.key === request.key ? request.pathMappings : undefined,
             }))
@@ -248,19 +295,80 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
 
   private _buildPathControls(): void {
     this.pathControls = this.members.map(() => new FormControl(''));
+    this._pathControlsChanged$.next();
+    merge(...this.pathControls.map(control => control.valueChanges))
+      .pipe(takeUntil(merge(this.destroy$, this._pathControlsChanged$)))
+      .subscribe(() => this._updateSortState());
+    this._updateSortState();
+  }
+
+  private _updateSortState(): void {
+    this.canSort = canSortOnPaths(this.pathControls.map(control => control.value));
+    const sortableControl = this.formGroup.get('sortable');
+    const defaultSortControl = this.formGroup.get('defaultSort');
+
+    if (!this.canSort || this.showTagAmount) {
+      sortableControl?.setValue(false, {emitEvent: false});
+      sortableControl?.disable({emitEvent: false});
+    } else {
+      sortableControl?.enable({emitEvent: false});
+      sortableControl?.setValue(this._sortableIntent, {emitEvent: false});
+    }
+
+    if (sortableControl?.value && !this.otherColumnHasDefaultSort) {
+      defaultSortControl?.enable({emitEvent: false});
+      defaultSortControl?.setValue(this._defaultSortIntent, {emitEvent: false});
+    } else {
+      defaultSortControl?.setValue(NO_DEFAULT_SORT, {emitEvent: false});
+      defaultSortControl?.disable({emitEvent: false});
+    }
+    this.cdr.markForCheck();
+  }
+
+  private _withEffectiveSort(
+    column: GroupListColumn & {pathMappings?: GroupPathMapping[]},
+    editedKey: string
+  ): GroupListColumn & {pathMappings?: GroupPathMapping[]} {
+    if (column.key === editedKey) return column;
+
+    const sortable =
+      column.sortable && canSortOnPaths((column.pathMappings ?? []).map(mapping => mapping.path));
+
+    return {...column, sortable, defaultSort: sortable ? column.defaultSort : undefined};
+  }
+
+  private _loadOtherColumnDefaultSort(): void {
+    this.otherColumnHasDefaultSort = false;
+    if (!this.groupKey) return;
+
+    this.groupService
+      .getListColumns(this.groupKey)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(columns => {
+        this.otherColumnHasDefaultSort = columns.some(
+          c => !!c.defaultSort && c.key !== this.column?.key
+        );
+        this._updateSortState();
+      });
   }
 
   private _resetForm(): void {
+    this._sortableIntent = this.column?.sortable ?? true;
+    this._defaultSortIntent = this.column?.defaultSort ?? NO_DEFAULT_SORT;
     if (this.column) {
       const params = this.column.displayType.displayTypeParameters ?? {};
-      this.formGroup.patchValue({
-        title: this.column.title ?? '',
-        key: this.column.key,
-        displayType: this.column.displayType.type,
-        sortable: this.column.sortable,
-        dateFormat: params.dateFormat ?? '',
-        tagAmount: params.tagAmount ?? 1,
-      });
+      this.formGroup.patchValue(
+        {
+          title: this.column.title ?? '',
+          key: this.column.key,
+          displayType: this.column.displayType.type,
+          sortable: this.column.sortable,
+          defaultSort: this.column.defaultSort ?? NO_DEFAULT_SORT,
+          dateFormat: params.dateFormat ?? '',
+          tagAmount: params.tagAmount ?? 1,
+        },
+        {emitEvent: false}
+      );
       this.formGroup.get('key')?.disable();
       if (params.enum) {
         this.defaultEnumValues = Object.entries(params.enum).map(([key, value]) => ({
@@ -272,14 +380,15 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
         this.defaultEnumValues = [];
         this.enumValues = [];
       }
-      this._updateVisibility();
       this._loadPathMappings();
+      this._updateVisibility();
     } else {
       this.formGroup.reset({
         title: '',
         key: '',
         displayType: 'text',
         sortable: true,
+        defaultSort: NO_DEFAULT_SORT,
         dateFormat: '',
         tagAmount: 1,
       });
@@ -291,14 +400,17 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     }
     this.pathSearchControl.setValue('');
     this.showOnlyEmpty = false;
+    this._loadOtherColumnDefaultSort();
+    this._updateSortState();
   }
 
   private _loadPathMappings(): void {
     const mappings: GroupPathMapping[] = (this.column as any)?.pathMappings ?? [];
     this.members.forEach((member, i) => {
       const mapping = mappings.find(m => m.caseDefinitionKey === member.caseDefinitionKey);
-      this.pathControls[i]?.setValue(mapping?.path ?? '');
+      this.pathControls[i]?.setValue(mapping?.path ?? '', {emitEvent: false});
     });
+    this._updateSortState();
   }
 
   private _buildRequest() {
@@ -313,16 +425,22 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       displayTypeParameters.tagAmount = value.tagAmount;
     }
     if (this.showEnum && this.enumValues.length > 0) {
-      displayTypeParameters.enum = Object.fromEntries(
-        this.enumValues.map(e => [e.key, e.value])
-      );
+      displayTypeParameters.enum = Object.fromEntries(this.enumValues.map(e => [e.key, e.value]));
     }
+
+    const defaultSortValue = value.defaultSort?.value ?? value.defaultSort;
+    const sortable = this.canSort && !!value.sortable;
+    const defaultSort =
+      sortable && (defaultSortValue === 'ASC' || defaultSortValue === 'DESC')
+        ? (defaultSortValue as 'ASC' | 'DESC')
+        : undefined;
 
     return {
       key: value.key,
       title: value.title || undefined,
       displayType: {type: displayTypeValue, displayTypeParameters},
-      sortable: value.sortable,
+      sortable,
+      defaultSort,
       exportable: true,
       pathMappings: this.members
         .map((member, i) => ({
