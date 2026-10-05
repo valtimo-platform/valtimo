@@ -58,14 +58,19 @@ def scan(pr, old_base, new_base, notes_base):
     merge_base = git("merge-base", f"origin/{old_base}", head_sha).strip()
     try:
         stale = stale_folders(merge_base, head_sha, notes_base, root, current)
-        if not stale:
-            return None
-        entries, _ = stale_entries(merge_base, head_sha, stale)
     except Skip as skip:
         warn(f"PR #{number}: {skip} -- skipping.")
         return None
-    if not entries:
+    if not stale:
         return None
+    try:
+        entries, _ = stale_entries(merge_base, head_sha, stale)
+    except Skip as skip:
+        # Still a matrix leg: prepare stops it before Claude, and the push job tells the author.
+        warn(f"PR #{number}: {skip} -- reporting it.")
+    else:
+        if not entries:
+            return None
     return {
         "number": number,
         "head": head,
