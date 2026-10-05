@@ -207,6 +207,11 @@ class GuardTest(unittest.TestCase):
         before = self.insert_row(FILLED, "| Case | Existing case fix |", self.ROW)
         self.assertEqual(("already-present", []), guard(before, before, [entry("Bugfixes", self.ROW)], "13.49.0"))
 
+    def test_scattered_lines_are_not_already_present(self):
+        before = FILLED.replace("Already here.\n", "Search is faster.\n\n### Faster search\n\nSomething else.\n")
+        entries = [entry("Enhancements", "### Faster search"), entry("Enhancements", "Search is faster.")]
+        self.assertEqual(("no-change", []), guard(before, before, entries, "13.49.0"))
+
     def test_unchanged_without_entries(self):
         self.assertEqual(("no-change", []), guard(FILLED, FILLED, [entry("Bugfixes", self.ROW)], "13.49.0"))
 
@@ -277,6 +282,16 @@ class PlacementTest(unittest.TestCase):
         rows = ["| Zaak | Fixed the zaak |", "| Admin | Fixed the admin |"]
         after = FILLED.replace("| Case | Existing case fix |\n", f"{rows[1]}\n| Case | Existing case fix |\n") + rows[0] + "\n"
         self.assertEqual(("moved", []), guard(FILLED, after, [entry("Bugfixes", r) for r in rows], "13.49.0"))
+
+    def test_bullet_inside_another_wrapped_bullet_is_rejected(self):
+        before = LEGACY.replace("* New bugfix.\n", "* Fixed the case list\n  when sorting by date.\n")
+        after = before.replace("* Fixed the case list\n", "* Fixed the case list\n* PR fix.\n")
+        self.assertEqual("rejected", guard(before, after, [entry("Bugfixes", "* PR fix.", "legacy")], "12.49.0")[0])
+
+    def test_bullet_after_a_wrapped_bullet_is_accepted(self):
+        before = LEGACY.replace("* New bugfix.\n", "* Fixed the case list\n  when sorting by date.\n")
+        after = before + "* PR fix.\n"
+        self.assertEqual("moved", guard(before, after, [entry("Bugfixes", "* PR fix.", "legacy")], "12.49.0")[0])
 
     def test_entry_lines_out_of_order_are_rejected(self):
         after = FILLED.replace("Already here.\n", "Already here.\n\n" + "\n\n".join(reversed(self.FEATURE)) + "\n")
