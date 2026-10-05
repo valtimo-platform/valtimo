@@ -265,6 +265,12 @@ class FencedBlockTest(unittest.TestCase):
         entries, before, after = self.move(self.NOTE)
         self.assertEqual(("moved", []), guard(before, after, entries, "13.49.0"))
 
+    def test_blank_lines_and_document_breaks_in_a_fence_still_move(self):
+        self.NOTE = self.NOTE.replace("valtimo:\n", "\nvaltimo:\n").replace("  thing: true\n", "  thing: true\n---\nother: 1\n")
+        entries, before, after = self.move(self.NOTE)
+        self.assertEqual(("moved", []), guard(before, after, entries, "13.49.0"))
+        self.assertIn("---", [e["line"] for e in entries])
+
     def test_dropping_a_comment_line_from_a_fence_is_rejected(self):
         entries, before, after = self.move(self.NOTE.replace("# enable the thing\n", ""))
         outcome, errors = guard(before, after, entries, "13.49.0")
