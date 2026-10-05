@@ -267,6 +267,7 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
       this.paginationService.clearPagination();
       this.assigneeService.resetAssigneeFilter();
       this.searchService.setGlobalSearchFilter(null);
+      this.onClearEvent();
       this.listService.setCaseDefinitionKey(newId);
       this.orchestration.setLoading();
       this.subscribeToPagination();

@@ -49,10 +49,17 @@ describe('GenericCaseListComponent', () => {
   let component: GenericCaseListComponent;
   let router: jasmine.SpyObj<Router>;
   let windowOpen: jasmine.Spy;
+  let calls: string[];
 
   beforeEach(() => {
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
     windowOpen = spyOn(window, 'open');
+    calls = [];
+    const record =
+      (name: string) =>
+      (...args: unknown[]): void => {
+        calls.push(`${name}(${JSON.stringify(args)})`);
+      };
 
     TestBed.configureTestingModule({
       providers: [
@@ -63,21 +70,44 @@ describe('GenericCaseListComponent', () => {
           useValue: {getAllDefinitions: () => of({content: []}), invalidSearchFields$: of([])},
         },
         {provide: TranslateService, useValue: {stream: () => of(null), instant: k => k}},
-        {provide: CaseListService, useValue: {}},
-        {provide: CaseListAssigneeService, useValue: {}},
+        {
+          provide: CaseListService,
+          useValue: {setCaseDefinitionKey: record('setCaseDefinitionKey')},
+        },
+        {
+          provide: CaseListAssigneeService,
+          useValue: {resetAssigneeFilter: () => {}, canHaveAssignee$: of(true)},
+        },
         {provide: CaseBulkAssignService, useValue: {}},
         {provide: CaseExportService, useValue: {}},
-        {provide: CaseListCaseTagService, useValue: {}},
+        {
+          provide: CaseListCaseTagService,
+          useValue: {setSelectedCaseTags: record('setSelectedCaseTags')},
+        },
         {provide: PageTitleService, useValue: {enableReset: () => {}}},
-        {provide: CaseListPaginationService, useValue: {}},
-        {provide: CaseParameterService, useValue: {}},
+        {provide: CaseListPaginationService, useValue: {clearPagination: () => {}}},
+        {
+          provide: CaseParameterService,
+          useValue: {clearParameters: () => {}, clearSearchFieldValues: () => {}},
+        },
         {provide: QuickSearchStateService, useValue: {}},
-        {provide: CaseListSearchService, useValue: {}},
-        {provide: CaseListStatusService, useValue: {}},
+        {provide: CaseListSearchService, useValue: {setGlobalSearchFilter: () => {}}},
+        {
+          provide: CaseListStatusService,
+          useValue: {setSelectedStatuses: record('setSelectedStatuses')},
+        },
         {provide: QUICK_SEARCH_SERVICE, useValue: {}},
         {provide: ConfigService, useValue: {config: {}}},
         {provide: TeamsApiService, useValue: {}},
-        {provide: CaseListOrchestrationService, useValue: {}},
+        {
+          provide: CaseListOrchestrationService,
+          useValue: {
+            setLoading: () => {},
+            setLoadingSearchFields: () => {},
+            pagination$: of(null),
+            searchFields$: of([]),
+          },
+        },
       ],
     });
     TestBed.overrideComponent(GenericCaseListComponent, {set: {template: '', providers: []}});
@@ -118,5 +148,15 @@ describe('GenericCaseListComponent', () => {
       [CASE_URL, '_blank'],
     ]);
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('resets the status and case tag filters before switching from all cases to a case definition', () => {
+    component.setCaseDefinition({item: {id: 'bezwaar'}});
+
+    expect(calls).toEqual([
+      'setSelectedStatuses([[]])',
+      'setSelectedCaseTags([[]])',
+      'setCaseDefinitionKey(["bezwaar"])',
+    ]);
   });
 });
