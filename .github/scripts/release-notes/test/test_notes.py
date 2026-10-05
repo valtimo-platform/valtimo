@@ -273,6 +273,11 @@ class PlacementTest(unittest.TestCase):
         after = FILLED.replace("### Existing one\n", "### Existing one\n\n" + "\n\n".join(self.FEATURE) + "\n")
         self.assertEqual("rejected", self.guard_feature(after))
 
+    def test_rows_sorted_by_area_as_the_prompt_asks_are_accepted(self):
+        rows = ["| Zaak | Fixed the zaak |", "| Admin | Fixed the admin |"]
+        after = FILLED.replace("| Case | Existing case fix |\n", f"{rows[1]}\n| Case | Existing case fix |\n") + rows[0] + "\n"
+        self.assertEqual(("moved", []), guard(FILLED, after, [entry("Bugfixes", r) for r in rows], "13.49.0"))
+
     def test_entry_lines_out_of_order_are_rejected(self):
         after = FILLED.replace("Already here.\n", "Already here.\n\n" + "\n\n".join(reversed(self.FEATURE)) + "\n")
         self.assertEqual("rejected", self.guard_feature(after))
@@ -342,6 +347,13 @@ class ReshapeTest(unittest.TestCase):
         before = FILLED.replace("| Case | Existing case fix |", "| Case | Fixed the empty case list. |")
         outcome = guard(before, before, [entry("Bugfixes", "* Fixed the empty case list.", "legacy")], "13.49.0")
         self.assertEqual(("already-present", []), outcome)
+
+    def test_reshaped_bullets_sorted_into_rows_are_accepted(self):
+        bullets = [entry("Bugfixes", "* Fixed the zaak list", "legacy"), entry("Bugfixes", "  when it is empty.", "legacy"),
+                   entry("Bugfixes", "* Fixed the admin page.", "legacy")]
+        after = FILLED.replace("| Case | Existing case fix |\n", "| Admin | Fixed the admin page |\n| Case | Existing case fix |\n")
+        after += "| Zaak | Fixed the zaak list when it is empty |\n"
+        self.assertEqual(("moved", []), guard(FILLED, after, bullets, "13.49.0"))
 
     def test_extra_row_made_of_the_entry_s_own_words_is_rejected(self):
         after = FILLED + "| Forms | Fixed the form |\n| Case | the form |\n"
