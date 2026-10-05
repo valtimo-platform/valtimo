@@ -101,13 +101,13 @@ def table_breaks(text):
 
 
 def entry_blocks(lines):
-    """Per line, (block number, whether the block is one entry). An entry is a `### ` heading or a legacy `* **` bullet with its text."""
+    """Per line, (block number, whether the block is one entry). An entry is a `### ` heading or a top-level bullet, with its text."""
     out, block, is_entry = [], 0, False
     for line, in_fence in zip(lines, fenced(lines)):
         s = line.strip()
-        if not in_fence and (s.startswith("#") or s == "---" or TABLE_HEADER_RE.match(s) or line.startswith("* **")):
+        if not in_fence and (s.startswith("#") or s == "---" or TABLE_HEADER_RE.match(s) or line.startswith(("* ", "- "))):
             block += 1
-            is_entry = s.startswith("### ") or line.startswith("* **")
+            is_entry = s.startswith("### ") or line.startswith(("* ", "- "))
         out.append((block, is_entry))
     return out
 
@@ -234,6 +234,13 @@ def guard(before, after, entries, current):
             for (s, line), n in Counter((e["section"], e["line"]) for e in entries).items():
                 if have[(s, line)] < n:
                     missing.append(f"entry missing from {s or 'the top'}: {line!r}")
+            if not added and not missing:
+                # Already there means as one note: its prose lines in their order, not shuffled among other notes.
+                for section in {e["section"] for e in entries}:
+                    got = iter(line for s, line in a_tagged if s == section and line.strip())
+                    want = [e["line"] for e in entries if e["section"] == section and not is_row(e["line"])]
+                    if not all(any(w == g for g in got) for w in want):
+                        missing.append(f"this PR's lines under {section or 'the top'} are not in order in the target")
         else:
             # Substring match against Claude's additions, else existing text could stand in for an entry.
             # With none (a re-run, or a note moved by hand), whole lines of the target: a longer note is not this one.
