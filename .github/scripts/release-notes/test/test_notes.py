@@ -299,6 +299,18 @@ class BlankLineTest(unittest.TestCase):
         after = before.replace("| Zaken | Existing zaken fix |\n\n---", f"| Zaken | Existing zaken fix |\n{row}\n---")
         self.assertEqual("rejected", guard(before, after, [entry("Bugfixes", row)], "13.49.0")[0])
 
+    def test_prose_straight_under_another_note_s_paragraph_is_rejected(self):
+        before = FILLED + "\n---\n\n## Breaking Changes\n\nThe old endpoint is removed.\n\nOther text stays.\n"
+        line = "The foo property is gone."
+        after = before.replace("The old endpoint is removed.\n", f"The old endpoint is removed.\n{line}\n")
+        self.assertEqual("rejected", guard(before, after, [entry("Breaking Changes", line)], "13.49.0")[0])
+
+    def test_prose_after_a_blank_line_is_accepted(self):
+        before = FILLED + "\n---\n\n## Breaking Changes\n\nThe old endpoint is removed.\n"
+        line = "The foo property is gone."
+        after = before + f"\n{line}\n"
+        self.assertEqual("moved", guard(before, after, [entry("Breaking Changes", line)], "13.49.0")[0])
+
     def test_row_appended_before_the_blank_line_is_accepted(self):
         before = FILLED + "\n---\n\n## Security\n\nNothing this time.\n"
         row = "| Forms | Fixed the thing |"
@@ -354,6 +366,11 @@ class ReshapeTest(unittest.TestCase):
         after = FILLED.replace("| Case | Existing case fix |\n", "| Admin | Fixed the admin page |\n| Case | Existing case fix |\n")
         after += "| Zaak | Fixed the zaak list when it is empty |\n"
         self.assertEqual(("moved", []), guard(FILLED, after, bullets, "13.49.0"))
+
+    def test_legacy_and_modern_rows_in_one_section_are_accepted(self):
+        mixed = [entry("Bugfixes", "* Fixed the admin page.", "legacy"), entry("Bugfixes", "| Zaak | Fixed the zaak |")]
+        after = FILLED + "| Admin | Fixed the admin page |\n| Zaak | Fixed the zaak |\n"
+        self.assertEqual(("moved", []), guard(FILLED, after, mixed, "13.49.0"))
 
     def test_extra_row_made_of_the_entry_s_own_words_is_rejected(self):
         after = FILLED + "| Forms | Fixed the form |\n| Case | the form |\n"
