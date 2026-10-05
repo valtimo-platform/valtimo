@@ -25,6 +25,7 @@ import {
 } from '../../../constants';
 import {apiDelete, apiGet, apiPost} from '../../../utils/api.utils';
 import {ikoTabConfig, TAB_TYPE_LABELS} from './iko-tab-config';
+import {openAndSelectOption} from '../../../utils/ui.utils';
 
 interface TabResponse {
   key: string;
@@ -142,8 +143,10 @@ export class IkoTabPage {
 
   /** Click the v-select combo-box and pick the option matching `label`. */
   async selectTabType(label: string): Promise<void> {
-    await this.typeComboBox.click();
-    await this.page.getByRole('listbox').getByText(label, {exact: true}).click();
+    await openAndSelectOption(
+      this.typeComboBox,
+      this.page.getByRole('listbox').getByText(label, {exact: true})
+    );
   }
 
   async save(): Promise<void> {

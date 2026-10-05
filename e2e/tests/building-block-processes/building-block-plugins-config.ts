@@ -126,7 +126,12 @@ export const BUILDING_BLOCK_PLUGIN_API = {
   /** Plugin definitions that can be linked to a given activity type. */
   pluginDefinitions: (activityType: string) =>
     `/api/v1/plugin/definition?activityType=${encodeURIComponent(activityType)}`,
+  /** External plugin definitions — own endpoint, not part of the activity-type-scoped list. */
+  externalPluginDefinitions: '/api/management/v1/external-plugin/definition',
   processLinks: (processDefinitionId: string) =>
     `/api/v1/process-link?processDefinitionId=${encodeURIComponent(processDefinitionId)}`,
   serviceTaskActivityType: 'bpmn:ServiceTask:start',
 } as const;
+
+/** Prefix the wizard puts on an external plugin definition id to key its row. */
+export const EXTERNAL_PLUGIN_KEY_PREFIX = 'external:';

@@ -27,13 +27,21 @@ const ONLY = process.env.MIGRATION_UI_REPLAY_ONLY;
 const CONFIG_ROOT = path.resolve(__dirname, '../../../backend/apps/dev/src/main/resources/config');
 const REPORT = path.resolve(__dirname, '../../playwright/migration-ui-replay-report.json');
 
+/** Directory entries only — a stray file such as `.DS_Store` must not abort collection. */
+function subdirectories(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir, {withFileTypes: true})
+    .filter(entry => entry.isDirectory())
+    .map(entry => entry.name);
+}
+
 function collectFixtures(): Fixture[] {
   const fixtures: Fixture[] = [];
   for (const blueprintDir of ['case', 'building-block'] as const) {
     const root = path.join(CONFIG_ROOT, blueprintDir);
-    if (!fs.existsSync(root)) continue;
-    for (const key of fs.readdirSync(root)) {
-      for (const versionDir of fs.readdirSync(path.join(root, key))) {
+    for (const key of subdirectories(root)) {
+      for (const versionDir of subdirectories(path.join(root, key))) {
         const planDir = path.join(
           root,
           key,
@@ -42,7 +50,7 @@ function collectFixtures(): Fixture[] {
         );
         if (!fs.existsSync(planDir)) continue;
         const versionTag = versionDir.replace(/-/g, '.');
-        for (const file of fs.readdirSync(planDir)) {
+        for (const file of fs.readdirSync(planDir).filter(name => name.endsWith('.json'))) {
           const plan = JSON.parse(fs.readFileSync(path.join(planDir, file), 'utf-8'));
           fixtures.push({
             blueprintType: blueprintDir,
@@ -63,6 +71,10 @@ function collectFixtures(): Fixture[] {
   return fixtures.sort((a, b) => a.label.localeCompare(b.label));
 }
 
+// Scanned once, and only when the audit is on: collection runs for every suite, and a fixture
+// tree this file cannot read must not take the rest of the run down with it.
+const allFixtures = ENABLED ? collectFixtures() : [];
+
 test.describe('Migration plan editor — fixture replay audit', () => {
   test.use({storageState: undefined});
   test.skip(!ENABLED, 'Set MIGRATION_UI_REPLAY=1 to run — it deletes and rebuilds dev fixtures.');
@@ -71,11 +83,11 @@ test.describe('Migration plan editor — fixture replay audit', () => {
   let page: Page;
   let editor: PlanEditorPage;
   const results: PlanResult[] = [];
-  const fixtures = collectFixtures().filter(f => !ONLY || f.label.includes(ONLY));
+  const fixtures = allFixtures.filter(f => !ONLY || f.label.includes(ONLY));
 
   // `runAfter` offers plan titles and stores plan keys, so the fixture's key needs its title.
   const titlesByKey = new Map<string, string>(
-    collectFixtures().map(f => [f.migrationKey, f.plan.title || f.migrationKey])
+    allFixtures.map(f => [f.migrationKey, f.plan.title || f.migrationKey])
   );
 
   test.beforeAll(async ({browser, baseURL}) => {
@@ -90,7 +102,10 @@ test.describe('Migration plan editor — fixture replay audit', () => {
     await page.goto('/');
   });
 
-  for (const fixture of collectFixtures().filter(f => !ONLY || f.label.includes(ONLY))) {
+  // A placeholder keeps the file visible as skipped when the audit is off and nothing was scanned.
+  if (!fixtures.length) test('replays the dev migration fixtures', () => {});
+
+  for (const fixture of fixtures) {
     test(`replays ${fixture.label}`, async () => {
       test.setTimeout(Number(process.env.MIGRATION_UI_REPLAY_TIMEOUT ?? 10 * 60_000));
 
