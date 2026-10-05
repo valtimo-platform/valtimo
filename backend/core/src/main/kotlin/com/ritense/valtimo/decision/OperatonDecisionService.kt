@@ -92,6 +92,19 @@ class OperatonDecisionService(
         }
     }
 
+    fun deleteAllDecisionDefinitions(caseDefinitionId: CaseDefinitionId) {
+        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
+
+        // Per deployment: one DMN file can hold several decisions
+        getDecisionDefinitions(caseDefinitionId).map { it.deploymentId }.distinct().forEach { deploymentId ->
+            check(repositoryService.createProcessDefinitionQuery().deploymentId(deploymentId).count() == 0L) {
+                "Failed to delete decision definitions for case definition $caseDefinitionId. " +
+                    "The deployment $deploymentId also contains process definitions."
+            }
+            repositoryService.deleteDeployment(deploymentId)
+        }
+    }
+
     fun getDmnModel(decisionDefinition: DecisionDefinition): ByteArray {
         return operatonByteArrayService.getByNameAndDeploymentId(
             decisionDefinition.resourceName,

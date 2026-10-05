@@ -52,9 +52,7 @@ class CaseTagCaseEventListener(
     @RunWithoutAuthorization
     @EventListener(CaseDefinitionPreDeleteEvent::class)
     fun handleCaseDefinitionPreDeleteEvent(event: CaseDefinitionPreDeleteEvent) {
-        service.getCaseTags(event.caseDefinitionId).forEach { tag ->
-            service.delete(event.caseDefinitionId, tag.id.key)
-        }
+        service.deleteAll(event.caseDefinitionId)
     }
 
 }
