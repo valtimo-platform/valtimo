@@ -278,6 +278,48 @@ class PlacementTest(unittest.TestCase):
         self.assertEqual("rejected", self.guard_feature(after))
 
 
+class SectionTest(unittest.TestCase):
+
+    ROW = "| Forms | Fixed the thing |"
+    MIGRATION = "## Migration\n\nStop the service first.\n"
+
+    def guard_migration(self, after):
+        return guard(FILLED, after, [entry("Migration", "Stop the service first.")], "13.49.0")[0]
+
+    def test_new_section_in_its_place_is_accepted(self):
+        after = FILLED.replace("---\n\n## Enhancements", f"---\n\n{self.MIGRATION}\n---\n\n## Enhancements")
+        self.assertEqual("moved", self.guard_migration(after))
+
+    def test_new_section_out_of_order_is_rejected(self):
+        self.assertEqual("rejected", self.guard_migration(FILLED + "\n---\n\n" + self.MIGRATION))
+
+    def test_second_copy_of_an_existing_section_is_rejected(self):
+        after = FILLED + f"\n---\n\n## Bugfixes\n\n| Area | Fix |\n|------|-----|\n{self.ROW}\n"
+        self.assertEqual("rejected", guard(FILLED, after, [entry("Bugfixes", self.ROW)], "13.49.0")[0])
+
+
+class ReshapeTest(unittest.TestCase):
+
+    STEPS = [entry("Enhancements", "* **Cleanup**", "legacy"),
+             entry("Enhancements", "  First stop the old service.", "legacy"),
+             entry("Enhancements", "  Then drop the table.", "legacy")]
+
+    def reshaped(self, *body):
+        return FILLED.replace("Already here.\n", "Already here.\n\n### Cleanup\n\n" + "\n".join(body) + "\n")
+
+    def test_reshaped_steps_in_order_are_accepted(self):
+        after = self.reshaped("First stop the old service.", "Then drop the table.")
+        self.assertEqual("moved", guard(FILLED, after, self.STEPS, "13.49.0")[0])
+
+    def test_reshaped_steps_swapped_are_rejected(self):
+        after = self.reshaped("Then drop the table.", "First stop the old service.")
+        self.assertEqual("rejected", guard(FILLED, after, self.STEPS, "13.49.0")[0])
+
+    def test_extra_row_made_of_the_entry_s_own_words_is_rejected(self):
+        after = FILLED + "| Forms | Fixed the form |\n| Case | the form |\n"
+        self.assertEqual("rejected", guard(FILLED, after, [entry("Bugfixes", "* Fixed the form.", "legacy")], "13.49.0")[0])
+
+
 class FencedBlockTest(unittest.TestCase):
 
     PLACEHOLDER = "### New enhancement title\n\nNew enhancement explanation."
