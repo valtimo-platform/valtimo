@@ -325,7 +325,15 @@ jobs:
           && (steps.push.outputs.outcome == 'committed' || steps.push.outputs.outcome == 'already-clean')
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
-        run: gh pr edit "${PR_NUMBER}" --base "${BASE}"
+        run: |
+          set -euo pipefail
+          # Someone may have retargeted the PR since detect; their choice wins.
+          NOW="$(gh pr view "${PR_NUMBER}" --json baseRefName --jq .baseRefName)"
+          if [ "${NOW}" != "${OLD_BASE}" ]; then
+            echo "::warning::PR #${PR_NUMBER} now targets ${NOW}, not ${OLD_BASE} -- leaving its base alone."
+            exit 0
+          fi
+          gh pr edit "${PR_NUMBER}" --base "${BASE}"
 
       - name: Report on the PR
         if: ${{ !cancelled() && steps.app_token.outcome == 'success' }}
