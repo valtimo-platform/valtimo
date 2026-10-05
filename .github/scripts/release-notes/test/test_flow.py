@@ -289,6 +289,31 @@ class FlowTest(unittest.TestCase):
         self.pr_branch(folder="13.49.0")
         self.assertEqual([], self.detect(self.prs("feature/x")))
 
+    def test_one_unreadable_pr_does_not_stop_the_sweep(self):
+        self.pr_branch(name="feature/bad")
+        Path(NOTES, "13.x.x/13.48.0/README.md").write_bytes(self.read("13.x.x/13.48.0/README.md").encode() + b"| Forms | caf\xe9 |\n")
+        self.commit("not utf-8")
+        self.git("push", "-q", "origin", "feature/bad")
+        self.pr_branch(name="feature/good")
+        self.git("checkout", "-q", "--orphan", "feature/unrelated")
+        self.commit("unrelated history")
+        self.git("push", "-q", "origin", "feature/unrelated")
+        self.cut()
+        bad, good, unrelated = self.prs("feature/bad", "feature/good", "feature/unrelated")
+        no_owner = {**good, "number": 9, "headRepositoryOwner": None}
+        self.assertEqual([2], [item["number"] for item in self.detect([bad, good, unrelated, no_owner])])
+
+    def test_only_the_target_readme_is_taken_from_the_relocate_job(self):
+        self.pr_branch()
+        self.cut()
+        [item] = self.detect(self.prs("feature/x"))
+        artifact = self.relocate(item, self.place)
+        (artifact / "elsewhere.md").write_text("planted\n")
+        self.assertEqual(("committed", []), self.push(item, artifact))
+        changed = self.git("diff", "--name-only", item["head_sha"], "HEAD").split()
+        self.assertTrue(all(p.startswith(f"{NOTES}/") for p in changed), changed)
+        self.assertNotIn("elsewhere.md", " ".join(changed))
+
     def test_long_lived_head_branches_are_skipped(self):
         self.pr_branch(name="automation/sync-next-major")
         self.cut()
