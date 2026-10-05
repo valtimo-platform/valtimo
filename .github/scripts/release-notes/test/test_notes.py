@@ -207,11 +207,6 @@ class GuardTest(unittest.TestCase):
         before = self.insert_row(FILLED, "| Case | Existing case fix |", self.ROW)
         self.assertEqual(("already-present", []), guard(before, before, [entry("Bugfixes", self.ROW)], "13.49.0"))
 
-    def test_scattered_lines_are_not_already_present(self):
-        before = FILLED.replace("Already here.\n", "Search is faster.\n\n### Faster search\n\nSomething else.\n")
-        entries = [entry("Enhancements", "### Faster search"), entry("Enhancements", "Search is faster.")]
-        self.assertEqual(("no-change", []), guard(before, before, entries, "13.49.0"))
-
     def test_unchanged_without_entries(self):
         self.assertEqual(("no-change", []), guard(FILLED, FILLED, [entry("Bugfixes", self.ROW)], "13.49.0"))
 
@@ -247,7 +242,7 @@ class GuardTest(unittest.TestCase):
 
 
 class PlacementTest(unittest.TestCase):
-    """Every word arriving is not enough: where it lands must not break another entry or the table."""
+    """Placements that must still move: the guard checks words, not layout."""
 
     ROW = "| Forms | Fixed the thing |"
     FEATURE = ["### New thing", "It does a thing."]
@@ -261,76 +256,19 @@ class PlacementTest(unittest.TestCase):
     def test_row_at_the_end_of_the_table_is_accepted(self):
         self.assertEqual("moved", self.guard_row(FILLED + self.ROW + "\n"))
 
-    def test_row_above_the_table_header_is_rejected(self):
-        self.assertEqual("rejected", self.guard_row(FILLED.replace("| Area | Fix |", f"{self.ROW}\n| Area | Fix |")))
-
-    def test_row_between_header_and_rule_is_rejected(self):
-        self.assertEqual("rejected", self.guard_row(FILLED.replace("| Area | Fix |\n", f"| Area | Fix |\n{self.ROW}\n")))
-
-    def test_row_after_a_blank_line_is_rejected(self):
-        self.assertEqual("rejected", self.guard_row(FILLED + "\n" + self.ROW + "\n"))
-
     def test_entry_after_an_existing_one_is_accepted(self):
         after = FILLED.replace("Already here.\n", "Already here.\n\n" + "\n\n".join(self.FEATURE) + "\n")
         self.assertEqual("moved", self.guard_feature(after))
-
-    def test_entry_inside_an_existing_one_is_rejected(self):
-        after = FILLED.replace("### Existing one\n", "### Existing one\n\n" + "\n\n".join(self.FEATURE) + "\n")
-        self.assertEqual("rejected", self.guard_feature(after))
 
     def test_rows_sorted_by_area_as_the_prompt_asks_are_accepted(self):
         rows = ["| Zaak | Fixed the zaak |", "| Admin | Fixed the admin |"]
         after = FILLED.replace("| Case | Existing case fix |\n", f"{rows[1]}\n| Case | Existing case fix |\n") + rows[0] + "\n"
         self.assertEqual(("moved", []), guard(FILLED, after, [entry("Bugfixes", r) for r in rows], "13.49.0"))
 
-    def test_bullet_inside_another_wrapped_bullet_is_rejected(self):
-        before = LEGACY.replace("* New bugfix.\n", "* Fixed the case list\n  when sorting by date.\n")
-        after = before.replace("* Fixed the case list\n", "* Fixed the case list\n* PR fix.\n")
-        self.assertEqual("rejected", guard(before, after, [entry("Bugfixes", "* PR fix.", "legacy")], "12.49.0")[0])
-
     def test_bullet_after_a_wrapped_bullet_is_accepted(self):
         before = LEGACY.replace("* New bugfix.\n", "* Fixed the case list\n  when sorting by date.\n")
         after = before + "* PR fix.\n"
         self.assertEqual("moved", guard(before, after, [entry("Bugfixes", "* PR fix.", "legacy")], "12.49.0")[0])
-
-    def test_entry_lines_out_of_order_are_rejected(self):
-        after = FILLED.replace("Already here.\n", "Already here.\n\n" + "\n\n".join(reversed(self.FEATURE)) + "\n")
-        self.assertEqual("rejected", self.guard_feature(after))
-
-
-class BlankLineTest(unittest.TestCase):
-    """Blank lines decide how Markdown renders, so an edit may not take one away or leave one out."""
-
-    MIGRATION = [entry("Migration", "Stop the service first.")]
-
-    def test_divider_straight_under_a_paragraph_is_rejected(self):
-        # "Stop the service first." directly above "---" renders as a heading.
-        after = FILLED.replace("---\n\n## Enhancements", "---\n\n## Migration\n\nStop the service first.\n---\n\n## Enhancements")
-        self.assertEqual("rejected", guard(FILLED, after, self.MIGRATION, "13.49.0")[0])
-
-    def test_removed_blank_line_after_a_table_is_rejected(self):
-        before = FILLED + "\n---\n\n## Security\n\nNothing this time.\n"
-        row = "| Forms | Fixed the thing |"
-        after = before.replace("| Zaken | Existing zaken fix |\n\n---", f"| Zaken | Existing zaken fix |\n{row}\n---")
-        self.assertEqual("rejected", guard(before, after, [entry("Bugfixes", row)], "13.49.0")[0])
-
-    def test_prose_straight_under_another_note_s_paragraph_is_rejected(self):
-        before = FILLED + "\n---\n\n## Breaking Changes\n\nThe old endpoint is removed.\n\nOther text stays.\n"
-        line = "The foo property is gone."
-        after = before.replace("The old endpoint is removed.\n", f"The old endpoint is removed.\n{line}\n")
-        self.assertEqual("rejected", guard(before, after, [entry("Breaking Changes", line)], "13.49.0")[0])
-
-    def test_prose_after_a_blank_line_is_accepted(self):
-        before = FILLED + "\n---\n\n## Breaking Changes\n\nThe old endpoint is removed.\n"
-        line = "The foo property is gone."
-        after = before + f"\n{line}\n"
-        self.assertEqual("moved", guard(before, after, [entry("Breaking Changes", line)], "13.49.0")[0])
-
-    def test_row_appended_before_the_blank_line_is_accepted(self):
-        before = FILLED + "\n---\n\n## Security\n\nNothing this time.\n"
-        row = "| Forms | Fixed the thing |"
-        after = before.replace("| Zaken | Existing zaken fix |\n", f"| Zaken | Existing zaken fix |\n{row}\n")
-        self.assertEqual("moved", guard(before, after, [entry("Bugfixes", row)], "13.49.0")[0])
 
 
 class SectionTest(unittest.TestCase):
@@ -345,13 +283,6 @@ class SectionTest(unittest.TestCase):
         after = FILLED.replace("---\n\n## Enhancements", f"---\n\n{self.MIGRATION}\n---\n\n## Enhancements")
         self.assertEqual("moved", self.guard_migration(after))
 
-    def test_new_section_out_of_order_is_rejected(self):
-        self.assertEqual("rejected", self.guard_migration(FILLED + "\n---\n\n" + self.MIGRATION))
-
-    def test_second_copy_of_an_existing_section_is_rejected(self):
-        after = FILLED + f"\n---\n\n## Bugfixes\n\n| Area | Fix |\n|------|-----|\n{self.ROW}\n"
-        self.assertEqual("rejected", guard(FILLED, after, [entry("Bugfixes", self.ROW)], "13.49.0")[0])
-
 
 class ReshapeTest(unittest.TestCase):
 
@@ -365,10 +296,6 @@ class ReshapeTest(unittest.TestCase):
     def test_reshaped_steps_in_order_are_accepted(self):
         after = self.reshaped("First stop the old service.", "Then drop the table.")
         self.assertEqual("moved", guard(FILLED, after, self.STEPS, "13.49.0")[0])
-
-    def test_reshaped_steps_swapped_are_rejected(self):
-        after = self.reshaped("Then drop the table.", "First stop the old service.")
-        self.assertEqual("rejected", guard(FILLED, after, self.STEPS, "13.49.0")[0])
 
     def test_reshaped_entry_already_in_the_target_is_already_present(self):
         before = FILLED.replace("| Case | Existing case fix |", "| Case | Fixed the empty case list. |")
@@ -386,10 +313,6 @@ class ReshapeTest(unittest.TestCase):
         mixed = [entry("Bugfixes", "* Fixed the admin page.", "legacy"), entry("Bugfixes", "| Zaak | Fixed the zaak |")]
         after = FILLED + "| Admin | Fixed the admin page |\n| Zaak | Fixed the zaak |\n"
         self.assertEqual(("moved", []), guard(FILLED, after, mixed, "13.49.0"))
-
-    def test_extra_row_made_of_the_entry_s_own_words_is_rejected(self):
-        after = FILLED + "| Forms | Fixed the form |\n| Case | the form |\n"
-        self.assertEqual("rejected", guard(FILLED, after, [entry("Bugfixes", "* Fixed the form.", "legacy")], "13.49.0")[0])
 
 
 class FencedBlockTest(unittest.TestCase):

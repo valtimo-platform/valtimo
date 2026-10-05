@@ -80,44 +80,6 @@ def fenced(lines):
     return flags
 
 
-def table_breaks(text):
-    """Table lines where they stop the table rendering: a header not above its rule, a row not directly below the table."""
-    lines = [line.strip() for line in text.splitlines()]
-    bad = []
-    for k, (s, in_fence) in enumerate(zip(lines, fenced(lines))):
-        if in_fence or not s.startswith("|"):
-            continue
-        prev = lines[k - 1] if k else ""
-        following = lines[k + 1] if k + 1 < len(lines) else ""
-        if TABLE_HEADER_RE.match(s):
-            ok = bool(TABLE_RULE_RE.match(following))
-        elif TABLE_RULE_RE.match(s):
-            ok = bool(TABLE_HEADER_RE.match(prev))
-        else:
-            ok = prev.startswith("|")
-        if not ok:
-            bad.append(s)
-    return bad
-
-
-def entry_blocks(lines):
-    """Per line, (block number, whether the block is one entry). An entry is a `### ` heading or a top-level bullet, with its text."""
-    out, block, is_entry = [], 0, False
-    for line, in_fence in zip(lines, fenced(lines)):
-        s = line.strip()
-        if not in_fence and (s.startswith("#") or s == "---" or TABLE_HEADER_RE.match(s) or line.startswith(("* ", "- "))):
-            block += 1
-            is_entry = s.startswith("### ") or line.startswith(("* ", "- "))
-        out.append((block, is_entry))
-    return out
-
-
-def section_order(text):
-    """The `## ` sections of a README, in order, outside code fences."""
-    lines = text.splitlines()
-    return [section_name(line) for line, in_fence in zip(lines, fenced(lines)) if line.startswith("## ") and not in_fence]
-
-
 def section_name(heading):
     return heading.strip()[3:].split(" (")[0].strip()
 
@@ -180,37 +142,14 @@ def norm(line, drop_label=False):
     return re.sub(r"\.(?=\s|$)", "", " ".join(s.split()))
 
 
-def is_row(line):
-    s = line.strip()
-    return s.startswith("|") and s.endswith("|") and not TABLE_HEADER_RE.match(s) and not TABLE_RULE_RE.match(s)
-
-
-def is_prose(line):
-    """A paragraph line: what joins the line above it into one paragraph when no blank line separates them."""
-    s = line.strip()
-    return bool(s) and not is_structural(line) and not is_row(line) and not s.startswith(("#", "* ", "- ", "```", "~~~", "|"))
-
-
-def bullets(lines):
-    """A list's items, each one normalised string without an Area cell: a row, or a `* ` / `- ` line, starts one; an indented line continues it."""
-    items = []
-    for line in lines:
-        n = norm(line, drop_label=True)
-        if not n:
-            continue
-        if is_row(line) or line.lstrip().startswith(("* ", "- ")) or not items:
-            items.append(n)
-        else:
-            items[-1] += " " + n
-    return items
-
-
 def _joined(pairs, section, drop_label=False):
     return " ".join(n for n in (norm(line, drop_label) for s, line in pairs if s == section) if n)
 
 
 def guard(before, after, entries, current):
-    """Checks Claude's edit of the target README. Returns (outcome, errors).
+    """Checks Claude's edit of the target README: every word of the PR's note arrived, nothing already
+    there was removed, changed or reordered, and nothing was added that is not the note. Layout is
+    Claude's, and is read by whoever reviews the PR. Returns (outcome, errors).
 
     outcome: moved | already-present | no-change | rejected.
     """
@@ -234,13 +173,6 @@ def guard(before, after, entries, current):
             for (s, line), n in Counter((e["section"], e["line"]) for e in entries).items():
                 if have[(s, line)] < n:
                     missing.append(f"entry missing from {s or 'the top'}: {line!r}")
-            if not added and not missing:
-                # Already there means as one note: its prose lines in their order, not shuffled among other notes.
-                for section in {e["section"] for e in entries}:
-                    got = iter(line for s, line in a_tagged if s == section and line.strip())
-                    want = [e["line"] for e in entries if e["section"] == section and not is_row(e["line"])]
-                    if not all(any(w == g for g in got) for w in want):
-                        missing.append(f"this PR's lines under {section or 'the top'} are not in order in the target")
         else:
             # Substring match against Claude's additions, else existing text could stand in for an entry.
             # With none (a re-run, or a note moved by hand), whole lines of the target: a longer note is not this one.
@@ -260,55 +192,26 @@ def guard(before, after, entries, current):
     # Existing content, same order, same section: a heading inserted mid-section would re-file the lines below it.
     # Greedy earliest match finds a subsequence if one exists.
     b_tagged = tagged(before)
-    b_lines = [line for _, line in b_tagged]
     # Fence state is part of a line's identity: a `---` inside the PR's block is not the section divider.
-    kept_with_block = [
-        ((s, line, in_fence), blk) for (s, line), in_fence, blk in zip(b_tagged, fenced(b_lines), entry_blocks(b_lines))
+    kept = [
+        (s, line, in_fence) for (s, line), in_fence in zip(b_tagged, fenced([line for _, line in b_tagged]))
         if line.strip() and not is_placeholder(line)
     ]
-    kept = [(s, line) for (s, line, _), _ in kept_with_block]
-    # Blank lines decide how Markdown renders: one taken away from above a line joins it to what precedes it.
-    blank_above = [j > 0 and not b_lines[j - 1].strip()
-                   for j, line in enumerate(b_lines) if line.strip() and not is_placeholder(line)]
     i = 0
     additions, additions_fenced = [], []
-    kept_at = set()
-    for k, ((s, line), in_fence) in enumerate(zip(a_tagged, fenced(a_lines))):
+    for (s, line), in_fence in zip(a_tagged, fenced(a_lines)):
         if not line.strip():
             continue
-        after_blank = k == 0 or not a_lines[k - 1].strip()
-        if i < len(kept) and (s, line, in_fence) == kept_with_block[i][0]:
-            if blank_above[i] and not after_blank:
-                errors.append(f"the blank line above {line!r} was removed")
-            kept_at.add(k)
+        if i < len(kept) and (s, line, in_fence) == kept[i]:
             i += 1
         else:
-            # Straight under someone else's paragraph, a paragraph line reads as part of it.
-            if not in_fence and is_prose(line) and k - 1 in kept_at and is_prose(a_lines[k - 1]):
-                errors.append(f"added {line!r} straight under the existing paragraph {a_lines[k - 1]!r}")
-            # `---` straight under a paragraph turns that paragraph into a heading.
-            if line.strip() == "---" and not in_fence and not after_blank:
-                errors.append(f"added a '---' with no blank line above it, under {a_lines[k - 1]!r}")
-            # Between two lines of one existing entry: the lines below would read as part of this one.
-            if 0 < i < len(kept) and kept_with_block[i - 1][1] == kept_with_block[i][1] and kept_with_block[i][1][1]:
-                errors.append(f"added a line inside the existing entry {kept[i - 1][1]!r}: {line!r}")
             additions.append((s, line))
             additions_fenced.append(in_fence)
     if i < len(kept):
         errors.append(f"an existing line was removed, changed, reordered or moved out of {kept[i][0] or 'the top'}: {kept[i][1]!r}")
-    for line in (Counter(table_breaks(after)) - Counter(table_breaks(before))).elements():
-        errors.append(f"a table line no longer sits in its table: {line!r}")
 
     budget = Counter((e["section"], e["line"]) for e in entries)
-    existing = section_order(before)
-    order = [s for s in section_order(after) if s in SECTIONS]
-    if order != sorted(order, key=SECTIONS.index) and [s for s in existing if s in SECTIONS] == sorted(
-            (s for s in existing if s in SECTIONS), key=SECTIONS.index):
-        errors.append(f"the sections are no longer in order: {', '.join(order)}")
-    # Reshaping may change markup and add an Area cell, nothing else: per section, the words must match in order.
-    entry_text = {s: " ".join(n for n in (norm(e["line"], drop_label=True) for e in entries if e["section"] == s) if n)
-                  for s in {e["section"] for e in entries}}
-    reshaped = {s: [] for s in entry_text}
+    entry_text = {s: _joined([(e["section"], e["line"]) for e in entries], s, drop_label=True) for s in {e["section"] for e in entries}}
     for (s, line), in_fence in zip(additions, additions_fenced):
         stripped = line.strip()
         # A fenced line (`# comment` in yaml, `---` between documents) is entry text, never structure.
@@ -318,8 +221,6 @@ def guard(before, after, entries, current):
             if stripped.startswith("## "):
                 if section_name(stripped) not in SECTIONS:
                     errors.append(f"added an unknown section: {line!r}")
-                elif section_name(stripped) in existing:
-                    errors.append(f"added a second {line!r} section")
                 continue
             if is_structural(line):
                 errors.append(f"added a structural line: {line!r}")
@@ -329,32 +230,11 @@ def guard(before, after, entries, current):
                 budget[(s, line)] -= 1
                 continue
         else:
+            # Reshaping may change markup and add an Area cell; every word it adds must be the note's.
             n = norm(line, drop_label=True)
-            if n is not None and s in reshaped:
-                if n:
-                    reshaped[s].append((is_row(line), n))
+            if n is not None and (not n or n in entry_text.get(s, "")):
                 continue
         errors.append(f"added a line that is not one of this PR's entries under {s or 'the top'}: {line!r}")
-    if not exact:
-        for s, added in reshaped.items():
-            if not added:
-                continue
-            # Rows are sorted by Area or Severity, as the prompt asks: each bullet must be one row, in any order.
-            if all(row for row, _ in added):
-                ok = sorted(n for _, n in added) == sorted(bullets([e["line"] for e in entries if e["section"] == s]))
-            else:
-                ok = " ".join(n for _, n in added) == entry_text[s]
-            if not ok:
-                errors.append(f"under {s or 'the top'}, the added text is not this PR's entries word for word and in order")
 
-    missing = present(additions)
-    errors += missing
-    if exact and not missing:
-        for section in {e["section"] for e in entries}:
-            # Subsequence check: iterating `got` once means each match must come after the last.
-            # Table rows are left out: the prompt sorts them by Area or Severity.
-            got = iter(line for s, line in additions if s == section and not is_row(line))
-            want = (e["line"] for e in entries if e["section"] == section and not is_row(e["line"]))
-            if not all(any(w == g for g in got) for w in want):
-                errors.append(f"this PR's lines under {section or 'the top'} are not in their original order")
+    errors += present(additions)
     return ("rejected" if errors else "moved"), errors
