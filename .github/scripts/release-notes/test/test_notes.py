@@ -241,6 +241,43 @@ class GuardTest(unittest.TestCase):
         self.assertEqual("rejected", guard(LEGACY, reshaped, [entry("Bugfixes", bullet, "legacy")], "12.49.0")[0])
 
 
+class PlacementTest(unittest.TestCase):
+    """Every word arriving is not enough: where it lands must not break another entry or the table."""
+
+    ROW = "| Forms | Fixed the thing |"
+    FEATURE = ["### New thing", "It does a thing."]
+
+    def guard_row(self, after):
+        return guard(FILLED, after, [entry("Bugfixes", self.ROW)], "13.49.0")[0]
+
+    def guard_feature(self, after):
+        return guard(FILLED, after, [entry("Enhancements", line) for line in self.FEATURE], "13.49.0")[0]
+
+    def test_row_at_the_end_of_the_table_is_accepted(self):
+        self.assertEqual("moved", self.guard_row(FILLED + self.ROW + "\n"))
+
+    def test_row_above_the_table_header_is_rejected(self):
+        self.assertEqual("rejected", self.guard_row(FILLED.replace("| Area | Fix |", f"{self.ROW}\n| Area | Fix |")))
+
+    def test_row_between_header_and_rule_is_rejected(self):
+        self.assertEqual("rejected", self.guard_row(FILLED.replace("| Area | Fix |\n", f"| Area | Fix |\n{self.ROW}\n")))
+
+    def test_row_after_a_blank_line_is_rejected(self):
+        self.assertEqual("rejected", self.guard_row(FILLED + "\n" + self.ROW + "\n"))
+
+    def test_entry_after_an_existing_one_is_accepted(self):
+        after = FILLED.replace("Already here.\n", "Already here.\n\n" + "\n\n".join(self.FEATURE) + "\n")
+        self.assertEqual("moved", self.guard_feature(after))
+
+    def test_entry_inside_an_existing_one_is_rejected(self):
+        after = FILLED.replace("### Existing one\n", "### Existing one\n\n" + "\n\n".join(self.FEATURE) + "\n")
+        self.assertEqual("rejected", self.guard_feature(after))
+
+    def test_entry_lines_out_of_order_are_rejected(self):
+        after = FILLED.replace("Already here.\n", "Already here.\n\n" + "\n\n".join(reversed(self.FEATURE)) + "\n")
+        self.assertEqual("rejected", self.guard_feature(after))
+
+
 class FencedBlockTest(unittest.TestCase):
 
     PLACEHOLDER = "### New enhancement title\n\nNew enhancement explanation."
