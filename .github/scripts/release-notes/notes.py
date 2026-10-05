@@ -36,6 +36,7 @@ PLACEHOLDERS = frozenset({
     "* New bugfix.",
 })
 
+FENCE_RE = re.compile(r"^\s*(```|~~~)")
 TABLE_HEADER_RE = re.compile(r"^\|\s*(Area|Severity)\s*\|\s*Fix\s*\|$")
 TABLE_RULE_RE = re.compile(r"^\|[\s:|]*-[\s:|-]*\|$")
 MAX_LABEL = 40
@@ -66,6 +67,19 @@ def is_structural(line):
     )
 
 
+def fenced(lines):
+    """Per line, whether it is inside a code fence, the fence lines included. Nothing in a fence is structure."""
+    flags, fence = [], None
+    for line in lines:
+        m = FENCE_RE.match(line)
+        flags.append(bool(fence or m))
+        if fence and m and m[1] == fence:
+            fence = None
+        elif not fence and m:
+            fence = m[1]
+    return flags
+
+
 def section_name(heading):
     return heading.strip()[3:].split(" (")[0].strip()
 
@@ -74,8 +88,9 @@ def tagged(text):
     """(section, line) per line; section is the nearest `## ` heading above, or ''."""
     section = ""
     out = []
-    for line in text.splitlines():
-        if line.startswith("## "):
+    lines = text.splitlines()
+    for line, in_fence in zip(lines, fenced(lines)):
+        if line.startswith("## ") and not in_fence:
             section = section_name(line)
         out.append((section, line))
     return out
@@ -90,6 +105,7 @@ def analyze(old, new):
     old_lines = old.splitlines()
     new_tagged = tagged(new)
     new_lines = [line for _, line in new_tagged]
+    new_fenced = fenced(new_lines)
     layout = layout_of(new)
     entries, blocks, removed = [], [], []
     for op, i1, i2, j1, j2 in SequenceMatcher(None, old_lines, new_lines, autojunk=False).get_opcodes():
@@ -99,11 +115,11 @@ def analyze(old, new):
                 if line.strip() and line.strip() != "---" and not is_placeholder(line)
             ]
         if op in ("insert", "replace"):
-            chunk = [(s, line) for s, line in new_tagged[j1:j2] if not is_placeholder(line)]
-            content = [(s, line) for s, line in chunk if not is_structural(line)]
+            chunk = [(s, line, f) for (s, line), f in zip(new_tagged[j1:j2], new_fenced[j1:j2]) if not is_placeholder(line)]
+            content = [(s, line) for s, line, f in chunk if f or not is_structural(line)]
             entries += [{"section": s, "line": line, "layout": layout} for s, line in content]
             if content:
-                text = "\n".join(line for _, line in chunk).strip("\n")
+                text = "\n".join(line for _, line, _ in chunk).strip("\n")
                 blocks.append({"section": content[0][0], "text": text})
     return entries, blocks, removed
 
@@ -171,30 +187,33 @@ def guard(before, after, entries, current):
     # Greedy earliest match finds a subsequence if one exists.
     kept = [(s, line) for s, line in tagged(before) if line.strip() and not is_placeholder(line)]
     i = 0
-    additions = []
-    for s, line in a_tagged:
+    additions, additions_fenced = [], []
+    for (s, line), in_fence in zip(a_tagged, fenced(a_lines)):
         if not line.strip():
             continue
         if i < len(kept) and (s, line) == kept[i]:
             i += 1
         else:
             additions.append((s, line))
+            additions_fenced.append(in_fence)
     if i < len(kept):
         errors.append(f"an existing line was removed, changed, reordered or moved out of {kept[i][0] or 'the top'}: {kept[i][1]!r}")
 
     budget = Counter((e["section"], e["line"]) for e in entries)
     entry_text = {s: _joined([(e["section"], e["line"]) for e in entries], s) for s in {e["section"] for e in entries}}
-    for s, line in additions:
+    for (s, line), in_fence in zip(additions, additions_fenced):
         stripped = line.strip()
-        if is_placeholder(line) or stripped == "---" or TABLE_HEADER_RE.match(stripped) or TABLE_RULE_RE.match(stripped):
-            continue
-        if stripped.startswith("## "):
-            if section_name(stripped) not in SECTIONS:
-                errors.append(f"added an unknown section: {line!r}")
-            continue
-        if is_structural(line):
-            errors.append(f"added a structural line: {line!r}")
-            continue
+        # A fenced line (`# comment` in yaml, `---` between documents) is entry text, never structure.
+        if not in_fence:
+            if is_placeholder(line) or stripped == "---" or TABLE_HEADER_RE.match(stripped) or TABLE_RULE_RE.match(stripped):
+                continue
+            if stripped.startswith("## "):
+                if section_name(stripped) not in SECTIONS:
+                    errors.append(f"added an unknown section: {line!r}")
+                continue
+            if is_structural(line):
+                errors.append(f"added a structural line: {line!r}")
+                continue
         if exact:
             if budget[(s, line)] > 0:
                 budget[(s, line)] -= 1
