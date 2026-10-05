@@ -30,6 +30,8 @@ spring-actuator:
 valtimo:
   versioning:
     enabled: false
+  case-configuration-test:
+    notification-email: test@example.com
   plugin:
     encryption-secret: "abcdefghijklmnop"
 
