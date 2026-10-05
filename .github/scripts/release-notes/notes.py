@@ -116,7 +116,8 @@ def analyze(old, new):
             ]
         if op in ("insert", "replace"):
             chunk = [(s, line, f) for (s, line), f in zip(new_tagged[j1:j2], new_fenced[j1:j2]) if not is_placeholder(line)]
-            content = [(s, line) for s, line, f in chunk if f or not is_structural(line)]
+            # Blank lines are never entries, fenced or not: the guard skips them on both sides.
+            content = [(s, line) for s, line, f in chunk if line.strip() and (f or not is_structural(line))]
             entries += [{"section": s, "line": line, "layout": layout} for s, line in content]
             if content:
                 text = "\n".join(line for _, line, _ in chunk).strip("\n")
