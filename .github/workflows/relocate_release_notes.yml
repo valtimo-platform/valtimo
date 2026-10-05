@@ -84,8 +84,8 @@ jobs:
           set -euo pipefail
           # Every line on every run: the weekly run may be what replaced a queued post-cut sweep.
           LINES="next-minor rc next-major"
-          # Oldest first: the cap truncates the tail.
-          gh pr list --state open --limit 200 --search "sort:created-asc" \
+          # Oldest first; gh pages up to --limit, so set it well above how many PRs are ever open.
+          gh pr list --state open --limit 1000 --search "sort:created-asc" \
             --json number,headRefName,headRefOid,baseRefName,headRepositoryOwner,labels > "${RUNNER_TEMP}/prs.json"
           python3 -B "${SCRIPTS}/detect.py" --prs "${RUNNER_TEMP}/prs.json" --lines "${LINES}" \
             --only-pr "${ONLY_PR}" --max-prs "${MAX_PRS}" --notes-base "${NOTES_BASE}" > "${RUNNER_TEMP}/detect.json"
