@@ -121,7 +121,14 @@ export class CaseManagementConfigurationComponent {
     this._reload$,
   ]).pipe(
     tap(() => this.loading$.next(true)),
-    switchMap(([params]) => this.caseConfigurationApiService.getConfigurations(params)),
+    // carbon-list builds its action column only when items arrive, so items wait for the actions
+    switchMap(([params]) =>
+      combineLatest([
+        this.caseConfigurationApiService.getConfigurations(params),
+        this.canEditDeclarations$.pipe(take(1)),
+      ])
+    ),
+    map(([items]) => items),
     tap(items => {
       this.$usedKeys.set(items.map(item => item.key));
       this.loading$.next(false);
