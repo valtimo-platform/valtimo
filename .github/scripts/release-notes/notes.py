@@ -112,6 +112,12 @@ def entry_blocks(lines):
     return out
 
 
+def section_order(text):
+    """The `## ` sections of a README, in order, outside code fences."""
+    lines = text.splitlines()
+    return [section_name(line) for line, in_fence in zip(lines, fenced(lines)) if line.startswith("## ") and not in_fence]
+
+
 def section_name(heading):
     return heading.strip()[3:].split(" (")[0].strip()
 
@@ -245,7 +251,15 @@ def guard(before, after, entries, current):
         errors.append(f"a table line no longer sits in its table: {line!r}")
 
     budget = Counter((e["section"], e["line"]) for e in entries)
-    entry_text = {s: _joined([(e["section"], e["line"]) for e in entries], s) for s in {e["section"] for e in entries}}
+    existing = section_order(before)
+    order = [s for s in section_order(after) if s in SECTIONS]
+    if order != sorted(order, key=SECTIONS.index) and [s for s in existing if s in SECTIONS] == sorted(
+            (s for s in existing if s in SECTIONS), key=SECTIONS.index):
+        errors.append(f"the sections are no longer in order: {', '.join(order)}")
+    # Reshaping may change markup and add an Area cell, nothing else: per section, the words must match in order.
+    entry_text = {s: " ".join(n for n in (norm(e["line"], drop_label=True) for e in entries if e["section"] == s) if n)
+                  for s in {e["section"] for e in entries}}
+    reshaped = {s: [] for s in entry_text}
     for (s, line), in_fence in zip(additions, additions_fenced):
         stripped = line.strip()
         # A fenced line (`# comment` in yaml, `---` between documents) is entry text, never structure.
@@ -255,6 +269,8 @@ def guard(before, after, entries, current):
             if stripped.startswith("## "):
                 if section_name(stripped) not in SECTIONS:
                     errors.append(f"added an unknown section: {line!r}")
+                elif section_name(stripped) in existing:
+                    errors.append(f"added a second {line!r} section")
                 continue
             if is_structural(line):
                 errors.append(f"added a structural line: {line!r}")
@@ -265,9 +281,15 @@ def guard(before, after, entries, current):
                 continue
         else:
             n = norm(line, drop_label=True)
-            if n is not None and (not n or n in entry_text.get(s, "")):
+            if n is not None and s in reshaped:
+                if n:
+                    reshaped[s].append(n)
                 continue
         errors.append(f"added a line that is not one of this PR's entries under {s or 'the top'}: {line!r}")
+    if not exact:
+        for s, words in reshaped.items():
+            if words and " ".join(words) != entry_text[s]:
+                errors.append(f"under {s or 'the top'}, the added text is not this PR's entries word for word and in order")
 
     missing = present(additions)
     errors += missing
