@@ -91,19 +91,19 @@ class FlowTest(unittest.TestCase):
         self.git("push", "-q", "origin", "next-minor")
         self.git("fetch", "-q", "origin")
 
-    def prs(self, *heads):
+    def prs(self, *heads, base="next-minor"):
         return [{
             "number": n,
             "headRefName": head,
             "headRefOid": self.git("rev-parse", f"origin/{head}").strip(),
-            "baseRefName": "next-minor",
+            "baseRefName": base,
             "headRepositoryOwner": {"login": "valtimo-platform"},
             "labels": [],
         } for n, head in enumerate(heads, start=1)]
 
-    def detect(self, prs, **kwargs):
+    def detect(self, prs, lines=("next-minor",), **kwargs):
         with contextlib.redirect_stderr(io.StringIO()):
-            return detect.detect(prs, ["next-minor"], NOTES, "valtimo-platform", **kwargs)
+            return detect.detect(prs, list(lines), NOTES, "valtimo-platform", **kwargs)
 
     def prepare(self, item, out):
         self.git("checkout", "-q", "-f", "next-minor")
@@ -255,6 +255,21 @@ class FlowTest(unittest.TestCase):
         [item] = self.detect(self.prs("feature/x"))
         self.assertEqual("too-large", self.prepare(item, self.out / "work")["status"])
 
+    def test_base_conflicting_outside_the_notes_is_skipped(self):
+        Path("app.txt").write_text("one\n")
+        self.commit("app")
+        self.git("push", "-q", "origin", "next-minor")
+        self.pr_branch()
+        Path("app.txt").write_text("the branch's\n")
+        self.commit("branch edit")
+        self.git("push", "-q", "origin", "feature/x")
+        self.git("checkout", "-q", "next-minor")
+        Path("app.txt").write_text("the base's\n")
+        self.commit("base edit")
+        self.cut()
+        [item] = self.detect(self.prs("feature/x"))
+        self.assertEqual("merge-conflict", self.prepare(item, self.out / "work")["status"])
+
     def test_missing_artifact_fails(self):
         self.pr_branch()
         self.cut()
@@ -334,6 +349,81 @@ class FlowTest(unittest.TestCase):
         self.git("push", "-q", "origin", "feature/x")
         [item] = self.detect(self.prs("feature/x"))
         self.assertEqual("ineligible", self.prepare(item, self.out / "work")["status"])
+
+    def rc_line(self, name, version, start=None):
+        """A 12.x maintenance branch: its own history, no 13.x.x root."""
+        if start:
+            self.git("checkout", "-q", "-b", name, start)
+        else:
+            self.git("checkout", "-q", "--orphan", name)
+            self.git("rm", "-q", "-r", "-f", ".")
+        self.write(f"12.x.x/{version}/README.md", README.format(v=version))
+        self.commit(f"{version} skeleton")
+        self.git("push", "-q", "origin", name)
+        self.git("fetch", "-q", "origin")
+
+    def rc_pr(self):
+        self.git("checkout", "-q", "-b", "feature/rc", "origin/rc/12.5.0")
+        readme = "12.x.x/12.5.0/README.md"
+        self.write(readme, self.place(self.read(readme)))
+        self.commit("note")
+        self.git("push", "-q", "origin", "feature/rc")
+        return self.prs("feature/rc", base="rc/12.5.0")
+
+    def test_older_rc_line_moves_to_its_newest_rc_branch(self):
+        self.rc_line("rc/12.5.0", "12.5.0")
+        prs = self.rc_pr()
+        self.rc_line("rc/12.10.0", "12.10.0", start="origin/rc/12.5.0")
+
+        [item] = self.detect(prs, lines=["rc"])
+        self.assertEqual(("rc/12.5.0", "rc/12.10.0", "12.10.0"), (item["old_base"], item["base"], item["current"]))
+        self.assertEqual(f"{NOTES}/12.x.x/12.5.0", item["stale"])
+        artifact = self.relocate(item, self.place)
+        self.assertEqual(("committed", []), self.push(item, artifact))
+        self.assertIn(ROW, self.read("12.x.x/12.10.0/README.md"))
+        self.assertEqual("", self.git("diff", "origin/rc/12.10.0", "--", f"{NOTES}/12.x.x/12.5.0"))
+
+    def test_rc_branch_not_containing_the_old_base_is_skipped(self):
+        self.rc_line("rc/12.5.0", "12.5.0")
+        prs = self.rc_pr()
+        self.rc_line("rc/12.10.0", "12.10.0")
+        self.assertEqual([], self.detect(prs, lines=["rc"]))
+
+    def test_rc_line_of_the_current_major_is_left_alone(self):
+        self.git("push", "-q", "origin", "origin/next-minor:refs/heads/rc/13.48.0")
+        self.pr_branch()
+        self.cut()
+        self.git("push", "-q", "origin", "origin/next-minor:refs/heads/rc/13.49.0")
+        self.git("fetch", "-q", "origin")
+        self.assertEqual([], self.detect(self.prs("feature/x", base="rc/13.48.0"), lines=["rc"]))
+
+    def next_major_pr(self):
+        self.git("push", "-q", "origin", "next-minor:next-major")
+        self.git("checkout", "-q", "-b", "feature/major", "next-minor")
+        readme = "13.x.x/13.48.0/README.md"
+        self.write(readme, self.place(self.read(readme)))
+        self.commit("note")
+        self.git("push", "-q", "origin", "feature/major")
+        self.git("checkout", "-q", "-b", "major", "origin/next-major")
+        return self.prs("feature/major", base="next-major")
+
+    def test_next_major_without_its_own_root_is_not_swept(self):
+        prs = self.next_major_pr()
+        self.write("13.x.x/13.49.0/README.md", README.format(v="13.49.0"))
+        self.commit("13.49.0 from next-minor")
+        self.git("push", "-q", "origin", "major:next-major")
+        self.git("fetch", "-q", "origin")
+        self.assertEqual([], self.detect(prs, lines=["next-major"]))
+
+    def test_next_major_with_its_own_root_is_swept(self):
+        prs = self.next_major_pr()
+        self.write("14.x.x/14.0.0/README.md", README.format(v="14.0.0"))
+        self.commit("14.0.0 skeleton")
+        self.git("push", "-q", "origin", "major:next-major")
+        self.git("fetch", "-q", "origin")
+        [item] = self.detect(prs, lines=["next-major"])
+        self.assertEqual((f"{NOTES}/14.x.x", "14.0.0"), (item["notes_root"], item["current"]))
+        self.assertEqual(f"{NOTES}/13.x.x/13.48.0", item["stale"])
 
 
 if __name__ == "__main__":
