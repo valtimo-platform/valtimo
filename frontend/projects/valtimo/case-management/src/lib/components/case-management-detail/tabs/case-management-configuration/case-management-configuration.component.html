@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    actionItems: actionItems$ | async,
+    canEditDeclarations: canEditDeclarations$ | async,
+    items: items$ | async,
+    loading: loading$ | async,
+    params: params$ | async,
+  } as obs"
+>
+  <valtimo-carbon-list
+    [actionItems]="obs.actionItems"
+    [attr.data-test-id]="testIds.list"
+    [fields]="FIELDS"
+    [header]="false"
+    [items]="obs.items"
+    [loading]="obs.loading"
+    (rowClicked)="onRowClicked($event)"
+  >
+    <ng-container carbonToolbarContent *ngTemplateOutlet="addButton"></ng-container>
+
+    <valtimo-no-results
+      [action]="addButton"
+      [description]="
+        obs.canEditDeclarations
+          ? ('caseManagement.configuration.noResults.description' | translate)
+          : ('caseManagement.configuration.noResultsFinalVersion.description' | translate)
+      "
+      [title]="'caseManagement.configuration.noResults.title' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <valtimo-case-management-configuration-modal
+    [item]="$declarationToEdit()"
+    [open]="$declarationModalOpen()"
+    [params]="obs.params"
+    [usedKeys]="$usedKeys()"
+    (closeEvent)="onDeclarationModalClose($event)"
+  ></valtimo-case-management-configuration-modal>
+
+  <valtimo-case-management-configuration-environment-value-modal
+    [item]="$environmentValueItem()"
+    [open]="$environmentValueModalOpen()"
+    [params]="obs.params"
+    (closeEvent)="onEnvironmentValueModalClose($event)"
+  ></valtimo-case-management-configuration-environment-value-modal>
+
+  <ng-template #addButton>
+    <button
+      *ngIf="obs.canEditDeclarations"
+      cdsButton="primary"
+      [attr.data-test-id]="testIds.addButton"
+      [disabled]="obs.loading"
+      (click)="openAddModal()"
+    >
+      {{ 'caseManagement.configuration.add' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </ng-template>
+</ng-container>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="caseManagement.configuration.deleteText"
+  titleTranslationKey="interface.delete"
+  [outputOnConfirm]="$declarationToEdit()"
+  [showModalSubject$]="showDeleteModal$"
+  (confirmEvent)="onConfirmDelete($event)"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="caseManagement.configuration.clear"
+  confirmButtonType="danger"
+  contentTranslationKey="caseManagement.configuration.clearEnvironmentValueText"
+  titleTranslationKey="caseManagement.configuration.clearEnvironmentValue"
+  [outputOnConfirm]="$environmentValueItem()"
+  [showModalSubject$]="showClearEnvironmentValueModal$"
+  (confirmEvent)="onConfirmClearEnvironmentValue($event)"
+></valtimo-confirmation-modal>

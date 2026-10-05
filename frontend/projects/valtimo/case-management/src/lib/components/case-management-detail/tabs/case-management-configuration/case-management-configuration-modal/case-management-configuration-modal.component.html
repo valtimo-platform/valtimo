@@ -1,0 +1,93 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal valtimoCdsModal size="sm" [open]="open" (close)="close()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="close()">
+    <h3 cdsModalHeaderHeading>
+      {{
+        ($isEdit() ? 'caseManagement.configuration.edit' : 'caseManagement.configuration.add')
+          | translate
+      }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent [cdsLayer]="1">
+    <form class="case-configuration-form" [formGroup]="formGroup">
+      <cds-label
+        [helperText]="$isEdit() ? '' : ('caseManagement.configuration.keyHelperText' | translate)"
+        [invalid]="key.dirty && key.invalid"
+        [invalidText]="
+          (key.hasError('uniqueKey')
+            ? 'caseManagement.configuration.keyNotUnique'
+            : 'caseManagement.configuration.keyInvalid'
+          ) | translate
+        "
+      >
+        {{ 'caseManagement.configuration.columns.key' | translate }}
+
+        <input
+          cdsText
+          formControlName="key"
+          [attr.data-test-id]="testIds.keyInput"
+          [attr.modal-primary-focus]="!$isEdit()"
+          [invalid]="key.dirty && key.invalid"
+        />
+      </cds-label>
+
+      <cds-label [helperText]="'caseManagement.configuration.defaultValueHelperText' | translate">
+        {{ 'caseManagement.configuration.columns.defaultValue' | translate }}
+
+        <input
+          cdsText
+          formControlName="defaultValue"
+          [attr.data-test-id]="testIds.defaultValueInput"
+          [attr.modal-primary-focus]="$isEdit()"
+        />
+      </cds-label>
+    </form>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.cancelButton"
+      [disabled]="$disabled()"
+      (click)="close()"
+    >
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    @if ($isEdit()) {
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.saveButton"
+        [disabled]="formGroup.pristine || $disabled()"
+        (click)="save()"
+      >
+        {{ 'interface.save' | translate }}
+      </button>
+    } @else {
+      <button
+        cdsButton="primary"
+        [attr.data-test-id]="testIds.addConfirmButton"
+        [disabled]="formGroup.invalid || $disabled()"
+        (click)="save()"
+      >
+        {{ 'interface.create' | translate }}
+      </button>
+    }
+  </cds-modal-footer>
+</cds-modal>

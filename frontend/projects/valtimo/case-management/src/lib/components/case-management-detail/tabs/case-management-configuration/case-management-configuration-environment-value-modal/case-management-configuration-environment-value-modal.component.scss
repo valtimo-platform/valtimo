@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './status.model';
-export * from './tab.model';
-export * from './case-list.model';
-export * from './case-deployment.model';
-export * from './startable-item.model';
-export * from './case-management-actions-modal.model';
-export * from './migration.model';
-export * from './case-configuration.model';
+.case-configuration-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-05);
+}

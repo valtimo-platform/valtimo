@@ -1160,6 +1160,7 @@
       "formFlows": "Form Flows",
       "tasks": "Tasks",
       "migration": "Migration",
+      "configuration": "Configuration",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",
@@ -1455,6 +1456,32 @@
       },
       "noResultsFinalVersion": {
         "description": "No tags have been created for this case type."
+      }
+    },
+    "configuration": {
+      "add": "Add configuration",
+      "edit": "Edit configuration",
+      "setEnvironmentValue": "Set environment value",
+      "clearEnvironmentValue": "Clear environment value",
+      "clear": "Clear",
+      "clearEnvironmentValueText": "Are you sure you want to clear the environment value? The default value will be used again in this environment.",
+      "deleteText": "Are you sure you want to delete this configuration? This action cannot be undone.",
+      "environmentValueDescription": "The environment value applies to this environment only and overrides the default value. It is not part of the case definition.",
+      "keyHelperText": "The key cannot be changed after creation",
+      "keyInvalid": "The key is required and cannot contain whitespace",
+      "keyNotUnique": "This key is already in use",
+      "defaultValueHelperText": "Optional",
+      "columns": {
+        "key": "Key",
+        "defaultValue": "Default value",
+        "environmentValue": "Environment value"
+      },
+      "noResults": {
+        "title": "No configuration declared",
+        "description": "Click here to declare a configuration for this case type"
+      },
+      "noResultsFinalVersion": {
+        "description": "No configuration has been declared for this case type version."
       }
     },
     "draftWarning": {

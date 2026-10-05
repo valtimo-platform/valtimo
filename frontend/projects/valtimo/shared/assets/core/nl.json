@@ -1160,6 +1160,7 @@
       "formFlows": "Form flows",
       "tasks": "Taken",
       "migration": "Migratie",
+      "configuration": "Configuratie",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
@@ -1462,6 +1463,32 @@
       },
       "noResultsFinalVersion": {
         "description": "Er zijn geen tags aangemaakt voor dit dossiertype."
+      }
+    },
+    "configuration": {
+      "add": "Configuratie toevoegen",
+      "edit": "Configuratie bewerken",
+      "setEnvironmentValue": "Omgevingswaarde instellen",
+      "clearEnvironmentValue": "Omgevingswaarde wissen",
+      "clear": "Wissen",
+      "clearEnvironmentValueText": "Weet je zeker dat je de omgevingswaarde wilt wissen? In deze omgeving wordt dan weer de standaardwaarde gebruikt.",
+      "deleteText": "Weet je zeker dat je deze configuratie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "environmentValueDescription": "De omgevingswaarde geldt alleen voor deze omgeving en overschrijft de standaardwaarde. Ze maakt geen deel uit van de dossierdefinitie.",
+      "keyHelperText": "De key kan na het aanmaken niet meer worden gewijzigd",
+      "keyInvalid": "De key is verplicht en mag geen spaties bevatten",
+      "keyNotUnique": "Deze key is al in gebruik",
+      "defaultValueHelperText": "Optioneel",
+      "columns": {
+        "key": "Key",
+        "defaultValue": "Standaardwaarde",
+        "environmentValue": "Omgevingswaarde"
+      },
+      "noResults": {
+        "title": "Er is geen configuratie gedeclareerd",
+        "description": "Klik hier om een configuratie voor dit dossiertype te declareren"
+      },
+      "noResultsFinalVersion": {
+        "description": "Er is geen configuratie gedeclareerd voor deze versie van het dossiertype."
       }
     },
     "draftWarning": {

@@ -14,12 +14,28 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './status.model';
-export * from './tab.model';
-export * from './case-list.model';
-export * from './case-deployment.model';
-export * from './startable-item.model';
-export * from './case-management-actions-modal.model';
-export * from './migration.model';
-export * from './case-configuration.model';
+interface CaseConfigurationItem {
+  key: string;
+  defaultValue: string | null;
+  environmentValue: string | null;
+}
+
+interface CreateCaseConfigurationRequest {
+  key: string;
+  defaultValue: string | null;
+}
+
+interface UpdateCaseConfigurationRequest {
+  defaultValue: string | null;
+}
+
+interface SetCaseConfigurationEnvironmentValueRequest {
+  value: string | null;
+}
+
+export {
+  CaseConfigurationItem,
+  CreateCaseConfigurationRequest,
+  SetCaseConfigurationEnvironmentValueRequest,
+  UpdateCaseConfigurationRequest,
+};
