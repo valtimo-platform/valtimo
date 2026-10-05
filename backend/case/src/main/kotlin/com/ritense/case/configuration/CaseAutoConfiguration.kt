@@ -44,7 +44,6 @@ import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.case.service.CaseDefinitionGroupService
-import com.ritense.case.web.rest.error.InvalidGroupListColumnSortExceptionMapper
 import com.ritense.case.service.GroupCaseInstanceService
 import com.ritense.case.service.PinnedItemService
 import com.ritense.case.service.CaseDefinitionImportPreviewService
@@ -80,6 +79,7 @@ import com.ritense.case.web.rest.CaseTabResource
 import com.ritense.case.web.rest.StartableItemManagementResource
 import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
+import com.ritense.case.web.rest.error.InvalidGroupListColumnSortExceptionMapper
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.HiddenCaseListColumnRepository

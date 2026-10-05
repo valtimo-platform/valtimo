@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-
 package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.permission.ConditionContainer
 import com.ritense.authorization.permission.Permission
-import com.ritense.case_.authorization.CaseDefinitionActionProvider
-import com.ritense.case_.domain.definition.CaseDefinition
-import java.util.UUID
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
@@ -36,36 +32,43 @@ import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.service.GroupCaseInstanceService
+import com.ritense.case_.authorization.CaseDefinitionActionProvider
+import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valueresolver.ValueResolverService
-import org.springframework.test.context.bean.override.mockito.MockitoBean
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
-import org.junit.jupiter.api.DynamicTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.time.LocalDateTime
+import java.util.UUID
 
 @WithMockUser(username = BaseOpenSearchIntegrationTest.USERNAME, authorities = [BaseOpenSearchIntegrationTest.FULL_ACCESS_ROLE])
 class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
 
     @Autowired
     @Qualifier("jpaDocumentSearchService")
-    lateinit var jpaSearchService: com.ritense.document.service.impl.JsonSchemaDocumentSearchService
+    lateinit var jpaSearchService: JsonSchemaDocumentSearchService
 
     @Autowired
     @Qualifier("openSearchDocumentSearchService")
@@ -79,6 +82,9 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
 
     @MockitoBean
     lateinit var valueResolverService: ValueResolverService
+
+    @Autowired
+    lateinit var entityManager: EntityManager
 
     @Autowired
     lateinit var environment: Environment
@@ -106,12 +112,27 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
         val houseStatuses = listOf("started", null, "closed", "suspended", "started", "closed", null, "suspended")
         val personStatuses = listOf("closed", "started", null, "started", "closed", null)
         houseStatuses.forEachIndexed { index, status ->
-            seedDocument("house", index, status, "Street ${(index * 7) % 10}")
+            seedDocument("house", index, index, status, "Street ${(index * 7) % 10}")
         }
         personStatuses.forEachIndexed { index, status ->
-            seedDocument("person", index, status, null)
+            seedDocument("person", index, houseStatuses.size + index, status, null)
         }
         refreshIndex()
+    }
+
+    @Test
+    fun `seeded dates do not follow the sequence order`() {
+        val byCreatedOn = search(jpaSearchService, true, PageRequest.of(0, 50, Sort.by("case:createdOn")))
+        val bySequence = search(
+            jpaSearchService,
+            true,
+            PageRequest.of(0, 50, Sort.by("case:sequence", "case:documentDefinitionId.name"))
+        )
+        val houses = search(jpaSearchService, false, PageRequest.of(0, 50))
+
+        assertThat(byCreatedOn.map { it.id() }).isNotEqualTo(bySequence.map { it.id() })
+        assertThat(houses.count { (it as JsonSchemaDocument).retentionDate().isPresent }).isGreaterThanOrEqualTo(2)
+        assertThat(houses.count { (it as JsonSchemaDocument).modifiedOn().isPresent }).isGreaterThanOrEqualTo(2)
     }
 
     @TestFactory
@@ -120,7 +141,6 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
             listOf(Sort.Direction.ASC, Sort.Direction.DESC).flatMap { direction ->
                 listOf(true, false).map { multi ->
                     DynamicTest.dynamicTest("$property $direction ${if (multi) "multi" else "single"}") {
-                        assumeFalse(isMysql && property.removePrefix("case:") in DATE_PROPERTIES, "MySQL dates have lower precision")
                         assertParity(property, direction, multi)
                     }
                 }
@@ -128,9 +148,64 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
         }
 
     @Test
-    fun `group search ignores non sortable column keys and sorts identically on both engines`() {
+    fun `group search translates column keys and sorts identically on both engines`() {
+        val groupKey = createParityGroup()
+        val expectedSort = Sort.by(Sort.Order.desc("case:sequence"), Sort.Order.asc("case:documentDefinitionId.name"))
+        val expectedIds = search(jpaSearchService, true, PageRequest.of(0, 50, expectedSort)).map { it.id().toString() }
+
+        SearchEngineToggle.Engine.entries.forEach { engine ->
+            searchEngineToggle.set(engine)
+
+            val result = groupCaseInstanceService.search(
+                groupKey,
+                SearchWithConfigRequest(),
+                PageRequest.of(0, 50, Sort.by(Sort.Order.desc("created"), Sort.Order.asc("type")))
+            )
+
+            assertThat(result.pageable.sort.toList()).describedAs("$engine sort").isEqualTo(expectedSort.toList())
+            assertThat(result.content.map { it.id }).describedAs("$engine order").isEqualTo(expectedIds)
+        }
+    }
+
+    @Test
+    fun `group search ignores sorting on non sortable column keys on both engines`() {
+        val groupKey = createParityGroup()
+
+        SearchEngineToggle.Engine.entries.forEach { engine ->
+            searchEngineToggle.set(engine)
+
+            val unsorted = groupCaseInstanceService.search(groupKey, SearchWithConfigRequest(), PageRequest.of(0, 50))
+            val sortedByDocColumn = groupCaseInstanceService.search(
+                groupKey,
+                SearchWithConfigRequest(),
+                PageRequest.of(0, 50, Sort.by("street"))
+            )
+
+            assertThat(sortedByDocColumn.pageable.sort.isUnsorted).describedAs("$engine sort").isTrue()
+            assertThat(sortedByDocColumn.content.map { it.id })
+                .describedAs("$engine order")
+                .isEqualTo(unsorted.content.map { it.id })
+        }
+    }
+
+    @Test
+    fun `group search translates the sort of unpaged requests`() {
+        val groupKey = createParityGroup()
+        val expectedSort = Sort.by(Sort.Order.desc("case:sequence"), Sort.Order.asc("case:documentDefinitionId.name"))
+        val expectedIds = search(jpaSearchService, true, PageRequest.of(0, 50, expectedSort)).map { it.id().toString() }
+
+        val result = groupCaseInstanceService.search(
+            groupKey,
+            SearchWithConfigRequest(),
+            Pageable.unpaged(Sort.by(Sort.Order.desc("created"), Sort.Order.asc("type")))
+        )
+
+        assertThat(result.content.map { it.id }).isEqualTo(expectedIds)
+    }
+
+    private fun createParityGroup(): String {
         val groupKey = "parity_group"
-        val role = roleRepository.findByKey(FULL_ACCESS_ROLE)!!
+        val role = requireNotNull(roleRepository.findByKey(FULL_ACCESS_ROLE))
         permissionRepository.save(
             Permission(
                 UUID.randomUUID(), CaseDefinition::class.java,
@@ -144,21 +219,9 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
             )
         }
         saveColumn(group, "created", true, "case:sequence")
+        saveColumn(group, "type", true, "case:documentDefinitionId.name")
         saveColumn(group, "street", false, "doc:street")
-
-        val sorted = groupCaseInstanceService.search(
-            groupKey,
-            SearchWithConfigRequest(),
-            PageRequest.of(0, 50, Sort.by(Sort.Order.desc("created"), Sort.Order.asc("street")))
-        )
-        val unsortedByDoc = groupCaseInstanceService.search(
-            groupKey,
-            SearchWithConfigRequest(),
-            PageRequest.of(0, 50, Sort.by("street"))
-        )
-
-        assertThat(sorted.content.map { it.id }).hasSize(14)
-        assertThat(unsortedByDoc.content).hasSize(14)
+        return groupKey
     }
 
     private fun saveColumn(group: CaseDefinitionGroup, key: String, sortable: Boolean, path: String): GroupListColumn {
@@ -210,9 +273,9 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
     }
 
     private fun search(
-        service: com.ritense.document.service.DocumentSearchService,
+        service: DocumentSearchService,
         multi: Boolean,
-        pageable: PageRequest
+        pageable: Pageable
     ): List<Document> =
         if (multi) {
             service.search(
@@ -234,7 +297,7 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
         }
     }
 
-    private fun seedDocument(definitionName: String, index: Int, status: String?, street: String?) {
+    private fun seedDocument(definitionName: String, index: Int, globalIndex: Int, status: String?, street: String?) {
         val content = objectMapper.createObjectNode().apply { street?.let { put("street", it) } }
         val created = runWithoutAuthorization {
             documentService.createDocument(
@@ -244,17 +307,40 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
         if (status != null) {
             runWithoutAuthorization { documentService.setInternalStatus(created.id(), status) }
         }
-        val jpaDoc = documentRepository.findById(created.id()).orElseThrow()
         if (index % 3 != 0) {
-            jpaDoc.setAssignee("user-$definitionName-$index", "Assignee ${(index * 5) % 9} $definitionName")
-            documentRepository.save(jpaDoc)
+            val assigned = documentRepository.findById(created.id()).orElseThrow()
+            assigned.setAssignee("user-$definitionName-$index", "Assignee ${(index * 5) % 9} $definitionName")
+            documentRepository.save(assigned)
         }
+        setDates(created.id().id, globalIndex)
+        val jpaDoc = documentRepository.findById(created.id()).orElseThrow()
         val osContent = objectMapper.convertValue(jpaDoc.content().asJson(), object : TypeReference<Map<String, Any?>>() {})
         openSearchRepository.save(converter.toOsDocument(jpaDoc).copy(content = osContent))
     }
 
+    private fun setDates(documentId: UUID, globalIndex: Int) {
+        entityManager.flush()
+        entityManager.createQuery(
+            "UPDATE JsonSchemaDocument d " +
+                "SET d.createdOn = :createdOn, d.modifiedOn = :modifiedOn, d.retentionDate = :retentionDate " +
+                "WHERE d.id.id = :id"
+        )
+            .setParameter("createdOn", BASE_DATE.plusSeconds(((globalIndex * 5) % 14).toLong()))
+            .setParameter(
+                "modifiedOn",
+                if (globalIndex % 4 == 0) null else BASE_DATE.plusHours(1).plusSeconds(((globalIndex * 3) % 14).toLong())
+            )
+            .setParameter(
+                "retentionDate",
+                if (globalIndex % 3 == 0) null else BASE_DATE.plusDays(1).plusSeconds(((globalIndex * 11) % 14).toLong())
+            )
+            .setParameter("id", documentId)
+            .executeUpdate()
+        entityManager.clear()
+    }
+
     companion object {
-        private val DATE_PROPERTIES = setOf("createdOn", "modifiedOn", "retentionDate")
+        private val BASE_DATE = LocalDateTime.of(2026, 1, 1, 12, 0, 0)
 
         private val SORT_PROPERTIES = listOf(
             "case:createdOn",

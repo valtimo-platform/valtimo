@@ -258,6 +258,21 @@ describe('GroupColumnModalComponent', () => {
       expect(request.defaultSort).toBeUndefined();
     });
 
+    it('trims paths and drops whitespace only paths in the save request', () => {
+      component.pathControls[0].setValue('case:createdOn ');
+      component.pathControls[1].setValue('   ');
+      component.pathControls[2].setValue(' case:createdOn');
+      component.formGroup.patchValue({key: 'my-key', displayType: 'text', sortable: true});
+
+      const request = (component as any)._buildRequest();
+
+      expect(request.sortable).toBe(true);
+      expect(request.pathMappings).toEqual([
+        {caseDefinitionKey: 'bezwaar', path: 'case:createdOn'},
+        {caseDefinitionKey: 'case-messaging', path: 'case:createdOn'},
+      ]);
+    });
+
     it('sends the default sort of every column when saving', () => {
       groupService().getListColumns.and.returnValue(
         of([

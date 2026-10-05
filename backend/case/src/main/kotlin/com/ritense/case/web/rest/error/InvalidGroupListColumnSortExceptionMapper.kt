@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.ritense.case.web.rest.error
 
 import com.ritense.case.exception.InvalidGroupListColumnSortException

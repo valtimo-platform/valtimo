@@ -445,7 +445,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       pathMappings: this.members
         .map((member, i) => ({
           caseDefinitionKey: member.caseDefinitionKey,
-          path: this.pathControls[i]?.value || '',
+          path: (this.pathControls[i]?.value ?? '').trim(),
         }))
         .filter(m => m.path),
     };

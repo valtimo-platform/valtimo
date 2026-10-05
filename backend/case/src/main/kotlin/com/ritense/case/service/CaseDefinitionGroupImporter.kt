@@ -29,9 +29,9 @@ import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupListColumnPathMapping
 import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupSearchField
-import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.domain.group.GroupSearchFieldPathMapping
 import com.ritense.case.domain.group.GroupSearchFieldPathMappingId
+import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository

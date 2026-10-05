@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.ritense.case.domain.group
 
 object SortableCaseField {
@@ -33,7 +32,7 @@ object SortableCaseField {
     )
 
     fun sortPathOf(mappings: Collection<String>): String? {
-        val path = mappings.distinct().singleOrNull() ?: return null
+        val path = mappings.map { it.trim() }.filter { it.isNotEmpty() }.distinct().singleOrNull() ?: return null
         if (!path.startsWith(CASE_PREFIX)) {
             return null
         }

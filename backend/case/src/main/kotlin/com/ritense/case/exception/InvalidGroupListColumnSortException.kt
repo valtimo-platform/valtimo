@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.ritense.case.exception
 
 class InvalidGroupListColumnSortException(message: String) : RuntimeException(message)

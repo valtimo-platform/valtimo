@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 export const GROUP_LIST_COLUMN_CASE_PREFIX = 'case:';
 
 export const SORTABLE_CASE_FIELDS: readonly string[] = [

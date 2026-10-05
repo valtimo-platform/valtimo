@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.ritense.case.domain.group
 
 import org.junit.jupiter.api.Test
@@ -32,6 +31,13 @@ class SortableCaseFieldTest {
     fun `returns path for one or many identical case paths`() {
         assertEquals("case:createdOn", SortableCaseField.sortPathOf(listOf("case:createdOn")))
         assertEquals("case:createdOn", SortableCaseField.sortPathOf(listOf("case:createdOn", "case:createdOn")))
+    }
+
+    @Test
+    fun `trims paths and ignores blank mappings`() {
+        assertEquals("case:createdOn", SortableCaseField.sortPathOf(listOf(" case:createdOn ", "case:createdOn")))
+        assertEquals("case:createdOn", SortableCaseField.sortPathOf(listOf("case:createdOn", "  ", "")))
+        assertNull(SortableCaseField.sortPathOf(listOf(" ", "")))
     }
 
     @Test

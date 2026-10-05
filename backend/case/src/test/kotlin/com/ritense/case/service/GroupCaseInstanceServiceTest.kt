@@ -412,7 +412,7 @@ class GroupCaseInstanceServiceTest {
     }
 
     @Test
-    fun `search keeps unpaged and unsorted pageables`() {
+    fun `search translates the sort of unpaged pageables and keeps unsorted pageables`() {
         val groupKey = "test_group"
         mockAccessibleGroup(groupKey)
         mockColumns(groupKey, column(groupKey, "created", true, null) to listOf("test-case" to "case:createdOn"))
@@ -422,10 +422,15 @@ class GroupCaseInstanceServiceTest {
         whenever(documentSearchService.search(any(), any(), any(), any(), any(), captor.capture()))
             .thenReturn(PageImpl(emptyList()))
 
-        service.search(groupKey, SearchWithConfigRequest(), Pageable.unpaged())
+        service.search(
+            groupKey,
+            SearchWithConfigRequest(),
+            Pageable.unpaged(Sort.by(Sort.Order.desc("created"), Sort.Order.asc("unknown")))
+        )
         service.search(groupKey, SearchWithConfigRequest(), PageRequest.of(0, 10))
 
         assertTrue(captor.firstValue.isUnpaged)
+        assertEquals(listOf(Sort.Order.desc("case:createdOn")), captor.firstValue.sort.toList())
         assertTrue(captor.secondValue.sort.isUnsorted)
     }
 

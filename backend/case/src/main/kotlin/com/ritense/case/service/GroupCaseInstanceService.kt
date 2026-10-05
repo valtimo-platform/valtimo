@@ -23,8 +23,8 @@ import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupSearchField
-import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.domain.group.GroupQuickSearch
+import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
@@ -34,8 +34,8 @@ import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
 import com.ritense.case.web.rest.dto.CaseDefinitionQuickSearchDto
 import com.ritense.case.web.rest.dto.CaseListRowDto
-import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.GroupCaseListRowDto
+import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
@@ -183,9 +183,6 @@ class GroupCaseInstanceService(
     }
 
     private fun translateSort(pageable: Pageable, sortPathByColumnKey: Map<String, String>): Pageable {
-        if (pageable.isUnpaged) {
-            return pageable
-        }
         val orders = pageable.sort.mapNotNull { order ->
             val sortPath = sortPathByColumnKey[order.property]
             if (sortPath == null) {
@@ -195,7 +192,12 @@ class GroupCaseInstanceService(
                 order.withProperty(sortPath)
             }
         }.toList()
-        return PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by(orders))
+        val sort = Sort.by(orders)
+        return if (pageable.isUnpaged) {
+            Pageable.unpaged(sort)
+        } else {
+            PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
+        }
     }
 
     private fun toGroupCaseListRowDto(
