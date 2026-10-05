@@ -117,6 +117,11 @@ class WorkflowTest(unittest.TestCase):
                 if "uses:" in line:
                     self.assertRegex(line, r"uses: [\w./-]+@[0-9a-f]{40}\b", f"{workflow.name}: {line.strip()}")
 
+    def test_the_open_pr_list_is_not_cut_short(self):
+        # A PR past the list's limit could never be detected, not even by an only_pr retry.
+        limit = int(re.search(r"gh pr list --state open --limit (\d+)", self.job("detect"))[1])
+        self.assertGreaterEqual(limit, 1000)
+
     def test_every_job_has_a_timeout(self):
         for name in ("redispatch", "detect", "relocate", "push"):
             self.assertIn("timeout-minutes:", self.job(name), name)
