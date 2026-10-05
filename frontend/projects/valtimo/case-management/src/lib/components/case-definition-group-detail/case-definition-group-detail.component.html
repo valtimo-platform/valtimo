@@ -14,7 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="{currentTab: currentTab$ | async, group: group$ | async} as obs" class="case-definition-group-detail-container">
+<div
+  *ngIf="{currentTab: currentTab$ | async, group: group$ | async} as obs"
+  class="case-definition-group-detail-container"
+>
   <cds-tabs class="case-management-tabs" type="inline">
     <cds-tab
       class="no-padding-left-right main-content"
@@ -45,3 +48,25 @@
     <router-outlet></router-outlet>
   </div>
 </div>
+
+<valtimo-case-definition-group-create-modal
+  [group]="group$ | async"
+  [open]="(showEditModal$ | async) ?? false"
+  (closeEvent)="onCloseEditModal()"
+  (saveEvent)="onSaveGroup($event)"
+></valtimo-case-definition-group-create-modal>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <button
+      cdsButton="tertiary"
+      [attr.data-test-id]="testIds.editButton"
+      [size]="(compactMode$ | async) ? 'sm' : 'md'"
+      (click)="openEditModal()"
+    >
+      {{ 'interface.edit' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+    </button>
+  </ng-template>
+</ng-container>

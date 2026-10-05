@@ -945,6 +945,9 @@
         "title": "Geen zaakgroepen",
         "description": "Er zijn nog geen zaakgroepen aangemaakt"
       },
+      "editModal": {
+        "title": "Zaakgroep bewerken"
+      },
       "createModal": {
         "title": "Zaakgroep aanmaken",
         "name": "Naam",

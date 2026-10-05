@@ -26,6 +26,11 @@ interface CaseDefinitionGroupUpdateRequest {
   color?: string;
 }
 
+interface CaseDefinitionGroupFormValue {
+  title: string;
+  description?: string;
+}
+
 interface CaseDefinitionGroupResponse {
   key: string;
   title: string;
@@ -94,6 +99,7 @@ interface AddGroupMemberRequest {
 export {
   AddGroupMemberRequest,
   CaseDefinitionGroupCreateRequest,
+  CaseDefinitionGroupFormValue,
   CaseDefinitionGroupResponse,
   CaseDefinitionGroupUpdateRequest,
   CaseDefinitionGroupWithMembersResponse,

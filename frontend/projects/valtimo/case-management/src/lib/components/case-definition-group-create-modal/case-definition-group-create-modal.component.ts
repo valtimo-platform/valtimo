@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, InputModule, ModalModule, LayerModule} from 'carbon-components-angular';
 import {ValtimoCdsModalDirective, CARBON_CONSTANTS} from '@valtimo/components';
 import {CaseDefinitionGroupManagementService} from '../../services';
+import {CaseDefinitionGroupFormValue, CaseDefinitionGroupResponse} from '../../models';
 
 @Component({
   standalone: true,
@@ -39,9 +48,11 @@ import {CaseDefinitionGroupManagementService} from '../../services';
     ValtimoCdsModalDirective,
   ],
 })
-export class CaseDefinitionGroupCreateModalComponent {
+export class CaseDefinitionGroupCreateModalComponent implements OnChanges {
   @Input() open = false;
+  @Input() group: Pick<CaseDefinitionGroupResponse, 'title' | 'description'> | null = null;
   @Output() closeEvent = new EventEmitter<boolean>();
+  @Output() saveEvent = new EventEmitter<CaseDefinitionGroupFormValue>();
 
   public formGroup: FormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
@@ -53,14 +64,37 @@ export class CaseDefinitionGroupCreateModalComponent {
     private readonly groupService: CaseDefinitionGroupManagementService
   ) {}
 
-  public onCloseModal(created?: boolean): void {
-    if (!created) {
+  public get isEditMode(): boolean {
+    return !!this.group;
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open']?.currentValue && this.group) {
+      this.formGroup.reset({
+        title: this.group.title,
+        description: this.group.description ?? '',
+      });
+    }
+  }
+
+  public onCloseModal(confirmed?: boolean): void {
+    if (!confirmed) {
       this.closeEvent.emit(false);
       this._resetForm();
       return;
     }
 
     const {title, description} = this.formGroup.controls;
+
+    if (this.isEditMode) {
+      this.saveEvent.emit({
+        title: title.value,
+        description: description.value || undefined,
+      });
+      this.closeEvent.emit(true);
+      return;
+    }
+
     this.groupService
       .createGroup({
         title: title.value,
@@ -80,6 +114,7 @@ export class CaseDefinitionGroupCreateModalComponent {
 
   private _resetForm(): void {
     setTimeout(() => {
+      if (this.isEditMode) return;
       this.formGroup.reset();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }

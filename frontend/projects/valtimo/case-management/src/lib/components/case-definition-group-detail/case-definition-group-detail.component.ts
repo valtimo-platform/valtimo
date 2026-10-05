@@ -17,13 +17,23 @@
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
+import {Edit16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {BreadcrumbService, PageTitleService} from '@valtimo/components';
-import {TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, filter, map, Subscription, switchMap} from 'rxjs';
-import {CaseDefinitionGroupManagementService} from '../../services';
-import {CaseDefinitionGroupWithMembersResponse, CaseManagementListTab} from '../../models';
-import {CASE_MANAGEMENT_LIST_TAB_PARAM} from '../../constants';
+import {
+  BreadcrumbService,
+  PageHeaderService,
+  PageTitleService,
+  RenderInPageHeaderDirective,
+} from '@valtimo/components';
+import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
+import {BehaviorSubject, filter, map, Subscription} from 'rxjs';
+import {CaseDefinitionGroupFormValue, CaseManagementListTab} from '../../models';
+import {CaseDefinitionGroupCreateModalComponent} from '../case-definition-group-create-modal/case-definition-group-create-modal.component';
+import {CaseDefinitionGroupDetailService} from './case-definition-group-detail.service';
+import {
+  CASE_DEFINITION_GROUP_DETAIL_TEST_IDS,
+  CASE_MANAGEMENT_LIST_TAB_PARAM,
+} from '../../constants';
 
 enum GroupTabEnum {
   CONFIG = 'config',
@@ -37,16 +47,29 @@ enum GroupTabEnum {
   templateUrl: './case-definition-group-detail.component.html',
   styleUrl: './case-definition-group-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, TranslateModule, TabsModule],
+  providers: [CaseDefinitionGroupDetailService],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    ButtonModule,
+    IconModule,
+    TabsModule,
+    CaseDefinitionGroupCreateModalComponent,
+    RenderInPageHeaderDirective,
+  ],
 })
 export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   public readonly GroupTabEnum = GroupTabEnum;
 
+  protected readonly testIds = CASE_DEFINITION_GROUP_DETAIL_TEST_IDS;
+
   private readonly _subscriptions = new Subscription();
-  private readonly _group$ = new BehaviorSubject<CaseDefinitionGroupWithMembersResponse | null>(
-    null
-  );
-  public readonly group$ = this._group$.asObservable();
+  private readonly _showEditModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showEditModal$ = this._showEditModal$.asObservable();
+
+  public readonly group$ = this.detailService.group$;
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
   public readonly groupKey$ = this.route.params.pipe(map(params => params['groupKey'] as string));
 
@@ -58,10 +81,14 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly groupService: CaseDefinitionGroupManagementService,
+    private readonly detailService: CaseDefinitionGroupDetailService,
     private readonly pageTitleService: PageTitleService,
-    private readonly breadcrumbService: BreadcrumbService
-  ) {}
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Edit16]);
+  }
 
   public ngOnInit(): void {
     this.breadcrumbService.setSecondBreadcrumb({
@@ -72,13 +99,13 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     });
 
     this._subscriptions.add(
-      this.groupKey$
-        .pipe(
-          filter(key => !!key),
-          switchMap(key => this.groupService.getGroup(key))
-        )
+      this.groupKey$.pipe(filter(key => !!key)).subscribe(key => this.detailService.loadGroup(key))
+    );
+
+    this._subscriptions.add(
+      this.group$
+        .pipe(filter((group): group is NonNullable<typeof group> => !!group))
         .subscribe(group => {
-          this._group$.next(group);
           this.pageTitleService.setCustomPageTitle(group.title, true);
           this.breadcrumbService.setThirdBreadcrumb({
             route: [`/case-management/group/${group.key}`],
@@ -94,6 +121,19 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
     this.breadcrumbService.clearThirdBreadcrumb();
+  }
+
+  public openEditModal(): void {
+    this._showEditModal$.next(true);
+  }
+
+  public onCloseEditModal(): void {
+    this._showEditModal$.next(false);
+  }
+
+  public onSaveGroup(value: CaseDefinitionGroupFormValue): void {
+    const color = this.detailService.currentGroup?.color;
+    this.detailService.updateGroup({...value, color}).subscribe();
   }
 
   public navigateToTab(tab: GroupTabEnum): void {

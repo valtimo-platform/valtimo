@@ -938,6 +938,9 @@
         "title": "No case groups",
         "description": "No case groups have been created yet"
       },
+      "editModal": {
+        "title": "Edit case group"
+      },
       "createModal": {
         "title": "Create case group",
         "name": "Name",

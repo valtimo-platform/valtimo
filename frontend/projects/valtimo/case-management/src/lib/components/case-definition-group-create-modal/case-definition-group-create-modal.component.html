@@ -23,7 +23,12 @@
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
-      {{ 'caseManagement.groups.createModal.title' | translate }}
+      {{
+        (isEditMode
+          ? 'caseManagement.groups.editModal.title'
+          : 'caseManagement.groups.createModal.title'
+        ) | translate
+      }}
     </h3>
   </cds-modal-header>
 
@@ -61,7 +66,7 @@
     </button>
 
     <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
-      {{ 'interface.create' | translate }}
+      {{ (isEditMode ? 'interface.save' : 'interface.create') | translate }}
     </button>
   </cds-modal-footer>
 </cds-modal>

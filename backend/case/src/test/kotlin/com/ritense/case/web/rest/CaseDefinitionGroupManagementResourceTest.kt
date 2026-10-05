@@ -44,6 +44,7 @@ import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.never
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -174,6 +175,34 @@ class CaseDefinitionGroupManagementResourceTest {
             .andExpect(jsonPath("$.color").value("#00FF00"))
 
         verify(groupService).updateGroup("my-group", "Updated Title", "Updated description", "#00FF00")
+    }
+
+    @Test
+    fun `should reject create group with blank title`() {
+        val request = CaseDefinitionGroupCreateRequestDto(title = " ")
+
+        mockMvc.perform(
+            post("/api/management/v1/case-definition-group")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(MapperSingleton.get().writeValueAsString(request))
+        )
+            .andExpect(status().isBadRequest)
+
+        verify(groupService, never()).createGroup(any(), any(), any())
+    }
+
+    @Test
+    fun `should reject update group with blank title`() {
+        val request = CaseDefinitionGroupUpdateRequestDto(title = "")
+
+        mockMvc.perform(
+            put("/api/management/v1/case-definition-group/{groupKey}", "my-group")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(MapperSingleton.get().writeValueAsString(request))
+        )
+            .andExpect(status().isBadRequest)
+
+        verify(groupService, never()).updateGroup(any(), any(), any(), any())
     }
 
     @Test

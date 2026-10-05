@@ -16,7 +16,6 @@
 
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ActivatedRoute} from '@angular/router';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DialogModule} from 'carbon-components-angular';
@@ -34,9 +33,19 @@ import {
   TableModule,
 } from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {BehaviorSubject, combineLatest, filter, forkJoin, map, startWith, Subscription, switchMap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  forkJoin,
+  map,
+  startWith,
+  Subscription,
+} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
-import {CaseDefinitionGroupWithMembersResponse, GroupMember} from '../../../../models';
+import {GroupMember} from '../../../../models';
+import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
 
 interface MemberListItem {
   caseDefinitionKey: string;
@@ -90,10 +99,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   @ViewChild('addWrapper') addWrapperRef: ElementRef<HTMLElement>;
 
   private readonly _subscriptions = new Subscription();
-  private readonly _group$ = new BehaviorSubject<CaseDefinitionGroupWithMembersResponse | null>(
-    null
-  );
-  public readonly group$ = this._group$.asObservable();
+  public readonly group$ = this.detailService.group$;
 
   private readonly _members$ = new BehaviorSubject<MemberListItem[]>([]);
   public readonly members$ = this._members$.asObservable();
@@ -121,12 +127,8 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   public selectedCaseDefinitionKey: string | null = null;
   public showAddPanel = false;
 
-  public readonly groupKey$ = this.route.parent?.params.pipe(
-    map(params => params['groupKey'] as string)
-  );
-
   constructor(
-    private readonly route: ActivatedRoute,
+    private readonly detailService: CaseDefinitionGroupDetailService,
     private readonly groupService: CaseDefinitionGroupManagementService,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
@@ -138,7 +140,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this._loadGroupAndMembers();
+    this._subscribeToGroup();
     this._loadAvailableCaseDefinitions();
   }
 
@@ -186,7 +188,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   public addMember(): void {
     if (!this.selectedCaseDefinitionKey) return;
 
-    const groupKey = this.route.parent?.snapshot.params['groupKey'];
+    const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 
     this.groupService
@@ -195,8 +197,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
         next: () => {
           this.selectedCaseDefinitionKey = null;
           this.showAddPanel = false;
-          this._loadGroupAndMembers();
-          this._loadAvailableCaseDefinitions();
+          this.detailService.reloadGroup();
         },
         error: () => {
           this.notificationService.showToast({
@@ -208,29 +209,30 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   }
 
   public removeMember(member: MemberListItem): void {
-    const groupKey = this.route.parent?.snapshot.params['groupKey'];
+    const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 
     this.groupService.removeMember(groupKey, member.caseDefinitionKey).subscribe({
-      next: () => {
-        this._loadGroupAndMembers();
-        this._loadAvailableCaseDefinitions();
-      },
+      next: () => this.detailService.reloadGroup(),
     });
   }
 
-  private _loadGroupAndMembers(): void {
+  private _subscribeToGroup(): void {
     this._subscriptions.add(
-      this.groupKey$
-        ?.pipe(
-          filter(key => !!key),
-          switchMap(key => this.groupService.getGroup(key))
+      this.group$.pipe(filter(group => !!group)).subscribe(group => {
+        this.selectedColor = group.color ?? '';
+        this.cdr.markForCheck();
+      })
+    );
+
+    this._subscriptions.add(
+      this.group$
+        .pipe(
+          filter(group => !!group),
+          map(group => group.members),
+          distinctUntilChanged((previous, current) => JSON.stringify(previous) === JSON.stringify(current))
         )
-        .subscribe(group => {
-          this._group$.next(group);
-          this.selectedColor = group.color ?? '';
-          this._loadMemberDetails(group.members);
-        })
+        .subscribe(members => this._loadMemberDetails(members))
     );
   }
 
@@ -274,11 +276,11 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   }
 
   private _saveColor(color: string): void {
-    const group = this._group$.value;
+    const group = this.detailService.currentGroup;
     if (!group) return;
 
-    this.groupService
-      .updateGroup(group.key, {
+    this.detailService
+      .updateGroup({
         title: group.title,
         description: group.description,
         color,

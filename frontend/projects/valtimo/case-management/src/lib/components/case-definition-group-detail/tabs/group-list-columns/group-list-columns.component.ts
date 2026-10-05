@@ -16,7 +16,6 @@
 
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ActivatedRoute} from '@angular/router';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
@@ -25,10 +24,19 @@ import {GroupListColumn} from '@valtimo/document';
 import {OverflowMenuModule} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, TableModule} from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {BehaviorSubject, combineLatest, filter, map, startWith, Subscription, switchMap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+  Subscription,
+} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
-import {GroupPathMapping, CaseDefinitionGroupWithMembersResponse} from '../../../../models';
+import {GroupPathMapping} from '../../../../models';
 import {canSortOnPaths} from '../../../../constants';
+import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
 import {GroupColumnModalComponent} from './group-column-modal/group-column-modal.component';
 import {GroupPathMappingEditorComponent} from '../../shared/group-path-mapping-editor/group-path-mapping-editor.component';
 
@@ -79,20 +87,13 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
     })
   );
 
-  private readonly _group$ = new BehaviorSubject<CaseDefinitionGroupWithMembersResponse | null>(
-    null
-  );
-  public readonly group$ = this._group$.asObservable();
+  public readonly group$ = this.detailService.group$;
 
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
   public readonly editingColumn$ = new BehaviorSubject<ColumnWithMappings | null>(null);
 
-  public readonly groupKey$ = this.route.parent?.params.pipe(
-    map(params => params['groupKey'] as string)
-  );
-
   constructor(
-    private readonly route: ActivatedRoute,
+    private readonly detailService: CaseDefinitionGroupDetailService,
     private readonly groupService: CaseDefinitionGroupManagementService,
     private readonly translateService: TranslateService,
     private readonly notificationService: GlobalNotificationService,
@@ -119,7 +120,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
       this.editingColumn$.next(column);
       this.showModal$.next(true);
     } else {
-      const groupKey = this.route.parent?.snapshot.params['groupKey'];
+      const groupKey = this.detailService.currentGroup?.key;
       if (!groupKey) return;
 
       this.groupService.getListColumnPathMappings(groupKey, column.key).subscribe(mappings => {
@@ -158,20 +159,18 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
 
   private _loadGroupAndColumns(): void {
     this._subscriptions.add(
-      this.groupKey$
-        ?.pipe(
-          filter(key => !!key),
-          switchMap(key => this.groupService.getGroup(key))
+      this.group$
+        .pipe(
+          filter(group => !!group),
+          map(group => group.key),
+          distinctUntilChanged()
         )
-        .subscribe(group => {
-          this._group$.next(group);
-          this._loadColumns();
-        })
+        .subscribe(() => this._loadColumns())
     );
   }
 
   private _loadColumns(): void {
-    const groupKey = this.route.parent?.snapshot.params['groupKey'];
+    const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 
     this.groupService.getListColumns(groupKey).subscribe(columns => {
@@ -181,7 +180,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   }
 
   private _loadPathMappings(column: ColumnWithMappings): void {
-    const groupKey = this.route.parent?.snapshot.params['groupKey'];
+    const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 
     this.groupService.getListColumnPathMappings(groupKey, column.key).subscribe(mappings => {
@@ -191,7 +190,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   }
 
   private _saveColumnOrder(columns: ColumnWithMappings[]): void {
-    const groupKey = this.route.parent?.snapshot.params['groupKey'];
+    const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 
     const requests = columns.map(c => {
