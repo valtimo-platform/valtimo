@@ -1,0 +1,92 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.deployerapi.configuration
+
+import com.ritense.case.service.CaseDefinitionImportService
+import com.ritense.case.service.CaseDefinitionService
+import com.ritense.deployerapi.security.config.DeployerApiHttpSecurityConfigurer
+import com.ritense.deployerapi.web.filter.DeployerImportSizeLimitFilter
+import com.ritense.deployerapi.web.rest.DeployerApiExceptionHandler
+import com.ritense.deployerapi.web.rest.DeployerCaseDefinitionResource
+import com.ritense.deployerapi.web.rest.DeployerOpenApiResource
+import com.ritense.exporter.ExportService
+import org.springdoc.core.models.GroupedOpenApi
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.web.servlet.FilterRegistrationBean
+import org.springframework.context.annotation.Bean
+import org.springframework.core.annotation.Order
+import org.springframework.util.unit.DataSize
+
+@AutoConfiguration
+class DeployerApiAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(DeployerCaseDefinitionResource::class)
+    fun deployerCaseDefinitionResource(
+        caseDefinitionService: CaseDefinitionService,
+        exportService: ExportService,
+        caseDefinitionImportService: CaseDefinitionImportService,
+    ): DeployerCaseDefinitionResource {
+        return DeployerCaseDefinitionResource(
+            caseDefinitionService,
+            exportService,
+            caseDefinitionImportService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DeployerOpenApiResource::class)
+    fun deployerOpenApiResource(): DeployerOpenApiResource {
+        return DeployerOpenApiResource()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DeployerApiExceptionHandler::class)
+    fun deployerApiExceptionHandler(): DeployerApiExceptionHandler {
+        return DeployerApiExceptionHandler()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = ["deployerImportSizeLimitFilter"])
+    fun deployerImportSizeLimitFilter(
+        @Value("\${valtimo.deployer.import.max-request-size:100MB}") maxRequestSize: DataSize,
+    ): FilterRegistrationBean<DeployerImportSizeLimitFilter> {
+        return FilterRegistrationBean(DeployerImportSizeLimitFilter(maxRequestSize)).apply {
+            addUrlPatterns("/api/deployer/v1/case-definition/import")
+        }
+    }
+
+    @Order(301)
+    @Bean
+    @ConditionalOnMissingBean(DeployerApiHttpSecurityConfigurer::class)
+    fun deployerApiHttpSecurityConfigurer(): DeployerApiHttpSecurityConfigurer {
+        return DeployerApiHttpSecurityConfigurer()
+    }
+
+    @Bean
+    fun deployerGroupedOpenApi(): GroupedOpenApi {
+        return GroupedOpenApi.builder()
+            .group("deployer")
+            .pathsToMatch("/api/deployer/v1/**")
+            .addOpenApiCustomizer { openApi ->
+                openApi.components?.schemas?.remove("FieldErrorVM")
+            }
+            .build()
+    }
+}
