@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -119,6 +120,14 @@ class WorkflowTest(unittest.TestCase):
     def test_every_job_has_a_timeout(self):
         for name in ("redispatch", "detect", "relocate", "push"):
             self.assertIn("timeout-minutes:", self.job(name), name)
+
+    def test_a_hung_claude_step_times_out_before_its_job(self):
+        # A cancelled job uploads no artifact, which the push job would report as a permanent failure.
+        relocate = self.job("relocate")
+        step = relocate[relocate.index("- name: Relocate with Claude"):relocate.index("- name: Collect the result")]
+        minutes = lambda text: int(re.search(r"timeout-minutes: (\d+)", text)[1])
+        self.assertLess(minutes(step), minutes(relocate))
+        self.assertIn("if: ${{ !cancelled() }}", relocate[relocate.index("- name: Collect the result"):])
 
     def test_a_queued_run_never_cancels_a_running_sweep(self):
         text = WORKFLOW.read_text()
