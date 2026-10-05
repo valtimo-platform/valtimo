@@ -22,6 +22,7 @@ import com.ritense.formflow.domain.definition.FormFlowDefinitionId
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.formflow.BaseIntegrationTest
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
+import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
@@ -32,7 +33,10 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -60,6 +64,9 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
 
     @PersistenceContext
     lateinit var entityManager: EntityManager
+
+    @MockitoSpyBean
+    lateinit var caseDefinitionChecker: CaseDefinitionChecker
 
     lateinit var mockMvc: MockMvc
 
@@ -150,6 +157,26 @@ class FormFlowManagementResourceIntTest : BaseIntegrationTest() {
         assertNotNull(formFlowService.findDefinitionOrNull("keep-test", CASE_DEFINITION_ID))
         assertEquals(1L, countInstances(keptInstanceIds))
         assertEquals(1L, countStepInstances(keptInstanceIds))
+    }
+
+    @Test
+    fun `should not delete form flow definition or its instances when the case definition cannot be updated`() {
+        createSingleStepDefinition("read-only-test")
+        val instanceIds = createInstances("read-only-test", 1)
+        entityManager.flush()
+        entityManager.clear()
+        doReturn(false).whenever(caseDefinitionChecker).canUpdateCaseDefinition(CASE_DEFINITION_ID)
+
+        mockMvc
+            .perform(delete("/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/{definitionKey}", "profile", "1.0.0", "read-only-test"))
+            .andExpect(status().isForbidden)
+
+        entityManager.flush()
+        entityManager.clear()
+
+        assertNotNull(formFlowService.findDefinitionOrNull("read-only-test", CASE_DEFINITION_ID))
+        assertEquals(1L, countInstances(instanceIds))
+        assertEquals(1L, countStepInstances(instanceIds))
     }
 
     @Test
