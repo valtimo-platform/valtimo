@@ -21,4 +21,4 @@ export * from './case-status.constants';
 export * from './case-widget.constants';
 export * from './case-detail-layout.constants';
 export * from './case-inspection.constants';
-export * from './case.test-ids';
+export * from './case-detail.test-ids';

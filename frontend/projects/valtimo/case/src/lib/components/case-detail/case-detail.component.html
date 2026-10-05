@@ -131,18 +131,18 @@
           ) {
             <div class="task-panel">
               @if (tabContentObs.startFormPanel) {
-                <div class="start-form-panel" [attr.data-test-id]="panelTestIds.startFormPanel">
+                <div class="start-form-panel" [attr.data-test-id]="testIds.startFormPanel">
                   <section class="start-form-panel__header">
                     <h4
                       class="start-form-panel__title"
-                      [attr.data-test-id]="panelTestIds.startFormPanelTitle"
+                      [attr.data-test-id]="testIds.startFormPanelTitle"
                     >
                       {{ tabContentObs.startFormPanel.title }}
                     </h4>
 
                     <button
                       cdsButton="ghost"
-                      [attr.data-test-id]="panelTestIds.startFormPanelCloseButton"
+                      [attr.data-test-id]="testIds.startFormPanelCloseButton"
                       [iconOnly]="true"
                       (click)="onStartFormPanelClose()"
                     >

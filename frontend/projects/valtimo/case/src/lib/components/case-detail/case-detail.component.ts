@@ -334,7 +334,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly CASE_DETAIL_GUTTER_SIZE = CASE_DETAIL_GUTTER_SIZE;
 
-  public readonly panelTestIds = CASE_DETAIL_PANEL_TEST_IDS;
+  protected readonly testIds = CASE_DETAIL_PANEL_TEST_IDS;
 
   public readonly caseDetailLayout$ = this.caseDetailLayoutService.caseDetailLayout$;
 

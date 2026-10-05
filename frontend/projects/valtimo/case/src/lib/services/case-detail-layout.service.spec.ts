@@ -16,6 +16,7 @@
 
 import {TestBed} from '@angular/core/testing';
 import {PageHeaderService} from '@valtimo/components';
+import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserSettings, UserSettingsService} from '@valtimo/shared';
 import {of, ReplaySubject, Subject, throwError} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -109,7 +110,7 @@ describe('CaseDetailLayoutService', () => {
     service = createService({taskPanelWidth: 700});
     service.setFormDisplayType('panel');
     service.setFormDisplaySize('medium');
-    service.setTaskAndProcessLinkOpenedInPanel({} as any);
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
 
     layoutAfterContainerWidth(service, layout => {
       expect(layout.rightPanelWidth).toBe(700);
@@ -208,7 +209,7 @@ describe('CaseDetailLayoutService', () => {
     service = createService({taskPanelWidth: 700});
     service.setFormDisplayType('panel');
     service.setFormDisplaySize('medium');
-    service.setTaskAndProcessLinkOpenedInPanel({} as any);
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
 
     layoutAfterContainerWidth(
       service,
@@ -273,7 +274,7 @@ describe('CaseDetailLayoutService', () => {
   it('keeps the right panel while a task form is in the panel on a tab that hides the task list', done => {
     service = createService({}, false);
     service.setFormDisplayType('panel');
-    service.setTaskAndProcessLinkOpenedInPanel({} as any);
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
 
     layoutAfterContainerWidth(service, layout => {
       expect(layout.showRightPanel).toBeTrue();
