@@ -1,0 +1,10 @@
+[
+    {
+        "key": "notificationEmail",
+        "defaultValue": "test@example.com"
+    },
+    {
+        "key": "mailProvider",
+        "defaultValue": "smtp"
+    }
+]

@@ -18,6 +18,7 @@ package com.ritense.processdocument.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
+import com.ritense.case_.caseconfiguration.service.CaseConfigurationService;
 import com.ritense.case_.service.ActiveCaseDefinitionService;
 import com.ritense.document.config.DocumentProperties;
 import com.ritense.document.service.DocumentDefinitionService;
@@ -35,6 +36,7 @@ import com.ritense.processdocument.domain.listener.StartEventFromCallActivityLis
 import com.ritense.processdocument.domain.listener.StartEventListener;
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository;
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository;
+import com.ritense.processdocument.resolver.CaseConfigurationValueResolverFactory;
 import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory;
 import com.ritense.processdocument.resolver.DocumentTableValueResolver;
 import com.ritense.processdocument.resolver.TaskValueResolver;
@@ -294,6 +296,16 @@ public class ProcessDocumentAutoConfiguration {
         DocumentService documentService
     ) {
         return new DocumentTableValueResolver(processDocumentService, documentService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseConfigurationValueResolverFactory.class)
+    public ValueResolverFactory caseConfigurationValueResolverFactory(
+        ProcessDocumentService processDocumentService,
+        DocumentService documentService,
+        CaseConfigurationService caseConfigurationService
+    ) {
+        return new CaseConfigurationValueResolverFactory(processDocumentService, documentService, caseConfigurationService);
     }
 
     @Bean
