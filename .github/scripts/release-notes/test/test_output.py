@@ -19,6 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from notes import is_placeholder, is_structural  # noqa: E402
 from prompt import build  # noqa: E402
 from report import body  # noqa: E402
 
@@ -120,10 +121,25 @@ class WorkflowTest(unittest.TestCase):
             self.assertIn("timeout-minutes:", self.job(name), name)
 
     def test_a_queued_run_never_cancels_a_running_sweep(self):
-        # Each run sweeps every PR, so a run replaced in the queue loses nothing.
         text = WORKFLOW.read_text()
         self.assertIn("cancel-in-progress: false", text)
         self.assertNotIn("github.event.before", text)
+
+    def test_whatever_replaces_a_queued_sweep_is_a_full_sweep(self):
+        # GitHub keeps one pending run per group: a narrower run queued behind a post-cut sweep would drop the cut.
+        text = WORKFLOW.read_text()
+        group = next(line for line in text.splitlines() if line.strip().startswith("group:"))
+        self.assertIn("inputs.only_pr", group)
+        self.assertEqual(['LINES="next-minor rc next-major"'],
+                         [line.strip() for line in self.job("detect").splitlines() if "LINES=" in line])
+
+    def test_placeholders_match_the_release_cut_skeleton(self):
+        text = (WORKFLOW.parent / "publish_release.yml").read_text()
+        start = text.index('cat > "${NOTES_DIR}/README.md" <<EOF')
+        skeleton = text[start:text.index("\n          EOF\n", start)].splitlines()[1:]
+        content = [line.strip() for line in skeleton if not is_structural(line)]
+        self.assertTrue(content)
+        self.assertEqual([], [line for line in content if not is_placeholder(line)])
 
     def test_retarget_leaves_a_base_someone_else_changed(self):
         push = self.job("push")
