@@ -33,7 +33,6 @@ import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
   CaseTag,
-  CaseTagsUtils,
   Documents,
   DocumentService,
   InternalCaseStatus,
@@ -71,6 +70,7 @@ import {
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../permissions';
+import {mapCaseTagColumnValue} from '../utils';
 import {CaseColumnService} from './case-column.service';
 import {CaseListAssigneeService} from './case-list-assignee.service';
 import {CaseListCaseTagService} from './case-list-case-tag.service';
@@ -258,21 +258,25 @@ export class CaseListOrchestrationService {
     this.translateService.stream('key'),
   ]).pipe(
     map(([canHaveAssignee, columns, hasApiConfig, statuses, context]) => {
+      // Rebuilt from the current columns, so keys of a previously opened list do not linger.
       this._internalStatusKeys$.next([
-        ...this._internalStatusKeys$.getValue(),
-        ...columns.reduce(
-          (acc, curr) =>
-            curr.propertyName === this.INTERNAL_STATUS_COLUMN ? [...acc, curr.translationKey] : acc,
-          [] as string[]
-        ),
+        this.INTERNAL_STATUS_COLUMN,
+        ...columns
+          .filter(column => column.propertyName === this.INTERNAL_STATUS_COLUMN)
+          .map(column => column.translationKey),
       ]);
+      // Group columns are keyed by their own key rather than their path, so a tags column is
+      // recognised by its view type as well.
       this._caseTagsKeys$.next([
-        ...this._caseTagsKeys$.getValue(),
-        ...columns.reduce(
-          (acc, curr) =>
-            curr.propertyName === this.CASE_TAGS_COLUMN ? [...acc, curr.translationKey] : acc,
-          []
-        ),
+        this.CASE_TAGS_COLUMN,
+        ...columns
+          .filter(
+            column =>
+              column.propertyName === this.CASE_TAGS_COLUMN ||
+              (column.viewType === ViewType.TAGS &&
+                column.propertyName !== this.INTERNAL_STATUS_COLUMN)
+          )
+          .map(column => column.translationKey),
       ]);
       const filteredAssigneeColumns = this.assigneeService.filterAssigneeColumns(
         columns,
@@ -716,18 +720,11 @@ export class CaseListOrchestrationService {
             };
       }, {});
 
-      const mappedTagColumns = res.caseTagsKeys.reduce((acc, curr) => {
-        if (item[curr]) {
-          return {
-            ...acc,
-            [curr]: item[curr].map(tag => ({
-              content: tag.title,
-              type: CaseTagsUtils.getTagTypeFromCaseTagColor(tag.color),
-            })),
-          };
-        }
-        return acc;
-      }, {});
+      const mappedTagColumns = res.caseTagsKeys.reduce(
+        (acc, curr) =>
+          Array.isArray(item[curr]) ? {...acc, [curr]: mapCaseTagColumnValue(item[curr])} : acc,
+        {}
+      );
 
       return {
         ...item,
