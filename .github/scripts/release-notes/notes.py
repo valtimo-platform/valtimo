@@ -185,14 +185,20 @@ def is_row(line):
     return s.startswith("|") and s.endswith("|") and not TABLE_HEADER_RE.match(s) and not TABLE_RULE_RE.match(s)
 
 
+def is_prose(line):
+    """A paragraph line: what joins the line above it into one paragraph when no blank line separates them."""
+    s = line.strip()
+    return bool(s) and not is_structural(line) and not is_row(line) and not s.startswith(("#", "* ", "- ", "```", "~~~", "|"))
+
+
 def bullets(lines):
-    """A legacy list's items, each one normalised string: a `* ` or `- ` line starts one, an indented line continues it."""
+    """A list's items, each one normalised string without an Area cell: a row, or a `* ` / `- ` line, starts one; an indented line continues it."""
     items = []
     for line in lines:
-        n = norm(line)
+        n = norm(line, drop_label=True)
         if not n:
             continue
-        if line.lstrip().startswith(("* ", "- ")) or not items:
+        if is_row(line) or line.lstrip().startswith(("* ", "- ")) or not items:
             items.append(n)
         else:
             items[-1] += " " + n
@@ -259,6 +265,7 @@ def guard(before, after, entries, current):
                    for j, line in enumerate(b_lines) if line.strip() and not is_placeholder(line)]
     i = 0
     additions, additions_fenced = [], []
+    kept_at = set()
     for k, ((s, line), in_fence) in enumerate(zip(a_tagged, fenced(a_lines))):
         if not line.strip():
             continue
@@ -266,8 +273,12 @@ def guard(before, after, entries, current):
         if i < len(kept) and (s, line, in_fence) == kept_with_block[i][0]:
             if blank_above[i] and not after_blank:
                 errors.append(f"the blank line above {line!r} was removed")
+            kept_at.add(k)
             i += 1
         else:
+            # Straight under someone else's paragraph, a paragraph line reads as part of it.
+            if not in_fence and is_prose(line) and k - 1 in kept_at and is_prose(a_lines[k - 1]):
+                errors.append(f"added {line!r} straight under the existing paragraph {a_lines[k - 1]!r}")
             # `---` straight under a paragraph turns that paragraph into a heading.
             if line.strip() == "---" and not in_fence and not after_blank:
                 errors.append(f"added a '---' with no blank line above it, under {a_lines[k - 1]!r}")
