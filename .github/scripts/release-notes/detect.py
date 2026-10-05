@@ -88,7 +88,7 @@ def candidates(prs, base_re, owner, only_pr):
     for pr in prs:
         if only_pr and str(pr["number"]) != str(only_pr):
             continue
-        if pr["headRepositoryOwner"]["login"] != owner:
+        if (pr.get("headRepositoryOwner") or {}).get("login") != owner:
             continue
         if any(label["name"] in SKIP_LABELS for label in pr["labels"]):
             continue
@@ -104,7 +104,12 @@ def detect(prs, lines, notes_base, owner, only_pr=None, attempted=lambda number,
     found = []
 
     def add(pr, old_base, new_base):
-        item = scan(pr, old_base, new_base, notes_base)
+        try:
+            item = scan(pr, old_base, new_base, notes_base)
+        # One unreadable PR (a non-UTF-8 note, unrelated history) must not stop the sweep for every other.
+        except (subprocess.CalledProcessError, UnicodeDecodeError) as error:
+            warn(f"PR #{pr['number']}: could not be read ({type(error).__name__}) -- skipping.")
+            return
         if not item:
             return
         # Dispatch for one PR is the retry path, so it ignores earlier attempts.
