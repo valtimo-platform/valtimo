@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import apply  # noqa: E402
 import detect  # noqa: E402
 import prepare  # noqa: E402
+import report  # noqa: E402
 
 NOTES = "documentation/release-notes"
 README = "# {v}\n\nRelease date: 01-01-2026\n\n---\n\n## Bugfixes\n\n| Area | Fix |\n|------|-----|\n| Area name | New bugfix. |\n"
@@ -306,13 +307,24 @@ class FlowTest(unittest.TestCase):
         self.assertEqual([], self.detect(prs, attempted=lambda n, c: True))
         self.assertEqual(1, len(self.detect(prs, only_pr="1", attempted=lambda n, c: True)))
 
-    def test_companion_file_makes_it_ineligible(self):
+    def test_companion_file_makes_it_ineligible_and_the_author_hears(self):
         self.pr_branch()
         self.write("13.x.x/13.48.0/migration.md", "steps\n")
         self.commit("companion")
         self.git("push", "-q", "origin", "feature/x")
         self.cut()
-        self.assertEqual([], self.detect(self.prs("feature/x")))
+        [item] = self.detect(self.prs("feature/x"))
+        self.assertEqual("ineligible", self.prepare(item, self.out / "a-work")["status"])
+        outcome, errors = self.push(item, self.out / "no-artifact")
+        self.assertEqual("ineligible", outcome)
+        self.assertTrue(any("migration.md" in e for e in errors))
+        self.assertNotEqual("", report.body(outcome, errors, "", item["stale"], item["current"], "next-minor", "next-minor", "r", "w"))
+
+    def test_removed_shipped_line_makes_it_ineligible(self):
+        self.pr_branch(text=README.format(v="13.48.0").replace("Release date: 01-01-2026\n\n", "") + ROW + "\n")
+        self.cut()
+        [item] = self.detect(self.prs("feature/x"))
+        self.assertEqual("ineligible", self.push(item, self.out / "no-artifact")[0])
 
     def test_created_folder_is_a_release_cut(self):
         self.git("checkout", "-q", "-b", "release-cut-ish", "origin/next-minor")
