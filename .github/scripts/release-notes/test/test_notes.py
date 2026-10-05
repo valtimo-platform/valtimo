@@ -241,6 +241,37 @@ class GuardTest(unittest.TestCase):
         self.assertEqual("rejected", guard(LEGACY, reshaped, [entry("Bugfixes", bullet, "legacy")], "12.49.0")[0])
 
 
+class FencedBlockTest(unittest.TestCase):
+
+    PLACEHOLDER = "### New enhancement title\n\nNew enhancement explanation."
+    NOTE = (
+        "### Configure the thing\n\nAdd this to `application.yml`:\n\n"
+        "```yaml\n# enable the thing\n## per environment\nvaltimo:\n  thing: true\n```"
+    )
+
+    def move(self, note):
+        entries, _, removed = analyze(SKELETON, SKELETON.replace(self.PLACEHOLDER, self.NOTE))
+        self.assertEqual([], removed)
+        before = SKELETON.replace("13.48.0", "13.49.0")
+        return entries, before, before.replace(self.PLACEHOLDER, note)
+
+    def test_comment_lines_in_a_fence_are_part_of_the_entry(self):
+        entries, _, _ = analyze(SKELETON, SKELETON.replace(self.PLACEHOLDER, self.NOTE))
+        lines = [e["line"] for e in entries]
+        self.assertIn("# enable the thing", lines)
+        self.assertEqual({"Enhancements"}, {e["section"] for e in entries})
+
+    def test_faithful_move_of_a_fenced_block_is_accepted(self):
+        entries, before, after = self.move(self.NOTE)
+        self.assertEqual(("moved", []), guard(before, after, entries, "13.49.0"))
+
+    def test_dropping_a_comment_line_from_a_fence_is_rejected(self):
+        entries, before, after = self.move(self.NOTE.replace("# enable the thing\n", ""))
+        outcome, errors = guard(before, after, entries, "13.49.0")
+        self.assertEqual("rejected", outcome)
+        self.assertTrue(any("enable the thing" in e for e in errors))
+
+
 class NormTest(unittest.TestCase):
 
     def test_markup_and_sentence_ends_go(self):
