@@ -35,6 +35,7 @@ List columns and search fields apply to **all** versions of the case definition,
 currently selected version. Changes made here affect how all cases of this type appear in the
 case list.
 {% endhint %}
+
 ---
 
 ## Navigating between the case list and a case
