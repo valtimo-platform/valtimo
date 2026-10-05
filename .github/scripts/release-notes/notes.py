@@ -235,14 +235,23 @@ def guard(before, after, entries, current):
         if line.strip() and not is_placeholder(line)
     ]
     kept = [(s, line) for (s, line, _), _ in kept_with_block]
+    # Blank lines decide how Markdown renders: one taken away from above a line joins it to what precedes it.
+    blank_above = [j > 0 and not b_lines[j - 1].strip()
+                   for j, line in enumerate(b_lines) if line.strip() and not is_placeholder(line)]
     i = 0
     additions, additions_fenced = [], []
-    for (s, line), in_fence in zip(a_tagged, fenced(a_lines)):
+    for k, ((s, line), in_fence) in enumerate(zip(a_tagged, fenced(a_lines))):
         if not line.strip():
             continue
+        after_blank = k == 0 or not a_lines[k - 1].strip()
         if i < len(kept) and (s, line, in_fence) == kept_with_block[i][0]:
+            if blank_above[i] and not after_blank:
+                errors.append(f"the blank line above {line!r} was removed")
             i += 1
         else:
+            # `---` straight under a paragraph turns that paragraph into a heading.
+            if line.strip() == "---" and not in_fence and not after_blank:
+                errors.append(f"added a '---' with no blank line above it, under {a_lines[k - 1]!r}")
             # Between two lines of one existing entry: the lines below would read as part of this one.
             if 0 < i < len(kept) and kept_with_block[i - 1][1] == kept_with_block[i][1] and kept_with_block[i][1][1]:
                 errors.append(f"added a line inside the existing entry {kept[i - 1][1]!r}: {line!r}")
