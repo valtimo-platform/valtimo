@@ -180,8 +180,8 @@ def norm(line, drop_label=False):
     return re.sub(r"\.(?=\s|$)", "", " ".join(s.split()))
 
 
-def _joined(pairs, section):
-    return " ".join(n for n in (norm(line) for s, line in pairs if s == section) if n)
+def _joined(pairs, section, drop_label=False):
+    return " ".join(n for n in (norm(line, drop_label) for s, line in pairs if s == section) if n)
 
 
 def guard(before, after, entries, current):
@@ -210,10 +210,13 @@ def guard(before, after, entries, current):
                 if have[(s, line)] < n:
                     missing.append(f"entry missing from {s or 'the top'}: {line!r}")
         else:
-            # Substring match: only against Claude's additions, else existing text could stand in for an entry.
+            # Substring match against Claude's additions, else existing text could stand in for an entry.
+            # With none (a re-run, or a note moved by hand), whole lines of the target: a longer note is not this one.
+            existing = {(s, norm(line, drop_label=True)) for s, line in a_tagged}
             for e in entries:
-                n = norm(e["line"])
-                if n and n not in _joined(added, e["section"]):
+                n = norm(e["line"], drop_label=True)
+                found = n in _joined(added, e["section"], drop_label=True) if added else (e["section"], n) in existing
+                if n and not found:
                     missing.append(f"entry missing from {e['section'] or 'the top'}: {e['line']!r}")
         return missing
 
