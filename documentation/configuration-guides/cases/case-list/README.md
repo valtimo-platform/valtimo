@@ -35,3 +35,14 @@ List columns and search fields apply to **all** versions of the case definition,
 currently selected version. Changes made here affect how all cases of this type appear in the
 case list.
 {% endhint %}
+---
+
+## Navigating between the case list and a case
+
+When a user opens a case from the case list and goes back through the case list link in the
+breadcrumb, the list shows the same filters, search, sorting and page as before the case was
+opened. Opening the case list from its menu item always starts with a clean list.
+
+Cases open in the same browser tab by default. Each user can change this in their profile
+settings with **Open cases in a new tab by default**. Ctrl-click, Cmd-click and middle-click on a
+case always open it in a new tab.

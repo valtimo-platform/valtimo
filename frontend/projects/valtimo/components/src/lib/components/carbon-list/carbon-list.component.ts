@@ -20,6 +20,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   OnDestroy,
   OnInit,
@@ -218,6 +219,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
    * either input, rows are rebuilt on every emission exactly as before.
    */
   @Input() trackByKey: string;
+  /** When true, a middle click on a row emits rowClicked with ctrlClick set, so it can open in a new tab. */
+  @Input() enableRowMiddleClick = false;
+  private _middleClick = false;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -372,12 +376,33 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  @HostListener('mousedown', ['$event'])
+  public onMouseDown(event: MouseEvent): void {
+    if (this.getMiddleClickedRowCell(event)) event.preventDefault();
+  }
+
+  @HostListener('auxclick', ['$event'])
+  public onAuxClick(event: MouseEvent): void {
+    const cell = this.getMiddleClickedRowCell(event);
+    if (!cell) return;
+
+    event.preventDefault();
+    this._middleClick = true;
+    try {
+      cell.click();
+    } finally {
+      this._middleClick = false;
+    }
+  }
+
   public onRowClick(index: number): void {
     const rowData = this._table.model.data[index];
     const firstItemWithData = rowData.find(item => !!item['item']);
     const firstItem = firstItemWithData?.['item'];
 
-    if (firstItem) firstItem.ctrlClick = this.keyStateService.getCtrlOrCmdState();
+    if (firstItem) {
+      firstItem.ctrlClick = this._middleClick || this.keyStateService.getCtrlOrCmdState();
+    }
 
     if (!firstItem || firstItem?.locked) return;
 
@@ -883,6 +908,16 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return segments;
+  }
+
+  private getMiddleClickedRowCell(event: MouseEvent): HTMLElement | null {
+    if (!this.enableRowMiddleClick || event.button !== 1 || !(event.target instanceof Element)) {
+      return null;
+    }
+    if (event.target.closest('a, button, input, label, select, textarea')) return null;
+
+    const cell = event.target.closest('tbody td[cdsTableData]') as HTMLElement | null;
+    return cell && this.elementRef.nativeElement.contains(cell) ? cell : null;
   }
 
   private getSearchInputElement(): HTMLInputElement | null {

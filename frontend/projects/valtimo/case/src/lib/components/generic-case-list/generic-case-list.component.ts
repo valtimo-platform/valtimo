@@ -18,6 +18,7 @@ import {Router} from '@angular/router';
 import {
   BreadcrumbService,
   CarbonListComponent,
+  CaseOpeningPreferenceService,
   CarbonPaginationSelection,
   IQuickSearchService,
   ListField,
@@ -108,6 +109,7 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
   public visibleCaseTabs: CaseListTab[] | null = null;
 
   public readonly orchestration = inject(CaseListOrchestrationService);
+  private readonly caseOpeningPreferenceService = inject(CaseOpeningPreferenceService);
 
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
@@ -284,18 +286,23 @@ export class GenericCaseListComponent implements OnInit, OnDestroy {
   }
 
   public rowClick(item: any): void {
-    this._selectedCaseDefinitionId$.pipe(take(1)).subscribe(selectedId => {
-      const caseDefinitionKey =
-        selectedId !== ALL_CASES_ID ? selectedId : item.definitionName || item.definitionId?.name;
+    combineLatest([
+      this._selectedCaseDefinitionId$,
+      this.caseOpeningPreferenceService.openCasesInNewTab$,
+    ])
+      .pipe(take(1))
+      .subscribe(([selectedId, openCasesInNewTab]) => {
+        const caseDefinitionKey =
+          selectedId !== ALL_CASES_ID ? selectedId : item.definitionName || item.definitionId?.name;
 
-      if (caseDefinitionKey) {
-        if (item.ctrlClick) {
-          window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
-        } else {
-          this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
+        if (caseDefinitionKey) {
+          if (item.ctrlClick || openCasesInNewTab) {
+            window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
+          } else {
+            this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
+          }
         }
-      }
-    });
+      });
   }
 
   public onTabChange(tab: CaseListTab): void {

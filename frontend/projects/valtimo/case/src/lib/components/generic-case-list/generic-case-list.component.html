@@ -21,6 +21,7 @@
   <ng-container *ngIf="mode.isAllCases">
     <valtimo-carbon-list
       [fields]="allCasesFields$ | async"
+      [enableRowMiddleClick]="true"
       [header]="false"
       [initialSearchValue]="allCasesGlobalSearch$ | async"
       [invalidSearchFields]="allCasesInvalidSearchFields$ | async"
@@ -96,6 +97,7 @@
       <ng-container *ngIf="obs.loaded; else specificLoading">
         <valtimo-carbon-list
           #specificCaseList
+          [enableRowMiddleClick]="true"
           [fields]="obs.fields"
           [header]="false"
           [initialSearchValue]="searchService.globalSearchFilter$ | async"

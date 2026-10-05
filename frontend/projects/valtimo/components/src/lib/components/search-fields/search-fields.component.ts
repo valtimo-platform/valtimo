@@ -224,10 +224,16 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private openCaseDefinitionKeySubscription(): void {
+    let previousCaseDefinitionKey = '';
+
     this._subscriptions.add(
-      this._caseDefinitionKey$.subscribe(() => {
+      this._caseDefinitionKey$.subscribe(caseDefinitionKey => {
         this.collapse();
-        this.clear();
+        this.clear$.next(null);
+        this.doSearch.emit({});
+        // the first case definition is a page load, not a switch: keep filters restored from the URL
+        if (previousCaseDefinitionKey) this.clearEvent.emit();
+        previousCaseDefinitionKey = caseDefinitionKey;
       })
     );
   }

@@ -15,6 +15,7 @@
  */
 
 export * from './admin-settings.service';
+export * from './case-opening-preference.service';
 export * from './cds-theme.service';
 export * from './choice-field.service';
 export * from './key-generator.service';

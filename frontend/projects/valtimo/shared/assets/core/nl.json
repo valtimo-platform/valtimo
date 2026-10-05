@@ -761,7 +761,8 @@
       },
       "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
       "compactMode": "Compacte modus",
-      "showUserName": "Toon naam van gebruiker"
+      "showUserName": "Toon naam van gebruiker",
+      "openCasesInNewTab": "Dossiers standaard in nieuw tabblad openen"
     }
   },
   "decisions": {

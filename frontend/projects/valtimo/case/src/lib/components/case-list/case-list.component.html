@@ -96,7 +96,9 @@
   <valtimo-carbon-list
     [fields]="obs.fields"
     [header]="false"
+    [enableRowMiddleClick]="true"
     [initialSortState]="pagination.sort"
+    [initialSearchValue]="orchestration.globalSearchFilter$ | async"
     [invalidSearchFields]="obs.invalidSearchFields || []"
     [isSearchable]="true"
     [searchDebounceMs]="2000"

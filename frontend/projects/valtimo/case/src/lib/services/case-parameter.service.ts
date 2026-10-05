@@ -123,6 +123,10 @@ export class CaseParameterService implements OnDestroy {
     );
   }
 
+  public get queryGlobalSearchParam(): string {
+    return this.route.snapshot?.queryParams?.globalSearch ?? '';
+  }
+
   private _caseParametersSubscription!: Subscription;
 
   constructor(
@@ -215,6 +219,19 @@ export class CaseParameterService implements OnDestroy {
     });
   }
 
+  public setGlobalSearchParameter(globalSearch: string): void {
+    this._caseParameters$.pipe(take(1)).subscribe(dossierParameters => {
+      if (globalSearch) {
+        this._caseParameters$.next({...dossierParameters, globalSearch});
+      } else {
+        if (dossierParameters?.globalSearch) {
+          delete dossierParameters.globalSearch;
+        }
+        this._caseParameters$.next(dossierParameters);
+      }
+    });
+  }
+
   public clearSearchFieldValues(): void {
     this._searchFieldValues$.next({});
   }
@@ -274,6 +291,9 @@ export class CaseParameterService implements OnDestroy {
           if (assigneeParams) this.setAssigneeParameter(assigneeParams);
           if (statusParams) this.setStatusParameter(statusParams);
           if (caseTagParams) this.setCaseTagParameter(caseTagParams);
+          if (this.queryGlobalSearchParam) {
+            this.setGlobalSearchParameter(this.queryGlobalSearchParam);
+          }
           if (searchParams) {
             this.setSearchParameters(searchParams);
             this.setSearchFieldValues(searchParams);

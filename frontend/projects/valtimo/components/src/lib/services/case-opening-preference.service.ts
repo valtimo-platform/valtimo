@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-interface UserSettings {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  compactMode?: boolean;
-  showUserNameInTopBar?: boolean;
-  preferredTheme?: string;
-  caseListPageSizes?: {[key: string]: number};
-  taskListPageSizes?: {[key: string]: number};
-  taskPanelWidth?: number;
-  openCasesInNewTab?: boolean;
-}
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
 
-export {UserSettings};
+@Injectable({
+  providedIn: 'root',
+})
+export class CaseOpeningPreferenceService {
+  private readonly _openCasesInNewTab$ = new BehaviorSubject<boolean>(false);
+
+  public get openCasesInNewTab$(): Observable<boolean> {
+    return this._openCasesInNewTab$.asObservable();
+  }
+
+  public setOpenCasesInNewTab(openCasesInNewTab: boolean): void {
+    this._openCasesInNewTab$.next(!!openCasesInNewTab);
+  }
+}

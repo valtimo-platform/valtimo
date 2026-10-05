@@ -6,17 +6,17 @@ Release date: 07-10-2026
 
 ## New Features
 
-### New feature title
+### Open cases in a new tab by default
 
-New feature explanation.
+Users can now choose in their profile settings to open cases from the case list in a new browser tab by default. Ctrl-click, Cmd-click and middle-click on a case always open it in a new tab.
 
 ---
 
 ## Enhancements
 
-### New enhancement title
+### The case list keeps its filters when you go back to it
 
-New enhancement explanation.
+Going back to the case list through the breadcrumb of a case now shows the list with the same filters, search, sorting and page as before. Opening the case list from the menu still starts with a clean list.
 
 ---
 
