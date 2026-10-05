@@ -180,6 +180,25 @@ def norm(line, drop_label=False):
     return re.sub(r"\.(?=\s|$)", "", " ".join(s.split()))
 
 
+def is_row(line):
+    s = line.strip()
+    return s.startswith("|") and s.endswith("|") and not TABLE_HEADER_RE.match(s) and not TABLE_RULE_RE.match(s)
+
+
+def bullets(lines):
+    """A legacy list's items, each one normalised string: a `* ` or `- ` line starts one, an indented line continues it."""
+    items = []
+    for line in lines:
+        n = norm(line)
+        if not n:
+            continue
+        if line.lstrip().startswith(("* ", "- ")) or not items:
+            items.append(n)
+        else:
+            items[-1] += " " + n
+    return items
+
+
 def _joined(pairs, section, drop_label=False):
     return " ".join(n for n in (norm(line, drop_label) for s, line in pairs if s == section) if n)
 
@@ -295,12 +314,19 @@ def guard(before, after, entries, current):
             n = norm(line, drop_label=True)
             if n is not None and s in reshaped:
                 if n:
-                    reshaped[s].append(n)
+                    reshaped[s].append((is_row(line), n))
                 continue
         errors.append(f"added a line that is not one of this PR's entries under {s or 'the top'}: {line!r}")
     if not exact:
-        for s, words in reshaped.items():
-            if words and " ".join(words) != entry_text[s]:
+        for s, added in reshaped.items():
+            if not added:
+                continue
+            # Rows are sorted by Area or Severity, as the prompt asks: each bullet must be one row, in any order.
+            if all(row for row, _ in added):
+                ok = sorted(n for _, n in added) == sorted(bullets([e["line"] for e in entries if e["section"] == s]))
+            else:
+                ok = " ".join(n for _, n in added) == entry_text[s]
+            if not ok:
                 errors.append(f"under {s or 'the top'}, the added text is not this PR's entries word for word and in order")
 
     missing = present(additions)
@@ -308,7 +334,9 @@ def guard(before, after, entries, current):
     if exact and not missing:
         for section in {e["section"] for e in entries}:
             # Subsequence check: iterating `got` once means each match must come after the last.
-            got = iter(line for s, line in additions if s == section)
-            if not all(any(w == g for g in got) for w in (e["line"] for e in entries if e["section"] == section)):
+            # Table rows are left out: the prompt sorts them by Area or Severity.
+            got = iter(line for s, line in additions if s == section and not is_row(line))
+            want = (e["line"] for e in entries if e["section"] == section and not is_row(e["line"]))
+            if not all(any(w == g for g in got) for w in want):
                 errors.append(f"this PR's lines under {section or 'the top'} are not in their original order")
     return ("rejected" if errors else "moved"), errors
