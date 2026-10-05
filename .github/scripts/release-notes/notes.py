@@ -80,6 +80,38 @@ def fenced(lines):
     return flags
 
 
+def table_breaks(text):
+    """Table lines where they stop the table rendering: a header not above its rule, a row not directly below the table."""
+    lines = [line.strip() for line in text.splitlines()]
+    bad = []
+    for k, (s, in_fence) in enumerate(zip(lines, fenced(lines))):
+        if in_fence or not s.startswith("|"):
+            continue
+        prev = lines[k - 1] if k else ""
+        following = lines[k + 1] if k + 1 < len(lines) else ""
+        if TABLE_HEADER_RE.match(s):
+            ok = bool(TABLE_RULE_RE.match(following))
+        elif TABLE_RULE_RE.match(s):
+            ok = bool(TABLE_HEADER_RE.match(prev))
+        else:
+            ok = prev.startswith("|")
+        if not ok:
+            bad.append(s)
+    return bad
+
+
+def entry_blocks(lines):
+    """Per line, (block number, whether the block is one entry). An entry is a `### ` heading or a legacy `* **` bullet with its text."""
+    out, block, is_entry = [], 0, False
+    for line, in_fence in zip(lines, fenced(lines)):
+        s = line.strip()
+        if not in_fence and (s.startswith("#") or s == "---" or TABLE_HEADER_RE.match(s) or line.startswith("* **")):
+            block += 1
+            is_entry = s.startswith("### ") or line.startswith("* **")
+        out.append((block, is_entry))
+    return out
+
+
 def section_name(heading):
     return heading.strip()[3:].split(" (")[0].strip()
 
@@ -186,19 +218,31 @@ def guard(before, after, entries, current):
 
     # Existing content, same order, same section: a heading inserted mid-section would re-file the lines below it.
     # Greedy earliest match finds a subsequence if one exists.
-    kept = [(s, line) for s, line in tagged(before) if line.strip() and not is_placeholder(line)]
+    b_tagged = tagged(before)
+    b_lines = [line for _, line in b_tagged]
+    # Fence state is part of a line's identity: a `---` inside the PR's block is not the section divider.
+    kept_with_block = [
+        ((s, line, in_fence), blk) for (s, line), in_fence, blk in zip(b_tagged, fenced(b_lines), entry_blocks(b_lines))
+        if line.strip() and not is_placeholder(line)
+    ]
+    kept = [(s, line) for (s, line, _), _ in kept_with_block]
     i = 0
     additions, additions_fenced = [], []
     for (s, line), in_fence in zip(a_tagged, fenced(a_lines)):
         if not line.strip():
             continue
-        if i < len(kept) and (s, line) == kept[i]:
+        if i < len(kept) and (s, line, in_fence) == kept_with_block[i][0]:
             i += 1
         else:
+            # Between two lines of one existing entry: the lines below would read as part of this one.
+            if 0 < i < len(kept) and kept_with_block[i - 1][1] == kept_with_block[i][1] and kept_with_block[i][1][1]:
+                errors.append(f"added a line inside the existing entry {kept[i - 1][1]!r}: {line!r}")
             additions.append((s, line))
             additions_fenced.append(in_fence)
     if i < len(kept):
         errors.append(f"an existing line was removed, changed, reordered or moved out of {kept[i][0] or 'the top'}: {kept[i][1]!r}")
+    for line in (Counter(table_breaks(after)) - Counter(table_breaks(before))).elements():
+        errors.append(f"a table line no longer sits in its table: {line!r}")
 
     budget = Counter((e["section"], e["line"]) for e in entries)
     entry_text = {s: _joined([(e["section"], e["line"]) for e in entries], s) for s in {e["section"] for e in entries}}
@@ -225,5 +269,12 @@ def guard(before, after, entries, current):
                 continue
         errors.append(f"added a line that is not one of this PR's entries under {s or 'the top'}: {line!r}")
 
-    errors += present(additions)
+    missing = present(additions)
+    errors += missing
+    if exact and not missing:
+        for section in {e["section"] for e in entries}:
+            # Subsequence check: iterating `got` once means each match must come after the last.
+            got = iter(line for s, line in additions if s == section)
+            if not all(any(w == g for g in got) for w in (e["line"] for e in entries if e["section"] == section)):
+                errors.append(f"this PR's lines under {section or 'the top'} are not in their original order")
     return ("rejected" if errors else "moved"), errors
