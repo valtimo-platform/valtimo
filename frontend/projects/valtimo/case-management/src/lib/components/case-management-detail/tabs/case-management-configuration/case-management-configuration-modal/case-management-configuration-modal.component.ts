@@ -41,7 +41,7 @@ import {CASE_MANAGEMENT_CONFIGURATION_MODAL_TEST_IDS} from '../../../../../const
 import {CaseConfigurationItem, StatusModalCloseEvent} from '../../../../../models';
 import {CaseConfigurationApiService} from '../../../../../services';
 
-const NO_WHITESPACE_PATTERN = /^\S+$/;
+const KEY_PATTERN = /^[A-Za-z0-9_.-]+$/;
 
 @Component({
   standalone: true,
@@ -76,7 +76,7 @@ export class CaseManagementConfigurationModalComponent implements OnChanges {
   public readonly formGroup = this.fb.group({
     key: this.fb.control('', [
       Validators.required,
-      Validators.pattern(NO_WHITESPACE_PATTERN),
+      Validators.pattern(KEY_PATTERN),
       this.uniqueKeyValidator.bind(this),
     ]),
     defaultValue: this.fb.control(''),

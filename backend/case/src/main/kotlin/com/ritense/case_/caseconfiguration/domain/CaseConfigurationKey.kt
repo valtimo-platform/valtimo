@@ -19,11 +19,14 @@ package com.ritense.case_.caseconfiguration.domain
 object CaseConfigurationKey {
     const val MAX_KEY_LENGTH = 255
     const val MAX_VALUE_LENGTH = 4000
-    private val KEY_PATTERN = Regex("^\\S+$")
+    // Keys travel as a URL path segment, so only characters that need no encoding
+    private val KEY_PATTERN = Regex("^[A-Za-z0-9_.-]+$")
 
     fun validate(key: String) {
         require(key.isNotBlank()) { "Configuration key was blank!" }
-        require(KEY_PATTERN.matches(key)) { "Configuration key '$key' may not contain whitespace" }
+        require(KEY_PATTERN.matches(key)) {
+            "Configuration key '$key' may only contain letters, digits, '.', '_' and '-'"
+        }
         require(key.length <= MAX_KEY_LENGTH) { "Configuration key '$key' is longer than $MAX_KEY_LENGTH characters" }
     }
 

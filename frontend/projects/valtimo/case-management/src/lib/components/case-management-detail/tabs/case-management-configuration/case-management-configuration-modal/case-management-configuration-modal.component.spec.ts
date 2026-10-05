@@ -44,15 +44,15 @@ describe('CaseManagementConfigurationModalComponent', () => {
     component.usedKeys = ['api-url'];
   });
 
-  it('rejects a blank key, a key with whitespace and a key already in use', () => {
+  it('rejects a blank key, a key with whitespace or URL-reserved characters and a key already in use', () => {
     open(null);
 
-    for (const key of ['', '   ', 'api url', 'api-url']) {
+    for (const key of ['', '   ', 'api url', 'api/url', 'api%url', 'api;url', 'api-url']) {
       component.key.setValue(key);
       expect(component.key.valid).withContext(key).toBeFalse();
     }
 
-    component.key.setValue('other-key');
+    component.key.setValue('other.key_2-x');
     expect(component.key.valid).toBeTrue();
   });
 

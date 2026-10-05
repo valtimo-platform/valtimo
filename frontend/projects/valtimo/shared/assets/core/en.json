@@ -1466,9 +1466,9 @@
       "clear": "Clear",
       "clearEnvironmentValueText": "Are you sure you want to clear the environment value? The default value will be used again in this environment.",
       "deleteText": "Are you sure you want to delete this configuration? This action cannot be undone.",
-      "environmentValueDescription": "The environment value applies to this environment only and overrides the default value. It is not part of the case definition.",
+      "environmentValueDescription": "The environment value applies to this environment only and overrides the default value. It is not part of the case definition. Leave it empty to use the default value.",
       "keyHelperText": "The key cannot be changed after creation",
-      "keyInvalid": "The key is required and cannot contain whitespace",
+      "keyInvalid": "The key is required and may only contain letters, digits, '.', '_' and '-'",
       "keyNotUnique": "This key is already in use",
       "defaultValueHelperText": "Optional",
       "columns": {

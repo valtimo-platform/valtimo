@@ -128,6 +128,10 @@ class CaseConfigurationService(
         denyManagementOperation()
         assertCaseDefinitionExists(caseDefinitionId)
         val declaration = getDeclaration(caseDefinitionId, key)
+        if (value.isBlank()) {
+            clearEnvironmentValue(caseDefinitionId, key)
+            return CaseConfigurationItem(key, declaration.defaultValue, null)
+        }
         environmentValueRepository.save(
             CaseConfigurationEnvironmentValue(CaseConfigurationEnvironmentValueId(caseDefinitionId.key, key), value)
         )

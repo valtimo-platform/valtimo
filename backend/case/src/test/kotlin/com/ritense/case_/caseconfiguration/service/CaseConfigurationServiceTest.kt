@@ -121,6 +121,25 @@ class CaseConfigurationServiceTest {
     }
 
     @Test
+    fun `should refuse a key that cannot be addressed as a URL path segment`() {
+        val service = service(draftEnvironment = true, final = false)
+
+        listOf("mail/provider", "mail%provider", "mail;provider", "mail\\provider", "mail?provider", "mail#provider").forEach { key ->
+            assertThrows<IllegalArgumentException>(key) { service.createDeclaration(caseDefinitionId, key, null) }
+        }
+        verify(declarationRepository, never()).save(any<CaseConfigurationDeclaration>())
+    }
+
+    @Test
+    fun `should accept a key with letters, digits, dots, underscores and dashes`() {
+        val service = service(draftEnvironment = true, final = false)
+
+        service.createDeclaration(caseDefinitionId, "mail.provider_v2-test", null)
+
+        verify(declarationRepository).save(any<CaseConfigurationDeclaration>())
+    }
+
+    @Test
     fun `should set an environment value on a final case definition where drafts are not supported`() {
         val service = service(draftEnvironment = false, final = true)
         declare("notificationEmail", "test@example.com")
@@ -145,6 +164,21 @@ class CaseConfigurationServiceTest {
         service.clearEnvironmentValue(caseDefinitionId, "notificationEmail")
 
         verify(environmentValueRepository).deleteById(id)
+    }
+
+    @Test
+    fun `should clear the environment value instead of storing a blank one`() {
+        val service = service(draftEnvironment = false, final = true)
+        declare("notificationEmail", "test@example.com")
+        val id = CaseConfigurationEnvironmentValueId("mail-case", "notificationEmail")
+        whenever(environmentValueRepository.existsById(id)).thenReturn(true)
+
+        val item = service.setEnvironmentValue(caseDefinitionId, "notificationEmail", " ")
+
+        verify(environmentValueRepository, never()).save(any<CaseConfigurationEnvironmentValue>())
+        verify(environmentValueRepository).deleteById(id)
+        assertThat(item).isEqualTo(CaseConfigurationItem("notificationEmail", "test@example.com", null))
+        assertThat(service.resolveValue(caseDefinitionId, "notificationEmail")).isEqualTo("test@example.com")
     }
 
     @Test
