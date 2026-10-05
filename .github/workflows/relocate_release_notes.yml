@@ -167,6 +167,8 @@ jobs:
       - name: Relocate with Claude
         id: claude
         if: steps.prepare.outputs.status == 'ready'
+        # Under the job's 15: a hung step then fails rather than cancelling the job, so its result is still collected.
+        timeout-minutes: 10
         uses: anthropics/claude-code-action@97c53473391bff1901034d4b454b5bac7ab7a029 # v1
         with:
           anthropic_api_key: ${{ secrets.VALTIMO_ANTHROPIC_API_KEY }}
