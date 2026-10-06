@@ -28,7 +28,8 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Building blocks | A final building block can be deployed to an environment that does not allow drafts, such as production |
+| Form flows | A form flow that has been used can now be deleted from a draft case definition or building block, as can the draft case definition itself; its form flow instances are deleted along with it |
 
 ---
 

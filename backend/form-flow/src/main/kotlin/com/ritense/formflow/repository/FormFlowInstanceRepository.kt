@@ -16,8 +16,27 @@
 
 package com.ritense.formflow.repository
 
+import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.instance.FormFlowInstance
 import com.ritense.formflow.domain.instance.FormFlowInstanceId
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
 
-interface FormFlowInstanceRepository: JpaRepository<FormFlowInstance, FormFlowInstanceId>
+interface FormFlowInstanceRepository: JpaRepository<FormFlowInstance, FormFlowInstanceId> {
+
+    @Modifying(flushAutomatically = true)
+    @Query(
+        """
+        DELETE FROM FormFlowStepInstance s
+        WHERE s.instance.id IN (
+            SELECT i.id FROM FormFlowInstance i WHERE i.formFlowDefinition = :formFlowDefinition
+        )
+        """
+    )
+    fun deleteStepInstancesByFormFlowDefinition(formFlowDefinition: FormFlowDefinition)
+
+    @Modifying(flushAutomatically = true)
+    @Query("DELETE FROM FormFlowInstance i WHERE i.formFlowDefinition = :formFlowDefinition")
+    fun deleteInstancesByFormFlowDefinition(formFlowDefinition: FormFlowDefinition)
+}

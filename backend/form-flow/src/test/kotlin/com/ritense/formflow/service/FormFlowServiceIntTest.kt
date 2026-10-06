@@ -19,17 +19,21 @@ package com.ritense.formflow.service
 import com.ritense.formflow.BaseIntegrationTest
 import com.ritense.formflow.repository.FormFlowInstanceRepository
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.transaction.annotation.Transactional
 
 internal class FormFlowServiceIntTest @Autowired constructor(
     private val formFlowService: FormFlowService,
-    private val formFlowInstanceRepository: FormFlowInstanceRepository
+    private val formFlowInstanceRepository: FormFlowInstanceRepository,
+    private val entityManager: EntityManager,
 ): BaseIntegrationTest() {
 
     val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
@@ -128,6 +132,22 @@ internal class FormFlowServiceIntTest @Autowired constructor(
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to 123)))
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to 1234)))
         assertEquals(1, formFlowService.findInstances(mutableMapOf("taskId" to 123)).size)
+    }
+
+    @Test
+    @Transactional
+    fun `deleteAllByCaseDefinitionId removes form flow definitions with instances`() {
+        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)
+        val instanceId = formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "123"))).id
+        entityManager.flush()
+        entityManager.clear()
+
+        formFlowService.deleteAllByCaseDefinitionId(caseDefinitionId)
+        entityManager.flush()
+        entityManager.clear()
+
+        assertTrue(formFlowService.getFormFlowDefinitions(caseDefinitionId).isEmpty())
+        assertFalse(formFlowInstanceRepository.existsById(instanceId))
     }
 
     @Test

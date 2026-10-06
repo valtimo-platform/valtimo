@@ -33,6 +33,7 @@ import {
   ikoSearchFieldConfig,
   uniqueSearchFieldTitle,
 } from './iko-search-field-config';
+import {runCleanups} from '../../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
 
@@ -77,16 +78,19 @@ test.describe('Feature 15D — IKO Search Fields', () => {
   });
 
   test.afterAll(async () => {
-    // Fields → action → view → server. Children first.
-    await searchFieldPage.cleanupTestFieldsViaApi(
-      parentViewKey,
-      parentActionKey,
-      IKO_SEARCH_FIELD_TITLE_PREFIX
+    // Fields → action → view → server. Children first, and every step runs even if one throws.
+    await runCleanups(
+      () =>
+        searchFieldPage.cleanupTestFieldsViaApi(
+          parentViewKey,
+          parentActionKey,
+          IKO_SEARCH_FIELD_TITLE_PREFIX
+        ),
+      () => searchActionPage.deleteSearchActionViaApi(parentViewKey, parentActionKey),
+      () => ikoViewPage.deleteViewViaApi(parentViewKey),
+      () => ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX),
+      () => context.close()
     );
-    await searchActionPage.deleteSearchActionViaApi(parentViewKey, parentActionKey);
-    await ikoViewPage.deleteViewViaApi(parentViewKey);
-    await ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX);
-    await context.close();
   });
 
   // Guard against tests that fail mid-modal — leaving a stuck modal would
