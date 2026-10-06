@@ -42,8 +42,13 @@ export class VSelect {
   }
 
   async open() {
-    await this.comboBox.click();
-    await expect(this.options.first()).toBeVisible();
+    await expect(this.comboBox).toBeVisible();
+    await expect(async () => {
+      if (!(await this.options.first().isVisible())) {
+        await this.comboBox.click();
+      }
+      await expect(this.options.first()).toBeVisible({timeout: 1_000});
+    }).toPass({timeout: 20_000});
   }
 
   async close() {

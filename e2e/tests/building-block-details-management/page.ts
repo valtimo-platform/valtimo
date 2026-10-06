@@ -36,6 +36,7 @@ import {
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {OverflowMenu} from '../../shared/overflow-menu/overflow-menu.utils';
 import {apiDelete, apiGet, apiPost} from '../../utils/api.utils';
+import {expectSettledLabels, openAndSelectOption} from '../../utils/ui.utils';
 
 const ARCHIVES_DIR = 'building-block-archives';
 const BUILDING_BLOCK_API_URL = '/api/management/v1/building-block';
@@ -223,8 +224,8 @@ export class BuildingBlockDetailsPage {
 
   async assertTabsVisible(expectedTabs: readonly string[]) {
     await expect(this.tabs).toBeVisible();
-    const headings = await this.tabs.getByRole('tab').allInnerTexts();
-    expect(headings.map(heading => heading.trim())).toEqual(
+    await expectSettledLabels(
+      this.tabs.getByRole('tab'),
       expect.arrayContaining([...expectedTabs])
     );
   }
@@ -380,16 +381,21 @@ export class BuildingBlockDetailsPage {
   }
 
   async switchToVersion(versionTag: string) {
-    await this.openVersionDropdown();
-    const option = this.versionOption(versionTag);
-    await expect(option).toBeVisible();
-    await option.click();
+    await openAndSelectOption(this.versionDropdownButton, this.versionOption(versionTag));
     await this.page.waitForURL(new RegExp(`/version/${versionTag}/`));
   }
 
-  async openVersionDropdown() {
+  async openVersionDropdown(expectedVersionTag: string) {
     await expect(this.versionDropdownButton).toBeEnabled();
-    await this.versionDropdownButton.click();
+
+    const option = this.versionOption(expectedVersionTag);
+
+    await expect(async () => {
+      if (!(await option.isVisible())) {
+        await this.versionDropdownButton.click({timeout: 5_000});
+      }
+      await expect(option).toBeVisible({timeout: 2_000});
+    }).toPass({timeout: 30_000});
   }
 
   /** Open the "More" menu, read the actions it offers, and close it again. */

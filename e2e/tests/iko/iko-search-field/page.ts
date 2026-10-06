@@ -29,6 +29,7 @@ import {
   ikoSearchFieldConfig,
   MATCH_TYPE_LABELS,
 } from './iko-search-field-config';
+import {openAndSelectOption} from '../../../utils/ui.utils';
 
 interface IkoSearchFieldResponse {
   key: string;
@@ -173,8 +174,10 @@ export class IkoSearchFieldPage {
 
   /** Click a cds-dropdown trigger and pick the option matching `label`. */
   private async selectDropdownItem(dropdown: Locator, label: string): Promise<void> {
-    await dropdown.click();
-    await this.page.getByRole('listbox').getByText(label, {exact: true}).click();
+    await openAndSelectOption(
+      dropdown,
+      this.page.getByRole('listbox').getByText(label, {exact: true})
+    );
   }
 
   async selectDataType(label: string): Promise<void> {
