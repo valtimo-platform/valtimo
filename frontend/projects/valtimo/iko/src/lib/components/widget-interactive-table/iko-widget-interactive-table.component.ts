@@ -27,13 +27,23 @@ import {CaseListActionsComponent, CaseListService} from '@valtimo/case';
 import {CarbonListModule} from '@valtimo/components';
 import {CaseDefinition} from '@valtimo/document';
 import {
+  catchWidgetDataError,
   InteractiveTableWidget,
   WidgetAction,
   WidgetInteractiveTableComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
 import {ButtonModule, ModalModule, PaginationModule, TilesModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
@@ -79,6 +89,11 @@ export class IkoWidgetInteractiveTableComponent {
 
   private readonly _queryParams$ = new BehaviorSubject<HttpParams>(new HttpParams());
 
+  private readonly _reloadWidgetData$ = this.widgetLayoutService.widgetDataReload$.pipe(
+    filter(uuid => uuid === this.widgetUuid),
+    startWith(null)
+  );
+
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
@@ -88,17 +103,20 @@ export class IkoWidgetInteractiveTableComponent {
       )
     ),
     this.listService.forceRefresh$,
+    this._reloadWidgetData$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams, queryParams]) =>
       !widgetParams || !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
-            widgetConfiguration.key,
-            widgetParams.entryId,
-            queryParams
-          )
+        : this.ikoApiService
+            .getIkoWidgetData(
+              widgetParams.ikoViewKey,
+              widgetParams.tabKey,
+              widgetConfiguration.key,
+              widgetParams.entryId,
+              queryParams
+            )
+            .pipe(catchWidgetDataError(this.widgetLayoutService, () => this.widgetUuid))
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );

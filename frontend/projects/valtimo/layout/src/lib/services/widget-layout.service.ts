@@ -19,6 +19,7 @@ import {
   BehaviorSubject,
   combineLatest,
   debounceTime,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -70,6 +71,13 @@ export class WidgetLayoutService implements OnDestroy {
 
   private readonly _widgetsWithExternalData$ = new BehaviorSubject<string[]>([]);
   private readonly _widgetsWithExternalDataReady$ = new BehaviorSubject<string[]>([]);
+
+  private readonly _widgetDataErrors$ = new BehaviorSubject<string[]>([]);
+  private readonly _widgetDataReload$ = new Subject<string>();
+
+  public get widgetDataReload$(): Observable<string> {
+    return this._widgetDataReload$.asObservable();
+  }
 
   private readonly _subscriptions = new Subscription();
 
@@ -138,12 +146,41 @@ export class WidgetLayoutService implements OnDestroy {
     });
   }
 
+  public hasWidgetDataError$(uuid: string): Observable<boolean> {
+    return this._widgetDataErrors$.pipe(
+      map(uuids => uuids.includes(uuid)),
+      distinctUntilChanged()
+    );
+  }
+
+  public setWidgetDataError(uuid: string): void {
+    this._widgetDataErrors$.pipe(take(1)).subscribe(uuids => {
+      if (!uuids.includes(uuid)) this._widgetDataErrors$.next([...uuids, uuid]);
+    });
+    // Mark settled — otherwise the container keeps waiting on a widget that will never load.
+    this.setWidgetDataLoaded(uuid);
+  }
+
+  public clearWidgetDataError(uuid: string): void {
+    this._widgetDataErrors$.pipe(take(1)).subscribe(uuids => {
+      if (uuids.includes(uuid)) {
+        this._widgetDataErrors$.next(uuids.filter(errorUuid => errorUuid !== uuid));
+      }
+    });
+  }
+
+  public reloadWidgetData(uuid: string): void {
+    this.clearWidgetDataError(uuid);
+    this._widgetDataReload$.next(uuid);
+  }
+
   public reset(): void {
     this._containerWidthSubject$.next(null);
     this._widgetsSubject$.next(null);
     this._widgetDataLoadedSubject$.next(null);
     this._widgetsWithExternalData$.next([]);
     this._widgetsWithExternalDataReady$.next([]);
+    this._widgetDataErrors$.next([]);
     this._muuriSubject$.next(null);
   }
 
