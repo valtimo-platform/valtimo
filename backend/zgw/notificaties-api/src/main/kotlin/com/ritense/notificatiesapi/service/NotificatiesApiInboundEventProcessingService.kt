@@ -51,18 +51,28 @@ class NotificatiesApiInboundEventProcessingService(
     private val notificationPublishTemplate = TransactionTemplate(transactionManager).apply {
         propagationBehavior = TransactionDefinition.PROPAGATION_NOT_SUPPORTED
     }
+    private val batchProcessingTemplate = TransactionTemplate(transactionManager)
+    private val maintenanceTemplate = TransactionTemplate(transactionManager).apply {
+        propagationBehavior = TransactionDefinition.PROPAGATION_REQUIRES_NEW
+    }
 
-    @Transactional
     fun processBatch() {
-        while (true) {
-            val batch = inboundEventRepository.fetchNextBatchForProcessing(processingProperties.batchSize)
-            if (batch.isEmpty()) {
-                break
+        batchProcessingTemplate.executeWithoutResult {
+            while (true) {
+                val batch = inboundEventRepository.fetchNextBatchForProcessing(processingProperties.batchSize)
+                if (batch.isEmpty()) {
+                    break
+                }
+                val now = LocalDateTime.now()
+                batch.forEach { processSingleEvent(it, now) }
             }
-            val now = LocalDateTime.now()
-            batch.forEach { processSingleEvent(it, now) }
         }
-        runMaintenance(LocalDateTime.now())
+        // Runs only after the batch committed, so a maintenance failure cannot roll back processed events.
+        try {
+            maintenanceTemplate.executeWithoutResult { runMaintenance(LocalDateTime.now()) }
+        } catch (ex: Exception) {
+            logger.error(ex) { "Maintenance of inbound notificaties api events failed" }
+        }
     }
 
     @Transactional

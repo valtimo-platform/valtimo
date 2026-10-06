@@ -133,6 +133,36 @@ class NotificatiesApiInboundEventProcessingServiceTest {
         verify(repository).deleteByStatusAndReceivedAtBefore(any(), any())
     }
 
+    @Test
+    fun `maintenance failure does not propagate and starts only after the batch transaction committed`() {
+        val recordingTransactionManager = RecordingTransactionManager()
+        service = NotificatiesApiInboundEventProcessingService(
+            repository,
+            publisher,
+            objectMapper,
+            properties,
+            recordingTransactionManager
+        )
+        val event = inboundEvent(NotificatiesApiInboundEventStatus.RECEIVED)
+        whenever(repository.fetchNextBatchForProcessing(properties.batchSize)).thenReturn(listOf(event), emptyList())
+        whenever(repository.deleteByStatusAndReceivedAtBefore(any(), any())).thenThrow(IllegalStateException("cleanup failed"))
+
+        service.processBatch()
+
+        assertEquals(NotificatiesApiInboundEventStatus.PROCESSED, event.status)
+        assertEquals(
+            listOf(
+                "begin REQUIRED",
+                "begin NOT_SUPPORTED",
+                "commit NOT_SUPPORTED",
+                "commit REQUIRED",
+                "begin REQUIRES_NEW",
+                "rollback REQUIRES_NEW"
+            ),
+            recordingTransactionManager.log
+        )
+    }
+
     private fun inboundEvent(
         status: NotificatiesApiInboundEventStatus,
         payload: String = objectMapper.writeValueAsString(sampleNotification())
@@ -163,4 +193,29 @@ private class NoOpTransactionManager : PlatformTransactionManager {
     override fun getTransaction(definition: TransactionDefinition?): TransactionStatus = SimpleTransactionStatus()
     override fun commit(status: TransactionStatus) {}
     override fun rollback(status: TransactionStatus) {}
+}
+
+private class RecordingTransactionManager : PlatformTransactionManager {
+    val log = mutableListOf<String>()
+    private val open = ArrayDeque<String>()
+
+    override fun getTransaction(definition: TransactionDefinition?): TransactionStatus {
+        val propagation = when (definition?.propagationBehavior ?: TransactionDefinition.PROPAGATION_REQUIRED) {
+            TransactionDefinition.PROPAGATION_REQUIRES_NEW -> "REQUIRES_NEW"
+            TransactionDefinition.PROPAGATION_NOT_SUPPORTED -> "NOT_SUPPORTED"
+            TransactionDefinition.PROPAGATION_REQUIRED -> "REQUIRED"
+            else -> "OTHER"
+        }
+        open.addLast(propagation)
+        log += "begin $propagation"
+        return SimpleTransactionStatus()
+    }
+
+    override fun commit(status: TransactionStatus) {
+        log += "commit ${open.removeLast()}"
+    }
+
+    override fun rollback(status: TransactionStatus) {
+        log += "rollback ${open.removeLast()}"
+    }
 }

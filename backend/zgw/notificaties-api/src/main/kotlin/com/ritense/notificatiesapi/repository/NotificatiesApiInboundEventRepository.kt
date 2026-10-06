@@ -47,6 +47,7 @@ interface NotificatiesApiInboundEventRepository :
     fun findByIdForUpdate(id: UUID): NotificatiesApiInboundEvent?
 
     @Modifying
+    @Query("delete from NotificatiesApiInboundEvent event where event.status = :status and event.receivedAt < :receivedAt")
     fun deleteByStatusAndReceivedAtBefore(
         status: NotificatiesApiInboundEventStatus,
         receivedAt: LocalDateTime
