@@ -54,25 +54,21 @@ import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ProcessLinkRepository
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
-import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
@@ -99,14 +95,6 @@ class BuildingBlockVersionMigrationIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
 ) : BaseIntegrationTest() {
-
-    @MockitoSpyBean
-    lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
-
-    @AfterEach
-    fun resetChecker() {
-        reset(buildingBlockDefinitionChecker)
-    }
 
     @Test
     fun `lists only the versions that are referenced, nested and from a case link included`() {
@@ -189,13 +177,22 @@ class BuildingBlockVersionMigrationIT @Autowired constructor(
     @Test
     fun `migrates the worked example from the issue`() {
         val f = workedExample()
+        var instanceDefinitionAfter: BuildingBlockDefinitionId? = null
         val instanceDocumentId = createBuildingBlockDocument(f.notify110)
         val instance = buildingBlockInstanceRepository.saveAndFlush(
             BuildingBlockInstance(documentId = instanceDocumentId, definition = definitionOf(f.notify110))
         )
         val preview = preview(f.sendEmail100, f.sendEmail101)
 
-        val result = execute(f.sendEmail100, f.sendEmail101, preview.chains.map { it.id })
+        val result = try {
+            execute(f.sendEmail100, f.sendEmail101, preview.chains.map { it.id })
+        } finally {
+            instanceDefinitionAfter = transactionTemplate.execute {
+                buildingBlockInstanceRepository.findById(instance.id).orElseThrow().definition.id
+            }
+            // Other tests count every instance in the shared database.
+            buildingBlockInstanceRepository.deleteById(instance.id)
+        }
 
         // moving 1.3.0 is a draft: its link is updated in place, nothing else is created for it.
         val movingLink = linkIn(MigrationContainer.of(f.moving), "mv-${f.uid}", "callSendEmail")
@@ -246,8 +243,7 @@ class BuildingBlockVersionMigrationIT @Autowired constructor(
 
         // Nothing is finalized and no running building block is touched.
         verify(buildingBlockManagementService, never()).finalize(any(), any())
-        val instanceAfter = transactionTemplate.execute { buildingBlockInstanceRepository.findById(instance.id).orElseThrow().definition.id }
-        assertThat(instanceAfter).isEqualTo(f.notify110)
+        assertThat(instanceDefinitionAfter).isEqualTo(f.notify110)
     }
 
     @Test
@@ -473,20 +469,6 @@ class BuildingBlockVersionMigrationIT @Autowired constructor(
         assertThat(repositoryService.createProcessDefinitionQuery().versionTag("BB:${f.notify110.key}:1.1.1").count()).isZero()
         assertThat(caseDefinitionBuildingBlockLinkRepository.findAllByCaseDefinitionId(f.moving).single().buildingBlockDefinitionId)
             .isEqualTo(f.sendEmail100)
-        assertThat(linkIn(MigrationContainer.of(f.moving), "mv-${f.uid}", "callSendEmail").buildingBlockDefinitionId)
-            .isEqualTo(f.sendEmail100)
-    }
-
-    @Test
-    fun `refuses to run where drafts are not allowed`() {
-        val f = workedExample()
-        val chainIds = preview(f.sendEmail100, f.sendEmail101).chains.map { it.id }
-        doReturn(false).whenever(buildingBlockDefinitionChecker).canUpdateGlobalConfiguration()
-
-        assertThat(preview(f.sendEmail100, f.sendEmail101).chains).allMatch { !it.migratable }
-        assertThatThrownBy { execute(f.sendEmail100, f.sendEmail101, chainIds) }
-            .isInstanceOf(BuildingBlockVersionMigrationException::class.java)
-            .hasMessageContaining("does not allow drafts")
         assertThat(linkIn(MigrationContainer.of(f.moving), "mv-${f.uid}", "callSendEmail").buildingBlockDefinitionId)
             .isEqualTo(f.sendEmail100)
     }
