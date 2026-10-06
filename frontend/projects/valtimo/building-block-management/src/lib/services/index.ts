@@ -19,3 +19,4 @@ export * from './building-block-management-api.service';
 export * from './building-block-management-detail.service';
 export * from './building-block-management.service';
 export * from './building-block-migration-api.service';
+export * from './building-block-version-migration-api.service';

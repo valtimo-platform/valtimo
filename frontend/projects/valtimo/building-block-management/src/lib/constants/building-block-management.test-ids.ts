@@ -17,6 +17,7 @@
 export const BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS = {
   uploadButton: 'buildingBlockUploadButton',
   createButton: 'buildingBlockCreateButton',
+  migrateButton: 'buildingBlockMigrateButton',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS = {
@@ -36,6 +37,33 @@ export const BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS = {
   backButton: 'buildingBlockUploadBackButton',
   nextButton: 'buildingBlockUploadNextButton',
   finishButton: 'buildingBlockUploadFinishButton',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS = {
+  modal: 'buildingBlockVersionMigrationModal',
+  progressIndicator: 'buildingBlockVersionMigrationProgressIndicator',
+  sourceDropdown: 'buildingBlockVersionMigrationSourceDropdown',
+  targetDropdown: 'buildingBlockVersionMigrationTargetDropdown',
+  noSourceVersions: 'buildingBlockVersionMigrationNoSourceVersions',
+  draftsNotAllowed: 'buildingBlockVersionMigrationDraftsNotAllowed',
+  chain: 'buildingBlockVersionMigrationChain',
+  chainCheckbox: 'buildingBlockVersionMigrationChainCheckbox',
+  chainModifiesExistingDraft: 'buildingBlockVersionMigrationChainModifiesExistingDraft',
+  chainNotMigratable: 'buildingBlockVersionMigrationChainNotMigratable',
+  differences: 'buildingBlockVersionMigrationDifferences',
+  inputSourceInput: 'buildingBlockVersionMigrationInputSourceInput',
+  pluginConfigurationDropdown: 'buildingBlockVersionMigrationPluginConfigurationDropdown',
+  droppedMappings: 'buildingBlockVersionMigrationDroppedMappings',
+  review: 'buildingBlockVersionMigrationReview',
+  confirmCheckbox: 'buildingBlockVersionMigrationConfirmCheckbox',
+  result: 'buildingBlockVersionMigrationResult',
+  draftLink: 'buildingBlockVersionMigrationDraftLink',
+  remainingReferences: 'buildingBlockVersionMigrationRemainingReferences',
+  cancelButton: 'buildingBlockVersionMigrationCancelButton',
+  backButton: 'buildingBlockVersionMigrationBackButton',
+  nextButton: 'buildingBlockVersionMigrationNextButton',
+  executeButton: 'buildingBlockVersionMigrationExecuteButton',
+  closeButton: 'buildingBlockVersionMigrationCloseButton',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS = {
@@ -88,3 +116,11 @@ export const BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS = {
  * `buildingBlockVersion-<versionTag>`, built in the version selector component.
  */
 export const BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX = 'buildingBlockVersion-';
+
+/** Prefix for the options of the migration wizard's source dropdown: `<prefix><key>-<versionTag>`. */
+export const BUILDING_BLOCK_VERSION_MIGRATION_SOURCE_OPTION_TEST_ID_PREFIX =
+  'buildingBlockVersionMigrationSource-';
+
+/** Prefix for the options of the migration wizard's target dropdown: `<prefix><versionTag>`. */
+export const BUILDING_BLOCK_VERSION_MIGRATION_TARGET_OPTION_TEST_ID_PREFIX =
+  'buildingBlockVersionMigrationTarget-';

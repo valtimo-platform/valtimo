@@ -4362,6 +4362,91 @@
   },
   "buildingBlockManagement": {
     "title": "Bouwblokken",
+    "versionMigration": {
+      "button": "Migreren",
+      "title": "Bouwblokversie migreren",
+      "draft": "Concept",
+      "final": "Definitief",
+      "none": "Geen",
+      "containerType": {
+        "CASE": "Dossier",
+        "BUILDING_BLOCK": "Bouwblok"
+      },
+      "steps": {
+        "source": "Bron",
+        "target": "Doel",
+        "chains": "Gebruik",
+        "differences": "Verschillen",
+        "review": "Controleren"
+      },
+      "source": {
+        "description": "Selecteer de bouwblokversie die je wilt vervangen. Alleen versies die ergens gebruikt worden staan in de lijst.",
+        "label": "Bronversie",
+        "placeholder": "Selecteer een bouwblokversie",
+        "emptyTitle": "Niets te migreren",
+        "emptyMessage": "Geen enkele bouwblokversie wordt gebruikt door een dossier of een ander bouwblok."
+      },
+      "target": {
+        "description": "Selecteer de versie van {{key}} die {{versionTag}} moet vervangen. Dit kan een oudere of een nieuwere versie zijn.",
+        "label": "Doelversie",
+        "placeholder": "Selecteer een versie",
+        "emptyTitle": "Geen andere versie",
+        "emptyMessage": "Dit bouwblok heeft geen andere versie om naar te migreren."
+      },
+      "chains": {
+        "description": "Dit zijn alle plekken waar {{key}} {{sourceVersionTag}} gebruikt wordt, van het dossier of het bovenste bouwblok tot aan de verwijzing. Selecteer welke naar {{targetVersionTag}} moeten. Gebruik via een definitieve versie maakt nieuwe concepten aan en is standaard niet geselecteerd.",
+        "empty": "Geen gebruik gevonden.",
+        "requiresDrafts": "Maakt nieuwe concepten van definitieve versies",
+        "modifiesExistingDraft": "Wijzigt bestaand concept {{key}} {{versionTag}} (gebaseerd op {{basedOn}})",
+        "notMigratable": "Kan niet gemigreerd worden: {{reason}}",
+        "selectAtLeastOne": "Selecteer minstens één gebruik om verder te gaan."
+      },
+      "differences": {
+        "description": "Los per geselecteerd gebruik de verschillen tussen de bron- en de doelversie op. Je kunt niet verder zolang een gebruik niet volledig geconfigureerd is.",
+        "configured": "Geconfigureerd",
+        "notConfigured": "Niet geconfigureerd",
+        "none": "Geen verschillen op te lossen.",
+        "inputSource": "Waarde voor verplichte invoer {{field}}",
+        "inputPlaceholder": "Bijvoorbeeld doc:/pad, case:assignee of een vaste waarde",
+        "inputRequired": "Deze invoer is verplicht in de doelversie",
+        "pluginConfiguration": "Pluginconfiguratie voor {{plugin}}",
+        "pluginPlaceholder": "Selecteer een pluginconfiguratie",
+        "pluginRequired": "De doelversie heeft een configuratie van deze plugin nodig",
+        "noPluginConfigurations": "Er bestaat nog geen configuratie van deze plugin. Maak er eerst een aan in pluginbeheer.",
+        "pluginLink": "Opgeslagen op de koppeling in {{container}}",
+        "dropped": "Koppelingen die vervallen omdat de doelversie het veld niet meer heeft",
+        "droppedInput": "Invoer {{source}} → {{target}}",
+        "droppedOutput": "Uitvoer {{source}} → {{target}}"
+      },
+      "review": {
+        "description": "Controleer alle wijzigingen voor het migreren van {{key}} {{sourceVersionTag}} naar {{targetVersionTag}}. Er wordt niets definitief gemaakt en er verandert niets aan lopende dossiers.",
+        "draftsToCreate": "Aan te maken concepten",
+        "draftsToModify": "Te wijzigen concepten",
+        "draftVersion": "versie {{versionTag}}, gebaseerd op {{basedOn}}",
+        "linksToRepoint": "Om te zetten verwijzingen",
+        "containerReference": "Verwijzing naar container",
+        "skipped": "Overgeslagen gebruik",
+        "covered": "Ook gemigreerd via een gedeelde verwijzing",
+        "confirm": "Ik heb deze wijzigingen gecontroleerd en wil ze doorvoeren",
+        "execute": "Migreren"
+      },
+      "result": {
+        "title": "Migratie voltooid",
+        "message": "Verwijzingen naar {{key}} {{sourceVersionTag}} zijn waar geselecteerd omgezet naar {{targetVersionTag}}.",
+        "migratedDirectly": "Direct gemigreerd gebruik",
+        "draftsCreated": "Aangemaakte concepten",
+        "draftsModified": "Gewijzigde concepten",
+        "basedOn": "gebaseerd op {{versionTag}}",
+        "remainingReferences": "Resterende verwijzingen",
+        "noRemainingReferences": "Niets verwijst nog naar {{key}} {{versionTag}}.",
+        "nextStepsTitle": "Volgende stappen",
+        "nextSteps": "Controleer de concepten hierboven en maak ze definitief, en plan daarna een dossiermigratie om bestaande dossiers naar de nieuwe versies te verplaatsen."
+      },
+      "draftsNotAllowed": {
+        "title": "Concepten zijn niet toegestaan",
+        "message": "Deze omgeving staat geen concepten toe, dus bouwblokverwijzingen kunnen hier niet gemigreerd worden. Voer de migratie uit op een omgeving waar configuratie gewijzigd kan worden."
+      }
+    },
     "listColumns": {
       "name": "Naam",
       "key": "Sleutel",

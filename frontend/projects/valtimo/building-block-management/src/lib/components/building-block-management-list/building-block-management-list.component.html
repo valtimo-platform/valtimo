@@ -48,6 +48,17 @@
 <ng-template #buildingBlockDefinitionActions>
   <div class="valtimo-building-block-management-list__actions">
     <button
+      *ngIf="canUpdateGlobalConfiguration$ | async"
+      [attr.data-test-id]="testIds.migrateButton"
+      cdsButton="ghost"
+      (click)="showVersionMigrationModal()"
+    >
+      {{ 'buildingBlockManagement.versionMigration.button' | translate }}
+
+      <svg cdsIcon="migrate" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button
       [attr.data-test-id]="testIds.uploadButton"
       cdsButton="ghost"
       (click)="showUploadModal()"
@@ -72,3 +83,5 @@
 <valtimo-building-block-management-create-modal></valtimo-building-block-management-create-modal>
 
 <valtimo-building-block-management-upload-modal></valtimo-building-block-management-upload-modal>
+
+<valtimo-building-block-management-version-migration-modal></valtimo-building-block-management-version-migration-modal>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
-export * from './building-block-management.model';
-export * from './migration.model';
-export * from './building-block-version-migration.model';
+enum VERSION_MIGRATION_STEP {
+  SOURCE = 'source',
+  TARGET = 'target',
+  CHAINS = 'chains',
+  DIFFERENCES = 'differences',
+  REVIEW = 'review',
+}
+
+const VERSION_MIGRATION_STEPS = [
+  VERSION_MIGRATION_STEP.SOURCE,
+  VERSION_MIGRATION_STEP.TARGET,
+  VERSION_MIGRATION_STEP.CHAINS,
+  VERSION_MIGRATION_STEP.DIFFERENCES,
+  VERSION_MIGRATION_STEP.REVIEW,
+];
+
+const VERSION_MIGRATION_PREVIEW_DEBOUNCE_MS = 300;
+
+export {VERSION_MIGRATION_PREVIEW_DEBOUNCE_MS, VERSION_MIGRATION_STEP, VERSION_MIGRATION_STEPS};

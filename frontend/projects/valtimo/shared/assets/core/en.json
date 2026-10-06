@@ -4353,6 +4353,91 @@
   },
   "buildingBlockManagement": {
     "title": "Building blocks",
+    "versionMigration": {
+      "button": "Migrate",
+      "title": "Migrate building block version",
+      "draft": "Draft",
+      "final": "Finalized",
+      "none": "None",
+      "containerType": {
+        "CASE": "Case",
+        "BUILDING_BLOCK": "Building block"
+      },
+      "steps": {
+        "source": "Source",
+        "target": "Target",
+        "chains": "Usages",
+        "differences": "Differences",
+        "review": "Review"
+      },
+      "source": {
+        "description": "Select the building block version you want to move away from. Only versions that are used somewhere are listed.",
+        "label": "Source version",
+        "placeholder": "Select a building block version",
+        "emptyTitle": "Nothing to migrate",
+        "emptyMessage": "No building block version is referenced by a case or another building block."
+      },
+      "target": {
+        "description": "Select the version of {{key}} that should replace {{versionTag}}. This can be an older or a newer version.",
+        "label": "Target version",
+        "placeholder": "Select a version",
+        "emptyTitle": "No other version",
+        "emptyMessage": "This building block has no other version to migrate to."
+      },
+      "chains": {
+        "description": "These are all places where {{key}} {{sourceVersionTag}} is used, from the case or top building block down to the reference. Select the ones to move to {{targetVersionTag}}. Usages that go through a finalized version create new drafts and are not selected by default.",
+        "empty": "No usages found.",
+        "requiresDrafts": "Creates new drafts of finalized versions",
+        "modifiesExistingDraft": "Modifies existing draft {{key}} {{versionTag}} (based on {{basedOn}})",
+        "notMigratable": "Cannot be migrated: {{reason}}",
+        "selectAtLeastOne": "Select at least one usage to continue."
+      },
+      "differences": {
+        "description": "Resolve the differences between the source and the target version for each selected usage. You cannot continue while a usage is not fully configured.",
+        "configured": "Configured",
+        "notConfigured": "Not configured",
+        "none": "No differences to resolve.",
+        "inputSource": "Value for required input {{field}}",
+        "inputPlaceholder": "For example doc:/path, case:assignee or a fixed value",
+        "inputRequired": "This input is required by the target version",
+        "pluginConfiguration": "Plugin configuration for {{plugin}}",
+        "pluginPlaceholder": "Select a plugin configuration",
+        "pluginRequired": "The target version needs a configuration of this plugin",
+        "noPluginConfigurations": "No configuration of this plugin exists yet. Create one in plugin management first.",
+        "pluginLink": "Saved on the link in {{container}}",
+        "dropped": "Mappings that will be dropped because the target version no longer has the field",
+        "droppedInput": "Input {{source}} → {{target}}",
+        "droppedOutput": "Output {{source}} → {{target}}"
+      },
+      "review": {
+        "description": "Review all changes for migrating {{key}} {{sourceVersionTag}} to {{targetVersionTag}}. Nothing is finalized and no running case is changed.",
+        "draftsToCreate": "Drafts to create",
+        "draftsToModify": "Drafts to modify",
+        "draftVersion": "version {{versionTag}}, based on {{basedOn}}",
+        "linksToRepoint": "References to re-point",
+        "containerReference": "Container reference",
+        "skipped": "Usages skipped",
+        "covered": "Also migrated through a shared reference",
+        "confirm": "I have reviewed these changes and want to apply them",
+        "execute": "Migrate"
+      },
+      "result": {
+        "title": "Migration done",
+        "message": "References to {{key}} {{sourceVersionTag}} have been moved to {{targetVersionTag}} where selected.",
+        "migratedDirectly": "Usages migrated directly",
+        "draftsCreated": "Drafts created",
+        "draftsModified": "Drafts modified",
+        "basedOn": "based on {{versionTag}}",
+        "remainingReferences": "Remaining references",
+        "noRemainingReferences": "Nothing refers to {{key}} {{versionTag}} anymore.",
+        "nextStepsTitle": "Next steps",
+        "nextSteps": "Review and finalize the drafts above, then plan a dossier migration to move existing cases to the new versions."
+      },
+      "draftsNotAllowed": {
+        "title": "Drafts are not allowed",
+        "message": "This environment does not allow drafts, so building block references cannot be migrated here. Run the migration on an environment where configuration can be changed."
+      }
+    },
     "listColumns": {
       "name": "Name",
       "key": "Key",

@@ -129,6 +129,143 @@ export interface BuildingBlockVersionDto {
     final: boolean;
 }
 
+export interface BuildingBlockInUseVersionDto {
+    key: string;
+    versionTag: string;
+    name: string | null;
+    final: boolean;
+    referenceCount: number;
+}
+
+export interface BuildingBlockVersionMigrationChainDto {
+    id: string;
+    containers: BuildingBlockVersionMigrationContainerDto[];
+    references: BuildingBlockVersionMigrationReferenceDto[];
+    link: BuildingBlockVersionMigrationReferenceDto;
+    selected: boolean;
+    selectedByDefault: boolean;
+    requiresDrafts: boolean;
+    modifiesExistingDraft: boolean;
+    existingDrafts: BuildingBlockVersionMigrationExistingDraftDto[];
+    migratable: boolean;
+    notMigratableReason: string | null;
+    differences: BuildingBlockVersionMigrationDifferencesDto;
+}
+
+export interface BuildingBlockVersionMigrationChainResolutionDto {
+    chainId: string;
+    inputMappings: BuildingBlockInputMappingDto[];
+    pluginConfigurations: { [index: string]: string };
+}
+
+export interface BuildingBlockVersionMigrationChangesetDto {
+    draftsToCreate: BuildingBlockVersionMigrationDraftDto[];
+    draftsToModify: BuildingBlockVersionMigrationDraftDto[];
+    linksToRepoint: BuildingBlockVersionMigrationRepointDto[];
+    skippedChainIds: string[];
+    coveredChainIds: string[];
+}
+
+export interface BuildingBlockVersionMigrationContainerDto {
+    type: BuildingBlockVersionMigrationContainerType;
+    key: string;
+    versionTag: string;
+    final: boolean;
+}
+
+export interface BuildingBlockVersionMigrationDifferencesDto {
+    existingInputMappings: BuildingBlockInputMappingDto[];
+    missingRequiredInputs: string[];
+    droppedInputMappings: BuildingBlockInputMappingDto[];
+    droppedOutputMappings: BuildingBlockOutputMappingDto[];
+    missingPluginDefinitionKeys: string[];
+    pluginConfigurationLink: BuildingBlockVersionMigrationReferenceDto | null;
+    unresolvedRequiredInputs: string[];
+    unresolvedPluginDefinitionKeys: string[];
+    configured: boolean;
+}
+
+export interface BuildingBlockVersionMigrationDraftDto {
+    type: BuildingBlockVersionMigrationContainerType;
+    key: string;
+    versionTag: string;
+    basedOnVersionTag: string | null;
+}
+
+export interface BuildingBlockVersionMigrationExecuteRequestDto {
+    key: string;
+    sourceVersionTag: string;
+    targetVersionTag: string;
+    selectedChainIds: string[];
+    resolutions: BuildingBlockVersionMigrationChainResolutionDto[];
+}
+
+export interface BuildingBlockVersionMigrationExistingDraftDto {
+    container: BuildingBlockVersionMigrationContainerDto;
+    draftVersionTag: string;
+    draftBasedOnVersionTag: string | null;
+}
+
+export interface BuildingBlockVersionMigrationPreviewDto {
+    key: string;
+    sourceVersionTag: string;
+    targetVersionTag: string;
+    draftsAllowed: boolean;
+    chains: BuildingBlockVersionMigrationChainDto[];
+    changeset: BuildingBlockVersionMigrationChangesetDto;
+}
+
+export interface BuildingBlockVersionMigrationPreviewRequestDto {
+    key: string;
+    sourceVersionTag: string;
+    targetVersionTag: string;
+    selectedChainIds: string[] | null;
+    resolutions: BuildingBlockVersionMigrationChainResolutionDto[];
+}
+
+export interface BuildingBlockVersionMigrationReferenceDto {
+    container: BuildingBlockVersionMigrationContainerDto;
+    kind: BuildingBlockVersionMigrationReferenceKind;
+    processDefinitionKey: string | null;
+    activityId: string | null;
+    buildingBlockKey: string;
+    buildingBlockVersionTag: string;
+}
+
+export interface BuildingBlockVersionMigrationRepointDto {
+    container: BuildingBlockVersionMigrationContainerDto;
+    kind: BuildingBlockVersionMigrationReferenceKind;
+    processDefinitionKey: string | null;
+    activityId: string | null;
+    buildingBlockKey: string;
+    fromVersionTag: string;
+    toVersionTag: string;
+    containerReference: boolean;
+}
+
+export interface BuildingBlockVersionMigrationResultDto {
+    key: string;
+    sourceVersionTag: string;
+    targetVersionTag: string;
+    chainsMigratedDirectly: string[];
+    linksRepointed: BuildingBlockVersionMigrationRepointDto[];
+    draftsCreated: BuildingBlockVersionMigrationDraftDto[];
+    draftsModified: BuildingBlockVersionMigrationDraftDto[];
+    skippedChainIds: string[];
+    remainingReferences: BuildingBlockVersionMigrationReferenceDto[];
+}
+
+export interface BuildingBlockInputMappingDto {
+    source: string;
+    target: string;
+}
+
+export interface BuildingBlockOutputMappingDto {
+    source: string;
+    target: string;
+    syncTiming: BuildingBlockSyncTiming;
+}
+
 export interface CaseDefinitionBuildingBlockLinkDto {
     id: string;
     caseDefinitionKey: string;
@@ -1884,6 +2021,10 @@ export type SearchFieldMatchType = "like" | "exact";
 export type TabWidgetLayout = "MUURI_GAP_FREE" | "MUURI" | "BEAUTIFUL";
 
 export type WidgetColor = "YELLOW" | "ORANGE" | "RED" | "BROWN" | "GREEN" | "TURQOISE" | "PURPLE" | "PERIWINKLE" | "BLUE" | "HIGHCONTRAST" | "WHITE";
+
+export type BuildingBlockVersionMigrationContainerType = "CASE" | "BUILDING_BLOCK";
+
+export type BuildingBlockVersionMigrationReferenceKind = "PROCESS_LINK" | "CASE_LINK";
 
 export type BuildingBlockSyncTiming = "CONTINUOUS" | "END";
 
