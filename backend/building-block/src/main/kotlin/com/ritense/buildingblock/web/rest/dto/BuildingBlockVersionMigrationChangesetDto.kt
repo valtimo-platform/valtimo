@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.repository
+package com.ritense.buildingblock.web.rest.dto
 
-import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import org.springframework.data.jpa.repository.JpaRepository
-import java.util.UUID
-
-interface BuildingBlockProcessLinkRepository : JpaRepository<BuildingBlockProcessLink, UUID> {
-    fun findAllByBuildingBlockDefinitionIdKey(buildingBlockDefinitionKey: String): List<BuildingBlockProcessLink>
-}
+data class BuildingBlockVersionMigrationChangesetDto(
+    val draftsToCreate: List<BuildingBlockVersionMigrationDraftDto>,
+    val draftsToModify: List<BuildingBlockVersionMigrationDraftDto>,
+    val linksToRepoint: List<BuildingBlockVersionMigrationRepointDto>,
+    val skippedChainIds: List<String>,
+    val coveredChainIds: List<String>,
+)

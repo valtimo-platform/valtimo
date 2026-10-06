@@ -133,6 +133,11 @@ import com.ritense.buildingblock.web.rest.BuildingBlockFormFlowManagementResourc
 import com.ritense.buildingblock.web.rest.BuildingBlockFormManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockInstanceResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
+import com.ritense.buildingblock.web.rest.BuildingBlockVersionMigrationResource
+import com.ritense.buildingblock.service.versionmigration.BuildingBlockUsageIndexLoader
+import com.ritense.buildingblock.service.versionmigration.BuildingBlockVersionMigrationService
+import com.ritense.case_.repository.CaseDefinitionRepository
+import jakarta.persistence.EntityManager
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
 import com.ritense.case.service.CaseDefinitionService
@@ -378,6 +383,76 @@ class BuildingBlockAutoConfiguration {
             importService,
             exportService
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockUsageIndexLoader::class)
+    fun buildingBlockUsageIndexLoader(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        caseDefinitionRepository: CaseDefinitionRepository,
+        buildingBlockProcessLinkRepository: BuildingBlockProcessLinkRepository,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        repositoryService: RepositoryService,
+    ): BuildingBlockUsageIndexLoader {
+        return BuildingBlockUsageIndexLoader(
+            buildingBlockDefinitionRepository,
+            caseDefinitionRepository,
+            buildingBlockProcessLinkRepository,
+            caseDefinitionBuildingBlockLinkRepository,
+            processDefinitionBuildingBlockDefinitionRepository,
+            processDefinitionCaseDefinitionRepository,
+            repositoryService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockVersionMigrationService::class)
+    fun buildingBlockVersionMigrationService(
+        buildingBlockUsageIndexLoader: BuildingBlockUsageIndexLoader,
+        buildingBlockManagementService: BuildingBlockManagementService,
+        caseDefinitionService: CaseDefinitionService,
+        buildingBlockFieldService: BuildingBlockFieldService,
+        buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+        operatonProcessService: OperatonProcessService,
+        repositoryService: RepositoryService,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
+        processLinkRepository: ProcessLinkRepository,
+        buildingBlockProcessLinkRepository: BuildingBlockProcessLinkRepository,
+        caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        pluginService: PluginService,
+        authorizationService: AuthorizationService,
+        entityManager: EntityManager,
+    ): BuildingBlockVersionMigrationService {
+        return BuildingBlockVersionMigrationService(
+            buildingBlockUsageIndexLoader,
+            buildingBlockManagementService,
+            caseDefinitionService,
+            buildingBlockFieldService,
+            buildingBlockPluginDefinitionService,
+            buildingBlockDefinitionChecker,
+            operatonProcessService,
+            repositoryService,
+            processDefinitionBuildingBlockDefinitionRepository,
+            processDefinitionCaseDefinitionRepository,
+            processLinkRepository,
+            buildingBlockProcessLinkRepository,
+            caseDefinitionBuildingBlockLinkRepository,
+            pluginService,
+            authorizationService,
+            entityManager,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockVersionMigrationResource::class)
+    fun buildingBlockVersionMigrationResource(
+        buildingBlockVersionMigrationService: BuildingBlockVersionMigrationService,
+    ): BuildingBlockVersionMigrationResource {
+        return BuildingBlockVersionMigrationResource(buildingBlockVersionMigrationService)
     }
 
     @Bean

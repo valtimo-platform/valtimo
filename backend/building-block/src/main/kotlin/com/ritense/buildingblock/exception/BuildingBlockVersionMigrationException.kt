@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.repository
+package com.ritense.buildingblock.exception
 
-import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import org.springframework.data.jpa.repository.JpaRepository
-import java.util.UUID
+import org.zalando.problem.AbstractThrowableProblem
+import org.zalando.problem.Exceptional
+import org.zalando.problem.Status
 
-interface BuildingBlockProcessLinkRepository : JpaRepository<BuildingBlockProcessLink, UUID> {
-    fun findAllByBuildingBlockDefinitionIdKey(buildingBlockDefinitionKey: String): List<BuildingBlockProcessLink>
+class BuildingBlockVersionMigrationException(message: String) :
+    AbstractThrowableProblem(
+        null,
+        message,
+        Status.BAD_REQUEST
+    ) {
+    override fun getCause(): Exceptional? {
+        return null
+    }
 }
