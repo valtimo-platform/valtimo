@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Supporting process start forms open in the side panel on every tab
 
-New enhancement explanation.
+A supporting process whose start form is configured to open in the side panel now opens there on every case tab, including tabs that do not show a task list. Previously the form did not open on those tabs.
 
 ---
 

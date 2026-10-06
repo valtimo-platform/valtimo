@@ -482,15 +482,12 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   public startItem(item: StartableItem): void {
-    this.showTaskList$.pipe(take(1)).subscribe(showTaskList => {
-      this.supportingProcessStart.openModalForStartableItem(
-        item,
-        this.documentId,
-        this.caseDefinitionKey,
-        this.caseDefinitionVersionTag,
-        showTaskList
-      );
-    });
+    this.supportingProcessStart.openModalForStartableItem(
+      item,
+      this.documentId,
+      this.caseDefinitionKey,
+      this.caseDefinitionVersionTag
+    );
   }
 
   public onStartFormPanelClose(): void {
