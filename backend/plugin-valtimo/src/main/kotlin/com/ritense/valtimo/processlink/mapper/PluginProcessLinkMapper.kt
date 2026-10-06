@@ -27,6 +27,9 @@ import com.ritense.plugin.domain.PluginActionResultMapping
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.BUILDING_BLOCK
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.FIXED
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.VALUE_RESOLVER
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
@@ -36,6 +39,7 @@ import com.ritense.plugin.web.rest.request.PluginProcessLinkCreateDto
 import com.ritense.plugin.web.rest.request.PluginProcessLinkUpdateDto
 import com.ritense.plugin.web.rest.result.PluginProcessLinkResultDto
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
+import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.mapper.remapConfigurationIdField
@@ -47,6 +51,8 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.event.CaseConfigurationIssueDetectedEvent
 import com.ritense.valtimo.contract.event.CaseConfigurationIssueResolvedEvent
+import com.ritense.valueresolver.ValueResolverService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -58,6 +64,7 @@ class PluginProcessLinkMapper(
     private val pluginConfigurationRepository: PluginConfigurationRepository,
     private val pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
     private val pluginDefinitionRepository: PluginDefinitionRepository,
+    private val valueResolverService: ValueResolverService? = null,
 ) : ProcessLinkMapper {
 
     init {
@@ -86,22 +93,25 @@ class PluginProcessLinkMapper(
                 pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
                 actionProperties = processLink.actionProperties,
                 actionResultMappings = processLink.actionResultMappings,
+                pluginConfigurationIdExpression = processLink.pluginConfigurationIdExpression,
             )
         }
     }
 
     override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto, blueprintId: BlueprintId?): PluginProcessLinkCreateDto {
         deployDto as PluginProcessLinkDeployDto
+        val reference = toDeployedReference(deployDto, logIssues = true)
         return PluginProcessLinkCreateDto(
             processDefinitionId = deployDto.processDefinitionId,
             activityId = deployDto.activityId,
-            pluginConfigurationId = deployDto.pluginConfigurationId,
+            pluginConfigurationId = reference.configurationId,
             pluginActionDefinitionKey = deployDto.pluginActionDefinitionKey,
             actionProperties = deployDto.actionProperties,
             activityType = deployDto.activityType,
-            referenceType = deployDto.referenceType,
+            referenceType = reference.type,
             pluginDefinitionKey = deployDto.pluginDefinitionKey,
             actionResultMappings = deployDto.actionResultMappings,
+            pluginConfigurationIdExpression = reference.expression,
         )
     }
 
@@ -111,14 +121,17 @@ class PluginProcessLinkMapper(
         blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as PluginProcessLinkDeployDto
+        // Issues were already logged by toProcessLinkCreateRequestDto, which every importer calls first
+        val reference = toDeployedReference(deployDto, logIssues = false)
         return PluginProcessLinkUpdateDto(
             id = existingProcessLinkId,
-            pluginConfigurationId = deployDto.pluginConfigurationId,
+            pluginConfigurationId = reference.configurationId,
             pluginActionDefinitionKey = deployDto.pluginActionDefinitionKey,
             actionProperties = deployDto.actionProperties,
-            referenceType = deployDto.referenceType,
+            referenceType = reference.type,
             pluginDefinitionKey = deployDto.pluginDefinitionKey,
             actionResultMappings = deployDto.actionResultMappings,
+            pluginConfigurationIdExpression = reference.expression,
         )
     }
 
@@ -140,6 +153,7 @@ class PluginProcessLinkMapper(
                 referenceType = processLink.pluginConfigurationReference.type,
                 pluginDefinitionKey = definitionKey,
                 actionResultMappings = processLink.actionResultMappings,
+                pluginConfigurationIdExpression = processLink.pluginConfigurationIdExpression,
             )
         }
     }
@@ -173,7 +187,8 @@ class PluginProcessLinkMapper(
         createRequestDto as PluginProcessLinkCreateDto
         val reference = createReference(createRequestDto.referenceType, createRequestDto.pluginDefinitionKey)
         val configurationId = createRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
-        validateReference(reference.type, configurationId)
+        val expression = createRequestDto.pluginConfigurationIdExpression
+        validateReference(reference.type, configurationId, expression)
         PluginActionResultMappingValidator.validate(createRequestDto.actionResultMappings)
         return PluginProcessLink(
             id = UUID.randomUUID(),
@@ -185,6 +200,7 @@ class PluginProcessLinkMapper(
             pluginActionDefinitionKey = createRequestDto.pluginActionDefinitionKey,
             actionProperties = createRequestDto.actionProperties,
             actionResultMappings = createRequestDto.actionResultMappings,
+            pluginConfigurationIdExpression = expression,
         )
     }
 
@@ -195,9 +211,17 @@ class PluginProcessLinkMapper(
     ): PluginProcessLink {
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             updateRequestDto as PluginProcessLinkUpdateDto
-            val reference = createReference(updateRequestDto.referenceType, updateRequestDto.pluginDefinitionKey)
+            processLinkToUpdate as PluginProcessLink
+            // The process-link editor cannot show an expression, so an update that omits it keeps the stored one
+            val keepsStoredExpression = updateRequestDto.referenceType == VALUE_RESOLVER &&
+                processLinkToUpdate.pluginConfigurationReference.type == VALUE_RESOLVER
+            val expression = updateRequestDto.pluginConfigurationIdExpression
+                ?: processLinkToUpdate.pluginConfigurationIdExpression.takeIf { keepsStoredExpression }
+            val definitionKey = updateRequestDto.pluginDefinitionKey
+                ?: processLinkToUpdate.pluginConfigurationReference.pluginDefinitionKey.takeIf { keepsStoredExpression }
+            val reference = createReference(updateRequestDto.referenceType, definitionKey)
             val configurationId = updateRequestDto.pluginConfigurationId?.let { PluginConfigurationId.existingId(it) }
-            validateReference(reference.type, configurationId)
+            validateReference(reference.type, configurationId, expression)
             PluginActionResultMappingValidator.validate(updateRequestDto.actionResultMappings)
             PluginProcessLink(
                 id = updateRequestDto.id,
@@ -209,6 +233,7 @@ class PluginProcessLinkMapper(
                 pluginActionDefinitionKey = updateRequestDto.pluginActionDefinitionKey,
                 actionProperties = updateRequestDto.actionProperties,
                 actionResultMappings = updateRequestDto.actionResultMappings,
+                pluginConfigurationIdExpression = expression,
             )
         }
     }
@@ -218,14 +243,20 @@ class PluginProcessLinkMapper(
         pluginDefinitionKey: String?
     ): PluginConfigurationReference {
         return when (type) {
-            PluginConfigurationReferenceType.FIXED -> PluginConfigurationReference(
+            FIXED -> PluginConfigurationReference(
                 type = type,
                 pluginDefinitionKey = pluginDefinitionKey,
             )
-            PluginConfigurationReferenceType.BUILDING_BLOCK -> PluginConfigurationReference(
+            BUILDING_BLOCK -> PluginConfigurationReference(
                 type = type,
                 pluginDefinitionKey = requireNotNull(pluginDefinitionKey) {
                     "pluginDefinitionKey is required when reference type is BUILDING_BLOCK"
+                }
+            )
+            VALUE_RESOLVER -> PluginConfigurationReference(
+                type = type,
+                pluginDefinitionKey = requireNotNull(pluginDefinitionKey?.takeIf { it.isNotBlank() }) {
+                    "pluginDefinitionKey is required when reference type is VALUE_RESOLVER"
                 }
             )
         }
@@ -256,17 +287,102 @@ class PluginProcessLinkMapper(
 
     private fun validateReference(
         type: PluginConfigurationReferenceType,
-        pluginConfigurationId: PluginConfigurationId?
+        pluginConfigurationId: PluginConfigurationId?,
+        pluginConfigurationIdExpression: String?,
     ) {
         when (type) {
-            PluginConfigurationReferenceType.FIXED -> {} // pluginConfigurationId may be null during import
-            PluginConfigurationReferenceType.BUILDING_BLOCK -> require(pluginConfigurationId == null) {
+            FIXED -> {} // pluginConfigurationId may be null during import
+            BUILDING_BLOCK -> require(pluginConfigurationId == null) {
                 "pluginConfigurationId must be empty when reference type is BUILDING_BLOCK"
+            }
+            VALUE_RESOLVER -> {
+                require(pluginConfigurationId == null) {
+                    "pluginConfigurationId must be empty when reference type is VALUE_RESOLVER"
+                }
+                require(!pluginConfigurationIdExpression.isNullOrBlank()) {
+                    "pluginConfigurationIdExpression is required when reference type is VALUE_RESOLVER"
+                }
+                require(isSupportedExpression(pluginConfigurationIdExpression)) {
+                    "pluginConfigurationIdExpression '$pluginConfigurationIdExpression' is not supported by any value resolver"
+                }
+            }
+        }
+        if (type != VALUE_RESOLVER) {
+            require(pluginConfigurationIdExpression == null) {
+                "pluginConfigurationIdExpression can only be set when reference type is VALUE_RESOLVER"
             }
         }
     }
 
+    private fun toDeployedReference(deployDto: PluginProcessLinkDeployDto, logIssues: Boolean): DeployedReference {
+        val activityId = deployDto.activityId
+        if (logIssues) {
+            findPlaceholderName(deployDto.pluginActionDefinitionKey)?.let { name ->
+                logger.error {
+                    "Plugin process link for activity '$activityId' of process definition '${deployDto.processDefinitionId}': " +
+                        "pluginActionDefinitionKey contains the unresolved placeholder '$name'. $PLACEHOLDER_HINT " +
+                        "The link is stored as written and will fail when the activity runs."
+                }
+            }
+        }
+
+        val expression = deployDto.pluginConfigurationIdExpression
+        if (deployDto.referenceType != VALUE_RESOLVER || expression == null) {
+            return DeployedReference(deployDto.referenceType, deployDto.pluginConfigurationId, expression)
+        }
+
+        val placeholderName = findPlaceholderName(expression)
+        if (placeholderName != null || !isSupportedExpression(expression)) {
+            if (logIssues) {
+                val problem = if (placeholderName != null) {
+                    "contains the unresolved placeholder '$placeholderName'. $PLACEHOLDER_HINT"
+                } else {
+                    "has the value '$expression', which is neither a plugin configuration id (UUID) nor a value " +
+                        "supported by a value resolver (such as 'pv:<variable>')."
+                }
+                logger.error {
+                    "Plugin process link for activity '$activityId' of process definition '${deployDto.processDefinitionId}': " +
+                        "pluginConfigurationId $problem The link is stored without a plugin configuration."
+                }
+            }
+            return DeployedReference(FIXED, null, null)
+        }
+
+        require(!deployDto.pluginDefinitionKey.isNullOrBlank()) {
+            "Plugin process link for activity '$activityId': pluginConfigurationId '$expression' is resolved per " +
+                "process instance and therefore requires pluginDefinitionKey. If pluginConfigurationId was written " +
+                "as an environment placeholder, '$expression' is the value it was replaced with."
+        }
+        if (logIssues && deployDto.activityType == ActivityTypeWithEventName.MESSAGE_START_EVENT_START) {
+            logger.warn {
+                "Plugin process link for activity '$activityId': pluginConfigurationId '$expression' is resolved per " +
+                    "process instance, so it cannot be used to decide which messages start this process."
+            }
+        }
+        return DeployedReference(VALUE_RESOLVER, null, expression)
+    }
+
+    private fun isSupportedExpression(expression: String): Boolean {
+        if (expression.indexOf(':') <= 0) {
+            return false
+        }
+        return valueResolverService?.supportsValue(expression) ?: true
+    }
+
+    private fun findPlaceholderName(value: String): String? =
+        PLACEHOLDER_PATTERN.find(value)?.groupValues?.get(1)?.substringBefore(':')
+
+    private data class DeployedReference(
+        val type: PluginConfigurationReferenceType,
+        val configurationId: UUID?,
+        val expression: String?,
+    )
+
     companion object {
         const val ISSUE_TYPE = "plugin-process-link"
+        private val logger = KotlinLogging.logger {}
+        private val PLACEHOLDER_PATTERN = Regex("""\$\{([^{}]+)}""")
+        private const val PLACEHOLDER_HINT = "Placeholders are only substituted during autodeployment, and only " +
+            "for property names matching valtimo.import.whitelistedPaths."
     }
 }

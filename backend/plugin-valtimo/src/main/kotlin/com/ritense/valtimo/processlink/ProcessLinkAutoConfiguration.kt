@@ -39,6 +39,7 @@ import com.ritense.valtimo.processlink.service.PluginProcessLinkServiceImpl
 import com.ritense.valtimo.processlink.service.PluginSupportedProcessLinksHandler
 import com.ritense.valtimo.processlink.web.rest.PluginProcessLinkResource
 import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valueresolver.ValueResolverService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationEventPublisher
@@ -150,12 +151,14 @@ class ProcessLinkAutoConfiguration {
         pluginConfigurationRepository: PluginConfigurationRepository,
         pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
         pluginDefinitionRepository: PluginDefinitionRepository,
+        valueResolverService: ValueResolverService,
     ): PluginProcessLinkMapper {
         return PluginProcessLinkMapper(
             objectMapper,
             pluginConfigurationRepository,
             pluginProcessLinkRepository,
             pluginDefinitionRepository,
+            valueResolverService,
         )
     }
 

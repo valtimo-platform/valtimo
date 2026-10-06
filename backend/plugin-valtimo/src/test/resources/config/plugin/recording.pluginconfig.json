@@ -1,0 +1,12 @@
+[
+    {
+        "id": "7b1c0a52-2a4e-4d0e-9a51-1f0e4d2c9a01",
+        "title": "Recording plugin A",
+        "pluginDefinitionKey": "recording-test-plugin"
+    },
+    {
+        "id": "7b1c0a52-2a4e-4d0e-9a51-1f0e4d2c9a02",
+        "title": "Recording plugin B",
+        "pluginDefinitionKey": "recording-test-plugin"
+    }
+]

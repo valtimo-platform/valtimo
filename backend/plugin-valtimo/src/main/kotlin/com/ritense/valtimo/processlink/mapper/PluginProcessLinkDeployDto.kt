@@ -16,11 +16,14 @@
 
 package com.ritense.valtimo.processlink.mapper
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.plugin.domain.PluginActionResultMapping
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.FIXED
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.VALUE_RESOLVER
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -37,7 +40,63 @@ class PluginProcessLinkDeployDto(
     val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
     val pluginDefinitionKey: String? = null,
     val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
+    val pluginConfigurationIdExpression: String? = null,
 ) : ProcessLinkDeployDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_PLUGIN
+
+    companion object {
+        // A pluginConfigurationId that is not a UUID, such as 'pv:configId', is read as pluginConfigurationIdExpression
+        @JvmStatic
+        @JsonCreator
+        fun fromJson(
+            processDefinitionId: String,
+            activityId: String,
+            activityType: ActivityTypeWithEventName,
+            pluginConfigurationId: String? = null,
+            pluginActionDefinitionKey: String,
+            actionProperties: ObjectNode? = JsonNodeFactory.instance.objectNode(),
+            referenceType: PluginConfigurationReferenceType? = null,
+            pluginDefinitionKey: String? = null,
+            actionResultMappings: List<PluginActionResultMapping>? = null,
+            pluginConfigurationIdExpression: String? = null,
+        ): PluginProcessLinkDeployDto {
+            val configurationIdText = pluginConfigurationId?.trim()?.takeIf { it.isNotEmpty() }
+            val configurationId = configurationIdText?.let(::parseUuid)
+            val textExpression = configurationIdText?.takeIf { configurationId == null }
+            val explicitExpression = pluginConfigurationIdExpression?.trim()?.takeIf { it.isNotEmpty() }
+            require(textExpression == null || explicitExpression == null || textExpression == explicitExpression) {
+                "Process link for activity '$activityId' has both pluginConfigurationId '$textExpression' and " +
+                    "pluginConfigurationIdExpression '$explicitExpression'. Use only one of them."
+            }
+            val expression = explicitExpression ?: textExpression
+            val type = when {
+                expression != null && (referenceType == null || referenceType == FIXED) -> VALUE_RESOLVER
+                else -> referenceType ?: FIXED
+            }
+            return PluginProcessLinkDeployDto(
+                processDefinitionId = processDefinitionId,
+                activityId = activityId,
+                activityType = activityType,
+                pluginConfigurationId = configurationId,
+                pluginActionDefinitionKey = pluginActionDefinitionKey,
+                actionProperties = actionProperties,
+                referenceType = type,
+                pluginDefinitionKey = pluginDefinitionKey,
+                actionResultMappings = actionResultMappings ?: emptyList(),
+                pluginConfigurationIdExpression = expression,
+            )
+        }
+
+        private fun parseUuid(value: String): UUID? {
+            if (value.length != 36) {
+                return null
+            }
+            return try {
+                UUID.fromString(value)
+            } catch (_: IllegalArgumentException) {
+                null
+            }
+        }
+    }
 }

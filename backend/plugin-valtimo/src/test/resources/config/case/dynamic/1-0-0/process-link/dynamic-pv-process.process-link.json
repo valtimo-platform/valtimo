@@ -1,0 +1,11 @@
+[
+    {
+        "activityId": "RecordTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "pv:pluginConfigId",
+        "pluginActionDefinitionKey": "record",
+        "actionProperties": {},
+        "pluginDefinitionKey": "recording-test-plugin"
+    }
+]

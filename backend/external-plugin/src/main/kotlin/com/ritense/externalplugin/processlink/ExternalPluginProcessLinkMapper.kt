@@ -34,6 +34,7 @@ import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.domain.PluginConfigurationReferenceType.BUILDING_BLOCK
 import com.ritense.plugin.domain.PluginConfigurationReferenceType.FIXED
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.VALUE_RESOLVER
 import com.ritense.plugin.service.PluginActionResultMappingValidator
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.domain.ProcessLink
@@ -279,6 +280,7 @@ class ExternalPluginProcessLinkMapper(
                     "pluginVersion is required when reference type is BUILDING_BLOCK"
                 },
             )
+            VALUE_RESOLVER -> throw IllegalArgumentException(VALUE_RESOLVER_NOT_SUPPORTED)
         }
     }
 
@@ -291,6 +293,7 @@ class ExternalPluginProcessLinkMapper(
             BUILDING_BLOCK -> require(externalPluginConfigurationId == null) {
                 "externalPluginConfigurationId must be empty when reference type is BUILDING_BLOCK"
             }
+            VALUE_RESOLVER -> throw IllegalArgumentException(VALUE_RESOLVER_NOT_SUPPORTED)
         }
     }
 
@@ -370,6 +373,8 @@ class ExternalPluginProcessLinkMapper(
                     definitionRepository.findByPluginIdAndVersion(pluginId, version)
                 }
             }
+
+            VALUE_RESOLVER -> null
         }
     }
 
@@ -393,6 +398,8 @@ class ExternalPluginProcessLinkMapper(
 
     companion object {
         const val ISSUE_TYPE = "external-plugin-process-link"
+        private const val VALUE_RESOLVER_NOT_SUPPORTED =
+            "Reference type VALUE_RESOLVER is not supported for external plugin process links"
         private val logger = KotlinLogging.logger {}
     }
 }

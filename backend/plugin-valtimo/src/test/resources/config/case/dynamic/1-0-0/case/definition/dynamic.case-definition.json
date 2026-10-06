@@ -1,0 +1,8 @@
+{
+    "key": "dynamic",
+    "name": "Dynamic plugin configuration",
+    "versionTag": "1.0.0",
+    "final": false,
+    "canHaveAssignee": true,
+    "autoAssignTasks": true
+}

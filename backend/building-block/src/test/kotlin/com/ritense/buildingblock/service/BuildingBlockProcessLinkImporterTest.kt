@@ -176,6 +176,52 @@ class BuildingBlockProcessLinkImporterTest {
         assertThat(createDto.pluginConfigurationId).isNull()
     }
 
+    @Test
+    fun `should remove a value-resolver pluginConfigurationId and expression from a building block link`() {
+        val buildingBlockId = BuildingBlockDefinitionId.of("my-bb", "1.2.0")
+        whenever(
+            buildingBlockDefinitionProcessDefinitionService.getProcessDefinitionsForBuildingBlock(
+                eq(buildingBlockId.key),
+                eq(buildingBlockId.versionTag.toString())
+            )
+        ).thenReturn(
+            listOf(BuildingBlockProcessDefinitionDto(id = "pd-123", key = "my-process", name = "My Process", versionTag = "1", main = true))
+        )
+        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository)
+        whenever(processLinkService.getProcessLinkMapper(eq(PROCESS_LINK_TYPE_PLUGIN))).thenReturn(pluginMapper)
+        doReturn(mock<ProcessLink>()).whenever(processLinkService).createProcessLink(any(), anyOrNull())
+
+        val json = """
+          [
+            {
+              "activityId": "Task_1",
+              "activityType": "bpmn:ServiceTask:start",
+              "processLinkType": "plugin",
+              "pluginConfigurationId": "pv:pluginConfigId",
+              "pluginConfigurationIdExpression": "pv:pluginConfigId",
+              "pluginDefinitionKey": "some-plugin",
+              "pluginActionDefinitionKey": "get-besluittype"
+            }
+          ]
+        """.trimIndent()
+
+        importer.import(
+            ImportRequest(
+                fileName = VALID_FILENAME,
+                content = json.toByteArray(),
+                buildingBlockDefinitionId = buildingBlockId,
+                caseDefinitionId = null
+            )
+        )
+
+        val createCaptor = argumentCaptor<ProcessLinkCreateRequestDto>()
+        verify(processLinkService).createProcessLink(createCaptor.capture(), isNotNull())
+        val createDto = createCaptor.firstValue as PluginProcessLinkCreateDto
+        assertThat(createDto.referenceType).isEqualTo(PluginConfigurationReferenceType.BUILDING_BLOCK)
+        assertThat(createDto.pluginConfigurationId).isNull()
+        assertThat(createDto.pluginConfigurationIdExpression).isNull()
+    }
+
     private companion object {
         const val VALID_FILENAME = "/process-link/my-process.process-link.json"
     }

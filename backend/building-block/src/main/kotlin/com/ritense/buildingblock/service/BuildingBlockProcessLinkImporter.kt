@@ -77,6 +77,7 @@ class BuildingBlockProcessLinkImporter(
                     TextNode.valueOf(PluginConfigurationReferenceType.BUILDING_BLOCK.name)
                 )
                 node.remove("pluginConfigurationId")
+                node.remove("pluginConfigurationIdExpression")
 
                 node.set<ObjectNode>("processDefinitionId", TextNode.valueOf(processDefinitionId))
 

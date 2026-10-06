@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_dynamic-pv-process" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="dynamic-pv-process" name="dynamic-pv-process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent" />
+    <bpmn:sequenceFlow id="Flow_0" sourceRef="StartEvent" targetRef="RecordTask" />
+    <bpmn:serviceTask id="RecordTask" name="RecordTask" camunda:expression="${null}" />
+    <bpmn:sequenceFlow id="Flow_end" sourceRef="RecordTask" targetRef="EndEvent" />
+    <bpmn:endEvent id="EndEvent" />
+  </bpmn:process>
+</bpmn:definitions>
