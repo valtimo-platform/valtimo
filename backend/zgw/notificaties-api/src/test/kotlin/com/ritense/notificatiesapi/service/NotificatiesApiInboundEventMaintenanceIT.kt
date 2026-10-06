@@ -45,6 +45,7 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import javax.sql.DataSource
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -68,6 +69,9 @@ class NotificatiesApiInboundEventMaintenanceIT : BaseIntegrationTest() {
 
     @Autowired
     lateinit var entityManager: EntityManager
+
+    @Autowired
+    lateinit var dataSource: DataSource
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
@@ -101,7 +105,11 @@ class NotificatiesApiInboundEventMaintenanceIT : BaseIntegrationTest() {
         val otherInstanceDeleted = CountDownLatch(1)
         val otherInstance = CompletableFuture.runAsync {
             transactionTemplate.executeWithoutResult {
-                jdbcTemplate.update("DELETE FROM notificaties_api_inbound_event WHERE id = ?", takenByOtherInstance)
+                val deleted = jdbcTemplate.update(
+                    "DELETE FROM notificaties_api_inbound_event WHERE idempotence_key = ?",
+                    idempotenceKeyOf(takenByOtherInstance)
+                )
+                assertEquals(1, deleted)
                 otherInstanceDeleted.countDown()
                 Thread.sleep(OTHER_INSTANCE_COMMIT_DELAY.toMillis())
             }
@@ -114,6 +122,31 @@ class NotificatiesApiInboundEventMaintenanceIT : BaseIntegrationTest() {
         assertEquals(PROCESSED, inboundEventRepository.findById(received).orElseThrow().status)
         assertFalse(inboundEventRepository.existsById(takenByOtherInstance))
         assertFalse(inboundEventRepository.existsById(untouchedExpired))
+        assertEquals(emptyList(), errorsLogged())
+    }
+
+    @Test
+    fun `cleanup does not wait for an event another instance is still processing`() {
+        val expiredProcessed = save(PROCESSED, receivedAt = expiredReceivedAt())
+        val inProgress = save(RECEIVED, receivedAt = LocalDateTime.now().minusMinutes(1))
+
+        dataSource.connection.use { otherInstance ->
+            otherInstance.autoCommit = false
+            otherInstance.prepareStatement(
+                "UPDATE notificaties_api_inbound_event SET status = 'PROCESSED', next_due_at = NULL WHERE idempotence_key = ?"
+            ).use {
+                it.setString(1, idempotenceKeyOf(inProgress))
+                assertEquals(1, it.executeUpdate())
+            }
+            try {
+                CompletableFuture.runAsync { processingService.processBatch() }.get(10, TimeUnit.SECONDS)
+            } finally {
+                otherInstance.commit()
+            }
+        }
+
+        assertFalse(inboundEventRepository.existsById(expiredProcessed))
+        assertEquals(PROCESSED, inboundEventRepository.findById(inProgress).orElseThrow().status)
         assertEquals(emptyList(), errorsLogged())
     }
 
@@ -160,6 +193,9 @@ class NotificatiesApiInboundEventMaintenanceIT : BaseIntegrationTest() {
         assertEquals(0, managedAfterDelete)
         ids.forEach { assertFalse(inboundEventRepository.existsById(it)) }
     }
+
+    private fun idempotenceKeyOf(id: UUID): String =
+        inboundEventRepository.findById(id).orElseThrow().idempotenceKey
 
     private fun expiredReceivedAt(): LocalDateTime =
         LocalDateTime.now().minus(processingProperties.retentionPeriod).minusDays(1)

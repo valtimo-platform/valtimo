@@ -21,7 +21,6 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.stereotype.Repository
@@ -45,11 +44,4 @@ interface NotificatiesApiInboundEventRepository :
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select event from NotificatiesApiInboundEvent event where event.id = :id")
     fun findByIdForUpdate(id: UUID): NotificatiesApiInboundEvent?
-
-    @Modifying
-    @Query("delete from NotificatiesApiInboundEvent event where event.status = :status and event.receivedAt < :receivedAt")
-    fun deleteByStatusAndReceivedAtBefore(
-        status: NotificatiesApiInboundEventStatus,
-        receivedAt: LocalDateTime
-    ): Long
 }

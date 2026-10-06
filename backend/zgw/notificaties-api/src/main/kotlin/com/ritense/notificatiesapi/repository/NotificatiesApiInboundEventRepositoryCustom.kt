@@ -17,8 +17,12 @@
 package com.ritense.notificatiesapi.repository
 
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEvent
+import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
+import java.time.LocalDateTime
 
 interface NotificatiesApiInboundEventRepositoryCustom {
 
     fun fetchNextBatchForProcessing(limit: Int): List<NotificatiesApiInboundEvent>
+
+    fun deleteByStatusAndReceivedAtBefore(status: NotificatiesApiInboundEventStatus, receivedAt: LocalDateTime): Long
 }
