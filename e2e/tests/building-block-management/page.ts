@@ -27,13 +27,66 @@ import {
   BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS,
+  BUILDING_BLOCK_VERSION_MIGRATION_SOURCE_OPTION_TEST_ID_PREFIX,
+  BUILDING_BLOCK_VERSION_MIGRATION_TARGET_OPTION_TEST_ID_PREFIX,
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete, apiGet} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/api.utils';
 import {BUILDING_BLOCK_TEXTS} from './building-block-config';
 
 const ARCHIVES_DIR = 'building-block-archives';
 const BUILDING_BLOCK_API_URL = '/api/management/v1/building-block';
+const VERSION_MIGRATION_API_URL = `${BUILDING_BLOCK_API_URL}/version-migration`;
+const PROCESS_LINK_API_URL = '/api/v1/process-link';
+
+/**
+ * A main process whose only step is a call activity that starts building block
+ * `childKey` at `childVersionTag`. The diagram section is required: the backend
+ * drops every element without a shape before validating, so a BPMN without DI
+ * is rejected as having no start event.
+ */
+function callActivityBpmn(
+  processKey: string,
+  activityId: string,
+  childKey: string,
+  childVersionTag: string
+): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="${processKey}" name="${processKey}" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1"><bpmn:outgoing>Flow_1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:callActivity id="${activityId}" calledElement="${childKey}" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:${childKey}:${childVersionTag}">
+      <bpmn:extensionElements><camunda:in businessKey="#{buildingBlockDocumentId}" /></bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent_1"><bpmn:incoming>Flow_2</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="${activityId}" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="${activityId}" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="${processKey}">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1"><dc:Bounds x="173" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="${activityId}_di" bpmnElement="${activityId}"><dc:Bounds x="260" y="80" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1"><dc:Bounds x="412" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1"><di:waypoint x="209" y="120" /><di:waypoint x="260" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2"><di:waypoint x="360" y="120" /><di:waypoint x="412" y="120" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+}
+
+export interface BuildingBlockVersion {
+  versionTag: string;
+  final: boolean;
+}
+
+export interface BuildingBlockProcessLink {
+  activityId: string;
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+}
 
 function escapeForRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -149,6 +202,51 @@ export class BuildingBlockManagementPage {
 
   get uploadFinishButton() {
     return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS.finishButton);
+  }
+
+  // ─── Version migration wizard locators ────────────────────────────
+
+  get migrateButton() {
+    return this.carbonList.toolbar.getByTestId(
+      BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.migrateButton
+    );
+  }
+
+  private migrationTestId(id: keyof typeof BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS) {
+    return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS[id]);
+  }
+
+  get migrationChains() {
+    return this.migrationTestId('chain');
+  }
+
+  /** A chain of the chains step, identified by a container key on its path. */
+  migrationChain(containerKey: string) {
+    return this.migrationChains.filter({hasText: containerKey});
+  }
+
+  get migrationDifferences() {
+    return this.migrationTestId('differences');
+  }
+
+  get migrationReview() {
+    return this.migrationTestId('review');
+  }
+
+  get migrationResult() {
+    return this.migrationTestId('result');
+  }
+
+  get migrationDraftLinks() {
+    return this.migrationTestId('draftLink');
+  }
+
+  get migrationNextButton() {
+    return this.migrationTestId('nextButton');
+  }
+
+  get migrationExecuteButton() {
+    return this.migrationTestId('executeButton');
   }
 
   // ─── Navigation ───────────────────────────────────────────────────
@@ -340,6 +438,174 @@ export class BuildingBlockManagementPage {
     await expect(this.uploadFinishButton).toBeVisible();
     await expect(this.uploadCancelButton).not.toBeVisible();
     await expect(this.uploadBackButton).not.toBeVisible();
+  }
+
+  // ─── Version migration wizard ─────────────────────────────────────
+
+  async openMigrationWizard() {
+    await this.goToBuildingBlockManagement();
+    await this.migrateButton.click();
+    await expect(this.migrationTestId('sourceDropdown')).toBeVisible();
+  }
+
+  /** Step 1: the source is one of the building block versions that are in use. */
+  async selectMigrationSource(key: string, versionTag: string) {
+    await this.migrationTestId('sourceDropdown').locator('button').first().click();
+    await this.page
+      .getByTestId(
+        `${BUILDING_BLOCK_VERSION_MIGRATION_SOURCE_OPTION_TEST_ID_PREFIX}${key}-${versionTag}`
+      )
+      .click();
+    await this.goToNextMigrationStep();
+  }
+
+  /** Step 2: another version of the same key. */
+  async selectMigrationTarget(versionTag: string) {
+    await this.migrationTestId('targetDropdown').locator('button').first().click();
+    await this.page
+      .getByTestId(`${BUILDING_BLOCK_VERSION_MIGRATION_TARGET_OPTION_TEST_ID_PREFIX}${versionTag}`)
+      .click();
+    await this.goToNextMigrationStep();
+    await expect(this.migrationChains.first()).toBeVisible();
+  }
+
+  migrationChainCheckbox(containerKey: string) {
+    return this.migrationChain(containerKey).locator('input[type="checkbox"]');
+  }
+
+  /**
+   * Opt a chain in. As with the upload modal, the inner label has to be clicked —
+   * a click on the `cds-checkbox` host does not emit Carbon's `checkedChange`.
+   */
+  async selectMigrationChain(containerKey: string) {
+    await this.migrationChain(containerKey)
+      .getByTestId(BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS.chainCheckbox)
+      .locator('label')
+      .click();
+    await expect(this.migrationChainCheckbox(containerKey)).toBeChecked();
+  }
+
+  async goToNextMigrationStep() {
+    await expect(this.migrationNextButton).toBeEnabled();
+    await this.migrationNextButton.click();
+  }
+
+  async confirmMigration() {
+    await this.migrationTestId('confirmCheckbox').locator('label').click();
+  }
+
+  async executeMigration(): Promise<Response> {
+    await expect(this.migrationExecuteButton).toBeEnabled();
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().endsWith(`${VERSION_MIGRATION_API_URL}/execute`) &&
+          res.request().method() === 'POST'
+      ),
+      this.migrationExecuteButton.click(),
+    ]);
+    return response;
+  }
+
+  // ─── Version migration fixture API ────────────────────────────────
+
+  async createBuildingBlockViaApi(key: string, versionTag: string) {
+    await apiPost(BUILDING_BLOCK_API_URL, {
+      key,
+      name: key,
+      versionTag,
+      description: 'Building block created by the e2e building block version migration test.',
+    });
+  }
+
+  async finalizeBuildingBlockViaApi(key: string, versionTag: string) {
+    await apiPost(`${BUILDING_BLOCK_API_URL}/${key}/version/${versionTag}/finalize`, {});
+  }
+
+  async createBuildingBlockDraftViaApi(key: string, basedOnVersionTag: string, versionTag: string) {
+    await apiPost(`${BUILDING_BLOCK_API_URL}/${key}/version/${basedOnVersionTag}/draft`, {
+      versionTag,
+    });
+  }
+
+  private async getMainProcessDefinitionIdViaApi(key: string, versionTag: string) {
+    const processes = await apiGet<{id: string; main: boolean}[]>(
+      `${BUILDING_BLOCK_API_URL}/${key}/version/${versionTag}/process-definition`
+    );
+    const main = processes.find(process => process.main);
+    expect(main, `${key} ${versionTag} has a main process definition`).toBeDefined();
+    return main!.id;
+  }
+
+  /**
+   * Redeploy the main process of a draft building block version with one call
+   * activity that is linked to building block `childKey` at `childVersionTag`.
+   * Goes through the multipart endpoint the process editor uses, so the process
+   * link is stored exactly as when it is made in the UI.
+   */
+  async linkMainProcessToBuildingBlockViaApi(
+    key: string,
+    versionTag: string,
+    activityId: string,
+    childKey: string,
+    childVersionTag: string
+  ) {
+    // The api utils have no multipart helper. Their GET above refreshes an expired
+    // token into PLAYWRIGHT_BEARER_TOKEN, so the PUT below reuses a valid one.
+    const processDefinitionId = await this.getMainProcessDefinitionIdViaApi(key, versionTag);
+    const processLinks = [
+      {
+        processLinkType: 'building-block',
+        processDefinitionId,
+        activityId,
+        activityType: 'bpmn:CallActivity:start',
+        buildingBlockDefinitionKey: childKey,
+        buildingBlockDefinitionVersionTag: childVersionTag,
+        pluginConfigurationMappings: {},
+        inputMappings: [],
+        outputMappings: [],
+      },
+    ];
+    const response = await this.request.put(
+      `${BUILDING_BLOCK_API_URL}/${key}/version/${versionTag}/process-definition/${processDefinitionId}`,
+      {
+        headers: {Authorization: `Bearer ${process.env.PLAYWRIGHT_BEARER_TOKEN}`},
+        multipart: {
+          file: {
+            name: `${key}.bpmn`,
+            mimeType: 'text/xml',
+            buffer: Buffer.from(callActivityBpmn(key, activityId, childKey, childVersionTag)),
+          },
+          processLinks: {
+            name: 'processLinks.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(JSON.stringify(processLinks)),
+          },
+          main: {name: 'main.json', mimeType: 'application/json', buffer: Buffer.from('true')},
+        },
+      }
+    );
+    expect(response.status(), await response.text()).toBe(204);
+  }
+
+  /** The building block process link on `activityId` in the main process of a version. */
+  async getBuildingBlockProcessLinkViaApi(
+    key: string,
+    versionTag: string,
+    activityId: string
+  ): Promise<BuildingBlockProcessLink | undefined> {
+    const processDefinitionId = await this.getMainProcessDefinitionIdViaApi(key, versionTag);
+    const links = await apiGet<BuildingBlockProcessLink[]>(
+      `${PROCESS_LINK_API_URL}?processDefinitionId=${encodeURIComponent(processDefinitionId)}`
+    );
+    return links.find(link => link.activityId === activityId);
+  }
+
+  async getBuildingBlockVersionsViaApi(key: string): Promise<BuildingBlockVersion[]> {
+    const page = await apiGet<{content: BuildingBlockVersion[]}>(
+      `${BUILDING_BLOCK_API_URL}/${key}/version?all=true`
+    );
+    return page.content;
   }
 
   // ─── API helpers ──────────────────────────────────────────────────

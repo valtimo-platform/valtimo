@@ -58,6 +58,29 @@ export const NEW_BUILDING_BLOCK = {
   description: 'Building block created by the e2e building block management test.',
 } as const;
 
+/**
+ * The reproduction of gzac-issues#841. Every key gets a unique suffix in the
+ * spec, because finalized versions cannot be changed or removed again.
+ *
+ * - `sendEmail` exists as 1.0.0 and 1.0.1, both final; 1.0.0 is in use.
+ * - `draftContainer` 1.0.0 is a draft whose call activity links `sendEmail` 1.0.0.
+ * - `finalizedChain`: `outer` 1.0.0 (final) calls `notify` 1.0.0 (final), which
+ *   calls `sendEmail` 1.0.0.
+ */
+export const VERSION_MIGRATION = {
+  sendEmailKeyPrefix: 'e2e-bb-send-email',
+  draftContainerKeyPrefix: 'e2e-bb-migration-draft',
+  notifyKeyPrefix: 'e2e-bb-migration-notify',
+  outerKeyPrefix: 'e2e-bb-migration-outer',
+  sourceVersionTag: '1.0.0',
+  targetVersionTag: '1.0.1',
+  containerVersionTag: '1.0.0',
+  /** Patch differs between source and target, so new drafts bump the patch. */
+  newDraftVersionTag: '1.0.1',
+  sendEmailActivityId: 'callSendEmail',
+  notifyActivityId: 'callNotify',
+} as const;
+
 export const BUILDING_BLOCK_TEXTS = {
   listColumns: ['Name', 'Key', 'Version'],
   duplicateKeyError: 'This key is already in use. Please change to a unique key.',
