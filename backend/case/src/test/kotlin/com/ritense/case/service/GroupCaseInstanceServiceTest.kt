@@ -193,6 +193,45 @@ class GroupCaseInstanceServiceTest {
     }
 
     @Test
+    fun `should return each status key once when members share a status`() {
+        val groupKey = "test_group"
+        val statuses = listOf(
+            InternalCaseStatus(
+                id = InternalCaseStatusId("case-a", "open"),
+                title = "Open A",
+                visibleInCaseListByDefault = true,
+                order = 0,
+                retentionPeriodInDays = -1,
+                color = InternalCaseStatusColor.GRAY
+            ),
+            InternalCaseStatus(
+                id = InternalCaseStatusId("case-b", "open"),
+                title = "Open B",
+                visibleInCaseListByDefault = true,
+                order = 0,
+                retentionPeriodInDays = -1,
+                color = InternalCaseStatusColor.BLUE
+            ),
+            InternalCaseStatus(
+                id = InternalCaseStatusId("case-b", "closed"),
+                title = "Closed",
+                visibleInCaseListByDefault = false,
+                order = 1,
+                retentionPeriodInDays = -1,
+                color = InternalCaseStatusColor.GRAY
+            )
+        )
+
+        mockAccessibleGroup(groupKey)
+        whenever(internalCaseStatusService.getInternalCaseStatusesByKeys(listOf("test-case"))).thenReturn(statuses)
+
+        val result = service.getInternalCaseStatuses(groupKey)
+
+        assertEquals(listOf("open", "closed"), result.map { it.id.key })
+        assertEquals("Open A", result[0].title)
+    }
+
+    @Test
     fun `should return empty list when no accessible members for internal statuses`() {
         val groupKey = "test_group"
 

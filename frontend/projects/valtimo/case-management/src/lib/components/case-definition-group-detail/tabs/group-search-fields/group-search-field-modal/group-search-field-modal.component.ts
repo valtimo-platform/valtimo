@@ -51,6 +51,10 @@ import {
 import {GlobalNotificationService} from '@valtimo/shared';
 import {CaseDefinitionGroupManagementService} from '../../../../../services';
 import {GroupMember, GroupPathMapping} from '../../../../../models';
+import {
+  CASE_DEFINITION_GROUP_ITEM_MODAL_TEST_IDS,
+  CASE_DEFINITION_GROUP_SEARCH_FIELD_MODAL_TEST_IDS,
+} from '../../../../../constants';
 
 const DATA_TYPES = ['text', 'number', 'date', 'datetime', 'boolean'];
 const FIELD_TYPES = ['single', 'range', 'multi-select-dropdown', 'single-select-dropdown'];
@@ -91,6 +95,9 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
   @Input() public field: GroupSearchField | null = null;
   @Input() public usedKeys: string[] = [];
   @Output() public closeModal = new EventEmitter<boolean>();
+
+  protected readonly searchFieldTestIds = CASE_DEFINITION_GROUP_SEARCH_FIELD_MODAL_TEST_IDS;
+  protected readonly testIds = CASE_DEFINITION_GROUP_ITEM_MODAL_TEST_IDS;
 
   public get modalMode(): ModalMode {
     return this.field ? 'edit' : 'add';

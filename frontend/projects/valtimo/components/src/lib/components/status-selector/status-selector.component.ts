@@ -30,6 +30,7 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 import {CASES_WITHOUT_STATUS_KEY} from '../../constants';
+import {STATUS_SELECTOR_TEST_IDS} from '../../constants/components.test-ids';
 
 @Component({
   selector: 'valtimo-status-selector',
@@ -61,6 +62,8 @@ export class StatusSelectorComponent {
   private readonly _selectedStatusKeys$ = new BehaviorSubject<string[]>([]);
 
   public readonly CASES_WITHOUT_STATUS_KEY = CASES_WITHOUT_STATUS_KEY;
+
+  protected readonly testIds = STATUS_SELECTOR_TEST_IDS;
 
   public readonly listItems$: Observable<ListItem[]> = combineLatest([
     this._statuses$,

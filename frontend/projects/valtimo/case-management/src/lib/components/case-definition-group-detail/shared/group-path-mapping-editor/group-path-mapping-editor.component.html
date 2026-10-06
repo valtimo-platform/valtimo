@@ -16,12 +16,20 @@
 
 <div class="valtimo-path-mapping-editor">
   <div class="valtimo-path-mapping-editor__grid">
-    <div *ngFor="let mapping of editableMappings" class="valtimo-path-mapping-editor__item">
+    <div
+      *ngFor="let mapping of editableMappings"
+      class="valtimo-path-mapping-editor__item"
+      [attr.data-test-id]="testIds.mapping"
+    >
       <p class="valtimo-path-mapping-editor__case-name">{{ mapping.caseDefinitionKey }}</p>
       <p class="valtimo-path-mapping-editor__path">{{ mapping.path || '—' }}</p>
     </div>
 
-    <div *ngIf="editableMappings.length === 0" class="valtimo-path-mapping-editor__empty">
+    <div
+      *ngIf="editableMappings.length === 0"
+      class="valtimo-path-mapping-editor__empty"
+      [attr.data-test-id]="testIds.noMembers"
+    >
       {{ 'caseManagement.groups.pathMappings.noMembers' | translate }}
     </div>
   </div>

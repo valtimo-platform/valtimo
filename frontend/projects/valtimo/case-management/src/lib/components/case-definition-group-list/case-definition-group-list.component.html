@@ -29,7 +29,7 @@
 </valtimo-carbon-list>
 
 <ng-template #toolbarContent>
-  <button cdsButton="primary" (click)="showCreateModal()">
+  <button cdsButton="primary" (click)="showCreateModal()" [attr.data-test-id]="testIds.createButton">
     {{ 'interface.create' | translate }}
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>

@@ -43,7 +43,9 @@
         <span class="case-management-color__preview-label">
           {{ 'caseManagement.tabs.generalTab.color.selected' | translate }}
         </span>
-        <span class="case-management-color__preview-hex">{{ obs.selectedColor | uppercase }}</span>
+        <span class="case-management-color__preview-hex" [attr.data-test-id]="testIds.previewHex">{{
+          obs.selectedColor | uppercase
+        }}</span>
       </div>
     </div>
 
@@ -57,6 +59,8 @@
         [style.box-shadow]="obs.selectedColor?.toLowerCase() === color.toLowerCase() ? '0 0 0 2px white, 0 0 0 4px ' + color : 'none'"
         [disabled]="isReadOnly"
         (click)="onSwatchClick(color)"
+        [attr.aria-label]="color | uppercase"
+        [attr.aria-pressed]="obs.selectedColor?.toLowerCase() === color.toLowerCase()"
         [attr.data-test-id]="testIds.swatch"
       ></button>
     </div>

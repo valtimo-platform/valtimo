@@ -119,7 +119,9 @@ class GroupCaseInstanceService(
 
     fun getInternalCaseStatuses(groupKey: String): List<InternalCaseStatus> {
         val accessibleMemberKeys = getAccessibleMembers(groupKey).map { it.id.caseDefinitionKey }
+        // Filter matches by key across members
         return internalCaseStatusService.getInternalCaseStatusesByKeys(accessibleMemberKeys)
+            .distinctBy { it.id.key }
     }
 
     fun search(

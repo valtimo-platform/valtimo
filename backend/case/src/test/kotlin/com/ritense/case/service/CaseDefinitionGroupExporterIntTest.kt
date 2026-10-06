@@ -141,7 +141,7 @@ class CaseDefinitionGroupExporterIntTest @Autowired constructor(
 
         assertThat(exportResult.exportFiles).hasSize(1)
         val exportFile = exportResult.exportFiles.first()
-        assertThat(exportFile.path).isEqualTo("config/case-group/$testGroupKey/$testGroupKey.case-group.json")
+        assertThat(exportFile.path).isEqualTo("config/global/case-group/$testGroupKey/$testGroupKey.case-group.json")
     }
 
     @Test

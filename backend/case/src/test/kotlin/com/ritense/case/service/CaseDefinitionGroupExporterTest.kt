@@ -71,7 +71,7 @@ class CaseDefinitionGroupExporterTest {
         val result = exporter.export(CaseDefinitionGroupExportRequest("test-group"))
 
         assertThat(result.exportFiles).hasSize(1)
-        assertThat(result.exportFiles.first().path).isEqualTo("config/case-group/test-group/test-group.case-group.json")
+        assertThat(result.exportFiles.first().path).isEqualTo("config/global/case-group/test-group/test-group.case-group.json")
         assertThat(result.relatedRequests).isEmpty()
     }
 

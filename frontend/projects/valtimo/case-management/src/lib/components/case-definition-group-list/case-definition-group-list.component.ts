@@ -23,6 +23,7 @@ import {IconModule, IconService, ButtonModule} from 'carbon-components-angular';
 import {BehaviorSubject, map} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../services';
 import {CaseDefinitionGroupResponse} from '../../models';
+import {CASE_DEFINITION_GROUP_LIST_TEST_IDS} from '../../constants';
 import {CaseDefinitionGroupCreateModalComponent} from '../case-definition-group-create-modal/case-definition-group-create-modal.component';
 import {CommonModule} from '@angular/common';
 
@@ -47,6 +48,8 @@ interface GroupListItem {
   ],
 })
 export class CaseDefinitionGroupListComponent implements OnInit {
+  protected readonly testIds = CASE_DEFINITION_GROUP_LIST_TEST_IDS;
+
   public readonly fields: ColumnConfig[] = [
     {key: 'title', label: 'caseManagement.listColumns.name'},
     {key: 'key', label: 'caseManagement.listColumns.key'},

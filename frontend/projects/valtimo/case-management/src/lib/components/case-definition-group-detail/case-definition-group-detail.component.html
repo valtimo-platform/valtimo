@@ -18,7 +18,7 @@
   *ngIf="{currentTab: currentTab$ | async, group: group$ | async} as obs"
   class="case-definition-group-detail-container"
 >
-  <cds-tabs class="case-management-tabs" type="inline">
+  <cds-tabs class="case-management-tabs" type="inline" [attr.data-test-id]="testIds.tabs">
     <cds-tab
       class="no-padding-left-right main-content"
       [id]="GroupTabEnum.CONFIG"

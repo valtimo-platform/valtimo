@@ -14,11 +14,12 @@
   ~ limitations under the License.
   -->
 
-<cds-tabs [cacheActive]="true" type="contained">
+<cds-tabs [cacheActive]="true" type="contained" [attr.data-test-id]="testIds.tabs">
   <cds-tab
     [active]="$activeTab() === CASE_MANAGEMENT_LIST_TAB.CASES"
     [heading]="'caseManagement.listTabs.cases' | translate"
     (selected)="onTabSelected(CASE_MANAGEMENT_LIST_TAB.CASES)"
+    [attr.data-test-id]="testIds.casesTabPanel"
   >
     <valtimo-carbon-list
       [items]="caseListItems$ | async"
@@ -43,6 +44,7 @@
     [active]="$activeTab() === CASE_MANAGEMENT_LIST_TAB.GROUPS"
     [heading]="'caseManagement.listTabs.caseGroups' | translate"
     (selected)="onTabSelected(CASE_MANAGEMENT_LIST_TAB.GROUPS)"
+    [attr.data-test-id]="testIds.caseGroupsTabPanel"
   >
     <valtimo-case-definition-group-list></valtimo-case-definition-group-list>
   </cds-tab>

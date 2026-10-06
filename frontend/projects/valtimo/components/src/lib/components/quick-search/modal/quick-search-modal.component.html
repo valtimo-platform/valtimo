@@ -21,6 +21,7 @@
   size="sm"
   showFooter="true"
   (close)="closeModal()"
+  [attr.data-test-id]="testIds.modal"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>{{ 'quickSearch.addItem' | translate }}</h3>
@@ -37,10 +38,15 @@
         maxlength="50"
         [placeholder]="'interface.title' | translate"
         [attr.modal-primary-focus]="true"
+        [attr.data-test-id]="testIds.titleInput"
       />
     </cds-text-label>
 
-    <div *ngIf="$showDuplicateError()" class="valtimo-qiuck-search-modal__error">
+    <div
+      *ngIf="$showDuplicateError()"
+      class="valtimo-qiuck-search-modal__error"
+      [attr.data-test-id]="testIds.duplicateError"
+    >
       <svg cdsIcon="warning--filled" size="16"></svg>
 
       {{ 'quickSearch.duplicateError' | translate }}
@@ -57,11 +63,16 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">
+    <button cdsButton="ghost" (click)="closeModal()" [attr.data-test-id]="testIds.cancelButton">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="closeModal(true)">
+    <button
+      [disabled]="formGroup.invalid"
+      cdsButton="primary"
+      (click)="closeModal(true)"
+      [attr.data-test-id]="testIds.saveButton"
+    >
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

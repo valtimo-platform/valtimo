@@ -4,13 +4,13 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 25        | 20         | 4              |
-| Admin Features (ROLE_ADMIN) | 15       | 365       | 352        | 7              |
-| **Total**                   | **20**   | **390**   | **372**    | **11**         |
+| User Features (ROLE_USER)   | 5        | 34        | 28         | 4              |
+| Admin Features (ROLE_ADMIN) | 15       | 382       | 369        | 7              |
+| **Total**                   | **20**   | **416**   | **397**    | **11**         |
 
-**Coverage:** `372 / 390` — `95.4%`
+**Coverage:** `397 / 416` — `95.4%`
 
-> Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (1).
+> Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (2).
 
 ---
 
@@ -44,14 +44,23 @@
 
 ### Feature 2 — Cases (User)
 
-| #   | Function                           | Test Scenarios                                        | Coverage | Notes                                           |
-|:----|:-----------------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
-| 2.1 | View cases overview per definition | Display cases overview for specific definition        |    ✅    | user-cases.spec.ts                              |
-| 2.2 | View case details (tabs)           | Navigate and view case details with tabs              |    ✅    | user-cases.spec.ts                              |
-| 2.3 | Search/filter cases                | Search cases by criteria · Filter cases using filters |    ✅    | user-cases.spec.ts                              |
-| 2.4 | View case documents                | Display list of case documents                        |    ✅    | user-cases.spec.ts                              |
-| 2.5 | View case progress/status          | View current case progress and status                 |    ✅    | user-cases.spec.ts                              |
-| 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ✅    | user-cases.spec.ts                              |
+| #      | Function                                 | Test Scenarios                                        | Coverage | Notes                                           |
+|:-------|:-----------------------------------------|:------------------------------------------------------|:--------:|:------------------------------------------------|
+| 2.1    | View cases overview per definition       | Display cases overview for specific definition        |    ✅    | user-cases.spec.ts                              |
+| 2.2    | View case details (tabs)                 | Navigate and view case details with tabs              |    ✅    | user-cases.spec.ts                              |
+| 2.3    | Search/filter cases                      | Search cases by criteria · Filter cases using filters |    ✅    | user-cases.spec.ts                              |
+| 2.4    | View case documents                      | Display list of case documents                        |    ✅    | user-cases.spec.ts                              |
+| 2.5    | View case progress/status                | View current case progress and status                 |    ✅    | user-cases.spec.ts                              |
+| 2.6    | Execute tasks within case                | Execute task from case detail view                    |    ✅    | user-cases.spec.ts                              |
+| 2.7    | Cases overview                           | Sections + counts · search by group title / case type name · empty states · links · pin info dismissal |    ✅    | cases-overview.spec.ts                           |
+| 2.8    | Pin and unpin case groups and case types | Pin/unpin with toast · pinned first · failed pin rolls back · API 409/404 |    ✅    | cases-overview.spec.ts                           |
+| 2.9    | Pinned items in the sidebar              | Placeholder · Cases title opens overview · chevron toggles · alphabetical · highlight + auto-expand on Cases routes · deleted group disappears |    ✅    | cases-overview.spec.ts                           |
+| 2.10   | Group case list columns and toolbar      | Group title · configured columns, no assignee column · assignee tabs · no start/export · rows from every member |    ✅    | group-case-list.spec.ts                          |
+| 2.11   | Group case list sorting                  | Default sort from column · header flips order · document-path columns not sortable |    ✅    | group-case-list.spec.ts                          |
+| 2.12   | Group case list search and quick search  | Field mapped for one member · save/reopen/delete quick search · no matches |    ✅    | group-case-list.spec.ts                          |
+| 2.13   | Group case list navigation and settings  | Row opens case in its own definition · page size remembered per group  |    ✅    | group-case-list.spec.ts |
+| 2.14   | Group status filter across members       | Shared status offered once · deselecting hides cases                   |    ✅    | group-case-list.spec.ts                          |
+| 2.15   | Group case list edge cases               | Group without columns renders · unknown group returns 404              |    ⏳    | group-case-list.spec.ts — 404 fixme: needs BE fix |
 
 ---
 
@@ -104,6 +113,7 @@
 | 6.3 | Set auto-assign tasks toggle   | Enable/disable auto-assign tasks to case handler |    ✅    | case-details-management.spec.ts                 |
 | 6.4 | Set external start form toggle | Enable/disable external start form               |    ✅    | case-details-management.spec.ts                 |
 | 6.5 | Enter external start form URL  | Configure external start form URL                |    ✅    | case-details-management.spec.ts                 |
+| 6.112 | Set case color                 | Swatch saves color · survives reload · read-only on final version |    ✅    | case-details-management.spec.ts                 |
 
 #### 6B · Processes
 
@@ -301,6 +311,37 @@
 | 6.109 | View keywords   | View keywords   |    ✅    | case-details-management-zgw-keywords.spec.ts    |
 | 6.110 | Add keyword     | Add keyword     |    ✅    | case-details-management-zgw-keywords.spec.ts    |
 | 6.111 | Search keywords | Search keywords |    ✅    | case-details-management-zgw-keywords.spec.ts    |
+
+#### 6T · Case Groups
+
+| #     | Function                                 | Test Scenarios                                                         | Coverage | Notes                                            |
+|:------|:-----------------------------------------|:-----------------------------------------------------------------------|:--------:|:-------------------------------------------------|
+| 6.113 | Case groups tab                          | Switch tabs (?tab=groups) · direct link selects tab                    |    ✅    | case-management-groups.spec.ts                   |
+| 6.114 | Create case group                        | Create from modal · suffixed key on duplicate title · empty / whitespace name · cancel |    ✅    | case-management-groups.spec.ts                   |
+| 6.115 | Group detail and edit                    | Row opens Config · root redirect · tabs · breadcrumb · edit title/description |    ✅    | case-management-groups.spec.ts                   |
+| 6.116 | Manage group members                     | Empty state · add two members · select hides members · search · remove |    ✅    | case-management-groups.spec.ts                   |
+| 6.117 | Set group color                          | Swatch saves color · survives reload · replace                         |    ✅    | case-management-groups.spec.ts                   |
+| 6.118 | Import / export case group (API)         | Export zip path · import restores · idempotent · invalid file 400      |    ✅    | case-management-groups.spec.ts (API only, no UI) |
+
+#### 6U · Case Groups — List Columns
+
+| #     | Function                                 | Test Scenarios                                                         | Coverage | Notes                                            |
+|:------|:-----------------------------------------|:-----------------------------------------------------------------------|:--------:|:-------------------------------------------------|
+| 6.119 | View list columns                        | Empty state                                                            |    ✅    | case-management-group-list-columns.spec.ts       |
+| 6.120 | Add list column                          | Per-case paths · sortable rule + default sort · empty/duplicate key · mixed paths · one default sort · cancel · API 400 |    ✅    | case-management-group-list-columns.spec.ts       |
+| 6.121 | Column display types                     | Options · tags forces sorting off · enum/boolean mapping               |    ✅    | case-management-group-list-columns.spec.ts       |
+| 6.122 | Per-case path filtering                  | Show only empty · search case types · no matches                       |    ✅    | case-management-group-list-columns.spec.ts       |
+| 6.123 | Inspect and edit list columns            | Expand paths · edit with read-only key · toolbar search                |    ✅    | case-management-group-list-columns.spec.ts       |
+| 6.124 | Reorder and delete list columns          | Drag saves order · delete without confirmation                         |    ✅    | case-management-group-list-columns.spec.ts       |
+
+#### 6V · Case Groups — Search Fields
+
+| #     | Function                                 | Test Scenarios                                                         | Coverage | Notes                                            |
+|:------|:-----------------------------------------|:-----------------------------------------------------------------------|:--------:|:-------------------------------------------------|
+| 6.125 | View search fields                       | Empty state                                                            |    ✅    | case-management-group-search-fields.spec.ts      |
+| 6.126 | Add search field                         | Text/like + date range · required types · duplicate key · cancel       |    ✅    | case-management-group-search-fields.spec.ts      |
+| 6.127 | Search field conditional inputs          | Type options · match type only for single text · dropdown data provider |    ✅    | case-management-group-search-fields.spec.ts      |
+| 6.128 | Manage search fields                     | Expand paths · edit · search · drag · delete                           |    ✅    | case-management-group-search-fields.spec.ts      |
 
 ---
 
@@ -764,9 +805,9 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   390   |
-| ✅ Covered by Playwright |   372   |
+| Total Functions          |   416   |
+| ✅ Covered by Playwright |   397   |
 | ❌ Not covered           |   11    |
-| ⏳ In progress           |    1    |
+| ⏳ In progress           |    2    |
 | `N/A` Not applicable     |    6    |
 | **Coverage %**           | **95.4%** |

@@ -20,6 +20,7 @@
   valtimoCdsModal
   class="valtimo-group-create"
   (close)="onCloseModal()"
+  [attr.data-test-id]="testIds.modal"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
@@ -46,6 +47,7 @@
         cdsText
         placeholder="{{ 'caseManagement.groups.createModal.namePlaceholder' | translate }}"
         [attr.modal-primary-focus]="true"
+        [attr.data-test-id]="testIds.titleInput"
       />
     </cds-label>
 
@@ -56,16 +58,26 @@
         formControlName="description"
         cdsText
         placeholder="{{ 'caseManagement.groups.createModal.descriptionPlaceholder' | translate }}"
+        [attr.data-test-id]="testIds.descriptionInput"
       />
     </cds-label>
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCloseModal()">
+    <button
+      cdsButton="secondary"
+      (click)="onCloseModal()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.invalid"
+      (click)="onCloseModal(true)"
+      [attr.data-test-id]="testIds.submitButton"
+    >
       {{ (isEditMode ? 'interface.save' : 'interface.create') | translate }}
     </button>
   </cds-modal-footer>

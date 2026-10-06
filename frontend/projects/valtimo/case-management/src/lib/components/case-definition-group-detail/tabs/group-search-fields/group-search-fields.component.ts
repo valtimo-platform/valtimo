@@ -35,6 +35,7 @@ import {
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
 import {GroupPathMapping} from '../../../../models';
+import {CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS} from '../../../../constants';
 import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
 import {GroupSearchFieldModalComponent} from './group-search-field-modal/group-search-field-modal.component';
 import {GroupPathMappingEditorComponent} from '../../shared/group-path-mapping-editor/group-path-mapping-editor.component';
@@ -64,6 +65,8 @@ interface SearchFieldWithMappings extends GroupSearchField {
   ],
 })
 export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
+  protected readonly testIds = CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS;
+
   public readonly searchControl = new FormControl('');
 
   private readonly _subscriptions = new Subscription();

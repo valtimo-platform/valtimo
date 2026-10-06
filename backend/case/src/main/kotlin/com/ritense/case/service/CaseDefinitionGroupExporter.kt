@@ -55,6 +55,6 @@ class CaseDefinitionGroupExporter(
     }
 
     companion object {
-        private const val PATH = "config/case-group/%s/%s.case-group.json"
+        private const val PATH = "config/global/case-group/%s/%s.case-group.json"
     }
 }

@@ -27,10 +27,11 @@
         <cds-table-toolbar-search
           [expandable]="false"
           [formControl]="searchControl"
+          [attr.data-test-id]="testIds.search"
           placeholder="{{ 'caseManagement.groups.listColumns.searchPlaceholder' | translate }}"
         ></cds-table-toolbar-search>
 
-        <button cdsButton="primary" (click)="showAddModal()">
+        <button cdsButton="primary" (click)="showAddModal()" [attr.data-test-id]="testIds.addButton">
           {{ 'interface.add' | translate }}
           <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
         </button>
@@ -52,9 +53,9 @@
 
       <tbody cdsTableBody cdkDropList (cdkDropListDropped)="onDropColumn($event)">
         <ng-container *ngFor="let column of obs.columns">
-          <tr cdkDrag class="valtimo-group-list-columns__row">
+          <tr cdkDrag class="valtimo-group-list-columns__row" [attr.data-test-id]="testIds.row">
             <td class="valtimo-group-list-columns__cell--narrow">
-              <div cdkDragHandle class="valtimo-group-list-columns__drag-handle">
+              <div cdkDragHandle class="valtimo-group-list-columns__drag-handle" [attr.data-test-id]="testIds.dragHandle">
                 <svg cdsIcon="draggable" size="16"></svg>
               </div>
             </td>
@@ -63,6 +64,9 @@
               <button
                 type="button"
                 class="valtimo-group-list-columns__expand-btn"
+                [attr.aria-expanded]="!!column.expanded"
+                [attr.aria-label]="(column.expanded ? 'interface.collapse' : 'interface.expand') | translate"
+                [attr.data-test-id]="testIds.expandButton"
                 (click)="toggleExpand(column)"
               >
                 <svg
@@ -80,20 +84,35 @@
 
             <td class="valtimo-group-list-columns__cell--narrow">
               <v-overflow-menu [portalToBody]="true" placement="bottom-end">
-                <v-overflow-menu-trigger overflowTrigger></v-overflow-menu-trigger>
+                <v-overflow-menu-trigger
+                  overflowTrigger
+                  [label]="'interface.options' | translate"
+                  [attr.data-test-id]="testIds.overflowMenu"
+                ></v-overflow-menu-trigger>
 
-                <v-overflow-menu-option (selected)="showEditModal(column)">
+                <v-overflow-menu-option
+                  (selected)="showEditModal(column)"
+                  [attr.data-test-id]="testIds.editOption"
+                >
                   {{ 'interface.edit' | translate }}
                 </v-overflow-menu-option>
 
-                <v-overflow-menu-option type="danger" (selected)="deleteColumn(column)">
+                <v-overflow-menu-option
+                  type="danger"
+                  (selected)="deleteColumn(column)"
+                  [attr.data-test-id]="testIds.deleteOption"
+                >
                   {{ 'interface.delete' | translate }}
                 </v-overflow-menu-option>
               </v-overflow-menu>
             </td>
           </tr>
 
-          <tr *ngIf="column.expanded" class="valtimo-group-list-columns__expanded-row">
+          <tr
+            *ngIf="column.expanded"
+            class="valtimo-group-list-columns__expanded-row"
+            [attr.data-test-id]="testIds.expandedRow"
+          >
             <td colspan="7">
               <valtimo-group-path-mapping-editor
                 [groupKey]="obs.group?.key"
@@ -106,7 +125,11 @@
           </tr>
         </ng-container>
 
-        <tr *ngIf="obs.columns?.length === 0" class="valtimo-group-list-columns__empty-row">
+        <tr
+          *ngIf="obs.columns?.length === 0"
+          class="valtimo-group-list-columns__empty-row"
+          [attr.data-test-id]="testIds.emptyRow"
+        >
           <td colspan="7">
             {{ 'caseManagement.groups.listColumns.noColumns' | translate }}
           </td>

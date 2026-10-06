@@ -17,6 +17,9 @@
 export const CASE_MANAGEMENT_LIST_TEST_IDS = {
   uploadButton: 'caseManagementUploadButton',
   createButton: 'caseManagementCreateButton',
+  tabs: 'caseManagementListTabs',
+  casesTabPanel: 'caseManagementListCasesTabPanel',
+  caseGroupsTabPanel: 'caseManagementListCaseGroupsTabPanel',
 } as const;
 
 export const CASE_MANAGEMENT_DETAIL_TEST_IDS = {
@@ -162,10 +165,87 @@ export const CASE_MANAGEMENT_DOCUMENT_TEST_IDS = {
 export const CASE_MANAGEMENT_COLOR_TEST_IDS = {
   panel: 'caseColorPanel',
   previewCircle: 'caseColorPreview',
+  previewHex: 'caseColorPreviewHex',
   swatch: 'caseColorSwatch',
   customPicker: 'caseColorCustomPicker',
 } as const;
 
+export const CASE_DEFINITION_GROUP_LIST_TEST_IDS = {
+  createButton: 'caseDefinitionGroupListCreateButton',
+} as const;
+
+export const CASE_DEFINITION_GROUP_MODAL_TEST_IDS = {
+  modal: 'caseDefinitionGroupModal',
+  titleInput: 'caseDefinitionGroupModalTitleInput',
+  descriptionInput: 'caseDefinitionGroupModalDescriptionInput',
+  cancelButton: 'caseDefinitionGroupModalCancelButton',
+  submitButton: 'caseDefinitionGroupModalSubmitButton',
+} as const;
+
 export const CASE_DEFINITION_GROUP_DETAIL_TEST_IDS = {
   editButton: 'caseDefinitionGroupEditButton',
+  tabs: 'caseDefinitionGroupTabs',
+} as const;
+
+export const CASE_DEFINITION_GROUP_CONFIG_TEST_IDS = {
+  memberSearch: 'caseDefinitionGroupMemberSearch',
+  addCaseButton: 'caseDefinitionGroupAddCaseButton',
+  addPanel: 'caseDefinitionGroupAddPanel',
+  caseSelect: 'caseDefinitionGroupCaseSelect',
+  addToGroupButton: 'caseDefinitionGroupAddToGroupButton',
+  memberRow: 'caseDefinitionGroupMemberRow',
+  memberOverflowMenu: 'caseDefinitionGroupMemberOverflowMenu',
+  removeMemberOption: 'caseDefinitionGroupRemoveMemberOption',
+  noMembers: 'caseDefinitionGroupNoMembers',
+  noSearchResults: 'caseDefinitionGroupNoMemberSearchResults',
+  memberCount: 'caseDefinitionGroupMemberCount',
+} as const;
+
+// Shared by the list columns and search fields tabs: one is rendered at a time.
+export const CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS = {
+  search: 'caseDefinitionGroupItemSearch',
+  addButton: 'caseDefinitionGroupItemAddButton',
+  row: 'caseDefinitionGroupItemRow',
+  dragHandle: 'caseDefinitionGroupItemDragHandle',
+  expandButton: 'caseDefinitionGroupItemExpandButton',
+  overflowMenu: 'caseDefinitionGroupItemOverflowMenu',
+  editOption: 'caseDefinitionGroupItemEditOption',
+  deleteOption: 'caseDefinitionGroupItemDeleteOption',
+  expandedRow: 'caseDefinitionGroupItemExpandedRow',
+  emptyRow: 'caseDefinitionGroupItemEmptyRow',
+} as const;
+
+export const CASE_DEFINITION_GROUP_PATH_MAPPING_TEST_IDS = {
+  mapping: 'caseDefinitionGroupPathMapping',
+  noMembers: 'caseDefinitionGroupPathMappingNoMembers',
+} as const;
+
+// Shared by the column and search field modals: one is open at a time.
+export const CASE_DEFINITION_GROUP_ITEM_MODAL_TEST_IDS = {
+  modal: 'caseDefinitionGroupItemModal',
+  titleInput: 'caseDefinitionGroupItemTitleInput',
+  pathSearch: 'caseDefinitionGroupItemPathSearch',
+  pathCounter: 'caseDefinitionGroupItemPathCounter',
+  showOnlyEmptyCheckbox: 'caseDefinitionGroupItemShowOnlyEmptyCheckbox',
+  pathRow: 'caseDefinitionGroupItemPathRow',
+  noMatchingCaseTypes: 'caseDefinitionGroupItemNoMatchingCaseTypes',
+  cancelButton: 'caseDefinitionGroupItemCancelButton',
+  saveButton: 'caseDefinitionGroupItemSaveButton',
+} as const;
+
+export const CASE_DEFINITION_GROUP_COLUMN_MODAL_TEST_IDS = {
+  displayTypeDropdown: 'caseDefinitionGroupColumnDisplayTypeDropdown',
+  dateFormatInput: 'caseDefinitionGroupColumnDateFormatInput',
+  tagAmountInput: 'caseDefinitionGroupColumnTagAmountInput',
+  enumInput: 'caseDefinitionGroupColumnEnumInput',
+  sortableCheckbox: 'group-column-sortable-checkbox',
+  sortableHint: 'group-column-sortable-hint',
+  defaultSortDropdown: 'group-column-default-sort-dropdown',
+} as const;
+
+export const CASE_DEFINITION_GROUP_SEARCH_FIELD_MODAL_TEST_IDS = {
+  dataTypeDropdown: 'caseDefinitionGroupSearchFieldDataTypeDropdown',
+  fieldTypeDropdown: 'caseDefinitionGroupSearchFieldFieldTypeDropdown',
+  matchTypeDropdown: 'caseDefinitionGroupSearchFieldMatchTypeDropdown',
+  dropdownDataProviderInput: 'caseDefinitionGroupSearchFieldDropdownDataProviderInput',
 } as const;

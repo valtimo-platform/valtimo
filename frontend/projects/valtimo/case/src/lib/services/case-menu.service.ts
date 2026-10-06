@@ -19,6 +19,7 @@ import {ConfigService, MenuItem} from '@valtimo/shared';
 import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {MenuService} from '@valtimo/components';
+import {CASE_MENU_TEST_IDS} from '../constants/case.test-ids';
 import {PinnedItem, PinnedItemType} from '../models';
 import {PinnedItemsService} from './pinned-items.service';
 
@@ -55,6 +56,7 @@ export class CaseMenuService {
         const index = this.getCasesIndex(menuItems);
 
         if (index >= 0) {
+          menuItems[index].testId = CASE_MENU_TEST_IDS.casesMenu;
           menuItems[index].titleLink = CASES_OVERVIEW_LINK;
           menuItems[index].sectionLinks = CASES_SECTION_LINKS;
           menuItems[index].children = this.toMenuItems(pinnedItems);
@@ -91,6 +93,7 @@ export class CaseMenuService {
         color: pinnedItem.color,
         sequence: index,
         show: true,
+        testId: CASE_MENU_TEST_IDS.pinnedItem,
       }));
 
     return menuItems.length > 0 ? menuItems : [this.getPlaceholderMenuItem()];
@@ -103,6 +106,7 @@ export class CaseMenuService {
       iconClass: 'icon mdi mdi-pin',
       sequence: 0,
       show: true,
+      testId: CASE_MENU_TEST_IDS.pinPlaceholder,
     };
   }
 }

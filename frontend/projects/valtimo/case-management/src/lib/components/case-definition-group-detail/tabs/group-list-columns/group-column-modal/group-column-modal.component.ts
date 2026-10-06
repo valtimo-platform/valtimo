@@ -52,7 +52,11 @@ import {
 } from 'carbon-components-angular';
 import {CaseDefinitionGroupManagementService} from '../../../../../services';
 import {GroupMember, GroupPathMapping} from '../../../../../models';
-import {canSortOnPaths} from '../../../../../constants';
+import {
+  canSortOnPaths,
+  CASE_DEFINITION_GROUP_COLUMN_MODAL_TEST_IDS,
+  CASE_DEFINITION_GROUP_ITEM_MODAL_TEST_IDS,
+} from '../../../../../constants';
 
 const DISPLAY_TYPE_ITEMS = [
   {content: 'text', value: 'text'},
@@ -105,6 +109,9 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
   @Input() public column: GroupListColumn | null = null;
   @Input() public usedKeys: string[] = [];
   @Output() public closeModal = new EventEmitter<boolean>();
+
+  protected readonly columnTestIds = CASE_DEFINITION_GROUP_COLUMN_MODAL_TEST_IDS;
+  protected readonly testIds = CASE_DEFINITION_GROUP_ITEM_MODAL_TEST_IDS;
 
   public get modalMode(): ModalMode {
     return this.column ? 'edit' : 'add';

@@ -41,6 +41,7 @@ interface MenuItem {
   show?: boolean;
   count$?: Observable<number>;
   includeFunction?: IncludeFunction | IncludeFunction[];
+  testId?: string;
 }
 
 export {MenuItem, IncludeFunction};

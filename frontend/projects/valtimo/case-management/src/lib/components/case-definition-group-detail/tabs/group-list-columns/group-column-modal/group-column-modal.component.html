@@ -14,7 +14,13 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="open" showFooter="true" valtimoCdsModal (close)="onCloseModal()">
+<cds-modal
+  [open]="open"
+  showFooter="true"
+  valtimoCdsModal
+  (close)="onCloseModal()"
+  [attr.data-test-id]="testIds.modal"
+>
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
       {{ (column ? 'caseManagement.groups.listColumns.editColumn' : 'caseManagement.groups.listColumns.addColumn') | translate }}
@@ -34,6 +40,7 @@
         cdsText
         [placeholder]="'caseManagement.groups.listColumns.columnTitlePlaceholder' | translate"
         [attr.modal-primary-focus]="true"
+        [attr.data-test-id]="testIds.titleInput"
       />
     </cds-label>
 
@@ -60,14 +67,16 @@
               [formControl]="pathSearchControl"
               [placeholder]="'caseManagement.groups.searchCaseTypes' | translate"
               class="valtimo-group-column-modal__path-search"
+              [attr.data-test-id]="testIds.pathSearch"
             />
 
-            <span class="valtimo-group-column-modal__path-counter">
+            <span class="valtimo-group-column-modal__path-counter" [attr.data-test-id]="testIds.pathCounter">
               {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
             </span>
 
             <cds-checkbox
               class="valtimo-group-column-modal__show-empty-checkbox"
+              [attr.data-test-id]="testIds.showOnlyEmptyCheckbox"
               [checked]="showOnlyEmpty"
               (checkedChange)="onShowOnlyEmptyChange($event)"
             >
@@ -78,6 +87,7 @@
           <div
             *ngFor="let item of displayedMembers; trackBy: trackByMember"
             class="valtimo-group-column-modal__path-row"
+            [attr.data-test-id]="testIds.pathRow"
           >
             <div class="valtimo-group-column-modal__case-label">
               <span class="valtimo-group-column-modal__case-name">{{ item.member.caseDefinitionName || item.member.caseDefinitionKey }}</span>
@@ -93,6 +103,7 @@
           <div
             *ngIf="displayedMembers.length === 0 && members.length > 0"
             class="valtimo-group-column-modal__no-results"
+            [attr.data-test-id]="testIds.noMatchingCaseTypes"
           >
             {{ 'caseManagement.groups.noMatchingCaseTypes' | translate }}
           </div>
@@ -105,7 +116,11 @@
         {{ 'caseManagement.groups.listColumns.displayType' | translate }}
         <v-tooltip-icon [tooltip]="'listColumn.displayTypeTooltip' | translate"></v-tooltip-icon>
       </span>
-      <cds-dropdown formControlName="displayType" [itemValueKey]="'value'">
+      <cds-dropdown
+        formControlName="displayType"
+        [itemValueKey]="'value'"
+        [attr.data-test-id]="columnTestIds.displayTypeDropdown"
+      >
         <cds-dropdown-list [items]="DISPLAY_TYPE_ITEMS"></cds-dropdown-list>
       </cds-dropdown>
     </div>
@@ -115,7 +130,7 @@
         {{ 'listColumn.dateFormat' | translate }}
         <v-tooltip-icon [tooltip]="'listColumn.dateFormatTooltip' | translate"></v-tooltip-icon>
       </span>
-      <input cdsText formControlName="dateFormat" />
+      <input cdsText formControlName="dateFormat" [attr.data-test-id]="columnTestIds.dateFormatInput" />
     </cds-label>
 
     <cds-label *ngIf="showTagAmount">
@@ -123,7 +138,12 @@
         {{ 'listColumn.tagAmount' | translate }}
         <v-tooltip-icon [tooltip]="'listColumn.tagAmountTooltip' | translate"></v-tooltip-icon>
       </span>
-      <cds-number formControlName="tagAmount" [min]="1" [step]="1"></cds-number>
+      <cds-number
+        formControlName="tagAmount"
+        [min]="1"
+        [step]="1"
+        [attr.data-test-id]="columnTestIds.tagAmountInput"
+      ></cds-number>
     </cds-label>
 
     <cds-label *ngIf="showEnum">
@@ -138,17 +158,18 @@
         [hideAddButton]="isYesNo"
         [hideDeleteButton]="isYesNo"
         [maxRows]="isYesNo ? 1 : null"
+        [attr.data-test-id]="columnTestIds.enumInput"
       ></valtimo-carbon-multi-input>
     </cds-label>
 
-    <cds-checkbox formControlName="sortable" data-test-id="group-column-sortable-checkbox">
+    <cds-checkbox formControlName="sortable" [attr.data-test-id]="columnTestIds.sortableCheckbox">
       {{ 'caseManagement.groups.listColumns.sortable' | translate }}
     </cds-checkbox>
 
     <p
       *ngIf="!canSort"
       class="cds--label valtimo-group-column-modal__sortable-hint"
-      data-test-id="group-column-sortable-hint"
+      [attr.data-test-id]="columnTestIds.sortableHint"
     >
       {{ 'caseManagement.groups.listColumns.sortableCaseFieldsOnly' | translate }}
     </p>
@@ -161,7 +182,7 @@
       <cds-dropdown
         formControlName="defaultSort"
         [itemValueKey]="'value'"
-        data-test-id="group-column-default-sort-dropdown"
+        [attr.data-test-id]="columnTestIds.defaultSortDropdown"
       >
         <cds-dropdown-list [items]="defaultSortItems"></cds-dropdown-list>
       </cds-dropdown>
@@ -169,11 +190,16 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCloseModal()">
+    <button cdsButton="secondary" (click)="onCloseModal()" [attr.data-test-id]="testIds.cancelButton">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.invalid"
+      (click)="onCloseModal(true)"
+      [attr.data-test-id]="testIds.saveButton"
+    >
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

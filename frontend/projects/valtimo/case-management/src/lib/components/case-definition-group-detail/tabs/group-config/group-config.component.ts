@@ -45,6 +45,10 @@ import {
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
 import {GroupMember} from '../../../../models';
+import {
+  CASE_DEFINITION_GROUP_CONFIG_TEST_IDS,
+  CASE_MANAGEMENT_COLOR_TEST_IDS,
+} from '../../../../constants';
 import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
 
 interface MemberListItem {
@@ -90,6 +94,9 @@ const COLOR_SWATCHES = [
   ],
 })
 export class GroupConfigComponent implements OnInit, OnDestroy {
+  protected readonly colorTestIds = CASE_MANAGEMENT_COLOR_TEST_IDS;
+  protected readonly testIds = CASE_DEFINITION_GROUP_CONFIG_TEST_IDS;
+
   public readonly COLOR_SWATCHES = COLOR_SWATCHES;
   public readonly colorPickerConfig: ColorPickerConfig = {
     swatches: [],

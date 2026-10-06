@@ -257,6 +257,6 @@ class CaseDefinitionGroupImporter(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        private val FILENAME_REGEX = """/case-group/[^/]+/[^/]+\.case-group\.json""".toRegex()
+        private val FILENAME_REGEX = """/global/case-group/[^/]+/[^/]+\.case-group\.json""".toRegex()
     }
 }

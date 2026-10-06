@@ -14,7 +14,13 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="open" showFooter="true" valtimoCdsModal (close)="onCloseModal()">
+<cds-modal
+  [open]="open"
+  showFooter="true"
+  valtimoCdsModal
+  (close)="onCloseModal()"
+  [attr.data-test-id]="testIds.modal"
+>
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
       {{ (field ? 'caseManagement.groups.searchFields.editField' : 'caseManagement.groups.searchFields.addField') | translate }}
@@ -34,6 +40,7 @@
         cdsText
         [placeholder]="'caseManagement.groups.searchFields.fieldTitlePlaceholder' | translate"
         [attr.modal-primary-focus]="true"
+        [attr.data-test-id]="testIds.titleInput"
       />
     </cds-label>
 
@@ -60,14 +67,16 @@
               [formControl]="pathSearchControl"
               [placeholder]="'caseManagement.groups.searchCaseTypes' | translate"
               class="valtimo-group-search-field-modal__path-search"
+              [attr.data-test-id]="testIds.pathSearch"
             />
 
-            <span class="valtimo-group-search-field-modal__path-counter">
+            <span class="valtimo-group-search-field-modal__path-counter" [attr.data-test-id]="testIds.pathCounter">
               {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
             </span>
 
             <cds-checkbox
               class="valtimo-group-search-field-modal__show-empty-checkbox"
+              [attr.data-test-id]="testIds.showOnlyEmptyCheckbox"
               [checked]="showOnlyEmpty"
               (checkedChange)="onShowOnlyEmptyChange($event)"
             >
@@ -78,6 +87,7 @@
           <div
             *ngFor="let item of displayedMembers; trackBy: trackByMember"
             class="valtimo-group-search-field-modal__path-row"
+            [attr.data-test-id]="testIds.pathRow"
           >
             <div class="valtimo-group-search-field-modal__case-label">
               <span class="valtimo-group-search-field-modal__case-name">{{ item.member.caseDefinitionName || item.member.caseDefinitionKey }}</span>
@@ -93,6 +103,7 @@
           <div
             *ngIf="displayedMembers.length === 0 && members.length > 0"
             class="valtimo-group-search-field-modal__no-results"
+            [attr.data-test-id]="testIds.noMatchingCaseTypes"
           >
             {{ 'caseManagement.groups.noMatchingCaseTypes' | translate }}
           </div>
@@ -105,7 +116,11 @@
         {{ 'caseManagement.groups.searchFields.dataType' | translate }}
         <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.dataTypeTooltip' | translate"></v-tooltip-icon>
       </span>
-      <cds-dropdown formControlName="dataType" [itemValueKey]="'value'">
+      <cds-dropdown
+        formControlName="dataType"
+        [itemValueKey]="'value'"
+        [attr.data-test-id]="searchFieldTestIds.dataTypeDropdown"
+      >
         <cds-dropdown-list [items]="DATA_TYPE_ITEMS"></cds-dropdown-list>
       </cds-dropdown>
     </div>
@@ -115,7 +130,11 @@
         {{ 'caseManagement.groups.searchFields.fieldType' | translate }}
         <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.fieldTypeTooltip' | translate"></v-tooltip-icon>
       </span>
-      <cds-dropdown formControlName="fieldType" [itemValueKey]="'value'">
+      <cds-dropdown
+        formControlName="fieldType"
+        [itemValueKey]="'value'"
+        [attr.data-test-id]="searchFieldTestIds.fieldTypeDropdown"
+      >
         <cds-dropdown-list [items]="FIELD_TYPE_ITEMS"></cds-dropdown-list>
       </cds-dropdown>
     </div>
@@ -125,7 +144,11 @@
         {{ 'caseManagement.groups.searchFields.matchType' | translate }}
         <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.matchTypeTooltip' | translate"></v-tooltip-icon>
       </span>
-      <cds-dropdown formControlName="matchType" [itemValueKey]="'value'">
+      <cds-dropdown
+        formControlName="matchType"
+        [itemValueKey]="'value'"
+        [attr.data-test-id]="searchFieldTestIds.matchTypeDropdown"
+      >
         <cds-dropdown-list [items]="MATCH_TYPE_ITEMS"></cds-dropdown-list>
       </cds-dropdown>
     </div>
@@ -140,16 +163,22 @@
         formControlName="dropdownDataProvider"
         cdsText
         [placeholder]="'caseManagement.groups.searchFields.dropdownDataProviderPlaceholder' | translate"
+        [attr.data-test-id]="searchFieldTestIds.dropdownDataProviderInput"
       />
     </cds-label>
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCloseModal()">
+    <button cdsButton="secondary" (click)="onCloseModal()" [attr.data-test-id]="testIds.cancelButton">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.invalid"
+      (click)="onCloseModal(true)"
+      [attr.data-test-id]="testIds.saveButton"
+    >
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

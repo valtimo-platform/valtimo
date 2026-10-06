@@ -30,6 +30,7 @@ import {ButtonModule, InputModule, ModalModule, LayerModule} from 'carbon-compon
 import {ValtimoCdsModalDirective, CARBON_CONSTANTS} from '@valtimo/components';
 import {CaseDefinitionGroupManagementService} from '../../services';
 import {CaseDefinitionGroupFormValue, CaseDefinitionGroupResponse} from '../../models';
+import {CASE_DEFINITION_GROUP_MODAL_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: true,
@@ -53,6 +54,8 @@ export class CaseDefinitionGroupCreateModalComponent implements OnChanges {
   @Input() group: Pick<CaseDefinitionGroupResponse, 'title' | 'description'> | null = null;
   @Output() closeEvent = new EventEmitter<boolean>();
   @Output() saveEvent = new EventEmitter<CaseDefinitionGroupFormValue>();
+
+  protected readonly testIds = CASE_DEFINITION_GROUP_MODAL_TEST_IDS;
 
   public formGroup: FormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),

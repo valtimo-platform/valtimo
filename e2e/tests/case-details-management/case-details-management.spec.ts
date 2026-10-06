@@ -306,6 +306,51 @@ test.describe('Case management', () => {
         });
       });
 
+      test.describe('6.112 — Case color', () => {
+        let originalColor: string | null | undefined;
+        let colorVersion: {key: string; versionTag: string} | undefined;
+
+        test.afterAll(async () => {
+          // Clearing a color is not supported; only restore one that existed
+          if (originalColor && colorVersion) {
+            await caseDetailsManagementPage.setCaseColorViaApi(originalColor, colorVersion);
+          }
+        });
+
+        test('the color panel is the first tile on the General tab', async () => {
+          const panel = caseDetailsManagementPage.colorPanel;
+          await expect(panel.panel).toBeVisible();
+          await expect(panel.swatches).toHaveCount(27);
+          await expect(panel.swatches.first()).toBeEnabled();
+        });
+
+        test('picking a swatch saves the case color and shows it as selected', async () => {
+          colorVersion ??= caseDetailsManagementPage.caseDefinitionFromUrl();
+          originalColor ??= await caseDetailsManagementPage.getCaseColorViaApi();
+          const panel = caseDetailsManagementPage.colorPanel;
+          const color = await panel.pickDifferentColor(originalColor);
+
+          const body = await caseDetailsManagementPage.pickCaseColor(color);
+
+          expect(String(body.color).toUpperCase()).toBe(color);
+          await panel.assertSelected(color);
+          expect((await caseDetailsManagementPage.getCaseColorViaApi())?.toUpperCase()).toBe(color);
+        });
+
+        test('the case color survives a reload', async () => {
+          const saved = (await caseDetailsManagementPage.getCaseColorViaApi()) as string;
+          await caseDetailsManagementPage.colorPanel.assertSelected(saved);
+        });
+
+        test('a final version shows the color read-only', async () => {
+          await ensureFinalVersionSelected(page);
+          const panel = caseDetailsManagementPage.colorPanel;
+          await expect(panel.panel).toBeVisible();
+          await expect(panel.swatches.first()).toBeDisabled();
+          await expect(panel.swatches.last()).toBeDisabled();
+        });
+      });
+
       test('Read-only states', async () => {
         //Act
         await ensureFinalVersionSelected(page);

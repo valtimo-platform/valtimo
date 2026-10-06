@@ -35,7 +35,7 @@ import {
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
 import {GroupPathMapping} from '../../../../models';
-import {canSortOnPaths} from '../../../../constants';
+import {canSortOnPaths, CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS} from '../../../../constants';
 import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
 import {GroupColumnModalComponent} from './group-column-modal/group-column-modal.component';
 import {GroupPathMappingEditorComponent} from '../../shared/group-path-mapping-editor/group-path-mapping-editor.component';
@@ -65,6 +65,8 @@ interface ColumnWithMappings extends GroupListColumn {
   ],
 })
 export class GroupListColumnsComponent implements OnInit, OnDestroy {
+  protected readonly testIds = CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS;
+
   public readonly searchControl = new FormControl('');
 
   private readonly _subscriptions = new Subscription();

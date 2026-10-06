@@ -16,7 +16,11 @@
 
 <ng-container *ngIf="{members: filteredMembers$ | async, allMembers: members$ | async, available: availableCaseDefinitions$ | async} as obs">
   <div class="valtimo-group-config">
-    <div class="valtimo-group-config__color-panel" [cdsLayer]="1">
+    <div
+      class="valtimo-group-config__color-panel"
+      [cdsLayer]="1"
+      [attr.data-test-id]="colorTestIds.panel"
+    >
       <h4>{{ 'caseManagement.groups.config.color' | translate }}</h4>
 
       <p class="valtimo-group-config__color-description">
@@ -27,12 +31,15 @@
         <div
           class="valtimo-group-config__preview-circle"
           [style.background-color]="selectedColor"
+          [attr.data-test-id]="colorTestIds.previewCircle"
         ></div>
         <div class="valtimo-group-config__preview-info">
           <span class="valtimo-group-config__preview-label">
             {{ 'caseManagement.groups.config.selected' | translate }}
           </span>
-          <span class="valtimo-group-config__preview-hex">{{ selectedColor | uppercase }}</span>
+          <span class="valtimo-group-config__preview-hex" [attr.data-test-id]="colorTestIds.previewHex">{{
+            selectedColor | uppercase
+          }}</span>
         </div>
       </div>
 
@@ -45,6 +52,9 @@
           [style.background-color]="color"
           [style.box-shadow]="selectedColor?.toLowerCase() === color.toLowerCase() ? '0 0 0 2px white, 0 0 0 4px ' + color : 'none'"
           (click)="onSwatchClick(color)"
+          [attr.aria-label]="color | uppercase"
+          [attr.aria-pressed]="selectedColor?.toLowerCase() === color.toLowerCase()"
+          [attr.data-test-id]="colorTestIds.swatch"
         ></button>
       </div>
 
@@ -57,6 +67,7 @@
           [config]="colorPickerConfig"
           [ngModel]="selectedColor"
           (colorChangeEvent)="onColorChange($event)"
+          [attr.data-test-id]="colorTestIds.customPicker"
         ></valtimo-color-picker>
       </div>
     </div>
@@ -68,6 +79,7 @@
             [expandable]="false"
             [formControl]="searchControl"
             placeholder="{{ 'caseManagement.groups.config.searchPlaceholder' | translate }}"
+            [attr.data-test-id]="testIds.memberSearch"
           ></cds-table-toolbar-search>
 
           <div class="valtimo-group-config__toolbar-spacer"></div>
@@ -77,12 +89,18 @@
               cdsButton="primary"
               (click)="toggleAddPanel()"
               class="valtimo-group-config__add-btn"
+              [attr.data-test-id]="testIds.addCaseButton"
             >
               {{ 'caseManagement.groups.config.addCase' | translate }}
               <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
             </button>
 
-            <div *ngIf="showAddPanel" class="valtimo-group-config__add-panel" [cdsLayer]="1">
+            <div
+              *ngIf="showAddPanel"
+              class="valtimo-group-config__add-panel"
+              [cdsLayer]="1"
+              [attr.data-test-id]="testIds.addPanel"
+            >
               <p class="valtimo-group-config__add-panel-title">
                 {{ 'caseManagement.groups.config.selectCase' | translate }}
               </p>
@@ -90,6 +108,7 @@
               <v-select
                 [items]="(availableCaseDefinitions$ | async) || []"
                 [placeholder]="'caseManagement.groups.config.selectCasePlaceholder' | translate"
+                [dataTestId]="testIds.caseSelect"
                 [dropUp]="false"
                 (selectedChange)="onCaseDefinitionSelected($event)"
               ></v-select>
@@ -99,6 +118,7 @@
                 [disabled]="!selectedCaseDefinitionKey"
                 (click)="addMember()"
                 class="valtimo-group-config__add-panel-btn"
+                [attr.data-test-id]="testIds.addToGroupButton"
               >
                 {{ 'caseManagement.groups.config.addToGroup' | translate }}
                 <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -120,17 +140,26 @@
           <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--actions"></div>
         </div>
 
-        <div *ngIf="obs.allMembers?.length === 0" class="valtimo-group-config__members-empty">
+        <div
+          *ngIf="obs.allMembers?.length === 0"
+          class="valtimo-group-config__members-empty"
+          [attr.data-test-id]="testIds.noMembers"
+        >
           {{ 'caseManagement.groups.config.noMembers' | translate }}
         </div>
 
-        <div *ngIf="obs.allMembers?.length > 0 && obs.members?.length === 0" class="valtimo-group-config__members-empty">
+        <div
+          *ngIf="obs.allMembers?.length > 0 && obs.members?.length === 0"
+          class="valtimo-group-config__members-empty"
+          [attr.data-test-id]="testIds.noSearchResults"
+        >
           {{ 'caseManagement.groups.config.noSearchResults' | translate }}
         </div>
 
         <div
           *ngFor="let member of obs.members"
           class="valtimo-group-config__table-row"
+          [attr.data-test-id]="testIds.memberRow"
         >
           <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--name">
             {{ member.name }}
@@ -142,10 +171,11 @@
             {{ member.version || '-' }}
           </div>
           <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--actions">
-            <cds-overflow-menu flip="true">
+            <cds-overflow-menu flip="true" [attr.data-test-id]="testIds.memberOverflowMenu">
               <cds-overflow-menu-option
                 type="danger"
                 (selected)="removeMember(member)"
+                [attr.data-test-id]="testIds.removeMemberOption"
               >
                 {{ 'caseManagement.groups.config.removeFromGroup' | translate }}
               </cds-overflow-menu-option>
@@ -153,7 +183,7 @@
           </div>
         </div>
 
-        <div class="valtimo-group-config__table-footer">
+        <div class="valtimo-group-config__table-footer" [attr.data-test-id]="testIds.memberCount">
           {{ 'caseManagement.groups.config.caseCount' | translate: {count: obs.allMembers?.length || 0} }}
         </div>
       </div>

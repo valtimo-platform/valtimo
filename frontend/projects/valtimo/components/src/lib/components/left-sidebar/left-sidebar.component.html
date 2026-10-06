@@ -65,10 +65,12 @@
             [ngClass]="{
               'menu-item--section-active': obs.activeParentSequence === '' + menuItem.sequence,
             }"
+            [submenuSectionActive]="obs.activeParentSequence === '' + menuItem.sequence"
             [title]="menuItem | menuItemTranslate | async"
             [valtimoSubmenuTitleClick]="!!menuItem.titleLink"
             (submenuTitleClickEvent)="onSubmenuTitleClick(menuItem, $event)"
             [attr.data-testid]="'sidenav-item-' + menuItem.title"
+            [attr.data-test-id]="menuItem.testId"
           >
             <ng-container
               *ngFor="let childMenuItem of menuItem.children; trackBy: trackByMenuItem"
@@ -82,6 +84,7 @@
               >
                 <cds-sidenav-item
                   [attr.data-testid]="'sidenav-item-' + childMenuItem?.title"
+                  [attr.data-test-id]="childMenuItem?.testId"
                   [title]="
                     menuItem.title === 'Cases' || menuItem.title === 'Dossiers'
                       ? (childMenuItem | menuItemTranslate | async)
@@ -135,6 +138,7 @@
     ><cds-sidenav-item
       *ngIf="!menuItem.children"
       [attr.data-testid]="'sidenav-item-' + menuItem.title"
+      [attr.data-test-id]="menuItem.testId"
       [ngClass]="{
         'menu-item--hidden': menuItem.includeFunction !== undefined,
         'menu-item--visible':

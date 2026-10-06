@@ -105,8 +105,9 @@ class CaseDefinitionGroupImporterTest {
 
     @Test
     fun `should support correct filename pattern`() {
-        assertThat(importer.supports("/case-group/my-group/my-group.case-group.json")).isTrue()
-        assertThat(importer.supports("/case-group/test/test.case-group.json")).isTrue()
+        assertThat(importer.supports("/global/case-group/my-group/my-group.case-group.json")).isTrue()
+        assertThat(importer.supports("/global/case-group/test/test.case-group.json")).isTrue()
+        assertThat(importer.supports("config/case-group/my-group/my-group.case-group.json")).isFalse()
         assertThat(importer.supports("/case/my-case/case.json")).isFalse()
         assertThat(importer.supports("/case-group.json")).isFalse()
     }
@@ -472,7 +473,7 @@ class CaseDefinitionGroupImporterTest {
     }
 
     private fun createImportRequest(json: String) = ImportRequest(
-        fileName = "/case-group/my-group/my-group.case-group.json",
+        fileName = "/global/case-group/my-group/my-group.case-group.json",
         content = json.toByteArray()
     )
 

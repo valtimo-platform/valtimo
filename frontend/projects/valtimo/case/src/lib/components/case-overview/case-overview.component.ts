@@ -22,6 +22,7 @@ import {RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CaseDefinition, CaseDefinitionGroup, DocumentService} from '@valtimo/document';
 import {GlobalNotificationService} from '@valtimo/shared';
+import {CASE_OVERVIEW_TEST_IDS} from '../../constants';
 import {PinnedItemType} from '../../models';
 import {PinnedItemsService} from '../../services';
 import {
@@ -54,6 +55,8 @@ const PIN_INFO_DISMISSED_KEY = 'caseOverviewPinInfoDismissed';
 })
 export class CaseOverviewComponent {
   public readonly PINNED_ITEM_TYPE = PinnedItemType;
+
+  protected readonly testIds = CASE_OVERVIEW_TEST_IDS;
 
   public readonly $searchQuery = signal<string>('');
   public readonly $pinInfoVisible = signal<boolean>(!this.isPinInfoDismissed());

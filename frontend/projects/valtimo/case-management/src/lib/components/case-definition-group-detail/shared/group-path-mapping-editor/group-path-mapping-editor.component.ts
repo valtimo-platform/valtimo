@@ -24,6 +24,7 @@ import {
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {GroupMember, GroupPathMapping} from '../../../../models';
+import {CASE_DEFINITION_GROUP_PATH_MAPPING_TEST_IDS} from '../../../../constants';
 
 @Component({
   standalone: true,
@@ -39,6 +40,8 @@ export class GroupPathMappingEditorComponent implements OnChanges {
   @Input() public itemType: 'list-column' | 'search-field' = 'list-column';
   @Input() public members: GroupMember[] = [];
   @Input() public mappings: GroupPathMapping[] = [];
+
+  protected readonly testIds = CASE_DEFINITION_GROUP_PATH_MAPPING_TEST_IDS;
 
   public editableMappings: Array<{caseDefinitionKey: string; path: string}> = [];
 

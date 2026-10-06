@@ -343,7 +343,7 @@ class CaseDefinitionGroupImporterIntTest @Autowired constructor(
     }
 
     private fun createImportRequest(json: String) = ImportRequest(
-        fileName = "/case-group/$testGroupKey/$testGroupKey.case-group.json",
+        fileName = "/global/case-group/$testGroupKey/$testGroupKey.case-group.json",
         content = json.toByteArray()
     )
 }
