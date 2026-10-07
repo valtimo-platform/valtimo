@@ -337,6 +337,55 @@ class BuildingBlockVersionMigrationIT @Autowired constructor(
     }
 
     @Test
+    fun `an open draft whose link already points to a third version is left alone and the chain is not migratable`() {
+        val uid = uid()
+        val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendEmail101 = buildingBlock("send-email-$uid", "1.0.1", final = true)
+        val sendEmail102 = buildingBlock("send-email-$uid", "1.0.2", final = true)
+        listOf(sendEmail100, sendEmail101, sendEmail102).forEach { deployBuildingBlockProcess(it, "se-$uid", calls = emptyList()) }
+        case("orders-$uid", "1.0.0", final = true, processKey = "or-$uid", calls = listOf("callSendEmail" to sendEmail100))
+        val openDraft = case(
+            "orders-$uid", "1.1.0", final = false, processKey = "or-$uid", calls = listOf("callSendEmail" to sendEmail100), basedOn = "1.0.0"
+        )
+        pointLinkAt(openDraft, "or-$uid", "callSendEmail", sendEmail102)
+
+        val chain = preview(sendEmail100, sendEmail101).chains.single()
+
+        assertThat(chain.migratable).isFalse()
+        assertThat(chain.notMigratableReason).contains("1.1.0").contains("no longer contains the reference")
+        assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id)) }
+            .isInstanceOf(BuildingBlockVersionMigrationException::class.java)
+            .hasMessageContaining("cannot be migrated")
+        assertThat(linkIn(MigrationContainer.of(openDraft), "or-$uid", "callSendEmail").buildingBlockDefinitionId).isEqualTo(sendEmail102)
+    }
+
+    @Test
+    fun `an open draft that points a container higher up at another version is left alone and the chain is not migratable`() {
+        val uid = uid()
+        val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendEmail101 = buildingBlock("send-email-$uid", "1.0.1", final = true)
+        listOf(sendEmail100, sendEmail101).forEach { deployBuildingBlockProcess(it, "se-$uid", calls = emptyList()) }
+        val wrapper100 = buildingBlock("wrapper-$uid", "1.0.0", final = true)
+        deployBuildingBlockProcess(wrapper100, "wr-$uid", calls = listOf("callSendEmail" to sendEmail100))
+        val wrapper200 = buildingBlock("wrapper-$uid", "2.0.0", final = true)
+        deployBuildingBlockProcess(wrapper200, "wr-$uid", calls = emptyList())
+        case("orders-$uid", "1.0.0", final = true, processKey = "or-$uid", calls = listOf("callWrapper" to wrapper100))
+        val openDraft = case(
+            "orders-$uid", "1.1.0", final = false, processKey = "or-$uid", calls = listOf("callWrapper" to wrapper100), basedOn = "1.0.0"
+        )
+        pointLinkAt(openDraft, "or-$uid", "callWrapper", wrapper200)
+
+        val chain = preview(sendEmail100, sendEmail101).chains.single()
+
+        assertThat(chain.migratable).isFalse()
+        assertThat(chain.notMigratableReason).contains("1.1.0").contains("no longer contains the reference")
+        assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id)) }
+            .isInstanceOf(BuildingBlockVersionMigrationException::class.java)
+            .hasMessageContaining("cannot be migrated")
+        assertThat(linkIn(MigrationContainer.of(openDraft), "or-$uid", "callWrapper").buildingBlockDefinitionId).isEqualTo(wrapper200)
+    }
+
+    @Test
     fun `reports the differences per chain, refuses an unconfigured chain and applies the resolution`() {
         val uid = uid()
         val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true, properties = listOf("recipient", "legacy"))
@@ -670,6 +719,13 @@ class BuildingBlockVersionMigrationIT @Autowired constructor(
             .processDefinitionKey(processKey)
             .singleResult()
             .id
+    }
+
+    private fun pointLinkAt(container: CaseDefinitionId, processKey: String, activityId: String, child: BuildingBlockDefinitionId) {
+        val processDefinitionId = processDefinitionIn(MigrationContainer.of(container), processKey)
+        processLinkRepository.deleteAll(processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinitionId, activityId))
+        processLinkRepository.flush()
+        processLinkRepository.saveAndFlush(buildingBlockLink(processDefinitionId, activityId, child))
     }
 
     private fun linkIn(container: MigrationContainer, processKey: String, activityId: String): BuildingBlockProcessLink =

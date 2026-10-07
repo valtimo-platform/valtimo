@@ -187,7 +187,7 @@ class BuildingBlockVersionMigrationPlanner(
         }
 
         val effectiveLinks = repointed.mapValues { (hopIndex, writable) ->
-            effectiveLink(writable, chain.hops[hopIndex], reasons)
+            effectiveLink(writable, chain.hops[hopIndex], acceptedChildren(hopIndex, repointed), reasons)
         }
 
         val top = chain.top
@@ -197,7 +197,7 @@ class BuildingBlockVersionMigrationPlanner(
         val topLink = when {
             !topIsCase -> null
             effectiveLinks.containsKey(topIndex) -> effectiveLinks[topIndex]
-            else -> effectiveLink(topWritable, top, reasons)
+            else -> effectiveLink(topWritable, top, acceptedChildren(topIndex, repointed), reasons)
         }
 
         val missingPluginKeys = if (topLink != null) {
@@ -247,11 +247,25 @@ class BuildingBlockVersionMigrationPlanner(
         return if (openDraft != null) ExistingDraft(container, openDraft) else NewDraft(container)
     }
 
-    private fun effectiveLink(writable: WritableVersion, reference: UsageReference, reasons: MutableList<String>): UsageReference? {
+    /** The versions an existing draft's link may already point at besides the chain's own: the target, or the version written one hop below. */
+    private fun acceptedChildren(hopIndex: Int, repointed: Map<Int, WritableVersion>): Set<BuildingBlockDefinitionId> {
+        if (hopIndex == 0) {
+            return setOf(target)
+        }
+        val below = repointed[hopIndex - 1]?.identity ?: return emptySet()
+        return setOf(BuildingBlockDefinitionId(below.key, below.versionTag))
+    }
+
+    private fun effectiveLink(
+        writable: WritableVersion,
+        reference: UsageReference,
+        accepted: Set<BuildingBlockDefinitionId>,
+        reasons: MutableList<String>,
+    ): UsageReference? {
         if (writable !is ExistingDraft) {
             return reference
         }
-        val corresponding = index.findCorresponding(writable.draft.container, reference)
+        val corresponding = index.findCorresponding(writable.draft.container, reference, accepted)
         if (corresponding == null) {
             reasons += "Open draft ${writable.draft.container} (based on ${writable.draft.basedOnVersionTag ?: "nothing"}) " +
                 "no longer contains the reference ${reference.location} to building block ${reference.child.key}; " +

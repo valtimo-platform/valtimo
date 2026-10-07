@@ -118,10 +118,15 @@ class BuildingBlockUsageIndex(
             .filter { !it.final }
             .maxWithOrNull { a, b -> a.container.versionTag.compareTo(b.container.versionTag) }
 
-    /** The reference in [container] that corresponds to [reference] in another version of the same container. */
-    fun findCorresponding(container: MigrationContainer, reference: UsageReference): UsageReference? {
+    /** The reference in [container] that corresponds to [reference] in another version of the same container, pointing at it or at a version in [alsoAccepted]. */
+    fun findCorresponding(
+        container: MigrationContainer,
+        reference: UsageReference,
+        alsoAccepted: Set<BuildingBlockDefinitionId>,
+    ): UsageReference? {
         val candidates = referencesIn(container).filter { it.matches(reference) }
-        return candidates.firstOrNull { it.child == reference.child } ?: candidates.singleOrNull()
+        return candidates.firstOrNull { it.child == reference.child }
+            ?: candidates.filter { it.child in alsoAccepted }.singleOrNull()
     }
 }
 
