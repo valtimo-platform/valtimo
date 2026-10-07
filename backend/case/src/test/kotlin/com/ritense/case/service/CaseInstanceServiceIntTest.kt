@@ -112,6 +112,9 @@ class CaseInstanceServiceIntTest @Autowired constructor(
     @Test
     @WithMockUser(username = USERNAME, authorities = [FULL_ACCESS_ROLE])
     fun `should return null for column whose resolver fails`() {
+        // Not transactional: restore imported columns other tests rely on
+        val originalColumns = caseDefinitionListColumnRepository
+            .findByIdCaseDefinitionKeyOrderByOrderAsc(CASE_DEFINITION_NAME)
         documentRepository.deleteAll()
         deleteListColumnsInOwnTransaction()
 
@@ -156,6 +159,7 @@ class CaseInstanceServiceIntTest @Autowired constructor(
         } finally {
             documentRepository.deleteAll()
             deleteListColumnsInOwnTransaction()
+            caseDefinitionListColumnRepository.saveAll(originalColumns)
         }
     }
 

@@ -14,24 +14,20 @@
  *  limitations under the License.
  */
 
-package com.ritense.valtimo.web.sse.domain
+package com.ritense.valtimo.web.sse
 
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
 
-class Subscriber(timeout: Long? = null) : SseEmitter(timeout) {
-
-    // SseEmitter.send throws IllegalStateException once completed; track it to tell "gone" from "unsendable"
-    @Volatile
-    var completed: Boolean = false
-        private set
-
-    override fun complete() {
-        completed = true
-        super.complete()
+class MutableClock(private var now: Instant = Instant.parse("2026-10-07T10:00:00Z")) : Clock() {
+    fun advance(duration: Duration) {
+        now = now.plus(duration)
     }
 
-    override fun completeWithError(ex: Throwable) {
-        completed = true
-        super.completeWithError(ex)
-    }
+    override fun instant(): Instant = now
+    override fun getZone(): ZoneId = ZoneOffset.UTC
+    override fun withZone(zone: ZoneId): Clock = this
 }

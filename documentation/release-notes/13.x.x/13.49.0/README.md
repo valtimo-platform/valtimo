@@ -30,3 +30,6 @@ New enhancement explanation.
 | Case list | The case list now loads even when a ZGW API fails to return data for a case, for example when the zaak is confidential and GZAC is not authorized to view it; the affected columns stay empty and all other data is still shown |
 | Cases | A form opened in the side panel of a case stays open and keeps its contents when switching between the case's tabs |
 | Cases | A start form configured to open in the side panel now opens there on every case tab, including tabs without a task list, instead of opening in a modal |
+| Platform | The application stays stable when users reload or close their browser, instead of slowly running out of memory |
+| Platform | A user with a slow or lost connection no longer delays the processing of cases and tasks for other users |
+| Platform | A user closing their browser while a page is loading no longer shows up as an error in the application logs |

@@ -14,24 +14,8 @@
  *  limitations under the License.
  */
 
-package com.ritense.valtimo.web.sse.domain
+package com.ritense.valtimo.web.sse
 
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import com.ritense.valtimo.web.sse.event.BaseSseEvent
 
-class Subscriber(timeout: Long? = null) : SseEmitter(timeout) {
-
-    // SseEmitter.send throws IllegalStateException once completed; track it to tell "gone" from "unsendable"
-    @Volatile
-    var completed: Boolean = false
-        private set
-
-    override fun complete() {
-        completed = true
-        super.complete()
-    }
-
-    override fun completeWithError(ex: Throwable) {
-        completed = true
-        super.completeWithError(ex)
-    }
-}
+class TestSseEvent(val seq: Int) : BaseSseEvent("TEST")
