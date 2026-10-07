@@ -20,6 +20,10 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.DocumentService
+import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.logging.LoggableResource
 import com.ritense.processdocument.event.ProcessTimerSkippedEvent
 import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
@@ -51,6 +55,7 @@ import java.util.UUID
 @RequestMapping("/api/v1/process-document", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ProcessTimerResource(
     private val caseAccessService: ProcessInstanceCaseAccessService,
+    private val documentService: DocumentService,
     private val authorizationService: AuthorizationService,
     private val managementService: ManagementService,
     private val eventPublisher: ApplicationEventPublisher,
@@ -66,6 +71,7 @@ class ProcessTimerResource(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
         @PathVariable processInstanceId: String,
     ): ResponseEntity<List<JobInspectionDto>> {
+        requireViewableCase(caseId)
         caseAccessService.requireBelongsToCase(caseId, processInstanceId)
 
         val timers = getTimerJobs(processInstanceId)
@@ -86,6 +92,7 @@ class ProcessTimerResource(
         @PathVariable processInstanceId: String,
         @PathVariable jobId: String,
     ): ResponseEntity<Void> {
+        requireViewableCase(caseId)
         caseAccessService.requireBelongsToCase(caseId, processInstanceId)
 
         val timer = getTimerJobs(processInstanceId).find { it.dto.id == jobId }
@@ -108,6 +115,13 @@ class ProcessTimerResource(
         )
 
         return ResponseEntity.noContent().build()
+    }
+
+    private fun requireViewableCase(caseId: UUID) {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(caseId))
+        } as JsonSchemaDocument? ?: return
+        authorizationService.requireDocumentPermission(document)
     }
 
     private fun hasCompletePermission(timer: OperatonTimer) =

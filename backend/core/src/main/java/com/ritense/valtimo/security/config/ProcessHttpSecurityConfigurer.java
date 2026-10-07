@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,14 +48,14 @@ public class ProcessHttpSecurityConfigurer implements HttpSecurityConfigurer {
                     .authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/process/definition/{sourceProcessDefinitionId}/{targetProcessDefinitionId}/migrate"))
                     .hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/history")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/log")).authenticated()
+                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/history")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/log")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/tasks")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/activetask")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/xml")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/activities")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/comments")).authenticated()
+                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/activetask")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/xml")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/activities")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/comments")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(POST, "/api/v1/process/{processDefinitionName}/search")).authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v2/process/{processDefinitionName}/search")).authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/process/{processDefinitionName}/count")).authenticated()

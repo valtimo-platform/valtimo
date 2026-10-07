@@ -47,6 +47,7 @@ import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.processdocument.service.ProcessInstanceCaseAccessService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
+import com.ritense.processdocument.web.rest.CaseProcessDiagramResource;
 import com.ritense.processdocument.web.rest.LogInspectionResource;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
 import com.ritense.processdocument.web.rest.ProcessInspectionResource;
@@ -57,6 +58,7 @@ import com.ritense.valtimo.contract.document.CaseDocumentResolver;
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.ProcessInstanceDiagramService;
 import com.ritense.valueresolver.ValueResolverFactory;
 import org.operaton.bpm.engine.HistoryService;
 import org.operaton.bpm.engine.ManagementService;
@@ -179,13 +181,17 @@ public class ProcessDocumentAutoConfiguration {
         ProcessDocumentService processDocumentService,
         ProcessDocumentAssociationService processDocumentAssociationService,
         ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService,
-        ActiveCaseDefinitionService activeCaseDefinitionService
+        ActiveCaseDefinitionService activeCaseDefinitionService,
+        DocumentService documentService,
+        AuthorizationService authorizationService
     ) {
         return new ProcessDocumentResource(
             processDocumentService,
             processDocumentAssociationService,
             processDefinitionCaseDefinitionService,
-            activeCaseDefinitionService
+            activeCaseDefinitionService,
+            documentService,
+            authorizationService
         );
     }
 
@@ -210,6 +216,7 @@ public class ProcessDocumentAutoConfiguration {
         HistoryService historyService,
         ManagementService managementService,
         OperatonTaskService operatonTaskService,
+        ProcessInstanceDiagramService processInstanceDiagramService,
         java.util.Optional<BuildingBlockProcessLookup> buildingBlockProcessLookup,
         ApplicationEventPublisher eventPublisher,
         ObjectMapper objectMapper
@@ -223,6 +230,7 @@ public class ProcessDocumentAutoConfiguration {
             historyService,
             managementService,
             operatonTaskService,
+            processInstanceDiagramService,
             buildingBlockProcessLookup.orElse(null),
             eventPublisher,
             objectMapper
@@ -230,15 +238,33 @@ public class ProcessDocumentAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseProcessDiagramResource.class)
+    public CaseProcessDiagramResource caseProcessDiagramResource(
+        ProcessInstanceCaseAccessService processInstanceCaseAccessService,
+        DocumentService documentService,
+        AuthorizationService authorizationService,
+        ProcessInstanceDiagramService processInstanceDiagramService
+    ) {
+        return new CaseProcessDiagramResource(
+            processInstanceCaseAccessService,
+            documentService,
+            authorizationService,
+            processInstanceDiagramService
+        );
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessTimerResource.class)
     public ProcessTimerResource processTimerResource(
         ProcessInstanceCaseAccessService processInstanceCaseAccessService,
+        DocumentService documentService,
         AuthorizationService authorizationService,
         ManagementService managementService,
         ApplicationEventPublisher eventPublisher
     ) {
         return new ProcessTimerResource(
             processInstanceCaseAccessService,
+            documentService,
             authorizationService,
             managementService,
             eventPublisher

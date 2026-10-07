@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@ package com.ritense.processdocument.web.rest;
 
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -38,9 +44,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ritense.case_.domain.definition.CaseDefinition;
+import com.ritense.authorization.AuthorizationService;
+import com.ritense.authorization.request.EntityAuthorizationRequest;
+import com.ritense.document.domain.Document;
+import com.ritense.document.domain.impl.JsonSchemaDocument;
+import org.springframework.security.access.AccessDeniedException;
 import com.ritense.case_.service.ActiveCaseDefinitionService;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
+import com.ritense.document.service.DocumentService;
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.document.domain.impl.request.NewDocumentRequest;
 import com.ritense.document.service.result.CreateDocumentResult;
@@ -66,6 +78,7 @@ import com.ritense.valtimo.contract.utils.TestUtil;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,6 +104,9 @@ class ProcessDocumentResourceTest extends BaseTest {
     private OperatonProcessJsonSchemaDocumentAssociationService processDocumentAssociationService;
 
     private MockMvc mockMvc;
+    private ProcessDocumentResource processDocumentResource;
+    private DocumentService documentService;
+    private AuthorizationService authorizationService;
     private ProcessDefinitionCaseDefinition processDefinitionCaseDefinition;
     private ProcessDocumentInstanceDto processDocumentInstance;
     private ObjectMapper objectMapper;
@@ -107,11 +123,15 @@ class ProcessDocumentResourceTest extends BaseTest {
         processDocumentAssociationService = mock(OperatonProcessJsonSchemaDocumentAssociationService.class);
         processDefinitionCaseDefinitionService = mock(ProcessDefinitionCaseDefinitionService.class);
         activeCaseDefinitionService = mock(ActiveCaseDefinitionService.class);
-        ProcessDocumentResource processDocumentResource = new ProcessDocumentResource(
+        documentService = mock(DocumentService.class);
+        authorizationService = mock(AuthorizationService.class);
+        processDocumentResource = new ProcessDocumentResource(
             processDocumentService,
             processDocumentAssociationService,
             processDefinitionCaseDefinitionService,
-            activeCaseDefinitionService
+            activeCaseDefinitionService,
+            documentService,
+            authorizationService
         );
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
@@ -164,6 +184,34 @@ class ProcessDocumentResourceTest extends BaseTest {
             null
         );
         when(activeCaseDefinitionService.getActiveCaseDefinition("house")).thenReturn(caseDefinition);
+    }
+
+    @Test
+    void shouldDenyDocumentInstanceCaseProcessLinkWithoutDocumentViewPermission() {
+        var documentId = UUID.randomUUID();
+        var document = mock(JsonSchemaDocument.class);
+        doReturn(Optional.of(document)).when(documentService).findBy(any(Document.Id.class));
+        doThrow(new AccessDeniedException("denied")).when(authorizationService).requirePermission(
+            argThat((EntityAuthorizationRequest<JsonSchemaDocument> request) ->
+                request.getResourceType().equals(JsonSchemaDocument.class)
+            )
+        );
+
+        assertThrows(AccessDeniedException.class, () ->
+            processDocumentResource.findProcessDocumentDefinitions(documentId, null, null));
+        verifyNoInteractions(processDefinitionCaseDefinitionService);
+    }
+
+    @Test
+    void shouldReturnOkForUnknownDocumentOnDocumentInstanceCaseProcessLink() {
+        var documentId = UUID.randomUUID();
+        when(documentService.findBy(any(Document.Id.class))).thenReturn(Optional.empty());
+        when(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(documentId, null, null))
+            .thenReturn(List.of());
+
+        var response = processDocumentResource.findProcessDocumentDefinitions(documentId, null, null);
+
+        assertEquals(200, response.getStatusCode().value());
     }
 
     @Test

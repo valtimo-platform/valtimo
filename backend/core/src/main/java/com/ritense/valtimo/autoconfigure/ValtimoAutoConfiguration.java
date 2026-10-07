@@ -62,6 +62,7 @@ import com.ritense.valtimo.service.OperatonByteArrayService;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
+import com.ritense.valtimo.service.ProcessInstanceDiagramService;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
 import com.ritense.valtimo.service.TaskBusinessKeyResolver;
@@ -328,6 +329,22 @@ public class ValtimoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ProcessInstanceDiagramService.class)
+    public ProcessInstanceDiagramService processInstanceDiagramService(
+        final OperatonHistoryService operatonHistoryService,
+        final RepositoryService repositoryService,
+        final OperatonRepositoryService operatonRepositoryService,
+        final HistoryService historyService
+    ) {
+        return new ProcessInstanceDiagramService(
+            operatonHistoryService,
+            repositoryService,
+            operatonRepositoryService,
+            historyService
+        );
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessResource.class)
     public ProcessResource processResource(
         final HistoryService historyService,
@@ -340,7 +357,8 @@ public class ValtimoAutoConfiguration {
         final ProcessShortTimerService processShortTimerService,
         final OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository,
         final ProcessPropertyService processPropertyService,
-        final ProcessDefinitionAutofillService processDefinitionAutofillService
+        final ProcessDefinitionAutofillService processDefinitionAutofillService,
+        final ProcessInstanceDiagramService processInstanceDiagramService
     ) {
         return new ProcessResource(
             historyService,
@@ -353,7 +371,8 @@ public class ValtimoAutoConfiguration {
             processShortTimerService,
             operatonSearchProcessInstanceRepository,
             processPropertyService,
-            processDefinitionAutofillService
+            processDefinitionAutofillService,
+            processInstanceDiagramService
         );
     }
 

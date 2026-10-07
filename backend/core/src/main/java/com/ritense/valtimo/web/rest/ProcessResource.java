@@ -48,6 +48,7 @@ import com.ritense.valtimo.repository.operaton.dto.ProcessInstance;
 import com.ritense.valtimo.repository.operaton.dto.TaskInstanceWithIdentityLink;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.ProcessInstanceDiagramService;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
 import com.ritense.valtimo.processautofill.service.ProcessDefinitionAutofillService;
@@ -91,7 +92,6 @@ import org.operaton.bpm.engine.repository.DeploymentWithDefinitions;
 import org.operaton.bpm.engine.rest.dto.batch.BatchDto;
 import org.operaton.bpm.engine.rest.dto.history.HistoricActivityInstanceDto;
 import org.operaton.bpm.engine.rest.dto.history.UserOperationLogEntryDto;
-import org.operaton.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
 import org.operaton.bpm.engine.rest.dto.runtime.ActivityInstanceDto;
 import org.operaton.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.operaton.bpm.engine.runtime.ProcessInstanceQuery;
@@ -131,6 +131,7 @@ public class ProcessResource extends AbstractProcessResource {
     private final OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository;
     private final ProcessPropertyService processPropertyService;
     private final ProcessDefinitionAutofillService processDefinitionAutofillService;
+    private final ProcessInstanceDiagramService processInstanceDiagramService;
 
     public ProcessResource(
             final HistoryService historyService,
@@ -143,7 +144,8 @@ public class ProcessResource extends AbstractProcessResource {
             final ProcessShortTimerService processShortTimerService,
             final OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository,
             final ProcessPropertyService processPropertyService,
-            final ProcessDefinitionAutofillService processDefinitionAutofillService
+            final ProcessDefinitionAutofillService processDefinitionAutofillService,
+            final ProcessInstanceDiagramService processInstanceDiagramService
     ) {
         super(operatonHistoryService, repositoryService, operatonRepositoryService, operatonTaskService);
         this.historyService = historyService;
@@ -155,6 +157,7 @@ public class ProcessResource extends AbstractProcessResource {
         this.operatonSearchProcessInstanceRepository = operatonSearchProcessInstanceRepository;
         this.processPropertyService = processPropertyService;
         this.processDefinitionAutofillService = processDefinitionAutofillService;
+        this.processInstanceDiagramService = processInstanceDiagramService;
     }
 
     @EndpointDescription(
@@ -421,6 +424,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(processInstanceWithDefinition.getProcessInstanceDto());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Get a process instance",
         nl = "Procesinstantie ophalen"
@@ -438,6 +446,11 @@ public class ProcessResource extends AbstractProcessResource {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Get process instance activity history",
         nl = "Activiteitenhistorie van procesinstantie ophalen"
@@ -462,6 +475,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Get process instance operation log",
         nl = "Bewerkingslogboek van procesinstantie ophalen"
@@ -479,6 +497,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * @deprecated Will be removed. Task data is available via the authorized task endpoints
+     *     (e.g. {@code POST /api/v2/task}).
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "List tasks for a process instance",
         nl = "Taken voor een procesinstantie ophalen"
@@ -496,6 +519,11 @@ public class ProcessResource extends AbstractProcessResource {
             );
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Get the active task of a process instance",
         nl = "Actieve taak van een procesinstantie ophalen"
@@ -515,6 +543,12 @@ public class ProcessResource extends AbstractProcessResource {
                 .orElse(ResponseEntity.noContent().build());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use
+     *     {@code GET /api/v1/process-document/case/{caseId}/process-instance/{processInstanceId}/xml} (document VIEW)
+     *     or the Case Inspection variant under {@code /api/management} (document INSPECT).
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Get process instance XML diagram",
         nl = "XML-diagram van procesinstantie ophalen"
@@ -523,26 +557,21 @@ public class ProcessResource extends AbstractProcessResource {
     public ResponseEntity<ProcessInstanceDiagramDto> getProcessInstanceXml(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String processInstanceId
     ) {
-        OperatonHistoricProcessInstance processInstance = runWithoutAuthorization(() ->
-            getHistoricProcessInstance(processInstanceId)
-        );
         try {
-            ProcessDefinitionDiagramDto definitionDiagramDto = createProcessDefinitionDiagramDto(
-                    processInstance.getProcessDefinitionId());
-            List<HistoricActivityInstance> historicActivityInstances = historyService.createHistoricActivityInstanceQuery()
-                    .processInstanceId(processInstanceId)
-                    .orderPartiallyByOccurrence()
-                    .asc()
-                    .list();
-            return Optional.ofNullable(definitionDiagramDto)
-                    .map(process -> ResponseEntity.ok(
-                            ProcessInstanceDiagramDto.create(definitionDiagramDto, historicActivityInstances)))
-                    .orElse(ResponseEntity.notFound().build());
+            ProcessInstanceDiagramDto diagram = processInstanceDiagramService.getProcessInstanceDiagram(processInstanceId);
+            return diagram != null
+                    ? ResponseEntity.ok(diagram)
+                    : ResponseEntity.notFound().build();
         } catch (UnsupportedEncodingException e) {
             return ResponseEntity.status(INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Get process instance activity tree",
         nl = "Activiteitenstructuur van procesinstantie ophalen"

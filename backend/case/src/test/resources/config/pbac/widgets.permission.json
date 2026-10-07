@@ -73,6 +73,16 @@
             "resourceType": "com.ritense.case.domain.CaseTab",
             "action": "view",
             "roleKey": "ROLE_ONLY_TEST_WIDGETS"
+        },
+        {
+            "resourceType": "com.ritense.case_.domain.tab.CaseWidgetTabWidget",
+            "action": "view",
+            "roleKey": "ROLE_OWN_DOCUMENT_WIDGETS"
+        },
+        {
+            "resourceType": "com.ritense.case.domain.CaseTab",
+            "action": "view",
+            "roleKey": "ROLE_OWN_DOCUMENT_WIDGETS"
         }
     ]
 }
