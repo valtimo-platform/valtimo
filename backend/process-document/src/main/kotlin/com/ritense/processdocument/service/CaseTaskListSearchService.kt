@@ -741,7 +741,7 @@ class CaseTaskListSearchService(
 
         val (taskPaths, otherPaths) = paths.partition { it.startsWith(TASK_PREFIX) }
 
-        val resolvedValuesMap = valueResolverService.resolveValues(caseTask.documentInstanceId.toString(), otherPaths).toMutableMap()
+        val resolvedValuesMap = valueResolverService.resolveValuesOrNull(caseTask.documentInstanceId.toString(), otherPaths).toMutableMap()
         resolvedValuesMap.putAll(taskPaths.map { taskPath -> resolveTaskValue(caseTask, taskPath) })
 
         val items = taskListColumns.map { caseListColumn ->
