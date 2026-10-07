@@ -19,7 +19,6 @@ dockerCompose {
 
     integrationTestingPostgresql {
         isRequiredBy(project.tasks.integrationTestingPostgresql)
-        isRequiredBy(project.tasks.securityTesting)
         useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
     }
 
