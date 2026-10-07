@@ -26,6 +26,7 @@ import {
   BESLUITEN_API_CONFIGURATION_TEST_IDS,
   OPEN_ZAAK_CONFIGURATION_TEST_IDS,
 } from '../../constants';
+import {runCleanups} from '../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
 
@@ -124,8 +125,12 @@ test.describe('9.9–9.27 — Plugin management', () => {
   });
 
   test.afterAll(async () => {
-    await pluginPage.deleteAllTestPlugins();
-    await context.close();
+    // `deleteAllTestPlugins` raises on a configuration it could not remove, so the context has
+    // to be closed by a step that runs regardless.
+    await runCleanups(
+      () => pluginPage.deleteAllTestPlugins(),
+      () => context.close()
+    );
   });
 
   test.describe('Success test', () => {

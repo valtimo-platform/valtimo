@@ -3744,7 +3744,7 @@
     "version": "Version",
     "readOnly": "Read only",
     "add": "Create new form flow",
-    "deleteModalContent": "Are you sure you want to delete this form flow?",
+    "deleteModalContent": "Are you sure you want to delete this form flow? All form flow instances of this definition, including unfinished ones, will also be deleted. This action cannot be undone.",
     "deletedSuccessfully": "{{key}} was deleted successfully",
     "savedSuccessTitle": "Saved successfully",
     "savedSuccessTitleMessage": "{{key}} was saved successfully",
@@ -3908,6 +3908,10 @@
   "processStartSuccessful": "{{processName}} has successfully been started",
   "widgets": {
     "noData": "No data found",
+    "dataError": {
+      "title": "Data could not be loaded",
+      "retry": "Try again"
+    },
     "emptyFields": "Nothing here",
     "noWidgets": "No widgets",
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",

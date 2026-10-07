@@ -1,7 +1,7 @@
 spring:
     rabbitmq:
         host: localhost
-        port: 55672
+        port: 5682
         username: guest
         password: guest
         publisher-confirm-type: correlated

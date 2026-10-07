@@ -1,10 +1,29 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { chromium } from '@playwright/test';
 import { writeFileSync, mkdirSync, unlinkSync, existsSync } from 'fs';
-import * as OTPAuth from 'otpauth';
 import { Keycloak } from '../components/keycloak';
-import { setLanguage } from '../utils/settings';
+import { pinLanguage } from '../utils/settings';
+import { generateOtp, millisUntilNextOtp, waitForNextOtp } from './otp.utils';
+import { acquireRunLock } from './run-lock';
 
 export default async () => {
+  acquireRunLock();
+
   console.log('[GLOBAL SETUP] Launching browser');
 
   const browser = await chromium.launch();
@@ -43,25 +62,34 @@ export default async () => {
     scope: 'openid',
   };
 
-  // ----- Handle OTP (generate from otpauth URL only) -----
-  let otpCode: string | undefined;
-  if (process.env.qa_admin_otp_url) {
-    const totp = OTPAuth.URI.parse(process.env.qa_admin_otp_url);
-    otpCode = totp.generate();
-    console.log('[GLOBAL SETUP] Generated TOTP via otpauth URL:', otpCode);
+  const otpUrl = process.env.qa_admin_otp_url;
+
+  const requestToken = async () => {
+    // ----- Handle OTP (generate from otpauth URL only) -----
+    if (otpUrl) {
+      form.otp = generateOtp(otpUrl);
+      console.log('[GLOBAL SETUP] Generated TOTP from the otpauth URL');
+    }
+
+    return page.request.post(
+      `${keycloakUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect/token`,
+      {
+        form,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      },
+    );
+  };
+
+  let tokenResp = await requestToken();
+
+  // Keycloak accepts a TOTP once. A run that follows hard on the heels of another lands in the
+  // same window and is refused, so give it the next code rather than failing the whole suite.
+  if (!tokenResp.ok() && otpUrl && tokenResp.status() === 401) {
+    console.log('[GLOBAL SETUP] TOTP refused — waiting for the next window and retrying');
+    await waitForNextOtp(otpUrl);
+    tokenResp = await requestToken();
   }
 
-  if (otpCode) {
-    form.otp = otpCode;
-  }
-
-  const tokenResp = await page.request.post(
-    `${keycloakUrl}/auth/realms/${keycloakRealm}/protocol/openid-connect/token`,
-    {
-      form,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    },
-  );
   if (!tokenResp.ok()) {
     const errBody = await tokenResp.text();
     throw new Error(`[GLOBAL SETUP] Token request failed (${tokenResp.status()}): ${errBody}`);
@@ -93,8 +121,12 @@ export default async () => {
 
   const keycloak = new Keycloak(page);
   await page.goto('/login'); // Ensure KC login page
-  // console.log('[GLOBAL SETUP] Waiting 30 s before Keycloak.login to avoid OTP race…');
-  await page.waitForTimeout(30_000);
+
+  if (process.env.qa_admin_otp_url) {
+    const waitMs = millisUntilNextOtp(process.env.qa_admin_otp_url);
+    console.log(`[GLOBAL SETUP] Waiting ${Math.round(waitMs / 1000)}s for the next TOTP...`);
+    await page.waitForTimeout(waitMs);
+  }
 
   await keycloak.login(
     process.env.qa_admin_username ?? 'admin',
@@ -102,9 +134,14 @@ export default async () => {
     process.env.qa_admin_otp_url,
   );
 
-  // Wait for app landing page after successful login
-  // await page.waitForLoadState('networkidle');
-  await setLanguage(page, 'en');
+  const appOrigin = new URL(process.env.qa_url ?? 'http://localhost:4200').origin;
+  await page.waitForURL(
+    url => url.origin === appOrigin && !url.pathname.startsWith('/keycloak'),
+    { timeout: 60_000 }
+  );
+  await page.waitForLoadState('domcontentloaded');
+
+  await pinLanguage(page, 'en');
   const uiStatePath = 'playwright/.auth/uiState.json';
   writeFileSync(uiStatePath, JSON.stringify(await context.storageState(), null, 2));
   console.log('[GLOBAL SETUP] storageState saved →', uiStatePath);

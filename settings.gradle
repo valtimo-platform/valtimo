@@ -47,6 +47,7 @@ include(
     ":backend:core",
     ":backend:dashboard",
     ":backend:data-provider",
+    ":backend:deployer",
     ":backend:document-generation",
     ":backend:document-generation:local-document-generation",
     ":backend:document-generation:smartdocuments",

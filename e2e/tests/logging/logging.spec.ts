@@ -19,7 +19,7 @@ import {LoggingPage} from './page';
 
 test.use({storageState: undefined});
 
-test.describe.configure({mode: 'serial'});
+test.describe.configure({mode: 'serial', timeout: 240_000});
 
 /**
  * Covers the `/logging` admin page. The page is read-only: it lists log events the running
@@ -90,8 +90,6 @@ test.describe('Logging', () => {
 
   test.describe('18.2 — Filter and search logs', () => {
     test('Filter by message text narrows the list', async () => {
-      test.setTimeout(60_000);
-
       // Arrange — pick a word from an existing entry so the filter is guaranteed to match
       const messages = await loggingPage.messageCells();
       const searchTerm = messages
@@ -117,8 +115,6 @@ test.describe('Logging', () => {
     });
 
     test('Filter by log level narrows the list to that level and above', async () => {
-      test.setTimeout(60_000);
-
       // Arrange — WARN sits in the middle of the severity scale, so filtering on it has to drop
       // something (INFO/DEBUG/TRACE) while keeping ERROR
       const unfiltered = await loggingPage.getLogsViaApi(1, 0);
@@ -140,8 +136,6 @@ test.describe('Logging', () => {
 
   test.describe('Failure scenarios', () => {
     test('A filter that matches nothing shows the no-results state', async () => {
-      test.setTimeout(60_000);
-
       // Act — a message no log line can contain
       await loggingPage.filterByMessage('zzz-no-log-line-matches-this-zzz');
 

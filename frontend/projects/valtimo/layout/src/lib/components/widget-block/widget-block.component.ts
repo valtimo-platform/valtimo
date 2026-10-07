@@ -43,18 +43,27 @@ import {
   Observable,
   startWith,
   Subscription,
+  switchMap,
   tap,
 } from 'rxjs';
 import {WidgetColor, WidgetComponentMap, WidgetType, WidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {WIDGET_COLOR_THEME_MAP, type WidgetColorVariant} from '../../constants';
+import {WidgetDataErrorComponent} from '../widget-data-error/widget-data-error.component';
 
 @Component({
   selector: 'valtimo-widget-block',
   templateUrl: './widget-block.component.html',
   styleUrls: ['./widget-block.component.scss'],
   standalone: true,
-  imports: [CommonModule, LoadingModule, CarbonListModule, TranslateModule, TilesModule],
+  imports: [
+    CommonModule,
+    LoadingModule,
+    CarbonListModule,
+    TranslateModule,
+    TilesModule,
+    WidgetDataErrorComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
@@ -141,6 +150,10 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     )
   )
 
+  public readonly hasDataError$ = this.widget$.pipe(
+    switchMap(widget => this.widgetLayoutService.hasWidgetDataError$(widget.uuid))
+  );
+
   private readonly _subscriptions = new Subscription();
 
   private _observer!: ResizeObserver;
@@ -177,6 +190,10 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     if (typeof widgetContentHeight === 'number' && widgetContentHeight !== 0) {
       this._contentHeight$.next(widgetContentHeight);
     }
+  }
+
+  public onRetryDataLoad(): void {
+    this.widgetLayoutService.reloadWidgetData(this._widget$.value?.uuid);
   }
 
   public openWidgetComponentSubscription(): void {

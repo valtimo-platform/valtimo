@@ -15,6 +15,8 @@
   -->
 
 @let widgetColors = widgetColors$ | async;
+@let hasDataError = hasDataError$ | async;
+@let widget = widget$ | async;
 
 <div
   class="widget-block"
@@ -25,7 +27,18 @@
   [style.--widget-accent-color]="widgetColors?.accent"
 >
   <div #widgetBlockContent class="widget-block__content">
-    <ng-template #widgetComponent></ng-template>
+    <!-- Stays in flow while the error shows, so the error cannot change the block height. -->
+    <div [class.widget-block__content-hidden]="hasDataError">
+      <ng-template #widgetComponent></ng-template>
+    </div>
+
+    @if (hasDataError) {
+      <valtimo-widget-data-error
+        [widgetTitle]="widget?.title"
+        [widgetType]="widget?.type"
+        (retryEvent)="onRetryDataLoad()"
+      ></valtimo-widget-data-error>
+    }
   </div>
 </div>
 

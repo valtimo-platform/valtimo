@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,26 +182,58 @@ class ValueResolverServiceImpl(
         properties: Map<String, Any>,
         requestedValues: Collection<String>
     ): Map<String, Any?> {
+        return resolveValues(properties, requestedValues, failOnError = true)
+    }
+
+    override fun resolveValuesOrNull(
+        @LoggableResource("com.ritense.document.domain.impl.JsonSchemaDocument") documentInstanceId: String,
+        requestedValues: Collection<String>
+    ): Map<String, Any?> {
+        return resolveValues(mapOf(DOCUMENT_ID to documentInstanceId), requestedValues, failOnError = false)
+    }
+
+    private fun resolveValues(
+        properties: Map<String, Any>,
+        requestedValues: Collection<String>,
+        failOnError: Boolean
+    ): Map<String, Any?> {
         val allRequestedValues =
             (extractAdditionalRequestedValuesFromQueryParameters(requestedValues) + requestedValues).distinct()
 
         val resolvedValues = mutableMapOf<String, Any?>()
         toResolverFactoryGroups(allRequestedValues)
-            .forEach { (resolverFactory, queryParamProperties, requestedValues) ->
-                val resolvedProperties = (properties + queryParamProperties).entries.mapNotNull { (key, value) ->
-                    if (isRequestedValue(value)) {
-                        resolvedValues[value]?.let { key to it }
-                    } else {
-                        value?.let { key to value }
+            .forEach { (resolverFactory, queryParamProperties, groupRequestedValues) ->
+                try {
+                    val resolvedProperties = (properties + queryParamProperties).entries.mapNotNull { (key, value) ->
+                        if (isRequestedValue(value)) {
+                            resolvedValues[value]?.let { key to it }
+                        } else {
+                            value?.let { key to value }
+                        }
+                    }.toMap()
+                    val resolver = memoizedResolver(resolverFactory, resolvedProperties)
+                    val groupResult = groupRequestedValues.associateWith { requestedValue ->
+                        resolver.apply(trimPrefix(trimQueryParameters(requestedValue)))
                     }
-                }.toMap()
-                val resolver = memoizedResolver(resolverFactory, resolvedProperties)
-                //Create a list of resolved Map entries
-                requestedValues.forEach { requestedValue ->
-                    resolvedValues[requestedValue] = resolver.apply(trimPrefix(trimQueryParameters(requestedValue)))
+                    resolvedValues.putAll(groupResult)
+                } catch (e: Exception) {
+                    if (failOnError) {
+                        throw e
+                    }
+                    logResolveFailure(resolverFactory.supportedPrefix(), properties, e)
+                    groupRequestedValues.forEach { resolvedValues[it] = null }
                 }
             }
         return resolvedValues
+    }
+
+    private fun logResolveFailure(prefix: String, properties: Map<String, Any>, e: Exception) {
+        val rootCause = generateSequence<Throwable>(e) { it.cause }.take(MAX_CAUSE_CHAIN_LENGTH).last()
+        logger.warn {
+            "Could not resolve values for prefix '$prefix:' of document '${properties[DOCUMENT_ID]}'; " +
+                "resolving to null. Cause: ${rootCause::class.simpleName}: ${rootCause.message}"
+        }
+        logger.debug(e) { "Resolve failure for prefix '$prefix:'" }
     }
 
     override fun resolverDependencies(

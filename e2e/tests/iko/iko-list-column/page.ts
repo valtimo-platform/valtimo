@@ -29,6 +29,7 @@ import {
   COLUMN_SORT_LABELS,
   ikoListColumnConfig,
 } from './iko-list-column-config';
+import {openAndSelectOption} from '../../../utils/ui.utils';
 
 interface ListColumnDto {
   key: string;
@@ -165,8 +166,10 @@ export class IkoListColumnPage {
 
   /** Click a v-select combo box and pick the option whose label matches `label`. */
   private async selectComboItem(combo: Locator, label: string): Promise<void> {
-    await combo.click();
-    await this.page.getByRole('listbox').getByText(label, {exact: true}).click();
+    await openAndSelectOption(
+      combo,
+      this.page.getByRole('listbox').getByText(label, {exact: true})
+    );
   }
 
   async selectDisplayType(label: string): Promise<void> {

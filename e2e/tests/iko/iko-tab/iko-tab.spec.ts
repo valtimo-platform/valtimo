@@ -30,8 +30,11 @@ import {
   ikoTabConfig,
   uniqueTabTitle,
 } from './iko-tab-config';
+import {runCleanups} from '../../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
+
+test.describe.configure({mode: 'serial'});
 
 test.describe('Feature 15F — IKO Tabs', () => {
   let context: BrowserContext;
@@ -58,6 +61,7 @@ test.describe('Feature 15F — IKO Tabs', () => {
     );
 
     const parentViewTitle = `E2E IKO View tab-suite-parent`;
+    await ikoViewPage.deleteViewViaApi(ikoViewPage.viewKeyFor(parentViewTitle));
     parentViewKey = await ikoViewPage.createViewViaApi(parentServerKey, parentViewTitle);
 
     await page.goto('/');
@@ -65,11 +69,13 @@ test.describe('Feature 15F — IKO Tabs', () => {
   });
 
   test.afterAll(async () => {
-    // Tabs → view → server. Children first.
-    await tabPage.cleanupTestTabsViaApi(parentViewKey, IKO_TAB_TITLE_PREFIX);
-    await ikoViewPage.deleteViewViaApi(parentViewKey);
-    await ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX);
-    await context.close();
+    // Tabs → view → server. Children first, and every step runs even if an earlier one throws.
+    await runCleanups(
+      () => tabPage.cleanupTestTabsViaApi(parentViewKey, IKO_TAB_TITLE_PREFIX),
+      () => ikoViewPage.deleteViewViaApi(parentViewKey),
+      () => ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX),
+      () => context.close()
+    );
   });
 
   // Guard against tests that fail mid-modal — leaving a stuck modal would

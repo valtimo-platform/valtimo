@@ -121,10 +121,9 @@ test.describe('Building block management — building block details', () => {
       await detailsPage.goToTab(buildingBlockKey, initialVersion, BUILDING_BLOCK_TABS.processes);
       await detailsPage.processList.waitForLoaded();
 
-      const headers = await detailsPage.processList.table.locator('thead th').allInnerTexts();
-      expect(headers.map(header => header.trim())).toEqual([
-        ...BUILDING_BLOCK_DETAIL_TEXTS.processColumns,
-      ]);
+      await detailsPage.processList.assertColumnHeaders(
+        BUILDING_BLOCK_DETAIL_TEXTS.processColumns
+      );
 
       // Creating a building block also generates its main process definition.
       const processes = await detailsPage.getBuildingBlockProcessesViaApi(
@@ -319,7 +318,7 @@ test.describe('Building block management — building block details', () => {
       await detailsPage.goToGeneralTab(buildingBlockKey, draftVersion);
 
       // Two versions now exist, so the dropdown offers both.
-      await detailsPage.openVersionDropdown();
+      await detailsPage.openVersionDropdown(initialVersion);
       await expect(detailsPage.versionOption(initialVersion)).toBeVisible();
       await expect(detailsPage.versionOption(draftVersion)).toBeVisible();
       await detailsPage.versionOption(initialVersion).click();

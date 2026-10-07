@@ -3753,7 +3753,7 @@
     "version": "Versie",
     "readOnly": "Alleen lezen",
     "add": "Nieuwe form flow aanmaken",
-    "deleteModalContent": "Weet je zeker dat je deze form flow wilt verwijderen?",
+    "deleteModalContent": "Weet je zeker dat je deze form flow wilt verwijderen? Alle form flow instanties van deze definitie, ook onafgeronde, worden ook verwijderd. Deze actie kan niet ongedaan worden gemaakt.",
     "deletedSuccessfully": "{{key}} is succesvol verwijderd",
     "savedSuccessTitle": "Succesvol opgeslagen",
     "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
@@ -3917,6 +3917,10 @@
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {
     "noData": "Geen data gevonden",
+    "dataError": {
+      "title": "Gegevens niet geladen",
+      "retry": "Opnieuw proberen"
+    },
     "emptyFields": "Niets hier",
     "noWidgets": "Geen widgets",
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",

@@ -31,6 +31,8 @@ import {Router} from '@angular/router';
   providedIn: 'root',
 })
 export class IkoApiService extends BaseApiService {
+  private readonly WIDGET_DATA_SKIP_TOAST_STATUSES = '500,502,503,504';
+
   private readonly _cachedMenuItems$ = new BehaviorSubject<IkoView[]>([]);
 
   public get cachedMenuItems$(): Observable<IkoView[]> {
@@ -94,7 +96,10 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get(
       this.getApiUrl(
         `/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}${!queryParams ? '' : '&' + queryParams.toString()}`
-      )
+      ),
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, this.WIDGET_DATA_SKIP_TOAST_STATUSES),
+      }
     );
   }
 
@@ -109,8 +114,14 @@ export class IkoApiService extends BaseApiService {
 
     return this.httpClient.get<WidgetDataGroupResponse>(
       this.getApiUrl(`/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/data?${params.toString()}`),
-      // An unrecognised group falls back to per-widget requests — no global error toast
-      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
+      // An unrecognised group falls back to per-widget requests, and the widgets of a group that
+      // could not be filled say so themselves — neither warrants a global error toast
+      {
+        headers: new HttpHeaders().set(
+          InterceptorSkip,
+          `404,${this.WIDGET_DATA_SKIP_TOAST_STATUSES}`
+        ),
+      }
     );
   }
 

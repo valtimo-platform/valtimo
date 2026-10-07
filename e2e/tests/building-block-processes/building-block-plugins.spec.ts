@@ -19,6 +19,7 @@ import {generateId} from '../../utils/dataGenerator';
 import {
   BUILDING_BLOCK_PLUGIN_API,
   BUILDING_BLOCK_PLUGIN_TEXTS,
+  EXTERNAL_PLUGIN_KEY_PREFIX,
   LINKED_PLUGIN,
   OTHER_PLUGIN,
   PLUGIN_STEPS_PROCESS,
@@ -126,14 +127,22 @@ test.describe('Building block management — plugin integration (13E)', () => {
       // More than one plugin is offered, so the list is a real choice.
       expect(offered).toEqual(expect.arrayContaining([OTHER_PLUGIN.definitionKey]));
 
-      // Every offered definition is one the backend serves for this activity
-      // type. The UI additionally drops definitions without a frontend plugin
-      // specification, so it is a subset rather than an exact match.
+      // Embedded and external come from separate endpoints; each half is a subset of its source
+      const isExternal = (id: string) => id.startsWith(EXTERNAL_PLUGIN_KEY_PREFIX);
+      const offeredExternal = offered.filter(isExternal);
+      const offeredEmbedded = offered.filter(id => !isExternal(id));
+
       const definitions = await pluginsPage.getPluginDefinitionsViaApi(
         BUILDING_BLOCK_PLUGIN_API.serviceTaskActivityType
       );
       const definitionKeys = definitions.map(definition => definition.key);
-      expect(definitionKeys).toEqual(expect.arrayContaining(offered));
+      expect(definitionKeys).toEqual(expect.arrayContaining(offeredEmbedded));
+
+      const externalDefinitions = await pluginsPage.getExternalPluginDefinitionsViaApi();
+      const externalKeys = externalDefinitions.map(
+        definition => `${EXTERNAL_PLUGIN_KEY_PREFIX}${definition.id}`
+      );
+      expect(externalKeys).toEqual(expect.arrayContaining(offeredExternal));
 
       await pluginsPage.closeProcessLinkModal();
     });
@@ -141,10 +150,9 @@ test.describe('Building block management — plugin integration (13E)', () => {
     test('13.42 — The list shows each plugin with its description, and the wizard its steps', async () => {
       await openWizardFor(PLUGIN_STEPS_PROCESS.serviceTaskId);
 
-      expect(
-        await pluginsPage.linkWizard.pluginList.locator('cds-list-header cds-list-column')
-          .allInnerTexts()
-      ).toEqual([...BUILDING_BLOCK_PLUGIN_TEXTS.selectPluginColumns]);
+      expect(await pluginsPage.linkWizard.pluginListColumnHeaders()).toEqual([
+        ...BUILDING_BLOCK_PLUGIN_TEXTS.selectPluginColumns,
+      ]);
 
       // Logo, name and a non-empty description, in that column order.
       const row = pluginsPage.linkWizard.pluginRow(LINKED_PLUGIN.definitionKey);
@@ -281,7 +289,7 @@ test.describe('Building block management — plugin integration (13E)', () => {
 
         // Cancelling stores nothing.
         await pluginsPage.closeProcessLinkModal();
-        await expect(pluginsPage.createProcessLinkButton).toBeVisible();
+        await pluginsPage.assertStepUnlinked(PLUGIN_STEPS_PROCESS.serviceTaskId);
       });
 
       test('13.45b — A user task cannot be linked to a UI component inside a building block', async () => {
@@ -359,9 +367,7 @@ test.describe('Building block management — plugin integration (13E)', () => {
       // Reopens the link the previous test saved.
       const saved = await currentProcess();
       await pluginsPage.goToProcessBuilder(buildingBlockKey, versionTag, saved.id);
-      await pluginsPage.modeler.selectElement(PLUGIN_STEPS_PROCESS.serviceTaskId);
-      await pluginsPage.modeler.expandGroup('Process link');
-      await pluginsPage.editProcessLinkButton.click();
+      await pluginsPage.openEditProcessLinkForStep(PLUGIN_STEPS_PROCESS.serviceTaskId);
       await pluginsPage.linkWizard.waitForOpen();
 
       // Editing opens on the last step, with the earlier choices marked complete.

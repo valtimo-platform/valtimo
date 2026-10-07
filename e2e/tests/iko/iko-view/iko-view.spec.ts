@@ -29,8 +29,11 @@ import {
   ikoViewConfig,
   uniqueViewTitle,
 } from './iko-view-config';
+import {runCleanups} from '../../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
+
+test.describe.configure({mode: 'serial'});
 
 test.describe('Feature 15B — IKO View Management', () => {
   let context: BrowserContext;
@@ -58,10 +61,12 @@ test.describe('Feature 15B — IKO View Management', () => {
   });
 
   test.afterAll(async () => {
-    // Children first, then the parent server.
-    await ikoViewPage.cleanupTestViewsViaApi(parentServerKey, IKO_VIEW_TITLE_PREFIX);
-    await ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX);
-    await context.close();
+    // Children first, then the parent server. Every step runs even if an earlier one throws.
+    await runCleanups(
+      () => ikoViewPage.cleanupTestViewsViaApi(parentServerKey, IKO_VIEW_TITLE_PREFIX),
+      () => ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX),
+      () => context.close()
+    );
   });
 
   // ─── Property field tooltips ────────────────────────────────────────
@@ -89,6 +94,10 @@ test.describe('Feature 15B — IKO View Management', () => {
   test.describe('View management', () => {
     const initialTitle = uniqueViewTitle('crud');
     const editedTitle = uniqueViewTitle('crud-edited');
+
+    test.afterEach(async () => {
+      await ikoViewPage.dismissOpenModal();
+    });
 
     test('15.13 — displays the views list (empty by default)', async () => {
       await ikoViewPage.list.waitForLoaded();
@@ -122,13 +131,13 @@ test.describe('Feature 15B — IKO View Management', () => {
       await expect(removeButtons.first()).toBeDisabled();
 
       // Add a second row, fill it, then remove it.
-      await ikoViewPage.propertyKvAddRowButton(kvKey).click();
+      await ikoViewPage.addKeyValueRow(kvKey);
       await expect(keys).toHaveCount(2);
       await keys.nth(1).fill('second-key');
       await values.nth(1).fill('second-value');
 
       await expect(removeButtons.nth(1)).toBeEnabled();
-      await removeButtons.nth(1).click();
+      await ikoViewPage.removeKeyValueRow(kvKey, 1);
       await expect(keys).toHaveCount(1);
 
       await ikoViewPage.cancelButton.click();
