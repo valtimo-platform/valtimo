@@ -82,6 +82,27 @@ public class ExceptionTranslatorIntTest {
     }
 
     @Test
+    public void clientDisconnectIsLeftToSpringWithoutProblemResponse() throws Exception {
+        mockMvc.perform(get("/test/client-disconnected"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(""));
+    }
+
+    @Test
+    public void brokenPipeIsLeftToSpringWithoutProblemResponse() throws Exception {
+        mockMvc.perform(get("/test/broken-pipe"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(""));
+    }
+
+    @Test
+    public void otherIOExceptionStillBecomesProblem() throws Exception {
+        mockMvc.perform(get("/test/io-exception"))
+            .andExpect(status().isInternalServerError())
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+    }
+
+    @Test
     public void testConcurrencyFailure() throws Exception {
         mockMvc.perform(get("/test/concurrency-failure"))
             .andDo(print())

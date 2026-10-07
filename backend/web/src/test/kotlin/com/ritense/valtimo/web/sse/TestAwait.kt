@@ -14,24 +14,14 @@
  *  limitations under the License.
  */
 
-package com.ritense.valtimo.web.sse.domain
+package com.ritense.valtimo.web.sse
 
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.time.Duration
 
-class Subscriber(timeout: Long? = null) : SseEmitter(timeout) {
-
-    // SseEmitter.send throws IllegalStateException once completed; track it to tell "gone" from "unsendable"
-    @Volatile
-    var completed: Boolean = false
-        private set
-
-    override fun complete() {
-        completed = true
-        super.complete()
-    }
-
-    override fun completeWithError(ex: Throwable) {
-        completed = true
-        super.completeWithError(ex)
+fun awaitUntil(timeout: Duration = Duration.ofSeconds(10), description: String = "condition", condition: () -> Boolean) {
+    val deadline = System.nanoTime() + timeout.toNanos()
+    while (!condition()) {
+        if (System.nanoTime() > deadline) throw AssertionError("Timed out after ${timeout.toMillis()}ms waiting for $description")
+        Thread.sleep(20)
     }
 }
