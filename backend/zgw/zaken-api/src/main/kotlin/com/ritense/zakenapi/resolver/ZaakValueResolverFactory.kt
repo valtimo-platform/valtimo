@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,33 @@
 
 package com.ritense.zakenapi.resolver
 
+import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverOption
-import com.ritense.zakenapi.service.ZaakDocumentService
+import com.ritense.zakenapi.ZaakUrlProvider
+import com.ritense.zakenapi.ZakenApiPlugin
 import org.operaton.bpm.engine.delegate.VariableScope
 import java.util.UUID
 import java.util.function.Function
 
 class ZaakValueResolverFactory(
-    private val zaakDocumentService: ZaakDocumentService,
     processDocumentService: ProcessDocumentService,
+    private val zaakUrlProvider: ZaakUrlProvider,
+    private val pluginService: PluginService,
 ) : BaseFieldValueResolverFactory(processDocumentService) {
     override fun supportedPrefix(): String {
         return "zaak"
     }
 
     override fun createResolver(documentId: String): Function<String, Any?> {
-        val zaak = zaakDocumentService.getZaakByDocumentIdOrThrow(UUID.fromString(documentId))
+        val url = zaakUrlProvider.getZaakUrl(UUID.fromString(documentId))
+        val zakenApiPlugin = pluginService.createInstance(
+            ZakenApiPlugin::class.java,
+            ZakenApiPlugin.findConfigurationByUrl(url)
+        )
+            ?: throw IllegalStateException("Missing plugin configuration of type '${ZakenApiPlugin.PLUGIN_KEY}' for url '$url'")
+        val zaak = zakenApiPlugin.getZaak(url)
         return Function { field ->
             return@Function getField(zaak, field)
         }

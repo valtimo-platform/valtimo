@@ -191,11 +191,90 @@ class ZaakDocumentServiceTest {
         whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
             .doReturn(documentenApiPlugin)
         whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any()))
-            .doAnswer { throw HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden") }
+            .doAnswer { throw HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Unauthorized") }
 
         assertThrows<HttpClientErrorException> {
             service.getInformatieObjectenAsRelatedFiles(caseId)
         }
+    }
+
+    @Test
+    fun `should skip informatieobjecten the Documenten API forbids access to`() {
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+
+        val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
+            zaakInformatieObjects
+        )
+
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(documentenApiPluginConfiguration.id)
+            .doReturn(PluginConfigurationId(UUID.randomUUID()))
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        val forbiddenInformatieobjectUrl = zaakInformatieObjects[2].informatieobject
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any())).doAnswer { answer ->
+            val uri = answer.getArgument(0) as URI
+            if (uri == forbiddenInformatieobjectUrl) {
+                throw HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden")
+            }
+            createDocumentInformatieObject(uri)
+        }
+
+        val relatedFiles = service.getInformatieObjectenAsRelatedFiles(caseId)
+
+        assertEquals(4, relatedFiles.size)
+    }
+
+    @Test
+    fun `should page correctly when the Documenten API forbids access to a document`() {
+        val caseId = UUID.randomUUID()
+        val zaakUrl = URI("https://example.com/$caseId")
+        whenever(zaakUrlProvider.getZaakUrl(caseId)).thenReturn(zaakUrl)
+        whenever(documentenApiVersionService.getVersionByDocumentId(caseId)).thenReturn(MINIMUM_VERSION)
+
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .doReturn(zakenApiPlugin)
+
+        val zaakInformatieObjects = createZaakInformatieObjecten(zaakUrl, count = 10)
+        whenever(zakenApiPlugin.getZaakInformatieObjecten(caseId, zaakUrl)).thenReturn(
+            zaakInformatieObjects
+        )
+
+        val documentenApiPluginConfiguration = mock<PluginConfiguration>()
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.findPluginConfiguration(eq(DocumentenApiPlugin::class.java), any()))
+            .doReturn(documentenApiPluginConfiguration)
+        whenever(documentenApiPluginConfiguration.id)
+            .doReturn(PluginConfigurationId(UUID.randomUUID()))
+        whenever(pluginService.createInstance(eq(documentenApiPluginConfiguration)))
+            .doReturn(documentenApiPlugin)
+        val forbiddenInformatieobjectUrl = zaakInformatieObjects[2].informatieobject
+        whenever(documentenApiPlugin.getInformatieObject(any<URI>(), any())).doAnswer { answer ->
+            val uri = answer.getArgument(0) as URI
+            if (uri == forbiddenInformatieobjectUrl) {
+                throw HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden")
+            }
+            createDocumentInformatieObject(uri)
+        }
+
+        val page = service.getInformatieObjectenAsRelatedFilesPage(
+            caseId,
+            DocumentSearchRequest(),
+            PageRequest.of(0, 10)
+        )
+        assertEquals(9, page.content.size)
+        assertEquals(9, page.totalElements)
     }
 
     @Test
