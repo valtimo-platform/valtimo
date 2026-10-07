@@ -9,6 +9,7 @@ This section covers:
 - **[General](general.md)** — Name, description, and artwork configuration
 - **[Document](document.md)** — JSON schema for building block data
 - **[Migration](migration.md)** — Moving running building block instances onto a newer version
+- **[Updating usages](usage-update.md)** — Moving all references to a building block version onto another version
 - **[Processes](processes.md)** — BPMN process definitions
 - **[Forms](forms.md)** — Form definitions for user tasks
 - **[Form flows](form-flows.md)** — Multi-step form wizards

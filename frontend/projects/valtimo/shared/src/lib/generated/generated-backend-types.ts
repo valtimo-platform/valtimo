@@ -137,122 +137,127 @@ export interface BuildingBlockInUseVersionDto {
     referenceCount: number;
 }
 
-export interface BuildingBlockVersionMigrationChainDto {
+export interface BuildingBlockUsageUpdateChainDto {
     id: string;
-    containers: BuildingBlockVersionMigrationContainerDto[];
-    references: BuildingBlockVersionMigrationReferenceDto[];
-    link: BuildingBlockVersionMigrationReferenceDto;
+    containers: BuildingBlockUsageUpdateContainerDto[];
+    references: BuildingBlockUsageUpdateReferenceDto[];
+    link: BuildingBlockUsageUpdateReferenceDto;
     selected: boolean;
     selectedByDefault: boolean;
     requiresDrafts: boolean;
     modifiesExistingDraft: boolean;
-    existingDrafts: BuildingBlockVersionMigrationExistingDraftDto[];
-    migratable: boolean;
-    notMigratableReason: string | null;
-    differences: BuildingBlockVersionMigrationDifferencesDto;
+    existingDrafts: BuildingBlockUsageUpdateExistingDraftDto[];
+    updatable: boolean;
+    notUpdatableReason: string | null;
+    differences: BuildingBlockUsageUpdateDifferencesDto;
 }
 
-export interface BuildingBlockVersionMigrationChainResolutionDto {
+export interface BuildingBlockUsageUpdateChainResolutionDto {
     chainId: string;
     inputMappings: BuildingBlockInputMappingDto[];
     pluginConfigurations: { [index: string]: string };
 }
 
-export interface BuildingBlockVersionMigrationChangesetDto {
-    draftsToCreate: BuildingBlockVersionMigrationDraftDto[];
-    draftsToModify: BuildingBlockVersionMigrationDraftDto[];
-    linksToRepoint: BuildingBlockVersionMigrationRepointDto[];
+export interface BuildingBlockUsageUpdateChangesetDto {
+    draftsToCreate: BuildingBlockUsageUpdateDraftDto[];
+    draftsToModify: BuildingBlockUsageUpdateDraftDto[];
+    linksToRepoint: BuildingBlockUsageUpdateRepointDto[];
     skippedChainIds: string[];
     coveredChainIds: string[];
 }
 
-export interface BuildingBlockVersionMigrationContainerDto {
-    type: BuildingBlockVersionMigrationContainerType;
+export interface BuildingBlockUsageUpdateContainerDto {
+    type: BuildingBlockUsageUpdateContainerType;
     key: string;
     versionTag: string;
     final: boolean;
 }
 
-export interface BuildingBlockVersionMigrationDifferencesDto {
+export interface BuildingBlockUsageUpdateDifferencesDto {
     existingInputMappings: BuildingBlockInputMappingDto[];
     missingRequiredInputs: string[];
     droppedInputMappings: BuildingBlockInputMappingDto[];
     droppedOutputMappings: BuildingBlockOutputMappingDto[];
     missingPluginDefinitionKeys: string[];
-    pluginConfigurationLink: BuildingBlockVersionMigrationReferenceDto | null;
+    pluginConfigurationLink: BuildingBlockUsageUpdateReferenceDto | null;
     unresolvedRequiredInputs: string[];
     unresolvedPluginDefinitionKeys: string[];
     configured: boolean;
 }
 
-export interface BuildingBlockVersionMigrationDraftDto {
-    type: BuildingBlockVersionMigrationContainerType;
+export interface BuildingBlockUsageUpdateDraftDto {
+    type: BuildingBlockUsageUpdateContainerType;
     key: string;
     versionTag: string;
     basedOnVersionTag: string | null;
 }
 
-export interface BuildingBlockVersionMigrationExecuteRequestDto {
+export interface BuildingBlockUsageUpdateExecuteRequestDto {
     key: string;
     sourceVersionTag: string;
     targetVersionTag: string;
     selectedChainIds: string[];
-    resolutions: BuildingBlockVersionMigrationChainResolutionDto[];
+    resolutions: BuildingBlockUsageUpdateChainResolutionDto[];
+    targetKey: string | null;
 }
 
-export interface BuildingBlockVersionMigrationExistingDraftDto {
-    container: BuildingBlockVersionMigrationContainerDto;
+export interface BuildingBlockUsageUpdateExistingDraftDto {
+    container: BuildingBlockUsageUpdateContainerDto;
     draftVersionTag: string;
     draftBasedOnVersionTag: string | null;
 }
 
-export interface BuildingBlockVersionMigrationPreviewDto {
+export interface BuildingBlockUsageUpdatePreviewDto {
     key: string;
     sourceVersionTag: string;
+    targetKey: string;
     targetVersionTag: string;
     draftsAllowed: boolean;
-    chains: BuildingBlockVersionMigrationChainDto[];
-    changeset: BuildingBlockVersionMigrationChangesetDto;
+    chains: BuildingBlockUsageUpdateChainDto[];
+    changeset: BuildingBlockUsageUpdateChangesetDto;
 }
 
-export interface BuildingBlockVersionMigrationPreviewRequestDto {
+export interface BuildingBlockUsageUpdatePreviewRequestDto {
     key: string;
     sourceVersionTag: string;
     targetVersionTag: string;
     selectedChainIds: string[] | null;
-    resolutions: BuildingBlockVersionMigrationChainResolutionDto[];
+    resolutions: BuildingBlockUsageUpdateChainResolutionDto[];
+    targetKey: string | null;
 }
 
-export interface BuildingBlockVersionMigrationReferenceDto {
-    container: BuildingBlockVersionMigrationContainerDto;
-    kind: BuildingBlockVersionMigrationReferenceKind;
+export interface BuildingBlockUsageUpdateReferenceDto {
+    container: BuildingBlockUsageUpdateContainerDto;
+    kind: BuildingBlockUsageUpdateReferenceKind;
     processDefinitionKey: string | null;
     activityId: string | null;
     buildingBlockKey: string;
     buildingBlockVersionTag: string;
 }
 
-export interface BuildingBlockVersionMigrationRepointDto {
-    container: BuildingBlockVersionMigrationContainerDto;
-    kind: BuildingBlockVersionMigrationReferenceKind;
+export interface BuildingBlockUsageUpdateRepointDto {
+    container: BuildingBlockUsageUpdateContainerDto;
+    kind: BuildingBlockUsageUpdateReferenceKind;
     processDefinitionKey: string | null;
     activityId: string | null;
     buildingBlockKey: string;
     fromVersionTag: string;
+    toBuildingBlockKey: string;
     toVersionTag: string;
     containerReference: boolean;
 }
 
-export interface BuildingBlockVersionMigrationResultDto {
+export interface BuildingBlockUsageUpdateResultDto {
     key: string;
     sourceVersionTag: string;
+    targetKey: string;
     targetVersionTag: string;
-    chainsMigratedDirectly: string[];
-    linksRepointed: BuildingBlockVersionMigrationRepointDto[];
-    draftsCreated: BuildingBlockVersionMigrationDraftDto[];
-    draftsModified: BuildingBlockVersionMigrationDraftDto[];
+    chainsUpdatedDirectly: string[];
+    linksRepointed: BuildingBlockUsageUpdateRepointDto[];
+    draftsCreated: BuildingBlockUsageUpdateDraftDto[];
+    draftsModified: BuildingBlockUsageUpdateDraftDto[];
     skippedChainIds: string[];
-    remainingReferences: BuildingBlockVersionMigrationReferenceDto[];
+    remainingReferences: BuildingBlockUsageUpdateReferenceDto[];
 }
 
 export interface BuildingBlockInputMappingDto {
@@ -2022,9 +2027,9 @@ export type TabWidgetLayout = "MUURI_GAP_FREE" | "MUURI" | "BEAUTIFUL";
 
 export type WidgetColor = "YELLOW" | "ORANGE" | "RED" | "BROWN" | "GREEN" | "TURQOISE" | "PURPLE" | "PERIWINKLE" | "BLUE" | "HIGHCONTRAST" | "WHITE";
 
-export type BuildingBlockVersionMigrationContainerType = "CASE" | "BUILDING_BLOCK";
+export type BuildingBlockUsageUpdateContainerType = "CASE" | "BUILDING_BLOCK";
 
-export type BuildingBlockVersionMigrationReferenceKind = "PROCESS_LINK" | "CASE_LINK";
+export type BuildingBlockUsageUpdateReferenceKind = "PROCESS_LINK" | "CASE_LINK";
 
 export type BuildingBlockSyncTiming = "CONTINUOUS" | "END";
 

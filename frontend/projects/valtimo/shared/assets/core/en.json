@@ -4353,9 +4353,9 @@
   },
   "buildingBlockManagement": {
     "title": "Building blocks",
-    "versionMigration": {
-      "button": "Migrate",
-      "title": "Migrate building block version",
+    "usageUpdate": {
+      "button": "Update usages",
+      "title": "Update building block usages",
       "draft": "Draft",
       "final": "Finalized",
       "none": "None",
@@ -4371,25 +4371,33 @@
         "review": "Review"
       },
       "source": {
-        "description": "Select the building block version you want to move away from. Only versions that are used somewhere are listed.",
-        "label": "Source version",
-        "placeholder": "Select a building block version",
-        "emptyTitle": "Nothing to migrate",
+        "description": "Select the building block and the version you want to move away from. Only versions that are used somewhere are listed.",
+        "keyLabel": "Building block",
+        "keyPlaceholder": "Search for a building block",
+        "versionLabel": "Source version",
+        "versionPlaceholder": "Search for a version",
+        "emptyTitle": "Nothing to update",
         "emptyMessage": "No building block version is referenced by a case or another building block."
       },
       "target": {
-        "description": "Select the version of {{key}} that should replace {{versionTag}}. This can be an older or a newer version.",
+        "description": "Select the building block and version that should replace {{key}} {{versionTag}}. This can be an older or a newer version, or another building block.",
+        "keyLabel": "Target building block",
+        "keyPlaceholder": "Search for a building block",
         "label": "Target version",
-        "placeholder": "Select a version",
-        "emptyTitle": "No other version",
-        "emptyMessage": "This building block has no other version to migrate to."
+        "placeholder": "Search for a version",
+        "emptyTitle": "No version",
+        "emptyMessage": "This building block has no other version to switch to."
       },
       "chains": {
-        "description": "These are all places where {{key}} {{sourceVersionTag}} is used, from the case or top building block down to the reference. Select the ones to move to {{targetVersionTag}}. Usages that go through a finalized version create new drafts and are not selected by default.",
+        "description": "Select which usages of {{key}} {{sourceVersionTag}} should be updated to {{targetKey}} {{targetVersionTag}}. Usages through a finalized version create new drafts and are not selected by default.",
+        "via": "via",
+        "isUsing": "is using",
+        "inActivity": "(activity {{activityId}})",
+        "willBeUpdatedTo": "and will be updated to use",
         "empty": "No usages found.",
         "requiresDrafts": "Creates new drafts of finalized versions",
         "modifiesExistingDraft": "Modifies existing draft {{key}} {{versionTag}} (based on {{basedOn}})",
-        "notMigratable": "Cannot be migrated: {{reason}}",
+        "notUpdatable": "Cannot be updated: {{reason}}",
         "selectAtLeastOne": "Select at least one usage to continue."
       },
       "differences": {
@@ -4397,8 +4405,13 @@
         "configured": "Configured",
         "notConfigured": "Not configured",
         "none": "No differences to resolve.",
-        "inputSource": "Value for required input {{field}}",
-        "inputPlaceholder": "For example doc:/path, case:assignee or a fixed value",
+        "inputMode": "Source",
+        "inputMode_path": "Path",
+        "inputMode_value": "Value",
+        "inputPath": "Path",
+        "inputValue": "Value",
+        "inputValuePlaceholder": "Fixed value",
+        "inputTarget": "Required input",
         "inputRequired": "This input is required by the target version",
         "pluginConfiguration": "Plugin configuration for {{plugin}}",
         "pluginPlaceholder": "Select a plugin configuration",
@@ -4410,32 +4423,37 @@
         "droppedOutput": "Output {{source}} → {{target}}"
       },
       "review": {
-        "description": "Review all changes for migrating {{key}} {{sourceVersionTag}} to {{targetVersionTag}}. Nothing is finalized and no running case is changed.",
+        "description": "Review all changes for updating the usages of {{key}} {{sourceVersionTag}} to {{targetKey}} {{targetVersionTag}}. Nothing is finalized and no running case is changed.",
         "draftsToCreate": "Drafts to create",
         "draftsToModify": "Drafts to modify",
         "draftVersion": "version {{versionTag}}, based on {{basedOn}}",
         "linksToRepoint": "References to re-point",
         "containerReference": "Container reference",
         "skipped": "Usages skipped",
-        "covered": "Also migrated through a shared reference",
+        "covered": "Also updated through a shared reference",
         "confirm": "I have reviewed these changes and want to apply them",
-        "execute": "Migrate"
+        "execute": "Update usages"
       },
       "result": {
-        "title": "Migration done",
-        "message": "References to {{key}} {{sourceVersionTag}} have been moved to {{targetVersionTag}} where selected.",
-        "migratedDirectly": "Usages migrated directly",
+        "title": "Usages updated",
+        "message": "References to {{key}} {{sourceVersionTag}} have been moved to {{targetKey}} {{targetVersionTag}} where selected.",
+        "updatedDirectly": "Usages updated directly",
         "draftsCreated": "Drafts created",
         "draftsModified": "Drafts modified",
         "basedOn": "based on {{versionTag}}",
         "remainingReferences": "Remaining references",
         "noRemainingReferences": "Nothing refers to {{key}} {{versionTag}} anymore.",
         "nextStepsTitle": "Next steps",
-        "nextSteps": "Review and finalize the drafts above, then plan a dossier migration to move existing cases to the new versions."
+        "nextSteps": "Review and finalize the drafts above, then plan a case migration to move existing cases to the new versions."
+      },
+      "previewFailed": {
+        "title": "The usage update preview could not be loaded",
+        "message": "Something went wrong while comparing the source and the target version.",
+        "retry": "Try again"
       },
       "draftsNotAllowed": {
         "title": "Drafts are not allowed",
-        "message": "This environment does not allow drafts, so building block references cannot be migrated here. Run the migration on an environment where configuration can be changed."
+        "message": "This environment does not allow drafts, so building block usages cannot be updated here. Update them on an environment where configuration can be changed."
       }
     },
     "listColumns": {

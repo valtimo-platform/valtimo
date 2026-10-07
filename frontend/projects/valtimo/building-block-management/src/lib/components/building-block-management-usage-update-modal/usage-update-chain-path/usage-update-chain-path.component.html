@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<span class="valtimo-building-block-usage-update__path">
+  @for (container of chain.containers; track $index) {
+    @if (!$first) {
+      <span class="valtimo-building-block-usage-update__secondary">
+        {{ 'buildingBlockManagement.usageUpdate.chains.via' | translate }}
+      </span>
+    }
+
+    <span class="valtimo-building-block-usage-update__path-item">
+      <span>{{
+        'buildingBlockManagement.usageUpdate.containerType.' + container.type | translate
+      }}</span>
+
+      <strong>{{ container.key }}</strong>
+
+      <span>{{ container.versionTag }}</span>
+
+      <valtimo-building-block-usage-update-status-tag
+        [final]="container.final"
+      ></valtimo-building-block-usage-update-status-tag>
+    </span>
+  }
+
+  <span>{{ 'buildingBlockManagement.usageUpdate.chains.isUsing' | translate }}</span>
+
+  <span class="valtimo-building-block-usage-update__path-item">
+    <strong>{{ chain.link.buildingBlockKey }}</strong>
+
+    <span>{{ chain.link.buildingBlockVersionTag }}</span>
+
+    @if (chain.link.activityId) {
+      <span class="valtimo-building-block-usage-update__secondary">
+        {{
+          'buildingBlockManagement.usageUpdate.chains.inActivity'
+            | translate: {activityId: chain.link.activityId}
+        }}
+      </span>
+    }
+  </span>
+
+  @if (chain.updatable) {
+    <span>{{ 'buildingBlockManagement.usageUpdate.chains.willBeUpdatedTo' | translate }}</span>
+
+    <span class="valtimo-building-block-usage-update__path-item">
+      <strong>{{ $targetKey() }}</strong>
+
+      <span>{{ $target() }}</span>
+    </span>
+  }
+</span>

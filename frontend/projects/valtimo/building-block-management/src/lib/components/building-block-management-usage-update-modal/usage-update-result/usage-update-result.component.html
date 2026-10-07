@@ -1,0 +1,137 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if ($result(); as result) {
+  <div [attr.data-test-id]="testIds.result" class="valtimo-building-block-usage-update__list">
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'success',
+        title: ('buildingBlockManagement.usageUpdate.result.title' | translate),
+        message:
+          ('buildingBlockManagement.usageUpdate.result.message'
+          | translate
+            : {
+                key: result.key,
+                sourceVersionTag: result.sourceVersionTag,
+                targetKey: result.targetKey,
+                targetVersionTag: result.targetVersionTag,
+              }),
+        showClose: false,
+        lowContrast: true,
+      }"
+    ></cds-inline-notification>
+
+    <section>
+      <h5>{{ 'buildingBlockManagement.usageUpdate.result.updatedDirectly' | translate }}</h5>
+
+      <valtimo-building-block-usage-update-chain-list
+        [chainIds]="result.chainsUpdatedDirectly"
+      ></valtimo-building-block-usage-update-chain-list>
+    </section>
+
+    <section>
+      <h5>{{ 'buildingBlockManagement.usageUpdate.result.draftsCreated' | translate }}</h5>
+
+      <ng-container
+        *ngTemplateOutlet="draftLinksTemplate; context: {$implicit: result.draftsCreated}"
+      ></ng-container>
+    </section>
+
+    <section>
+      <h5>{{ 'buildingBlockManagement.usageUpdate.result.draftsModified' | translate }}</h5>
+
+      <ng-container
+        *ngTemplateOutlet="draftLinksTemplate; context: {$implicit: result.draftsModified}"
+      ></ng-container>
+    </section>
+
+    @if (result.skippedChainIds.length > 0) {
+      <section>
+        <h5>{{ 'buildingBlockManagement.usageUpdate.review.skipped' | translate }}</h5>
+
+        <valtimo-building-block-usage-update-chain-list
+          [chainIds]="result.skippedChainIds"
+        ></valtimo-building-block-usage-update-chain-list>
+      </section>
+    }
+
+    <section [attr.data-test-id]="testIds.remainingReferences">
+      <h5>{{ 'buildingBlockManagement.usageUpdate.result.remainingReferences' | translate }}</h5>
+
+      @if (result.remainingReferences.length === 0) {
+        <p class="valtimo-building-block-usage-update__secondary">
+          {{
+            'buildingBlockManagement.usageUpdate.result.noRemainingReferences'
+              | translate: {key: result.key, versionTag: result.sourceVersionTag}
+          }}
+        </p>
+      } @else {
+        <ul class="valtimo-building-block-usage-update__bullets">
+          @for (reference of result.remainingReferences; track $index) {
+            <li>
+              {{ reference.container.key }} {{ reference.container.versionTag }}
+              @if (reference.activityId) {
+                ({{ reference.activityId }})
+              }
+              › {{ reference.buildingBlockKey }} {{ reference.buildingBlockVersionTag }}
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        title: ('buildingBlockManagement.usageUpdate.result.nextStepsTitle' | translate),
+        message: ('buildingBlockManagement.usageUpdate.result.nextSteps' | translate),
+        showClose: false,
+        lowContrast: true,
+      }"
+    ></cds-inline-notification>
+  </div>
+}
+
+<ng-template #draftLinksTemplate let-drafts>
+  @if (drafts.length === 0) {
+    <p class="valtimo-building-block-usage-update__secondary">
+      {{ 'buildingBlockManagement.usageUpdate.none' | translate }}
+    </p>
+  } @else {
+    <ul class="valtimo-building-block-usage-update__bullets">
+      @for (draft of drafts; track $index) {
+        <li>
+          {{ 'buildingBlockManagement.usageUpdate.containerType.' + draft.type | translate }}
+          <a
+            [attr.data-test-id]="testIds.draftLink"
+            [routerLink]="draftRoute(draft)"
+            (click)="onDraftLinkClick()"
+          >
+            {{ draft.key }} {{ draft.versionTag }}
+          </a>
+          @if (draft.basedOnVersionTag) {
+            <span class="valtimo-building-block-usage-update__secondary">
+              {{
+                'buildingBlockManagement.usageUpdate.result.basedOn'
+                  | translate: {versionTag: draft.basedOnVersionTag}
+              }}
+            </span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</ng-template>

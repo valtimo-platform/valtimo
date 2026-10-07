@@ -27,25 +27,21 @@ import {
   BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS,
-  BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS,
-  BUILDING_BLOCK_VERSION_MIGRATION_SOURCE_OPTION_TEST_ID_PREFIX,
-  BUILDING_BLOCK_VERSION_MIGRATION_TARGET_OPTION_TEST_ID_PREFIX,
+  BUILDING_BLOCK_MANAGEMENT_USAGE_UPDATE_TEST_IDS,
+  BUILDING_BLOCK_USAGE_UPDATE_SOURCE_KEY_OPTION_TEST_ID_PREFIX,
+  BUILDING_BLOCK_USAGE_UPDATE_SOURCE_OPTION_TEST_ID_PREFIX,
+  BUILDING_BLOCK_USAGE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX,
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost} from '../../utils/api.utils';
 import {BUILDING_BLOCK_TEXTS} from './building-block-config';
 
 const ARCHIVES_DIR = 'building-block-archives';
 const BUILDING_BLOCK_API_URL = '/api/management/v1/building-block';
-const VERSION_MIGRATION_API_URL = `${BUILDING_BLOCK_API_URL}/version-migration`;
+const USAGE_UPDATE_API_URL = `${BUILDING_BLOCK_API_URL}/usage-update`;
 const PROCESS_LINK_API_URL = '/api/v1/process-link';
 
-/**
- * A main process whose only step is a call activity that starts building block
- * `childKey` at `childVersionTag`. The diagram section is required: the backend
- * drops every element without a shape before validating, so a BPMN without DI
- * is rejected as having no start event.
- */
+// DI section required — backend drops elements without a shape
 function callActivityBpmn(
   processKey: string,
   activityId: string,
@@ -204,49 +200,49 @@ export class BuildingBlockManagementPage {
     return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS.finishButton);
   }
 
-  // ─── Version migration wizard locators ────────────────────────────
+  // ─── Usage update wizard locators ────────────────────────────
 
-  get migrateButton() {
+  get updateUsagesButton() {
     return this.carbonList.toolbar.getByTestId(
-      BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.migrateButton
+      BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.updateUsagesButton
     );
   }
 
-  private migrationTestId(id: keyof typeof BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS) {
-    return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS[id]);
+  private usageUpdateTestId(id: keyof typeof BUILDING_BLOCK_MANAGEMENT_USAGE_UPDATE_TEST_IDS) {
+    return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_USAGE_UPDATE_TEST_IDS[id]);
   }
 
-  get migrationChains() {
-    return this.migrationTestId('chain');
+  get usageUpdateChains() {
+    return this.usageUpdateTestId('chain');
   }
 
   /** A chain of the chains step, identified by a container key on its path. */
-  migrationChain(containerKey: string) {
-    return this.migrationChains.filter({hasText: containerKey});
+  usageUpdateChain(containerKey: string) {
+    return this.usageUpdateChains.filter({hasText: containerKey});
   }
 
-  get migrationDifferences() {
-    return this.migrationTestId('differences');
+  get usageUpdateDifferences() {
+    return this.usageUpdateTestId('differences');
   }
 
-  get migrationReview() {
-    return this.migrationTestId('review');
+  get usageUpdateReview() {
+    return this.usageUpdateTestId('review');
   }
 
-  get migrationResult() {
-    return this.migrationTestId('result');
+  get usageUpdateResult() {
+    return this.usageUpdateTestId('result');
   }
 
-  get migrationDraftLinks() {
-    return this.migrationTestId('draftLink');
+  get usageUpdateDraftLinks() {
+    return this.usageUpdateTestId('draftLink');
   }
 
-  get migrationNextButton() {
-    return this.migrationTestId('nextButton');
+  get usageUpdateNextButton() {
+    return this.usageUpdateTestId('nextButton');
   }
 
-  get migrationExecuteButton() {
-    return this.migrationTestId('executeButton');
+  get usageUpdateExecuteButton() {
+    return this.usageUpdateTestId('executeButton');
   }
 
   // ─── Navigation ───────────────────────────────────────────────────
@@ -440,81 +436,90 @@ export class BuildingBlockManagementPage {
     await expect(this.uploadBackButton).not.toBeVisible();
   }
 
-  // ─── Version migration wizard ─────────────────────────────────────
+  // ─── Usage update wizard ─────────────────────────────────────
 
-  async openMigrationWizard() {
+  async openUsageUpdateWizard() {
     await this.goToBuildingBlockManagement();
-    await this.migrateButton.click();
-    await expect(this.migrationTestId('sourceDropdown')).toBeVisible();
+    await this.updateUsagesButton.click();
+    await expect(this.usageUpdateTestId('sourceKeyComboBox')).toBeVisible();
   }
 
   /** Step 1: the source is one of the building block versions that are in use. */
-  async selectMigrationSource(key: string, versionTag: string) {
-    await this.migrationTestId('sourceDropdown').locator('button').first().click();
+  async selectUsageUpdateSource(key: string, versionTag: string) {
+    await this.usageUpdateTestId('sourceKeyComboBox').locator('input').fill(key);
     await this.page
-      .getByTestId(
-        `${BUILDING_BLOCK_VERSION_MIGRATION_SOURCE_OPTION_TEST_ID_PREFIX}${key}-${versionTag}`
-      )
+      .getByTestId(`${BUILDING_BLOCK_USAGE_UPDATE_SOURCE_KEY_OPTION_TEST_ID_PREFIX}${key}`)
       .click();
-    await this.goToNextMigrationStep();
+    const sourceVersionInput = this.usageUpdateTestId('sourceVersionComboBox').locator('input');
+    const autoSelected = await expect(sourceVersionInput)
+      .toHaveValue(versionTag, {timeout: 2000})
+      .then(() => true)
+      .catch(() => false);
+    if (!autoSelected) {
+      await sourceVersionInput.fill(versionTag);
+      await this.page
+        .getByTestId(
+          `${BUILDING_BLOCK_USAGE_UPDATE_SOURCE_OPTION_TEST_ID_PREFIX}${key}-${versionTag}`
+        )
+        .click();
+      await expect(sourceVersionInput).toHaveValue(versionTag);
+    }
+    await this.goToNextUsageUpdateStep();
   }
 
   /** Step 2: another version of the same key. */
-  async selectMigrationTarget(versionTag: string) {
-    await this.migrationTestId('targetDropdown').locator('button').first().click();
+  async selectUsageUpdateTarget(versionTag: string) {
+    await this.usageUpdateTestId('targetComboBox').locator('input').fill(versionTag);
     await this.page
-      .getByTestId(`${BUILDING_BLOCK_VERSION_MIGRATION_TARGET_OPTION_TEST_ID_PREFIX}${versionTag}`)
+      .getByTestId(`${BUILDING_BLOCK_USAGE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX}${versionTag}`)
       .click();
-    await this.goToNextMigrationStep();
-    await expect(this.migrationChains.first()).toBeVisible();
+    await this.goToNextUsageUpdateStep();
+    await expect(this.usageUpdateChains.first()).toBeVisible();
   }
 
-  migrationChainCheckbox(containerKey: string) {
-    return this.migrationChain(containerKey).locator('input[type="checkbox"]');
+  usageUpdateChainCheckbox(containerKey: string) {
+    return this.usageUpdateChain(containerKey).locator('input[type="checkbox"]');
   }
 
-  /**
-   * Opt a chain in. As with the upload modal, the inner label has to be clicked —
-   * a click on the `cds-checkbox` host does not emit Carbon's `checkedChange`.
-   */
-  async selectMigrationChain(containerKey: string) {
-    await this.migrationChain(containerKey)
-      .getByTestId(BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS.chainCheckbox)
+  // Click the label — host click doesn't emit `checkedChange`
+  async selectUsageUpdateChain(containerKey: string) {
+    await this.usageUpdateChain(containerKey)
+      .getByTestId(BUILDING_BLOCK_MANAGEMENT_USAGE_UPDATE_TEST_IDS.chainCheckbox)
       .locator('label')
       .click();
-    await expect(this.migrationChainCheckbox(containerKey)).toBeChecked();
+    await expect(this.usageUpdateChainCheckbox(containerKey)).toBeChecked();
   }
 
-  async goToNextMigrationStep() {
-    await expect(this.migrationNextButton).toBeEnabled();
-    await this.migrationNextButton.click();
+  async goToNextUsageUpdateStep() {
+    await expect(this.usageUpdateNextButton).toBeEnabled();
+    await this.usageUpdateNextButton.click();
   }
 
-  async confirmMigration() {
-    await this.migrationTestId('confirmCheckbox').locator('label').click();
+  async confirmUsageUpdate() {
+    await this.usageUpdateTestId('confirmCheckbox').locator('label').click();
   }
 
-  async executeMigration(): Promise<Response> {
-    await expect(this.migrationExecuteButton).toBeEnabled();
+  async executeUsageUpdate(): Promise<Response> {
+    await expect(this.usageUpdateExecuteButton).toBeEnabled();
     const [response] = await Promise.all([
       this.page.waitForResponse(
         res =>
-          res.url().endsWith(`${VERSION_MIGRATION_API_URL}/execute`) &&
+          res.url().endsWith(`${USAGE_UPDATE_API_URL}/execute`) &&
           res.request().method() === 'POST'
       ),
-      this.migrationExecuteButton.click(),
+      this.usageUpdateExecuteButton.click(),
     ]);
     return response;
   }
 
-  // ─── Version migration fixture API ────────────────────────────────
+  // ─── Usage update fixture API ────────────────────────────────
 
   async createBuildingBlockViaApi(key: string, versionTag: string) {
     await apiPost(BUILDING_BLOCK_API_URL, {
       key,
       name: key,
       versionTag,
-      description: 'Building block created by the e2e building block version migration test.',
+      description: 'Building block created by the e2e building block usage update test.',
     });
   }
 
@@ -537,12 +542,7 @@ export class BuildingBlockManagementPage {
     return main!.id;
   }
 
-  /**
-   * Redeploy the main process of a draft building block version with one call
-   * activity that is linked to building block `childKey` at `childVersionTag`.
-   * Goes through the multipart endpoint the process editor uses, so the process
-   * link is stored exactly as when it is made in the UI.
-   */
+  // Uses the process editor's multipart endpoint, so the link is stored as in the UI
   async linkMainProcessToBuildingBlockViaApi(
     key: string,
     versionTag: string,
@@ -550,8 +550,7 @@ export class BuildingBlockManagementPage {
     childKey: string,
     childVersionTag: string
   ) {
-    // The api utils have no multipart helper. Their GET above refreshes an expired
-    // token into PLAYWRIGHT_BEARER_TOKEN, so the PUT below reuses a valid one.
+    // Multipart PUT reuses PLAYWRIGHT_BEARER_TOKEN; api utils refresh it on 401
     const processDefinitionId = await this.getMainProcessDefinitionIdViaApi(key, versionTag);
     const processLinks = [
       {

@@ -1,0 +1,108 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.valtimo-building-block-usage-update {
+  &__selectors {
+    display: grid;
+    // No Carbon token for column width — stacks the combo boxes on narrow screens
+    grid-template-columns: repeat(auto-fit, minmax(256px, 1fr));
+    gap: var(--cds-spacing-05);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-05);
+    list-style: none;
+    padding: 0;
+  }
+
+  &__description,
+  &__secondary {
+    color: var(--cds-text-secondary);
+  }
+
+  &__version,
+  &__path,
+  &__path-item,
+  &__chain-header,
+  &__chain-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__path {
+    row-gap: var(--cds-spacing-02);
+  }
+
+  &__chain-header {
+    justify-content: space-between;
+  }
+
+  &__chain-details .cds--tag {
+    max-inline-size: none;
+  }
+
+  &__chain {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+    padding: var(--cds-spacing-04);
+    border: 1px solid var(--cds-border-subtle);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-04);
+  }
+
+  &__input {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__mapping {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) auto minmax(0, 1fr);
+    align-items: end;
+    gap: var(--cds-spacing-04);
+  }
+
+  &__mapping-source {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    align-items: end;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__mapping-arrow {
+    padding-bottom: var(--cds-spacing-03);
+    color: var(--cds-icon-secondary);
+  }
+
+  &__bullets {
+    list-style: disc;
+    padding-inline-start: var(--cds-spacing-06);
+  }
+
+  &__error {
+    color: var(--cds-text-error);
+  }
+}

@@ -23,8 +23,8 @@ export class BuildingBlockManagementService {
   public readonly showCreateModal$ = this._showCreateModal$.asObservable();
   private readonly _showUploadModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = this._showUploadModal$.asObservable();
-  private readonly _showVersionMigrationModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showVersionMigrationModal$ = this._showVersionMigrationModal$.asObservable();
+  private readonly _showUsageUpdateModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showUsageUpdateModal$ = this._showUsageUpdateModal$.asObservable();
   private readonly _usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly usedKeys$ = this._usedKeys$.asObservable();
   private readonly _reload$ = new BehaviorSubject<null>(null);
@@ -44,11 +44,11 @@ export class BuildingBlockManagementService {
     this._showUploadModal$.next(false);
   }
 
-  public showVersionMigrationModal(): void {
-    this._showVersionMigrationModal$.next(true);
+  public showUsageUpdateModal(): void {
+    this._showUsageUpdateModal$.next(true);
   }
-  public hideVersionMigrationModal(): void {
-    this._showVersionMigrationModal$.next(false);
+  public hideUsageUpdateModal(): void {
+    this._showUsageUpdateModal$.next(false);
   }
 
   public setUsedKeys(keys: string[]): void {

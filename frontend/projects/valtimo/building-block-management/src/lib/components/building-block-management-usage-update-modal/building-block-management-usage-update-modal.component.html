@@ -1,0 +1,118 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  valtimoCdsModal
+  [attr.data-test-id]="testIds.modal"
+  [open]="showModal$ | async"
+  class="valtimo-building-block-usage-update"
+  size="lg"
+  (close)="onCloseModal()"
+>
+  <cds-modal-header [showCloseButton]="!$executing()" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'buildingBlockManagement.usageUpdate.title' | translate }}
+    </h3>
+
+    <cds-progress-indicator
+      [attr.data-test-id]="testIds.progressIndicator"
+      [steps]="$progressSteps()"
+      [current]="$progressCurrentIndex()"
+      class="valtimo-building-block-usage-update__progress"
+      spacing="equal"
+    ></cds-progress-indicator>
+  </cds-modal-header>
+
+  <section cdsModalContent class="valtimo-building-block-usage-update__content">
+    @if ($result()) {
+      <valtimo-building-block-usage-update-result></valtimo-building-block-usage-update-result>
+    } @else {
+      @switch ($step()) {
+        @case (USAGE_UPDATE_STEP.SOURCE) {
+          <valtimo-building-block-usage-update-source-step></valtimo-building-block-usage-update-source-step>
+        }
+
+        @case (USAGE_UPDATE_STEP.TARGET) {
+          <valtimo-building-block-usage-update-target-step></valtimo-building-block-usage-update-target-step>
+        }
+
+        @case (USAGE_UPDATE_STEP.CHAINS) {
+          <valtimo-building-block-usage-update-chains-step></valtimo-building-block-usage-update-chains-step>
+        }
+
+        @case (USAGE_UPDATE_STEP.DIFFERENCES) {
+          <valtimo-building-block-usage-update-differences-step></valtimo-building-block-usage-update-differences-step>
+        }
+
+        @case (USAGE_UPDATE_STEP.REVIEW) {
+          <valtimo-building-block-usage-update-review-step></valtimo-building-block-usage-update-review-step>
+        }
+      }
+    }
+  </section>
+
+  <cds-modal-footer>
+    @if ($result()) {
+      <button
+        [attr.data-test-id]="testIds.closeButton"
+        cdsButton="primary"
+        (click)="onCloseModal()"
+      >
+        {{ 'interface.close' | translate }}
+      </button>
+    } @else {
+      <button
+        [attr.data-test-id]="testIds.cancelButton"
+        [disabled]="$executing()"
+        cdsButton="ghost"
+        (click)="onCloseModal()"
+      >
+        {{ 'interface.cancel' | translate }}
+      </button>
+
+      @if ($currentStepIndex() > 0) {
+        <button
+          [attr.data-test-id]="testIds.backButton"
+          [disabled]="$executing()"
+          cdsButton="secondary"
+          (click)="onBackClick()"
+        >
+          {{ 'interface.back' | translate }}
+        </button>
+      }
+
+      @if ($step() === USAGE_UPDATE_STEP.REVIEW) {
+        <button
+          [attr.data-test-id]="testIds.executeButton"
+          [disabled]="!$canProceed()"
+          cdsButton="primary"
+          (click)="onExecute()"
+        >
+          {{ 'buildingBlockManagement.usageUpdate.review.execute' | translate }}
+        </button>
+      } @else {
+        <button
+          [attr.data-test-id]="testIds.nextButton"
+          [disabled]="!$canProceed()"
+          cdsButton="primary"
+          (click)="onNextClick()"
+        >
+          {{ 'interface.next' | translate }}
+        </button>
+      }
+    }
+  </cds-modal-footer>
+</cds-modal>

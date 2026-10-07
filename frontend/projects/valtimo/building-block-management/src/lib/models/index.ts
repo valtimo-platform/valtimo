@@ -16,4 +16,4 @@
 
 export * from './building-block-management.model';
 export * from './migration.model';
-export * from './building-block-version-migration.model';
+export * from './building-block-usage-update.model';

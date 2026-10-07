@@ -67,8 +67,11 @@ import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationC
 import com.ritense.buildingblock.service.migration.RemoveBuildingBlockVersionChecker
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentSuggester
 import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentSuggester
+import com.ritense.buildingblock.service.usageupdate.BuildingBlockUsageIndexLoader
+import com.ritense.buildingblock.service.usageupdate.BuildingBlockUsageUpdateService
 import com.ritense.buildingblock.web.rest.BuildingBlockMigrationManagementResource
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.repository.CaseMigrationCaseRepository
 import com.ritense.case_.service.migration.CaseMigrationService
 import com.ritense.case_.service.migration.MigrationPlanApplier
@@ -133,12 +136,8 @@ import com.ritense.buildingblock.web.rest.BuildingBlockFormFlowManagementResourc
 import com.ritense.buildingblock.web.rest.BuildingBlockFormManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockInstanceResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
-import com.ritense.buildingblock.web.rest.BuildingBlockVersionMigrationResource
-import com.ritense.buildingblock.service.versionmigration.BuildingBlockUsageIndexLoader
-import com.ritense.buildingblock.service.versionmigration.BuildingBlockVersionMigrationService
-import com.ritense.case_.repository.CaseDefinitionRepository
-import jakarta.persistence.EntityManager
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.buildingblock.web.rest.BuildingBlockUsageUpdateResource
 import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
@@ -178,6 +177,7 @@ import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverService
+import jakarta.persistence.EntityManager
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
@@ -408,8 +408,8 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(BuildingBlockVersionMigrationService::class)
-    fun buildingBlockVersionMigrationService(
+    @ConditionalOnMissingBean(BuildingBlockUsageUpdateService::class)
+    fun buildingBlockUsageUpdateService(
         buildingBlockUsageIndexLoader: BuildingBlockUsageIndexLoader,
         buildingBlockManagementService: BuildingBlockManagementService,
         caseDefinitionService: CaseDefinitionService,
@@ -426,8 +426,8 @@ class BuildingBlockAutoConfiguration {
         pluginService: PluginService,
         authorizationService: AuthorizationService,
         entityManager: EntityManager,
-    ): BuildingBlockVersionMigrationService {
-        return BuildingBlockVersionMigrationService(
+    ): BuildingBlockUsageUpdateService {
+        return BuildingBlockUsageUpdateService(
             buildingBlockUsageIndexLoader,
             buildingBlockManagementService,
             caseDefinitionService,
@@ -448,11 +448,11 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(BuildingBlockVersionMigrationResource::class)
-    fun buildingBlockVersionMigrationResource(
-        buildingBlockVersionMigrationService: BuildingBlockVersionMigrationService,
-    ): BuildingBlockVersionMigrationResource {
-        return BuildingBlockVersionMigrationResource(buildingBlockVersionMigrationService)
+    @ConditionalOnMissingBean(BuildingBlockUsageUpdateResource::class)
+    fun buildingBlockUsageUpdateResource(
+        buildingBlockUsageUpdateService: BuildingBlockUsageUpdateService,
+    ): BuildingBlockUsageUpdateResource {
+        return BuildingBlockUsageUpdateResource(buildingBlockUsageUpdateService)
     }
 
     @Bean

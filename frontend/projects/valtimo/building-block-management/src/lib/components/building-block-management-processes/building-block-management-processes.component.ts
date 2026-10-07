@@ -84,10 +84,18 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
       processDefinitions.map(definition => {
         const statusTags: Array<{content: string; type: string}> = [];
         if (definition.main) {
-          statusTags.push({content: this.translateService.instant('buildingBlockManagement.processDefinition.mainText'), type: 'blue'});
+          statusTags.push({
+            content: this.translateService.instant(
+              'buildingBlockManagement.processDefinition.mainText'
+            ),
+            type: 'blue',
+          });
         }
         if (definition.draft) {
-          statusTags.push({content: this.translateService.instant('processManagement.draft'), type: 'red'});
+          statusTags.push({
+            content: this.translateService.instant('processManagement.draft'),
+            type: 'red',
+          });
         }
         return {
           ...definition,

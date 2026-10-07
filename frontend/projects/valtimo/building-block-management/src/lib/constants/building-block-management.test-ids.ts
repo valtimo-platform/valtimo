@@ -17,7 +17,7 @@
 export const BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS = {
   uploadButton: 'buildingBlockUploadButton',
   createButton: 'buildingBlockCreateButton',
-  migrateButton: 'buildingBlockMigrateButton',
+  updateUsagesButton: 'buildingBlockUpdateUsagesButton',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS = {
@@ -39,31 +39,36 @@ export const BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS = {
   finishButton: 'buildingBlockUploadFinishButton',
 } as const;
 
-export const BUILDING_BLOCK_MANAGEMENT_VERSION_MIGRATION_TEST_IDS = {
-  modal: 'buildingBlockVersionMigrationModal',
-  progressIndicator: 'buildingBlockVersionMigrationProgressIndicator',
-  sourceDropdown: 'buildingBlockVersionMigrationSourceDropdown',
-  targetDropdown: 'buildingBlockVersionMigrationTargetDropdown',
-  noSourceVersions: 'buildingBlockVersionMigrationNoSourceVersions',
-  draftsNotAllowed: 'buildingBlockVersionMigrationDraftsNotAllowed',
-  chain: 'buildingBlockVersionMigrationChain',
-  chainCheckbox: 'buildingBlockVersionMigrationChainCheckbox',
-  chainModifiesExistingDraft: 'buildingBlockVersionMigrationChainModifiesExistingDraft',
-  chainNotMigratable: 'buildingBlockVersionMigrationChainNotMigratable',
-  differences: 'buildingBlockVersionMigrationDifferences',
-  inputSourceInput: 'buildingBlockVersionMigrationInputSourceInput',
-  pluginConfigurationDropdown: 'buildingBlockVersionMigrationPluginConfigurationDropdown',
-  droppedMappings: 'buildingBlockVersionMigrationDroppedMappings',
-  review: 'buildingBlockVersionMigrationReview',
-  confirmCheckbox: 'buildingBlockVersionMigrationConfirmCheckbox',
-  result: 'buildingBlockVersionMigrationResult',
-  draftLink: 'buildingBlockVersionMigrationDraftLink',
-  remainingReferences: 'buildingBlockVersionMigrationRemainingReferences',
-  cancelButton: 'buildingBlockVersionMigrationCancelButton',
-  backButton: 'buildingBlockVersionMigrationBackButton',
-  nextButton: 'buildingBlockVersionMigrationNextButton',
-  executeButton: 'buildingBlockVersionMigrationExecuteButton',
-  closeButton: 'buildingBlockVersionMigrationCloseButton',
+export const BUILDING_BLOCK_MANAGEMENT_USAGE_UPDATE_TEST_IDS = {
+  modal: 'buildingBlockUsageUpdateModal',
+  progressIndicator: 'buildingBlockUsageUpdateProgressIndicator',
+  sourceKeyComboBox: 'buildingBlockUsageUpdateSourceKeyComboBox',
+  sourceVersionComboBox: 'buildingBlockUsageUpdateSourceVersionComboBox',
+  targetKeyComboBox: 'buildingBlockUsageUpdateTargetKeyComboBox',
+  targetComboBox: 'buildingBlockUsageUpdateTargetComboBox',
+  noSourceVersions: 'buildingBlockUsageUpdateNoSourceVersions',
+  draftsNotAllowed: 'buildingBlockUsageUpdateDraftsNotAllowed',
+  previewFailed: 'buildingBlockUsageUpdatePreviewFailed',
+  retryPreviewButton: 'buildingBlockUsageUpdateRetryPreviewButton',
+  chain: 'buildingBlockUsageUpdateChain',
+  chainCheckbox: 'buildingBlockUsageUpdateChainCheckbox',
+  chainModifiesExistingDraft: 'buildingBlockUsageUpdateChainModifiesExistingDraft',
+  chainNotUpdatable: 'buildingBlockUsageUpdateChainNotUpdatable',
+  differences: 'buildingBlockUsageUpdateDifferences',
+  inputMapping: 'buildingBlockUsageUpdateInputMapping',
+  inputValueInput: 'buildingBlockUsageUpdateInputValueInput',
+  pluginConfigurationDropdown: 'buildingBlockUsageUpdatePluginConfigurationDropdown',
+  droppedMappings: 'buildingBlockUsageUpdateDroppedMappings',
+  review: 'buildingBlockUsageUpdateReview',
+  confirmCheckbox: 'buildingBlockUsageUpdateConfirmCheckbox',
+  result: 'buildingBlockUsageUpdateResult',
+  draftLink: 'buildingBlockUsageUpdateDraftLink',
+  remainingReferences: 'buildingBlockUsageUpdateRemainingReferences',
+  cancelButton: 'buildingBlockUsageUpdateCancelButton',
+  backButton: 'buildingBlockUsageUpdateBackButton',
+  nextButton: 'buildingBlockUsageUpdateNextButton',
+  executeButton: 'buildingBlockUsageUpdateExecuteButton',
+  closeButton: 'buildingBlockUsageUpdateCloseButton',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS = {
@@ -117,10 +122,18 @@ export const BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS = {
  */
 export const BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX = 'buildingBlockVersion-';
 
-/** Prefix for the options of the migration wizard's source dropdown: `<prefix><key>-<versionTag>`. */
-export const BUILDING_BLOCK_VERSION_MIGRATION_SOURCE_OPTION_TEST_ID_PREFIX =
-  'buildingBlockVersionMigrationSource-';
+/** Prefix for the options of the usage update wizard's source key combo box: `<prefix><key>`. */
+export const BUILDING_BLOCK_USAGE_UPDATE_SOURCE_KEY_OPTION_TEST_ID_PREFIX =
+  'buildingBlockUsageUpdateSourceKey-';
 
-/** Prefix for the options of the migration wizard's target dropdown: `<prefix><versionTag>`. */
-export const BUILDING_BLOCK_VERSION_MIGRATION_TARGET_OPTION_TEST_ID_PREFIX =
-  'buildingBlockVersionMigrationTarget-';
+/** Prefix for the options of the usage update wizard's source version combo box: `<prefix><key>-<versionTag>`. */
+export const BUILDING_BLOCK_USAGE_UPDATE_SOURCE_OPTION_TEST_ID_PREFIX =
+  'buildingBlockUsageUpdateSource-';
+
+/** Prefix for the options of the usage update wizard's target key combo box: `<prefix><key>`. */
+export const BUILDING_BLOCK_USAGE_UPDATE_TARGET_KEY_OPTION_TEST_ID_PREFIX =
+  'buildingBlockUsageUpdateTargetKey-';
+
+/** Prefix for the options of the usage update wizard's target combo box: `<prefix><versionTag>`. */
+export const BUILDING_BLOCK_USAGE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX =
+  'buildingBlockUsageUpdateTarget-';

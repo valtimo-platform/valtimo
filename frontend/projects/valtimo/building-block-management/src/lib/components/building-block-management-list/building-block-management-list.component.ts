@@ -41,10 +41,13 @@ import {BuildingBlockManagementCreateModalComponent} from '../building-block-man
 import {BuildingBlockDefinitionDto, EnvironmentService} from '@valtimo/shared';
 import {Migrate16, Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
-import {BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS, BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {
+  BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_TABS,
+} from '../../constants';
 import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 import {BuildingBlockDefinitionQuery} from '../../models';
-import {BuildingBlockManagementVersionMigrationModalComponent} from '../building-block-management-version-migration-modal/building-block-management-version-migration-modal.component';
+import {BuildingBlockManagementUsageUpdateModalComponent} from '../building-block-management-usage-update-modal/building-block-management-usage-update-modal.component';
 
 @Component({
   standalone: true,
@@ -59,7 +62,7 @@ import {BuildingBlockManagementVersionMigrationModalComponent} from '../building
     TranslatePipe,
     BuildingBlockManagementCreateModalComponent,
     BuildingBlockManagementUploadModalComponent,
-    BuildingBlockManagementVersionMigrationModalComponent,
+    BuildingBlockManagementUsageUpdateModalComponent,
   ],
   providers: [BuildingBlockManagementService],
 })
@@ -68,8 +71,10 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
 
   public readonly $loading = signal<boolean>(true);
 
-  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
-    this.environmentService.canUpdateGlobalConfiguration();
+  public readonly showUsageUpdateButton$: Observable<boolean> = combineLatest([
+    this.environmentService.canUpdateGlobalConfiguration(),
+    this.buildingBlockManagementService.usedKeys$,
+  ]).pipe(map(([canUpdate, usedKeys]) => canUpdate && usedKeys.length > 0));
 
   private readonly _collectionSize$ = new BehaviorSubject<number>(0);
 
@@ -184,8 +189,8 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
     this.buildingBlockManagementService.showUploadModal();
   }
 
-  public showVersionMigrationModal(): void {
-    this.buildingBlockManagementService.showVersionMigrationModal();
+  public showUsageUpdateModal(): void {
+    this.buildingBlockManagementService.showUsageUpdateModal();
   }
 
   public onRowClick(buildingBlockDefinition: BuildingBlockDefinitionDto): void {

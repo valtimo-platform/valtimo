@@ -4362,9 +4362,9 @@
   },
   "buildingBlockManagement": {
     "title": "Bouwblokken",
-    "versionMigration": {
-      "button": "Migreren",
-      "title": "Bouwblokversie migreren",
+    "usageUpdate": {
+      "button": "Gebruik bijwerken",
+      "title": "Gebruik van bouwblok bijwerken",
       "draft": "Concept",
       "final": "Definitief",
       "none": "Geen",
@@ -4380,25 +4380,33 @@
         "review": "Controleren"
       },
       "source": {
-        "description": "Selecteer de bouwblokversie die je wilt vervangen. Alleen versies die ergens gebruikt worden staan in de lijst.",
-        "label": "Bronversie",
-        "placeholder": "Selecteer een bouwblokversie",
-        "emptyTitle": "Niets te migreren",
+        "description": "Selecteer het bouwblok en de versie die je wilt vervangen. Alleen versies die ergens gebruikt worden staan in de lijst.",
+        "keyLabel": "Bouwblok",
+        "keyPlaceholder": "Zoek een bouwblok",
+        "versionLabel": "Bronversie",
+        "versionPlaceholder": "Zoek een versie",
+        "emptyTitle": "Niets bij te werken",
         "emptyMessage": "Geen enkele bouwblokversie wordt gebruikt door een dossier of een ander bouwblok."
       },
       "target": {
-        "description": "Selecteer de versie van {{key}} die {{versionTag}} moet vervangen. Dit kan een oudere of een nieuwere versie zijn.",
+        "description": "Selecteer het bouwblok en de versie die {{key}} {{versionTag}} moet vervangen. Dit kan een oudere of een nieuwere versie zijn, of een ander bouwblok.",
+        "keyLabel": "Doelbouwblok",
+        "keyPlaceholder": "Zoek een bouwblok",
         "label": "Doelversie",
-        "placeholder": "Selecteer een versie",
-        "emptyTitle": "Geen andere versie",
-        "emptyMessage": "Dit bouwblok heeft geen andere versie om naar te migreren."
+        "placeholder": "Zoek een versie",
+        "emptyTitle": "Geen versie",
+        "emptyMessage": "Dit bouwblok heeft geen andere versie om naar over te stappen."
       },
       "chains": {
-        "description": "Dit zijn alle plekken waar {{key}} {{sourceVersionTag}} gebruikt wordt, van het dossier of het bovenste bouwblok tot aan de verwijzing. Selecteer welke naar {{targetVersionTag}} moeten. Gebruik via een definitieve versie maakt nieuwe concepten aan en is standaard niet geselecteerd.",
+        "description": "Selecteer welk gebruik van {{key}} {{sourceVersionTag}} naar {{targetKey}} {{targetVersionTag}} bijgewerkt moet worden. Gebruik via een definitieve versie maakt nieuwe concepten aan en is standaard niet geselecteerd.",
+        "via": "via",
+        "isUsing": "gebruikt",
+        "inActivity": "(activiteit {{activityId}})",
+        "willBeUpdatedTo": "en gaat over naar",
         "empty": "Geen gebruik gevonden.",
         "requiresDrafts": "Maakt nieuwe concepten van definitieve versies",
         "modifiesExistingDraft": "Wijzigt bestaand concept {{key}} {{versionTag}} (gebaseerd op {{basedOn}})",
-        "notMigratable": "Kan niet gemigreerd worden: {{reason}}",
+        "notUpdatable": "Kan niet bijgewerkt worden: {{reason}}",
         "selectAtLeastOne": "Selecteer minstens één gebruik om verder te gaan."
       },
       "differences": {
@@ -4406,8 +4414,13 @@
         "configured": "Geconfigureerd",
         "notConfigured": "Niet geconfigureerd",
         "none": "Geen verschillen op te lossen.",
-        "inputSource": "Waarde voor verplichte invoer {{field}}",
-        "inputPlaceholder": "Bijvoorbeeld doc:/pad, case:assignee of een vaste waarde",
+        "inputMode": "Bron",
+        "inputMode_path": "Pad",
+        "inputMode_value": "Waarde",
+        "inputPath": "Pad",
+        "inputValue": "Waarde",
+        "inputValuePlaceholder": "Vaste waarde",
+        "inputTarget": "Verplichte invoer",
         "inputRequired": "Deze invoer is verplicht in de doelversie",
         "pluginConfiguration": "Pluginconfiguratie voor {{plugin}}",
         "pluginPlaceholder": "Selecteer een pluginconfiguratie",
@@ -4419,21 +4432,21 @@
         "droppedOutput": "Uitvoer {{source}} → {{target}}"
       },
       "review": {
-        "description": "Controleer alle wijzigingen voor het migreren van {{key}} {{sourceVersionTag}} naar {{targetVersionTag}}. Er wordt niets definitief gemaakt en er verandert niets aan lopende dossiers.",
+        "description": "Controleer alle wijzigingen voor het bijwerken van het gebruik van {{key}} {{sourceVersionTag}} naar {{targetKey}} {{targetVersionTag}}. Er wordt niets definitief gemaakt en er verandert niets aan lopende dossiers.",
         "draftsToCreate": "Aan te maken concepten",
         "draftsToModify": "Te wijzigen concepten",
         "draftVersion": "versie {{versionTag}}, gebaseerd op {{basedOn}}",
         "linksToRepoint": "Om te zetten verwijzingen",
         "containerReference": "Verwijzing naar container",
         "skipped": "Overgeslagen gebruik",
-        "covered": "Ook gemigreerd via een gedeelde verwijzing",
+        "covered": "Ook bijgewerkt via een gedeelde verwijzing",
         "confirm": "Ik heb deze wijzigingen gecontroleerd en wil ze doorvoeren",
-        "execute": "Migreren"
+        "execute": "Gebruik bijwerken"
       },
       "result": {
-        "title": "Migratie voltooid",
-        "message": "Verwijzingen naar {{key}} {{sourceVersionTag}} zijn waar geselecteerd omgezet naar {{targetVersionTag}}.",
-        "migratedDirectly": "Direct gemigreerd gebruik",
+        "title": "Gebruik bijgewerkt",
+        "message": "Verwijzingen naar {{key}} {{sourceVersionTag}} zijn waar geselecteerd omgezet naar {{targetKey}} {{targetVersionTag}}.",
+        "updatedDirectly": "Direct bijgewerkt gebruik",
         "draftsCreated": "Aangemaakte concepten",
         "draftsModified": "Gewijzigde concepten",
         "basedOn": "gebaseerd op {{versionTag}}",
@@ -4442,9 +4455,14 @@
         "nextStepsTitle": "Volgende stappen",
         "nextSteps": "Controleer de concepten hierboven en maak ze definitief, en plan daarna een dossiermigratie om bestaande dossiers naar de nieuwe versies te verplaatsen."
       },
+      "previewFailed": {
+        "title": "Het voorbeeld kon niet geladen worden",
+        "message": "Er ging iets mis bij het vergelijken van de bron- en de doelversie.",
+        "retry": "Opnieuw proberen"
+      },
       "draftsNotAllowed": {
         "title": "Concepten zijn niet toegestaan",
-        "message": "Deze omgeving staat geen concepten toe, dus bouwblokverwijzingen kunnen hier niet gemigreerd worden. Voer de migratie uit op een omgeving waar configuratie gewijzigd kan worden."
+        "message": "Deze omgeving staat geen concepten toe, dus het gebruik van bouwblokken kan hier niet bijgewerkt worden. Werk het bij op een omgeving waar configuratie gewijzigd kan worden."
       }
     },
     "listColumns": {

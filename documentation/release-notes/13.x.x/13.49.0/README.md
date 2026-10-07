@@ -6,25 +6,13 @@ Release date: 07-10-2026
 
 ## New Features
 
-### Building block migration wizard
+### Update building block usages
 
-Building block versions no longer have to be traced and updated by hand. The **Migrate** button on the
+Building block versions no longer have to be traced and updated by hand. The **Update usages** button on the
 building block list opens a wizard that moves every reference to one building block version onto
-another version of the same building block — newer or older.
+another version — newer or older — of the same building block, or onto another building block.
 
-- **Where it is used** — only versions that are actually referenced can be chosen, and each reference
-  is shown with its full path, up to and including the case definition version: a call activity in a
-  case or in another building block at any depth, or a building block on a case's Actions tab.
-- **What it changes** — references that live entirely in drafts are migrated in place. References
-  that pass through finalized versions can be opted in: the wizard then creates the drafts needed along
-  the way, based on exactly the versions referenced, and points each of them to the next. A container
-  that already has an open draft gets no second one; the change goes into that draft instead.
-- **What differs** — new required inputs, mappings to fields the target no longer has, and plugins the
-  target needs are listed per reference and resolved in the wizard before anything runs.
-
-The migration runs as a single transaction and only ever writes to drafts. It never finalizes anything
-and never touches running cases: review and finalize the drafts afterwards, then plan a case migration
-to move running cases.
+**[Try it out →](../../../configuration-guides/building-blocks/usage-update.md)**
 
 ---
 
