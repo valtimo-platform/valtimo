@@ -28,7 +28,6 @@ import {SubmenuTitleClickDirective} from './submenu-title-click.directive';
   template: `
     <cds-sidenav-menu
       title="Cases"
-      [submenuSectionActive]="sectionActive"
       [valtimoSubmenuTitleClick]="enabled"
       (submenuTitleClickEvent)="titleClicks = titleClicks + 1"
     >
@@ -38,7 +37,6 @@ import {SubmenuTitleClickDirective} from './submenu-title-click.directive';
 })
 class TestHostComponent {
   public enabled = true;
-  public sectionActive = false;
   public titleClicks = 0;
 }
 
@@ -62,18 +60,18 @@ describe('SubmenuTitleClickDirective', () => {
     fixture.detectChanges();
   });
 
-  it('emits on a title click and opens the submenu', () => {
+  it('emits on a title click without expanding the submenu', () => {
     click('.cds--side-nav__submenu-title');
 
     expect(host.titleClicks).toBe(1);
-    expect(expanded()).toBe(true);
+    expect(expanded()).toBe(false);
   });
 
-  it('keeps an open submenu open when the title is clicked again', () => {
-    click('.cds--side-nav__submenu-title');
+  it('does not collapse an open submenu on a title click', () => {
+    click('.cds--side-nav__submenu-chevron');
     click('.cds--side-nav__submenu-title');
 
-    expect(host.titleClicks).toBe(2);
+    expect(host.titleClicks).toBe(1);
     expect(expanded()).toBe(true);
   });
 
@@ -97,38 +95,6 @@ describe('SubmenuTitleClickDirective', () => {
     );
 
     expect(chevron.getAttribute('data-test-id')).toBe(LEFT_SIDEBAR_TEST_IDS.submenuChevron);
-  });
-
-  it('opens the submenu when its section becomes active', () => {
-    host.sectionActive = true;
-    fixture.detectChanges();
-
-    expect(expanded()).toBe(true);
-  });
-
-  it('does not collapse the submenu when its section becomes inactive', () => {
-    host.sectionActive = true;
-    fixture.detectChanges();
-    host.sectionActive = false;
-    fixture.detectChanges();
-
-    expect(expanded()).toBe(true);
-  });
-
-  it('respects a manual collapse while the section stays active', () => {
-    host.sectionActive = true;
-    fixture.detectChanges();
-    click('.cds--side-nav__submenu-chevron');
-
-    expect(expanded()).toBe(false);
-  });
-
-  it('does not open on an active section when disabled', () => {
-    host.enabled = false;
-    host.sectionActive = true;
-    fixture.detectChanges();
-
-    expect(expanded()).toBe(false);
   });
 
   it('leaves the default toggle intact when disabled', () => {

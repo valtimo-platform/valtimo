@@ -203,16 +203,11 @@ export const CASE_DEFINITION_GROUP_CONFIG_TEST_IDS = {
 
 // Shared by the list columns and search fields tabs: one is rendered at a time.
 export const CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS = {
+  list: 'caseDefinitionGroupItemList',
   search: 'caseDefinitionGroupItemSearch',
   addButton: 'caseDefinitionGroupItemAddButton',
-  row: 'caseDefinitionGroupItemRow',
-  dragHandle: 'caseDefinitionGroupItemDragHandle',
-  expandButton: 'caseDefinitionGroupItemExpandButton',
-  overflowMenu: 'caseDefinitionGroupItemOverflowMenu',
-  editOption: 'caseDefinitionGroupItemEditOption',
-  deleteOption: 'caseDefinitionGroupItemDeleteOption',
   expandedRow: 'caseDefinitionGroupItemExpandedRow',
-  emptyRow: 'caseDefinitionGroupItemEmptyRow',
+  emptyState: 'caseDefinitionGroupItemEmptyState',
 } as const;
 
 export const CASE_DEFINITION_GROUP_PATH_MAPPING_TEST_IDS = {

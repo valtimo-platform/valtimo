@@ -24,19 +24,24 @@ import {
 import {fillStable, openAndSelectOption} from '../../utils/ui.utils';
 import {fillValuePathManually} from '../../utils/value-path-selector.utils';
 import {GROUP_MANAGEMENT_ENDPOINT} from '../../utils/case-group.utils';
+import {CarbonList, CarbonListRow} from '../carbon-list/carbon-list.utils';
 
 export type GroupItemResource = 'list-column' | 'search-field';
 
 /**
- * The List columns and Search fields tabs of a case group render the same table: search, add,
+ * The List columns and Search fields tabs of a case group are a carbon list: search, add,
  * drag-to-reorder rows, an expandable row with the per-case paths and an Edit/Delete menu.
  */
 export class GroupItemList {
+  private readonly carbonList: CarbonList;
+
   constructor(
     private readonly page: Page,
     private readonly groupKey: string,
     private readonly resource: GroupItemResource
-  ) {}
+  ) {
+    this.carbonList = new CarbonList(page);
+  }
 
   get searchInput(): Locator {
     return this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.search).locator('input');
@@ -46,8 +51,9 @@ export class GroupItemList {
     return this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.addButton);
   }
 
+  /** Item rows only: Carbon keeps a hidden expanded-row <tr> after each one. */
   get rows(): Locator {
-    return this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.row);
+    return this.carbonList.rows.and(this.page.locator('tr:not([data-child-row])'));
   }
 
   /** Row whose Key cell equals `key` exactly, so `name` never matches `name-2`. */
@@ -55,12 +61,14 @@ export class GroupItemList {
     return this.rows.filter({has: this.page.getByRole('cell', {name: key, exact: true})});
   }
 
-  get emptyRow(): Locator {
-    return this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.emptyRow);
+  get emptyState(): Locator {
+    return this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.emptyState);
   }
 
   get expandedRow(): Locator {
-    return this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.expandedRow);
+    return this.page
+      .getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.expandedRow)
+      .filter({visible: true});
   }
 
   get pathMappings(): Locator {
@@ -81,59 +89,33 @@ export class GroupItemList {
     return this.row(key).getByRole('cell').nth(columnIndex);
   }
 
-  async toggleExpand(key: string) {
-    await this.row(key).getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.expandButton).click();
-  }
-
   expandButton(key: string): Locator {
-    return this.row(key).getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.expandButton);
+    return this.row(key).locator('.cds--table-expand__button');
   }
 
-  async openActions(key: string) {
-    await this.row(key).getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.overflowMenu).click();
+  async toggleExpand(key: string) {
+    await this.expandButton(key).click();
+  }
+
+  private carbonRow(key: string): CarbonListRow {
+    return new CarbonListRow(this.page, this.row(key));
   }
 
   async openEdit(key: string) {
-    await this.openActions(key);
-    await this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.editOption).click();
+    await this.carbonRow(key).clickAction('Edit');
   }
 
   /** Deletes a row; there is no confirmation, the whole list is saved straight away. */
   async delete(key: string): Promise<unknown[]> {
-    await this.openActions(key);
-    const response = await this.waitForSave(() =>
-      this.page.getByTestId(CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.deleteOption).click()
-    );
+    const response = await this.waitForSave(() => this.carbonRow(key).clickAction('Delete'));
     return response.request().postDataJSON();
   }
 
   /** Drags the row with `sourceKey` onto the row with `targetKey` and waits for the save. */
   async drag(sourceKey: string, targetKey: string): Promise<unknown[]> {
-    const handle = this.row(sourceKey).getByTestId(
-      CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS.dragHandle
+    const response = await this.waitForSave(() =>
+      this.carbonList.dragRow(this.carbonRow(sourceKey), this.carbonRow(targetKey))
     );
-    const target = this.row(targetKey);
-    const response = await this.waitForSave(async () => {
-      const from = await handle.boundingBox();
-      const to = await target.boundingBox();
-      if (!from || !to) throw new Error('Drag source or target not visible');
-      await this.page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
-      await this.page.mouse.down();
-      // cdkDrag needs a few intermediate moves before it starts dragging
-      const startY = from.y + from.height / 2;
-      const endY = to.y + to.height * (to.y < from.y ? 0.25 : 0.75);
-      const steps = 10;
-      for (let step = 1; step <= steps; step++) {
-        await this.page.mouse.move(
-          from.x + from.width / 2,
-          startY + ((endY - startY) * step) / steps,
-          {
-            steps: 2,
-          }
-        );
-      }
-      await this.page.mouse.up();
-    });
     return response.request().postDataJSON();
   }
 

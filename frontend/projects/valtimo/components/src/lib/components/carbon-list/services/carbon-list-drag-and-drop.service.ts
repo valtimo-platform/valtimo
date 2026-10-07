@@ -33,6 +33,7 @@ export class CarbonListDragAndDropService {
   public readonly dragAndDropEvents$ = new Subject<DragAndDropEvent>();
 
   private readonly _ROW_DRAG_CLASS = 'valtimo-carbon-list__drag-table-row';
+  private readonly _CHILD_ROW_ATTRIBUTE = 'data-child-row';
 
   private readonly _carbonListElementRefSubject$ =
     new BehaviorSubject<ElementRef<CarbonListComponent> | null>(null);
@@ -106,16 +107,26 @@ export class CarbonListDragAndDropService {
       this._tableRowToMove$,
       this._mouseMoveDirection$,
     ]).subscribe(([pauseSwap, tableRowMouseOver, tableRowToMove, mouseMoveDirection]) => {
-      if (tableRowMouseOver !== tableRowToMove && !pauseSwap) {
+      if (tableRowMouseOver === tableRowToMove || pauseSwap) return;
+
+      const movingUp = mouseMoveDirection === MoveRowDirection.UP;
+      // Moving down: land after the hovered row's expanded child row, not between the two.
+      const insertBeforeNode = movingUp
+        ? tableRowMouseOver
+        : (this.getChildRow(tableRowMouseOver) ?? tableRowMouseOver).nextSibling;
+
+      if (insertBeforeNode) {
         this.pauseSwap();
 
-        if (mouseMoveDirection === MoveRowDirection.UP) {
-          tableRowToMove.parentNode.insertBefore(tableRowToMove, tableRowMouseOver);
-          this.continueSwap();
-        } else if (tableRowMouseOver.nextSibling) {
-          tableRowToMove.parentNode.insertBefore(tableRowToMove, tableRowMouseOver.nextSibling);
-          this.continueSwap();
+        const childRowToMove = this.getChildRow(tableRowToMove);
+
+        tableRowToMove.parentNode.insertBefore(tableRowToMove, insertBeforeNode);
+
+        if (childRowToMove) {
+          tableRowToMove.parentNode.insertBefore(childRowToMove, tableRowToMove.nextSibling);
         }
+
+        this.continueSwap();
       }
     });
   }
@@ -134,6 +145,11 @@ export class CarbonListDragAndDropService {
         if (findTableRow && currentTableRow !== findTableRow)
           this._tableRowMouseOverSubject$.next(findTableRow);
       });
+  }
+
+  private getChildRow(row: HTMLTableRowElement): HTMLTableRowElement | null {
+    const next = row.nextElementSibling as HTMLTableRowElement | null;
+    return next?.hasAttribute(this._CHILD_ROW_ATTRIBUTE) ? next : null;
   }
 
   private pauseSwap(): void {
@@ -196,9 +212,12 @@ export class CarbonListDragAndDropService {
     const htmlTableBodyElement = htmlTableElementChildren?.find(
       child => child.localName === 'tbody'
     );
+    // Expanded-row children are separate <tr>s; leave them out so indexes match the items.
     const htmlTableRowElements =
       htmlTableBodyElement?.children &&
-      (Array.from(htmlTableBodyElement.children) as any as HTMLTableRowElement[]);
+      (Array.from(htmlTableBodyElement.children) as any as HTMLTableRowElement[]).filter(
+        row => !row.hasAttribute(this._CHILD_ROW_ATTRIBUTE)
+      );
 
     return htmlTableRowElements || null;
   }

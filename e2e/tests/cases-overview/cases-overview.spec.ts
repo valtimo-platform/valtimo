@@ -92,21 +92,29 @@ test.describe('Cases overview and pinned items', () => {
 
     test('the placeholder links to the overview', async () => {
       await page.goto('/cases/bezwaar');
+      await overviewPage.expandCasesMenu();
       await expect(overviewPage.pinPlaceholder).toBeVisible();
 
       await overviewPage.pinPlaceholder.click();
       await expect(page).toHaveURL(/\/cases-overview$/);
     });
 
-    test('clicking the Cases title opens the overview and expands the menu', async () => {
-      await page.goto('/cases/bezwaar');
-      await overviewPage.casesMenuChevron.click();
-      await expect(overviewPage.pinPlaceholder).toBeHidden();
+    test('clicking the Cases title opens the overview without toggling the menu', async () => {
+      await page.goto('/tasks');
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'false');
 
       await overviewPage.casesMenuTitle.click();
 
       await expect(page).toHaveURL(/\/cases-overview$/);
-      await expect(overviewPage.pinPlaceholder).toBeVisible();
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'false');
+
+      await page.goto('/cases/bezwaar');
+      await overviewPage.expandCasesMenu();
+
+      await overviewPage.casesMenuTitle.click();
+
+      await expect(page).toHaveURL(/\/cases-overview$/);
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'true');
     });
 
     test('the chevron toggles the menu without navigating', async () => {
@@ -201,12 +209,9 @@ test.describe('Cases overview and pinned items', () => {
 
       expect(response.status()).toBe(201);
       await overviewPage.assertPinned(pinButton, true);
-      await expect(overviewPage.toast('Now in your sidebar under Cases.')).toContainText(
-        group.title
-      );
-      await expect(overviewPage.toast('Now in your sidebar under Cases.')).toContainText(
-        'Case group'
-      );
+      await expect(
+        overviewPage.toast(`Case group '${group.title}' now appears under 'Cases' in the left sidebar.`)
+      ).toBeVisible();
       await expect(overviewPage.pinnedMenuItem(group.title)).toBeVisible();
       await expect(overviewPage.pinPlaceholder).toHaveCount(0);
       expect((await overviewPage.groupTitles())[0]).toBe(group.title);
@@ -218,7 +223,9 @@ test.describe('Cases overview and pinned items', () => {
       await overviewPage.togglePin(pinButton, 'POST');
 
       await overviewPage.assertPinned(pinButton, true);
-      await expect(overviewPage.toast(caseTypeName)).toContainText('Case type');
+      await expect(
+        overviewPage.toast(`Case type '${caseTypeName}' now appears under 'Cases' in the left sidebar.`)
+      ).toBeVisible();
       expect((await overviewPage.typeNames())[0]).toBe(caseTypeName);
       await expect(overviewPage.pinnedMenuItem(caseTypeName)).toBeVisible();
     });
@@ -241,7 +248,11 @@ test.describe('Cases overview and pinned items', () => {
 
       expect(response.status()).toBe(204);
       await overviewPage.assertPinned(pinButton, false);
-      await expect(overviewPage.toast('Removed from your sidebar.')).toContainText(caseTypeName);
+      await expect(
+        overviewPage.toast(
+          `Case type '${caseTypeName}' no longer appears under 'Cases' in the left sidebar.`
+        )
+      ).toBeVisible();
       await expect(overviewPage.pinnedMenuItem(caseTypeName)).toHaveCount(0);
       await expect(overviewPage.pinnedMenuItem(group.title)).toBeVisible();
     });
@@ -297,10 +308,11 @@ test.describe('Cases overview and pinned items', () => {
     });
 
     for (const route of ['/cases-overview', '/cases/bezwaar', 'group']) {
-      test(`a direct load of ${route === 'group' ? '/groups/:key' : route} highlights and expands Cases`, async () => {
+      test(`a direct load of ${route === 'group' ? '/groups/:key' : route} highlights Cases`, async () => {
         await page.goto(route === 'group' ? `/groups/${group.key}` : route);
 
         await overviewPage.assertCasesSectionActive(true);
+        await overviewPage.expandCasesMenu();
         await expect(overviewPage.pinnedMenuItem(group.title)).toBeVisible();
       });
     }

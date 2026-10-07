@@ -90,11 +90,13 @@ export class CaseDefinitionGroupListComponent implements OnInit {
       .getGroups()
       .pipe(
         map((groups: CaseDefinitionGroupResponse[]) =>
-          groups.map(g => ({
-            key: g.key,
-            title: g.title,
-            memberCount: g.memberCount,
-          }))
+          groups
+            .map(g => ({
+              key: g.key,
+              title: g.title,
+              memberCount: g.memberCount,
+            }))
+            .sort((a, b) => a.title.localeCompare(b.title))
         )
       )
       .subscribe(groups => this.groups$.next(groups));

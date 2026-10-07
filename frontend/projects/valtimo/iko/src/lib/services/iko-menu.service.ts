@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Injectable} from '@angular/core';
-import {MenuItem} from '@valtimo/shared';
+import {isCasesMenuItem, MenuItem} from '@valtimo/shared';
 import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {IkoApiService} from './iko-api.service';
@@ -74,9 +74,7 @@ export class IkoMenuService {
   };
 
   private insertAfterCases(menuItems: MenuItem[], newItem: MenuItem): MenuItem[] {
-    const casesIndex = menuItems.findIndex(
-      item => item.title === 'Cases' || item.title === 'Dossiers'
-    );
+    const casesIndex = menuItems.findIndex(isCasesMenuItem);
     if (casesIndex === -1) {
       const lastSequence = menuItems[menuItems.length - 1]?.sequence;
       return [

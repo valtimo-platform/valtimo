@@ -15,6 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
+import {PinnedItemsService, PinnedItemType} from '@valtimo/case';
 import {BehaviorSubject, map, Observable, tap, throwError} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../services';
 import {
@@ -33,7 +34,10 @@ export class CaseDefinitionGroupDetailService {
     return this._group$.value;
   }
 
-  constructor(private readonly groupManagementService: CaseDefinitionGroupManagementService) {}
+  constructor(
+    private readonly groupManagementService: CaseDefinitionGroupManagementService,
+    private readonly pinnedItemsService: PinnedItemsService
+  ) {}
 
   public loadGroup(groupKey: string): void {
     if (this._group$.value?.key !== groupKey) this._group$.next(null);
@@ -66,6 +70,10 @@ export class CaseDefinitionGroupDetailService {
           color: response.color,
           order: response.order,
         });
+
+        if (this.pinnedItemsService.isPinned(PinnedItemType.CASE_DEFINITION_GROUP, current.key)) {
+          this.pinnedItemsService.refresh();
+        }
       }),
       map(() => this._group$.value)
     );

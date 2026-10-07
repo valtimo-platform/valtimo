@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, MenuItem} from '@valtimo/shared';
+import {CASES_MENU_ITEM_ID, ConfigService, isCasesMenuItem, MenuItem} from '@valtimo/shared';
 import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {MenuService} from '@valtimo/components';
@@ -56,6 +56,7 @@ export class CaseMenuService {
         const index = this.getCasesIndex(menuItems);
 
         if (index >= 0) {
+          menuItems[index].id = CASES_MENU_ITEM_ID;
           menuItems[index].testId = CASE_MENU_TEST_IDS.casesMenu;
           menuItems[index].titleLink = CASES_OVERVIEW_LINK;
           menuItems[index].sectionLinks = CASES_SECTION_LINKS;
@@ -68,7 +69,7 @@ export class CaseMenuService {
   };
 
   private getCasesIndex(menuItems: MenuItem[]): number {
-    return menuItems.findIndex(item => item.title === 'Cases' || item.title === 'Dossiers');
+    return menuItems.findIndex(isCasesMenuItem);
   }
 
   /**

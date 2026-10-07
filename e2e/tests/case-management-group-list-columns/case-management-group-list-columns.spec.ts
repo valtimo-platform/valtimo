@@ -70,8 +70,8 @@ test.describe('Case group — List columns', () => {
   test.describe('6.119 — View list columns', () => {
     test('a new group shows the empty state', async () => {
       await columnsPage.goTo();
-      await expect(columnsPage.list.emptyRow).toBeVisible();
-      await expect(columnsPage.list.emptyRow).toHaveText('No columns configured');
+      await expect(columnsPage.list.emptyState).toBeVisible();
+      await expect(columnsPage.list.emptyState).toHaveText('No columns configured');
     });
   });
 
@@ -84,12 +84,12 @@ test.describe('Case group — List columns', () => {
         await expect(columnsPage.modal.heading).toHaveText('Add column');
         await columnsPage.modal.fillTitle('Name');
         await expect(columnsPage.modal.keyInput).toHaveValue('name');
-        await expect(columnsPage.modal.pathCounter).toHaveText('0 of 2 case types filled');
+        await expect(columnsPage.modal.pathCounter).toHaveText('0 of 2 case definitions filled');
 
         await columnsPage.modal.fillPath(bezwaar, DOC_PATHS[bezwaar]);
-        await expect(columnsPage.modal.pathCounter).toHaveText('1 of 2 case types filled');
+        await expect(columnsPage.modal.pathCounter).toHaveText('1 of 2 case definitions filled');
         await columnsPage.modal.fillPath(verhuizing, DOC_PATHS[verhuizing]);
-        await expect(columnsPage.modal.pathCounter).toHaveText('2 of 2 case types filled');
+        await expect(columnsPage.modal.pathCounter).toHaveText('2 of 2 case definitions filled');
 
         const sent = await columnsPage.save();
 
@@ -305,7 +305,7 @@ test.describe('Case group — List columns', () => {
       await columnsPage.goTo();
       await columnsPage.list.toggleExpand('name');
 
-      await expect(columnsPage.list.expandButton('name')).toHaveAttribute('aria-expanded', 'true');
+      await expect(columnsPage.list.expandedRow).toBeVisible();
       await expect(columnsPage.list.pathMappings).toHaveCount(2);
       await expect(columnsPage.list.pathMappings.filter({hasText: bezwaar})).toContainText(
         DOC_PATHS[bezwaar]
@@ -316,6 +316,21 @@ test.describe('Case group — List columns', () => {
 
       await columnsPage.list.toggleExpand('name');
       await expect(columnsPage.list.expandedRow).toBeHidden();
+    });
+
+    test('clicking a row opens it for editing; the expand button does not', async () => {
+      await columnsPage.list.toggleExpand('name');
+      await expect(columnsPage.list.expandedRow).toBeVisible();
+      await expect(columnsPage.modal.modal.getByRole('heading', {level: 3})).toBeHidden();
+      await columnsPage.list.toggleExpand('name');
+
+      await columnsPage.list.cell('name', COLUMN_CELL.key).click();
+      await columnsPage.modal.waitForOpen();
+      await expect(columnsPage.modal.heading).toHaveText('Edit column');
+      await expect(columnsPage.modal.keyInput).toHaveValue('name');
+
+      await columnsPage.modal.cancelButton.click();
+      await expect(columnsPage.modal.titleInput).toBeHidden();
     });
 
     test('editing keeps the key read-only and saves the new title', async () => {
@@ -352,6 +367,7 @@ test.describe('Case group — List columns', () => {
   test.describe('6.124 — Reorder and delete', () => {
     test('dragging a row saves the new order', async () => {
       await columnsPage.goTo();
+      await expect(columnsPage.list.rows).toHaveCount(2);
       expect(await columnsPage.list.keys()).toEqual(['name', 'created-on']);
 
       const sent = await columnsPage.list.drag('created-on', 'name');

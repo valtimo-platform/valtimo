@@ -20,13 +20,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
   Output,
-  SimpleChanges,
 } from '@angular/core';
-import {SideNavMenu} from 'carbon-components-angular';
 import {LEFT_SIDEBAR_TEST_IDS} from '../../constants/components.test-ids';
 
 const SUBMENU_SELECTOR = '.cds--side-nav__submenu';
@@ -34,37 +31,21 @@ const SUBMENU_CHEVRON_SELECTOR = '.cds--side-nav__submenu-chevron';
 
 /**
  * Splits a click on a `cds-sidenav-menu` header: the chevron keeps toggling the submenu, the rest
- * of the header emits `submenuTitleClickEvent` instead. Also opens the submenu when its section
- * becomes active (`submenuSectionActive`).
+ * of the header emits `submenuTitleClickEvent` instead and leaves the submenu as it is.
  */
 @Directive({
   selector: '[valtimoSubmenuTitleClick]',
   standalone: true,
 })
-export class SubmenuTitleClickDirective implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-  @Input() public submenuSectionActive = false;
+export class SubmenuTitleClickDirective implements OnInit, AfterViewInit, OnDestroy {
   @Input() public valtimoSubmenuTitleClick = false;
 
   @Output() public submenuTitleClickEvent = new EventEmitter<MouseEvent>();
 
-  constructor(
-    private readonly element: ElementRef<HTMLElement>,
-    private readonly sideNavMenu: SideNavMenu
-  ) {}
+  constructor(private readonly element: ElementRef<HTMLElement>) {}
 
   public ngOnInit(): void {
     this.element.nativeElement.addEventListener('click', this.onCaptureClick, true);
-  }
-
-  public ngOnChanges(changes: SimpleChanges): void {
-    // Open on entering the section only; never collapse what the user opened
-    if (
-      changes.submenuSectionActive &&
-      this.submenuSectionActive &&
-      this.valtimoSubmenuTitleClick
-    ) {
-      this.sideNavMenu.expanded = true;
-    }
   }
 
   public ngAfterViewInit(): void {
@@ -91,9 +72,6 @@ export class SubmenuTitleClickDirective implements OnInit, OnChanges, AfterViewI
 
     event.preventDefault();
     event.stopPropagation();
-
-    // The title opens the submenu on top of navigating; collapsing stays with the chevron.
-    this.sideNavMenu.expanded = true;
 
     this.submenuTitleClickEvent.emit(event);
   };

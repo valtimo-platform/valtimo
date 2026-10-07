@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {PinnedItemType} from '@valtimo/case';
 import {of} from 'rxjs';
 import {CaseDefinitionGroupResponse, CaseDefinitionGroupWithMembersResponse} from '../../models';
 import {CaseDefinitionGroupDetailService} from './case-definition-group-detail.service';
@@ -31,6 +32,7 @@ describe('CaseDefinitionGroupDetailService', () => {
   };
 
   let managementService: jasmine.SpyObj<any>;
+  let pinnedItemsService: jasmine.SpyObj<any>;
   let service: CaseDefinitionGroupDetailService;
   let current: CaseDefinitionGroupWithMembersResponse | null;
 
@@ -58,7 +60,9 @@ describe('CaseDefinitionGroupDetailService', () => {
     managementService.updateGroup.and.callFake((_key: string, request: any) =>
       of(toResponse(request))
     );
-    service = new CaseDefinitionGroupDetailService(managementService);
+    pinnedItemsService = jasmine.createSpyObj('PinnedItemsService', ['isPinned', 'refresh']);
+    pinnedItemsService.isPinned.and.returnValue(false);
+    service = new CaseDefinitionGroupDetailService(managementService, pinnedItemsService);
     service.group$.subscribe(value => (current = value));
   });
 
@@ -115,6 +119,27 @@ describe('CaseDefinitionGroupDetailService', () => {
     });
     expect(current?.title).toBe('Renamed');
     expect(current?.color).toBe('#00ff00');
+  });
+
+  it('refreshes the pinned menu items when the updated group is pinned', () => {
+    pinnedItemsService.isPinned.and.returnValue(true);
+    service.loadGroup('group-a');
+
+    service.updateGroup({title: 'Group A', color: '#00ff00'}).subscribe();
+
+    expect(pinnedItemsService.isPinned).toHaveBeenCalledWith(
+      PinnedItemType.CASE_DEFINITION_GROUP,
+      'group-a'
+    );
+    expect(pinnedItemsService.refresh).toHaveBeenCalled();
+  });
+
+  it('does not refresh the pinned menu items when the group is not pinned', () => {
+    service.loadGroup('group-a');
+
+    service.updateGroup({title: 'Group A', color: '#00ff00'}).subscribe();
+
+    expect(pinnedItemsService.refresh).not.toHaveBeenCalled();
   });
 
   it('errors when updating without a loaded group', () => {

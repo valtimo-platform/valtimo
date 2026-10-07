@@ -14,131 +14,72 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{
-  fields: filteredFields$ | async,
-  group: group$ | async,
-  showModal: showModal$ | async,
-  editing: editingField$ | async,
-  usedKeys: usedKeys$ | async
-} as obs">
-  <cds-table-container class="valtimo-group-search-fields">
-    <cds-table-toolbar>
-      <cds-table-toolbar-content>
-        <cds-table-toolbar-search
-          [expandable]="false"
-          [formControl]="searchControl"
-          [attr.data-test-id]="testIds.search"
-          placeholder="{{ 'caseManagement.groups.searchFields.searchPlaceholder' | translate }}"
-        ></cds-table-toolbar-search>
+<ng-container
+  *ngIf="{
+    fields: filteredFields$ | async,
+    filtering: filtering$ | async,
+    group: group$ | async,
+    loading: loading$ | async,
+    showModal: showModal$ | async,
+    editing: editingField$ | async,
+    usedKeys: usedKeys$ | async,
+  } as obs"
+>
+  <valtimo-carbon-list
+    class="valtimo-group-search-fields"
+    [items]="obs.fields ?? []"
+    [fields]="fields"
+    [actionItems]="actionItems"
+    [loading]="obs.loading"
+    [header]="false"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="obs.filtering"
+    [expandedRowTemplate]="pathMappingsTemplate"
+    expandedRowKey="key"
+    (rowClicked)="showEditModal($event)"
+    (itemsReordered)="onItemsReordered($event)"
+    [attr.data-test-id]="testIds.list"
+  >
+    <ng-container carbonToolbarContent>
+      <cds-table-toolbar-search
+        [expandable]="false"
+        [formControl]="searchControl"
+        [attr.data-test-id]="testIds.search"
+        placeholder="{{ 'caseManagement.groups.searchFields.searchPlaceholder' | translate }}"
+      ></cds-table-toolbar-search>
 
-        <button cdsButton="primary" (click)="showAddModal()" [attr.data-test-id]="testIds.addButton">
-          {{ 'interface.add' | translate }}
-          <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-        </button>
-      </cds-table-toolbar-content>
-    </cds-table-toolbar>
+      <button
+        cdsButton="primary"
+        [disabled]="!obs.group?.members?.length"
+        (click)="showAddModal()"
+        [attr.data-test-id]="testIds.addButton"
+      >
+        {{ 'interface.add' | translate }}
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </ng-container>
 
-    <table cdsTable [sortable]="false">
-      <thead cdsTableHead>
-        <tr>
-          <th class="valtimo-group-search-fields__narrow-col"></th>
-          <th class="valtimo-group-search-fields__narrow-col"></th>
-          <th>{{ 'caseManagement.listColumns.name' | translate }}</th>
-          <th>{{ 'caseManagement.listColumns.key' | translate }}</th>
-          <th>{{ 'caseManagement.groups.searchFields.dataType' | translate }}</th>
-          <th>{{ 'caseManagement.groups.searchFields.fieldType' | translate }}</th>
-          <th>{{ 'caseManagement.groups.searchFields.matchType' | translate }}</th>
-          <th class="valtimo-group-search-fields__narrow-col"></th>
-        </tr>
-      </thead>
+    <valtimo-no-results
+      [description]="
+        obs.group && !obs.group.members?.length
+          ? ('caseManagement.groups.noMembersHint' | translate)
+          : ''
+      "
+      [title]="'caseManagement.groups.searchFields.noFields' | translate"
+      [attr.data-test-id]="testIds.emptyState"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
 
-      <tbody cdsTableBody cdkDropList (cdkDropListDropped)="onDropField($event)">
-        <ng-container *ngFor="let field of obs.fields">
-          <tr cdkDrag class="valtimo-group-search-fields__row" [attr.data-test-id]="testIds.row">
-            <td class="valtimo-group-search-fields__cell--narrow">
-              <div cdkDragHandle class="valtimo-group-search-fields__drag-handle" [attr.data-test-id]="testIds.dragHandle">
-                <svg cdsIcon="draggable" size="16"></svg>
-              </div>
-            </td>
-
-            <td class="valtimo-group-search-fields__cell--narrow">
-              <button
-                type="button"
-                class="valtimo-group-search-fields__expand-btn"
-                [attr.aria-expanded]="!!field.expanded"
-                [attr.aria-label]="(field.expanded ? 'interface.collapse' : 'interface.expand') | translate"
-                [attr.data-test-id]="testIds.expandButton"
-                (click)="toggleExpand(field)"
-              >
-                <svg
-                  cdsIcon="chevron--right"
-                  size="16"
-                  [ngClass]="{'valtimo-group-search-fields__chevron--expanded': field.expanded}"
-                ></svg>
-              </button>
-            </td>
-
-            <td>{{ field.title || field.key }}</td>
-            <td>{{ field.key }}</td>
-            <td>{{ field.dataType }}</td>
-            <td>{{ field.fieldType }}</td>
-            <td>{{ field.matchType || '-' }}</td>
-
-            <td class="valtimo-group-search-fields__cell--narrow">
-              <v-overflow-menu [portalToBody]="true" placement="bottom-end">
-                <v-overflow-menu-trigger
-                  overflowTrigger
-                  [label]="'interface.options' | translate"
-                  [attr.data-test-id]="testIds.overflowMenu"
-                ></v-overflow-menu-trigger>
-
-                <v-overflow-menu-option
-                  (selected)="showEditModal(field)"
-                  [attr.data-test-id]="testIds.editOption"
-                >
-                  {{ 'interface.edit' | translate }}
-                </v-overflow-menu-option>
-
-                <v-overflow-menu-option
-                  type="danger"
-                  (selected)="deleteField(field)"
-                  [attr.data-test-id]="testIds.deleteOption"
-                >
-                  {{ 'interface.delete' | translate }}
-                </v-overflow-menu-option>
-              </v-overflow-menu>
-            </td>
-          </tr>
-
-          <tr
-            *ngIf="field.expanded"
-            class="valtimo-group-search-fields__expanded-row"
-            [attr.data-test-id]="testIds.expandedRow"
-          >
-            <td colspan="8">
-              <valtimo-group-path-mapping-editor
-                [groupKey]="obs.group?.key"
-                [itemKey]="field.key"
-                [members]="obs.group?.members ?? []"
-                [mappings]="field.pathMappings ?? []"
-                itemType="search-field"
-              ></valtimo-group-path-mapping-editor>
-            </td>
-          </tr>
-        </ng-container>
-
-        <tr
-          *ngIf="obs.fields?.length === 0"
-          class="valtimo-group-search-fields__empty-row"
-          [attr.data-test-id]="testIds.emptyRow"
-        >
-          <td colspan="8">
-            {{ 'caseManagement.groups.searchFields.noFields' | translate }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </cds-table-container>
+  <ng-template #pathMappingsTemplate let-data="data">
+    <valtimo-group-path-mapping-editor
+      [groupKey]="obs.group?.key"
+      [itemKey]="data.key"
+      [members]="obs.group?.members ?? []"
+      [mappings]="(pathMappings$(data.key) | async) ?? []"
+      itemType="search-field"
+      [attr.data-test-id]="testIds.expandedRow"
+    ></valtimo-group-path-mapping-editor>
+  </ng-template>
 
   <valtimo-group-search-field-modal
     [open]="obs.showModal"

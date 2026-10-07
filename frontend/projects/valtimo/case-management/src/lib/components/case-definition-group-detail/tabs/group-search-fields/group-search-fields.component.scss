@@ -14,87 +14,47 @@
  * limitations under the License.
  */
 
-.valtimo-group-search-fields {
-  &__narrow-col {
-    width: 48px !important;
-    padding: 0 !important;
+// Fixed layout so the expanded row can mirror the data columns. Carbon gives the expanded cell
+// colspan = columns + 2, a phantom trailing column; equal percentages on the data columns
+// over-claim the width and collapse it. Column order: expand, drag, data..., actions.
+:host ::ng-deep .valtimo-group-search-fields {
+  .cds--data-table {
+    table-layout: fixed;
   }
 
-  &__cell--narrow {
-    width: 48px !important;
-    padding: 0 !important;
+  // The over-claim shrinks the other columns to their padding: pad them to 3rem each.
+  thead th.cds--table-expand,
+  thead th.valtimo-carbon-list__actions {
+    padding-inline: 1.5rem;
   }
 
-  &__row {
-    background: var(--cds-layer-01);
+  // Trailing actions column: fit the 40px overflow trigger plus cell padding.
+  thead th.valtimo-carbon-list__actions:last-child {
+    padding-inline: 2.25rem;
   }
 
-  &__drag-handle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px;
-    cursor: grab;
-    color: var(--cds-icon-secondary);
-
-    &:active {
-      cursor: grabbing;
-    }
+  thead th:not(.cds--table-expand):not(.valtimo-carbon-list__actions) {
+    width: 20%;
   }
 
-  &__expand-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    padding: 14px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--cds-icon-primary);
-    transition: background-color 110ms;
-
-    &:hover {
-      background: var(--cds-layer-hover-01);
-    }
+  // Inset past the expand + drag columns and before the actions column; beats Carbon's own inset.
+  tr[data-child-row] > td {
+    padding: 0 4.5rem 0 6rem !important;
   }
 
-  &__chevron--expanded {
-    transform: rotate(90deg);
-    transition: transform 110ms ease-out;
-  }
-
-  &__expanded-row td {
-    padding: 0 !important;
-    background: var(--cds-layer-02);
-  }
-
-  &__empty-row td {
-    text-align: center;
-    color: var(--cds-text-secondary);
-    padding: 2rem !important;
-  }
-
-  ::ng-deep valtimo-group-path-mapping-editor {
+  valtimo-group-path-mapping-editor {
     display: block;
-    padding: 1rem;
+    padding-block: 1rem;
+
+    // One mapping per data column; 1rem inset matches Carbon's cell padding.
+    .valtimo-path-mapping-editor__grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1rem 0;
+    }
+
+    .valtimo-path-mapping-editor__item,
+    .valtimo-path-mapping-editor__empty {
+      padding-inline: 1rem;
+    }
   }
-}
-
-.cdk-drag-preview {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  background: var(--cds-layer-01);
-}
-
-.cdk-drag-placeholder {
-  opacity: 0.3;
-}
-
-.cdk-drag-animating {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-}
-
-.cdk-drop-list-dragging tr:not(.cdk-drag-placeholder) {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }

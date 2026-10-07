@@ -105,6 +105,15 @@ describe('GroupSearchFieldModalComponent', () => {
       ]);
     });
 
+    it('keeps an empty member visible while its path is being filled in', () => {
+      component.onShowOnlyEmptyChange(true);
+      component.pathControls[1].setValue('doc:/p');
+
+      expect(component.displayedMembers.map(item => item.member.caseDefinitionKey)).toContain(
+        'auto-assign-test'
+      );
+    });
+
     it('combines the search term and the showOnlyEmpty filter', () => {
       component.pathControls[0].setValue('doc:/path');
       component.onShowOnlyEmptyChange(true);

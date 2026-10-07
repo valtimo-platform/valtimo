@@ -21,37 +21,37 @@
   },
   "case": {
     "menu": {
-      "pinPlaceholder": "Pin items om ze hier te zetten"
+      "pinPlaceholder": "Zet items vast om ze hier te tonen"
     },
     "allCases": "Alle dossiers",
     "overview": {
-      "title": "Cases overzicht",
-      "pin": "Vastzetten in het menu",
-      "pinnedToast": "Staat nu in je zijbalk onder Cases.",
-      "unpinnedToast": "Is losgemaakt uit je zijbalk.",
-      "unpin": "Verwijderen uit het menu",
+      "title": "Dossieroverzicht",
+      "pin": "Vastzetten in de zijbalk",
+      "unpin": "Losmaken uit de zijbalk",
       "search": {
-        "label": "Zoek zaaktypen en zaakgroepen",
-        "placeholder": "Zoek zaaktypen en zaakgroepen..."
+        "label": "Zoek dossiertypen en dossiergroepen",
+        "placeholder": "Zoek dossiertypen en dossiergroepen..."
       },
       "groups": {
-        "title": "Zaakgroepen",
-        "singular": "Zaakgroep",
-        "noResults": "Geen zaakgroepen gevonden voor je zoekopdracht.",
+        "title": "Dossiergroepen",
+        "noResults": "Geen dossiergroepen gevonden voor je zoekopdracht.",
         "open": "{{title}} openen",
-        "pin": "Vastzetten in de zijbalk"
+        "pin": "Vastzetten in de zijbalk",
+        "pinnedToast": "De dossiergroep '{{name}}' staat nu onder 'Dossiers' in de linkerzijbalk.",
+        "unpinnedToast": "De dossiergroep '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk."
       },
       "types": {
-        "title": "Zaaktypen",
-        "singular": "Zaaktype",
+        "title": "Dossiertypen",
         "name": "Naam",
-        "noResults": "Geen zaaktypen gevonden voor je zoekopdracht.",
+        "noResults": "Geen dossiertypen gevonden voor je zoekopdracht.",
         "open": "{{name}} openen",
-        "pin": "Vastzetten in de zijbalk"
+        "pin": "Vastzetten in de zijbalk",
+        "pinnedToast": "Het dossiertype '{{name}}' staat nu onder 'Dossiers' in de linkerzijbalk.",
+        "unpinnedToast": "Het dossiertype '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk."
       },
       "pinInfo": {
-        "title": "Zet de zaakgroepen die je vaak gebruikt in je zijbalk:",
-        "message": "klik op het pin-icoon bij een zaakgroep of zaaktype. Het verschijnt dan links onder Cases, zodat je er vanaf elke pagina in één klik bij bent."
+        "title": "Zet de dossiergroepen die je vaak gebruikt in je zijbalk:",
+        "message": "klik op het pin-icoon bij een dossiergroep of dossiertype. Het verschijnt dan links onder Dossiers, zodat je er vanaf elke pagina in één klik bij bent."
       }
     },
     "exportButtonTooltip": "Exporteer huidige dossier lijst",
@@ -1041,14 +1041,14 @@
       "status": "Status"
     },
     "listTabs": {
-      "cases": "Zaken",
-      "caseGroups": "Zaakgroepen"
+      "cases": "Dossierdefinities",
+      "caseGroups": "Dossiergroepen"
     },
     "groups": {
       "listColumns": {
         "title": "Lijstkolommen",
         "key": "Key",
-        "memberCount": "Aantal zaken",
+        "memberCount": "Aantal dossierdefinities",
         "noColumns": "Geen kolommen geconfigureerd",
         "addColumn": "Kolom toevoegen",
         "editColumn": "Kolom bewerken",
@@ -1058,10 +1058,10 @@
         "columnTitlePlaceholder": "Voer een weergavetitel in",
         "displayType": "Weergavetype",
         "sortable": "Sorteerbaar",
-        "sortableCaseFieldsOnly": "Alleen kolommen die naar één gedeeld zaakveld verwijzen (bijvoorbeeld case:createdOn) kunnen sorteerbaar zijn.",
+        "sortableCaseFieldsOnly": "Alleen kolommen die naar één gedeeld dossierveld verwijzen (bijvoorbeeld case:createdOn) kunnen sorteerbaar zijn.",
         "exportable": "Exporteerbaar",
-        "pathPerCase": "Pad (per zaaktype)",
-        "pathPerCaseTooltip": "Pad naar de eigenschap om weer te geven voor elke zaakdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor zaakeigenschappen.",
+        "pathPerCase": "Pad (per dossierdefinitie)",
+        "pathPerCaseTooltip": "Pad naar de eigenschap om weer te geven voor elke dossierdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor dossiereigenschappen.",
         "saveError": "Opslaan van kolommen mislukt",
         "searchPlaceholder": "Zoek kolommen..."
       },
@@ -1078,7 +1078,7 @@
         "fieldType": "Veldtype",
         "matchType": "Matchtype",
         "dropdownDataProvider": "Dropdown data provider",
-        "dropdownDataProviderPlaceholder": "Voer de provider class naam in",
+        "dropdownDataProviderPlaceholder": "Voer de naam van de providerclass in",
         "saveError": "Opslaan van zoekvelden mislukt",
         "searchPlaceholder": "Zoek velden...",
         "fieldKeyTooltip": "Verplicht. Unieke identificatie voor dit zoekveld.",
@@ -1086,8 +1086,8 @@
         "dataTypeTooltip": "Verplicht. Het datatype van de veldwaarden.",
         "fieldTypeTooltip": "Verplicht. Hoe de zoekinvoer wordt weergegeven.",
         "matchTypeTooltip": "Optioneel. Hoe waarden worden gematcht (exact of gedeeltelijk).",
-        "dropdownDataProviderTooltip": "Optioneel. Class naam die dropdown opties levert.",
-        "pathPerCaseTooltip": "Pad naar de eigenschap om op te zoeken voor elke zaakdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor zaakeigenschappen."
+        "dropdownDataProviderTooltip": "Optioneel. Naam van de class die de dropdownopties levert.",
+        "pathPerCaseTooltip": "Pad naar de eigenschap om op te zoeken voor elke dossierdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor dossiereigenschappen."
       },
       "tabs": {
         "config": "Configuratie",
@@ -1096,53 +1096,53 @@
       },
       "config": {
         "color": "Groepskleur",
-        "colorDescription": "Kies een weergavekleur voor deze zaakgroep",
+        "colorDescription": "Kies een weergavekleur voor deze dossiergroep",
         "selected": "Geselecteerd",
-        "customColorLabel": "Aangepaste kleur:",
+        "customColorLabel": "Kies je eigen kleur:",
         "chooseFreely": "Kies vrij",
-        "assignedCases": "Toegewezen zaakdefinities",
-        "addCase": "Zaak toevoegen",
-        "selectCase": "Selecteer zaak",
-        "selectCasePlaceholder": "Kies zaak...",
+        "assignedCases": "Toegewezen dossierdefinities",
+        "addCase": "Dossierdefinitie toevoegen",
+        "selectCase": "Selecteer dossierdefinitie",
+        "selectCasePlaceholder": "Kies dossierdefinitie...",
         "addToGroup": "Toevoegen aan groep",
-        "noMembers": "Geen zaken toegewezen. Klik \"Zaak toevoegen\" om er een toe te voegen.",
-        "addMemberError": "Toevoegen van zaakdefinitie mislukt",
-        "removeFromGroup": "Verwijderen uit groep",
-        "caseCount": "{{count}} zaken in deze groep",
-        "searchPlaceholder": "Zoek zaken...",
-        "noSearchResults": "Geen zaken gevonden",
+        "noMembers": "Geen dossierdefinities toegewezen. Klik \"Dossierdefinitie toevoegen\" om er een toe te voegen.",
+        "addMemberError": "Toevoegen van dossierdefinitie mislukt",
+        "caseCount": "{{count}} dossierdefinities in deze groep",
+        "searchPlaceholder": "Filter dossierdefinities...",
+        "noSearchResults": "Geen dossierdefinities gevonden",
         "columns": {
           "name": "Naam",
-          "key": "Sleutel",
+          "key": "Key",
           "version": "Versie"
         }
       },
       "pathMappings": {
         "title": "Padkoppelingen",
-        "caseDefinition": "Zaakdefinitie",
+        "caseDefinition": "Dossierdefinitie",
         "path": "Pad",
         "pathPlaceholder": "bijv. doc:name of case:createdOn",
-        "noMembers": "Voeg eerst zaakdefinities toe aan de groep",
+        "noMembers": "Voeg eerst dossierdefinities toe aan de groep",
         "saveError": "Opslaan van padkoppelingen mislukt"
       },
       "noResults": {
-        "title": "Geen zaakgroepen",
-        "description": "Er zijn nog geen zaakgroepen aangemaakt"
+        "title": "Geen dossiergroepen",
+        "description": "Er zijn nog geen dossiergroepen aangemaakt"
       },
       "editModal": {
-        "title": "Zaakgroep bewerken"
+        "title": "Dossiergroep bewerken"
       },
       "createModal": {
-        "title": "Zaakgroep aanmaken",
+        "title": "Dossiergroep aanmaken",
         "name": "Naam",
         "namePlaceholder": "Voer een naam in",
-        "description": "Omschrijving",
-        "descriptionPlaceholder": "Voer een omschrijving in"
+        "description": "Beschrijving",
+        "descriptionPlaceholder": "Voer een beschrijving in"
       },
-      "pathCounter": "{{filled}} van {{total}} zaaktypen ingevuld",
-      "searchCaseTypes": "Zoek zaaktypen...",
-      "noMatchingCaseTypes": "Geen overeenkomende zaaktypen gevonden",
-      "showOnlyEmpty": "Toon alleen lege"
+      "pathCounter": "{{filled}} van {{total}} dossierdefinities ingevuld",
+      "searchCaseTypes": "Dossierdefinities filteren...",
+      "noMatchingCaseTypes": "Geen overeenkomende dossierdefinities gevonden",
+      "showOnlyEmpty": "Alleen ontbrekende paden tonen",
+      "noMembersHint": "Voeg eerst een dossierdefinitie toe aan deze groep, onder Configuratie."
     },
     "needsConfiguration": "Configuratie vereist",
     "inactive": "Inactief",
@@ -1318,10 +1318,10 @@
           }
         },
         "color": {
-          "title": "Zaakkleur",
-          "description": "Kies een weergavekleur voor deze zaakdefinitie",
+          "title": "Dossierkleur",
+          "description": "Kies een weergavekleur voor deze dossierdefinitie",
           "selected": "Geselecteerd",
-          "customColorLabel": "Aangepaste kleur:"
+          "customColorLabel": "Kies je eigen kleur:"
         }
       },
       "caseListTab": {
@@ -2266,6 +2266,7 @@
   "Overview of all Cases": "Overzicht van alle Dossiers",
   "Start Case": "Creëer Nieuw Dossier",
   "Case details": "Dossier details",
+  "Case group": "Dossiergroep",
   "Related documents": "Gerelateerde documenten",
   "Overview of all documents in this case": "Overzicht van documenten in dit dossier",
   "Basics": "Basis",

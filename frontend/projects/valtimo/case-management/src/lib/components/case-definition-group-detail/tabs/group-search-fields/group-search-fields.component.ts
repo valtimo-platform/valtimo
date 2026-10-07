@@ -18,10 +18,9 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/co
 import {CommonModule} from '@angular/common';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
-import {Add16, ChevronRight16, Draggable16} from '@carbon/icons';
+import {Add16} from '@carbon/icons';
 import {GroupSearchField} from '@valtimo/document';
-import {OverflowMenuModule} from '@valtimo/components';
+import {ActionItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, TableModule} from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {
@@ -30,8 +29,11 @@ import {
   distinctUntilChanged,
   filter,
   map,
+  Observable,
+  shareReplay,
   startWith,
   Subscription,
+  take,
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
 import {GroupPathMapping} from '../../../../models';
@@ -41,7 +43,6 @@ import {GroupSearchFieldModalComponent} from './group-search-field-modal/group-s
 import {GroupPathMappingEditorComponent} from '../../shared/group-path-mapping-editor/group-path-mapping-editor.component';
 
 interface SearchFieldWithMappings extends GroupSearchField {
-  expanded?: boolean;
   pathMappings?: GroupPathMapping[];
 }
 
@@ -55,11 +56,10 @@ interface SearchFieldWithMappings extends GroupSearchField {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    DragDropModule,
     ButtonModule,
     IconModule,
-    OverflowMenuModule,
     TableModule,
+    CarbonListModule,
     GroupSearchFieldModalComponent,
     GroupPathMappingEditorComponent,
   ],
@@ -69,24 +69,60 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
 
   public readonly searchControl = new FormControl('');
 
+  public readonly fields: ColumnConfig[] = [
+    {viewType: ViewType.TEXT, sortable: false, key: 'name', label: 'caseManagement.listColumns.name'},
+    {viewType: ViewType.TEXT, sortable: false, key: 'key', label: 'caseManagement.listColumns.key'},
+    {
+      viewType: ViewType.TEXT,
+      sortable: false,
+      key: 'dataType',
+      label: 'caseManagement.groups.searchFields.dataType',
+    },
+    {
+      viewType: ViewType.TEXT,
+      sortable: false,
+      key: 'fieldType',
+      label: 'caseManagement.groups.searchFields.fieldType',
+    },
+    {
+      viewType: ViewType.TEXT,
+      sortable: false,
+      key: 'matchType',
+      label: 'caseManagement.groups.searchFields.matchType',
+    },
+  ];
+
+  public readonly actionItems: ActionItem[] = [
+    {label: 'interface.edit', callback: this.showEditModal.bind(this)},
+    {label: 'interface.delete', callback: this.deleteField.bind(this), type: 'danger'},
+  ];
+
   private readonly _subscriptions = new Subscription();
   private readonly _fields$ = new BehaviorSubject<SearchFieldWithMappings[]>([]);
-  public readonly fields$ = this._fields$.asObservable();
+  private readonly _pathMappingsCache = new Map<string, Observable<GroupPathMapping[]>>();
+
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly usedKeys$ = this._fields$.pipe(map(fields => fields.map(f => f.key)));
 
-  public readonly filteredFields$ = combineLatest([
-    this._fields$,
-    this.searchControl.valueChanges.pipe(startWith('')),
-  ]).pipe(
-    map(([fields, search]) => {
-      if (!search) return fields;
-      const term = search.toLowerCase();
-      return fields.filter(
-        f =>
-          f.key.toLowerCase().includes(term) ||
-          (f.title && f.title.toLowerCase().includes(term))
-      );
-    })
+  private readonly _searchTerm$ = this.searchControl.valueChanges.pipe(
+    startWith(''),
+    map(search => (search ?? '').trim().toLowerCase())
+  );
+
+  // Reordering a filtered subset would drop the hidden rows on save.
+  public readonly filtering$ = this._searchTerm$.pipe(map(term => !!term));
+
+  public readonly filteredFields$ = combineLatest([this._fields$, this._searchTerm$]).pipe(
+    map(([fields, term]) =>
+      fields
+        .filter(
+          f =>
+            !term ||
+            f.key.toLowerCase().includes(term) ||
+            (f.title && f.title.toLowerCase().includes(term))
+        )
+        .map(f => ({...f, name: f.title || f.key}))
+    )
   );
 
   public readonly group$ = this.detailService.group$;
@@ -101,7 +137,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     private readonly notificationService: GlobalNotificationService,
     private readonly iconService: IconService
   ) {
-    this.iconService.registerAll([Add16, ChevronRight16, Draggable16]);
+    this.iconService.registerAll([Add16]);
   }
 
   public ngOnInit(): void {
@@ -118,19 +154,12 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public showEditModal(field: SearchFieldWithMappings): void {
-    if (field.pathMappings) {
-      this.editingField$.next(field);
-      this.showModal$.next(true);
-    } else {
-      const groupKey = this.detailService.currentGroup?.key;
-      if (!groupKey) return;
-
-      this.groupService.getSearchFieldPathMappings(groupKey, field.key).subscribe(mappings => {
-        field.pathMappings = mappings;
-        this.editingField$.next(field);
+    this.pathMappings$(field.key)
+      .pipe(take(1))
+      .subscribe(pathMappings => {
+        this.editingField$.next({...this._findField(field.key), pathMappings});
         this.showModal$.next(true);
       });
-    }
   }
 
   public onCloseModal(saved: boolean): void {
@@ -139,24 +168,37 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     if (saved) this._loadFields();
   }
 
-  public toggleExpand(field: SearchFieldWithMappings): void {
-    field.expanded = !field.expanded;
-    if (field.expanded && !field.pathMappings) {
-      this._loadPathMappings(field);
+  // Fetched once per field.
+  public pathMappings$(fieldKey: string): Observable<GroupPathMapping[]> {
+    const groupKey = this.detailService.currentGroup?.key;
+    if (!groupKey) return new BehaviorSubject<GroupPathMapping[]>([]);
+
+    if (!this._pathMappingsCache.has(fieldKey)) {
+      this._pathMappingsCache.set(
+        fieldKey,
+        this.groupService
+          .getSearchFieldPathMappings(groupKey, fieldKey)
+          .pipe(shareReplay({bufferSize: 1, refCount: false}))
+      );
     }
+
+    return this._pathMappingsCache.get(fieldKey) as Observable<GroupPathMapping[]>;
   }
 
-  public onDropField(event: CdkDragDrop<SearchFieldWithMappings[]>): void {
-    const fields = [...this._fields$.value];
-    moveItemInArray(fields, event.previousIndex, event.currentIndex);
-    this._fields$.next(fields);
-    this._saveFieldOrder(fields);
+  public onItemsReordered(fields: SearchFieldWithMappings[]): void {
+    const reordered = fields.map(field => this._findField(field.key));
+    this._fields$.next(reordered);
+    this._saveFieldOrder(reordered);
   }
 
   public deleteField(field: GroupSearchField): void {
     const fields = this._fields$.value.filter(f => f.key !== field.key);
     this._fields$.next(fields);
     this._saveFieldOrder(fields);
+  }
+
+  private _findField(key: string): SearchFieldWithMappings {
+    return this._fields$.value.find(f => f.key === key) as SearchFieldWithMappings;
   }
 
   private _loadGroupAndFields(): void {
@@ -175,19 +217,11 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 
+    this._pathMappingsCache.clear();
+
     this.groupService.getSearchFields(groupKey).subscribe(fields => {
-      const sorted = fields.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      this._fields$.next(sorted.map(f => ({...f, expanded: false})));
-    });
-  }
-
-  private _loadPathMappings(field: SearchFieldWithMappings): void {
-    const groupKey = this.detailService.currentGroup?.key;
-    if (!groupKey) return;
-
-    this.groupService.getSearchFieldPathMappings(groupKey, field.key).subscribe(mappings => {
-      field.pathMappings = mappings;
-      this._fields$.next([...this._fields$.value]);
+      this._fields$.next(fields.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+      this.loading$.next(false);
     });
   }
 

@@ -105,14 +105,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.group$
         .pipe(filter((group): group is NonNullable<typeof group> => !!group))
-        .subscribe(group => {
-          this.pageTitleService.setCustomPageTitle(group.title, true);
-          this.breadcrumbService.setThirdBreadcrumb({
-            route: [`/case-management/group/${group.key}`],
-            content: group.title,
-            href: `/case-management/group/${group.key}`,
-          });
-        })
+        .subscribe(group => this.pageTitleService.setCustomPageTitle(group.title, true))
     );
   }
 
@@ -120,7 +113,6 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     this.breadcrumbService.clearSecondBreadcrumb();
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
-    this.breadcrumbService.clearThirdBreadcrumb();
   }
 
   public openEditModal(): void {

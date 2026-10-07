@@ -70,7 +70,7 @@ test.describe('Case group — Search fields', () => {
   test.describe('6.125 — View search fields', () => {
     test('a new group shows the empty state', async () => {
       await fieldsPage.goTo();
-      await expect(fieldsPage.list.emptyRow).toHaveText('No search fields configured');
+      await expect(fieldsPage.list.emptyState).toHaveText('No search fields configured');
     });
   });
 
@@ -242,6 +242,21 @@ test.describe('Case group — Search fields', () => {
       await fieldsPage.list.toggleExpand('name');
     });
 
+    test('clicking a row opens it for editing; the expand button does not', async () => {
+      await fieldsPage.list.toggleExpand('name');
+      await expect(fieldsPage.list.expandedRow).toBeVisible();
+      await expect(fieldsPage.modal.modal.getByRole('heading', {level: 3})).toBeHidden();
+      await fieldsPage.list.toggleExpand('name');
+
+      await fieldsPage.list.cell('name', SEARCH_FIELD_CELL.key).click();
+      await fieldsPage.modal.waitForOpen();
+      await expect(fieldsPage.modal.heading).toHaveText('Edit search field');
+      await expect(fieldsPage.modal.keyInput).toHaveValue('name');
+
+      await fieldsPage.modal.cancelButton.click();
+      await expect(fieldsPage.modal.titleInput).toBeHidden();
+    });
+
     test('editing keeps the key read-only and saves the new title', async () => {
       await fieldsPage.list.openEdit('name');
       await fieldsPage.modal.waitForOpen();
@@ -264,6 +279,7 @@ test.describe('Case group — Search fields', () => {
 
     test('dragging a row saves the new order', async () => {
       await fieldsPage.goTo();
+      await expect(fieldsPage.list.rows).toHaveCount(2);
       expect(await fieldsPage.list.keys()).toEqual(['name', 'created']);
 
       const sent = await fieldsPage.list.drag('created', 'name');

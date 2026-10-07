@@ -131,9 +131,8 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     return this.members
       .map((member, index) => ({member, index}))
       .filter(({member, index}) => {
-        if (this.showOnlyEmpty) {
-          const value = this.pathControls[index]?.value;
-          if (value && value.trim() !== '') return false;
+        if (this.showOnlyEmpty && !this._emptyMemberKeys.has(member.caseDefinitionKey)) {
+          return false;
         }
 
         if (searchTerm) {
@@ -174,6 +173,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
 
   private _defaultSortIntent = NO_DEFAULT_SORT;
   private _sortableIntent = true;
+  private _emptyMemberKeys = new Set<string>();
 
   constructor(
     private readonly fb: FormBuilder,
@@ -228,6 +228,14 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   public onShowOnlyEmptyChange(checked: boolean): void {
+    // Snapshot: a row being filled in must not vanish mid-typing.
+    this._emptyMemberKeys = new Set(
+      checked
+        ? this.members
+            .filter((_member, index) => !this.pathControls[index]?.value?.trim())
+            .map(member => member.caseDefinitionKey)
+        : []
+    );
     this.showOnlyEmpty = checked;
     this.cdr.markForCheck();
   }
@@ -407,6 +415,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     }
     this.pathSearchControl.setValue('');
     this.showOnlyEmpty = false;
+    this._emptyMemberKeys = new Set();
     this._loadOtherColumnDefaultSort();
     this._updateSortState();
   }

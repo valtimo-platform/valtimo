@@ -188,17 +188,13 @@ export class CaseOverviewComponent {
       this.globalNotificationService.close(this._pinToast);
     }
 
+    const section = itemType === PinnedItemType.CASE_DEFINITION_GROUP ? 'groups' : 'types';
+
     this._pinToast = this.globalNotificationService.showToast({
-      type: 'info',
-      lowContrast: true,
-      title: name,
-      subtitle: this.translateService.instant(
-        pinning ? 'case.overview.pinnedToast' : 'case.overview.unpinnedToast'
-      ),
-      caption: this.translateService.instant(
-        itemType === PinnedItemType.CASE_DEFINITION_GROUP
-          ? 'case.overview.groups.singular'
-          : 'case.overview.types.singular'
+      type: 'success',
+      title: this.translateService.instant(
+        `case.overview.${section}.${pinning ? 'pinnedToast' : 'unpinnedToast'}`,
+        {name}
       ),
     });
   }

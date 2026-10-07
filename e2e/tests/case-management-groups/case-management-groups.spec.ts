@@ -76,13 +76,13 @@ test.describe('Case groups management', () => {
   test.describe('6.113 — Case groups tab', () => {
     test('switching tabs adds and removes ?tab=groups', async () => {
       await page.goto('/case-management');
-      await expect(groupsPage.listTab('Cases')).toHaveAttribute('aria-selected', 'true');
+      await expect(groupsPage.listTab('Case definitions')).toHaveAttribute('aria-selected', 'true');
 
       await groupsPage.listTab('Case groups').click();
       await expect(page).toHaveURL(/[?&]tab=groups/);
       await expect(groupsPage.caseGroupsTabPanel).toBeVisible();
 
-      await groupsPage.listTab('Cases').click();
+      await groupsPage.listTab('Case definitions').click();
       await expect(page).not.toHaveURL(/tab=groups/);
       await expect(groupsPage.casesTabPanel).toBeVisible();
     });
@@ -90,7 +90,7 @@ test.describe('Case groups management', () => {
     test('opening ?tab=groups directly selects the Case groups tab', async () => {
       await groupsPage.goToGroupsTab();
       await expect(groupsPage.listTab('Case groups')).toHaveAttribute('aria-selected', 'true');
-      await groupsPage.groupsList.assertColumnHeaders(['Name', 'Key', 'Number of cases']);
+      await groupsPage.groupsList.assertColumnHeaders(['Name', 'Key', 'Number of case definitions']);
     });
   });
 
@@ -219,7 +219,9 @@ test.describe('Case groups management', () => {
 
     test('the Case groups breadcrumb leads back to the groups tab', async () => {
       await groupsPage.goToGroup(group.key);
-      await expect(groupsPage.breadcrumb).toContainText(group.title);
+      await expect(groupsPage.heading).toHaveText(group.title);
+      // The title is the page heading; it is not repeated as a breadcrumb.
+      await expect(groupsPage.breadcrumb).not.toContainText(group.title);
 
       await groupsPage.breadcrumb.getByRole('link', {name: 'Case groups'}).click();
       await expect(page).toHaveURL(/\/case-management\?tab=groups/);
@@ -239,7 +241,6 @@ test.describe('Case groups management', () => {
       expect(body).toMatchObject({title: newTitle, description: 'Edited description'});
       expect(body).toHaveProperty('color');
       await expect(groupsPage.heading).toHaveText(newTitle);
-      await expect(groupsPage.breadcrumb).toContainText(newTitle);
       expect((await getGroup(group.key)).title).toBe(newTitle);
     });
   });
@@ -261,7 +262,7 @@ test.describe('Case groups management', () => {
     test('a new group shows the empty member state', async () => {
       await groupsPage.goToGroup(group.key);
       await expect(groupsPage.noMembers).toBeVisible();
-      await expect(groupsPage.memberCount).toHaveText('0 cases in this group');
+      await expect(groupsPage.memberCount).toHaveText('0 case definitions in this group');
     });
 
     test('Add to group stays disabled until a case is selected', async () => {
@@ -277,7 +278,7 @@ test.describe('Case groups management', () => {
       await expect(groupsPage.memberRow(secondMemberKey)).toBeVisible();
 
       await expect(groupsPage.memberRows).toHaveCount(2);
-      await expect(groupsPage.memberCount).toHaveText('2 cases in this group');
+      await expect(groupsPage.memberCount).toHaveText('2 case definitions in this group');
       await expect(groupsPage.memberRow(firstMemberKey)).toContainText(firstMemberName);
       expect((await getGroup(group.key)).members.map(m => m.caseDefinitionKey)).toEqual([
         firstMemberKey,
@@ -315,7 +316,7 @@ test.describe('Case groups management', () => {
 
       await expect(groupsPage.memberRow(firstMemberKey)).toHaveCount(0);
       await expect(groupsPage.memberRows).toHaveCount(1);
-      await expect(groupsPage.memberCount).toHaveText('1 cases in this group');
+      await expect(groupsPage.memberCount).toHaveText('1 case definitions in this group');
       expect((await getGroup(group.key)).members.map(m => m.caseDefinitionKey)).toEqual([
         secondMemberKey,
       ]);

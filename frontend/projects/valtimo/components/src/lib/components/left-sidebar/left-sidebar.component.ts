@@ -23,7 +23,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {Router} from '@angular/router';
-import {ConfigService, MenuItem} from '@valtimo/shared';
+import {CASES_MENU_ITEM_ID, ConfigService, MenuItem} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 
@@ -60,6 +60,7 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
   public readonly menuItems$: Observable<Array<MenuItem>> = this.menuService.menuItems$;
+  protected readonly casesMenuItemId = CASES_MENU_ITEM_ID;
   public readonly menuItemsLoaded$ = this.menuService.menuItemsLoaded$;
   public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   public readonly closestSequence$: Observable<string> = this.menuService.closestSequence$;

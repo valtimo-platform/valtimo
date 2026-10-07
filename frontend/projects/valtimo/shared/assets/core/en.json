@@ -21,33 +21,33 @@
   },
   "case": {
     "menu": {
-      "pinPlaceholder": "Pin items to place them here"
+      "pinPlaceholder": "Pin items to show them here"
     },
     "allCases": "All cases",
     "overview": {
       "title": "Cases overview",
-      "pin": "Pin to menu",
-      "pinnedToast": "Now in your sidebar under Cases.",
-      "unpinnedToast": "Removed from your sidebar.",
-      "unpin": "Remove from menu",
+      "pin": "Pin to sidebar",
+      "unpin": "Unpin from sidebar",
       "search": {
         "label": "Search case types and case groups",
         "placeholder": "Search case types and case groups..."
       },
       "groups": {
         "title": "Case groups",
-        "singular": "Case group",
         "noResults": "No case groups match your search.",
         "open": "Open {{title}}",
-        "pin": "Pin to sidebar"
+        "pin": "Pin to sidebar",
+        "pinnedToast": "Case group '{{name}}' now appears under 'Cases' in the left sidebar.",
+        "unpinnedToast": "Case group '{{name}}' no longer appears under 'Cases' in the left sidebar."
       },
       "types": {
         "title": "Case types",
-        "singular": "Case type",
         "name": "Name",
         "noResults": "No case types match your search.",
         "open": "Open {{name}}",
-        "pin": "Pin to sidebar"
+        "pin": "Pin to sidebar",
+        "pinnedToast": "Case type '{{name}}' now appears under 'Cases' in the left sidebar.",
+        "unpinnedToast": "Case type '{{name}}' no longer appears under 'Cases' in the left sidebar."
       },
       "pinInfo": {
         "title": "Put the case groups you use most in your sidebar:",
@@ -1041,14 +1041,14 @@
       "status": "Status"
     },
     "listTabs": {
-      "cases": "Cases",
+      "cases": "Case definitions",
       "caseGroups": "Case groups"
     },
     "groups": {
       "listColumns": {
         "title": "List columns",
         "key": "Key",
-        "memberCount": "Number of cases",
+        "memberCount": "Number of case definitions",
         "noColumns": "No columns configured",
         "addColumn": "Add column",
         "editColumn": "Edit column",
@@ -1060,7 +1060,7 @@
         "sortable": "Sortable",
         "sortableCaseFieldsOnly": "Only columns that map to a single shared case field (for example case:createdOn) can be sortable.",
         "exportable": "Exportable",
-        "pathPerCase": "Path (per case)",
+        "pathPerCase": "Path (per case definition)",
         "pathPerCaseTooltip": "Path to the property to display for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties.",
         "saveError": "Failed to save columns",
         "searchPlaceholder": "Search columns..."
@@ -1098,19 +1098,18 @@
         "color": "Group color",
         "colorDescription": "Choose a display color for this case group",
         "selected": "Selected",
-        "customColorLabel": "Custom color:",
+        "customColorLabel": "Choose your own color:",
         "chooseFreely": "Choose freely",
         "assignedCases": "Assigned case definitions",
-        "addCase": "Add case",
-        "selectCase": "Select case",
-        "selectCasePlaceholder": "Choose case...",
+        "addCase": "Add case definition",
+        "selectCase": "Select case definition",
+        "selectCasePlaceholder": "Choose case definition...",
         "addToGroup": "Add to group",
-        "noMembers": "No cases assigned. Click \"Add case\" to add one.",
+        "noMembers": "No case definitions assigned. Click \"Add case definition\" to add one.",
         "addMemberError": "Failed to add case definition",
-        "removeFromGroup": "Remove from group",
-        "caseCount": "{{count}} cases in this group",
-        "searchPlaceholder": "Search cases...",
-        "noSearchResults": "No cases match your search",
+        "caseCount": "{{count}} case definitions in this group",
+        "searchPlaceholder": "Filter case definitions...",
+        "noSearchResults": "No case definitions match your search",
         "columns": {
           "name": "Name",
           "key": "Key",
@@ -1139,10 +1138,11 @@
         "description": "Description",
         "descriptionPlaceholder": "Enter a description"
       },
-      "pathCounter": "{{filled}} of {{total}} case types filled",
-      "searchCaseTypes": "Search case types...",
-      "noMatchingCaseTypes": "No matching case types found",
-      "showOnlyEmpty": "Show only empty"
+      "pathCounter": "{{filled}} of {{total}} case definitions filled",
+      "searchCaseTypes": "Filter case definitions...",
+      "noMatchingCaseTypes": "No matching case definitions found",
+      "showOnlyEmpty": "Show only missing paths",
+      "noMembersHint": "Add a case definition to this group first, under Configuration."
     },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",
@@ -1321,7 +1321,7 @@
           "title": "Case color",
           "description": "Choose a display color for this case definition",
           "selected": "Selected",
-          "customColorLabel": "Custom color:"
+          "customColorLabel": "Choose your own color:"
         }
       },
       "caseListTab": {
@@ -2259,6 +2259,7 @@
   "Overview of all Cases": "Overview of all Cases",
   "Start Case": "Create New Case",
   "Case details": "Case details",
+  "Case group": "Case group",
   "Related documents": "Related documents",
   "Overview of all documents in this case": "Overview of all documents in this case",
   "Basics": "Basics",

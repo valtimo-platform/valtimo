@@ -56,10 +56,12 @@ export class CaseDefinitionGroupCreateModalComponent implements OnChanges {
   @Output() saveEvent = new EventEmitter<CaseDefinitionGroupFormValue>();
 
   protected readonly testIds = CASE_DEFINITION_GROUP_MODAL_TEST_IDS;
+  protected readonly titleMaxLength = 255;
+  protected readonly descriptionMaxLength = 256;
 
   public formGroup: FormGroup = this.fb.group({
-    title: this.fb.control('', Validators.required),
-    description: this.fb.control(''),
+    title: this.fb.control('', [Validators.required, Validators.maxLength(this.titleMaxLength)]),
+    description: this.fb.control('', Validators.maxLength(this.descriptionMaxLength)),
   });
 
   constructor(

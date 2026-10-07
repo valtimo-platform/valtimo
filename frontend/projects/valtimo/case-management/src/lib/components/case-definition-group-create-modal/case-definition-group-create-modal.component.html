@@ -46,6 +46,7 @@
         formControlName="title"
         cdsText
         placeholder="{{ 'caseManagement.groups.createModal.namePlaceholder' | translate }}"
+        [attr.maxlength]="titleMaxLength"
         [attr.modal-primary-focus]="true"
         [attr.data-test-id]="testIds.titleInput"
       />
@@ -59,6 +60,7 @@
         cdsText
         placeholder="{{ 'caseManagement.groups.createModal.descriptionPlaceholder' | translate }}"
         [attr.data-test-id]="testIds.descriptionInput"
+        [attr.maxlength]="descriptionMaxLength"
       />
     </cds-label>
   </form>

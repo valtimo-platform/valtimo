@@ -17,14 +17,10 @@
 :host ::ng-deep form[cdsModalContent] {
   > cds-label,
   > cds-dropdown,
-  > cds-checkbox,
+  > .valtimo-group-column-modal__sortable-field,
   > .valtimo-group-column-modal__dropdown-field {
     display: block;
     margin-bottom: 1.5rem;
-  }
-
-  > cds-checkbox {
-    margin-bottom: 0;
   }
 
   cds-label span,
@@ -104,6 +100,6 @@
 
   &__sortable-hint {
     color: var(--cds-text-secondary);
-    margin-bottom: 1rem;
+    margin: 0.25rem 0 0;
   }
 }

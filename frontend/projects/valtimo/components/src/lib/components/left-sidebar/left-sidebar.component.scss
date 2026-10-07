@@ -132,6 +132,8 @@
   top: 8px;
   left: 13px;
   height: 0;
+  // Overlays the item; let clicks reach it
+  pointer-events: none;
 
   i {
     width: 0px;

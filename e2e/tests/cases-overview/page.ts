@@ -27,6 +27,7 @@ export class CasesOverviewPage {
     await this.page.goto('/cases-overview');
     await expect(this.typesSection).toBeVisible();
     await expect(this.typeRows.first()).toBeVisible();
+    await this.expandCasesMenu();
   }
 
   // ─── Overview ─────────────────────────────────────────────────────
@@ -134,7 +135,7 @@ export class CasesOverviewPage {
 
   async assertPinned(button: Locator, pinned: boolean) {
     await expect(button).toHaveAttribute('aria-pressed', String(pinned));
-    await expect(button).toHaveAccessibleName(pinned ? 'Remove from menu' : 'Pin to menu');
+    await expect(button).toHaveAccessibleName(pinned ? 'Unpin from sidebar' : 'Pin to sidebar');
   }
 
   toast(text: string): Locator {
@@ -155,6 +156,19 @@ export class CasesOverviewPage {
 
   get casesMenuChevron(): Locator {
     return this.casesMenu.getByTestId(LEFT_SIDEBAR_TEST_IDS.submenuChevron);
+  }
+
+  get casesMenuToggle(): Locator {
+    return this.casesMenu.locator('button[aria-haspopup="true"]');
+  }
+
+  // Only the chevron expands the menu; it starts collapsed on every load.
+  async expandCasesMenu() {
+    await expect(this.casesMenuToggle).toBeVisible();
+    if ((await this.casesMenuToggle.getAttribute('aria-expanded')) !== 'true') {
+      await this.casesMenuChevron.click();
+    }
+    await expect(this.casesMenuToggle).toHaveAttribute('aria-expanded', 'true');
   }
 
   get pinnedMenuItems(): Locator {

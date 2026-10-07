@@ -55,7 +55,7 @@ export class CaseManagementGroupsPage {
     return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.tabs);
   }
 
-  listTab(name: 'Cases' | 'Case groups'): Locator {
+  listTab(name: 'Case definitions' | 'Case groups'): Locator {
     return this.listTabs.getByRole('tab', {name, exact: true});
   }
 

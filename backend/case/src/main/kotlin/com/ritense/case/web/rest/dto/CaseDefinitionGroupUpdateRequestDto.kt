@@ -17,9 +17,10 @@
 package com.ritense.case.web.rest.dto
 
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
 
 data class CaseDefinitionGroupUpdateRequestDto(
-    @field:NotBlank val title: String,
-    val description: String? = null,
+    @field:NotBlank @field:Size(max = 255) val title: String,
+    @field:Size(max = 256) val description: String? = null,
     val color: String? = null
 )

@@ -86,6 +86,13 @@ export class PinnedItemsService {
     });
   }
 
+  /** Re-fetches after a pinned item's name or colour changed elsewhere. */
+  public refresh(): void {
+    if (!this._loadStarted) return;
+
+    this.fetchPinnedItems();
+  }
+
   private getItemId(itemType: PinnedItemType, itemKey: string): string {
     return `${itemType}:${itemKey}`;
   }
