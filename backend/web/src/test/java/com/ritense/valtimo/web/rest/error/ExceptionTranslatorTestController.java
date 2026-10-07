@@ -17,6 +17,7 @@
 package com.ritense.valtimo.web.rest.error;
 
 import jakarta.validation.Valid;
+import java.io.IOException;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 @RestController
 public class ExceptionTranslatorTestController {
@@ -48,6 +50,21 @@ public class ExceptionTranslatorTestController {
 
     @GetMapping("/test/missing-servlet-request-parameter")
     public void missingServletRequestParameterException(@RequestParam String param) {
+    }
+
+    @GetMapping("/test/client-disconnected")
+    public void clientDisconnected() throws IOException {
+        throw new AsyncRequestNotUsableException("Servlet container error notification for disconnected client");
+    }
+
+    @GetMapping("/test/broken-pipe")
+    public void brokenPipe() throws IOException {
+        throw new IOException("Broken pipe");
+    }
+
+    @GetMapping("/test/io-exception")
+    public void ioException() throws IOException {
+        throw new IOException("disk full");
     }
 
     @GetMapping("/test/access-denied")
