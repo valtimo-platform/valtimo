@@ -207,7 +207,8 @@ class CaseWidgetService(
      * pays for its shared upstream request once. Null when the group matches no widget.
      *
      * Permission is checked per widget, as on the per-widget endpoint — a widget the user may not
-     * view drops out instead of failing the group. Hidden widgets drop out too.
+     * view drops out instead of failing the group. Hidden widgets drop out too, as do widgets
+     * without data (e.g. dividers).
      */
     @Transactional
     fun getCaseWidgetDataGroup(
@@ -231,7 +232,9 @@ class CaseWidgetService(
 
         groupWidgets
             .filter { widget ->
-                viewPermissionCheckForContext(widget, document) && widgetHiddenCheck(widget, document)
+                hasDataProvider(widget) &&
+                    viewPermissionCheckForContext(widget, document) &&
+                    widgetHiddenCheck(widget, document)
             }
             .associate { widget ->
                 widget.id.key to envelopeFor(widget, document, pageable, caseDefinitionId)
@@ -368,6 +371,9 @@ class CaseWidgetService(
             WidgetDataEnvelope.failed()
         }
     }
+
+    private fun hasDataProvider(widget: Any): Boolean =
+        caseWidgetDataProviders.any { provider -> provider.supports(widget) }
 
     private fun callCaseWidgetDataProvider(widget: Any, document: Document, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Any? {
         return runWithoutAuthorization {
