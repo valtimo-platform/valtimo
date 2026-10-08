@@ -31,7 +31,7 @@ export interface PluginManifest {
   configurationSchema?: Record<string, unknown>;
   permissions?: { endpoints?: Array<{ method: string; pattern: string }> };
   frontendBundles?: Array<{
-    type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page" | "task-form";
+    type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page" | "task-form" | "side-panel";
     key?: string;
     title?: string;
     path: string;

@@ -16,6 +16,7 @@
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TranslateModule} from '@ngx-translate/core';
+import {SidePanelService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/shared';
 import {ExternalPluginIframeComponent} from './external-plugin-iframe.component';
 
@@ -157,7 +158,10 @@ describe('ExternalPluginIframeComponent', () => {
   });
 
   describe('plugin data proxy', () => {
-    const proxyToPlugin = (method: string, path: string): Promise<{status: number; body: unknown}> =>
+    const proxyToPlugin = (
+      method: string,
+      path: string
+    ): Promise<{status: number; body: unknown}> =>
       (component as any)._proxyToPlugin(method, path, undefined, undefined);
 
     beforeEach(() => {
@@ -336,6 +340,74 @@ describe('ExternalPluginIframeComponent', () => {
       component.ngOnInit();
 
       expect(component.$trustedUrl()).toBeNull();
+    });
+  });
+  describe('side panel offers', () => {
+    let iframe: HTMLIFrameElement;
+    let sidePanelService: jasmine.SpyObj<SidePanelService>;
+
+    const sendPanelMessage = (event: string, payload: unknown): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event, payload},
+        source: iframe.contentWindow,
+      } as MessageEvent);
+
+    beforeEach(() => {
+      sidePanelService = jasmine.createSpyObj<SidePanelService>('SidePanelService', [
+        'offer',
+        'withdraw',
+      ]);
+      (component as any)._sidePanelService = sidePanelService;
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+      component.configurationId = 'config-1';
+      component.context = {documentId: 'doc-1', caseDefinitionKey: 'plan'};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    it('offers a namespaced key, a case link and the trusted context over the plugin context', () => {
+      sendPanelMessage('offerPanel', {
+        bundleKey: 'evaluatie',
+        key: 'session-1',
+        title: 'Evaluatie',
+        subtitle: 'Plan A',
+        context: {documentId: 'forged', evaluationId: 'e-1'},
+      });
+
+      const offer = sidePanelService.offer.calls.mostRecent().args[0];
+      expect(offer.key).toBe('external-plugin:config-1:evaluatie:session-1');
+      expect(offer.subtitleLink).toEqual(['/cases', 'plan', 'document', 'doc-1']);
+      expect(offer.inputs?.['context']).toEqual({
+        documentId: 'doc-1',
+        caseDefinitionKey: 'plan',
+        evaluationId: 'e-1',
+      });
+    });
+
+    it('ignores an offer without a title', () => {
+      sendPanelMessage('offerPanel', {key: 'session-1'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('ignores an offer from a surface without a configuration', () => {
+      component.configurationId = null;
+
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('withdraws only under its own configuration namespace', () => {
+      sendPanelMessage('withdrawPanel', {bundleKey: 'evaluatie', key: 'session-1'});
+
+      expect(sidePanelService.withdraw).toHaveBeenCalledWith(
+        'external-plugin:config-1:evaluatie:session-1'
+      );
     });
   });
 });

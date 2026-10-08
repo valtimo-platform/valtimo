@@ -4099,6 +4099,11 @@
   "externalPluginPage": {
     "loadError": "Deze pluginpagina kon niet worden geladen."
   },
+  "sidePanel": {
+    "close": "Paneel sluiten",
+    "loadError": "Dit paneel kon niet worden geladen.",
+    "resize": "Paneelbreedte aanpassen"
+  },
   "adminSettings": {
     "title": "Instellingen",
     "tabs": {

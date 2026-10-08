@@ -4090,6 +4090,11 @@
   "externalPluginPage": {
     "loadError": "This plugin page could not be loaded."
   },
+  "sidePanel": {
+    "close": "Close panel",
+    "loadError": "This panel could not be loaded.",
+    "resize": "Resize panel"
+  },
   "adminSettings": {
     "title": "Settings",
     "tabs": {

@@ -64,6 +64,9 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     // Non-management: the menu-configuration builder lists activated page bundles. The
                     // list is unfiltered; access to page data is enforced at render time (PBAC ∩ allowlist).
                     .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/menu-pages")).authenticated()
+                    // Non-management: resolve a side-panel bundle a plugin surface offered. Access to the
+                    // panel's data is enforced at render time (PBAC ∩ allowlist).
+                    .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/configuration/*/side-panel")).authenticated()
                     // Non-management: host origins for the frontend CSP (frame-src/connect-src). Every
                     // user rendering a plugin surface needs these; an origin exposes no secret.
                     .requestMatchers(antMatcher(GET, "/api/v1/external-plugin/host-origins")).authenticated()

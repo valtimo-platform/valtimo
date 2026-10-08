@@ -513,7 +513,7 @@ describe("validatePluginManifest", () => {
       expect(
         validatePluginManifest(withBundles([{ type: "dashboard", path: "/frontend/x.html" }]))
       ).toContain(
-        "manifest.json frontendBundles[0].type must be one of: config, process-link-action, case-tab, case-widget, page, task-form"
+        "manifest.json frontendBundles[0].type must be one of: config, process-link-action, case-tab, case-widget, page, task-form, side-panel"
       );
     });
 

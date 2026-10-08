@@ -22,3 +22,4 @@ export * from './external-plugin-user-token.service';
 export * from './external-plugin-session.service';
 export * from './external-plugin-task-form-submission.service';
 export * from './external-plugin-page.service';
+export * from './external-plugin-side-panel.service';

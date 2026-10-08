@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
-export {
-  ValtimoPluginSDK,
-  PluginContext,
-  ParentToIframeEvents,
-  IframeToParentEvents,
-  ParentEventType,
-  IframeEventType,
-} from "./plugin-frontend-sdk.js";
-export type { PanelOffer, ProxyResult, SubmitResult, ValtimoPluginSDKOptions } from "./plugin-frontend-sdk.js";
+/**
+ * An activated external-plugin `side-panel` bundle, as returned by
+ * `GET /api/v1/external-plugin/configuration/{configurationId}/side-panel`.
+ */
+interface ExternalPluginSidePanel {
+  configurationId: string;
+  bundleKey: string | null;
+  bundleUrl: string;
+}
+
+/** Payload of the iframe's `offerPanel` message, after validation. */
+interface ExternalPluginPanelOffer {
+  bundleKey?: string;
+  key: string;
+  title: string;
+  subtitle?: string;
+  context?: Record<string, unknown>;
+}
+
+export {ExternalPluginPanelOffer, ExternalPluginSidePanel};

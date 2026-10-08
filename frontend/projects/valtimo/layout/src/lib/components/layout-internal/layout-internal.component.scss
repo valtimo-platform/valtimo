@@ -21,6 +21,7 @@
 
 ::ng-deep .cds--content {
   padding-top: 24px !important;
+  padding-right: calc(2rem + var(--valtimo-side-panel-offset, 0px));
 }
 
 @media screen and (max-width: 767px) {

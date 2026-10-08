@@ -23,6 +23,7 @@ import {
   PageHeaderModule,
   PromptModule,
   RightSidebarModule,
+  SidePanelComponent,
   TopbarModule,
 } from '@valtimo/components';
 import {GlobalNotificationComponent} from '@valtimo/shared';
@@ -39,6 +40,7 @@ import {PlaceholderModule} from 'carbon-components-angular';
     TopbarModule,
     LeftSidebarModule,
     RightSidebarModule,
+    SidePanelComponent,
     PageHeaderModule,
     AlertModule,
     CommonModule,

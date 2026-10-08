@@ -1,0 +1,52 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.externalplugin.web.rest
+
+import com.ritense.externalplugin.service.ExternalPluginSidePanelService
+import com.ritense.externalplugin.web.rest.dto.ExternalPluginSidePanelDto
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+
+@RestController
+@SkipComponentScan
+@RequestMapping("/api/v1/external-plugin", produces = [APPLICATION_JSON_UTF8_VALUE])
+class ExternalPluginSidePanelResource(
+    private val sidePanelService: ExternalPluginSidePanelService,
+) {
+
+    @EndpointDescription(
+        en = "Get an external plugin side panel",
+        nl = "Een zijpaneel van een externe plugin ophalen",
+    )
+    @GetMapping("/configuration/{configurationId}/side-panel")
+    fun getSidePanel(
+        @PathVariable configurationId: UUID,
+        @RequestParam(required = false) bundleKey: String?,
+    ): ResponseEntity<ExternalPluginSidePanelDto> {
+        val sidePanel = sidePanelService.getSidePanel(configurationId, bundleKey)
+            ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(sidePanel)
+    }
+}

@@ -28,9 +28,12 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import {Subscription} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
+import {CdsThemeService, CurrentCarbonTheme, SidePanelService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/shared';
-import {ExternalPluginEndpoint} from '../../models';
+import {ExternalPluginEndpoint, ExternalPluginPanelOffer} from '../../models';
+import {ExternalPluginSidePanelComponent} from '../external-plugin-side-panel/external-plugin-side-panel.component';
 
 /**
  * Ceiling for an iframe height reported from inside the sandbox. High enough for any legitimate
@@ -38,6 +41,8 @@ import {ExternalPluginEndpoint} from '../../models';
  * scroll.
  */
 const MAX_IFRAME_HEIGHT = 20000;
+
+const MAX_PANEL_TEXT_LENGTH = 200;
 
 @Component({
   standalone: true,
@@ -101,13 +106,17 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   public readonly $trustedUrl = signal<SafeResourceUrl | null>(null);
 
   private readonly _onMessageBound = this._onMessage.bind(this);
+  private readonly _subscriptions = new Subscription();
+  private _theme: CurrentCarbonTheme = CurrentCarbonTheme.WHITE;
   /** Pathname prefix all proxied GZAC calls must stay under (derived from the API endpoint URI). */
   private readonly _apiBasePath: string;
 
   constructor(
     private readonly _sanitizer: DomSanitizer,
     private readonly _translateService: TranslateService,
-    private readonly _configService: ConfigService
+    private readonly _configService: ConfigService,
+    private readonly _sidePanelService: SidePanelService,
+    private readonly _cdsThemeService: CdsThemeService
   ) {
     this._apiBasePath = this._deriveApiBasePath();
   }
@@ -120,10 +129,19 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     }
 
     window.addEventListener('message', this._onMessageBound);
+
+    this._subscriptions.add(
+      this._cdsThemeService.currentTheme$.subscribe(theme => {
+        const changed = theme !== this._theme;
+        this._theme = theme;
+        if (changed) this._postToIframe('themeChanged', {theme});
+      })
+    );
   }
 
   public ngOnDestroy(): void {
     window.removeEventListener('message', this._onMessageBound);
+    this._subscriptions.unsubscribe();
   }
 
   public triggerSave(): void {
@@ -156,7 +174,7 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   public onIframeLoad(): void {
     this._postToIframe('init', {
       context: this.context,
-      theme: 'white',
+      theme: this._theme,
       locale: this._translateService.currentLang ?? this._translateService.defaultLang ?? 'en',
     });
   }
@@ -202,7 +220,87 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
       case 'proxyRequest':
         void this._handleProxyRequest(data.payload);
         break;
+      case 'offerPanel':
+        this._offerPanel(data.payload);
+        break;
+      case 'withdrawPanel':
+        this._withdrawPanel(data.payload);
+        break;
     }
+  }
+
+  /**
+   * Offers one of this configuration's own `side-panel` bundles to the app-wide side panel. The
+   * bundle URL is resolved by GZAC, never taken from the iframe. This surface's context is trusted
+   * and overrides same-named keys in the plugin-supplied context.
+   */
+  private _offerPanel(payload: unknown): void {
+    const offer = this._parsePanelOffer(payload);
+    if (!offer || !this.configurationId) return;
+
+    const documentId = this._contextString('documentId');
+    const caseDefinitionKey = this._contextString('caseDefinitionKey');
+
+    this._sidePanelService.offer({
+      key: this._panelKey(offer.bundleKey, offer.key),
+      title: offer.title,
+      subtitle: offer.subtitle,
+      subtitleLink:
+        documentId && caseDefinitionKey
+          ? ['/cases', caseDefinitionKey, 'document', documentId]
+          : undefined,
+      component: ExternalPluginSidePanelComponent,
+      inputs: {
+        bundleKey: offer.bundleKey ?? null,
+        configurationId: this.configurationId,
+        context: {...(offer.context ?? {}), ...this.context},
+      },
+    });
+  }
+
+  /** Withdraws the panel only when it still shows this configuration's content under that key. */
+  private _withdrawPanel(payload: unknown): void {
+    const {bundleKey, key} = (payload ?? {}) as {bundleKey?: unknown; key?: unknown};
+    if (!this.configurationId || !this._isPanelText(key)) return;
+    if (bundleKey !== undefined && !this._isPanelText(bundleKey)) return;
+
+    this._sidePanelService.withdraw(this._panelKey(bundleKey as string | undefined, key));
+  }
+
+  private _contextString(name: string): string | null {
+    const value = this.context?.[name];
+    return typeof value === 'string' && value ? value : null;
+  }
+
+  private _isPanelText(value: unknown): value is string {
+    return typeof value === 'string' && value.length > 0 && value.length <= MAX_PANEL_TEXT_LENGTH;
+  }
+
+  private _panelKey(bundleKey: string | undefined, key: string): string {
+    return `external-plugin:${this.configurationId}:${bundleKey ?? ''}:${key}`;
+  }
+
+  private _parsePanelOffer(payload: unknown): ExternalPluginPanelOffer | null {
+    if (!payload || typeof payload !== 'object') return null;
+    const {bundleKey, key, title, subtitle, context} = payload as Record<string, unknown>;
+
+    if (!this._isPanelText(key) || !this._isPanelText(title)) return null;
+    if (bundleKey !== undefined && !this._isPanelText(bundleKey)) return null;
+    if (subtitle !== undefined && !this._isPanelText(subtitle)) return null;
+    if (
+      context !== undefined &&
+      (!context || typeof context !== 'object' || Array.isArray(context))
+    ) {
+      return null;
+    }
+
+    return {
+      bundleKey: bundleKey as string | undefined,
+      key,
+      title,
+      subtitle: subtitle as string | undefined,
+      context: context as Record<string, unknown> | undefined,
+    };
   }
 
   /**

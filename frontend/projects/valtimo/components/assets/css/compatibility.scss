@@ -569,7 +569,7 @@ valtimo-list {
 .notification-overlay {
   position: fixed;
   top: 32px;
-  right: 32px;
+  right: calc(32px + var(--valtimo-side-panel-offset, 0px));
   z-index: 10000;
   display: flex;
   flex-direction: column;

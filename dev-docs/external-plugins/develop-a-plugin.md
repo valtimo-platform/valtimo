@@ -120,6 +120,7 @@ Start from what you are trying to achieve, not from the API list:
 | Show your own data on a case | A **case tab** (a whole tab) or **case widget** (a card among others) | a `case-tab` / `case-widget` bundle + `request()` |
 | Give a user a form to fill in on a user task | A **task form** | a `task-form` bundle, optionally `submit()` |
 | Add a screen to the main navigation, not tied to a case | A **page** | a `page` bundle + `request()` |
+| Keep something at hand while the user moves through the whole app | A **side panel** | a `side-panel` bundle, offered from another surface with `offerPanel()` |
 | Let an administrator configure your plugin through a real form | A **config bundle** | a `config` bundle + `configurationSchema` |
 | Give an administrator a real form for an action's inputs | A **process-link-action bundle** | a `process-link-action` bundle |
 
@@ -272,7 +273,7 @@ broken down section by section below:
 
 | Field | Meaning |
 |---|---|
-| `type` | One of the six types above. |
+| `type` | One of the seven types above. |
 | `path` | Bundle entry point; must start with `/bundles/`, which maps onto the package's `frontend/` directory (`/bundles/case-tab.html` → `frontend/case-tab.html`). The host serves it at `GET /plugins/{id}/{version}/bundles/…`. |
 | `key` | Distinguishes multiple bundles of one type (e.g. three task forms). Optional for a plugin's sole bundle of a type. |
 | `title` | Label in admin pickers. **For `page` bundles it is a translation key**, resolved against your locale buckets to build the menu label; every other type renders it literally. |
@@ -496,6 +497,8 @@ policy.
 | `getPluginData(path, query?)` / `postPluginData(path, body?)` | Calls your `request()` handlers through the host's `/data` route → `Promise<{status, body}>`. |
 | `submitTask(data)` | Task forms (Levels 0/1): hand the form data to GZAC → `Promise<{ok, errors?, fieldErrors?}>`; on `ok: false` render the errors, the form stays up. |
 | `emit("taskCompleted", {})` | Level 2 only: tell the parent *you* completed the task (via `gzacApi.asUser`), so it closes and refreshes. |
+| `offerPanel({bundleKey?, key, title, subtitle?, context?})` | Show one of your `side-panel` bundles in GZAC's app-wide side panel (next section). |
+| `withdrawPanel(key, bundleKey?)` | Remove the panel content you offered under `key`. |
 | `emit("notification", …)` / `emit("navigate", …)` | **Reserved** — defined in the message schema, but current GZAC frontends do not act on them. |
 | `setConfiguration(valid, title, data)` / `onPrefillConfiguration(h)` | The `config` bundle contract — next section. |
 | `destroy()` | Detach listeners (hot-reload/dev). |
@@ -507,7 +510,28 @@ Context fields per surface:
 | `case-tab`, `case-widget` | `pluginConfigurationId`, `documentId`, `caseDefinitionKey`, `caseDefinitionVersionTag` |
 | `task-form` | `pluginConfigurationId`, `taskId`, `processInstanceId`, `documentId` |
 | `page` | `configurationId` (note the different key) — a page is not case-bound |
+| `side-panel` | the offer's `context`, overlaid with the context of the surface that offered it (so `documentId` comes from the offering case tab, not from your offer) |
 | `config`, `process-link-action` | empty — drive these via the contract below |
+
+### Side panels
+
+GZAC has one side panel at the right edge of the screen, below the header. It pushes the page
+content aside and stays open while the user navigates, so a user can keep your content at hand
+while looking things up elsewhere. The panel is generic: it does not know what it shows or why.
+
+- **Offer, don't open.** Any of your surfaces calls `sdk.offerPanel({bundleKey, key, title,
+  subtitle})`. The latest offer takes the panel over from whatever it showed. Re-offering the
+  `key` that is already shown does not reload it; it only shows the panel again if the user had
+  closed it. So a case tab can safely offer on every load.
+- **Closing only hides.** The user's close button hides the panel and keeps your iframe alive.
+  Your content stays until you call `withdrawPanel(key)` or another offer replaces it.
+- **The panel does not survive a reload.** It belongs to the browser tab. If your content must
+  come back, offer it again from the surface where it belongs (for example the case tab of the
+  case it is about), and keep its state in your backend.
+- **Your own bundles only.** GZAC resolves the bundle from your configuration's manifest; an
+  offer cannot point at a URL. `key`, `title`, `subtitle` and `bundleKey` are strings of at most
+  200 characters; an invalid offer is ignored.
+- When the offering surface is case-bound, the panel subtitle links back to that case.
 
 ### The `config` bundle contract
 

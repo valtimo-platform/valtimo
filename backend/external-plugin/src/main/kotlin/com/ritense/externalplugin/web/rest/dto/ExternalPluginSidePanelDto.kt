@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-export {
-  ValtimoPluginSDK,
-  PluginContext,
-  ParentToIframeEvents,
-  IframeToParentEvents,
-  ParentEventType,
-  IframeEventType,
-} from "./plugin-frontend-sdk.js";
-export type { PanelOffer, ProxyResult, SubmitResult, ValtimoPluginSDKOptions } from "./plugin-frontend-sdk.js";
+package com.ritense.externalplugin.web.rest.dto
+
+import java.util.UUID
+
+/** An activated external-plugin `side-panel` bundle the frontend can render in the app-wide side panel. */
+data class ExternalPluginSidePanelDto(
+    val configurationId: UUID,
+    val bundleKey: String?,
+    val bundleUrl: String,
+)

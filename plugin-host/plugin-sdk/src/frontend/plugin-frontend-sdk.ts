@@ -93,6 +93,26 @@ interface IframeToParentEvents {
     body?: unknown;
     headers?: Record<string, string>;
   };
+  /**
+   * Offer one of this configuration's `side-panel` bundles to GZAC's app-wide side panel. The latest
+   * offer takes the panel over; re-offering the current `key` only shows it again. The parent adds the
+   * offering surface's own context (e.g. `documentId`), which wins over same-named keys in `context`.
+   * Prefer {@link ValtimoPluginSDK.offerPanel}.
+   */
+  offerPanel: PanelOffer;
+  /** Remove this configuration's panel content offered under `key`. Prefer {@link ValtimoPluginSDK.withdrawPanel}. */
+  withdrawPanel: { bundleKey?: string; key: string };
+}
+
+/** Content offered to GZAC's side panel; see {@link IframeToParentEvents.offerPanel}. */
+export interface PanelOffer {
+  /** Key of the manifest's `side-panel` bundle; omit when the plugin has only one. */
+  bundleKey?: string;
+  /** Identity of the content, e.g. an evaluation id. Max 200 characters, as are the texts. */
+  key: string;
+  title: string;
+  subtitle?: string;
+  context?: Record<string, unknown>;
 }
 
 /** Result of a proxied call: the HTTP status and the response body (data only). */
@@ -354,6 +374,16 @@ class ValtimoPluginSDK {
       this._pendingSubmits.set(correlationId, { resolve, reject });
       this.emit("submitTask", { correlationId, data });
     });
+  }
+
+  /** Offer side-panel content to GZAC; see {@link IframeToParentEvents.offerPanel}. */
+  public offerPanel(offer: PanelOffer): void {
+    this.emit("offerPanel", offer);
+  }
+
+  /** Withdraw side-panel content this configuration offered under `key`. */
+  public withdrawPanel(key: string, bundleKey?: string): void {
+    this.emit("withdrawPanel", { bundleKey, key });
   }
 
   private _proxyRequest(
