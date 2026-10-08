@@ -366,7 +366,7 @@ class PluginProcessLinkMapper(
         if (expression.indexOf(':') <= 0) {
             return false
         }
-        return valueResolverService?.supportsValue(expression) ?: true
+        return valueResolverService?.supportsValue(expression) ?: false
     }
 
     private fun findPlaceholderName(value: String): String? =

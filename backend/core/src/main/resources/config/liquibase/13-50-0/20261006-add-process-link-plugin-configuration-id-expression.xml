@@ -18,10 +18,10 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
-                   logicalFilePath="config/liquibase/13-50-0/20261006-add-process-link-plugin-configuration-id-expression.xml">
+                   logicalFilePath="config/liquibase/changelog/20261006-add-process-link-plugin-configuration-id-expression.xml">
 
     <changeSet author="Ritense" id="1">
-        <preConditions onFail="CONTINUE">
+        <preConditions onFail="MARK_RAN">
             <tableExists tableName="process_link"/>
         </preConditions>
         <addColumn tableName="process_link">
