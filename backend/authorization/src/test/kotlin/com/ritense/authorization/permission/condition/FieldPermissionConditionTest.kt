@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.EQUAL_TO
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.GREATER_THAN
+import com.ritense.authorization.permission.condition.PermissionConditionOperator.GREATER_THAN_OR_EQUAL_TO
+import com.ritense.authorization.permission.condition.PermissionConditionOperator.IN
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LESS_THAN
+import com.ritense.authorization.permission.condition.PermissionConditionOperator.LESS_THAN_OR_EQUAL_TO
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LIST_CONTAINS
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.NOT_EQUAL_TO
 import com.ritense.authorization.testimpl.TestChildEntity
@@ -221,12 +224,77 @@ class FieldPermissionConditionTest {
     }
 
     @Test
-    fun `should throw NullPointerException when a parent in the path is null`() {
-        val entity = TestEntity(null)
-        val condition = conditionTemplate
-        assertThrows<NullPointerException> {
-            condition.isValid(entity)
+    fun `should fail validation with EQUAL_TO when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", EQUAL_TO, 100)
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should pass validation with NOT_EQUAL_TO when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", NOT_EQUAL_TO, 100)
+        assertTrue(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should pass validation with EQUAL_TO null when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", EQUAL_TO, null)
+        assertTrue(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should fail validation with NOT_EQUAL_TO null when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", NOT_EQUAL_TO, null)
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should fail validation with IN when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", IN, listOf(100, 200))
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should fail validation with GREATER_THAN when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", GREATER_THAN, 1)
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should fail validation with GREATER_THAN_OR_EQUAL_TO when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", GREATER_THAN_OR_EQUAL_TO, 1)
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should fail validation with LESS_THAN when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", LESS_THAN, 1)
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should fail validation with LESS_THAN_OR_EQUAL_TO when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", LESS_THAN_OR_EQUAL_TO, 1)
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should fail validation with LIST_CONTAINS when a parent in the path is null`() {
+        val condition = FieldPermissionCondition("child.property", LIST_CONTAINS, 100)
+        assertFalse(condition.isValid(TestEntity(null)))
+    }
+
+    @Test
+    fun `should throw NoSuchFieldException when a field after a null parent cannot be found`() {
+        val condition = conditionTemplate.copy(field = "child.non-existent")
+        assertThrows<NoSuchFieldException> {
+            condition.isValid(TestEntity(null))
         }
+    }
+
+    @Test
+    fun `should not throw when a parent is null and the field after it cannot be checked`() {
+        val condition = conditionTemplate.copy(field = "child.property.x")
+        assertFalse(condition.isValid(TestEntity(TestChildEntity(null))))
     }
 
     @Test

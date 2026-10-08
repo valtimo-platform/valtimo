@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package com.ritense.authorization.permission.condition
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.EQUAL_TO
+import com.ritense.authorization.permission.condition.PermissionConditionOperator.GREATER_THAN
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LIST_CONTAINS
+import com.ritense.authorization.permission.condition.PermissionConditionOperator.NOT_EQUAL_TO
 import com.ritense.authorization.testimpl.TestChildEntity
 import com.ritense.authorization.testimpl.TestEntity
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -154,6 +156,68 @@ class ExpressionPermissionConditionTest {
 
         val result = condition.isValid(entity)
         assertEquals(true, result)
+    }
+
+    @Test
+    fun `should pass validation with NOT_EQUAL_TO when json property is not found`() {
+        val condition = conditionTemplate.copy(path = "y", operator = NOT_EQUAL_TO)
+
+        val result = condition.isValid(entity)
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `should fail validation with EQUAL_TO when a parent in the path is null`() {
+        val result = conditionTemplate.isValid(TestEntity(null))
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun `should pass validation with NOT_EQUAL_TO when a parent in the path is null`() {
+        val condition = conditionTemplate.copy(operator = NOT_EQUAL_TO)
+
+        val result = condition.isValid(TestEntity(null))
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `should pass validation with EQUAL_TO null when a parent in the path is null`() {
+        val condition = conditionTemplate.copy(value = null)
+
+        val result = condition.isValid(TestEntity(null))
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `should pass validation with NOT_EQUAL_TO when entity property value is null`() {
+        val condition = conditionTemplate.copy(operator = NOT_EQUAL_TO)
+
+        val result = condition.isValid(TestEntity(TestChildEntity(null)))
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun `should fail validation with NOT_EQUAL_TO null when entity property value is null`() {
+        val condition = conditionTemplate.copy(operator = NOT_EQUAL_TO, value = null)
+
+        val result = condition.isValid(TestEntity(TestChildEntity(null)))
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun `should fail validation with GREATER_THAN when entity property value is null`() {
+        val condition = conditionTemplate.copy(operator = GREATER_THAN)
+
+        val result = condition.isValid(TestEntity(TestChildEntity(null)))
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun `should throw NoSuchFieldException when a field after a null parent cannot be found`() {
+        val condition = conditionTemplate.copy(field = "child.non-existent")
+        assertThrows<NoSuchFieldException> {
+            condition.isValid(TestEntity(null))
+        }
     }
 
     @Test

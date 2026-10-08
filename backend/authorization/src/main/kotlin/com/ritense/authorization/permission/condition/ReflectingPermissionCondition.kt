@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,38 @@
 package com.ritense.authorization.permission.condition
 
 import java.lang.reflect.Field
+import java.lang.reflect.Modifier
 
 abstract class ReflectingPermissionCondition(type: PermissionConditionType) : PermissionCondition(type) {
     protected fun findEntityFieldValue(entity: Any, field: String): Any? {
-        var currentEntity: Any? = entity
         val fields = field.split('.')
-        fields.forEachIndexed { index, value ->
-            if (currentEntity == null) {
-                throw NullPointerException("Field $fields not found in class ${entity.javaClass}")
+        var currentEntity: Any? = entity
+        var currentClass: Class<*> = entity.javaClass
+        for (value in fields) {
+            val parent = currentEntity
+            // A null parent resolves the path to null. Remaining segments are still validated against the declared type, when possible.
+            if (parent == null && !canResolveFieldsOf(currentClass)) {
+                return null
             }
-            val declaredField = findDeclaredField(currentEntity.javaClass, value)
+            val declaredField = findDeclaredField(parent?.javaClass ?: currentClass, value)
+                ?: throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
+            currentClass = declaredField.type
 
-            if (declaredField == null) {
-                throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
-            }
-            declaredField.trySetAccessible()
-
-            // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
-            currentEntity = try {
-                declaredField.get(currentEntity)
-            } catch (npe: NullPointerException) {
-                if (index == fields.size - 1) {
+            if (parent != null) {
+                declaredField.trySetAccessible()
+                // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
+                currentEntity = try {
+                    declaredField.get(parent)
+                } catch (_: NullPointerException) {
                     null
-                } else {
-                    throw npe
                 }
             }
         }
         return currentEntity
+    }
+
+    private fun canResolveFieldsOf(clazz: Class<*>): Boolean {
+        return clazz != Any::class.java && !clazz.isInterface && !Modifier.isAbstract(clazz.modifiers)
     }
 
 
