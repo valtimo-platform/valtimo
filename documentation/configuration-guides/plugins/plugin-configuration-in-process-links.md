@@ -1,7 +1,7 @@
 # Plugin configuration in process links
 
 {% hint style="success" %}
-Available since Valtimo `13.49.1`
+Available since Valtimo `13.50.0`
 {% endhint %}
 
 A plugin process link names the plugin configuration whose action it runs. In a deployed
