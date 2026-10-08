@@ -4362,6 +4362,98 @@
   },
   "buildingBlockManagement": {
     "title": "Bouwblokken",
+    "referenceUpdate": {
+      "title": "Referenties bijwerken",
+      "draft": "Concept",
+      "final": "Definitief",
+      "none": "Geen",
+      "containerType": {
+        "CASE": "Dossier",
+        "BUILDING_BLOCK": "Bouwblok"
+      },
+      "steps": {
+        "target": "Doel",
+        "chains": "Referenties",
+        "differences": "Verschillen",
+        "review": "Controleren"
+      },
+      "target": {
+        "description": "Selecteer het bouwblok en de versie die {{key}} {{versionTag}} moet vervangen. Dit kan een oudere of een nieuwere versie zijn, of een ander bouwblok.",
+        "keyLabel": "Doelbouwblok",
+        "keyPlaceholder": "Zoek een bouwblok",
+        "label": "Doelversie",
+        "placeholder": "Zoek een versie",
+        "emptyTitle": "Geen versie",
+        "emptyMessage": "Dit bouwblok heeft geen andere versie om naar over te stappen."
+      },
+      "chains": {
+        "description": "Selecteer welke referenties van {{key}} {{sourceVersionTag}} naar {{targetKey}} {{targetVersionTag}} bijgewerkt moeten worden. Referenties via een definitieve versie maken nieuwe concepten aan en zijn standaard niet geselecteerd.",
+        "via": "via",
+        "refersTo": "verwijst naar",
+        "inActivity": "(activiteit {{activityId}})",
+        "willBeUpdatedTo": "en gaat over naar",
+        "empty": "Geen referenties gevonden.",
+        "requiresDrafts": "Maakt nieuwe concepten van definitieve versies",
+        "modifiesExistingDraft": "Wijzigt bestaand concept {{key}} {{versionTag}} (gebaseerd op {{basedOn}})",
+        "notUpdatable": "Kan niet bijgewerkt worden: {{reason}}",
+        "selectAtLeastOne": "Selecteer minstens één referentie om verder te gaan."
+      },
+      "differences": {
+        "description": "Los per geselecteerde referentie de verschillen tussen de bron- en de doelversie op. Je kunt niet verder zolang een referentie niet volledig geconfigureerd is.",
+        "configured": "Geconfigureerd",
+        "notConfigured": "Niet geconfigureerd",
+        "none": "Geen verschillen op te lossen.",
+        "inputMode": "Bron",
+        "inputMode_path": "Pad",
+        "inputMode_value": "Waarde",
+        "inputPath": "Pad",
+        "inputValue": "Waarde",
+        "inputValuePlaceholder": "Vaste waarde",
+        "inputTarget": "Verplichte invoer",
+        "inputRequired": "Deze invoer is verplicht in de doelversie",
+        "pluginConfiguration": "Pluginconfiguratie voor {{plugin}}",
+        "pluginPlaceholder": "Selecteer een pluginconfiguratie",
+        "pluginRequired": "De doelversie heeft een configuratie van deze plugin nodig",
+        "noPluginConfigurations": "Er bestaat nog geen configuratie van deze plugin. Maak er eerst een aan in pluginbeheer.",
+        "pluginLink": "Opgeslagen op de koppeling in {{container}}",
+        "dropped": "Koppelingen die vervallen omdat de doelversie het veld niet meer heeft",
+        "droppedInput": "Invoer {{source}} → {{target}}",
+        "droppedOutput": "Uitvoer {{source}} → {{target}}"
+      },
+      "review": {
+        "description": "Controleer alle wijzigingen voor het bijwerken van de referenties van {{key}} {{sourceVersionTag}} naar {{targetKey}} {{targetVersionTag}}. Er wordt niets definitief gemaakt en er verandert niets aan lopende dossiers.",
+        "draftsToCreate": "Aan te maken concepten",
+        "draftsToModify": "Te wijzigen concepten",
+        "draftVersion": "versie {{versionTag}}, gebaseerd op {{basedOn}}",
+        "linksToRepoint": "Om te zetten referenties",
+        "containerReference": "Referentie naar container",
+        "skipped": "Overgeslagen referenties",
+        "covered": "Ook bijgewerkt via een gedeelde referentie",
+        "confirm": "Ik heb deze wijzigingen gecontroleerd en wil ze doorvoeren",
+        "execute": "Referenties bijwerken"
+      },
+      "result": {
+        "title": "Referenties bijgewerkt",
+        "message": "Referenties naar {{key}} {{sourceVersionTag}} zijn waar geselecteerd omgezet naar {{targetKey}} {{targetVersionTag}}.",
+        "updatedDirectly": "Direct bijgewerkte referenties",
+        "draftsCreated": "Aangemaakte concepten",
+        "draftsModified": "Gewijzigde concepten",
+        "basedOn": "gebaseerd op {{versionTag}}",
+        "remainingReferences": "Resterende referenties",
+        "noRemainingReferences": "Niets verwijst nog naar {{key}} {{versionTag}}.",
+        "nextStepsTitle": "Volgende stappen",
+        "nextSteps": "Controleer de concepten hierboven en maak ze definitief, en plan daarna een dossiermigratie om bestaande dossiers naar de nieuwe versies te verplaatsen."
+      },
+      "previewFailed": {
+        "title": "Het voorbeeld kon niet geladen worden",
+        "message": "Er ging iets mis bij het vergelijken van de bron- en de doelversie.",
+        "retry": "Opnieuw proberen"
+      },
+      "draftsNotAllowed": {
+        "title": "Concepten zijn niet toegestaan",
+        "message": "Deze omgeving staat geen concepten toe, dus referenties naar bouwblokken kunnen hier niet bijgewerkt worden. Werk ze bij op een omgeving waar configuratie gewijzigd kan worden."
+      }
+    },
     "listColumns": {
       "name": "Naam",
       "key": "Sleutel",
@@ -4413,7 +4505,8 @@
       "forms": "Formulieren",
       "formFlows": "Form flows",
       "decisions": "Beslistabellen",
-      "migration": "Migratie"
+      "migration": "Migratie",
+      "references": "Referenties"
     },
     "migration": {
       "addPlan": "Migratieplan toevoegen",
@@ -4540,6 +4633,23 @@
       "export": "Exporteer \"{{value}}\"",
       "exportSuccessTitle": "Download start binnenkort",
       "preparingDownload": "Download aan het voorbereiden"
+    },
+    "references": {
+      "updateButton": "Referenties bijwerken",
+      "containerType": "Type",
+      "key": "Sleutel",
+      "versionTag": "Versie",
+      "status": "Status",
+      "location": "Locatie",
+      "caseLink": "Bouwblokkoppeling van dossier",
+      "processLink": "Proces {{processDefinitionKey}}, activiteit {{activityId}}",
+      "goTo": "Ga naar",
+      "processDefinitionLink": "Proces",
+      "actionsLink": "Acties",
+      "noResults": {
+        "title": "Geen referenties",
+        "description": "Geen dossier of bouwblok verwijst naar deze versie."
+      }
     }
   },
   "migrationEditor": {

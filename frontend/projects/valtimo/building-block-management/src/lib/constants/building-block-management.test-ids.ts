@@ -38,8 +38,42 @@ export const BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS = {
   finishButton: 'buildingBlockUploadFinishButton',
 } as const;
 
+export const BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS = {
+  modal: 'buildingBlockReferenceUpdateModal',
+  progressIndicator: 'buildingBlockReferenceUpdateProgressIndicator',
+  targetKeyComboBox: 'buildingBlockReferenceUpdateTargetKeyComboBox',
+  targetComboBox: 'buildingBlockReferenceUpdateTargetComboBox',
+  draftsNotAllowed: 'buildingBlockReferenceUpdateDraftsNotAllowed',
+  previewFailed: 'buildingBlockReferenceUpdatePreviewFailed',
+  retryPreviewButton: 'buildingBlockReferenceUpdateRetryPreviewButton',
+  chain: 'buildingBlockReferenceUpdateChain',
+  chainCheckbox: 'buildingBlockReferenceUpdateChainCheckbox',
+  chainModifiesExistingDraft: 'buildingBlockReferenceUpdateChainModifiesExistingDraft',
+  chainNotUpdatable: 'buildingBlockReferenceUpdateChainNotUpdatable',
+  differences: 'buildingBlockReferenceUpdateDifferences',
+  inputMapping: 'buildingBlockReferenceUpdateInputMapping',
+  inputValueInput: 'buildingBlockReferenceUpdateInputValueInput',
+  pluginConfigurationDropdown: 'buildingBlockReferenceUpdatePluginConfigurationDropdown',
+  droppedMappings: 'buildingBlockReferenceUpdateDroppedMappings',
+  review: 'buildingBlockReferenceUpdateReview',
+  confirmCheckbox: 'buildingBlockReferenceUpdateConfirmCheckbox',
+  result: 'buildingBlockReferenceUpdateResult',
+  draftLink: 'buildingBlockReferenceUpdateDraftLink',
+  remainingReferences: 'buildingBlockReferenceUpdateRemainingReferences',
+  cancelButton: 'buildingBlockReferenceUpdateCancelButton',
+  backButton: 'buildingBlockReferenceUpdateBackButton',
+  nextButton: 'buildingBlockReferenceUpdateNextButton',
+  executeButton: 'buildingBlockReferenceUpdateExecuteButton',
+  closeButton: 'buildingBlockReferenceUpdateCloseButton',
+} as const;
+
 export const BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS = {
   tabs: 'buildingBlockTabs',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS = {
+  updateReferencesButton: 'buildingBlockUpdateReferencesButton',
+  referenceLink: 'buildingBlockReferenceLink',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_PROCESSES_TEST_IDS = {
@@ -88,3 +122,11 @@ export const BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS = {
  * `buildingBlockVersion-<versionTag>`, built in the version selector component.
  */
 export const BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX = 'buildingBlockVersion-';
+
+/** Prefix for the options of the reference update wizard's target key combo box: `<prefix><key>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_KEY_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateTargetKey-';
+
+/** Prefix for the options of the reference update wizard's target combo box: `<prefix><versionTag>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateTarget-';

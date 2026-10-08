@@ -1,0 +1,151 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if ($preview(); as preview) {
+  <div [attr.data-test-id]="testIds.review" class="valtimo-building-block-reference-update__list">
+    <p class="valtimo-building-block-reference-update__description">
+      {{
+        'buildingBlockManagement.referenceUpdate.review.description'
+          | translate
+            : {
+                key: preview.key,
+                sourceVersionTag: preview.sourceVersionTag,
+                targetKey: preview.targetKey,
+                targetVersionTag: preview.targetVersionTag,
+              }
+      }}
+    </p>
+
+    <valtimo-building-block-reference-update-preview-status></valtimo-building-block-reference-update-preview-status>
+
+    <section>
+      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.draftsToCreate' | translate }}</h5>
+
+      <ng-container
+        *ngTemplateOutlet="
+          draftListTemplate;
+          context: {$implicit: preview.changeset.draftsToCreate}
+        "
+      ></ng-container>
+    </section>
+
+    <section>
+      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.draftsToModify' | translate }}</h5>
+
+      <ng-container
+        *ngTemplateOutlet="
+          draftListTemplate;
+          context: {$implicit: preview.changeset.draftsToModify}
+        "
+      ></ng-container>
+    </section>
+
+    <section>
+      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.linksToRepoint' | translate }}</h5>
+
+      @if (preview.changeset.linksToRepoint.length === 0) {
+        <p class="valtimo-building-block-reference-update__secondary">
+          {{ 'buildingBlockManagement.referenceUpdate.none' | translate }}
+        </p>
+      } @else {
+        <ul class="valtimo-building-block-reference-update__bullets">
+          @for (link of preview.changeset.linksToRepoint; track $index) {
+            <li>
+              {{ link.container.key }} {{ link.container.versionTag }}
+              @if (link.activityId) {
+                <span class="valtimo-building-block-reference-update__secondary">
+                  ({{ link.activityId }})
+                </span>
+              }
+              :
+              <strong>{{ link.buildingBlockKey }}</strong> {{ link.fromVersionTag }} →
+              @if (link.toBuildingBlockKey !== link.buildingBlockKey) {
+                <strong>{{ link.toBuildingBlockKey }}</strong>
+              }
+              {{ link.toVersionTag }}
+
+              @if (link.containerReference) {
+                <cds-tag class="cds-tag--no-margin" size="sm" type="cool-gray">
+                  {{
+                    'buildingBlockManagement.referenceUpdate.review.containerReference' | translate
+                  }}
+                </cds-tag>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section>
+      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.skipped' | translate }}</h5>
+
+      <valtimo-building-block-reference-update-chain-list
+        [chainIds]="preview.changeset.skippedChainIds"
+      ></valtimo-building-block-reference-update-chain-list>
+    </section>
+
+    @if (preview.changeset.coveredChainIds.length > 0) {
+      <section>
+        <h5>{{ 'buildingBlockManagement.referenceUpdate.review.covered' | translate }}</h5>
+
+        <valtimo-building-block-reference-update-chain-list
+          [chainIds]="preview.changeset.coveredChainIds"
+        ></valtimo-building-block-reference-update-chain-list>
+      </section>
+    }
+
+    <cds-checkbox
+      [attr.data-test-id]="testIds.confirmCheckbox"
+      [checked]="$confirmed()"
+      [disabled]="$executing()"
+      (checkedChange)="onConfirmedChange($event)"
+    >
+      {{ 'buildingBlockManagement.referenceUpdate.review.confirm' | translate }}
+    </cds-checkbox>
+
+    @if ($executing()) {
+      <cds-loading size="sm" [isActive]="true"></cds-loading>
+    }
+  </div>
+}
+
+<ng-template #draftListTemplate let-drafts>
+  @if (drafts.length === 0) {
+    <p class="valtimo-building-block-reference-update__secondary">
+      {{ 'buildingBlockManagement.referenceUpdate.none' | translate }}
+    </p>
+  } @else {
+    <ul class="valtimo-building-block-reference-update__bullets">
+      @for (draft of drafts; track $index) {
+        <li>
+          {{ 'buildingBlockManagement.referenceUpdate.containerType.' + draft.type | translate }}
+          <strong>{{ draft.key }}</strong>
+          {{
+            'buildingBlockManagement.referenceUpdate.review.draftVersion'
+              | translate
+                : {
+                    versionTag: draft.versionTag,
+                    basedOn:
+                      draft.basedOnVersionTag ??
+                      ('buildingBlockManagement.referenceUpdate.none' | translate),
+                  }
+          }}
+        </li>
+      }
+    </ul>
+  }
+</ng-template>

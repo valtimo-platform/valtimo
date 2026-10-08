@@ -4353,6 +4353,98 @@
   },
   "buildingBlockManagement": {
     "title": "Building blocks",
+    "referenceUpdate": {
+      "title": "Update references",
+      "draft": "Draft",
+      "final": "Finalized",
+      "none": "None",
+      "containerType": {
+        "CASE": "Case",
+        "BUILDING_BLOCK": "Building block"
+      },
+      "steps": {
+        "target": "Target",
+        "chains": "References",
+        "differences": "Differences",
+        "review": "Review"
+      },
+      "target": {
+        "description": "Select the building block and version that should replace {{key}} {{versionTag}}. This can be an older or a newer version, or another building block.",
+        "keyLabel": "Target building block",
+        "keyPlaceholder": "Search for a building block",
+        "label": "Target version",
+        "placeholder": "Search for a version",
+        "emptyTitle": "No version",
+        "emptyMessage": "This building block has no other version to switch to."
+      },
+      "chains": {
+        "description": "Select which references of {{key}} {{sourceVersionTag}} should be updated to {{targetKey}} {{targetVersionTag}}. References through a finalized version create new drafts and are not selected by default.",
+        "via": "via",
+        "refersTo": "references",
+        "inActivity": "(activity {{activityId}})",
+        "willBeUpdatedTo": "and will be updated to use",
+        "empty": "No references found.",
+        "requiresDrafts": "Creates new drafts of finalized versions",
+        "modifiesExistingDraft": "Modifies existing draft {{key}} {{versionTag}} (based on {{basedOn}})",
+        "notUpdatable": "Cannot be updated: {{reason}}",
+        "selectAtLeastOne": "Select at least one reference to continue."
+      },
+      "differences": {
+        "description": "Resolve the differences between the source and the target version for each selected reference. You cannot continue while a reference is not fully configured.",
+        "configured": "Configured",
+        "notConfigured": "Not configured",
+        "none": "No differences to resolve.",
+        "inputMode": "Source",
+        "inputMode_path": "Path",
+        "inputMode_value": "Value",
+        "inputPath": "Path",
+        "inputValue": "Value",
+        "inputValuePlaceholder": "Fixed value",
+        "inputTarget": "Required input",
+        "inputRequired": "This input is required by the target version",
+        "pluginConfiguration": "Plugin configuration for {{plugin}}",
+        "pluginPlaceholder": "Select a plugin configuration",
+        "pluginRequired": "The target version needs a configuration of this plugin",
+        "noPluginConfigurations": "No configuration of this plugin exists yet. Create one in plugin management first.",
+        "pluginLink": "Saved on the link in {{container}}",
+        "dropped": "Mappings that will be dropped because the target version no longer has the field",
+        "droppedInput": "Input {{source}} → {{target}}",
+        "droppedOutput": "Output {{source}} → {{target}}"
+      },
+      "review": {
+        "description": "Review all changes for updating the references of {{key}} {{sourceVersionTag}} to {{targetKey}} {{targetVersionTag}}. Nothing is finalized and no running case is changed.",
+        "draftsToCreate": "Drafts to create",
+        "draftsToModify": "Drafts to modify",
+        "draftVersion": "version {{versionTag}}, based on {{basedOn}}",
+        "linksToRepoint": "References to re-point",
+        "containerReference": "Container reference",
+        "skipped": "References skipped",
+        "covered": "Also updated through a shared reference",
+        "confirm": "I have reviewed these changes and want to apply them",
+        "execute": "Update references"
+      },
+      "result": {
+        "title": "References updated",
+        "message": "References to {{key}} {{sourceVersionTag}} have been moved to {{targetKey}} {{targetVersionTag}} where selected.",
+        "updatedDirectly": "References updated directly",
+        "draftsCreated": "Drafts created",
+        "draftsModified": "Drafts modified",
+        "basedOn": "based on {{versionTag}}",
+        "remainingReferences": "Remaining references",
+        "noRemainingReferences": "Nothing refers to {{key}} {{versionTag}} anymore.",
+        "nextStepsTitle": "Next steps",
+        "nextSteps": "Review and finalize the drafts above, then plan a case migration to move existing cases to the new versions."
+      },
+      "previewFailed": {
+        "title": "The reference update preview could not be loaded",
+        "message": "Something went wrong while comparing the source and the target version.",
+        "retry": "Try again"
+      },
+      "draftsNotAllowed": {
+        "title": "Drafts are not allowed",
+        "message": "This environment does not allow drafts, so building block references cannot be updated here. Update them on an environment where configuration can be changed."
+      }
+    },
     "listColumns": {
       "name": "Name",
       "key": "Key",
@@ -4404,7 +4496,8 @@
       "forms": "Forms",
       "formFlows": "Form flows",
       "decisions": "Decision tables",
-      "migration": "Migration"
+      "migration": "Migration",
+      "references": "References"
     },
     "migration": {
       "addPlan": "Add migration plan",
@@ -4531,6 +4624,23 @@
       "export": "Export \"{{value}}\"",
       "exportSuccessTitle": "Download will start shortly",
       "preparingDownload": "Preparing download"
+    },
+    "references": {
+      "updateButton": "Update references",
+      "containerType": "Type",
+      "key": "Key",
+      "versionTag": "Version",
+      "status": "Status",
+      "location": "Location",
+      "caseLink": "Case building block link",
+      "processLink": "Process {{processDefinitionKey}}, activity {{activityId}}",
+      "goTo": "Go to",
+      "processDefinitionLink": "Process",
+      "actionsLink": "Actions",
+      "noResults": {
+        "title": "No references",
+        "description": "No case or building block references this version."
+      }
     }
   },
   "migrationEditor": {

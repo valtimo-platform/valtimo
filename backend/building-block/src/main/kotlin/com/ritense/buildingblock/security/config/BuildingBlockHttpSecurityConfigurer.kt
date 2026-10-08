@@ -152,6 +152,13 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/migration/{migrationKey}/status"))
                     .hasAuthority(ADMIN)
+                    // Reference update wizard endpoints
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/reference-update/references/{key}/version/{versionTag}"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/reference-update/preview"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/reference-update/execute"))
+                    .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case/{caseId}/building-blocks"))
                     .authenticated()
             }

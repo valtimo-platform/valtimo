@@ -29,6 +29,8 @@ interface CaseDefinitionBuildingBlockLinkRepository :
 
     fun findAllByCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<CaseDefinitionBuildingBlockLink>
 
+    fun findAllByBuildingBlockDefinitionIdKey(buildingBlockDefinitionKey: String): List<CaseDefinitionBuildingBlockLink>
+
     fun findByCaseDefinitionIdAndBuildingBlockDefinitionId(
         caseDefinitionId: CaseDefinitionId,
         buildingBlockDefinitionId: BuildingBlockDefinitionId

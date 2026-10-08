@@ -27,13 +27,61 @@ import {
   BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS,
+  BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX,
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete, apiGet} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost} from '../../utils/api.utils';
 import {BUILDING_BLOCK_TEXTS} from './building-block-config';
 
 const ARCHIVES_DIR = 'building-block-archives';
 const BUILDING_BLOCK_API_URL = '/api/management/v1/building-block';
+const REFERENCE_UPDATE_API_URL = `${BUILDING_BLOCK_API_URL}/reference-update`;
+const PROCESS_LINK_API_URL = '/api/v1/process-link';
+
+// DI section required — backend drops elements without a shape
+function callActivityBpmn(
+  processKey: string,
+  activityId: string,
+  childKey: string,
+  childVersionTag: string
+): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="${processKey}" name="${processKey}" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1"><bpmn:outgoing>Flow_1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:callActivity id="${activityId}" calledElement="${childKey}" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="BB:${childKey}:${childVersionTag}">
+      <bpmn:extensionElements><camunda:in businessKey="#{buildingBlockDocumentId}" /></bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent_1"><bpmn:incoming>Flow_2</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="${activityId}" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="${activityId}" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="${processKey}">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1"><dc:Bounds x="173" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="${activityId}_di" bpmnElement="${activityId}"><dc:Bounds x="260" y="80" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1"><dc:Bounds x="412" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1"><di:waypoint x="209" y="120" /><di:waypoint x="260" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2"><di:waypoint x="360" y="120" /><di:waypoint x="412" y="120" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+}
+
+export interface BuildingBlockVersion {
+  versionTag: string;
+  final: boolean;
+}
+
+export interface BuildingBlockProcessLink {
+  activityId: string;
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+}
 
 function escapeForRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -54,6 +102,7 @@ export interface CreateBuildingBlockValues {
 
 export class BuildingBlockManagementPage {
   readonly carbonList: CarbonList;
+  readonly referencesList: CarbonList;
   private readonly listScope: Locator;
 
   constructor(
@@ -62,6 +111,10 @@ export class BuildingBlockManagementPage {
   ) {
     this.listScope = page.locator('valtimo-building-block-management-list');
     this.carbonList = new CarbonList(page, this.listScope);
+    this.referencesList = new CarbonList(
+      page,
+      page.locator('valtimo-building-block-management-references')
+    );
   }
 
   // ─── List locators ────────────────────────────────────────────────
@@ -149,6 +202,56 @@ export class BuildingBlockManagementPage {
 
   get uploadFinishButton() {
     return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS.finishButton);
+  }
+
+  // ─── References tab & reference update wizard locators ───────────
+
+  get updateReferencesButton() {
+    return this.referencesList.toolbar.getByTestId(
+      BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS.updateReferencesButton
+    );
+  }
+
+  /** A row of the references tab, identified by its container key. */
+  referenceRow(containerKey: string) {
+    return this.referencesList.rows.filter({hasText: containerKey});
+  }
+
+  private referenceUpdateTestId(id: keyof typeof BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS) {
+    return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS[id]);
+  }
+
+  get referenceUpdateChains() {
+    return this.referenceUpdateTestId('chain');
+  }
+
+  /** A chain of the chains step, identified by a container key on its path. */
+  referenceUpdateChain(containerKey: string) {
+    return this.referenceUpdateChains.filter({hasText: containerKey});
+  }
+
+  get referenceUpdateDifferences() {
+    return this.referenceUpdateTestId('differences');
+  }
+
+  get referenceUpdateReview() {
+    return this.referenceUpdateTestId('review');
+  }
+
+  get referenceUpdateResult() {
+    return this.referenceUpdateTestId('result');
+  }
+
+  get referenceUpdateDraftLinks() {
+    return this.referenceUpdateTestId('draftLink');
+  }
+
+  get referenceUpdateNextButton() {
+    return this.referenceUpdateTestId('nextButton');
+  }
+
+  get referenceUpdateExecuteButton() {
+    return this.referenceUpdateTestId('executeButton');
   }
 
   // ─── Navigation ───────────────────────────────────────────────────
@@ -340,6 +443,167 @@ export class BuildingBlockManagementPage {
     await expect(this.uploadFinishButton).toBeVisible();
     await expect(this.uploadCancelButton).not.toBeVisible();
     await expect(this.uploadBackButton).not.toBeVisible();
+  }
+
+  // ─── Reference update wizard ─────────────────────────────────────
+
+  async goToReferencesTab(key: string, versionTag: string) {
+    await this.page.goto(
+      `/building-block-management/building-block/${key}/version/${versionTag}/references`
+    );
+    await this.referencesList.waitForLoaded();
+  }
+
+  /** The source is the building block version of the references tab. */
+  async openReferenceUpdateWizard() {
+    await expect(this.updateReferencesButton).toBeEnabled();
+    await this.updateReferencesButton.click();
+    await expect(this.referenceUpdateTestId('targetComboBox')).toBeVisible();
+  }
+
+  /** Step 1: another version of the same key. */
+  async selectReferenceUpdateTarget(versionTag: string) {
+    await this.referenceUpdateTestId('targetComboBox').locator('input').fill(versionTag);
+    await this.page
+      .getByTestId(`${BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX}${versionTag}`)
+      .click();
+    await this.goToNextReferenceUpdateStep();
+    await expect(this.referenceUpdateChains.first()).toBeVisible();
+  }
+
+  referenceUpdateChainCheckbox(containerKey: string) {
+    return this.referenceUpdateChain(containerKey).locator('input[type="checkbox"]');
+  }
+
+  // Click the label — host click doesn't emit `checkedChange`
+  async selectReferenceUpdateChain(containerKey: string) {
+    await this.referenceUpdateChain(containerKey)
+      .getByTestId(BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS.chainCheckbox)
+      .locator('label')
+      .click();
+    await expect(this.referenceUpdateChainCheckbox(containerKey)).toBeChecked();
+  }
+
+  async goToNextReferenceUpdateStep() {
+    await expect(this.referenceUpdateNextButton).toBeEnabled();
+    await this.referenceUpdateNextButton.click();
+  }
+
+  async closeReferenceUpdateWizard() {
+    await this.referenceUpdateTestId('closeButton').click();
+    await expect(this.referenceUpdateTestId('modal')).toBeHidden();
+  }
+
+  async confirmReferenceUpdate() {
+    await this.referenceUpdateTestId('confirmCheckbox').locator('label').click();
+  }
+
+  async executeReferenceUpdate(): Promise<Response> {
+    await expect(this.referenceUpdateExecuteButton).toBeEnabled();
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().endsWith(`${REFERENCE_UPDATE_API_URL}/execute`) &&
+          res.request().method() === 'POST'
+      ),
+      this.referenceUpdateExecuteButton.click(),
+    ]);
+    return response;
+  }
+
+  // ─── Reference update fixture API ────────────────────────────────
+
+  async createBuildingBlockViaApi(key: string, versionTag: string) {
+    await apiPost(BUILDING_BLOCK_API_URL, {
+      key,
+      name: key,
+      versionTag,
+      description: 'Building block created by the e2e building block reference update test.',
+    });
+  }
+
+  async finalizeBuildingBlockViaApi(key: string, versionTag: string) {
+    await apiPost(`${BUILDING_BLOCK_API_URL}/${key}/version/${versionTag}/finalize`, {});
+  }
+
+  async createBuildingBlockDraftViaApi(key: string, basedOnVersionTag: string, versionTag: string) {
+    await apiPost(`${BUILDING_BLOCK_API_URL}/${key}/version/${basedOnVersionTag}/draft`, {
+      versionTag,
+    });
+  }
+
+  private async getMainProcessDefinitionIdViaApi(key: string, versionTag: string) {
+    const processes = await apiGet<{id: string; main: boolean}[]>(
+      `${BUILDING_BLOCK_API_URL}/${key}/version/${versionTag}/process-definition`
+    );
+    const main = processes.find(process => process.main);
+    expect(main, `${key} ${versionTag} has a main process definition`).toBeDefined();
+    return main!.id;
+  }
+
+  // Uses the process editor's multipart endpoint, so the link is stored as in the UI
+  async linkMainProcessToBuildingBlockViaApi(
+    key: string,
+    versionTag: string,
+    activityId: string,
+    childKey: string,
+    childVersionTag: string
+  ) {
+    // Multipart PUT reuses PLAYWRIGHT_BEARER_TOKEN; api utils refresh it on 401
+    const processDefinitionId = await this.getMainProcessDefinitionIdViaApi(key, versionTag);
+    const processLinks = [
+      {
+        processLinkType: 'building-block',
+        processDefinitionId,
+        activityId,
+        activityType: 'bpmn:CallActivity:start',
+        buildingBlockDefinitionKey: childKey,
+        buildingBlockDefinitionVersionTag: childVersionTag,
+        pluginConfigurationMappings: {},
+        inputMappings: [],
+        outputMappings: [],
+      },
+    ];
+    const response = await this.request.put(
+      `${BUILDING_BLOCK_API_URL}/${key}/version/${versionTag}/process-definition/${processDefinitionId}`,
+      {
+        headers: {Authorization: `Bearer ${process.env.PLAYWRIGHT_BEARER_TOKEN}`},
+        multipart: {
+          file: {
+            name: `${key}.bpmn`,
+            mimeType: 'text/xml',
+            buffer: Buffer.from(callActivityBpmn(key, activityId, childKey, childVersionTag)),
+          },
+          processLinks: {
+            name: 'processLinks.json',
+            mimeType: 'application/json',
+            buffer: Buffer.from(JSON.stringify(processLinks)),
+          },
+          main: {name: 'main.json', mimeType: 'application/json', buffer: Buffer.from('true')},
+        },
+      }
+    );
+    expect(response.status(), await response.text()).toBe(204);
+  }
+
+  /** The building block process link on `activityId` in the main process of a version. */
+  async getBuildingBlockProcessLinkViaApi(
+    key: string,
+    versionTag: string,
+    activityId: string
+  ): Promise<BuildingBlockProcessLink | undefined> {
+    const processDefinitionId = await this.getMainProcessDefinitionIdViaApi(key, versionTag);
+    const links = await apiGet<BuildingBlockProcessLink[]>(
+      `${PROCESS_LINK_API_URL}?processDefinitionId=${encodeURIComponent(processDefinitionId)}`
+    );
+    return links.find(link => link.activityId === activityId);
+  }
+
+  async getBuildingBlockVersionsViaApi(key: string): Promise<BuildingBlockVersion[]> {
+    const page = await apiGet<{content: BuildingBlockVersion[]}>(
+      `${BUILDING_BLOCK_API_URL}/${key}/version?all=true`
+    );
+    return page.content;
   }
 
   // ─── API helpers ──────────────────────────────────────────────────
