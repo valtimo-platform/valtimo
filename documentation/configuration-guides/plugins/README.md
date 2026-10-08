@@ -12,6 +12,8 @@ covers two kinds:
 
 This section covers:
 
+- **[Plugin configuration in process links](plugin-configuration-in-process-links.md)** — take a
+  process link's plugin configuration from an environment setting or a process variable
 - **[External plugins](external-plugins/README.md)** — concepts of the admin screens, and how
   plugin hosts, apps, and plugin configurations fit together
 - **[Add a plugin host](external-plugins/add-a-plugin-host.md)** — connect a plugin host to
