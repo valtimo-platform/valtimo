@@ -25,7 +25,12 @@ import com.ritense.case_.TestResolverFactory
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.service.CaseWidgetService
+import com.ritense.case_.widget.divider.DividerCaseWidgetDto
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDto
+import com.ritense.case_.widget.metroline.MetrolineCaseWidgetDto
+import com.ritense.case_.widget.metroline.MetrolineCaseWidgetProperties
+import com.ritense.case_.widget.metroline.MetrolineMode
+import com.ritense.case_.widget.metroline.MetrolineOrientation
 import com.ritense.case_.widget.table.TableCaseWidgetDto
 import com.ritense.case_.widget.table.TableWidgetProperties
 import com.ritense.case_.widget.fields.FieldsWidgetProperties
@@ -125,6 +130,43 @@ class CaseWidgetDataGroupResourceIntTest @Autowired constructor(
             .andExpect(jsonPath("$.first-widget").exists())
             .andExpect(jsonPath("$.second-widget").exists())
             .andExpect(jsonPath("$.table-widget").doesNotExist())
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [USER])
+    fun `should serve the static group without the widgets that have no data`() {
+        val documentId = createCase(
+            listOf(
+                MetrolineCaseWidgetDto(
+                    key = "metroline-widget",
+                    title = "metroline-widget",
+                    icon = null,
+                    width = 4,
+                    highContrast = false,
+                    isCompact = null,
+                    properties = MetrolineCaseWidgetProperties(
+                        orientation = MetrolineOrientation.HORIZONTAL,
+                        mode = MetrolineMode.INTERNAL_CASE_STATUS,
+                    ),
+                ),
+                DividerCaseWidgetDto(
+                    key = "divider-widget",
+                    title = "divider-widget",
+                    icon = null,
+                    width = 4,
+                    highContrast = false,
+                    isCompact = null,
+                ),
+            )
+        )
+        assertThat(dataGroupIds(documentId)).containsOnly("static")
+
+        mockMvc.perform(dataGroupRequest(documentId, "static"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.metroline-widget.data").isArray)
+            .andExpect(jsonPath("$.metroline-widget.error").doesNotExist())
+            .andExpect(jsonPath("$.divider-widget").doesNotExist())
     }
 
     @Test
