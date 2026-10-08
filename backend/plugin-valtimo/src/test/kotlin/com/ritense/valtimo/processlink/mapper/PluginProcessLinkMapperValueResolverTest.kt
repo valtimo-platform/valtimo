@@ -216,7 +216,7 @@ class PluginProcessLinkMapperValueResolverTest {
     private fun errors() = logAppender.list.filter { it.level == Level.ERROR }.map { it.formattedMessage }
 
     private fun deploy(fields: String, actionKey: String = "test-action"): PluginProcessLinkDeployDto {
-        return objectMapper.copy().also { PluginProcessLinkMapper(it, mock(), mock(), mock()) }
+        return objectMapper.copy().also { PluginProcessLinkMapper(it, mock(), mock(), mock(), mock()) }
             .readValue<ProcessLinkDeployDto>(
                 """
                 {

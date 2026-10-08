@@ -76,6 +76,7 @@ class PluginProcessLinkMapperTest {
             pluginConfigurationRepository,
             pluginProcessLinkRepository,
             pluginDefinitionRepository,
+            mock(),
         )
     }
 

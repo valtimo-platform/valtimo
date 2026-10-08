@@ -59,6 +59,6 @@ data class PluginConfigurationReference(
 enum class PluginConfigurationReferenceType {
     FIXED,
     BUILDING_BLOCK,
-    // The configuration id is resolved per execution from an expression such as 'pv:pluginConfigurationId'
+    // Configuration id resolved per execution from expression, e.g. pv:pluginConfigurationId
     VALUE_RESOLVER
 }

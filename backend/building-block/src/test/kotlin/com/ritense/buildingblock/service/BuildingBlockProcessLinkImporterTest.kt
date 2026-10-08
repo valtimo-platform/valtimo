@@ -73,7 +73,7 @@ class BuildingBlockProcessLinkImporterTest {
     @BeforeEach
     fun setUp() {
         objectMapper = jacksonObjectMapper()
-        PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository)
+        PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository, mock())
 
         importer = BuildingBlockProcessLinkImporter(
             processLinkService = processLinkService,
@@ -138,7 +138,7 @@ class BuildingBlockProcessLinkImporterTest {
             )
         )
 
-        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository)
+        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository, mock())
         whenever(processLinkService.getProcessLinkMapper(eq(PROCESS_LINK_TYPE_PLUGIN))).thenReturn(pluginMapper)
 
         doReturn(mock<ProcessLink>()).whenever(processLinkService).createProcessLink(any(), anyOrNull())
@@ -187,7 +187,7 @@ class BuildingBlockProcessLinkImporterTest {
         ).thenReturn(
             listOf(BuildingBlockProcessDefinitionDto(id = "pd-123", key = "my-process", name = "My Process", versionTag = "1", main = true))
         )
-        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository)
+        val pluginMapper = PluginProcessLinkMapper(objectMapper, pluginConfigurationRepository, pluginProcessLinkRepository, pluginDefinitionRepository, mock())
         whenever(processLinkService.getProcessLinkMapper(eq(PROCESS_LINK_TYPE_PLUGIN))).thenReturn(pluginMapper)
         doReturn(mock<ProcessLink>()).whenever(processLinkService).createProcessLink(any(), anyOrNull())
 

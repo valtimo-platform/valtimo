@@ -46,7 +46,7 @@ class PluginProcessLinkDeployDto(
         get() = PROCESS_LINK_TYPE_PLUGIN
 
     companion object {
-        // A pluginConfigurationId that is not a UUID, such as 'pv:configId', is read as pluginConfigurationIdExpression
+        // Non-UUID pluginConfigurationId (e.g. pv:configId) → pluginConfigurationIdExpression
         @JvmStatic
         @JsonCreator
         fun fromJson(

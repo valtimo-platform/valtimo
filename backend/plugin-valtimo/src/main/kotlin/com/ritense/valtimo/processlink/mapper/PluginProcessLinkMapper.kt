@@ -64,7 +64,7 @@ class PluginProcessLinkMapper(
     private val pluginConfigurationRepository: PluginConfigurationRepository,
     private val pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
     private val pluginDefinitionRepository: PluginDefinitionRepository,
-    private val valueResolverService: ValueResolverService? = null,
+    private val valueResolverService: ValueResolverService,
 ) : ProcessLinkMapper {
 
     init {
@@ -121,7 +121,7 @@ class PluginProcessLinkMapper(
         blueprintId: BlueprintId?
     ): ProcessLinkUpdateRequestDto {
         deployDto as PluginProcessLinkDeployDto
-        // Issues were already logged by toProcessLinkCreateRequestDto, which every importer calls first
+        // Logged already by toProcessLinkCreateRequestDto; importers call it first
         val reference = toDeployedReference(deployDto, logIssues = false)
         return PluginProcessLinkUpdateDto(
             id = existingProcessLinkId,
@@ -212,7 +212,7 @@ class PluginProcessLinkMapper(
         return withLoggingContext(ProcessLink::class, processLinkToUpdate.id) {
             updateRequestDto as PluginProcessLinkUpdateDto
             processLinkToUpdate as PluginProcessLink
-            // The process-link editor cannot show an expression, so an update that omits it keeps the stored one
+            // Editor cannot show expression; keep stored one when update omits it
             val keepsStoredExpression = updateRequestDto.referenceType == VALUE_RESOLVER &&
                 processLinkToUpdate.pluginConfigurationReference.type == VALUE_RESOLVER
             val expression = updateRequestDto.pluginConfigurationIdExpression
@@ -338,7 +338,8 @@ class PluginProcessLinkMapper(
                     "contains the unresolved placeholder '$placeholderName'. $PLACEHOLDER_HINT"
                 } else {
                     "has the value '$expression', which is neither a plugin configuration id (UUID) nor a value " +
-                        "supported by a value resolver (such as 'pv:<variable>')."
+                        "supported by a value resolver (such as 'pv:<variable>'). If pluginConfigurationId was written as " +
+                        "an environment placeholder, '$expression' is the value it was replaced with."
                 }
                 logger.error {
                     "Plugin process link for activity '$activityId' of process definition '${deployDto.processDefinitionId}': " +
@@ -366,7 +367,7 @@ class PluginProcessLinkMapper(
         if (expression.indexOf(':') <= 0) {
             return false
         }
-        return valueResolverService?.supportsValue(expression) ?: false
+        return valueResolverService.supportsValue(expression)
     }
 
     private fun findPlaceholderName(value: String): String? =
