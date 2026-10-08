@@ -16,6 +16,7 @@
 
 :host ::ng-deep form[cdsModalContent] {
   > cds-label,
+  > valtimo-auto-key-input,
   > cds-dropdown,
   > .valtimo-group-column-modal__sortable-field,
   > .valtimo-group-column-modal__dropdown-field {
@@ -32,7 +33,6 @@
 
 .valtimo-group-column-modal {
   &__path-section {
-    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
   }
 
@@ -71,7 +71,10 @@
     max-width: 300px;
   }
 
-  &__show-empty-checkbox {
+  &__show-empty {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     margin-left: auto;
   }
 

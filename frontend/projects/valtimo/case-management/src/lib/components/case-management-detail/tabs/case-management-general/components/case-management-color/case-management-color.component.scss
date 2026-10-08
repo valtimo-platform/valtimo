@@ -102,15 +102,9 @@
     align-items: center;
     gap: 8px;
 
-    valtimo-color-picker cds-label {
-      display: block;
-      font-size: 0;
-      line-height: 0;
-
-      > .valtimo-color-picker {
-        font-size: 1rem;
-        line-height: normal;
-      }
+    // Empty picker label still reserves its 8px margin and pushes the swatch down.
+    ::ng-deep valtimo-color-picker .cds--label {
+      display: none;
     }
   }
 

@@ -1142,6 +1142,7 @@
       "searchCaseTypes": "Filter case definitions...",
       "noMatchingCaseTypes": "No matching case definitions found",
       "showOnlyEmpty": "Show only missing paths",
+      "showOnlyEmptyTooltip": "If this is checked, only case definitions without a path are shown. Rows that are filled in stay visible until this is turned off.",
       "noMembersHint": "Add a case definition to this group first, under Configuration."
     },
     "needsConfiguration": "Needs configuration",

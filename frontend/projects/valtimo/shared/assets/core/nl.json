@@ -1142,6 +1142,7 @@
       "searchCaseTypes": "Dossierdefinities filteren...",
       "noMatchingCaseTypes": "Geen overeenkomende dossierdefinities gevonden",
       "showOnlyEmpty": "Alleen ontbrekende paden tonen",
+      "showOnlyEmptyTooltip": "Als dit is aangevinkt, worden alleen dossierdefinities zonder pad getoond. Ingevulde rijen blijven zichtbaar tot dit wordt uitgezet.",
       "noMembersHint": "Voeg eerst een dossierdefinitie toe aan deze groep, onder Configuratie."
     },
     "needsConfiguration": "Configuratie vereist",

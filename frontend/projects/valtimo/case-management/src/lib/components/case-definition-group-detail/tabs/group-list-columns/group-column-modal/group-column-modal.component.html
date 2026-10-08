@@ -74,14 +74,19 @@
               {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
             </span>
 
-            <cds-checkbox
-              class="valtimo-group-column-modal__show-empty-checkbox"
-              [attr.data-test-id]="testIds.showOnlyEmptyCheckbox"
-              [checked]="showOnlyEmpty"
-              (checkedChange)="onShowOnlyEmptyChange($event)"
-            >
-              {{ 'caseManagement.groups.showOnlyEmpty' | translate }}
-            </cds-checkbox>
+            <div class="valtimo-group-column-modal__show-empty">
+              <cds-checkbox
+                [attr.data-test-id]="testIds.showOnlyEmptyCheckbox"
+                [checked]="showOnlyEmpty"
+                (checkedChange)="onShowOnlyEmptyChange($event)"
+              >
+                {{ 'caseManagement.groups.showOnlyEmpty' | translate }}
+              </cds-checkbox>
+
+              <v-tooltip-icon
+                [tooltip]="'caseManagement.groups.showOnlyEmptyTooltip' | translate"
+              ></v-tooltip-icon>
+            </div>
           </div>
 
           <div
