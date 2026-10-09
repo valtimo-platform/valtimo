@@ -33,6 +33,7 @@
         * [Running a plan](configuration-guides/cases/migration/running-a-plan.md)
     * [Forms](configuration-guides/cases/forms.md)
         * [E-mail preview component](configuration-guides/cases/forms/email-preview-component.md)
+        * [Submit once button](configuration-guides/cases/forms/submit-once-button.md)
     * [Form flows](configuration-guides/cases/form-flows.md)
     * [Tasks](configuration-guides/cases/tasks/README.md)
         * [Columns](configuration-guides/cases/tasks/columns.md)
