@@ -56,12 +56,26 @@ export class TaskListPage {
   }
 
   async selectCaseFromDropdown(caseName: string) {
-    await this.caseDropdown.click();
-    await this.page.getByRole('option', {name: caseName}).first().click();
+    const option = this.page.getByRole('option', {name: caseName}).first();
+
+    await expect(async () => {
+      if (!(await option.isVisible())) {
+        await this.caseDropdown.click({timeout: 5_000});
+      }
+      await option.click({timeout: 5_000});
+    }).toPass({timeout: 30_000});
+
+    await this.carbonList.waitForLoaded();
   }
 
   async selectTab(tabName: string) {
-    await this.page.getByRole('tab', {name: tabName}).click();
+    const tab = this.page.getByRole('tab', {name: tabName});
+
+    await expect(async () => {
+      await tab.click({timeout: 5_000});
+      await expect(tab).toHaveAttribute('aria-selected', 'true', {timeout: 3_000});
+    }).toPass({timeout: 30_000});
+
     await this.carbonList.waitForLoaded();
   }
 
@@ -82,7 +96,7 @@ export class TaskListPage {
 
   async closeTaskDetailModal() {
     await this.taskDetailDialog.getByRole('button', {name: 'Close modal'}).click();
-    await this.page.waitForTimeout(1_000);
+    await expect(this.taskDetailDialog).toHaveCount(0);
   }
 
   async claimTask() {

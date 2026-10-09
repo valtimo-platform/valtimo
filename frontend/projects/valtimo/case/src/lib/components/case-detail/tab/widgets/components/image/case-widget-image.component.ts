@@ -20,6 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService} from '@valtimo/document';
 import {
+  groupWidgetData,
   ImageWidget,
   WidgetAction,
   WidgetDataGroupService,
@@ -88,7 +89,14 @@ export class CaseWidgetImageComponent extends WidgetProcess implements OnDestroy
   public readonly images$: Observable<WidgetImageResolved[] | null> =
     this.widgetConfiguration$.pipe(
       filter(widget => !!widget),
-      switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
+      switchMap(widget =>
+        groupWidgetData(
+          this.widgetDataGroupService,
+          this.widgetLayoutService,
+          widget.key,
+          () => this.widgetUuid
+        )
+      ),
       switchMap(data => {
         const widgetData = data as any;
         const valueMap = new Map<string, string>(

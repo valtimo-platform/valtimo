@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.ritense.dataprovider.defaultdataproviders.providers.dropdown
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.ritense.dataprovider.defaultdataproviders.providers.resolveClasspathJsonResource
 import com.ritense.dataprovider.domain.DataProvider
 import com.ritense.dataprovider.domain.DataProviderConstants
 import com.ritense.dataprovider.domain.DataProviderConstants.Companion.DROPDOWN_CATEGORY
 import java.io.FileNotFoundException
 import org.springframework.core.io.ResourceLoader
-import org.springframework.core.io.support.ResourcePatternUtils
 
 class DropdownJsonFileDataProvider(
     private val resourceLoader: ResourceLoader,
@@ -34,10 +34,9 @@ class DropdownJsonFileDataProvider(
 
     override fun get(query: Map<String, Any>): Map<String, String>? {
         val key = DataProviderConstants.getQueryKey(query)
+        val resource = resolveClasspathJsonResource(resourceLoader, "config/dropdown", key)
+            ?: return null
         return try {
-            val resource = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-                .getResource("classpath:config/dropdown/$key.json")
-
             objectMapper.readValue(resource.inputStream)
         } catch (e: FileNotFoundException) {
             null

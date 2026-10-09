@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2024 Ritense BV, the Netherlands.
+ *  Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,4 +18,20 @@ package com.ritense.valtimo.web.sse.domain
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
-class Subscriber : SseEmitter()
+class Subscriber(timeout: Long? = null) : SseEmitter(timeout) {
+
+    // SseEmitter.send throws IllegalStateException once completed; track it to tell "gone" from "unsendable"
+    @Volatile
+    var completed: Boolean = false
+        private set
+
+    override fun complete() {
+        completed = true
+        super.complete()
+    }
+
+    override fun completeWithError(ex: Throwable) {
+        completed = true
+        super.completeWithError(ex)
+    }
+}

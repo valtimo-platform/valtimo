@@ -21,6 +21,7 @@ import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.util.DisconnectedClientHelper;
 import org.zalando.problem.DefaultProblem;
 import org.zalando.problem.Problem;
 import org.zalando.problem.ProblemBuilder;
@@ -87,6 +89,18 @@ public class ExceptionTranslator implements ProblemHandling {
             }
         }
         return create(throwable, request);
+    }
+
+    /**
+     * Client gone (broken pipe, async request no longer usable): rethrow so Spring's own
+     * disconnected-client handling applies instead of an ERROR log plus a response nobody reads.
+     */
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<Problem> handleIoException(IOException ex, @Nonnull NativeWebRequest request) throws IOException {
+        if (DisconnectedClientHelper.isClientDisconnectedException(ex)) {
+            throw ex;
+        }
+        return handleThrowable(ex, request);
     }
 
     @Override

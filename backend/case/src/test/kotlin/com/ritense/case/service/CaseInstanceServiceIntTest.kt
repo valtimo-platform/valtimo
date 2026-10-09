@@ -42,14 +42,18 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.util.function.Function
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @Import(CaseInstanceServiceIntTest.ValueResolverTestConfiguration::class)
 class CaseInstanceServiceIntTest @Autowired constructor(
     private val caseInstanceService: CaseInstanceService,
     private val caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
+    private val transactionManager: PlatformTransactionManager,
 ) : BaseIntegrationTest() {
 
     private lateinit var currentUser: ManageableUser
@@ -97,6 +101,66 @@ class CaseInstanceServiceIntTest @Autowired constructor(
         assertEquals(1, result.totalElements)
         val row = result.content.first { it.id == document.id().toString() }
         assertEquals("dummy-permission-value", row.items.first { it.key == caseListColumn.id.key }.value)
+    }
+
+    private fun deleteListColumnsInOwnTransaction() {
+        TransactionTemplate(transactionManager).executeWithoutResult {
+            caseDefinitionListColumnRepository.deleteByIdCaseDefinitionKey(CASE_DEFINITION_NAME)
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [FULL_ACCESS_ROLE])
+    fun `should return null for column whose resolver fails`() {
+        // Not transactional: restore imported columns other tests rely on
+        val originalColumns = caseDefinitionListColumnRepository
+            .findByIdCaseDefinitionKeyOrderByOrderAsc(CASE_DEFINITION_NAME)
+        documentRepository.deleteAll()
+        deleteListColumnsInOwnTransaction()
+
+        caseDefinitionListColumnRepository.save(
+            CaseListColumn(
+                id = CaseListColumnId(CASE_DEFINITION_NAME, "street"),
+                title = "Street",
+                path = "doc:street",
+                displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+                sortable = false,
+                defaultSort = null,
+                order = 0,
+                exportable = false
+            )
+        )
+        caseDefinitionListColumnRepository.save(
+            CaseListColumn(
+                id = CaseListColumnId(CASE_DEFINITION_NAME, "failing"),
+                title = "Failing",
+                path = "failing:someField",
+                displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+                sortable = false,
+                defaultSort = null,
+                order = 1,
+                exportable = false
+            )
+        )
+
+        try {
+            val document = createDocument(definition(), """{"street": "Sesame Street"}""")
+
+            val result = caseInstanceService.search(
+                CASE_DEFINITION_NAME,
+                SearchWithConfigRequest(),
+                Pageable.ofSize(10)
+            )
+
+            assertEquals(1, result.totalElements)
+            val row = result.content.first { it.id == document.id().toString() }
+            assertEquals("Sesame Street", row.items.first { it.key == "street" }.value)
+            assertNull(row.items.first { it.key == "failing" }.value)
+        } finally {
+            documentRepository.deleteAll()
+            deleteListColumnsInOwnTransaction()
+            caseDefinitionListColumnRepository.saveAll(originalColumns)
+        }
     }
 
     @Test
@@ -159,6 +223,11 @@ class CaseInstanceServiceIntTest @Autowired constructor(
         ): ValueResolverFactory {
             return PermissionCheckingValueResolverFactory(authorizationService)
         }
+
+        @Bean
+        fun failingValueResolverFactory(): ValueResolverFactory {
+            return FailingValueResolverFactory()
+        }
     }
 
     class PermissionCheckingValueResolverFactory(
@@ -174,6 +243,14 @@ class CaseInstanceServiceIntTest @Autowired constructor(
                 )
             )
             return Function { "dummy-permission-value" }
+        }
+    }
+
+    class FailingValueResolverFactory : ValueResolverFactory {
+        override fun supportedPrefix(): String = "failing"
+
+        override fun createResolver(documentId: String): Function<String, Any?> {
+            throw IllegalStateException("Simulated Zaken API failure")
         }
     }
 }

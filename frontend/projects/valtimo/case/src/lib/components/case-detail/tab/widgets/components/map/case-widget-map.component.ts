@@ -21,6 +21,7 @@ import {PermissionService} from '@valtimo/access-control';
 import {CarbonListModule} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
+  groupWidgetData,
   MapWidget,
   WidgetAction,
   WidgetDataGroupService,
@@ -67,7 +68,14 @@ export class CaseWidgetMapComponent extends WidgetProcess {
 
   public readonly widgetData$: Observable<any[] | {} | null> = this.widgetConfiguration$.pipe(
     filter(widget => !!widget),
-    switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
+    switchMap(widget =>
+      groupWidgetData(
+        this.widgetDataGroupService,
+        this.widgetLayoutService,
+        widget.key,
+        () => this.widgetUuid
+      )
+    ),
     tap(() => {
       this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
     }),

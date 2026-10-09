@@ -68,5 +68,6 @@ services:
 #   url: jdbc:postgresql://localhost:3368/case-opensearch-test
 #   url: jdbc:postgresql://localhost:3369/catalogi-api-test
 #   url: jdbc:postgresql://localhost:3370/external-plugin-test
-#   url: localhost:55672 <--rabbitmq
-#   url: localhost:55673 <--rabbitmq
+#   url: jdbc:postgresql://localhost:3371/deployer-test
+#   url: localhost:5682 <--outbox rabbitmq
+#   url: localhost:5683 <--inbox rabbitmq

@@ -31,6 +31,7 @@ import {
   ikoListColumnConfig,
   uniqueColumnTitle,
 } from './iko-list-column-config';
+import {runCleanups} from '../../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
 
@@ -66,11 +67,13 @@ test.describe('Feature 15E — IKO List Columns', () => {
   });
 
   test.afterAll(async () => {
-    // Columns → view → server. Children first.
-    await columnsPage.cleanupTestColumnsViaApi(parentViewKey, IKO_LIST_COLUMN_TITLE_PREFIX);
-    await ikoViewPage.deleteViewViaApi(parentViewKey);
-    await ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX);
-    await context.close();
+    // Columns → view → server. Children first, and every step runs even if an earlier one throws.
+    await runCleanups(
+      () => columnsPage.cleanupTestColumnsViaApi(parentViewKey, IKO_LIST_COLUMN_TITLE_PREFIX),
+      () => ikoViewPage.deleteViewViaApi(parentViewKey),
+      () => ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX),
+      () => context.close()
+    );
   });
 
   // Guard against tests that fail mid-modal — leaving a stuck modal would

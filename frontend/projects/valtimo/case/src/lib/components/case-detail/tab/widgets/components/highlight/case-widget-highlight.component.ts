@@ -18,6 +18,7 @@ import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  groupWidgetData,
   HighlightWidget,
   WidgetDataGroupService,
   WidgetHighlightComponent,
@@ -51,7 +52,14 @@ export class CaseWidgetHighlightComponent {
 
   public readonly widgetData$: Observable<object | null> = this.widgetConfiguration$.pipe(
     filter(widget => !!widget),
-    switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
+    switchMap(widget =>
+      groupWidgetData<object>(
+        this.widgetDataGroupService,
+        this.widgetLayoutService,
+        widget.key,
+        () => this.widgetUuid
+      )
+    ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid)),
     catchError((error: HttpErrorResponse) => {
       if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);

@@ -19,6 +19,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {
   FieldsWidget,
+  groupWidgetData,
   WidgetAction,
   WidgetDataGroupService,
   WidgetFieldComponent,
@@ -53,7 +54,14 @@ export class IkoWidgetFieldComponent {
 
   public readonly widgetData$ = this.widgetConfiguration$.pipe(
     switchMap(widgetConfiguration =>
-      !widgetConfiguration ? of(null) : this.widgetDataGroupService.dataFor(widgetConfiguration.key)
+      !widgetConfiguration
+        ? of(null)
+        : groupWidgetData(
+            this.widgetDataGroupService,
+            this.widgetLayoutService,
+            widgetConfiguration.key,
+            () => this.widgetUuid
+          )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );

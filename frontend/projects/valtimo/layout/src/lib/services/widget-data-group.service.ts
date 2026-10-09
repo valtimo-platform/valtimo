@@ -16,12 +16,15 @@
 
 import {Injectable, OnDestroy} from '@angular/core';
 import {defer, Observable, ReplaySubject, Subscription} from 'rxjs';
-import {BasicWidget, WidgetDataGroupResponse} from '../models';
+import {BasicWidget, WidgetDataEnvelope, WidgetDataGroupResponse} from '../models';
 
 interface WidgetDataGroupSource {
   fetchGroup(group: string): Observable<WidgetDataGroupResponse>;
   fetchWidget(widgetKey: string): Observable<any>;
 }
+
+/** Stands in for an envelope the backend could not produce, or did not return at all. */
+const UPSTREAM_UNAVAILABLE: WidgetDataEnvelope = {error: {code: 'UPSTREAM_UNAVAILABLE'}};
 
 /**
  * Serves widget data per group instead of per widget: one request per distinct upstream request.
@@ -31,12 +34,15 @@ interface WidgetDataGroupSource {
  *
  * Falls back to per-widget requests when `dataGroupId` is missing (older backend) or when a group
  * request fails, so an unrecognised group still renders data.
+ *
+ * Every widget is served an envelope rather than bare data, so a widget that could not be filled
+ * is never handed the empty result of one that simply has nothing to show.
  */
 @Injectable()
 export class WidgetDataGroupService implements OnDestroy {
   private _source: WidgetDataGroupSource | null = null;
   private _groupOfWidget = new Map<string, string>();
-  private _dataOfWidget = new Map<string, ReplaySubject<any>>();
+  private _dataOfWidget = new Map<string, ReplaySubject<WidgetDataEnvelope>>();
   private _requestedGroups = new Set<string>();
   private _requestedWidgets = new Set<string>();
 
@@ -52,23 +58,44 @@ export class WidgetDataGroupService implements OnDestroy {
 
     const grouped = widgets.every(widget => !!widget.dataGroupId);
     widgets.forEach(widget => {
-      this._dataOfWidget.set(widget.key, new ReplaySubject<any>(1));
+      this._dataOfWidget.set(widget.key, new ReplaySubject<WidgetDataEnvelope>(1));
       if (grouped) this._groupOfWidget.set(widget.key, widget.dataGroupId);
     });
   }
 
-  public dataFor<T = any>(widgetKey: string): Observable<T> {
+  /**
+   * This widget's data or its failure, requested on first subscription. The stream stays open:
+   * every later result reaches the widget over it, including one a sibling's retry brought in.
+   */
+  public dataFor(widgetKey: string): Observable<WidgetDataEnvelope> {
     return defer(() => {
       const data$ = this.dataSubject(widgetKey);
       this.request(widgetKey);
-      return data$ as Observable<T>;
+      return data$.asObservable();
     });
   }
 
-  /** Re-runs every request made so far, into the same subjects. */
-  public refresh(): void {
-    this._requestedGroups.forEach(group => this.fetchGroup(group));
-    this._requestedWidgets.forEach(widgetKey => this.fetchWidget(widgetKey));
+  /**
+   * Re-runs requests into the same subjects: the one serving `widgetKey`, or every request made
+   * so far when no widget is named.
+   */
+  public refresh(widgetKey?: string): void {
+    if (!this._source) return;
+
+    if (widgetKey === undefined) {
+      this._requestedGroups.forEach(group => this.fetchGroup(group));
+      this._requestedWidgets.forEach(requested => this.fetchWidget(requested));
+      return;
+    }
+
+    const group = this._groupOfWidget.get(widgetKey);
+    if (group) {
+      this._requestedGroups.add(group);
+      this.fetchGroup(group);
+    } else {
+      this._requestedWidgets.add(widgetKey);
+      this.fetchWidget(widgetKey);
+    }
   }
 
   public reset(): void {
@@ -83,9 +110,9 @@ export class WidgetDataGroupService implements OnDestroy {
     this.cancelAll();
   }
 
-  private dataSubject(widgetKey: string): ReplaySubject<any> {
+  private dataSubject(widgetKey: string): ReplaySubject<WidgetDataEnvelope> {
     if (!this._dataOfWidget.has(widgetKey)) {
-      this._dataOfWidget.set(widgetKey, new ReplaySubject<any>(1));
+      this._dataOfWidget.set(widgetKey, new ReplaySubject<WidgetDataEnvelope>(1));
     }
 
     return this._dataOfWidget.get(widgetKey);
@@ -119,8 +146,10 @@ export class WidgetDataGroupService implements OnDestroy {
     this.track(group, () =>
       this._source.fetchGroup(group).subscribe({
         next: response => {
-          // An error envelope has no data — the widget renders as if it got none
-          widgetKeys.forEach(key => this.dataSubject(key).next(response[key]?.data ?? null));
+          // A widget the group left out got no data either — report it as a failure
+          widgetKeys.forEach(key =>
+            this.dataSubject(key).next(response[key] ?? UPSTREAM_UNAVAILABLE)
+          );
         },
         // Demote for good, so dataFor and refresh keep working per widget
         error: () => {
@@ -138,8 +167,8 @@ export class WidgetDataGroupService implements OnDestroy {
   private fetchWidget(widgetKey: string): void {
     this.track(widgetKey, () =>
       this._source.fetchWidget(widgetKey).subscribe({
-        next: data => this.dataSubject(widgetKey).next(data),
-        error: () => this.dataSubject(widgetKey).next(null),
+        next: data => this.dataSubject(widgetKey).next({data}),
+        error: () => this.dataSubject(widgetKey).next(UPSTREAM_UNAVAILABLE),
       })
     );
   }

@@ -34,6 +34,7 @@ import {WidgetsService} from '../../widgets.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {
   FormioWidgetWidgetWithUuid,
+  groupWidgetData,
   WidgetAction,
   WidgetDataGroupService,
   WidgetFormioComponent,
@@ -77,7 +78,14 @@ export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
   public readonly widgetData$: Observable<any[] | {} | null> =
     this._widgetConfigurationSubject$.pipe(
       filter(widget => !!widget),
-      switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
+      switchMap(widget =>
+        groupWidgetData(
+          this.widgetDataGroupService,
+          this.widgetLayoutService,
+          widget.key,
+          () => this.widgetUuid
+        )
+      ),
       tap(() => {
         this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
       }),

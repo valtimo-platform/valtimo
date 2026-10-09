@@ -23,12 +23,14 @@ import {
   IKO_VIEW_MANAGEMENT_TEST_IDS,
   IKO_VIEW_MODAL_TEST_IDS,
 } from '../../../constants';
-import {apiDelete, apiGet, apiPost} from '../../../utils/api.utils';
+import {apiDelete, apiGet, apiPost, isApiStatus} from '../../../utils/api.utils';
 import {ikoViewConfig} from './iko-view-config';
 
 interface IkoViewListResponse {
   content: Array<{key: string; title: string}>;
 }
+
+const MODAL_FORM_RESET_MS = 750;
 
 export class IkoViewPage {
   constructor(
@@ -132,9 +134,84 @@ export class IkoViewPage {
 
   // ─── Actions ────────────────────────────────────────────────────────
 
+  get openModal(): Locator {
+    return this.page.locator('.cds--modal.is-visible');
+  }
+
+  async dismissOpenModal(): Promise<void> {
+    if (!(await this.openModal.count())) return;
+
+    await expect(async () => {
+      if (!(await this.openModal.count())) return;
+      await this.page.keyboard.press('Escape');
+      if (await this.openModal.count()) {
+        await this.cancelButton.click({timeout: 3_000});
+      }
+      await expect(this.openModal).toHaveCount(0, {timeout: 3_000});
+    }).toPass({timeout: 20_000});
+  }
+
   async openAddModal(): Promise<void> {
+    await expect(this.openModal).toHaveCount(0);
+    await this.page.waitForTimeout(MODAL_FORM_RESET_MS);
+
     await this.addViewButton.click();
     await expect(this.addModalHeading).toBeVisible();
+    await expect(this.titleInput).toBeEnabled();
+    await this.waitForPropertyFormSettled();
+  }
+
+  /**
+   * The property fields are built from definitions the modal fetches after it opens, and the
+   * form is rebuilt once they land. A row added before that rebuild is silently thrown away,
+   * so wait until the field count stops moving before touching the form.
+   */
+  async waitForPropertyFormSettled(): Promise<void> {
+    // Every property control, key-value rows included — a rebuild changes this count.
+    const controls = this.openModal.locator('[data-test-id^="ikoProperty"]');
+
+    let previous = -1;
+    await expect
+      .poll(
+        async () => {
+          const current = await controls.count();
+          const settled = current > 0 && current === previous;
+          previous = current;
+          return settled;
+        },
+        {intervals: [250, 250, 250, 500], timeout: 20_000}
+      )
+      .toBe(true);
+  }
+
+  async addKeyValueRow(key: string): Promise<void> {
+    const rows = this.propertyKvKeyAll(key);
+    const before = await rows.count();
+
+    await expect(async () => {
+      if ((await rows.count()) <= before) {
+        await this.propertyKvAddRowButton(key).click({timeout: 5_000});
+        // Wait for this click's own row to render, otherwise a slow FormArray
+        // render lets the retry fire again and add a second row.
+        await expect(rows).toHaveCount(before + 1, {timeout: 3_000});
+      }
+      expect(await rows.count()).toBeGreaterThan(before);
+    }).toPass({timeout: 20_000});
+  }
+
+  async removeKeyValueRow(key: string, index: number): Promise<void> {
+    const rows = this.propertyKvKeyAll(key);
+    const before = await rows.count();
+    const removeButton = this.propertyKvRemoveAll(key).nth(index);
+
+    await expect(async () => {
+      if ((await rows.count()) >= before) {
+        await removeButton.click({timeout: 3_000});
+        // As above: wait for the removal to render before the retry can click again.
+        await expect(rows).toHaveCount(before - 1, {timeout: 3_000});
+      }
+      expect(await rows.count()).toBeLessThan(before);
+    }).toPass({timeout: 20_000});
   }
 
   async openEditModal(title: string): Promise<void> {
@@ -230,6 +307,13 @@ export class IkoViewPage {
 
   // ─── API helpers (setup / cleanup) ──────────────────────────────────
 
+  viewKeyFor(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
+      .replace(/^[^a-z]+/g, '');
+  }
+
   /**
    * Create a view directly via the management API. Use this for parent setup
    * in suites that test things nested under a view (columns, tabs, …). The
@@ -237,10 +321,7 @@ export class IkoViewPage {
    * Returns the slugified key.
    */
   async createViewViaApi(repositoryConfigKey: string, title: string): Promise<string> {
-    const key = title
-      .toLowerCase()
-      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
-      .replace(/^[^a-z]+/g, '');
+    const key = this.viewKeyFor(title);
     await apiPost(`/api/management/v1/iko-view/${key}`, {
       ikoRepositoryConfigKey: repositoryConfigKey,
       title,
@@ -261,25 +342,26 @@ export class IkoViewPage {
     return res.content ?? [];
   }
 
+  /**
+   * Safe as a pre-clean: the endpoint's `deleteById` is a no-op on Spring Data 3, so a view that
+   * is not there still answers 204 (and a 404 is tolerated in case that ever changes).
+   * Anything else — refused, failed — leaves the key occupied and has to surface.
+   */
   async deleteViewViaApi(viewKey: string): Promise<void> {
     try {
       await apiDelete(`/api/management/v1/iko-view/${viewKey}`);
-    } catch {
-      // View may already be deleted or never created.
+    } catch (error) {
+      if (!isApiStatus(error, 404)) throw error;
     }
   }
 
   /** Delete every view under `repositoryConfigKey` whose title starts with the prefix. */
   async cleanupTestViewsViaApi(repositoryConfigKey: string, titlePrefix: string): Promise<void> {
-    try {
-      const views = await this.getViewsViaApi(repositoryConfigKey);
-      for (const view of views) {
-        if (view.title?.startsWith(titlePrefix)) {
-          await this.deleteViewViaApi(view.key);
-        }
+    const views = await this.getViewsViaApi(repositoryConfigKey);
+    for (const view of views) {
+      if (view.title?.startsWith(titlePrefix)) {
+        await this.deleteViewViaApi(view.key);
       }
-    } catch {
-      // Listing failed — nothing reliable to clean up.
     }
   }
 }
