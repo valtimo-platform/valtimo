@@ -18,13 +18,13 @@ import {Components} from 'formiojs';
 
 const BuiltInButton = (Components as any).components['button'];
 
-const SUBMIT_ONCE_BUTTON_TYPE = 'submitOnceButton';
+export const SUBMIT_ONCE_BUTTON_TYPE = 'submitOnceButton';
 
-// Emitted on the rendered form by the host when a submit did not go through, or the form moved on.
-const SUBMIT_ONCE_RELEASE_EVENT = 'submitOnceRelease';
+// Host emits on rendered form: submit failed or form moved on
+export const SUBMIT_ONCE_RELEASE_EVENT = 'submitOnceRelease';
 
-// The built-in submit button, locked once its form is submitted until the submit fails.
-class SubmitOnceButton extends BuiltInButton {
+// Built-in submit button, locked after form submit until submit fails
+export class SubmitOnceButton extends BuiltInButton {
   private _submitOnceLocked = false;
 
   public static schema(...extend: any[]): any {
@@ -71,7 +71,7 @@ class SubmitOnceButton extends BuiltInButton {
 
   public attachButton(): void {
     super.attachButton();
-    // Every submit button of the form emits this, so a second Submit once button locks as well.
+    // Every submit button of form emits this — second Submit once button locks too
     this.on('submitButton', () => this.lockSubmitOnce(), true);
     this.on('submitError', () => this.releaseSubmitOnce(), true);
     this.on('cancelSubmit', () => this.releaseSubmitOnce(), true);
@@ -104,13 +104,6 @@ class SubmitOnceButton extends BuiltInButton {
   }
 }
 
-function registerFormioSubmitOnceButtonComponent(): void {
+export function registerFormioSubmitOnceButtonComponent(): void {
   Components.setComponent(SUBMIT_ONCE_BUTTON_TYPE, SubmitOnceButton);
 }
-
-export {
-  SUBMIT_ONCE_BUTTON_TYPE,
-  SUBMIT_ONCE_RELEASE_EVENT,
-  SubmitOnceButton,
-  registerFormioSubmitOnceButtonComponent,
-};

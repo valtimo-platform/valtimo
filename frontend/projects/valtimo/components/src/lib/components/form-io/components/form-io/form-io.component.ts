@@ -242,7 +242,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.scrollToTop();
   }
 
-  // Hosts pass on whatever the request failed with, usually an HttpErrorResponse rather than a list.
+  // Hosts pass raw request failure, usually HttpErrorResponse, not list
   private isFailure(errors: unknown): boolean {
     return Array.isArray(errors) ? errors.length > 0 : !!errors;
   }

@@ -68,7 +68,7 @@ test.describe('Submit once button', () => {
     test.slow();
     const submissions: string[] = [];
 
-    // The first submission fails; later ones are held so the form stays open while the user keeps clicking.
+    // First submission fails; later ones held so form stays open during clicks
     await page.route(FORM_SUBMISSION, async route => {
       submissions.push(route.request().url());
       if (submissions.length === 1) {

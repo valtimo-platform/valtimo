@@ -38,7 +38,7 @@ class FormHostComponent {
 describe('SubmitOnceButton', () => {
   let fixture: ComponentFixture<FormHostComponent>;
 
-  // Longer than form.io's debounced change event, which is what re-enables the built-in button.
+  // Outlast form.io debounced change event — that re-enables built-in button
   const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 300));
 
   const renderForm = async (
