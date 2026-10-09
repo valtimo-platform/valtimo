@@ -23,11 +23,11 @@ const SUBMIT_ONCE_BUTTON_TYPE = 'submitOnceButton';
 // Emitted on the rendered form by the host when a submit did not go through, or the form moved on.
 const SUBMIT_ONCE_RELEASE_EVENT = 'submitOnceRelease';
 
-// The built-in submit button, locked after its first click until the submit fails.
+// The built-in submit button, locked once its form is submitted until the submit fails.
 class SubmitOnceButton extends BuiltInButton {
-  private submitOnceLocked = false;
+  private _submitOnceLocked = false;
 
-  static schema(...extend: any[]): any {
+  public static schema(...extend: any[]): any {
     return BuiltInButton.schema(
       {
         type: SUBMIT_ONCE_BUTTON_TYPE,
@@ -39,7 +39,7 @@ class SubmitOnceButton extends BuiltInButton {
     );
   }
 
-  static get builderInfo(): any {
+  public static get builderInfo(): any {
     return {
       title: 'Submit once',
       group: 'basic',
@@ -49,7 +49,7 @@ class SubmitOnceButton extends BuiltInButton {
     };
   }
 
-  static editForm(...extend: any[]): any {
+  public static editForm(...extend: any[]): any {
     return BuiltInButton.editForm(
       [{key: 'display', components: [{key: 'action', ignore: true}]}],
       ...extend
@@ -61,39 +61,43 @@ class SubmitOnceButton extends BuiltInButton {
     this.component.action = 'submit';
   }
 
-  get defaultSchema(): any {
+  public get defaultSchema(): any {
     return SubmitOnceButton.schema();
   }
 
-  get shouldDisabled(): boolean {
-    return super.shouldDisabled || this.submitOnceLocked;
+  public get shouldDisabled(): boolean {
+    return super.shouldDisabled || this._submitOnceLocked;
   }
 
-  attachButton(): void {
+  public attachButton(): void {
     super.attachButton();
+    // Every submit button of the form emits this, so a second Submit once button locks as well.
+    this.on('submitButton', () => this.lockSubmitOnce(), true);
     this.on('submitError', () => this.releaseSubmitOnce(), true);
     this.on('cancelSubmit', () => this.releaseSubmitOnce(), true);
     this.on(SUBMIT_ONCE_RELEASE_EVENT, () => this.releaseSubmitOnce(), true);
   }
 
-  onClick(event: Event): void {
-    if (this.submitOnceLocked) {
+  public onClick(event: Event): void {
+    if (this._submitOnceLocked) {
       event?.preventDefault();
       event?.stopPropagation();
       return;
     }
 
-    if (!this.disabled && this.options.attachMode !== 'builder') {
-      this.submitOnceLocked = true;
-    }
-
     super.onClick(event);
   }
 
-  private releaseSubmitOnce(): void {
-    if (!this.submitOnceLocked) return;
+  private lockSubmitOnce(): void {
+    this._submitOnceLocked = true;
+    this.disabled = true;
+    this.setDisabled(this.refs.button, true);
+  }
 
-    this.submitOnceLocked = false;
+  private releaseSubmitOnce(): void {
+    if (!this._submitOnceLocked) return;
+
+    this._submitOnceLocked = false;
     this.loading = false;
     this.disabled = this.shouldDisabled;
     this.setDisabled(this.refs.button, this.disabled);

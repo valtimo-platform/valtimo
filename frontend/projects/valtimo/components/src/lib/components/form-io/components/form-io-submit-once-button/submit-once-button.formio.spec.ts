@@ -41,12 +41,17 @@ describe('SubmitOnceButton', () => {
   // Longer than form.io's debounced change event, which is what re-enables the built-in button.
   const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 300));
 
-  const renderForm = async (buttonType: string, nameRequired = false): Promise<any> => {
+  const renderForm = async (
+    buttonType: string,
+    nameRequired = false,
+    extraButtons: Array<any> = []
+  ): Promise<any> => {
     fixture = TestBed.createComponent(FormHostComponent);
     fixture.componentInstance.form = {
       components: [
         {type: 'textfield', key: 'name', label: 'Name', validate: {required: nameRequired}},
         {type: buttonType, key: 'submit', label: 'Submit', action: 'submit'},
+        ...extraButtons,
       ],
     };
     fixture.detectChanges();
@@ -135,6 +140,22 @@ describe('SubmitOnceButton', () => {
       await settle();
 
       expect(submissions()).toBe(1);
+    });
+
+    it('should not let a second Submit once button on the same form submit again', async () => {
+      const form = await renderForm(SUBMIT_ONCE_BUTTON_TYPE, false, [
+        {type: SUBMIT_ONCE_BUTTON_TYPE, key: 'submitBottom', label: 'Submit', action: 'submit'},
+      ]);
+      const bottomButton: HTMLButtonElement = form.getComponent('submitBottom').refs.button;
+      await fillName(form);
+
+      button(form).click();
+      await settle();
+      bottomButton.click();
+      await settle();
+
+      expect(submissions()).toBe(1);
+      expect(bottomButton.disabled).toBe(true);
     });
 
     it('should submit again once the host releases it after a failure', async () => {
