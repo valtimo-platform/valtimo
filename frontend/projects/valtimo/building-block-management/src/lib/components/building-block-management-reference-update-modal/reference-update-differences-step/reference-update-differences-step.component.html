@@ -63,63 +63,27 @@
             <div
               [attr.data-field]="field"
               [attr.data-test-id]="testIds.inputMapping"
-              [formGroupName]="field"
               class="valtimo-building-block-reference-update__input"
             >
               <div class="valtimo-building-block-reference-update__mapping">
-                <div class="valtimo-building-block-reference-update__mapping-source">
-                  <cds-select
-                    [label]="
-                      'buildingBlockManagement.referenceUpdate.differences.inputMode' | translate
-                    "
-                    formControlName="mode"
-                  >
-                    @for (mode of INPUT_MODES; track mode) {
-                      <option [value]="mode">
-                        {{
-                          'buildingBlockManagement.referenceUpdate.differences.inputMode_' + mode
-                            | translate
-                        }}
-                      </option>
-                    }
-                  </cds-select>
-
-                  @if (resolutionForm.get([chain.id, 'inputs', field, 'mode'])?.value === 'value') {
-                    <cds-text-label>
-                      {{
-                        'buildingBlockManagement.referenceUpdate.differences.inputValue' | translate
-                      }}
-                      <input
-                        cdsText
-                        [attr.data-test-id]="testIds.inputValueInput"
-                        [placeholder]="
-                          'buildingBlockManagement.referenceUpdate.differences.inputValuePlaceholder'
-                            | translate
-                        "
-                        formControlName="value"
-                      />
-                    </cds-text-label>
-                  } @else {
-                    <valtimo-value-path-selector
-                      [buildingBlockDefinitionKey]="
-                        $sourceContexts()[chain.id]?.buildingBlockKey ?? null
-                      "
-                      [buildingBlockDefinitionVersionTag]="
-                        $sourceContexts()[chain.id]?.buildingBlockVersionTag ?? null
-                      "
-                      [caseDefinitionKey]="$sourceContexts()[chain.id]?.caseDefinitionKey ?? null"
-                      [caseDefinitionVersionTag]="
-                        $sourceContexts()[chain.id]?.caseDefinitionVersionTag ?? null
-                      "
-                      [label]="
-                        'buildingBlockManagement.referenceUpdate.differences.inputPath' | translate
-                      "
-                      [notation]="'slashes'"
-                      [prefixes]="SOURCE_PREFIXES"
-                      formControlName="source"
-                    ></valtimo-value-path-selector>
-                  }
-                </div>
+                <valtimo-value-path-selector
+                  [buildingBlockDefinitionKey]="
+                    $sourceContexts()[chain.id]?.buildingBlockKey ?? null
+                  "
+                  [buildingBlockDefinitionVersionTag]="
+                    $sourceContexts()[chain.id]?.buildingBlockVersionTag ?? null
+                  "
+                  [caseDefinitionKey]="$sourceContexts()[chain.id]?.caseDefinitionKey ?? null"
+                  [caseDefinitionVersionTag]="
+                    $sourceContexts()[chain.id]?.caseDefinitionVersionTag ?? null
+                  "
+                  [formControlName]="field"
+                  [label]="
+                    'buildingBlockManagement.referenceUpdate.differences.inputPath' | translate
+                  "
+                  [notation]="'slashes'"
+                  [prefixes]="SOURCE_PREFIXES"
+                ></valtimo-value-path-selector>
 
                 <span
                   class="valtimo-building-block-reference-update__mapping-arrow"

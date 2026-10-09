@@ -17,14 +17,18 @@
 package com.ritense.buildingblock.service.referenceupdate
 
 import com.ritense.buildingblock.exception.BuildingBlockReferenceUpdateException
+import com.ritense.buildingblock.repository.BuildingBlockProcessLinkRepository
+import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateContainerType.CASE
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateExecuteRequestDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePreviewRequestDto
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -70,6 +74,10 @@ class BuildingBlockReferenceUpdateServiceTest {
     private val buildingBlockManagementService = mock<BuildingBlockManagementService>()
     private val caseDefinitionService = mock<CaseDefinitionService>()
     private val operatonProcessService = mock<OperatonProcessService>()
+    private val processLinkRepository = mock<ProcessLinkRepository>()
+    private val buildingBlockProcessLinkRepository = mock<BuildingBlockProcessLinkRepository>()
+    private val caseDefinitionBuildingBlockLinkRepository = mock<CaseDefinitionBuildingBlockLinkRepository>()
+    private val entityManager = mock<EntityManager>()
 
     private val service = BuildingBlockReferenceUpdateService(
         referenceIndexLoader = referenceIndexLoader,
@@ -82,12 +90,13 @@ class BuildingBlockReferenceUpdateServiceTest {
         repositoryService = mock(),
         processDefinitionBuildingBlockDefinitionRepository = mock(),
         processDefinitionCaseDefinitionRepository = mock(),
-        processLinkRepository = mock(),
-        buildingBlockProcessLinkRepository = mock(),
-        caseDefinitionBuildingBlockLinkRepository = mock(),
+        processLinkRepository = processLinkRepository,
+        buildingBlockProcessLinkRepository = buildingBlockProcessLinkRepository,
+        caseDefinitionBuildingBlockLinkRepository = caseDefinitionBuildingBlockLinkRepository,
+        startableItemRepository = mock(),
         pluginService = mock(),
         authorizationService = mock(),
-        entityManager = mock(),
+        entityManager = entityManager,
     )
 
     @Test
@@ -110,6 +119,14 @@ class BuildingBlockReferenceUpdateServiceTest {
         }
             .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
             .hasMessageContaining("does not allow drafts")
-        verifyNoInteractions(buildingBlockManagementService, caseDefinitionService, operatonProcessService)
+        verifyNoInteractions(
+            buildingBlockManagementService,
+            caseDefinitionService,
+            operatonProcessService,
+            processLinkRepository,
+            buildingBlockProcessLinkRepository,
+            caseDefinitionBuildingBlockLinkRepository,
+            entityManager,
+        )
     }
 }

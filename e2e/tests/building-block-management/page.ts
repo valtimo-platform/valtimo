@@ -491,7 +491,7 @@ export class BuildingBlockManagementPage {
 
   async closeReferenceUpdateWizard() {
     await this.referenceUpdateTestId('closeButton').click();
-    await expect(this.referenceUpdateTestId('modal')).toBeHidden();
+    await expect(this.referenceUpdateTestId('closeButton')).toBeHidden();
   }
 
   async confirmReferenceUpdate() {

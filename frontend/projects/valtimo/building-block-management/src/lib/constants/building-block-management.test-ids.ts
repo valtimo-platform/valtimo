@@ -52,7 +52,6 @@ export const BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS = {
   chainNotUpdatable: 'buildingBlockReferenceUpdateChainNotUpdatable',
   differences: 'buildingBlockReferenceUpdateDifferences',
   inputMapping: 'buildingBlockReferenceUpdateInputMapping',
-  inputValueInput: 'buildingBlockReferenceUpdateInputValueInput',
   pluginConfigurationDropdown: 'buildingBlockReferenceUpdatePluginConfigurationDropdown',
   droppedMappings: 'buildingBlockReferenceUpdateDroppedMappings',
   review: 'buildingBlockReferenceUpdateReview',

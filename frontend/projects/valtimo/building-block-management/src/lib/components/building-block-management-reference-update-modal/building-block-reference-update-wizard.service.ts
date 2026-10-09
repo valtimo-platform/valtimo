@@ -29,18 +29,13 @@ import {
   BuildingBlockReferenceUpdateResultDto,
 } from '@valtimo/shared';
 import {ListItem} from 'carbon-components-angular';
-import {catchError, debounceTime, of, Subject, Subscription, switchMap, tap} from 'rxjs';
+import {catchError, debounceTime, map, of, Subject, Subscription, switchMap, tap} from 'rxjs';
 import {
   REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS,
   REFERENCE_UPDATE_STEP,
   REFERENCE_UPDATE_STEPS,
 } from '../../constants';
-import {
-  ReferenceUpdateInputFormValue,
-  ReferenceUpdateInputMode,
-  ReferenceUpdateResolutionFormValue,
-  ReferenceUpdateSource,
-} from '../../models';
+import {ReferenceUpdateResolutionFormValue, ReferenceUpdateSource} from '../../models';
 import {
   BuildingBlockManagementApiService,
   BuildingBlockManagementDetailService,
@@ -90,6 +85,8 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
   });
 
   private _selectionInitialized = false;
+  private _previewDebouncing = false;
+  private _session = 0;
 
   private readonly _previewRequests$ = new Subject<BuildingBlockReferenceUpdatePreviewRequestDto>();
   private readonly _subscriptions = new Subscription();
@@ -105,18 +102,22 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
       this._previewRequests$
         .pipe(
           switchMap(request =>
-            this.buildingBlockReferenceUpdateApiService
-              .preview(request)
-              .pipe(catchError(() => of(null)))
+            this.buildingBlockReferenceUpdateApiService.preview(request).pipe(
+              catchError(() => of(null)),
+              map(preview => ({request, preview}))
+            )
           )
         )
-        .subscribe(preview => this.onPreviewLoaded(preview))
+        .subscribe(({request, preview}) => this.onPreviewLoaded(request, preview))
     );
 
     this._subscriptions.add(
       this.resolutionForm.valueChanges
         .pipe(
-          tap(() => this.$previewLoading.set(true)),
+          tap(() => {
+            this._previewDebouncing = true;
+            this.$previewLoading.set(true);
+          }),
           debounceTime(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS)
         )
         .subscribe(() => this.requestPreview())
@@ -128,6 +129,8 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
   }
 
   public start(source: ReferenceUpdateSource): void {
+    this._session++;
+    this.reset();
     this.setSource(source);
     this.loadTargetDefinitions();
   }
@@ -136,7 +139,10 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     if (this.$executing()) return;
 
     this.buildingBlockManagementDetailService.hideReferenceUpdateModal();
-    runAfterCarbonModalClosed(() => this.reset());
+    const session = this._session;
+    runAfterCarbonModalClosed(() => {
+      if (session === this._session) this.reset();
+    });
   }
 
   public back(): void {
@@ -208,12 +214,14 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
   }
 
   public requestPreview(): void {
+    this._previewDebouncing = false;
     const source = this.$source();
     const targetKey = this.$targetKey();
     const target = this.$target();
     if (!source || !targetKey || !target) return;
 
     this.$previewLoading.set(true);
+    this.$previewFailed.set(false);
     this._previewRequests$.next({
       key: source.key,
       sourceVersionTag: source.versionTag,
@@ -277,10 +285,17 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     });
   }
 
-  private onPreviewLoaded(preview: BuildingBlockReferenceUpdatePreviewDto | null): void {
+  private onPreviewLoaded(
+    request: BuildingBlockReferenceUpdatePreviewRequestDto,
+    preview: BuildingBlockReferenceUpdatePreviewDto | null
+  ): void {
+    // Edit pending in debounce — this preview is already stale
+    if (this._previewDebouncing) return;
     this.$previewLoading.set(false);
+    if (!this.requestMatchesSelection(request)) return;
+
     this.$previewFailed.set(preview === null);
-    if (!preview || !this.previewMatchesSelection(preview)) return;
+    if (!preview) return;
 
     this.$preview.set(preview);
     if (this._selectionInitialized) return;
@@ -295,12 +310,12 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     if (!this.sameIds(defaults, selectedByServer)) this.requestPreview();
   }
 
-  private previewMatchesSelection(preview: BuildingBlockReferenceUpdatePreviewDto): boolean {
+  private requestMatchesSelection(request: BuildingBlockReferenceUpdatePreviewRequestDto): boolean {
     return (
-      preview.key === this.$source()?.key &&
-      preview.sourceVersionTag === this.$source()?.versionTag &&
-      preview.targetKey === this.$targetKey() &&
-      preview.targetVersionTag === this.$target()
+      request.key === this.$source()?.key &&
+      request.sourceVersionTag === this.$source()?.versionTag &&
+      request.targetKey === this.$targetKey() &&
+      request.targetVersionTag === this.$target()
     );
   }
 
@@ -333,7 +348,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
       .map(chainId => ({
         chainId,
         inputMappings: Object.entries(value[chainId].inputs ?? {})
-          .map(([target, input]) => ({source: this.inputSource(input), target}))
+          .map(([target, source]) => ({source: (source ?? '').trim(), target}))
           .filter(mapping => !!mapping.source),
         pluginConfigurations: Object.fromEntries(
           Object.entries(value[chainId].plugins ?? {}).filter(
@@ -346,10 +361,6 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
           resolution.inputMappings.length > 0 ||
           Object.keys(resolution.pluginConfigurations).length > 0
       );
-  }
-
-  private inputSource(input: ReferenceUpdateInputFormValue | undefined): string {
-    return ((input?.mode === 'value' ? input.value : input?.source) ?? '').trim();
   }
 
   private syncResolutionForm(): void {
@@ -365,15 +376,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
 
       const inputs = this.fb.group({});
       chain.differences.missingRequiredInputs.forEach(field =>
-        inputs.addControl(
-          field,
-          this.fb.group({
-            mode: this.fb.control<ReferenceUpdateInputMode>('path'),
-            source: this.fb.control(''),
-            value: this.fb.control(''),
-          }),
-          {emitEvent: false}
-        )
+        inputs.addControl(field, this.fb.control(''), {emitEvent: false})
       );
       const plugins = this.fb.group({});
       chain.differences.missingPluginDefinitionKeys.forEach(pluginDefinitionKey =>
@@ -425,6 +428,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     this.$targetVersions.set(null);
     this.$result.set(null);
     this.$executing.set(false);
+    this._previewDebouncing = false;
     this.$previewLoading.set(false);
     this.$pluginConfigurations.set({});
     this.resetChains();

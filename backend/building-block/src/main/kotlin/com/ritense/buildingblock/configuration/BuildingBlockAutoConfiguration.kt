@@ -139,6 +139,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.buildingblock.web.rest.BuildingBlockReferenceUpdateResource
 import com.ritense.buildingblock.web.rest.BuildingBlockValueResolverResource
+import com.ritense.case.repository.StartableItemRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
 import com.ritense.document.autoconfiguration.DocumentAuthorizationAutoConfiguration
@@ -423,6 +424,7 @@ class BuildingBlockAutoConfiguration {
         processLinkRepository: ProcessLinkRepository,
         buildingBlockProcessLinkRepository: BuildingBlockProcessLinkRepository,
         caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+        startableItemRepository: StartableItemRepository,
         pluginService: PluginService,
         authorizationService: AuthorizationService,
         entityManager: EntityManager,
@@ -441,6 +443,7 @@ class BuildingBlockAutoConfiguration {
             processLinkRepository,
             buildingBlockProcessLinkRepository,
             caseDefinitionBuildingBlockLinkRepository,
+            startableItemRepository,
             pluginService,
             authorizationService,
             entityManager,

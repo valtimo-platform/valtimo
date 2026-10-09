@@ -26,7 +26,6 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.http.HttpStatus.OK
 import org.springframework.security.test.context.support.WithMockUser
 
 class BuildingBlockReferenceUpdateResourceSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
@@ -36,8 +35,8 @@ class BuildingBlockReferenceUpdateResourceSecurityIntTest : SecuritySpecificEndp
 
     @Test
     @WithMockUser(authorities = [ADMIN])
-    fun `an admin can list the references to a building block version`() {
-        assertHttpStatus(GET, "$BASE/references/no-such-block/version/1.0.0", OK)
+    fun `an admin reaches the reference listing`() {
+        assertHttpStatus(GET, "$BASE/references/no-such-block/version/1.0.0", NOT_FOUND)
     }
 
     @Test

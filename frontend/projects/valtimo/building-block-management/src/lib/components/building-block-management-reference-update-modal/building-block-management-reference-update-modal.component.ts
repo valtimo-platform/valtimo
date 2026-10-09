@@ -119,6 +119,7 @@ export class BuildingBlockManagementReferenceUpdateModalComponent implements OnI
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.buildingBlockManagementDetailService.hideReferenceUpdateModal();
   }
 
   public onCloseModal(): void {

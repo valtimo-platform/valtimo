@@ -16,16 +16,8 @@
 
 import {ListItem} from 'carbon-components-angular';
 
-type ReferenceUpdateInputMode = 'path' | 'value';
-
-interface ReferenceUpdateInputFormValue {
-  mode: ReferenceUpdateInputMode;
-  source: string;
-  value: string;
-}
-
 interface ReferenceUpdateChainResolutionFormValue {
-  inputs: Record<string, ReferenceUpdateInputFormValue>;
+  inputs: Record<string, string>;
   plugins: Record<string, string>;
 }
 
@@ -43,8 +35,6 @@ interface ReferenceUpdateVersionListItem extends ListItem {
 
 export {
   ReferenceUpdateChainResolutionFormValue,
-  ReferenceUpdateInputFormValue,
-  ReferenceUpdateInputMode,
   ReferenceUpdateResolutionFormValue,
   ReferenceUpdateSource,
   ReferenceUpdateVersionListItem,

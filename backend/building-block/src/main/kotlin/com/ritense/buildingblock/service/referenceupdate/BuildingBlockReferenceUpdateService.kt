@@ -52,7 +52,11 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePrevie
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateRepointDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateResultDto
+import com.ritense.case.domain.StartableItem
+import com.ritense.case.domain.StartableItemId
+import com.ritense.case.repository.StartableItemRepository
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case.web.rest.dto.StartableItemType
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
@@ -75,6 +79,7 @@ import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.operaton.bpm.model.xml.instance.ModelElementInstance
 import org.semver4j.Semver
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -96,6 +101,7 @@ class BuildingBlockReferenceUpdateService(
     private val processLinkRepository: ProcessLinkRepository,
     private val buildingBlockProcessLinkRepository: BuildingBlockProcessLinkRepository,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
+    private val startableItemRepository: StartableItemRepository,
     private val pluginService: PluginService,
     private val authorizationService: AuthorizationService,
     private val entityManager: EntityManager,
@@ -107,6 +113,9 @@ class BuildingBlockReferenceUpdateService(
 
         val id = parseId(key, versionTag)
         val index = referenceIndexLoader.load(key)
+        if (index.info(ReferenceContainer.of(id)) == null) {
+            throw UnknownBuildingBlockDefinitionException(id)
+        }
         return index.referencesTo(id)
             .map { it.toDto(index) }
             .sortedWith(
@@ -213,16 +222,26 @@ class BuildingBlockReferenceUpdateService(
         throw BuildingBlockReferenceUpdateException(e.message ?: "Invalid building block version $key:$versionTag")
     }
 
-    private fun toResolutions(resolutions: List<BuildingBlockReferenceUpdateChainResolutionDto>): Map<String, ChainResolution> =
-        resolutions.associate { resolution ->
+    private fun toResolutions(resolutions: List<BuildingBlockReferenceUpdateChainResolutionDto>): Map<String, ChainResolution> {
+        val duplicates = resolutions.groupingBy { it.chainId }.eachCount().filterValues { it > 1 }.keys
+        if (duplicates.isNotEmpty()) {
+            throw BuildingBlockReferenceUpdateException("Duplicate resolutions for chains: ${duplicates.joinToString()}.")
+        }
+        return resolutions.associate { resolution ->
             resolution.chainId to ChainResolution(
                 inputMappings = resolution.inputMappings.map { BuildingBlockInputMapping(it.source, it.target) },
                 pluginConfigurations = resolution.pluginConfigurations,
             )
         }
+    }
 
     private fun validateResolutions(context: ReferenceUpdateContext, resolutions: Map<String, ChainResolution>) {
+        val analyses = context.analyses.associateBy { it.chain.id }
         resolutions.forEach { (chainId, resolution) ->
+            val analysis = analyses[chainId]
+                ?: throw BuildingBlockReferenceUpdateException(
+                    "Resolution given for unknown chain $chainId. Refresh the preview and try again."
+                )
             resolution.inputMappings.forEach { mapping ->
                 if (mapping.source.isBlank() || !context.targetFields.has(mapping.target)) {
                     throw BuildingBlockReferenceUpdateException(
@@ -231,6 +250,11 @@ class BuildingBlockReferenceUpdateService(
                 }
             }
             resolution.pluginConfigurations.forEach { (pluginDefinitionKey, configurationId) ->
+                if (pluginDefinitionKey !in analysis.differences.missingPluginDefinitionKeys) {
+                    throw BuildingBlockReferenceUpdateException(
+                        "Chain $chainId selects a configuration for plugin '$pluginDefinitionKey', which is not missing."
+                    )
+                }
                 val configuration = pluginService.findPluginConfiguration(PluginConfigurationId.existingId(configurationId))
                 if (configuration == null || configuration.pluginDefinition.key != pluginDefinitionKey) {
                     throw BuildingBlockReferenceUpdateException(
@@ -295,9 +319,11 @@ class BuildingBlockReferenceUpdateService(
             .filter { it.chain.id !in selectedIds && it.updatable }
             .filter { analysis ->
                 val proposals = proposeChanges(context, analysis, null, draftVersions, requireAllocated = true)
-                proposals != null && proposals.all { proposal ->
-                    proposal.newChild == null || changes[proposal.key]?.newChild == proposal.newChild
-                }
+                proposals != null &&
+                    analysis.unresolvedPluginDefinitionKeys(null).isEmpty() &&
+                    proposals.all { proposal ->
+                        proposal.newChild == null || changes[proposal.key]?.newChild == proposal.newChild
+                    }
             }
             .map { it.chain.id }
             .toSet()
@@ -415,6 +441,9 @@ class BuildingBlockReferenceUpdateService(
             ?: throw IllegalStateException("$container has no building block link to ${change.link.child.key}")
 
         val newChild = change.newChild ?: link.buildingBlockDefinitionId
+        if (newChild != link.buildingBlockDefinitionId) {
+            moveStartableItem(caseDefinitionId, link.buildingBlockDefinitionId, newChild)
+        }
         // Key column not updatable
         val keyChanged = newChild.key != link.buildingBlockDefinitionId.key
         if (keyChanged) {
@@ -430,6 +459,18 @@ class BuildingBlockReferenceUpdateService(
                 outputMappings = change.outputMappings(context, link.outputMappings),
                 pluginConfigurationMappings = link.pluginConfigurationMappings + change.addPlugins,
                 startableByUser = link.startableByUser,
+            )
+        )
+    }
+
+    private fun moveStartableItem(caseDefinitionId: CaseDefinitionId, from: BuildingBlockDefinitionId, to: BuildingBlockDefinitionId) {
+        val oldId = StartableItemId(caseDefinitionId, from.key, StartableItemType.BUILDING_BLOCK, from.versionTag.toString())
+        val item = startableItemRepository.findByIdOrNull(oldId) ?: return
+        startableItemRepository.delete(item)
+        startableItemRepository.save(
+            StartableItem(
+                id = StartableItemId(caseDefinitionId, to.key, StartableItemType.BUILDING_BLOCK, to.versionTag.toString()),
+                sortOrder = item.sortOrder,
             )
         )
     }

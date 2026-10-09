@@ -196,7 +196,7 @@ class BuildingBlockReferenceUpdatePlanner(
         if (cycleThrough != null) {
             reasons += "Building block $target uses ${cycleThrough.identity}, so pointing that at $target creates a cycle."
         }
-        if (target.key != source.key && alreadyLinksTarget(chain, repointed.getValue(0), effectiveLinks[0])) {
+        if (alreadyLinksTarget(chain, repointed.getValue(0), effectiveLinks[0])) {
             reasons += "${repointed.getValue(0).identity} already links building block ${target.key}."
         }
 
@@ -251,7 +251,9 @@ class BuildingBlockReferenceUpdatePlanner(
 
     private fun alreadyLinksTarget(chain: ReferenceChain, linkWritable: WritableVersion, link: IndexedReference?) =
         chain.link.location is CaseLinkLocation &&
-            index.referencesIn(linkWritable.identity).any { it != link && it.location == CaseLinkLocation(target.key) }
+            index.referencesIn(linkWritable.identity).any {
+                it != link && it.location == CaseLinkLocation(target.key) && (target.key != source.key || it.child == target)
+            }
 
     /** Target and every building block version it uses, transitively. */
     private val targetClosure: Set<BuildingBlockDefinitionId> by lazy {

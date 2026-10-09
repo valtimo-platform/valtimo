@@ -27,7 +27,7 @@ import {
   BuildingBlockReferenceUpdatePreviewDto,
   BuildingBlockReferenceUpdatePreviewRequestDto,
 } from '@valtimo/shared';
-import {BehaviorSubject, NEVER, of, throwError} from 'rxjs';
+import {BehaviorSubject, NEVER, of, Subject, throwError} from 'rxjs';
 import {
   BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS,
   REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS,
@@ -371,10 +371,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       expect(wizard.$step()).toBe(REFERENCE_UPDATE_STEP.DIFFERENCES);
       expect(wizard.$canProceed()).toBeFalse();
 
-      wizard.resolutionForm
-        .get(['draft-chain', 'inputs'])!
-        .get(['/recipient', 'source'])!
-        .setValue('doc:/email');
+      wizard.resolutionForm.get(['draft-chain', 'inputs', '/recipient'])!.setValue('doc:/email');
       tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
       expect(wizard.$canProceed()).toBeFalse();
 
@@ -383,6 +380,30 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
 
       expect(wizard.$canProceed()).toBeTrue();
+    }));
+
+    it('ignores a preview that arrives while a later edit is still debouncing', fakeAsync(() => {
+      chainOverrides['draft-chain'] = {
+        differences: {
+          ...chain('draft-chain', {}).differences,
+          missingRequiredInputs: ['/recipient'],
+        },
+      };
+      goToChains();
+      wizard.next();
+      fixture.detectChanges();
+      const recipient = wizard.resolutionForm.get(['draft-chain', 'inputs', '/recipient'])!;
+      const pending = new Subject<BuildingBlockReferenceUpdatePreviewDto>();
+      referenceUpdateApi.preview.and.returnValue(pending);
+
+      recipient.setValue('doc:/email');
+      tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
+      const configuredRequest = referenceUpdateApi.preview.calls.mostRecent().args[0];
+      recipient.setValue('');
+      pending.next(previewFor(configuredRequest));
+
+      expect(wizard.$canProceed()).toBeFalse();
+      tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
     }));
 
     it('does not execute without an explicit confirmation', () => {
@@ -481,8 +502,8 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       wizard.setChainSelected('final-chain', true);
       wizard.next();
       wizard.resolutionForm.get(['final-chain', 'inputs'])!.patchValue({
-        '/recipient': {source: ' doc:/email '},
-        '/subject': {mode: 'value', source: 'doc:/ignored', value: 'Welcome'},
+        '/recipient': ' doc:/email ',
+        '/subject': 'case:/subject',
       });
       wizard.resolutionForm.get(['final-chain', 'plugins', 'smtp'])!.setValue('smtp-config-id');
       tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
@@ -502,7 +523,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
             chainId: 'final-chain',
             inputMappings: [
               {source: 'doc:/email', target: '/recipient'},
-              {source: 'Welcome', target: '/subject'},
+              {source: 'case:/subject', target: '/subject'},
             ],
             pluginConfigurations: {smtp: 'smtp-config-id'},
           },

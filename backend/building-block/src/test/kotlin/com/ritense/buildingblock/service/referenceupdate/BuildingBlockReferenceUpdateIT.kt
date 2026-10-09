@@ -33,6 +33,7 @@ import com.ritense.buildingblock.processlink.dto.BuildingBlockInputMappingDto
 import com.ritense.buildingblock.repository.BuildingBlockInstanceRepository
 import com.ritense.buildingblock.repository.CaseDefinitionBuildingBlockLinkRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceKind
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateChainDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateChainResolutionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateContainerType.BUILDING_BLOCK
@@ -40,8 +41,11 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateContai
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateExecuteRequestDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePreviewDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePreviewRequestDto
-import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceKind
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateResultDto
+import com.ritense.case.domain.StartableItem
+import com.ritense.case.domain.StartableItemId
+import com.ritense.case.repository.StartableItemRepository
+import com.ritense.case.web.rest.dto.StartableItemType
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.document.domain.impl.JsonSchema
@@ -92,6 +96,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     private val processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
     private val caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
     private val buildingBlockInstanceRepository: BuildingBlockInstanceRepository,
+    private val startableItemRepository: StartableItemRepository,
     private val transactionTemplate: TransactionTemplate,
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
@@ -469,6 +474,14 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         assertThat(resolved.unresolvedRequiredInputs).isEmpty()
         assertThat(resolved.unresolvedPluginDefinitionKeys).isEmpty()
 
+        val extraPlugin = resolution.copy(pluginConfigurations = resolution.pluginConfigurations + ("other-plugin" to PLUGIN_CONFIGURATION_ID))
+        assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id), listOf(extraPlugin)) }
+            .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
+            .hasMessageContaining("'other-plugin', which is not missing")
+        assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id), listOf(resolution, resolution)) }
+            .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
+            .hasMessageContaining("Duplicate resolutions")
+
         execute(sendEmail100, sendEmail101, listOf(chain.id), listOf(resolution))
 
         val wrapperDraftLink = linkIn(ReferenceContainer.of(BuildingBlockDefinitionId.of(wrapper.key, "1.0.1")), "wr-$uid", "callSendEmail")
@@ -558,6 +571,43 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
             .isEqualTo(sendLetter)
         assertThat(caseDefinitionBuildingBlockLinkRepository.findAllByCaseDefinitionId(returns).map { it.buildingBlockDefinitionId })
             .containsExactlyInAnyOrder(sendEmail, sendLetter)
+    }
+
+    @Test
+    fun `a case that already links the target version is not updatable`() {
+        val uid = uid()
+        val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendEmail200 = buildingBlock("send-email-$uid", "2.0.0", final = true)
+        val orders = case("orders-$uid", "1.0.0", final = false, processKey = "or-$uid", calls = emptyList())
+        listOf(sendEmail100, sendEmail200).forEach { child ->
+            caseDefinitionBuildingBlockLinkRepository.saveAndFlush(
+                CaseDefinitionBuildingBlockLink(caseDefinitionId = orders, buildingBlockDefinitionId = child)
+            )
+        }
+
+        val chain = preview(sendEmail100, sendEmail200).chains.single()
+
+        assertThat(chain.updatable).isFalse()
+        assertThat(chain.notUpdatableReason).contains("already links building block ${sendEmail200.key}")
+    }
+
+    @Test
+    fun `re-pointing a case link keeps its startable item sort order`() {
+        val uid = uid()
+        val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendEmail101 = buildingBlock("send-email-$uid", "1.0.1", final = true)
+        val orders = case("orders-$uid", "1.0.0", final = false, processKey = "or-$uid", calls = emptyList())
+        caseDefinitionBuildingBlockLinkRepository.saveAndFlush(
+            CaseDefinitionBuildingBlockLink(caseDefinitionId = orders, buildingBlockDefinitionId = sendEmail100)
+        )
+        startableItemRepository.saveAndFlush(
+            StartableItem(StartableItemId(orders, sendEmail100.key, StartableItemType.BUILDING_BLOCK, "1.0.0"), sortOrder = 3)
+        )
+
+        execute(sendEmail100, sendEmail101, preview(sendEmail100, sendEmail101).chains.map { it.id })
+
+        assertThat(startableItemRepository.findAllByIdCaseDefinitionId(orders).map { it.id.itemVersionTag to it.sortOrder })
+            .containsExactly("1.0.1" to 3)
     }
 
     @Test

@@ -20,7 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {ValuePathSelectorComponent, ValuePathSelectorPrefix} from '@valtimo/components';
 import {InputModule, SelectModule, TagModule} from 'carbon-components-angular';
 import {BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS} from '../../../constants';
-import {ReferenceUpdateInputMode, ValuePathContext} from '../../../models';
+import {ValuePathContext} from '../../../models';
 import {BuildingBlockReferenceUpdateWizardService} from '../building-block-reference-update-wizard.service';
 import {BuildingBlockReferenceUpdateChainPathComponent} from '../reference-update-chain-path/reference-update-chain-path.component';
 import {BuildingBlockReferenceUpdatePreviewStatusComponent} from '../reference-update-preview-status/reference-update-preview-status.component';
@@ -45,7 +45,6 @@ import {BuildingBlockReferenceUpdatePreviewStatusComponent} from '../reference-u
 export class BuildingBlockReferenceUpdateDifferencesStepComponent {
   protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS;
 
-  public readonly INPUT_MODES: ReferenceUpdateInputMode[] = ['path', 'value'];
   public readonly SOURCE_PREFIXES = [ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE];
 
   public readonly resolutionForm = this.wizardService.resolutionForm;

@@ -85,13 +85,6 @@
     gap: var(--cds-spacing-04);
   }
 
-  &__mapping-source {
-    display: grid;
-    grid-template-columns: 7rem minmax(0, 1fr);
-    align-items: end;
-    gap: var(--cds-spacing-03);
-  }
-
   &__mapping-arrow {
     padding-bottom: var(--cds-spacing-03);
     color: var(--cds-icon-secondary);

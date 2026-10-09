@@ -14,11 +14,15 @@
   ~ limitations under the License.
   -->
 
+<p class="valtimo-building-block-management-references__description">
+  {{ 'buildingBlockManagement.references.description' | translate }}
+</p>
+
 <valtimo-carbon-list [fields]="$fields()" [items]="$references()" [loading]="$loading()">
   <div carbonToolbarContent>
     <button
       [attr.data-test-id]="testIds.updateReferencesButton"
-      [disabled]="$loading() || $references().length === 0 || (canUpdate$ | async) === false"
+      [disabled]="$loading() || $references().length === 0 || !(canUpdate$ | async)"
       cdsButton="primary"
       (click)="onUpdateReferencesClick()"
     >
