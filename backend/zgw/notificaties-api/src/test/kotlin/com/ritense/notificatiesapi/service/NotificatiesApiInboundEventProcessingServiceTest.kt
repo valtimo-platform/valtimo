@@ -27,7 +27,10 @@ import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventReposit
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
@@ -40,6 +43,7 @@ import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class NotificatiesApiInboundEventProcessingServiceTest {
 
@@ -123,14 +127,37 @@ class NotificatiesApiInboundEventProcessingServiceTest {
     }
 
     @Test
-    fun `triggers cleanup when batch empty`() {
+    fun `process batch does not run maintenance`() {
         whenever(repository.fetchNextBatchForProcessing(properties.batchSize)).thenReturn(emptyList())
-        whenever(repository.deleteByStatusAndReceivedAtBefore(any(), any())).thenReturn(1)
-        whenever(repository.existsByStatusAndReceivedAtBefore(any(), any())).thenReturn(false)
 
         service.processBatch()
 
-        verify(repository).deleteByStatusAndReceivedAtBefore(any(), any())
+        verify(repository, never()).deleteByStatusAndReceivedAtBefore(any(), any())
+        verify(repository, never()).existsByStatusAndReceivedAtBefore(any(), any())
+    }
+
+    @Test
+    fun `maintenance cleans up processed events older than the retention period`() {
+        whenever(repository.deleteByStatusAndReceivedAtBefore(any(), any())).thenReturn(1)
+        whenever(repository.existsByStatusAndReceivedAtBefore(any(), any())).thenReturn(false)
+
+        val before = LocalDateTime.now()
+        service.runMaintenance()
+
+        val cutoff = argumentCaptor<LocalDateTime>()
+        verify(repository).deleteByStatusAndReceivedAtBefore(eq(NotificatiesApiInboundEventStatus.PROCESSED), cutoff.capture())
+        assertTrue(!cutoff.firstValue.isBefore(before.minus(properties.retentionPeriod)))
+        verify(repository).existsByStatusAndReceivedAtBefore(eq(NotificatiesApiInboundEventStatus.RECEIVED), any())
+    }
+
+    @Test
+    fun `maintenance skips cleanup when the retention period is zero`() {
+        properties.retentionPeriod = Duration.ZERO
+        whenever(repository.existsByStatusAndReceivedAtBefore(any(), any())).thenReturn(false)
+
+        service.runMaintenance()
+
+        verify(repository, never()).deleteByStatusAndReceivedAtBefore(any(), any())
     }
 
     private fun inboundEvent(

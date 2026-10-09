@@ -17,12 +17,14 @@
 package com.ritense.valtimo
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.core.env.Environment
 import java.net.InetAddress
 
 @SpringBootApplication
+@EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
 class Application
 
 fun main(args: Array<String>) {
