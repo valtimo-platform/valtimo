@@ -2,9 +2,11 @@
 
 ## New Features
 
-* **New feature title**
+* **Delete a document from a process**
 
-  New feature explanation.
+  The Documenten API plugin has a new **Delete informatie object** action, so a process can delete
+  a document straight from a service task by giving its URL. The same checks that already run when
+  a document is deleted elsewhere in the application also run for this action.
 
 ## Enhancements
 
