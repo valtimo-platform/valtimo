@@ -62,7 +62,6 @@ class NotificatiesApiInboundEventProcessingService(
             val now = LocalDateTime.now()
             batch.forEach { processSingleEvent(it, now) }
         }
-        runMaintenance(LocalDateTime.now())
     }
 
     @Transactional
@@ -151,7 +150,9 @@ class NotificatiesApiInboundEventProcessingService(
         return writer.toString()
     }
 
-    private fun runMaintenance(referenceTime: LocalDateTime) {
+    @Transactional
+    fun runMaintenance() {
+        val referenceTime = LocalDateTime.now()
         cleanupProcessed(referenceTime)
         warnOnStuckReceived(referenceTime)
     }
