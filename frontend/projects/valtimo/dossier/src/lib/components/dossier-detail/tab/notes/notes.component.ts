@@ -48,8 +48,13 @@ export class DossierDetailTabNotesComponent implements OnInit {
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
   public readonly actions = [
-    {id: 'edit', label: 'Edit', icon: 'mdi-pencil', callback: this.editNote.bind(this)},
-    {id: 'delete', label: 'Delete', icon: 'mdi-delete', callback: this.deleteNote.bind(this)},
+    {id: 'edit', label: 'interface.edit', icon: 'mdi-pencil', callback: this.editNote.bind(this)},
+    {
+      id: 'delete',
+      label: 'interface.delete',
+      icon: 'mdi-delete',
+      callback: this.deleteNote.bind(this),
+    },
   ];
 
   public readonly canAdd$: Observable<boolean> = this.documentId$.pipe(
