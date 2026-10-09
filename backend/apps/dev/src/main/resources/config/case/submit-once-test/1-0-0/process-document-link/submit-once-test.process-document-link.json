@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "submit-once-test",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    }
+]

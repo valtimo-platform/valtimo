@@ -1,0 +1,14 @@
+[
+    {
+        "activityId": "start-event",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "submit-once-test"
+    },
+    {
+        "activityId": "submit-once-task",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "submit-once-test",
+        "processLinkType": "form"
+    }
+]

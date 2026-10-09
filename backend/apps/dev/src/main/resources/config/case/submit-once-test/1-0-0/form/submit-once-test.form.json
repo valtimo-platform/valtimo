@@ -1,0 +1,22 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "label": "Name",
+            "key": "name",
+            "type": "textfield",
+            "validate": {
+                "required": true
+            },
+            "input": true
+        },
+        {
+            "type": "submitOnceButton",
+            "label": "Submit",
+            "key": "submit",
+            "action": "submit",
+            "theme": "primary",
+            "input": true
+        }
+    ]
+}

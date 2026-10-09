@@ -19,6 +19,8 @@ export const TASK_CONFIG = {
   autoAssignProcess: 'auto-assign-test',
   /** Case definition with user tasks that have real form fields (textfield, number, checkbox, etc.) */
   formioTestProcess: 'formio-test',
+  /** Case definition whose task form uses the Submit once button */
+  submitOnceProcess: 'submit-once-test',
   /** API endpoint to create a new case and start its process */
   processDocumentEndpoint: '/api/v1/process-document/operation/new-document-and-start-process',
   /** API endpoint to delete a created document by id */

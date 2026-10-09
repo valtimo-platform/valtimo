@@ -1,0 +1,12 @@
+{
+    "$id": "submit-once-test.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Submit once test",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name"
+        }
+    }
+}
