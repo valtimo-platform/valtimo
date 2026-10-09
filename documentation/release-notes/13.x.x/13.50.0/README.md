@@ -29,6 +29,7 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Area name | New bugfix. |
+| Processes | A text of more than 4000 characters, such as a long description in a form text area, can be saved and shown in a form again instead of causing an error |
 
 ---
 

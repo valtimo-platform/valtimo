@@ -20,6 +20,7 @@ import com.ritense.valtimo.operaton.ProcessDefinitionDeployedEventPublisher;
 import com.ritense.valtimo.operaton.command.ValtimoSchemaOperationsCommand;
 import com.ritense.valtimo.operaton.domain.OperatonVariableInstance;
 import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
+import com.ritense.valtimo.operaton.variable.LargeStringValueSerializer;
 import com.ritense.valtimo.validator.MaxDateValidator;
 import com.ritense.valtimo.validator.MinDateValidator;
 import java.util.ArrayList;
@@ -63,6 +64,11 @@ public class OperatonConfiguration implements OperatonProcessEngineConfiguration
             processEngineConfiguration.setCustomPostDeployers(new ArrayList<>());
         }
         processEngineConfiguration.getCustomPostDeployers().add(processDefinitionDeployedEventPublisher);
+
+        if (processEngineConfiguration.getCustomPreVariableSerializers() == null) {
+            processEngineConfiguration.setCustomPreVariableSerializers(new ArrayList<>());
+        }
+        processEngineConfiguration.getCustomPreVariableSerializers().add(new LargeStringValueSerializer());
 
         //Override default
         processEngineConfiguration.setSchemaOperationsCommand(schemaOperationsCommand);
