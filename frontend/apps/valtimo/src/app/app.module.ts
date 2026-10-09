@@ -22,6 +22,7 @@ import {
   WidgetModule,
   enableCustomFormioComponents,
   registerFormioMailPreviewComponent,
+  registerFormioSubmitOnceButtonComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
@@ -191,5 +192,6 @@ export class AppModule {
     registerFormioValueResolverSelectorComponent(injector);
     registerIkoSearchFormioComponent(injector);
     registerFormioMailPreviewComponent(injector);
+    registerFormioSubmitOnceButtonComponent();
   }
 }

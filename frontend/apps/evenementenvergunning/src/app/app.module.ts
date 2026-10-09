@@ -20,6 +20,7 @@ import {
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
   registerFormioMailPreviewComponent,
+  registerFormioSubmitOnceButtonComponent,
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent
 } from '@valtimo/components';
@@ -220,5 +221,6 @@ export class AppModule {
     registerFormioValueResolverSelectorComponent(injector);
     registerIkoSearchFormioComponent(injector);
     registerFormioMailPreviewComponent(injector);
+    registerFormioSubmitOnceButtonComponent();
   }
 }

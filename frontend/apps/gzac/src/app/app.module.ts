@@ -58,6 +58,7 @@ import {
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
   registerFormioMailPreviewComponent,
+  registerFormioSubmitOnceButtonComponent,
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   WidgetModule,
@@ -259,5 +260,6 @@ export class AppModule {
     registerDocumentenApiFormioUploadComponent(injector);
     registerIkoSearchFormioComponent(injector);
     registerFormioMailPreviewComponent(injector);
+    registerFormioSubmitOnceButtonComponent();
   }
 }
