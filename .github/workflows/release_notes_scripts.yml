@@ -1,0 +1,26 @@
+name: Release-notes scripts
+
+# Tests for the scripts behind relocate_release_notes.yml.
+
+on:
+  pull_request:
+    paths:
+      - .github/scripts/release-notes/**
+      - .github/prompts/relocate-release-notes*.md
+      - .github/workflows/relocate_release_notes.yml
+      - .github/workflows/release_notes_scripts.yml
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - run: python3 -B -m unittest discover -s .github/scripts/release-notes/test

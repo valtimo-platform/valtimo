@@ -17,6 +17,7 @@ import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {
+  groupWidgetData,
   PersonCardWidget,
   WidgetDataGroupService,
   WidgetLayoutService,
@@ -49,7 +50,14 @@ export class CaseWidgetPersonCardComponent {
 
   public readonly widgetData$: Observable<any> = this.widgetConfiguration$.pipe(
     filter(widget => !!widget),
-    switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
+    switchMap(widget =>
+      groupWidgetData(
+        this.widgetDataGroupService,
+        this.widgetLayoutService,
+        widget.key,
+        () => this.widgetUuid
+      )
+    ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid)),
     catchError((error: HttpErrorResponse) => {
       if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
