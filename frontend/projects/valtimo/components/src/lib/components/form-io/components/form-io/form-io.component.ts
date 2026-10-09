@@ -52,6 +52,7 @@ import {
   FormIoTagsService,
   FormioTranslationService,
 } from '../../services';
+import {SUBMIT_ONCE_RELEASE_EVENT} from '../form-io-submit-once-button/submit-once-button.formio';
 
 @Component({
   selector: 'valtimo-form-io',
@@ -65,15 +66,18 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.options$.next(optionsValue);
   }
   @Input() set submission(submissionValue: FormioSubmission) {
+    this.releaseSubmitOnce();
     this.submission$.next(submissionValue);
   }
   @Input() set form(formValue: FormioForm) {
+    this.releaseSubmitOnce();
     this._form$.next(formValue);
   }
   @Input() set readOnly(readOnlyValue: boolean) {
     this.readOnly$.next(readOnlyValue);
   }
   @Input() set errors(errorsValue: Array<string>) {
+    if (errorsValue?.length) this.releaseSubmitOnce();
     this.errors$.next(errorsValue ?? []);
   }
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
@@ -155,6 +159,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     ? this.localStorageService.tokenSetInLocalStorage$
     : this._inMemoryTokenSet$.asObservable();
 
+  private _renderedForm: FormIoSourceComponent | null = null;
+
   private _tokenRefreshTimerSubscription!: Subscription;
   private _formRefreshSubscription!: Subscription;
 
@@ -206,6 +212,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public showErrors(errors: string[]): void {
+    if (errors?.length) this.releaseSubmitOnce();
     this.errors$.next(errors);
   }
 
@@ -215,6 +222,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public formReady(form: FormIoSourceComponent): void {
+    this._renderedForm = form;
     this.stateService.currentForm = form;
   }
 
@@ -232,6 +240,10 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public prevPage(): void {
     this.scrollToTop();
+  }
+
+  private releaseSubmitOnce(): void {
+    this._renderedForm?.formio?.emit(SUBMIT_ONCE_RELEASE_EVENT);
   }
 
   private openReloadFormSubscription(): void {
