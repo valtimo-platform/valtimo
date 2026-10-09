@@ -36,7 +36,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 class DocumentenApiPreviewPluginTest {
-    private val documentenApiConfigurationId: String = "mock_documenten_api_preview_configuration_id"
+    private val documentenApiConfigurationId: String = "mock_documenten_api_configuration_id"
     private lateinit var documentenApiPreviewPlugin: DocumentenApiPreviewPlugin
     private lateinit var documentenApiPlugin: DocumentenApiPlugin
     private lateinit var pdfConversionClient: PdfConversionClient
