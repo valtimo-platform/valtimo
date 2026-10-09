@@ -10,9 +10,9 @@ This release contains security fixes. See [Security](#security) for details.
 
 ## New Features
 
-### New feature title
+### Submit once button for forms
 
-New feature explanation.
+The form builder has a new **Submit once** button that works like the standard submit button, but submits the form only once, however often it is clicked. If the form is invalid or the submit fails, the button can be used again.
 
 ---
 

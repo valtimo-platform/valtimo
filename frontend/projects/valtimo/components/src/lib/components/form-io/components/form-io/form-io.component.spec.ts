@@ -27,6 +27,7 @@ import {of} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ValtimoModalService} from '../../../../services';
 import {FormIoLocalStorageService} from '../../services';
+import {SUBMIT_ONCE_RELEASE_EVENT} from '../form-io-submit-once-button/submit-once-button.formio';
 import {FormioComponent} from './form-io.component';
 
 describe('FormioComponent', () => {
@@ -151,6 +152,52 @@ describe('FormioComponent', () => {
 
       expect(numberComponent.decimalSeparator).toBe('.');
       expect(numberComponent.delimiter).toBe(',');
+    });
+  });
+
+  describe('releasing the Submit once button', () => {
+    let emit: jasmine.Spy;
+
+    beforeEach(() => {
+      emit = jasmine.createSpy('emit');
+      component.formReady({formio: {emit}} as any);
+    });
+
+    it('should release it when the host shows errors', () => {
+      component.showErrors(['Task could not be completed']);
+
+      expect(emit).toHaveBeenCalledOnceWith(SUBMIT_ONCE_RELEASE_EVENT);
+    });
+
+    it('should release it again when the same errors are shown after a retry', () => {
+      const errors = ['Task could not be completed'];
+
+      component.showErrors(errors);
+      component.showErrors(errors);
+
+      expect(emit).toHaveBeenCalledTimes(2);
+    });
+
+    it('should release it when errors arrive through the input', () => {
+      component.errors = ['Process could not be started'];
+
+      expect(emit).toHaveBeenCalledOnceWith(SUBMIT_ONCE_RELEASE_EVENT);
+    });
+
+    it('should not release it when the errors are cleared', () => {
+      component.showErrors([]);
+      component.errors = [];
+      component.errors = null;
+
+      expect(emit).not.toHaveBeenCalled();
+    });
+
+    it('should release it when the host supplies a new form or submission', () => {
+      component.form = {components: []};
+      component.submission = {data: {}};
+
+      expect(emit).toHaveBeenCalledTimes(2);
+      expect(emit).toHaveBeenCalledWith(SUBMIT_ONCE_RELEASE_EVENT);
     });
   });
 });
