@@ -57,6 +57,10 @@ export interface DownloadDocumentConfig {
   processVariableName: string;
 }
 
+export interface DeleteInformatieObjectConfig {
+  documentUrl: string;
+}
+
 export {
   DocumentenApiConfig,
   StoreTempDocumentConfig,
