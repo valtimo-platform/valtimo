@@ -22,6 +22,7 @@ const BUILDING_BLOCK_MANAGEMENT_TABS = {
   FORM_FLOWS: 'form-flows',
   DECISIONS: 'decisions',
   MIGRATION: 'migration',
+  REFERENCES: 'references',
 } as const;
 
 export {BUILDING_BLOCK_MANAGEMENT_TABS};

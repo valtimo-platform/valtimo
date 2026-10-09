@@ -58,6 +58,21 @@ export const NEW_BUILDING_BLOCK = {
   description: 'Building block created by the e2e building block management test.',
 } as const;
 
+// Keys get a unique suffix per run — finalized versions can't be removed
+export const REFERENCE_UPDATE = {
+  sendEmailKeyPrefix: 'e2e-bb-send-email',
+  draftContainerKeyPrefix: 'e2e-bb-reference-update-draft',
+  notifyKeyPrefix: 'e2e-bb-reference-update-notify',
+  outerKeyPrefix: 'e2e-bb-reference-update-outer',
+  sourceVersionTag: '1.0.0',
+  targetVersionTag: '1.0.1',
+  containerVersionTag: '1.0.0',
+  /** Patch differs between source and target, so new drafts bump the patch. */
+  newDraftVersionTag: '1.0.1',
+  sendEmailActivityId: 'callSendEmail',
+  notifyActivityId: 'callNotify',
+} as const;
+
 export const BUILDING_BLOCK_TEXTS = {
   listColumns: ['Name', 'Key', 'Version'],
   duplicateKeyError: 'This key is already in use. Please change to a unique key.',

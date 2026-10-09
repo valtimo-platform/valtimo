@@ -129,6 +129,140 @@ export interface BuildingBlockVersionDto {
     final: boolean;
 }
 
+export interface BuildingBlockReferenceUpdateChainDto {
+    id: string;
+    containers: BuildingBlockReferenceUpdateContainerDto[];
+    references: BuildingBlockReferenceDto[];
+    link: BuildingBlockReferenceDto;
+    selected: boolean;
+    selectedByDefault: boolean;
+    requiresDrafts: boolean;
+    modifiesExistingDraft: boolean;
+    existingDrafts: BuildingBlockReferenceUpdateExistingDraftDto[];
+    updatable: boolean;
+    notUpdatableReason: string | null;
+    differences: BuildingBlockReferenceUpdateDifferencesDto;
+}
+
+export interface BuildingBlockReferenceUpdateChainResolutionDto {
+    chainId: string;
+    inputMappings: BuildingBlockInputMappingDto[];
+    pluginConfigurations: { [index: string]: string };
+}
+
+export interface BuildingBlockReferenceUpdateChangesetDto {
+    draftsToCreate: BuildingBlockReferenceUpdateDraftDto[];
+    draftsToModify: BuildingBlockReferenceUpdateDraftDto[];
+    linksToRepoint: BuildingBlockReferenceUpdateRepointDto[];
+    skippedChainIds: string[];
+    coveredChainIds: string[];
+}
+
+export interface BuildingBlockReferenceUpdateContainerDto {
+    type: BuildingBlockReferenceUpdateContainerType;
+    key: string;
+    versionTag: string;
+    final: boolean;
+}
+
+export interface BuildingBlockReferenceUpdateDifferencesDto {
+    existingInputMappings: BuildingBlockInputMappingDto[];
+    missingRequiredInputs: string[];
+    droppedInputMappings: BuildingBlockInputMappingDto[];
+    droppedOutputMappings: BuildingBlockOutputMappingDto[];
+    missingPluginDefinitionKeys: string[];
+    pluginConfigurationLink: BuildingBlockReferenceDto | null;
+    unresolvedRequiredInputs: string[];
+    unresolvedPluginDefinitionKeys: string[];
+    configured: boolean;
+}
+
+export interface BuildingBlockReferenceUpdateDraftDto {
+    type: BuildingBlockReferenceUpdateContainerType;
+    key: string;
+    versionTag: string;
+    basedOnVersionTag: string | null;
+}
+
+export interface BuildingBlockReferenceUpdateExecuteRequestDto {
+    key: string;
+    sourceVersionTag: string;
+    targetVersionTag: string;
+    selectedChainIds: string[];
+    resolutions: BuildingBlockReferenceUpdateChainResolutionDto[];
+    targetKey: string | null;
+}
+
+export interface BuildingBlockReferenceUpdateExistingDraftDto {
+    container: BuildingBlockReferenceUpdateContainerDto;
+    draftVersionTag: string;
+    draftBasedOnVersionTag: string | null;
+}
+
+export interface BuildingBlockReferenceUpdatePreviewDto {
+    key: string;
+    sourceVersionTag: string;
+    targetKey: string;
+    targetVersionTag: string;
+    draftsAllowed: boolean;
+    chains: BuildingBlockReferenceUpdateChainDto[];
+    changeset: BuildingBlockReferenceUpdateChangesetDto;
+}
+
+export interface BuildingBlockReferenceUpdatePreviewRequestDto {
+    key: string;
+    sourceVersionTag: string;
+    targetVersionTag: string;
+    selectedChainIds: string[] | null;
+    resolutions: BuildingBlockReferenceUpdateChainResolutionDto[];
+    targetKey: string | null;
+}
+
+export interface BuildingBlockReferenceDto {
+    container: BuildingBlockReferenceUpdateContainerDto;
+    kind: BuildingBlockReferenceKind;
+    processDefinitionKey: string | null;
+    activityId: string | null;
+    buildingBlockKey: string;
+    buildingBlockVersionTag: string;
+}
+
+export interface BuildingBlockReferenceUpdateRepointDto {
+    container: BuildingBlockReferenceUpdateContainerDto;
+    kind: BuildingBlockReferenceKind;
+    processDefinitionKey: string | null;
+    activityId: string | null;
+    buildingBlockKey: string;
+    fromVersionTag: string;
+    toBuildingBlockKey: string;
+    toVersionTag: string;
+    containerReference: boolean;
+}
+
+export interface BuildingBlockReferenceUpdateResultDto {
+    key: string;
+    sourceVersionTag: string;
+    targetKey: string;
+    targetVersionTag: string;
+    chainsUpdatedDirectly: string[];
+    linksRepointed: BuildingBlockReferenceUpdateRepointDto[];
+    draftsCreated: BuildingBlockReferenceUpdateDraftDto[];
+    draftsModified: BuildingBlockReferenceUpdateDraftDto[];
+    skippedChainIds: string[];
+    remainingReferences: BuildingBlockReferenceDto[];
+}
+
+export interface BuildingBlockInputMappingDto {
+    source: string;
+    target: string;
+}
+
+export interface BuildingBlockOutputMappingDto {
+    source: string;
+    target: string;
+    syncTiming: BuildingBlockSyncTiming;
+}
+
 export interface CaseDefinitionBuildingBlockLinkDto {
     id: string;
     caseDefinitionKey: string;
@@ -1884,6 +2018,10 @@ export type SearchFieldMatchType = "like" | "exact";
 export type TabWidgetLayout = "MUURI_GAP_FREE" | "MUURI" | "BEAUTIFUL";
 
 export type WidgetColor = "YELLOW" | "ORANGE" | "RED" | "BROWN" | "GREEN" | "TURQOISE" | "PURPLE" | "PERIWINKLE" | "BLUE" | "HIGHCONTRAST" | "WHITE";
+
+export type BuildingBlockReferenceUpdateContainerType = "CASE" | "BUILDING_BLOCK";
+
+export type BuildingBlockReferenceKind = "PROCESS_LINK" | "CASE_LINK";
 
 export type BuildingBlockSyncTiming = "CONTINUOUS" | "END";
 

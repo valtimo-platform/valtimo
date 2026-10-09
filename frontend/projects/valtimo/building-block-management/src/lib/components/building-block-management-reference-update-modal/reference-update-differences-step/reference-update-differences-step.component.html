@@ -1,0 +1,201 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<p class="valtimo-building-block-reference-update__description">
+  {{ 'buildingBlockManagement.referenceUpdate.differences.description' | translate }}
+</p>
+
+<valtimo-building-block-reference-update-preview-status></valtimo-building-block-reference-update-preview-status>
+
+<form [formGroup]="resolutionForm" class="valtimo-building-block-reference-update__list">
+  @for (chain of $selectedChains(); track chain.id) {
+    <section
+      [attr.data-test-id]="testIds.differences"
+      [formGroupName]="chain.id"
+      class="valtimo-building-block-reference-update__chain"
+    >
+      <div class="valtimo-building-block-reference-update__chain-header">
+        <valtimo-building-block-reference-update-chain-path
+          [chain]="chain"
+        ></valtimo-building-block-reference-update-chain-path>
+
+        <cds-tag
+          [type]="chain.differences.configured ? 'green' : 'red'"
+          class="cds-tag--no-margin"
+          size="sm"
+        >
+          {{
+            (chain.differences.configured
+              ? 'buildingBlockManagement.referenceUpdate.differences.configured'
+              : 'buildingBlockManagement.referenceUpdate.differences.notConfigured'
+            ) | translate
+          }}
+        </cds-tag>
+      </div>
+
+      @if (
+        chain.differences.missingRequiredInputs.length === 0 &&
+        chain.differences.missingPluginDefinitionKeys.length === 0 &&
+        chain.differences.droppedInputMappings.length === 0 &&
+        chain.differences.droppedOutputMappings.length === 0
+      ) {
+        <p class="valtimo-building-block-reference-update__secondary">
+          {{ 'buildingBlockManagement.referenceUpdate.differences.none' | translate }}
+        </p>
+      }
+
+      @if (chain.differences.missingRequiredInputs.length > 0) {
+        <div formGroupName="inputs" class="valtimo-building-block-reference-update__fields">
+          @for (field of chain.differences.missingRequiredInputs; track field) {
+            <div
+              [attr.data-field]="field"
+              [attr.data-test-id]="testIds.inputMapping"
+              class="valtimo-building-block-reference-update__input"
+            >
+              <div class="valtimo-building-block-reference-update__mapping">
+                <valtimo-value-path-selector
+                  [buildingBlockDefinitionKey]="
+                    $sourceContexts()[chain.id]?.buildingBlockKey ?? null
+                  "
+                  [buildingBlockDefinitionVersionTag]="
+                    $sourceContexts()[chain.id]?.buildingBlockVersionTag ?? null
+                  "
+                  [caseDefinitionKey]="$sourceContexts()[chain.id]?.caseDefinitionKey ?? null"
+                  [caseDefinitionVersionTag]="
+                    $sourceContexts()[chain.id]?.caseDefinitionVersionTag ?? null
+                  "
+                  [formControlName]="field"
+                  [label]="
+                    'buildingBlockManagement.referenceUpdate.differences.inputPath' | translate
+                  "
+                  [notation]="'slashes'"
+                  [prefixes]="SOURCE_PREFIXES"
+                ></valtimo-value-path-selector>
+
+                <span
+                  class="valtimo-building-block-reference-update__mapping-arrow"
+                  aria-hidden="true"
+                  >→</span
+                >
+
+                <cds-text-label>
+                  {{
+                    'buildingBlockManagement.referenceUpdate.differences.inputTarget' | translate
+                  }}
+                  <input cdsText [readonly]="true" [value]="field" />
+                </cds-text-label>
+              </div>
+
+              @if (chain.differences.unresolvedRequiredInputs.includes(field)) {
+                <span class="valtimo-building-block-reference-update__error">
+                  {{
+                    'buildingBlockManagement.referenceUpdate.differences.inputRequired' | translate
+                  }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (chain.differences.missingPluginDefinitionKeys.length > 0) {
+        <div formGroupName="plugins" class="valtimo-building-block-reference-update__fields">
+          @for (
+            pluginDefinitionKey of chain.differences.missingPluginDefinitionKeys;
+            track pluginDefinitionKey
+          ) {
+            <cds-select
+              [attr.data-plugin-definition-key]="pluginDefinitionKey"
+              [attr.data-test-id]="testIds.pluginConfigurationDropdown"
+              [formControlName]="pluginDefinitionKey"
+              [helperText]="
+                chain.differences.pluginConfigurationLink
+                  ? ('buildingBlockManagement.referenceUpdate.differences.pluginLink'
+                    | translate
+                      : {
+                          container:
+                            chain.differences.pluginConfigurationLink.container.key +
+                            ' ' +
+                            chain.differences.pluginConfigurationLink.container.versionTag,
+                        })
+                  : ''
+              "
+              [invalid]="
+                chain.differences.unresolvedPluginDefinitionKeys.includes(pluginDefinitionKey)
+              "
+              [invalidText]="
+                ($pluginConfigurations()[pluginDefinitionKey]?.length ?? 0) === 0
+                  ? ('buildingBlockManagement.referenceUpdate.differences.noPluginConfigurations'
+                    | translate)
+                  : ('buildingBlockManagement.referenceUpdate.differences.pluginRequired'
+                    | translate)
+              "
+              [label]="
+                'buildingBlockManagement.referenceUpdate.differences.pluginConfiguration'
+                  | translate: {plugin: pluginDefinitionKey}
+              "
+            >
+              <option value="">
+                {{
+                  'buildingBlockManagement.referenceUpdate.differences.pluginPlaceholder'
+                    | translate
+                }}
+              </option>
+
+              @for (
+                configuration of $pluginConfigurations()[pluginDefinitionKey] ?? [];
+                track configuration.id
+              ) {
+                <option [value]="configuration.id">{{ configuration.title }}</option>
+              }
+            </cds-select>
+          }
+        </div>
+      }
+
+      @if (
+        chain.differences.droppedInputMappings.length > 0 ||
+        chain.differences.droppedOutputMappings.length > 0
+      ) {
+        <div [attr.data-test-id]="testIds.droppedMappings">
+          <strong>
+            {{ 'buildingBlockManagement.referenceUpdate.differences.dropped' | translate }}
+          </strong>
+
+          <ul class="valtimo-building-block-reference-update__bullets">
+            @for (mapping of chain.differences.droppedInputMappings; track $index) {
+              <li>
+                {{
+                  'buildingBlockManagement.referenceUpdate.differences.droppedInput'
+                    | translate: {source: mapping.source, target: mapping.target}
+                }}
+              </li>
+            }
+
+            @for (mapping of chain.differences.droppedOutputMappings; track $index) {
+              <li>
+                {{
+                  'buildingBlockManagement.referenceUpdate.differences.droppedOutput'
+                    | translate: {source: mapping.source, target: mapping.target}
+                }}
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+  }
+</form>

@@ -1,0 +1,107 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<p class="valtimo-building-block-reference-update__description">
+  {{
+    'buildingBlockManagement.referenceUpdate.chains.description'
+      | translate
+        : {
+            key: $source()?.key,
+            sourceVersionTag: $source()?.versionTag,
+            targetKey: $targetKey(),
+            targetVersionTag: $target(),
+          }
+  }}
+</p>
+
+<valtimo-building-block-reference-update-preview-status></valtimo-building-block-reference-update-preview-status>
+
+@if ($preview(); as preview) {
+  @if (preview.chains.length === 0) {
+    <p>{{ 'buildingBlockManagement.referenceUpdate.chains.empty' | translate }}</p>
+  }
+
+  <ul class="valtimo-building-block-reference-update__list">
+    @for (chain of preview.chains; track chain.id) {
+      <li
+        [attr.data-test-id]="testIds.chain"
+        class="valtimo-building-block-reference-update__chain"
+      >
+        <cds-checkbox
+          [attr.data-test-id]="testIds.chainCheckbox"
+          [checked]="$selectedChainIds().includes(chain.id)"
+          [disabled]="!chain.updatable && !$selectedChainIds().includes(chain.id)"
+          (checkedChange)="onChainCheckedChange(chain.id, $event)"
+        >
+          <valtimo-building-block-reference-update-chain-path
+            [chain]="chain"
+          ></valtimo-building-block-reference-update-chain-path>
+        </cds-checkbox>
+
+        <div class="valtimo-building-block-reference-update__chain-details">
+          @if (chain.requiresDrafts) {
+            <cds-tag class="cds-tag--no-margin" size="sm" type="purple">
+              {{ 'buildingBlockManagement.referenceUpdate.chains.requiresDrafts' | translate }}
+            </cds-tag>
+          }
+
+          @if (chain.modifiesExistingDraft) {
+            @for (existingDraft of chain.existingDrafts; track $index) {
+              <cds-tag
+                [attr.data-test-id]="testIds.chainModifiesExistingDraft"
+                class="cds-tag--no-margin"
+                size="sm"
+                type="blue"
+              >
+                {{
+                  'buildingBlockManagement.referenceUpdate.chains.modifiesExistingDraft'
+                    | translate
+                      : {
+                          key: existingDraft.container.key,
+                          versionTag: existingDraft.draftVersionTag,
+                          basedOn:
+                            existingDraft.draftBasedOnVersionTag ??
+                            ('buildingBlockManagement.referenceUpdate.none' | translate),
+                        }
+                }}
+              </cds-tag>
+            }
+          }
+
+          @if (!chain.updatable) {
+            <span
+              [attr.data-test-id]="testIds.chainNotUpdatable"
+              class="valtimo-building-block-reference-update__error"
+            >
+              {{
+                'buildingBlockManagement.referenceUpdate.chains.notUpdatable'
+                  | translate: {reason: chain.notUpdatableReason}
+              }}
+            </span>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+
+  @if ($selectedChainIds().length === 0 && preview.chains.length > 0) {
+    <p class="valtimo-building-block-reference-update__secondary">
+      {{ 'buildingBlockManagement.referenceUpdate.chains.selectAtLeastOne' | translate }}
+    </p>
+  }
+} @else if (!$previewFailed()) {
+  <cds-loading size="sm" [isActive]="true"></cds-loading>
+}
