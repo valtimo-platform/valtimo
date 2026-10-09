@@ -28,7 +28,7 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Forms | Clicking the submit button of a form more than once no longer submits the form multiple times; after a failed submit the button can be used again |
 
 ---
 
