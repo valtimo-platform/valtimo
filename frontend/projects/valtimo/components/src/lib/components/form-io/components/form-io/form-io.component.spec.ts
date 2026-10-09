@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {HttpErrorResponse} from '@angular/common/http';
 import {ComponentFixture, fakeAsync, TestBed, tick, waitForAsync} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {ActivatedRoute} from '@angular/router';
@@ -176,6 +177,18 @@ describe('FormioComponent', () => {
       component.showErrors(errors);
 
       expect(emit).toHaveBeenCalledTimes(2);
+    });
+
+    it('should release it when the host shows the failed request itself', () => {
+      component.showErrors(new HttpErrorResponse({status: 500}) as any);
+
+      expect(emit).toHaveBeenCalledOnceWith(SUBMIT_ONCE_RELEASE_EVENT);
+    });
+
+    it('should release it when the failed request arrives through the input', () => {
+      component.errors = new HttpErrorResponse({status: 400}) as any;
+
+      expect(emit).toHaveBeenCalledOnceWith(SUBMIT_ONCE_RELEASE_EVENT);
     });
 
     it('should release it when errors arrive through the input', () => {

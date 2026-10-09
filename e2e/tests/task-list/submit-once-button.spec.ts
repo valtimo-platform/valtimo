@@ -64,13 +64,17 @@ test.describe('Submit once button', () => {
     await context.close();
   });
 
-  test('highlights an empty required field and completes the task once however often Submit is clicked', async () => {
+  test('highlights an empty required field, can be retried after a failed submit, and then completes the task once however often Submit is clicked', async () => {
     test.slow();
     const submissions: string[] = [];
 
-    // Hold the submission so the form stays open while the user keeps clicking.
+    // The first submission fails; later ones are held so the form stays open while the user keeps clicking.
     await page.route(FORM_SUBMISSION, async route => {
       submissions.push(route.request().url());
+      if (submissions.length === 1) {
+        await route.fulfill({status: 500, json: {title: 'Internal Server Error', status: 500}});
+        return;
+      }
       await new Promise(resolve => setTimeout(resolve, 2_000));
       await route.continue();
     });
@@ -87,12 +91,18 @@ test.describe('Submit once button', () => {
     expect(submissions).toHaveLength(0);
 
     await dialog.getByRole('textbox', {name: 'Name'}).fill('Jane Doe');
+    await submitButton.click();
+    await expect(page.getByText('An unexpected error occurred').first()).toBeVisible({timeout: 10_000});
+    await page.waitForTimeout(1_000);
+    await expect(submitButton).toBeEnabled();
+    expect(submissions).toHaveLength(1);
+
     for (let click = 0; click < 3; click++) {
       await submitButton.click({force: true});
       await page.waitForTimeout(400);
     }
 
     await taskListPage.assertTaskCompletedNotification(TASK_NAME);
-    expect(submissions).toHaveLength(1);
+    expect(submissions).toHaveLength(2);
   });
 });

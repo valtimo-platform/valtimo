@@ -77,7 +77,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.readOnly$.next(readOnlyValue);
   }
   @Input() set errors(errorsValue: Array<string>) {
-    if (errorsValue?.length) this.releaseSubmitOnce();
+    if (this.isFailure(errorsValue)) this.releaseSubmitOnce();
     this.errors$.next(errorsValue ?? []);
   }
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
@@ -212,7 +212,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public showErrors(errors: string[]): void {
-    if (errors?.length) this.releaseSubmitOnce();
+    if (this.isFailure(errors)) this.releaseSubmitOnce();
     this.errors$.next(errors);
   }
 
@@ -240,6 +240,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public prevPage(): void {
     this.scrollToTop();
+  }
+
+  // Hosts pass on whatever the request failed with, usually an HttpErrorResponse rather than a list.
+  private isFailure(errors: unknown): boolean {
+    return Array.isArray(errors) ? errors.length > 0 : !!errors;
   }
 
   private releaseSubmitOnce(): void {
