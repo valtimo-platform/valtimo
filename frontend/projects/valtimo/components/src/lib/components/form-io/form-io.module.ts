@@ -38,11 +38,9 @@ import {FormIoCurrencyComponent} from './components/form-io-currency/currency.co
 import {applyDataGridPatch} from './patches/patched-datagrid';
 import {registerFormioFlatpickr, setFormioFlatpickrLocale} from './formio-flatpickr';
 import { FormIoMailPreviewComponent } from './components/form-io-mail-preview/mail-preview.component';
-import {registerSingleClickButtonComponent} from './components/form-io-single-click-button/single-click-button.formio';
 
 // Apply FormIO patches before any form renders
 applyDataGridPatch();
-registerSingleClickButtonComponent();
 
 @NgModule({
   imports: [
