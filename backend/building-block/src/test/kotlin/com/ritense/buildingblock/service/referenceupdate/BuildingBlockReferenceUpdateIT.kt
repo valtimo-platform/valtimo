@@ -62,7 +62,6 @@ import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.hamcrest.Matchers.containsString
@@ -81,7 +80,6 @@ import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletResponse
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
@@ -110,9 +108,6 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
 ) : BaseIntegrationTest() {
-
-    @MockitoSpyBean
-    lateinit var operatonProcessService: OperatonProcessService
 
     @Test
     fun `lists the direct references to a version, cases first`() {
