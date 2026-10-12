@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package com.ritense.buildingblock.service.referenceupdate
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
