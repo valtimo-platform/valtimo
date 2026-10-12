@@ -20,7 +20,7 @@ import {provideRouter} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {BuildingBlockReferenceDto, EnvironmentService} from '@valtimo/shared';
-import {BehaviorSubject, of} from 'rxjs';
+import {BehaviorSubject, of, throwError} from 'rxjs';
 import {BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS} from '../../constants';
 import {
   BuildingBlockManagementDetailService,
@@ -68,6 +68,7 @@ describe('BuildingBlockManagementReferencesComponent', () => {
     container: {type: 'CASE', key: 'moving', versionTag: '1.3.0', final: false},
     kind: 'PROCESS_LINK',
     processDefinitionKey: 'main',
+    processDefinitionId: 'main:1:abc',
     activityId: 'callSendEmail',
     buildingBlockKey: 'send-email',
     buildingBlockVersionTag: '1.0.0',
@@ -91,11 +92,13 @@ describe('BuildingBlockManagementReferencesComponent', () => {
           container: {type: 'CASE', key: 'notify', versionTag: '1.1.0', final: true},
           kind: 'CASE_LINK',
           processDefinitionKey: null,
+          processDefinitionId: null,
           activityId: null,
         }),
         reference({
           container: {type: 'BUILDING_BLOCK', key: 'outer', versionTag: '2.0.0', final: false},
           processDefinitionKey: 'outer-main',
+          processDefinitionId: 'outer-main:2:def',
         }),
       ])
     );
@@ -163,7 +166,7 @@ describe('BuildingBlockManagementReferencesComponent', () => {
         'version',
         '2.0.0',
         'process-definition',
-        'outer-main',
+        'outer-main:2:def',
       ],
     ]);
     expect(component.$fields().at(-1)?.template).toBe(component.linkColumnTemplate);
@@ -183,6 +186,16 @@ describe('BuildingBlockManagementReferencesComponent', () => {
     fixture.detectChanges();
 
     expect(referenceUpdateApi.getReferences).toHaveBeenCalledTimes(2);
+    expect(updateButton().disabled).toBeTrue();
+  });
+
+  it('shows a load failure instead of an empty list and disables the update button', () => {
+    referenceUpdateApi.getReferences.and.returnValue(throwError(() => new Error('403')));
+    reloadReferences$.next(null);
+    fixture.detectChanges();
+
+    expect(component.$loadFailed()).toBeTrue();
+    expect(component.$loading()).toBeFalse();
     expect(updateButton().disabled).toBeTrue();
   });
 });

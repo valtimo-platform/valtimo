@@ -36,6 +36,7 @@ import {
   REFERENCE_UPDATE_STEPS,
 } from '../../constants';
 import {ReferenceUpdateResolutionFormValue, ReferenceUpdateSource} from '../../models';
+import {isValidReferenceUpdateInputSource, referenceUpdateInputSourceValidator} from '../../utils';
 import {
   BuildingBlockManagementApiService,
   BuildingBlockManagementDetailService,
@@ -61,6 +62,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
   public readonly $confirmed = signal<boolean>(false);
   public readonly $executing = signal<boolean>(false);
   public readonly $result = signal<BuildingBlockReferenceUpdateResultDto | null>(null);
+  public readonly $invalidInputs = signal<Record<string, string[]>>({});
 
   public readonly $currentStepIndex = computed(() => REFERENCE_UPDATE_STEPS.indexOf(this.$step()));
 
@@ -76,9 +78,14 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
       case REFERENCE_UPDATE_STEP.CHAINS:
         return this.selectedChainsUpdatable();
       case REFERENCE_UPDATE_STEP.DIFFERENCES:
-        return this.selectedChainsConfigured();
+        return this.selectedChainsConfigured() && this.inputSourcesValid();
       case REFERENCE_UPDATE_STEP.REVIEW:
-        return this.selectedChainsConfigured() && this.$confirmed() && !this.$executing();
+        return (
+          this.selectedChainsConfigured() &&
+          this.inputSourcesValid() &&
+          this.$confirmed() &&
+          !this.$executing()
+        );
       default:
         return false;
     }
@@ -115,6 +122,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
       this.resolutionForm.valueChanges
         .pipe(
           tap(() => {
+            this.updateInvalidInputs();
             this._previewDebouncing = true;
             this.$previewLoading.set(true);
           }),
@@ -209,7 +217,12 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
         this.$result.set(result);
         this.buildingBlockManagementDetailService.reloadReferences();
       },
-      error: () => this.$executing.set(false),
+      error: () => {
+        // Usually a stale preview; reload so the review shows what would happen now
+        this.$executing.set(false);
+        this.$confirmed.set(false);
+        this.requestPreview();
+      },
     });
   }
 
@@ -245,6 +258,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
       targetVersionTag: this.$target() ?? '',
       selectedChainIds: [...this.$selectedChainIds()],
       resolutions: this.buildResolutions(),
+      expectedFingerprint: this.$preview()?.fingerprint ?? '',
     };
   }
 
@@ -298,7 +312,10 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     if (!preview) return;
 
     this.$preview.set(preview);
-    if (this._selectionInitialized) return;
+    if (this._selectionInitialized) {
+      this.dropVanishedChains(preview);
+      return;
+    }
 
     this._selectionInitialized = true;
     const defaults = preview.chains
@@ -308,6 +325,17 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     this.$selectedChainIds.set(defaults);
 
     if (!this.sameIds(defaults, selectedByServer)) this.requestPreview();
+  }
+
+  // Chains updated elsewhere vanish from the preview and would block the selection forever
+  private dropVanishedChains(preview: BuildingBlockReferenceUpdatePreviewDto): void {
+    const chainIds = preview.chains.map(chain => chain.id);
+    const selected = this.$selectedChainIds();
+    const kept = selected.filter(id => chainIds.includes(id));
+    if (kept.length === selected.length) return;
+
+    this.$selectedChainIds.set(kept);
+    this.requestPreview();
   }
 
   private requestMatchesSelection(request: BuildingBlockReferenceUpdatePreviewRequestDto): boolean {
@@ -349,7 +377,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
         chainId,
         inputMappings: Object.entries(value[chainId].inputs ?? {})
           .map(([target, source]) => ({source: (source ?? '').trim(), target}))
-          .filter(mapping => !!mapping.source),
+          .filter(mapping => isValidReferenceUpdateInputSource(mapping.source)),
         pluginConfigurations: Object.fromEntries(
           Object.entries(value[chainId].plugins ?? {}).filter(
             ([, configurationId]) => !!configurationId
@@ -376,7 +404,9 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
 
       const inputs = this.fb.group({});
       chain.differences.missingRequiredInputs.forEach(field =>
-        inputs.addControl(field, this.fb.control(''), {emitEvent: false})
+        inputs.addControl(field, this.fb.control('', referenceUpdateInputSourceValidator), {
+          emitEvent: false,
+        })
       );
       const plugins = this.fb.group({});
       chain.differences.missingPluginDefinitionKeys.forEach(pluginDefinitionKey =>
@@ -386,6 +416,27 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
         emitEvent: false,
       });
     });
+    this.updateInvalidInputs();
+  }
+
+  private inputSourcesValid(): boolean {
+    return Object.values(this.$invalidInputs()).every(fields => fields.length === 0);
+  }
+
+  private updateInvalidInputs(): void {
+    this.$invalidInputs.set(
+      Object.fromEntries(
+        Object.entries(this.resolutionForm.controls).map(([chainId, chainGroup]) => {
+          const inputs = (chainGroup.get('inputs') as FormGroup | null)?.controls ?? {};
+          return [
+            chainId,
+            Object.entries(inputs)
+              .filter(([, control]) => control.invalid)
+              .map(([field]) => field),
+          ];
+        })
+      )
+    );
   }
 
   private loadPluginConfigurations(): void {
@@ -418,6 +469,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     Object.keys(this.resolutionForm.controls).forEach(chainId =>
       this.resolutionForm.removeControl(chainId, {emitEvent: false})
     );
+    this.$invalidInputs.set({});
   }
 
   private reset(): void {

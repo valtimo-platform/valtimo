@@ -78,7 +78,7 @@ version. Each container in the chain is marked **Draft** or **Finalized**.
 | Drafts only                        | Selected by default. The link is updated in place; no versions are created                                                                          |
 | Creates new drafts of finalized versions | Not selected by default. When selected, the wizard creates a new draft of each finalized container, based on the version in the chain, and points it to the new child version |
 | Modifies existing draft            | A finalized container already has an open draft. The wizard changes that draft instead of creating a second one                                     |
-| Cannot be updated                  | The chain can't be updated, for example because the open draft no longer contains the link. Change that draft yourself                              |
+| Cannot be updated                  | The chain can't be updated. The reason is shown, for example: the open draft no longer contains the link (change that draft yourself), or the target is another version of the building block that holds the link, which would make it call itself |
 
 A container shared by several selected chains gets one new draft. Deselected chains keep using the
 current version. Select at least one reference to continue.
@@ -92,7 +92,7 @@ reference is marked **Configured** when no further input is needed.
 
 | Difference                   | What to do                                                                                                            |
 |------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| Required input               | The target version requires an input the source did not. Enter the path that feeds it                                 |
+| Required input               | The target version requires an input the source did not. Enter the path that feeds it, starting with `doc:` or `case:` |
 | Plugin configuration         | The target version uses a plugin the source did not. Select a plugin configuration. Create one in plugin management first if none exists |
 | Dropped mappings             | Input or output mappings to fields that no longer exist in the target version. They are removed                       |
 
@@ -110,6 +110,10 @@ The review lists the complete change set:
 <figure><img src="../../assets/configuration-guides/building-blocks/references/05-review-step.png" alt=""><figcaption>Reviewing the changes</figcaption></figure>
 
 Select **I have reviewed these changes and want to apply them** and click **Update references**.
+
+If something changed after the review, for example another administrator finalized one of the drafts,
+nothing is updated. The review reloads to show the changes as they would be applied now; review them
+again and confirm.
 
 ### Result
 

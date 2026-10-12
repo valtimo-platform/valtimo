@@ -99,7 +99,17 @@
                 </cds-text-label>
               </div>
 
-              @if (chain.differences.unresolvedRequiredInputs.includes(field)) {
+              @if ($invalidInputs()[chain.id]?.includes(field)) {
+                <span
+                  [attr.data-test-id]="testIds.inputPathInvalid"
+                  class="valtimo-building-block-reference-update__error"
+                >
+                  {{
+                    'buildingBlockManagement.referenceUpdate.differences.inputPathInvalid'
+                      | translate
+                  }}
+                </span>
+              } @else if (chain.differences.unresolvedRequiredInputs.includes(field)) {
                 <span class="valtimo-building-block-reference-update__error">
                   {{
                     'buildingBlockManagement.referenceUpdate.differences.inputRequired' | translate
@@ -170,10 +180,13 @@
         chain.differences.droppedInputMappings.length > 0 ||
         chain.differences.droppedOutputMappings.length > 0
       ) {
-        <div [attr.data-test-id]="testIds.droppedMappings">
-          <strong>
+        <div
+          [attr.data-test-id]="testIds.droppedMappings"
+          class="valtimo-building-block-reference-update__section"
+        >
+          <h5 class="valtimo-building-block-reference-update__subheading">
             {{ 'buildingBlockManagement.referenceUpdate.differences.dropped' | translate }}
-          </strong>
+          </h5>
 
           <ul class="valtimo-building-block-reference-update__bullets">
             @for (mapping of chain.differences.droppedInputMappings; track $index) {

@@ -31,7 +31,9 @@ import org.springframework.security.test.context.support.WithMockUser
 class BuildingBlockReferenceUpdateResourceSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
 
     private val preview = BuildingBlockReferenceUpdatePreviewRequestDto("no-such-block", "1.0.0", "1.0.1")
-    private val execute = BuildingBlockReferenceUpdateExecuteRequestDto("no-such-block", "1.0.0", "1.0.1", listOf("chain"))
+    private val execute = BuildingBlockReferenceUpdateExecuteRequestDto(
+        "no-such-block", "1.0.0", "1.0.1", listOf("chain"), expectedFingerprint = "fingerprint"
+    )
 
     @Test
     @WithMockUser(authorities = [ADMIN])

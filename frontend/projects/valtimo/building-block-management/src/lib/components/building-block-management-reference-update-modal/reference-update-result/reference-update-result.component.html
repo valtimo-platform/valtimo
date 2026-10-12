@@ -34,24 +34,36 @@
       }"
     ></cds-inline-notification>
 
-    <section>
-      <h5>{{ 'buildingBlockManagement.referenceUpdate.result.updatedDirectly' | translate }}</h5>
+    <section class="valtimo-building-block-reference-update__section">
+      <h5 class="valtimo-building-block-reference-update__subheading">
+        {{ 'buildingBlockManagement.referenceUpdate.result.updatedDirectly' | translate }}
+      </h5>
 
       <valtimo-building-block-reference-update-chain-list
         [chainIds]="result.chainsUpdatedDirectly"
       ></valtimo-building-block-reference-update-chain-list>
     </section>
 
-    <section>
-      <h5>{{ 'buildingBlockManagement.referenceUpdate.result.draftsCreated' | translate }}</h5>
+    <section
+      [attr.data-test-id]="testIds.resultDraftsCreated"
+      class="valtimo-building-block-reference-update__section"
+    >
+      <h5 class="valtimo-building-block-reference-update__subheading">
+        {{ 'buildingBlockManagement.referenceUpdate.result.draftsCreated' | translate }}
+      </h5>
 
       <ng-container
         *ngTemplateOutlet="draftLinksTemplate; context: {$implicit: result.draftsCreated}"
       ></ng-container>
     </section>
 
-    <section>
-      <h5>{{ 'buildingBlockManagement.referenceUpdate.result.draftsModified' | translate }}</h5>
+    <section
+      [attr.data-test-id]="testIds.resultDraftsModified"
+      class="valtimo-building-block-reference-update__section"
+    >
+      <h5 class="valtimo-building-block-reference-update__subheading">
+        {{ 'buildingBlockManagement.referenceUpdate.result.draftsModified' | translate }}
+      </h5>
 
       <ng-container
         *ngTemplateOutlet="draftLinksTemplate; context: {$implicit: result.draftsModified}"
@@ -59,8 +71,10 @@
     </section>
 
     @if (result.skippedChainIds.length > 0) {
-      <section>
-        <h5>{{ 'buildingBlockManagement.referenceUpdate.review.skipped' | translate }}</h5>
+      <section class="valtimo-building-block-reference-update__section">
+        <h5 class="valtimo-building-block-reference-update__subheading">
+          {{ 'buildingBlockManagement.referenceUpdate.review.skipped' | translate }}
+        </h5>
 
         <valtimo-building-block-reference-update-chain-list
           [chainIds]="result.skippedChainIds"
@@ -68,8 +82,11 @@
       </section>
     }
 
-    <section [attr.data-test-id]="testIds.remainingReferences">
-      <h5>
+    <section
+      [attr.data-test-id]="testIds.remainingReferences"
+      class="valtimo-building-block-reference-update__section"
+    >
+      <h5 class="valtimo-building-block-reference-update__subheading">
         {{ 'buildingBlockManagement.referenceUpdate.result.remainingReferences' | translate }}
       </h5>
 

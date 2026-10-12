@@ -24,4 +24,6 @@ data class BuildingBlockReferenceUpdatePreviewDto(
     val draftsAllowed: Boolean,
     val chains: List<BuildingBlockReferenceUpdateChainDto>,
     val changeset: BuildingBlockReferenceUpdateChangesetDto,
+    /** Echo as [BuildingBlockReferenceUpdateExecuteRequestDto.expectedFingerprint]; execute refuses a changed plan. */
+    val fingerprint: String,
 )

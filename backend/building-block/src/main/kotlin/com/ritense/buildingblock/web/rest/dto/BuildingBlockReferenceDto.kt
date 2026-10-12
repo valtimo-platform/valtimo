@@ -20,6 +20,7 @@ data class BuildingBlockReferenceDto(
     val container: BuildingBlockReferenceUpdateContainerDto,
     val kind: BuildingBlockReferenceKind,
     val processDefinitionKey: String?,
+    val processDefinitionId: String?,
     val activityId: String?,
     val buildingBlockKey: String,
     val buildingBlockVersionTag: String,

@@ -30,4 +30,6 @@ data class BuildingBlockReferenceUpdateExecuteRequestDto(
     val selectedChainIds: List<String>,
     val resolutions: List<BuildingBlockReferenceUpdateChainResolutionDto> = emptyList(),
     val targetKey: String? = null,
+    @field:NotBlank
+    val expectedFingerprint: String,
 )

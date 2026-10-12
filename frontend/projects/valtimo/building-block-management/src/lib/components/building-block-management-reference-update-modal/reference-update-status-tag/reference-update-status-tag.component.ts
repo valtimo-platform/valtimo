@@ -22,6 +22,7 @@ import {TagModule} from 'carbon-components-angular';
   standalone: true,
   selector: 'valtimo-building-block-reference-update-status-tag',
   templateUrl: './reference-update-status-tag.component.html',
+  styleUrls: ['../styles/reference-update-step.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslateModule, TagModule],
 })

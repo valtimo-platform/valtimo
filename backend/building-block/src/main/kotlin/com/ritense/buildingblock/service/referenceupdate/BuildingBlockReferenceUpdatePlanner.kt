@@ -16,11 +16,20 @@
 
 package com.ritense.buildingblock.service.referenceupdate
 
+import com.ritense.buildingblock.exception.BuildingBlockReferenceUpdateException
 import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.buildingblock.processlink.dto.BuildingBlockFieldDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateContainerType.BUILDING_BLOCK
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateContainerType.CASE
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode.ALREADY_LINKS_TARGET
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode.CYCLE
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode.DRAFTS_NOT_ALLOWED
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode.DRAFT_MISSING_REFERENCE
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode.SELF_REFERENCE
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode.TARGET_USES_CONTAINER
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
 import java.util.UUID
@@ -63,6 +72,18 @@ data class ChainDifferences(
     val pluginConfigurationLink: IndexedReference?,
 )
 
+data class NotUpdatableReason(
+    val code: BuildingBlockReferenceUpdateReasonCode,
+    val parameters: Map<String, String> = emptyMap(),
+) {
+    val message: String get() = code.format(parameters)
+
+    fun toDto() = BuildingBlockReferenceUpdateReasonDto(code, parameters, message)
+}
+
+/** Container as shown in reasons: key and version, no type word, so it reads in any language. */
+fun ReferenceContainer.label() = "$key $versionTag"
+
 data class ChainResolution(
     val inputMappings: List<BuildingBlockInputMapping> = emptyList(),
     val pluginConfigurations: Map<String, UUID> = emptyMap(),
@@ -79,11 +100,11 @@ class ChainAnalysis(
     val sourceLink: IndexedReference?,
     val topLink: IndexedReference?,
     val differences: ChainDifferences,
-    val notUpdatableReason: String?,
+    val notUpdatableReasons: List<NotUpdatableReason>,
     val allDrafts: Boolean,
 ) {
     val writables: List<WritableVersion> get() = (repointedHops.values + listOfNotNull(pluginWritable)).distinct()
-    val updatable get() = notUpdatableReason == null
+    val updatable get() = notUpdatableReasons.isEmpty()
     val requiresDrafts get() = writables.any { it is NewDraft }
     val existingDrafts get() = writables.filterIsInstance<ExistingDraft>()
     val modifiesExistingDraft get() = existingDrafts.isNotEmpty()
@@ -147,6 +168,9 @@ class BuildingBlockReferenceUpdatePlanner(
         index.referencesTo(source).forEach { reference ->
             walkUp(listOf(reference), setOf(ReferenceContainer.of(source)), chains)
         }
+        if (chains.size > MAX_CHAINS) {
+            throw tooManyChains()
+        }
         return chains.sortedWith(compareBy({ it.top.container.type }, { it.top.container.key }, { it.top.container.versionTag }, { it.id }))
     }
 
@@ -165,8 +189,16 @@ class BuildingBlockReferenceUpdatePlanner(
             chains += chainOf(path, cycle = false)
             return
         }
-        parents.forEach { parent -> walkUp(path + parent, visited + container, chains) }
+        parents.forEach { parent ->
+            // Diamond-shaped graphs grow exponentially — stop early
+            if (chains.size > MAX_CHAINS) throw tooManyChains()
+            walkUp(path + parent, visited + container, chains)
+        }
     }
+
+    private fun tooManyChains() = BuildingBlockReferenceUpdateException(
+        "More than $MAX_CHAINS reference paths lead to building block $source. Update the references closest to it first."
+    )
 
     private fun chainOf(path: List<IndexedReference>, cycle: Boolean): ReferenceChain {
         val signature = path.joinToString("|") { "${it.container.type}:${it.container.key}:${it.container.versionTag}:${it.location}" }
@@ -182,9 +214,17 @@ class BuildingBlockReferenceUpdatePlanner(
             if (writable is InPlaceDraft) break
         }
 
-        val reasons = mutableListOf<String>()
+        val reasons = mutableListOf<NotUpdatableReason>()
         if (chain.cycle) {
-            reasons += "The chain contains a cycle of building blocks referencing each other."
+            reasons += NotUpdatableReason(CYCLE)
+        }
+        // Deploy binds a call to the container's own key to the container itself
+        repointed.keys.forEach { hopIndex ->
+            val container = chain.hops[hopIndex].container
+            val newChildKey = if (hopIndex == 0) target.key else chain.hops[hopIndex - 1].container.key
+            if (container.type == BUILDING_BLOCK && container.key == newChildKey) {
+                reasons += NotUpdatableReason(SELF_REFERENCE, mapOf("container" to container.label(), "targetKey" to newChildKey))
+            }
         }
 
         val effectiveLinks = repointed.mapValues { (hopIndex, writable) ->
@@ -194,10 +234,16 @@ class BuildingBlockReferenceUpdatePlanner(
             .filter { it !is NewDraft && it.identity.type == BUILDING_BLOCK }
             .firstOrNull { BuildingBlockDefinitionId(it.identity.key, it.identity.versionTag) in targetClosure }
         if (cycleThrough != null) {
-            reasons += "Building block $target uses ${cycleThrough.identity}, so pointing that at $target creates a cycle."
+            reasons += NotUpdatableReason(
+                TARGET_USES_CONTAINER,
+                mapOf("target" to "${target.key} ${target.versionTag}", "container" to cycleThrough.identity.label())
+            )
         }
         if (alreadyLinksTarget(chain, repointed.getValue(0), effectiveLinks[0])) {
-            reasons += "${repointed.getValue(0).identity} already links building block ${target.key}."
+            reasons += NotUpdatableReason(
+                ALREADY_LINKS_TARGET,
+                mapOf("container" to repointed.getValue(0).identity.label(), "targetKey" to target.key)
+            )
         }
 
         val top = chain.top
@@ -218,7 +264,7 @@ class BuildingBlockReferenceUpdatePlanner(
         val pluginWritable = if (missingPluginKeys.isNotEmpty()) topWritable else null
 
         if (!draftsAllowed) {
-            reasons += "This environment does not allow drafts, so no draft can be created or changed."
+            reasons += NotUpdatableReason(DRAFTS_NOT_ALLOWED)
         }
 
         val sourceLink = effectiveLinks[0]
@@ -244,7 +290,7 @@ class BuildingBlockReferenceUpdatePlanner(
                 missingPluginDefinitionKeys = missingPluginKeys,
                 pluginConfigurationLink = if (topIsCase) top else null,
             ),
-            notUpdatableReason = reasons.distinct().takeIf { it.isNotEmpty() }?.joinToString(" "),
+            notUpdatableReasons = reasons.distinct(),
             allDrafts = chain.containers.none { index.isFinal(it) },
         )
     }
@@ -289,16 +335,21 @@ class BuildingBlockReferenceUpdatePlanner(
         writable: WritableVersion,
         reference: IndexedReference,
         accepted: Set<BuildingBlockDefinitionId>,
-        reasons: MutableList<String>,
+        reasons: MutableList<NotUpdatableReason>,
     ): IndexedReference? {
         if (writable !is ExistingDraft) {
             return reference
         }
         val corresponding = index.findCorresponding(writable.draft.container, reference, accepted)
         if (corresponding == null) {
-            reasons += "Open draft ${writable.draft.container} (based on ${writable.draft.basedOnVersionTag ?: "nothing"}) " +
-                "no longer contains the reference ${reference.location} to building block ${reference.child.key}; " +
-                "change that draft yourself."
+            reasons += NotUpdatableReason(
+                DRAFT_MISSING_REFERENCE,
+                mapOf(
+                    "draft" to writable.draft.container.label(),
+                    "location" to reference.location.toString(),
+                    "buildingBlockKey" to reference.child.key,
+                )
+            )
         }
         return corresponding
     }
@@ -311,11 +362,7 @@ class BuildingBlockReferenceUpdatePlanner(
             .forEach { base ->
                 val taken = index.versionsOf(base.type, base.key).map { it.container.versionTag } +
                     allocations.filterKeys { it.type == base.type && it.key == base.key }.values
-                var next = bump(taken.maxWithOrNull { a, b -> a.compareTo(b) } ?: base.versionTag)
-                while (taken.any { it.isEqualTo(next) }) {
-                    next = bump(next)
-                }
-                allocations[base] = next
+                allocations[base] = bump(taken.maxWithOrNull { a, b -> a.compareTo(b) } ?: base.versionTag)
             }
         return allocations
     }
@@ -325,5 +372,9 @@ class BuildingBlockReferenceUpdatePlanner(
         source.versionTag.major != target.versionTag.major -> latest.nextMajor()
         source.versionTag.minor != target.versionTag.minor -> latest.nextMinor()
         else -> latest.nextPatch()
+    }
+
+    companion object {
+        const val MAX_CHAINS = 500
     }
 }

@@ -148,6 +148,7 @@ fun IndexedReference.toDto(index: BuildingBlockReferenceIndex) = BuildingBlockRe
     container = container.toDto(index.isFinal(container)),
     kind = location.kind,
     processDefinitionKey = (location as? ProcessLinkLocation)?.processDefinitionKey,
+    processDefinitionId = processDefinitionId,
     activityId = (location as? ProcessLinkLocation)?.activityId,
     buildingBlockKey = child.key,
     buildingBlockVersionTag = child.versionTag.toString(),

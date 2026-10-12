@@ -140,7 +140,7 @@ export interface BuildingBlockReferenceUpdateChainDto {
     modifiesExistingDraft: boolean;
     existingDrafts: BuildingBlockReferenceUpdateExistingDraftDto[];
     updatable: boolean;
-    notUpdatableReason: string | null;
+    notUpdatableReasons: BuildingBlockReferenceUpdateReasonDto[];
     differences: BuildingBlockReferenceUpdateDifferencesDto;
 }
 
@@ -191,6 +191,7 @@ export interface BuildingBlockReferenceUpdateExecuteRequestDto {
     selectedChainIds: string[];
     resolutions: BuildingBlockReferenceUpdateChainResolutionDto[];
     targetKey: string | null;
+    expectedFingerprint: string;
 }
 
 export interface BuildingBlockReferenceUpdateExistingDraftDto {
@@ -207,6 +208,7 @@ export interface BuildingBlockReferenceUpdatePreviewDto {
     draftsAllowed: boolean;
     chains: BuildingBlockReferenceUpdateChainDto[];
     changeset: BuildingBlockReferenceUpdateChangesetDto;
+    fingerprint: string;
 }
 
 export interface BuildingBlockReferenceUpdatePreviewRequestDto {
@@ -222,9 +224,16 @@ export interface BuildingBlockReferenceDto {
     container: BuildingBlockReferenceUpdateContainerDto;
     kind: BuildingBlockReferenceKind;
     processDefinitionKey: string | null;
+    processDefinitionId: string | null;
     activityId: string | null;
     buildingBlockKey: string;
     buildingBlockVersionTag: string;
+}
+
+export interface BuildingBlockReferenceUpdateReasonDto {
+    code: BuildingBlockReferenceUpdateReasonCode;
+    parameters: { [index: string]: string };
+    message: string;
 }
 
 export interface BuildingBlockReferenceUpdateRepointDto {
@@ -2022,6 +2031,8 @@ export type WidgetColor = "YELLOW" | "ORANGE" | "RED" | "BROWN" | "GREEN" | "TUR
 export type BuildingBlockReferenceUpdateContainerType = "CASE" | "BUILDING_BLOCK";
 
 export type BuildingBlockReferenceKind = "PROCESS_LINK" | "CASE_LINK";
+
+export type BuildingBlockReferenceUpdateReasonCode = "CYCLE" | "SELF_REFERENCE" | "TARGET_USES_CONTAINER" | "ALREADY_LINKS_TARGET" | "DRAFTS_NOT_ALLOWED" | "DRAFT_MISSING_REFERENCE" | "CONFLICT_SECOND_DRAFT" | "CONFLICT_CHILD" | "CONFLICT_INPUT" | "CONFLICT_PLUGIN";
 
 export type BuildingBlockSyncTiming = "CONTINUOUS" | "END";
 

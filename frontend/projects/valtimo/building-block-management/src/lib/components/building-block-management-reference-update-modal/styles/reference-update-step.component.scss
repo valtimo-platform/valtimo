@@ -26,12 +26,28 @@
     display: flex;
     flex-direction: column;
     gap: var(--cds-spacing-05);
-    list-style: none;
+    margin: 0;
     padding: 0;
+    list-style: none;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__subheading {
+    margin: 0;
+    font-size: var(--cds-heading-compact-01-font-size);
+    font-weight: var(--cds-heading-compact-01-font-weight);
+    line-height: var(--cds-heading-compact-01-line-height);
+    letter-spacing: var(--cds-heading-compact-01-letter-spacing);
   }
 
   &__description,
   &__secondary {
+    margin: 0;
     color: var(--cds-text-secondary);
   }
 
@@ -62,7 +78,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--cds-spacing-03);
-    padding: var(--cds-spacing-04);
+    padding: var(--cds-spacing-05);
     border: 1px solid var(--cds-border-subtle);
   }
 
@@ -91,11 +107,24 @@
   }
 
   &__bullets {
+    margin: 0;
     list-style: disc;
     padding-inline-start: var(--cds-spacing-06);
   }
 
   &__error {
+    font-size: var(--cds-helper-text-01-font-size);
+    line-height: var(--cds-helper-text-01-line-height);
+    letter-spacing: var(--cds-helper-text-01-letter-spacing);
     color: var(--cds-text-error);
   }
+}
+
+// Carbon caps inline notifications at a narrow width; fill the modal instead
+cds-inline-notification {
+  max-inline-size: none;
+}
+
+.cds-tag--no-margin {
+  margin: 0;
 }

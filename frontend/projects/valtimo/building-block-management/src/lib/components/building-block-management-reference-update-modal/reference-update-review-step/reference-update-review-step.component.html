@@ -31,8 +31,13 @@
 
     <valtimo-building-block-reference-update-preview-status></valtimo-building-block-reference-update-preview-status>
 
-    <section>
-      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.draftsToCreate' | translate }}</h5>
+    <section
+      [attr.data-test-id]="testIds.reviewDraftsToCreate"
+      class="valtimo-building-block-reference-update__section"
+    >
+      <h5 class="valtimo-building-block-reference-update__subheading">
+        {{ 'buildingBlockManagement.referenceUpdate.review.draftsToCreate' | translate }}
+      </h5>
 
       <ng-container
         *ngTemplateOutlet="
@@ -42,8 +47,13 @@
       ></ng-container>
     </section>
 
-    <section>
-      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.draftsToModify' | translate }}</h5>
+    <section
+      [attr.data-test-id]="testIds.reviewDraftsToModify"
+      class="valtimo-building-block-reference-update__section"
+    >
+      <h5 class="valtimo-building-block-reference-update__subheading">
+        {{ 'buildingBlockManagement.referenceUpdate.review.draftsToModify' | translate }}
+      </h5>
 
       <ng-container
         *ngTemplateOutlet="
@@ -53,8 +63,13 @@
       ></ng-container>
     </section>
 
-    <section>
-      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.linksToRepoint' | translate }}</h5>
+    <section
+      [attr.data-test-id]="testIds.reviewLinksToRepoint"
+      class="valtimo-building-block-reference-update__section"
+    >
+      <h5 class="valtimo-building-block-reference-update__subheading">
+        {{ 'buildingBlockManagement.referenceUpdate.review.linksToRepoint' | translate }}
+      </h5>
 
       @if (preview.changeset.linksToRepoint.length === 0) {
         <p class="valtimo-building-block-reference-update__secondary">
@@ -90,8 +105,10 @@
       }
     </section>
 
-    <section>
-      <h5>{{ 'buildingBlockManagement.referenceUpdate.review.skipped' | translate }}</h5>
+    <section class="valtimo-building-block-reference-update__section">
+      <h5 class="valtimo-building-block-reference-update__subheading">
+        {{ 'buildingBlockManagement.referenceUpdate.review.skipped' | translate }}
+      </h5>
 
       <valtimo-building-block-reference-update-chain-list
         [chainIds]="preview.changeset.skippedChainIds"
@@ -99,8 +116,10 @@
     </section>
 
     @if (preview.changeset.coveredChainIds.length > 0) {
-      <section>
-        <h5>{{ 'buildingBlockManagement.referenceUpdate.review.covered' | translate }}</h5>
+      <section class="valtimo-building-block-reference-update__section">
+        <h5 class="valtimo-building-block-reference-update__subheading">
+          {{ 'buildingBlockManagement.referenceUpdate.review.covered' | translate }}
+        </h5>
 
         <valtimo-building-block-reference-update-chain-list
           [chainIds]="preview.changeset.coveredChainIds"
@@ -135,14 +154,10 @@
           {{ 'buildingBlockManagement.referenceUpdate.containerType.' + draft.type | translate }}
           <strong>{{ draft.key }}</strong>
           {{
-            'buildingBlockManagement.referenceUpdate.review.draftVersion'
-              | translate
-                : {
-                    versionTag: draft.versionTag,
-                    basedOn:
-                      draft.basedOnVersionTag ??
-                      ('buildingBlockManagement.referenceUpdate.none' | translate),
-                  }
+            (draft.basedOnVersionTag
+              ? 'buildingBlockManagement.referenceUpdate.review.draftVersion'
+              : 'buildingBlockManagement.referenceUpdate.review.draftVersionNoBase'
+            ) | translate: {versionTag: draft.versionTag, basedOn: draft.basedOnVersionTag}
           }}
         </li>
       }

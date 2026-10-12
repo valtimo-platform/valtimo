@@ -19,10 +19,12 @@
 </p>
 
 <valtimo-carbon-list [fields]="$fields()" [items]="$references()" [loading]="$loading()">
-  <div carbonToolbarContent>
+  <ng-container carbonToolbarContent>
     <button
       [attr.data-test-id]="testIds.updateReferencesButton"
-      [disabled]="$loading() || $references().length === 0 || !(canUpdate$ | async)"
+      [disabled]="
+        $loading() || $loadFailed() || $references().length === 0 || !(canUpdate$ | async)
+      "
       cdsButton="primary"
       (click)="onUpdateReferencesClick()"
     >
@@ -30,12 +32,19 @@
 
       <svg cdsIcon="migrate" size="16" class="cds--btn__icon"></svg>
     </button>
-  </div>
+  </ng-container>
 
-  <valtimo-no-results
-    [description]="'buildingBlockManagement.references.noResults.description' | translate"
-    [title]="'buildingBlockManagement.references.noResults.title' | translate"
-  ></valtimo-no-results>
+  @if ($loadFailed()) {
+    <valtimo-no-results
+      [description]="'buildingBlockManagement.references.loadFailed.description' | translate"
+      [title]="'buildingBlockManagement.references.loadFailed.title' | translate"
+    ></valtimo-no-results>
+  } @else {
+    <valtimo-no-results
+      [description]="'buildingBlockManagement.references.noResults.description' | translate"
+      [title]="'buildingBlockManagement.references.noResults.title' | translate"
+    ></valtimo-no-results>
+  }
 </valtimo-carbon-list>
 
 <ng-template #linkColumn let-data="data">

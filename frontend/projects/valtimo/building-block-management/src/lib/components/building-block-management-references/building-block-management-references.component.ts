@@ -66,6 +66,8 @@ export class BuildingBlockManagementReferencesComponent implements OnInit {
 
   public readonly $loading = signal<boolean>(true);
 
+  public readonly $loadFailed = signal<boolean>(false);
+
   public readonly canUpdate$ = this.environmentService.canUpdateGlobalConfiguration();
 
   public readonly references$ = combineLatest([
@@ -75,11 +77,18 @@ export class BuildingBlockManagementReferencesComponent implements OnInit {
     distinctUntilChanged((a, b) => isEqual(a, b)),
     switchMap(([key, versionTag]) =>
       this.buildingBlockManagementDetailService.reloadReferences$.pipe(
-        tap(() => this.$loading.set(true)),
+        tap(() => {
+          this.$loading.set(true);
+          this.$loadFailed.set(false);
+        }),
         switchMap(() =>
-          this.buildingBlockReferenceUpdateApiService
-            .getReferences(key, versionTag)
-            .pipe(catchError(() => of([])))
+          this.buildingBlockReferenceUpdateApiService.getReferences(key, versionTag).pipe(
+            // Global interceptor shows the error; an empty list would claim the version is unused
+            catchError(() => {
+              this.$loadFailed.set(true);
+              return of([]);
+            })
+          )
         )
       )
     ),
@@ -179,6 +188,7 @@ export class BuildingBlockManagementReferencesComponent implements OnInit {
           ];
     }
 
+    // Building block process route takes the process definition id
     return [
       '/building-block-management',
       'building-block',
@@ -186,7 +196,7 @@ export class BuildingBlockManagementReferencesComponent implements OnInit {
       'version',
       versionTag,
       BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES,
-      reference.processDefinitionKey ?? '',
+      reference.processDefinitionId ?? '',
     ];
   }
 }

@@ -31,13 +31,16 @@
 
 @if ($preview(); as preview) {
   @if (preview.chains.length === 0) {
-    <p>{{ 'buildingBlockManagement.referenceUpdate.chains.empty' | translate }}</p>
+    <p class="valtimo-building-block-reference-update__secondary">
+      {{ 'buildingBlockManagement.referenceUpdate.chains.empty' | translate }}
+    </p>
   }
 
   <ul class="valtimo-building-block-reference-update__list">
     @for (chain of preview.chains; track chain.id) {
       <li
         [attr.data-test-id]="testIds.chain"
+        [attr.data-top-container]="chain.containers[0].key"
         class="valtimo-building-block-reference-update__chain"
       >
         <cds-checkbox
@@ -67,14 +70,15 @@
                 type="blue"
               >
                 {{
-                  'buildingBlockManagement.referenceUpdate.chains.modifiesExistingDraft'
+                  (existingDraft.draftBasedOnVersionTag
+                    ? 'buildingBlockManagement.referenceUpdate.chains.modifiesExistingDraft'
+                    : 'buildingBlockManagement.referenceUpdate.chains.modifiesExistingDraftNoBase'
+                  )
                     | translate
                       : {
                           key: existingDraft.container.key,
                           versionTag: existingDraft.draftVersionTag,
-                          basedOn:
-                            existingDraft.draftBasedOnVersionTag ??
-                            ('buildingBlockManagement.referenceUpdate.none' | translate),
+                          basedOn: existingDraft.draftBasedOnVersionTag,
                         }
                 }}
               </cds-tag>
@@ -86,10 +90,15 @@
               [attr.data-test-id]="testIds.chainNotUpdatable"
               class="valtimo-building-block-reference-update__error"
             >
-              {{
-                'buildingBlockManagement.referenceUpdate.chains.notUpdatable'
-                  | translate: {reason: chain.notUpdatableReason}
-              }}
+              {{ 'buildingBlockManagement.referenceUpdate.chains.notUpdatable' | translate }}
+              @for (reason of chain.notUpdatableReasons; track $index) {
+                <span [attr.data-reason-code]="reason.code">
+                  {{
+                    'buildingBlockManagement.referenceUpdate.reasons.' + reason.code
+                      | translate: reason.parameters
+                  }}
+                </span>
+              }
             </span>
           }
         </div>

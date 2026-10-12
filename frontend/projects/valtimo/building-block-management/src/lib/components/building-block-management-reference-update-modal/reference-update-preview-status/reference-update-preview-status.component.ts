@@ -24,6 +24,10 @@ import {BuildingBlockReferenceUpdateWizardService} from '../building-block-refer
   standalone: true,
   selector: 'valtimo-building-block-reference-update-preview-status',
   templateUrl: './reference-update-preview-status.component.html',
+  styleUrls: [
+    '../styles/reference-update-step.component.scss',
+    './reference-update-preview-status.component.scss',
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslateModule, ButtonModule, NotificationModule],
 })

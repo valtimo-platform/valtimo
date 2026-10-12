@@ -24,7 +24,9 @@
     margin-top: var(--cds-spacing-05);
   }
 
-  &__content {
+  // Step hosts too — their blocks are spaced by gap, not by browser/Bootstrap margins
+  &__content,
+  &__content > * {
     display: flex;
     flex-direction: column;
     gap: var(--cds-spacing-05);

@@ -27,6 +27,6 @@ data class BuildingBlockReferenceUpdateChainDto(
     val modifiesExistingDraft: Boolean,
     val existingDrafts: List<BuildingBlockReferenceUpdateExistingDraftDto>,
     val updatable: Boolean,
-    val notUpdatableReason: String?,
+    val notUpdatableReasons: List<BuildingBlockReferenceUpdateReasonDto>,
     val differences: BuildingBlockReferenceUpdateDifferencesDto,
 )

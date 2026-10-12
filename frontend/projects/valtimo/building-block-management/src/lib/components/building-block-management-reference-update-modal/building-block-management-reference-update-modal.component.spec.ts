@@ -90,6 +90,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       container,
       kind: 'PROCESS_LINK' as const,
       processDefinitionKey: 'main',
+      processDefinitionId: 'main:1:abc',
       activityId: `call-${id}`,
       buildingBlockKey: 'send-email',
       buildingBlockVersionTag: '1.0.0',
@@ -105,7 +106,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       modifiesExistingDraft: false,
       existingDrafts: [],
       updatable: true,
-      notUpdatableReason: null,
+      notUpdatableReasons: [],
       differences: {
         existingInputMappings: [],
         missingRequiredInputs: [],
@@ -139,7 +140,20 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
           selectedByDefault: defaults.includes(id),
           requiresDrafts: id === 'final-chain',
           updatable: draftsAllowed && id !== 'blocked-chain',
-          notUpdatableReason: id === 'blocked-chain' ? 'The open draft no longer holds it.' : null,
+          notUpdatableReasons:
+            id === 'blocked-chain'
+              ? [
+                  {
+                    code: 'DRAFT_MISSING_REFERENCE',
+                    parameters: {
+                      draft: 'moving 1.4.0',
+                      location: 'main#call',
+                      buildingBlockKey: 'x',
+                    },
+                    message: 'The open draft no longer holds it.',
+                  },
+                ]
+              : [],
           ...chainOverrides[id],
           ...resolvedDifferences(id, request),
         })
@@ -151,6 +165,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
         skippedChainIds: ids.filter(id => !selected.includes(id)),
         coveredChainIds: [],
       },
+      fingerprint: `fingerprint-${[...selected].sort().join(',')}`,
     };
   };
 
@@ -345,6 +360,18 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       expect(wizard.$step()).toBe(REFERENCE_UPDATE_STEP.CHAINS);
     });
 
+    it('marks each reason a chain cannot be updated with its reason code', () => {
+      goToChains();
+      fixture.detectChanges();
+
+      const reasons = testId(
+        BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS.chainNotUpdatable
+      )!.querySelectorAll('[data-reason-code]');
+      expect(Array.from(reasons).map(reason => reason.getAttribute('data-reason-code'))).toEqual([
+        'DRAFT_MISSING_REFERENCE',
+      ]);
+    });
+
     it('does not proceed while drafts are not allowed and says so', () => {
       draftsAllowed = false;
       goToChains();
@@ -382,6 +409,46 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       expect(wizard.$canProceed()).toBeTrue();
     }));
 
+    it('rejects input paths without a doc: or case: prefix and keeps them out of the preview', fakeAsync(() => {
+      chainOverrides['draft-chain'] = {
+        differences: {
+          ...chain('draft-chain', {}).differences,
+          missingRequiredInputs: ['/recipient'],
+        },
+      };
+      goToChains();
+      wizard.next();
+      const recipient = wizard.resolutionForm.get(['draft-chain', 'inputs', '/recipient'])!;
+      const invalidMessage = (): HTMLElement | null => {
+        fixture.detectChanges();
+        return testId(BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS.inputPathInvalid);
+      };
+
+      expect(invalidMessage()).toBeNull();
+
+      for (const source of ['subject', 'doc:', 'case:/', 'pv:subject']) {
+        recipient.setValue(source);
+        tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
+
+        expect(wizard.$invalidInputs()['draft-chain']).withContext(source).toEqual(['/recipient']);
+        expect(invalidMessage()).withContext(source).not.toBeNull();
+        expect(wizard.$canProceed()).withContext(source).toBeFalse();
+        expect(referenceUpdateApi.preview.calls.mostRecent().args[0].resolutions)
+          .withContext(source)
+          .toEqual([]);
+      }
+
+      wizard.next();
+      expect(wizard.$step()).toBe(REFERENCE_UPDATE_STEP.DIFFERENCES);
+
+      recipient.setValue('case:/subject');
+      tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
+
+      expect(wizard.$invalidInputs()['draft-chain']).toEqual([]);
+      expect(invalidMessage()).toBeNull();
+      expect(wizard.$canProceed()).toBeTrue();
+    }));
+
     it('ignores a preview that arrives while a later edit is still debouncing', fakeAsync(() => {
       chainOverrides['draft-chain'] = {
         differences: {
@@ -405,6 +472,43 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       expect(wizard.$canProceed()).toBeFalse();
       tick(REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS);
     }));
+
+    it('reloads the preview and asks for confirmation again when execute fails', () => {
+      goToChains();
+      wizard.next();
+      wizard.next();
+      wizard.$confirmed.set(true);
+      referenceUpdateApi.execute.and.returnValue(throwError(() => new Error('stale preview')));
+      const previewCalls = referenceUpdateApi.preview.calls.count();
+
+      wizard.execute();
+
+      expect(wizard.$executing()).toBeFalse();
+      expect(wizard.$confirmed()).toBeFalse();
+      expect(wizard.$result()).toBeNull();
+      expect(referenceUpdateApi.preview.calls.count()).toBe(previewCalls + 1);
+    });
+
+    it('drops selected chains that a refreshed preview no longer contains', () => {
+      goToChains();
+      wizard.next();
+      wizard.next();
+      wizard.$confirmed.set(true);
+      referenceUpdateApi.execute.and.returnValue(throwError(() => new Error('stale preview')));
+      referenceUpdateApi.preview.and.callFake(request =>
+        of({
+          ...previewFor(request),
+          chains: previewFor(request).chains.filter(chain => chain.id !== 'draft-chain'),
+        })
+      );
+
+      wizard.execute();
+
+      expect(wizard.$selectedChainIds()).not.toContain('draft-chain');
+      expect(referenceUpdateApi.preview.calls.mostRecent().args[0].selectedChainIds).toEqual(
+        wizard.$selectedChainIds()
+      );
+    });
 
     it('does not execute without an explicit confirmation', () => {
       goToChains();
@@ -528,6 +632,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
             pluginConfigurations: {smtp: 'smtp-config-id'},
           },
         ],
+        expectedFingerprint: 'fingerprint-draft-chain,final-chain',
       });
     }));
   });

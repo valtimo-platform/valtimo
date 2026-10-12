@@ -20,11 +20,11 @@ import org.zalando.problem.AbstractThrowableProblem
 import org.zalando.problem.Exceptional
 import org.zalando.problem.Status
 
-class BuildingBlockReferenceUpdateException(message: String) :
+class BuildingBlockReferenceUpdateException(message: String, status: Status = Status.BAD_REQUEST) :
     AbstractThrowableProblem(
         null,
         message,
-        Status.BAD_REQUEST
+        status
     ) {
     override fun getCause(): Exceptional? {
         return null

@@ -41,6 +41,7 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateContai
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateExecuteRequestDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePreviewDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePreviewRequestDto
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateReasonCode
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateResultDto
 import com.ritense.case.domain.StartableItem
 import com.ritense.case.domain.StartableItemId
@@ -64,10 +65,14 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -75,6 +80,8 @@ import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.instance.CallActivity
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
@@ -82,6 +89,9 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.io.ByteArrayInputStream
 import java.time.LocalDateTime
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /** Each test builds its own uniquely keyed fixture. */
 class BuildingBlockReferenceUpdateIT @Autowired constructor(
@@ -89,7 +99,6 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val documentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
     private val documentService: DocumentService,
-    private val operatonProcessService: OperatonProcessService,
     private val repositoryService: RepositoryService,
     private val processLinkRepository: ProcessLinkRepository,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
@@ -101,6 +110,9 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
 ) : BaseIntegrationTest() {
+
+    @MockitoSpyBean
+    lateinit var operatonProcessService: OperatonProcessService
 
     @Test
     fun `lists the direct references to a version, cases first`() {
@@ -122,6 +134,9 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
                 "BUILDING_BLOCK ${f.notify110.key} PROCESS_LINK nt-${f.uid}#callSendEmail",
             )
         assertThat(references.single { it.container.key == f.moving.key }.container.final).isFalse()
+        // Building block process pages route by process definition id
+        assertThat(references.single { it.container.key == f.notify110.key }.processDefinitionId)
+            .isEqualTo(processDefinitionIdIn(ReferenceContainer.of(f.notify110), "nt-${f.uid}"))
         assertThat(references(f.sendEmail101)).isEmpty()
     }
 
@@ -310,7 +325,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
 
         val chainIds = preview(sendEmail100, sendEmail101).chains.map { it.id }
         val conflicting = preview(sendEmail100, sendEmail101, chainIds).chains.single { !it.updatable }
-        assertThat(conflicting.notUpdatableReason).contains("new draft of ${orders100.key}")
+        assertThat(reasons(conflicting)).contains("new draft of ${orders100.key}")
         assertThatThrownBy { execute(sendEmail100, sendEmail101, chainIds) }
             .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
 
@@ -362,7 +377,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         val chain = preview(sendEmail100, sendEmail101).chains.single()
 
         assertThat(chain.updatable).isFalse()
-        assertThat(chain.notUpdatableReason).contains("1.1.0").contains("no longer contains the reference")
+        assertThat(reasons(chain)).contains("1.1.0").contains("no longer contains the reference")
         assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id)) }
             .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
             .hasMessageContaining("cannot be updated")
@@ -385,7 +400,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         val chain = preview(sendEmail100, sendEmail101).chains.single()
 
         assertThat(chain.updatable).isFalse()
-        assertThat(chain.notUpdatableReason).contains("1.1.0").contains("no longer contains the reference")
+        assertThat(reasons(chain)).contains("1.1.0").contains("no longer contains the reference")
         assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id)) }
             .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
             .hasMessageContaining("cannot be updated")
@@ -411,7 +426,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         val chain = preview(sendEmail100, sendEmail101).chains.single()
 
         assertThat(chain.updatable).isFalse()
-        assertThat(chain.notUpdatableReason).contains("1.1.0").contains("no longer contains the reference")
+        assertThat(reasons(chain)).contains("1.1.0").contains("no longer contains the reference")
         assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id)) }
             .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
             .hasMessageContaining("cannot be updated")
@@ -449,8 +464,9 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         assertThat(differences.droppedOutputMappings.map { it.source }).containsExactly("doc:/legacy")
         assertThat(differences.missingPluginDefinitionKeys).containsExactly(PLUGIN_DEFINITION_KEY)
         // Plugin configurations go on the case's link to the outermost block
-        assertThat(differences.pluginConfigurationLink!!.container.key).isEqualTo(orders.key)
-        assertThat(differences.pluginConfigurationLink!!.activityId).isEqualTo("callWrapper")
+        val pluginConfigurationLink = requireNotNull(differences.pluginConfigurationLink)
+        assertThat(pluginConfigurationLink.container.key).isEqualTo(orders.key)
+        assertThat(pluginConfigurationLink.activityId).isEqualTo("callWrapper")
         assertThat(differences.configured).isFalse()
 
         val linkCountBefore = processLinkRepository.count()
@@ -481,6 +497,10 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id), listOf(resolution, resolution)) }
             .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
             .hasMessageContaining("Duplicate resolutions")
+        val unprefixed = resolution.copy(inputMappings = listOf(BuildingBlockInputMappingDto("title", "doc:/subject")))
+        assertThatThrownBy { execute(sendEmail100, sendEmail101, listOf(chain.id), listOf(unprefixed)) }
+            .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
+            .hasMessageContaining("'title', which is not a path starting with doc: or case:")
 
         execute(sendEmail100, sendEmail101, listOf(chain.id), listOf(resolution))
 
@@ -564,7 +584,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         val preview = preview(sendEmail, sendLetter)
         val returnsChain = chainWithTop(preview, returns.key)
         assertThat(returnsChain.updatable).isFalse()
-        assertThat(returnsChain.notUpdatableReason).contains("already links building block ${sendLetter.key}")
+        assertThat(reasons(returnsChain)).contains("already links building block ${sendLetter.key}")
         execute(sendEmail, sendLetter, listOf(chainWithTop(preview, orders.key).id))
 
         assertThat(caseDefinitionBuildingBlockLinkRepository.findAllByCaseDefinitionId(orders).single().buildingBlockDefinitionId)
@@ -588,7 +608,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         val chain = preview(sendEmail100, sendEmail200).chains.single()
 
         assertThat(chain.updatable).isFalse()
-        assertThat(chain.notUpdatableReason).contains("already links building block ${sendEmail200.key}")
+        assertThat(reasons(chain)).contains("already links building block ${sendEmail200.key}")
     }
 
     @Test
@@ -623,16 +643,16 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         val chain = preview(sendEmail, bundle).chains.single()
 
         assertThat(chain.updatable).isFalse()
-        assertThat(chain.notUpdatableReason).contains("creates a cycle")
+        assertThat(reasons(chain)).contains("creates a cycle")
     }
 
     @Test
     fun `a failure halfway rolls back every draft, link, ownership row and deployment`() {
         val f = workedExample()
-        // Non-call-activity link: invisible to preview, fails on execute
+        // Link on a user task: preview lists it, execute fails rewriting its BPMN
         val broken = case("zz-broken-${f.uid}", "1.0.0", final = false, processKey = "br-${f.uid}", calls = emptyList(), userTask = "notACall")
         processLinkRepository.saveAndFlush(
-            buildingBlockLink(processDefinitionIn(ReferenceContainer.of(broken), "br-${f.uid}"), "notACall", f.sendEmail100)
+            buildingBlockLink(processDefinitionIdIn(ReferenceContainer.of(broken), "br-${f.uid}"), "notACall", f.sendEmail100)
         )
         caseDefinitionBuildingBlockLinkRepository.saveAndFlush(
             CaseDefinitionBuildingBlockLink(caseDefinitionId = f.moving, buildingBlockDefinitionId = f.sendEmail100)
@@ -666,6 +686,274 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     }
 
     @Test
+    fun `a redeploy failing after the drafts exist rolls back every draft, link, ownership row and startable item`() {
+        val f = workedExample()
+        caseDefinitionBuildingBlockLinkRepository.saveAndFlush(
+            CaseDefinitionBuildingBlockLink(caseDefinitionId = f.moving, buildingBlockDefinitionId = f.sendEmail100)
+        )
+        startableItemRepository.saveAndFlush(
+            StartableItem(StartableItemId(f.moving, f.sendEmail100.key, StartableItemType.BUILDING_BLOCK, "1.0.0"), sortOrder = 2)
+        )
+        val incomeDraft = CaseDefinitionId.of(f.income.key, "2.0.1")
+        // Only the reference update's redeploy: draft copies pass a version tag
+        doThrow(IllegalStateException("Deploy failed"))
+            .whenever(operatonProcessService)
+            .deploy(eq(incomeDraft), any(), any(), eq(false), eq(false), eq(false), isNull(), any())
+        val preview = preview(f.sendEmail100, f.sendEmail101)
+
+        val linkCount = processLinkRepository.count()
+        val buildingBlockOwnershipCount = processDefinitionBuildingBlockDefinitionRepository.count()
+        val caseOwnershipCount = processDefinitionCaseDefinitionRepository.count()
+        val processDefinitionCount = repositoryService.createProcessDefinitionQuery().count()
+        val startableItems = startableItemRepository.findAllByIdCaseDefinitionId(f.moving).map { it.id to it.sortOrder }
+
+        assertThatThrownBy { execute(f.sendEmail100, f.sendEmail101, preview.chains.map { it.id }) }
+            .hasMessageContaining("Deploy failed")
+
+        verify(buildingBlockManagementService).createDraft(eq(f.notify110.key), any(), any())
+        assertThat(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(f.income.key)).hasSize(1)
+        assertThat(buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(f.notify110.key)).hasSize(1)
+        assertThat(processLinkRepository.count()).isEqualTo(linkCount)
+        assertThat(processDefinitionBuildingBlockDefinitionRepository.count()).isEqualTo(buildingBlockOwnershipCount)
+        assertThat(processDefinitionCaseDefinitionRepository.count()).isEqualTo(caseOwnershipCount)
+        assertThat(repositoryService.createProcessDefinitionQuery().count()).isEqualTo(processDefinitionCount)
+        assertThat(caseDefinitionBuildingBlockLinkRepository.findAllByCaseDefinitionId(f.moving).single().buildingBlockDefinitionId)
+            .isEqualTo(f.sendEmail100)
+        assertThat(linkIn(ReferenceContainer.of(f.moving), "mv-${f.uid}", "callSendEmail").buildingBlockDefinitionId)
+            .isEqualTo(f.sendEmail100)
+        assertThat(startableItemRepository.findAllByIdCaseDefinitionId(f.moving).map { it.id to it.sortOrder })
+            .containsExactlyElementsOf(startableItems)
+    }
+
+    @Test
+    fun `a written container without process definitions fails and rolls back`() {
+        val f = workedExample()
+        val notifyDraft = BuildingBlockDefinitionId.of(f.notify110.key, "1.1.1")
+        doAnswer { invocation ->
+            invocation.callRealMethod().also {
+                processDefinitionBuildingBlockDefinitionRepository.deleteAll(
+                    processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(notifyDraft)
+                )
+            }
+        }.whenever(buildingBlockManagementService).createDraft(eq(f.notify110.key), any(), any())
+        val income = chainWithTop(preview(f.sendEmail100, f.sendEmail101), f.income.key)
+
+        assertThatThrownBy { execute(f.sendEmail100, f.sendEmail101, listOf(income.id)) }
+            .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
+            .hasMessageContaining("${ReferenceContainer.of(notifyDraft)} has no process definitions")
+
+        assertThat(buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(f.notify110.key)).hasSize(1)
+        assertThat(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(f.income.key)).hasSize(1)
+    }
+
+    @Test
+    fun `a written container with two process definitions of the key fails and rolls back`() {
+        val f = workedExample()
+        val notifyDraft = BuildingBlockDefinitionId.of(f.notify110.key, "1.1.1")
+        val releasedProcessDefinitionId = processDefinitionIdIn(ReferenceContainer.of(f.notify110), "nt-${f.uid}")
+        doAnswer { invocation ->
+            invocation.callRealMethod().also {
+                processDefinitionBuildingBlockDefinitionRepository.save(
+                    ProcessDefinitionBuildingBlockDefinition(
+                        ProcessDefinitionBuildingBlockDefinitionId(ProcessDefinitionId.of(releasedProcessDefinitionId), notifyDraft),
+                        main = false,
+                    )
+                )
+            }
+        }.whenever(buildingBlockManagementService).createDraft(eq(f.notify110.key), any(), any())
+        val income = chainWithTop(preview(f.sendEmail100, f.sendEmail101), f.income.key)
+
+        assertThatThrownBy { execute(f.sendEmail100, f.sendEmail101, listOf(income.id)) }
+            .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
+            .hasMessageContaining("${ReferenceContainer.of(notifyDraft)} has no single process definition 'nt-${f.uid}'")
+
+        assertThat(buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(f.notify110.key)).hasSize(1)
+        assertThat(processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(notifyDraft)).isEmpty()
+    }
+
+    @Test
+    fun `two identical executes at once update once and refuse the other cleanly`() {
+        val f = workedExample()
+        val chainIds = preview(f.sendEmail100, f.sendEmail101).chains.map { it.id }
+        val request = BuildingBlockReferenceUpdateExecuteRequestDto(
+            f.sendEmail100.key, "1.0.0", "1.0.1", chainIds,
+            expectedFingerprint = preview(f.sendEmail100, f.sendEmail101, chainIds).fingerprint,
+        )
+
+        val responses = executeConcurrently(request, request)
+
+        assertOneSucceededAndOneRefusedCleanly(responses)
+        assertThat(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(f.income.key)).hasSize(2)
+        assertThat(buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(f.notify110.key)).hasSize(2)
+        assertThat(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(f.moving.key)).hasSize(1)
+    }
+
+    @Test
+    fun `executes for two sources that need the same new draft update once and refuse the other cleanly`() {
+        val uid = uid()
+        val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendEmail101 = buildingBlock("send-email-$uid", "1.0.1", final = true)
+        val sendLetter100 = buildingBlock("send-letter-$uid", "1.0.0", final = true)
+        val sendLetter101 = buildingBlock("send-letter-$uid", "1.0.1", final = true)
+        deployBuildingBlockProcess(sendEmail100, "se-$uid", calls = emptyList())
+        deployBuildingBlockProcess(sendEmail101, "se-$uid", calls = emptyList())
+        deployBuildingBlockProcess(sendLetter100, "sl-$uid", calls = emptyList())
+        deployBuildingBlockProcess(sendLetter101, "sl-$uid", calls = emptyList())
+        val orders = case(
+            "orders-$uid", "1.0.0", final = true, processKey = "or-$uid",
+            calls = listOf("callSendEmail" to sendEmail100, "callSendLetter" to sendLetter100),
+        )
+        val requests = listOf(sendEmail100 to sendEmail101, sendLetter100 to sendLetter101).map { (source, target) ->
+            val chainIds = preview(source, target).chains.map { it.id }
+            BuildingBlockReferenceUpdateExecuteRequestDto(
+                source.key, "1.0.0", "1.0.1", chainIds,
+                expectedFingerprint = preview(source, target, chainIds).fingerprint,
+            )
+        }
+
+        val responses = executeConcurrently(requests[0], requests[1])
+
+        assertOneSucceededAndOneRefusedCleanly(responses)
+        assertThat(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(orders.key)).hasSize(2)
+        val draft = CaseDefinitionId.of(orders.key, "1.0.1")
+        assertThat(processDefinitionCaseDefinitionRepository.findByIdCaseDefinitionId(draft)).hasSize(1)
+        val children = listOf("callSendEmail", "callSendLetter")
+            .map { linkIn(ReferenceContainer.of(draft), "or-$uid", it).buildingBlockDefinitionId }
+        assertThat(children).isIn(listOf(sendEmail101, sendLetter100), listOf(sendEmail100, sendLetter101))
+    }
+
+    @Test
+    fun `executing for a source that does not exist is not found`() {
+        val key = "missing-${uid()}"
+
+        mockMvc.post("$BASE/execute") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(
+                BuildingBlockReferenceUpdateExecuteRequestDto(key, "1.0.0", "1.0.1", listOf("chain"), expectedFingerprint = "fingerprint")
+            )
+        }.andExpect {
+            status { isNotFound() }
+            content { string(containsString(key)) }
+        }
+    }
+
+    @Test
+    fun `a preview with an unprefixed input path is a bad request`() {
+        val uid = uid()
+        val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendEmail101 = buildingBlock("send-email-$uid", "1.0.1", final = true, properties = listOf("recipient", "subject"))
+        deployBuildingBlockProcess(sendEmail100, "se-$uid", calls = emptyList())
+        deployBuildingBlockProcess(sendEmail101, "se-$uid", calls = emptyList())
+        case("orders-$uid", "1.0.0", final = false, processKey = "or-$uid", calls = listOf("callSendEmail" to sendEmail100))
+        val chain = preview(sendEmail100, sendEmail101).chains.single()
+
+        mockMvc.post("$BASE/preview") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(
+                BuildingBlockReferenceUpdatePreviewRequestDto(
+                    sendEmail100.key, "1.0.0", "1.0.1", listOf(chain.id),
+                    listOf(
+                        BuildingBlockReferenceUpdateChainResolutionDto(
+                            chainId = chain.id,
+                            inputMappings = listOf(BuildingBlockInputMappingDto("title", "doc:/subject")),
+                        )
+                    ),
+                )
+            )
+        }.andExpect {
+            status { isBadRequest() }
+            content { string(containsString("'title'")) }
+        }
+    }
+
+    @Test
+    fun `a target with the key of the referencing building block would make it call itself and is not updatable`() {
+        val uid = uid()
+        val a = buildingBlock("a-$uid", "1.0.0", final = true)
+        deployBuildingBlockProcess(a, "a-$uid", calls = emptyList())
+        val b100 = buildingBlock("b-$uid", "1.0.0", final = true)
+        deployBuildingBlockProcess(b100, "b-$uid", calls = emptyList())
+        val b101 = buildingBlock("b-$uid", "1.0.1", final = false)
+        deployBuildingBlockProcess(b101, "b-$uid", calls = listOf("callA" to a))
+        case("y-$uid", "1.0.0", final = false, processKey = "y-$uid", calls = listOf("callB" to b101))
+
+        val preview = preview(a, b100)
+
+        assertThat(preview.chains).hasSize(1).allSatisfy { chain ->
+            assertThat(chain.updatable).isFalse()
+            assertThat(chain.selectedByDefault).isFalse()
+            assertThat(chain.notUpdatableReasons.map { it.code }).containsExactly(BuildingBlockReferenceUpdateReasonCode.SELF_REFERENCE)
+        }
+        assertThat(preview.changeset.linksToRepoint).isEmpty()
+        assertThatThrownBy { execute(a, b100, preview.chains.map { it.id }) }
+            .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
+            .hasMessageContaining("which is itself")
+        assertThat(linkIn(ReferenceContainer.of(b101), "b-$uid", "callA").buildingBlockDefinitionId).isEqualTo(a)
+    }
+
+    @Test
+    fun `execute refuses changes that differ from the reviewed preview`() {
+        val f = workedExample()
+        val moving = chainWithTop(preview(f.sendEmail100, f.sendEmail101), f.moving.key)
+        val reviewed = preview(f.sendEmail100, f.sendEmail101, listOf(moving.id))
+        assertThat(reviewed.changeset.draftsToModify.map { it.key }).containsExactly(f.moving.key)
+        // Another admin finalizes the draft after the review
+        caseDefinitionRepository.saveAndFlush(caseDefinitionRepository.findById(f.moving).orElseThrow().copy(final = true))
+
+        assertThatThrownBy { execute(f.sendEmail100, f.sendEmail101, listOf(moving.id), expectedFingerprint = reviewed.fingerprint) }
+            .isInstanceOf(BuildingBlockReferenceUpdateException::class.java)
+            .hasMessageContaining("changed since the preview")
+
+        assertThat(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(f.moving.key)).hasSize(1)
+        assertThat(linkIn(ReferenceContainer.of(f.moving), "mv-${f.uid}", "callSendEmail").buildingBlockDefinitionId)
+            .isEqualTo(f.sendEmail100)
+    }
+
+    @Test
+    fun `moving a case link to another building block moves a startable item copied without version`() {
+        val uid = uid()
+        val sendEmail = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendLetter = buildingBlock("send-letter-$uid", "1.0.0", final = true)
+        val other = buildingBlock("other-$uid", "1.0.0", final = true)
+        val orders = case("orders-$uid", "1.0.1", final = false, processKey = "or-$uid", calls = emptyList(), basedOn = "1.0.0")
+        listOf(sendEmail, other).forEach { child ->
+            caseDefinitionBuildingBlockLinkRepository.saveAndFlush(
+                CaseDefinitionBuildingBlockLink(caseDefinitionId = orders, buildingBlockDefinitionId = child)
+            )
+        }
+        // "Create draft version" copies startable items without version tag
+        startableItemRepository.saveAndFlush(StartableItem(StartableItemId(orders, sendEmail.key, StartableItemType.BUILDING_BLOCK), 0))
+        startableItemRepository.saveAndFlush(StartableItem(StartableItemId(orders, other.key, StartableItemType.BUILDING_BLOCK), 1))
+
+        execute(sendEmail, sendLetter, preview(sendEmail, sendLetter).chains.map { it.id })
+
+        assertThat(startableItemRepository.findAllByIdCaseDefinitionId(orders).map { "${it.id.itemKey}:${it.id.itemVersionTag}:${it.sortOrder}" })
+            .containsExactlyInAnyOrder("${sendLetter.key}::0", "${other.key}::1")
+    }
+
+    @Test
+    fun `re-pointing one of two links to the same key only moves its own startable item`() {
+        val uid = uid()
+        val sendEmail100 = buildingBlock("send-email-$uid", "1.0.0", final = true)
+        val sendEmail101 = buildingBlock("send-email-$uid", "1.0.1", final = true)
+        val sendEmail200 = buildingBlock("send-email-$uid", "2.0.0", final = true)
+        val orders = case("orders-$uid", "1.0.0", final = false, processKey = "or-$uid", calls = emptyList())
+        listOf(sendEmail100 to 0, sendEmail200 to 1).forEach { (child, sortOrder) ->
+            caseDefinitionBuildingBlockLinkRepository.saveAndFlush(
+                CaseDefinitionBuildingBlockLink(caseDefinitionId = orders, buildingBlockDefinitionId = child)
+            )
+            startableItemRepository.saveAndFlush(
+                StartableItem(StartableItemId(orders, child.key, StartableItemType.BUILDING_BLOCK, child.versionTag.toString()), sortOrder)
+            )
+        }
+
+        execute(sendEmail100, sendEmail101, preview(sendEmail100, sendEmail101).chains.map { it.id })
+
+        assertThat(startableItemRepository.findAllByIdCaseDefinitionId(orders).map { "${it.id.itemVersionTag}:${it.sortOrder}" })
+            .containsExactlyInAnyOrder("1.0.1:0", "2.0.0:1")
+    }
+
+    @Test
     fun `the REST endpoints drive the wizard from source to summary`() {
         val f = workedExample()
 
@@ -690,13 +978,16 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
             jsonPath("$.chains[0].differences.missingRequiredInputs") { isArray() }
             jsonPath("$.changeset.linksToRepoint.length()") { value(1) }
         }.andReturn().response.contentAsString
-        val chainIds = objectMapper.readValue(previewJson, BuildingBlockReferenceUpdatePreviewDto::class.java)
-            .chains.map { it.id }
+        val chainIds = objectMapper.readValue(previewJson, BuildingBlockReferenceUpdatePreviewDto::class.java).chains.map { it.id }
+        // Execute must carry the fingerprint of the preview of exactly what it executes
+        val previewDto = preview(f.sendEmail100, f.sendEmail101, chainIds)
 
         mockMvc.post("$BASE/execute") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
-                BuildingBlockReferenceUpdateExecuteRequestDto(f.sendEmail100.key, "1.0.0", "1.0.1", chainIds)
+                BuildingBlockReferenceUpdateExecuteRequestDto(
+                    f.sendEmail100.key, "1.0.0", "1.0.1", chainIds, expectedFingerprint = previewDto.fingerprint
+                )
             )
         }.andExpect {
             status { isOk() }
@@ -708,7 +999,9 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         mockMvc.post("$BASE/execute") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
-                BuildingBlockReferenceUpdateExecuteRequestDto(f.sendEmail100.key, "1.0.0", "1.0.0", chainIds)
+                BuildingBlockReferenceUpdateExecuteRequestDto(
+                    f.sendEmail100.key, "1.0.0", "1.0.0", chainIds, expectedFingerprint = previewDto.fingerprint
+                )
             )
         }.andExpect { status { isBadRequest() } }
     }
@@ -854,7 +1147,7 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         outputMappings = outputMappings,
     )
 
-    private fun processDefinitionIn(container: ReferenceContainer, processKey: String): String {
+    private fun processDefinitionIdIn(container: ReferenceContainer, processKey: String): String {
         val ids = when (container.type) {
             BUILDING_BLOCK -> processDefinitionBuildingBlockDefinitionRepository
                 .findAllByIdBuildingBlockDefinitionId(BuildingBlockDefinitionId(container.key, container.versionTag))
@@ -871,14 +1164,14 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     }
 
     private fun pointLinkAt(container: CaseDefinitionId, processKey: String, activityId: String, child: BuildingBlockDefinitionId) {
-        val processDefinitionId = processDefinitionIn(ReferenceContainer.of(container), processKey)
+        val processDefinitionId = processDefinitionIdIn(ReferenceContainer.of(container), processKey)
         processLinkRepository.deleteAll(processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinitionId, activityId))
         processLinkRepository.flush()
         processLinkRepository.saveAndFlush(buildingBlockLink(processDefinitionId, activityId, child))
     }
 
     private fun linkIn(container: ReferenceContainer, processKey: String, activityId: String): BuildingBlockProcessLink =
-        processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinitionIn(container, processKey), activityId)
+        processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinitionIdIn(container, processKey), activityId)
             .filterIsInstance<BuildingBlockProcessLink>()
             .single()
 
@@ -918,18 +1211,58 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
         )
     )
 
+    /** Previews first, like the wizard, unless [expectedFingerprint] is given. */
     private fun execute(
         source: BuildingBlockDefinitionId,
         target: BuildingBlockDefinitionId,
         selected: List<String>,
         resolutions: List<BuildingBlockReferenceUpdateChainResolutionDto> = emptyList(),
+        expectedFingerprint: String? = null,
     ): BuildingBlockReferenceUpdateResultDto = runWithoutAuthorization {
+        val fingerprint = expectedFingerprint ?: referenceUpdateService.preview(
+            BuildingBlockReferenceUpdatePreviewRequestDto(
+                source.key, source.versionTag.toString(), target.versionTag.toString(), selected, resolutions, target.key
+            )
+        ).fingerprint
         referenceUpdateService.execute(
             BuildingBlockReferenceUpdateExecuteRequestDto(
-                source.key, source.versionTag.toString(), target.versionTag.toString(), selected, resolutions, target.key
+                source.key, source.versionTag.toString(), target.versionTag.toString(), selected, resolutions, target.key, fingerprint
             )
         )
     }
+
+    private fun executeConcurrently(
+        vararg requests: BuildingBlockReferenceUpdateExecuteRequestDto,
+    ): List<MockHttpServletResponse> {
+        val start = CountDownLatch(1)
+        val executor = Executors.newFixedThreadPool(requests.size)
+        try {
+            val futures = requests.map { request ->
+                executor.submit<MockHttpServletResponse> {
+                    start.await()
+                    mockMvc.post("$BASE/execute") {
+                        contentType = MediaType.APPLICATION_JSON
+                        content = objectMapper.writeValueAsString(request)
+                    }.andReturn().response
+                }
+            }
+            start.countDown()
+            return futures.map { it.get(2, TimeUnit.MINUTES) }
+        } finally {
+            executor.shutdownNow()
+        }
+    }
+
+    private fun assertOneSucceededAndOneRefusedCleanly(responses: List<MockHttpServletResponse>) {
+        assertThat(responses.map { it.status }).containsOnlyOnce(200)
+        val refused = responses.single { it.status != 200 }
+        assertThat(refused.status).isIn(400, 409)
+        assertThat(refused.contentAsString)
+            .doesNotContainIgnoringCase("JDBC")
+            .doesNotContainIgnoringCase("transaction is aborted")
+    }
+
+    private fun reasons(chain: BuildingBlockReferenceUpdateChainDto) = chain.notUpdatableReasons.joinToString(" ") { it.message }
 
     private fun BuildingBlockReferenceUpdateService.previewAsAdmin(request: BuildingBlockReferenceUpdatePreviewRequestDto) =
         runWithoutAuthorization { preview(request) }

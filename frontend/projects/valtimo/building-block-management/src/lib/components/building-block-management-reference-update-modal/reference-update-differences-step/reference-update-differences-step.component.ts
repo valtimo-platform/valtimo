@@ -49,6 +49,7 @@ export class BuildingBlockReferenceUpdateDifferencesStepComponent {
 
   public readonly resolutionForm = this.wizardService.resolutionForm;
 
+  public readonly $invalidInputs = this.wizardService.$invalidInputs;
   public readonly $pluginConfigurations = this.wizardService.$pluginConfigurations;
   public readonly $selectedChains = this.wizardService.$selectedChains;
 

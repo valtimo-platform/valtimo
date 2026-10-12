@@ -68,6 +68,7 @@ import com.ritense.buildingblock.service.migration.RemoveBuildingBlockVersionChe
 import com.ritense.buildingblock.service.migration.AddBuildingBlockMigrationComponentSuggester
 import com.ritense.buildingblock.service.migration.RemoveBuildingBlockMigrationComponentSuggester
 import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceIndexLoader
+import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceUpdateApplier
 import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceUpdateService
 import com.ritense.buildingblock.web.rest.BuildingBlockMigrationManagementResource
 import com.ritense.case_.repository.CaseDefinitionMigrationRepository
@@ -169,6 +170,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
+import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository
@@ -409,14 +411,12 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(BuildingBlockReferenceUpdateService::class)
-    fun buildingBlockReferenceUpdateService(
-        buildingBlockReferenceIndexLoader: BuildingBlockReferenceIndexLoader,
+    @ConditionalOnMissingBean(BuildingBlockReferenceUpdateApplier::class)
+    fun buildingBlockReferenceUpdateApplier(
         buildingBlockManagementService: BuildingBlockManagementService,
         caseDefinitionService: CaseDefinitionService,
-        buildingBlockFieldService: BuildingBlockFieldService,
-        buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
         buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+        caseDefinitionChecker: CaseDefinitionChecker,
         operatonProcessService: OperatonProcessService,
         repositoryService: RepositoryService,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
@@ -425,17 +425,14 @@ class BuildingBlockAutoConfiguration {
         buildingBlockProcessLinkRepository: BuildingBlockProcessLinkRepository,
         caseDefinitionBuildingBlockLinkRepository: CaseDefinitionBuildingBlockLinkRepository,
         startableItemRepository: StartableItemRepository,
-        pluginService: PluginService,
-        authorizationService: AuthorizationService,
+        applicationEventPublisher: ApplicationEventPublisher,
         entityManager: EntityManager,
-    ): BuildingBlockReferenceUpdateService {
-        return BuildingBlockReferenceUpdateService(
-            buildingBlockReferenceIndexLoader,
+    ): BuildingBlockReferenceUpdateApplier {
+        return BuildingBlockReferenceUpdateApplier(
             buildingBlockManagementService,
             caseDefinitionService,
-            buildingBlockFieldService,
-            buildingBlockPluginDefinitionService,
             buildingBlockDefinitionChecker,
+            caseDefinitionChecker,
             operatonProcessService,
             repositoryService,
             processDefinitionBuildingBlockDefinitionRepository,
@@ -444,6 +441,29 @@ class BuildingBlockAutoConfiguration {
             buildingBlockProcessLinkRepository,
             caseDefinitionBuildingBlockLinkRepository,
             startableItemRepository,
+            applicationEventPublisher,
+            entityManager,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockReferenceUpdateService::class)
+    fun buildingBlockReferenceUpdateService(
+        buildingBlockReferenceIndexLoader: BuildingBlockReferenceIndexLoader,
+        buildingBlockReferenceUpdateApplier: BuildingBlockReferenceUpdateApplier,
+        buildingBlockFieldService: BuildingBlockFieldService,
+        buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker,
+        pluginService: PluginService,
+        authorizationService: AuthorizationService,
+        entityManager: EntityManager,
+    ): BuildingBlockReferenceUpdateService {
+        return BuildingBlockReferenceUpdateService(
+            buildingBlockReferenceIndexLoader,
+            buildingBlockReferenceUpdateApplier,
+            buildingBlockFieldService,
+            buildingBlockPluginDefinitionService,
+            buildingBlockDefinitionChecker,
             pluginService,
             authorizationService,
             entityManager,
