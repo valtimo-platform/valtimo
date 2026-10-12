@@ -180,22 +180,34 @@ export class CaseOverviewComponent {
 
   public onTogglePin(itemType: PinnedItemType, itemKey: string, name: string): void {
     const pinning = !this.isPinned(itemType, itemKey);
+    const section = itemType === PinnedItemType.CASE_DEFINITION_GROUP ? 'groups' : 'types';
 
-    this.pinnedItemsService.togglePinnedItem(itemType, itemKey);
+    // Toast only once the backend answered, so a failed call never reports success.
+    this.pinnedItemsService.togglePinnedItem(itemType, itemKey).subscribe({
+      complete: () =>
+        this.showPinToast(
+          'success',
+          `case.overview.${section}.${pinning ? 'pinnedToast' : 'unpinnedToast'}`,
+          name
+        ),
+      error: () =>
+        this.showPinToast(
+          'error',
+          `case.overview.${section}.${pinning ? 'pinErrorToast' : 'unpinErrorToast'}`,
+          name
+        ),
+    });
+  }
 
-    // One pin toast at a time: replace the previous one.
+  // One pin toast at a time: replace the previous one.
+  private showPinToast(type: 'success' | 'error', titleKey: string, name: string): void {
     if (this._pinToast && !this._pinToast.componentRef?.hostView.destroyed) {
       this.globalNotificationService.close(this._pinToast);
     }
 
-    const section = itemType === PinnedItemType.CASE_DEFINITION_GROUP ? 'groups' : 'types';
-
     this._pinToast = this.globalNotificationService.showToast({
-      type: 'success',
-      title: this.translateService.instant(
-        `case.overview.${section}.${pinning ? 'pinnedToast' : 'unpinnedToast'}`,
-        {name}
-      ),
+      type,
+      title: this.translateService.instant(titleKey, {name}),
     });
   }
 

@@ -33,6 +33,18 @@
 .menu-item-text-container {
   display: flex;
 
+  // Flex drops the whitespace between the dot and the title, which otherwise adds a space after
+  // the dot that labels without one don't get.
+  .menu-item-label {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  // Makes the text the label's baseline; the empty dot would otherwise lower it by half a pixel.
+  .menu-item-title {
+    align-self: baseline;
+  }
+
   .menu-item-icon-container {
     position: absolute;
     margin-left: -0.75rem;

@@ -38,7 +38,9 @@
         "open": "{{title}} openen",
         "pin": "Vastzetten in de zijbalk",
         "pinnedToast": "De dossiergroep '{{name}}' staat nu onder 'Dossiers' in de linkerzijbalk.",
-        "unpinnedToast": "De dossiergroep '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk."
+        "unpinnedToast": "De dossiergroep '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk.",
+        "pinErrorToast": "Het vastzetten van '{{name}}' is mislukt. Probeer het opnieuw.",
+        "unpinErrorToast": "Het losmaken van '{{name}}' is mislukt. Probeer het opnieuw."
       },
       "types": {
         "title": "Dossiertypen",
@@ -47,7 +49,9 @@
         "open": "{{name}} openen",
         "pin": "Vastzetten in de zijbalk",
         "pinnedToast": "Het dossiertype '{{name}}' staat nu onder 'Dossiers' in de linkerzijbalk.",
-        "unpinnedToast": "Het dossiertype '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk."
+        "unpinnedToast": "Het dossiertype '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk.",
+        "pinErrorToast": "Het vastzetten van '{{name}}' is mislukt. Probeer het opnieuw.",
+        "unpinErrorToast": "Het losmaken van '{{name}}' is mislukt. Probeer het opnieuw."
       },
       "pinInfo": {
         "title": "Zet de dossiergroepen die je vaak gebruikt in je zijbalk:",
