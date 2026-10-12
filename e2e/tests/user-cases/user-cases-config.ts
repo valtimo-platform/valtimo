@@ -26,6 +26,12 @@ export const USER_CASES_CONFIG = {
   documentEndpoint: '/api/v1/document',
   /** Sub-process started from case detail via the "Start" overflow button. */
   changeNameProcess: 'Change name',
+  /** Start-menu item whose start form opens in the side panel with editable fields. */
+  createZaaknotitieProcess: 'Create Zaaknotitie',
+  /** Start-menu item whose start form opens in the side panel with read-only fields. */
+  catalogiGetTypenProcess: 'Catalogi - Get typen',
+  /** First user task of a freshly created bezwaar case; its form opens in the side panel. */
+  validateRequestTask: 'Valideer gegevens aanvrager',
   /** Expected tab headings on the user case detail page. */
   detailTabs: {
     summary: 'Summary',
