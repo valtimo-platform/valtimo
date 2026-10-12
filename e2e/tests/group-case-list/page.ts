@@ -16,6 +16,7 @@
 
 import {expect, Locator, Page} from '@playwright/test';
 import {
+  CASE_LIST_ACTIONS_TEST_IDS,
   CASE_LIST_TOOLBAR_TEST_IDS,
   CONFIRMATION_MODAL_TEST_IDS,
   QUICK_SEARCH_TEST_IDS,
@@ -50,6 +51,19 @@ export class GroupCaseListPage {
 
   get startCaseButton(): Locator {
     return this.page.getByTestId(CASE_LIST_TOOLBAR_TEST_IDS.startCaseButton);
+  }
+
+  get memberSelectionModal(): Locator {
+    return this.page.getByTestId(CASE_LIST_ACTIONS_TEST_IDS.memberSelectionModal);
+  }
+
+  get memberTiles(): Locator {
+    return this.memberSelectionModal.getByTestId(CASE_LIST_ACTIONS_TEST_IDS.memberTile);
+  }
+
+  async closeMemberSelectionModal(): Promise<void> {
+    await this.memberSelectionModal.getByRole('button', {name: 'Close'}).click();
+    await expect(this.memberSelectionModal.getByRole('heading')).toBeHidden();
   }
 
   get exportButton(): Locator {

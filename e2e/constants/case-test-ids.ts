@@ -17,5 +17,6 @@
 export {
   CASE_OVERVIEW_TEST_IDS,
   CASE_MENU_TEST_IDS,
+  CASE_LIST_ACTIONS_TEST_IDS,
   CASE_LIST_TOOLBAR_TEST_IDS,
 } from '../../frontend/projects/valtimo/case/src/lib/constants/case.test-ids';

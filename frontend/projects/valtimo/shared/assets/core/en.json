@@ -220,6 +220,13 @@
     "caseUpdated": "Case updated",
     "startSubProcess": "Start",
     "noLinkedStartProcessNotification": "There is no start form linked",
+    "searchError": {
+      "title": "Search failed",
+      "description": "The cases could not be searched. Check the search fields or try again later."
+    },
+    "startCase": {
+      "selectCaseType": "Select case type"
+    },
     "noLinkedProcessNotification": "There is no form linked",
     "configure": "Configure",
     "claimAssigneeCase": "Claim",
@@ -1078,7 +1085,7 @@
         "fieldType": "Field type",
         "matchType": "Match type",
         "dropdownDataProvider": "Dropdown data provider",
-        "dropdownDataProviderPlaceholder": "Enter provider class name",
+        "dropdownDataProviderPlaceholder": "Select a dropdown data provider",
         "saveError": "Failed to save search fields",
         "searchPlaceholder": "Search fields...",
         "fieldKeyTooltip": "Required. Unique identifier for this search field.",
@@ -1087,7 +1094,8 @@
         "fieldTypeTooltip": "Required. How the search input is displayed.",
         "matchTypeTooltip": "Optional. How values are matched (exact or partial).",
         "dropdownDataProviderTooltip": "Optional. Class name providing dropdown options.",
-        "pathPerCaseTooltip": "Path to the property to search on for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties."
+        "pathPerCaseTooltip": "Path to the property to search on for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties.",
+        "unsupportedPathPrefix": "Only document (doc:) and case (case:) paths can be searched."
       },
       "tabs": {
         "config": "Config",

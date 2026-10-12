@@ -27,12 +27,24 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Subject, takeUntil} from 'rxjs';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
+import {combineLatest, Observable, of, Subject, take, takeUntil} from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {GroupSearchField} from '@valtimo/document';
+import {DocumentService, GroupSearchField} from '@valtimo/document';
 import {
   AutoKeyInputComponent,
+  CarbonMultiInputModule,
+  MultiInputOutput,
+  MultiInputValues,
   TooltipIconModule,
   ValtimoCdsModalDirective,
   ValuePathSelectorComponent,
@@ -58,11 +70,29 @@ import {
 
 const DATA_TYPES = ['text', 'number', 'date', 'datetime', 'boolean'];
 const FIELD_TYPES = ['single', 'range', 'multi-select-dropdown', 'single-select-dropdown'];
+// Same rules as a single case type: dropdowns only for text, booleans only single
+const FIELD_TYPES_BY_DATA_TYPE: Record<string, string[]> = {
+  text: FIELD_TYPES,
+  boolean: ['single'],
+};
+const DEFAULT_FIELD_TYPES = ['single', 'range'];
+const DROPDOWN_FIELD_TYPES = ['single-select-dropdown', 'multi-select-dropdown'];
+// Only this provider stores editable lists
+const EDITABLE_DROPDOWN_DATA_PROVIDER = 'dropdownDatabaseDataProvider';
 const MATCH_TYPES = ['exact', 'like'];
 
 const DATA_TYPE_ITEMS = DATA_TYPES.map(t => ({content: t, value: t}));
-const FIELD_TYPE_ITEMS = FIELD_TYPES.map(t => ({content: t, value: t}));
 const MATCH_TYPE_ITEMS = MATCH_TYPES.map(t => ({content: t, value: t}));
+
+// Group search only supports document and case properties
+const SEARCHABLE_PATH_PREFIXES = [ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE];
+
+const searchablePathValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const path = (control.value ?? '').trim();
+  const isSearchable =
+    !path || SEARCHABLE_PATH_PREFIXES.some(prefix => path.startsWith(`${prefix}:`));
+  return isSearchable ? null : {unsupportedPathPrefix: true};
+};
 
 @Component({
   standalone: true,
@@ -76,6 +106,7 @@ const MATCH_TYPE_ITEMS = MATCH_TYPES.map(t => ({content: t, value: t}));
     TranslateModule,
     AutoKeyInputComponent,
     ButtonModule,
+    CarbonMultiInputModule,
     CheckboxModule,
     DropdownModule,
     InputModule,
@@ -107,6 +138,10 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     return this.pathControls.filter(c => c.value && c.value.trim() !== '').length;
   }
 
+  public get hasInvalidPath(): boolean {
+    return this.pathControls.some(control => control.invalid);
+  }
+
   public get totalMemberCount(): number {
     return this.members.length;
   }
@@ -132,9 +167,9 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
   }
 
   public readonly DATA_TYPE_ITEMS = DATA_TYPE_ITEMS;
-  public readonly FIELD_TYPE_ITEMS = FIELD_TYPE_ITEMS;
+  public fieldTypeItems = this.toItems(FIELD_TYPES);
   public readonly MATCH_TYPE_ITEMS = MATCH_TYPE_ITEMS;
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+  public readonly SEARCHABLE_PATH_PREFIXES = SEARCHABLE_PATH_PREFIXES;
 
   public formGroup: FormGroup = this.fb.group({
     key: ['', Validators.required],
@@ -150,6 +185,13 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
   public showOnlyEmpty = false;
   public showMatchType = false;
   public showDropdownDataProvider = false;
+  public showDropdownValues = false;
+  public initialDropdownValues: MultiInputValues = [];
+
+  public dropdownDataProviderItems: {content: string; value: string}[] = [];
+
+  private _dropdownValues: MultiInputValues = [];
+  private _dataTypeForFieldTypes: string | null = null;
 
   private _emptyMemberKeys = new Set<string>();
 
@@ -158,10 +200,24 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     private readonly groupService: CaseDefinitionGroupManagementService,
     private readonly translateService: TranslateService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly documentService: DocumentService
   ) {}
 
   public ngOnInit(): void {
+    combineLatest([
+      this.documentService.getDropdownDataProviders(),
+      this.translateService.stream('key'),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([providers]) => {
+        this.dropdownDataProviderItems = providers.map(provider => ({
+          content: this.translateService.instant(`searchFieldsOverview.${provider}`),
+          value: provider,
+        }));
+        this.cdr.markForCheck();
+      });
+
     this.formGroup.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this._updateVisibility();
     });
@@ -185,6 +241,10 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     this.cdr.markForCheck();
   }
 
+  public onDropdownValuesChange(values: MultiInputOutput): void {
+    this._dropdownValues = values as MultiInputValues;
+  }
+
   public trackByMember(_index: number, item: {member: GroupMember; index: number}): string {
     return item.member.caseDefinitionKey;
   }
@@ -197,8 +257,21 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     const isDropdown =
       fieldTypeValue === 'single-select-dropdown' || fieldTypeValue === 'multi-select-dropdown';
 
+    this.updateFieldTypeItems(dataTypeValue, fieldTypeValue);
+
+    const providerControl = this.formGroup.get('dropdownDataProvider');
+    const providerValue = providerControl?.value?.value ?? providerControl?.value;
+    if (isDropdown && !providerControl?.hasValidator(Validators.required)) {
+      providerControl?.addValidators(Validators.required);
+      providerControl?.updateValueAndValidity({emitEvent: false});
+    } else if (!isDropdown && providerControl?.hasValidator(Validators.required)) {
+      providerControl.removeValidators(Validators.required);
+      providerControl.updateValueAndValidity({emitEvent: false});
+    }
+
     this.showMatchType = dataTypeValue === 'text' && !isDropdown;
     this.showDropdownDataProvider = isDropdown;
+    this.showDropdownValues = isDropdown && providerValue === EDITABLE_DROPDOWN_DATA_PROVIDER;
     this.cdr.markForCheck();
   }
 
@@ -215,7 +288,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
   }
 
   private _buildPathControls(): void {
-    this.pathControls = this.members.map(() => new FormControl(''));
+    this.pathControls = this.members.map(() => new FormControl('', searchablePathValidator));
   }
 
   private _resetForm(): void {
@@ -230,6 +303,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       });
       this.formGroup.get('key')?.disable();
       this._loadPathMappings();
+      this.loadDropdownValues(this.field);
     } else {
       this.formGroup.reset({
         key: '',
@@ -241,6 +315,8 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       });
       this.formGroup.get('key')?.enable();
       this.pathControls.forEach(c => c.setValue(''));
+      this.initialDropdownValues = [];
+      this._dropdownValues = [];
     }
     this.pathSearchControl.setValue('');
     this.showOnlyEmpty = false;
@@ -283,13 +359,12 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
             }))
           )
           .subscribe({
-            next: () => this.closeModal.emit(true),
-            error: () => {
-              this.notificationService.showToast({
-                type: 'error',
-                title: this.translateService.instant('caseManagement.groups.searchFields.saveError'),
-              });
-            },
+            next: () =>
+              this.syncDropdownValues(request).subscribe({
+                next: () => this.closeModal.emit(true),
+                error: () => this.showSaveError(),
+              }),
+            error: () => this.showSaveError(),
           });
       });
     } else {
@@ -308,7 +383,9 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       dataType: dataTypeValue,
       fieldType: fieldTypeValue,
       matchType: matchTypeValue || undefined,
-      dropdownDataProvider: value.dropdownDataProvider || undefined,
+      dropdownDataProvider: DROPDOWN_FIELD_TYPES.includes(fieldTypeValue)
+        ? value.dropdownDataProvider?.value ?? (value.dropdownDataProvider || undefined)
+        : undefined,
       pathMappings: this.members
         .map((member, i) => ({
           caseDefinitionKey: member.caseDefinitionKey,
@@ -316,5 +393,73 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
         }))
         .filter(m => m.path),
     };
+  }
+
+  private loadDropdownValues(field: GroupSearchField): void {
+    this.initialDropdownValues = [];
+    this._dropdownValues = [];
+    if (field.dropdownDataProvider !== EDITABLE_DROPDOWN_DATA_PROVIDER || !this.groupKey) return;
+
+    this.documentService
+      .getDropdownData(field.dropdownDataProvider, this.groupKey, field.key)
+      .pipe(take(1))
+      .subscribe(dropdownData => {
+        this.initialDropdownValues = Object.entries(dropdownData ?? {}).map(([key, value]) => ({
+          key,
+          value: `${value}`,
+        }));
+        this._dropdownValues = this.initialDropdownValues;
+        this.cdr.markForCheck();
+      });
+  }
+
+  // Group lists live under `<groupKey>_<fieldKey>`, like `<caseDefinitionKey>_<fieldKey>` for a case type
+  private syncDropdownValues(request: {key: string; dropdownDataProvider?: string}): Observable<unknown> {
+    const groupKey = this.groupKey!;
+    const previousProvider = this.field?.dropdownDataProvider;
+
+    if (request.dropdownDataProvider === EDITABLE_DROPDOWN_DATA_PROVIDER) {
+      const values = this._dropdownValues
+        .filter(keyValue => keyValue.key)
+        .reduce((acc, keyValue) => ({...acc, [keyValue.key!]: keyValue.value ?? ''}), {});
+      return this.documentService.postDropdownData(
+        EDITABLE_DROPDOWN_DATA_PROVIDER,
+        groupKey,
+        request.key,
+        values
+      );
+    }
+
+    if (previousProvider === EDITABLE_DROPDOWN_DATA_PROVIDER) {
+      return this.documentService.deleteDropdownData(
+        EDITABLE_DROPDOWN_DATA_PROVIDER,
+        groupKey,
+        request.key
+      );
+    }
+
+    return of(null);
+  }
+
+  private showSaveError(): void {
+    this.notificationService.showToast({
+      type: 'error',
+      title: this.translateService.instant('caseManagement.groups.searchFields.saveError'),
+    });
+  }
+
+  private toItems(values: string[]): {content: string; value: string}[] {
+    return values.map(value => ({content: value, value}));
+  }
+
+  private updateFieldTypeItems(dataType: string | null, fieldType: string | null): void {
+    if (dataType === this._dataTypeForFieldTypes) return;
+    this._dataTypeForFieldTypes = dataType;
+
+    const allowed = (dataType && FIELD_TYPES_BY_DATA_TYPE[dataType]) || DEFAULT_FIELD_TYPES;
+    this.fieldTypeItems = this.toItems(dataType ? allowed : FIELD_TYPES);
+    if (dataType && fieldType && !allowed.includes(fieldType)) {
+      this.formGroup.get('fieldType')?.setValue(null);
+    }
   }
 }

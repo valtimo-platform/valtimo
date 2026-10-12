@@ -81,6 +81,7 @@ import com.ritense.case.web.rest.StartableItemManagementResource
 import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
 import com.ritense.case.web.rest.error.InvalidGroupListColumnSortExceptionMapper
+import com.ritense.case.web.rest.error.InvalidGroupSearchFieldExceptionMapper
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.listener.CaseMigrationCaseEventListener
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
@@ -108,6 +109,7 @@ import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.case_.service.migration.MigrationTriggerScheduler
+import com.ritense.dataprovider.service.DataProviderService
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
@@ -621,6 +623,10 @@ class CaseAutoConfiguration {
     fun invalidGroupListColumnSortExceptionMapper() = InvalidGroupListColumnSortExceptionMapper()
 
     @Bean
+    @ConditionalOnMissingBean(InvalidGroupSearchFieldExceptionMapper::class)
+    fun invalidGroupSearchFieldExceptionMapper() = InvalidGroupSearchFieldExceptionMapper()
+
+    @Bean
     @ConditionalOnMissingBean(CaseDefinitionGroupService::class)
     fun caseDefinitionGroupService(
         groupRepository: CaseDefinitionGroupRepository,
@@ -630,7 +636,8 @@ class CaseAutoConfiguration {
         searchFieldRepository: GroupSearchFieldRepository,
         searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
         caseDefinitionRepository: CaseDefinitionRepository,
-        authorizationService: AuthorizationService
+        authorizationService: AuthorizationService,
+        dataProviderService: DataProviderService
     ): CaseDefinitionGroupService {
         return CaseDefinitionGroupService(
             groupRepository,
@@ -640,7 +647,8 @@ class CaseAutoConfiguration {
             searchFieldRepository,
             searchFieldPathMappingRepository,
             caseDefinitionRepository,
-            authorizationService
+            authorizationService,
+            dataProviderService
         )
     }
 

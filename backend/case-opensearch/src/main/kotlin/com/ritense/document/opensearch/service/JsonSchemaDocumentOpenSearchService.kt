@@ -230,31 +230,8 @@ class JsonSchemaDocumentOpenSearchService(
         searchWithConfigRequest: SearchWithConfigRequest,
         filterPathMappings: Map<String, Map<String, String>>,
         pageable: Pageable
-    ): Page<JsonSchemaDocument> {
-        if (documentDefinitionNames.isEmpty()) {
-            return PageImpl(emptyList(), pageable, 0)
-        }
-
-        val otherFilters = searchWithConfigRequest.otherFilters.map { filter ->
-            AdvancedSearchRequest.OtherFilter().apply {
-                path = filter.key
-                searchType = DatabaseSearchType.LIKE
-                setSearchRequestValues(filter.searchRequestValues)
-            }
-        }
-
-        val advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, otherFilters)
-
-        val combinedQuery = buildCombinedQueryMultipleDefinitionsWithMappings(
-            documentDefinitionNames,
-            blueprintType,
-            advancedSearchRequest,
-            filterPathMappings,
-            emptyMap(),
-            JsonSchemaDocumentActionProvider.VIEW_LIST
-        )
-        return executeSearch(combinedQuery, pageable)
-    }
+    ): Page<JsonSchemaDocument> =
+        search(documentDefinitionNames, blueprintType, searchWithConfigRequest, filterPathMappings, emptyMap(), pageable)
 
     override fun search(
         documentDefinitionNames: Collection<String>,
@@ -268,12 +245,9 @@ class JsonSchemaDocumentOpenSearchService(
             return PageImpl(emptyList(), pageable, 0)
         }
 
+        val zoneOffset = RequestHelper.getZoneOffset()
         val otherFilters = searchWithConfigRequest.otherFilters.map { filter ->
-            AdvancedSearchRequest.OtherFilter().apply {
-                path = filter.key
-                searchType = DatabaseSearchType.LIKE
-                setSearchRequestValues(filter.searchRequestValues)
-            }
+            SearchRequestMapper.toGroupOtherFilter(filter, globalSearchFields[filter.key], zoneOffset)
         }
 
         val advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, otherFilters)
@@ -405,7 +379,11 @@ class JsonSchemaDocumentOpenSearchService(
         }
 
         val orConditions = documentDefinitionNames.mapNotNull { definitionName ->
-            val path = pathsPerDefinition[definitionName] ?: return@mapNotNull null
+            val path = pathsPerDefinition[definitionName]
+            // Unsupported prefix (e.g. zaak:) or none: treat as unmapped, so no match instead of an error
+            if (path == null || !(path.startsWith(DOC_PREFIX) || path.startsWith(CASE_PREFIX))) {
+                return@mapNotNull null
+            }
 
             QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definitionName))

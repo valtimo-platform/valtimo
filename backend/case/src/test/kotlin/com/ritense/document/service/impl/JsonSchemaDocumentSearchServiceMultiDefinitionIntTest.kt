@@ -21,8 +21,13 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
+import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.SearchWithConfigRequest
+import com.ritense.document.service.GlobalSearchFieldMeta
 import com.ritense.valtimo.contract.blueprint.BlueprintType
+import java.time.LocalDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -292,6 +297,168 @@ class JsonSchemaDocumentSearchServiceMultiDefinitionIntTest : BaseIntegrationTes
         assertThat(results.totalElements).isEqualTo(1)
         assertThat(results.content.map { it.id() }).containsExactly(houseDoc.id())
     }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should match a number search field exactly across definitions`() {
+        val house4 = createDocumentInDefinition("house", """{"housenumber": 4}""")
+        createDocumentInDefinition("house", """{"housenumber": 14}""")
+        val person4 = createDocumentInDefinition("person", """{"age": 4}""")
+        createDocumentInDefinition("person", """{"age": 40}""")
+
+        val results = searchNumber(
+            SearchWithConfigRequest.SearchWithConfigFilter().apply {
+                key = "amount"
+                setValues(listOf(4))
+            },
+            SearchFieldFieldType.SINGLE
+        )
+
+        assertThat(results.content.map { it.id() })
+            .containsExactlyInAnyOrder(house4.id(), person4.id())
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should search a number range across definitions`() {
+        val house4 = createDocumentInDefinition("house", """{"housenumber": 4}""")
+        createDocumentInDefinition("house", """{"housenumber": 14}""")
+        val person5 = createDocumentInDefinition("person", """{"age": 5}""")
+        createDocumentInDefinition("person", """{"age": 2}""")
+
+        val results = searchNumber(
+            SearchWithConfigRequest.SearchWithConfigFilter().apply {
+                key = "amount"
+                setRangeFrom(3)
+                setRangeTo(5)
+            },
+            SearchFieldFieldType.RANGE
+        )
+
+        assertThat(results.content.map { it.id() })
+            .containsExactlyInAnyOrder(house4.id(), person5.id())
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should keep contains matching for a text search field with match type like`() {
+        val houseDoc = createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        createDocumentInDefinition("person", """{"firstName": "Utrecht"}""")
+
+        val searchRequest = SearchWithConfigRequest()
+        searchRequest.otherFilters = listOf(
+            SearchWithConfigRequest.SearchWithConfigFilter().apply {
+                key = "name"
+                setValues(listOf("Amster"))
+            }
+        )
+
+        val results = documentSearchService.search(
+            listOf("house", "person"),
+            BlueprintType.CASE,
+            searchRequest,
+            mapOf("name" to mapOf("house" to "doc:street", "person" to "doc:firstName")),
+            mapOf(
+                "name" to GlobalSearchFieldMeta(
+                    SearchFieldDataType.TEXT,
+                    SearchFieldFieldType.SINGLE,
+                    SearchFieldMatchType.LIKE
+                )
+            ),
+            PageRequest.of(0, 10)
+        )
+
+        assertThat(results.content.map { it.id() }).containsExactly(houseDoc.id())
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should search a date range on a case field across definitions`() {
+        val houseDoc = createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        val personDoc = createDocumentInDefinition("person", """{"firstName": "Utrecht"}""")
+        val today = LocalDate.now()
+
+        val in2020 = searchCreatedOn("2020-01-01", "2020-12-31")
+        val aroundToday = searchCreatedOn(today.minusDays(1).toString(), today.plusDays(1).toString())
+
+        assertThat(in2020.content.map { it.id() }).doesNotContain(houseDoc.id(), personDoc.id())
+        assertThat(aroundToday.content.map { it.id() }).contains(houseDoc.id(), personDoc.id())
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should treat paths with an unsupported or missing prefix as unmapped`() {
+        createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        val personDoc = createDocumentInDefinition("person", """{"firstName": "Amsterdam"}""")
+
+        val results = documentSearchService.search(
+            listOf("house", "person"),
+            BlueprintType.CASE,
+            SearchWithConfigRequest().apply {
+                otherFilters = listOf(
+                    SearchWithConfigRequest.SearchWithConfigFilter().apply {
+                        key = "name"
+                        setValues(listOf("Amsterdam"))
+                    }
+                )
+            },
+            mapOf("name" to mapOf("house" to "zaak:identificatie", "person" to "doc:firstName")),
+            mapOf(
+                "name" to GlobalSearchFieldMeta(
+                    SearchFieldDataType.TEXT,
+                    SearchFieldFieldType.SINGLE,
+                    SearchFieldMatchType.EXACT
+                )
+            ),
+            PageRequest.of(0, 10)
+        )
+        val noPrefixResults = documentSearchService.search(
+            listOf("house", "person"),
+            BlueprintType.CASE,
+            SearchWithConfigRequest().apply {
+                otherFilters = listOf(
+                    SearchWithConfigRequest.SearchWithConfigFilter().apply {
+                        key = "name"
+                        setValues(listOf("Amsterdam"))
+                    }
+                )
+            },
+            mapOf("name" to mapOf("house" to "street", "person" to "firstName")),
+            PageRequest.of(0, 10)
+        )
+
+        assertThat(results.content.map { it.id() }).containsExactly(personDoc.id())
+        assertThat(noPrefixResults.content).isEmpty()
+    }
+
+    private fun searchCreatedOn(from: String, to: String) = documentSearchService.search(
+        listOf("house", "person"),
+        BlueprintType.CASE,
+        SearchWithConfigRequest().apply {
+            otherFilters = listOf(
+                SearchWithConfigRequest.SearchWithConfigFilter().apply {
+                    key = "created-on"
+                    setRangeFrom(from)
+                    setRangeTo(to)
+                }
+            )
+        },
+        mapOf("created-on" to mapOf("house" to "case:createdOn", "person" to "case:createdOn")),
+        mapOf("created-on" to GlobalSearchFieldMeta(SearchFieldDataType.DATE, SearchFieldFieldType.RANGE, null)),
+        PageRequest.of(0, 50)
+    )
+
+    private fun searchNumber(
+        filter: SearchWithConfigRequest.SearchWithConfigFilter,
+        fieldType: SearchFieldFieldType
+    ) = documentSearchService.search(
+        listOf("house", "person"),
+        BlueprintType.CASE,
+        SearchWithConfigRequest().apply { otherFilters = listOf(filter) },
+        mapOf("amount" to mapOf("house" to "doc:housenumber", "person" to "doc:age")),
+        mapOf("amount" to GlobalSearchFieldMeta(SearchFieldDataType.NUMBER, fieldType, null)),
+        PageRequest.of(0, 10)
+    )
 
     private fun createDocumentInDefinition(definitionName: String, contentJson: String): JsonSchemaDocument {
         return runWithoutAuthorization {

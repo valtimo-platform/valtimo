@@ -31,6 +31,11 @@ export const CASE_OVERVIEW_TEST_IDS = {
   typesNoResults: 'caseOverviewTypesNoResults',
 } as const;
 
+export const CASE_LIST_ACTIONS_TEST_IDS = {
+  memberSelectionModal: 'caseListMemberSelectionModal',
+  memberTile: 'caseListMemberTile',
+} as const;
+
 export const CASE_LIST_TOOLBAR_TEST_IDS = {
   exportButton: 'caseListExportButton',
   startCaseButton: 'caseListStartCaseButton',

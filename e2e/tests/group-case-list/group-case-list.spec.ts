@@ -124,12 +124,22 @@ test.describe('Group case list', () => {
       await expect(listPage.columnHeader('Assignee')).toHaveCount(0);
     });
 
-    test('offers the assignee tabs but no start or export buttons', async () => {
+    test('offers the assignee tabs and a start button, but no export button', async () => {
       for (const tab of ['All cases', 'My cases', 'Unassigned cases']) {
         await expect(listPage.assigneeTab(tab)).toBeVisible();
       }
-      await expect(listPage.startCaseButton).toHaveCount(0);
+      await expect(listPage.startCaseButton).toBeEnabled();
       await expect(listPage.exportButton).toHaveCount(0);
+    });
+
+    test('starting a case asks which member case type to create', async () => {
+      await listPage.startCaseButton.click();
+
+      await expect(listPage.memberSelectionModal.getByRole('heading')).toHaveText(
+        'Select case type'
+      );
+      await expect(listPage.memberTiles).toHaveText(['Bezwaar', 'Verhuizing']);
+      await listPage.closeMemberSelectionModal();
     });
 
     test('a search field narrows the list to cases from every member', async () => {
@@ -294,6 +304,45 @@ test.describe('Group case list', () => {
   // ─── 2.15 Edge cases ────────────────────────────────────────────
 
   test.describe('2.15 — Edge cases', () => {
+    test('a failed search shows an error, clears the rows and the next search still runs', async () => {
+      const errorGroup = await createGroupWithMembersViaApi(uniqueGroupTitle('E2E error'), [bezwaar]);
+      createdGroupKeys.push(errorGroup.key);
+      await putListColumnsViaApi(errorGroup.key, [
+        documentColumn('name', 'Name', [{caseDefinitionKey: bezwaar, path: DOC_PATHS[bezwaar]}]),
+      ]);
+      await putSearchFieldsViaApi(errorGroup.key, [
+        {
+          key: 'name',
+          title: 'Name',
+          dataType: 'text',
+          fieldType: 'single',
+          matchType: 'like',
+          pathMappings: [{caseDefinitionKey: bezwaar, path: DOC_PATHS[bezwaar]}],
+        },
+      ]);
+      let failNextSearch = false;
+      const searchRoute = `**${GROUP_USER_ENDPOINT}/${errorGroup.key}/search**`;
+      await page.route(searchRoute, route => {
+        if (!failNextSearch) return route.continue();
+        failNextSearch = false;
+        return route.fulfill({status: 500, json: {title: 'Internal Server Error', status: 500}});
+      });
+
+      try {
+        await listPage.goTo(errorGroup.key);
+        failNextSearch = true;
+        await listPage.searchFor('name', name('B1'));
+        await expect(page.getByText('Search failed')).toBeVisible();
+        await expect(listPage.list.rows).toHaveCount(0);
+
+        await listPage.searchFor('name', name('B2'));
+        // Only column, so cell 1 (0 is the selection checkbox)
+        expect(await listPage.columnValues(1)).toEqual([name('B2')]);
+      } finally {
+        await page.unroute(searchRoute);
+      }
+    });
+
     test('a group without columns renders without errors', async () => {
       const bare = await createGroupWithMembersViaApi(uniqueGroupTitle('E2E bare'), [bezwaar]);
       createdGroupKeys.push(bare.key);

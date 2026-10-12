@@ -16,10 +16,19 @@
 
 package com.ritense.document.service;
 
+import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType;
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType;
 
 public record GlobalSearchFieldMeta(
     SearchFieldDataType dataType,
+    SearchFieldFieldType fieldType,
     SearchFieldMatchType matchType
-) {}
+) {
+
+    // Path = key: the member path is resolved later from the group's path mappings
+    public SearchField toSearchField(String key) {
+        return new SearchField(key, key, dataType, fieldType, matchType, null, 0, null);
+    }
+}

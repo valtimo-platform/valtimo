@@ -220,6 +220,13 @@
     "caseUpdated": "Dossier aangepast",
     "startSubProcess": "Start",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
+    "searchError": {
+      "title": "Zoeken mislukt",
+      "description": "De dossiers konden niet doorzocht worden. Controleer de zoekvelden of probeer het later opnieuw."
+    },
+    "startCase": {
+      "selectCaseType": "Kies dossiertype"
+    },
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
     "configure": "Configureer",
     "claimAssigneeCase": "Claimen",
@@ -1078,7 +1085,7 @@
         "fieldType": "Veldtype",
         "matchType": "Matchtype",
         "dropdownDataProvider": "Dropdown data provider",
-        "dropdownDataProviderPlaceholder": "Voer de naam van de providerclass in",
+        "dropdownDataProviderPlaceholder": "Selecteer een dropdown-dataprovider",
         "saveError": "Opslaan van zoekvelden mislukt",
         "searchPlaceholder": "Zoek velden...",
         "fieldKeyTooltip": "Verplicht. Unieke identificatie voor dit zoekveld.",
@@ -1087,7 +1094,8 @@
         "fieldTypeTooltip": "Verplicht. Hoe de zoekinvoer wordt weergegeven.",
         "matchTypeTooltip": "Optioneel. Hoe waarden worden gematcht (exact of gedeeltelijk).",
         "dropdownDataProviderTooltip": "Optioneel. Naam van de class die de dropdownopties levert.",
-        "pathPerCaseTooltip": "Pad naar de eigenschap om op te zoeken voor elke dossierdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor dossiereigenschappen."
+        "pathPerCaseTooltip": "Pad naar de eigenschap om op te zoeken voor elke dossierdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor dossiereigenschappen.",
+        "unsupportedPathPrefix": "Alleen document- (doc:) en dossierpaden (case:) kunnen doorzocht worden."
       },
       "tabs": {
         "config": "Configuratie",

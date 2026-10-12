@@ -33,13 +33,13 @@ import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.AssigneeFilter;
-import com.ritense.document.domain.search.DatabaseSearchType;
 import com.ritense.document.domain.search.SearchOperator;
 import com.ritense.document.domain.search.SearchRequestMapper;
 import com.ritense.document.domain.search.SearchRequestValidator;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
 import com.ritense.document.event.DocumentsListed;
 import com.ritense.document.service.DocumentSearchService;
+import com.ritense.document.service.GlobalSearchFieldMeta;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
@@ -266,18 +266,37 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         Map<String, Map<String, String>> filterPathMappings,
         Pageable pageable
     ) {
+        return search(
+            documentDefinitionNames,
+            blueprintType,
+            searchWithConfigRequest,
+            filterPathMappings,
+            Map.of(),
+            pageable
+        );
+    }
+
+    @Override
+    public Page<JsonSchemaDocument> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields,
+        Pageable pageable
+    ) {
         if (documentDefinitionNames == null || documentDefinitionNames.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
+        ZoneOffset zoneOffset = RequestHelper.getZoneOffset();
+
         var otherFilters = searchWithConfigRequest.getOtherFilters().stream()
-            .map(filter -> {
-                var otherFilter = new AdvancedSearchRequest.OtherFilter();
-                otherFilter.setPath(filter.getKey());
-                otherFilter.setSearchType(DatabaseSearchType.LIKE);
-                otherFilter.setSearchRequestValues(filter.getSearchRequestValues());
-                return otherFilter;
-            })
+            .map(filter -> SearchRequestMapper.toGroupOtherFilter(
+                filter,
+                globalSearchFields.get(filter.getKey()),
+                zoneOffset
+            ))
             .toList();
 
         var advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(
@@ -391,7 +410,8 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         List<Predicate> orConditions = new ArrayList<>();
         for (String definitionName : documentDefinitionNames) {
             String path = pathsPerDefinition.get(definitionName);
-            if (path != null) {
+            // Unsupported prefix (e.g. zaak:) or none: treat as unmapped, so no match instead of an error
+            if (isSearchablePath(path)) {
                 Predicate defMatch = cb.equal(
                     root.get(DOCUMENT_DEFINITION_ID).get(NAME), definitionName
                 );
@@ -405,6 +425,10 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             return cb.disjunction();
         }
         return cb.or(orConditions.toArray(Predicate[]::new));
+    }
+
+    private boolean isSearchablePath(String path) {
+        return path != null && (path.startsWith(DOC_PREFIX) || path.startsWith(CASE_PREFIX));
     }
 
     private String extractFilterKey(String path) {

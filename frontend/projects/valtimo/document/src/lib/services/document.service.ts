@@ -420,7 +420,7 @@ export class DocumentService {
     return this.http.post<Page<GroupCaseListRow>>(
       `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/search`,
       searchRequest,
-      {params}
+      {params, headers: new HttpHeaders().set(InterceptorSkip, '500')}
     );
   }
 

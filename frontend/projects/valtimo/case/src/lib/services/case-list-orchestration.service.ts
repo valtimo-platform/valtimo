@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {HttpErrorResponse} from '@angular/common/http';
 import {DestroyRef, Inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TranslateService} from '@ngx-translate/core';
@@ -32,6 +33,7 @@ import {
 import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
+  CaseDefinitionGroupMember,
   CaseTag,
   Documents,
   DocumentService,
@@ -43,12 +45,14 @@ import {
   AssigneeFilter,
   CaseListTab,
   DefinitionColumn,
+  GlobalNotificationService,
   SearchField,
   SearchFieldValues,
 } from '@valtimo/shared';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   debounceTime,
   defaultIfEmpty,
@@ -56,8 +60,10 @@ import {
   filter,
   forkJoin,
   map,
+  merge,
   Observable,
   of,
+  shareReplay,
   switchMap,
   take,
   tap,
@@ -84,6 +90,18 @@ import {CaseParameterService} from './case-parameter.service';
 @Injectable()
 export class CaseListOrchestrationService {
   private readonly INTERNAL_STATUS_COLUMN = 'internalStatus';
+  private readonly EMPTY_DOCUMENTS: SpecifiedDocuments = {
+    content: [],
+    empty: true,
+    first: true,
+    last: true,
+    number: 0,
+    numberOfElements: 0,
+    size: 0,
+    sort: false,
+    totalElements: 0,
+    totalPages: 0,
+  };
   private readonly CASE_TAGS_COLUMN = 'caseTags';
 
   private readonly _statusField: ListField = {
@@ -173,14 +191,28 @@ export class CaseListOrchestrationService {
     })
   );
 
-  public readonly canCreateCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
-      caseDefinitionKey
-        ? this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
-            resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-            identifier: caseDefinitionKey,
-          })
-        : of(false)
+  public readonly startableGroupMembers$: Observable<CaseDefinitionGroupMember[] | null> =
+    this.listService.context$.pipe(
+      switchMap(context =>
+        context?.type === 'group' ? this.getStartableGroupMembers(context.key) : of(null)
+      ),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
+
+  public readonly canCreateCase$: Observable<boolean> = merge(
+    this.caseDefinitionKey$.pipe(
+      switchMap(caseDefinitionKey =>
+        caseDefinitionKey
+          ? this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+              identifier: caseDefinitionKey,
+            })
+          : of(false)
+      )
+    ),
+    this.startableGroupMembers$.pipe(
+      filter(members => members !== null),
+      map(members => members.length > 0)
     )
   );
 
@@ -410,6 +442,7 @@ export class CaseListOrchestrationService {
     private readonly columnService: CaseColumnService,
     private readonly destroyRef: DestroyRef,
     private readonly documentService: DocumentService,
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly listService: CaseListService,
     private readonly pageTitleService: PageTitleService,
     private readonly paginationService: CaseListPaginationService,
@@ -613,12 +646,26 @@ export class CaseListOrchestrationService {
     }
 
     return forkJoin({
-      documents: documentsObs,
+      documents: documentsObs.pipe(
+        // Keep the list pipeline alive: an error here would stop every later search
+        catchError((error: HttpErrorResponse) => {
+          if (error?.status === 500) this.showSearchErrorToast();
+          return of(this.EMPTY_DOCUMENTS);
+        })
+      ),
       hasApiColumnConfig: of(hasApiColumnConfig),
       isSearchResult: of(!!searchFilters || !!globalFilter),
       allStatuses: of(allStatuses),
       assigneeFilter: of(assigneeFilter),
       context: of(context),
+    });
+  }
+
+  private showSearchErrorToast(): void {
+    this.globalNotificationService.showToast({
+      title: this.translateService.instant('case.searchError.title'),
+      caption: this.translateService.instant('case.searchError.description'),
+      type: 'error',
     });
   }
 
@@ -732,5 +779,40 @@ export class CaseListOrchestrationService {
         ...mappedTagColumns,
       };
     });
+  }
+
+  private getStartableGroupMembers(groupKey: string): Observable<CaseDefinitionGroupMember[]> {
+    return this.documentService.getCaseDefinitionGroupMembers(groupKey).pipe(
+      switchMap(members =>
+        forkJoin(members.map(member => this.isStartableMember(member.caseDefinitionKey))).pipe(
+          defaultIfEmpty([] as boolean[]),
+          map(startable => members.filter((_, index) => startable[index]))
+        )
+      ),
+      catchError(() => of([]))
+    );
+  }
+
+  private isStartableMember(caseDefinitionKey: string): Observable<boolean> {
+    return forkJoin({
+      canCreate: this.permissionService
+        .requestPermission(CAN_CREATE_CASE_PERMISSION, {
+          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+          identifier: caseDefinitionKey,
+        })
+        .pipe(take(1)),
+      caseSettings: this.documentService.getCaseSettings(caseDefinitionKey),
+      processDefinitions:
+        this.documentService.findProcessDefinitionCaseDefinitionsByCanInitializeDocument(
+          caseDefinitionKey,
+          true
+        ),
+    }).pipe(
+      map(
+        ({canCreate, caseSettings, processDefinitions}) =>
+          canCreate && (processDefinitions.length > 0 || !!caseSettings?.hasExternalStartForm)
+      ),
+      catchError(() => of(false))
+    );
   }
 }

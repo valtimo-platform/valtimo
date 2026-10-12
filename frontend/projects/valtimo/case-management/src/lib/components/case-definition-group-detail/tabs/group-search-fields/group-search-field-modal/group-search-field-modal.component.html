@@ -99,10 +99,18 @@
               <span class="valtimo-group-search-field-modal__case-key">({{ item.member.caseDefinitionKey }})</span>
             </div>
             <valtimo-value-path-selector
-              [formControl]="pathControls[item.index]"
               [caseDefinitionKey]="item.member.caseDefinitionKey"
-              [excludePrefixes]="[ValuePathSelectorPrefix.TASK]"
+              [formControl]="pathControls[item.index]"
+              [prefixes]="SEARCHABLE_PATH_PREFIXES"
             ></valtimo-value-path-selector>
+
+            <div
+              *ngIf="pathControls[item.index].hasError('unsupportedPathPrefix')"
+              class="valtimo-group-search-field-modal__path-error"
+              [attr.data-test-id]="searchFieldTestIds.pathError"
+            >
+              {{ 'caseManagement.groups.searchFields.unsupportedPathPrefix' | translate }}
+            </div>
           </div>
 
           <div
@@ -140,7 +148,7 @@
         [itemValueKey]="'value'"
         [attr.data-test-id]="searchFieldTestIds.fieldTypeDropdown"
       >
-        <cds-dropdown-list [items]="FIELD_TYPE_ITEMS"></cds-dropdown-list>
+        <cds-dropdown-list [items]="fieldTypeItems"></cds-dropdown-list>
       </cds-dropdown>
     </div>
 
@@ -158,19 +166,35 @@
       </cds-dropdown>
     </div>
 
-    <cds-label *ngIf="showDropdownDataProvider">
-      <span>
+    <div
+      *ngIf="showDropdownDataProvider && dropdownDataProviderItems.length"
+      class="valtimo-group-search-field-modal__dropdown-field"
+    >
+      <span class="cds--label">
         {{ 'caseManagement.groups.searchFields.dropdownDataProvider' | translate }}
         <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.dropdownDataProviderTooltip' | translate"></v-tooltip-icon>
       </span>
-
-      <input
+      <cds-dropdown
         formControlName="dropdownDataProvider"
-        cdsText
+        [itemValueKey]="'value'"
         [placeholder]="'caseManagement.groups.searchFields.dropdownDataProviderPlaceholder' | translate"
         [attr.data-test-id]="searchFieldTestIds.dropdownDataProviderInput"
-      />
-    </cds-label>
+      >
+        <cds-dropdown-list [items]="dropdownDataProviderItems"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <valtimo-carbon-multi-input
+      *ngIf="showDropdownValues"
+      name="dropdownValues"
+      type="keyValue"
+      [defaultValues]="initialDropdownValues"
+      [margin]="true"
+      [title]="'searchFieldsOverview.dropdownListValues' | translate"
+      [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
+      [attr.data-test-id]="searchFieldTestIds.dropdownValues"
+      (valueChange)="onDropdownValuesChange($event)"
+    ></valtimo-carbon-multi-input>
   </form>
 
   <cds-modal-footer>
@@ -180,7 +204,7 @@
 
     <button
       cdsButton="primary"
-      [disabled]="formGroup.invalid"
+      [disabled]="formGroup.invalid || hasInvalidPath"
       (click)="onCloseModal(true)"
       [attr.data-test-id]="testIds.saveButton"
     >

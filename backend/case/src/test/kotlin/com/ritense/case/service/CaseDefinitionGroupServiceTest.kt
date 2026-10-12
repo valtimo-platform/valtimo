@@ -17,29 +17,39 @@
 package com.ritense.case.service
 
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
-import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupListColumnPathMapping
 import com.ritense.case.domain.group.GroupListColumnPathMappingId
+import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.exception.InvalidGroupListColumnSortException
-import com.ritense.case.web.rest.dto.GroupListColumnDto
-import com.ritense.case.web.rest.dto.GroupListColumnPathMappingDto
-import com.ritense.search.domain.DisplayType
-import com.ritense.search.domain.EmptyDisplayTypeParameter
+import com.ritense.case.exception.InvalidGroupSearchFieldException
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
+import com.ritense.case.web.rest.dto.GroupListColumnDto
+import com.ritense.case.web.rest.dto.GroupListColumnPathMappingDto
+import com.ritense.case.web.rest.dto.GroupSearchFieldDto
 import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.dataprovider.domain.DataProviderConstants
+import com.ritense.dataprovider.service.DataProviderService
+import com.ritense.search.domain.DataType
+import com.ritense.search.domain.DisplayType
+import com.ritense.search.domain.EmptyDisplayTypeParameter
+import com.ritense.search.domain.FieldType
+import java.time.ZonedDateTime
+import java.util.Optional
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -47,9 +57,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.time.ZonedDateTime
-import java.util.Optional
-import kotlin.test.assertEquals
 
 class CaseDefinitionGroupServiceTest {
 
@@ -61,6 +68,7 @@ class CaseDefinitionGroupServiceTest {
     lateinit var searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
     lateinit var authorizationService: AuthorizationService
+    lateinit var dataProviderService: DataProviderService
     lateinit var service: CaseDefinitionGroupService
 
     @BeforeEach
@@ -73,6 +81,9 @@ class CaseDefinitionGroupServiceTest {
         searchFieldPathMappingRepository = mock()
         caseDefinitionRepository = mock()
         authorizationService = mock()
+        dataProviderService = mock()
+        whenever(dataProviderService.getProviderNames(DataProviderConstants.DROPDOWN_CATEGORY))
+            .thenReturn(listOf("dropdownDatabaseDataProvider"))
 
         service = CaseDefinitionGroupService(
             groupRepository,
@@ -82,7 +93,8 @@ class CaseDefinitionGroupServiceTest {
             searchFieldRepository,
             searchFieldPathMappingRepository,
             caseDefinitionRepository,
-            authorizationService
+            authorizationService,
+            dataProviderService
         )
     }
 
@@ -347,6 +359,71 @@ class CaseDefinitionGroupServiceTest {
             Optional.of(CaseDefinitionGroup(key = GROUP_KEY, title = "Test Group", description = null, order = 0))
         )
     }
+
+    @Test
+    fun `should reject a dropdown search field that is not text`() {
+        givenGroup("test_group")
+
+        val exception = assertThrows<InvalidGroupSearchFieldException> {
+            service.updateSearchFields(
+                "test_group",
+                listOf(searchField(DataType.DATE, FieldType.SINGLE_SELECT_DROPDOWN, "dropdownDatabaseDataProvider"))
+            )
+        }
+
+        assertEquals("Dropdown search field 'status' must have data type text", exception.message)
+        verify(searchFieldRepository, never()).deleteByGroupKey(any())
+    }
+
+    @Test
+    fun `should reject a dropdown search field with an unknown or missing provider`() {
+        givenGroup("test_group")
+
+        listOf("doesNotExist", null).forEach { provider ->
+            assertThrows<InvalidGroupSearchFieldException> {
+                service.updateSearchFields(
+                    "test_group",
+                    listOf(searchField(DataType.TEXT, FieldType.MULTI_SELECT_DROPDOWN, provider))
+                )
+            }
+        }
+        verify(searchFieldRepository, never()).deleteByGroupKey(any())
+    }
+
+    @Test
+    fun `should save a text dropdown search field with an existing provider`() {
+        givenGroup("test_group")
+        whenever(searchFieldRepository.save(any<GroupSearchField>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateSearchFields(
+            "test_group",
+            listOf(searchField(DataType.TEXT, FieldType.SINGLE_SELECT_DROPDOWN, "dropdownDatabaseDataProvider"))
+        )
+
+        assertEquals("dropdownDatabaseDataProvider", result.single().dropdownDataProvider)
+    }
+
+    private fun givenGroup(groupKey: String) {
+        val group = CaseDefinitionGroup(
+            key = groupKey,
+            title = "Test Group",
+            description = null,
+            order = 0,
+            createdBy = "admin",
+            createdOn = ZonedDateTime.now()
+        )
+        whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
+    }
+
+    private fun searchField(dataType: DataType, fieldType: FieldType, provider: String?) = GroupSearchFieldDto(
+        key = "status",
+        title = "Status",
+        dataType = dataType,
+        fieldType = fieldType,
+        matchType = null,
+        dropdownDataProvider = provider,
+        order = null
+    )
 
     private fun mapping(path: String, caseDefinitionKey: String = "case") =
         GroupListColumnPathMappingDto(caseDefinitionKey, path)

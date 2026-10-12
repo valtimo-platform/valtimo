@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
@@ -84,7 +85,7 @@ class JsonSchemaDocumentOpenSearchServiceMultiDefinitionIntTest : BaseOpenSearch
         seedDocumentInDefinition("person", mapOf("firstName" to "John"))
 
         val globalSearchFields = mapOf(
-            "street" to GlobalSearchFieldMeta(SearchFieldDataType.TEXT, SearchFieldMatchType.LIKE)
+            "street" to GlobalSearchFieldMeta(SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE)
         )
 
         val searchFilter = SearchWithConfigRequest.SearchWithConfigFilter().apply {

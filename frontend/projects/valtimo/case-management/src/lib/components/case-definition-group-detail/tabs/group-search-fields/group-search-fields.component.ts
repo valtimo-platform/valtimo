@@ -19,7 +19,7 @@ import {CommonModule} from '@angular/common';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {Add16} from '@carbon/icons';
-import {GroupSearchField} from '@valtimo/document';
+import {DocumentService, GroupSearchField} from '@valtimo/document';
 import {ActionItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, TableModule} from 'carbon-components-angular';
 import {GlobalNotificationService} from '@valtimo/shared';
@@ -135,7 +135,8 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     private readonly groupService: CaseDefinitionGroupManagementService,
     private readonly translateService: TranslateService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly documentService: DocumentService
   ) {
     this.iconService.registerAll([Add16]);
   }
@@ -195,6 +196,13 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     const fields = this._fields$.value.filter(f => f.key !== field.key);
     this._fields$.next(fields);
     this._saveFieldOrder(fields);
+
+    const groupKey = this.detailService.currentGroup?.key;
+    if (groupKey && field.dropdownDataProvider === 'dropdownDatabaseDataProvider') {
+      this.documentService
+        .deleteDropdownData(field.dropdownDataProvider, groupKey, field.key)
+        .subscribe();
+    }
   }
 
   private _findField(key: string): SearchFieldWithMappings {

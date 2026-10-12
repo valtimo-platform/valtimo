@@ -55,12 +55,12 @@
 | 2.7    | Cases overview                           | Sections + counts · search by group title / case type name · empty states · links · pin info dismissal |    ✅    | cases-overview.spec.ts                           |
 | 2.8    | Pin and unpin case groups and case types | Pin/unpin with toast · pinned first · failed pin rolls back · API 409/404 |    ✅    | cases-overview.spec.ts                           |
 | 2.9    | Pinned items in the sidebar              | Placeholder · Cases title opens overview · chevron toggles · alphabetical · highlight + auto-expand on Cases routes · deleted group disappears |    ✅    | cases-overview.spec.ts                           |
-| 2.10   | Group case list columns and toolbar      | Group title · configured columns, no assignee column · assignee tabs · no start/export · rows from every member |    ✅    | group-case-list.spec.ts                          |
+| 2.10   | Group case list columns and toolbar      | Group title · configured columns, no assignee column · assignee tabs · start button opens member case-type picker · no export · rows from every member |    ✅    | group-case-list.spec.ts                          |
 | 2.11   | Group case list sorting                  | Default sort from column · header flips order · document-path columns not sortable |    ✅    | group-case-list.spec.ts                          |
 | 2.12   | Group case list search and quick search  | Field mapped for one member · save/reopen/delete quick search · no matches |    ✅    | group-case-list.spec.ts                          |
 | 2.13   | Group case list navigation and settings  | Row opens case in its own definition · page size remembered per group  |    ✅    | group-case-list.spec.ts |
 | 2.14   | Group status filter across members       | Shared status offered once · deselecting hides cases                   |    ✅    | group-case-list.spec.ts                          |
-| 2.15   | Group case list edge cases               | Group without columns renders · unknown group returns 404              |    ⏳    | group-case-list.spec.ts — 404 fixme: needs BE fix |
+| 2.15   | Group case list edge cases               | Group without columns renders · failed search shows error, clears rows, next search still runs · unknown group returns 404 |    ⏳    | group-case-list.spec.ts — 404 fixme: needs BE fix |
 
 ---
 

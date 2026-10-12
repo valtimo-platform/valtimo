@@ -22,8 +22,8 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.GroupListColumn
-import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.domain.group.GroupQuickSearch
+import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
@@ -39,14 +39,15 @@ import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
-import org.springframework.security.access.AccessDeniedException
+import com.ritense.document.domain.InternalCaseStatus
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.SearchWithConfigRequest
-import com.ritense.document.domain.InternalCaseStatus
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.GlobalSearchFieldMeta
 import com.ritense.document.service.InternalCaseStatusService
+import com.ritense.search.domain.FieldType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valueresolver.ValueResolverService
@@ -56,6 +57,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -148,6 +150,7 @@ class GroupCaseInstanceService(
         val globalSearchFields = searchFields.associate { searchField ->
             searchField.key to GlobalSearchFieldMeta(
                 SearchFieldDataType.fromString(searchField.dataType.key),
+                toSearchFieldFieldType(searchField.fieldType),
                 searchField.matchType?.let { SearchFieldMatchType.fromString(it.key) }
             )
         }
@@ -182,6 +185,14 @@ class GroupCaseInstanceService(
             val caseDefinitionKey = document.definitionId().name()
             toGroupCaseListRowDto(document, caseDefinitionKey, columns, columnPathMappings)
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun toSearchFieldFieldType(fieldType: FieldType): SearchFieldFieldType = when (fieldType) {
+        FieldType.TEXT_CONTAINS, FieldType.SINGLE -> SearchFieldFieldType.SINGLE
+        FieldType.RANGE -> SearchFieldFieldType.RANGE
+        FieldType.SINGLE_SELECT_DROPDOWN -> SearchFieldFieldType.SINGLE_SELECT_DROPDOWN
+        FieldType.MULTI_SELECT_DROPDOWN -> SearchFieldFieldType.MULTI_SELECT_DROPDOWN
     }
 
     private fun translateSort(pageable: Pageable, sortPathByColumnKey: Map<String, String>): Pageable {

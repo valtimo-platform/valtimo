@@ -32,6 +32,7 @@ import com.ritense.case.domain.group.GroupSearchFieldPathMapping
 import com.ritense.case.domain.group.GroupSearchFieldPathMappingId
 import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.exception.InvalidGroupListColumnSortException
+import com.ritense.case.exception.InvalidGroupSearchFieldException
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
@@ -43,6 +44,8 @@ import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.GroupListColumnPathMappingDto
 import com.ritense.case.web.rest.dto.GroupSearchFieldDto
 import com.ritense.case.web.rest.dto.GroupSearchFieldPathMappingDto
+import com.ritense.dataprovider.domain.DataProviderConstants
+import com.ritense.dataprovider.service.DataProviderService
 import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.FieldType
@@ -63,7 +66,8 @@ class CaseDefinitionGroupService(
     private val searchFieldRepository: GroupSearchFieldRepository,
     private val searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
     private val caseDefinitionRepository: CaseDefinitionRepository,
-    private val authorizationService: AuthorizationService
+    private val authorizationService: AuthorizationService,
+    private val dataProviderService: DataProviderService
 ) {
 
     @Transactional(readOnly = true)
@@ -287,6 +291,7 @@ class CaseDefinitionGroupService(
     fun updateSearchFields(groupKey: String, fields: List<GroupSearchFieldDto>): List<GroupSearchField> {
         denyAuthorization()
         val group = getGroup(groupKey)
+        validateDropdownSearchFields(fields)
 
         val existingMappings = mutableMapOf<String, List<GroupSearchFieldPathMapping>>()
         searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey).forEach { field ->
@@ -383,6 +388,25 @@ class CaseDefinitionGroupService(
                     path = dto.path
                 )
             )
+        }
+    }
+
+    private fun validateDropdownSearchFields(fields: List<GroupSearchFieldDto>) {
+        val dropdownFields = fields.filter {
+            it.fieldType == FieldType.SINGLE_SELECT_DROPDOWN || it.fieldType == FieldType.MULTI_SELECT_DROPDOWN
+        }
+        if (dropdownFields.isEmpty()) return
+
+        val providerNames = dataProviderService.getProviderNames(DataProviderConstants.DROPDOWN_CATEGORY)
+        dropdownFields.forEach { field ->
+            if (field.dataType != DataType.TEXT) {
+                throw InvalidGroupSearchFieldException("Dropdown search field '${field.key}' must have data type text")
+            }
+            if (field.dropdownDataProvider.isNullOrBlank() || field.dropdownDataProvider !in providerNames) {
+                throw InvalidGroupSearchFieldException(
+                    "Dropdown search field '${field.key}' needs an existing dropdown data provider"
+                )
+            }
         }
     }
 

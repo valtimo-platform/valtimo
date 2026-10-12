@@ -243,4 +243,6 @@ export const CASE_DEFINITION_GROUP_SEARCH_FIELD_MODAL_TEST_IDS = {
   fieldTypeDropdown: 'caseDefinitionGroupSearchFieldFieldTypeDropdown',
   matchTypeDropdown: 'caseDefinitionGroupSearchFieldMatchTypeDropdown',
   dropdownDataProviderInput: 'caseDefinitionGroupSearchFieldDropdownDataProviderInput',
+  pathError: 'caseDefinitionGroupSearchFieldPathError',
+  dropdownValues: 'caseDefinitionGroupSearchFieldDropdownValues',
 } as const;
