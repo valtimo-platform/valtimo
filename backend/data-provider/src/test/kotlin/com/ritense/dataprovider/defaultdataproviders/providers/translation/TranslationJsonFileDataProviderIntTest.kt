@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package com.ritense.dataprovider.defaultdataproviders.providers.translation
 
 import com.ritense.dataprovider.BaseIntegrationTest
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -66,6 +68,27 @@ internal class TranslationJsonFileDataProviderIntTest : BaseIntegrationTest() {
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(content().string("""{"menu.back":"Terug"}"""))
+    }
+
+    @Test
+    fun `should not read json file outside translation directory via path traversal`() {
+        mockMvc.perform(
+            get("/api/v1/data/translation")
+                .param("key", "../../traversal-target")
+        )
+            .andDo(print())
+            .andExpect(content().string(not(containsString("traversal-secret-value"))))
+    }
+
+    @Test
+    fun `should not read property from json file outside translation directory via path traversal`() {
+        mockMvc.perform(
+            get("/api/v1/data/translation")
+                .param("key", "../../traversal-target")
+                .param("properties", "secret")
+        )
+            .andDo(print())
+            .andExpect(content().string(not(containsString("traversal-secret-value"))))
     }
 
 }
