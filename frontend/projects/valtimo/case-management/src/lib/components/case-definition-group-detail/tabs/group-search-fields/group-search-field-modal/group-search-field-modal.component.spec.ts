@@ -15,6 +15,8 @@
  */
 
 import {FormBuilder} from '@angular/forms';
+import {GroupSearchField} from '@valtimo/document';
+import {of} from 'rxjs';
 import {GroupSearchFieldModalComponent} from './group-search-field-modal.component';
 import {GroupMember} from '../../../../../models';
 
@@ -34,9 +36,10 @@ describe('GroupSearchFieldModalComponent', () => {
         'getSearchFields',
         'updateSearchFields',
       ]),
-      jasmine.createSpyObj('TranslateService', ['instant']),
+      jasmine.createSpyObj('TranslateService', {instant: '', stream: of('')}),
       jasmine.createSpyObj('GlobalNotificationService', ['showToast']),
-      jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck'])
+      jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck']),
+      jasmine.createSpyObj('DocumentService', {getDropdownDataProviders: of([])})
     );
   });
 
@@ -149,6 +152,53 @@ describe('GroupSearchFieldModalComponent', () => {
       const second = component.displayedMembers[0];
 
       expect(component.trackByMember(0, first)).toBe(component.trackByMember(0, second));
+    });
+  });
+
+  describe('field type items', () => {
+    const numberField = {
+      key: 'aantal',
+      title: 'Aantal',
+      dataType: 'number',
+      fieldType: 'single',
+    } as GroupSearchField;
+
+    const openWith = (field: GroupSearchField | null): void => {
+      component.ngOnInit();
+      setMembers();
+      component.open = true;
+      component.field = field;
+      component.ngOnChanges({field: {} as any});
+    };
+
+    const selectedFieldTypes = (): string[] =>
+      component.fieldTypeItems.filter(item => item.selected).map(item => item.value);
+
+    it('keeps the field type of an edited field selected', () => {
+      openWith(numberField);
+
+      expect(component.fieldTypeItems.map(item => item.value)).toEqual(['single', 'range']);
+      expect(selectedFieldTypes()).toEqual(['single']);
+      expect(component.formGroup.get('fieldType')?.value).toBe('single');
+    });
+
+    it('clears a field type that the new data type does not allow', () => {
+      openWith({...numberField, fieldType: 'range'} as GroupSearchField);
+
+      component.formGroup.get('dataType')?.setValue('boolean');
+
+      expect(component.fieldTypeItems.map(item => item.value)).toEqual(['single']);
+      expect(selectedFieldTypes()).toEqual([]);
+      expect(component.formGroup.get('fieldType')?.value).toBeNull();
+    });
+
+    it('keeps a field type that the new data type still allows', () => {
+      openWith({...numberField, fieldType: 'range'} as GroupSearchField);
+
+      component.formGroup.get('dataType')?.setValue('date');
+
+      expect(selectedFieldTypes()).toEqual(['range']);
+      expect(component.formGroup.get('fieldType')?.value).toBe('range');
     });
   });
 });

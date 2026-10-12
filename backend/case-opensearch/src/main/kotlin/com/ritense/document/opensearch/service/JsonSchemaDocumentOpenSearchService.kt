@@ -71,8 +71,11 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.query.StringQuery
 import java.time.Instant
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAccessor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
 
@@ -564,11 +567,13 @@ class JsonSchemaDocumentOpenSearchService(
             }
             DatabaseSearchType.IN -> QueryBuilders.termsQuery(keywordField, filter.getValues<Any>())
             DatabaseSearchType.GREATER_THAN_OR_EQUAL_TO ->
-                QueryBuilders.rangeQuery(baseField).gte(formatInstantForOpenSearch(filter.rangeFromValue()!! as Instant))
+                QueryBuilders.rangeQuery(baseField).gte(toRangeBound(filter.rangeFromValue()))
             DatabaseSearchType.LESS_THAN_OR_EQUAL_TO ->
-                QueryBuilders.rangeQuery(baseField).lte(formatInstantForOpenSearch(filter.rangeToValue()!! as Instant))
+                QueryBuilders.rangeQuery(baseField).lte(toRangeBound(filter.rangeToValue()))
             DatabaseSearchType.BETWEEN ->
-                QueryBuilders.rangeQuery(baseField).gte(formatInstantForOpenSearch(filter.rangeFromValue()!! as Instant)).lte(formatInstantForOpenSearch(filter.rangeToValue()!! as Instant))
+                QueryBuilders.rangeQuery(baseField)
+                    .gte(toRangeBound(filter.rangeFromValue()))
+                    .lte(toRangeBound(filter.rangeToValue()))
             else -> throw NotImplementedException("Search type '${filter.searchType}' is not supported in the OpenSearch search service")
         }
     }
@@ -587,6 +592,15 @@ class JsonSchemaDocumentOpenSearchService(
             throw IllegalArgumentException("LIKE search requires String values, got: ${value?.javaClass?.simpleName}")
         }
         return QueryBuilders.wildcardQuery(keywordField, "*${value.trim()}*").caseInsensitive(true)
+    }
+
+    // Dates go in the index format; numbers and strings are passed as-is, so numeric fields compare as numbers
+    private fun toRangeBound(value: Any?): Any? = when (value) {
+        is Instant -> formatInstantForOpenSearch(value)
+        is OffsetDateTime -> formatInstantForOpenSearch(value.toInstant())
+        is ZonedDateTime -> formatInstantForOpenSearch(value.toInstant())
+        is TemporalAccessor -> value.toString()
+        else -> value
     }
 
     private fun formatInstantForOpenSearch(instant: Instant): String {

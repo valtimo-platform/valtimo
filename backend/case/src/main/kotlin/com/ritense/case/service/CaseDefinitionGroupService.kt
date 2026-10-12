@@ -23,6 +23,7 @@ import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
+import com.ritense.case.domain.group.DropdownSearchFieldRule
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupListColumnPathMapping
@@ -46,9 +47,7 @@ import com.ritense.case.web.rest.dto.GroupSearchFieldDto
 import com.ritense.case.web.rest.dto.GroupSearchFieldPathMappingDto
 import com.ritense.dataprovider.domain.DataProviderConstants
 import com.ritense.dataprovider.service.DataProviderService
-import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
-import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
@@ -392,21 +391,17 @@ class CaseDefinitionGroupService(
     }
 
     private fun validateDropdownSearchFields(fields: List<GroupSearchFieldDto>) {
-        val dropdownFields = fields.filter {
-            it.fieldType == FieldType.SINGLE_SELECT_DROPDOWN || it.fieldType == FieldType.MULTI_SELECT_DROPDOWN
-        }
-        if (dropdownFields.isEmpty()) return
+        if (fields.none { DropdownSearchFieldRule.isDropdown(it.fieldType) }) return
 
         val providerNames = dataProviderService.getProviderNames(DataProviderConstants.DROPDOWN_CATEGORY)
-        dropdownFields.forEach { field ->
-            if (field.dataType != DataType.TEXT) {
-                throw InvalidGroupSearchFieldException("Dropdown search field '${field.key}' must have data type text")
-            }
-            if (field.dropdownDataProvider.isNullOrBlank() || field.dropdownDataProvider !in providerNames) {
-                throw InvalidGroupSearchFieldException(
-                    "Dropdown search field '${field.key}' needs an existing dropdown data provider"
-                )
-            }
+        fields.forEach { field ->
+            DropdownSearchFieldRule.violation(
+                field.key,
+                field.dataType,
+                field.fieldType,
+                field.dropdownDataProvider,
+                providerNames
+            )?.let { throw InvalidGroupSearchFieldException(it) }
         }
     }
 

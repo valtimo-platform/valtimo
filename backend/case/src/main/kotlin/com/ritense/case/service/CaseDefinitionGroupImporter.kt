@@ -24,6 +24,7 @@ import com.ritense.case.deployment.GroupSearchFieldExportDto
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
+import com.ritense.case.domain.group.DropdownSearchFieldRule
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupListColumnPathMapping
@@ -39,6 +40,8 @@ import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
 import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.dataprovider.domain.DataProviderConstants
+import com.ritense.dataprovider.service.DataProviderService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION_GROUP
@@ -56,6 +59,7 @@ class CaseDefinitionGroupImporter(
     private val searchFieldRepository: GroupSearchFieldRepository,
     private val searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
     private val caseDefinitionRepository: CaseDefinitionRepository,
+    private val dataProviderService: DataProviderService,
 ) : Importer {
 
     override fun type() = CASE_DEFINITION_GROUP
@@ -208,7 +212,25 @@ class CaseDefinitionGroupImporter(
     ) {
         searchFieldRepository.deleteByGroupKey(dto.key)
 
+        val providerNames = if (dto.searchFields.any { DropdownSearchFieldRule.isDropdown(it.fieldType) }) {
+            dataProviderService.getProviderNames(DataProviderConstants.DROPDOWN_CATEGORY)
+        } else {
+            emptyList()
+        }
+
         dto.searchFields.forEach { fieldDto ->
+            val violation = DropdownSearchFieldRule.violation(
+                fieldDto.key,
+                fieldDto.dataType,
+                fieldDto.fieldType,
+                fieldDto.dropdownDataProvider,
+                providerNames
+            )
+            if (violation != null) {
+                logger.warn { "Skipping search field in group '${dto.key}': $violation" }
+                return@forEach
+            }
+
             val field = searchFieldRepository.save(
                 GroupSearchField(
                     id = UUID.randomUUID(),

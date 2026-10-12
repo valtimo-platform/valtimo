@@ -448,8 +448,11 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     });
   }
 
-  private toItems(values: string[]): {content: string; value: string}[] {
-    return values.map(value => ({content: value, value}));
+  private toItems(
+    values: string[],
+    selectedValue: string | null = null
+  ): {content: string; value: string; selected: boolean}[] {
+    return values.map(value => ({content: value, value, selected: value === selectedValue}));
   }
 
   private updateFieldTypeItems(dataType: string | null, fieldType: string | null): void {
@@ -457,8 +460,10 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     this._dataTypeForFieldTypes = dataType;
 
     const allowed = (dataType && FIELD_TYPES_BY_DATA_TYPE[dataType]) || DEFAULT_FIELD_TYPES;
-    this.fieldTypeItems = this.toItems(dataType ? allowed : FIELD_TYPES);
-    if (dataType && fieldType && !allowed.includes(fieldType)) {
+    const isAllowed = !dataType || !fieldType || allowed.includes(fieldType);
+    // New items replace the list the dropdown rendered from, so they must carry the current selection
+    this.fieldTypeItems = this.toItems(dataType ? allowed : FIELD_TYPES, isAllowed ? fieldType : null);
+    if (!isAllowed) {
       this.formGroup.get('fieldType')?.setValue(null);
     }
   }

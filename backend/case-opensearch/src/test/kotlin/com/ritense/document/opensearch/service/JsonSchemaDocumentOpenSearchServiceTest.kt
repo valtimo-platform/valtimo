@@ -31,6 +31,7 @@ import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
 import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.AdvancedSearchRequest
+import com.ritense.document.domain.search.DatabaseSearchType
 import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
@@ -69,6 +70,7 @@ import org.springframework.data.elasticsearch.core.query.Query
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import java.time.Instant
 
 class JsonSchemaDocumentOpenSearchServiceTest {
 
@@ -569,6 +571,45 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val sorts = service.buildSorts(Sort.by("foo"))
 
         assertThat((sorts[0] as FieldSortBuilder).fieldName).isEqualTo("foo")
+    }
+
+    @Test
+    fun `number range filter compares numbers`() {
+        val query = captureQueryFor(
+            AdvancedSearchRequest.OtherFilter()
+                .path("doc:size")
+                .searchType(DatabaseSearchType.BETWEEN)
+                .rangeFrom(85)
+                .rangeTo(100)
+        )
+
+        assertThat(query).contains("\"content.size\"")
+        assertThat(query).contains("\"from\" : 85")
+        assertThat(query).contains("\"to\" : 100")
+    }
+
+    @Test
+    fun `date range filter formats bounds for the index`() {
+        val query = captureQueryFor(
+            AdvancedSearchRequest.OtherFilter()
+                .path("case:createdOn")
+                .searchType(DatabaseSearchType.GREATER_THAN_OR_EQUAL_TO)
+                .rangeFrom(Instant.parse("2020-01-01T00:00:00Z"))
+        )
+
+        assertThat(query).contains("\"from\" : \"2020-01-01T00:00:00.000\"")
+    }
+
+    private fun captureQueryFor(filter: AdvancedSearchRequest.OtherFilter): String {
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+
+        service.search("house", BlueprintType.CASE, AdvancedSearchRequest().addOtherFilters(filter), PageRequest.of(0, 10))
+
+        return queryCaptor.firstValue.query.toString()
     }
 
     private fun status(definitionKey: String, key: String, order: Int) = InternalCaseStatus(

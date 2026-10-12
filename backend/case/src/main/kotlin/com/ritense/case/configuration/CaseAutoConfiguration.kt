@@ -670,6 +670,7 @@ class CaseAutoConfiguration {
         searchFieldRepository: GroupSearchFieldRepository,
         searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
         caseDefinitionRepository: CaseDefinitionRepository,
+        dataProviderService: DataProviderService,
     ) = CaseDefinitionGroupImporter(
         objectMapper,
         groupRepository,
@@ -678,7 +679,8 @@ class CaseAutoConfiguration {
         listColumnPathMappingRepository,
         searchFieldRepository,
         searchFieldPathMappingRepository,
-        caseDefinitionRepository
+        caseDefinitionRepository,
+        dataProviderService
     )
 
     @Bean

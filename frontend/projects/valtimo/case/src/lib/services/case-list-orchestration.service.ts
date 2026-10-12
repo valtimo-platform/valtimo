@@ -649,7 +649,9 @@ export class CaseListOrchestrationService {
       documents: documentsObs.pipe(
         // Keep the list pipeline alive: an error here would stop every later search
         catchError((error: HttpErrorResponse) => {
-          if (error?.status === 500) this.showSearchErrorToast();
+          // Only statuses the search request skips in the error interceptor, so one toast is shown
+          const silentStatuses = context.type === 'group' ? [400, 500] : [500];
+          if (silentStatuses.includes(error?.status)) this.showSearchErrorToast();
           return of(this.EMPTY_DOCUMENTS);
         })
       ),

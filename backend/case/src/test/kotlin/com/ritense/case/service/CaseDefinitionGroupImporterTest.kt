@@ -31,6 +31,8 @@ import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.dataprovider.domain.DataProviderConstants
+import com.ritense.dataprovider.service.DataProviderService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -58,6 +60,7 @@ class CaseDefinitionGroupImporterTest {
     private lateinit var searchFieldRepository: GroupSearchFieldRepository
     private lateinit var searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository
     private lateinit var caseDefinitionRepository: CaseDefinitionRepository
+    private lateinit var dataProviderService: DataProviderService
     private lateinit var importer: CaseDefinitionGroupImporter
     private val objectMapper = MapperSingleton.get()
 
@@ -70,6 +73,9 @@ class CaseDefinitionGroupImporterTest {
         searchFieldRepository = mock()
         searchFieldPathMappingRepository = mock()
         caseDefinitionRepository = mock()
+        dataProviderService = mock()
+        whenever(dataProviderService.getProviderNames(DataProviderConstants.DROPDOWN_CATEGORY))
+            .thenReturn(listOf("dropdownDatabaseDataProvider"))
 
         importer = CaseDefinitionGroupImporter(
             objectMapper,
@@ -79,7 +85,8 @@ class CaseDefinitionGroupImporterTest {
             listColumnPathMappingRepository,
             searchFieldRepository,
             searchFieldPathMappingRepository,
-            caseDefinitionRepository
+            caseDefinitionRepository,
+            dataProviderService
         )
     }
 
@@ -264,6 +271,38 @@ class CaseDefinitionGroupImporterTest {
         verify(searchFieldPathMappingRepository, never()).save(argThat<GroupSearchFieldPathMapping> { mapping ->
             mapping.id.caseDefinitionKey == "missing-case"
         })
+    }
+
+    @Test
+    fun `should skip dropdown search fields that are not text or have an unknown provider`() {
+        val json = """
+            {
+                "key": "my-group",
+                "title": "My Group",
+                "description": null,
+                "order": 0,
+                "color": null,
+                "members": [],
+                "listColumns": [],
+                "searchFields": [
+                    ${searchField("valid", "text", "dropdownDatabaseDataProvider")},
+                    ${searchField("date-dropdown", "date", "dropdownDatabaseDataProvider")},
+                    ${searchField("unknown-provider", "text", "doesNotExist")},
+                    ${searchField("no-provider", "text", null)}
+                ]
+            }
+        """.trimIndent()
+
+        whenever(caseDefinitionRepository.findAll()).thenReturn(emptyList())
+        whenever(groupRepository.findById("my-group")).thenReturn(Optional.empty())
+        whenever(groupRepository.save(any<CaseDefinitionGroup>())).thenAnswer { it.arguments[0] }
+        whenever(searchFieldRepository.save(any<GroupSearchField>())).thenAnswer { it.arguments[0] }
+
+        importer.import(createImportRequest(json))
+
+        val captor = argumentCaptor<GroupSearchField>()
+        verify(searchFieldRepository).save(captor.capture())
+        assertThat(captor.allValues.map { it.key }).containsExactly("valid")
     }
 
     @Test
@@ -471,6 +510,19 @@ class CaseDefinitionGroupImporterTest {
         verify(listColumnRepository, times(columnJson.size)).save(captor.capture())
         return captor.allValues
     }
+
+    private fun searchField(key: String, dataType: String, provider: String?) = """
+        {
+            "key": "$key",
+            "title": "$key",
+            "dataType": "$dataType",
+            "fieldType": "single-select-dropdown",
+            "matchType": null,
+            "dropdownDataProvider": ${provider?.let { "\"$it\"" }},
+            "order": 0,
+            "pathMappings": []
+        }
+    """.trimIndent()
 
     private fun createImportRequest(json: String) = ImportRequest(
         fileName = "/global/case-group/my-group/my-group.case-group.json",
