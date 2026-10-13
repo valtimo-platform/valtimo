@@ -28,7 +28,7 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Cases | In the case list, users who are not allowed to assign cases no longer see the row checkboxes and the Assign button |
 
 ---
 

@@ -66,6 +66,7 @@ import {
 import {CASE_LIST_NO_RESULTS_MESSAGE} from '../constants';
 import {CaseListQuickSearchParams} from '../models';
 import {
+  CAN_ASSIGN_CASE_PERMISSION,
   CAN_CREATE_CASE_PERMISSION,
   CAN_EXPORT_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
@@ -163,6 +164,17 @@ export class CaseListOrchestrationService {
     switchMap(caseDefinitionKey =>
       caseDefinitionKey
         ? this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+            resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+            identifier: caseDefinitionKey,
+          })
+        : of(false)
+    )
+  );
+
+  public readonly canAssignCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
+    switchMap(caseDefinitionKey =>
+      caseDefinitionKey
+        ? this.permissionService.requestPermission(CAN_ASSIGN_CASE_PERMISSION, {
             resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
             identifier: caseDefinitionKey,
           })
