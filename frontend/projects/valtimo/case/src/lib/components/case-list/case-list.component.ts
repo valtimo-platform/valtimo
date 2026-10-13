@@ -130,10 +130,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.subscribeToCanHaveAssignee();
     this.subscribeToSearchFields();
     this.resolveVisibleCaseTabs();
-
-    if (!this.configService.config?.featureToggles?.enableGenericCaseList) {
-      this.breadcrumbService.suppressSecondBreadcrumb();
-    }
+    this.breadcrumbService.suppressSecondBreadcrumb();
   }
 
   public ngOnDestroy(): void {

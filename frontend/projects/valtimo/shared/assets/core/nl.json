@@ -23,7 +23,6 @@
     "menu": {
       "pinPlaceholder": "Zet items vast om ze hier te tonen"
     },
-    "allCases": "Alle dossiers",
     "overview": {
       "title": "Dossieroverzicht",
       "pin": "Vastzetten in de zijbalk",
@@ -4449,8 +4448,8 @@
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         },
         "enableGenericCaseList": {
-          "title": "Generieke dossierlijst inschakelen",
-          "description": "Toon één dossierlijstweergave met een dropdown om tussen dossierdefinities te wisselen."
+          "title": "Alle dossiertypen in het menu tonen",
+          "description": "Toon elk dossiertype waar de gebruiker toegang toe heeft in het Dossiers-menu, in plaats van alleen de vastgezette dossiergroepen en dossiertypen. Vastzetten is dan uitgeschakeld."
         },
         "enableManualTaskListRefresh": {
           "title": "Handmatig verversen takenlijst inschakelen",

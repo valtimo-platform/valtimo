@@ -37,6 +37,7 @@ export class CaseStatusService extends BaseApiService {
     );
   }
 
+  /** @deprecated Only used by the removed generic case list. Will be removed in a future release. */
   public getAllInternalCaseStatuses(): Observable<InternalCaseStatus[]> {
     return this.httpClient.get<InternalCaseStatus[]>(
       this.getApiUrl('/v1/internal-status')

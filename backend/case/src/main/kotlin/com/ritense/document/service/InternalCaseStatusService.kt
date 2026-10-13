@@ -65,6 +65,7 @@ class InternalCaseStatusService(
         return internalCaseStatusRepository.findByIdCaseDefinitionKeyOrderByOrder(caseDefinitionKey)
     }
 
+    @Deprecated("Only used by the removed generic case list. Will be removed in a future release.")
     fun getAllInternalCaseStatuses(): List<InternalCaseStatus> {
         val authorizedDefinitions = caseDefinitionService.getCaseDefinitions(active = true)
         if (authorizedDefinitions.isEmpty()) {

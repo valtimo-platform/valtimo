@@ -23,7 +23,6 @@
     "menu": {
       "pinPlaceholder": "Pin items to show them here"
     },
-    "allCases": "All cases",
     "overview": {
       "title": "Cases overview",
       "pin": "Pin to sidebar",
@@ -4440,8 +4439,8 @@
           "description": "Start with the navigation menu collapsed instead of expanded."
         },
         "enableGenericCaseList": {
-          "title": "Enable generic case list",
-          "description": "Show a single case list view with a dropdown to switch between case definitions."
+          "title": "Show all case definitions in the menu",
+          "description": "Show every case definition the user has access to in the Cases menu, instead of only their pinned case groups and case types. Pinning is turned off."
         },
         "enableManualTaskListRefresh": {
           "title": "Enable manual task list refresh",

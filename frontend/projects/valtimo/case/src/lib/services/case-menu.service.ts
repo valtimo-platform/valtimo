@@ -16,8 +16,10 @@
 
 import {Injectable} from '@angular/core';
 import {CASES_MENU_ITEM_ID, ConfigService, isCasesMenuItem, MenuItem} from '@valtimo/shared';
-import {Observable, of} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {CaseDefinition, DocumentService, OpenDocumentCount} from '@valtimo/document';
+import {SseService} from '@valtimo/sse';
+import {merge, Observable, of} from 'rxjs';
+import {map, shareReplay, startWith, switchMap} from 'rxjs/operators';
 import {MenuService} from '@valtimo/components';
 import {CASE_MENU_TEST_IDS} from '../constants/case.test-ids';
 import {PINNED_ITEM_FALLBACK_COLOR} from '../constants/pinned-item.constants';
@@ -30,30 +32,54 @@ const CASES_SECTION_LINKS = ['/cases', '/groups'];
 
 @Injectable({providedIn: 'root'})
 export class CaseMenuService {
+  // Shared by every case definition menu item, so one request refreshes all counts.
+  private readonly _openCaseCounts$: Observable<Map<string, number>> = this.configService
+    .getFeatureToggleObservable('disableCaseCount')
+    .pipe(
+      switchMap(disableCaseCount =>
+        disableCaseCount
+          ? of(new Map<string, number>())
+          : this.sseService
+              .getSseMessagesObservableByEventType([
+                'CASE_UNASSIGNED',
+                'CASE_ASSIGNED',
+                'CASE_CREATED',
+              ])
+              .pipe(
+                startWith(null),
+                switchMap(() => this.documentService.getOpenDocumentCount()),
+                map(
+                  (counts: OpenDocumentCount[]) =>
+                    new Map(
+                      counts.map(count => [count.documentDefinitionName, count.openDocumentCount])
+                    )
+                )
+              )
+      ),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
+
   constructor(
     private readonly menuService: MenuService,
     private readonly configService: ConfigService,
-    private readonly pinnedItemsService: PinnedItemsService
+    private readonly documentService: DocumentService,
+    private readonly pinnedItemsService: PinnedItemsService,
+    private readonly sseService: SseService
   ) {
     this.menuService.registerAppendMenuItemsFunction(this.appendCaseMenuItems.bind(this));
   }
 
-  public appendCaseMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> => {
-    const isGenericCaseList =
-      this.configService.config?.featureToggles?.enableGenericCaseList === true;
-
-    if (isGenericCaseList) {
-      const index = this.getCasesIndex(menuItems);
-      if (index >= 0) {
-        menuItems[index].link = ['/cases'];
-        delete menuItems[index].children;
-      }
-      return of(menuItems);
-    }
-
-    // Kept subscribed on purpose: pinning emits, which re-emits the menu items.
-    return this.pinnedItemsService.pinnedItems$.pipe(
-      map((pinnedItems: PinnedItem[]) => {
+  // Kept subscribed on purpose: pinning or flipping the toggle emits, which re-emits the menu items.
+  public appendCaseMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> =>
+    this.configService.getFeatureToggleObservable('enableGenericCaseList').pipe(
+      switchMap(showAllCaseDefinitions =>
+        showAllCaseDefinitions
+          ? this.getCaseDefinitionMenuItems()
+          : this.pinnedItemsService.pinnedItems$.pipe(
+              map((pinnedItems: PinnedItem[]) => this.toMenuItems(pinnedItems))
+            )
+      ),
+      map((children: MenuItem[]) => {
         const index = this.getCasesIndex(menuItems);
 
         if (index >= 0) {
@@ -61,16 +87,39 @@ export class CaseMenuService {
           menuItems[index].testId = CASE_MENU_TEST_IDS.casesMenu;
           menuItems[index].titleLink = CASES_OVERVIEW_LINK;
           menuItems[index].sectionLinks = CASES_SECTION_LINKS;
-          menuItems[index].children = this.toMenuItems(pinnedItems);
+          menuItems[index].children = children;
         }
 
         return menuItems;
       })
     );
-  };
 
   private getCasesIndex(menuItems: MenuItem[]): number {
     return menuItems.findIndex(isCasesMenuItem);
+  }
+
+  /** Every case definition the user may see, sorted alphabetically by name. */
+  private getCaseDefinitionMenuItems(): Observable<MenuItem[]> {
+    return this.documentService.getCaseDefinitions({active: true}).pipe(
+      map((caseDefinitions: CaseDefinition[]) =>
+        [...caseDefinitions]
+          .sort((left: CaseDefinition, right: CaseDefinition) =>
+            (left.name ?? '').localeCompare(right.name ?? '', undefined, {sensitivity: 'base'})
+          )
+          .map((caseDefinition: CaseDefinition, index: number) => ({
+            link: ['/cases/' + caseDefinition.caseDefinitionKey],
+            title: caseDefinition.name,
+            iconClass: 'icon mdi mdi-dot-circle',
+            color: caseDefinition.color || PINNED_ITEM_FALLBACK_COLOR,
+            sequence: index,
+            show: true,
+            count$: this._openCaseCounts$.pipe(
+              map(counts => counts.get(caseDefinition.caseDefinitionKey) ?? 0)
+            ),
+            testId: CASE_MENU_TEST_IDS.caseDefinitionItem,
+          }))
+      )
+    );
   }
 
   /**

@@ -45,4 +45,5 @@ export const CASE_MENU_TEST_IDS = {
   casesMenu: 'caseMenuCases',
   pinnedItem: 'caseMenuPinnedItem',
   pinPlaceholder: 'caseMenuPinPlaceholder',
+  caseDefinitionItem: 'caseMenuCaseDefinitionItem',
 } as const;

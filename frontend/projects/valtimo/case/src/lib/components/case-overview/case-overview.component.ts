@@ -21,7 +21,7 @@ import {toSignal} from '@angular/core/rxjs-interop';
 import {RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CaseDefinition, CaseDefinitionGroup, DocumentService} from '@valtimo/document';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {CASE_OVERVIEW_TEST_IDS} from '../../constants';
 import {PinnedItemType} from '../../models';
 import {PinnedItemsService} from '../../services';
@@ -60,6 +60,14 @@ export class CaseOverviewComponent {
 
   public readonly $searchQuery = signal<string>('');
   public readonly $pinInfoVisible = signal<boolean>(!this.isPinInfoDismissed());
+
+  // With the full case definition list in the menu, pins have no effect.
+  public readonly $pinningEnabled: Signal<boolean> = toSignal(
+    this.configService
+      .getFeatureToggleObservable('enableGenericCaseList')
+      .pipe(map(showAllCaseDefinitions => !showAllCaseDefinitions)),
+    {initialValue: !this.configService.config?.featureToggles?.enableGenericCaseList}
+  );
 
   private _pinToast: Notification | null = null;
 
@@ -151,6 +159,7 @@ export class CaseOverviewComponent {
     );
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly globalNotificationService: GlobalNotificationService,
@@ -175,7 +184,7 @@ export class CaseOverviewComponent {
   }
 
   public isPinned(itemType: PinnedItemType, itemKey: string): boolean {
-    return this._$pinnedKeys().has(`${itemType}:${itemKey}`);
+    return this.$pinningEnabled() && this._$pinnedKeys().has(`${itemType}:${itemKey}`);
   }
 
   public onTogglePin(
