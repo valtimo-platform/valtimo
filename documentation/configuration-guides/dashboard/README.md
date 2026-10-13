@@ -71,11 +71,23 @@ Click **Complete** to save changes
 
 The layout algorithm determines how widgets are arranged on the dashboard.
 
-| Option | Description |
-|--------|-------------|
-| Default | Muuri's plain masonry layout, keeps widgets in configured order |
-| Default (less gaps) | Muuri's masonry with gap filling, keeps widgets in configured order |
-| Gap free | Custom gap-free packing, may reorder widgets to remove gaps |
+**Default**
+
+Muuri's plain masonry layout that keeps widgets in their configured order.
+
+<figure><img src="../../assets/configuration-guides/dashboard/08-layout-default.png" alt="Default layout"><figcaption></figcaption></figure>
+
+**Default (less gaps)**
+
+Muuri's masonry layout with gap filling, keeps widgets in their configured order.
+
+<figure><img src="../../assets/configuration-guides/dashboard/09-layout-less-gaps.png" alt="Default (less gaps) layout"><figcaption></figcaption></figure>
+
+**Gap free**
+
+Custom gap-free packing that may reorder widgets within a section to remove gaps.
+
+<figure><img src="../../assets/configuration-guides/dashboard/10-layout-gap-free.png" alt="Gap free layout"><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Default and Default (less gaps) keep widgets in their configured order as much as possible, which can leave empty gaps. Gap free may reorder widgets within a section to remove those gaps.
