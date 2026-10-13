@@ -178,10 +178,15 @@ export class CaseOverviewComponent {
     return this._$pinnedKeys().has(`${itemType}:${itemKey}`);
   }
 
-  public onTogglePin(itemType: PinnedItemType, itemKey: string, name: string): void {
+  public onTogglePin(
+    itemType: PinnedItemType,
+    itemKey: string,
+    name: string,
+    color?: string
+  ): void {
     const pinning = !this.isPinned(itemType, itemKey);
 
-    this.pinnedItemsService.togglePinnedItem(itemType, itemKey);
+    this.pinnedItemsService.togglePinnedItem(itemType, itemKey, {color, displayName: name});
 
     // One pin toast at a time: replace the previous one.
     if (this._pinToast && !this._pinToast.componentRef?.hostView.destroyed) {

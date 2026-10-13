@@ -20,6 +20,7 @@ import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {MenuService} from '@valtimo/components';
 import {CASE_MENU_TEST_IDS} from '../constants/case.test-ids';
+import {PINNED_ITEM_FALLBACK_COLOR} from '../constants/pinned-item.constants';
 import {PinnedItem, PinnedItemType} from '../models';
 import {PinnedItemsService} from './pinned-items.service';
 
@@ -91,7 +92,7 @@ export class CaseMenuService {
             : ['/cases/' + pinnedItem.itemKey],
         title: pinnedItem.displayName as string,
         iconClass: 'icon mdi mdi-dot-circle',
-        color: pinnedItem.color,
+        color: pinnedItem.color || PINNED_ITEM_FALLBACK_COLOR,
         sequence: index,
         show: true,
         testId: CASE_MENU_TEST_IDS.pinnedItem,

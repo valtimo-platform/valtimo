@@ -30,6 +30,7 @@ import {SubmenuTitleClickDirective} from './submenu-title-click.directive';
       title="Cases"
       [valtimoSubmenuTitleClick]="enabled"
       (submenuTitleClickEvent)="titleClicks = titleClicks + 1"
+      (submenuTitleContextMenuEvent)="titleContextMenus = titleContextMenus + 1"
     >
       <cds-sidenav-item href="javascript:void(0)">Child</cds-sidenav-item>
     </cds-sidenav-menu>
@@ -38,6 +39,7 @@ import {SubmenuTitleClickDirective} from './submenu-title-click.directive';
 class TestHostComponent {
   public enabled = true;
   public titleClicks = 0;
+  public titleContextMenus = 0;
 }
 
 describe('SubmenuTitleClickDirective', () => {
@@ -48,6 +50,14 @@ describe('SubmenuTitleClickDirective', () => {
     const element: HTMLElement = fixture.nativeElement.querySelector(selector);
     element.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, detail}));
     fixture.detectChanges();
+  };
+
+  const rightClick = (selector: string): MouseEvent => {
+    const element: HTMLElement = fixture.nativeElement.querySelector(selector);
+    const event = new MouseEvent('contextmenu', {bubbles: true, cancelable: true});
+    element.dispatchEvent(event);
+    fixture.detectChanges();
+    return event;
   };
 
   const expanded = (): boolean =>
@@ -105,5 +115,29 @@ describe('SubmenuTitleClickDirective', () => {
 
     expect(host.titleClicks).toBe(0);
     expect(expanded()).toBe(true);
+  });
+
+  it('emits on a right-click on the header instead of opening the browser menu', () => {
+    const event = rightClick('.cds--side-nav__submenu-title');
+
+    expect(host.titleContextMenus).toBe(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('ignores a right-click on a child item', () => {
+    const event = rightClick('cds-sidenav-item');
+
+    expect(host.titleContextMenus).toBe(0);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('leaves the browser menu intact on a right-click when disabled', () => {
+    host.enabled = false;
+    fixture.detectChanges();
+
+    const event = rightClick('.cds--side-nav__submenu-title');
+
+    expect(host.titleContextMenus).toBe(0);
+    expect(event.defaultPrevented).toBe(false);
   });
 });

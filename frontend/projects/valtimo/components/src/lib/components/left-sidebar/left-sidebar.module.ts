@@ -23,6 +23,9 @@ import {IconModule, LoadingModule, UIShellModule} from 'carbon-components-angula
 import {CaseCountPipe, ComponentsPipesModule} from '../../pipes';
 import {CtrlClickDirective} from '../../directives/ctrl-click/ctrl-click.directive';
 import {SubmenuTitleClickDirective} from '../../directives/submenu-title-click/submenu-title-click.directive';
+import {OverflowMenuComponent} from '../overflow-menu/overflow-menu.component';
+import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
+import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [LeftSidebarComponent, CaseCountPipe],
@@ -36,6 +39,9 @@ import {SubmenuTitleClickDirective} from '../../directives/submenu-title-click/s
     CtrlClickDirective,
     SubmenuTitleClickDirective,
     LoadingModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    TranslateModule,
   ],
   exports: [LeftSidebarComponent],
 })

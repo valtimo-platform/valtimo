@@ -141,6 +141,15 @@
   }
 }
 
+// Anchor only: zero-height strip on the header's top edge, the pane opens to its right.
+// Its empty trigger still overlaps the header, so it must not take clicks.
+.submenu-title-overflow {
+  display: block;
+  width: 100%;
+  height: 0;
+  pointer-events: none;
+}
+
 .menu-item--hidden {
   display: none;
 }
@@ -191,8 +200,16 @@
     padding-left: 3.5rem;
   }
 
+  // Carbon stretches the chevron over the free space, which then toggles instead of navigating
   .cds--side-nav__submenu-title {
+    flex: 1 1 auto;
+    min-width: 0;
     padding-right: 1.5rem;
+  }
+
+  .cds--side-nav__submenu .cds--side-nav__submenu-chevron {
+    flex: 0 0 auto;
+    padding-left: 1rem;
   }
 
   .cds--side-nav__items {
@@ -230,5 +247,19 @@
   .cds--side-nav__submenu-title {
     color: var(--cds-text-primary);
     font-weight: 600;
+  }
+}
+
+// Header owns the route itself (overview, unpinned group): no child carries Carbon's active bar
+::ng-deep cds-sidenav-menu.menu-item--section-current .cds--side-nav__submenu {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    background-color: var(--cds-border-interactive);
+    content: '';
+    inline-size: 3px;
+    inset-block: 0;
+    inset-inline-start: 0;
   }
 }

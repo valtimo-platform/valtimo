@@ -75,7 +75,12 @@
                     "
                     type="button"
                     (click)="
-                      onTogglePin(PINNED_ITEM_TYPE.CASE_DEFINITION_GROUP, group.key, group.title)
+                      onTogglePin(
+                        PINNED_ITEM_TYPE.CASE_DEFINITION_GROUP,
+                        group.key,
+                        group.title,
+                        group.color
+                      )
                     "
                     [attr.data-test-id]="testIds.groupPinButton"
                   >
@@ -155,7 +160,8 @@
                   onTogglePin(
                     PINNED_ITEM_TYPE.CASE_DEFINITION,
                     caseType.caseDefinitionKey,
-                    caseType.name
+                    caseType.name,
+                    caseType.color
                   )
                 "
                 [attr.data-test-id]="testIds.typePinButton"

@@ -32,6 +32,7 @@ const SUBMENU_CHEVRON_SELECTOR = '.cds--side-nav__submenu-chevron';
 /**
  * Splits a click on a `cds-sidenav-menu` header: the chevron keeps toggling the submenu, the rest
  * of the header emits `submenuTitleClickEvent` instead and leaves the submenu as it is.
+ * A right-click on the header emits `submenuTitleContextMenuEvent` instead of the browser menu.
  */
 @Directive({
   selector: '[valtimoSubmenuTitleClick]',
@@ -41,11 +42,13 @@ export class SubmenuTitleClickDirective implements OnInit, AfterViewInit, OnDest
   @Input() public valtimoSubmenuTitleClick = false;
 
   @Output() public submenuTitleClickEvent = new EventEmitter<MouseEvent>();
+  @Output() public submenuTitleContextMenuEvent = new EventEmitter<MouseEvent>();
 
   constructor(private readonly element: ElementRef<HTMLElement>) {}
 
   public ngOnInit(): void {
     this.element.nativeElement.addEventListener('click', this.onCaptureClick, true);
+    this.element.nativeElement.addEventListener('contextmenu', this.onContextMenu);
   }
 
   public ngAfterViewInit(): void {
@@ -57,6 +60,7 @@ export class SubmenuTitleClickDirective implements OnInit, AfterViewInit, OnDest
 
   public ngOnDestroy(): void {
     this.element.nativeElement.removeEventListener('click', this.onCaptureClick, true);
+    this.element.nativeElement.removeEventListener('contextmenu', this.onContextMenu);
   }
 
   // Capture phase: Carbon toggles on the submenu button itself, so the title click has to win first.
@@ -74,5 +78,16 @@ export class SubmenuTitleClickDirective implements OnInit, AfterViewInit, OnDest
     event.stopPropagation();
 
     this.submenuTitleClickEvent.emit(event);
+  };
+
+  // Child items handle their own right-click; only the header itself is ours.
+  private readonly onContextMenu = (event: MouseEvent): void => {
+    if (!this.valtimoSubmenuTitleClick) return;
+
+    if (!(event.target as HTMLElement).closest(SUBMENU_SELECTOR)) return;
+
+    event.preventDefault();
+
+    this.submenuTitleContextMenuEvent.emit(event);
   };
 }

@@ -65,7 +65,11 @@ export class PinnedItemsService {
       .some(item => item.itemType === itemType && item.itemKey === itemKey);
   }
 
-  public togglePinnedItem(itemType: PinnedItemType, itemKey: string): void {
+  public togglePinnedItem(
+    itemType: PinnedItemType,
+    itemKey: string,
+    display?: Pick<PinnedItem, 'color' | 'displayName'>
+  ): void {
     const current = this._pinnedItems$.getValue();
     const pinned = this.isPinned(itemType, itemKey);
 
@@ -73,7 +77,7 @@ export class PinnedItemsService {
     this._pinnedItems$.next(
       pinned
         ? current.filter(item => !(item.itemType === itemType && item.itemKey === itemKey))
-        : [{itemType, itemKey, order: 0}, ...current]
+        : [{itemType, itemKey, order: 0, ...display}, ...current]
     );
 
     const request = pinned

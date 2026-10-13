@@ -28,10 +28,27 @@
   .v-overflow-menu__pane {
     pointer-events: auto;
   }
+
+  // Trigger is inline-flex and grows with its text; cap it so long titles get an ellipsis
+  .v-overflow-menu,
+  .v-overflow-menu__trigger {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .menu-item-text-container {
   display: flex;
+  width: 100%;
+  min-width: 0;
+
+  > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   .menu-item-icon-container {
     position: absolute;
