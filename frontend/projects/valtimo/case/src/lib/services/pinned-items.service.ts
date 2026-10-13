@@ -16,8 +16,17 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/shared';
-import {BehaviorSubject, catchError, defer, distinctUntilChanged, map, Observable, of} from 'rxjs';
+import {ConfigService, InterceptorSkipHeader} from '@valtimo/shared';
+import {
+  AsyncSubject,
+  BehaviorSubject,
+  catchError,
+  defer,
+  distinctUntilChanged,
+  map,
+  Observable,
+  of,
+} from 'rxjs';
 import {PinnedItem, PinnedItemType} from '../models';
 
 /**
@@ -60,34 +69,55 @@ export class PinnedItemsService {
   }
 
   public isPinned(itemType: PinnedItemType, itemKey: string): boolean {
-    return this._pinnedItems$
-      .getValue()
-      .some(item => item.itemType === itemType && item.itemKey === itemKey);
+    return !!this.findPinnedItem(itemType, itemKey);
   }
 
+  /**
+   * Runs whether or not the result is subscribed to. The returned observable completes once the
+   * backend accepted the change, or errors after the change was rolled back. The global error
+   * toast is skipped: the caller reports the failure.
+   * `display` is shown until the backend answers; without it a new pin stays out of the menu.
+   */
   public togglePinnedItem(
     itemType: PinnedItemType,
     itemKey: string,
     display?: Pick<PinnedItem, 'color' | 'displayName'>
-  ): void {
-    const current = this._pinnedItems$.getValue();
-    const pinned = this.isPinned(itemType, itemKey);
+  ): Observable<void> {
+    const existing = this.findPinnedItem(itemType, itemKey);
+    const result$ = new AsyncSubject<void>();
 
     // Applied right away so the click feels instant; the backend answer replaces it.
     this._pinnedItems$.next(
-      pinned
-        ? current.filter(item => !(item.itemType === itemType && item.itemKey === itemKey))
-        : [{itemType, itemKey, order: 0, ...display}, ...current]
+      existing
+        ? this.withoutItem(this._pinnedItems$.getValue(), itemType, itemKey)
+        : [{itemType, itemKey, order: 0, ...display}, ...this._pinnedItems$.getValue()]
     );
 
-    const request = pinned
-      ? this.http.delete<void>(`${this._endpointUri}/${itemType}/${itemKey}`)
-      : this.http.post<void>(this._endpointUri, {itemType, itemKey});
+    const request = existing
+      ? this.http.delete<void>(`${this._endpointUri}/${itemType}/${itemKey}`, {
+          headers: InterceptorSkipHeader,
+        })
+      : this.http.post<void>(
+          this._endpointUri,
+          {itemType, itemKey},
+          {headers: InterceptorSkipHeader}
+        );
 
     request.subscribe({
-      next: () => this.fetchPinnedItems(),
-      error: () => this._pinnedItems$.next(current),
+      next: () => {
+        this.fetchPinnedItems();
+        result$.next();
+        result$.complete();
+      },
+      // Only this item is rolled back, so a toggle made while this call was pending survives.
+      error: error => {
+        const others = this.withoutItem(this._pinnedItems$.getValue(), itemType, itemKey);
+        this._pinnedItems$.next(existing ? [...others, existing] : others);
+        result$.error(error);
+      },
     });
+
+    return result$.asObservable();
   }
 
   /** Re-fetches after a pinned item's name or colour changed elsewhere. */
@@ -95,6 +125,20 @@ export class PinnedItemsService {
     if (!this._loadStarted) return;
 
     this.fetchPinnedItems();
+  }
+
+  private findPinnedItem(itemType: PinnedItemType, itemKey: string): PinnedItem | undefined {
+    return this._pinnedItems$
+      .getValue()
+      .find(item => item.itemType === itemType && item.itemKey === itemKey);
+  }
+
+  private withoutItem(
+    items: PinnedItem[],
+    itemType: PinnedItemType,
+    itemKey: string
+  ): PinnedItem[] {
+    return items.filter(item => !(item.itemType === itemType && item.itemKey === itemKey));
   }
 
   private getItemId(itemType: PinnedItemType, itemKey: string): string {

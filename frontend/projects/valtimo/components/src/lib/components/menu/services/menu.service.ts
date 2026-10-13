@@ -32,6 +32,7 @@ import {
 import {distinctUntilChanged, filter, map, tap} from 'rxjs/operators';
 import {PendingChangesService} from '../../pending-changes/pending-changes.service';
 import {AppendMenuItemsFunction} from '../../../models';
+import {getMenuLinkMatchScore} from '../menu-route-match.util';
 import {isEqual} from 'lodash';
 import {KeycloakService} from 'keycloak-angular';
 
@@ -79,20 +80,8 @@ export class MenuService implements OnDestroy {
         let closestSequence = '';
         let highestDiff = 0;
 
-        const normalize = (value: string): string =>
-          ('/' + decodeURIComponent(value).toLowerCase().replace(/^\/+/, '')).replace(/\/+$/, '');
-
-        const normalizedCurrent = normalize(currentRoute);
-
         const checkItemMatch = (rawUrl: string, seq: string, parentSeq?: string): void => {
-          const normalizedUrl = normalize(rawUrl);
-          // The root link normalizes to '', which matches every url; only the root route is its own.
-          const diff =
-            normalizedUrl === ''
-              ? normalizedCurrent === ''
-                ? 1
-                : 0
-              : normalizedCurrent.length - normalizedCurrent.replace(normalizedUrl, '').length;
+          const diff = getMenuLinkMatchScore(currentRoute, rawUrl);
 
           if (diff > highestDiff) {
             highestDiff = diff;

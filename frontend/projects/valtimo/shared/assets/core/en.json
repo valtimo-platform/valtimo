@@ -38,7 +38,9 @@
         "open": "Open {{title}}",
         "pin": "Pin to sidebar",
         "pinnedToast": "Case group '{{name}}' now appears under 'Cases' in the left sidebar.",
-        "unpinnedToast": "Case group '{{name}}' no longer appears under 'Cases' in the left sidebar."
+        "unpinnedToast": "Case group '{{name}}' no longer appears under 'Cases' in the left sidebar.",
+        "pinErrorToast": "Pinning '{{name}}' failed. Please try again.",
+        "unpinErrorToast": "Unpinning '{{name}}' failed. Please try again."
       },
       "types": {
         "title": "Case types",
@@ -47,7 +49,9 @@
         "open": "Open {{name}}",
         "pin": "Pin to sidebar",
         "pinnedToast": "Case type '{{name}}' now appears under 'Cases' in the left sidebar.",
-        "unpinnedToast": "Case type '{{name}}' no longer appears under 'Cases' in the left sidebar."
+        "unpinnedToast": "Case type '{{name}}' no longer appears under 'Cases' in the left sidebar.",
+        "pinErrorToast": "Pinning '{{name}}' failed. Please try again.",
+        "unpinErrorToast": "Unpinning '{{name}}' failed. Please try again."
       },
       "pinInfo": {
         "title": "Put the case groups you use most in your sidebar:",

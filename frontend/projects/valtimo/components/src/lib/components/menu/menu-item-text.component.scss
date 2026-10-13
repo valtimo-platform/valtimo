@@ -43,7 +43,18 @@
   width: 100%;
   min-width: 0;
 
-  > span {
+  // Flex drops the whitespace between the dot and the title, which otherwise adds a space after
+  // the dot that labels without one don't get.
+  .menu-item-label {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  // Makes the text the label's baseline; the empty dot would otherwise lower it by half a pixel.
+  // Ellipsis lives here: a flex container (the label) ignores text-overflow.
+  .menu-item-title {
+    align-self: baseline;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
