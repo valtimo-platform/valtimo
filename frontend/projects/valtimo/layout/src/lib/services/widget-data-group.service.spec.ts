@@ -71,10 +71,10 @@ describe('WidgetDataGroupService', () => {
     service.setWidgets([widget('first', 'a'), widget('second', 'a')]);
     const received: unknown[] = [];
 
-    service.dataFor('first').subscribe(data => received.push(data));
-    service.dataFor('second').subscribe(data => received.push(data));
+    service.dataFor('first').subscribe(envelope => received.push(envelope));
+    service.dataFor('second').subscribe(envelope => received.push(envelope));
 
-    expect(received).toEqual([{value: 'one'}, {value: 'two'}]);
+    expect(received).toEqual([{data: {value: 'one'}}, {data: {value: 'two'}}]);
   });
 
   it('should not request a group no widget subscribes to', () => {
@@ -89,12 +89,12 @@ describe('WidgetDataGroupService', () => {
     service.setWidgets([widget('first'), widget('second')]);
     const received: unknown[] = [];
 
-    service.dataFor('first').subscribe(data => received.push(data));
-    service.dataFor('second').subscribe(data => received.push(data));
+    service.dataFor('first').subscribe(envelope => received.push(envelope));
+    service.dataFor('second').subscribe(envelope => received.push(envelope));
 
     expect(groupCalls).toEqual([]);
     expect(widgetCalls).toEqual(['first', 'second']);
-    expect(received).toEqual([{value: 'first'}, {value: 'second'}]);
+    expect(received).toEqual([{data: {value: 'first'}}, {data: {value: 'second'}}]);
   });
 
   it('should fall back for every widget when one lacks a dataGroupId', () => {
@@ -107,7 +107,7 @@ describe('WidgetDataGroupService', () => {
     expect(widgetCalls).toEqual(['first', 'second']);
   });
 
-  it('should emit null for a widget whose envelope holds an error', () => {
+  it('should pass on the error envelope of a widget the group could not fill', () => {
     groupResponse = {
       first: {data: {value: 'one'}},
       second: {error: {code: 'UPSTREAM_UNAVAILABLE'}},
@@ -115,10 +115,20 @@ describe('WidgetDataGroupService', () => {
     service.setWidgets([widget('first', 'a'), widget('second', 'a')]);
     const received: unknown[] = [];
 
-    service.dataFor('first').subscribe(data => received.push(data));
-    service.dataFor('second').subscribe(data => received.push(data));
+    service.dataFor('first').subscribe(envelope => received.push(envelope));
+    service.dataFor('second').subscribe(envelope => received.push(envelope));
 
-    expect(received).toEqual([{value: 'one'}, null]);
+    expect(received).toEqual([{data: {value: 'one'}}, {error: {code: 'UPSTREAM_UNAVAILABLE'}}]);
+  });
+
+  it('should report a widget the group response left out as failed', () => {
+    groupResponse = {first: {data: {value: 'one'}}};
+    service.setWidgets([widget('first', 'a'), widget('second', 'a')]);
+    let received: unknown = 'untouched';
+
+    service.dataFor('second').subscribe(envelope => (received = envelope));
+
+    expect(received).toEqual({error: {code: 'UPSTREAM_UNAVAILABLE'}});
   });
 
   it('should fall back to per-widget requests when a group request fails', () => {
@@ -135,12 +145,12 @@ describe('WidgetDataGroupService', () => {
     service.setWidgets([widget('first', 'a'), widget('second', 'a')]);
     const received: unknown[] = [];
 
-    service.dataFor('first').subscribe(data => received.push(data));
-    service.dataFor('second').subscribe(data => received.push(data));
+    service.dataFor('first').subscribe(envelope => received.push(envelope));
+    service.dataFor('second').subscribe(envelope => received.push(envelope));
 
     expect(groupCalls).toEqual(['a']);
     expect(widgetCalls).toEqual(['first', 'second']);
-    expect(received).toEqual([{value: 'first'}, {value: 'second'}]);
+    expect(received).toEqual([{data: {value: 'first'}}, {data: {value: 'second'}}]);
   });
 
   it('should refresh per widget after a group request failed', () => {
@@ -164,7 +174,7 @@ describe('WidgetDataGroupService', () => {
     expect(widgetCalls).toEqual(['first', 'second']);
   });
 
-  it('should emit null for a widget whose own request fails', () => {
+  it('should report a widget whose own request fails as failed, not as empty', () => {
     service.setSource({
       fetchGroup: () => of({}),
       fetchWidget: () => throwError(() => new Error('boom')),
@@ -172,9 +182,9 @@ describe('WidgetDataGroupService', () => {
     service.setWidgets([widget('first')]);
     let received: unknown = 'untouched';
 
-    service.dataFor('first').subscribe(data => (received = data));
+    service.dataFor('first').subscribe(envelope => (received = envelope));
 
-    expect(received).toBeNull();
+    expect(received).toEqual({error: {code: 'UPSTREAM_UNAVAILABLE'}});
   });
 
   it('should drop a response that arrives after the widget list was replaced', () => {
@@ -192,7 +202,7 @@ describe('WidgetDataGroupService', () => {
 
     service.setWidgets([widget('first', 'b')]);
     let received: unknown = 'untouched';
-    service.dataFor('first').subscribe(data => (received = data));
+    service.dataFor('first').subscribe(envelope => (received = envelope));
     responses[0].next({first: {data: {value: 'stale'}}});
 
     expect(received).toBe('untouched');
@@ -210,13 +220,13 @@ describe('WidgetDataGroupService', () => {
     });
     service.setWidgets([widget('first', 'a')]);
     let received: unknown = 'untouched';
-    service.dataFor('first').subscribe(data => (received = data));
+    service.dataFor('first').subscribe(envelope => (received = envelope));
 
     service.refresh();
     responses[0].next({first: {data: {value: 'stale'}}});
     responses[1].next({first: {data: {value: 'fresh'}}});
 
-    expect(received).toEqual({value: 'fresh'});
+    expect(received).toEqual({data: {value: 'fresh'}});
   });
 
   it('should cancel in-flight requests on destroy', () => {
@@ -235,10 +245,10 @@ describe('WidgetDataGroupService', () => {
     service.dataFor('first').subscribe();
 
     let received: unknown = undefined;
-    service.dataFor('second').subscribe(data => (received = data));
+    service.dataFor('second').subscribe(envelope => (received = envelope));
 
     expect(groupCalls).toEqual(['a']);
-    expect(received).toEqual({value: 'two'});
+    expect(received).toEqual({data: {value: 'two'}});
   });
 
   it('should re-run requested groups on refresh, and only those', () => {
@@ -257,6 +267,62 @@ describe('WidgetDataGroupService', () => {
     service.refresh();
 
     expect(widgetCalls).toEqual(['first', 'first']);
+  });
+
+  it('should re-run only the group serving the named widget', () => {
+    service.setWidgets([widget('first', 'a'), widget('third', 'b')]);
+    service.dataFor('first').subscribe();
+    service.dataFor('third').subscribe();
+
+    service.refresh('first');
+
+    expect(groupCalls).toEqual(['a', 'b', 'a']);
+  });
+
+  it('should re-run only the named widget when it has no group', () => {
+    service.setWidgets([widget('first'), widget('second')]);
+    service.dataFor('first').subscribe();
+    service.dataFor('second').subscribe();
+
+    service.refresh('second');
+
+    expect(widgetCalls).toEqual(['first', 'second', 'second']);
+  });
+
+  it('should re-run the named widget after its earlier request failed', () => {
+    let fail = true;
+    service.setSource({
+      fetchGroup: () => of({}),
+      fetchWidget: widgetKey => {
+        widgetCalls.push(widgetKey);
+        return fail ? throwError(() => new Error('boom')) : of({value: widgetKey});
+      },
+    });
+    service.setWidgets([widget('first')]);
+    const received: unknown[] = [];
+    service.dataFor('first').subscribe(envelope => received.push(envelope));
+
+    fail = false;
+    service.refresh('first');
+
+    expect(widgetCalls).toEqual(['first', 'first']);
+    expect(received).toEqual([{error: {code: 'UPSTREAM_UNAVAILABLE'}}, {data: {value: 'first'}}]);
+  });
+
+  it('should serve a retried group response to every widget of that group', () => {
+    groupResponse = {
+      first: {error: {code: 'UPSTREAM_UNAVAILABLE'}},
+      second: {error: {code: 'UPSTREAM_UNAVAILABLE'}},
+    };
+    service.setWidgets([widget('first', 'a'), widget('second', 'a')]);
+    const received: unknown[] = [];
+    service.dataFor('first').subscribe();
+    service.dataFor('second').subscribe(envelope => received.push(envelope));
+
+    groupResponse = {first: {data: {value: 'one'}}, second: {data: {value: 'two'}}};
+    service.refresh('first');
+
+    expect(received).toEqual([{error: {code: 'UPSTREAM_UNAVAILABLE'}}, {data: {value: 'two'}}]);
   });
 
   it('should request nothing before a widget list is set', () => {
