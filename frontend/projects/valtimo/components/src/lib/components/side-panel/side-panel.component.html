@@ -1,0 +1,116 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<aside
+  [attr.aria-hidden]="!$visible()"
+  [attr.data-test-id]="testIds.panel"
+  [class.valtimo-side-panel--resizing]="$resizing()"
+  [class.valtimo-side-panel--visible]="$visible() && !!$current()"
+  [style.width.px]="$width()"
+  class="valtimo-side-panel"
+>
+  <div
+    [attr.aria-label]="'sidePanel.resize' | translate"
+    [attr.data-test-id]="testIds.resizeHandle"
+    (keydown.arrowLeft)="onResizeKey(1)"
+    (keydown.arrowRight)="onResizeKey(-1)"
+    (mousedown)="onResizeStart($event)"
+    aria-orientation="vertical"
+    class="valtimo-side-panel__resize-handle"
+    role="separator"
+    tabindex="0"
+  ></div>
+
+  @if ($current(); as current) {
+    <header class="valtimo-side-panel__header">
+      <div class="valtimo-side-panel__titles">
+        <div class="valtimo-side-panel__title-row">
+          @if (current.pinned) {
+            <cds-tooltip [description]="'sidePanel.pinned' | translate" align="bottom-left">
+              <span
+                [attr.aria-label]="'sidePanel.pinned' | translate"
+                [attr.data-test-id]="testIds.pinnedIcon"
+                class="valtimo-side-panel__pin"
+                role="img"
+                tabindex="0"
+              >
+                <svg cdsIcon="pin--filled" size="16"></svg>
+              </span>
+            </cds-tooltip>
+          }
+
+          <h2 class="valtimo-side-panel__title">{{ current.title }}</h2>
+        </div>
+
+        @if (current.subtitle) {
+          @if (current.subtitleLink) {
+            <a
+              [attr.data-test-id]="testIds.subtitleLink"
+              [routerLink]="current.subtitleLink"
+              class="valtimo-side-panel__subtitle"
+              >{{ current.subtitle }}</a
+            >
+          } @else {
+            <span class="valtimo-side-panel__subtitle">{{ current.subtitle }}</span>
+          }
+        }
+
+        @if (current.origin; as origin) {
+          <div [attr.data-test-id]="testIds.origin" class="valtimo-side-panel__origin">
+            <span>{{ 'sidePanel.originFor' | translate }}</span>
+
+            <a [routerLink]="origin.route" class="valtimo-side-panel__origin-link">{{
+              $originLabel() ?? ('sidePanel.originFallback' | translate)
+            }}</a>
+
+            @if ($originElsewhere()) {
+              <cds-tag
+                [attr.data-test-id]="testIds.originElsewhere"
+                [title]="
+                  'sidePanel.originElsewhereDescription'
+                    | translate: {label: $originLabel() ?? ('sidePanel.originFallback' | translate)}
+                "
+                class="valtimo-side-panel__origin-tag"
+                size="sm"
+                type="warm-gray"
+                >{{ 'sidePanel.originElsewhere' | translate }}</cds-tag
+              >
+            }
+          </div>
+        }
+      </div>
+
+      <button
+        [attr.aria-label]="'sidePanel.close' | translate"
+        [attr.data-test-id]="testIds.closeButton"
+        [iconOnly]="true"
+        (click)="onClose()"
+        cdsButton="ghost"
+        class="valtimo-side-panel__close"
+      >
+        <svg cdsIcon="close" class="cds--btn__icon" size="16"></svg>
+      </button>
+    </header>
+  }
+
+  <div class="valtimo-side-panel__body">
+    @for (offer of $offers(); track offer.key) {
+      <ng-container
+        *ngComponentOutlet="offer.component; inputs: offer.inputs ?? {}; injector: offer.injector"
+      ></ng-container>
+    }
+  </div>
+</aside>

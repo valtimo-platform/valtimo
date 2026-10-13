@@ -10,6 +10,16 @@ This release contains security fixes. See [Security](#security) for details.
 
 ## New Features
 
+### Side panel
+
+A new side panel at the right edge of the screen shows supporting content next to the page the user is working on. The page moves aside to make room; on small screens the panel overlays the page instead.
+
+- On a case's detail page, the side panel shows the tasks of the case. Task forms and start forms with the **Panel** form display type open in the side panel. The tasks button in the case header shows or hides the panel.
+- A form open in the panel stays open when switching between case tabs. Leaving the case with unsaved changes in a form asks for confirmation first.
+- External plugins can offer their own content to the side panel. The panel header names the case the content belongs to and links back to it.
+- Users resize the panel by dragging its left edge. The width is remembered.
+- The case header actions adapt to the available width, collapsing to icon-only buttons when space runs out.
+
 ### New feature title
 
 New feature explanation.

@@ -292,4 +292,49 @@ describe('CaseDetailLayoutService', () => {
     });
     service.setTabContentContainerWidth(CONTAINER_WIDTH);
   });
+
+  it('reports actions taken in the task panel to the case detail', () => {
+    service = createService({});
+    const selected = jasmine.createSpy('selected');
+    const submitted = jasmine.createSpy('submitted');
+    const closeRequested = jasmine.createSpy('closeRequested');
+    const taskCloseRequested = jasmine.createSpy('taskCloseRequested');
+    service.taskSelected$.subscribe(selected);
+    service.taskFormSubmitted$.subscribe(submitted);
+    service.startFormPanelCloseRequested$.subscribe(closeRequested);
+    service.taskCloseRequested$.subscribe(taskCloseRequested);
+    const task = {} as TaskWithProcessLink;
+
+    service.selectTask(task);
+    service.notifyTaskFormSubmitted();
+    service.requestStartFormPanelClose();
+    service.requestTaskClose();
+
+    expect(selected).toHaveBeenCalledWith(task);
+    expect(submitted).toHaveBeenCalled();
+    expect(closeRequested).toHaveBeenCalled();
+    expect(taskCloseRequested).toHaveBeenCalled();
+  });
+
+  it('exposes the saved task panel width', done => {
+    service = createService({taskPanelWidth: 700});
+
+    service.taskPanelWidth$.pipe(take(1)).subscribe(width => {
+      expect(width).toBe(700);
+      done();
+    });
+  });
+
+  it('has pending changes while a task or start form is edited, until cleared', () => {
+    service = createService({});
+    expect(service.hasPendingFormChanges).toBeFalse();
+
+    service.setTaskFormPendingChanges(true);
+    service.setStartFormPendingChanges(true);
+    service.setTaskFormPendingChanges(false);
+    expect(service.hasPendingFormChanges).toBeTrue();
+
+    service.clearPendingFormChanges();
+    expect(service.hasPendingFormChanges).toBeFalse();
+  });
 });
