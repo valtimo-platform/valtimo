@@ -26,6 +26,7 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.http.HttpStatus.OK
 import org.springframework.security.test.context.support.WithMockUser
 
 class BuildingBlockReferenceUpdateResourceSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
@@ -34,6 +35,18 @@ class BuildingBlockReferenceUpdateResourceSecurityIntTest : SecuritySpecificEndp
     private val execute = BuildingBlockReferenceUpdateExecuteRequestDto(
         "no-such-block", "1.0.0", "1.0.1", listOf("chain"), expectedFingerprint = "fingerprint"
     )
+
+    @Test
+    @WithMockUser(authorities = [ADMIN])
+    fun `an admin can list the referenced versions`() {
+        assertHttpStatus(GET, "$BASE/in-use", OK)
+    }
+
+    @Test
+    @WithMockUser(authorities = [USER])
+    fun `a user cannot list the referenced versions`() {
+        assertHttpStatus(GET, "$BASE/in-use", FORBIDDEN)
+    }
 
     @Test
     @WithMockUser(authorities = [ADMIN])

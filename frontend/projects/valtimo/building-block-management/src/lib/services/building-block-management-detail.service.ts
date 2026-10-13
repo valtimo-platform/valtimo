@@ -102,9 +102,6 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
   public readonly showProcessDefinitionUploadModal$ =
     this._showProcessDefinitionUploadModal$.asObservable();
 
-  private readonly _showReferenceUpdateModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showReferenceUpdateModal$ = this._showReferenceUpdateModal$.asObservable();
-
   private readonly _reload$ = new BehaviorSubject<null>(null);
 
   private readonly _reloadVersions$ = new BehaviorSubject<null>(null);
@@ -126,11 +123,6 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
   private readonly _reloadFormFlowDefinitions$ = new BehaviorSubject<null>(null);
   public get reloadFormFlowDefinitions$(): Observable<null> {
     return this._reloadFormFlowDefinitions$.asObservable();
-  }
-
-  private readonly _reloadReferences$ = new BehaviorSubject<null>(null);
-  public get reloadReferences$(): Observable<null> {
-    return this._reloadReferences$.asObservable();
   }
 
   constructor(
@@ -223,17 +215,5 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
 
   public reloadFormFlowDefinitions(): void {
     this._reloadFormFlowDefinitions$.next(null);
-  }
-
-  public showReferenceUpdateModal(): void {
-    this._showReferenceUpdateModal$.next(true);
-  }
-
-  public hideReferenceUpdateModal(): void {
-    this._showReferenceUpdateModal$.next(false);
-  }
-
-  public reloadReferences(): void {
-    this._reloadReferences$.next(null);
   }
 }

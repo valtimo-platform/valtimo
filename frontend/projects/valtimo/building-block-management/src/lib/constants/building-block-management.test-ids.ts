@@ -17,6 +17,7 @@
 export const BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS = {
   uploadButton: 'buildingBlockUploadButton',
   createButton: 'buildingBlockCreateButton',
+  updateReferencesButton: 'buildingBlockUpdateReferencesButton',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS = {
@@ -41,6 +42,9 @@ export const BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS = {
 export const BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS = {
   modal: 'buildingBlockReferenceUpdateModal',
   progressIndicator: 'buildingBlockReferenceUpdateProgressIndicator',
+  sourceKeyComboBox: 'buildingBlockReferenceUpdateSourceKeyComboBox',
+  sourceVersionComboBox: 'buildingBlockReferenceUpdateSourceVersionComboBox',
+  noSourceVersions: 'buildingBlockReferenceUpdateNoSourceVersions',
   targetKeyComboBox: 'buildingBlockReferenceUpdateTargetKeyComboBox',
   targetComboBox: 'buildingBlockReferenceUpdateTargetComboBox',
   draftsNotAllowed: 'buildingBlockReferenceUpdateDraftsNotAllowed',
@@ -77,7 +81,6 @@ export const BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS = {
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS = {
-  updateReferencesButton: 'buildingBlockUpdateReferencesButton',
   referenceLink: 'buildingBlockReferenceLink',
 } as const;
 
@@ -127,6 +130,14 @@ export const BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS = {
  * `buildingBlockVersion-<versionTag>`, built in the version selector component.
  */
 export const BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX = 'buildingBlockVersion-';
+
+/** Prefix for the options of the reference update wizard's source key combo box: `<prefix><key>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_KEY_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateSourceKey-';
+
+/** Prefix for the options of the reference update wizard's source version combo box: `<prefix><key>-<versionTag>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateSource-';
 
 /** Prefix for the options of the reference update wizard's target key combo box: `<prefix><key>`. */
 export const BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_KEY_OPTION_TEST_ID_PREFIX =

@@ -129,6 +129,14 @@ export interface BuildingBlockVersionDto {
     final: boolean;
 }
 
+export interface BuildingBlockInUseVersionDto {
+    key: string;
+    versionTag: string;
+    name: string | null;
+    final: boolean;
+    referenceCount: number;
+}
+
 export interface BuildingBlockReferenceUpdateChainDto {
     id: string;
     containers: BuildingBlockReferenceUpdateContainerDto[];

@@ -116,9 +116,8 @@ test.describe('Building block details — references tab', () => {
       )
     );
     await expect(page.locator('.djs-container').first()).toBeVisible();
-    await buildingBlockPage.goToReferencesTab(sendEmail, sourceVersionTag);
 
-    await buildingBlockPage.openReferenceUpdateWizard();
+    await buildingBlockPage.openReferenceUpdateWizard(sendEmail, sourceVersionTag);
     await buildingBlockPage.selectReferenceUpdateTarget(targetVersionTag);
 
     // Draft chain selected by default; finalized chain is opt-in
@@ -174,6 +173,7 @@ test.describe('Building block details — references tab', () => {
 
     // Only the unchanged finalized notify still references the source version
     await buildingBlockPage.closeReferenceUpdateWizard();
+    await buildingBlockPage.goToReferencesTab(sendEmail, sourceVersionTag);
     await expect(buildingBlockPage.referenceRow(draftContainer)).toHaveCount(0);
     await expect(buildingBlockPage.referenceRow(notify)).toHaveCount(1);
 
@@ -288,8 +288,7 @@ test.describe('Building block details — references tab', () => {
         sourceVersionTag
       );
 
-      await buildingBlockPage.goToReferencesTab(requiringCallee, sourceVersionTag);
-      await buildingBlockPage.openReferenceUpdateWizard();
+      await buildingBlockPage.openReferenceUpdateWizard(requiringCallee, sourceVersionTag);
       await buildingBlockPage.selectReferenceUpdateTarget(targetVersionTag);
       await expect(buildingBlockPage.referenceUpdateChainCheckbox(requiringCaller)).toBeChecked();
       await buildingBlockPage.goToNextReferenceUpdateStep();
@@ -337,8 +336,7 @@ test.describe('Building block details — references tab', () => {
         sourceVersionTag
       );
 
-      await buildingBlockPage.goToReferencesTab(callee, sourceVersionTag);
-      await buildingBlockPage.updateReferencesButton.click();
+      await buildingBlockPage.openReferenceUpdateWizard(callee, sourceVersionTag);
       await buildingBlockPage.selectReferenceUpdateTargetKey(caller);
       await buildingBlockPage.selectReferenceUpdateTarget(containerVersionTag);
 

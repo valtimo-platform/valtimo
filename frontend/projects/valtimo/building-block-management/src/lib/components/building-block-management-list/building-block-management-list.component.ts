@@ -38,12 +38,16 @@ import {isEqual} from 'lodash';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
 import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
-import {BuildingBlockDefinitionDto} from '@valtimo/shared';
-import {Upload16} from '@carbon/icons';
+import {BuildingBlockDefinitionDto, EnvironmentService} from '@valtimo/shared';
+import {Migrate16, Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
-import {BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS, BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {
+  BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS,
+  BUILDING_BLOCK_MANAGEMENT_TABS,
+} from '../../constants';
 import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 import {BuildingBlockDefinitionQuery} from '../../models';
+import {BuildingBlockManagementReferenceUpdateModalComponent} from '../building-block-management-reference-update-modal/building-block-management-reference-update-modal.component';
 
 @Component({
   standalone: true,
@@ -58,6 +62,7 @@ import {BuildingBlockDefinitionQuery} from '../../models';
     TranslatePipe,
     BuildingBlockManagementCreateModalComponent,
     BuildingBlockManagementUploadModalComponent,
+    BuildingBlockManagementReferenceUpdateModalComponent,
   ],
   providers: [BuildingBlockManagementService],
 })
@@ -65,6 +70,11 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
   protected readonly testIds = BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS;
 
   public readonly $loading = signal<boolean>(true);
+
+  public readonly showUpdateReferencesButton$: Observable<boolean> = combineLatest([
+    this.environmentService.canUpdateGlobalConfiguration(),
+    this.buildingBlockManagementService.usedKeys$,
+  ]).pipe(map(([canUpdate, usedKeys]) => canUpdate && usedKeys.length > 0));
 
   private readonly _collectionSize$ = new BehaviorSubject<number>(0);
 
@@ -122,10 +132,11 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly buildingBlockManagementService: BuildingBlockManagementService,
+    private readonly environmentService: EnvironmentService,
     private readonly iconService: IconService,
     private readonly router: Router
   ) {
-    this.iconService.registerAll([Upload16]);
+    this.iconService.registerAll([Migrate16, Upload16]);
   }
 
   public ngOnInit(): void {
@@ -176,6 +187,10 @@ export class BuildingBlockManagementListComponent implements OnInit, OnDestroy {
 
   public showUploadModal(): void {
     this.buildingBlockManagementService.showUploadModal();
+  }
+
+  public showReferenceUpdateModal(): void {
+    this.buildingBlockManagementService.showReferenceUpdateModal();
   }
 
   public onRowClick(buildingBlockDefinition: BuildingBlockDefinitionDto): void {

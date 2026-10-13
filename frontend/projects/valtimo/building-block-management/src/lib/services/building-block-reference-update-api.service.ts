@@ -18,6 +18,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   BaseApiService,
+  BuildingBlockInUseVersionDto,
   BuildingBlockReferenceUpdateExecuteRequestDto,
   BuildingBlockReferenceUpdatePreviewDto,
   BuildingBlockReferenceUpdatePreviewRequestDto,
@@ -36,6 +37,13 @@ export class BuildingBlockReferenceUpdateApiService extends BaseApiService {
     protected readonly httpClient: HttpClient
   ) {
     super(httpClient, configService);
+  }
+
+  public getInUseVersions(key?: string): Observable<BuildingBlockInUseVersionDto[]> {
+    return this.httpClient.get<BuildingBlockInUseVersionDto[]>(
+      this.getApiUrl('management/v1/building-block/reference-update/in-use'),
+      {params: key ? {key} : {}}
+    );
   }
 
   public getReferences(key: string, versionTag: string): Observable<BuildingBlockReferenceDto[]> {

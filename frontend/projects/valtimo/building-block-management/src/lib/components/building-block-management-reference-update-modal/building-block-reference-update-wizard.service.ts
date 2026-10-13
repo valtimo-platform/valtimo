@@ -20,6 +20,7 @@ import {runAfterCarbonModalClosed} from '@valtimo/components';
 import {PluginConfiguration, PluginManagementService} from '@valtimo/plugin';
 import {
   BuildingBlockDefinitionDto,
+  BuildingBlockInUseVersionDto,
   BuildingBlockVersionDto,
   BuildingBlockReferenceUpdateChainDto,
   BuildingBlockReferenceUpdateChainResolutionDto,
@@ -39,7 +40,7 @@ import {ReferenceUpdateResolutionFormValue, ReferenceUpdateSource} from '../../m
 import {isValidReferenceUpdateInputSource, referenceUpdateInputSourceValidator} from '../../utils';
 import {
   BuildingBlockManagementApiService,
-  BuildingBlockManagementDetailService,
+  BuildingBlockManagementService,
   BuildingBlockReferenceUpdateApiService,
 } from '../../services';
 
@@ -49,6 +50,8 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
   public readonly resolutionForm: FormGroup = this.fb.group({});
 
   public readonly $step = signal<REFERENCE_UPDATE_STEP>(REFERENCE_UPDATE_STEPS[0]);
+  public readonly $inUseVersions = signal<BuildingBlockInUseVersionDto[] | null>(null);
+  public readonly $sourceKey = signal<string | null>(null);
   public readonly $source = signal<ReferenceUpdateSource | null>(null);
   public readonly $targetDefinitions = signal<BuildingBlockDefinitionDto[] | null>(null);
   public readonly $targetKey = signal<string | null>(null);
@@ -73,6 +76,8 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
 
   public readonly $canProceed = computed((): boolean => {
     switch (this.$step()) {
+      case REFERENCE_UPDATE_STEP.SOURCE:
+        return this.$source() !== null;
       case REFERENCE_UPDATE_STEP.TARGET:
         return this.$target() !== null && !this.isSourceVersion(this.$targetKey(), this.$target());
       case REFERENCE_UPDATE_STEP.CHAINS:
@@ -100,7 +105,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
 
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
+    private readonly buildingBlockManagementService: BuildingBlockManagementService,
     private readonly buildingBlockReferenceUpdateApiService: BuildingBlockReferenceUpdateApiService,
     private readonly fb: FormBuilder,
     private readonly pluginManagementService: PluginManagementService
@@ -136,17 +141,17 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public start(source: ReferenceUpdateSource): void {
+  public start(): void {
     this._session++;
     this.reset();
-    this.setSource(source);
+    this.loadInUseVersions();
     this.loadTargetDefinitions();
   }
 
   public close(): void {
     if (this.$executing()) return;
 
-    this.buildingBlockManagementDetailService.hideReferenceUpdateModal();
+    this.buildingBlockManagementService.hideReferenceUpdateModal();
     const session = this._session;
     runAfterCarbonModalClosed(() => {
       if (session === this._session) this.reset();
@@ -182,6 +187,24 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     }
   }
 
+  public selectSourceKey(event: ListItem | ListItem[] | null): void {
+    const sourceKey = this.selectedItemId(event);
+    if (sourceKey === this.$sourceKey()) return;
+
+    this.$sourceKey.set(sourceKey);
+    this.setSource(null);
+
+    const versions = this.versionsForKey(sourceKey);
+    if (versions.length === 1) this.setSource(versions[0]);
+  }
+
+  public selectSource(event: ListItem | ListItem[] | null): void {
+    const sourceId = this.selectedItemId(event);
+    this.setSource(
+      (this.$inUseVersions() ?? []).find(version => this.sourceItemId(version) === sourceId) ?? null
+    );
+  }
+
   public selectTargetKey(event: ListItem | ListItem[] | null): void {
     const targetKey = this.selectedItemId(event);
     if (targetKey === this.$targetKey()) return;
@@ -215,7 +238,7 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
       next: result => {
         this.$executing.set(false);
         this.$result.set(result);
-        this.buildingBlockManagementDetailService.reloadReferences();
+        this.buildingBlockManagementService.reload();
       },
       error: () => {
         // Usually a stale preview; reload so the review shows what would happen now
@@ -250,6 +273,14 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     return !!source && source.key === key && source.versionTag === versionTag;
   }
 
+  public sourceItemId(version: ReferenceUpdateSource | null): string {
+    return version ? `${version.key}:${version.versionTag}` : '';
+  }
+
+  public versionsForKey(key: string | null): BuildingBlockInUseVersionDto[] {
+    return (this.$inUseVersions() ?? []).filter(version => version.key === key);
+  }
+
   private buildExecuteRequest(): BuildingBlockReferenceUpdateExecuteRequestDto {
     return {
       key: this.$source()?.key ?? '',
@@ -262,9 +293,11 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
     };
   }
 
-  private setSource(source: ReferenceUpdateSource): void {
-    this.$source.set(source);
-    this.setTargetKey(source.key);
+  private setSource(source: ReferenceUpdateSource | null): void {
+    if (this.sourceItemId(source) === this.sourceItemId(this.$source())) return;
+
+    this.$source.set(source && {key: source.key, versionTag: source.versionTag});
+    this.setTargetKey(source?.key ?? null);
   }
 
   private setTargetKey(targetKey: string | null): void {
@@ -289,6 +322,19 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
   private selectedItemId(event: ListItem | ListItem[] | null): string | null {
     const item = Array.isArray(event) ? event[0] : event;
     return item?.selected ? (item['id'] ?? null) : null;
+  }
+
+  private loadInUseVersions(): void {
+    const session = this._session;
+    this.$inUseVersions.set(null);
+    this.buildingBlockReferenceUpdateApiService.getInUseVersions().subscribe({
+      next: versions => {
+        if (session === this._session) this.$inUseVersions.set(versions);
+      },
+      error: () => {
+        if (session === this._session) this.$inUseVersions.set([]);
+      },
+    });
   }
 
   private loadTargetDefinitions(): void {
@@ -474,6 +520,8 @@ export class BuildingBlockReferenceUpdateWizardService implements OnDestroy {
 
   private reset(): void {
     this.$step.set(REFERENCE_UPDATE_STEPS[0]);
+    this.$inUseVersions.set(null);
+    this.$sourceKey.set(null);
     this.$source.set(null);
     this.$targetKey.set(null);
     this.$target.set(null);

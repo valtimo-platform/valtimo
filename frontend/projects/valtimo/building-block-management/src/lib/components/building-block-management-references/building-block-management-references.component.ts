@@ -27,9 +27,7 @@ import {RouterLink} from '@angular/router';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
-import {BuildingBlockReferenceDto, EnvironmentService} from '@valtimo/shared';
-import {Migrate16} from '@carbon/icons';
-import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
+import {BuildingBlockReferenceDto} from '@valtimo/shared';
 import {catchError, combineLatest, distinctUntilChanged, map, of, switchMap, tap} from 'rxjs';
 import {isEqual} from 'lodash';
 import {
@@ -41,7 +39,6 @@ import {
   BuildingBlockManagementDetailService,
   BuildingBlockReferenceUpdateApiService,
 } from '../../services';
-import {BuildingBlockManagementReferenceUpdateModalComponent} from '../building-block-management-reference-update-modal/building-block-management-reference-update-modal.component';
 
 @Component({
   standalone: true,
@@ -49,15 +46,7 @@ import {BuildingBlockManagementReferenceUpdateModalComponent} from '../building-
   templateUrl: './building-block-management-references.component.html',
   styleUrls: ['./building-block-management-references.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    RouterLink,
-    TranslateModule,
-    ButtonModule,
-    IconModule,
-    CarbonListModule,
-    BuildingBlockManagementReferenceUpdateModalComponent,
-  ],
+  imports: [CommonModule, RouterLink, TranslateModule, CarbonListModule],
 })
 export class BuildingBlockManagementReferencesComponent implements OnInit {
   @ViewChild('linkColumn', {static: true}) public linkColumnTemplate!: TemplateRef<unknown>;
@@ -68,28 +57,22 @@ export class BuildingBlockManagementReferencesComponent implements OnInit {
 
   public readonly $loadFailed = signal<boolean>(false);
 
-  public readonly canUpdate$ = this.environmentService.canUpdateGlobalConfiguration();
-
   public readonly references$ = combineLatest([
     this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$,
     this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag$,
   ]).pipe(
     distinctUntilChanged((a, b) => isEqual(a, b)),
+    tap(() => {
+      this.$loading.set(true);
+      this.$loadFailed.set(false);
+    }),
     switchMap(([key, versionTag]) =>
-      this.buildingBlockManagementDetailService.reloadReferences$.pipe(
-        tap(() => {
-          this.$loading.set(true);
-          this.$loadFailed.set(false);
-        }),
-        switchMap(() =>
-          this.buildingBlockReferenceUpdateApiService.getReferences(key, versionTag).pipe(
-            // Global interceptor shows the error; an empty list would claim the version is unused
-            catchError(() => {
-              this.$loadFailed.set(true);
-              return of([]);
-            })
-          )
-        )
+      this.buildingBlockReferenceUpdateApiService.getReferences(key, versionTag).pipe(
+        // Global interceptor shows the error; an empty list would claim the version is unused
+        catchError(() => {
+          this.$loadFailed.set(true);
+          return of([]);
+        })
       )
     ),
     map(references => references.map(reference => this.toItem(reference))),
@@ -103,12 +86,8 @@ export class BuildingBlockManagementReferencesComponent implements OnInit {
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly buildingBlockReferenceUpdateApiService: BuildingBlockReferenceUpdateApiService,
-    private readonly environmentService: EnvironmentService,
-    private readonly iconService: IconService,
     private readonly translateService: TranslateService
-  ) {
-    this.iconService.registerAll([Migrate16]);
-  }
+  ) {}
 
   public ngOnInit(): void {
     this.$fields.set([
@@ -128,10 +107,6 @@ export class BuildingBlockManagementReferencesComponent implements OnInit {
         template: this.linkColumnTemplate,
       },
     ]);
-  }
-
-  public onUpdateReferencesClick(): void {
-    this.buildingBlockManagementDetailService.showReferenceUpdateModal();
   }
 
   private toItem(reference: BuildingBlockReferenceDto): BuildingBlockReferenceItem {

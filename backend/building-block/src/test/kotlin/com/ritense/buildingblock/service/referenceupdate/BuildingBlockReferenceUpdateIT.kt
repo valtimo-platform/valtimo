@@ -136,6 +136,24 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     }
 
     @Test
+    fun `lists the referenced versions with their reference counts`() {
+        val f = workedExample()
+        // A link in a process nothing owns is not a reference.
+        processLinkRepository.saveAndFlush(
+            buildingBlockLink("orphan-process:1:${f.uid}", "callOrphan", f.sendEmail101)
+        )
+
+        val forKey = inUse(f.sendEmail100.key)
+        assertThat(forKey.map { it.versionTag }).containsExactly("1.0.0")
+        assertThat(forKey.single().referenceCount).isEqualTo(2)
+
+        val all = inUse(null).filter { it.key.endsWith(f.uid) }
+        assertThat(all.map { "${it.key}:${it.versionTag}" })
+            .containsExactlyInAnyOrder("${f.sendEmail100}", "${f.notify110}")
+        assertThat(all.single { it.key == f.notify110.key }.referenceCount).isEqualTo(1)
+    }
+
+    @Test
     fun `previews every chain to the source with its full path, draft labels and default selection`() {
         val f = workedExample()
 
@@ -952,6 +970,15 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
     fun `the REST endpoints drive the wizard from source to summary`() {
         val f = workedExample()
 
+        mockMvc.get("$BASE/in-use") { param("key", f.sendEmail100.key) }
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.length()") { value(1) }
+                jsonPath("$[0].key") { value(f.sendEmail100.key) }
+                jsonPath("$[0].versionTag") { value("1.0.0") }
+                jsonPath("$[0].referenceCount") { value(2) }
+            }
+
         mockMvc.get("$BASE/references/${f.sendEmail100.key}/version/1.0.0")
             .andExpect {
                 status { isOk() }
@@ -1195,6 +1222,8 @@ class BuildingBlockReferenceUpdateIT @Autowired constructor(
 
     private fun references(id: BuildingBlockDefinitionId) =
         runWithoutAuthorization { referenceUpdateService.getReferences(id.key, id.versionTag.toString()) }
+
+    private fun inUse(key: String?) = runWithoutAuthorization { referenceUpdateService.getInUseVersions(key) }
 
     private fun preview(
         source: BuildingBlockDefinitionId,

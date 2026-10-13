@@ -19,21 +19,6 @@
 </p>
 
 <valtimo-carbon-list [fields]="$fields()" [items]="$references()" [loading]="$loading()">
-  <ng-container carbonToolbarContent>
-    <button
-      [attr.data-test-id]="testIds.updateReferencesButton"
-      [disabled]="
-        $loading() || $loadFailed() || $references().length === 0 || !(canUpdate$ | async)
-      "
-      cdsButton="primary"
-      (click)="onUpdateReferencesClick()"
-    >
-      {{ 'buildingBlockManagement.references.updateButton' | translate }}
-
-      <svg cdsIcon="migrate" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </ng-container>
-
   @if ($loadFailed()) {
     <valtimo-no-results
       [description]="'buildingBlockManagement.references.loadFailed.description' | translate"
@@ -52,5 +37,3 @@
     {{ data.item.linkText }}
   </a>
 </ng-template>
-
-<valtimo-building-block-management-reference-update-modal></valtimo-building-block-management-reference-update-modal>

@@ -16,8 +16,11 @@
 
 import {type APIRequestContext, type Page, type Response, expect} from '@playwright/test';
 import {
+  BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS,
   BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS,
+  BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_KEY_OPTION_TEST_ID_PREFIX,
+  BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_OPTION_TEST_ID_PREFIX,
   BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX,
   VALUE_PATH_SELECTOR_TEST_IDS,
 } from '../../constants';
@@ -94,10 +97,9 @@ export class BuildingBlockReferencesPage {
 
   // ─── References tab & reference update wizard locators ───────────
 
+  /** On the building block management list, not the references tab. */
   get updateReferencesButton() {
-    return this.referencesList.toolbar.getByTestId(
-      BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS.updateReferencesButton
-    );
+    return this.page.getByTestId(BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS.updateReferencesButton);
   }
 
   /** A row of the references tab, identified by its container key. */
@@ -205,14 +207,34 @@ export class BuildingBlockReferencesPage {
 
   // ─── Reference update wizard ─────────────────────────────────────
 
-  /** The source is the building block version of the references tab. */
-  async openReferenceUpdateWizard() {
+  /** Opens the wizard from the building block list and completes the source step. */
+  async openReferenceUpdateWizard(key: string, versionTag: string) {
+    await this.page.goto('/building-block-management');
     await expect(this.updateReferencesButton).toBeEnabled();
     await this.updateReferencesButton.click();
-    await expect(this.referenceUpdateTestId('targetComboBox')).toBeVisible();
+
+    await this.referenceUpdateTestId('sourceKeyComboBox').locator('input').fill(key);
+    await this.page
+      .getByTestId(`${BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_KEY_OPTION_TEST_ID_PREFIX}${key}`)
+      .click();
+
+    // Only referenced version is preselected
+    const versionInput = this.referenceUpdateTestId('sourceVersionComboBox').locator('input');
+    await expect(versionInput).toBeEnabled();
+    if ((await versionInput.inputValue()) !== versionTag) {
+      await versionInput.fill(versionTag);
+      await this.page
+        .getByTestId(
+          `${BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_OPTION_TEST_ID_PREFIX}${key}-${versionTag}`
+        )
+        .click();
+    }
+
+    await this.goToNextReferenceUpdateStep();
+    await expect(this.referenceUpdateTestId('targetKeyComboBox')).toBeVisible();
   }
 
-  /** Step 1: another building block as target. */
+  /** Target step: another building block as target. */
   async selectReferenceUpdateTargetKey(key: string) {
     await this.referenceUpdateTestId('targetKeyComboBox').locator('input').fill(key);
     await this.page
@@ -221,7 +243,7 @@ export class BuildingBlockReferencesPage {
       .click();
   }
 
-  /** Step 1: another version of the same key. */
+  /** Target step: another version of the same key. */
   async selectReferenceUpdateTarget(versionTag: string) {
     await this.referenceUpdateTestId('targetComboBox').locator('input').fill(versionTag);
     await this.page

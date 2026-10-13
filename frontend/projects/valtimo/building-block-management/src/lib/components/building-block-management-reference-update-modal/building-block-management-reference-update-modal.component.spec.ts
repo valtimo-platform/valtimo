@@ -36,12 +36,13 @@ import {
 } from '../../constants';
 import {
   BuildingBlockManagementApiService,
-  BuildingBlockManagementDetailService,
+  BuildingBlockManagementService,
   BuildingBlockReferenceUpdateApiService,
 } from '../../services';
 import {BuildingBlockManagementReferenceUpdateModalComponent} from './building-block-management-reference-update-modal.component';
 import {BuildingBlockReferenceUpdateWizardService} from './building-block-reference-update-wizard.service';
 import {BuildingBlockReferenceUpdateDifferencesStepComponent} from './reference-update-differences-step/reference-update-differences-step.component';
+import {BuildingBlockReferenceUpdateSourceStepComponent} from './reference-update-source-step/reference-update-source-step.component';
 import {BuildingBlockReferenceUpdateTargetStepComponent} from './reference-update-target-step/reference-update-target-step.component';
 
 @Component({
@@ -71,12 +72,10 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
   let component: BuildingBlockManagementReferenceUpdateModalComponent;
   let wizard: BuildingBlockReferenceUpdateWizardService;
   let referenceUpdateApi: jasmine.SpyObj<BuildingBlockReferenceUpdateApiService>;
-  let detailService: {
-    buildingBlockDefinitionKey: string;
-    buildingBlockDefinitionVersionTag: string;
+  let listService: {
     showReferenceUpdateModal$: BehaviorSubject<boolean>;
     hideReferenceUpdateModal: jasmine.Spy;
-    reloadReferences: jasmine.Spy;
+    reload: jasmine.Spy;
   };
   let chainOverrides: Record<string, Partial<BuildingBlockReferenceUpdateChainDto>>;
   let draftsAllowed: boolean;
@@ -204,13 +203,22 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
     return fixture.debugElement.query(By.directive(type)).componentInstance;
   };
 
+  const sourceStep = (): BuildingBlockReferenceUpdateSourceStepComponent =>
+    step(BuildingBlockReferenceUpdateSourceStepComponent);
+
   const targetStep = (): BuildingBlockReferenceUpdateTargetStepComponent =>
     step(BuildingBlockReferenceUpdateTargetStepComponent);
 
   const testId = (id: string): HTMLElement | null =>
     fixture.nativeElement.querySelector(`[data-test-id="${id}"]`);
 
+  const goToTarget = (): void => {
+    wizard.selectSourceKey(item('send-email'));
+    wizard.next();
+  };
+
   const goToChains = (): void => {
+    goToTarget();
     wizard.selectTarget(item('1.0.1'));
     wizard.next();
   };
@@ -218,16 +226,27 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
   beforeEach(() => {
     chainOverrides = {};
     draftsAllowed = true;
-    detailService = {
-      buildingBlockDefinitionKey: 'send-email',
-      buildingBlockDefinitionVersionTag: '1.0.0',
+    listService = {
       showReferenceUpdateModal$: new BehaviorSubject<boolean>(false),
       hideReferenceUpdateModal: jasmine.createSpy('hideReferenceUpdateModal'),
-      reloadReferences: jasmine.createSpy('reloadReferences'),
+      reload: jasmine.createSpy('reload'),
     };
     referenceUpdateApi = jasmine.createSpyObj<BuildingBlockReferenceUpdateApiService>(
       'BuildingBlockReferenceUpdateApiService',
-      ['preview', 'execute']
+      ['getInUseVersions', 'preview', 'execute']
+    );
+    referenceUpdateApi.getInUseVersions.and.returnValue(
+      of([
+        {key: 'notify', versionTag: '1.1.0', name: 'Notify', final: true, referenceCount: 1},
+        {key: 'notify', versionTag: '1.0.0', name: 'Notify', final: true, referenceCount: 2},
+        {
+          key: 'send-email',
+          versionTag: '1.0.0',
+          name: 'Send email',
+          final: true,
+          referenceCount: 3,
+        },
+      ])
     );
     referenceUpdateApi.preview.and.callFake(request => of(previewFor(request)));
     referenceUpdateApi.execute.and.returnValue(
@@ -255,7 +274,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       imports: [BuildingBlockManagementReferenceUpdateModalComponent, TranslateModule.forRoot()],
       providers: [
         provideRouter([]),
-        {provide: BuildingBlockManagementDetailService, useValue: detailService},
+        {provide: BuildingBlockManagementService, useValue: listService},
         {provide: BuildingBlockReferenceUpdateApiService, useValue: referenceUpdateApi},
         {
           provide: BuildingBlockManagementApiService,
@@ -291,19 +310,63 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
     component = fixture.componentInstance;
     wizard = fixture.debugElement.injector.get(BuildingBlockReferenceUpdateWizardService);
     fixture.detectChanges();
-    detailService.showReferenceUpdateModal$.next(true);
+    listService.showReferenceUpdateModal$.next(true);
     fixture.detectChanges();
   });
 
   describe('step gating', () => {
-    it('starts on the target step with the building block version of the page as source', () => {
-      expect(wizard.$step()).toBe(REFERENCE_UPDATE_STEP.TARGET);
+    it('starts on the source step and offers only building blocks with referenced versions', () => {
+      expect(wizard.$step()).toBe(REFERENCE_UPDATE_STEP.SOURCE);
       expect(wizard.$currentStepIndex()).toBe(0);
+      expect(wizard.$canProceed()).toBeFalse();
+      expect(
+        sourceStep()
+          .$sourceKeyItems()
+          .map(item => item.id)
+      ).toEqual(['notify', 'send-email']);
+    });
+
+    it('selects the only referenced version of a building block and defaults the target to it', () => {
+      wizard.selectSourceKey(item('send-email'));
+
       expect(wizard.$source()).toEqual({key: 'send-email', versionTag: '1.0.0'});
       expect(wizard.$targetKey()).toBe('send-email');
+      expect(wizard.$canProceed()).toBeTrue();
+
+      wizard.next();
+
+      expect(wizard.$step()).toBe(REFERENCE_UPDATE_STEP.TARGET);
+    });
+
+    it('asks for the version when a building block has several referenced versions', () => {
+      wizard.selectSourceKey(item('notify'));
+
+      expect(wizard.$source()).toBeNull();
+      expect(
+        sourceStep()
+          .$sourceItems()
+          .map(item => item.content)
+      ).toEqual(['1.1.0', '1.0.0']);
+
+      wizard.selectSource(item('notify:1.0.0'));
+
+      expect(wizard.$source()).toEqual({key: 'notify', versionTag: '1.0.0'});
+      expect(wizard.$canProceed()).toBeTrue();
+    });
+
+    it('says so when no building block version is referenced', () => {
+      referenceUpdateApi.getInUseVersions.and.returnValue(of([]));
+      wizard.start();
+      fixture.detectChanges();
+
+      expect(
+        testId(BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS.noSourceVersions)
+      ).not.toBeNull();
+      expect(wizard.$canProceed()).toBeFalse();
     });
 
     it('does not proceed from the target step without a target and never offers the source as target', () => {
+      goToTarget();
       expect(wizard.$step()).toBe(REFERENCE_UPDATE_STEP.TARGET);
       expect(wizard.$canProceed()).toBeFalse();
       expect(
@@ -318,6 +381,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
     });
 
     it('offers another building block as target, with all its versions, and previews against it', () => {
+      goToTarget();
       expect(wizard.$targetKey()).toBe('send-email');
       expect(
         targetStep()
@@ -524,7 +588,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
 
       expect(referenceUpdateApi.execute).toHaveBeenCalledTimes(1);
       expect(wizard.$result()?.draftsCreated.length).toBe(1);
-      expect(detailService.reloadReferences).toHaveBeenCalled();
+      expect(listService.reload).toHaveBeenCalled();
       expect(component.$progressSteps().every(step => step.complete)).toBeTrue();
       expect(component.$progressCurrentIndex()).toBe(REFERENCE_UPDATE_STEPS.length);
     });
@@ -572,7 +636,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
 
       wizard.close();
 
-      expect(detailService.hideReferenceUpdateModal).not.toHaveBeenCalled();
+      expect(listService.hideReferenceUpdateModal).not.toHaveBeenCalled();
     });
   });
 

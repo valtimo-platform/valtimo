@@ -19,27 +19,18 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {provideRouter} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
-import {BuildingBlockReferenceDto, EnvironmentService} from '@valtimo/shared';
-import {BehaviorSubject, of, throwError} from 'rxjs';
-import {BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS} from '../../constants';
+import {BuildingBlockReferenceDto} from '@valtimo/shared';
+import {of, throwError} from 'rxjs';
 import {
   BuildingBlockManagementDetailService,
   BuildingBlockReferenceUpdateApiService,
 } from '../../services';
-import {BuildingBlockManagementReferenceUpdateModalComponent} from '../building-block-management-reference-update-modal/building-block-management-reference-update-modal.component';
 import {BuildingBlockManagementReferencesComponent} from './building-block-management-references.component';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-building-block-management-reference-update-modal',
-  template: '',
-})
-class ReferenceUpdateModalStubComponent {}
-
-@Component({
-  standalone: true,
   selector: 'valtimo-carbon-list',
-  template: '<ng-content select="[carbonToolbarContent]"></ng-content>',
+  template: '',
 })
 class CarbonListStubComponent {
   @Input() public fields: unknown;
@@ -61,8 +52,6 @@ describe('BuildingBlockManagementReferencesComponent', () => {
   let fixture: ComponentFixture<BuildingBlockManagementReferencesComponent>;
   let component: BuildingBlockManagementReferencesComponent;
   let referenceUpdateApi: jasmine.SpyObj<BuildingBlockReferenceUpdateApiService>;
-  let reloadReferences$: BehaviorSubject<null>;
-  let showReferenceUpdateModal: jasmine.Spy;
 
   const reference = (overrides: Partial<BuildingBlockReferenceDto>): BuildingBlockReferenceDto => ({
     container: {type: 'CASE', key: 'moving', versionTag: '1.3.0', final: false},
@@ -75,10 +64,11 @@ describe('BuildingBlockManagementReferencesComponent', () => {
     ...overrides,
   });
 
-  const updateButton = (): HTMLButtonElement =>
-    fixture.nativeElement.querySelector(
-      `[data-test-id="${BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS.updateReferencesButton}"]`
-    );
+  const createComponent = (): void => {
+    fixture = TestBed.createComponent(BuildingBlockManagementReferencesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  };
 
   beforeEach(() => {
     referenceUpdateApi = jasmine.createSpyObj<BuildingBlockReferenceUpdateApiService>(
@@ -102,42 +92,30 @@ describe('BuildingBlockManagementReferencesComponent', () => {
         }),
       ])
     );
-    reloadReferences$ = new BehaviorSubject<null>(null);
-    showReferenceUpdateModal = jasmine.createSpy('showReferenceUpdateModal');
 
     TestBed.overrideComponent(BuildingBlockManagementReferencesComponent, {
-      remove: {imports: [BuildingBlockManagementReferenceUpdateModalComponent, CarbonListModule]},
-      add: {
-        imports: [
-          ReferenceUpdateModalStubComponent,
-          CarbonListStubComponent,
-          NoResultsStubComponent,
-        ],
-      },
+      remove: {imports: [CarbonListModule]},
+      add: {imports: [CarbonListStubComponent, NoResultsStubComponent]},
     });
     TestBed.configureTestingModule({
       imports: [BuildingBlockManagementReferencesComponent, TranslateModule.forRoot()],
       providers: [
         provideRouter([]),
         {provide: BuildingBlockReferenceUpdateApiService, useValue: referenceUpdateApi},
-        {provide: EnvironmentService, useValue: {canUpdateGlobalConfiguration: () => of(true)}},
         {
           provide: BuildingBlockManagementDetailService,
           useValue: {
             buildingBlockDefinitionKey$: of('send-email'),
             buildingBlockDefinitionVersionTag$: of('1.0.0'),
-            reloadReferences$,
-            showReferenceUpdateModal,
           },
         },
       ],
     });
-    fixture = TestBed.createComponent(BuildingBlockManagementReferencesComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('lists the references to the building block version of the page', () => {
+    createComponent();
+
     expect(referenceUpdateApi.getReferences).toHaveBeenCalledOnceWith('send-email', '1.0.0');
     expect(component.$loading()).toBeFalse();
     expect(
@@ -156,6 +134,8 @@ describe('BuildingBlockManagementReferencesComponent', () => {
   });
 
   it('links each reference to the process or actions tab of its container', () => {
+    createComponent();
+
     expect(component.$references().map(item => item.linkRoute)).toEqual([
       ['/case-management', 'case', 'moving', 'version', '1.3.0', 'processes', 'main'],
       ['/case-management', 'case', 'notify', 'version', '1.1.0', 'actions'],
@@ -172,30 +152,12 @@ describe('BuildingBlockManagementReferencesComponent', () => {
     expect(component.$fields().at(-1)?.template).toBe(component.linkColumnTemplate);
   });
 
-  it('opens the reference update wizard from the update button', () => {
-    expect(updateButton().disabled).toBeFalse();
-
-    updateButton().click();
-
-    expect(showReferenceUpdateModal).toHaveBeenCalledTimes(1);
-  });
-
-  it('disables the update button when nothing references the version', () => {
-    referenceUpdateApi.getReferences.and.returnValue(of([]));
-    reloadReferences$.next(null);
-    fixture.detectChanges();
-
-    expect(referenceUpdateApi.getReferences).toHaveBeenCalledTimes(2);
-    expect(updateButton().disabled).toBeTrue();
-  });
-
-  it('shows a load failure instead of an empty list and disables the update button', () => {
+  it('shows a load failure instead of an empty list', () => {
     referenceUpdateApi.getReferences.and.returnValue(throwError(() => new Error('403')));
-    reloadReferences$.next(null);
-    fixture.detectChanges();
+    createComponent();
 
     expect(component.$loadFailed()).toBeTrue();
     expect(component.$loading()).toBeFalse();
-    expect(updateButton().disabled).toBeTrue();
+    expect(component.$references()).toEqual([]);
   });
 });

@@ -19,6 +19,7 @@ package com.ritense.buildingblock.web.rest
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.buildingblock.exception.BuildingBlockReferenceUpdateException
 import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceUpdateService
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockInUseVersionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateExecuteRequestDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePreviewDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdatePreviewRequestDto
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.zalando.problem.Status
 import java.sql.SQLException
@@ -53,6 +55,18 @@ import java.sql.SQLException
 class BuildingBlockReferenceUpdateResource(
     private val buildingBlockReferenceUpdateService: BuildingBlockReferenceUpdateService,
 ) {
+
+    @EndpointDescription(
+        en = "List building block versions that are referenced (management)",
+        nl = "Bouwblokversies waarnaar verwezen wordt ophalen (beheer)",
+    )
+    @RunWithoutAuthorization
+    @GetMapping("/in-use")
+    fun getInUseVersions(
+        @RequestParam(value = "key", required = false) key: String?,
+    ): ResponseEntity<List<BuildingBlockInUseVersionDto>> {
+        return ResponseEntity.ok(buildingBlockReferenceUpdateService.getInUseVersions(key))
+    }
 
     @EndpointDescription(
         en = "List references to a building block version (management)",

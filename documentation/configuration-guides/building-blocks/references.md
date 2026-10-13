@@ -5,8 +5,9 @@ Available since Valtimo `13.50.0`
 {% endhint %}
 
 A case or building block links to one exact version of a building block. The **References** tab of a
-building block version shows every place that links to that version. **Update references** moves those
-links onto another version, so you don't have to trace and edit each case and building block by hand.
+building block version shows every place that links to that version. **Update references**, on the
+building blocks list, moves those links onto another version, so you don't have to trace and edit each case
+and building block by hand.
 
 ---
 
@@ -48,7 +49,10 @@ listed under that building block's references instead.
 
 ## Updating references
 
-**Update references** opens a wizard that moves the references of this version onto a target version.
+**Update references** on the **Building blocks** list opens a wizard that moves the references of a
+building block version onto a target version.
+
+<figure><img src="../../assets/configuration-guides/building-blocks/references/02-building-blocks-list.png" alt=""><figcaption>Update references on the building blocks list</figcaption></figure>
 
 {% hint style="info" %}
 The wizard only changes drafts. It creates new drafts where needed, but never finalizes anything and
@@ -56,22 +60,31 @@ never changes running cases. Afterwards, review and finalize the drafts, then mo
 [case migration](../cases/migration/README.md).
 {% endhint %}
 
-The button is disabled when nothing references this version, or when the environment does not allow
+The button is hidden when there are no building blocks, or when the environment does not allow
 configuration changes.
+
+### Source
+
+Select the **Building block** and the **Source version** whose references you want to update. Only
+versions that are referenced somewhere are listed. When a building block has a single referenced version,
+it is selected for you.
+
+<figure><img src="../../assets/configuration-guides/building-blocks/references/03-source-step.png" alt=""><figcaption>Selecting the source version</figcaption></figure>
 
 ### Target
 
-Select the **Target building block** and **Target version**. The target can be a newer or an older
-version of the same building block, or a version of another building block.
+Select the **Target building block** and **Target version**. The source building block is preselected.
+The target can be a newer or an older version of the same building block, or a version of another
+building block.
 
-<figure><img src="../../assets/configuration-guides/building-blocks/references/02-target-step.png" alt=""><figcaption>Selecting the target version</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/building-blocks/references/04-target-step.png" alt=""><figcaption>Selecting the target version</figcaption></figure>
 
 ### References
 
 Every reference is shown as a chain, from the case or building block at the top down to the link to this
 version. Each container in the chain is marked **Draft** or **Finalized**.
 
-<figure><img src="../../assets/configuration-guides/building-blocks/references/03-references-step.png" alt=""><figcaption>Choosing which references to update</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/building-blocks/references/05-references-step.png" alt=""><figcaption>Choosing which references to update</figcaption></figure>
 
 | Chain                              | Behaviour                                                                                                                                           |
 |------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -88,7 +101,7 @@ current version. Select at least one reference to continue.
 For each selected reference, the wizard compares this version with the target version. Each
 reference is marked **Configured** when no further input is needed.
 
-<figure><img src="../../assets/configuration-guides/building-blocks/references/04-differences-step.png" alt=""><figcaption>Resolving differences</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/building-blocks/references/06-differences-step.png" alt=""><figcaption>Resolving differences</figcaption></figure>
 
 | Difference                   | What to do                                                                                                            |
 |------------------------------|-----------------------------------------------------------------------------------------------------------------------|
@@ -107,7 +120,7 @@ The review lists the complete change set:
 - **References to re-point**: every link that moves, including the links between new drafts (marked **Container reference**)
 - **References skipped**: references you deselected
 
-<figure><img src="../../assets/configuration-guides/building-blocks/references/05-review-step.png" alt=""><figcaption>Reviewing the changes</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/building-blocks/references/07-review-step.png" alt=""><figcaption>Reviewing the changes</figcaption></figure>
 
 Select **I have reviewed these changes and want to apply them** and click **Update references**.
 
@@ -120,7 +133,7 @@ again and confirm.
 The result lists the references updated directly, the drafts created and modified (with links to open
 them), and the references that still point to this version.
 
-<figure><img src="../../assets/configuration-guides/building-blocks/references/06-result.png" alt=""><figcaption>References updated</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/building-blocks/references/08-result.png" alt=""><figcaption>References updated</figcaption></figure>
 
 ---
 

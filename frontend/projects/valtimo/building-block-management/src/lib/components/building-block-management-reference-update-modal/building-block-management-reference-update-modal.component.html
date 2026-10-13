@@ -41,6 +41,10 @@
       <valtimo-building-block-reference-update-result></valtimo-building-block-reference-update-result>
     } @else {
       @switch ($step()) {
+        @case (REFERENCE_UPDATE_STEP.SOURCE) {
+          <valtimo-building-block-reference-update-source-step></valtimo-building-block-reference-update-source-step>
+        }
+
         @case (REFERENCE_UPDATE_STEP.TARGET) {
           <valtimo-building-block-reference-update-target-step></valtimo-building-block-reference-update-target-step>
         }

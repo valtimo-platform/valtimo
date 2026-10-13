@@ -14,7 +14,7 @@ This release contains security fixes. See [Security](#security) for details.
 
 Building block versions no longer have to be traced and updated by hand. The new **References** tab of a
 building block version lists every case and building block that references it, with a link to the process
-or actions tab where the reference is configured. **Update references** opens a
+or actions tab where the reference is configured. **Update references**, on the building blocks list, opens a
 wizard that moves those references onto another version — newer or older — of the same building block,
 or onto another building block. See the [references documentation](../../../configuration-guides/building-blocks/references.md).
 

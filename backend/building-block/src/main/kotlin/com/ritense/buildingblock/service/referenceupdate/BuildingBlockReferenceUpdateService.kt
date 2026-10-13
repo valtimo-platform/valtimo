@@ -31,6 +31,7 @@ import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceU
 import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceUpdateMapper.toChangesetDto
 import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceUpdateMapper.toModifiedDraftDtos
 import com.ritense.buildingblock.service.referenceupdate.BuildingBlockReferenceUpdateMapper.toRepointDtos
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockInUseVersionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateChainResolutionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockReferenceUpdateContainerType
@@ -61,6 +62,29 @@ class BuildingBlockReferenceUpdateService(
     private val authorizationService: AuthorizationService,
     private val entityManager: EntityManager,
 ) {
+
+    @Transactional(readOnly = true)
+    fun getInUseVersions(key: String?): List<BuildingBlockInUseVersionDto> {
+        denyAuthorization()
+
+        val index = referenceIndexLoader.load(key?.takeIf { it.isNotBlank() })
+        return index.references
+            .groupBy { it.child }
+            .map { (child, references) ->
+                val info = index.info(ReferenceContainer.of(child))
+                BuildingBlockInUseVersionDto(
+                    key = child.key,
+                    versionTag = child.versionTag.toString(),
+                    name = info?.name,
+                    final = info?.final ?: true,
+                    referenceCount = references.size,
+                )
+            }
+            .sortedWith(
+                compareBy<BuildingBlockInUseVersionDto> { it.key }
+                    .thenByDescending { Semver.parse(it.versionTag) }
+            )
+    }
 
     @Transactional(readOnly = true)
     fun getReferences(key: String, versionTag: String): List<BuildingBlockReferenceDto> {

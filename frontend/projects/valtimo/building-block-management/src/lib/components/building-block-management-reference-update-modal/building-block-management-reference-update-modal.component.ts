@@ -32,12 +32,13 @@ import {
   REFERENCE_UPDATE_STEP,
   REFERENCE_UPDATE_STEPS,
 } from '../../constants';
-import {BuildingBlockManagementDetailService} from '../../services';
+import {BuildingBlockManagementService} from '../../services';
 import {BuildingBlockReferenceUpdateWizardService} from './building-block-reference-update-wizard.service';
 import {BuildingBlockReferenceUpdateChainsStepComponent} from './reference-update-chains-step/reference-update-chains-step.component';
 import {BuildingBlockReferenceUpdateDifferencesStepComponent} from './reference-update-differences-step/reference-update-differences-step.component';
 import {BuildingBlockReferenceUpdateResultComponent} from './reference-update-result/reference-update-result.component';
 import {BuildingBlockReferenceUpdateReviewStepComponent} from './reference-update-review-step/reference-update-review-step.component';
+import {BuildingBlockReferenceUpdateSourceStepComponent} from './reference-update-source-step/reference-update-source-step.component';
 import {BuildingBlockReferenceUpdateTargetStepComponent} from './reference-update-target-step/reference-update-target-step.component';
 
 @Component({
@@ -58,6 +59,7 @@ import {BuildingBlockReferenceUpdateTargetStepComponent} from './reference-updat
     BuildingBlockReferenceUpdateDifferencesStepComponent,
     BuildingBlockReferenceUpdateResultComponent,
     BuildingBlockReferenceUpdateReviewStepComponent,
+    BuildingBlockReferenceUpdateSourceStepComponent,
     BuildingBlockReferenceUpdateTargetStepComponent,
   ],
 })
@@ -66,7 +68,7 @@ export class BuildingBlockManagementReferenceUpdateModalComponent implements OnI
 
   public readonly REFERENCE_UPDATE_STEP = REFERENCE_UPDATE_STEP;
 
-  public readonly showModal$ = this.buildingBlockManagementDetailService.showReferenceUpdateModal$;
+  public readonly showModal$ = this.buildingBlockManagementService.showReferenceUpdateModal$;
 
   public readonly $canProceed = this.wizardService.$canProceed;
   public readonly $currentStepIndex = this.wizardService.$currentStepIndex;
@@ -91,7 +93,7 @@ export class BuildingBlockManagementReferenceUpdateModalComponent implements OnI
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
+    private readonly buildingBlockManagementService: BuildingBlockManagementService,
     private readonly translateService: TranslateService,
     private readonly wizardService: BuildingBlockReferenceUpdateWizardService
   ) {}
@@ -108,18 +110,13 @@ export class BuildingBlockManagementReferenceUpdateModalComponent implements OnI
     );
 
     this._subscriptions.add(
-      this.showModal$.pipe(filter(show => !!show)).subscribe(() =>
-        this.wizardService.start({
-          key: this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
-          versionTag: this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
-        })
-      )
+      this.showModal$.pipe(filter(show => !!show)).subscribe(() => this.wizardService.start())
     );
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-    this.buildingBlockManagementDetailService.hideReferenceUpdateModal();
+    this.buildingBlockManagementService.hideReferenceUpdateModal();
   }
 
   public onCloseModal(): void {

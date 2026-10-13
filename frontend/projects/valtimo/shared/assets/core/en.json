@@ -4355,6 +4355,7 @@
     "title": "Building blocks",
     "referenceUpdate": {
       "title": "Update references",
+      "button": "Update references",
       "draft": "Draft",
       "final": "Finalized",
       "none": "None",
@@ -4375,10 +4376,20 @@
         "BUILDING_BLOCK": "Building block"
       },
       "steps": {
+        "source": "Source",
         "target": "Target",
         "chains": "References",
         "differences": "Differences",
         "review": "Review"
+      },
+      "source": {
+        "description": "Select the building block and the version whose references you want to update. Only versions that are referenced somewhere are listed.",
+        "keyLabel": "Building block",
+        "keyPlaceholder": "Search for a building block",
+        "versionLabel": "Source version",
+        "versionPlaceholder": "Search for a version",
+        "emptyTitle": "Nothing to update",
+        "emptyMessage": "No building block version is referenced by a case or another building block."
       },
       "target": {
         "description": "Select the building block and version that should replace {{key}} {{versionTag}}. This can be an older or a newer version, or another building block.",
@@ -4637,7 +4648,6 @@
     },
     "references": {
       "description": "All places that reference this version of the building block: process activities and case actions.",
-      "updateButton": "Update references",
       "containerType": "Type",
       "key": "Key",
       "versionTag": "Version",

@@ -4364,6 +4364,7 @@
     "title": "Bouwblokken",
     "referenceUpdate": {
       "title": "Referenties bijwerken",
+      "button": "Referenties bijwerken",
       "draft": "Concept",
       "final": "Definitief",
       "none": "Geen",
@@ -4384,10 +4385,20 @@
         "BUILDING_BLOCK": "Bouwblok"
       },
       "steps": {
+        "source": "Bron",
         "target": "Doel",
         "chains": "Referenties",
         "differences": "Verschillen",
         "review": "Controleren"
+      },
+      "source": {
+        "description": "Selecteer het bouwblok en de versie waarvan je de verwijzingen wilt bijwerken. Alleen versies waarnaar ergens verwezen wordt staan in de lijst.",
+        "keyLabel": "Bouwblok",
+        "keyPlaceholder": "Zoek een bouwblok",
+        "versionLabel": "Bronversie",
+        "versionPlaceholder": "Zoek een versie",
+        "emptyTitle": "Niets bij te werken",
+        "emptyMessage": "Geen enkele bouwblokversie wordt gebruikt door een dossier of een ander bouwblok."
       },
       "target": {
         "description": "Selecteer het bouwblok en de versie die {{key}} {{versionTag}} moet vervangen. Dit kan een oudere of een nieuwere versie zijn, of een ander bouwblok.",
@@ -4646,7 +4657,6 @@
     },
     "references": {
       "description": "Alle plekken die naar deze versie van het bouwblok verwijzen: procesactiviteiten en dossieracties.",
-      "updateButton": "Referenties bijwerken",
       "containerType": "Type",
       "key": "Sleutel",
       "versionTag": "Versie",
