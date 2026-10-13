@@ -19,3 +19,5 @@ export {
   PLUGIN_CATALOG_TEST_IDS,
   PLUGIN_EDIT_MODAL_TEST_IDS,
 } from '../../frontend/projects/valtimo/plugin/src/lib/constants/plugin.test-ids';
+
+export {PLUGIN_ADD_MODAL_TEST_IDS} from '../../frontend/projects/valtimo/plugin-management/src/lib/constants/plugin-add-modal.test-ids';

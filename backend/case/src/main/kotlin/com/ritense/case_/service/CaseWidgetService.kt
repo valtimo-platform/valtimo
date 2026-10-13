@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -93,11 +94,11 @@ class CaseWidgetService(
     }
 
     fun getWidgetTab(documentId: JsonSchemaDocumentId, key: String): CaseWidgetTabDto? {
-        val document = runWithoutAuthorization { documentService.findByOrNull(documentId) }
+        val document = findViewableDocument(documentId)
 
         return document?.let { existingDocument ->
             caseTabRepository.findByIdOrNull(CaseTabId(document.definitionId().caseDefinitionId(), key))?.let { caseTab ->
-                checkCaseTabAccess(existingDocument as JsonSchemaDocument, caseTab, VIEW)
+                checkCaseTabAccess(existingDocument, caseTab, VIEW)
                 caseWidgetTabRepository.findByIdOrNull(CaseTabId(existingDocument.definitionId().caseDefinitionId(), key))
                     ?.let { widgetTab ->
                         ValueResolverCache.memoized {
@@ -106,7 +107,6 @@ class CaseWidgetService(
                                     widgetTab,
                                     caseWidgetMappers,
                                     { widget ->
-                                        document as JsonSchemaDocument
                                         this.viewPermissionCheckForContext(widget, document) &&
                                             this.widgetHiddenCheck(widget, document)
                                     }
@@ -155,11 +155,9 @@ class CaseWidgetService(
 
     @Transactional
     fun getCaseWidgetData(documentId: UUID, tabKey: String, widgetKey: String, pageable: Pageable): Any? {
-        val document = runWithoutAuthorization {
-            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
-        } ?: return null
+        val document = findViewableDocument(JsonSchemaDocumentId.existingId(documentId)) ?: return null
         val caseDefinitionId = document.definitionId().caseDefinitionId()
-        checkCaseTabAccess(caseDefinitionId, tabKey, VIEW, document as JsonSchemaDocument)
+        checkCaseTabAccess(caseDefinitionId, tabKey, VIEW, document)
         val widgetTab = caseWidgetTabRepository.findByIdOrNull(CaseTabId(caseDefinitionId, tabKey)) ?: return null
         val widget = widgetTab.widgets.firstOrNull { it.id.key == widgetKey } ?: return null
 
@@ -171,19 +169,21 @@ class CaseWidgetService(
             ).withContext(
                 AuthorizationResourceContext(
                     JsonSchemaDocument::class.java,
-                    document as JsonSchemaDocument
+                    document
                 )
             )
         )
+
+        if (!widgetHiddenCheck(widget, document)) {
+            return null
+        }
 
         return callCaseWidgetDataProvider(widget, document, pageable, widgetTab.id.caseDefinitionId)
     }
 
     /** Widget key to the id of the upstream request it needs. */
     fun dataGroupIds(documentId: UUID, tabKey: String): Map<String, String> {
-        val document = runWithoutAuthorization {
-            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
-        } as JsonSchemaDocument? ?: return emptyMap()
+        val document = findViewableDocument(JsonSchemaDocumentId.existingId(documentId)) ?: return emptyMap()
         return dataGroupIds(document, widgetsOf(document, tabKey) ?: return emptyMap())
     }
 
@@ -207,7 +207,8 @@ class CaseWidgetService(
      * pays for its shared upstream request once. Null when the group matches no widget.
      *
      * Permission is checked per widget, as on the per-widget endpoint — a widget the user may not
-     * view drops out instead of failing the group. Hidden widgets drop out too.
+     * view drops out instead of failing the group. Hidden widgets drop out too, as do widgets
+     * without data (e.g. dividers).
      */
     @Transactional
     fun getCaseWidgetDataGroup(
@@ -216,9 +217,7 @@ class CaseWidgetService(
         group: String,
         pageable: Pageable
     ): Map<String, WidgetDataEnvelope>? = ValueResolverCache.memoized {
-        val document = runWithoutAuthorization {
-            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
-        } as JsonSchemaDocument? ?: return@memoized null
+        val document = findViewableDocument(JsonSchemaDocumentId.existingId(documentId)) ?: return@memoized null
         val caseDefinitionId = document.definitionId().caseDefinitionId()
         checkCaseTabAccess(caseDefinitionId, tabKey, VIEW, document)
         val widgets = widgetsOf(document, tabKey) ?: return@memoized null
@@ -231,7 +230,9 @@ class CaseWidgetService(
 
         groupWidgets
             .filter { widget ->
-                viewPermissionCheckForContext(widget, document) && widgetHiddenCheck(widget, document)
+                hasDataProvider(widget) &&
+                    viewPermissionCheckForContext(widget, document) &&
+                    widgetHiddenCheck(widget, document)
             }
             .associate { widget ->
                 widget.id.key to envelopeFor(widget, document, pageable, caseDefinitionId)
@@ -254,6 +255,12 @@ class CaseWidgetService(
         )
 
         return callCaseWidgetDataProvider(widget, document, pageable, caseDefinitionId)
+    }
+
+    private fun findViewableDocument(documentId: JsonSchemaDocumentId): JsonSchemaDocument? {
+        val document = runWithoutAuthorization { documentService.findByOrNull(documentId) } as JsonSchemaDocument?
+        document?.let { authorizationService.requireDocumentPermission(it) }
+        return document
     }
 
     private fun checkCaseTabAccess(
@@ -368,6 +375,9 @@ class CaseWidgetService(
             WidgetDataEnvelope.failed()
         }
     }
+
+    private fun hasDataProvider(widget: Any): Boolean =
+        caseWidgetDataProviders.any { provider -> provider.supports(widget) }
 
     private fun callCaseWidgetDataProvider(widget: Any, document: Document, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Any? {
         return runWithoutAuthorization {

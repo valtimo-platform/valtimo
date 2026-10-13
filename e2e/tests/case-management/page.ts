@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {APIRequestContext, expect, Page} from '@playwright/test';
+import {APIRequestContext, expect, Page, type Request} from '@playwright/test';
 import {caseConfiguration} from './case-config';
+import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import path from 'path';
 import {
   AUTO_KEY_INPUT_TEST_IDS,
@@ -36,11 +37,47 @@ export interface ConfigureStepResult {
   name: string;
 }
 
+interface VersionCheckTracker {
+  readonly inFlight: number;
+  readonly lastFinishedAt: number;
+}
+
+/** Follow every case-definition version check on `page` from start to finish. */
+function trackVersionChecks(page: Page): VersionCheckTracker {
+  const isVersionCheck = (url: string) =>
+    /\/management\/v1\/case-definition\/[^/?]+\/version/.test(url);
+
+  const tracker = {inFlight: 0, lastFinishedAt: Date.now()};
+
+  const onSettled = (request: Request) => {
+    if (!isVersionCheck(request.url())) return;
+    tracker.inFlight = Math.max(0, tracker.inFlight - 1);
+    tracker.lastFinishedAt = Date.now();
+  };
+
+  page.on('request', request => {
+    if (isVersionCheck(request.url())) tracker.inFlight++;
+  });
+  page.on('requestfinished', onSettled);
+  page.on('requestfailed', onSettled);
+
+  return tracker;
+}
+
 export class CaseManagementPage {
+  /**
+   * Counts version checks from the moment this page object exists. Registering the listeners
+   * inside the wait instead would miss a check that the key change already started, and the
+   * wait would then call the run quiet while that check was still on its way back.
+   */
+  private readonly versionCheckTracker: VersionCheckTracker;
+
   constructor(
     private readonly page: Page,
     private readonly request: APIRequestContext
-  ) {}
+  ) {
+    this.versionCheckTracker = trackVersionChecks(page);
+  }
 
   // UI Elements
   get createSaveButton() {
@@ -52,7 +89,7 @@ export class CaseManagementPage {
   }
 
   get createCaseButton() {
-    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.createButton);
+    return this.page.getByTestId(CASE_MANAGEMENT_LIST_TEST_IDS.createButton).first();
   }
 
   get uploadCaseButton() {
@@ -104,6 +141,7 @@ export class CaseManagementPage {
     console.log('Navigate to Case Management...');
     await this.page.goto('/case-management');
     await this.page.waitForSelector('valtimo-carbon-list');
+    await new CarbonList(this.page).waitForLoaded();
   }
 
   // Case form
@@ -183,7 +221,9 @@ export class CaseManagementPage {
 
   // Upload steps
   async pluginConfigurationStep(): Promise<Awaited<ReturnType<Page['waitForResponse']>>> {
-    await expect(this.page.getByText('Plugin Configuration').first()).toBeVisible({timeout: 10_000});
+    await expect(this.page.getByText('Plugin Configuration').first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     const responsePromise = this.page.waitForResponse(
       res =>
@@ -240,7 +280,7 @@ export class CaseManagementPage {
 
     // Handle draft override warning — check the confirmation checkbox
     if (await this.overrideCheckbox.isVisible()) {
-      await this.overrideCheckbox.locator('label').click();
+      await this.confirmDraftOverride();
     }
 
     const key = await this.configureKeyInput.inputValue();
@@ -252,7 +292,10 @@ export class CaseManagementPage {
     return {key, name};
   }
 
-  async configureStepWithCustomKey(name: string, key: string): Promise<{key: string; name: string}> {
+  async configureStepWithCustomKey(
+    name: string,
+    key: string
+  ): Promise<{key: string; name: string}> {
     await expect(this.configureNameInput).toBeVisible();
 
     // Clear and fill custom name
@@ -273,9 +316,8 @@ export class CaseManagementPage {
     }
 
     // Handle draft override warning — check the confirmation checkbox
-    // Must click the inner label, not the cds-checkbox host, for the checkedChange event to fire
     if (await this.overrideCheckbox.isVisible()) {
-      await this.overrideCheckbox.locator('label').click();
+      await this.confirmDraftOverride();
     }
 
     const actualKey = await this.configureKeyInput.inputValue();
@@ -300,6 +342,39 @@ export class CaseManagementPage {
         {timeout: 15_000}
       )
       .catch(() => {});
+  }
+
+  private async awaitVersionChecksSettled(quietMs = 1_500, timeout = 20_000) {
+    const tracker = this.versionCheckTracker;
+    // Floor the window at "now": the tracker's last check may be minutes old, and without this
+    // the poll passes on its first tick and calls the run quiet before a debounced check has
+    // even been issued.
+    const waitStartedAt = Date.now();
+
+    await expect
+      .poll(
+        () =>
+          tracker.inFlight === 0 &&
+          Date.now() - Math.max(tracker.lastFinishedAt, waitStartedAt) >= quietMs,
+        {timeout}
+      )
+      .toBe(true);
+  }
+
+  async confirmDraftOverride() {
+    await this.awaitVersionChecksSettled();
+
+    const input = this.overrideCheckbox.locator('input[type="checkbox"]');
+    const label = this.overrideCheckbox.locator('label');
+
+    await expect(async () => {
+      if (await input.isChecked()) {
+        await label.click();
+        await expect(input).not.toBeChecked({timeout: 2_000});
+      }
+      await label.click();
+      await expect(this.uploadWizardNextButton).toBeEnabled({timeout: 3_000});
+    }).toPass({timeout: 20_000});
   }
 
   async awaitConfigureValidation() {
