@@ -52,7 +52,7 @@
 | 2.4 | View case documents                | Display list of case documents                        |    ✅    | user-cases.spec.ts                              |
 | 2.5 | View case progress/status          | View current case progress and status                 |    ✅    | user-cases.spec.ts                              |
 | 2.6 | Execute tasks within case          | Execute task from case detail view                    |    ✅    | user-cases.spec.ts                              |
-| 2.7 | In-panel form persistence          | Start form and task form in side panel survive tab switches (incl. task-hiding tabs) · closes via header button |    ✅    | user-cases.spec.ts                              |
+| 2.7 | In-panel form persistence          | Start form and task form in side panel survive tab switches (incl. task-hiding tabs) · closes via header button, confirming unsaved changes |    ✅    | user-cases.spec.ts                              |
 
 ---
 

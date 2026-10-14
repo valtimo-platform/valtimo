@@ -19,6 +19,8 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  inject,
+  Injector,
   Input,
   OnDestroy,
   OnInit,
@@ -28,9 +30,28 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import {
+  catchError,
+  defer,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  Subscription,
+  take,
+} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
+import {
+  CdsThemeService,
+  CurrentCarbonTheme,
+  SidePanelOrigin,
+  SidePanelService,
+} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
 import {ConfigService} from '@valtimo/shared';
-import {ExternalPluginEndpoint} from '../../models';
+import {ExternalPluginEndpoint, ExternalPluginPanelOffer} from '../../models';
+import {ExternalPluginSidePanelComponent} from '../external-plugin-side-panel/external-plugin-side-panel.component';
 
 /**
  * Ceiling for an iframe height reported from inside the sandbox. High enough for any legitimate
@@ -38,6 +59,11 @@ import {ExternalPluginEndpoint} from '../../models';
  * scroll.
  */
 const MAX_IFRAME_HEIGHT = 20000;
+
+const MAX_PANEL_TEXT_LENGTH = 200;
+
+/** Context keys that name the case; only GZAC's surface context may set them. */
+const CASE_CONTEXT_KEYS = ['documentId', 'caseDefinitionKey'];
 
 @Component({
   standalone: true,
@@ -101,13 +127,21 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   public readonly $trustedUrl = signal<SafeResourceUrl | null>(null);
 
   private readonly _onMessageBound = this._onMessage.bind(this);
+  private readonly _subscriptions = new Subscription();
+  /** Offers waiting for their case to resolve, by key without the case. */
+  private readonly _pendingPanelOffers = new Map<string, Subscription>();
+  private _theme: CurrentCarbonTheme = CurrentCarbonTheme.WHITE;
   /** Pathname prefix all proxied GZAC calls must stay under (derived from the API endpoint URI). */
   private readonly _apiBasePath: string;
 
   constructor(
     private readonly _sanitizer: DomSanitizer,
     private readonly _translateService: TranslateService,
-    private readonly _configService: ConfigService
+    private readonly _configService: ConfigService,
+    // Defaults keep subclasses that call super() with the original three arguments working.
+    private readonly _sidePanelService: SidePanelService = inject(SidePanelService),
+    private readonly _cdsThemeService: CdsThemeService = inject(CdsThemeService),
+    private readonly _injector: Injector = inject(Injector)
   ) {
     this._apiBasePath = this._deriveApiBasePath();
   }
@@ -120,10 +154,19 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     }
 
     window.addEventListener('message', this._onMessageBound);
+
+    this._subscriptions.add(
+      this._cdsThemeService.currentTheme$.subscribe(theme => {
+        const changed = theme !== this._theme;
+        this._theme = theme;
+        if (changed) this._postToIframe('themeChanged', {theme});
+      })
+    );
   }
 
   public ngOnDestroy(): void {
     window.removeEventListener('message', this._onMessageBound);
+    this._subscriptions.unsubscribe();
   }
 
   public triggerSave(): void {
@@ -156,7 +199,7 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   public onIframeLoad(): void {
     this._postToIframe('init', {
       context: this.context,
-      theme: 'white',
+      theme: this._theme,
       locale: this._translateService.currentLang ?? this._translateService.defaultLang ?? 'en',
     });
   }
@@ -202,7 +245,160 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
       case 'proxyRequest':
         void this._handleProxyRequest(data.payload);
         break;
+      case 'offerPanel':
+        this._offerPanel(data.payload);
+        break;
+      case 'withdrawPanel':
+        this._withdrawPanel(data.payload);
+        break;
     }
+  }
+
+  /**
+   * Offers one of this configuration's own `side-panel` bundles to the app-wide side panel. The
+   * bundle URL is resolved by GZAC, never taken from the iframe. This surface's context is trusted
+   * and overrides same-named keys in the plugin-supplied context; the keys naming the case are
+   * GZAC's alone.
+   */
+  private _offerPanel(payload: unknown): void {
+    const offer = this._parsePanelOffer(payload);
+    if (!offer || !this.configurationId) return;
+
+    const configurationId = this.configurationId;
+    const documentId = this._contextString('documentId');
+    // Per case: the same key offered for another case gets a fresh iframe with that case's context.
+    const key = `${this._panelKeyBase(offer.bundleKey, offer.key)}:${encodeURIComponent(documentId ?? '')}`;
+    const pluginContext = Object.fromEntries(
+      Object.entries(offer.context ?? {}).filter(([name]) => !CASE_CONTEXT_KEYS.includes(name))
+    );
+
+    this._cancelPendingPanelOffer(offer.bundleKey, offer.key);
+    const subscription = this._caseOrigin(documentId).subscribe(origin => {
+      this._pendingPanelOffers.delete(this._panelKeyBase(offer.bundleKey, offer.key));
+      this._sidePanelService.offer({
+        key,
+        title: offer.title,
+        subtitle: offer.subtitle,
+        // Named by GZAC, never by the plugin, so the user can trust which case it is for.
+        origin,
+        pinned: offer.pinned,
+        component: ExternalPluginSidePanelComponent,
+        inputs: {
+          bundleKey: offer.bundleKey ?? null,
+          configurationId,
+          context: {...pluginContext, ...this.context},
+        },
+      });
+    });
+    if (!subscription.closed) {
+      this._pendingPanelOffers.set(this._panelKeyBase(offer.bundleKey, offer.key), subscription);
+    }
+  }
+
+  /**
+   * Withdraws the panel only when it still shows this configuration's content under that key, for
+   * whichever case it was offered.
+   */
+  private _withdrawPanel(payload: unknown): void {
+    const {bundleKey, key} = (payload ?? {}) as {bundleKey?: unknown; key?: unknown};
+    if (!this.configurationId || !this._isPanelText(key)) return;
+    if (bundleKey !== undefined && !this._isPanelText(bundleKey)) return;
+
+    this._cancelPendingPanelOffer(bundleKey as string | undefined, key);
+    const keyBase = `${this._panelKeyBase(bundleKey as string | undefined, key)}:`;
+    this._sidePanelService.current$.pipe(take(1)).subscribe(current => {
+      if (current?.key.startsWith(keyBase)) this._sidePanelService.withdraw(current.key);
+    });
+  }
+
+  private _cancelPendingPanelOffer(bundleKey: string | undefined, key: string): void {
+    const keyBase = this._panelKeyBase(bundleKey, key);
+    this._pendingPanelOffers.get(keyBase)?.unsubscribe();
+    this._pendingPanelOffers.delete(keyBase);
+  }
+
+  /** Synchronous when the surface names the case; a task form only knows its document. */
+  private _caseOrigin(documentId: string | null): Observable<SidePanelOrigin | undefined> {
+    if (!documentId) return of(undefined);
+
+    const caseDefinitionKey = this._contextString('caseDefinitionKey');
+    const caseDefinitionKey$: Observable<string | null> = caseDefinitionKey
+      ? of(caseDefinitionKey)
+      : defer(() => this._injector.get(DocumentService).getDocument(documentId)).pipe(
+          map(document => document?.definitionId?.name || null),
+          catchError(() => of(null))
+        );
+
+    return caseDefinitionKey$.pipe(
+      map(definitionKey =>
+        definitionKey
+          ? {
+              route: ['/cases', definitionKey, 'document', documentId],
+              label: this._caseLabel(definitionKey, documentId),
+            }
+          : undefined
+      )
+    );
+  }
+
+  /** E.g. "Inwonerplan #12". Resolved only once shown. */
+  private _caseLabel(caseDefinitionKey: string, documentId: string): Observable<string> {
+    return defer(() => {
+      const documentService = this._injector.get(DocumentService);
+      return forkJoin({
+        caseDefinition: documentService
+          .getActiveCaseDefinition(caseDefinitionKey)
+          .pipe(catchError(() => of(null))),
+        documentDefinition: documentService
+          .getDocumentDefinition(caseDefinitionKey)
+          .pipe(catchError(() => of(null))),
+        document: documentService.getDocument(documentId).pipe(catchError(() => of(null))),
+      });
+    }).pipe(
+      map(({caseDefinition, documentDefinition, document}) => {
+        const name = caseDefinition?.name || documentDefinition?.schema?.title || caseDefinitionKey;
+        return document?.sequence ? `${name} #${document.sequence}` : name;
+      }),
+      shareReplay({bufferSize: 1, refCount: false})
+    );
+  }
+
+  private _contextString(name: string): string | null {
+    const value = this.context?.[name];
+    return typeof value === 'string' && value ? value : null;
+  }
+
+  private _isPanelText(value: unknown): value is string {
+    return typeof value === 'string' && value.length > 0 && value.length <= MAX_PANEL_TEXT_LENGTH;
+  }
+
+  private _panelKeyBase(bundleKey: string | undefined, key: string): string {
+    return `external-plugin:${this.configurationId}:${encodeURIComponent(bundleKey ?? '')}:${encodeURIComponent(key)}`;
+  }
+
+  private _parsePanelOffer(payload: unknown): ExternalPluginPanelOffer | null {
+    if (!payload || typeof payload !== 'object') return null;
+    const {bundleKey, key, title, subtitle, pinned, context} = payload as Record<string, unknown>;
+
+    if (!this._isPanelText(key) || !this._isPanelText(title)) return null;
+    if (bundleKey !== undefined && !this._isPanelText(bundleKey)) return null;
+    if (subtitle !== undefined && !this._isPanelText(subtitle)) return null;
+    if (pinned !== undefined && typeof pinned !== 'boolean') return null;
+    if (
+      context !== undefined &&
+      (!context || typeof context !== 'object' || Array.isArray(context))
+    ) {
+      return null;
+    }
+
+    return {
+      bundleKey: bundleKey as string | undefined,
+      key,
+      title,
+      subtitle: subtitle as string | undefined,
+      pinned: pinned as boolean | undefined,
+      context: context as Record<string, unknown> | undefined,
+    };
   }
 
   /**

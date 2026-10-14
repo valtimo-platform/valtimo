@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,16 @@
 
 package com.ritense.document.service
 
+import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import kotlin.jvm.optionals.getOrNull
 
 fun DocumentService.findByOrNull(documentId: Document.Id) = this.findBy(documentId).getOrNull()
+
+fun AuthorizationService.requireDocumentPermission(
+    document: JsonSchemaDocument,
+    action: Action<JsonSchemaDocument> = JsonSchemaDocumentActionProvider.VIEW
+) = requirePermission(EntityAuthorizationRequest(JsonSchemaDocument::class.java, action, document))

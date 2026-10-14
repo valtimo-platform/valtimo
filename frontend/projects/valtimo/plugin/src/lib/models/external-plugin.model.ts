@@ -126,7 +126,8 @@ type ExternalPluginFrontendBundleType =
   | 'case-tab'
   | 'case-widget'
   | 'page'
-  | 'task-form';
+  | 'task-form'
+  | 'side-panel';
 
 interface ExternalPluginFrontendBundle {
   type: ExternalPluginFrontendBundleType;

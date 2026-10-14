@@ -30,6 +30,7 @@
 >
   <ng-container *ngIf="isAssigned || hasPermission">
     <div
+      [class.assignment-container--compact]="compact"
       class="assignment-container"
       (mouseenter)="onMouseEnter()"
       (mouseleave)="onMouseLeave()"
@@ -37,6 +38,7 @@
       <!-- Assigned state: display pills with icons -->
       <div
         class="assigned-display element"
+        [ngbTooltip]="compact ? assignedNames : null"
         [ngClass]="{
           active: hasPermission
             ? isAssigned && !obs.mouseIsOver && !obs.editToggletipOpen
@@ -45,12 +47,12 @@
       >
         <span class="assignment-pill" *ngIf="_assignedTeamKey">
           <svg cdsIcon="group" size="16" class="pill-icon"></svg>
-          <span class="pill-text">{{ _assignedTeamTitle }}</span>
+          <span *ngIf="!compact" class="pill-text">{{ _assignedTeamTitle }}</span>
         </span>
 
         <span class="assignment-pill" *ngIf="_assigneeId">
           <svg cdsIcon="user" size="16" class="pill-icon"></svg>
-          <span class="pill-text">{{ _assigneeFullName || _assigneeId }}</span>
+          <span *ngIf="!compact" class="pill-text">{{ _assigneeFullName || _assigneeId }}</span>
         </span>
       </div>
 
@@ -69,10 +71,17 @@
           cdsToggletipButton
           [removeClassnames]="['cds--toggletip-button']"
           cdsButton="ghost"
-          size="sm"
+          [attr.aria-label]="compact ? ('assignment.clickToEdit' | translate) : null"
+          [iconOnly]="compact"
+          [ngbTooltip]="compact ? assignedNames : null"
+          [size]="compact ? 'md' : 'sm'"
           class="click-to-edit-button"
         >
-          {{ 'assignment.clickToEdit' | translate }}
+          @if (compact) {
+            <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+          } @else {
+            {{ 'assignment.clickToEdit' | translate }}
+          }
         </button>
 
         <div cdsToggletipContent class="assignment-popover-content">
@@ -147,12 +156,17 @@
           cdsToggletipButton
           [removeClassnames]="['cds--toggletip-button']"
           cdsButton="tertiary"
-          size="sm"
+          [attr.aria-label]="compact ? (assignButtonTranslationKey | translate) : null"
+          [iconOnly]="compact"
+          [ngbTooltip]="compact ? (assignButtonTranslationKey | translate) : null"
+          [size]="compact ? 'md' : 'sm'"
           class="assign-button"
         >
           <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
 
-          {{ assignButtonTranslationKey | translate }}
+          @if (!compact) {
+            {{ assignButtonTranslationKey | translate }}
+          }
         </button>
 
         <div cdsToggletipContent class="assignment-popover-content">

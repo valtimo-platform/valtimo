@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.security.config;
 
+import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
@@ -29,7 +30,7 @@ public class ProcessInstanceHttpSecurityConfigurer implements HttpSecurityConfig
     public void configure(HttpSecurity http) {
         try {
             http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/v1/process-instance/{id}/variables")).authenticated()
+                requests.requestMatchers(antMatcher(POST, "/api/v1/process-instance/{id}/variables")).hasAuthority(ADMIN)
             );
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
