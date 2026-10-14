@@ -74,10 +74,6 @@ The Documenten API version configured for the plugin must support trefwoorden fo
 be available.
 {% endhint %}
 
-### Delete a document from a process
-
-The Documenten API plugin has a new **Delete informatie object** action, so a process can delete a document straight from a service task by giving its URL. The same checks that already run when a document is deleted elsewhere in the application also run for this action.
-
 ---
 
 ## Enhancements
