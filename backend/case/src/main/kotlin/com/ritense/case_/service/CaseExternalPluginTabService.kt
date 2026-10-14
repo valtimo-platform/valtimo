@@ -35,6 +35,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -125,9 +126,10 @@ class CaseExternalPluginTabService(
     fun getExternalPluginTab(documentId: UUID, tabKey: String): ExternalPluginTabContentDto? {
         val document = runWithoutAuthorization {
             documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
-        } ?: return null
+        } as JsonSchemaDocument? ?: return null
+        authorizationService.requireDocumentPermission(document)
         val caseDefinitionId = document.definitionId().caseDefinitionId()
-        checkCaseTabAccess(document as JsonSchemaDocument, tabKey)
+        checkCaseTabAccess(document, tabKey)
 
         val tab = caseExternalPluginTabRepository.findByIdOrNull(CaseTabId(caseDefinitionId, tabKey))
             ?: return null

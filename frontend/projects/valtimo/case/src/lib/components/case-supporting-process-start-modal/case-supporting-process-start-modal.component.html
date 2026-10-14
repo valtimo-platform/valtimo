@@ -54,6 +54,7 @@
       [form]="formDefinition$ | async"
       [options]="options$ | async"
       [errors]="formErrors$ | async"
+      (change)="onFormChange($event)"
       (submit)="onSubmit($event)"
     ></valtimo-form-io>
   }

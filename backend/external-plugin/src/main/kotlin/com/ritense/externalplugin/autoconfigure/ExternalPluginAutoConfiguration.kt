@@ -66,6 +66,7 @@ import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
 import com.ritense.externalplugin.service.ExternalPluginHostUsageResolver
 import com.ritense.externalplugin.service.ExternalPluginMenuPageService
+import com.ritense.externalplugin.service.ExternalPluginSidePanelService
 import com.ritense.externalplugin.service.ExternalPluginPackageInstaller
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
@@ -73,6 +74,7 @@ import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginHostOriginsResource
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
+import com.ritense.externalplugin.web.rest.ExternalPluginSidePanelResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenIntrospectionResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
 import com.ritense.externalplugin.web.rest.error.ExternalPluginHostValidationExceptionMapper
@@ -239,6 +241,20 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginMenuPageResource(
         menuPageService: ExternalPluginMenuPageService,
     ) = ExternalPluginMenuPageResource(menuPageService)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginSidePanelService::class)
+    fun externalPluginSidePanelService(
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        bundleUrlResolver: ExternalPluginBundleUrlResolver,
+    ) = ExternalPluginSidePanelService(configurationRepository, definitionRepository, bundleUrlResolver)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginSidePanelResource::class)
+    fun externalPluginSidePanelResource(
+        sidePanelService: ExternalPluginSidePanelService,
+    ) = ExternalPluginSidePanelResource(sidePanelService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginHostOriginsResource::class)

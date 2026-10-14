@@ -236,6 +236,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     caseDefinitionKey: string,
     caseDefinitionVersionTag: string
   ): void {
+    this.caseDetailLayoutService.setStartFormPendingChanges(false);
+
     if (item.draft) {
       this._pendingStartableItem = {
         item,
@@ -333,6 +335,11 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     }
   }
 
+  /** Form.io also emits on render and on programmatic updates; only user edits are changes. */
+  public onFormChange(event: {isModified?: boolean}): void {
+    if (event?.isModified) this.caseDetailLayoutService.setStartFormPendingChanges(true);
+  }
+
   public formSubmitted(): void {
     this.closeStartForm();
     this.formSubmit.emit();
@@ -349,6 +356,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   }
 
   private closeStartForm(): void {
+    this.caseDetailLayoutService.setStartFormPendingChanges(false);
+
     if (this._displayInPanel) {
       this._displayInPanel = false;
       this.caseDetailLayoutService.closeStartFormPanel();
@@ -438,6 +447,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   }
 
   private closeCdsModal(): void {
+    this.caseDetailLayoutService.setStartFormPendingChanges(false);
     this.modalOpen$.next(false);
   }
 

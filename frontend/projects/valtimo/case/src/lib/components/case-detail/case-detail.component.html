@@ -57,125 +57,41 @@
     <div
       *ngIf="{
         noTabsConfigured: noTabsConfigured$ | async,
-        showTaskList: showTaskList$ | async,
         showNoAccess: showNoAccess$ | async,
-        caseDetailLayout: caseDetailLayout$ | async,
-        openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
-        taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
-        startFormPanel: startFormPanel$ | async,
-        isDarkMode: isDarkMode$ | async,
         compactMode: compactMode$ | async,
         tabContentContainerMaxHeight: tabContentContainerMaxHeight$ | async,
       } as tabContentObs"
       #tabContentContainer
       class="tab-content-container"
-      [ngClass]="{
-        'tab-content-container--dark': tabContentObs.isDarkMode,
-        'tab-content-container--compact': tabContentObs.compactMode,
-      }"
       [style.max-height]="tabContentObs.tabContentContainerMaxHeight"
       [style.height]="tabContentObs.tabContentContainerMaxHeight"
     >
-      <as-split
-        direction="horizontal"
-        [disabled]="!tabContentObs.caseDetailLayout.widthAdjustable"
-        [gutterSize]="CASE_DETAIL_GUTTER_SIZE"
-        [unit]="tabContentObs.caseDetailLayout.unit"
-        (dragEnd)="onSplitDragEnd($event)"
-        class="split-area"
+      <div
+        class="card-body bg-white p-5 position-relative tab-container"
+        [class.tab-container--compact]="tabContentObs.compactMode"
       >
-        <as-split-area
-          [size]="tabContentObs.caseDetailLayout.leftPanelWidth"
-          [minSize]="tabContentObs.caseDetailLayout.leftPanelMinWidth"
-          [maxSize]="tabContentObs.caseDetailLayout.leftPanelMaxWidth"
-          class="split-area__content"
+        <div *ngIf="loadingTabs$ | async" class="loading-container">
+          <cds-loading></cds-loading>
+        </div>
+
+        <valtimo-no-results
+          *ngIf="tabContentObs.showNoAccess"
+          description="{{ 'case.noAccess.description' | translate }}"
+          title="{{ 'case.noAccess.title' | translate }}"
+          illustration="valtimo-layout/img/emptystate-not-authorised.svg"
         >
-          <div
-            class="card-body bg-white p-5 position-relative tab-container"
-            [class.tab-container--compact]="compactMode$ | async"
-          >
-            <div *ngIf="loadingTabs$ | async" class="loading-container">
-              <cds-loading></cds-loading>
-            </div>
+        </valtimo-no-results>
 
-            <valtimo-no-results
-              *ngIf="tabContentObs.showNoAccess"
-              description="{{ 'case.noAccess.description' | translate }}"
-              title="{{ 'case.noAccess.title' | translate }}"
-              illustration="valtimo-layout/img/emptystate-not-authorised.svg"
-            >
-            </valtimo-no-results>
+        <valtimo-no-results
+          *ngIf="tabContentObs.noTabsConfigured"
+          [description]="'case.tabs.noResultsDescription' | translate"
+          [title]="'case.tabs.noResults' | translate"
+        ></valtimo-no-results>
 
-            <valtimo-no-results
-              *ngIf="tabContentObs.noTabsConfigured"
-              [description]="'case.tabs.noResultsDescription' | translate"
-              [title]="'case.tabs.noResults' | translate"
-            ></valtimo-no-results>
+        <ng-template #tabContainer></ng-template>
 
-            <ng-template #tabContainer></ng-template>
-
-            <div class="clearfix"></div>
-          </div>
-        </as-split-area>
-
-        <as-split-area
-          *ngIf="tabContentObs.caseDetailLayout.showRightPanel"
-          [size]="tabContentObs.caseDetailLayout.rightPanelWidth"
-          [minSize]="tabContentObs.caseDetailLayout.rightPanelMinWidth"
-          [maxSize]="tabContentObs.caseDetailLayout.rightPanelMaxWidth"
-        >
-          @if (
-            tabContentObs.showTaskList ||
-            tabContentObs.startFormPanel ||
-            tabContentObs.taskAndProcessLinkOpenedInPanel
-          ) {
-            <div class="task-panel">
-              @if (tabContentObs.startFormPanel) {
-                <div class="start-form-panel" [attr.data-test-id]="testIds.startFormPanel">
-                  <section class="start-form-panel__header">
-                    <h4
-                      class="start-form-panel__title"
-                      [attr.data-test-id]="testIds.startFormPanelTitle"
-                    >
-                      {{ tabContentObs.startFormPanel.title }}
-                    </h4>
-
-                    <button
-                      cdsButton="ghost"
-                      [attr.data-test-id]="testIds.startFormPanelCloseButton"
-                      [iconOnly]="true"
-                      (click)="onStartFormPanelClose()"
-                    >
-                      <svg cdsIcon="close" size="16"></svg>
-                    </button>
-                  </section>
-
-                  <section class="start-form-panel__body">
-                    <ng-container
-                      *ngTemplateOutlet="tabContentObs.startFormPanel.template"
-                    ></ng-container>
-                  </section>
-                </div>
-              } @else if (tabContentObs.taskAndProcessLinkOpenedInPanel) {
-                <valtimo-case-detail-task-detail
-                  [taskAndProcessLink]="tabContentObs.taskAndProcessLinkOpenedInPanel"
-                  (activeChange)="onActiveChangeEvent($event)"
-                  (closeEvent)="onTaskDetailsClose()"
-                  (formSubmit)="onFormSubmitEvent()"
-                  (dueDateChanged)="onDueDateChanged()"
-                >
-                </valtimo-case-detail-task-detail>
-              } @else {
-                <valtimo-case-detail-task-list
-                  [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
-                  (taskClickEvent)="onTaskClickEvent($event)"
-                  (formSubmitEvent)="onFormSubmitEvent()"
-                ></valtimo-case-detail-task-list>
-              }
-            </div>
-          }
-        </as-split-area>
-      </as-split>
+        <div class="clearfix"></div>
+      </div>
     </div>
   </div>
 
@@ -184,6 +100,15 @@
     (formSubmit)="onFormSubmitEvent()"
     #supportingProcessStartModal
   ></valtimo-case-supporting-process-start-modal>
+
+  <valtimo-task-detail-modal
+    #taskDetailModal
+    [modalSize]="formDisplaySize$ | async"
+    [openFromCaseManagement]="true"
+    (assignmentOfTaskChanged)="onTaskChanged()"
+    (dueDateChanged)="onTaskChanged()"
+    (formSubmit)="onFormSubmitEvent()"
+  ></valtimo-task-detail-modal>
 </div>
 
 <ng-template
@@ -205,11 +130,13 @@
   let-canHaveAssignee="canHaveAssignee"
   let-document="document"
   let-canAssign="canAssign"
+  let-compact="compact"
 >
   <div *ngIf="canHaveAssignee && document">
     <valtimo-assignment
       *ngIf="canAssignLoaded$ | async"
       mode="case"
+      [compact]="!!compact"
       [assigneeFullName]="document?.assigneeFullName"
       [assigneeId]="document.assigneeId"
       [assignedTeamKey]="document.assignedTeamKey"
@@ -265,16 +192,30 @@
   </v-overflow-menu-option>
 </ng-template>
 
-<ng-template #customStartTrigger>
+<ng-template #customStartTrigger let-collapsed="collapsed">
   <button
     [size]="(compactMode$ | async) ? 'sm' : 'lg'"
     cdsButton="primary"
+    [attr.aria-label]="collapsed ? ('case.startSubProcess' | translate) : null"
     [disabled]="startableItems.length === 0"
-    [ngbTooltip]="startableItems.length === 0 ? 'No action' : null"
+    [iconOnly]="!!collapsed"
+    [ngbTooltip]="
+      startableItems.length === 0
+        ? ('case.noStartableProcesses' | translate)
+        : collapsed
+          ? ('case.startSubProcess' | translate)
+          : null
+    "
+    [attr.data-case-actions-collapsed]="!!collapsed"
+    data-case-actions-collapsible="start"
   >
-    {{ 'case.startSubProcess' | translate }}
+    @if (collapsed) {
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    } @else {
+      {{ 'case.startSubProcess' | translate }}
 
-    <svg class="cds--btn__icon" cdsIcon="chevron--down" size="16"></svg>
+      <svg class="cds--btn__icon" cdsIcon="chevron--down" size="16"></svg>
+    }
   </button>
 </ng-template>
 
@@ -287,14 +228,24 @@
   (confirmEvent)="onConfirmDelete()"
 ></valtimo-confirmation-modal>
 
-<ng-container renderInPageHeader [fullWidth]="true">
+<valtimo-confirmation-modal
+  cancelButtonTextTranslationKey="interface.pendingChanges.keepEditing"
+  confirmButtonTextTranslationKey="interface.confirm"
+  contentTranslationKey="interface.pendingChanges.content"
+  titleTranslationKey="interface.pendingChanges.title"
+  [showModalSubject$]="showPendingChangesModal$"
+  (cancelEvent)="onLeaveCancel()"
+  (confirmEvent)="onLeaveConfirm()"
+  [attr.data-test-id]="testIds.pendingChangesModal"
+></valtimo-confirmation-modal>
+
+<ng-container renderInPageHeader [fullWidth]="true" [wrap]="true">
   <ng-template>
     <div
+      #actionsLayout="caseActionsLayout"
       class="case-actions"
-      [ngClass]="{
-        'case-actions--compact': compactMode$ | async,
-        'case-actions--small-title': smallTitle$ | async,
-      }"
+      [class.case-actions--wrapped]="actionsLayout.$layout() === 'wrapped'"
+      valtimoCaseActionsLayout
       *ngIf="{
         assigneeId: assigneeId$ | async,
         canAssign: canAssign$ | async,
@@ -304,16 +255,22 @@
         canInspect: canInspect$ | async,
         document: document$ | async,
         caseStatus: caseStatus$ | async,
+        compactMode: compactMode$ | async,
+        taskPanelAvailable: taskPanelAvailable$ | async,
+        taskPanelVisible: taskPanelVisible$ | async,
       } as obs"
     >
-      <div class="case-status-assign-custom-title" [ngClass]="{'--compact': compactMode$ | async}">
+      <div class="case-status-assign-custom-title" data-case-actions-group>
         @if (obs.caseStatus) {
           <cds-tag size="sm" [type]="obs.caseStatus.tagType" [title]="obs.caseStatus.title">{{
             obs.caseStatus.title
           }}</cds-tag>
         }
 
-        <div [ngClass]="{'--compact': compactMode$ | async}">
+        <div
+          [attr.data-case-actions-collapsed]="actionsLayout.isCollapsed('assignment')"
+          data-case-actions-collapsible="assignment"
+        >
           <ng-container
             *ngTemplateOutlet="
               caseDetailAssignee;
@@ -321,6 +278,7 @@
                 canHaveAssignee: obs.canHaveAssignee,
                 document: obs.document,
                 canAssign: obs.canAssign,
+                compact: actionsLayout.isCollapsed('assignment'),
               }
             "
           ></ng-container>
@@ -329,7 +287,24 @@
         <ng-container *ngTemplateOutlet="caseDetailHeader"></ng-container>
       </div>
 
-      <div class="buttons-container">
+      <div class="buttons-container" data-case-actions-group>
+        @if (obs.taskPanelAvailable) {
+          <cds-icon-button
+            [attr.data-test-id]="testIds.taskPanelToggleButton"
+            [buttonAttributes]="{'aria-pressed': '' + !!obs.taskPanelVisible}"
+            [buttonNgClass]="{'cds--btn--selected': !!obs.taskPanelVisible}"
+            [description]="
+              (obs.taskPanelVisible ? 'case.taskPanel.hide' : 'case.taskPanel.show') | translate
+            "
+            [size]="obs.compactMode ? 'sm' : 'md'"
+            (click)="onTaskPanelToggle()"
+            align="bottom"
+            kind="ghost"
+          >
+            <svg cdsIcon="task" size="16"></svg>
+          </cds-icon-button>
+        }
+
         <v-overflow-menu
           *ngIf="obs.canHaveAssignee || obs.canDelete || obs.canInspect"
           placement="bottom-end"
@@ -375,7 +350,12 @@
           class="overflow-button case-detail-overflow"
         >
           <ng-container overflowTrigger>
-            <ng-container *ngTemplateOutlet="customStartTrigger"></ng-container>
+            <ng-container
+              *ngTemplateOutlet="
+                customStartTrigger;
+                context: {collapsed: actionsLayout.isCollapsed('start')}
+              "
+            ></ng-container>
           </ng-container>
           <v-overflow-menu-option
             *ngFor="let startableItem of startableItems"

@@ -19,6 +19,8 @@ package com.ritense.processdocument.web.rest
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId
 import com.ritense.processdocument.domain.ProcessInstanceId
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto
@@ -41,6 +43,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.doThrow
+import java.util.Optional
+import org.springframework.security.access.AccessDeniedException
 import org.operaton.bpm.engine.ManagementService
 import org.operaton.bpm.engine.management.JobDefinition
 import org.operaton.bpm.engine.runtime.Job
@@ -53,6 +58,7 @@ class ProcessTimerResourceTest {
     private lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
     private lateinit var managementService: ManagementService
     private lateinit var eventPublisher: ApplicationEventPublisher
+    private lateinit var documentService: DocumentService
 
     private lateinit var resource: ProcessTimerResource
 
@@ -61,6 +67,7 @@ class ProcessTimerResourceTest {
     @BeforeEach
     fun setUp() {
         authorizationService = mock()
+        documentService = mock()
         processDocumentAssociationService = mock()
         managementService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
         eventPublisher = mock()
@@ -71,6 +78,7 @@ class ProcessTimerResourceTest {
 
         resource = ProcessTimerResource(
             caseAccessService = caseAccessService,
+            documentService = documentService,
             authorizationService = authorizationService,
             managementService = managementService,
             eventPublisher = eventPublisher,
@@ -184,6 +192,34 @@ class ProcessTimerResourceTest {
 
         assertEquals(200, response.statusCode.value())
         assertTrue(response.body!!.isEmpty())
+    }
+
+    @Test
+    fun `skip should be denied without document VIEW permission`() {
+        val processInstanceId = associateInstance()
+        denyDocumentView()
+
+        assertThrows<AccessDeniedException> { resource.skipTimer(caseId, processInstanceId, "job-1") }
+        verify(managementService, never()).executeJob(any())
+    }
+
+    @Test
+    fun `getSkippableTimers should be denied without document VIEW permission`() {
+        val processInstanceId = associateInstance()
+        denyDocumentView()
+
+        assertThrows<AccessDeniedException> { resource.getSkippableTimers(caseId, processInstanceId) }
+        verify(authorizationService, never()).hasPermission(any<EntityAuthorizationRequest<OperatonTimer>>())
+    }
+
+    private fun denyDocumentView() {
+        val document = mock<JsonSchemaDocument>()
+        whenever(documentService.findBy(any<Document.Id>())).thenReturn(Optional.of(document))
+        whenever(
+            authorizationService.requirePermission(
+                argThat<EntityAuthorizationRequest<JsonSchemaDocument>> { resourceType == JsonSchemaDocument::class.java }
+            )
+        ).doThrow(AccessDeniedException("denied"))
     }
 
     private fun associateInstance(): String {
