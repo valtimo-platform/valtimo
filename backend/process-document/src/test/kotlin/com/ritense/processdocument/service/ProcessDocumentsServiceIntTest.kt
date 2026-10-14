@@ -25,8 +25,10 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.BaseIntegrationTest
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
+import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byName
+import com.ritense.valtimo.processbean.ProcessBeanService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import org.operaton.bpm.engine.ProcessEngineException
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @Transactional
 class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
@@ -66,6 +69,9 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var operatonProcessService: OperatonProcessService
+
+    @Autowired
+    lateinit var processBeanService: ProcessBeanService
 
     lateinit var documentJson: String
     lateinit var document: Document
@@ -99,6 +105,84 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
         }
 
         assertEquals(0, result.errors().size)
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should delete other processes for a document and continue the calling process`() {
+        val request = NewDocumentAndStartProcessRequest(
+            "delete-other-processes",
+            NewDocumentRequest(
+                "house",
+                "house",
+                "1.0.0",
+                objectMapper.readTree(documentJson)
+            )
+        )
+
+        val result = runWithoutAuthorization {
+            processDocumentService.newDocumentAndStartProcess(request)
+        }
+
+        assertEquals(0, result.errors().size)
+        val callingProcessInstanceId = result.resultingProcessInstanceId().orElseThrow().toString()
+        val otherProcessInstanceIds = processDocumentInstanceRepository
+            .findAllByProcessDocumentInstanceIdDocumentId(
+                JsonSchemaDocumentId.existingId(result.resultingDocument().orElseThrow().id().id)
+            )
+            .map { it.processDocumentInstanceId().processInstanceId().toString() }
+            .filter { it != callingProcessInstanceId }
+        assertEquals(1, otherProcessInstanceIds.size)
+
+        runWithoutAuthorization {
+            taskService.complete(taskService.findTask(byName("trigger delete other processes")).id)
+        }
+
+        runWithoutAuthorization {
+            assertTrue(operatonProcessService.findProcessInstanceById(callingProcessInstanceId).isPresent)
+            assertTrue(operatonProcessService.findProcessInstanceById(otherProcessInstanceIds.first()).isEmpty)
+        }
+        assertNotNull(runWithoutAuthorization { taskService.findTask(byName("delete other processes user task")) })
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should delete other processes when the calling process makes the call before its first wait state`() {
+        val first = runWithoutAuthorization {
+            processDocumentService.newDocumentAndStartProcess(
+                NewDocumentAndStartProcessRequest(
+                    "single-user-task-process",
+                    NewDocumentRequest("house", "house", "1.0.0", objectMapper.readTree(documentJson))
+                )
+            )
+        }
+        assertEquals(0, first.errors().size)
+        val documentId = JsonSchemaDocumentId.existingId(first.resultingDocument().orElseThrow().id().id)
+        val otherProcessInstanceId = first.resultingProcessInstanceId().orElseThrow().toString()
+
+        val calling = runWithoutAuthorization {
+            processDocumentService.startProcessForDocument(
+                StartProcessForDocumentRequest(documentId, "delete-other-processes-at-start", emptyMap())
+            )
+        }
+
+        assertEquals(0, calling.errors().size)
+        val callingProcessInstanceId = calling.processInstanceId().orElseThrow().toString()
+        runWithoutAuthorization {
+            assertTrue(operatonProcessService.findProcessInstanceById(otherProcessInstanceId).isEmpty)
+            assertTrue(operatonProcessService.findProcessInstanceById(callingProcessInstanceId).isPresent)
+        }
+        assertNotNull(
+            runWithoutAuthorization { taskService.findTask(byName("delete other processes at start user task")) }
+        )
+    }
+
+    @Test
+    fun `should list the new method as a process bean method of processService`() {
+        val methodNames = processBeanService.getProcessBean("processService")!!.methods.map { it.name }
+
+        assertTrue("deleteAllOtherProcessInstancesForThisDocument" in methodNames)
+        assertTrue("deleteAllProcessInstancesForThisDocument" in methodNames)
     }
 
     @Test
