@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {AssignmentChangeEvent, AssignmentComponent, PageHeaderService} from '@valtimo/components';
+import {AssignmentChangeEvent, AssignmentComponent} from '@valtimo/components';
 import {ConfigService, NamedUser, TeamResponseDto} from '@valtimo/shared';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {
@@ -38,7 +38,7 @@ import {
   TaskDetailIntermediateSaveComponent,
   TaskService,
 } from '@valtimo/task';
-import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   catchError,
@@ -53,6 +53,8 @@ import {
   take,
 } from 'rxjs';
 import {TaskWithProcessLink} from '@valtimo/process-link';
+import {ArrowLeft16} from '@carbon/icons';
+import {CASE_DETAIL_PANEL_TEST_IDS} from '../../constants/case-detail.test-ids';
 
 @Component({
   selector: 'valtimo-case-detail-task-detail',
@@ -82,13 +84,15 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${value?.task?.created}`,
     });
   }
+  /** Emitted once the task detail is closed (destroyed). */
   @Output() public readonly closeEvent = new EventEmitter();
+  /** Back button clicked; the host decides whether to close, e.g. after confirming unsaved edits. */
+  @Output() public readonly closeRequestEvent = new EventEmitter<void>();
   @Output() public readonly assignmentOfTaskChanged = new EventEmitter();
   @Output() public readonly dueDateChanged = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
   @Output() public readonly formSubmit = new EventEmitter();
 
-  public readonly compactMode$: Observable<boolean> = this.pageHeaderService.compactMode$;
   public readonly taskAndProcessLink$ = new BehaviorSubject<TaskWithProcessLink | null>(null);
   public readonly task$ = new BehaviorSubject<ProcessInstanceTask | null>(null);
   public readonly canAssignUserToTask$: Observable<boolean> = this.task$.pipe(
@@ -142,21 +146,24 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   public readonly enableIntermediateSave$ =
     this.configService.getFeatureToggleObservable('enableIntermediateSave');
 
+  protected readonly testIds = CASE_DETAIL_PANEL_TEST_IDS;
+
   constructor(
     private readonly configService: ConfigService,
-    private readonly pageHeaderService: PageHeaderService,
+    private readonly iconService: IconService,
     private readonly permissionService: PermissionService,
     private readonly translateService: TranslateService,
     private readonly taskService: TaskService
-  ) {}
+  ) {
+    this.iconService.register(ArrowLeft16);
+  }
 
   public ngOnDestroy(): void {
     this.closeEvent.emit();
   }
 
   public onClose(): void {
-    this.closeEvent.emit();
-    this.onActiveChangeEvent(false);
+    this.closeRequestEvent.emit();
   }
 
   public onCurrentIntermediateSaveEvent(value: IntermediateSubmission | null): void {

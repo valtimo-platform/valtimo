@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
     canSkipTimer: canSkipTimer$ | async,
     skippableTimers: skippableTimers$ | async,
     diagramReloadToken: diagramReloadToken$ | async,
+    documentId: documentId$ | async,
   } as obs"
 >
   <span *ngIf="!obs.processInstanceItems.isLoading && !obs.processInstanceItems.value">{{
@@ -89,6 +90,8 @@
     <valtimo-process-diagram
       *ngIf="!obs.selectedProcessInstance.isLoading"
       [canSkipTimer]="obs.canSkipTimer || false"
+      [caseId]="obs.documentId || undefined"
+      [diagramScope]="'view'"
       [processInstanceId]="obs.selectedProcessInstance.value.id.processInstanceId"
       [reloadToken]="obs.diagramReloadToken || 0"
       [skipTimerLabel]="'progress.skipTimer.action' | translate"

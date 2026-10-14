@@ -241,8 +241,8 @@ test.describe('Feature 2 — Cases (User)', () => {
       await expect(subject).toHaveValue(noteSubject);
     });
 
-    test('closes the panel via the header close button', async () => {
-      await userCasesPage.closeStartFormPanel();
+    test('asks before discarding entered data via the header close button', async () => {
+      await userCasesPage.discardStartFormPanel();
     });
 
     test('keeps a read-only start form open across a task-hiding tab', async () => {
