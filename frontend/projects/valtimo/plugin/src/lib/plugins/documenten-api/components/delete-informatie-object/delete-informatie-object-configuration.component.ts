@@ -18,6 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {DeleteInformatieObjectConfig} from '../../models';
+import {DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS} from '../../../../constants';
 
 @Component({
   selector: 'valtimo-delete-informatie-object-configuration',
@@ -34,6 +35,8 @@ export class DeleteInformatieObjectConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<DeleteInformatieObjectConfig> =
     new EventEmitter<DeleteInformatieObjectConfig>();
+
+  protected readonly testIds = DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS;
 
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<DeleteInformatieObjectConfig | null>(null);
