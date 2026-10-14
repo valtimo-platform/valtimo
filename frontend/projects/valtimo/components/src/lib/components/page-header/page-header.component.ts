@@ -22,8 +22,10 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
+import {filter, map, Subscription} from 'rxjs';
 import {UserInterfaceService} from '../../services/user-interface.service';
 import {PageHeaderService, PageTitleService} from '../../services';
+import {fromResizeObserver} from '../../utils/observer.utils';
 
 @Component({
   selector: 'valtimo-page-header',
@@ -42,8 +44,10 @@ export class PageHeaderComponent implements AfterViewInit, OnDestroy {
   public readonly titleAsBreadcrumb$ = this.pageHeaderService.titleAsBreadcrumb$;
   public readonly pageActionsHasContent$ = this.pageHeaderService.pageActionsHasContent$;
   public readonly pageTitleHidden$ = this.pageTitleService.pageTitleHidden$;
+  public readonly pageActionsWrap$ = this.pageTitleService.pageActionsWrap$;
+  public readonly pageActionsMinWidth$ = this.pageTitleService.pageActionsMinWidth$;
 
-  private _pageHeadResizeObserver!: ResizeObserver;
+  private _pageHeadHeightSubscription: Subscription | null = null;
 
   constructor(
     private readonly userInterfaceService: UserInterfaceService,
@@ -57,17 +61,16 @@ export class PageHeaderComponent implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._pageHeadResizeObserver?.disconnect();
+    this._pageHeadHeightSubscription?.unsubscribe();
   }
 
   private openPageHeadResizeObserver(): void {
-    this._pageHeadResizeObserver = new ResizeObserver(entries => {
-      const pageHeadEntry = Array.isArray(entries) && entries[0];
-      const pageHeadHeight = pageHeadEntry?.contentRect?.height;
-
-      if (pageHeadHeight) this.pageHeaderService.setPageHeadHeight(pageHeadHeight);
-    });
-
-    this._pageHeadResizeObserver.observe(this._pageHead.nativeElement);
+    // Width-only resizes emit too: FitPage re-fits when content above it reflows.
+    this._pageHeadHeightSubscription = fromResizeObserver(this._pageHead.nativeElement)
+      .pipe(
+        map(entries => entries[entries.length - 1]?.contentRect.height),
+        filter((height): height is number => !!height)
+      )
+      .subscribe(height => this.pageHeaderService.setPageHeadHeight(height));
   }
 }
