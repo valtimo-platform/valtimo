@@ -38,7 +38,7 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Tasks | A user who may view a task but not complete it now sees its form read-only, with the submit, save progress and clear progress buttons disabled, instead of getting an error after submitting |
 
 ---
 

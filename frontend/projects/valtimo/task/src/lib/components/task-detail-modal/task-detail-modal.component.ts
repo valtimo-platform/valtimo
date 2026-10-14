@@ -56,6 +56,7 @@ import {
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
+import {TaskDetailContentComponent} from '../task-detail-content/task-detail-content.component';
 import {IconService} from 'carbon-components-angular';
 import {DocumentService} from '@valtimo/document';
 // @ts-ignore
@@ -74,6 +75,8 @@ moment.locale(localStorage.getItem('langKey') || '');
 export class TaskDetailModalComponent implements OnInit, OnDestroy {
   @ViewChild(TaskDetailIntermediateSaveComponent)
   private readonly _intermediateSaveComponent!: TaskDetailIntermediateSaveComponent;
+  @ViewChild(TaskDetailContentComponent)
+  private readonly _taskDetailContentComponent?: TaskDetailContentComponent;
 
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
@@ -275,6 +278,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
             }
 
             this.task$.next(mergedTask);
+            this.refreshCompleteTaskPermission();
           }
         })
     );
@@ -317,6 +321,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     // A skipped close cleanup can leave the preloaded flag of a previous open behind
     this.processLinkPreloaded$.next(false);
     if (task) {
+      this.invalidateTaskPermissions(task.id);
       this.task$.next({...task});
     }
     this.setPageFromTask(task);
@@ -326,6 +331,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public openTaskAndProcessLinkDetails(taskWithProcessLink: TaskWithProcessLink | null): void {
     this.processLinkPreloaded$.next(true);
     if (taskWithProcessLink) {
+      this.invalidateTaskPermissions(taskWithProcessLink.task.id);
       this.taskAndProcessLink$.next(taskWithProcessLink);
       const task = enrichTaskFromProcessLink(
         {...taskWithProcessLink.task} as unknown as Task,
@@ -335,6 +341,11 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     }
     this.setPageFromTask(taskWithProcessLink?.task);
     this.openModal();
+  }
+
+  // Answers cached at an earlier open may predate an assignment made elsewhere
+  private invalidateTaskPermissions(taskId: string): void {
+    this.permissionService.invalidateResource(TASK_DETAIL_PERMISSION_RESOURCE.task, taskId);
   }
 
   private setPageFromTask(task: {name?: string; created?: string} | null | undefined): void {
@@ -412,10 +423,17 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   private handleAssignmentChangeResponse(response: any): void {
     if (response) {
       this.refreshTask(response);
+      this.refreshCompleteTaskPermission();
     } else {
       this.closeModal();
     }
     this.assignmentOfTaskChanged.emit();
+  }
+
+  // The children are not handed the refreshed task when the process link was preloaded
+  private refreshCompleteTaskPermission(): void {
+    this._taskDetailContentComponent?.refreshCompleteTaskPermission();
+    this._intermediateSaveComponent?.refreshCompleteTaskPermission();
   }
 
   public onFormSubmit(): void {

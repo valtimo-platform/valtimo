@@ -18,20 +18,27 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
   Input,
   Output,
   signal,
 } from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RecentlyViewed16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {ConfirmationModalModule, TooltipModule} from '@valtimo/components';
 import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
 import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, combineLatest, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subject, switchMap, take, tap} from 'rxjs';
 import {IntermediateSaveRequest, IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
+import {
+  CAN_COMPLETE_TASK_PERMISSION,
+  TASK_DETAIL_PERMISSION_RESOURCE,
+} from '../../task-permissions';
 
 @Component({
   selector: 'valtimo-task-detail-intermediate-save',
@@ -51,7 +58,11 @@ import {TaskIntermediateSaveService, TaskService} from '../../services';
 })
 export class TaskDetailIntermediateSaveComponent {
   @Input() public set task(value: Task | null) {
-    if (!value) return;
+    if (!value) {
+      // A closed modal publishes no task, so its next open starts unanswered
+      this.$canCompleteTask.set(null);
+      return;
+    }
     this.taskService
       .getTaskProcessLink(value.id)
       .pipe(take(1))
@@ -59,6 +70,7 @@ export class TaskDetailIntermediateSaveComponent {
         this.setFormFlow(res);
       });
 
+    this.requestCompleteTaskPermission(value);
     this.taskValue.set(value);
     this.page.set({
       title: value.name,
@@ -70,6 +82,9 @@ export class TaskDetailIntermediateSaveComponent {
     if (!value) return;
 
     this.setFormFlow(value.processLinkActivityResult);
+    // Hosts only publish a task with its process link when they open it, so it starts unanswered
+    this.$canCompleteTask.set(null);
+    this.requestCompleteTaskPermission(value.task as any);
     this.taskValue.set(value.task as any);
     this.page.set({
       title: value?.task.name,
@@ -87,12 +102,17 @@ export class TaskDetailIntermediateSaveComponent {
   public readonly taskValue = signal<Task | null>(null);
   public readonly page = signal<{title: string; subtitle: string} | null>(null);
   public readonly canAssignUserToTask = signal<boolean>(false);
+  // null until the backend has answered; saving stays disabled until then
+  public readonly $canCompleteTask = signal<boolean | null>(null);
   public readonly submission$ = this.taskIntermediateSaveService.submission$;
   public readonly formIoFormData$ = this.taskIntermediateSaveService.formIoFormData$;
 
   public readonly intermediateSaveEnabled$ =
     this.configService.getFeatureToggleObservable('enableIntermediateSave');
   public currentIntermediateSave: IntermediateSubmission | null = null;
+
+  private readonly _completePermissionRequest$ = new Subject<string>();
+  private readonly _permissionService = inject(PermissionService);
 
   constructor(
     private readonly configService: ConfigService,
@@ -103,6 +123,13 @@ export class TaskDetailIntermediateSaveComponent {
     private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([RecentlyViewed16]);
+    this.openCompletePermissionSubscription();
+  }
+
+  /** Re-requests the complete permission of the current task, e.g. after its permissions were invalidated. */
+  public refreshCompleteTaskPermission(): void {
+    const taskId = this.taskValue()?.id;
+    if (taskId) this._completePermissionRequest$.next(taskId);
   }
 
   public saveCurrentProgress(): void {
@@ -162,6 +189,25 @@ export class TaskDetailIntermediateSaveComponent {
         this.currentIntermediateSave = null;
         this.currentIntermediateSaveEvent.emit(this.currentIntermediateSave);
       });
+  }
+
+  private openCompletePermissionSubscription(): void {
+    this._completePermissionRequest$
+      .pipe(
+        switchMap(taskId =>
+          this._permissionService.requestPermission(CAN_COMPLETE_TASK_PERMISSION, {
+            resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+            identifier: taskId,
+          })
+        ),
+        takeUntilDestroyed()
+      )
+      .subscribe(allowed => this.$canCompleteTask.set(allowed));
+  }
+
+  private requestCompleteTaskPermission(task: Task): void {
+    if (this.taskValue()?.id !== task.id) this.$canCompleteTask.set(null);
+    this._completePermissionRequest$.next(task.id);
   }
 
   private setFormFlow(processLink: TaskProcessLinkResult): void {

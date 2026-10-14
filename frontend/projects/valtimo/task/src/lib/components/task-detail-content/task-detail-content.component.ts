@@ -74,16 +74,23 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
+  EMPTY,
   filter,
   map,
+  merge,
   Observable,
+  Subject,
   Subscription,
   switchMap,
   take,
 } from 'rxjs';
 import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
-import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
+import {
+  CAN_ASSIGN_TASK_PERMISSION,
+  CAN_COMPLETE_TASK_PERMISSION,
+  TASK_DETAIL_PERMISSION_RESOURCE,
+} from '../../task-permissions';
 import {enrichTaskFromProcessLink} from '../../utils/task-enrichment.utils';
 import {TaskExternalPluginFormComponent} from '../task-external-plugin-form/task-external-plugin-form.component';
 
@@ -142,6 +149,8 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   @Output() public readonly taskUpdated = new EventEmitter<Task>();
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
+  // null until the backend has answered; the form stays read-only until then
+  public readonly canCompleteTask$ = new BehaviorSubject<boolean | null>(null);
   public readonly errorMessage$ = new BehaviorSubject<string | null>(null);
   public readonly formDefinition$ = new BehaviorSubject<FormioForm | null>(null);
   public readonly formDefinitionId$ = new BehaviorSubject<string | null>(null);
@@ -223,6 +232,12 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     )
   );
 
+  public readonly formReadOnly$: Observable<boolean> = this.canCompleteTask$.pipe(
+    map(canComplete => canComplete !== true),
+    distinctUntilChanged()
+  );
+
+  private readonly _completePermissionRefresh$ = new Subject<void>();
   private readonly _processLinkId$ = new BehaviorSubject<string | null>(null);
   private readonly _subscriptions = new Subscription();
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
@@ -264,6 +279,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   }
   public ngOnInit(): void {
     this.openPermissionSubscription();
+    this.openCompletePermissionSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -319,6 +335,11 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     if (this.formFlow) this.formFlow.saveData();
   }
 
+  /** Re-requests the complete permission of the current task, e.g. after its permissions were invalidated. */
+  public refreshCompleteTaskPermission(): void {
+    this._completePermissionRefresh$.next();
+  }
+
   public onChange(event: any): void {
     if (event.data) {
       this.taskIntermediateSaveService.setFormIoFormData(event.data);
@@ -333,6 +354,8 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   private loadTaskDetails(task: Task, processLink?: TaskProcessLinkResult): void {
+    // Every open starts unanswered, also a reopen of the same task whose answer may have changed
+    this.canCompleteTask$.next(null);
     this.resetTaskProcessLinkType();
     this.resetFormDefinition();
 
@@ -497,6 +520,23 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
           this.canAssignUserToTask$.next(false);
         }
       })
+    );
+  }
+
+  private openCompletePermissionSubscription(): void {
+    this._subscriptions.add(
+      merge(this.task$, this._completePermissionRefresh$.pipe(map(() => this.task$.getValue())))
+        .pipe(
+          switchMap(task =>
+            task
+              ? this.permissionService.requestPermission(CAN_COMPLETE_TASK_PERMISSION, {
+                  resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+                  identifier: task.id,
+                })
+              : EMPTY
+          )
+        )
+        .subscribe(allowed => this.canCompleteTask$.next(allowed))
     );
   }
 

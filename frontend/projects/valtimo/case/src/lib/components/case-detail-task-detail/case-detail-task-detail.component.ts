@@ -22,6 +22,7 @@ import {
   OnDestroy,
   Output,
   signal,
+  ViewChild,
 } from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -74,9 +75,16 @@ import {CASE_DETAIL_PANEL_TEST_IDS} from '../../constants/case-detail.test-ids';
   ],
 })
 export class CaseDetailsTaskDetailComponent implements OnDestroy {
+  @ViewChild(TaskDetailContentComponent)
+  private readonly _taskDetailContentComponent?: TaskDetailContentComponent;
+  @ViewChild(TaskDetailIntermediateSaveComponent)
+  private readonly _intermediateSaveComponent?: TaskDetailIntermediateSaveComponent;
+
   @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;
 
+    // Answers cached at an earlier open may predate an assignment made elsewhere
+    this.permissionService.invalidateResource(TASK_DETAIL_PERMISSION_RESOURCE.task, value.task.id);
     this.taskAndProcessLink$.next(value);
     this.task$.next(value.task);
     this.pageValue.set({
@@ -225,6 +233,9 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   private handleAssignmentChangeResponse(response: any): void {
     if (response) {
       this.refreshTask(response);
+      // The children are not handed the refreshed task, so they re-check it themselves
+      this._taskDetailContentComponent?.refreshCompleteTaskPermission();
+      this._intermediateSaveComponent?.refreshCompleteTaskPermission();
     } else {
       this.onClose();
     }

@@ -142,6 +142,82 @@ describe('TaskDetailModalComponent', () => {
     expect(assignmentOfTaskChangedSpy).toHaveBeenCalled();
   }));
 
+  it('invalidates the cached permissions of a task before checking them when it is opened', fakeAsync(() => {
+    component.openTaskDetails(task);
+    tick();
+
+    expect(permissionService.invalidateResource).toHaveBeenCalledWith(
+      TASK_DETAIL_PERMISSION_RESOURCE.task,
+      task.id
+    );
+    expect(permissionService.invalidateResource).toHaveBeenCalledBefore(
+      permissionService.requestPermission
+    );
+  }));
+
+  it('invalidates the cached permissions of a task before checking them when it is opened with its process link', fakeAsync(() => {
+    component.openTaskAndProcessLinkDetails(taskWithProcessLink);
+    tick();
+
+    expect(permissionService.invalidateResource).toHaveBeenCalledWith(
+      TASK_DETAIL_PERMISSION_RESOURCE.task,
+      task.id
+    );
+    expect(permissionService.invalidateResource).toHaveBeenCalledBefore(
+      permissionService.requestPermission
+    );
+    flush();
+  }));
+
+  it('makes the task content and intermediate save re-check the complete permission after an assignment change', fakeAsync(() => {
+    const content = jasmine.createSpyObj('TaskDetailContentComponent', [
+      'refreshCompleteTaskPermission',
+    ]);
+    const intermediateSave = jasmine.createSpyObj('TaskDetailIntermediateSaveComponent', [
+      'refreshCompleteTaskPermission',
+    ]);
+    (component as any)._taskDetailContentComponent = content;
+    (component as any)._intermediateSaveComponent = intermediateSave;
+
+    component.openTaskAndProcessLinkDetails(taskWithProcessLink);
+    tick();
+
+    taskService.assignTask.and.returnValue(of(null));
+    taskService.getTask.and.returnValue(of({task: {id: task.id, assignee: 'other-user'}}));
+
+    component.onAssignmentChanged({userId: 'other-user'});
+
+    expect(permissionService.invalidateResource).toHaveBeenCalledWith(
+      TASK_DETAIL_PERMISSION_RESOURCE.task,
+      task.id
+    );
+    expect(content.refreshCompleteTaskPermission).toHaveBeenCalled();
+    expect(intermediateSave.refreshCompleteTaskPermission).toHaveBeenCalled();
+    flush();
+  }));
+
+  it('makes the task content and intermediate save re-check the complete permission after an external update', fakeAsync(() => {
+    const content = jasmine.createSpyObj('TaskDetailContentComponent', [
+      'refreshCompleteTaskPermission',
+    ]);
+    const intermediateSave = jasmine.createSpyObj('TaskDetailIntermediateSaveComponent', [
+      'refreshCompleteTaskPermission',
+    ]);
+    (component as any)._taskDetailContentComponent = content;
+    (component as any)._intermediateSaveComponent = intermediateSave;
+
+    component.openTaskAndProcessLinkDetails(taskWithProcessLink);
+    tick();
+
+    taskService.getTask.and.returnValue(of({task: {id: task.id, assignee: null}}));
+
+    sseEvents$.next({taskId: task.id} as TaskUpdateSseEvent);
+
+    expect(content.refreshCompleteTaskPermission).toHaveBeenCalled();
+    expect(intermediateSave.refreshCompleteTaskPermission).toHaveBeenCalled();
+    flush();
+  }));
+
   it('falls back to an empty candidate list when the candidate request is denied after an assignment change', fakeAsync(() => {
     // Right after an assignment change the task is re-emitted while the assign permission still
     // reads as allowed, firing a candidate request that the backend now denies with a 403. The

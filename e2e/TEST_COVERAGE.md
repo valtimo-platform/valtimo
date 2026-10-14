@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 26        | 21         | 4              |
+| User Features (ROLE_USER)   | 5        | 27        | 22         | 4              |
 | Admin Features (ROLE_ADMIN) | 15       | 365       | 352        | 7              |
-| **Total**                   | **20**   | **391**   | **373**    | **11**         |
+| **Total**                   | **20**   | **392**   | **374**    | **11**         |
 
-**Coverage:** `373 / 391` — `95.4%`
+**Coverage:** `374 / 392` — `95.4%`
 
 > Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (1).
 
@@ -66,6 +66,7 @@
 | 3.4 | Claim task               | Claim an unassigned task                        |    ✅    | task-list.spec.ts                               |
 | 3.5 | Execute task (fill form) | Fill in task form fields                        |    ✅    | task-list.spec.ts                               |
 | 3.6 | Complete task            | Submit and complete task                        |    ✅    | task-list.spec.ts                               |
+| 3.7 | Read-only task form      | Form read-only and submit disabled without the complete permission, from the task list and a case's tasks |    ✅    | task-complete-permission.spec.ts                |
 
 ---
 
@@ -765,8 +766,8 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   391   |
-| ✅ Covered by Playwright |   373   |
+| Total Functions          |   392   |
+| ✅ Covered by Playwright |   374   |
 | ❌ Not covered           |   11    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    6    |

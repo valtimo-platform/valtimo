@@ -34,6 +34,7 @@
     externalPluginTaskForm: externalPluginTaskForm$ | async,
     errorMessage: errorMessage$ | async,
     canAssignUserToTask: canAssignUserToTask$ | async,
+    formReadOnly: formReadOnly$ | async,
     noFormNotification: noFormNotification$ | async,
   } as obs"
 >
@@ -42,21 +43,33 @@
       <cds-loading size="sm"></cds-loading>
     </div>
   } @else {
-    <valtimo-form-io
-      #form
-      *ngIf="
-        obs.formDefinition &&
-        obs.submission &&
-        obs.processLinkIsForm &&
-        !obs.processLinkIsUiComponent &&
-        !obs.processLinkIsFormViewModel
-      "
-      [form]="obs.formDefinition"
-      [submission]="obs.submission"
-      (submit)="onSubmit($event)"
-      (change)="onChange($event)"
-      [options]="obs.formioOptions"
-    ></valtimo-form-io>
+    @if (
+      obs.formDefinition &&
+      obs.submission &&
+      obs.processLinkIsForm &&
+      !obs.processLinkIsUiComponent &&
+      !obs.processLinkIsFormViewModel
+    ) {
+      <!-- form.io reads readOnly only when it creates the form, so each state gets its own form -->
+      @if (obs.formReadOnly) {
+        <valtimo-form-io
+          #form
+          [form]="obs.formDefinition"
+          [options]="obs.formioOptions"
+          [readOnly]="true"
+          [submission]="obs.submission"
+        ></valtimo-form-io>
+      } @else {
+        <valtimo-form-io
+          #form
+          [form]="obs.formDefinition"
+          [options]="obs.formioOptions"
+          [submission]="obs.submission"
+          (change)="onChange($event)"
+          (submit)="onSubmit($event)"
+        ></valtimo-form-io>
+      }
+    }
 
     <valtimo-form-flow
       #formFlow

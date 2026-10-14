@@ -20,6 +20,7 @@ enum PERMISSION_ACTION {
   assign = 'assign',
   view = 'view',
   modify = 'modify',
+  complete = 'complete',
 }
 
 enum TASK_DETAIL_PERMISSION_RESOURCE {
@@ -47,8 +48,14 @@ const CAN_MODIFY_TASK_PERMISSION: PermissionRequest = {
   resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
 };
 
+const CAN_COMPLETE_TASK_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.complete,
+  resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+};
+
 export {
   CAN_ASSIGN_TASK_PERMISSION,
+  CAN_COMPLETE_TASK_PERMISSION,
   CAN_VIEW_TASK_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
   CAN_MODIFY_TASK_PERMISSION,

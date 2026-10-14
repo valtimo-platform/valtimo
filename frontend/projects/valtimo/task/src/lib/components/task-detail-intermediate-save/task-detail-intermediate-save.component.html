@@ -19,6 +19,7 @@
     cdsButton="ghost"
     iconOnly="true"
     cdsIcon="save"
+    [disabled]="$canCompleteTask() !== true"
     [vTooltip]="'formManagement.intermediateSave.save' | translate"
     (click)="saveCurrentProgress()"
   ></button>
@@ -27,7 +28,7 @@
     cdsButton="ghost"
     iconOnly="true"
     cdsIcon="recently-viewed"
-    [disabled]="!currentIntermediateSave"
+    [disabled]="!currentIntermediateSave || $canCompleteTask() !== true"
     [vTooltip]="'formManagement.intermediateSave.clear' | translate"
     (click)="revertSaveClick()"
   ></button>
