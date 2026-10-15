@@ -19,6 +19,8 @@ package com.ritense.document.domain.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonPointer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -84,6 +86,69 @@ class JsonDocumentContentTest {
         assertThat(source.at(NAME_POINTER).textValue()).isEqualTo("Julia");
         assertThat(source.at("/" + FAVOURITES_KEY + "/0/" + NAME_KEY).textValue()).isEqualTo("painAuxChocolat");
         assertThat(source.at("/" + FAVOURITES_KEY + "/0/" + SIZE_KEY).textValue()).isEqualTo("normal");
+    }
+
+    @Test
+    void shouldRemoveArrayItemsBeyondTheTenthWithBuild() {
+        ArrayNode stored = JsonNodeFactory.instance.arrayNode();
+        ArrayNode shorter = JsonNodeFactory.instance.arrayNode();
+        for (int i = 0; i < 13; i++) {
+            stored.add("item-" + i);
+            if (i < 10) {
+                shorter.add("item-" + i);
+            }
+        }
+        source.set(FAVOURITES_KEY, stored);
+        ObjectNode modifiedContent = JsonNodeFactory.instance.objectNode();
+        modifiedContent.set(FAVOURITES_KEY, shorter);
+
+        JsonDocumentContent.build(source, modifiedContent);
+
+        assertThat(source.get(FAVOURITES_KEY)).isEqualTo(shorter);
+    }
+
+    @Test
+    void shouldKeepOmittedPropertyInsideArrayItemWithBuild() {
+        ObjectNode modifiedContent = source.deepCopy();
+        ((ObjectNode) modifiedContent.at("/" + FAVOURITES_KEY + "/1")).remove(SIZE_KEY);
+
+        JsonDocumentContent.build(source, modifiedContent);
+
+        assertThat(source.at("/" + FAVOURITES_KEY + "/1/" + SIZE_KEY).textValue()).isEqualTo("large");
+    }
+
+    @Test
+    void shouldKeepOmittedNumericObjectKeyWithBuild() {
+        ObjectNode scores = JsonNodeFactory.instance.objectNode();
+        scores.put("2024", 1);
+        scores.put("2025", 2);
+        source.set("scores", scores);
+        ObjectNode modifiedContent = source.deepCopy();
+        ((ObjectNode) modifiedContent.get("scores")).remove("2025");
+
+        JsonDocumentContent.build(source, modifiedContent);
+
+        assertThat(source.at("/scores/2025").intValue()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldShrinkNestedArrayAfterEarlierRowIsRemovedWithBuild() throws Exception {
+        JsonNode stored = new ObjectMapper().readTree("{\"rows\":[{\"k\":1},{\"name\":\"l\"},{\"inner\":[1,2,3]}]}");
+        JsonNode modified = new ObjectMapper().readTree("{\"rows\":[{\"name\":\"l\"},{\"inner\":[1,2]}]}");
+
+        JsonDocumentContent.build(stored, modified);
+
+        assertThat(stored).isEqualTo(modified);
+    }
+
+    @Test
+    void shouldShrinkNestedArrayAfterRowIsInsertedBeforeItWithBuild() throws Exception {
+        JsonNode stored = new ObjectMapper().readTree("{\"rows\":[{\"name\":\"l\"},{\"inner\":[1,2,3]}]}");
+        JsonNode modified = new ObjectMapper().readTree("{\"rows\":[{\"new\":1},{\"name\":\"l\"},{\"inner\":[1,2]}]}");
+
+        JsonDocumentContent.build(stored, modified);
+
+        assertThat(stored).isEqualTo(modified);
     }
 
     @Test

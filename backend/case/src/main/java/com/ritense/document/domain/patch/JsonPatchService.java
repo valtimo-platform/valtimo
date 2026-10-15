@@ -30,7 +30,7 @@ public interface JsonPatchService {
     }
 
     static void apply(JsonNode patch, JsonNode source, EnumSet<JsonPatchFilterFlag> jsonPatchFilterFlags) {
-        JsonPatchFilter.filter(patch, jsonPatchFilterFlags);
+        JsonPatchFilter.filter(patch, source, jsonPatchFilterFlags);
         JsonPatch.applyInPlace(patch, source, defaultCompatibilityFlags());
     }
 

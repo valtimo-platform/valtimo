@@ -17,6 +17,7 @@
 package com.ritense.processdocument.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
@@ -69,5 +70,34 @@ class ValueResolverDelegateServiceIntTest : BaseIntegrationTest() {
             """{"person":{"firstName":"John","lastName":"Doe"}}""",
             result.resultingDocument().get().content().asJson().toString()
         )
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [AuthoritiesConstants.USER])
+    fun `should replace a document array with a shorter process variable array`() {
+        val stored = objectMapper.readTree(javaClass.getResource("/value-resolver/voorzieningen-stored.json"))
+        val written = objectMapper.readTree(javaClass.getResource("/value-resolver/voorzieningen-written.json"))
+        val documentContent = objectMapper.createObjectNode().set<ObjectNode>("person", stored)
+        val processVars = mapOf("person" to objectMapper.treeToValue(written, List::class.java))
+
+        val result = runWithoutAuthorization {
+            processDocumentService.newDocumentAndStartProcess(
+                NewDocumentAndStartProcessRequest(
+                    "pv-object-to-doc-process",
+                    NewDocumentRequest(
+                        "additional-properties",
+                        "additional-properties",
+                        "1.0.0",
+                        documentContent
+                    )
+                ).withProcessVars(processVars)
+            )
+        }
+
+        assertTrue(result.errors().isEmpty())
+        val documentId = result.resultingDocument().get().id().toString()
+        val person = runWithoutAuthorization { documentService.get(documentId) }.content().asJson().at("/person")
+        assertEquals(written.size(), person.size())
+        assertEquals(written, person)
     }
 }

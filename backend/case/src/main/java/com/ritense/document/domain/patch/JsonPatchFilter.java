@@ -16,7 +16,11 @@
 
 package com.ritense.document.domain.patch;
 
+import static com.ritense.document.domain.patch.JsonPatchFlag.defaultCompatibilityFlags;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.flipkart.zjsonpatch.JsonPatch;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -24,6 +28,14 @@ import java.util.regex.Pattern;
 public interface JsonPatchFilter {
 
     static void filter(JsonNode patch, EnumSet<JsonPatchFilterFlag> flags) {
+        filter(patch, null, flags);
+    }
+
+    static void filter(JsonNode patch, JsonNode source, EnumSet<JsonPatchFilterFlag> flags) {
+        // Each path addresses the document as patched by the operations before it, so track that document.
+        JsonNode document = source != null && flags.contains(JsonPatchFilterFlag.ALLOW_ARRAY_REMOVAL_ONLY)
+            ? source.deepCopy()
+            : null;
         Iterator<JsonNode> item = patch.iterator();
         while (item.hasNext()) {
             JsonNode operation = item.next();
@@ -33,16 +45,26 @@ public interface JsonPatchFilter {
                 }
             } else if (flags.contains(JsonPatchFilterFlag.ALLOW_ARRAY_REMOVAL_ONLY)) {
                 if (operation.get("op").asText().equals("remove")
-                    && !arrayPattern().matcher(operation.get("path").asText()).matches()
+                    && !isArrayElement(operation.get("path").asText(), document)
                 ) {
                     item.remove();
+                } else if (document != null) {
+                    JsonPatch.applyInPlace(JsonNodeFactory.instance.arrayNode().add(operation), document, defaultCompatibilityFlags());
                 }
             }
         }
     }
 
+    private static boolean isArrayElement(String path, JsonNode source) {
+        if (!arrayPattern().matcher(path).matches()) {
+            return false;
+        }
+        // A numeric last segment is also a valid object key, so the document decides.
+        return source == null || source.at(path.substring(0, path.lastIndexOf('/'))).isArray();
+    }
+
     static Pattern arrayPattern() {
-        return Pattern.compile(".*/[0-9]");
+        return Pattern.compile(".*/[0-9]+");
     }
 
 }
