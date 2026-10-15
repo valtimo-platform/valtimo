@@ -23,6 +23,7 @@ class ValtimoImportTypes {
         const val CASE_LIST = "caselist"
         const val CASE_TAB = "casetab"
         const val CASE_TAG = "casetag"
+        const val CASE_CONFIGURATION = "caseconfiguration"
         const val CASE_WIDGET_TAB = "casewidgettab"
         const val CASE_TASK_LIST = "casetasklist"
         const val DECISION_DEFINITION = "decisiondefinition"
