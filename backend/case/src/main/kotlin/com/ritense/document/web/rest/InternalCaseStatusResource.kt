@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ class InternalCaseStatusResource(
         en = "List all internal case statuses",
         nl = "Alle interne dossierstatussen ophalen",
     )
+    @Deprecated("Only used by the removed generic case list. Will be removed in a future release.")
     @GetMapping("/v1/internal-status")
     fun getAllInternalCaseStatuses(): ResponseEntity<List<InternalCaseStatusResponseDto>> {
         val internalCaseStatuses = internalCaseStatusService.getAllInternalCaseStatuses()

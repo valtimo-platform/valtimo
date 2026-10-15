@@ -202,12 +202,10 @@ export class CaseListOrchestrationService {
   public readonly canCreateCase$: Observable<boolean> = merge(
     this.caseDefinitionKey$.pipe(
       switchMap(caseDefinitionKey =>
-        caseDefinitionKey
-          ? this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
-              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-              identifier: caseDefinitionKey,
-            })
-          : of(false)
+        this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+          identifier: caseDefinitionKey,
+        })
       )
     ),
     this.startableGroupMembers$.pipe(
@@ -218,15 +216,13 @@ export class CaseListOrchestrationService {
 
   public readonly canExportCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      caseDefinitionKey
-        ? combineLatest([
-            this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
-              resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-              identifier: caseDefinitionKey,
-            }),
-            this.documentService.getCaseList(caseDefinitionKey),
-          ])
-        : of([false, []] as [boolean, any[]])
+      combineLatest([
+        this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
+          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+          identifier: caseDefinitionKey,
+        }),
+        this.documentService.getCaseList(caseDefinitionKey),
+      ])
     ),
     switchMap(([canExportPermission, caseList]) => {
       const isExportableColumns = caseList.some(caseListitem => caseListitem.exportable);

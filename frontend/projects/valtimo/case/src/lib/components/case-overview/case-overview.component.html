@@ -26,7 +26,7 @@
   ></cds-search>
 
   @if (pinInfoNotification$ | async; as pinInfoNotification) {
-    @if ($pinInfoVisible()) {
+    @if ($pinningEnabled() && $pinInfoVisible()) {
       <cds-inline-notification
         class="case-overview__pin-info"
         [notificationObj]="pinInfoNotification"
@@ -62,31 +62,33 @@
               <div class="case-overview__group-header">
                 <h4 class="case-overview__group-title">{{ group.title }}</h4>
 
-                <div class="case-overview__group-meta">
-                  <button
-                    class="case-overview__pin"
-                    [attr.aria-label]="
-                      (groupPinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
-                    "
-                    [attr.aria-pressed]="groupPinned"
-                    [ngClass]="{'case-overview__pin--active': groupPinned}"
-                    [title]="
-                      (groupPinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
-                    "
-                    type="button"
-                    (click)="
-                      onTogglePin(
-                        PINNED_ITEM_TYPE.CASE_DEFINITION_GROUP,
-                        group.key,
-                        group.title,
-                        group.color
-                      )
-                    "
-                    [attr.data-test-id]="testIds.groupPinButton"
-                  >
-                    <svg [cdsIcon]="groupPinned ? 'pin--filled' : 'pin'" size="16"></svg>
-                  </button>
-                </div>
+                @if ($pinningEnabled()) {
+                  <div class="case-overview__group-meta">
+                    <button
+                      class="case-overview__pin"
+                      [attr.aria-label]="
+                        (groupPinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
+                      "
+                      [attr.aria-pressed]="groupPinned"
+                      [ngClass]="{'case-overview__pin--active': groupPinned}"
+                      [title]="
+                        (groupPinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
+                      "
+                      type="button"
+                      (click)="
+                        onTogglePin(
+                          PINNED_ITEM_TYPE.CASE_DEFINITION_GROUP,
+                          group.key,
+                          group.title,
+                          group.color
+                        )
+                      "
+                      [attr.data-test-id]="testIds.groupPinButton"
+                    >
+                      <svg [cdsIcon]="groupPinned ? 'pin--filled' : 'pin'" size="16"></svg>
+                    </button>
+                  </div>
+                }
               </div>
 
               @if (group.description) {
@@ -146,28 +148,32 @@
               @let caseTypePinned =
                 isPinned(PINNED_ITEM_TYPE.CASE_DEFINITION, caseType.caseDefinitionKey);
 
-              <button
-                class="case-overview__pin"
-                [attr.aria-label]="
-                  (caseTypePinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
-                "
-                [attr.aria-pressed]="caseTypePinned"
-                [ngClass]="{'case-overview__pin--active': caseTypePinned}"
-                [style.--case-overview-pin-color]="caseType.color"
-                [title]="(caseTypePinned ? 'case.overview.unpin' : 'case.overview.pin') | translate"
-                type="button"
-                (click)="
-                  onTogglePin(
-                    PINNED_ITEM_TYPE.CASE_DEFINITION,
-                    caseType.caseDefinitionKey,
-                    caseType.name,
-                    caseType.color
-                  )
-                "
-                [attr.data-test-id]="testIds.typePinButton"
-              >
-                <svg [cdsIcon]="caseTypePinned ? 'pin--filled' : 'pin'" size="16"></svg>
-              </button>
+              @if ($pinningEnabled()) {
+                <button
+                  class="case-overview__pin"
+                  [attr.aria-label]="
+                    (caseTypePinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
+                  "
+                  [attr.aria-pressed]="caseTypePinned"
+                  [ngClass]="{'case-overview__pin--active': caseTypePinned}"
+                  [style.--case-overview-pin-color]="caseType.color"
+                  [title]="
+                    (caseTypePinned ? 'case.overview.unpin' : 'case.overview.pin') | translate
+                  "
+                  type="button"
+                  (click)="
+                    onTogglePin(
+                      PINNED_ITEM_TYPE.CASE_DEFINITION,
+                      caseType.caseDefinitionKey,
+                      caseType.name,
+                      caseType.color
+                    )
+                  "
+                  [attr.data-test-id]="testIds.typePinButton"
+                >
+                  <svg [cdsIcon]="caseTypePinned ? 'pin--filled' : 'pin'" size="16"></svg>
+                </button>
+              }
             </div>
           } @empty {
             <p

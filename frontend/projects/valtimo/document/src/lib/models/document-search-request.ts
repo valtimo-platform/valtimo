@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ export class DocumentSearchRequestHttpBody {
   sequence?: number;
   createdBy?: string;
   globalSearchFilter?: string;
+  /** @deprecated Only used by the removed generic case list. Will be removed in a future release. */
   assigneeFilter?: string;
   otherFilters?: Array<{path: string; value: string}>;
 }
@@ -50,6 +51,7 @@ export class DocumentSearchRequestImpl implements DocumentSearchRequest {
   createdBy?: string;
   globalSearchFilter?: string;
   sort?: SortState;
+  /** @deprecated Only used by the removed generic case list. Will be removed in a future release. */
   assigneeFilter?: string;
   otherFilters?: Array<{path: string; value: string}>;
 
