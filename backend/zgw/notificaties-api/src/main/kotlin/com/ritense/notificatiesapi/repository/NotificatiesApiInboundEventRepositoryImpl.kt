@@ -17,10 +17,12 @@
 package com.ritense.notificatiesapi.repository
 
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEvent
+import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import java.util.UUID
 
 class NotificatiesApiInboundEventRepositoryImpl(
     @PersistenceContext private val entityManager: EntityManager
@@ -49,5 +51,34 @@ class NotificatiesApiInboundEventRepositoryImpl(
 
         @Suppress("UNCHECKED_CAST")
         return query.resultList as List<NotificatiesApiInboundEvent>
+    }
+
+    // Deletes by id rather than by range, so it never locks rows another instance is processing.
+    override fun deleteByStatusAndReceivedAtBefore(
+        status: NotificatiesApiInboundEventStatus,
+        receivedAt: LocalDateTime
+    ): Long {
+        val ids = entityManager.createQuery(
+            "select event.id from NotificatiesApiInboundEvent event " +
+                "where event.status = :status and event.receivedAt < :receivedAt order by event.id",
+            UUID::class.java
+        )
+            .setParameter("status", status)
+            .setParameter("receivedAt", receivedAt)
+            .resultList
+
+        return ids.chunked(DELETE_CHUNK_SIZE).sumOf { chunk ->
+            entityManager.createQuery(
+                "delete from NotificatiesApiInboundEvent event where event.id in :ids and event.status = :status"
+            )
+                .setParameter("ids", chunk)
+                .setParameter("status", status)
+                .executeUpdate()
+                .toLong()
+        }
+    }
+
+    companion object {
+        private const val DELETE_CHUNK_SIZE = 500
     }
 }
