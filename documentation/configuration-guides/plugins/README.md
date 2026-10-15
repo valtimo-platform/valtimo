@@ -4,14 +4,15 @@ Plugins extend Valtimo with integrations and custom behavior. The Plugins config
 covers two kinds:
 
 - **Embedded plugins** — plugins that ship as part of the Valtimo application, such as the ZGW
-  plugins. They are configured on the same Plugins page but require no infrastructure of their
-  own.
+  plugins and the [Verzoek plugin](verzoek.md). They are configured on the same Plugins page but
+  require no infrastructure of their own.
 - **[External plugins](external-plugins/README.md)** — plugins that run outside the Valtimo
   backend on a plugin host or as a standalone app, and are installed, permissioned, and updated
   independently of Valtimo releases.
 
 This section covers:
 
+- **[Verzoek](verzoek.md)** — turn citizen requests from the Objecten API into cases and zaken
 - **[External plugins](external-plugins/README.md)** — concepts of the admin screens, and how
   plugin hosts, apps, and plugin configurations fit together
 - **[Add a plugin host](external-plugins/add-a-plugin-host.md)** — connect a plugin host to
