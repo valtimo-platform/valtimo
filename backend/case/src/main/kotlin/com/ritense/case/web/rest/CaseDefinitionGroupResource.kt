@@ -29,6 +29,7 @@ import com.ritense.document.web.rest.dto.InternalCaseStatusResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -49,6 +50,10 @@ class CaseDefinitionGroupResource(
     private val caseDefinitionService: CaseDefinitionService
 ) {
 
+    @EndpointDescription(
+        en = "List case groups",
+        nl = "Dossiergroepen ophalen",
+    )
     @GetMapping
     fun getGroups(): ResponseEntity<List<CaseDefinitionGroupResponseDto>> {
         val groups = groupCaseInstanceService.getAccessibleGroups()
@@ -56,6 +61,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(groups)
     }
 
+    @EndpointDescription(
+        en = "Get case group",
+        nl = "Dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}")
     fun getGroup(
         @PathVariable groupKey: String
@@ -64,6 +73,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(CaseDefinitionGroupResponseDto.of(group))
     }
 
+    @EndpointDescription(
+        en = "List case definitions in case group",
+        nl = "Dossierdefinities in dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}/member")
     fun getMembers(
         @PathVariable groupKey: String
@@ -76,6 +89,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(members)
     }
 
+    @EndpointDescription(
+        en = "List case group list columns",
+        nl = "Lijstkolommen van dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}/list-column")
     fun getListColumns(
         @PathVariable groupKey: String
@@ -84,6 +101,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(columns)
     }
 
+    @EndpointDescription(
+        en = "List case group search fields",
+        nl = "Zoekvelden van dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}/search-field")
     fun getSearchFields(
         @PathVariable groupKey: String
@@ -93,6 +114,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(fields)
     }
 
+    @EndpointDescription(
+        en = "List internal case statuses of case group",
+        nl = "Interne dossierstatussen van dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}/internal-status")
     fun getInternalCaseStatuses(
         @PathVariable groupKey: String
@@ -102,6 +127,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(statuses)
     }
 
+    @EndpointDescription(
+        en = "Search cases in case group",
+        nl = "Dossiers in dossiergroep zoeken",
+    )
     @PostMapping("/{groupKey}/search")
     fun search(
         @PathVariable groupKey: String,
@@ -112,6 +141,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(result)
     }
 
+    @EndpointDescription(
+        en = "List stored quick searches of case group",
+        nl = "Opgeslagen snelzoekopdrachten van dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}/stored-quick-search")
     fun getQuickSearchList(
         @PathVariable groupKey: String
@@ -122,6 +155,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok(result)
     }
 
+    @EndpointDescription(
+        en = "Store quick search for case group",
+        nl = "Snelzoekopdracht voor dossiergroep opslaan",
+    )
     @PostMapping("/{groupKey}/stored-quick-search")
     fun saveQuickSearch(
         @PathVariable groupKey: String,
@@ -132,6 +169,10 @@ class CaseDefinitionGroupResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete stored quick search of case group",
+        nl = "Opgeslagen snelzoekopdracht van dossiergroep verwijderen",
+    )
     @DeleteMapping("/{groupKey}/stored-quick-search/{title}")
     fun deleteQuickSearch(
         @PathVariable groupKey: String,

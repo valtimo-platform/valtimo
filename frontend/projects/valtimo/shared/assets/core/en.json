@@ -4459,7 +4459,7 @@
           "title": "Menu collapsed by default",
           "description": "Start with the navigation menu collapsed instead of expanded."
         },
-        "enableGenericCaseList": {
+        "showAllCaseDefinitionsInMenu": {
           "title": "Show all case definitions in the menu",
           "description": "Show every case definition the user has access to in the Cases menu, instead of only their pinned case groups and case types. Pinning is turned off."
         },

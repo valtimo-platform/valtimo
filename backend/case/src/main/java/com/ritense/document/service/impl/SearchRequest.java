@@ -62,7 +62,7 @@ public class SearchRequest {
     /**
      * @deprecated Only used by the removed generic case list. Will be removed in a future release.
      */
-    @Deprecated(since = "13.50.0", forRemoval = true)
+    @Deprecated(since = "13.51.0", forRemoval = true)
     public AssigneeFilter getAssigneeFilter() {
         return assigneeFilter;
     }
@@ -70,7 +70,7 @@ public class SearchRequest {
     /**
      * @deprecated Only used by the removed generic case list. Will be removed in a future release.
      */
-    @Deprecated(since = "13.50.0", forRemoval = true)
+    @Deprecated(since = "13.51.0", forRemoval = true)
     public void setAssigneeFilter(AssigneeFilter assigneeFilter) {
         this.assigneeFilter = assigneeFilter;
     }

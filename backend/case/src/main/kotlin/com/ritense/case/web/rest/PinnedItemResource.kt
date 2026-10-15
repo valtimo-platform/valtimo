@@ -22,6 +22,7 @@ import com.ritense.case.web.rest.dto.PinnedItemCreateRequestDto
 import com.ritense.case.web.rest.dto.PinnedItemResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -40,12 +41,20 @@ class PinnedItemResource(
     private val pinnedItemService: PinnedItemService
 ) {
 
+    @EndpointDescription(
+        en = "List pinned items of the current user",
+        nl = "Vastgezette items van de huidige gebruiker ophalen",
+    )
     @GetMapping
     fun getPinnedItems(): ResponseEntity<List<PinnedItemResponseDto>> {
         val pinnedItems = pinnedItemService.getPinnedItems()
         return ResponseEntity.ok(pinnedItems)
     }
 
+    @EndpointDescription(
+        en = "Pin a case group or case definition",
+        nl = "Dossiergroep of dossierdefinitie vastzetten",
+    )
     @PostMapping
     fun pinItem(
         @Valid @RequestBody request: PinnedItemCreateRequestDto
@@ -54,6 +63,10 @@ class PinnedItemResource(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @EndpointDescription(
+        en = "Unpin a case group or case definition",
+        nl = "Dossiergroep of dossierdefinitie losmaken",
+    )
     @DeleteMapping("/{itemType}/{itemKey}")
     fun unpinItem(
         @PathVariable itemType: PinnedItemType,

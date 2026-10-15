@@ -64,9 +64,9 @@ export class CaseOverviewComponent {
   // With the full case definition list in the menu, pins have no effect.
   public readonly $pinningEnabled: Signal<boolean> = toSignal(
     this.configService
-      .getFeatureToggleObservable('enableGenericCaseList')
+      .getFeatureToggleObservable('showAllCaseDefinitionsInMenu')
       .pipe(map(showAllCaseDefinitions => !showAllCaseDefinitions)),
-    {initialValue: !this.configService.config?.featureToggles?.enableGenericCaseList}
+    {initialValue: !this.configService.config?.featureToggles?.showAllCaseDefinitionsInMenu}
   );
 
   private _pinToast: Notification | null = null;

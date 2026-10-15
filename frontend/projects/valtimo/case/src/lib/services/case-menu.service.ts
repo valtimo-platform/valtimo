@@ -71,7 +71,7 @@ export class CaseMenuService {
 
   // Kept subscribed on purpose: pinning or flipping the toggle emits, which re-emits the menu items.
   public appendCaseMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> =>
-    this.configService.getFeatureToggleObservable('enableGenericCaseList').pipe(
+    this.configService.getFeatureToggleObservable('showAllCaseDefinitionsInMenu').pipe(
       switchMap(showAllCaseDefinitions =>
         showAllCaseDefinitions
           ? this.getCaseDefinitionMenuItems()

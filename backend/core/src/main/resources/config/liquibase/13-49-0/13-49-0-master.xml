@@ -21,9 +21,5 @@ xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="20260930-add-form-flow-instance-indexes.xml" relativeToChangelogFile="true"/>
-    <include file="20260901-add-case-definition-group-tables.xml" relativeToChangelogFile="true"/>
-    <include file="20260915-add-color-to-case-definition-group.xml" relativeToChangelogFile="true"/>
-    <include file="20260928-add-color-to-case-definition.xml" relativeToChangelogFile="true"/>
-    <include file="20260928-create-pinned-item-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

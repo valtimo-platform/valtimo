@@ -22,6 +22,7 @@ import com.ritense.case.service.CaseDefinitionService
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionGroupExportRequest
 import com.ritense.importer.ValtimoImportService
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -62,6 +63,10 @@ class CaseDefinitionGroupManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case groups (management)",
+        nl = "Dossiergroepen ophalen (beheer)",
+    )
     @GetMapping
     fun getGroups(): ResponseEntity<List<CaseDefinitionGroupResponseDto>> {
         val memberCounts = groupService.getMemberCountsByGroup()
@@ -72,6 +77,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get case group (management)",
+        nl = "Dossiergroep ophalen (beheer)",
+    )
     @GetMapping("/{groupKey}")
     fun getGroup(
         @PathVariable groupKey: String
@@ -85,6 +94,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create case group",
+        nl = "Dossiergroep aanmaken",
+    )
     @PostMapping
     fun createGroup(
         @Valid @RequestBody request: CaseDefinitionGroupCreateRequestDto
@@ -94,6 +107,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case group",
+        nl = "Dossiergroep bijwerken",
+    )
     @PutMapping("/{groupKey}")
     fun updateGroup(
         @PathVariable groupKey: String,
@@ -104,6 +121,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete case group",
+        nl = "Dossiergroep verwijderen",
+    )
     @DeleteMapping("/{groupKey}")
     fun deleteGroup(
         @PathVariable groupKey: String
@@ -113,6 +134,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case definitions in case group (management)",
+        nl = "Dossierdefinities in dossiergroep ophalen (beheer)",
+    )
     @GetMapping("/{groupKey}/member")
     fun getMembers(
         @PathVariable groupKey: String
@@ -125,6 +150,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Add case definition to case group",
+        nl = "Dossierdefinitie aan dossiergroep toevoegen",
+    )
     @PostMapping("/{groupKey}/member")
     fun addMember(
         @PathVariable groupKey: String,
@@ -136,6 +165,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Remove case definition from case group",
+        nl = "Dossierdefinitie uit dossiergroep verwijderen",
+    )
     @DeleteMapping("/{groupKey}/member/{caseDefinitionKey}")
     fun removeMember(
         @PathVariable groupKey: String,
@@ -146,6 +179,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update order of case definitions in case group",
+        nl = "Volgorde van dossierdefinities in dossiergroep bijwerken",
+    )
     @PutMapping("/{groupKey}/member/order")
     fun updateMemberOrder(
         @PathVariable groupKey: String,
@@ -160,6 +197,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case group list columns (management)",
+        nl = "Lijstkolommen van dossiergroep ophalen (beheer)",
+    )
     @GetMapping("/{groupKey}/list-column")
     fun getListColumns(
         @PathVariable groupKey: String
@@ -172,6 +213,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case group list columns",
+        nl = "Lijstkolommen van dossiergroep bijwerken",
+    )
     @PutMapping("/{groupKey}/list-column")
     fun updateListColumns(
         @PathVariable groupKey: String,
@@ -182,6 +227,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get path mappings of case group list column",
+        nl = "Padkoppelingen van lijstkolom van dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}/list-column/{columnKey}/path-mapping")
     fun getListColumnPathMappings(
         @PathVariable groupKey: String,
@@ -193,6 +242,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update path mappings of case group list column",
+        nl = "Padkoppelingen van lijstkolom van dossiergroep bijwerken",
+    )
     @PutMapping("/{groupKey}/list-column/{columnKey}/path-mapping")
     fun updateListColumnPathMappings(
         @PathVariable groupKey: String,
@@ -205,6 +258,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case group search fields (management)",
+        nl = "Zoekvelden van dossiergroep ophalen (beheer)",
+    )
     @GetMapping("/{groupKey}/search-field")
     fun getSearchFields(
         @PathVariable groupKey: String
@@ -214,6 +271,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case group search fields",
+        nl = "Zoekvelden van dossiergroep bijwerken",
+    )
     @PutMapping("/{groupKey}/search-field")
     fun updateSearchFields(
         @PathVariable groupKey: String,
@@ -224,6 +285,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get path mappings of case group search field",
+        nl = "Padkoppelingen van zoekveld van dossiergroep ophalen",
+    )
     @GetMapping("/{groupKey}/search-field/{fieldKey}/path-mapping")
     fun getSearchFieldPathMappings(
         @PathVariable groupKey: String,
@@ -235,6 +300,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update path mappings of case group search field",
+        nl = "Padkoppelingen van zoekveld van dossiergroep bijwerken",
+    )
     @PutMapping("/{groupKey}/search-field/{fieldKey}/path-mapping")
     fun updateSearchFieldPathMappings(
         @PathVariable groupKey: String,
@@ -247,6 +316,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Export case group",
+        nl = "Dossiergroep exporteren",
+    )
     @GetMapping("/{groupKey}/export", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
     fun exportGroup(
         @PathVariable groupKey: String
@@ -259,6 +332,10 @@ class CaseDefinitionGroupManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Import case group",
+        nl = "Dossiergroep importeren",
+    )
     @PostMapping("/import", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun importGroup(
         @RequestParam("file") file: MultipartFile

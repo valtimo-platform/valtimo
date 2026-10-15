@@ -4468,7 +4468,7 @@
           "title": "Menu standaard ingeklapt",
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         },
-        "enableGenericCaseList": {
+        "showAllCaseDefinitionsInMenu": {
           "title": "Alle dossiertypen in het menu tonen",
           "description": "Toon elk dossiertype waar de gebruiker toegang toe heeft in het Dossiers-menu, in plaats van alleen de vastgezette dossiergroepen en dossiertypen. Vastzetten is dan uitgeschakeld."
         },
