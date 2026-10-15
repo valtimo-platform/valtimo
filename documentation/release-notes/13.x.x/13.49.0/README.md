@@ -14,9 +14,10 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Combine several values in one widget field
 
-New enhancement explanation.
+A field in a Fields widget can now show several case values together, such as a full name or an address, under a
+single label. Write the field's value as a template, for example `${doc:/firstName} ${doc:/lastName}`.
 
 ---
 

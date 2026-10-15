@@ -73,3 +73,28 @@ export function createReorderTestData() {
     titleB: `E2e Reorder Widget B ${idB}`,
   };
 }
+
+/**
+ * Data for a Fields widget field whose value combines several document values (gzac-issues#79).
+ *
+ * Uses `layout-test`, whose cases start without the ZGW stack. `houseNumberAddition` is left out
+ * of the document: an empty placeholder must leave nothing behind.
+ */
+export function createValueTemplateTestData() {
+  const id = generateId();
+  return {
+    caseDefinitionKey: 'layout-test',
+    widgetTabName: 'Adres & Contact',
+    widgetTitle: `E2e Template Widget ${id}`,
+    fieldTitle: 'Adres',
+    template:
+      '${doc:/street} ${doc:/houseNumber}${doc:/houseNumberAddition}, ${doc:/postalCode} ${doc:/city}',
+    document: {
+      street: 'Kerkstraat',
+      houseNumber: '12',
+      postalCode: '1234 AB',
+      city: 'Utrecht',
+    },
+    expectedValue: 'Kerkstraat 12, 1234 AB Utrecht',
+  };
+}

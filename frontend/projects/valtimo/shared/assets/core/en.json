@@ -1677,7 +1677,7 @@
         "title": "Title",
         "titlePlaceholder": "Choose a title",
         "titleTooltip": "Title for the property",
-        "valueTooltip": "A path which leads to the property you want to show. For the document's JSON schema, follow this example: 'doc:customer.firstName'. For document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
+        "valueTooltip": "A path which leads to the property you want to show. For the document's JSON schema, follow this example: 'doc:customer.firstName'. For document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\". To show several values in one field, wrap each path in ${...} and put the text that should appear between them around it, for example: '${doc:/street} ${doc:/houseNumber}'. Empty values are left out.",
         "type": "Display type",
         "typePlaceholder": "Choose type",
         "value": "Value",

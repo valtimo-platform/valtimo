@@ -1684,7 +1684,7 @@
         "title": "Titel",
         "titlePlaceholder": "Kies een titel",
         "titleTooltip": "Titel van de eigenschap",
-        "valueTooltip": "Een pad dat leidt naar de eigenschap die je wilt weergeven.. Volg dit voorbeeld voor het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden voor documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
+        "valueTooltip": "Een pad dat leidt naar de eigenschap die je wilt weergeven.. Volg dit voorbeeld voor het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden voor documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\". Om meerdere waarden in één veld te tonen, zet je elk pad tussen ${...} met de tekst die ertussen moet staan eromheen, bijvoorbeeld: '${doc:/straat} ${doc:/huisnummer}'. Lege waarden worden weggelaten.",
         "type": "Weergavetype",
         "typePlaceholder": "Kies type",
         "value": "Waarde",

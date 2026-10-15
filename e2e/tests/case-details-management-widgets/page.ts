@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {type APIRequestContext, expect, type Page} from '@playwright/test';
+import {type APIRequestContext, expect, type Locator, type Page} from '@playwright/test';
 import * as ApiUtils from '../../utils/api.utils';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {JsonEditor} from '../../shared/json-editor/json-editor.utils';
@@ -66,10 +66,10 @@ export class CaseDetailsManagementWidgetsPage {
     return ensureDraftVersionSelected(this.page);
   }
 
-  async goToWidgetTab() {
+  async goToWidgetTab(tabName = 'Widgets') {
     await this.page.getByRole('tab', {name: 'Case details'}).click();
     await this.page.getByRole('tab', {name: 'Tabs'}).click();
-    await this.page.getByRole('cell', {name: 'Widgets', exact: true}).click();
+    await this.page.getByRole('cell', {name: tabName, exact: true}).click();
     await this.page.waitForSelector('valtimo-widget-management-editor');
   }
 
@@ -152,11 +152,40 @@ export class CaseDetailsManagementWidgetsPage {
     title: string;
     fieldTitle: string;
     valuePath: string;
+    /** Type the value into the selector's manual mode instead of picking a dropdown option. */
+    manualValue?: boolean;
     /** Optional display condition, set on the final wizard step before saving (6.94). */
     condition?: {path: string; operatorLabel: string; value: string};
   }) {
-    const {title, fieldTitle, valuePath, condition} = opts;
+    const {title, fieldTitle, valuePath, manualValue, condition} = opts;
 
+    await this.openFieldsWidgetContentStep();
+
+    // Step 5: Fill content
+    await this.fillWidgetTitle(title);
+    await this.fillFieldTitle(fieldTitle);
+    await this.selectDisplayType('Text');
+    if (manualValue) {
+      await this.fillValueManually(valuePath);
+    } else {
+      await this.selectValuePath(valuePath);
+    }
+    await expect(this.wizardNextButton).toBeEnabled();
+    await this.wizardNextButton.click();
+
+    // Step 6: Display conditions — optional; with no conditions the widget always shows
+    if (condition) {
+      await this.addDisplayCondition(condition);
+    }
+    await expect(this.wizardSaveButton).toBeEnabled();
+    await this.wizardSaveButton.click();
+
+    // Wait for the wizard modal to close and the list to refresh
+    await this.waitForWizardClosed();
+  }
+
+  /** Opens the add-widget wizard for a Fields widget and walks it to the content step (step 5). */
+  async openFieldsWidgetContentStep() {
     // Step 1: Select type
     await this.addWidgetButton.click();
     await this.selectWidgetType('tileFields');
@@ -177,24 +206,22 @@ export class CaseDetailsManagementWidgetsPage {
     await this.selectWidgetColor('tileWhite');
     await expect(this.wizardNextButton).toBeEnabled();
     await this.wizardNextButton.click();
+  }
 
-    // Step 5: Fill content
-    await this.fillWidgetTitle(title);
-    await this.fillFieldTitle(fieldTitle);
-    await this.selectDisplayType('Text');
-    await this.selectValuePath(valuePath);
-    await expect(this.wizardNextButton).toBeEnabled();
-    await this.wizardNextButton.click();
+  async fillValueManually(value: string) {
+    await fillValuePathManually(
+      this.page.getByTestId(WIDGET_CONTENT_FIELDS_TEST_IDS.valuePathSelector),
+      value
+    );
+  }
 
-    // Step 6: Display conditions — optional; with no conditions the widget always shows
-    if (condition) {
-      await this.addDisplayCondition(condition);
-    }
-    await expect(this.wizardSaveButton).toBeEnabled();
-    await this.wizardSaveButton.click();
-
-    // Wait for the wizard modal to close and the list to refresh
-    await this.waitForWizardClosed();
+  /** Hovers the help icon next to a field's Value input and returns the tooltip it opens. */
+  async openValueTooltip(): Promise<Locator> {
+    await this.page
+      .locator('.valtimo-widget-management-field-column__value-field .v-input-label__tooltip')
+      .first()
+      .hover();
+    return this.page.locator('.cdk-overlay-container');
   }
 
   // ─── 6.94 Display Conditions ───────────────────────────────────────

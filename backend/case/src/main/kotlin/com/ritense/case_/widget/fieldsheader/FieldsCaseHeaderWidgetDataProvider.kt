@@ -25,6 +25,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.fields.FieldValueTemplate
 import java.util.UUID
 import org.springframework.data.domain.Pageable
 
@@ -44,17 +45,19 @@ class FieldsCaseHeaderWidgetDataProvider(
         widget as CaseHeaderWidget
         val properties = objectMapper.convertValue<FieldsWidgetProperties>(widget.properties)
 
-        val valueKeyMap = properties.columns
-            .flatMap { column -> column.map { field -> field.value to field.key } }
-            .toMap()
+        val unresolvedValues = properties.columns
+            .flatMap { column -> column.flatMap { field -> FieldValueTemplate.getUnresolvedValues(field.value) } }
+            .distinct()
 
         val resolvedValues = valueResolverService.resolveValues(
             mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
-            valueKeyMap.keys
+            unresolvedValues
         )
 
         return properties.columns
-            .flatMap { column -> column.map { field -> field.key to (resolvedValues[field.value] ?: null) } }
+            .flatMap { column ->
+                column.map { field -> field.key to FieldValueTemplate.resolve(field.value) { resolvedValues[it] } }
+            }
             .toMap()
     }
 }

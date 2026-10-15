@@ -262,6 +262,7 @@
 | 6.91 | Set widget density       | Set widget density                                                        |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.92 | Set widget style         | Set widget style                                                          |    ✅    | case-details-management-widgets.spec.ts         |
 | 6.93 | Configure widget content | Configure widget content                                                  |    ✅    | case-details-management-widgets.spec.ts         |
+| 6.93a | Combine several values in one field | Value tooltip explains `${...}` templates · A template entered in manual mode is saved as entered and a case shows the combined value under the one field label |    ✅    | fields-widget-value-template.spec.ts (on `layout-test`, which starts cases without the ZGW stack) |
 | 6.94 | Set widget conditions    | Add a display condition in the wizard's last step · Condition round-trips when reopened |    ✅    | case-details-management-widgets.spec.ts (path entered in manual mode; the "Equal to" label is stored as `==`) |
 | 6.94a | Reject incomplete condition | Save disabled while a condition row is empty; removing the row re-enables it |    ✅    | case-details-management-widgets.spec.ts (failure scenario) |
 | 6.95 | Add widget separator     | Add widget separator                                                      |    ✅    | case-details-management-widgets.spec.ts         |
