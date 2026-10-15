@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section *ngIf="contracts.length > 0" class="plugin-external-contract-bindings">
+  <h6 class="cds--type-heading-compact-02 plugin-external-contract-bindings__heading">
+    {{ 'pluginManagement.contracts.requiredPluginsHeading' | translate }}
+  </h6>
+
+  <p class="plugin-external-contract-bindings__helper">
+    {{ 'pluginManagement.contracts.requiredPluginsDescription' | translate }}
+  </p>
+
+  <cds-loading *ngIf="$loading(); else bindingRows" [isActive]="true" size="sm"></cds-loading>
+
+  <ng-template #bindingRows>
+    <div class="plugin-external-contract-bindings__table">
+      <div
+        *ngFor="let row of $rows(); trackBy: trackByContract"
+        class="plugin-external-contract-bindings__row"
+      >
+        <div class="plugin-external-contract-bindings__contract">
+          <span class="plugin-external-contract-bindings__contract-title">{{
+            row.title || row.contract
+          }}</span>
+
+          <code *ngIf="row.title" class="cds--snippet--inline">{{ row.contract }}</code>
+        </div>
+
+        <div class="plugin-external-contract-bindings__provider">
+          <cds-inline-notification
+            *ngIf="row.items.length === 0; else providerSelect"
+            [attr.data-test-id]="testIds.noProviderNotification + row.contract"
+            [notificationObj]="{
+              type: 'warning',
+              title: '',
+              message: 'pluginManagement.contracts.noProvider' | translate,
+              showClose: false,
+              lowContrast: true,
+            }"
+          ></cds-inline-notification>
+
+          <ng-template #providerSelect>
+            <cds-dropdown
+              [appendInline]="false"
+              [attr.aria-label]="row.title || row.contract"
+              [attr.data-test-id]="testIds.providerDropdown + row.contract"
+              [invalid]="!row.selectedConfigurationId"
+              [invalidText]="'pluginManagement.contracts.bindingRequired' | translate"
+              [placeholder]="'pluginManagement.contracts.selectProvider' | translate"
+              (selected)="onProviderSelected(row.contract, $event)"
+            >
+              <cds-dropdown-list [items]="row.items"></cds-dropdown-list>
+            </cds-dropdown>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</section>

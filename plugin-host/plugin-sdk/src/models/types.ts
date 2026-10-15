@@ -156,6 +156,128 @@ export interface ManifestActionProperty {
   required?: boolean;
 }
 
+/** `sync`: answered within the call. `job`: GZAC keeps a ledger row; the provider may complete later. */
+export type ContractOperationMode = "sync" | "job";
+
+export interface ManifestContractOperation {
+  /** `/^[a-z][a-z0-9-]*$/`, unique within its contract. */
+  key: string;
+  title: string;
+  description?: string;
+  /** Defaults to `sync`. */
+  mode?: ContractOperationMode;
+  /** ISO-8601 duration (e.g. `PT2H`); only allowed with `mode: "job"`. */
+  timeout?: string;
+  /** Keys a completed result must contain (`null` values allowed). */
+  outputs?: string[];
+}
+
+export interface ManifestProvidedContract {
+  /** `name@major`, e.g. `nl.ritense.openplan@1`. */
+  contract: string;
+  title?: string;
+  operations: ManifestContractOperation[];
+}
+
+/** Identity of the calling configuration, stamped by GZAC from the caller's token. */
+export interface ContractCaller {
+  pluginId: string;
+  version: string;
+  configurationId: string;
+}
+
+/**
+ * Input to a provider's contract handler (`handle_contract_call`). `jobId` and `deadline` are only
+ * present when GZAC delivers a job.
+ */
+export interface ContractCallInput {
+  contract: string;
+  operation: string;
+  configurationId: string;
+  configuration: Record<string, unknown>;
+  caller: ContractCaller;
+  payload: unknown;
+  jobId?: string;
+  deadline?: string;
+}
+
+export interface ContractJobInput extends ContractCallInput {
+  jobId: string;
+}
+
+/**
+ * `accepted` is only meaningful for a job: the provider took it and completes it later with
+ * `completeJob`. `undefined` values on an object `result` are serialised as `null`.
+ */
+export interface ContractCallOutput {
+  status: "completed" | "accepted" | "error";
+  result?: unknown;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+export type ContractCallHandler = (
+  input: ContractCallInput
+) => ContractCallOutput | Promise<ContractCallOutput>;
+
+export type ContractJobHandler = (
+  input: ContractJobInput
+) => ContractCallOutput | Promise<ContractCallOutput>;
+
+/** A job's outcome, delivered to the requester's `handle_contract_reply`. */
+export interface ContractReplyInput {
+  configurationId: string;
+  configuration: Record<string, unknown>;
+  jobId: string;
+  contract: string;
+  operation: string;
+  status: "completed" | "failed" | "expired";
+  result?: unknown;
+  errorCode?: string;
+  errorMessage?: string;
+  requestedAt: string;
+  completedAt?: string;
+}
+
+/** `error` makes GZAC retry the delivery; anything else acknowledges it. */
+export interface ContractReplyOutput {
+  status: "completed" | "ignored" | "error";
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+export type ContractReplyHandler = (
+  reply: ContractReplyInput
+) => ContractReplyOutput | void | Promise<ContractReplyOutput | void>;
+
+/** Result of `pluginCall`. Remote failures arrive here as `status: "error"`, never as a throw. */
+export interface ContractCallResult<T = unknown> {
+  status: "completed" | "error";
+  result?: T;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+/** Result of `pluginRequest`. */
+export type ContractRequestResult =
+  | { status: "accepted"; jobId: string }
+  | { status: "error"; errorCode?: string; errorMessage?: string };
+
+/** What a provider reports through `completeJob`. */
+export interface ContractJobOutcome {
+  status: "completed" | "failed";
+  result?: unknown;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+/** Result of `completeJob`. */
+export interface ContractCompleteResult {
+  status: "completed" | "error";
+  errorCode?: string;
+  errorMessage?: string;
+}
+
 export interface Endpoint {
   method: string;
   pattern: string;
@@ -253,7 +375,15 @@ export interface PluginManifest {
      * admin supplies it at activation instead of the package being rebuilt per deployment.
      */
     egress?: string[];
+    /**
+     * Contracts (`name@major`) this plugin calls through `pluginCall` / `pluginRequest`. The admin
+     * binds each to a providing configuration at activation; the host refuses calls to any
+     * contract not in the pushed grant.
+     */
+    contracts?: string[];
   };
+  /** Contracts this plugin serves to other configurations, via `onContractCall` / `onContractJob`. */
+  provides?: ManifestProvidedContract[];
   frontendBundles?: FrontendBundle[];
   /**
    * Filename of the plugin logo relative to the plugin root (e.g. `logo.svg`). Written by the

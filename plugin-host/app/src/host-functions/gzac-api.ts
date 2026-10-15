@@ -55,6 +55,17 @@ export interface GzacApiCallContext {
    * calls at all.
    */
   allowedEgress?: string[];
+  /**
+   * Contracts the admin bound for this configuration. `plugin_contract` refuses `call`/`request`
+   * for any contract outside it. Deny-by-default.
+   */
+  grantedContracts?: string[];
+  /**
+   * Configuration ids of the contract chain this invocation runs in, ending with this
+   * configuration. Set only for contract deliveries; `plugin_contract` forwards it to GZAC as
+   * `X-Valtimo-Contract-Chain` so nested calls are depth- and cycle-checked.
+   */
+  contractChain?: string[];
 }
 
 interface GzacApiRequest {

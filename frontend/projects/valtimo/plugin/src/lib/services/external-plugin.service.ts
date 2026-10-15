@@ -16,13 +16,17 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   ExternalPluginConfiguration,
   ExternalPluginConfigurationCreateRequest,
   ExternalPluginConfigurationDetail,
   ExternalPluginConfigurationUpdateRequest,
+  ExternalPluginContractJobDetail,
+  ExternalPluginContractJobQuery,
+  ExternalPluginContractJobSummary,
+  ExternalPluginContractProvider,
   ExternalPluginDefinition,
   ExternalPluginEndpointDescription,
   ExternalPluginEndpointDescriptionQuery,
@@ -229,6 +233,30 @@ export class ExternalPluginService {
   ): Observable<Array<ExternalPluginHostUsage>> {
     return this._http.get<Array<ExternalPluginHostUsage>>(
       `${this._baseUrl}/configuration/${configurationId}/usages`
+    );
+  }
+
+  /** Configurations, across all integrations, whose accepted manifest provides the contract. */
+  public getContractProviders(contract: string): Observable<Array<ExternalPluginContractProvider>> {
+    return this._http.get<Array<ExternalPluginContractProvider>>(
+      `${this._baseUrl}/contract/${encodeURIComponent(contract)}/providers`
+    );
+  }
+
+  public getContractJobs(
+    query: ExternalPluginContractJobQuery
+  ): Observable<Page<ExternalPluginContractJobSummary>> {
+    let params = new HttpParams().set('page', query.page).set('size', query.size);
+    if (query.status) params = params.set('status', query.status);
+    if (query.configurationId) params = params.set('configurationId', query.configurationId);
+    return this._http.get<Page<ExternalPluginContractJobSummary>>(`${this._baseUrl}/contract-job`, {
+      params,
+    });
+  }
+
+  public getContractJob(jobId: string): Observable<ExternalPluginContractJobDetail> {
+    return this._http.get<ExternalPluginContractJobDetail>(
+      `${this._baseUrl}/contract-job/${jobId}`
     );
   }
 

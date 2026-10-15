@@ -114,12 +114,28 @@ data class ConfigurationCreateRequest(
      * listed here — they are derived at push time from the `x-egress-target` properties.
      */
     val grantedEgress: List<String> = emptyList(),
+    /** One per contract in the manifest's `permissions.contracts` — exact match, like the other grants. */
+    val contractBindings: List<ContractBindingEntry> = emptyList(),
 )
 
 data class ConfigurationUpdateRequest(
     val title: String,
     val properties: ObjectNode,
     val grantedEndpoints: List<GrantedEndpointEntry>? = null,
+    /** Null leaves the bindings unchanged; a list replaces them (rebinding). */
+    val contractBindings: List<ContractBindingEntry>? = null,
+)
+
+data class ContractBindingEntry(
+    val contract: String,
+    val targetConfigurationId: UUID,
+)
+
+data class ContractBindingResponse(
+    val contract: String,
+    val targetConfigurationId: UUID,
+    /** Null when the bound configuration no longer exists (descriptor-authored dangling binding). */
+    val targetConfigurationTitle: String?,
 )
 
 data class ConfigurationResponse(
@@ -156,5 +172,6 @@ data class ConfigurationDetailResponse(
      * manifest-declared grants so an admin sees the full destination set the host will permit.
      */
     val derivedEgress: List<String>,
+    val contractBindings: List<ContractBindingResponse> = emptyList(),
     val createdAt: Instant,
 )

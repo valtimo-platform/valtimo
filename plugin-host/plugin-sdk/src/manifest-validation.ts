@@ -51,6 +51,29 @@ export const PLUGIN_VERSION_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9._+-]*[A-Za-z0-9
 export const PLUGIN_LOGO_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:svg|png|jpe?g)$/i;
 export const MAX_PLUGIN_IDENTIFIER_LENGTH = 64;
 
+/** `name@major`, reverse-DNS style, e.g. `nl.ritense.openplan@1`. */
+export const CONTRACT_PATTERN = /^[a-z0-9]+(\.[a-z0-9-]+)+@[0-9]+$/;
+export const CONTRACT_OPERATION_KEY_PATTERN = /^[a-z][a-z0-9-]*$/;
+export const CONTRACT_OPERATION_MODES = ["sync", "job"] as const;
+/**
+ * The ISO-8601 duration subset `java.time.Duration.parse` accepts — days, hours, minutes, seconds —
+ * because GZAC parses the timeout with it. Years, months and weeks are rejected.
+ */
+export const CONTRACT_TIMEOUT_PATTERN = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/;
+
+export function isValidContract(value: unknown): value is string {
+  return typeof value === "string" && CONTRACT_PATTERN.test(value);
+}
+
+/** True for a positive duration in the {@link CONTRACT_TIMEOUT_PATTERN} subset. */
+export function isValidContractTimeout(value: unknown): value is string {
+  if (typeof value !== "string" || value.endsWith("T")) return false;
+  const match = CONTRACT_TIMEOUT_PATTERN.exec(value);
+  if (!match) return false;
+  const parts = match.slice(1).filter((part) => part !== undefined);
+  return parts.length > 0 && parts.some((part) => Number(part) > 0);
+}
+
 /**
  * The official strict-semver pattern from semver.org, inlined because this module is deliberately
  * dependency-free. Applies to the `compatibility` bounds only — the plugin's own `version` stays on
@@ -215,7 +238,14 @@ export function validatePluginManifest(manifest: unknown): string[] {
           }
         }
       }
+      if (p.contracts !== undefined) {
+        errors.push(...validateDeclaredContracts(p.contracts));
+      }
     }
+  }
+
+  if (m.provides !== undefined) {
+    errors.push(...validateProvidedContracts(m.provides));
   }
 
   errors.push(...validateEgressTargetProperties(m.configurationSchema));
@@ -280,6 +310,118 @@ export function validatePluginManifest(manifest: unknown): string[] {
     }
   }
 
+  return errors;
+}
+
+const CONTRACT_RULE = "must be a contract name of the form 'name@major', e.g. 'nl.ritense.openplan@1' (lowercase reverse-DNS segments, then '@' and the major version)";
+
+function validateDeclaredContracts(contracts: unknown): string[] {
+  if (!Array.isArray(contracts)) {
+    return ["manifest.json 'permissions.contracts' must be an array when present"];
+  }
+  const errors: string[] = [];
+  const seen = new Set<string>();
+  contracts.forEach((contract, i) => {
+    if (!isValidContract(contract)) {
+      errors.push(`manifest.json permissions.contracts[${i}] ${CONTRACT_RULE}`);
+      return;
+    }
+    if (seen.has(contract)) {
+      errors.push(`manifest.json 'permissions.contracts' must contain unique contracts; '${contract}' is duplicated`);
+    }
+    seen.add(contract);
+  });
+  return errors;
+}
+
+function validateProvidedContracts(provides: unknown): string[] {
+  if (!Array.isArray(provides)) {
+    return ["manifest.json 'provides' must be an array when present"];
+  }
+  const errors: string[] = [];
+  const seenContracts = new Set<string>();
+  provides.forEach((entry, i) => {
+    const at = `manifest.json provides[${i}]`;
+    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+      errors.push(`${at} must be an object`);
+      return;
+    }
+    const pc = entry as Record<string, unknown>;
+    if (!isValidContract(pc.contract)) {
+      errors.push(`${at}.contract ${CONTRACT_RULE}`);
+    } else {
+      if (seenContracts.has(pc.contract)) {
+        errors.push(`manifest.json 'provides' must contain unique contracts; '${pc.contract}' is duplicated`);
+      }
+      seenContracts.add(pc.contract);
+    }
+    if (pc.title !== undefined && (typeof pc.title !== "string" || pc.title.trim() === "")) {
+      errors.push(`${at}.title must be a non-empty string when present`);
+    }
+    if (!Array.isArray(pc.operations) || pc.operations.length === 0) {
+      errors.push(`${at}.operations must be a non-empty array`);
+      return;
+    }
+    const seenKeys = new Set<string>();
+    pc.operations.forEach((operation, j) => {
+      errors.push(...validateContractOperation(operation, `${at}.operations[${j}]`, seenKeys));
+    });
+  });
+  return errors;
+}
+
+function validateContractOperation(operation: unknown, at: string, seenKeys: Set<string>): string[] {
+  if (typeof operation !== "object" || operation === null || Array.isArray(operation)) {
+    return [`${at} must be an object`];
+  }
+  const errors: string[] = [];
+  const op = operation as Record<string, unknown>;
+  if (typeof op.key !== "string" || !CONTRACT_OPERATION_KEY_PATTERN.test(op.key)) {
+    errors.push(`${at}.key must start with a lowercase letter and contain only lowercase letters, digits and '-'`);
+  } else {
+    if (seenKeys.has(op.key)) {
+      errors.push(`${at}.key '${op.key}' is duplicated within its contract`);
+    }
+    seenKeys.add(op.key);
+  }
+  if (typeof op.title !== "string" || op.title.trim() === "") {
+    errors.push(`${at}.title must be a non-empty string`);
+  }
+  if (op.description !== undefined && typeof op.description !== "string") {
+    errors.push(`${at}.description must be a string when present`);
+  }
+  const modeValid =
+    op.mode === undefined ||
+    (typeof op.mode === "string" && (CONTRACT_OPERATION_MODES as readonly string[]).includes(op.mode));
+  if (!modeValid) {
+    errors.push(`${at}.mode must be one of: ${CONTRACT_OPERATION_MODES.join(", ")}`);
+  }
+  if (op.timeout !== undefined) {
+    if (op.mode !== "job") {
+      errors.push(`${at}.timeout is only allowed with mode 'job'`);
+    } else if (!isValidContractTimeout(op.timeout)) {
+      errors.push(
+        `${at}.timeout must be a positive ISO-8601 duration in days, hours, minutes or seconds, e.g. 'PT2H' or 'P1D'`
+      );
+    }
+  }
+  if (op.outputs !== undefined) {
+    if (!Array.isArray(op.outputs)) {
+      errors.push(`${at}.outputs must be an array when present`);
+    } else {
+      const seen = new Set<string>();
+      op.outputs.forEach((output, k) => {
+        if (typeof output !== "string" || output.trim() === "") {
+          errors.push(`${at}.outputs[${k}] must be a non-empty string`);
+          return;
+        }
+        if (seen.has(output)) {
+          errors.push(`${at}.outputs must contain unique keys; '${output}' is duplicated`);
+        }
+        seen.add(output);
+      });
+    }
+  }
   return errors;
 }
 

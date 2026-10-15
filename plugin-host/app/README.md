@@ -34,6 +34,7 @@ src/
     host-gzac-instances.ts  # GZAC instance + frontend-origin announcements
     plugin-actions.ts     # Action execution + manifest retrieval
     plugin-submit.ts      # Task-form submit hook (handle_submit)
+    plugin-contracts.ts   # Contract calls/jobs to a provider + job replies (handle_contract_*)
     plugin-data.ts        # Public data route for plugin iframes (handle_request)
     plugin-logs.ts        # Paginated plugin_logs queries for GZAC's log modal
     plugin-bundles.ts     # Static frontend asset serving, logo, frame-policy probe
@@ -45,6 +46,7 @@ src/
     http-request.ts       # Outbound HTTP with egress allowlist + SSRF guard
     kv.ts                 # Per-configuration key-value store
     log.ts                # Plugin log writes (pino + plugin_logs)
+    plugin-contract.ts    # Contract calls, job requests and completions via GZAC
   security/               # HMAC verification, replay cache, egress/endpoint allowlists,
                           # URL/SSRF guard, content pin, rate limits, user-token introspection
   config.ts               # Environment config loader
@@ -129,7 +131,7 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `WASM_POOL_MIN_INSTANCES` | no | `1` | Instances retained per plugin version while in use (creation is lazy; idle eviction may go below it). |
 | `WASM_POOL_MAX_INSTANCES` | no | `10` | Concurrent instances per plugin version; worst-case memory ≈ max × page cap. `1` serialises all calls to a version. |
 | `WASM_POOL_ACQUIRE_TIMEOUT_MS` | no | `30000` | Longest a call waits for a free pooled instance under load before failing. |
-| `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` callback fetch into GZAC. |
+| `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` and `plugin_contract` callback fetches into GZAC. |
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
 | `UPLOAD_MAX_BYTES` | no | `104857600` | Maximum plugin package (.zip) upload size (100 MiB), enforced before the file is buffered for the HMAC check. GZAC applies its own 100 MB gate and its servlet multipart limit before forwarding, so raising this alone does not widen the end-to-end limit. |
 | `PLUGIN_MAX_UNCOMPRESSED_BYTES` | no | `268435456` | Maximum total **uncompressed** size of the files extracted from a plugin package (256 MiB). `UPLOAD_MAX_BYTES` bounds the compressed zip; this bounds what it expands to, so a small package declaring gigabytes is refused with a 400 before anything is inflated. Raise it only for genuinely large frontend bundles. |
@@ -669,6 +671,11 @@ GZAC endpoints `gzac_api` may call. When `grantedEndpoints` is omitted entirely 
 versions) the host logs a warning and skips its side of the allowlist check — GZAC still enforces
 the allowlist server-side; an empty array denies every endpoint.
 
+Optional `grantedContracts` (array of `name@major` strings): the contracts the admin bound for this
+configuration. `plugin_contract` refuses `call`/`request` for any other contract before anything
+leaves the host. Omitted → no contracts (deny-by-default); `PUT` keeps the stored list unless the
+body carries the field.
+
 Optional `ownerId` (string): the pushing GZAC's host-row UUID, persisted and echoed in the
 configuration listing so that GZAC's [reconciliation pass](#reconciliation--ownership) can later
 delete its own orphaned configurations without touching another instance's. Omitted → the
@@ -717,6 +724,38 @@ curl -sS -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-s
   -H "Content-Type: application/json" \
   --data-binary @/tmp/action.json | jq .
 ```
+
+### `POST /plugins/:pluginId/:version/contracts/:contract/:operation` — deliver a contract call or job
+
+GZAC brokering a contract call (or, with `jobId` + `deadline`, a job) to the provider. The contract
+segment is sent raw (`nl.ritense.openplan@1`) — `@` and `.` are path-safe, and the HMAC signs the
+bare path. Body: `{configurationId, caller: {pluginId, version, configurationId}, payload, jobId?,
+deadline?, chain?: string[]}`. The host appends the provider's own configuration id to `chain` and
+hands it to `plugin_contract` as `X-Valtimo-Contract-Chain`, so nested calls stay depth- and
+cycle-checked by GZAC.
+
+`200 {status: "completed" | "accepted" | "error", result?, errorCode?, errorMessage?}` for every
+plugin-level outcome. Refusals: `404` unknown plugin/configuration, `400` configuration targets
+another plugin version, `409` content pin mismatch, `404 CONTRACT_OPERATION_NOT_PROVIDED` when the
+loaded manifest's `provides` lacks the contract/operation, `500 MISSING_CALLBACK_CONTEXT`, `501
+CONTRACT_NOT_IMPLEMENTED` for a plugin built without the `handle_contract_call` export, `500
+HOST_ERROR`.
+
+```bash
+printf '%s' '{"configurationId":"my-config","caller":{"pluginId":"pdca","version":"0.2.0","configurationId":"other-config"},"payload":{"resource":"plan"}}' > /tmp/contract.json
+host_sign POST /plugins/openplan/0.1.0/contracts/nl.ritense.openplan@1/list /tmp/contract.json
+curl -sS -X POST http://localhost:8090/plugins/openplan/0.1.0/contracts/nl.ritense.openplan@1/list \
+  -H "X-Valtimo-Timestamp: $TS" -H "X-Valtimo-Signature: $SIG" \
+  -H "Content-Type: application/json" \
+  --data-binary @/tmp/contract.json | jq .
+```
+
+### `POST /plugins/:pluginId/:version/contract-replies` — deliver a job outcome to its requester
+
+Body: `{configurationId, jobId, contract, operation, status: "completed" | "failed" | "expired",
+result?, errorCode?, errorMessage?, requestedAt, completedAt?}`. Runs `handle_contract_reply`;
+`200 {status: "completed" | "ignored" | "error", ...}` — GZAC retries on `error`. Same refusals as
+above, with `501 CONTRACT_REPLY_NOT_IMPLEMENTED` for a missing export.
 
 ### `GET /plugins/:pluginId/:version/plugin-manifest` — get plugin manifest
 

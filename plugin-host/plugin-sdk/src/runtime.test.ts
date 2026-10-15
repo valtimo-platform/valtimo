@@ -16,7 +16,8 @@
 
 import {describe, expect, it} from "vitest";
 import {action} from "./actions";
-import {handleAction} from "./runtime";
+import {onContractCall, onContractJob} from "./contracts";
+import {handleAction, handleContractCall, handleContractReply} from "./runtime";
 
 const actionInput = (actionKey: string) =>
   JSON.stringify({
@@ -65,5 +66,65 @@ describe("handleAction result serialization", () => {
     const output = JSON.parse(handleAction(actionInput("scalar-result")));
 
     expect(output).toEqual({ status: "completed", result: "just a string" });
+  });
+});
+
+describe("handleContractCall result serialization", () => {
+  const contractInput = (operation: string, extra: Record<string, unknown> = {}) =>
+    JSON.stringify({
+      contract: "nl.ritense.runtime-test@1",
+      operation,
+      configurationId: "cfg-1",
+      configuration: {},
+      caller: {pluginId: "caller", version: "1.0.0", configurationId: "cfg-0"},
+      payload: {},
+      ...extra,
+    });
+
+  it("serializes undefined result values as explicit null", () => {
+    onContractCall("nl.ritense.runtime-test@1", "lookup", () => ({
+      status: "completed",
+      result: {naam: "Jan", geboortedatum: undefined},
+    }));
+
+    expect(JSON.parse(handleContractCall(contractInput("lookup")))).toEqual({
+      status: "completed",
+      result: {naam: "Jan", geboortedatum: null},
+    });
+  });
+
+  it("reports an operation without a handler as UNKNOWN_CONTRACT_OPERATION", () => {
+    expect(JSON.parse(handleContractCall(contractInput("missing")))).toMatchObject({
+      status: "error",
+      errorCode: "UNKNOWN_CONTRACT_OPERATION",
+    });
+  });
+
+  it("refuses a job-only operation delivered without a jobId", () => {
+    onContractJob("nl.ritense.runtime-test@1", "generate", () => ({status: "accepted"}));
+
+    expect(JSON.parse(handleContractCall(contractInput("generate")))).toMatchObject({
+      status: "error",
+      errorCode: "OPERATION_REQUIRES_JOB",
+    });
+    expect(JSON.parse(handleContractCall(contractInput("generate", {jobId: "job-1"})))).toEqual({
+      status: "accepted",
+    });
+  });
+});
+
+describe("handleContractReply", () => {
+  it("reports a reply as ignored when no reply handler is registered", () => {
+    const reply = JSON.stringify({
+      configurationId: "cfg-1",
+      configuration: {},
+      jobId: "job-1",
+      contract: "nl.ritense.runtime-test@1",
+      operation: "generate",
+      status: "completed",
+      requestedAt: "2026-10-14T10:00:00Z",
+    });
+
+    expect(JSON.parse(handleContractReply(reply))).toEqual({status: "ignored"});
   });
 });

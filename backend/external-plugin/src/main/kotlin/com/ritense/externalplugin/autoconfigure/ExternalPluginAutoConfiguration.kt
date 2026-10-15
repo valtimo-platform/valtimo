@@ -37,6 +37,8 @@ import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSubmissionSe
 import com.ritense.externalplugin.processlink.ExternalPluginTaskFormSupportedProcessLinkTypeHandler
 import com.ritense.externalplugin.processlink.web.ExternalPluginTaskFormSubmissionResource
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractJobRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
@@ -60,6 +62,10 @@ import com.ritense.externalplugin.service.ExternalPluginCaseTabResolverImpl
 import com.ritense.externalplugin.service.ExternalPluginCaseWidgetResolverImpl
 import com.ritense.externalplugin.service.ExternalPluginConfigurationMappingResolver
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
+import com.ritense.externalplugin.service.ExternalPluginContractJobDispatchJob
+import com.ritense.externalplugin.service.ExternalPluginContractJobDispatcher
+import com.ritense.externalplugin.service.ExternalPluginContractJobService
+import com.ritense.externalplugin.service.ExternalPluginContractService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryJob
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
@@ -71,6 +77,7 @@ import com.ritense.externalplugin.service.ExternalPluginPackageInstaller
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
+import com.ritense.externalplugin.web.rest.ExternalPluginContractResource
 import com.ritense.externalplugin.web.rest.ExternalPluginHostOriginsResource
 import com.ritense.externalplugin.web.rest.ExternalPluginManagementResource
 import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
@@ -152,6 +159,8 @@ class ExternalPluginAutoConfiguration {
         configurationRepository: ExternalPluginConfigurationRepository,
         processLinkRepository: ExternalPluginProcessLinkRepository,
         taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
+        contractBindingRepository: ExternalPluginContractBindingRepository,
+        contractJobRepository: ExternalPluginContractJobRepository,
         processDefinitionUsageMetaResolver: ProcessDefinitionUsageMetaResolver,
         caseExternalPluginTabService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginTabService>,
         caseExternalPluginWidgetService: java.util.Optional<com.ritense.case_.service.CaseExternalPluginWidgetService>,
@@ -162,6 +171,8 @@ class ExternalPluginAutoConfiguration {
         configurationRepository,
         processLinkRepository,
         taskFormProcessLinkRepository,
+        contractBindingRepository,
+        contractJobRepository,
         processDefinitionUsageMetaResolver,
         caseExternalPluginTabService,
         caseExternalPluginWidgetService,
@@ -411,6 +422,7 @@ class ExternalPluginAutoConfiguration {
         objectMapper: ObjectMapper,
         serviceTokenService: ExternalPluginServiceTokenService,
         hostUsageResolver: ExternalPluginHostUsageResolver,
+        contractBindingRepository: ExternalPluginContractBindingRepository,
         @Value("\${server.port:8080}") serverPort: Int,
         @Value("\${valtimo.outbox.publisher.rabbitmq.exchange:valtimo-events}") defaultEventBrokerExchange: String,
     ) = ExternalPluginConfigurationService(
@@ -429,7 +441,120 @@ class ExternalPluginAutoConfiguration {
         hostUsageResolver,
         defaultEventBrokerExchange,
         "http://localhost:$serverPort",
+        contractBindingRepository,
     )
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginContractService::class)
+    fun externalPluginContractService(
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        hostRepository: ExternalPluginHostRepository,
+        contractBindingRepository: ExternalPluginContractBindingRepository,
+        hostClient: ExternalPluginHostClient,
+        encryptionService: EncryptionService,
+        objectMapper: ObjectMapper,
+        @Value("\${valtimo.external-plugin.contract.max-depth:4}") maxDepth: Int,
+        @Value("\${valtimo.external-plugin.contract.max-payload-bytes:262144}") maxPayloadBytes: Int,
+    ) = ExternalPluginContractService(
+        configurationRepository,
+        definitionRepository,
+        hostRepository,
+        contractBindingRepository,
+        hostClient,
+        encryptionService,
+        objectMapper,
+        maxDepth,
+        maxPayloadBytes,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginContractJobService::class)
+    fun externalPluginContractJobService(
+        jobRepository: ExternalPluginContractJobRepository,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        contractService: ExternalPluginContractService,
+        encryptionService: EncryptionService,
+        objectMapper: ObjectMapper,
+        transactionManager: PlatformTransactionManager,
+        runtimeService: org.operaton.bpm.engine.RuntimeService,
+        documentService: com.ritense.document.service.impl.JsonSchemaDocumentService,
+        authorizationService: com.ritense.authorization.AuthorizationService,
+        @Value("\${valtimo.external-plugin.contract-job.default-timeout:PT1H}") defaultTimeout: String,
+        @Value("\${valtimo.external-plugin.contract-job.max-deadline:P1D}") maxDeadline: String,
+        @Value("\${valtimo.external-plugin.contract.max-payload-bytes:262144}") maxPayloadBytes: Int,
+    ) = ExternalPluginContractJobService(
+        jobRepository,
+        configurationRepository,
+        definitionRepository,
+        contractService,
+        encryptionService,
+        objectMapper,
+        TransactionTemplate(transactionManager),
+        runtimeService,
+        documentService,
+        authorizationService,
+        DurationStyle.detectAndParse(defaultTimeout),
+        DurationStyle.detectAndParse(maxDeadline),
+        maxPayloadBytes,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginContractJobDispatcher::class)
+    fun externalPluginContractJobDispatcher(
+        jobRepository: ExternalPluginContractJobRepository,
+        configurationRepository: ExternalPluginConfigurationRepository,
+        definitionRepository: ExternalPluginDefinitionRepository,
+        hostRepository: ExternalPluginHostRepository,
+        contractService: ExternalPluginContractService,
+        jobService: ExternalPluginContractJobService,
+        hostClient: ExternalPluginHostClient,
+        encryptionService: EncryptionService,
+        objectMapper: ObjectMapper,
+        transactionManager: PlatformTransactionManager,
+        correlationService: com.ritense.processdocument.service.CorrelationService,
+        @Value("\${valtimo.external-plugin.contract-job.retry-base:PT5S}") retryBase: String,
+        @Value("\${valtimo.external-plugin.contract-job.retry-max:PT10M}") retryMax: String,
+        @Value("\${valtimo.external-plugin.contract-job.max-reply-attempts:20}") maxReplyAttempts: Int,
+        @Value("\${valtimo.external-plugin.contract-job.retention:P30D}") retention: String,
+        @Value("\${valtimo.external-plugin.contract-job.batch-size:50}") batchSize: Int,
+    ) = ExternalPluginContractJobDispatcher(
+        jobRepository,
+        configurationRepository,
+        definitionRepository,
+        hostRepository,
+        contractService,
+        jobService,
+        hostClient,
+        encryptionService,
+        objectMapper,
+        TransactionTemplate(transactionManager),
+        correlationService,
+        DurationStyle.detectAndParse(retryBase),
+        DurationStyle.detectAndParse(retryMax),
+        maxReplyAttempts,
+        DurationStyle.detectAndParse(retention),
+        batchSize,
+    )
+
+    /** Off switch for nodes that must not deliver; another node (ShedLock) still does. */
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginContractJobDispatchJob::class)
+    @ConditionalOnProperty(
+        name = ["valtimo.external-plugin.contract-job.dispatcher-enabled"],
+        havingValue = "true",
+        matchIfMissing = true,
+    )
+    fun externalPluginContractJobDispatchJob(dispatcher: ExternalPluginContractJobDispatcher) =
+        ExternalPluginContractJobDispatchJob(dispatcher)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginContractResource::class)
+    fun externalPluginContractResource(
+        contractService: ExternalPluginContractService,
+        jobService: ExternalPluginContractJobService,
+    ) = ExternalPluginContractResource(contractService, jobService)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginDiscoveryService::class)
@@ -531,6 +656,7 @@ class ExternalPluginAutoConfiguration {
         compatibilityChecker: GzacCompatibilityChecker,
         pluginPackageInspector: PluginPackageInspector,
         objectMapper: ObjectMapper,
+        contractJobService: ExternalPluginContractJobService,
     ) = ExternalPluginManagementResource(
         hostService,
         definitionService,
@@ -542,6 +668,7 @@ class ExternalPluginAutoConfiguration {
         compatibilityChecker,
         pluginPackageInspector,
         objectMapper,
+        contractJobService,
     )
 
     @Bean

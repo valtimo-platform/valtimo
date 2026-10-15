@@ -66,8 +66,36 @@ const configProviderStub = {
     gzacBaseUrl: "http://gzac.invalid",
     eventSubscriptions: [],
     grantedCapabilities: ["gzac_api", "http_request", "kv", "log"],
+    grantedContracts: ["nl.ritense.test.upstream@1"],
   }),
 };
+
+interface RecordedRequest {
+  url: string;
+  headers: Record<string, string | string[] | undefined>;
+  body: unknown;
+}
+
+/** GZAC stand-in for the contract API: records each request and answers with a contract envelope. */
+function startContractStub(): Promise<{ server: Server; baseUrl: string; requests: RecordedRequest[] }> {
+  const requests: RecordedRequest[] = [];
+  const server = createServer((req, res) => {
+    let raw = "";
+    req.on("data", (chunk) => (raw += chunk));
+    req.on("end", () => {
+      requests.push({ url: req.url ?? "", headers: req.headers, body: raw ? JSON.parse(raw) : undefined });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(req.url?.endsWith("/complete") ? { status: "completed" } : { status: "completed", result: { fromGzac: true } }));
+    });
+  });
+  return new Promise((resolve) => {
+    server.listen(0, "127.0.0.1", () => {
+      const addr = server.address();
+      const port = typeof addr === "object" && addr ? addr.port : 0;
+      resolve({ server, baseUrl: `http://127.0.0.1:${port}`, requests });
+    });
+  });
+}
 
 const kvStore = new Map<string, unknown>();
 const kvRepositoryStub = {
@@ -184,6 +212,118 @@ describe.skipIf(NODE_MAJOR < 22)("PluginManager on compiled Wasm (runInWorker)",
     });
     expect(out.status).toBe(200);
     expect(out.body).toMatchObject({ path: "/echo", method: "GET", query: { a: "b" } });
+  });
+
+  describe("contracts", () => {
+    const contractCall = (overrides: Record<string, unknown> = {}) => ({
+      configurationId: "provider-cfg",
+      configuration: { greeting: "hi" },
+      caller: { pluginId: "pdca", version: "0.2.0", configurationId: "requester-cfg" },
+      payload: { q: 1 },
+      chain: ["requester-cfg", "provider-cfg"],
+      serviceToken: "svc-token-123",
+      gzacBaseUrl: "http://gzac.invalid",
+      ...overrides,
+    });
+
+    it("runs handle_contract_call without host-only fields or the chain in the Wasm input", async () => {
+      const out = await manager.callContract(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, "nl.ritense.test.echo@1", "echo", contractCall());
+      expect(out.status).toBe("completed");
+      expect((out.result as { inputKeys: string[] }).inputKeys).toEqual([
+        "caller",
+        "configuration",
+        "configurationId",
+        "contract",
+        "operation",
+        "payload",
+      ]);
+    });
+
+    it("forwards the received chain and the service token when a provider calls onwards", async () => {
+      const gzac = await startContractStub();
+      try {
+        const out = await manager.callContract(
+          FIXTURE_PLUGIN_ID,
+          FIXTURE_VERSION,
+          "nl.ritense.test.echo@1",
+          "nested",
+          contractCall({ gzacBaseUrl: gzac.baseUrl })
+        );
+        expect(out).toEqual({ status: "completed", result: { upstream: { status: "completed", result: { fromGzac: true } } } });
+        expect(gzac.requests).toHaveLength(1);
+        expect(gzac.requests[0].url).toBe("/api/v1/plugin-contract/call");
+        expect(gzac.requests[0].headers["authorization"]).toBe("Bearer svc-token-123");
+        expect(gzac.requests[0].headers["x-valtimo-contract-chain"]).toBe("requester-cfg,provider-cfg");
+        expect(gzac.requests[0].body).toEqual({
+          contract: "nl.ritense.test.upstream@1",
+          operation: "lookup",
+          payload: { nested: true },
+        });
+      } finally {
+        gzac.server.close();
+      }
+    });
+
+    it("refuses a contract outside the pushed grant before anything leaves the host", async () => {
+      const gzac = await startContractStub();
+      try {
+        const out = await manager.callAction(
+          FIXTURE_PLUGIN_ID,
+          FIXTURE_VERSION,
+          "call-contract",
+          actionCall({ gzacBaseUrl: gzac.baseUrl, properties: { contract: "nl.ritense.test.other@1" } })
+        );
+        expect((out.variables as { outcome: unknown }).outcome).toMatchObject({
+          status: "error",
+          errorCode: "CONTRACT_NOT_GRANTED",
+        });
+        expect(gzac.requests).toHaveLength(0);
+      } finally {
+        gzac.server.close();
+      }
+    });
+
+    it("sends no chain header outside a contract delivery and completes a job via completeJob", async () => {
+      const gzac = await startContractStub();
+      try {
+        const called = await manager.callAction(
+          FIXTURE_PLUGIN_ID,
+          FIXTURE_VERSION,
+          "call-contract",
+          actionCall({ gzacBaseUrl: gzac.baseUrl })
+        );
+        expect((called.variables as { outcome: unknown }).outcome).toEqual({ status: "completed", result: { fromGzac: true } });
+        expect(gzac.requests[0].headers["x-valtimo-contract-chain"]).toBeUndefined();
+
+        const completed = await manager.callAction(
+          FIXTURE_PLUGIN_ID,
+          FIXTURE_VERSION,
+          "call-contract",
+          actionCall({ gzacBaseUrl: gzac.baseUrl, properties: { jobId: "5b0c3a1e-0000-4000-8000-000000000001" } })
+        );
+        expect((completed.variables as { outcome: unknown }).outcome).toEqual({ status: "completed" });
+        expect(gzac.requests[1].url).toBe("/api/v1/plugin-contract/jobs/5b0c3a1e-0000-4000-8000-000000000001/complete");
+        expect(gzac.requests[1].body).toEqual({ status: "completed", result: { done: true } });
+      } finally {
+        gzac.server.close();
+      }
+    });
+
+    it("delivers a job reply to handle_contract_reply", async () => {
+      const out = await manager.callContractReply(FIXTURE_PLUGIN_ID, FIXTURE_VERSION, {
+        configurationId: "requester-cfg",
+        configuration: {},
+        jobId: "job-1",
+        contract: "nl.ritense.test.echo@1",
+        operation: "slow-echo",
+        status: "completed",
+        result: { echoed: true },
+        requestedAt: "2026-10-14T10:00:00Z",
+        serviceToken: "svc-token-123",
+        gzacBaseUrl: "http://gzac.invalid",
+      });
+      expect(out).toEqual({ status: "completed" });
+    });
   });
 
   it("handles concurrent calls without an Extism reentrancy error", async () => {

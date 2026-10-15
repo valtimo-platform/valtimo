@@ -362,6 +362,48 @@ class ExternalPluginEndpointAllowlistFilterTest {
         verify(grantedEndpointRepository, org.mockito.kotlin.times(1)).findAllByConfigurationId(configId)
     }
 
+    @Test
+    fun `plugin principals reach the contract surface without any endpoint grant`() {
+        val configId = UUID.randomUUID()
+        listOf<() -> Unit>({ authenticateAsPlugin(configId) }, { authenticateAsUser(configId) }).forEach { authenticate ->
+            authenticate()
+            listOf(
+                "POST" to "/api/v1/plugin-contract/call",
+                "POST" to "/api/v1/plugin-contract/jobs",
+                "POST" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}/complete",
+                "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
+            ).forEach { (method, path) ->
+                val response = MockHttpServletResponse()
+                val chain = MockFilterChain()
+
+                filter.doFilter(request(method, path), response, chain)
+
+                assertThat(chain.request).describedAs("$method $path").isNotNull()
+                assertThat(response.status).isEqualTo(200)
+            }
+        }
+        verify(grantedEndpointRepository, never()).findAllByConfigurationId(any())
+    }
+
+    @Test
+    fun `the contract carve-out leaves the denylist intact`() {
+        val configId = UUID.randomUUID()
+        authenticateAsPlugin(configId)
+        listOf(
+            "/api/v1/external-plugin/contract-call",
+            "/api/management/v1/external-plugin/contract-job",
+            "/api/v1/plugin-contracts/call",
+        ).forEach { path ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
+
+            filter.doFilter(request("POST", path), response, chain)
+
+            assertThat(response.status).describedAs(path).isEqualTo(403)
+            assertThat(chain.request).isNull()
+        }
+    }
+
     private fun request(method: String, path: String) =
         MockHttpServletRequest(method, path).apply { servletPath = path }
 

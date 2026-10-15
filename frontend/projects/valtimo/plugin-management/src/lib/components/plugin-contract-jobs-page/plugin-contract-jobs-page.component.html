@@ -1,0 +1,89 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<p class="cds--type-body-01 plugin-contract-jobs-page__intro">
+  {{ 'pluginManagement.contractJobs.description' | translate }}
+</p>
+
+<div class="plugin-contract-jobs-page__filters" cdsLayer="1">
+  <cds-dropdown
+    class="plugin-contract-jobs-page__filter"
+    [appendInline]="true"
+    [attr.data-test-id]="testIds.statusFilter"
+    [label]="'pluginManagement.contractJobs.columns.status' | translate"
+    [placeholder]="'pluginManagement.contractJobs.filterAll' | translate"
+    (selected)="onStatusSelected($event)"
+  >
+    <cds-dropdown-list [items]="statusItems"></cds-dropdown-list>
+  </cds-dropdown>
+</div>
+
+<valtimo-carbon-list
+  [fields]="fields"
+  [header]="false"
+  [items]="$rows()"
+  [loading]="$loading()"
+  [pagination]="pagination"
+  [paginatorConfig]="paginatorConfig"
+  paginationIdentifier="pluginContractJobs"
+  (paginationClicked)="onPaginationClicked($event)"
+  (rowClicked)="onRowClicked($event)"
+>
+  <ng-container carbonToolbarContent>
+    <button
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.refreshButton"
+      [disabled]="$loading()"
+      (click)="onRefresh()"
+    >
+      {{ 'pluginManagement.contractJobs.refresh' | translate }}
+
+      <svg cdsIcon="renew" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-container>
+
+  <valtimo-no-results
+    [title]="'pluginManagement.contractJobs.empty' | translate"
+  ></valtimo-no-results>
+</valtimo-carbon-list>
+
+<valtimo-plugin-contract-job-detail-modal
+  [jobId]="$selectedJobId()"
+  [open]="$detailOpen()"
+  (closeEvent)="onDetailClose()"
+></valtimo-plugin-contract-job-detail-modal>
+
+<ng-template #statusTpl let-data="data">
+  <cds-tag size="sm" [type]="statusTagType(data.item.status)">
+    {{ 'pluginManagement.contractJobs.status.' + data.item.status | translate }}
+  </cds-tag>
+</ng-template>
+
+<ng-template #createdAtTpl let-data="data">
+  {{ data.item.createdAt | date: DATE_FORMAT }}
+</ng-template>
+
+<ng-template #deadlineTpl let-data="data">
+  {{ data.item.deadline ? (data.item.deadline | date: DATE_FORMAT) : '—' }}
+</ng-template>
+
+<ng-template #attemptsTpl let-data="data">
+  {{ data.item.deliveryAttempts ?? 0 }}
+</ng-template>
+
+<ng-template #errorTpl let-data="data">
+  <span [title]="data.item.errorMessage ?? ''">{{ data.item.errorCode ?? '' }}</span>
+</ng-template>

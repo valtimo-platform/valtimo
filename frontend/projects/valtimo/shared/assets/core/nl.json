@@ -2667,7 +2667,7 @@
       "steps": {
         "connection": "Verbinden",
         "configuration": "Gegevens invullen",
-        "permissions": "Rechten"
+        "permissions": "Rechten & plugins"
       },
       "connect": "Verbinden",
       "connecting": "Verbinding maken met de app…",
@@ -2798,12 +2798,12 @@
     "addSteps": {
       "step0": "Kies je plugin",
       "step1": "Gegevens invullen",
-      "step2": "Rechten",
+      "step2": "Rechten & plugins",
       "complete": "Configuratie opslaan"
     },
     "editSteps": {
       "step0": "Gegevens invullen",
-      "step1": "Rechten",
+      "step1": "Rechten & plugins",
       "save": "Configuratie opslaan"
     },
     "permissions": {
@@ -2831,7 +2831,11 @@
       "egressWildcard": "Elk adres onder dit domein — de plugin bepaalt zelf met welk adres verbinding wordt gemaakt",
       "egressFromManifest": "Vereist door de plugin",
       "egressFromConfiguration": "Uit een URL die u in deze configuratie heeft ingevuld",
-      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten"
+      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten",
+      "requiredContractsHeading": "Vereiste contracten",
+      "requiredContractsDescription": "Deze plugin mag de pluginconfiguraties aanroepen die aan deze contracten zijn gekoppeld.",
+      "providedContractsHeading": "Aangeboden contracten",
+      "providedContractsDescription": "Andere plugins kunnen voor deze contracten aan deze plugin worden gekoppeld. Dit is geen recht: het laat zien wat deze plugin aanbiedt."
     },
     "logs": {
       "menuItem": "Logs",
@@ -2893,12 +2897,16 @@
       "parentType": {
         "CASE": "Dossier",
         "BUILDING_BLOCK": "Bouwblok",
-        "GLOBAL": "Globaal"
+        "GLOBAL": "Globaal",
+        "CONTRACT_BINDING": "Contractkoppeling",
+        "CONTRACT_JOB": "Contractopdracht"
       },
       "caseTab": "Dossiertabblad",
       "caseWidget": "Dossierwidget",
       "buildingBlockMapping": "Plugin-koppeling van bouwblok",
-      "menuPage": "Menupagina"
+      "menuPage": "Menupagina",
+      "contractBinding": "Via een contract gekoppeld aan een andere pluginconfiguratie",
+      "contractJob": "Contractopdracht die nog openstaat"
     },
     "reviewRequired": {
       "tag": "Beoordeling vereist",
@@ -2926,6 +2934,71 @@
       "current": "Je gebruikt momenteel {{current}}.",
       "minimum": "Minimaal compatibele versie: {{min}}.",
       "maximum": "Maximaal compatibele versie: {{max}}."
+    },
+    "contracts": {
+      "requiredPluginsHeading": "Vereiste plugins",
+      "requiredPluginsDescription": "Deze plugin roept andere plugins aan via de onderstaande contracten. Kies per contract welke pluginconfiguratie het afhandelt.",
+      "selectProvider": "Kies een pluginconfiguratie",
+      "bindingRequired": "Kies een pluginconfiguratie voor dit contract",
+      "noProvider": "Nog geen enkele configuratie biedt dit contract aan — activeer eerst een plugin die het aanbiedt.",
+      "unavailable": "niet beschikbaar",
+      "contract": "Contract",
+      "operation": "Bewerking",
+      "mode": "Modus",
+      "immediate": "Direct",
+      "longRunning": "Langlopend",
+      "longRunningUpTo": "Langlopend, tot {{duration}}",
+      "durationUnits": {
+        "days": "{{value}} d",
+        "hours": "{{value}} u",
+        "minutes": "{{value}} min",
+        "seconds": "{{value}} s"
+      }
+    },
+    "contractJobs": {
+      "title": "Contractopdrachten",
+      "description": "Asynchrone verzoeken tussen pluginconfiguraties. Een openstaande opdracht blokkeert het verwijderen van beide configuraties.",
+      "filterAll": "Alle",
+      "refresh": "Vernieuwen",
+      "empty": "Geen contractopdrachten gevonden",
+      "detailTitle": "Contractopdracht",
+      "requestPayload": "Verzoek",
+      "resultPayload": "Resultaat",
+      "columns": {
+        "contract": "Contract",
+        "operation": "Bewerking",
+        "requester": "Aanvrager",
+        "provider": "Aanbieder",
+        "status": "Status",
+        "createdAt": "Aangemaakt",
+        "deadline": "Deadline",
+        "attempts": "Pogingen",
+        "error": "Fout",
+        "requestedBy": "Aangevraagd door",
+        "updatedAt": "Bijgewerkt",
+        "completedAt": "Afgerond",
+        "deliveredAt": "Afgeleverd",
+        "replyToProcessInstance": "Antwoord naar procesinstantie",
+        "lastDeliveryError": "Laatste afleverfout"
+      },
+      "status": {
+        "PENDING": "In afwachting",
+        "ACCEPTED": "Geaccepteerd",
+        "COMPLETED": "Voltooid",
+        "FAILED": "Mislukt",
+        "EXPIRED": "Verlopen",
+        "DELIVERED": "Afgeleverd",
+        "UNDELIVERABLE": "Niet af te leveren"
+      }
+    },
+    "propertiesEditor": {
+      "helper": "JSON, gecontroleerd tegen het configuratieschema van de plugin. Houd de muis boven een sleutel voor de uitleg; Ctrl+Spatie stelt de velden voor.",
+      "fieldsTitle": "Velden die deze plugin verwacht",
+      "required": "Verplicht",
+      "secret": "Geheim",
+      "egressTarget": "Uitgaande bestemming",
+      "secretKept": "Versleuteld opgeslagen en niet getoond; laat het weg om de huidige waarde te behouden.",
+      "titlePlaceholder": "Geef deze configuratie een naam"
     }
   },
   "customerCases": {

@@ -2661,7 +2661,7 @@
       "steps": {
         "connection": "Connect",
         "configuration": "Enter data",
-        "permissions": "Permissions"
+        "permissions": "Permissions & plugins"
       },
       "connect": "Connect",
       "connecting": "Connecting to the app…",
@@ -2792,12 +2792,12 @@
     "addSteps": {
       "step0": "Choose your plugin",
       "step1": "Enter data",
-      "step2": "Permissions",
+      "step2": "Permissions & plugins",
       "complete": "Save configuration"
     },
     "editSteps": {
       "step0": "Enter data",
-      "step1": "Permissions",
+      "step1": "Permissions & plugins",
       "save": "Save configuration"
     },
     "permissions": {
@@ -2825,7 +2825,11 @@
       "egressWildcard": "Any address under this domain — the plugin chooses which one it connects to",
       "egressFromManifest": "Required by the plugin",
       "egressFromConfiguration": "From a URL you entered in this configuration",
-      "accept": "I trust this plugin and accept the requested permissions"
+      "accept": "I trust this plugin and accept the requested permissions",
+      "requiredContractsHeading": "Required contracts",
+      "requiredContractsDescription": "This plugin may call the plugin configurations bound to these contracts.",
+      "providedContractsHeading": "Provided contracts",
+      "providedContractsDescription": "Other plugins can be bound to this plugin for these contracts. This is not a permission: it shows what this plugin offers."
     },
     "logs": {
       "menuItem": "Logs",
@@ -2887,12 +2891,16 @@
       "parentType": {
         "CASE": "Case",
         "BUILDING_BLOCK": "Building block",
-        "GLOBAL": "Global"
+        "GLOBAL": "Global",
+        "CONTRACT_BINDING": "Contract binding",
+        "CONTRACT_JOB": "Contract job"
       },
       "caseTab": "Case tab",
       "caseWidget": "Case widget",
       "buildingBlockMapping": "Building block plugin mapping",
-      "menuPage": "Menu page"
+      "menuPage": "Menu page",
+      "contractBinding": "Bound to another plugin configuration through a contract",
+      "contractJob": "Contract job that is still open"
     },
     "reviewRequired": {
       "tag": "Review required",
@@ -2920,6 +2928,71 @@
       "current": "You're currently running {{current}}.",
       "minimum": "Minimum compatible version: {{min}}.",
       "maximum": "Maximum compatible version: {{max}}."
+    },
+    "contracts": {
+      "requiredPluginsHeading": "Required plugins",
+      "requiredPluginsDescription": "This plugin calls other plugins through the contracts below. Choose which plugin configuration answers each contract.",
+      "selectProvider": "Choose a plugin configuration",
+      "bindingRequired": "Choose a plugin configuration for this contract",
+      "noProvider": "No configuration provides this contract yet — activate a plugin that provides it first.",
+      "unavailable": "unavailable",
+      "contract": "Contract",
+      "operation": "Operation",
+      "mode": "Mode",
+      "immediate": "Immediate",
+      "longRunning": "Long-running",
+      "longRunningUpTo": "Long-running, up to {{duration}}",
+      "durationUnits": {
+        "days": "{{value}} d",
+        "hours": "{{value}} h",
+        "minutes": "{{value}} min",
+        "seconds": "{{value}} s"
+      }
+    },
+    "contractJobs": {
+      "title": "Contract jobs",
+      "description": "Asynchronous requests between plugin configurations. An open job blocks deleting either configuration.",
+      "filterAll": "All",
+      "refresh": "Refresh",
+      "empty": "No contract jobs found",
+      "detailTitle": "Contract job",
+      "requestPayload": "Request",
+      "resultPayload": "Result",
+      "columns": {
+        "contract": "Contract",
+        "operation": "Operation",
+        "requester": "Requester",
+        "provider": "Provider",
+        "status": "Status",
+        "createdAt": "Created",
+        "deadline": "Deadline",
+        "attempts": "Attempts",
+        "error": "Error",
+        "requestedBy": "Requested by",
+        "updatedAt": "Updated",
+        "completedAt": "Completed",
+        "deliveredAt": "Delivered",
+        "replyToProcessInstance": "Reply to process instance",
+        "lastDeliveryError": "Last delivery error"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "ACCEPTED": "Accepted",
+        "COMPLETED": "Completed",
+        "FAILED": "Failed",
+        "EXPIRED": "Expired",
+        "DELIVERED": "Delivered",
+        "UNDELIVERABLE": "Undeliverable"
+      }
+    },
+    "propertiesEditor": {
+      "helper": "JSON validated against the plugin's configuration schema. Hover a key for its description; Ctrl+Space suggests the declared fields.",
+      "fieldsTitle": "Fields this plugin expects",
+      "required": "Required",
+      "secret": "Secret",
+      "egressTarget": "Outbound destination",
+      "secretKept": "Stored encrypted and not shown; leave it out to keep the current value.",
+      "titlePlaceholder": "Enter a name for this configuration"
     }
   },
   "customerCases": {

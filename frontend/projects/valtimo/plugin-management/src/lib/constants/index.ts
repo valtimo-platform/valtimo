@@ -17,3 +17,5 @@
 export * from './plugin-add-modal.test-ids';
 export * from './plugin-app-add-modal.test-ids';
 export * from './plugin-external-review-modal.test-ids';
+export * from './plugin-external-contract-bindings.test-ids';
+export * from './plugin-contract-jobs.test-ids';

@@ -26,6 +26,14 @@ import {
 import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {ExternalPluginHostUsage, ExternalPluginHostUsageParentType} from '@valtimo/plugin';
 
+const KNOWN_PARENT_TYPES: ReadonlyArray<string> = [
+  'CASE',
+  'BUILDING_BLOCK',
+  'GLOBAL',
+  'CONTRACT_BINDING',
+  'CONTRACT_JOB',
+];
+
 /**
  * Read-only modal shown when an admin tries to delete an external plugin entity (a host or a
  * configuration) that is still referenced by one or more BPMN process links, case tabs, case
@@ -65,7 +73,7 @@ export class PluginUsageModalComponent {
     this.closeEvent.emit();
   }
 
-  public trackByUsage(_index: number, usage: ExternalPluginHostUsage): string {
+  public trackByUsage(index: number, usage: ExternalPluginHostUsage): string {
     if (usage.processLinkId) {
       return usage.processLinkId;
     }
@@ -80,8 +88,23 @@ export class PluginUsageModalComponent {
     if (usage.menuItemTitle) {
       return `page:${usage.configurationId}:${usage.menuItemTitle}`;
     }
-    // Building-block mapping usage on a case-definition ↔ BB link (no process link, no tab).
-    return `bb:${usage.parentKey}:${usage.buildingBlockKey}:${usage.configurationId}`;
+    if (usage.buildingBlockKey) {
+      // Building-block mapping usage on a case-definition ↔ BB link (no process link, no tab).
+      return `bb:${usage.parentKey}:${usage.buildingBlockKey}:${usage.configurationId}`;
+    }
+    // Contract binding/job and any future usage kind: nothing unique beyond its position
+    return `${usage.parentType}:${usage.parentKey}:${usage.configurationId}:${index}`;
+  }
+
+  public isContractUsage(usage: ExternalPluginHostUsage): boolean {
+    return usage.parentType === 'CONTRACT_BINDING' || usage.parentType === 'CONTRACT_JOB';
+  }
+
+  /** Null for a type this UI does not know yet — the template then shows the raw name. */
+  public parentTypeLabelKey(parentType: ExternalPluginHostUsageParentType): string | null {
+    return KNOWN_PARENT_TYPES.includes(parentType)
+      ? `pluginManagement.usageModal.parentType.${parentType}`
+      : null;
   }
 
   public parentTypeTagColor(parentType: ExternalPluginHostUsageParentType): string {
@@ -90,6 +113,10 @@ export class PluginUsageModalComponent {
         return 'blue';
       case 'BUILDING_BLOCK':
         return 'purple';
+      case 'CONTRACT_BINDING':
+        return 'teal';
+      case 'CONTRACT_JOB':
+        return 'cyan';
       case 'GLOBAL':
       default:
         return 'cool-gray';

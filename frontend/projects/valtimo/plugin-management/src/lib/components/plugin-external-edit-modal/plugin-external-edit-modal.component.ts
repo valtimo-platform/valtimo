@@ -37,15 +37,21 @@ import {
 } from 'carbon-components-angular';
 import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
+  ExternalPluginContractBindingEntry,
+  ExternalPluginContractBindingResponse,
   ExternalPluginDefinition,
   ExternalPluginIframeComponent,
   ExternalPluginEndpoint,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
   getExternalPluginDisplayName,
+  getExternalPluginProvidedContracts,
 } from '@valtimo/plugin';
+import {PluginExternalPropertiesEditorComponent} from '../plugin-external-properties-editor/plugin-external-properties-editor.component';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {forkJoin, Subscription} from 'rxjs';
 import {PluginExternalPermissionsComponent} from '../plugin-external-permissions/plugin-external-permissions.component';
+import {PluginExternalContractBindingsComponent} from '../plugin-external-contract-bindings/plugin-external-contract-bindings.component';
 
 @Component({
   standalone: true,
@@ -65,6 +71,8 @@ import {PluginExternalPermissionsComponent} from '../plugin-external-permissions
     ValtimoCdsModalDirective,
     ExternalPluginIframeComponent,
     PluginExternalPermissionsComponent,
+    PluginExternalContractBindingsComponent,
+    PluginExternalPropertiesEditorComponent,
   ],
 })
 export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
@@ -97,6 +105,10 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
    * configuration rather than recomputed locally, so the list matches what GZAC pushed to the host.
    */
   public readonly $derivedEgress = signal<Array<string>>([]);
+  public readonly $requiredContracts = signal<Array<string>>([]);
+  public readonly $providedContracts = signal<Array<ExternalPluginProvidedContract>>([]);
+  public readonly $currentBindings = signal<Array<ExternalPluginContractBindingResponse>>([]);
+  public readonly $contractBindingsValid = signal(true);
   public readonly $permissionsValid = signal(false);
   public readonly $hasPermissionsStep = signal(false);
   public readonly $definitionName = signal<string>('');
@@ -108,8 +120,10 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
   private readonly _$configurationSchema = signal<unknown | null>(null);
+  public readonly $configurationSchema = this._$configurationSchema.asReadonly();
   private readonly _$iframeValid = signal(false);
   private readonly _$definition = signal<ExternalPluginDefinition | null>(null);
+  private _contractBindings: Array<ExternalPluginContractBindingEntry> = [];
 
   private readonly _subscriptions = new Subscription();
   private _propertiesValueSubscription: Subscription | null = null;
@@ -170,6 +184,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       .updateConfiguration(this.configuration.id, {
         title: this._form.value.title ?? '',
         properties,
+        ...this._changedContractBindings(),
       })
       .subscribe({
         next: () => {
@@ -208,6 +223,14 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$permissionsValid.set(valid);
   }
 
+  public onContractBindingsChange(bindings: Array<ExternalPluginContractBindingEntry>): void {
+    this._contractBindings = bindings;
+  }
+
+  public onContractBindingsValid(valid: boolean): void {
+    this.$contractBindingsValid.set(valid);
+  }
+
   public get configValid(): boolean {
     if (this.$awaitingHost()) return false;
     if (this.$configBundleUrl()) {
@@ -229,6 +252,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       .updateConfiguration(this.configuration.id, {
         title,
         properties,
+        ...this._changedContractBindings(),
       })
       .subscribe({
         next: () => {
@@ -239,6 +263,40 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this.$loading.set(false);
         },
       });
+  }
+
+  /** Rebinding is the only grant-adjacent change the edit flow sends; absent means unchanged. */
+  private _changedContractBindings(): {
+    contractBindings?: Array<ExternalPluginContractBindingEntry>;
+  } {
+    const current = new Map(
+      this.$currentBindings().map(binding => [binding.contract, binding.targetConfigurationId])
+    );
+    const changed =
+      this._contractBindings.length !== current.size ||
+      this._contractBindings.some(
+        binding => current.get(binding.contract) !== binding.targetConfigurationId
+      );
+    return changed && this.$requiredContracts().length > 0
+      ? {contractBindings: this._contractBindings}
+      : {};
+  }
+
+  private _applyContracts(
+    definition: ExternalPluginDefinition,
+    currentBindings: Array<ExternalPluginContractBindingResponse>
+  ): void {
+    const requiredContracts = definition.manifest?.permissions?.contracts ?? [];
+    this.$currentBindings.set(currentBindings);
+    this._contractBindings = currentBindings.map(({contract, targetConfigurationId}) => ({
+      contract,
+      targetConfigurationId,
+    }));
+    this.$contractBindingsValid.set(requiredContracts.length === 0);
+    this.$requiredContracts.set(requiredContracts);
+    this.$providedContracts.set(
+      getExternalPluginProvidedContracts(definition.manifest, this._translateService.currentLang)
+    );
   }
 
   private _initForm(): void {
@@ -259,6 +317,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$capabilities.set([]);
     this.$egress.set([]);
     this.$derivedEgress.set([]);
+    this._resetContracts();
     this.$permissionsValid.set(false);
     this.$hasPermissionsStep.set(false);
     this._$definition.set(null);
@@ -303,12 +362,14 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this.$capabilities.set(capabilities);
           this.$egress.set(egress);
           this.$derivedEgress.set(derivedEgress);
+          this._applyContracts(definition, configDetail.contractBindings ?? []);
           this.$hasPermissionsStep.set(
             endpoints.length > 0 ||
               eventSubscriptions.length > 0 ||
               capabilities.length > 0 ||
               egress.length > 0 ||
-              derivedEgress.length > 0
+              derivedEgress.length > 0 ||
+              this._hasContracts()
           );
           this.$permissionsValid.set(true);
 
@@ -335,11 +396,13 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this.$eventSubscriptions.set(eventSubscriptions);
           this.$capabilities.set(capabilities);
           this.$egress.set(egress);
+          this._applyContracts(definition, []);
           this.$hasPermissionsStep.set(
             endpoints.length > 0 ||
               eventSubscriptions.length > 0 ||
               capabilities.length > 0 ||
-              egress.length > 0
+              egress.length > 0 ||
+              this._hasContracts()
           );
           this.$permissionsValid.set(true);
 
@@ -366,6 +429,18 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this.$propertiesInvalid.set(true);
         }
       }) ?? null;
+  }
+
+  private _hasContracts(): boolean {
+    return this.$requiredContracts().length > 0 || this.$providedContracts().length > 0;
+  }
+
+  private _resetContracts(): void {
+    this.$requiredContracts.set([]);
+    this.$providedContracts.set([]);
+    this.$currentBindings.set([]);
+    this.$contractBindingsValid.set(true);
+    this._contractBindings = [];
   }
 
   private _setDefinition(definition: ExternalPluginDefinition): void {
@@ -419,6 +494,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$endpoints.set([]);
     this.$eventSubscriptions.set([]);
     this.$capabilities.set([]);
+    this._resetContracts();
     this.$permissionsValid.set(false);
     this.$hasPermissionsStep.set(false);
     this._$definition.set(null);

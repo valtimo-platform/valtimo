@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
   Input,
   OnChanges,
   Output,
@@ -25,13 +26,15 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ButtonModule, LoadingModule, ModalModule, NotificationModule} from 'carbon-components-angular';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {
   ExternalPluginDefinition,
   ExternalPluginEndpoint,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
+  getExternalPluginProvidedContracts,
 } from '@valtimo/plugin';
 import {PLUGIN_EXTERNAL_REVIEW_MODAL_TEST_IDS} from '../../constants';
 import {PluginExternalPermissionsComponent} from '../plugin-external-permissions/plugin-external-permissions.component';
@@ -77,8 +80,12 @@ export class PluginExternalReviewModalComponent implements OnChanges {
   public readonly $pendingEvents = signal<Array<string>>([]);
   public readonly $pendingCapabilities = signal<Array<string>>([]);
   public readonly $pendingEgress = signal<Array<string>>([]);
+  public readonly $pendingRequiredContracts = signal<Array<string>>([]);
+  public readonly $pendingProvidedContracts = signal<Array<ExternalPluginProvidedContract>>([]);
 
   protected readonly testIds = PLUGIN_EXTERNAL_REVIEW_MODAL_TEST_IDS;
+
+  private readonly _translateService = inject(TranslateService);
 
   constructor(private readonly _externalPluginService: ExternalPluginService) {}
 
@@ -93,6 +100,10 @@ export class PluginExternalReviewModalComponent implements OnChanges {
     this.$pendingCapabilities.set(pending?.permissions?.capabilities ?? []);
     this.$pendingEgress.set(pending?.permissions?.egress ?? []);
     this.$pendingEvents.set(pending?.eventSubscriptions ?? []);
+    this.$pendingRequiredContracts.set(pending?.permissions?.contracts ?? []);
+    this.$pendingProvidedContracts.set(
+      getExternalPluginProvidedContracts(pending, this._translateService.currentLang)
+    );
   }
 
   public onPermissionsValid(valid: boolean): void {

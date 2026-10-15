@@ -82,6 +82,8 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
         "GET,/api/management/v1/external-plugin/host-defaults",
         "GET,/api/management/v1/external-plugin/definition",
         "GET,/api/management/v1/external-plugin/configuration",
+        "GET,/api/management/v1/external-plugin/contract-job",
+        "GET,/api/management/v1/external-plugin/contract/nl.ritense.openplan@1/providers",
     )
     @WithMockUser(authorities = [ADMIN])
     fun `an admin reaches the management collection endpoints`(method: HttpMethod, path: String) {
@@ -101,6 +103,7 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId/usages")
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId/logs")
         assertReachable(HttpMethod.POST, "/api/management/v1/external-plugin/endpoint-descriptions")
+        assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/contract-job/$someId")
     }
 
     // ---------------------------------------------------------------- management endpoints, USER
@@ -114,6 +117,8 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
         "GET,/api/management/v1/external-plugin/configuration",
         "POST,/api/management/v1/external-plugin/configuration",
         "POST,/api/management/v1/external-plugin/endpoint-descriptions",
+        "GET,/api/management/v1/external-plugin/contract-job",
+        "GET,/api/management/v1/external-plugin/contract/nl.ritense.openplan@1/providers",
     )
     @WithMockUser(authorities = [USER])
     fun `a plain user cannot reach the management api`(method: HttpMethod, path: String) {
@@ -135,6 +140,16 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
         assertForbidden(HttpMethod.DELETE, "/api/management/v1/external-plugin/configuration/$someId")
         assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId/logs")
         assertForbidden(HttpMethod.POST, "/api/management/v1/external-plugin/configuration/$someId/revoke-tokens")
+        assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/contract-job/$someId")
+    }
+
+    @Test
+    @WithMockUser(authorities = [ADMIN])
+    fun `an interactive user cannot use the plugin contract surface, not even an admin`() {
+        // Reachability for plugin tokens is pinned in ExternalPluginContractIntTest.
+        assertThat(perform(HttpMethod.POST, "/api/v1/plugin-contract/call")).isEqualTo(HttpStatus.FORBIDDEN.value())
+        assertThat(perform(HttpMethod.POST, "/api/v1/plugin-contract/jobs")).isEqualTo(HttpStatus.FORBIDDEN.value())
+        assertThat(perform(HttpMethod.GET, "/api/v1/plugin-contract/jobs/$someId")).isEqualTo(HttpStatus.FORBIDDEN.value())
     }
 
     // ---------------------------------------------------------------- non-management endpoints, USER

@@ -325,6 +325,37 @@ completes the task with those values, or
 `{ "status": "error", "errorMessage": "…", "fieldErrors": { "field": "message" } }` (non-2xx) and
 GZAC does **not** complete — the errors render inline on the form.
 
+### `POST /plugins/{pluginId}/{version}/contracts/{contract}/{operation}` — serve a contract
+
+Only needed when the manifest declares `provides`. GZAC delivers a contract call, or a job when
+the body carries `jobId` and `deadline`; the `{contract}` segment arrives raw
+(`nl.ritense.demo.echo@1`) and is part of the signed path.
+
+```json
+{ "configurationId": "…", "caller": { "pluginId": "pdca", "version": "0.2.0", "configurationId": "…" },
+  "payload": { … }, "jobId": "…", "deadline": "2026-10-14T12:00:00Z", "chain": ["…"] }
+```
+
+Answer `200` with `{ "status": "completed", "result": … }`, `{ "status": "accepted" }` (jobs only —
+complete it later with `POST {gzacBaseUrl}/api/v1/plugin-contract/jobs/{jobId}/complete`,
+`{ "status": "completed" | "failed", "result"?, "errorCode"?, "errorMessage"? }`, service token), or
+`{ "status": "error", "errorCode": "…", "errorMessage": "…" }`. Refuse an operation your manifest
+does not provide with `404 { "errorCode": "CONTRACT_OPERATION_NOT_PROVIDED" }`. When your app
+itself calls a contract while serving one, send the received `chain` plus your own configuration
+id as `X-Valtimo-Contract-Chain` so GZAC can refuse cycles.
+
+### `POST /plugins/{pluginId}/{version}/contract-replies` — receive a job outcome
+
+Only needed when the app requests jobs (`POST {gzacBaseUrl}/api/v1/plugin-contract/jobs`). Body:
+`{ configurationId, jobId, contract, operation, status: "completed" | "failed" | "expired",
+result?, errorCode?, errorMessage?, requestedAt, completedAt? }`. Answer `200 { "status":
+"completed" }` to acknowledge; `{ "status": "error" }` makes GZAC redeliver, so key your handling
+on `jobId`. The demo app logs and stores replies — see
+[`demo-app/src/contracts.ts`](../../plugin-host/sample-apps/demo-app/src/contracts.ts).
+
+Adding `provides` changes the manifest, and an app's content pin is derived from its manifest:
+bump the version rather than changing it in place.
+
 ## Step 5: Implement public routes (browser-facing, CORS `*`)
 
 - **`GET …/plugin-manifest`** — the manifest JSON. The iframe SDK fetches it for translations.

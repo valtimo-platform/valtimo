@@ -31,8 +31,9 @@ src/
   gzac-api.ts       # gzacApi (+ asUser)         http-request.ts # httpRequest
   kv.ts             # kv store facade            config.ts    # config.getAll()/get(key)
   host-functions.ts # log facade                 egress.ts    # egress-origin grammar
+  contracts.ts      # contract handler registries + pluginCall/pluginRequest/completeJob
   manifest-validation.ts  # shared validator (pack time + host upload)
-  runtime.ts        # Wasm dispatcher for all four exports (action/event/request/submit)
+  runtime.ts        # Wasm dispatcher for every export (action/event/request/submit/contract call/contract reply)
   frontend/         # ValtimoPluginSDK (@valtimo/plugin-sdk/frontend)
   scaffold/         # The plugin generator behind valtimo-plugin-init (@valtimo/plugin-sdk/scaffold)
   index.ts          # Public API barrel export
@@ -203,7 +204,9 @@ Steps performed:
 1. Bundles the source with esbuild (CJS format, required by QuickJS) using the esbuild installed
    in the plugin project
 2. Compiles the bundle to `.wasm` via the `extism-js` CLI (with binaryen on its `PATH`)
-3. If `index.d.ts` exists in the plugin directory, passes it to extism-js with `-i` to declare exports
+3. If `index.d.ts` exists in the plugin directory, passes it to extism-js with `-i` to declare exports;
+   otherwise generates the interface, importing `plugin_contract` only when `manifest.json` declares
+   `provides` or `permissions.contracts`
 
 The CLI locates `extism-js` in this order (see [Prerequisites](#prerequisites)):
 1. `VALTIMO_EXTISM_JS` (explicit path)
@@ -264,8 +267,10 @@ submit("review", (input) => ({ status: "completed" }));    // handle_submit: tas
 | `config.getAll()` / `config.get(key)` | The configuration's properties for this call |
 | `log.debug/info/warn/error(msg, data?)` | Structured entries in the admin Logs modal |
 | `gzacApi.{get,post,put,delete}` / `gzacApi.asUser.*` | Calls back into GZAC as the configuration, or as the logged-in user |
-| `httpRequest.{get,post,put,delete}` | Outbound HTTP, restricted to declared egress origins |
+| `httpRequest.{get,post,put,patch,delete,request}` | Outbound HTTP, restricted to declared egress origins |
 | `kv.{get,set,delete,list}` | Per-configuration key/value store |
+| `onContractCall(contract, op, handler)` / `onContractJob(contract, op, handler)` | Serves an operation declared under `provides` (see [Contracts](#contracts)) |
+| `pluginCall` / `pluginRequest` / `completeJob` / `onContractReply` | Calls a contract declared under `permissions.contracts`, starts or completes a job, receives job outcomes |
 
 Handler input/output types, execution semantics, and the sandbox's limits are documented in
 [Developing an external plugin](../../dev-docs/external-plugins/develop-a-plugin.md#step-3-backend-handlers-srcplugints).
@@ -321,6 +326,56 @@ Entries are **origins**, matched on scheme + host + port:
 
 Declaring `egress` alongside a `capabilities` list that lacks `http_request` fails validation, as
 does an unparseable entry — the pack tool catches both before the package is built.
+
+### Contracts
+
+Plugins call each other through **contracts**, always brokered by GZAC. A plugin names a contract
+(`name@major`, e.g. `nl.ritense.openplan@1`), never another plugin; the admin binds a providing
+configuration at activation. No authority moves between plugins: each side runs under its own
+grants, and the provider sees the caller GZAC stamped, never its token.
+
+```json
+{
+  "provides": [
+    {
+      "contract": "nl.ritense.openplan@1",
+      "operations": [
+        { "key": "list", "title": "List resources" },
+        { "key": "report", "title": "Generate a report", "mode": "job", "timeout": "PT2H", "outputs": ["documentRef"] }
+      ]
+    }
+  ],
+  "permissions": { "contracts": ["nl.ritense.document.generate@1"] }
+}
+```
+
+```typescript
+import { completeJob, kv, onContractCall, onContractJob, onContractReply, pluginCall, pluginRequest } from "@valtimo/plugin-sdk";
+
+// Provider: one handler per declared operation.
+onContractCall("nl.ritense.openplan@1", "list", (input) => ({ status: "completed", result: { items: [] } }));
+onContractJob("nl.ritense.openplan@1", "report", (job) => {
+  kv.set(`job:${job.jobId}`, job.payload);
+  return { status: "accepted" };          // finish later: completeJob(job.jobId, { status: "completed", result })
+});
+
+// Requester: sync call, or a job whose outcome arrives later.
+const res = pluginCall("nl.ritense.document.generate@1", "render", { templateKey: "t" });
+const job = pluginRequest("nl.ritense.document.generate@1", "generate", { templateKey: "t" });
+onContractReply((reply) => ({ status: "completed" }));   // reply.status: completed | failed | expired
+```
+
+- `pluginCall` / `pluginRequest` / `completeJob` never throw for remote failures: an unbound
+  contract, an unavailable provider or a provider error comes back as
+  `{status: "error", errorCode, errorMessage}`. The host refuses a contract outside the pushed
+  grant with `CONTRACT_NOT_GRANTED` before anything leaves it.
+- `mode: "job"` operations need a `timeout` (ISO-8601, days to seconds — `PT2H`, `P1D`); `outputs`
+  lists keys a completed result must contain (`null` allowed; `undefined` values are sent as `null`).
+- Contracts need no capability. The build only imports the `plugin_contract` host function when
+  `manifest.json` declares `provides` or `permissions.contracts`, so a contract-free plugin still
+  loads on hosts that predate it. A plugin with its own `index.d.ts` must declare
+  `plugin_contract(input: PTR): PTR;` itself, plus the `handle_contract_call` /
+  `handle_contract_reply` exports.
 
 ## Frontend SDK (`@valtimo/plugin-sdk/frontend`)
 

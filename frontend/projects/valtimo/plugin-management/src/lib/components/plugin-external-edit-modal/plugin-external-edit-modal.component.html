@@ -62,21 +62,14 @@
                 <input class="cds--text-input" formControlName="title" />
               </div>
 
-              <div class="cds--form-item">
-                <label class="cds--label">{{
-                  'pluginManagement.labels.properties' | translate
-                }}</label>
-
-                <textarea
-                  class="cds--text-area plugin-external-edit-modal__properties-textarea"
-                  formControlName="properties"
-                  rows="12"
-                ></textarea>
-
-                <div *ngIf="$propertiesInvalid()" class="cds--form-requirement">
-                  {{ 'pluginManagement.invalidJson' | translate }}
-                </div>
-              </div>
+              <valtimo-plugin-external-properties-editor
+                class="plugin-external-edit-modal__properties"
+                [value]="_form.controls.properties.value ?? '{}'"
+                [schema]="$configurationSchema()"
+                [invalid]="$propertiesInvalid()"
+                [secretsKeptWhenEmpty]="true"
+                (valueChange)="_form.controls.properties.setValue($event)"
+              ></valtimo-plugin-external-properties-editor>
             </form>
           </ng-template>
         </ng-template>
@@ -84,12 +77,21 @@
     </div>
 
     <div *ngIf="$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
+      <valtimo-plugin-external-contract-bindings
+        [contracts]="$requiredContracts()"
+        [currentBindings]="$currentBindings()"
+        [selfConfigurationId]="configuration?.id ?? null"
+        (bindingsChangeEvent)="onContractBindingsChange($event)"
+        (validEvent)="onContractBindingsValid($event)"
+      ></valtimo-plugin-external-contract-bindings>
+
       <valtimo-plugin-external-permissions
         [endpoints]="$endpoints()"
         [eventSubscriptions]="$eventSubscriptions()"
         [capabilities]="$capabilities()"
         [egress]="$egress()"
         [derivedEgress]="$derivedEgress()"
+        [providedContracts]="$providedContracts()"
         [readonlyMode]="true"
         (validEvent)="onPermissionsValid($event)"
       ></valtimo-plugin-external-permissions>
@@ -122,7 +124,7 @@
     <button
       *ngIf="currentStepIndex === 1 && $hasPermissionsStep()"
       cdsButton="primary"
-      [disabled]="!$permissionsValid() || $loading()"
+      [disabled]="!$permissionsValid() || !$contractBindingsValid() || $loading()"
       (click)="onSave()"
     >
       {{ 'pluginManagement.editSteps.save' | translate }}

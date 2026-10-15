@@ -114,6 +114,42 @@ class ExternalPluginHostClientHmacTest {
     }
 
     @Test
+    fun `pushConfiguration carries the bound contracts, and an empty list for a contract-free configuration`() {
+        val configId = UUID.randomUUID().toString()
+        val path = "/api/host/configurations/$configId"
+        val bodies = mutableListOf<String>()
+        repeat(2) {
+            server.expect(requestTo("$baseUrl$path"))
+                .andExpect { request -> bodies += String((request as MockClientHttpRequest).bodyAsBytes) }
+                .andRespond(withStatus(HttpStatus.CREATED))
+        }
+
+        listOf(listOf("nl.ritense.openplan@1"), emptyList()).forEach { contracts ->
+            client.pushConfiguration(
+                baseUrl = baseUrl,
+                adminToken = secret,
+                configId = configId,
+                pluginId = "pdca",
+                pluginVersion = "0.2.0",
+                title = "PDCA",
+                properties = objectMapper.createObjectNode(),
+                serviceToken = "token",
+                gzacBaseUrl = "http://gzac:8080",
+                ownerId = UUID.randomUUID().toString(),
+                eventSubscriptions = emptyList(),
+                grantedContracts = contracts,
+                eventBrokerUrl = null,
+                eventBrokerExchange = "valtimo-events",
+                eventBrokerExchangeType = "fanout",
+            )
+        }
+
+        assertThat(bodies[0]).contains("\"grantedContracts\":[\"nl.ritense.openplan@1\"]")
+        assertThat(bodies[1]).contains("\"grantedContracts\":[]")
+        server.verify()
+    }
+
+    @Test
     fun `pushConfiguration omits queueTtlMs from the body when null`() {
         val configId = UUID.randomUUID().toString()
         val path = "/api/host/configurations/$configId"
@@ -255,6 +291,57 @@ class ExternalPluginHostClientHmacTest {
             )
 
         client.invokeAction(baseUrl, "case-summary", "0.1.0", "summarize", payload, secret)
+
+        server.verify()
+    }
+
+    @Test
+    fun `invokeContract signs the body on the raw contract path`() {
+        val path = "/plugins/openplan/1.0.0/contracts/nl.ritense.openplan@1/list"
+        val body = objectMapper.createObjectNode().apply {
+            put("configurationId", UUID.randomUUID().toString())
+            putObject("caller").put("pluginId", "pdca")
+            putObject("payload").put("resource", "plan")
+            putArray("chain")
+        }
+        val expectedBody = objectMapper.writeValueAsBytes(body)
+
+        server.expect(requestTo("$baseUrl$path"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                assertThat(request.uri.rawPath).isEqualTo(path)
+                assertSigned(request, "POST", path, expectedBody)
+            }
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                    .body("""{"status":"completed","result":{"items":[]}}""")
+            )
+
+        val response = client.invokeContract(baseUrl, "openplan", "1.0.0", "nl.ritense.openplan@1", "list", body, secret)
+
+        assertThat(response.status).isEqualTo(200)
+        assertThat(response.body!!.get("result").get("items").isArray).isTrue()
+        server.verify()
+    }
+
+    @Test
+    fun `invokeContractReply signs the reply body`() {
+        val path = "/plugins/pdca/0.2.0/contract-replies"
+        val body = objectMapper.createObjectNode().put("jobId", UUID.randomUUID().toString()).put("status", "completed")
+        val expectedBody = objectMapper.writeValueAsBytes(body)
+
+        server.expect(requestTo("$baseUrl$path"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect { request ->
+                request as MockClientHttpRequest
+                assertSigned(request, "POST", path, expectedBody)
+            }
+            .andRespond(
+                withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body("""{"status":"completed"}""")
+            )
+
+        client.invokeContractReply(baseUrl, "pdca", "0.2.0", body, secret)
 
         server.verify()
     }

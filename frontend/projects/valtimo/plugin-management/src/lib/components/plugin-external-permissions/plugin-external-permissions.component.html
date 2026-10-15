@@ -187,6 +187,96 @@
   </cds-structured-list>
 </section>
 
+<section *ngIf="requiredContracts.length > 0" class="plugin-external-permissions__section">
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.requiredContractsHeading' | translate }}
+  </h6>
+
+  <p class="plugin-external-permissions__helper">
+    {{ 'pluginManagement.permissions.requiredContractsDescription' | translate }}
+  </p>
+
+  <div class="plugin-external-permissions__tag-cloud">
+    <cds-tag
+      *ngFor="let contract of requiredContracts"
+      type="blue"
+      size="sm"
+      [attr.data-test-id]="'external-plugin-permission-contract-' + contract"
+    >
+      {{ contract }}
+    </cds-tag>
+  </div>
+</section>
+
+<section *ngIf="providedContracts.length > 0" class="plugin-external-permissions__section">
+  <h6 class="cds--type-heading-compact-02 plugin-external-permissions__section-heading">
+    {{ 'pluginManagement.permissions.providedContractsHeading' | translate }}
+  </h6>
+
+  <p class="plugin-external-permissions__helper">
+    {{ 'pluginManagement.permissions.providedContractsDescription' | translate }}
+  </p>
+
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.contracts.contract' | translate }}
+      </cds-list-column>
+      <cds-list-column>
+        {{ 'pluginManagement.contracts.operation' | translate }}
+      </cds-list-column>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.contracts.mode' | translate }}
+      </cds-list-column>
+    </cds-list-header>
+
+    <ng-container *ngFor="let provided of providedContracts">
+      <cds-list-row
+        *ngFor="let operation of provided.operations; let first = first"
+        [attr.data-test-id]="
+          'external-plugin-permission-provides-' + provided.contract + '-' + operation.key
+        "
+      >
+        <cds-list-column nowrap="true">
+          <ng-container *ngIf="first">
+            <cds-tag type="blue" size="sm">{{ provided.contract }}</cds-tag>
+
+            <div *ngIf="provided.title" class="plugin-external-permissions__helper">
+              {{ provided.title }}
+            </div>
+          </ng-container>
+        </cds-list-column>
+
+        <cds-list-column>
+          <div>{{ operation.title || operation.key }}</div>
+
+          <div class="plugin-external-permissions__helper">
+            <code class="cds--snippet--inline">{{ operation.key }}</code>
+            <span *ngIf="operation.description"> — {{ operation.description }}</span>
+          </div>
+        </cds-list-column>
+
+        <cds-list-column nowrap="true">
+          <cds-tag *ngIf="operation.mode === 'job'; else syncOperation" type="warm-gray" size="sm">
+            {{
+              operation.timeout
+                ? ('pluginManagement.contracts.longRunningUpTo'
+                  | translate: {duration: operation.timeout | externalPluginDuration})
+                : ('pluginManagement.contracts.longRunning' | translate)
+            }}
+          </cds-tag>
+
+          <ng-template #syncOperation>
+            <span class="plugin-external-permissions__helper">
+              {{ 'pluginManagement.contracts.immediate' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
+    </ng-container>
+  </cds-structured-list>
+</section>
+
 <cds-checkbox
   *ngIf="!readonlyMode && !isEmpty"
   class="plugin-external-permissions__acceptance"

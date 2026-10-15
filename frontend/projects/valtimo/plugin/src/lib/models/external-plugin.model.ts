@@ -150,10 +150,37 @@ interface ExternalPluginPermissions {
    * — and not supplied by the admin in a property marked `x-egress-target` — is refused by the host.
    */
   egress?: Array<string>;
+  /**
+   * Contracts (`name@major`) the plugin calls. Each must be bound to a providing configuration at
+   * activation; the bound list is the grant.
+   */
+  contracts?: Array<string>;
+}
+
+/** `job` operations run asynchronously and complete later, up to their `timeout`. */
+type ExternalPluginContractOperationMode = 'sync' | 'job';
+
+interface ExternalPluginContractOperation {
+  key: string;
+  title: string;
+  description?: string;
+  /** Absent means `sync`. */
+  mode?: ExternalPluginContractOperationMode;
+  /** ISO-8601 duration (e.g. `PT2H`), only with mode `job`. */
+  timeout?: string;
+  outputs?: Array<string>;
+}
+
+interface ExternalPluginProvidedContract {
+  contract: string;
+  title?: string;
+  operations: Array<ExternalPluginContractOperation>;
 }
 
 interface ExternalPluginManifest {
   actions?: Array<ExternalPluginAction>;
+  /** Contracts this plugin answers for other plugins. */
+  provides?: Array<ExternalPluginProvidedContract>;
   frontendBundles?: Array<ExternalPluginFrontendBundle>;
   permissions?: ExternalPluginPermissions;
   eventSubscriptions?: Array<string>;
@@ -300,6 +327,7 @@ interface ExternalPluginConfigurationDetail {
   grantedEgress: Array<ExternalPluginGrantedEgressResponse>;
   /** Origins derived from this configuration's own `x-egress-target` values; recomputed per read. */
   derivedEgress: Array<string>;
+  contractBindings: Array<ExternalPluginContractBindingResponse>;
   createdAt: string;
 }
 
@@ -315,12 +343,101 @@ interface ExternalPluginConfigurationCreateRequest {
    * sent — GZAC derives those from the `x-egress-target` property values in `properties`.
    */
   grantedEgress: Array<string>;
+  /** One binding per `permissions.contracts` entry — the backend requires an exact match. */
+  contractBindings: Array<ExternalPluginContractBindingEntry>;
 }
 
 interface ExternalPluginConfigurationUpdateRequest {
   title: string;
   properties: Record<string, unknown>;
   grantedEndpoints?: Array<ExternalPluginGrantedEndpointEntry>;
+  /** Absent means unchanged. */
+  contractBindings?: Array<ExternalPluginContractBindingEntry>;
+}
+
+interface ExternalPluginContractBindingEntry {
+  contract: string;
+  targetConfigurationId: string;
+}
+
+interface ExternalPluginContractBindingResponse extends ExternalPluginContractBindingEntry {
+  targetConfigurationTitle: string | null;
+}
+
+interface ExternalPluginContractProviderOperation {
+  key: string;
+  title: string | null;
+  mode: ExternalPluginContractOperationMode | null;
+  timeout: string | null;
+}
+
+/** A configuration whose definition's accepted manifest `provides` the requested contract. */
+interface ExternalPluginContractProvider {
+  configurationId: string;
+  configurationTitle: string;
+  definitionId: string;
+  pluginId: string;
+  version: string;
+  hostId: string;
+  hostName: string;
+  hostKind: ExternalPluginHostKind;
+  available: boolean;
+  operations: Array<ExternalPluginContractProviderOperation>;
+}
+
+type ExternalPluginContractJobStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'EXPIRED'
+  | 'DELIVERED'
+  | 'UNDELIVERABLE';
+
+const EXTERNAL_PLUGIN_CONTRACT_JOB_STATUSES: ReadonlyArray<ExternalPluginContractJobStatus> = [
+  'PENDING',
+  'ACCEPTED',
+  'COMPLETED',
+  'FAILED',
+  'EXPIRED',
+  'DELIVERED',
+  'UNDELIVERABLE',
+];
+
+interface ExternalPluginContractJobSummary {
+  id: string;
+  contract: string;
+  operation: string;
+  requesterConfigurationId: string;
+  requesterTitle: string | null;
+  requesterPluginId: string | null;
+  providerConfigurationId: string;
+  providerTitle: string | null;
+  providerPluginId: string | null;
+  status: ExternalPluginContractJobStatus;
+  requestedBy: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+  completedAt: string | null;
+  deliveredAt: string | null;
+  deadline: string | null;
+  deliveryAttempts: number;
+  errorCode: string | null;
+  errorMessage: string | null;
+}
+
+interface ExternalPluginContractJobDetail extends ExternalPluginContractJobSummary {
+  requestPayload: unknown | null;
+  resultPayload: unknown | null;
+  replyToProcessInstanceId: string | null;
+  lastDeliveryError: string | null;
+}
+
+interface ExternalPluginContractJobQuery {
+  page: number;
+  size: number;
+  status?: ExternalPluginContractJobStatus;
+  configurationId?: string;
 }
 
 /**
@@ -328,7 +445,12 @@ interface ExternalPluginConfigurationUpdateRequest {
  * doubles as the fallback when the process definition can't be resolved at all — in that case
  * `parentKey` and `parentVersionTag` are both null.
  */
-type ExternalPluginHostUsageParentType = 'CASE' | 'BUILDING_BLOCK' | 'GLOBAL';
+type ExternalPluginHostUsageParentType =
+  | 'CASE'
+  | 'BUILDING_BLOCK'
+  | 'GLOBAL'
+  | 'CONTRACT_BINDING'
+  | 'CONTRACT_JOB';
 
 /**
  * One BPMN activity that references a configuration under a plugin host. The host cannot be
@@ -357,6 +479,12 @@ interface ExternalPluginHostUsage {
   // Populated only for a building-block mapping usage (the BB's pluginConfigurationMappings
   // reference the configuration); names the building block holding the mapping.
   buildingBlockKey?: string | null;
+  // Populated only for contract usages: the contract, the open job, and the other configuration
+  // (the one binding this configuration, or the job's other party).
+  contract?: string | null;
+  contractJobId?: string | null;
+  relatedConfigurationId?: string | null;
+  relatedConfigurationTitle?: string | null;
   // Populated only for a menu-page usage: an external-plugin `page` bundle placed in the
   // application menu references the configuration. Names the menu item.
   menuItemTitle?: string | null;
@@ -391,6 +519,42 @@ function resolveManifestTranslation(
   if (!translations) return null;
   const localized = translations[lang]?.[key] ?? translations['en']?.[key];
   return localized && localized.length > 0 ? localized : null;
+}
+
+/**
+ * The manifest's `provides` with titles and descriptions localised from its translations, keyed
+ * `contracts.<contract>.title` and `contracts.<contract>.operations.<key>.{title,description}`.
+ * The manifest's own strings are the fallback.
+ */
+function getExternalPluginProvidedContracts(
+  manifest: ExternalPluginManifest | null | undefined,
+  lang: string
+): Array<ExternalPluginProvidedContract> {
+  return (manifest?.provides ?? []).map(provided => ({
+    ...provided,
+    title:
+      resolveManifestTranslation(manifest, `contracts.${provided.contract}.title`, lang) ??
+      provided.title,
+    operations: (provided.operations ?? []).map(operation =>
+      localizeContractOperation(manifest, provided.contract, operation, lang)
+    ),
+  }));
+}
+
+function localizeContractOperation<T extends {key: string; title?: string | null}>(
+  manifest: ExternalPluginManifest | null | undefined,
+  contract: string,
+  operation: T,
+  lang: string
+): T {
+  const prefix = `contracts.${contract}.operations.${operation.key}`;
+  const title = resolveManifestTranslation(manifest, `${prefix}.title`, lang);
+  const description = resolveManifestTranslation(manifest, `${prefix}.description`, lang);
+  return {
+    ...operation,
+    ...(title ? {title} : {}),
+    ...(description && 'description' in operation ? {description} : {}),
+  };
 }
 
 function getExternalPluginName(definition: ExternalPluginDefinition, lang: string): string {
@@ -454,6 +618,9 @@ export {
   ExternalPluginFrontendBundleType,
   ExternalPluginEndpoint,
   ExternalPluginPermissions,
+  ExternalPluginContractOperationMode,
+  ExternalPluginContractOperation,
+  ExternalPluginProvidedContract,
   ExternalPluginManifest,
   ExternalPluginCompatibilityInfo,
   ExternalPluginHostStatus,
@@ -482,11 +649,22 @@ export {
   ExternalPluginGrantedEgressResponse,
   ExternalPluginEndpointDescriptionQuery,
   ExternalPluginEndpointDescription,
+  ExternalPluginContractBindingEntry,
+  ExternalPluginContractBindingResponse,
+  ExternalPluginContractProviderOperation,
+  ExternalPluginContractProvider,
+  ExternalPluginContractJobStatus,
+  EXTERNAL_PLUGIN_CONTRACT_JOB_STATUSES,
+  ExternalPluginContractJobSummary,
+  ExternalPluginContractJobDetail,
+  ExternalPluginContractJobQuery,
   isExternalPluginKey,
   toExternalPluginKey,
   extractExternalDefinitionId,
   getExternalPluginName,
   getExternalPluginDescription,
+  getExternalPluginProvidedContracts,
+  localizeContractOperation,
   getExternalPluginDisplayName,
   isExternalPluginDefinitionIncompatible,
   PluginLogEntry,

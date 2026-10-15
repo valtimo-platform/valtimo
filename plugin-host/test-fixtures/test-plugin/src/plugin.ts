@@ -20,7 +20,22 @@
  * mock. Each handler is intentionally simple and side-effect-free.
  */
 
-import {action, config, gzacApi, onEvent, request, submit} from "@valtimo/plugin-sdk";
+import {
+  action,
+  completeJob,
+  config,
+  gzacApi,
+  onContractCall,
+  onContractJob,
+  onContractReply,
+  onEvent,
+  pluginCall,
+  request,
+  submit,
+} from "@valtimo/plugin-sdk";
+
+const ECHO_CONTRACT = "nl.ritense.test.echo@1";
+const UPSTREAM_CONTRACT = "nl.ritense.test.upstream@1";
 
 // Echoes the exact Wasm input the handler received. Lets a test prove that the service token and
 // gzacBaseUrl are NOT serialised into the Wasm input (they ride in the host context only).
@@ -127,4 +142,57 @@ submit("echo-submit", (input) => ({
 // Throws, to exercise the runtime's EXECUTION_ERROR envelope on the submit path.
 submit("boom-submit", () => {
   throw new Error("intentional submit boom");
+});
+
+// Calls the declared upstream contract through plugin_contract, or completes a job when given a
+// jobId — exercises the host function end to end with the token and chain attached host-side.
+action("call-contract", (input) => {
+  const props = input.properties as { contract?: string; jobId?: string };
+  if (props.jobId) {
+    return { status: "completed", variables: { outcome: completeJob(props.jobId, { status: "completed", result: { done: true } }) } };
+  }
+  return {
+    status: "completed",
+    variables: { outcome: pluginCall(props.contract ?? UPSTREAM_CONTRACT, "lookup", { q: 1 }) },
+  };
+});
+
+// Echoes the contract input so a test can prove no host-only secret or chain reaches the Wasm, and
+// that an undefined result key survives as null.
+onContractCall(ECHO_CONTRACT, "echo", (input) => ({
+  status: "completed",
+  result: {
+    inputKeys: Object.keys(input).sort(),
+    payload: input.payload,
+    caller: input.caller,
+    configFromAccessor: config.getAll(),
+    absent: undefined,
+  },
+}));
+
+// A provider that itself calls a contract — the host must forward the chain it received.
+onContractCall(ECHO_CONTRACT, "nested", () => ({
+  status: "completed",
+  result: { upstream: pluginCall(UPSTREAM_CONTRACT, "lookup", { nested: true }) },
+}));
+
+onContractCall(ECHO_CONTRACT, "boom", () => {
+  throw new Error("intentional contract boom");
+});
+
+// Long-running: takes the job and completes it later via completeJob.
+onContractJob(ECHO_CONTRACT, "slow-echo", () => ({ status: "accepted" }));
+
+// A job answered immediately.
+onContractJob(ECHO_CONTRACT, "instant-job", (input) => ({
+  status: "completed",
+  result: { jobId: input.jobId, deadline: input.deadline },
+}));
+
+// Acknowledges a reply; a reply for an unknown job is rejected so GZAC retries it.
+onContractReply((reply) => {
+  if (reply.jobId === "unknown-job") {
+    return { status: "error", errorCode: "UNKNOWN_JOB", errorMessage: `No pending job ${reply.jobId}` };
+  }
+  return { status: "completed" };
 });

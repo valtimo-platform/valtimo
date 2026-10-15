@@ -297,6 +297,10 @@ your machine, not the administrator's. Write it to these rules:
   [Version compatibility](./README.md#version-compatibility) maps those onto host and SDK versions.
 - **Declare capabilities consistently**: `permissions.endpoints` requires the `gzac_api`
   capability, and `permissions.egress` requires `http_request`.
+- **Name contracts `name@major`** in lowercase reverse-DNS form (`nl.ritense.openplan@1`), unique
+  within `provides` and within `permissions.contracts`. Each provided contract needs at least one
+  operation; operation keys are lowercase (`[a-z][a-z0-9-]*`) and unique per contract, `mode` is
+  `sync` (default) or `job`, and `timeout` is only allowed — as an ISO-8601 duration — on `job`.
 - **Ship a logo** as `logo.svg`/`.png`/`.jpg`/`.jpeg` next to `manifest.json` — the pack tool
   picks it up automatically; GZAC shows it in the plugin pickers.
 - **Leave `sdkVersion` out** — the pack tool stamps it from your project's resolved SDK.
@@ -439,6 +443,78 @@ interface SubmitOutput {
 
 `status: "error"` means GZAC does **not** complete the task.
 
+### Contracts — calling and serving other plugins
+
+Plugins talk to each other through **contracts**, always brokered by GZAC. You name a contract
+(`name@major`, e.g. `nl.ritense.openplan@1`), never a plugin or a host; the administrator binds a
+providing configuration when activating yours. Nothing is transferred between the two: each side
+runs under its own grants, and the provider receives the `caller` GZAC stamped from your token,
+never the token itself.
+
+**Provider** — declare what you serve, then register one handler per operation:
+
+```json
+"provides": [
+  {
+    "contract": "nl.ritense.openplan@1",
+    "operations": [
+      { "key": "get", "title": "Get a resource", "outputs": ["status", "body"] },
+      { "key": "report", "title": "Generate a report", "mode": "job", "timeout": "PT2H" }
+    ]
+  }
+]
+```
+
+```ts
+interface ContractCallInput {
+  contract: string; operation: string;
+  configurationId: string; configuration: Record<string, unknown>;
+  caller: { pluginId: string; version: string; configurationId: string };   // stamped by GZAC
+  payload: unknown;
+  jobId?: string; deadline?: string;            // jobs only
+}
+interface ContractCallOutput {
+  status: "completed" | "accepted" | "error";   // "accepted": a job you complete later
+  result?: unknown; errorCode?: string; errorMessage?: string;
+}
+
+onContractCall("nl.ritense.openplan@1", "get", (input) => ({ status: "completed", result: { status: 200, body: {} } }));
+onContractJob("nl.ritense.openplan@1", "report", (job) => {
+  kv.set(`job:${job.jobId}`, job.payload);      // pick it up again from a later invocation
+  return { status: "accepted" };
+});
+// …later, from any handler: completeJob(jobId, { status: "completed", result: { documentRef } })
+```
+
+**Requester** — declare the contract under `permissions.contracts`, then call it:
+
+```ts
+const res = pluginCall("nl.ritense.openplan@1", "get", { resource: "plan", uuid });
+// { status: "completed", result } or { status: "error", errorCode, errorMessage }
+
+const job = pluginRequest("nl.ritense.document.generate@1", "generate", { templateKey: "t" },
+  { replyTo: { processInstanceId: input.processInstanceId } });   // optional: also correlate in BPMN
+// { status: "accepted", jobId } — the outcome arrives later:
+onContractReply((reply) => ({ status: "completed" }));   // reply.status: completed | failed | expired
+```
+
+- Remote failures are values, not exceptions: an unbound contract, an unavailable provider or a
+  provider error all come back as `status: "error"`. A contract outside your declared, bound set is
+  refused by the host (`CONTRACT_NOT_GRANTED`) before anything leaves it.
+- A reply handler returning `status: "error"` makes GZAC redeliver it, so make it idempotent on
+  `jobId`. With `replyTo`, GZAC also correlates the BPMN message
+  `contract-reply:<contract>:<operation>` on the case's business key.
+- `mode: "job"` operations take an ISO-8601 `timeout` in days to seconds (`PT2H`, `P1D`); GZAC
+  expires the job after it. `outputs` lists keys a completed result must carry (`null` allowed).
+- Titles shown to administrators are localised from your `translations`:
+  `contracts.<contract>.title` and `contracts.<contract>.operations.<key>.title` (and
+  `.description`), e.g. `"contracts.nl.ritense.openplan@1.operations.get.title": "Registerobject
+  opvragen"` in the `nl` bucket. The `title` in `provides` is the fallback.
+- Contracts need no capability. The build imports the `plugin_contract` host function only when
+  your manifest declares `provides` or `permissions.contracts`, so contract-free plugins still load
+  on older hosts. Calls through `pluginCall` are synchronous like `gzacApi` — the host suspends
+  your handler while GZAC answers.
+
 ### Host functions
 
 | API | Capability | Returns | Notes |
@@ -449,6 +525,7 @@ interface SubmitOutput {
 | `kv.get(key)` | `kv` | `KvGetResult = { found, value }` | Per-configuration store; `found: false` ≠ stored `null`. Keys ≤ 256 chars. Also `kv.set(key, value)`, `kv.delete(key): boolean`, `kv.list(prefix?): string[]`. Entries persist until you delete them. |
 | `log.{debug,info,warn,error}(message, data?)` | `log` | `void` | Structured entries in the admin Logs modal; messages truncated at 4 KB; retained 30 days by default. Fire-and-forget. |
 | `config.getAll()` / `config.get(key)` | – | all properties / one value | Same data as `input.configuration` (`getAll()` returns a copy of the full object). |
+| `pluginCall` / `pluginRequest` / `completeJob` | – (the bound `permissions.contracts`) | `{ status, result?, jobId?, errorCode?, errorMessage? }` | GZAC-brokered contract calls; see [Contracts](#contracts--calling-and-serving-other-plugins). |
 
 A host function invoked without its capability granted returns a structured
 `Capability 'X' not granted for this configuration` error — deterministic, never silent access.

@@ -96,6 +96,7 @@ class ExternalPluginConfigurationResourceTest {
             compatibilityChecker = GzacCompatibilityChecker { "12.0.0" },
             pluginPackageInspector = PluginPackageInspector(objectMapper),
             objectMapper = objectMapper,
+            contractJobService = mock(),
         )
     }
 
@@ -121,7 +122,7 @@ class ExternalPluginConfigurationResourceTest {
             grantedEgress = listOf("api.kvk.nl"),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         val response = resource.createConfiguration(request)
@@ -137,6 +138,7 @@ class ExternalPluginConfigurationResourceTest {
             eq(listOf("api.kvk.nl")),
             any(),
             any(),
+            eq(emptyList()),
         )
     }
 
@@ -149,20 +151,20 @@ class ExternalPluginConfigurationResourceTest {
             grantedEndpoints = emptyList(),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         resource.createConfiguration(request)
 
         verify(configurationService).create(
-            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList()), any(), any()
+            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList()), any(), any(), eq(emptyList())
         )
     }
 
     @Test
     fun `createConfiguration response carries the token generation but no properties`() {
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration(tokenGeneration = 3))
 
         val body = resource.createConfiguration(
@@ -282,7 +284,7 @@ class ExternalPluginConfigurationResourceTest {
     @Test
     fun `updateConfiguration forwards title, properties and endpoint grants only`() {
         val properties = objectMapper.createObjectNode().put("apiUrl", "https://new.example.com")
-        whenever(configurationService.update(any(), any(), any(), anyOrNull()))
+        whenever(configurationService.update(any(), any(), any(), anyOrNull(), anyOrNull(), any()))
             .thenReturn(configuration())
 
         resource.updateConfiguration(
@@ -305,7 +307,7 @@ class ExternalPluginConfigurationResourceTest {
 
     @Test
     fun `updateConfiguration forwards a null endpoint list as leave-unchanged`() {
-        whenever(configurationService.update(any(), any(), any(), anyOrNull()))
+        whenever(configurationService.update(any(), any(), any(), anyOrNull(), anyOrNull(), any()))
             .thenReturn(configuration())
 
         resource.updateConfiguration(
@@ -313,7 +315,7 @@ class ExternalPluginConfigurationResourceTest {
             ConfigurationUpdateRequest(title = "t", properties = objectMapper.createObjectNode()),
         )
 
-        verify(configurationService).update(eq(configurationId), any(), any(), eq(null))
+        verify(configurationService).update(eq(configurationId), any(), any(), eq(null), eq(null), eq(false))
     }
 
     // ---------------------------------------------------------------- revoke / delete / usages

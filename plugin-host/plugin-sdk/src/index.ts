@@ -23,18 +23,31 @@ export { config } from "./config.js";
 export { log } from "./host-functions.js";
 export { gzacApi } from "./gzac-api.js";
 export { httpRequest } from "./http-request.js";
+export type { HttpRequestInput } from "./http-request.js";
 export { kv } from "./kv.js";
+export {
+  onContractCall,
+  onContractJob,
+  onContractReply,
+  pluginCall,
+  pluginRequest,
+  completeJob,
+} from "./contracts.js";
 export { setManifest } from "./runtime.js";
 export {
   handleAction,
   handleEvent,
   handleRequest,
   handleSubmit,
+  handleContractCall,
+  handleContractReply,
   handleGetManifest,
   handle_action,
   handle_event,
   handle_request,
   handle_submit,
+  handle_contract_call,
+  handle_contract_reply,
 } from "./runtime.js";
 
 // Types
@@ -54,6 +67,22 @@ export type {
   PluginManifest,
   ManifestAction,
   ManifestActionProperty,
+  ManifestContractOperation,
+  ManifestProvidedContract,
+  ContractOperationMode,
+  ContractCaller,
+  ContractCallInput,
+  ContractJobInput,
+  ContractCallOutput,
+  ContractCallHandler,
+  ContractJobHandler,
+  ContractReplyInput,
+  ContractReplyOutput,
+  ContractReplyHandler,
+  ContractCallResult,
+  ContractRequestResult,
+  ContractJobOutcome,
+  ContractCompleteResult,
   Endpoint,
   FrontendBundle,
   GzacApiResponse,

@@ -40,6 +40,8 @@
         [egress]="$pendingEgress()"
         [endpoints]="$pendingEndpoints()"
         [eventSubscriptions]="$pendingEvents()"
+        [providedContracts]="$pendingProvidedContracts()"
+        [requiredContracts]="$pendingRequiredContracts()"
         (validEvent)="onPermissionsValid($event)"
       ></valtimo-plugin-external-permissions>
     </ng-container>

@@ -1,0 +1,89 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="config/liquibase/13-38-0/20261014-external-plugin-contract-job.xml">
+
+    <!--
+      Ledger for asynchronous contract requests. No FKs to configurations: rows outlive them for the
+      audit window, and open jobs block deletion through the usage resolver instead.
+      Payload columns are `clob` (text on PostgreSQL, LONGTEXT on MySQL): encrypted payloads exceed
+      MySQL TEXT at the default size cap. Mapped as LONGVARCHAR, never @Lob.
+    -->
+    <changeSet author="Ritense" id="1">
+        <createTable tableName="external_plugin_contract_job">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ext_plugin_contract_job_pk"/>
+            </column>
+            <column name="contract" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operation" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="requester_configuration_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider_configuration_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="requested_by" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="request_payload" type="clob">
+                <constraints nullable="false"/>
+            </column>
+            <column name="result_payload" type="clob"/>
+            <column name="error_code" type="VARCHAR(255)"/>
+            <column name="error_message" type="clob"/>
+            <column name="reply_to_process_instance_id" type="VARCHAR(64)"/>
+            <column name="reply_to_business_key" type="VARCHAR(255)"/>
+            <column name="chain" type="VARCHAR(2048)"/>
+            <column name="deadline" type="DATETIME(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completed_at" type="DATETIME(6)"/>
+            <column name="delivered_at" type="DATETIME(6)"/>
+            <column name="delivery_attempts" type="${intType}" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="next_attempt_at" type="DATETIME(6)"/>
+            <column name="last_delivery_error" type="clob"/>
+        </createTable>
+
+        <createIndex tableName="external_plugin_contract_job" indexName="ext_plugin_contract_job_status_next_idx">
+            <column name="status"/>
+            <column name="next_attempt_at"/>
+        </createIndex>
+        <createIndex tableName="external_plugin_contract_job" indexName="ext_plugin_contract_job_requester_idx">
+            <column name="requester_configuration_id"/>
+        </createIndex>
+        <createIndex tableName="external_plugin_contract_job" indexName="ext_plugin_contract_job_provider_idx">
+            <column name="provider_configuration_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

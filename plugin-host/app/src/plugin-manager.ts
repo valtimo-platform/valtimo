@@ -32,8 +32,9 @@ import type {LogRepository} from "./db/log-repository.js";
 import {createKvHostFunction} from "./host-functions/kv.js";
 import {createLogHostFunction} from "./host-functions/log.js";
 import {createHttpRequestHostFunction} from "./host-functions/http-request.js";
+import {createPluginContractHostFunction} from "./host-functions/plugin-contract.js";
 import type {AllowedInternalCidrs} from "./security/url-guard.js";
-import {InvalidPluginPackageError} from "./errors.js";
+import {InvalidPluginPackageError, MissingPluginExportError} from "./errors.js";
 import {applyMaxMemoryPages} from "./wasm-memory-limit.js";
 import {WasmInstancePool} from "./wasm-instance-pool.js";
 
@@ -82,7 +83,7 @@ export interface PluginManagerOptions {
   wasmTimeoutMs?: number;
   /** Cap on the module's linear memory in 64 KiB pages; 0 disables the cap. */
   wasmMaxMemoryPages?: number;
-  /** Timeout for the `gzac_api` callback fetch. */
+  /** Timeout for the `gzac_api` and `plugin_contract` callback fetches. */
   gzacApiTimeoutMs?: number;
   /** Idle Extism instances are closed after this long without a call; 0 disables eviction. */
   instanceIdleTtlMs?: number;
@@ -556,6 +557,10 @@ export class PluginManager {
               this.allowPrivateNetwork,
               this.allowedInternalCidrs
             ),
+            // Always provided: a module that never imports it is unaffected.
+            plugin_contract: createPluginContractHostFunction(this.logger, {
+              timeoutMs: this.gzacApiTimeoutMs,
+            }),
           },
         },
       }
@@ -587,10 +592,13 @@ export class PluginManager {
   private async resolveGrants(
     configurationId: string | undefined
   ): Promise<
-    Pick<GzacApiCallContext, "grantedCapabilities" | "grantedEndpoints" | "allowedEgress">
+    Pick<
+      GzacApiCallContext,
+      "grantedCapabilities" | "grantedEndpoints" | "allowedEgress" | "grantedContracts"
+    >
   > {
     if (!configurationId) {
-      return { grantedCapabilities: [], allowedEgress: [] };
+      return { grantedCapabilities: [], allowedEgress: [], grantedContracts: [] };
     }
     const config = await this.configProvider.get(configurationId);
     return {
@@ -598,13 +606,17 @@ export class PluginManager {
       grantedEndpoints: config?.grantedEndpoints,
       // Deny-by-default: an unresolvable configuration grants no destinations.
       allowedEgress: config?.allowedEgress ?? [],
+      grantedContracts: config?.grantedContracts ?? [],
     };
   }
 
   /**
-   * Invokes one exported plugin function on a pooled Extism instance and parses its JSON reply. All
-   * four exports (`handle_action` / `handle_event` / `handle_request` / `handle_submit`) funnel
-   * through here; the public wrappers only shape their input/host-context.
+   * Invokes one exported plugin function on a pooled Extism instance and parses its JSON reply. Every
+   * export funnels through here; the public wrappers only shape their input/host-context.
+   *
+   * `optionalExport` marks an export older SDK builds lack: its absence throws
+   * {@link MissingPluginExportError} before the call instead of a generic Extism failure, and the
+   * healthy instance goes back to the pool.
    *
    * A call cancelled by the Wasm timeout is rethrown with a clear message — the routes map any
    * thrown error to a 5xx `HOST_ERROR` result. Any failing call discards its instance rather than
@@ -617,7 +629,8 @@ export class PluginManager {
     exportName: string,
     wasmInput: string,
     hostCtx: GzacApiCallContext,
-    logContext: Record<string, unknown>
+    logContext: Record<string, unknown>,
+    options: { optionalExport?: boolean } = {}
   ): Promise<T> {
     const k = this.key(pluginId, version);
     const loaded = this.plugins.get(k);
@@ -629,6 +642,19 @@ export class PluginManager {
     this.logger.debug({ pluginId, version, ...logContext }, `Calling ${exportName}`);
 
     const lease = await loaded.pool.acquire();
+    if (options.optionalExport) {
+      let exists: boolean;
+      try {
+        exists = await lease.instance.functionExists(exportName);
+      } catch (err) {
+        lease.discard();
+        throw err;
+      }
+      if (!exists) {
+        lease.release();
+        throw new MissingPluginExportError(exportName, pluginId, version);
+      }
+    }
     let succeeded = false;
     let output: T;
     try {
@@ -836,6 +862,105 @@ export class PluginManager {
     };
 
     return this.callExport(pluginId, version, "handle_submit", wasmInput, hostCtx, { submitKey });
+  }
+
+  /**
+   * Call `handle_contract_call` — GZAC delivering a contract call or job to this provider.
+   *
+   * `serviceToken` / `gzacBaseUrl` / `chain` are host-only: they reach the Wasm only through the
+   * per-call host context, so a nested `pluginCall` from the provider carries the chain onwards.
+   * Throws {@link MissingPluginExportError} for a plugin built without the export.
+   */
+  async callContract(
+    pluginId: string,
+    version: string,
+    contract: string,
+    operation: string,
+    input: {
+      configurationId: string;
+      configuration: Record<string, unknown>;
+      caller: Record<string, unknown>;
+      payload: unknown;
+      jobId?: string;
+      deadline?: string;
+      chain: string[];
+      serviceToken: string;
+      gzacBaseUrl: string;
+    }
+  ): Promise<{
+    status: string;
+    result?: unknown;
+    errorCode?: string;
+    errorMessage?: string;
+  }> {
+    const { serviceToken, gzacBaseUrl, chain, ...wasmFields } = input;
+    const wasmInput = JSON.stringify({ contract, operation, ...wasmFields });
+
+    const hostCtx: GzacApiCallContext = {
+      configurationId: input.configurationId,
+      pluginId,
+      pluginVersion: version,
+      serviceToken,
+      gzacBaseUrl,
+      contractChain: chain,
+      ...(await this.resolveGrants(input.configurationId)),
+    };
+
+    return this.callExport(
+      pluginId,
+      version,
+      "handle_contract_call",
+      wasmInput,
+      hostCtx,
+      { contract, operation, jobId: input.jobId },
+      { optionalExport: true }
+    );
+  }
+
+  /**
+   * Call `handle_contract_reply` — GZAC delivering a job outcome to the requesting configuration.
+   * Throws {@link MissingPluginExportError} for a plugin built without the export.
+   */
+  async callContractReply(
+    pluginId: string,
+    version: string,
+    input: {
+      configurationId: string;
+      configuration: Record<string, unknown>;
+      jobId: string;
+      contract: string;
+      operation: string;
+      status: string;
+      result?: unknown;
+      errorCode?: string;
+      errorMessage?: string;
+      requestedAt?: string;
+      completedAt?: string;
+      serviceToken: string;
+      gzacBaseUrl: string;
+    }
+  ): Promise<{ status: string; errorCode?: string; errorMessage?: string }> {
+    const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
+    const wasmInput = JSON.stringify(wasmFields);
+
+    const hostCtx: GzacApiCallContext = {
+      configurationId: input.configurationId,
+      pluginId,
+      pluginVersion: version,
+      serviceToken,
+      gzacBaseUrl,
+      ...(await this.resolveGrants(input.configurationId)),
+    };
+
+    return this.callExport(
+      pluginId,
+      version,
+      "handle_contract_reply",
+      wasmInput,
+      hostCtx,
+      { jobId: input.jobId, contract: input.contract, operation: input.operation },
+      { optionalExport: true }
+    );
   }
 
   /**

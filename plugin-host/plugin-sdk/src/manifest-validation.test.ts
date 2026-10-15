@@ -620,3 +620,188 @@ describe("validatePluginManifest", () => {
     expect(errors.length).toBeGreaterThanOrEqual(5);
   });
 });
+
+/**
+ * Contracts: `provides` (provider side) and `permissions.contracts` (requester side). Manifests
+ * without either key must validate exactly as before — that is the backwards-compatibility rule.
+ */
+describe("validatePluginManifest — contracts", () => {
+  const base = () => ({
+    pluginId: "openplan",
+    version: "0.1.0",
+    translations: { en: { name: "Open Plan", description: "Open Plan register" } },
+  });
+  const operation = (overrides: Record<string, unknown> = {}) => ({
+    key: "list",
+    title: "List resources",
+    ...overrides,
+  });
+  const provides = (operations: unknown[], extra: Record<string, unknown> = {}) => ({
+    ...base(),
+    provides: [{ contract: "nl.ritense.openplan@1", operations, ...extra }],
+  });
+
+  it("accepts a manifest without contract keys, unchanged", () => {
+    expect(validatePluginManifest(base())).toEqual([]);
+    expect(validatePluginManifest({ ...base(), permissions: { capabilities: ["log"] } })).toEqual([]);
+  });
+
+  it("accepts sync and job operations with outputs and a timeout", () => {
+    const manifest = provides(
+      [
+        operation(),
+        operation({ key: "generate-report", mode: "job", timeout: "PT2H", outputs: ["documentRef", "contentHash"] }),
+        operation({ key: "get", mode: "sync", description: "One resource" }),
+      ],
+      { title: "Open Plan" }
+    );
+    expect(validatePluginManifest(manifest)).toEqual([]);
+  });
+
+  it("accepts declared contracts on the requester side", () => {
+    expect(
+      validatePluginManifest({
+        ...base(),
+        permissions: { contracts: ["nl.ritense.openplan@1", "nl.ritense.document.generate@2"] },
+      })
+    ).toEqual([]);
+  });
+
+  it.each([
+    ["no major version", "nl.ritense.openplan"],
+    ["a single segment", "openplan@1"],
+    ["uppercase", "nl.Ritense.openplan@1"],
+    ["a non-numeric major", "nl.ritense.openplan@v1"],
+    ["a non-string", 42],
+  ])("rejects a contract name with %s", (_label, contract) => {
+    expect(validatePluginManifest({ ...base(), permissions: { contracts: [contract] } })).toEqual([
+      expect.stringContaining("manifest.json permissions.contracts[0] must be a contract name"),
+    ]);
+    expect(validatePluginManifest(provides([operation()], { contract }))).toEqual([
+      expect.stringContaining("manifest.json provides[0].contract must be a contract name"),
+    ]);
+  });
+
+  it("rejects duplicated contracts in permissions.contracts and in provides", () => {
+    expect(
+      validatePluginManifest({
+        ...base(),
+        permissions: { contracts: ["nl.ritense.openplan@1", "nl.ritense.openplan@1"] },
+      })
+    ).toEqual([
+      "manifest.json 'permissions.contracts' must contain unique contracts; 'nl.ritense.openplan@1' is duplicated",
+    ]);
+    const duplicated = {
+      ...base(),
+      provides: [
+        { contract: "nl.ritense.openplan@1", operations: [operation()] },
+        { contract: "nl.ritense.openplan@1", operations: [operation()] },
+      ],
+    };
+    expect(validatePluginManifest(duplicated)).toEqual([
+      "manifest.json 'provides' must contain unique contracts; 'nl.ritense.openplan@1' is duplicated",
+    ]);
+  });
+
+  it("rejects non-array contract keys", () => {
+    expect(validatePluginManifest({ ...base(), permissions: { contracts: "nl.ritense.openplan@1" } })).toEqual([
+      "manifest.json 'permissions.contracts' must be an array when present",
+    ]);
+    expect(validatePluginManifest({ ...base(), provides: {} })).toEqual([
+      "manifest.json 'provides' must be an array when present",
+    ]);
+    expect(validatePluginManifest({ ...base(), provides: ["x"] })).toEqual([
+      "manifest.json provides[0] must be an object",
+    ]);
+  });
+
+  it("requires a non-empty operations list", () => {
+    expect(validatePluginManifest(provides([]))).toEqual([
+      "manifest.json provides[0].operations must be a non-empty array",
+    ]);
+    expect(validatePluginManifest({ ...base(), provides: [{ contract: "nl.ritense.openplan@1" }] })).toEqual([
+      "manifest.json provides[0].operations must be a non-empty array",
+    ]);
+  });
+
+  it("rejects an empty contract title", () => {
+    expect(validatePluginManifest(provides([operation()], { title: " " }))).toEqual([
+      "manifest.json provides[0].title must be a non-empty string when present",
+    ]);
+  });
+
+  it.each([["List"], ["1list"], ["list_all"], [""], [7]])("rejects operation key %j", (key) => {
+    expect(validatePluginManifest(provides([operation({ key })]))).toEqual([
+      "manifest.json provides[0].operations[0].key must start with a lowercase letter and contain only lowercase letters, digits and '-'",
+    ]);
+  });
+
+  it("rejects a duplicated operation key within one contract", () => {
+    expect(validatePluginManifest(provides([operation(), operation({ title: "Again" })]))).toEqual([
+      "manifest.json provides[0].operations[1].key 'list' is duplicated within its contract",
+    ]);
+  });
+
+  it("allows the same operation key in two different contracts", () => {
+    const manifest = {
+      ...base(),
+      provides: [
+        { contract: "nl.ritense.openplan@1", operations: [operation()] },
+        { contract: "nl.ritense.openplan@2", operations: [operation()] },
+      ],
+    };
+    expect(validatePluginManifest(manifest)).toEqual([]);
+  });
+
+  it("requires an operation title", () => {
+    expect(validatePluginManifest(provides([{ key: "list" }]))).toEqual([
+      "manifest.json provides[0].operations[0].title must be a non-empty string",
+    ]);
+  });
+
+  it("rejects an unknown mode", () => {
+    expect(validatePluginManifest(provides([operation({ mode: "async" })]))).toEqual([
+      "manifest.json provides[0].operations[0].mode must be one of: sync, job",
+    ]);
+  });
+
+  it("only allows a timeout with mode job", () => {
+    const error = "manifest.json provides[0].operations[0].timeout is only allowed with mode 'job'";
+    expect(validatePluginManifest(provides([operation({ timeout: "PT1H" })]))).toEqual([error]);
+    expect(validatePluginManifest(provides([operation({ mode: "sync", timeout: "PT1H" })]))).toEqual([error]);
+  });
+
+  it.each([["PT2H"], ["P1D"], ["PT30M"], ["PT45S"], ["P1DT12H"], ["PT0.5S"]])(
+    "accepts timeout %s",
+    (timeout) => {
+      expect(validatePluginManifest(provides([operation({ mode: "job", timeout })]))).toEqual([]);
+    }
+  );
+
+  it.each([["2h"], ["P"], ["PT"], ["P1DT"], ["P1M"], ["P1W"], ["P1Y"], ["PT0S"], ["-PT1H"], [3600]])(
+    "rejects timeout %j",
+    (timeout) => {
+      expect(validatePluginManifest(provides([operation({ mode: "job", timeout })]))).toEqual([
+        "manifest.json provides[0].operations[0].timeout must be a positive ISO-8601 duration in days, hours, minutes or seconds, e.g. 'PT2H' or 'P1D'",
+      ]);
+    }
+  );
+
+  it("rejects malformed outputs", () => {
+    expect(validatePluginManifest(provides([operation({ outputs: "a" })]))).toEqual([
+      "manifest.json provides[0].operations[0].outputs must be an array when present",
+    ]);
+    expect(validatePluginManifest(provides([operation({ outputs: ["a", ""] })]))).toEqual([
+      "manifest.json provides[0].operations[0].outputs[1] must be a non-empty string",
+    ]);
+    expect(validatePluginManifest(provides([operation({ outputs: ["a", "a"] })]))).toEqual([
+      "manifest.json provides[0].operations[0].outputs must contain unique keys; 'a' is duplicated",
+    ]);
+  });
+
+  it("rejects a non-string description", () => {
+    expect(validatePluginManifest(provides([operation({ description: 1 })]))).toEqual([
+      "manifest.json provides[0].operations[0].description must be a string when present",
+    ]);
+  });
+});

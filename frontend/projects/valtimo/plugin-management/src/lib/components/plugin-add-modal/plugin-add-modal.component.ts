@@ -19,10 +19,12 @@ import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {
+  ExternalPluginContractBindingEntry,
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
   ExternalPluginEndpoint,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
   extractExternalDefinitionId,
   isExternalPluginDefinitionIncompatible,
@@ -108,6 +110,11 @@ export class PluginAddModalComponent implements OnDestroy {
   public readonly egress$ = new BehaviorSubject<Array<string>>([]);
   public readonly derivedEgress$ = new BehaviorSubject<Array<string>>([]);
   public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
+  public readonly requiredContracts$ = new BehaviorSubject<Array<string>>([]);
+  public readonly providedContracts$ = new BehaviorSubject<Array<ExternalPluginProvidedContract>>(
+    []
+  );
+  public readonly contractBindingsValid$ = new BehaviorSubject<boolean>(true);
 
   public currentStepIndex = 0;
   public isExternal = false;
@@ -177,6 +184,9 @@ export class PluginAddModalComponent implements OnDestroy {
       this.eventSubscriptions$.next([]);
       this.capabilities$.next([]);
       this.permissionsValid$.next(false);
+      this.requiredContracts$.next([]);
+      this.providedContracts$.next([]);
+      this.contractBindingsValid$.next(true);
       this._buildProgressSteps();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
@@ -263,6 +273,23 @@ export class PluginAddModalComponent implements OnDestroy {
     this._externalConfigureComponent?.setGrantedEgress(targets);
   }
 
+  public onRequiredContractsResolved(contracts: Array<string>): void {
+    this.contractBindingsValid$.next(contracts.length === 0);
+    this.requiredContracts$.next(contracts);
+  }
+
+  public onProvidedContractsResolved(contracts: Array<ExternalPluginProvidedContract>): void {
+    this.providedContracts$.next(contracts);
+  }
+
+  public onContractBindingsChange(bindings: Array<ExternalPluginContractBindingEntry>): void {
+    this._externalConfigureComponent?.setContractBindings(bindings);
+  }
+
+  public onContractBindingsValid(valid: boolean): void {
+    this.contractBindingsValid$.next(valid);
+  }
+
   public onExternalSave(event: {
     definitionId: string;
     title: string;
@@ -271,6 +298,7 @@ export class PluginAddModalComponent implements OnDestroy {
     grantedEvents: Array<ExternalPluginGrantedEventEntry>;
     grantedCapabilities: Array<string>;
     grantedEgress: Array<string>;
+    contractBindings: Array<ExternalPluginContractBindingEntry>;
   }): void {
     this._stateService.disableInput();
 
@@ -283,6 +311,7 @@ export class PluginAddModalComponent implements OnDestroy {
         grantedEvents: event.grantedEvents,
         grantedCapabilities: event.grantedCapabilities,
         grantedEgress: event.grantedEgress,
+        contractBindings: event.contractBindings,
       })
       .subscribe({
         next: () => {

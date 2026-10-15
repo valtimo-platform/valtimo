@@ -21,6 +21,7 @@ import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AppConfig } from "./config.js";
 import { createHmacAuthHook } from "./hmac.js";
+import { contractReplies, runContractCall } from "./contracts.js";
 import { manifest, PLUGIN_ID, PLUGIN_VERSION } from "./manifest.js";
 import { handleRequest, runAction } from "./plugin.js";
 import type { ConfigRecord, ConfigStore, EventBrokerConfig } from "./store.js";
@@ -311,6 +312,113 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
         request.log.error({ err }, "[demo-app] action failed");
         reply.code(500).send({ status: "error", errorCode: "HOST_ERROR", errorMessage: (err as Error).message });
       }
+    },
+  );
+
+  // ---- Contract calls and job replies (HMAC) ----
+  // Mirrors the plugin host's plugin-contracts routes: GZAC brokers a call or job delivery to this
+  // provider, and delivers job outcomes back to it as a requester. Plugin-level outcomes all
+  // answer 200; non-200s are refusals.
+  const lookupRecord = (
+    params: { pluginId: string; version: string },
+    configurationId: unknown,
+    reply: FastifyReply,
+  ): ConfigRecord | null => {
+    if (params.pluginId !== PLUGIN_ID || params.version !== PLUGIN_VERSION) {
+      reply.code(404).send({ error: `Plugin not found: ${params.pluginId}@${params.version}` });
+      return null;
+    }
+    if (typeof configurationId !== "string" || !configurationId) {
+      reply.code(400).send({ error: "Missing configurationId" });
+      return null;
+    }
+    const record = store.get(configurationId);
+    if (!record) {
+      reply.code(404).send({ error: `Configuration not found: ${configurationId}` });
+      return null;
+    }
+    if (record.pluginId !== PLUGIN_ID || record.pluginVersion !== PLUGIN_VERSION) {
+      reply.code(400).send({
+        error: `Configuration ${configurationId} targets ${record.pluginId}@${record.pluginVersion}, not ${PLUGIN_ID}@${PLUGIN_VERSION}`,
+      });
+      return null;
+    }
+    return record;
+  };
+
+  fastify.post<{
+    Params: { pluginId: string; version: string; contract: string; operation: string };
+    Body: Record<string, unknown>;
+  }>(
+    `${pluginBase}/contracts/:contract/:operation`,
+    { preHandler: hmac, config: { rawBody: true } },
+    async (request, reply) => {
+      const { contract, operation } = request.params;
+      const body = (request.body ?? {}) as Record<string, unknown>;
+      const record = lookupRecord(request.params, body.configurationId, reply);
+      if (!record) return;
+
+      const provided = manifest.provides
+        ?.find((p) => p.contract === contract)
+        ?.operations.some((op) => op.key === operation);
+      if (!provided) {
+        reply.code(404).send({
+          status: "error",
+          errorCode: "CONTRACT_OPERATION_NOT_PROVIDED",
+          errorMessage: `${PLUGIN_ID}@${PLUGIN_VERSION} does not provide operation '${operation}' of '${contract}'`,
+        });
+        return;
+      }
+
+      const output = runContractCall(
+        record,
+        store,
+        contract,
+        operation,
+        {
+          caller: (body.caller as Record<string, unknown>) ?? {},
+          payload: body.payload,
+          jobId: typeof body.jobId === "string" ? body.jobId : undefined,
+          deadline: typeof body.deadline === "string" ? body.deadline : undefined,
+        },
+        request.log,
+      );
+      reply.code(200).send(output);
+    },
+  );
+
+  fastify.post<{ Params: { pluginId: string; version: string }; Body: Record<string, unknown> }>(
+    `${pluginBase}/contract-replies`,
+    { preHandler: hmac, config: { rawBody: true } },
+    async (request, reply) => {
+      const body = (request.body ?? {}) as Record<string, unknown>;
+      const record = lookupRecord(request.params, body.configurationId, reply);
+      if (!record) return;
+      for (const field of ["jobId", "contract", "operation", "status"]) {
+        if (typeof body[field] !== "string" || !body[field]) {
+          reply.code(400).send({ error: `Missing required field: ${field}` });
+          return;
+        }
+      }
+      const optional = (value: unknown) => (typeof value === "string" ? value : undefined);
+      contractReplies.add({
+        configurationId: record.configurationId,
+        jobId: body.jobId as string,
+        contract: body.contract as string,
+        operation: body.operation as string,
+        status: body.status as string,
+        result: body.result,
+        errorCode: optional(body.errorCode),
+        errorMessage: optional(body.errorMessage),
+        requestedAt: optional(body.requestedAt),
+        completedAt: optional(body.completedAt),
+        receivedAt: new Date().toISOString(),
+      });
+      request.log.info(
+        { jobId: body.jobId, contract: body.contract, operation: body.operation, status: body.status },
+        "[demo-app] contract reply received",
+      );
+      reply.code(200).send({ status: "completed" });
     },
   );
 

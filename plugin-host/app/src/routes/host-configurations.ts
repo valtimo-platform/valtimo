@@ -142,6 +142,7 @@ export async function hostConfigurationRoutes(
       grantedCapabilities?: unknown;
       grantedEndpoints?: unknown;
       allowedEgress?: unknown;
+      grantedContracts?: unknown;
       eventBroker?: unknown;
       ownerId?: unknown;
     };
@@ -206,6 +207,8 @@ export async function hostConfigurationRoutes(
     // below when the capability is granted but the list is empty, since that combination is
     // otherwise silent.
     const allowedEgress = normalizeStringArray(request.body.allowedEgress);
+    // Absent (older GZAC) → no contracts; old hosts ignore the field.
+    const grantedContracts = normalizeStringArray(request.body.grantedContracts);
     const ownerId = normalizeOwnerId(request.body.ownerId);
 
     // An owner change on an existing configuration is the fingerprint of two GZAC environments
@@ -230,6 +233,7 @@ export async function hostConfigurationRoutes(
       grantedCapabilities,
       grantedEndpoints,
       allowedEgress,
+      grantedContracts,
       eventBroker,
       ownerId,
       expectedContentHash,
@@ -252,6 +256,7 @@ export async function hostConfigurationRoutes(
         eventBroker: eventBroker?.exchange ?? null,
         eventSubscriptionCount: eventSubscriptions.length,
         allowedEgressCount: allowedEgress.length,
+        grantedContractCount: grantedContracts.length,
       },
       "Configuration pushed"
     );
@@ -270,6 +275,7 @@ export async function hostConfigurationRoutes(
       eventSubscriptions?: unknown;
       grantedEndpoints?: unknown;
       allowedEgress?: unknown;
+      grantedContracts?: unknown;
       eventBroker?: unknown;
       ownerId?: unknown;
     };
@@ -311,6 +317,10 @@ export async function hostConfigurationRoutes(
       "allowedEgress" in request.body
         ? normalizeStringArray(request.body.allowedEgress)
         : existing.allowedEgress;
+    const grantedContracts =
+      "grantedContracts" in request.body
+        ? normalizeStringArray(request.body.grantedContracts)
+        : existing.grantedContracts;
     // The owner too — an update from a client that doesn't send one must not unclaim the config.
     const ownerId =
       "ownerId" in request.body ? normalizeOwnerId(request.body.ownerId) : existing.ownerId;
@@ -323,6 +333,7 @@ export async function hostConfigurationRoutes(
       eventSubscriptions,
       grantedEndpoints,
       allowedEgress,
+      grantedContracts,
       eventBroker,
       ownerId,
     });

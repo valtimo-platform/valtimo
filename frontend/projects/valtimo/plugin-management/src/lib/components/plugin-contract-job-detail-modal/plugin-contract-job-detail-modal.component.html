@@ -1,0 +1,190 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal *ngIf="open" size="lg" valtimoCdsModal [open]="open" (close)="onClose()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'pluginManagement.contractJobs.detailTitle' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
+
+    <ng-container *ngIf="$job() as job">
+      <cds-structured-list [condensed]="true">
+        <cds-list-row>
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.status' | translate }}
+          </cds-list-column>
+          <cds-list-column>
+            <cds-tag size="sm" [type]="statusTagType(job.status)">
+              {{ 'pluginManagement.contractJobs.status.' + job.status | translate }}
+            </cds-tag>
+          </cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row>
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.contract' | translate }}
+          </cds-list-column>
+          <cds-list-column>
+            <code class="cds--snippet--inline">{{ job.contract }}</code>
+          </cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row>
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.operation' | translate }}
+          </cds-list-column>
+          <cds-list-column>
+            <code class="cds--snippet--inline">{{ job.operation }}</code>
+          </cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row>
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.requester' | translate }}
+          </cds-list-column>
+          <cds-list-column>
+            {{ job.requesterTitle || job.requesterConfigurationId }}
+            <span *ngIf="job.requesterPluginId" class="plugin-contract-job-detail-modal__sub">
+              {{ job.requesterPluginId }}
+            </span>
+          </cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row>
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.provider' | translate }}
+          </cds-list-column>
+          <cds-list-column>
+            {{ job.providerTitle || job.providerConfigurationId }}
+            <span *ngIf="job.providerPluginId" class="plugin-contract-job-detail-modal__sub">
+              {{ job.providerPluginId }}
+            </span>
+          </cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.requestedBy">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.requestedBy' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.requestedBy }}</cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row>
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.createdAt' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.createdAt | date: DATE_FORMAT }}</cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.updatedAt">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.updatedAt' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.updatedAt | date: DATE_FORMAT }}</cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.deadline">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.deadline' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.deadline | date: DATE_FORMAT }}</cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.completedAt">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.completedAt' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.completedAt | date: DATE_FORMAT }}</cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.deliveredAt">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.deliveredAt' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.deliveredAt | date: DATE_FORMAT }}</cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row>
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.attempts' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.deliveryAttempts }}</cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.replyToProcessInstanceId">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.replyToProcessInstance' | translate }}
+          </cds-list-column>
+          <cds-list-column>
+            <code class="cds--snippet--inline">{{ job.replyToProcessInstanceId }}</code>
+          </cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.errorCode || job.errorMessage">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.error' | translate }}
+          </cds-list-column>
+          <cds-list-column>
+            <code *ngIf="job.errorCode" class="cds--snippet--inline">{{ job.errorCode }}</code>
+            <div *ngIf="job.errorMessage">{{ job.errorMessage }}</div>
+          </cds-list-column>
+        </cds-list-row>
+
+        <cds-list-row *ngIf="job.lastDeliveryError">
+          <cds-list-column nowrap="true">
+            {{ 'pluginManagement.contractJobs.columns.lastDeliveryError' | translate }}
+          </cds-list-column>
+          <cds-list-column>{{ job.lastDeliveryError }}</cds-list-column>
+        </cds-list-row>
+      </cds-structured-list>
+
+      <h6 class="cds--type-label-01 plugin-contract-job-detail-modal__label">
+        {{ 'pluginManagement.contractJobs.requestPayload' | translate }}
+      </h6>
+
+      <pre
+        class="plugin-contract-job-detail-modal__json"
+        [attr.data-test-id]="testIds.requestPayload"
+        >{{ formatJson(job.requestPayload) || '—' }}</pre
+      >
+
+      <h6 class="cds--type-label-01 plugin-contract-job-detail-modal__label">
+        {{ 'pluginManagement.contractJobs.resultPayload' | translate }}
+      </h6>
+
+      <pre
+        class="plugin-contract-job-detail-modal__json"
+        [attr.data-test-id]="testIds.resultPayload"
+        >{{ formatJson(job.resultPayload) || '—' }}</pre
+      >
+    </ng-container>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.closeButton"
+      [attr.modal-primary-focus]="true"
+      (click)="onClose()"
+    >
+      {{ 'interface.close' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

@@ -289,6 +289,28 @@ the broker until its own `x-expires` fires — up to 30 days — holding whateve
 broker where that matters, watch for `valtimo-external-plugins.*` queues with no consumers and
 delete them once the events in them are known to be stale.
 
+## Contract calls and jobs
+
+Plugins and apps that use contracts reach each other only through GZAC, so a host needs no extra
+network routes or environment variables for them. GZAC needs none either: every setting has an
+inline default.
+
+| Property | Default | Meaning |
+|---|---|---|
+| `valtimo.external-plugin.contract.max-depth` | `4` | Longest chain of nested contract calls |
+| `valtimo.external-plugin.contract.max-payload-bytes` | `262144` | Size cap for a request payload and a stored job result |
+| `valtimo.external-plugin.contract-job.dispatcher-enabled` | `true` | Runs the job dispatcher (one replica at a time, via ShedLock) |
+| `valtimo.external-plugin.contract-job.dispatch-interval` | `PT5S` | How often the dispatcher delivers, expires and replies |
+| `valtimo.external-plugin.contract-job.default-timeout` | `PT1H` | Deadline when the provider's operation declares no `timeout` |
+| `valtimo.external-plugin.contract-job.max-deadline` | `P1D` | Upper bound for any job deadline |
+| `valtimo.external-plugin.contract-job.retry-base` / `retry-max` | `PT5S` / `PT10M` | Exponential delivery backoff |
+| `valtimo.external-plugin.contract-job.max-reply-attempts` | `20` | Reply attempts before a job becomes `UNDELIVERABLE` |
+| `valtimo.external-plugin.contract-job.retention` | `P30D` | How long delivered and undeliverable jobs stay visible |
+| `valtimo.external-plugin.contract-job.batch-size` | `50` | Jobs handled per dispatcher tick |
+
+Job payloads are encrypted at rest with the same key as plugin secrets. A provider should store
+large results (documents) where the platform keeps documents and return a reference.
+
 ## Security Considerations
 
 - **TLS required for non-loopback deployments.** GZAC refuses to register or repoint to a plain-HTTP

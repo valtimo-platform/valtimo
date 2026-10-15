@@ -160,6 +160,11 @@ handler to the fixture. The handlers it carries today:
 | `mem-bomb` | Allocates until the memory cap stops it — the call fails cleanly and the host serves the next one. |
 | `call-gzac` | The backend callback works end to end, with the token attached by the host. |
 | `/echo` request, `review` / `echo-submit` | The data route and the task-form submit hook. |
+| `nl.ritense.test.echo@1` (`echo`, `nested`, `boom`, `slow-echo`, `instant-job`), `call-contract`, `onContractReply` | Contract dispatch (sync, job accepted/completed, unknown operation), `plugin_contract` with the chain and token attached host-side, and job replies. |
+
+The setup also builds the same source against a manifest **without** contract keys (into
+`dist/legacy/`), so a test can check the module does not import `plugin_contract` and still loads
+with only the older host functions.
 
 ```bash
 # from plugin-host/app, with Node 22 active (the Wasm toolchain downloads itself on first use)

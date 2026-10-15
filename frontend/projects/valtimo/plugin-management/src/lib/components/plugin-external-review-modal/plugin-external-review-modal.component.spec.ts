@@ -47,8 +47,15 @@ describe('PluginExternalReviewModalComponent', () => {
           {method: 'POST', pattern: '/api/v1/process-link/*/form/submission'},
         ],
         capabilities: ['gzac_api'],
+        contracts: ['nl.ritense.openplan@1'],
       },
       eventSubscriptions: ['com.ritense.valtimo.document.created'],
+      provides: [
+        {
+          contract: 'nl.ritense.pdca@1',
+          operations: [{key: 'export', title: 'Export', mode: 'job', timeout: 'PT2H'}],
+        },
+      ],
     },
   } as unknown as ExternalPluginDefinition;
 
@@ -80,6 +87,8 @@ describe('PluginExternalReviewModalComponent', () => {
     expect(component.$pendingEndpoints().length).toBe(2);
     expect(component.$pendingCapabilities()).toEqual(['gzac_api']);
     expect(component.$pendingEvents()).toEqual(['com.ritense.valtimo.document.created']);
+    expect(component.$pendingRequiredContracts()).toEqual(['nl.ritense.openplan@1']);
+    expect(component.$pendingProvidedContracts()[0].contract).toBe('nl.ritense.pdca@1');
   });
 
   it('accepting echoes the reviewed pending hash in a single call — the backend re-grants', () => {

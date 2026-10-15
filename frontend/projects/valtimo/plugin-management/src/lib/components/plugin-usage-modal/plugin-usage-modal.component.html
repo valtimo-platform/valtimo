@@ -49,7 +49,12 @@
         *ngFor="let usage of usages; trackBy: trackByUsage"
         [attr.data-test-id]="
           'plugin-usage-' +
-          (usage.processLinkId || usage.widgetKey || usage.tabKey || usage.menuItemTitle)
+          (usage.processLinkId ||
+            usage.widgetKey ||
+            usage.tabKey ||
+            usage.menuItemTitle ||
+            usage.buildingBlockKey ||
+            usage.parentType)
         "
       >
         <cds-list-column nowrap="true">
@@ -60,7 +65,9 @@
                 usage.tabName ||
                 usage.tabKey ||
                 usage.buildingBlockKey ||
-                usage.menuItemTitle
+                usage.menuItemTitle ||
+                usage.parentKey ||
+                usage.configurationTitle
             }}
           </div>
           <div *ngIf="usage.activityName" class="plugin-usage-modal__cell-sub">
@@ -90,6 +97,20 @@
           >
             {{ 'pluginManagement.usageModal.menuPage' | translate }}
           </div>
+          <div
+            *ngIf="isContractUsage(usage) && !usage.activityId && !usage.tabKey"
+            class="plugin-usage-modal__cell-sub"
+          >
+            {{
+              (usage.parentType === 'CONTRACT_JOB'
+                ? 'pluginManagement.usageModal.contractJob'
+                : 'pluginManagement.usageModal.contractBinding'
+              ) | translate
+            }}
+            <ng-container *ngIf="usage.relatedConfigurationTitle">
+              · {{ usage.relatedConfigurationTitle }}
+            </ng-container>
+          </div>
         </cds-list-column>
 
         <cds-list-column nowrap="true">
@@ -98,7 +119,11 @@
 
         <cds-list-column nowrap="true">
           <cds-tag [type]="parentTypeTagColor(usage.parentType)" size="sm">
-            {{ 'pluginManagement.usageModal.parentType.' + usage.parentType | translate }}
+            <ng-container *ngIf="parentTypeLabelKey(usage.parentType) as labelKey; else rawType">
+              {{ labelKey | translate }}
+            </ng-container>
+
+            <ng-template #rawType>{{ usage.parentType }}</ng-template>
           </cds-tag>
         </cds-list-column>
 

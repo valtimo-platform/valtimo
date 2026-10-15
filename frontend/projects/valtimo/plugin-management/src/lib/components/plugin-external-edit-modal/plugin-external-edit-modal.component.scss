@@ -19,10 +19,8 @@
   flex-direction: column;
 }
 
-.plugin-external-edit-modal__properties-textarea {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.8125rem;
-  resize: vertical;
+.plugin-external-edit-modal__properties {
+  margin-top: 1.5rem;
 }
 
 .plugin-external-edit-modal__progress {

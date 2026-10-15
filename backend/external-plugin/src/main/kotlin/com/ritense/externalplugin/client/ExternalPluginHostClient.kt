@@ -157,6 +157,8 @@ class ExternalPluginHostClient(
          * empty list means the configuration makes no outbound HTTP calls at all.
          */
         allowedEgress: List<String> = emptyList(),
+        /** Contracts bound for this configuration. The host refuses `plugin_contract` calls for any other. */
+        grantedContracts: List<String> = emptyList(),
         eventBrokerUrl: String?,
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
@@ -190,6 +192,9 @@ class ExternalPluginHostClient(
             })
             set<ObjectNode>("allowedEgress", objectMapper.createArrayNode().apply {
                 allowedEgress.forEach { add(it) }
+            })
+            set<ObjectNode>("grantedContracts", objectMapper.createArrayNode().apply {
+                grantedContracts.forEach { add(it) }
             })
             // The host learns this GZAC instance's broker from the push (it never configures one
             // itself). Omitted when no broker is configured — events are then disabled for the config.
@@ -328,6 +333,39 @@ class ExternalPluginHostClient(
             contentType = MediaType.APPLICATION_JSON
         }
 
+        return exchangeForActionResponse(RequestEntity(body, headers, HttpMethod.POST, uri))
+    }
+
+    /**
+     * Delivers a contract call or job to the provider's `handle_contract_call`. [body] is the full
+     * request (`configurationId`, `caller`, `payload`, `chain`, plus `jobId`/`deadline` for jobs). The
+     * contract segment goes raw: `@` and `.` are path-safe and the host signs the same string.
+     */
+    fun invokeContract(
+        baseUrl: String,
+        pluginId: String,
+        version: String,
+        contract: String,
+        operation: String,
+        body: ObjectNode,
+        hostSecret: String,
+    ): ActionResponse = postSigned(baseUrl, "/plugins/$pluginId/$version/contracts/$contract/$operation", body, hostSecret)
+
+    /** Delivers a job's outcome to the requester's `handle_contract_reply`. */
+    fun invokeContractReply(
+        baseUrl: String,
+        pluginId: String,
+        version: String,
+        body: ObjectNode,
+        hostSecret: String,
+    ): ActionResponse = postSigned(baseUrl, "/plugins/$pluginId/$version/contract-replies", body, hostSecret)
+
+    private fun postSigned(baseUrl: String, path: String, payload: ObjectNode, hostSecret: String): ActionResponse {
+        val uri = buildUri(baseUrl, path)
+        val body = objectMapper.writeValueAsBytes(payload)
+        val headers = hmacHeaders(hostSecret, HttpMethod.POST.name(), path, body).apply {
+            contentType = MediaType.APPLICATION_JSON
+        }
         return exchangeForActionResponse(RequestEntity(body, headers, HttpMethod.POST, uri))
     }
 

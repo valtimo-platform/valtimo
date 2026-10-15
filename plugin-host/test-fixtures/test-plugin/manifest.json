@@ -5,13 +5,30 @@
   "translations": {
     "en": { "name": "Test Plugin", "description": "Deterministic fixture plugin for L3 Wasm tests" }
   },
+  "permissions": {
+    "contracts": ["nl.ritense.test.upstream@1"]
+  },
   "actions": [
     { "key": "echo", "title": "Echo", "activityTypes": ["bpmn:ServiceTask"] },
     { "key": "async-double", "title": "Async double", "activityTypes": ["bpmn:ServiceTask"] },
     { "key": "boom", "title": "Boom", "activityTypes": ["bpmn:ServiceTask"] },
-    { "key": "call-gzac", "title": "Call GZAC", "activityTypes": ["bpmn:ServiceTask"] }
+    { "key": "call-gzac", "title": "Call GZAC", "activityTypes": ["bpmn:ServiceTask"] },
+    { "key": "call-contract", "title": "Call contract", "activityTypes": ["bpmn:ServiceTask"] }
   ],
   "eventSubscriptions": ["test.event.handled"],
+  "provides": [
+    {
+      "contract": "nl.ritense.test.echo@1",
+      "title": "Test echo",
+      "operations": [
+        { "key": "echo", "title": "Echo" },
+        { "key": "nested", "title": "Nested contract call" },
+        { "key": "boom", "title": "Boom" },
+        { "key": "slow-echo", "title": "Slow echo", "mode": "job", "timeout": "PT10M" },
+        { "key": "instant-job", "title": "Instant job", "mode": "job", "timeout": "PT1M", "outputs": ["jobId", "deadline"] }
+      ]
+    }
+  ],
   "frontendBundles": [
     {
       "type": "task-form",
