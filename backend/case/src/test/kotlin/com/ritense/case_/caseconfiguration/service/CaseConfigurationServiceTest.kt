@@ -229,22 +229,38 @@ class CaseConfigurationServiceTest {
     }
 
     @Test
-    fun `should delete environment values only with the last version of a case definition`() {
+    fun `should delete the environment value with the last declaration of its key`() {
         val service = service(draftEnvironment = true, final = false)
-        val environmentValues = listOf(
-            CaseConfigurationEnvironmentValue(CaseConfigurationEnvironmentValueId("mail-case", "notificationEmail"), "a@example.com")
+        declare("notificationEmail", "test@example.com")
+        val environmentValue = CaseConfigurationEnvironmentValue(
+            CaseConfigurationEnvironmentValueId("mail-case", "notificationEmail"), "a@example.com"
         )
-        whenever(environmentValueRepository.findAllByIdCaseDefinitionKey("mail-case")).thenReturn(environmentValues)
-        whenever(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc("mail-case"))
-            .thenReturn(listOf(caseDefinition(caseDefinitionId, false), caseDefinition(CaseDefinitionId.of("mail-case", "0.9.0"), true)))
+        whenever(environmentValueRepository.findAllByIdCaseDefinitionKey("mail-case")).thenReturn(listOf(environmentValue))
+
+        whenever(declarationRepository.findAllByIdCaseDefinitionIdKey("mail-case")).thenReturn(
+            listOf(CaseConfigurationDeclaration(CaseConfigurationDeclarationId(CaseDefinitionId.of("mail-case", "0.9.0"), "notificationEmail"), null))
+        )
+        service.deleteDeclaration(caseDefinitionId, "notificationEmail")
+        verify(environmentValueRepository).deleteAll(emptyList())
+
+        whenever(declarationRepository.findAllByIdCaseDefinitionIdKey("mail-case")).thenReturn(emptyList())
+        service.deleteDeclaration(caseDefinitionId, "notificationEmail")
+        verify(environmentValueRepository).deleteAll(listOf(environmentValue))
+    }
+
+    @Test
+    fun `should delete environment values of keys no remaining version declares when deleting a version`() {
+        val service = service(draftEnvironment = true, final = false)
+        val kept = CaseConfigurationEnvironmentValue(CaseConfigurationEnvironmentValueId("mail-case", "notificationEmail"), "a@example.com")
+        val orphaned = CaseConfigurationEnvironmentValue(CaseConfigurationEnvironmentValueId("mail-case", "mailProvider"), "api")
+        whenever(environmentValueRepository.findAllByIdCaseDefinitionKey("mail-case")).thenReturn(listOf(kept, orphaned))
+        whenever(declarationRepository.findAllByIdCaseDefinitionIdKey("mail-case")).thenReturn(
+            listOf(CaseConfigurationDeclaration(CaseConfigurationDeclarationId(CaseDefinitionId.of("mail-case", "0.9.0"), "notificationEmail"), null))
+        )
 
         service.deleteAll(caseDefinitionId)
-        verify(environmentValueRepository, never()).deleteAll(any<Iterable<CaseConfigurationEnvironmentValue>>())
 
-        whenever(caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc("mail-case"))
-            .thenReturn(listOf(caseDefinition(caseDefinitionId, false)))
-        service.deleteAll(caseDefinitionId)
-        verify(environmentValueRepository).deleteAll(environmentValues)
+        verify(environmentValueRepository).deleteAll(listOf(orphaned))
     }
 
     private fun declare(key: String, defaultValue: String?) {

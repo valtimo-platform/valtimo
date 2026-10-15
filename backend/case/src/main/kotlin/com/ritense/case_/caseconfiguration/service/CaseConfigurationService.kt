@@ -105,6 +105,7 @@ class CaseConfigurationService(
         denyManagementOperation()
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         declarationRepository.delete(getDeclaration(caseDefinitionId, key))
+        deleteUndeclaredEnvironmentValues(caseDefinitionId.key)
     }
 
     fun copyDeclarations(from: CaseDefinitionId, to: CaseDefinitionId) {
@@ -114,13 +115,7 @@ class CaseConfigurationService(
     fun deleteAll(caseDefinitionId: CaseDefinitionId) {
         denyManagementOperation()
         declarationRepository.deleteAll(getDeclarations(caseDefinitionId))
-        val otherVersionExists = caseDefinitionRepository.findAllByIdKeyOrderByIdVersionTagDesc(caseDefinitionId.key)
-            .any { it.id != caseDefinitionId }
-        if (!otherVersionExists) {
-            environmentValueRepository.deleteAll(
-                environmentValueRepository.findAllByIdCaseDefinitionKey(caseDefinitionId.key)
-            )
-        }
+        deleteUndeclaredEnvironmentValues(caseDefinitionId.key)
     }
 
     // Deliberately no draft check: environment values are environment state, not part of the definition
@@ -146,6 +141,14 @@ class CaseConfigurationService(
         if (environmentValueRepository.existsById(id)) {
             environmentValueRepository.deleteById(id)
         }
+    }
+
+    // Environment values are shared across versions; keep them while any version still declares the key
+    private fun deleteUndeclaredEnvironmentValues(caseDefinitionKey: String) {
+        val declaredKeys = getDeclaredKeys(caseDefinitionKey).toSet()
+        environmentValueRepository.deleteAll(
+            environmentValueRepository.findAllByIdCaseDefinitionKey(caseDefinitionKey).filter { it.id.key !in declaredKeys }
+        )
     }
 
     private fun assertCaseDefinitionExists(caseDefinitionId: CaseDefinitionId) {
