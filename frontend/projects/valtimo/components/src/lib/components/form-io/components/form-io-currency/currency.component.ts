@@ -15,7 +15,6 @@
  */
 
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
@@ -41,13 +40,17 @@ import {Subscription} from 'rxjs';
   standalone: false,
 })
 export class FormIoCurrencyComponent
-  implements FormioCustomComponent<number>, OnInit, AfterViewInit, OnChanges, OnDestroy
+  implements FormioCustomComponent<number>, OnInit, OnChanges, OnDestroy
 {
   @ViewChild('currencyElement') currencyElement!: ElementRef<HTMLInputElement>;
 
   public readonly currencyForm = new FormGroup({
     currencyValue: new FormControl<string>(''),
   });
+
+  private readonly DIGITS = 2;
+
+  private _focused = false;
 
   private _value: number | null = null;
 
@@ -57,6 +60,12 @@ export class FormIoCurrencyComponent
 
   @Input() public set value(value: number) {
     this._value = value;
+
+    if (this._focused) {
+      this.renderEditableValue();
+      return;
+    }
+
     // Rendering only — emitting here would write the rendered value back over the one form.io
     // is about to hand a freshly redrawn component.
     this.currencyForm.setValue(
@@ -81,16 +90,21 @@ export class FormIoCurrencyComponent
   @Input() public readonly currencyCurrency: string;
   @Input() public readonly allowEmptyValue: boolean;
 
-  private _currencyInstance!: Currency;
-
   private readonly _subscriptions = new Subscription();
 
-  // A fresh object every call: Currency's constructor sets viaInput on the options it is handed.
+  private get decimalSeparator(): string {
+    return (
+      new Intl.NumberFormat(this.currencyLocale || 'nl-NL')
+        .formatToParts(1.5)
+        .find(part => part.type === 'decimal')?.value ?? ','
+    );
+  }
+
   private get maskOpts(): any {
     return {
       empty: this.allowEmptyValue || false,
       locales: this.currencyLocale || 'nl-NL',
-      digits: 2,
+      digits: this.DIGITS,
       options: {
         style: 'currency',
         currency: this.currencyCurrency || 'EUR',
@@ -101,63 +115,59 @@ export class FormIoCurrencyComponent
   public ngOnInit(): void {
     this._subscriptions.add(
       this.currencyForm.valueChanges.subscribe(() => {
-        // No mask yet: the value is being rendered, not typed, so there is nothing to write back.
-        if (!this._currencyInstance) {
-          return;
-        }
+        const typed = this.currencyForm.value.currencyValue ?? '';
+        const sanitized = this.sanitize(typed);
 
-        const unmasked = this._currencyInstance.getUnmasked(this.currencyForm.value.currencyValue);
+        if (sanitized !== typed) this.replaceTypedText(typed, sanitized);
 
-        if (unmasked === 0 && this.allowEmptyValue) {
-          this._value = null;
-          this.valueChange.emit(null);
-        } else {
-          this._value = unmasked;
-          this.valueChange.emit(unmasked);
-        }
+        const value = this.toValue(sanitized);
+        this._value = value;
+        this.valueChange.emit(value);
       })
     );
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue) {
+      this.renderValue();
+    }
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  public ngAfterViewInit(): void {
-    this._currencyInstance = new Currency(this.currencyElement.nativeElement, {
-      maskOpts: this.maskOpts,
-    });
-
-    // A value can arrive before the view exists, so its render is redone here with the mask in
-    // place.
-    if (typeof this._value === 'number') {
-      this.renderValue();
-    }
+  public onBlur(): void {
+    this._focused = false;
+    this.renderValue();
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue) {
-      // ngOnChanges runs before ngAfterViewInit, which is where the mask is created from the
-      // current inputs, so there is nothing to update yet on the first run.
-      if (this._currencyInstance) {
-        if (typeof this.currencyLocale === 'string') {
-          this._currencyInstance.opts.maskOpts.locales = this.currencyLocale;
-        }
+  public onFocus(): void {
+    this._focused = true;
+    this.currencyForm.setValue(
+      {currencyValue: this.toEditableText(this._value)},
+      {emitEvent: false}
+    );
+  }
 
-        if (typeof this.currencyCurrency === 'string') {
-          this._currencyInstance.opts.maskOpts.options.currency = this.currencyCurrency;
-        }
-
-        if (typeof this.allowEmptyValue === 'boolean') {
-          this._currencyInstance.opts.maskOpts.empty = this.allowEmptyValue;
-        }
-      }
-
-      this.renderValue();
+  private renderEditableValue(): void {
+    // Leave what is being typed alone when it already is this value, e.g. a trailing separator.
+    if (this.toValue(this.sanitize(this.currencyForm.value.currencyValue ?? '')) === this._value) {
+      return;
     }
+
+    this.currencyForm.setValue(
+      {currencyValue: this.toEditableText(this._value)},
+      {emitEvent: false}
+    );
   }
 
   private renderValue(): void {
+    if (this._focused) {
+      this.renderEditableValue();
+      return;
+    }
+
     this.currencyForm.setValue(
       {
         currencyValue:
@@ -165,5 +175,50 @@ export class FormIoCurrencyComponent
       },
       {emitEvent: false}
     );
+  }
+
+  private replaceTypedText(typed: string, sanitized: string): void {
+    const input = this.currencyElement?.nativeElement;
+    const caret = input?.selectionStart ?? typed.length;
+    const sanitizedCaret = this.sanitize(typed.slice(0, caret)).length;
+
+    this.currencyForm.setValue({currencyValue: sanitized}, {emitEvent: false});
+    input?.setSelectionRange(sanitizedCaret, sanitizedCaret);
+  }
+
+  private sanitize(text: string): string {
+    const decimalSeparator = this.decimalSeparator;
+    let sanitized = '';
+    let decimals: number | null = null;
+
+    for (const character of text) {
+      if (character >= '0' && character <= '9') {
+        if (decimals !== null) {
+          if (decimals === this.DIGITS) continue;
+          decimals++;
+        }
+        sanitized += character;
+      } else if (character === decimalSeparator && decimals === null) {
+        decimals = 0;
+        sanitized += character;
+      } else if (character === '-' && sanitized === '') {
+        sanitized += character;
+      }
+    }
+
+    return sanitized;
+  }
+
+  private toEditableText(value: number | null): string {
+    if (typeof value !== 'number' || value === 0) return '';
+
+    const text = Number.isInteger(value) ? `${value}` : value.toFixed(this.DIGITS);
+    return text.replace('.', this.decimalSeparator);
+  }
+
+  private toValue(sanitized: string): number | null {
+    const amount = /\d/.test(sanitized) ? Number(sanitized.replace(this.decimalSeparator, '.')) : 0;
+
+    return amount === 0 && this.allowEmptyValue ? null : amount;
   }
 }

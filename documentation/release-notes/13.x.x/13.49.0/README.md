@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Forms | Typing an amount into a currency field now fills in whole euros instead of cents; the cents start after the comma (a point for English) |
