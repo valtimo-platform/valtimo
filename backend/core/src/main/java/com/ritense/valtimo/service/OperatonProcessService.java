@@ -560,6 +560,18 @@ public class OperatonProcessService {
 
     }
 
+    /** Takes the definition out of the blueprint version while its running instances finish on it. */
+    @Transactional
+    public void detachProcessDefinition(String processDefinitionId, BlueprintId blueprintId) {
+        denyAuthorization();
+
+        applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(processDefinitionId, blueprintId));
+        operatonProcessDefinitionRepository.setVersionTag(
+            processDefinitionId,
+            DETACHED_PROCESS_DEFINITION_PREFIX + blueprintId
+        );
+    }
+
     /**
      * @param skipIsDeployableCheck ignored - a system process may always be updated. Kept so external
      *     callers keep compiling; due for removal in the next major version.
@@ -649,11 +661,7 @@ public class OperatonProcessService {
             }
             if (latestProcessDefinition != null && blueprintId != null) {
                 // clean up previous process definition, can only be triggered when we're deploying a draft version
-                applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
-                    latestProcessDefinition.getId(),
-                    blueprintId
-                ));
-                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), DETACHED_PROCESS_DEFINITION_PREFIX + blueprintId);
+                detachProcessDefinition(latestProcessDefinition.getId(), blueprintId);
             }
 
             var deploymentBuilder = repositoryService.createDeployment()

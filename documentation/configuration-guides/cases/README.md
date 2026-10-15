@@ -98,6 +98,33 @@ Click **Start upload** to import the case definition
 {% endstep %}
 {% endstepper %}
 
+#### Uploading over an existing draft version
+
+When the package has the same key and version as an existing draft version, the upload updates that
+draft version. Since Valtimo `13.51.0`, the processes of the draft version are replaced by the
+processes in the package:
+
+- Processes in the package are added to the version, or updated when they changed
+- Processes the draft version has and the package does not contain are removed from the version
+
+After uploading a package exported from another environment, the draft version has exactly the
+processes of that environment.
+
+{% hint style="warning" %}
+A removed process is no longer part of the case definition and cannot be started from it. Cases that
+are already running the process continue until the process ends.
+{% endhint %}
+
+Only processes are removed. Forms, decision tables, and other configuration that the package does not
+contain stay on the version. A package that contains no processes at all leaves the processes of the
+version unchanged. An upload never changes a published version.
+
+{% hint style="info" %}
+The same applies when Valtimo deploys a draft version from its application configuration at startup.
+A process added in the admin interface to such a draft version is removed at the next restart, unless
+it is also added to the application configuration.
+{% endhint %}
+
 ---
 
 ## Version management

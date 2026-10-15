@@ -128,8 +128,10 @@ class ValtimoImportService(
             // If case definition is already imported, don't import the rest of the files for the case definition
             // (so a skip)
 
+            val entries = getEntriesFromResources(resources)
+            ImportContext.setCaseDefinitionFiles(entries)
             val importerEntriesList = getEntriesByImporter(
-                getEntriesFromResources(resources),
+                entries,
                 { importer -> importer.partOfCaseDefinition() }
             )
             val caseDefinitionId: CaseDefinitionId?
@@ -283,6 +285,7 @@ class ValtimoImportService(
             val entries = entriesWithRawPath
                 .filter { extractBuildingBlockGroupKey(it.first) == null }
                 .map { it.second }
+            ImportContext.setCaseDefinitionFiles(entries)
 
             val importerEntriesList = getEntriesByImporter(
                 entries

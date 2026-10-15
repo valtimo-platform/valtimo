@@ -25,6 +25,8 @@ class ImportContext {
 
         private val claimedThreadLocal = ThreadLocal.withInitial { mutableSetOf<Any>() }
 
+        private val caseDefinitionFilesThreadLocal = ThreadLocal.withInitial { emptyList<ZipFileEntry>() }
+
         @JvmStatic
         fun isImporting(): Boolean = importingThreadLocal.get()
 
@@ -37,6 +39,18 @@ class ImportContext {
             return !isImporting() || claimedThreadLocal.get().add(key)
         }
 
+        /** Every file of the case definition package this run is importing. Empty outside a run. */
+        @JvmStatic
+        fun caseDefinitionFiles(): List<ZipFileEntry> {
+            return if (isImporting()) caseDefinitionFilesThreadLocal.get() else emptyList()
+        }
+
+        internal fun setCaseDefinitionFiles(files: List<ZipFileEntry>) {
+            if (isImporting()) {
+                caseDefinitionFilesThreadLocal.set(files.toList())
+            }
+        }
+
         @JvmStatic
         fun <T> runImporter(callable: Callable<T>): T {
             return if (isImporting()) {
@@ -45,11 +59,13 @@ class ImportContext {
                 try {
                     // No claim outlives its run, not even on a pooled thread
                     claimedThreadLocal.remove()
+                    caseDefinitionFilesThreadLocal.remove()
                     importingThreadLocal.set(true)
                     callable.call()
                 } finally {
                     importingThreadLocal.set(false)
                     claimedThreadLocal.remove()
+                    caseDefinitionFilesThreadLocal.remove()
                 }
             }
         }

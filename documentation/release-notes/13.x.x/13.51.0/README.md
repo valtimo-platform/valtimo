@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Case definitions | Importing a case definition over an existing draft version, whether by upload, through the deployer or from the application configuration at startup, now removes the processes the import does not contain, including ones added in the admin screens, while cases already running them can still finish. |

@@ -16,6 +16,7 @@
 
 package com.ritense.importer
 
+import com.ritense.importer.ImportContext.Companion.caseDefinitionFiles
 import com.ritense.importer.ImportContext.Companion.claimOncePerRun
 import com.ritense.importer.ImportContext.Companion.isImporting
 import com.ritense.importer.ImportContext.Companion.runImporter
@@ -102,5 +103,68 @@ class ImportContextTest {
         }
 
         assertThat(isImporting()).isFalse()
+    }
+
+    @Test
+    fun `should keep the case definition files for the run`() {
+        val file = ZipFileEntry("/bpmn/process.bpmn", ByteArray(0))
+
+        runImporter<Unit> {
+            assertThat(caseDefinitionFiles()).isEmpty()
+            ImportContext.setCaseDefinitionFiles(listOf(file))
+
+            runImporter<Unit> {
+                assertThat(caseDefinitionFiles()).containsExactly(file)
+            }
+        }
+    }
+
+    @Test
+    fun `should replace the case definition files of an earlier package in the same run`() {
+        val first = ZipFileEntry("/bpmn/first.bpmn", ByteArray(0))
+        val second = ZipFileEntry("/bpmn/second.bpmn", ByteArray(0))
+
+        runImporter<Unit> {
+            ImportContext.setCaseDefinitionFiles(listOf(first))
+            ImportContext.setCaseDefinitionFiles(listOf(second))
+
+            assertThat(caseDefinitionFiles()).containsExactly(second)
+        }
+    }
+
+    @Test
+    fun `should clear the case definition files when the outermost run returns`() {
+        runImporter<Unit> {
+            ImportContext.setCaseDefinitionFiles(listOf(ZipFileEntry("/bpmn/process.bpmn", ByteArray(0))))
+        }
+
+        assertThat(caseDefinitionFiles()).isEmpty()
+        runImporter<Unit> {
+            assertThat(caseDefinitionFiles()).isEmpty()
+        }
+    }
+
+    @Test
+    fun `should clear the case definition files when the outermost run throws`() {
+        assertThatThrownBy {
+            runImporter<Unit> {
+                ImportContext.setCaseDefinitionFiles(listOf(ZipFileEntry("/bpmn/process.bpmn", ByteArray(0))))
+                throw IllegalStateException("import failed")
+            }
+        }.isInstanceOf(IllegalStateException::class.java)
+
+        runImporter<Unit> {
+            assertThat(caseDefinitionFiles()).isEmpty()
+        }
+    }
+
+    @Test
+    fun `should keep no case definition files outside a run`() {
+        ImportContext.setCaseDefinitionFiles(listOf(ZipFileEntry("/bpmn/process.bpmn", ByteArray(0))))
+
+        assertThat(caseDefinitionFiles()).isEmpty()
+        runImporter<Unit> {
+            assertThat(caseDefinitionFiles()).isEmpty()
+        }
     }
 }
