@@ -23,7 +23,17 @@ import {LayerModule} from 'carbon-components-angular';
 import {ColorPickerComponent, ColorPickerConfig} from '@valtimo/components';
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, finalize, map, Observable, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  finalize,
+  map,
+  Observable,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {CASE_MANAGEMENT_COLOR_TEST_IDS} from '../../../../../../constants';
 
 const COLOR_SWATCHES = [
@@ -83,10 +93,18 @@ export class CaseManagementColorComponent {
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
 
-  public readonly currentSettings$: Observable<CaseSettings> = this._refresh$.pipe(
-    switchMap(() => this.params$),
+  public readonly currentSettings$: Observable<CaseSettings> = this.params$.pipe(
+    // Drop the previous version's local pick
+    tap(() => this._userSelectedColor$.next(null)),
     switchMap(({caseDefinitionKey, caseDefinitionVersionTag}) =>
-      this.documentService.getCaseSettingsForManagement(caseDefinitionKey, caseDefinitionVersionTag)
+      this._refresh$.pipe(
+        switchMap(() =>
+          this.documentService.getCaseSettingsForManagement(
+            caseDefinitionKey,
+            caseDefinitionVersionTag
+          )
+        )
+      )
     ),
     tap(() => this._loading$.next(false))
   );
@@ -107,7 +125,7 @@ export class CaseManagementColorComponent {
   ) {}
 
   public onColorChange(color: string, currentColor: string): void {
-    if (color && color !== currentColor) {
+    if (color && color.toLowerCase() !== currentColor?.toLowerCase()) {
       this._userSelectedColor$.next(color);
       this._saveColor(color);
     }
@@ -119,8 +137,11 @@ export class CaseManagementColorComponent {
   }
 
   private _saveColor(color: string): void {
+    if (this.isReadOnly) return;
+
     this.params$
       .pipe(
+        take(1),
         switchMap(({caseDefinitionKey, caseDefinitionVersionTag}) =>
           this.documentService.patchCaseSettingsForManagement(
             caseDefinitionKey,
