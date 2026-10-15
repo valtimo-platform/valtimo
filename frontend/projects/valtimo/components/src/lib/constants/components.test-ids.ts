@@ -167,3 +167,13 @@ export const SEARCH_FIELDS_TEST_IDS = {
  * itself is one level down.
  */
 export const SEARCH_FIELD_TEST_ID_PREFIX = 'searchField-';
+
+export const SIDE_PANEL_TEST_IDS = {
+  panel: 'sidePanel',
+  closeButton: 'sidePanelCloseButton',
+  resizeHandle: 'sidePanelResizeHandle',
+  subtitleLink: 'sidePanelSubtitleLink',
+  pinnedIcon: 'sidePanelPinnedIcon',
+  origin: 'sidePanelOrigin',
+  originElsewhere: 'sidePanelOriginElsewhere',
+} as const;

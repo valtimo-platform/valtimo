@@ -6,5 +6,5 @@ services:
             - ../outbox/outbox-rabbitmq/docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
             - ../outbox/outbox-rabbitmq/docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
         ports:
-            - "55673:5672"
-            - "45672:15672"
+            - "5683:5672"
+            - "15683:15672"

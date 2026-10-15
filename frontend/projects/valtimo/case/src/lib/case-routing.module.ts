@@ -24,6 +24,7 @@ import {ROLE_USER} from '@valtimo/shared';
 import {CaseInspectionComponent} from './case-inspection/case-inspection.component';
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {CaseOverviewComponent} from './components/case-overview/case-overview.component';
+import {caseDetailPendingChangesGuard} from './guards/case-detail-pending-changes.guard';
 
 const routes: Routes = [
   {
@@ -69,8 +70,7 @@ const routes: Routes = [
     path: 'cases/:caseDefinitionKey/document/:documentId/:tab',
     component: CaseDetailComponent,
     canActivate: [AuthGuardService],
-    //TODO: Re-enable when pending changes is fixed
-    // canDeactivate: [pendingChangesGuard],
+    canDeactivate: [caseDetailPendingChangesGuard],
     data: {
       title: 'Case details',
       parentPath: 'cases/:caseDefinitionKey',
@@ -81,6 +81,7 @@ const routes: Routes = [
     path: 'cases/:caseDefinitionKey/document/:documentId',
     component: CaseDetailComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [caseDetailPendingChangesGuard],
     data: {
       title: 'Case details',
       parentPath: 'cases/:caseDefinitionKey',

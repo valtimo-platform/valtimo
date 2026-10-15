@@ -222,6 +222,7 @@
     },
     "caseUpdated": "Dossier aangepast",
     "startSubProcess": "Start",
+    "noStartableProcesses": "Geen actie",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
     "searchError": {
       "title": "Zoeken mislukt",
@@ -233,6 +234,12 @@
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
     "configure": "Configureer",
     "claimAssigneeCase": "Claimen",
+    "taskPanel": {
+      "title": "Taken",
+      "show": "Taken tonen",
+      "hide": "Taken verbergen",
+      "back": "Terug"
+    },
     "deleteConfirmation": {
       "title": "Bestand verwijderen",
       "description": "Weet u zeker dat u dit bestand wilt verwijderen?",
@@ -4073,6 +4080,10 @@
   "processStartSuccessful": "{{processName}} is succesvol gestart",
   "widgets": {
     "noData": "Geen data gevonden",
+    "dataError": {
+      "title": "Gegevens niet geladen",
+      "retry": "Opnieuw proberen"
+    },
     "emptyFields": "Niets hier",
     "noWidgets": "Geen widgets",
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
@@ -4250,6 +4261,16 @@
   },
   "externalPluginPage": {
     "loadError": "Deze pluginpagina kon niet worden geladen."
+  },
+  "sidePanel": {
+    "close": "Paneel sluiten",
+    "loadError": "Dit paneel kon niet worden geladen.",
+    "resize": "Paneelbreedte aanpassen",
+    "pinned": "Blijft open als u naar andere pagina's gaat",
+    "originFor": "Voor",
+    "originFallback": "het dossier",
+    "originElsewhere": "Niet deze pagina",
+    "originElsewhereDescription": "Dit paneel hoort bij {{label}}, niet bij de pagina waarop u nu bent."
   },
   "adminSettings": {
     "title": "Instellingen",

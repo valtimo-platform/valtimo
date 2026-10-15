@@ -323,7 +323,8 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     if (event.data) {
       this.taskIntermediateSaveService.setFormIoFormData(event.data);
       this.formIoFormData$.next(event.data);
-      this.activeChange.emit(true);
+      // Form.io also emits on render and on programmatic updates; only user edits are changes.
+      if (event.isModified) this.activeChange.emit(true);
     }
   }
 

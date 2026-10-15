@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 34        | 28         | 4              |
+| User Features (ROLE_USER)   | 5        | 35        | 29         | 4              |
 | Admin Features (ROLE_ADMIN) | 15       | 382       | 369        | 7              |
-| **Total**                   | **20**   | **416**   | **397**    | **11**         |
+| **Total**                   | **20**   | **417**   | **398**    | **11**         |
 
-**Coverage:** `397 / 416` — `95.4%`
+**Coverage:** `398 / 417` — `95.4%`
 
 > Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (2).
 
@@ -61,6 +61,7 @@
 | 2.13   | Group case list navigation and settings  | Row opens case in its own definition · page size remembered per group  |    ✅    | group-case-list.spec.ts |
 | 2.14   | Group status filter across members       | Shared status offered once · deselecting hides cases                   |    ✅    | group-case-list.spec.ts                          |
 | 2.15   | Group case list edge cases               | Group without columns renders · failed search shows error, clears rows, next search still runs · unknown group returns 404 |    ⏳    | group-case-list.spec.ts — 404 fixme: needs BE fix |
+| 2.16   | In-panel form persistence | Start form and task form in side panel survive tab switches (incl. task-hiding tabs) · closes via header button, confirming unsaved changes |    ✅    | user-cases.spec.ts |
 
 ---
 
@@ -805,8 +806,8 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   416   |
-| ✅ Covered by Playwright |   397   |
+| Total Functions          |   417   |
+| ✅ Covered by Playwright |   398   |
 | ❌ Not covered           |   11    |
 | ⏳ In progress           |    2    |
 | `N/A` Not applicable     |    6    |

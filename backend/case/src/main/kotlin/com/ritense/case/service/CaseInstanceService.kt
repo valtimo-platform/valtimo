@@ -190,7 +190,7 @@ class CaseInstanceService(
     ): CaseListRowDto {
         val paths = caseListColumns.map { it.path }
         val resolvedValuesMap = runWithoutAuthorization {
-            valueResolverService.resolveValues(document.id().id.toString(), paths)
+            valueResolverService.resolveValuesOrNull(document.id().id.toString(), paths)
         }
 
         val items = caseListColumns.map { caseListColumn ->
