@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_dynamic-broken-process" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="dynamic-broken-process" name="dynamic-broken-process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent" />
+    <bpmn:sequenceFlow id="Flow_0" sourceRef="StartEvent" targetRef="UnresolvedTask" />
+    <bpmn:serviceTask id="UnresolvedTask" name="UnresolvedTask" camunda:expression="${null}" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="UnresolvedTask" targetRef="UnsupportedTask" />
+    <bpmn:serviceTask id="UnsupportedTask" name="UnsupportedTask" camunda:expression="${null}" />
+    <bpmn:sequenceFlow id="Flow_end" sourceRef="UnsupportedTask" targetRef="EndEvent" />
+    <bpmn:endEvent id="EndEvent" />
+  </bpmn:process>
+</bpmn:definitions>

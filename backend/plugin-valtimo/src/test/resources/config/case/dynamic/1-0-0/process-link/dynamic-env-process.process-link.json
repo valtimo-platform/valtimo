@@ -1,0 +1,10 @@
+[
+    {
+        "activityId": "RecordTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "${valtimo.test.recording-config-id}",
+        "pluginActionDefinitionKey": "${valtimo.test.recording-action}",
+        "actionProperties": {}
+    }
+]

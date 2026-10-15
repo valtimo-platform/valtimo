@@ -37,5 +37,10 @@ class TestApplication {
             return TestPluginFactory(pluginService)
         }
 
+        @Bean
+        fun recordingTestPluginFactory(pluginService: PluginService): PluginFactory<RecordingTestPlugin> {
+            return RecordingTestPluginFactory(pluginService)
+        }
+
     }
 }

@@ -1,0 +1,20 @@
+[
+    {
+        "activityId": "UnresolvedTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "${valtimo.test.missing-config-id}",
+        "pluginActionDefinitionKey": "${valtimo.test.missing-action}",
+        "actionProperties": {},
+        "pluginDefinitionKey": "recording-test-plugin"
+    },
+    {
+        "activityId": "UnsupportedTask",
+        "activityType": "bpmn:ServiceTask:start",
+        "processLinkType": "plugin",
+        "pluginConfigurationId": "not-a-configuration-id",
+        "pluginActionDefinitionKey": "record",
+        "actionProperties": {},
+        "pluginDefinitionKey": "recording-test-plugin"
+    }
+]

@@ -36,6 +36,7 @@ class PluginProcessLinkExportResponseDto(
     val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
     val pluginDefinitionKey: String? = null,
     val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
+    val pluginConfigurationIdExpression: String? = null,
 ) : ProcessLinkExportResponseDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_PLUGIN

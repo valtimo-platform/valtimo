@@ -1,0 +1,11 @@
+# 13.50.0
+
+Release date: 14-10-2026
+
+---
+
+## New Features
+
+### Plugin configuration per environment or per case in process links
+
+A plugin action in a deployed process link can take its plugin configuration from an environment setting or from a process variable, so the same process links work in every environment and municipality. A missing environment setting no longer stops the deployment: it is reported in the log, and a case definition shows the process link as missing its plugin configuration. See the [plugin configuration in process links documentation](../../../configuration-guides/plugins/plugin-configuration-in-process-links.md) for details.

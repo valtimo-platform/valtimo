@@ -36,6 +36,7 @@ data class PluginProcessLinkCreateDto(
     val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
     val pluginDefinitionKey: String? = null,
     val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
+    val pluginConfigurationIdExpression: String? = null,
 ) : ProcessLinkCreateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_PLUGIN

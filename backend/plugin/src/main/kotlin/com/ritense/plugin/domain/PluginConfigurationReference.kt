@@ -49,11 +49,16 @@ data class PluginConfigurationReference(
             PluginConfigurationReferenceType.BUILDING_BLOCK -> require(!pluginDefinitionKey.isNullOrBlank()) {
                 "pluginDefinitionKey is required when reference type is BUILDING_BLOCK"
             }
+            PluginConfigurationReferenceType.VALUE_RESOLVER -> require(!pluginDefinitionKey.isNullOrBlank()) {
+                "pluginDefinitionKey is required when reference type is VALUE_RESOLVER"
+            }
         }
     }
 }
 
 enum class PluginConfigurationReferenceType {
     FIXED,
-    BUILDING_BLOCK
+    BUILDING_BLOCK,
+    // Configuration id resolved per execution from expression, e.g. pv:pluginConfigurationId
+    VALUE_RESOLVER
 }

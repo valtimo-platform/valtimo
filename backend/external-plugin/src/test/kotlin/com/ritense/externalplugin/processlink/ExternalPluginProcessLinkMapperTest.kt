@@ -361,6 +361,23 @@ class ExternalPluginProcessLinkMapperTest {
     }
 
     @Test
+    fun `VALUE_RESOLVER create is rejected for external plugins`() {
+        val createDto = ExternalPluginProcessLinkCreateRequestDto(
+            processDefinitionId = "pd-1",
+            activityId = "activity-1",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionKey = "send",
+            referenceType = PluginConfigurationReferenceType.VALUE_RESOLVER,
+            pluginDefinitionKey = "case-summary",
+            pluginVersion = "2.0.0",
+        )
+
+        assertThatThrownBy { mapper.toNewProcessLink(createDto, null) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("VALUE_RESOLVER is not supported for external plugin process links")
+    }
+
+    @Test
     fun `BUILDING_BLOCK create requires pluginVersion`() {
         val createDto = ExternalPluginProcessLinkCreateRequestDto(
             processDefinitionId = "pd-1",

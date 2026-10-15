@@ -18,6 +18,7 @@ package com.ritense.plugin.domain
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.plugin.domain.PluginConfigurationReferenceType.BUILDING_BLOCK
+import com.ritense.plugin.domain.PluginConfigurationReferenceType.VALUE_RESOLVER
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
@@ -52,6 +53,9 @@ class PluginProcessLink(
 
     actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 
+    @Column(name = "plugin_configuration_id_expression")
+    val pluginConfigurationIdExpression: String? = null,
+
 ) : ProcessLink(
     id,
     processDefinitionId,
@@ -75,6 +79,18 @@ class PluginProcessLink(
             }
             require(pluginConfigurationId == null) {
                 "pluginConfigurationId must not be set when reference type is BUILDING_BLOCK"
+            }
+        }
+        if (pluginConfigurationReference.type == VALUE_RESOLVER) {
+            require(!pluginConfigurationIdExpression.isNullOrBlank()) {
+                "pluginConfigurationIdExpression is required when reference type is VALUE_RESOLVER"
+            }
+            require(pluginConfigurationId == null) {
+                "pluginConfigurationId must not be set when reference type is VALUE_RESOLVER"
+            }
+        } else {
+            require(pluginConfigurationIdExpression == null) {
+                "pluginConfigurationIdExpression can only be set when reference type is VALUE_RESOLVER"
             }
         }
     }
@@ -118,6 +134,7 @@ class PluginProcessLink(
         pluginConfigurationReference: PluginConfigurationReference = this.pluginConfigurationReference,
         pluginActionDefinitionKey: String = this.pluginActionDefinitionKey,
         actionResultMappings: List<PluginActionResultMapping> = this.actionResultMappings,
+        pluginConfigurationIdExpression: String? = this.pluginConfigurationIdExpression,
     ) = PluginProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
@@ -128,6 +145,7 @@ class PluginProcessLink(
         pluginConfigurationReference = pluginConfigurationReference,
         pluginActionDefinitionKey = pluginActionDefinitionKey,
         actionResultMappings = actionResultMappings,
+        pluginConfigurationIdExpression = pluginConfigurationIdExpression,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -142,6 +160,7 @@ class PluginProcessLink(
         if (pluginConfigurationReference != other.pluginConfigurationReference) return false
         if (pluginActionDefinitionKey != other.pluginActionDefinitionKey) return false
         if (actionResultMappings != other.actionResultMappings) return false
+        if (pluginConfigurationIdExpression != other.pluginConfigurationIdExpression) return false
 
         return true
     }
@@ -153,6 +172,7 @@ class PluginProcessLink(
         result = 31 * result + pluginConfigurationReference.hashCode()
         result = 31 * result + pluginActionDefinitionKey.hashCode()
         result = 31 * result + actionResultMappings.hashCode()
+        result = 31 * result + (pluginConfigurationIdExpression?.hashCode() ?: 0)
         return result
     }
 }

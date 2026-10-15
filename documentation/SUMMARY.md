@@ -60,6 +60,7 @@
     * [Decision tables](configuration-guides/building-blocks/decision-tables.md)
 * [🔀 System processes](configuration-guides/system-processes/README.md)
 * [🔌 Plugins](configuration-guides/plugins/README.md)
+    * [Plugin configuration in process links](configuration-guides/plugins/plugin-configuration-in-process-links.md)
     * [External plugins](configuration-guides/plugins/external-plugins/README.md)
         * [Add a plugin host](configuration-guides/plugins/external-plugins/add-a-plugin-host.md)
         * [Add an app](configuration-guides/plugins/external-plugins/add-an-app.md)
@@ -82,6 +83,7 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
+  * [13.50.0](release-notes/13.x.x/13.50.0/README.md)
   * [13.49.1](release-notes/13.x.x/13.49.1/README.md)
   * [13.49.0](release-notes/13.x.x/13.49.0/README.md)
   * [13.48.0](release-notes/13.x.x/13.48.0/README.md)

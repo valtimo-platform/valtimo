@@ -36,4 +36,5 @@ data class PluginProcessLinkResultDto(
     val pluginActionDefinitionKey: String,
     val actionProperties: ObjectNode? = null,
     val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
+    val pluginConfigurationIdExpression: String? = null,
 ) : ProcessLinkResponseDto

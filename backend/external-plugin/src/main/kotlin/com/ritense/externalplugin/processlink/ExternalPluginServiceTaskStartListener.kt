@@ -200,6 +200,11 @@ class ExternalPluginServiceTaskStartListener(
                             "(process link '${processLink.id}')"
                     )
             }
+
+            PluginConfigurationReferenceType.VALUE_RESOLVER -> throw IllegalStateException(
+                "External plugin process link '${processLink.id}' has a VALUE_RESOLVER reference, " +
+                    "which is not supported for external plugins"
+            )
         }
     }
 

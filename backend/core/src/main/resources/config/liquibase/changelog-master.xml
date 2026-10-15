@@ -42,5 +42,6 @@
     <include file="/13-47-0/13-47-0-master.xml" relativeToChangelogFile="true"/>
     <include file="/13-48-0/13-48-0-master.xml" relativeToChangelogFile="true"/>
     <include file="/13-49-0/13-49-0-master.xml" relativeToChangelogFile="true"/>
+    <include file="/13-50-0/13-50-0-master.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

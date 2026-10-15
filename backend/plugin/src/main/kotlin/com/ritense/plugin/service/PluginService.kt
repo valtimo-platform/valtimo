@@ -417,7 +417,8 @@ class PluginService(
                     }
                 ),
                 pluginConfigurationReference = PluginConfigurationReference(),
-                pluginActionDefinitionKey = processLink.pluginActionDefinitionKey
+                pluginActionDefinitionKey = processLink.pluginActionDefinitionKey,
+                pluginConfigurationIdExpression = null,
             )
             pluginProcessLinkRepository.save(link).also {
                 applicationEventPublisher.publishEvent(
@@ -484,7 +485,52 @@ class PluginService(
                         "No plugin configuration mapping provided for definition '$pluginDefinitionKey'"
                     )
             }
+
+            PluginConfigurationReferenceType.VALUE_RESOLVER -> resolveValueResolverConfigurationId(
+                processLink,
+                execution ?: task?.execution ?: throw IllegalStateException(
+                    "No execution to resolve the plugin configuration of process link ${processLink.id}"
+                ),
+                task?.taskDefinitionKey ?: execution?.currentActivityId ?: processLink.activityId
+            )
         }
+    }
+
+    private fun resolveValueResolverConfigurationId(
+        processLink: PluginProcessLink,
+        execution: DelegateExecution,
+        activityId: String,
+    ): PluginConfigurationId {
+        val expression = requireNotNull(processLink.pluginConfigurationIdExpression) {
+            "Missing pluginConfigurationIdExpression for process link ${processLink.id}"
+        }
+        val expectedDefinitionKey = processLink.pluginConfigurationReference.pluginDefinitionKey
+        val failure = "Could not resolve the plugin configuration for activity '$activityId': " +
+            "pluginConfigurationId '$expression'"
+
+        val resolvedValue = valueResolverService.resolveValues(
+            processInstanceId = execution.processInstanceId,
+            variableScope = execution,
+            requestedValues = listOf(expression)
+        )[expression]?.toString()?.takeIf { it.isNotBlank() }
+            ?: throw IllegalStateException("$failure resolved to no value")
+
+        val configurationId = try {
+            PluginConfigurationId.existingId(UUID.fromString(resolvedValue))
+        } catch (_: IllegalArgumentException) {
+            throw IllegalStateException("$failure resolved to '$resolvedValue', which is not a plugin configuration id (UUID)")
+        }
+
+        val configuration = pluginConfigurationRepository.findByIdOrNull(configurationId)
+            ?: throw IllegalStateException("$failure resolved to '$resolvedValue', but no plugin configuration with that id exists")
+
+        if (expectedDefinitionKey != null && configuration.pluginDefinition.key != expectedDefinitionKey) {
+            throw IllegalStateException(
+                "$failure resolved to '$resolvedValue', a configuration of plugin '${configuration.pluginDefinition.key}', " +
+                    "but the process link expects plugin '$expectedDefinitionKey'"
+            )
+        }
+        return configurationId
     }
 
     fun invoke(execution: DelegateExecution, processLink: PluginProcessLink): Any? {
