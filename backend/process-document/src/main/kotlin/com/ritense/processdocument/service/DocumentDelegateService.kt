@@ -119,8 +119,11 @@ class DocumentDelegateService(
         logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
 
         val caseDocumentId = getCaseDocumentId(execution)
-        val user = runWithoutAuthorization { userManagementService.findByEmail(userEmail) }
-            .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
+        val user = runWithoutAuthorization { userManagementService.findByEmail(userEmail).getOrNull()?.let { userManagementService.findById(it.id) } }
+        if (user == null) {
+            logger.warn { "Not assigning case $caseDocumentId. User '$userEmail' could not be found." }
+            return
+        }
         documentService.assignUserToDocument(caseDocumentId, user.id)
     }
 

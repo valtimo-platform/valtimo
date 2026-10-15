@@ -29,21 +29,27 @@ import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
 import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.any as anyKt
 import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.springframework.boot.test.system.CapturedOutput
+import org.springframework.boot.test.system.OutputCaptureExtension
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
 
 
+@ExtendWith(OutputCaptureExtension::class)
 internal class DocumentDelegateServiceTest : BaseTest() {
 
     private lateinit var documentService: DocumentService
@@ -259,13 +265,47 @@ internal class DocumentDelegateServiceTest : BaseTest() {
         whenever(delegateExecution.id).thenReturn("id")
         whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
         whenever(delegateExecution.businessKey).thenReturn(documentId)
-        whenever(userManagementService.findByEmail("john@example.com"))
-            .thenReturn(Optional.of(ValtimoUserBuilder().id("anId").build()))
+        val user = ValtimoUserBuilder().id("anId").build()
+        whenever(userManagementService.findByEmail("john@example.com")).thenReturn(Optional.of(user))
+        whenever(userManagementService.findById("anId")).thenReturn(user)
 
         documentDelegateService.setAssignee(delegateExecution, "john@example.com")
 
         verify(caseDocumentResolver).resolveCaseDocumentId(UUID.fromString(documentId))
         verify(documentService, times(1)).assignUserToDocument(UUID.fromString(documentId), "anId")
+    }
+
+    @Test
+    fun `should skip assigning the case when the user no longer exists`(output: CapturedOutput) {
+        val documentId = "11111111-1111-1111-1111-111111111111"
+        val delegateExecution = mock<DelegateExecution>()
+        whenever(delegateExecution.id).thenReturn("id")
+        whenever(delegateExecution.processInstanceId).thenReturn("00000000-0000-0000-0000-000000000000")
+        whenever(delegateExecution.businessKey).thenReturn(documentId)
+        whenever(userManagementService.findByEmail("removed@example.com")).thenReturn(Optional.empty())
+
+        documentDelegateService.setAssignee(delegateExecution, "removed@example.com")
+
+        verify(documentService, never()).assignUserToDocument(anyKt(), anyKt())
+        verify(documentService, never()).unassignUserFromDocument(anyKt())
+        assertThat(output.out).contains("User 'removed@example.com' could not be found.")
+    }
+
+    @Test
+    fun `should skip assigning the case when the user is disabled`(output: CapturedOutput) {
+        val documentId = "11111111-1111-1111-1111-111111111111"
+        val delegateExecution = mock<DelegateExecution>()
+        whenever(delegateExecution.id).thenReturn("id")
+        whenever(delegateExecution.processInstanceId).thenReturn("00000000-0000-0000-0000-000000000000")
+        whenever(delegateExecution.businessKey).thenReturn(documentId)
+        whenever(userManagementService.findByEmail("disabled@example.com"))
+            .thenReturn(Optional.of(ValtimoUserBuilder().id("disabledId").build()))
+        whenever(userManagementService.findById("disabledId")).thenReturn(null)
+
+        documentDelegateService.setAssignee(delegateExecution, "disabled@example.com")
+
+        verify(documentService, never()).assignUserToDocument(anyKt(), anyKt())
+        assertThat(output.out).contains("User 'disabled@example.com' could not be found.")
     }
 
     @Test

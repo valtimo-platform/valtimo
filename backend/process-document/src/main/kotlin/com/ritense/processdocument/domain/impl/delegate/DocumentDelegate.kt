@@ -25,6 +25,7 @@ import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
+import kotlin.jvm.optionals.getOrNull
 
 @ProcessBean(description = "Case document operations (deprecated, use documentDelegateService)")
 @Deprecated(message = "Since 11.0.0", ReplaceWith("com.ritense.processdocument.service.DocumentDelegateService"))
@@ -43,8 +44,11 @@ class DocumentDelegate(
             }
             logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
             val caseDocumentId = getCaseDocumentId(execution)
-            val user = userManagementService.findByEmail(userEmail)
-                .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
+            val user = userManagementService.findByEmail(userEmail).getOrNull()?.let { userManagementService.findById(it.id) }
+            if (user == null) {
+                logger.warn { "Not assigning case $caseDocumentId. User '$userEmail' could not be found." }
+                return@runWithoutAuthorization
+            }
             AuthorizationContext
                 .runWithoutAuthorization { documentService.assignUserToDocument(caseDocumentId, user.id) }
         }

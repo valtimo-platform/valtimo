@@ -78,6 +78,7 @@
     * [Permissions](configuration-guides/access-control/permissions.md)
     * [Conditions](configuration-guides/access-control/conditions.md)
     * [Context conditions](configuration-guides/access-control/context-conditions.md)
+    * [Users removed from Keycloak](configuration-guides/access-control/removed-users.md)
 * [🌐 Translations](configuration-guides/translations/README.md)
 
 ## Release notes

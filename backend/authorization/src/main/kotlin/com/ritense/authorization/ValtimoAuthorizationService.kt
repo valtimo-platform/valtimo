@@ -137,7 +137,13 @@ class ValtimoAuthorizationService(
         } else {
             runWithoutAuthorization { userManagementService.findByUsername(context.user) }
                 ?.roles
-                ?: return emptyList()
+                ?: run {
+                    logger.warn {
+                        "Denying '${context.action.key}:${context.resourceType.simpleName}' for user '${context.user}': " +
+                            "the user was not found in the identity provider, or is disabled."
+                    }
+                    return emptyList()
+                }
         }
         return permissionRepository.findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(userRoles)
             .filter { permission ->

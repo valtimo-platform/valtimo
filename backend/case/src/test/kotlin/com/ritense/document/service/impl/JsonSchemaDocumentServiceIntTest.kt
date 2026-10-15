@@ -488,6 +488,38 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `should read, reassign and unassign a case whose assignee no longer exists`() {
+        val document = createDocument("""{"street": "Admin street"}""")
+        assignToUserThatIsRemovedAfterwards(document)
+
+        val assignedDocument = documentService.get(document.id!!.toString())
+        assertThat(assignedDocument.assigneeId()).isEqualTo("removed-user")
+        assertThat(assignedDocument.assigneeFullName()).isEqualTo("Removed User")
+
+        documentService.assignUserToDocument(document.id!!.id, USERNAME)
+        assertThat(documentService.get(document.id!!.toString()).assigneeId()).isEqualTo(USERNAME)
+
+        assignToUserThatIsRemovedAfterwards(document)
+        documentService.unassignUserFromDocument(document.id!!.id)
+        assertThat(documentService.get(document.id!!.toString()).assigneeId()).isNull()
+    }
+
+    private fun assignToUserThatIsRemovedAfterwards(document: JsonSchemaDocument) {
+        val user = ValtimoUser()
+        user.id = "removed-user-id"
+        user.username = "removed-user"
+        user.firstName = "Removed"
+        user.lastName = "User"
+        user.setRoles(listOf(USER, ADMIN))
+        whenever(userManagementService.findById("removed-user-id")).thenReturn(user)
+        whenever(userManagementService.findByUsername("removed-user")).thenReturn(user)
+        documentService.assignUserToDocument(document.id!!.id, "removed-user-id")
+        whenever(userManagementService.findById("removed-user-id")).thenReturn(null)
+        whenever(userManagementService.findByUsername("removed-user")).thenReturn(null)
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
     fun `should send outboxMessage on assignUserToDocument`() {
         val document = createDocument("""{"street": "Admin street"}""")
 

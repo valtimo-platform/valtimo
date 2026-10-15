@@ -28,7 +28,8 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Access control | When access is checked for a user who has been removed from Keycloak, the application log now says the user could not be found, instead of refusing without saying why |
+| Processes | A process step that assigns the case to a user who has been removed from Keycloak no longer stops the process; the case keeps its current assignee and the log says the user could not be found |
 
 ---
 

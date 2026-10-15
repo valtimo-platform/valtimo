@@ -9,6 +9,7 @@ This includes:
 - **[Permissions](permissions.md)** — Granting permissions to roles
 - **[Conditions](conditions.md)** — Restricting permissions with field and expression conditions
 - **[Context conditions](context-conditions.md)** — Context-aware permission rules
+- **[Users removed from Keycloak](removed-users.md)** — What happens to the tasks, cases and access checks of a deleted user
 
 ---
 

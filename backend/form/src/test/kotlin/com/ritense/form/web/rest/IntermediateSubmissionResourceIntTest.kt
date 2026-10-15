@@ -94,6 +94,24 @@ class IntermediateSubmissionResourceIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser
+    fun `should return the username when the user who saved the submission no longer exists`() {
+        runWithoutAuthorization {
+            intermediateSubmissionService.store(submission = objectMapper.createObjectNode(), taskInstanceId = "taskInstanceId")
+            intermediateSubmissionService.store(submission = objectMapper.createObjectNode(), taskInstanceId = "taskInstanceId")
+            whenever(userManagementService.findByUsername("username")).thenReturn(null)
+
+            mockMvc.perform(
+                get("$BASE_URL?taskInstanceId=taskInstanceId")
+                    .accept(APPLICATION_JSON_UTF8_VALUE)
+                    .contentType(APPLICATION_JSON_UTF8_VALUE)
+            ).andExpect(status().isOk)
+                .andExpect(jsonPath("$.createdBy").value("username"))
+                .andExpect(jsonPath("$.editedBy").value("username"))
+        }
+    }
+
+    @Test
+    @WithMockUser
     fun `should return 200 for store intermediate submission`() {
         runWithoutAuthorization {
             val submission = objectMapper.createObjectNode().apply { put("key", "value") }

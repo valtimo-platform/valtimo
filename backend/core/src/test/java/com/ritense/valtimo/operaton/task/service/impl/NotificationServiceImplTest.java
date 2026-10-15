@@ -21,6 +21,7 @@ import static com.ritense.valtimo.operaton.task.service.NotificationTestHelper.u
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -75,6 +76,18 @@ class NotificationServiceImplTest {
         notificationService.sendNotification(task, "mail-template-test");
 
         verify(mailSender).send(ArgumentMatchers.any(TemplatedMailMessage.class));
+    }
+
+    @Test
+    void shouldSkipNotificationWhenAssigneeNoLongerExists() {
+        when(delegateTaskHelper.isTaskBeingAssigned(ArgumentMatchers.any())).thenReturn(true);
+        when(userManagementService.findByUsername("AAAA-1111")).thenReturn(null);
+
+        DelegateTask task = mockTask("id");
+        notificationService.sendNotification(task, "mail-template-test");
+
+        verify(mailSender, never()).send(ArgumentMatchers.any(TemplatedMailMessage.class));
+        verify(emailNotificationService, never()).existsByEmailAddressAndTaskNotificationsEnabled(anyString());
     }
 
 }

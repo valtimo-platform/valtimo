@@ -201,6 +201,20 @@ class CaseAssigneeListenerTest {
     }
 
     @Test
+    fun `should not check permissions or assign when the case assignee no longer exists`() {
+        val task = mock<OperatonTask>()
+        whenever(task.id).thenReturn("task-id-1")
+        whenever(caseDefinitionService.getCaseDefinition(any())).thenReturn(caseDefinitionWithSettings())
+        whenever(operatonTaskService.findTasks(any())).thenReturn(listOf(task))
+        whenever(userManagementService.findByUsername(assigneeUsername)).thenReturn(null)
+
+        listener.updateAssigneeOnTasks(assigneeChangedEvent())
+
+        verify(authorizationService, never()).requirePermission<Any>(any())
+        verify(operatonTaskService, never()).assign(any(), any())
+    }
+
+    @Test
     fun `should do nothing when autoAssignTasks is false`() {
         whenever(caseDefinitionService.getCaseDefinition(any()))
             .thenReturn(caseDefinitionWithSettings(canHaveAssignee = true, autoAssignTasks = false))

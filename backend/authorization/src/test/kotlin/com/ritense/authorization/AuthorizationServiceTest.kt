@@ -19,6 +19,7 @@ package com.ritense.authorization
 import com.ritense.authorization.permission.ConditionContainer
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
+import com.ritense.authorization.request.DelegateUserEntityAuthorizationRequest
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.specification.AuthorizationSpecification
@@ -27,16 +28,21 @@ import com.ritense.authorization.specification.impl.DenyAuthorizationSpecificati
 import com.ritense.authorization.specification.impl.DenyAuthorizationSpecificationFactory
 import com.ritense.authorization.specification.impl.NoopAuthorizationSpecification
 import com.ritense.authorization.specification.impl.NoopAuthorizationSpecificationFactory
+import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.boot.test.system.CapturedOutput
+import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
@@ -44,6 +50,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import kotlin.test.assertEquals
 
+@ExtendWith(OutputCaptureExtension::class)
 class AuthorizationServiceTest {
 
     lateinit var factory1: AuthorizationSpecificationFactory<Int>
@@ -172,6 +179,51 @@ class AuthorizationServiceTest {
         }
 
         verify(authorizationSpecification).isAuthorized()
+    }
+
+    @Test
+    fun `should deny and warn when the referenced user is not found`(output: CapturedOutput) {
+        whenever(userManagementService.findByUsername("removed-user")).thenReturn(null)
+        val request = DelegateUserEntityAuthorizationRequest(String::class.java, Action(Action.VIEW), "removed-user", "")
+        givenSpecificationAuthorizedByAnyPermission(request)
+
+        assertThat(authorizationService.hasPermission(request)).isFalse()
+
+        assertThat(output.out).contains("Denying 'view:String' for user 'removed-user': the user was not found in the identity provider, or is disabled.")
+        verify(permissionRepository, never()).findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(any())
+    }
+
+    @Test
+    fun `should evaluate the roles of a referenced user that exists`(output: CapturedOutput) {
+        val user = mock<ManageableUser>()
+        whenever(user.roles).thenReturn(listOf("some-role"))
+        whenever(userManagementService.findByUsername("existing-user")).thenReturn(user)
+        whenever(permissionRepository.findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(listOf("some-role"))).thenReturn(
+            listOf(
+                Permission(
+                    resourceType = String::class.java,
+                    actions = mutableListOf(Action<String>(Action.VIEW)),
+                    conditionContainer = ConditionContainer(),
+                    role = Role(key = "some-role")
+                )
+            )
+        )
+        val request = DelegateUserEntityAuthorizationRequest(String::class.java, Action(Action.VIEW), "existing-user", "")
+        givenSpecificationAuthorizedByAnyPermission(request)
+
+        assertThat(authorizationService.hasPermission(request)).isTrue()
+
+        assertThat(output.out).doesNotContain("was not found in the identity provider")
+    }
+
+    private fun givenSpecificationAuthorizedByAnyPermission(request: DelegateUserEntityAuthorizationRequest<String>) {
+        whenever(factory2.canCreate(any(), any<Function0<List<Permission>>>())).thenReturn(true)
+        whenever(factory2.create(eq(request), any<Function0<List<Permission>>>())).thenAnswer { invocation ->
+            val permissions = invocation.getArgument<Function0<List<Permission>>>(1)
+            mock<AuthorizationSpecification<String>>().also {
+                whenever(it.isAuthorized()).thenAnswer { permissions().isNotEmpty() }
+            }
+        }
     }
 
     @Test

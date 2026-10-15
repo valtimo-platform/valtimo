@@ -20,12 +20,18 @@ import static com.ritense.authorization.AuthorizationContext.runWithoutAuthoriza
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.permission.ConditionContainer;
@@ -42,6 +48,7 @@ import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider;
 import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.operaton.domain.ProcessInstanceWithDefinition;
 import com.ritense.valtimo.operaton.dto.TaskExtended;
+import com.ritense.valtimo.web.rest.TaskResource;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,6 +66,7 @@ import org.operaton.bpm.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,6 +90,9 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
 
     @Autowired
     private OutboxMessageRepository outboxRepository;
+
+    @Autowired
+    private TaskResource taskResource;
 
     private final CaseDefinitionId caseDefinitionId = CaseDefinitionId.of("everything", "1.0.0");
     private final String processDefinitionKey = "one-task-process";
@@ -481,6 +492,82 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
         assertThat(event.getResultType()).isEqualTo("com.ritense.valtimo.operaton.domain.OperatonTask");
         assertThat(event.getResultId()).isEqualTo(task.getId());
         assertThat(event.getResult()).isNotNull();
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = ADMIN)
+    void shouldViewReassignAndUnassignTaskWhoseAssigneeNoLongerExists() throws Exception {
+        when(userManagementService.findByUsername("removed-user")).thenReturn(null);
+        when(userManagementService.findById("removed-user")).thenReturn(null);
+        var taskId = startProcessAndGetTaskId();
+        taskService.setAssignee(taskId, "removed-user");
+
+        MockMvcBuilders.standaloneSetup(taskResource).build()
+            .perform(get("/api/v1/task/{taskId}", taskId).accept(APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.task.assignee").value("removed-user"))
+            .andExpect(jsonPath("$.task.valtimoAssignee").doesNotExist());
+        var listedTask = operatonTaskService.findTasksFiltered(OperatonTaskService.TaskFilter.ALL, PageRequest.of(0, 5))
+            .get().filter(task -> task.getId().equals(taskId)).findFirst().orElseThrow();
+        assertThat(listedTask.getValtimoAssignee()).isNull();
+
+        givenAssignPermissions();
+        givenExistingUser("new-user-id", "new-user");
+        operatonTaskService.assign(taskId, "new-user-id");
+        assertThat(taskService.createTaskQuery().taskId(taskId).singleResult().getAssignee()).isEqualTo("new-user");
+
+        taskService.setAssignee(taskId, "removed-user");
+        operatonTaskService.unassign(taskId);
+        assertThat(taskService.createTaskQuery().taskId(taskId).singleResult().getAssignee()).isNull();
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = ADMIN)
+    void shouldRejectAssigningTaskToUserThatDoesNotExist() {
+        when(userManagementService.findById("removed-user-id")).thenReturn(null);
+        var taskId = startProcessAndGetTaskId();
+        taskService.setAssignee(taskId, "previous-user");
+        givenAssignPermissions();
+        clearInvocations(outboxService);
+
+        assertThatThrownBy(() -> operatonTaskService.assign(taskId, "removed-user-id"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("'removed-user-id'");
+
+        assertThat(taskService.createTaskQuery().taskId(taskId).singleResult().getAssignee()).isEqualTo("previous-user");
+        verify(userManagementService, never()).findByUsername("removed-user-id");
+        verify(outboxService, never()).send(any());
+    }
+
+    private String startProcessAndGetTaskId() {
+        final var processInstance = runWithoutAuthorization(() -> operatonProcessService.startProcess(
+            processDefinitionKey,
+            businessKey,
+            caseDefinitionId,
+            Map.of()
+        ));
+        return taskService.createTaskQuery()
+            .processInstanceId(processInstance.getProcessInstanceDto().getId())
+            .singleResult()
+            .getId();
+    }
+
+    private void givenAssignPermissions() {
+        var adminRole = roleRepository.findByKey(ADMIN);
+        var userRole = roleRepository.findByKey(USER);
+        permissionRepository.saveAllAndFlush(List.of(
+            new Permission(UUID.randomUUID(), OperatonTask.class, OperatonTaskActionProvider.ASSIGN, new ConditionContainer(), adminRole),
+            new Permission(UUID.randomUUID(), OperatonTask.class, OperatonTaskActionProvider.ASSIGNABLE, new ConditionContainer(), userRole)
+        ));
+    }
+
+    private void givenExistingUser(String id, String username) {
+        ManageableUser user = mock(ManageableUser.class);
+        when(user.getId()).thenReturn(id);
+        when(user.getUsername()).thenReturn(username);
+        when(user.getRoles()).thenReturn(List.of(USER));
+        when(userManagementService.findById(id)).thenReturn(user);
+        when(userManagementService.findByUsername(username)).thenReturn(user);
     }
 
     private void startProcessAndModifyTask(Consumer<Task> taskHandler) {
