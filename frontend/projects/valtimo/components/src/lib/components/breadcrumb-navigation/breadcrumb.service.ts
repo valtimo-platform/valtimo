@@ -120,7 +120,7 @@ export class BreadcrumbService {
   }
 
   public cacheQueryParams(routeMatchString: string, params: Params): void {
-    if (routeMatchString && typeof params === 'object' && Object.keys(params).length > 0) {
+    if (routeMatchString && typeof params === 'object' && params !== null) {
       this._cachedQueryParams = {...this._cachedQueryParams, [routeMatchString]: params};
     }
   }
@@ -161,31 +161,23 @@ export class BreadcrumbService {
   }
 
   private matchCachedQueryParams(breadcrumbItems: Array<BreadcrumbItem>): Array<BreadcrumbItem> {
-    let hasCachedParams = false;
-
-    const mappedItems = breadcrumbItems.map(breadCrumbItem => {
-      const cachedParamKey = Object.keys(this._cachedQueryParams).find(cachedQueryParamKey =>
-        this.routeStringToPlain(breadCrumbItem.href).includes(
-          this.routeStringToPlain(cachedQueryParamKey)
-        )
+    return breadcrumbItems.map(breadCrumbItem => {
+      const cachedParamKey = Object.keys(this._cachedQueryParams).find(
+        cachedQueryParamKey =>
+          !!breadCrumbItem.href &&
+          this.routeStringToPlain(breadCrumbItem.href) ===
+            this.routeStringToPlain(cachedQueryParamKey)
       );
       const cachedParams = cachedParamKey && this._cachedQueryParams[cachedParamKey];
 
-      if (cachedParams) {
+      if (cachedParams && Object.keys(cachedParams).length > 0) {
         const tree = this.router.createUrlTree(breadCrumbItem.route, {queryParams: cachedParams});
         const serializedUrl = this.serializer.serialize(tree);
-        hasCachedParams = true;
         return {...breadCrumbItem, routeExtras: {queryParams: cachedParams}, href: serializedUrl};
       }
 
       return breadCrumbItem;
     });
-
-    if (hasCachedParams) {
-      this._cachedQueryParams = {};
-    }
-
-    return mappedItems;
   }
 
   private routeStringToPlain(routeString: string): string {

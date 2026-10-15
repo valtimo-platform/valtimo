@@ -239,6 +239,21 @@
         </cds-toggle>
       </cds-list-column>
     </cds-list-row>
+
+    <cds-list-row>
+      <cds-list-column>
+        <cds-toggle
+          [attr.data-test-id]="testIds.openCasesInNewTabToggle"
+          [label]="'settings.interface.openCasesInNewTab' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+          [disabled]="updatingUserSettings$ | async"
+          [ngModel]="openCasesInNewTab$ | async"
+          (ngModelChange)="setOpenCasesInNewTab($event)"
+        >
+        </cds-toggle>
+      </cds-list-column>
+    </cds-list-row>
   </cds-structured-list>
 </ng-template>
 

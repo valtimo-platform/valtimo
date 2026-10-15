@@ -761,7 +761,8 @@
       },
       "collapsibleMenu": "Navigation bar always collapsible",
       "compactMode": "Compact mode",
-      "showUserName": "Show name of user"
+      "showUserName": "Show name of user",
+      "openCasesInNewTab": "Open cases in a new tab by default"
     }
   },
   "decisions": {

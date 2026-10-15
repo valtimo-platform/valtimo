@@ -32,7 +32,9 @@ export class CaseListSearchService {
       )
     );
 
-  private readonly _globalSearchFilter$ = new BehaviorSubject<string>('');
+  private readonly _globalSearchFilter$ = new BehaviorSubject<string>(
+    this.caseParameterService.queryGlobalSearchParam
+  );
 
   public get documentSearchFields$(): Observable<Array<SearchField> | null> {
     return this._documentSearchFields$;
@@ -50,6 +52,7 @@ export class CaseListSearchService {
 
   public setGlobalSearchFilter(value: string | null): void {
     this._globalSearchFilter$.next(value ?? '');
+    this.caseParameterService.setGlobalSearchParameter(value ?? '');
     this.caseListService.checkRefresh();
   }
 

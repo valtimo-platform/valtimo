@@ -23,6 +23,7 @@ interface UserSettings {
   caseListPageSizes?: {[key: string]: number};
   taskListPageSizes?: {[key: string]: number};
   taskPanelWidth?: number;
+  openCasesInNewTab?: boolean;
 }
 
 export {UserSettings};

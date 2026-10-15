@@ -119,6 +119,7 @@ export const RIGHT_SIDEBAR_TEST_IDS = {
   settingsTab: 'rightSidebarSettingsTab',
   languageDropdown: 'rightSidebarLanguageDropdown',
   themeDropdown: 'rightSidebarThemeDropdown',
+  openCasesInNewTabToggle: 'rightSidebarOpenCasesInNewTabToggle',
 } as const;
 
 export const COLOR_PICKER_TEST_IDS = {

@@ -18,6 +18,7 @@ import {ActivatedRoute, Params, Router} from '@angular/router';
 import {
   BreadcrumbService,
   CarbonListComponent,
+  CaseOpeningPreferenceService,
   CarbonPaginationSelection,
   IQuickSearchService,
   ListHiddenColumn,
@@ -88,6 +89,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public visibleCaseTabs: CaseListTab[] | null = null;
 
   public readonly orchestration = inject(CaseListOrchestrationService);
+  private readonly caseOpeningPreferenceService = inject(CaseOpeningPreferenceService);
 
   public readonly tableTranslations = CASE_LIST_TABLE_TRANSLATIONS;
 
@@ -158,18 +160,23 @@ export class CaseListComponent implements OnInit, OnDestroy {
   // --- Row click ---
 
   public rowClick(item: any): void {
-    this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
-      this.breadcrumbService.cacheQueryParams(
-        `/cases/${caseDefinitionKey}`,
-        this.route.snapshot.queryParams
-      );
+    combineLatest([
+      this.listService.caseDefinitionKey$,
+      this.caseOpeningPreferenceService.openCasesInNewTab$,
+    ])
+      .pipe(take(1))
+      .subscribe(([caseDefinitionKey, openCasesInNewTab]) => {
+        this.breadcrumbService.cacheQueryParams(
+          `/cases/${caseDefinitionKey}`,
+          this.route.snapshot.queryParams
+        );
 
-      if (item.ctrlClick) {
-        window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
-      } else {
-        this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
-      }
-    });
+        if (item.ctrlClick || openCasesInNewTab) {
+          window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
+        } else {
+          this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
+        }
+      });
   }
 
   // --- Tab change ---
@@ -324,6 +331,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         if (this._previousCaseDefinitionKey) {
           this.parameterService.clearParameters();
           this.parameterService.clearSearchFieldValues();
+          this.searchService.setGlobalSearchFilter(null);
         }
         this._previousCaseDefinitionKey = caseDefinitionKey;
         this.paginationService.clearPagination();

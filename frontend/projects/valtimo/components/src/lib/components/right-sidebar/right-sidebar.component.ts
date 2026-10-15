@@ -36,7 +36,12 @@ import {
 import {UserProviderService} from '@valtimo/security';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
-import {CdsThemeService, PageHeaderService, ShellService} from '../../services';
+import {
+  CaseOpeningPreferenceService,
+  CdsThemeService,
+  PageHeaderService,
+  ShellService,
+} from '../../services';
 import {map} from 'rxjs/operators';
 import {ListItem} from 'carbon-components-angular';
 import {RIGHT_SIDEBAR_TEST_IDS} from '../../constants/components.test-ids';
@@ -92,6 +97,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   public readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
   public readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
+  public readonly openCasesInNewTab$ = this.caseOpeningPreferenceService.openCasesInNewTab$;
 
   private readonly _preferredTheme$ = this.cdsThemeService.preferredTheme$;
 
@@ -151,7 +157,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly userSettingsService: UserSettingsService,
     private readonly pageHeaderService: PageHeaderService,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly cdsThemeService: CdsThemeService,
+    private readonly caseOpeningPreferenceService: CaseOpeningPreferenceService
   ) {}
 
   public ngOnInit(): void {
@@ -202,6 +209,14 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   public setShowUserName(showUserName: boolean, saveSettings = true): void {
     this.pageHeaderService.setShowUserNameInTopBar(showUserName);
+
+    if (saveSettings) {
+      this.saveUserSettings();
+    }
+  }
+
+  public setOpenCasesInNewTab(openCasesInNewTab: boolean, saveSettings = true): void {
+    this.caseOpeningPreferenceService.setOpenCasesInNewTab(openCasesInNewTab);
 
     if (saveSettings) {
       this.saveUserSettings();
@@ -289,6 +304,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       this.compactMode$,
       this.showUserNameInTopBar$,
       this._preferredTheme$,
+      this.openCasesInNewTab$,
       this.enableCompactModeToggle$,
       this.enableShowUserNameToggle$,
       this.allowUserThemeSwitching$,
@@ -302,6 +318,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
             compactMode,
             showUserNameInTopBar,
             preferredTheme,
+            openCasesInNewTab,
             enableCompactModeToggle,
             enableShowUserNameToggle,
             allowUserThemeSwitching,
@@ -309,6 +326,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
             this.userSettingsService.saveUserSettings({
               collapsibleWidescreenMenu,
               languageCode,
+              openCasesInNewTab,
               ...(enableCompactModeToggle && {compactMode}),
               ...(enableShowUserNameToggle && {showUserNameInTopBar}),
               ...(allowUserThemeSwitching && {preferredTheme}),
@@ -323,6 +341,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   private setUserSettings(settings: UserSettings): void {
     this._selectedLanguage$.next(settings.languageCode);
     this.updateUserLanguage(settings.languageCode, false);
+
+    this.setOpenCasesInNewTab(settings.openCasesInNewTab, false);
 
     this.configService
       .getFeatureToggleObservable('menuCollapsedByDefault')
