@@ -169,7 +169,7 @@ export class AccessControlFormEditorService {
           field: group.get('field')!.value,
           path: group.get('path')!.value,
           operator: group.get('operator')!.value,
-          value: textToValue(group.get('value')!.value),
+          value: textToValue(group.get('value')!.value, group.get('operator')!.value),
           clazz: group.get('clazz')!.value,
         };
       }
@@ -178,7 +178,7 @@ export class AccessControlFormEditorService {
         type: 'field',
         field: group.get('field')!.value,
         operator: group.get('operator')!.value,
-        value: textToValue(group.get('value')!.value),
+        value: textToValue(group.get('value')!.value, group.get('operator')!.value),
       };
     });
   }

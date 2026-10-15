@@ -128,6 +128,7 @@ Related resource conditions can be nested to any depth, allowing complex permiss
 | `<=` | is less than or equal to | Value must be less or equal |
 | `in` | is one of | Value must be in the provided list |
 | `list_contains` | contains | List must contain the value |
+| `like` | contains the text | Text must contain the value, ignoring case. Only applies to text: an empty value or a non-text field never matches |
 
 ---
 

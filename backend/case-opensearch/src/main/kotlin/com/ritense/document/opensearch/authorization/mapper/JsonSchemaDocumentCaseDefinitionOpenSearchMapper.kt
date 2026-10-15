@@ -18,11 +18,13 @@ package com.ritense.document.opensearch.authorization.mapper
 
 import com.ritense.authorization.permission.condition.FieldPermissionCondition
 import com.ritense.authorization.permission.condition.PermissionCondition
+import com.ritense.authorization.permission.condition.PermissionConditionOperator
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.andAll
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.applyOperator
+import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.denyAll
 import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
@@ -41,7 +43,11 @@ class JsonSchemaDocumentCaseDefinitionOpenSearchMapper : OpenSearchAuthorization
                 is FieldPermissionCondition<*> -> {
                     val osField = mapCaseDefinitionField(condition.field)
                     val value = CurrentUserExpressionHandler.resolveValue(condition.value)
-                    applyOperator(osField, condition.operator, value)
+                    if (condition.operator == PermissionConditionOperator.LIKE && osField !in TEXT_FIELDS) {
+                        denyAll()
+                    } else {
+                        applyOperator(osField, condition.operator, value)
+                    }
                 }
                 else -> throw UnsupportedOperationException(
                     "Condition type ${condition::class.simpleName} is not supported in " +
@@ -67,5 +73,10 @@ class JsonSchemaDocumentCaseDefinitionOpenSearchMapper : OpenSearchAuthorization
             "Field '$field' on CaseDefinition is not yet mapped for OpenSearch. " +
             "Add it to ${this::class.simpleName}."
         )
+    }
+
+    companion object {
+        // 'like' only applies to text, as in JPA; versionTag is a Semver there
+        private val TEXT_FIELDS = setOf("definitionId.blueprintId.blueprintKey")
     }
 }

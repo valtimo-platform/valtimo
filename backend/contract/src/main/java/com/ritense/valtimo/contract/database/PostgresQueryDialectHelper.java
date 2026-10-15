@@ -104,6 +104,23 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
     }
 
     @Override
+    public Predicate getJsonValueContainsTextExpression(CriteriaBuilder cb, Path column, String path, String value) {
+        return cb.isTrue(
+            cb.function(
+                "jsonb_path_exists",
+                Boolean.class,
+                toJsonb(cb, column),
+                cb.function(
+                    "jsonpath",
+                    String.class,
+                    // Flag q matches literally; lax mode unwraps one array level, type() keeps nested values out
+                    cb.literal(path + " ? (@.type() == \"string\" && @ like_regex \"" + escapeJsonPathRegex(value) + "\" flag \"iq\")")
+                )
+            )
+        );
+    }
+
+    @Override
     public Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column) {
         return cast(column, String.class);
     }

@@ -19,6 +19,7 @@ package com.ritense.authorization.permission.condition
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.EQUAL_TO
+import com.ritense.authorization.permission.condition.PermissionConditionOperator.LIKE
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LIST_CONTAINS
 import com.ritense.authorization.testimpl.TestChildEntity
 import com.ritense.authorization.testimpl.TestEntity
@@ -138,6 +139,38 @@ class ExpressionPermissionConditionTest {
 
         val result = conditionTemplate.isValid(entity)
         assertEquals(false, result)
+    }
+
+    @Test
+    fun `should reject LIKE operation when clazz is not String`() {
+        assertThrows<IllegalArgumentException> {
+            ExpressionPermissionCondition(
+                field = "child.property",
+                path = "value",
+                operator = LIKE,
+                value = "myValue",
+                clazz = Collection::class.java as Class<Any>
+            )
+        }
+    }
+
+    @Test
+    fun `should deserialize LIKE operation from JSON`() {
+        val result: PermissionCondition = mapper.readValue(
+            """
+                {
+                    "type":"expression",
+                    "field":"child.property",
+                    "path":"value",
+                    "operator":"like",
+                    "value":"Value",
+                    "clazz":"java.lang.String"
+                }
+            """.trimIndent()
+        )
+
+        MatcherAssert.assertThat(result, Matchers.equalTo(conditionTemplate.copy(operator = LIKE, value = "Value")))
+        assertEquals(true, result.isValid(entity))
     }
 
     @Test

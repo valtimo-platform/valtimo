@@ -25,6 +25,7 @@ const OPERATOR_LABEL: Record<ConditionOperator, string> = {
   '<=': 'accessControl.overview.operators.lte',
   in: 'accessControl.overview.operators.in',
   list_contains: 'accessControl.overview.operators.list_contains',
+  like: 'accessControl.overview.operators.like',
 };
 
 const NO_CONTEXT_RESOURCE_TYPE = 'com.ritense.authorization.NoContext';

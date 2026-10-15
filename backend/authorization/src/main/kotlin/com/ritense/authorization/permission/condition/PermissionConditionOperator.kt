@@ -32,7 +32,8 @@ enum class PermissionConditionOperator(
     LESS_THAN("<"),
     LESS_THAN_OR_EQUAL_TO("<="),
     LIST_CONTAINS("list_contains"),
-    IN("in");
+    IN("in"),
+    LIKE("like");
 
     fun evaluate(left: Any?, right: Any?): Boolean {
         return when (this) {
@@ -44,6 +45,7 @@ enum class PermissionConditionOperator(
             LESS_THAN_OR_EQUAL_TO -> compare(left, right) <= 0
             LIST_CONTAINS -> contains(left, right)
             IN -> contains(right, left)
+            LIKE -> like(left, right)
         }
     }
 
@@ -103,6 +105,17 @@ enum class PermissionConditionOperator(
                 }
                 inClause
             }
+
+            LIKE ->
+                if (expression.javaType == String::class.java && isLikeValue(value)) {
+                    criteriaBuilder.like(
+                        criteriaBuilder.lower(expression as Expression<String>),
+                        "%" + escapeLikePattern((value as String).lowercase()) + "%"
+                    )
+                } else {
+                    // Fail closed: a blank value or a non-text field never grants access
+                    criteriaBuilder.disjunction()
+                }
         }
     }
 
@@ -118,6 +131,10 @@ enum class PermissionConditionOperator(
         }
     }
 
+    private fun like(left: Any?, right: Any?): Boolean {
+        return left is String && isLikeValue(right) && left.contains(right as String, ignoreCase = true)
+    }
+
     private fun contains(collection: Any?, value: Any?): Boolean {
         return if (collection == value) {
             true
@@ -126,5 +143,14 @@ enum class PermissionConditionOperator(
         } else {
             false
         }
+    }
+
+    companion object {
+        fun isLikeValue(value: Any?): Boolean = value is String && value.isNotBlank()
+
+        fun escapeLikePattern(value: String): String = value
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
     }
 }

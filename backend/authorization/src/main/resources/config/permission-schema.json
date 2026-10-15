@@ -1074,9 +1074,10 @@
                         "<",
                         "<=",
                         "list_contains",
-                        "in"
+                        "in",
+                        "like"
                     ],
-                    "description": "How the values are compared. Available operators:\n- `!=` — Not equal to.\n- `==` — Equal to.\n- `>` — Greater than.\n- `>=` — Greater than or equal to.\n- `<` — Less than.\n- `<=` — Less than or equal to.\n- `list_contains` — The field is a list, and contains the given value.\n- `in` — The given value is one of the values in the provided list."
+                    "description": "How the values are compared. Available operators:\n- `!=` — Not equal to.\n- `==` — Equal to.\n- `>` — Greater than.\n- `>=` — Greater than or equal to.\n- `<` — Less than.\n- `<=` — Less than or equal to.\n- `list_contains` — The field is a list, and contains the given value.\n- `in` — The given value is one of the values in the provided list.\n- `like` — The value is text that contains the given text, ignoring upper and lower case. On an expression condition the clazz must be 'java.lang.String'; a list matches when one of its text values contains the given text."
                 },
                 "value": {
                     "description": "The value the field is compared against. May be a literal (string, number, boolean) or a list. Placeholders such as ${currentUserId}, ${currentUserEmail}, ${currentUsername}, ${currentUserRoles} and ${currentUserTeams} are replaced at evaluation time with information about the user making the request.",
@@ -1124,9 +1125,10 @@
                         "<",
                         "<=",
                         "list_contains",
-                        "in"
+                        "in",
+                        "like"
                     ],
-                    "description": "How the values are compared. Available operators:\n- `!=` — Not equal to.\n- `==` — Equal to.\n- `>` — Greater than.\n- `>=` — Greater than or equal to.\n- `<` — Less than.\n- `<=` — Less than or equal to.\n- `list_contains` — The field is a list, and contains the given value.\n- `in` — The given value is one of the values in the provided list."
+                    "description": "How the values are compared. Available operators:\n- `!=` — Not equal to.\n- `==` — Equal to.\n- `>` — Greater than.\n- `>=` — Greater than or equal to.\n- `<` — Less than.\n- `<=` — Less than or equal to.\n- `list_contains` — The field is a list, and contains the given value.\n- `in` — The given value is one of the values in the provided list.\n- `like` — The value is text that contains the given text, ignoring upper and lower case. On an expression condition the clazz must be 'java.lang.String'; a list matches when one of its text values contains the given text."
                 },
                 "clazz": {
                     "type": "string",

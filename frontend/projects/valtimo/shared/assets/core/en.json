@@ -3535,7 +3535,8 @@
         "lt": "is less than",
         "lte": "is less than or equal to",
         "in": "is one of",
-        "list_contains": "contains"
+        "list_contains": "contains",
+        "like": "contains the text"
       },
       "specialValues": {
         "currentUserId": "the current user's ID",

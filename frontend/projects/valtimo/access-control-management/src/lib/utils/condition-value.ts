@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {ConditionOperator} from '../models';
+
 // A permission condition value is generically typed on the backend (a string, number, boolean,
 // null, list or object). The form editor edits it through a single text field, so we need a
 // lossless-as-possible bridge between the stored value and its text representation.
@@ -39,9 +41,11 @@ function valueToText(value: unknown): string {
  * - valid JSON (number, boolean, null, array, object, quoted string) -> the parsed value
  * - anything else -> the raw string (so 'view' or '${currentUserId}' stay strings)
  */
-function textToValue(text: string): unknown {
+function textToValue(text: string, operator?: ConditionOperator): unknown {
   const trimmed = (text ?? '').trim();
   if (trimmed === '') return null;
+  // 'like' compares text, so a value that looks like a number or boolean must stay text
+  if (operator === 'like') return trimmed === 'null' ? null : text;
   try {
     return JSON.parse(trimmed);
   } catch {

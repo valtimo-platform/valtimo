@@ -3544,7 +3544,8 @@
         "lt": "kleiner dan",
         "lte": "kleiner dan of gelijk aan",
         "in": "is een van",
-        "list_contains": "bevat"
+        "list_contains": "bevat",
+        "like": "bevat de tekst"
       },
       "specialValues": {
         "currentUserId": "het ID van de huidige gebruiker",
