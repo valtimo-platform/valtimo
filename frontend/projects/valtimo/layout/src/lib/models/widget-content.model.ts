@@ -63,6 +63,7 @@ interface WidgetTableContent {
   collection: string;
   firstColumnAsTitle: boolean;
   defaultPageSize: number;
+  noDataMessage?: string;
 }
 
 interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {

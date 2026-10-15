@@ -1738,6 +1738,9 @@
         "columns": "Columns",
         "options": "Options",
         "firstColumnAsTitle": "First column is the title of the row",
+        "noDataMessage": "Message when the table is empty",
+        "noDataMessagePlaceholder": "No data found",
+        "noDataMessageTooltip": "Shown below the column headers when the table has no rows. Leave empty to show the default message.",
         "titleTooltip": "Title for the column",
         "valueTooltip": "Name of the property you wish to access within the previously filled table data path"
       },

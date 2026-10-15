@@ -1745,6 +1745,9 @@
         "columns": "Kolommen",
         "options": "Opties",
         "firstColumnAsTitle": "Eerste kolom is de titel van de rij",
+        "noDataMessage": "Melding bij een lege tabel",
+        "noDataMessagePlaceholder": "Geen data gevonden",
+        "noDataMessageTooltip": "Wordt onder de kolomkoppen getoond als de tabel geen rijen heeft. Laat leeg om de standaardmelding te tonen.",
         "titleTooltip": "Title voor de kolom",
         "valueTooltip": "Naam van de eigenschap waartoe je toegang wilt krijgen binnen het eerder ingevulde tabelgegevens-pad"
       },

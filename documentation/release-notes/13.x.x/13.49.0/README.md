@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Empty table widgets keep their columns
 
-New enhancement explanation.
+A table widget without data now shows its column headers with a single line of text, instead of a large "No data found" image, in case widget tabs and IKO views. That text can be set per table widget with the new "Message when the table is empty" option.
 
 ---
 

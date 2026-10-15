@@ -112,4 +112,23 @@
     [offText]="'interface.no' | translate"
     (checkedChange)="onCheckedChange($event)"
   ></cds-toggle>
+
+  <cds-text-label
+    [attr.data-carbon-theme]="theme$ | async"
+    [formGroup]="form"
+    class="valtimo-widget-management-table__no-data-message"
+  >
+    <v-input-label
+      [title]="'widgetTabManagement.content.table.noDataMessage' | translate"
+      [tooltip]="'widgetTabManagement.content.table.noDataMessageTooltip' | translate"
+    >
+    </v-input-label>
+
+    <input
+      formControlName="noDataMessage"
+      cdsText
+      [placeholder]="'widgetTabManagement.content.table.noDataMessagePlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
 </section>

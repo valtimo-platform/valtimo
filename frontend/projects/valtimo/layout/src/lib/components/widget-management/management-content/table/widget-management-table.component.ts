@@ -89,6 +89,9 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
       (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.defaultPageSize ?? 5,
       Validators.required
     ),
+    noDataMessage: this.fb.control<string>(
+      (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.noDataMessage ?? ''
+    ),
   });
 
   public readonly theme$: Observable<CARBON_THEME> = this.cdsThemeService.currentTheme$.pipe(
@@ -143,12 +146,21 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
         this.widgetWizardService.$widgetIcon.set(value?.widgetIcon ?? '');
 
         this.widgetWizardService.$widgetContent.update(
-          (content: WidgetContentProperties | null) =>
-            ({
+          (content: WidgetContentProperties | null) => {
+            const updatedContent = {
               ...content,
               collection: value?.collection || '',
               defaultPageSize: value?.defaultPageSize || 5,
-            }) as WidgetTableContent
+            } as WidgetTableContent;
+
+            if (this.showFirstColumnOption && value?.noDataMessage?.trim()) {
+              updatedContent.noDataMessage = value.noDataMessage;
+            } else {
+              delete updatedContent.noDataMessage;
+            }
+
+            return updatedContent;
+          }
         );
 
         this.widgetWizardService.$widgetContentValid.set(this.form.valid && this._$contentValid());
