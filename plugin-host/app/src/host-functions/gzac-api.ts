@@ -66,6 +66,15 @@ export interface GzacApiCallContext {
    * `X-Valtimo-Contract-Chain` so nested calls are depth- and cycle-checked.
    */
   contractChain?: string[];
+  /** Epoch ms on this host's clock by which a synchronous contract delivery must answer. */
+  contractDeadlineMs?: number;
+  /**
+   * Epoch ms deadline of the running invocation: the Wasm timeout, or {@link contractDeadlineMs}
+   * when earlier. Set by `PluginManager` for every export; bounds `plugin_contract`.
+   */
+  deadlineMs?: number;
+  /** Correlation id of the contract delivery being served; `plugin_contract` passes it on. */
+  correlationId?: string;
 }
 
 interface GzacApiRequest {

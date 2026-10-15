@@ -40,7 +40,7 @@ import {ensureToolchain, runEsbuild} from "./toolchain.mjs";
 // functions the module imports. Generated so plugin authors never write Wasm-specific type
 // declarations. extism-js turns every declared host function into a module import, used or not, so
 // `plugin_contract` is only declared for a plugin whose manifest declares contracts — a
-// contract-free plugin built with this SDK must still instantiate on a host that predates it.
+// contract-free module then instantiates on any host, with or without that host function.
 function buildInterface({ contracts }) {
   return `declare module "main" {
   export function handle_action(): I32;

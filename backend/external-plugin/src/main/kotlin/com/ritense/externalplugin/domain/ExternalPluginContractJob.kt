@@ -22,6 +22,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import java.time.Instant
@@ -33,7 +34,15 @@ import java.util.UUID
  * data from the case.
  */
 @Entity
-@Table(name = "external_plugin_contract_job")
+@Table(
+    name = "external_plugin_contract_job",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "ext_plugin_contract_job_idempotency_uq",
+            columnNames = ["requester_configuration_id", "idempotency_key"],
+        )
+    ],
+)
 class ExternalPluginContractJob(
 
     @Id
@@ -55,9 +64,22 @@ class ExternalPluginContractJob(
     @Column(name = "requested_by")
     val requestedBy: String? = null,
 
+    /** The case the job acts on. A user token always names one; a service token may. */
+    @Column(name = "document_id")
+    val documentId: String? = null,
+
+    /** Unique per requester; a repeated create with the same key answers with this job. */
+    @Column(name = "idempotency_key")
+    val idempotencyKey: String? = null,
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     var status: ExternalPluginContractJobStatus = ExternalPluginContractJobStatus.PENDING,
+
+    /** COMPLETED, FAILED or EXPIRED once finished; kept through DELIVERED and UNDELIVERABLE. */
+    @Column(name = "outcome")
+    @Enumerated(EnumType.STRING)
+    var outcome: ExternalPluginContractJobStatus? = null,
 
     @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "request_payload", nullable = false)
@@ -69,6 +91,10 @@ class ExternalPluginContractJob(
 
     @Column(name = "error_code")
     var errorCode: String? = null,
+
+    /** The provider's own error code, next to the platform's [errorCode]. */
+    @Column(name = "provider_error_code")
+    var providerErrorCode: String? = null,
 
     @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "error_message")

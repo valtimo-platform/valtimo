@@ -18,15 +18,15 @@
   <div class="plugin-external-properties-editor__header">
     <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
 
-    <p class="plugin-external-properties-editor__helper">
+    <p class="cds--type-helper-text-01 plugin-external-properties-editor__helper">
       {{ 'pluginManagement.propertiesEditor.helper' | translate }}
     </p>
   </div>
 
   <div
-    class="plugin-external-properties-editor__editor"
+    [attr.data-test-id]="testIds.editor"
     [class.plugin-external-properties-editor__editor--invalid]="invalid"
-    data-test-id="external-plugin-properties-editor"
+    class="plugin-external-properties-editor__editor"
   >
     <valtimo-editor
       [model]="$model()"
@@ -41,7 +41,7 @@
   </div>
 
   <section *ngIf="$fields().length > 0" class="plugin-external-properties-editor__fields">
-    <h5 class="plugin-external-properties-editor__fields-title">
+    <h5 class="cds--type-heading-compact-01 plugin-external-properties-editor__fields-title">
       {{ 'pluginManagement.propertiesEditor.fieldsTitle' | translate }}
     </h5>
 
@@ -51,9 +51,7 @@
         class="plugin-external-properties-editor__field"
       >
         <div class="plugin-external-properties-editor__field-head">
-          <span class="plugin-external-properties-editor__field-name">{{
-            field.title || field.key
-          }}</span>
+          <span class="cds--type-heading-compact-01">{{ field.title || field.key }}</span>
 
           <code class="cds--snippet--inline">{{ field.key }}</code>
 
@@ -73,16 +71,21 @@
             {{ 'pluginManagement.propertiesEditor.egressTarget' | translate }}
           </cds-tag>
 
-          <span class="plugin-external-properties-editor__field-type">{{ field.type }}</span>
+          <span class="cds--type-helper-text-01 plugin-external-properties-editor__field-type">{{
+            field.type
+          }}</span>
         </div>
 
-        <p *ngIf="field.description" class="plugin-external-properties-editor__helper">
+        <p
+          *ngIf="field.description"
+          class="cds--type-helper-text-01 plugin-external-properties-editor__helper"
+        >
           {{ field.description }}
         </p>
 
         <p
           *ngIf="field.secret && secretsKeptWhenEmpty"
-          class="plugin-external-properties-editor__helper"
+          class="cds--type-helper-text-01 plugin-external-properties-editor__helper"
         >
           {{ 'pluginManagement.propertiesEditor.secretKept' | translate }}
         </p>

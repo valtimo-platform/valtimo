@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-import {ExternalPluginContractJobStatus} from '@valtimo/plugin';
+import {ExternalPluginContractJobDetail, ExternalPluginContractJobStatus} from '@valtimo/plugin';
+
+/** Cancelling an open job fails it; the requester is told. */
+const CONTRACT_JOB_OPEN_STATUSES: ReadonlyArray<ExternalPluginContractJobStatus> = [
+  'PENDING',
+  'ACCEPTED',
+];
+
+/** Cancelling a finished job whose reply is not delivered yet stops that delivery. */
+const CONTRACT_JOB_FINISHED_STATUSES: ReadonlyArray<ExternalPluginContractJobStatus> = [
+  'COMPLETED',
+  'FAILED',
+  'EXPIRED',
+];
 
 /** Carbon tag colour per contract job status; open states neutral, terminal states signal outcome. */
 function contractJobStatusTagType(status: ExternalPluginContractJobStatus | string): string {
@@ -37,4 +50,24 @@ function contractJobStatusTagType(status: ExternalPluginContractJobStatus | stri
   }
 }
 
-export {contractJobStatusTagType};
+function isContractJobOpen(status: ExternalPluginContractJobStatus): boolean {
+  return CONTRACT_JOB_OPEN_STATUSES.includes(status);
+}
+
+function isContractJobCancellable(status: ExternalPluginContractJobStatus): boolean {
+  return isContractJobOpen(status) || CONTRACT_JOB_FINISHED_STATUSES.includes(status);
+}
+
+/** Only a reply given up on can be delivered again, and only when the job has an outcome to send. */
+function isContractJobRedeliverable(
+  job: Pick<ExternalPluginContractJobDetail, 'status' | 'outcome'>
+): boolean {
+  return job.status === 'UNDELIVERABLE' && !!job.outcome;
+}
+
+export {
+  contractJobStatusTagType,
+  isContractJobOpen,
+  isContractJobCancellable,
+  isContractJobRedeliverable,
+};

@@ -31,6 +31,11 @@ export interface ActionInput {
   documentId?: string;
   activityId?: string;
   properties: Record<string, unknown>;
+  /**
+   * Opaque, expiring handle naming this process instance. Send it as `replyTo` with
+   * `POST /api/v1/plugin-contract/jobs` to get the job's outcome back as a BPMN message.
+   */
+  replyHandle?: string;
 }
 
 export type ActionOutput =

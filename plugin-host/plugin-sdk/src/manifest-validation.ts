@@ -314,22 +314,57 @@ export function validatePluginManifest(manifest: unknown): string[] {
 }
 
 const CONTRACT_RULE = "must be a contract name of the form 'name@major', e.g. 'nl.ritense.openplan@1' (lowercase reverse-DNS segments, then '@' and the major version)";
+const OPERATION_KEY_RULE = "must start with a lowercase letter and contain only lowercase letters, digits and '-'";
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Each entry: `"name@major"` (any operation) or `{contract, operations}` (only those). */
 function validateDeclaredContracts(contracts: unknown): string[] {
   if (!Array.isArray(contracts)) {
     return ["manifest.json 'permissions.contracts' must be an array when present"];
   }
   const errors: string[] = [];
   const seen = new Set<string>();
-  contracts.forEach((contract, i) => {
-    if (!isValidContract(contract)) {
-      errors.push(`manifest.json permissions.contracts[${i}] ${CONTRACT_RULE}`);
+  contracts.forEach((entry, i) => {
+    const at = `manifest.json permissions.contracts[${i}]`;
+    let contract: unknown;
+    if (typeof entry === "string") {
+      contract = entry;
+      if (!isValidContract(contract)) errors.push(`${at} ${CONTRACT_RULE}`);
+    } else if (isPlainObject(entry)) {
+      contract = entry.contract;
+      if (!isValidContract(contract)) errors.push(`${at}.contract ${CONTRACT_RULE}`);
+      errors.push(...validateDeclaredOperations(entry.operations, `${at}.operations`));
+    } else {
+      errors.push(`${at} must be a contract name of the form 'name@major' or an object with 'contract' and 'operations'`);
       return;
     }
+    if (!isValidContract(contract)) return;
     if (seen.has(contract)) {
       errors.push(`manifest.json 'permissions.contracts' must contain unique contracts; '${contract}' is duplicated`);
     }
     seen.add(contract);
+  });
+  return errors;
+}
+
+function validateDeclaredOperations(operations: unknown, at: string): string[] {
+  if (!Array.isArray(operations) || operations.length === 0) {
+    return [`${at} must be a non-empty array of operation keys`];
+  }
+  const errors: string[] = [];
+  const seen = new Set<string>();
+  operations.forEach((key, j) => {
+    if (typeof key !== "string" || !CONTRACT_OPERATION_KEY_PATTERN.test(key)) {
+      errors.push(`${at}[${j}] ${OPERATION_KEY_RULE}`);
+      return;
+    }
+    if (seen.has(key)) {
+      errors.push(`${at} must contain unique keys; '${key}' is duplicated`);
+    }
+    seen.add(key);
   });
   return errors;
 }
@@ -377,7 +412,7 @@ function validateContractOperation(operation: unknown, at: string, seenKeys: Set
   const errors: string[] = [];
   const op = operation as Record<string, unknown>;
   if (typeof op.key !== "string" || !CONTRACT_OPERATION_KEY_PATTERN.test(op.key)) {
-    errors.push(`${at}.key must start with a lowercase letter and contain only lowercase letters, digits and '-'`);
+    errors.push(`${at}.key ${OPERATION_KEY_RULE}`);
   } else {
     if (seenKeys.has(op.key)) {
       errors.push(`${at}.key '${op.key}' is duplicated within its contract`);
@@ -420,6 +455,12 @@ function validateContractOperation(operation: unknown, at: string, seenKeys: Set
         }
         seen.add(output);
       });
+    }
+  }
+  // Shape only: GZAC compiles the schema and reports an invalid one.
+  for (const field of ["input", "output"] as const) {
+    if (op[field] !== undefined && !isPlainObject(op[field])) {
+      errors.push(`${at}.${field} must be a JSON Schema object when present`);
     }
   }
   return errors;

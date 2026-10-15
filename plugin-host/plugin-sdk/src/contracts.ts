@@ -24,8 +24,8 @@
  *   `permissions.contracts`; `onContractReply` receives job outcomes.
  *
  * All three host-bound calls go through the single `plugin_contract` host function. The build tool
- * only declares that import when the manifest declares contracts, so a contract-free plugin still
- * loads on a host that predates it.
+ * only declares that import when the manifest declares contracts, so a contract-free plugin's
+ * module never imports it.
  */
 
 import type {
@@ -53,7 +53,9 @@ export function onContractCall(contract: string, operation: string, handler: Con
 
 /**
  * Serve a `mode: "job"` operation. Return `{status: "completed", result}` to finish at once, or
- * `{status: "accepted"}` and call {@link completeJob} later with the input's `jobId`.
+ * `{status: "accepted"}` and call {@link completeJob} with the input's `jobId` from a later
+ * invocation — an action, event, request or submit handler. There is no timer: keep the `jobId`
+ * (e.g. in `kv`) until such an invocation can finish the job, or it expires at its `timeout`.
  */
 export function onContractJob(contract: string, operation: string, handler: ContractJobHandler): void {
   jobHandlers.set(handlerKey(contract, operation), handler);
@@ -96,7 +98,8 @@ interface PluginContractRequest {
   contract?: string;
   operation?: string;
   payload?: unknown;
-  replyTo?: { processInstanceId: string };
+  replyTo?: string;
+  idempotencyKey?: string;
   jobId?: string;
   status?: "completed" | "failed";
   result?: unknown;
@@ -163,17 +166,24 @@ export function pluginCall<T = unknown>(
 
 /**
  * Starts a job on the provider bound to `contract` and returns at once with its `jobId`. The outcome
- * arrives later in `onContractReply`, or — with `replyTo` — as a BPMN message
- * `contract-reply:<contract>:<operation>` correlated on the case's business key.
+ * arrives later in `onContractReply`, or — with `replyTo` — as a BPMN message to that process
+ * instance: `contract-reply:<jobId>` when a catch event waits for that name, otherwise
+ * `contract-reply:<contract>:<operation>`, with the outcome in the local variable `contractReply`.
+ *
+ * @param opts.replyTo an action input's `replyHandle`.
+ * @param opts.idempotencyKey 1-255 visible ASCII characters. Repeating a request with the same key
+ *   returns the existing job instead of starting another; reusing the key for another contract or
+ *   operation answers `IDEMPOTENCY_KEY_CONFLICT`.
  */
 export function pluginRequest(
   contract: string,
   operation: string,
   payload?: unknown,
-  opts: { replyTo?: { processInstanceId: string } } = {}
+  opts: { replyTo?: string; idempotencyKey?: string } = {}
 ): ContractRequestResult {
   const req: PluginContractRequest = { kind: "request", contract, operation, payload: payload ?? {} };
-  if (opts.replyTo) req.replyTo = opts.replyTo;
+  if (opts.replyTo !== undefined) req.replyTo = opts.replyTo;
+  if (opts.idempotencyKey !== undefined) req.idempotencyKey = opts.idempotencyKey;
   return callPluginContract(req) as unknown as ContractRequestResult;
 }
 

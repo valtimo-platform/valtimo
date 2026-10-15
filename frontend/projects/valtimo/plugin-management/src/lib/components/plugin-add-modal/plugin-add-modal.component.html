@@ -52,8 +52,8 @@
           (capabilitiesResolved)="onCapabilitiesResolved($event)"
           (egressResolved)="onEgressResolved($event)"
           (derivedEgressResolved)="onDerivedEgressResolved($event)"
+          (declaredContractsResolved)="onDeclaredContractsResolved($event)"
           (providedContractsResolved)="onProvidedContractsResolved($event)"
-          (requiredContractsResolved)="onRequiredContractsResolved($event)"
           (validEvent)="onValid($event)"
           (saveEvent)="onExternalSave($event)"
         ></valtimo-plugin-external-configure>
@@ -69,7 +69,7 @@
 
     <div *ngIf="isExternal" [hidden]="currentStepIndex !== 2">
       <valtimo-plugin-external-contract-bindings
-        [contracts]="requiredContracts$ | async"
+        [contracts]="declaredContracts$ | async"
         (bindingsChangeEvent)="onContractBindingsChange($event)"
         (validEvent)="onContractBindingsValid($event)"
       ></valtimo-plugin-external-contract-bindings>

@@ -98,8 +98,17 @@ describe("plugin_contract host function", () => {
     it("refuses a contract outside the pushed grant without any network I/O", async () => {
       const reply = await invoke(baseCtx, { kind: "call", contract: "nl.ritense.other@1", operation: "list" });
 
-      expect(reply).toMatchObject({ status: "error", errorCode: "CONTRACT_NOT_GRANTED" });
+      expect(reply).toEqual({
+        status: "error",
+        errorCode: "CONTRACT_NOT_GRANTED",
+        errorMessage: "Contract 'nl.ritense.other@1' is not declared and bound for this configuration",
+      });
       expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("forwards no reply handle or idempotency key — those belong to job requests", async () => {
+      await invoke(baseCtx, { kind: "call", contract: CONTRACT, operation: "list", replyTo: "h", idempotencyKey: "k" });
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ contract: CONTRACT, operation: "list", payload: {} });
     });
 
     it("denies by default when no contracts were pushed", async () => {
@@ -119,7 +128,9 @@ describe("plugin_contract host function", () => {
   });
 
   describe("request", () => {
-    it("posts to /jobs with replyTo and passes the accepted envelope through", async () => {
+    const HANDLE = "eyJjZmciOiJjZmctMSJ9.bWFj";
+
+    it("posts to /jobs with the reply handle and idempotency key and passes the accepted envelope through", async () => {
       fetchMock.mockResolvedValueOnce(jsonResponse({ status: "accepted", jobId: "job-1" }, 202));
 
       const reply = await invoke(baseCtx, {
@@ -127,7 +138,8 @@ describe("plugin_contract host function", () => {
         contract: CONTRACT,
         operation: "generate",
         payload: {},
-        replyTo: { processInstanceId: "pi-1" },
+        replyTo: HANDLE,
+        idempotencyKey: "report-pi-1",
       });
 
       expect(reply).toEqual({ status: "accepted", jobId: "job-1" });
@@ -137,17 +149,67 @@ describe("plugin_contract host function", () => {
         contract: CONTRACT,
         operation: "generate",
         payload: {},
-        replyTo: { processInstanceId: "pi-1" },
+        replyTo: HANDLE,
+        idempotencyKey: "report-pi-1",
       });
     });
 
-    it("refuses an ungranted contract and a malformed replyTo before the fetch", async () => {
+    it("sends neither field when the plugin gave none (null counts as none)", async () => {
+      await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate" });
+      await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", replyTo: null, idempotencyKey: null });
+
+      for (const [, init] of fetchMock.mock.calls) {
+        expect(JSON.parse(init.body)).toEqual({ contract: CONTRACT, operation: "generate", payload: {} });
+      }
+    });
+
+    it("accepts the longest reply handle and a key of every visible ASCII character", async () => {
+      const everyVisible = Array.from({ length: 0x7e - 0x21 + 1 }, (_, i) => String.fromCharCode(0x21 + i)).join("");
+
+      await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", replyTo: "h".repeat(4096) });
+      await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", idempotencyKey: everyVisible });
+      await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", idempotencyKey: "k".repeat(255) });
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(JSON.parse(fetchMock.mock.calls[1][1].body).idempotencyKey).toBe(everyVisible);
+    });
+
+    it("refuses an ungranted contract before the fetch", async () => {
       expect(await invoke(baseCtx, { kind: "request", contract: "nl.x.y@1", operation: "generate" })).toMatchObject({
         errorCode: "CONTRACT_NOT_GRANTED",
       });
-      expect(
-        await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", replyTo: { processInstanceId: 1 } })
-      ).toMatchObject({ errorCode: "INVALID_REQUEST" });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["an object", { processInstanceId: "pi-1" }],
+      ["an empty string", ""],
+      ["longer than 4096 characters", "h".repeat(4097)],
+      ["a number", 42],
+    ])("refuses a replyTo that is %s before the fetch", async (_label, replyTo) => {
+      const reply = await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", replyTo });
+      expect(reply).toEqual({
+        status: "error",
+        errorCode: "INVALID_REQUEST",
+        errorMessage: "'replyTo' must be a reply handle: a non-empty string of at most 4096 characters",
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["empty", ""],
+      ["longer than 255 characters", "k".repeat(256)],
+      ["containing a space", "report 1"],
+      ["containing a control character", "report\n1"],
+      ["non-ASCII", "rapport-é"],
+      ["a number", 7],
+    ])("refuses an idempotencyKey that is %s before the fetch", async (_label, idempotencyKey) => {
+      const reply = await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", idempotencyKey });
+      expect(reply).toEqual({
+        status: "error",
+        errorCode: "INVALID_REQUEST",
+        errorMessage: "'idempotencyKey' must be 1-255 visible ASCII characters",
+      });
       expect(fetchMock).not.toHaveBeenCalled();
     });
   });
@@ -220,6 +282,101 @@ describe("plugin_contract host function", () => {
       const reply = await invoke(baseCtx, { kind: "call", contract: CONTRACT, operation: "list" }, 20);
       expect(reply).toMatchObject({ status: "error", errorCode: "GZAC_UNREACHABLE" });
       expect(reply.errorMessage).toContain("20ms");
+    });
+  });
+
+  describe("deadline", () => {
+    const COMPLETE = { kind: "complete", jobId: "job-1", status: "completed" };
+    const CALL = { kind: "call", contract: CONTRACT, operation: "list" };
+    const REQUEST = { kind: "request", contract: CONTRACT, operation: "generate" };
+
+    /** A GZAC that never answers; the fetch only ends when its signal aborts. */
+    function hangingFetch() {
+      fetchMock.mockImplementation(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            init.signal!.addEventListener("abort", () => reject(init.signal!.reason));
+          })
+      );
+    }
+
+    it.each([
+      ["call", CALL],
+      ["request", REQUEST],
+      ["complete", COMPLETE],
+    ])("refuses a %s without calling GZAC when less than 250 ms is left", async (_kind, request) => {
+      const reply = await invoke({ ...baseCtx, deadlineMs: Date.now() + 100 }, request);
+
+      expect(reply).toEqual({
+        status: "error",
+        errorCode: "CONTRACT_DEADLINE_EXCEEDED",
+        errorMessage: "No time left for a contract call within this invocation",
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses once the deadline has passed", async () => {
+      const reply = await invoke({ ...baseCtx, deadlineMs: Date.now() - 1_000 }, CALL);
+      expect(reply).toMatchObject({ errorCode: "CONTRACT_DEADLINE_EXCEEDED" });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("hands the time left in the invocation to GZAC on a call only", async () => {
+      const deadlineMs = Date.now() + 10_000;
+      const ctx = { ...baseCtx, deadlineMs };
+
+      await invoke(ctx, CALL);
+      await invoke(ctx, REQUEST);
+      await invoke(ctx, COMPLETE);
+
+      const sent = Number(fetchMock.mock.calls[0][1].headers["X-Valtimo-Contract-Timeout-Ms"]);
+      expect(Number.isInteger(sent)).toBe(true);
+      expect(sent).toBeGreaterThan(9_000);
+      expect(sent).toBeLessThanOrEqual(10_000);
+      expect(fetchMock.mock.calls[1][1].headers["X-Valtimo-Contract-Timeout-Ms"]).toBeUndefined();
+      expect(fetchMock.mock.calls[2][1].headers["X-Valtimo-Contract-Timeout-Ms"]).toBeUndefined();
+    });
+
+    it("sends no timeout header for an invocation without a deadline", async () => {
+      await invoke(baseCtx, CALL);
+      expect(fetchMock.mock.calls[0][1].headers["X-Valtimo-Contract-Timeout-Ms"]).toBeUndefined();
+    });
+
+    it("cuts the wait off at the deadline when it comes before the configured timeout", async () => {
+      hangingFetch();
+      const started = Date.now();
+
+      const reply = await invoke({ ...baseCtx, deadlineMs: Date.now() + 400 }, CALL, 60_000);
+
+      expect(reply).toMatchObject({ status: "error", errorCode: "CONTRACT_DEADLINE_EXCEEDED" });
+      expect(reply.errorMessage).toMatch(/^GZAC did not answer within the \d+ms left in this invocation$/);
+      expect(Date.now() - started).toBeLessThan(5_000);
+    });
+
+    it("keeps the configured timeout when it ends before the deadline", async () => {
+      hangingFetch();
+
+      const reply = await invoke({ ...baseCtx, deadlineMs: Date.now() + 60_000 }, CALL, 20);
+
+      expect(reply).toEqual({
+        status: "error",
+        errorCode: "GZAC_UNREACHABLE",
+        errorMessage: "GZAC did not answer within 20ms",
+      });
+    });
+  });
+
+  describe("correlation id", () => {
+    it.each([
+      ["call", { kind: "call", contract: CONTRACT, operation: "list" }],
+      ["request", { kind: "request", contract: CONTRACT, operation: "generate" }],
+      ["complete", { kind: "complete", jobId: "job-1", status: "completed" }],
+    ])("passes the invocation's correlation id on a %s", async (_kind, request) => {
+      await invoke({ ...baseCtx, correlationId: "8d3c-corr-1" }, request);
+      await invoke(baseCtx, request);
+
+      expect(fetchMock.mock.calls[0][1].headers["X-Valtimo-Correlation-Id"]).toBe("8d3c-corr-1");
+      expect(fetchMock.mock.calls[1][1].headers["X-Valtimo-Correlation-Id"]).toBeUndefined();
     });
   });
 

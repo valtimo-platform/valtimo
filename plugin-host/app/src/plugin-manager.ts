@@ -614,7 +614,10 @@ export class PluginManager {
    * Invokes one exported plugin function on a pooled Extism instance and parses its JSON reply. Every
    * export funnels through here; the public wrappers only shape their input/host-context.
    *
-   * `optionalExport` marks an export older SDK builds lack: its absence throws
+   * Sets `hostCtx.deadlineMs` — the Wasm timeout, or the contract delivery's deadline when earlier —
+   * so host functions can fit their own waits inside the invocation.
+   *
+   * `optionalExport` marks an export a module may lack (the contract entrypoints): its absence throws
    * {@link MissingPluginExportError} before the call instead of a generic Extism failure, and the
    * healthy instance goes back to the pool.
    *
@@ -658,6 +661,7 @@ export class PluginManager {
     let succeeded = false;
     let output: T;
     try {
+      hostCtx.deadlineMs = Math.min(hostCtx.contractDeadlineMs ?? Infinity, Date.now() + this.wasmTimeoutMs);
       const result = await lease.instance.call(exportName, wasmInput, hostCtx);
       if (!result) {
         throw new Error(`${exportName} returned null for ${pluginId}@${version}`);
@@ -689,7 +693,7 @@ export class PluginManager {
    *
    * `serviceToken` and `gzacBaseUrl` are passed via Extism's per-call host context — they are
    * never serialized into the Wasm input. Host functions (e.g. `gzac_api`) read them via
-   * `callContext.hostContext()`.
+   * `callContext.hostContext()`. `replyHandle` is opaque to the host and reaches the Wasm as is.
    */
   async callAction(
     pluginId: string,
@@ -702,6 +706,7 @@ export class PluginManager {
       documentId: string;
       activityId: string;
       properties: Record<string, unknown>;
+      replyHandle?: string;
       serviceToken: string;
       gzacBaseUrl: string;
     }
@@ -867,8 +872,9 @@ export class PluginManager {
   /**
    * Call `handle_contract_call` — GZAC delivering a contract call or job to this provider.
    *
-   * `serviceToken` / `gzacBaseUrl` / `chain` are host-only: they reach the Wasm only through the
-   * per-call host context, so a nested `pluginCall` from the provider carries the chain onwards.
+   * `serviceToken` / `gzacBaseUrl` / `chain` / `contractDeadlineMs` / `correlationId` are host-only:
+   * they reach the Wasm only through the per-call host context, so a nested `pluginCall` from the
+   * provider carries the chain, the deadline and the correlation id onwards.
    * Throws {@link MissingPluginExportError} for a plugin built without the export.
    */
   async callContract(
@@ -883,7 +889,11 @@ export class PluginManager {
       payload: unknown;
       jobId?: string;
       deadline?: string;
+      documentId?: string;
+      requestedBy?: string;
       chain: string[];
+      contractDeadlineMs?: number;
+      correlationId?: string;
       serviceToken: string;
       gzacBaseUrl: string;
     }
@@ -893,7 +903,7 @@ export class PluginManager {
     errorCode?: string;
     errorMessage?: string;
   }> {
-    const { serviceToken, gzacBaseUrl, chain, ...wasmFields } = input;
+    const { serviceToken, gzacBaseUrl, chain, contractDeadlineMs, correlationId, ...wasmFields } = input;
     const wasmInput = JSON.stringify({ contract, operation, ...wasmFields });
 
     const hostCtx: GzacApiCallContext = {
@@ -903,6 +913,8 @@ export class PluginManager {
       serviceToken,
       gzacBaseUrl,
       contractChain: chain,
+      contractDeadlineMs,
+      correlationId,
       ...(await this.resolveGrants(input.configurationId)),
     };
 
@@ -912,14 +924,15 @@ export class PluginManager {
       "handle_contract_call",
       wasmInput,
       hostCtx,
-      { contract, operation, jobId: input.jobId },
+      { contract, operation, jobId: input.jobId, correlationId },
       { optionalExport: true }
     );
   }
 
   /**
    * Call `handle_contract_reply` — GZAC delivering a job outcome to the requesting configuration.
-   * Throws {@link MissingPluginExportError} for a plugin built without the export.
+   * `correlationId` is host-only, like the token. Throws {@link MissingPluginExportError} for a
+   * plugin built without the export.
    */
   async callContractReply(
     pluginId: string,
@@ -933,14 +946,16 @@ export class PluginManager {
       status: string;
       result?: unknown;
       errorCode?: string;
+      providerErrorCode?: string;
       errorMessage?: string;
       requestedAt?: string;
       completedAt?: string;
+      correlationId?: string;
       serviceToken: string;
       gzacBaseUrl: string;
     }
   ): Promise<{ status: string; errorCode?: string; errorMessage?: string }> {
-    const { serviceToken, gzacBaseUrl, ...wasmFields } = input;
+    const { serviceToken, gzacBaseUrl, correlationId, ...wasmFields } = input;
     const wasmInput = JSON.stringify(wasmFields);
 
     const hostCtx: GzacApiCallContext = {
@@ -949,6 +964,7 @@ export class PluginManager {
       pluginVersion: version,
       serviceToken,
       gzacBaseUrl,
+      correlationId,
       ...(await this.resolveGrants(input.configurationId)),
     };
 
@@ -958,7 +974,7 @@ export class PluginManager {
       "handle_contract_reply",
       wasmInput,
       hostCtx,
-      { jobId: input.jobId, contract: input.contract, operation: input.operation },
+      { jobId: input.jobId, contract: input.contract, operation: input.operation, correlationId },
       { optionalExport: true }
     );
   }

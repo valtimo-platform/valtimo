@@ -38,6 +38,11 @@ interface ExternalPluginContractJobRepository :
     @Query("select j from ExternalPluginContractJob j where j.id = :id")
     fun findByIdForUpdate(@Param("id") id: UUID): ExternalPluginContractJob?
 
+    fun findByRequesterConfigurationIdAndIdempotencyKey(
+        requesterConfigurationId: UUID,
+        idempotencyKey: String,
+    ): ExternalPluginContractJob?
+
     fun findAllByStatusInAndDeadlineBefore(
         statuses: Collection<ExternalPluginContractJobStatus>,
         now: Instant,

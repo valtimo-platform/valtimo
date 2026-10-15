@@ -294,12 +294,15 @@ Request:
   "processInstanceId": "…",
   "activityId": "GenerateGreeting",
   "documentId": "…",
-  "properties": { "name": "resolved value" }
+  "properties": { "name": "resolved value" },
+  "replyHandle": "…"
 }
 ```
 
 `documentId` is absent for processes without a case document. `properties` are the process-link
-action inputs, value-resolver expressions already resolved.
+action inputs, value-resolver expressions already resolved. `replyHandle` is an opaque, expiring
+handle naming this process instance: send it as `replyTo` when you request a contract job, to get
+the outcome back as a BPMN message (see [Calling contracts](#calling-contracts)).
 
 Responses GZAC understands — it keys on the **HTTP status**, the body's `status` field is
 informational:
@@ -327,31 +330,54 @@ GZAC does **not** complete — the errors render inline on the form.
 
 ### `POST /plugins/{pluginId}/{version}/contracts/{contract}/{operation}` — serve a contract
 
-Only needed when the manifest declares `provides`. GZAC delivers a contract call, or a job when
-the body carries `jobId` and `deadline`; the `{contract}` segment arrives raw
-(`nl.ritense.demo.echo@1`) and is part of the signed path.
+Only needed when the manifest declares `provides`. GZAC delivers a synchronous call, or a job when
+the body carries `jobId`; the `{contract}` segment arrives raw (`nl.ritense.demo.echo@1`) and is
+part of the signed path.
 
 ```json
 { "configurationId": "…", "caller": { "pluginId": "pdca", "version": "0.2.0", "configurationId": "…" },
-  "payload": { … }, "jobId": "…", "deadline": "2026-10-14T12:00:00Z", "chain": ["…"] }
+  "payload": { … }, "chain": ["…"], "timeoutMs": 38500 }
 ```
+
+```json
+{ "configurationId": "…", "caller": { … }, "payload": { … }, "chain": ["…"],
+  "jobId": "…", "deadline": "2026-10-14T12:00:00Z", "documentId": "…", "requestedBy": "behandelaar" }
+```
+
+- `timeoutMs` (synchronous calls) — the milliseconds the caller still waits. Turn it into a
+  deadline on your own clock; it is relative so clock skew cannot distort it.
+- `deadline` (jobs) — when GZAC expires the job. `documentId` and `requestedBy` come with jobs
+  when known; `requestedBy` means a user's token created the job and GZAC verified that user may
+  view `documentId`.
+- `payload` already satisfies the operation's `input` schema; GZAC checks your answer against
+  `outputs`, `output` and the payload cap.
 
 Answer `200` with `{ "status": "completed", "result": … }`, `{ "status": "accepted" }` (jobs only —
 complete it later with `POST {gzacBaseUrl}/api/v1/plugin-contract/jobs/{jobId}/complete`,
 `{ "status": "completed" | "failed", "result"?, "errorCode"?, "errorMessage"? }`, service token), or
-`{ "status": "error", "errorCode": "…", "errorMessage": "…" }`. Refuse an operation your manifest
-does not provide with `404 { "errorCode": "CONTRACT_OPERATION_NOT_PROVIDED" }`. When your app
-itself calls a contract while serving one, send the received `chain` plus your own configuration
-id as `X-Valtimo-Contract-Chain` so GZAC can refuse cycles.
+`{ "status": "error", "errorCode": "…", "errorMessage": "…" }` — your `errorCode` reaches the
+requester as `providerErrorCode`. Deliveries are at least once: key side effects on `jobId`.
+
+Refuse with `404 { "status": "error", "errorCode": "…", "errorMessage": "…" }`:
+
+| `errorCode` | When | GZAC's reading |
+|---|---|---|
+| `PLUGIN_NOT_LOADED` | The `pluginId@version` is not served right now. | Temporarily unavailable; a job is retried. |
+| `CONFIGURATION_NOT_FOUND` | The configuration was not pushed (yet). | Temporarily unavailable; a job is retried. |
+| `CONTRACT_OPERATION_NOT_PROVIDED` | Your manifest does not provide the operation. | `OPERATION_NOT_PROVIDED`, final. |
+
+A 404 without a code reads as "this app does not support contracts" and fails the call for good.
 
 ### `POST /plugins/{pluginId}/{version}/contract-replies` — receive a job outcome
 
-Only needed when the app requests jobs (`POST {gzacBaseUrl}/api/v1/plugin-contract/jobs`). Body:
-`{ configurationId, jobId, contract, operation, status: "completed" | "failed" | "expired",
-result?, errorCode?, errorMessage?, requestedAt, completedAt? }`. Answer `200 { "status":
-"completed" }` to acknowledge; `{ "status": "error" }` makes GZAC redeliver, so key your handling
-on `jobId`. The demo app logs and stores replies — see
-[`demo-app/src/contracts.ts`](../../plugin-host/sample-apps/demo-app/src/contracts.ts).
+Only needed when the app requests jobs. Body: `{ configurationId, jobId, contract, operation,
+status: "completed" | "failed" | "expired", result?, errorCode?, providerErrorCode?, errorMessage?,
+requestedAt, completedAt? }`. Answer `200 { "status": "completed" }` to acknowledge; `{ "status":
+"error" }` makes GZAC redeliver, so key your handling on `jobId`. The demo app logs and stores
+replies — see [`demo-app/src/contracts.ts`](../../plugin-host/sample-apps/demo-app/src/contracts.ts).
+
+Both contract routes may carry an `X-Valtimo-Correlation-Id` header (`^[A-Za-z0-9-]{1,64}$`, not
+signed): log it, and send it on the calls you make while serving the request.
 
 Adding `provides` changes the manifest, and an app's content pin is derived from its manifest:
 bump the version rather than changing it in place.
@@ -412,6 +438,35 @@ plugin screen from becoming a way around access control.
 Which endpoints exist, how to discover them for the version you target, and the exact denylist are
 documented in
 [The Valtimo API and event catalogue](./valtimo-api-and-events.md#part-1--calling-the-valtimo-api).
+
+### Calling contracts
+
+An app declares the contracts it calls under `permissions.contracts`, like a plugin (see
+[Contracts](./develop-a-plugin.md#contracts--calling-and-serving-other-plugins) for the manifest
+format and error codes), and calls GZAC directly with its service token. These endpoints need no
+endpoint grant: GZAC authorizes them against the configuration's own bindings and jobs.
+
+| Request | Body | Answer |
+|---|---|---|
+| `POST /api/v1/plugin-contract/call` | `{ contract, operation, payload? }` | `200 { status: "completed", result }` or `200 { status: "error", errorCode, providerErrorCode?, errorMessage }` |
+| `POST /api/v1/plugin-contract/jobs` | `{ contract, operation, payload?, replyTo?, documentId?, idempotencyKey? }` | `202 { status: "accepted", jobId }` or `200 { status: "error", … }` |
+| `POST /api/v1/plugin-contract/jobs/{jobId}/complete` | `{ status: "completed" \| "failed", result?, errorCode?, errorMessage? }` | `200`; `404` when the job is not yours; `409` when it is no longer open; `400` for an invalid result |
+| `GET /api/v1/plugin-contract/jobs/{jobId}` | – | The job as seen by its requester or provider; `404` for anyone else |
+
+Headers to send:
+
+| Header | When |
+|---|---|
+| `X-Valtimo-Contract-Chain` | While serving a contract delivery: the received `chain` plus your own configuration id, so GZAC can refuse cycles and runaway depth. |
+| `X-Valtimo-Contract-Timeout-Ms` | On `/call`: the milliseconds you can still wait (GZAC caps it at its own contract read timeout). `0` is refused with `CONTRACT_DEADLINE_EXCEEDED`. |
+| `X-Valtimo-Correlation-Id` | Optional: ties GZAC's and your log lines together. |
+
+`replyTo` is an action's `replyHandle` and only works for the configuration that received it.
+`idempotencyKey` (1-255 visible ASCII characters) makes a repeated request return the existing job.
+A request body larger than the payload cap plus 64 KiB is refused with `413 PAYLOAD_TOO_LARGE`
+before authentication. A *user* token (from `/data`) can only create jobs when the configuration
+declares and was granted `POST /api/v1/plugin-contract/jobs`, and must name a `documentId` the user
+may view.
 
 ## Step 7: Consume events (optional)
 

@@ -104,6 +104,9 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId/logs")
         assertReachable(HttpMethod.POST, "/api/management/v1/external-plugin/endpoint-descriptions")
         assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/contract-job/$someId")
+        assertReachable(HttpMethod.GET, "/api/management/v1/external-plugin/contract-job/$someId/payload")
+        assertReachable(HttpMethod.POST, "/api/management/v1/external-plugin/contract-job/$someId/cancel")
+        assertReachable(HttpMethod.POST, "/api/management/v1/external-plugin/contract-job/$someId/redeliver")
     }
 
     // ---------------------------------------------------------------- management endpoints, USER
@@ -141,6 +144,9 @@ class ExternalPluginEndpointAccessIntTest @Autowired constructor(
         assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/configuration/$someId/logs")
         assertForbidden(HttpMethod.POST, "/api/management/v1/external-plugin/configuration/$someId/revoke-tokens")
         assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/contract-job/$someId")
+        assertForbidden(HttpMethod.GET, "/api/management/v1/external-plugin/contract-job/$someId/payload")
+        assertForbidden(HttpMethod.POST, "/api/management/v1/external-plugin/contract-job/$someId/cancel")
+        assertForbidden(HttpMethod.POST, "/api/management/v1/external-plugin/contract-job/$someId/redeliver")
     }
 
     @Test

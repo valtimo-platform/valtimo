@@ -114,7 +114,7 @@ data class ConfigurationCreateRequest(
      * listed here — they are derived at push time from the `x-egress-target` properties.
      */
     val grantedEgress: List<String> = emptyList(),
-    /** One per contract in the manifest's `permissions.contracts` — exact match, like the other grants. */
+    /** At most one per contract in the manifest's `permissions.contracts`; a declared contract may stay unbound. */
     val contractBindings: List<ContractBindingEntry> = emptyList(),
 )
 

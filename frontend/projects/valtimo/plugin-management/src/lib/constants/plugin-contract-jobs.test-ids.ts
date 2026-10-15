@@ -16,11 +16,19 @@
 
 export const PLUGIN_CONTRACT_JOBS_PAGE_TEST_IDS = {
   statusFilter: 'pluginContractJobsStatusFilter',
+  configurationFilter: 'pluginContractJobsConfigurationFilter',
   refreshButton: 'pluginContractJobsRefreshButton',
 } as const;
 
 export const PLUGIN_CONTRACT_JOB_DETAIL_MODAL_TEST_IDS = {
   closeButton: 'pluginContractJobDetailModalCloseButton',
+  cancelButton: 'pluginContractJobDetailModalCancelButton',
+  redeliverButton: 'pluginContractJobDetailModalRedeliverButton',
+  loadError: 'pluginContractJobDetailModalLoadError',
+  retryButton: 'pluginContractJobDetailModalRetryButton',
+  actionError: 'pluginContractJobDetailModalActionError',
+  showPayloadsButton: 'pluginContractJobDetailModalShowPayloadsButton',
+  payloadError: 'pluginContractJobDetailModalPayloadError',
   requestPayload: 'pluginContractJobDetailModalRequestPayload',
   resultPayload: 'pluginContractJobDetailModalResultPayload',
 } as const;

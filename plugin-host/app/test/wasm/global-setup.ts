@@ -18,12 +18,12 @@ import {execFileSync} from "node:child_process";
 import {chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {
+  CONTRACT_FREE_FIXTURE_DIR,
+  CONTRACT_FREE_FIXTURE_WASM,
   EXTISM_JS_BIN,
   FIXTURE_DIR,
   FIXTURE_MANIFEST,
   FIXTURE_WASM,
-  LEGACY_FIXTURE_DIR,
-  LEGACY_FIXTURE_WASM,
 } from "./fixture.js";
 
 /**
@@ -64,32 +64,32 @@ export default async function setup(): Promise<void> {
     throw new Error(`Fixture build reported success but produced no Wasm at ${FIXTURE_WASM}`);
   }
 
-  buildLegacyFixture(env);
+  buildContractFreeFixture(env);
 }
 
 /**
  * Builds the fixture once more from a scratch directory whose manifest declares no contracts, so
  * the L3 suite can check which host imports the build tool emits for a contract-free plugin.
  */
-function buildLegacyFixture(env: NodeJS.ProcessEnv): void {
-  rmSync(LEGACY_FIXTURE_DIR, { recursive: true, force: true });
-  mkdirSync(LEGACY_FIXTURE_DIR, { recursive: true });
+function buildContractFreeFixture(env: NodeJS.ProcessEnv): void {
+  rmSync(CONTRACT_FREE_FIXTURE_DIR, { recursive: true, force: true });
+  mkdirSync(CONTRACT_FREE_FIXTURE_DIR, { recursive: true });
   const manifest = JSON.parse(readFileSync(FIXTURE_MANIFEST, "utf-8"));
   delete manifest.provides;
   delete manifest.permissions;
-  writeFileSync(join(LEGACY_FIXTURE_DIR, "manifest.json"), JSON.stringify(manifest, null, 2));
+  writeFileSync(join(CONTRACT_FREE_FIXTURE_DIR, "manifest.json"), JSON.stringify(manifest, null, 2));
 
   const buildTool = join(FIXTURE_DIR, "node_modules", "@valtimo", "plugin-sdk", "bin", "valtimo-plugin-build.mjs");
   try {
     execFileSync(
       process.execPath,
       [buildTool, "--input", join(FIXTURE_DIR, "src", "plugin.ts"), "--output", "plugin.wasm"],
-      { cwd: LEGACY_FIXTURE_DIR, env, stdio: "pipe" }
+      { cwd: CONTRACT_FREE_FIXTURE_DIR, env, stdio: "pipe" }
     );
   } catch (err) {
     throw new Error(`Failed to build the contract-free fixture: ${err instanceof Error ? err.message : String(err)}`);
   }
-  if (!existsSync(LEGACY_FIXTURE_WASM)) {
-    throw new Error(`Contract-free fixture build produced no Wasm at ${LEGACY_FIXTURE_WASM}`);
+  if (!existsSync(CONTRACT_FREE_FIXTURE_WASM)) {
+    throw new Error(`Contract-free fixture build produced no Wasm at ${CONTRACT_FREE_FIXTURE_WASM}`);
   }
 }

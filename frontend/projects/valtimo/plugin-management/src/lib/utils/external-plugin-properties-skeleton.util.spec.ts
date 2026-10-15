@@ -22,7 +22,7 @@ import {
 describe('external plugin properties skeleton', () => {
   const schema = {
     type: 'object',
-    required: ['openPlanUrl', 'openPlanToken'],
+    required: ['openPlanUrl', 'openPlanToken', 'tenant'],
     properties: {
       openPlanUrl: {
         type: 'string',
@@ -31,22 +31,29 @@ describe('external plugin properties skeleton', () => {
         'x-egress-target': true,
       },
       openPlanToken: {type: 'string', 'x-secret': true},
+      tenant: {type: 'string'},
       mode: {type: 'string', enum: ['a', 'b']},
-      retries: {type: 'integer'},
+      retries: {type: 'integer', default: 0},
+      apiKey: {type: 'string', default: 'changeme', 'x-secret': true},
     },
   };
 
-  it('fills defaults, enum values and empty values per type', () => {
-    expect(JSON.parse(buildExternalPluginPropertiesSkeleton(schema))).toEqual({
+  it('keeps only non-secret properties that declare a default', () => {
+    expect(buildExternalPluginPropertiesSkeleton(schema)).toEqual({
       openPlanUrl: 'http://host.docker.internal:7501',
-      openPlanToken: '',
-      mode: 'a',
       retries: 0,
     });
   });
 
+  it('leaves required properties without a default absent, so the schema still flags them', () => {
+    const skeleton = buildExternalPluginPropertiesSkeleton(schema);
+
+    expect('tenant' in skeleton).toBeFalse();
+    expect('openPlanToken' in skeleton).toBeFalse();
+  });
+
   it('is an empty object without a schema', () => {
-    expect(buildExternalPluginPropertiesSkeleton(null)).toBe('{}');
+    expect(buildExternalPluginPropertiesSkeleton(null)).toEqual({});
   });
 
   it('describes required, secret and egress fields', () => {
@@ -58,6 +65,6 @@ describe('external plugin properties skeleton', () => {
     expect(fields[1]).toEqual(
       jasmine.objectContaining({key: 'openPlanToken', required: true, secret: true})
     );
-    expect(fields[2].required).toBeFalse();
+    expect(fields[3].required).toBeFalse();
   });
 });

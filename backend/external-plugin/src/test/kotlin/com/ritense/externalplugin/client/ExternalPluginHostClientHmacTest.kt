@@ -347,6 +347,46 @@ class ExternalPluginHostClientHmacTest {
     }
 
     @Test
+    fun `contract deliveries and replies go through the contract RestTemplate with the correlation id`() {
+        val contractRestTemplate = RestTemplate()
+        val contractServer = MockRestServiceServer.createServer(contractRestTemplate)
+        val contractClient = ExternalPluginHostClient(restTemplate, objectMapper, contractRestTemplate)
+        val body = objectMapper.createObjectNode().put("jobId", "job-1")
+        listOf(
+            "/plugins/openplan/1.0.0/contracts/nl.ritense.openplan@1/list",
+            "/plugins/pdca/0.2.0/contract-replies",
+        ).forEach { path ->
+            contractServer.expect(requestTo("$baseUrl$path"))
+                .andExpect { request ->
+                    request as MockClientHttpRequest
+                    assertThat(request.headers.getFirst("X-Valtimo-Correlation-Id")).isEqualTo("job-1")
+                    assertSigned(request, "POST", path, objectMapper.writeValueAsBytes(body))
+                }
+                .andRespond(withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body("""{"status":"completed"}"""))
+        }
+
+        contractClient.invokeContract(baseUrl, "openplan", "1.0.0", "nl.ritense.openplan@1", "list", body, secret, "job-1")
+        contractClient.invokeContractReply(baseUrl, "pdca", "0.2.0", body, secret, "job-1")
+
+        contractServer.verify()
+        server.verify()
+    }
+
+    @Test
+    fun `a contract delivery without a correlation id sends no correlation header`() {
+        val path = "/plugins/openplan/1.0.0/contracts/nl.ritense.openplan@1/list"
+        server.expect(requestTo("$baseUrl$path"))
+            .andExpect { request ->
+                assertThat(request.headers.containsKey("X-Valtimo-Correlation-Id")).isFalse()
+            }
+            .andRespond(withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body("""{"status":"completed"}"""))
+
+        client.invokeContract(baseUrl, "openplan", "1.0.0", "nl.ritense.openplan@1", "list", objectMapper.createObjectNode(), secret)
+
+        server.verify()
+    }
+
+    @Test
     fun `invokeSubmit signs the submission body and sends no bearer token`() {
         val path = "/plugins/case-summary/0.1.0/submit/review"
         val payload = objectMapper.createObjectNode().apply {

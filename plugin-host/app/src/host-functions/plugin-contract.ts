@@ -20,8 +20,16 @@ import type {GzacApiCallContext} from "./gzac-api.js";
 import {readHostCall} from "./guard.js";
 
 export const CONTRACT_CHAIN_HEADER = "X-Valtimo-Contract-Chain";
+/** Milliseconds the caller still waits; relative, so clock skew between machines cannot distort it. */
+export const CONTRACT_TIMEOUT_HEADER = "X-Valtimo-Contract-Timeout-Ms";
+export const CORRELATION_ID_HEADER = "X-Valtimo-Correlation-Id";
+export const CORRELATION_ID_PATTERN = /^[A-Za-z0-9-]{1,64}$/;
 const CONTRACT_API_BASE = "/api/v1/plugin-contract";
 const JOB_ID_PATTERN = /^[A-Za-z0-9-]{1,64}$/;
+const IDEMPOTENCY_KEY_PATTERN = /^[\x21-\x7E]{1,255}$/;
+const MAX_REPLY_TO_LENGTH = 4096;
+/** Below this, a GZAC round trip cannot finish before the invocation is cancelled. */
+const MIN_CONTRACT_BUDGET_MS = 250;
 
 interface PluginContractRequest {
   kind?: unknown;
@@ -29,6 +37,7 @@ interface PluginContractRequest {
   operation?: unknown;
   payload?: unknown;
   replyTo?: unknown;
+  idempotencyKey?: unknown;
   jobId?: unknown;
   status?: unknown;
   result?: unknown;
@@ -56,7 +65,10 @@ interface OutboundCall {
  * channel for contract calls (`call`), job requests (`request`) and job completions (`complete`).
  * Every hop goes through GZAC, which resolves the binding and authorises it; the host only refuses
  * contracts outside the pushed `grantedContracts` before anything leaves, and attaches the service
- * token and the contract chain.
+ * token, the contract chain, the correlation id and — for `call` — the time left in the invocation.
+ *
+ * Each hop fits inside the invocation's deadline (`deadlineMs`): with less than
+ * {@link MIN_CONTRACT_BUDGET_MS} left it is refused, and the fetch never outlives the deadline.
  *
  * Replies are always a JSON envelope `{status, ...}`: GZAC's answer passed through, or
  * `{status:"error", errorCode, errorMessage}` for anything the host refused or could not reach.
@@ -87,13 +99,24 @@ export function createPluginContractHostFunction(
       return reply(outbound);
     }
 
+    const logFields = {
+      configurationId: ctx.configurationId,
+      pluginId: ctx.pluginId,
+      pluginVersion: ctx.pluginVersion,
+      kind: outbound.kind,
+      contract: outbound.contract,
+      operation: outbound.operation,
+      jobId: outbound.jobId,
+      correlationId: ctx.correlationId,
+    };
+
     if (outbound.kind !== "complete" && !(ctx.grantedContracts ?? []).includes(outbound.contract!)) {
-      log.warn(
-        { configurationId: ctx.configurationId, contract: outbound.contract, operation: outbound.operation, kind: outbound.kind },
-        "plugin_contract refused: contract not granted for this configuration"
-      );
+      log.warn(logFields, "plugin_contract refused: contract not granted for this configuration");
       return reply(
-        errorReply("CONTRACT_NOT_GRANTED", `Contract '${outbound.contract}' is not granted for this configuration`)
+        errorReply(
+          "CONTRACT_NOT_GRANTED",
+          `Contract '${outbound.contract}' is not declared and bound for this configuration`
+        )
       );
     }
 
@@ -106,6 +129,24 @@ export function createPluginContractHostFunction(
       );
     }
 
+    const deadlineMs = Number.isFinite(ctx.deadlineMs) ? (ctx.deadlineMs as number) : undefined;
+    let fetchTimeoutMs = timeoutMs;
+    let cutOffByDeadline = false;
+    let remainingMs: number | undefined;
+    if (deadlineMs !== undefined) {
+      remainingMs = Math.floor(deadlineMs - Date.now());
+      if (remainingMs < MIN_CONTRACT_BUDGET_MS) {
+        log.warn({ ...logFields, remainingMs }, "plugin_contract refused: no time left within this invocation");
+        return reply(
+          errorReply("CONTRACT_DEADLINE_EXCEEDED", "No time left for a contract call within this invocation")
+        );
+      }
+      if (remainingMs < timeoutMs) {
+        fetchTimeoutMs = remainingMs;
+        cutOffByDeadline = true;
+      }
+    }
+
     const headers: Record<string, string> = {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -114,17 +155,14 @@ export function createPluginContractHostFunction(
     if (ctx.contractChain && ctx.contractChain.length > 0) {
       headers[CONTRACT_CHAIN_HEADER] = ctx.contractChain.join(",");
     }
+    if (outbound.kind === "call" && remainingMs !== undefined) {
+      headers[CONTRACT_TIMEOUT_HEADER] = String(remainingMs);
+    }
+    if (ctx.correlationId) {
+      headers[CORRELATION_ID_HEADER] = ctx.correlationId;
+    }
 
     const url = `${ctx.gzacBaseUrl.replace(/\/$/, "")}${outbound.path}`;
-    const logFields = {
-      configurationId: ctx.configurationId,
-      pluginId: ctx.pluginId,
-      pluginVersion: ctx.pluginVersion,
-      kind: outbound.kind,
-      contract: outbound.contract,
-      operation: outbound.operation,
-      jobId: outbound.jobId,
-    };
     const start = Date.now();
 
     let res: Response;
@@ -134,16 +172,16 @@ export function createPluginContractHostFunction(
         method: "POST",
         headers,
         body: JSON.stringify(outbound.body),
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: AbortSignal.timeout(fetchTimeoutMs),
       });
       text = await res.text();
     } catch (err) {
-      const timedOut = (err as Error).name === "TimeoutError" || (err as Error).name === "AbortError";
-      const message = timedOut
-        ? `GZAC did not answer within ${timeoutMs}ms`
-        : `GZAC unreachable: ${(err as Error).message}`;
-      log.warn({ ...logFields, status: "error", durationMs: Date.now() - start, error: message }, "plugin_contract call");
-      return reply(errorReply("GZAC_UNREACHABLE", message));
+      const out = fetchFailure(err as Error, fetchTimeoutMs, cutOffByDeadline);
+      log.warn(
+        { ...logFields, status: "error", errorCode: out.errorCode, durationMs: Date.now() - start, error: out.errorMessage },
+        "plugin_contract call"
+      );
+      return reply(out);
     }
 
     const out = mapGzacResponse(res.status, text);
@@ -177,12 +215,22 @@ function buildOutboundCall(req: PluginContractRequest): OutboundCall | ContractE
       operation: req.operation,
       payload: req.payload ?? {},
     };
-    if (req.kind === "request" && req.replyTo !== undefined && req.replyTo !== null) {
-      const replyTo = req.replyTo as { processInstanceId?: unknown };
-      if (typeof replyTo !== "object" || typeof replyTo.processInstanceId !== "string" || !replyTo.processInstanceId) {
-        return errorReply("INVALID_REQUEST", "'replyTo' must be {processInstanceId: string}");
+    if (req.kind === "request") {
+      if (req.replyTo !== undefined && req.replyTo !== null) {
+        if (typeof req.replyTo !== "string" || req.replyTo.length === 0 || req.replyTo.length > MAX_REPLY_TO_LENGTH) {
+          return errorReply(
+            "INVALID_REQUEST",
+            `'replyTo' must be a reply handle: a non-empty string of at most ${MAX_REPLY_TO_LENGTH} characters`
+          );
+        }
+        body.replyTo = req.replyTo;
       }
-      body.replyTo = { processInstanceId: replyTo.processInstanceId };
+      if (req.idempotencyKey !== undefined && req.idempotencyKey !== null) {
+        if (typeof req.idempotencyKey !== "string" || !IDEMPOTENCY_KEY_PATTERN.test(req.idempotencyKey)) {
+          return errorReply("INVALID_REQUEST", "'idempotencyKey' must be 1-255 visible ASCII characters");
+        }
+        body.idempotencyKey = req.idempotencyKey;
+      }
     }
     return {
       kind: req.kind,
@@ -207,6 +255,15 @@ function buildOutboundCall(req: PluginContractRequest): OutboundCall | ContractE
     return { kind: "complete", path: `${CONTRACT_API_BASE}/jobs/${req.jobId}/complete`, body, jobId: req.jobId };
   }
   return errorReply("INVALID_REQUEST", "'kind' must be one of: call, request, complete");
+}
+
+function fetchFailure(err: Error, timeoutMs: number, cutOffByDeadline: boolean): ContractErrorReply {
+  if (err.name !== "TimeoutError" && err.name !== "AbortError") {
+    return errorReply("GZAC_UNREACHABLE", `GZAC unreachable: ${err.message}`);
+  }
+  return cutOffByDeadline
+    ? errorReply("CONTRACT_DEADLINE_EXCEEDED", `GZAC did not answer within the ${timeoutMs}ms left in this invocation`)
+    : errorReply("GZAC_UNREACHABLE", `GZAC did not answer within ${timeoutMs}ms`);
 }
 
 /**

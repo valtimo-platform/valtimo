@@ -28,10 +28,8 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {TagModule} from 'carbon-components-angular';
 import {EditorModel, EditorModule} from '@valtimo/components';
-import {
-  ExternalPluginSchemaField,
-  externalPluginSchemaFields,
-} from '../../utils/external-plugin-properties-skeleton.util';
+import {ExternalPluginSchemaField, externalPluginSchemaFields} from '../../utils';
+import {PLUGIN_EXTERNAL_PROPERTIES_EDITOR_TEST_IDS} from '../../constants';
 
 const SCHEMA_KEY = 'externalpluginproperties';
 
@@ -59,6 +57,8 @@ export class PluginExternalPropertiesEditorComponent implements OnChanges {
   public readonly $model = signal<EditorModel>({value: '{}', language: 'json'});
   public readonly $jsonSchema = signal<object | undefined>(undefined);
   public readonly $fields = signal<Array<ExternalPluginSchemaField>>([]);
+
+  protected readonly testIds = PLUGIN_EXTERNAL_PROPERTIES_EDITOR_TEST_IDS;
 
   private readonly _uri = `inmemory://plugin-properties/${Math.random().toString(36).slice(2)}.${SCHEMA_KEY}.json`;
   private _lastEmitted: string | null = null;

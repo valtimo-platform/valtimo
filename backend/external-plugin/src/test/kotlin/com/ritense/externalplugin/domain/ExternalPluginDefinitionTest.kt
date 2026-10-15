@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.domain
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.assertj.core.api.Assertions.assertThat
@@ -111,7 +112,7 @@ class ExternalPluginDefinitionTest {
     }
 
     @Test
-    fun `manifests without contract keys keep exactly the footprint they had before contracts existed`() {
+    fun `a manifest without contract keys declares no contract footprint`() {
         val accepted = manifest(capabilities = listOf("gzac_api"), endpoints = listOf("GET" to "/api/v1/document/*"))
         val pending = manifest(capabilities = listOf("gzac_api"), endpoints = listOf("GET" to "/api/v1/document/*"))
 
@@ -125,6 +126,50 @@ class ExternalPluginDefinitionTest {
         val definition = definition(
             accepted = manifest(capabilities = listOf("gzac_api")),
             pending = manifest(capabilities = listOf("gzac_api"), contracts = listOf("nl.ritense.openplan@1")),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isTrue()
+    }
+
+    @Test
+    fun `operations a consumer limits itself to are part of its footprint`() {
+        val definition = definition(
+            accepted = manifest(
+                contracts = listOf(
+                    "nl.ritense.openplan@1",
+                    mapOf("contract" to "nl.ritense.document.generate@1", "operations" to listOf("generate", "archive")),
+                ),
+            ),
+            pending = null,
+        )
+
+        assertThat(declaredPermissions(definition)).contains(
+            "contract:nl.ritense.openplan@1",
+            "contract:nl.ritense.document.generate@1",
+            "contract-operation:nl.ritense.document.generate@1:generate",
+            "contract-operation:nl.ritense.document.generate@1:archive",
+        )
+        assertThat(declaredPermissions(definition).filter { it.toString().startsWith("contract-operation:nl.ritense.openplan@1") })
+            .isEmpty()
+    }
+
+    @Test
+    fun `a changed set of declared operations is a permission change`() {
+        val generate = "nl.ritense.document.generate@1"
+        val definition = definition(
+            accepted = manifest(contracts = listOf(mapOf("contract" to generate, "operations" to listOf("generate")))),
+            pending = manifest(contracts = listOf(mapOf("contract" to generate, "operations" to listOf("generate", "archive")))),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isTrue()
+    }
+
+    @Test
+    fun `narrowing a contract to declared operations is a permission change`() {
+        val generate = "nl.ritense.document.generate@1"
+        val definition = definition(
+            accepted = manifest(contracts = listOf(generate)),
+            pending = manifest(contracts = listOf(mapOf("contract" to generate, "operations" to listOf("generate")))),
         )
 
         assertThat(definition.pendingPermissionsChanged).isTrue()
@@ -184,7 +229,7 @@ class ExternalPluginDefinitionTest {
         egress: List<String> = emptyList(),
         endpoints: List<Pair<String, String>> = emptyList(),
         events: List<String> = emptyList(),
-        contracts: List<String>? = null,
+        contracts: List<Any>? = null,
         provides: Map<String, List<Pair<String, String?>>>? = null,
     ): ObjectNode = objectMapper.createObjectNode().apply {
         putObject("permissions").apply {
@@ -195,7 +240,7 @@ class ExternalPluginDefinitionTest {
                     addObject().put("method", method).put("pattern", pattern)
                 }
             }
-            contracts?.let { putArray("contracts").apply { it.forEach { contract -> add(contract) } } }
+            contracts?.let { putArray("contracts").apply { it.forEach { contract -> add(objectMapper.valueToTree<JsonNode>(contract)) } } }
         }
         putArray("eventSubscriptions").apply { events.forEach { add(it) } }
         provides?.let { declared ->

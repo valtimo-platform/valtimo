@@ -103,6 +103,12 @@ The single exception is `GET /api/v1/external-plugin/user-token/introspect`, whi
 validate a user token (see
 [Developing an app](./develop-an-app.md#step-5-implement-public-routes-browser-facing-cors-)).
 
+The contract surface, `/api/v1/plugin-contract/**`, works the other way round: the service token
+reaches it without any grant, because GZAC authorizes each call against the configuration's own
+contract bindings and jobs. A user token only reaches `POST /api/v1/plugin-contract/jobs`, and only
+when that endpoint is declared and granted like any other (see
+[Contracts](./develop-a-plugin.md#contracts--calling-and-serving-other-plugins)).
+
 A call outside the granted set — or inside the denylist — comes back as a 403-shaped response
 rather than an exception, so handle it as a normal failure path.
 

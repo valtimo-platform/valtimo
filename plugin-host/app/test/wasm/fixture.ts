@@ -31,10 +31,10 @@ export const FIXTURE_VERSION = "1.0.0";
 
 /**
  * The same fixture source built against a manifest without contract keys — what a contract-free
- * plugin built with this SDK looks like. Built into a scratch directory by the global setup.
+ * plugin looks like. Built into a scratch directory by the global setup.
  */
-export const LEGACY_FIXTURE_DIR = join(FIXTURE_DIR, "dist", "legacy");
-export const LEGACY_FIXTURE_WASM = join(LEGACY_FIXTURE_DIR, "plugin.wasm");
+export const CONTRACT_FREE_FIXTURE_DIR = join(FIXTURE_DIR, "dist", "contract-free");
+export const CONTRACT_FREE_FIXTURE_WASM = join(CONTRACT_FREE_FIXTURE_DIR, "plugin.wasm");
 
 /** The extism-js compiler location the build tooling and CI both use. */
 export const EXTISM_JS_BIN = join(PLUGIN_HOST_ROOT, ".bin", "extism-js");

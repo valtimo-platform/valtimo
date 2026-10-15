@@ -207,7 +207,7 @@ export async function hostConfigurationRoutes(
     // below when the capability is granted but the list is empty, since that combination is
     // otherwise silent.
     const allowedEgress = normalizeStringArray(request.body.allowedEgress);
-    // Absent (older GZAC) → no contracts; old hosts ignore the field.
+    // Absent means no contracts.
     const grantedContracts = normalizeStringArray(request.body.grantedContracts);
     const ownerId = normalizeOwnerId(request.body.ownerId);
 

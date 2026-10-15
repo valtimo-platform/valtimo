@@ -57,6 +57,9 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract/*/providers")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract-job")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract-job/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract-job/*/payload")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/contract-job/*/cancel")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/contract-job/*/redeliver")).hasAuthority(ADMIN)
                     // Non-management: any authenticated user may mint a downscoped user token for a
                     // plugin tab — the result is always bounded by PBAC ∩ the plugin's allowlist.
                     .requestMatchers(antMatcher(POST, "/api/v1/external-plugin/configuration/*/user-token")).authenticated()
@@ -79,7 +82,8 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                         antMatcher(POST, "/api/v1/process-link/*/external-plugin-task-form/submission")
                     ).authenticated()
                     // Plugin → GZAC contract calls and jobs. The resource rejects every principal that
-                    // is not a plugin token and only reaches the caller's own bindings and jobs.
+                    // is not a plugin token and only reaches the caller's own bindings and jobs; a user
+                    // token additionally needs the endpoint granted (allowlist filter).
                     .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/call")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/jobs")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/jobs/*/complete")).authenticated()

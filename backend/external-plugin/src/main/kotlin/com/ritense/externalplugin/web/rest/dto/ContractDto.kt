@@ -37,6 +37,10 @@ data class ContractProviderResponse(
     /** False while the provider's definition is unavailable, a placeholder, or awaits re-acceptance. */
     val available: Boolean,
     val operations: List<ContractProviderOperationResponse>,
+    /** The provider's `provides[].title` for this contract. */
+    val contractTitle: String?,
+    /** Language → key → text: the provider manifest's `translations` under `contracts.<contract>.`. */
+    val contractTranslations: Map<String, Map<String, String>>,
 )
 
 data class ContractProviderOperationResponse(
@@ -65,9 +69,11 @@ data class ContractJobSummaryResponse(
     val deadline: Instant?,
     val deliveryAttempts: Int,
     val errorCode: String?,
+    val providerErrorCode: String?,
     val errorMessage: String?,
 )
 
+/** Without payloads: reading those is a separate call that records an audit event ([ContractJobPayloadResponse]). */
 data class ContractJobDetailResponse(
     val id: UUID,
     val contract: String,
@@ -79,7 +85,11 @@ data class ContractJobDetailResponse(
     val providerTitle: String?,
     val providerPluginId: String?,
     val status: ExternalPluginContractJobStatus,
+    /** COMPLETED, FAILED or EXPIRED once the provider side ended; kept through DELIVERED and UNDELIVERABLE. */
+    val outcome: ExternalPluginContractJobStatus?,
     val requestedBy: String?,
+    val documentId: String?,
+    val idempotencyKey: String?,
     val createdAt: Instant,
     val updatedAt: Instant?,
     val completedAt: Instant?,
@@ -87,11 +97,16 @@ data class ContractJobDetailResponse(
     val deadline: Instant?,
     val deliveryAttempts: Int,
     val errorCode: String?,
+    val providerErrorCode: String?,
     val errorMessage: String?,
-    val requestPayload: JsonNode?,
-    val resultPayload: JsonNode?,
     val replyToProcessInstanceId: String?,
     val lastDeliveryError: String?,
+)
+
+/** Decrypted request and result of a contract job. */
+data class ContractJobPayloadResponse(
+    val requestPayload: JsonNode?,
+    val resultPayload: JsonNode?,
 )
 
 // ---------------------------------------------------------------- plugin-facing (/api/v1/plugin-contract)
@@ -106,12 +121,10 @@ data class ContractJobCreateRequest(
     val contract: String? = null,
     val operation: String? = null,
     val payload: JsonNode? = null,
-    val replyTo: ContractReplyTo? = null,
+    /** The reply handle of the action invocation that requests the job (service tokens only). */
+    val replyTo: String? = null,
     val documentId: String? = null,
-)
-
-data class ContractReplyTo(
-    val processInstanceId: String? = null,
+    val idempotencyKey: String? = null,
 )
 
 data class ContractJobCompleteRequest(
@@ -129,6 +142,7 @@ data class ContractResponse(
     val jobId: UUID? = null,
     val errorCode: String? = null,
     val errorMessage: String? = null,
+    val providerErrorCode: String? = null,
 )
 
 /** Plugin-facing job view; `status` is the lowercase job status. */
@@ -140,6 +154,7 @@ data class ContractJobView(
     val status: String,
     val result: JsonNode? = null,
     val errorCode: String? = null,
+    val providerErrorCode: String? = null,
     val errorMessage: String? = null,
     val requestedAt: Instant,
     val completedAt: Instant? = null,

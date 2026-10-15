@@ -18,11 +18,14 @@ package com.ritense.externalplugin.web.rest
 
 import com.ritense.externalplugin.security.ExternalPluginServicePrincipal
 import com.ritense.externalplugin.security.ExternalPluginUserPrincipal
+import com.ritense.externalplugin.service.ContractLimits
 import com.ritense.externalplugin.service.ContractOutcome
 import com.ritense.externalplugin.service.ExternalPluginContractJobService
 import com.ritense.externalplugin.service.ExternalPluginContractJobService.CompletionResult
 import com.ritense.externalplugin.service.ExternalPluginContractService
 import com.ritense.externalplugin.service.ExternalPluginContractService.Companion.CHAIN_HEADER
+import com.ritense.externalplugin.service.ExternalPluginContractService.Companion.CORRELATION_ID_HEADER
+import com.ritense.externalplugin.service.ExternalPluginContractService.Companion.TIMEOUT_HEADER
 import com.ritense.externalplugin.web.rest.dto.ContractCallRequest
 import com.ritense.externalplugin.web.rest.dto.ContractJobCompleteRequest
 import com.ritense.externalplugin.web.rest.dto.ContractJobCreateRequest
@@ -45,9 +48,10 @@ import java.util.UUID
 
 /**
  * Plugin → GZAC contract surface. Mounted outside `/api/v1/external-plugin` (denylisted for
- * plugin tokens); the allowlist filter lets plugin principals through and this controller is the
+ * plugin tokens); the allowlist filter lets service principals through and this controller is the
  * gate: the token names the calling configuration, and only its own bindings and jobs are reachable.
- * Service tokens everywhere; a user token only creates jobs, bounded by that user's PBAC.
+ * Service tokens everywhere; a user token only creates jobs — when the endpoint is granted, and
+ * bounded by that user's PBAC on the case it names.
  */
 @Controller
 @SkipComponentScan
@@ -65,11 +69,13 @@ class ExternalPluginContractResource(
     fun call(
         @RequestBody request: ContractCallRequest,
         @RequestHeader(CHAIN_HEADER, required = false) chain: String?,
+        @RequestHeader(TIMEOUT_HEADER, required = false) timeoutMs: String?,
+        @RequestHeader(CORRELATION_ID_HEADER, required = false) correlationId: String?,
     ): ResponseEntity<ContractResponse> {
         val caller = servicePrincipal() ?: return forbidden()
         val (contract, operation) = target(request.contract, request.operation) ?: return badRequest()
         val outcome = try {
-            contractService.call(caller.pluginConfigId, contract, operation, request.payload, chain)
+            contractService.call(caller.pluginConfigId, contract, operation, request.payload, chain, timeoutMs, correlationId)
         } catch (e: IllegalArgumentException) {
             return badRequest(e.message)
         }
@@ -84,6 +90,7 @@ class ExternalPluginContractResource(
     fun createJob(
         @RequestBody request: ContractJobCreateRequest,
         @RequestHeader(CHAIN_HEADER, required = false) chain: String?,
+        @RequestHeader(CORRELATION_ID_HEADER, required = false) correlationId: String?,
     ): ResponseEntity<ContractResponse> {
         val principal = SecurityContextHolder.getContext().authentication?.principal
         val (configurationId, requestedBy) = when (principal) {
@@ -98,10 +105,12 @@ class ExternalPluginContractResource(
                 contract = contract,
                 operation = operation,
                 payload = request.payload,
-                replyToProcessInstanceId = request.replyTo?.processInstanceId,
+                replyTo = request.replyTo,
                 documentId = request.documentId,
+                idempotencyKey = request.idempotencyKey,
                 requestedBy = requestedBy,
                 chainHeader = chain,
+                correlationIdHeader = correlationId,
             )
         } catch (e: IllegalArgumentException) {
             return badRequest(e.message)
@@ -132,7 +141,7 @@ class ExternalPluginContractResource(
                 ContractResponse(
                     status = ExternalPluginContractService.STATUS_ERROR,
                     errorCode = result.errorCode,
-                    errorMessage = result.errorMessage,
+                    errorMessage = ContractLimits.errorMessage(result.errorMessage),
                 )
             )
         }
@@ -164,7 +173,7 @@ class ExternalPluginContractResource(
         ResponseEntity.badRequest().body(
             ContractResponse(
                 status = ExternalPluginContractService.STATUS_ERROR,
-                errorMessage = message ?: "contract and operation are required",
+                errorMessage = ContractLimits.errorMessage(message ?: "contract and operation are required"),
             )
         )
 
@@ -174,5 +183,6 @@ class ExternalPluginContractResource(
         jobId = jobId,
         errorCode = errorCode,
         errorMessage = errorMessage,
+        providerErrorCode = providerErrorCode,
     )
 }

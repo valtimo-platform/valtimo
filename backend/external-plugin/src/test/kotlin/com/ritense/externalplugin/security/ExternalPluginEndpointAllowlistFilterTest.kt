@@ -363,26 +363,60 @@ class ExternalPluginEndpointAllowlistFilterTest {
     }
 
     @Test
-    fun `plugin principals reach the contract surface without any endpoint grant`() {
+    fun `service principals reach the contract surface without any endpoint grant`() {
         val configId = UUID.randomUUID()
-        listOf<() -> Unit>({ authenticateAsPlugin(configId) }, { authenticateAsUser(configId) }).forEach { authenticate ->
-            authenticate()
-            listOf(
-                "POST" to "/api/v1/plugin-contract/call",
-                "POST" to "/api/v1/plugin-contract/jobs",
-                "POST" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}/complete",
-                "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
-            ).forEach { (method, path) ->
-                val response = MockHttpServletResponse()
-                val chain = MockFilterChain()
+        authenticateAsPlugin(configId)
+        listOf(
+            "POST" to "/api/v1/plugin-contract/call",
+            "POST" to "/api/v1/plugin-contract/jobs",
+            "POST" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}/complete",
+            "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
+        ).forEach { (method, path) ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
 
-                filter.doFilter(request(method, path), response, chain)
+            filter.doFilter(request(method, path), response, chain)
 
-                assertThat(chain.request).describedAs("$method $path").isNotNull()
-                assertThat(response.status).isEqualTo(200)
-            }
+            assertThat(chain.request).describedAs("$method $path").isNotNull()
+            assertThat(response.status).isEqualTo(200)
         }
         verify(grantedEndpointRepository, never()).findAllByConfigurationId(any())
+    }
+
+    @Test
+    fun `user principals get no contract carve-out`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId)).thenReturn(emptyList())
+        listOf(
+            "POST" to "/api/v1/plugin-contract/call",
+            "POST" to "/api/v1/plugin-contract/jobs",
+            "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
+        ).forEach { (method, path) ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
+
+            filter.doFilter(request(method, path), response, chain)
+
+            assertThat(response.status).describedAs("$method $path").isEqualTo(403)
+            assertThat(chain.request).isNull()
+        }
+    }
+
+    @Test
+    fun `a user principal reaches job creation when the configuration was granted it`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
+            .thenReturn(listOf(grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/jobs")))
+
+        val granted = MockFilterChain()
+        filter.doFilter(request("POST", "/api/v1/plugin-contract/jobs"), MockHttpServletResponse(), granted)
+        val ungranted = MockHttpServletResponse()
+        filter.doFilter(request("POST", "/api/v1/plugin-contract/call"), ungranted, MockFilterChain())
+
+        assertThat(granted.request).isNotNull()
+        assertThat(ungranted.status).isEqualTo(403)
     }
 
     @Test

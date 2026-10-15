@@ -29,7 +29,6 @@ type SchemaProperty = {
   title?: string;
   description?: string;
   default?: unknown;
-  enum?: Array<unknown>;
   'x-secret'?: boolean;
   'x-egress-target'?: boolean;
 };
@@ -61,31 +60,17 @@ function externalPluginSchemaFields(schema: unknown): Array<ExternalPluginSchema
   }));
 }
 
-const EMPTY_VALUE: Record<string, unknown> = {
-  string: '',
-  boolean: false,
-  number: 0,
-  integer: 0,
-  array: [],
-  object: {},
-};
-
 /**
- * Starting JSON for a new configuration: every declared property with its default, the first enum
- * value or an empty value of its type — so the admin fills in a form instead of recalling keys.
+ * Starting properties for a new configuration: every non-secret property that declares a
+ * `default`. Everything else stays absent, so the schema's `required` check keeps flagging it until
+ * the admin fills it in.
  */
-function buildExternalPluginPropertiesSkeleton(schema: unknown): string {
-  const skeleton: Record<string, unknown> = {};
-  for (const [key, property] of schemaProperties(schema)) {
-    if (property.default !== undefined) {
-      skeleton[key] = property.default;
-    } else if (Array.isArray(property.enum) && property.enum.length > 0) {
-      skeleton[key] = property.enum[0];
-    } else if (typeOf(property) in EMPTY_VALUE) {
-      skeleton[key] = EMPTY_VALUE[typeOf(property)];
-    }
-  }
-  return JSON.stringify(skeleton, null, 2);
+function buildExternalPluginPropertiesSkeleton(schema: unknown): Record<string, unknown> {
+  return Object.fromEntries(
+    schemaProperties(schema)
+      .filter(([, property]) => property.default !== undefined && property['x-secret'] !== true)
+      .map(([key, property]) => [key, property.default])
+  );
 }
 
 export {

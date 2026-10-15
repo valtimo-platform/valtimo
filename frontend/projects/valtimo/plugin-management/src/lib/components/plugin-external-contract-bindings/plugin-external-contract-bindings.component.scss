@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// Typography comes from `cds--type-*` classes in the template. The 1px row dividers have no Carbon
+// token; Carbon's own structured list uses the same hairline.
+
 :host {
   display: block;
 }
@@ -52,14 +55,22 @@
   text-align: start;
 }
 
-.plugin-external-contract-bindings__contract-title {
-  font-weight: 600;
+.plugin-external-contract-bindings__secondary {
+  color: var(--cds-text-secondary);
 }
 
 .plugin-external-contract-bindings__provider {
   min-inline-size: 0;
 }
 
+.plugin-external-contract-bindings__error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--cds-spacing-03);
+}
+
 :host ::ng-deep .cds--inline-notification {
   max-inline-size: unset;
+  margin: 0;
 }

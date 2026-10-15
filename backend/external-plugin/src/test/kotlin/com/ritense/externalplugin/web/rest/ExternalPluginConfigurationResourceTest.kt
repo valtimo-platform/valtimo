@@ -31,6 +31,7 @@ import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.exception.ExternalPluginConfigurationValidationException
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointDescription
 import com.ritense.externalplugin.service.EndpointQuery
@@ -45,6 +46,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -159,6 +161,34 @@ class ExternalPluginConfigurationResourceTest {
         verify(configurationService).create(
             eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList()), any(), any(), eq(emptyList())
         )
+    }
+
+    @Test
+    fun `a create or update the admin can fix surfaces as a configuration validation failure`() {
+        whenever(
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        ).thenThrow(IllegalArgumentException("These contract bindings would create a cycle"))
+        whenever(configurationService.update(any(), any(), any(), anyOrNull(), anyOrNull(), any()))
+            .thenThrow(IllegalArgumentException("Contract binding(s) for undeclared contract(s): x@1"))
+
+        assertThatThrownBy {
+            resource.createConfiguration(
+                ConfigurationCreateRequest(
+                    definitionId = definitionId,
+                    title = "t",
+                    properties = objectMapper.createObjectNode(),
+                    grantedEndpoints = emptyList(),
+                )
+            )
+        }.isInstanceOf(ExternalPluginConfigurationValidationException::class.java)
+            .hasMessage("These contract bindings would create a cycle")
+        assertThatThrownBy {
+            resource.updateConfiguration(
+                configurationId,
+                ConfigurationUpdateRequest(title = "t", properties = objectMapper.createObjectNode()),
+            )
+        }.isInstanceOf(ExternalPluginConfigurationValidationException::class.java)
+            .hasMessage("Contract binding(s) for undeclared contract(s): x@1")
     }
 
     @Test

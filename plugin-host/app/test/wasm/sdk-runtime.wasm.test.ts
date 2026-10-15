@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import createPlugin, {type Plugin} from "@extism/extism";
-import {afterAll, beforeAll, describe, expect, it} from "vitest";
+import createPlugin, {type CallContext, type Plugin} from "@extism/extism";
+import {afterAll, beforeAll, beforeEach, describe, expect, it} from "vitest";
 import {readFileSync} from "node:fs";
-import {FIXTURE_WASM, LEGACY_FIXTURE_WASM} from "./fixture.js";
+import {CONTRACT_FREE_FIXTURE_WASM, FIXTURE_WASM} from "./fixture.js";
 
 /**
  * L3 — the SDK runtime dispatcher (`runtime.ts`) exercised through a real Extism/QuickJS module.
@@ -27,6 +27,8 @@ import {FIXTURE_WASM, LEGACY_FIXTURE_WASM} from "./fixture.js";
  */
 describe("SDK runtime dispatch (compiled Wasm)", () => {
   let plugin: Plugin;
+  /** Every `plugin_contract` envelope the module sent, parsed. */
+  const contractRequests: unknown[] = [];
 
   beforeAll(async () => {
     // Stub every host import the SDK bundle declares (the module fails to instantiate if one is
@@ -41,10 +43,17 @@ describe("SDK runtime dispatch (compiled Wasm)", () => {
           http_request: okReply({ status: 200, headers: {}, body: {} }),
           kv: okReply({ status: 200 }),
           log: okReply({ status: 200 }),
-          plugin_contract: okReply({ status: "completed", result: { stubbed: true } }),
+          plugin_contract: (cc: CallContext, addr: bigint) => {
+            contractRequests.push(JSON.parse(cc.read(addr)!.string()));
+            return cc.store(JSON.stringify({ status: "completed", result: { stubbed: true } }));
+          },
         },
       },
     });
+  });
+
+  beforeEach(() => {
+    contractRequests.length = 0;
   });
 
   afterAll(async () => {
@@ -96,6 +105,32 @@ describe("SDK runtime dispatch (compiled Wasm)", () => {
     it("returns UNKNOWN_ACTION for an unregistered key", async () => {
       const out = await call("handle_action", actionInput("does-not-exist"));
       expect(out).toMatchObject({ status: "error", errorCode: "UNKNOWN_ACTION" });
+    });
+
+    it("sends a job request carrying the action's reply handle and the idempotency key", async () => {
+      const out = await call(
+        "handle_action",
+        actionInput("request-job", { replyHandle: "eyJwaSI6InBpIn0.bWFj", properties: { idempotencyKey: "report-pi" } })
+      );
+
+      expect(out.status).toBe("completed");
+      expect(contractRequests).toEqual([
+        {
+          kind: "request",
+          contract: "nl.ritense.test.upstream@1",
+          operation: "generate",
+          payload: { q: 1 },
+          replyTo: "eyJwaSI6InBpIn0.bWFj",
+          idempotencyKey: "report-pi",
+        },
+      ]);
+    });
+
+    it("sends neither option when the action has no reply handle and no key", async () => {
+      await call("handle_action", actionInput("request-job"));
+      expect(contractRequests).toEqual([
+        { kind: "request", contract: "nl.ritense.test.upstream@1", operation: "generate", payload: { q: 1 } },
+      ]);
     });
 
     it("wraps a thrown error in an EXECUTION_ERROR envelope with the message", async () => {
@@ -299,8 +334,8 @@ describe("SDK runtime dispatch (compiled Wasm)", () => {
 });
 
 /**
- * Backwards compatibility of the build tool: a plugin whose manifest declares no contracts must not
- * import `plugin_contract`, so it still instantiates on a host that predates the host function.
+ * The build tool imports `plugin_contract` only for a manifest that declares contracts, so a
+ * contract-free module instantiates on a host that offers no such host function.
  */
 describe("plugin_contract import is conditional on the manifest", () => {
   const userImports = (wasmPath: string) =>
@@ -314,12 +349,12 @@ describe("plugin_contract import is conditional on the manifest", () => {
   });
 
   it("does not import plugin_contract for a contract-free manifest", () => {
-    expect(userImports(LEGACY_FIXTURE_WASM)).toEqual(["gzac_api", "http_request", "kv", "log"]);
+    expect(userImports(CONTRACT_FREE_FIXTURE_WASM)).toEqual(["gzac_api", "http_request", "kv", "log"]);
   });
 
-  it("loads with only the pre-contract host functions and still exports the contract entrypoints", async () => {
+  it("loads with only the gzac_api, http_request, kv and log host functions and still exports the contract entrypoints", async () => {
     const okReply = (body: unknown) => (cc: { store: (s: string) => bigint }) => cc.store(JSON.stringify(body));
-    const legacy = await createPlugin(LEGACY_FIXTURE_WASM, {
+    const contractFree = await createPlugin(CONTRACT_FREE_FIXTURE_WASM, {
       useWasi: true,
       functions: {
         "extism:host/user": {
@@ -332,7 +367,7 @@ describe("plugin_contract import is conditional on the manifest", () => {
     });
     try {
       const action = JSON.parse(
-        (await legacy.call(
+        (await contractFree.call(
           "handle_action",
           JSON.stringify({ actionKey: "echo", configurationId: "c", configuration: {}, processInstanceId: "p", documentId: "d", activityId: "a", properties: {} })
         ))!.text()
@@ -341,7 +376,7 @@ describe("plugin_contract import is conditional on the manifest", () => {
 
       // Calling a contract without the import is a clear in-plugin error, not a host crash.
       const nested = JSON.parse(
-        (await legacy.call(
+        (await contractFree.call(
           "handle_contract_call",
           JSON.stringify({ contract: "nl.ritense.test.echo@1", operation: "nested", configurationId: "c", configuration: {}, caller: {}, payload: {} })
         ))!.text()
@@ -349,7 +384,7 @@ describe("plugin_contract import is conditional on the manifest", () => {
       expect(nested).toMatchObject({ status: "error", errorCode: "EXECUTION_ERROR" });
       expect(nested.errorMessage).toMatch(/plugin_contract host function not found/);
     } finally {
-      await legacy.close();
+      await contractFree.close();
     }
   });
 });

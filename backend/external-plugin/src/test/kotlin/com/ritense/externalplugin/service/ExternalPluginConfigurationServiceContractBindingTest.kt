@@ -53,8 +53,8 @@ import java.util.Optional
 import java.util.UUID
 
 /**
- * Contract bindings: exact match against `permissions.contracts`, bind-time target checks, the
- * re-acceptance rule, the push, and that a contract-free configuration behaves exactly as before.
+ * Contract bindings: only declared contracts, each at most once and possibly unbound; bind-time target
+ * and operation checks, the re-acceptance rule, the push, and a contract-free configuration.
  */
 class ExternalPluginConfigurationServiceContractBindingTest {
 
@@ -161,11 +161,10 @@ class ExternalPluginConfigurationServiceContractBindingTest {
     }
 
     @Test
-    fun `create rejects a declared contract that is left unbound`() {
-        assertThatThrownBy { create(consumerDefinition, emptyList()) }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("All contract bindings declared in the plugin manifest must be granted")
-            .hasMessageContaining(openplan)
+    fun `a declared contract may stay unbound`() {
+        val created = create(consumerDefinition, emptyList())
+
+        assertThat(created.id).isNotNull()
         assertThat(bindings).isEmpty()
     }
 
@@ -180,8 +179,7 @@ class ExternalPluginConfigurationServiceContractBindingTest {
                 )
             }
                 .isInstanceOf(IllegalArgumentException::class.java)
-                .hasMessageContaining("must be declared in the plugin manifest")
-                .hasMessageContaining(extra)
+                .hasMessage("Contract binding(s) for undeclared contract(s): $extra")
         }
     }
 
@@ -202,6 +200,41 @@ class ExternalPluginConfigurationServiceContractBindingTest {
         assertThatThrownBy { create(consumerDefinition, listOf(ContractBindingEntry(openplan, unrelated.id))) }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessageContaining("does not provide it")
+    }
+
+    @Test
+    fun `a target must provide every operation the consumer declares`() {
+        val declaring = definition("pdca-search", manifest(consumedOperations = mapOf(openplan to listOf("list", "search"))))
+
+        assertThatThrownBy { create(declaring, listOf(ContractBindingEntry(openplan, provider.id))) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage(
+                "Contract '$openplan' cannot be bound to 'Open Plan': it does not provide operation(s) [search] " +
+                    "that 'pdca-search@1.0.0' declares"
+            )
+        assertThat(bindings).isEmpty()
+    }
+
+    @Test
+    fun `a target providing every declared operation can be bound`() {
+        val declaring = definition("pdca-list", manifest(consumedOperations = mapOf(openplan to listOf("list", "generate"))))
+
+        create(declaring, listOf(ContractBindingEntry(openplan, provider.id)))
+
+        assertThat(bindings.single().targetConfigurationId).isEqualTo(provider.id)
+    }
+
+    @Test
+    fun `rebinding checks the declared operations too`() {
+        val declaring = definition("pdca-list", manifest(consumedOperations = mapOf(openplan to listOf("list"))))
+        val created = create(declaring, emptyList())
+        val partial = configuration(definition("partial", manifest(provides = listOf(openplan), providedOperations = listOf("get"))), "Partial")
+
+        assertThatThrownBy {
+            service.update(created.id, created.title, objectMapper.createObjectNode(), contractBindings = listOf(ContractBindingEntry(openplan, partial.id)))
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("does not provide operation(s) [list]")
     }
 
     @Test
@@ -266,7 +299,7 @@ class ExternalPluginConfigurationServiceContractBindingTest {
     }
 
     @Test
-    fun `a contract-free configuration activates and pushes exactly as before`() {
+    fun `a contract-free configuration activates and pushes an empty contract list`() {
         val plain = definition("plain", manifest())
 
         val created = create(plain, emptyList())
@@ -335,7 +368,23 @@ class ExternalPluginConfigurationServiceContractBindingTest {
             assertThat(it.available).isTrue()
             assertThat(it.operations.map { op -> op.key to op.mode }).containsExactly("list" to "sync", "generate" to "job")
             assertThat(it.operations.last().timeout).isEqualTo("PT2H")
+            assertThat(it.contractTitle).isEqualTo("Title of $openplan")
+            assertThat(it.hostName).isNull()
         })
+    }
+
+    @Test
+    fun `providers carry the provider's own wording for the contract`() {
+        providerDefinition.manifestJson = manifest(provides = listOf(openplan)).apply {
+            putObject("translations").apply {
+                putObject("nl").put("name", "Open Plan").put("contracts.$openplan.title", "Plannen")
+                putObject("en").put("name", "Open Plan")
+            }
+        }
+
+        val provided = service.findContractProviders(openplan).single()
+
+        assertThat(provided.contractTranslations).isEqualTo(mapOf("nl" to mapOf("contracts.$openplan.title" to "Plannen")))
     }
 
     @Test
@@ -369,6 +418,34 @@ class ExternalPluginConfigurationServiceContractBindingTest {
     }
 
     @Test
+    fun `re-acceptance auto-binds the one provider that offers every declared operation`() {
+        val added = "nl.ritense.added@1"
+        configuration(definition("added-partial", manifest(provides = listOf(added), providedOperations = listOf("list"))), "Partial")
+        val complete = configuration(definition("added-complete", manifest(provides = listOf(added))), "Complete")
+        val consumer = create(consumerDefinition, listOf(ContractBindingEntry(openplan, provider.id)))
+        stagePending(
+            consumerDefinition,
+            manifest(consumes = listOf(openplan), consumedOperations = mapOf(added to listOf("list", "generate"))),
+        )
+
+        service.acceptContent(consumerDefinition.id, "sha256:pending")
+
+        assertThat(bindings.filter { it.configurationId == consumer.id }.map { it.contract to it.targetConfigurationId })
+            .containsExactlyInAnyOrder(openplan to provider.id, added to complete.id)
+    }
+
+    @Test
+    fun `re-acceptance keeps a binding whose target lacks a declared operation`() {
+        val consumer = create(consumerDefinition, listOf(ContractBindingEntry(openplan, provider.id)))
+        stagePending(consumerDefinition, manifest(consumedOperations = mapOf(openplan to listOf("list", "search"))))
+
+        service.acceptContent(consumerDefinition.id, "sha256:pending")
+
+        assertThat(bindings.filter { it.configurationId == consumer.id }.map { it.contract to it.targetConfigurationId })
+            .containsExactly(openplan to provider.id)
+    }
+
+    @Test
     fun `re-acceptance leaves a newly declared contract unbound when several providers exist`() {
         val added = "nl.ritense.added@1"
         configuration(definition("added-a", manifest(provides = listOf(added))), "A")
@@ -382,7 +459,7 @@ class ExternalPluginConfigurationServiceContractBindingTest {
     }
 
     @Test
-    fun `findGrantMismatches reports a contract the descriptor did not bind`() {
+    fun `findGrantMismatches accepts a declared contract the descriptor left unbound`() {
         val placeholder = definition("pdca", null, status = ExternalPluginDefinitionStatus.UNAVAILABLE, contentHash = null)
         service.create(
             definitionId = placeholder.id,
@@ -394,8 +471,25 @@ class ExternalPluginConfigurationServiceContractBindingTest {
         )
         placeholder.manifestJson = manifest(consumes = listOf(openplan))
 
+        assertThat(service.findGrantMismatches(placeholder)).isEmpty()
+    }
+
+    @Test
+    fun `findGrantMismatches reports a binding the manifest does not declare`() {
+        val placeholder = definition("pdca", null, status = ExternalPluginDefinitionStatus.UNAVAILABLE, contentHash = null)
+        service.create(
+            definitionId = placeholder.id,
+            title = "PDCA",
+            properties = objectMapper.createObjectNode(),
+            grantedEndpoints = emptyList(),
+            grantedEvents = emptyList(),
+            allowPlaceholder = true,
+            contractBindings = listOf(ContractBindingEntry(openplan, provider.id)),
+        )
+        placeholder.manifestJson = manifest()
+
         assertThat(service.findGrantMismatches(placeholder)).singleElement().satisfies({
-            assertThat(it).contains("contract bindings declared but not granted: $openplan")
+            assertThat(it).contains("contract bindings granted but not declared: $openplan")
         })
     }
 
@@ -450,17 +544,32 @@ class ExternalPluginConfigurationServiceContractBindingTest {
         title = title,
     ).also { configurations[it.id] = it }
 
-    private fun manifest(consumes: List<String> = emptyList(), provides: List<String> = emptyList()): ObjectNode =
+    private fun manifest(
+        consumes: List<String> = emptyList(),
+        provides: List<String> = emptyList(),
+        consumedOperations: Map<String, List<String>> = emptyMap(),
+        providedOperations: List<String> = listOf("list", "generate"),
+    ): ObjectNode =
         objectMapper.createObjectNode().apply {
             putObject("permissions").apply {
-                if (consumes.isNotEmpty()) putArray("contracts").apply { consumes.forEach { add(it) } }
+                if (consumes.isNotEmpty() || consumedOperations.isNotEmpty()) {
+                    putArray("contracts").apply {
+                        consumes.forEach { add(it) }
+                        consumedOperations.forEach { (contract, operations) ->
+                            addObject().put("contract", contract).putArray("operations").apply { operations.forEach { add(it) } }
+                        }
+                    }
+                }
             }
             if (provides.isNotEmpty()) {
                 putArray("provides").apply {
                     provides.forEach { contract ->
-                        addObject().put("contract", contract).putArray("operations").apply {
-                            addObject().put("key", "list").put("title", "List")
-                            addObject().put("key", "generate").put("title", "Generate").put("mode", "job").put("timeout", "PT2H")
+                        addObject().put("contract", contract).put("title", "Title of $contract").putArray("operations").apply {
+                            providedOperations.forEach { key ->
+                                addObject().put("key", key).put("title", key.replaceFirstChar { it.uppercase() }).apply {
+                                    if (key == "generate") put("mode", "job").put("timeout", "PT2H")
+                                }
+                            }
                         }
                     }
                 }

@@ -17,6 +17,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   OnDestroy,
   OnInit,
   signal,
@@ -24,6 +25,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ButtonModule,
@@ -44,6 +46,7 @@ import {
 } from '@valtimo/components';
 import {
   EXTERNAL_PLUGIN_CONTRACT_JOB_STATUSES,
+  ExternalPluginConfiguration,
   ExternalPluginContractJobStatus,
   ExternalPluginContractJobSummary,
   ExternalPluginService,
@@ -53,11 +56,25 @@ import {PluginContractJobDetailModalComponent} from '../plugin-contract-job-deta
 import {PLUGIN_CONTRACT_JOBS_PAGE_TEST_IDS} from '../../constants';
 import {contractJobStatusTagType} from '../../utils';
 
+interface ContractJobRow extends ExternalPluginContractJobSummary {
+  statusTagType: string;
+  /** `errorCode`, followed by the provider's own code when it reported one. */
+  errorLabel: string;
+}
+
+interface FilterListItem extends ListItem {
+  value: string;
+}
+
 const DEFAULT_PAGE_SIZE = 10;
+
+/** Opens the detail modal of this job; set while the modal is open, so the URL can be shared. */
+const JOB_ID_QUERY_PARAM = 'jobId';
 
 /**
  * The contract job ledger: every asynchronous request one plugin configuration made of another,
- * with its state, deadline and delivery attempts. Row click opens the request and result JSON.
+ * with its state, deadline and delivery attempts, filterable by status and by the configuration on
+ * either side. A row (or the `jobId` query parameter) opens the job's details.
  */
 @Component({
   standalone: true,
@@ -84,13 +101,43 @@ export class PluginContractJobsPageComponent implements OnInit, OnDestroy {
   @ViewChild('errorTpl', {static: true}) public errorTpl!: TemplateRef<unknown>;
 
   public fields: ColumnConfig[] = [];
-  public page = 1;
-  public statusItems: Array<Partial<ListItem>> = [];
 
   public readonly $loading = signal(true);
-  public readonly $rows = signal<Array<ExternalPluginContractJobSummary>>([]);
+  public readonly $rows = signal<Array<ContractJobRow>>([]);
+  public readonly $page = signal(1);
+  public readonly $pagination = computed<Pagination>(() => ({
+    page: this.$page(),
+    size: this.PAGE_SIZE,
+    collectionSize: this._$totalElements(),
+  }));
   public readonly $selectedJobId = signal<string | null>(null);
   public readonly $detailOpen = signal(false);
+
+  public readonly $statusItems = computed<Array<FilterListItem>>(() => {
+    this._$lang();
+    const selected = this._$statusFilter();
+    return [
+      this._allItem('pluginManagement.contractJobs.filterAll', !selected),
+      ...EXTERNAL_PLUGIN_CONTRACT_JOB_STATUSES.map(status => ({
+        content: this._translateService.instant(`pluginManagement.contractJobs.status.${status}`),
+        selected: selected === status,
+        value: status,
+      })),
+    ];
+  });
+
+  public readonly $configurationItems = computed<Array<FilterListItem>>(() => {
+    this._$lang();
+    const selected = this._$configurationFilter();
+    return [
+      this._allItem('pluginManagement.contractJobs.filterAllConfigurations', !selected),
+      ...this._$configurations().map(configuration => ({
+        content: configuration.title,
+        selected: selected === configuration.id,
+        value: configuration.id,
+      })),
+    ];
+  });
 
   public readonly DATE_FORMAT = 'dd-MM-yyyy HH:mm';
   public readonly PAGE_SIZE = DEFAULT_PAGE_SIZE;
@@ -101,29 +148,37 @@ export class PluginContractJobsPageComponent implements OnInit, OnDestroy {
 
   protected readonly testIds = PLUGIN_CONTRACT_JOBS_PAGE_TEST_IDS;
 
-  private _statusFilter: ExternalPluginContractJobStatus | null = null;
   private _loadSubscription: Subscription | null = null;
-  private readonly _$totalElements = signal(0);
-  private readonly _subscriptions = new Subscription();
 
-  public get pagination(): Pagination {
-    return {page: this.page, size: this.PAGE_SIZE, collectionSize: this._$totalElements()};
-  }
+  private readonly _$totalElements = signal(0);
+  private readonly _$statusFilter = signal<ExternalPluginContractJobStatus | null>(null);
+  private readonly _$configurationFilter = signal<string | null>(null);
+  private readonly _$configurations = signal<Array<ExternalPluginConfiguration>>([]);
+  private readonly _$lang = signal('');
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly _externalPluginService: ExternalPluginService,
     private readonly _translateService: TranslateService,
-    private readonly _iconService: IconService
+    private readonly _iconService: IconService,
+    private readonly _route: ActivatedRoute,
+    private readonly _router: Router
   ) {
     this._iconService.registerAll([Renew16]);
   }
 
   public ngOnInit(): void {
     this._initFields();
-    this._buildStatusItems();
+    this._$lang.set(this._translateService.currentLang ?? '');
     this._subscriptions.add(
-      this._translateService.onLangChange.subscribe(() => this._buildStatusItems())
+      this._translateService.onLangChange.subscribe(({lang}) => this._$lang.set(lang))
     );
+    this._subscriptions.add(
+      this._route.queryParamMap.subscribe(params =>
+        this._showJobFromQueryParam(params.get(JOB_ID_QUERY_PARAM))
+      )
+    );
+    this._loadConfigurations();
     this._load();
   }
 
@@ -132,15 +187,18 @@ export class PluginContractJobsPageComponent implements OnInit, OnDestroy {
     this._loadSubscription?.unsubscribe();
   }
 
-  public onStatusSelected(event: {item?: {value?: string}}): void {
-    this._statusFilter = (event?.item?.value as ExternalPluginContractJobStatus) || null;
-    this.page = 1;
-    this._buildStatusItems();
-    this._load();
+  public onStatusSelected(event: {item?: FilterListItem}): void {
+    this._$statusFilter.set((event?.item?.value as ExternalPluginContractJobStatus) || null);
+    this._reloadFromFirstPage();
+  }
+
+  public onConfigurationSelected(event: {item?: FilterListItem}): void {
+    this._$configurationFilter.set(event?.item?.value || null);
+    this._reloadFromFirstPage();
   }
 
   public onPaginationClicked(page: number): void {
-    this.page = page;
+    this.$page.set(page);
     this._load();
   }
 
@@ -148,32 +206,21 @@ export class PluginContractJobsPageComponent implements OnInit, OnDestroy {
     this._load();
   }
 
-  public onRowClicked(row: ExternalPluginContractJobSummary): void {
-    this.$selectedJobId.set(row.id);
-    this.$detailOpen.set(true);
+  public onRowClicked(row: ContractJobRow): void {
+    this._setJobIdQueryParam(row.id);
   }
 
   public onDetailClose(): void {
     this.$detailOpen.set(false);
+    this._setJobIdQueryParam(null);
   }
 
-  public statusTagType(status: string): string {
-    return contractJobStatusTagType(status);
+  public onJobChanged(): void {
+    this._load();
   }
 
-  private _buildStatusItems(): void {
-    this.statusItems = [
-      {
-        content: this._translateService.instant('pluginManagement.contractJobs.filterAll'),
-        selected: !this._statusFilter,
-        value: '',
-      },
-      ...EXTERNAL_PLUGIN_CONTRACT_JOB_STATUSES.map(status => ({
-        content: this._translateService.instant(`pluginManagement.contractJobs.status.${status}`),
-        selected: this._statusFilter === status,
-        value: status,
-      })),
-    ];
+  private _allItem(translationKey: string, selected: boolean): FilterListItem {
+    return {content: this._translateService.instant(translationKey), selected, value: ''};
   }
 
   private _initFields(): void {
@@ -231,26 +278,66 @@ export class PluginContractJobsPageComponent implements OnInit, OnDestroy {
     ];
   }
 
+  private _showJobFromQueryParam(jobId: string | null): void {
+    if (!jobId) {
+      this.$detailOpen.set(false);
+      return;
+    }
+
+    this.$selectedJobId.set(jobId);
+    this.$detailOpen.set(true);
+  }
+
+  private _setJobIdQueryParam(jobId: string | null): void {
+    this._router.navigate([], {
+      relativeTo: this._route,
+      queryParams: {[JOB_ID_QUERY_PARAM]: jobId},
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  private _loadConfigurations(): void {
+    this._externalPluginService
+      .getConfigurations()
+      .subscribe(configurations =>
+        this._$configurations.set(
+          [...(configurations ?? [])].sort((a, b) => a.title.localeCompare(b.title))
+        )
+      );
+  }
+
+  private _reloadFromFirstPage(): void {
+    this.$page.set(1);
+    this._load();
+  }
+
   private _load(): void {
     this._loadSubscription?.unsubscribe();
     this.$loading.set(true);
     this._loadSubscription = this._externalPluginService
       .getContractJobs({
-        page: this.page - 1,
+        page: this.$page() - 1,
         size: this.PAGE_SIZE,
-        status: this._statusFilter ?? undefined,
+        status: this._$statusFilter() ?? undefined,
+        configurationId: this._$configurationFilter() ?? undefined,
       })
       .subscribe({
         next: result => {
-          this.$rows.set(
-            (result?.content ?? []).map(job => ({
-              ...job,
-              requesterTitle: job.requesterTitle ?? job.requesterConfigurationId,
-              providerTitle: job.providerTitle ?? job.providerConfigurationId,
-            }))
-          );
+          const content = result?.content ?? [];
           // Spring's VIA_DTO page serialization nests the totals under `page`
-          this._$totalElements.set(result?.totalElements ?? result?.['page']?.totalElements ?? 0);
+          const totalElements = result?.totalElements ?? result?.['page']?.totalElements ?? 0;
+          const lastPage = Math.max(1, Math.ceil(totalElements / this.PAGE_SIZE));
+
+          // Jobs left the page since it was opened: purged, or moved out of the status filter
+          if (content.length === 0 && this.$page() > lastPage) {
+            this.$page.set(lastPage);
+            this._load();
+            return;
+          }
+
+          this.$rows.set(content.map(job => this._toRow(job)));
+          this._$totalElements.set(totalElements);
           this.$loading.set(false);
         },
         error: () => {
@@ -259,5 +346,15 @@ export class PluginContractJobsPageComponent implements OnInit, OnDestroy {
           this.$loading.set(false);
         },
       });
+  }
+
+  private _toRow(job: ExternalPluginContractJobSummary): ContractJobRow {
+    return {
+      ...job,
+      requesterTitle: job.requesterTitle ?? job.requesterConfigurationId,
+      providerTitle: job.providerTitle ?? job.providerConfigurationId,
+      statusTagType: contractJobStatusTagType(job.status),
+      errorLabel: [job.errorCode, job.providerErrorCode].filter(code => !!code).join(' · '),
+    };
   }
 }

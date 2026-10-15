@@ -20,6 +20,7 @@ import {map, take} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {
   ExternalPluginContractBindingEntry,
+  ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
@@ -110,7 +111,9 @@ export class PluginAddModalComponent implements OnDestroy {
   public readonly egress$ = new BehaviorSubject<Array<string>>([]);
   public readonly derivedEgress$ = new BehaviorSubject<Array<string>>([]);
   public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
-  public readonly requiredContracts$ = new BehaviorSubject<Array<string>>([]);
+  public readonly declaredContracts$ = new BehaviorSubject<Array<ExternalPluginDeclaredContract>>(
+    []
+  );
   public readonly providedContracts$ = new BehaviorSubject<Array<ExternalPluginProvidedContract>>(
     []
   );
@@ -184,7 +187,7 @@ export class PluginAddModalComponent implements OnDestroy {
       this.eventSubscriptions$.next([]);
       this.capabilities$.next([]);
       this.permissionsValid$.next(false);
-      this.requiredContracts$.next([]);
+      this.declaredContracts$.next([]);
       this.providedContracts$.next([]);
       this.contractBindingsValid$.next(true);
       this._buildProgressSteps();
@@ -273,9 +276,9 @@ export class PluginAddModalComponent implements OnDestroy {
     this._externalConfigureComponent?.setGrantedEgress(targets);
   }
 
-  public onRequiredContractsResolved(contracts: Array<string>): void {
+  public onDeclaredContractsResolved(contracts: Array<ExternalPluginDeclaredContract>): void {
     this.contractBindingsValid$.next(contracts.length === 0);
-    this.requiredContracts$.next(contracts);
+    this.declaredContracts$.next(contracts);
   }
 
   public onProvidedContractsResolved(contracts: Array<ExternalPluginProvidedContract>): void {

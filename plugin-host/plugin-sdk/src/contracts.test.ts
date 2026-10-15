@@ -84,13 +84,18 @@ describe("contract host-function wrappers", () => {
     });
   });
 
-  it("pluginRequest sends a request envelope, with replyTo only when given", () => {
+  it("pluginRequest sends a request envelope, with replyTo and idempotencyKey only when given", () => {
     const stub = stubWasmGlobals("plugin_contract");
     stub.replyWith({status: "accepted", jobId: "job-1"});
     stub.replyWith({status: "accepted", jobId: "job-2"});
+    stub.replyWith({status: "accepted", jobId: "job-3"});
 
     const first = pluginRequest("nl.ritense.document.generate@1", "generate", {templateKey: "t"});
-    pluginRequest("nl.ritense.document.generate@1", "generate", {}, {replyTo: {processInstanceId: "pi-1"}});
+    pluginRequest("nl.ritense.document.generate@1", "generate", {}, {replyTo: "eyJjZmciOiJjIn0.mac"});
+    pluginRequest("nl.ritense.document.generate@1", "generate", undefined, {
+      replyTo: "eyJjZmciOiJjIn0.mac",
+      idempotencyKey: "report-pi-1",
+    });
 
     expect(first).toEqual({status: "accepted", jobId: "job-1"});
     expect(stub.requests[0]).toEqual({
@@ -104,7 +109,42 @@ describe("contract host-function wrappers", () => {
       contract: "nl.ritense.document.generate@1",
       operation: "generate",
       payload: {},
-      replyTo: {processInstanceId: "pi-1"},
+      replyTo: "eyJjZmciOiJjIn0.mac",
+    });
+    expect(stub.requests[2]).toEqual({
+      kind: "request",
+      contract: "nl.ritense.document.generate@1",
+      operation: "generate",
+      payload: {},
+      replyTo: "eyJjZmciOiJjIn0.mac",
+      idempotencyKey: "report-pi-1",
+    });
+  });
+
+  it("passes options through unvalidated — the host function judges them", () => {
+    const stub = stubWasmGlobals("plugin_contract");
+    stub.replyWith({status: "error", errorCode: "INVALID_REQUEST", errorMessage: "bad key"});
+
+    const out = pluginRequest("nl.ritense.document.generate@1", "generate", {}, {idempotencyKey: "has space"});
+
+    expect(stub.requests[0]).toMatchObject({idempotencyKey: "has space"});
+    expect(out).toEqual({status: "error", errorCode: "INVALID_REQUEST", errorMessage: "bad key"});
+  });
+
+  it("returns a provider's own error code next to PROVIDER_ERROR", () => {
+    const stub = stubWasmGlobals("plugin_contract");
+    stub.replyWith({
+      status: "error",
+      errorCode: "PROVIDER_ERROR",
+      providerErrorCode: "BSN_UNKNOWN",
+      errorMessage: "No person with that BSN",
+    });
+
+    expect(pluginCall("nl.ritense.bsn-lookup@1", "lookup", {bsn: "1"})).toEqual({
+      status: "error",
+      errorCode: "PROVIDER_ERROR",
+      providerErrorCode: "BSN_UNKNOWN",
+      errorMessage: "No person with that BSN",
     });
   });
 

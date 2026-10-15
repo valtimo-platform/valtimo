@@ -38,6 +38,7 @@ describe('PluginExternalReviewModalComponent', () => {
       permissions: {
         endpoints: [{method: 'GET', pattern: '/api/v1/document/*'}],
         capabilities: ['gzac_api'],
+        contracts: ['nl.ritense.openplan@1'],
       },
     },
     pendingManifest: {
@@ -47,7 +48,10 @@ describe('PluginExternalReviewModalComponent', () => {
           {method: 'POST', pattern: '/api/v1/process-link/*/form/submission'},
         ],
         capabilities: ['gzac_api'],
-        contracts: ['nl.ritense.openplan@1'],
+        contracts: [
+          'nl.ritense.openplan@1',
+          {contract: 'nl.ritense.zaakdms@1', operations: ['store']},
+        ],
       },
       eventSubscriptions: ['com.ritense.valtimo.document.created'],
       provides: [
@@ -87,8 +91,17 @@ describe('PluginExternalReviewModalComponent', () => {
     expect(component.$pendingEndpoints().length).toBe(2);
     expect(component.$pendingCapabilities()).toEqual(['gzac_api']);
     expect(component.$pendingEvents()).toEqual(['com.ritense.valtimo.document.created']);
-    expect(component.$pendingRequiredContracts()).toEqual(['nl.ritense.openplan@1']);
+    expect(component.$pendingDeclaredContracts()).toEqual([
+      {contract: 'nl.ritense.openplan@1', operations: null},
+      {contract: 'nl.ritense.zaakdms@1', operations: ['store']},
+    ]);
     expect(component.$pendingProvidedContracts()[0].contract).toBe('nl.ritense.pdca@1');
+  });
+
+  it('points out contracts the pending manifest declares for the first time', () => {
+    applyDefinition();
+
+    expect(component.$newlyDeclaredContracts()).toEqual(['nl.ritense.zaakdms@1']);
   });
 
   it('accepting echoes the reviewed pending hash in a single call — the backend re-grants', () => {
@@ -128,5 +141,16 @@ describe('PluginExternalReviewModalComponent', () => {
     expect(accepted).toBeFalse();
     expect(component.$loading()).toBeFalse();
     expect(component.$errorMessage()).toBe('The plugin package changed again on the host');
+  });
+
+  it('still reports a rejected accept that carries no explanation', () => {
+    applyDefinition();
+    externalPluginService.acceptDefinitionContent.and.returnValue(
+      throwError(() => ({error: {message: 'error.http.409'}}))
+    );
+
+    component.onAccept();
+
+    expect(component.$errorMessage()).toBe('');
   });
 });

@@ -30,6 +30,7 @@ import {
   onContractReply,
   onEvent,
   pluginCall,
+  pluginRequest,
   request,
   submit,
 } from "@valtimo/plugin-sdk";
@@ -154,6 +155,21 @@ action("call-contract", (input) => {
   return {
     status: "completed",
     variables: { outcome: pluginCall(props.contract ?? UPSTREAM_CONTRACT, "lookup", { q: 1 }) },
+  };
+});
+
+// Requests a job on the declared upstream contract with the action's reply handle, plus an
+// idempotency key from the properties — exercises the `request` envelope and the host's checks.
+action("request-job", (input) => {
+  const props = input.properties as { idempotencyKey?: string };
+  return {
+    status: "completed",
+    variables: {
+      outcome: pluginRequest(UPSTREAM_CONTRACT, "generate", { q: 1 }, {
+        replyTo: input.replyHandle,
+        idempotencyKey: props.idempotencyKey,
+      }),
+    },
   };
 });
 

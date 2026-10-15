@@ -306,7 +306,7 @@ describe("PluginManager (mocked Extism)", () => {
       return { ...fakeExtismPlugin(), functionExists: vi.fn(async () => exists) };
     }
 
-    it("calls handle_contract_call with the chain and contract grant in the host context only", async () => {
+    it("calls handle_contract_call with the chain, deadline and correlation id in the host context only", async () => {
       configProvider.get.mockResolvedValueOnce({
         ...(await configProvider.get()),
         grantedContracts: ["nl.ritense.openplan@1"],
@@ -316,8 +316,17 @@ describe("PluginManager (mocked Extism)", () => {
       await manager.loadPlugin(PLUGIN_ID, VERSION);
       const instance = contractInstance();
       createPluginMock.mockResolvedValueOnce(instance);
+      const contractDeadlineMs = Date.now() + 5_000;
 
-      await manager.callContract(PLUGIN_ID, VERSION, "nl.ritense.openplan@1", "list", contractInput);
+      await manager.callContract(PLUGIN_ID, VERSION, "nl.ritense.openplan@1", "list", {
+        ...contractInput,
+        jobId: "job-1",
+        deadline: new Date(contractDeadlineMs).toISOString(),
+        documentId: "doc-1",
+        requestedBy: "behandelaar",
+        contractDeadlineMs,
+        correlationId: "corr-1",
+      });
 
       const [exportName, wasmInput, hostCtx] = instance.call.mock.calls[0] as unknown as [
         string,
@@ -332,13 +341,76 @@ describe("PluginManager (mocked Extism)", () => {
         configuration: { setting: "x" },
         caller: { pluginId: "pdca", version: "0.2.0", configurationId: "cfg-0" },
         payload: { resource: "plan" },
+        jobId: "job-1",
+        deadline: new Date(contractDeadlineMs).toISOString(),
+        documentId: "doc-1",
+        requestedBy: "behandelaar",
       });
       expect(hostCtx).toMatchObject({
         serviceToken: "svc",
         gzacBaseUrl: "http://gzac:8080",
         contractChain: ["cfg-0", "cfg-1"],
         grantedContracts: ["nl.ritense.openplan@1"],
+        contractDeadlineMs,
+        // Earlier than the 30 s Wasm timeout, so the delivery's deadline bounds the invocation.
+        deadlineMs: contractDeadlineMs,
+        correlationId: "corr-1",
       });
+    });
+
+    it("bounds the invocation by the Wasm timeout when the delivery's deadline is later", async () => {
+      manager = makeManager({ wasmTimeoutMs: 2_000 });
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      const instance = contractInstance();
+      createPluginMock.mockResolvedValueOnce(instance);
+
+      const before = Date.now();
+      await manager.callContract(PLUGIN_ID, VERSION, "nl.ritense.openplan@1", "list", {
+        ...contractInput,
+        contractDeadlineMs: before + 60_000,
+      });
+      const after = Date.now();
+
+      const hostCtx = instance.call.mock.calls[0][2] as Record<string, number>;
+      expect(hostCtx.deadlineMs).toBeGreaterThanOrEqual(before + 2_000);
+      expect(hostCtx.deadlineMs).toBeLessThanOrEqual(after + 2_000);
+    });
+
+    it("gives every export a deadline of the Wasm timeout", async () => {
+      manager = makeManager({ wasmTimeoutMs: 12_345 });
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      const instance = fakeExtismPlugin();
+      createPluginMock.mockResolvedValueOnce(instance);
+
+      const before = Date.now();
+      await manager.callAction(PLUGIN_ID, VERSION, "echo", actionInput);
+      await manager.callSubmit(PLUGIN_ID, VERSION, "review", {
+        configurationId: "cfg-1",
+        configuration: {},
+        submission: {},
+        serviceToken: "svc",
+        gzacBaseUrl: "http://gzac:8080",
+      });
+      const after = Date.now();
+
+      for (const [, , hostCtx] of instance.call.mock.calls as unknown as Array<[string, string, Record<string, number>]>) {
+        expect(hostCtx.deadlineMs).toBeGreaterThanOrEqual(before + 12_345);
+        expect(hostCtx.deadlineMs).toBeLessThanOrEqual(after + 12_345);
+        expect(hostCtx.contractDeadlineMs).toBeUndefined();
+      }
+    });
+
+    it("passes an action's reply handle into its Wasm input", async () => {
+      manager = makeManager();
+      await manager.loadPlugin(PLUGIN_ID, VERSION);
+      const instance = fakeExtismPlugin();
+      createPluginMock.mockResolvedValueOnce(instance);
+
+      await manager.callAction(PLUGIN_ID, VERSION, "echo", { ...actionInput, replyHandle: "handle.mac" });
+      await manager.callAction(PLUGIN_ID, VERSION, "echo", actionInput);
+
+      expect(JSON.parse(instance.call.mock.calls[0][1] as string).replyHandle).toBe("handle.mac");
+      expect(JSON.parse(instance.call.mock.calls[1][1] as string)).not.toHaveProperty("replyHandle");
     });
 
     it("resolves grantedContracts per call, deny-by-default when the push had none", async () => {
@@ -366,21 +438,31 @@ describe("PluginManager (mocked Extism)", () => {
         jobId: "job-1",
         contract: "nl.ritense.openplan@1",
         operation: "generate",
-        status: "completed",
+        status: "failed",
+        errorCode: "PROVIDER_ERROR",
+        providerErrorCode: "TEMPLATE_MISSING",
+        correlationId: "job-1",
         serviceToken: "svc",
         gzacBaseUrl: "http://gzac:8080",
       });
 
-      const [exportName, wasmInput] = instance.call.mock.calls[0] as unknown as [string, string];
+      const [exportName, wasmInput, hostCtx] = instance.call.mock.calls[0] as unknown as [
+        string,
+        string,
+        Record<string, unknown>,
+      ];
       expect(exportName).toBe("handle_contract_reply");
       expect(Object.keys(JSON.parse(wasmInput)).sort()).toEqual([
         "configuration",
         "configurationId",
         "contract",
+        "errorCode",
         "jobId",
         "operation",
+        "providerErrorCode",
         "status",
       ]);
+      expect(hostCtx.correlationId).toBe("job-1");
     });
 
     it("throws MissingPluginExportError for a module without the export and keeps the instance", async () => {

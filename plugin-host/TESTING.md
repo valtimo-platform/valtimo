@@ -160,11 +160,13 @@ handler to the fixture. The handlers it carries today:
 | `mem-bomb` | Allocates until the memory cap stops it — the call fails cleanly and the host serves the next one. |
 | `call-gzac` | The backend callback works end to end, with the token attached by the host. |
 | `/echo` request, `review` / `echo-submit` | The data route and the task-form submit hook. |
-| `nl.ritense.test.echo@1` (`echo`, `nested`, `boom`, `slow-echo`, `instant-job`), `call-contract`, `onContractReply` | Contract dispatch (sync, job accepted/completed, unknown operation), `plugin_contract` with the chain and token attached host-side, and job replies. |
+| `nl.ritense.test.echo@1` (`echo`, `nested`, `boom`, `slow-echo`, `instant-job`), `call-contract`, `onContractReply` | Contract dispatch (sync, job accepted/completed, unknown operation), `plugin_contract` with the chain, token, deadline and correlation id attached host-side, the deadline cutting a hop off, and job replies. |
+| `request-job` | A job request carrying the action's reply handle and an idempotency key — and the host refusing a malformed key before anything leaves it. |
 
-The setup also builds the same source against a manifest **without** contract keys (into
-`dist/legacy/`), so a test can check the module does not import `plugin_contract` and still loads
-with only the older host functions.
+The fixture declares its upstream contract in the object form (`{contract, operations}`). The setup
+also builds the same source against a manifest **without** contract keys (into
+`dist/contract-free/`), so a test can check the module does not import `plugin_contract` and loads
+with only the `gzac_api`, `http_request`, `kv` and `log` host functions.
 
 ```bash
 # from plugin-host/app, with Node 22 active (the Wasm toolchain downloads itself on first use)

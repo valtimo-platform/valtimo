@@ -32,7 +32,12 @@ export interface ContractCallInput {
   caller: Record<string, unknown>;
   payload: unknown;
   jobId?: string;
+  /** ISO-8601 instant when the answer is due: the call's budget on this app's clock, or the job's deadline. */
   deadline?: string;
+  /** The case a job acts on, when known. Jobs only. */
+  documentId?: string;
+  /** Login of the user whose token requested the job. Jobs only. */
+  requestedBy?: string;
 }
 
 export type ContractCallOutput =
@@ -48,6 +53,8 @@ export interface ContractReply {
   status: string;
   result?: unknown;
   errorCode?: string;
+  /** The provider's own error code, next to `errorCode: "PROVIDER_ERROR"`. */
+  providerErrorCode?: string;
   errorMessage?: string;
   requestedAt?: string;
   completedAt?: string;
@@ -78,7 +85,16 @@ export function runContractCall(
         return { status: "error", errorCode: "OPERATION_REQUIRES_JOB", errorMessage: "slow-echo only runs as a job" };
       }
       const jobId = input.jobId;
-      log.info({ jobId, caller: input.caller, deadline: input.deadline }, "[demo-app] contract job accepted");
+      log.info(
+        {
+          jobId,
+          caller: input.caller,
+          deadline: input.deadline,
+          documentId: input.documentId,
+          requestedBy: input.requestedBy,
+        },
+        "[demo-app] contract job accepted",
+      );
       setTimeout(() => {
         void completeSlowEcho(store, record.configurationId, jobId, input.payload, log);
       }, SLOW_ECHO_DELAY_MS).unref();

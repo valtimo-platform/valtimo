@@ -527,16 +527,17 @@ class ExternalPluginConfigurationService(
     }
 
     /**
-     * Re-acceptance cannot ask a per-configuration question, so: still-declared bindings stay,
-     * undeclared ones go, and a newly declared contract is auto-bound only when exactly one provider
-     * exists. Otherwise it stays unbound and calls fail `NO_PROVIDER_BOUND` until the admin edits.
+     * Re-acceptance cannot ask a per-configuration question, so: still-declared bindings stay (also
+     * when the target lacks a declared operation — that only warns), undeclared ones go,
+     * and a newly declared contract is auto-bound only when exactly one compatible provider exists.
+     * Otherwise it stays unbound and calls fail `NO_PROVIDER_BOUND` until the admin edits.
      */
     private fun regrantContractBindings(
         configuration: ExternalPluginConfiguration,
         definition: ExternalPluginDefinition,
         manifest: JsonNode,
     ) {
-        val declared = ExternalPluginManifestContracts.declaredContracts(manifest).toSet()
+        val declared = ExternalPluginManifestContracts.declaredContractEntries(manifest).associate { it.contract to it.operations }
         val existing = contractBindingRepository.findAllByConfigurationId(configuration.id)
         val dropped = existing.filter { it.contract !in declared }
         if (dropped.isNotEmpty()) {
@@ -547,10 +548,31 @@ class ExternalPluginConfigurationService(
                     "no longer declared by '${definition.pluginId}@${definition.version}'"
             }
         }
-        val bound = existing.map { it.contract }.toSet() - dropped.map { it.contract }.toSet()
-        (declared - bound).forEach { contract ->
-            val candidates = providerConfigurations(contract).filter { (provider, _) ->
-                provider.id != configuration.id && !wouldCreateCycle(configuration.id, listOf(provider.id))
+        val kept = existing.filter { it.contract in declared }
+        kept.forEach { binding ->
+            val target = configurationRepository.findById(binding.targetConfigurationId).orElse(null) ?: return@forEach
+            val targetDefinition = definitionRepository.findById(target.definitionId).orElse(null) ?: return@forEach
+            if (targetDefinition.isPlaceholder) return@forEach
+            val missing = ExternalPluginManifestContracts.missingOperations(
+                targetDefinition.manifestJson, binding.contract, declared[binding.contract]
+            )
+            if (missing.isNotEmpty()) {
+                logger.warn {
+                    "Configuration ${configuration.id} ('${configuration.title}') keeps its binding of contract " +
+                        "'${binding.contract}' to ${target.id} ('${target.title}'), which does not provide operation(s) " +
+                        "$missing that '${definition.pluginId}@${definition.version}' declares. Calls to them fail " +
+                        "until an administrator rebinds the contract."
+                }
+            }
+        }
+        val bound = kept.map { it.contract }.toSet()
+        (declared.keys - bound).forEach { contract ->
+            val candidates = providerConfigurations(contract).filter { (provider, providerDefinition) ->
+                provider.id != configuration.id &&
+                    ExternalPluginManifestContracts.missingOperations(
+                        providerDefinition.manifestJson, contract, declared[contract]
+                    ).isEmpty() &&
+                    !wouldCreateCycle(configuration.id, listOf(provider.id))
             }
             if (candidates.size == 1) {
                 val target = candidates.single().first
@@ -563,26 +585,44 @@ class ExternalPluginConfigurationService(
                 logger.warn {
                     "Contract '$contract' newly declared by '${definition.pluginId}@${definition.version}' is left " +
                         "unbound for configuration ${configuration.id} ('${configuration.title}'): " +
-                        "${candidates.size} providers available. Calls fail with NO_PROVIDER_BOUND until an " +
+                        "${candidates.size} compatible providers available. Calls fail with NO_PROVIDER_BOUND until an " +
                         "administrator binds it."
                 }
             }
         }
     }
 
-    /** Consumers keep their binding when a provider stops providing; they then fail at call time. */
+    /**
+     * Consumers keep their binding when a provider stops providing the contract, or an operation they
+     * declare; they then fail at call time.
+     */
     private fun warnOnWithdrawnProvidedContracts(definition: ExternalPluginDefinition, manifest: JsonNode) {
         val providerIds = configurationRepository.findAllByDefinitionId(definition.id).map { it.id }
         if (providerIds.isEmpty()) return
-        contractBindingRepository.findAllByTargetConfigurationIdIn(providerIds)
-            .filterNot { ExternalPluginManifestContracts.provides(manifest, it.contract) }
-            .forEach { binding ->
+        contractBindingRepository.findAllByTargetConfigurationIdIn(providerIds).forEach { binding ->
+            if (!ExternalPluginManifestContracts.provides(manifest, binding.contract)) {
                 logger.warn {
                     "Configuration ${binding.configurationId} is bound to ${binding.targetConfigurationId} for " +
                         "contract '${binding.contract}', which '${definition.pluginId}@${definition.version}' " +
                         "no longer provides. Rebind it to another provider."
                 }
+                return@forEach
             }
+            val consumer = configurationRepository.findById(binding.configurationId).orElse(null) ?: return@forEach
+            val consumerDefinition = definitionRepository.findById(consumer.definitionId).orElse(null) ?: return@forEach
+            val missing = ExternalPluginManifestContracts.missingOperations(
+                manifest,
+                binding.contract,
+                ExternalPluginManifestContracts.declaredOperations(consumerDefinition.manifestJson, binding.contract),
+            )
+            if (missing.isNotEmpty()) {
+                logger.warn {
+                    "Configuration ${binding.configurationId} is bound to ${binding.targetConfigurationId} for " +
+                        "contract '${binding.contract}', but '${definition.pluginId}@${definition.version}' no longer " +
+                        "provides operation(s) $missing that it declares. Rebind it to another provider."
+                }
+            }
+        }
     }
 
     @Transactional(readOnly = true)
@@ -592,7 +632,7 @@ class ExternalPluginConfigurationService(
         val requiredEvents = declaredEvents(manifest).map { it.eventType }.toSet()
         val requiredCapabilities = declaredCapabilities(manifest).map { it.value }.toSet()
         val requiredEgress = declaredEgress(manifest).toSet()
-        val requiredContracts = ExternalPluginManifestContracts.declaredContracts(manifest).toSet()
+        val declaredContracts = ExternalPluginManifestContracts.declaredContracts(manifest).toSet()
 
         return configurationRepository.findAllByDefinitionId(definition.id).mapNotNull { configuration ->
             val problems = listOfNotNull(
@@ -620,12 +660,11 @@ class ExternalPluginConfigurationService(
                     grantedEgressRepository.findAllByConfigurationId(configuration.id)
                         .map { it.target }.toSet(),
                 ),
-                difference(
-                    "contract bindings",
-                    requiredContracts,
-                    contractBindingRepository.findAllByConfigurationId(configuration.id)
-                        .map { it.contract }.toSet(),
-                ),
+                // A declared contract may stay unbound; only a binding nothing declares is a mismatch.
+                (contractBindingRepository.findAllByConfigurationId(configuration.id).map { it.contract }.toSet() -
+                    declaredContracts)
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { "contract bindings granted but not declared: ${it.joinToString(", ")}" },
             )
             if (problems.isEmpty()) null else "configuration ${configuration.id} " +
                 "('${configuration.title}'): ${problems.joinToString("; ")}"
@@ -783,6 +822,8 @@ class ExternalPluginConfigurationService(
                 operations = provided.operations.map {
                     ContractProviderOperationResponse(it.key, it.title, it.mode, it.timeout)
                 },
+                contractTitle = provided.title,
+                contractTranslations = ExternalPluginManifestContracts.contractTranslations(definition.manifestJson, contract),
             )
         }.sortedBy { it.configurationTitle }
 
@@ -795,10 +836,11 @@ class ExternalPluginConfigurationService(
     }
 
     /**
-     * Bind-time validation: exact match against `permissions.contracts`, target exists and is not
-     * self, target provides the contract, and the binding graph stays acyclic. A descriptor is the
-     * admin's own review, so a missing target only warns and the provides-check waits for discovery
-     * while either side is a placeholder.
+     * Bind-time validation: every binding names a contract declared in `permissions.contracts` (a
+     * declared contract may stay unbound), target exists and is not self, target provides the contract
+     * and every operation the consumer declares for it, and the binding graph stays acyclic. A
+     * descriptor is the admin's own review, so a missing target only warns and the provides-check waits
+     * for discovery while either side is a placeholder.
      */
     private fun validateContractBindings(
         configurationId: UUID,
@@ -810,12 +852,14 @@ class ExternalPluginConfigurationService(
         require(duplicates.isEmpty()) {
             "Each contract can be bound only once. Bound more than once: ${duplicates.joinToString(", ")}"
         }
-        definition.manifestJson?.let { manifest ->
-            requireExactGrantMatch(
-                "contract bindings",
-                ExternalPluginManifestContracts.declaredContracts(manifest).toSet(),
-                bindings.map { it.contract }.toSet(),
-            )
+        val declared = definition.manifestJson?.let { manifest ->
+            ExternalPluginManifestContracts.declaredContractEntries(manifest).associate { it.contract to it.operations }
+        }
+        if (declared != null) {
+            val undeclared = bindings.map { it.contract }.distinct().filter { it !in declared }
+            require(undeclared.isEmpty()) {
+                "Contract binding(s) for undeclared contract(s): ${undeclared.joinToString(", ")}"
+            }
         }
         bindings.forEach { binding ->
             require(binding.targetConfigurationId != configurationId) {
@@ -842,6 +886,13 @@ class ExternalPluginConfigurationService(
             require(ExternalPluginManifestContracts.provides(targetDefinition.manifestJson, binding.contract)) {
                 "Contract '${binding.contract}' cannot be bound to '${target.title}': " +
                     "'${targetDefinition.pluginId}@${targetDefinition.version}' does not provide it"
+            }
+            val missing = ExternalPluginManifestContracts.missingOperations(
+                targetDefinition.manifestJson, binding.contract, declared?.get(binding.contract)
+            )
+            require(missing.isEmpty()) {
+                "Contract '${binding.contract}' cannot be bound to '${target.title}': it does not provide " +
+                    "operation(s) $missing that '${definition.pluginId}@${definition.version}' declares"
             }
         }
         require(!wouldCreateCycle(configurationId, bindings.map { it.targetConfigurationId })) {

@@ -19,23 +19,22 @@
   flex-direction: column;
 }
 
-.plugin-external-edit-modal__properties {
-  margin-top: 1.5rem;
+.plugin-external-edit-modal__section {
+  display: block;
+  margin-block-start: var(--cds-spacing-06);
 }
 
 .plugin-external-edit-modal__progress {
-  width: 100%;
-  margin-top: 16px;
-  margin-bottom: 8px;
+  inline-size: 100%;
+  margin-block: var(--cds-spacing-05) var(--cds-spacing-03);
 }
 
-.plugin-external-edit-modal__awaiting-host {
+.plugin-external-edit-modal__notification {
   display: block;
-  margin-bottom: var(--cds-spacing-05);
+  margin-block-end: var(--cds-spacing-05);
 }
 
-:host ::ng-deep .plugin-external-edit-modal__awaiting-host {
-  max-width: 100%;
-  width: 100%;
+:host ::ng-deep .plugin-external-edit-modal__notification {
+  inline-size: 100%;
   max-inline-size: unset;
 }

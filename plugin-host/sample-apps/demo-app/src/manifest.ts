@@ -29,7 +29,10 @@ export interface PluginManifest {
   provider?: string;
   compatibility?: { minGzacVersion?: string; maxGzacVersion?: string };
   configurationSchema?: Record<string, unknown>;
-  permissions?: { endpoints?: Array<{ method: string; pattern: string }>; contracts?: string[] };
+  permissions?: {
+    endpoints?: Array<{ method: string; pattern: string }>;
+    contracts?: Array<string | { contract: string; operations: string[] }>;
+  };
   provides?: Array<{
     contract: string;
     title?: string;
@@ -40,6 +43,10 @@ export interface PluginManifest {
       mode?: "sync" | "job";
       timeout?: string;
       outputs?: string[];
+      /** JSON Schema (2020-12) GZAC checks the request payload against. */
+      input?: Record<string, unknown>;
+      /** JSON Schema (2020-12) GZAC checks a completed result against. */
+      output?: Record<string, unknown>;
     }>;
   }>;
   frontendBundles?: Array<{
@@ -62,8 +69,8 @@ export interface PluginManifest {
 }
 
 export const PLUGIN_ID = "demo-app";
-// Bumped for `provides`: an app's content pin is derived from its manifest, so a change in place
-// would deactivate it until an admin re-accepts.
+// An app's content pin is derived from its manifest: change the manifest under a new version, or the
+// app deactivates until an admin re-accepts it.
 export const PLUGIN_VERSION = "1.1.0";
 
 export const manifest: PluginManifest = {
@@ -193,6 +200,30 @@ export const manifest: PluginManifest = {
           title: "Echo the payload",
           description: "Answers at once with the payload and the caller GZAC stamped.",
           outputs: ["echo", "caller"],
+          input: {
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            type: "object",
+            properties: {
+              message: { type: "string", maxLength: 1000 },
+            },
+          },
+          output: {
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            type: "object",
+            required: ["echo", "caller"],
+            properties: {
+              echo: { description: "The payload, as received." },
+              caller: {
+                type: "object",
+                required: ["pluginId", "version", "configurationId"],
+                properties: {
+                  pluginId: { type: "string" },
+                  version: { type: "string" },
+                  configurationId: { type: "string" },
+                },
+              },
+            },
+          },
         },
         {
           key: "slow-echo",

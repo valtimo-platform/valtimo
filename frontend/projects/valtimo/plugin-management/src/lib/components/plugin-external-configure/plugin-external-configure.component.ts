@@ -18,7 +18,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  inject,
   Input,
   OnDestroy,
   OnInit,
@@ -33,6 +32,7 @@ import {Subscription} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 import {
   ExternalPluginContractBindingEntry,
+  ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
@@ -41,12 +41,15 @@ import {
   ExternalPluginProvidedContract,
   ExternalPluginService,
   extractExternalDefinitionId,
-  isExternalPluginKey,
+  getExternalPluginDeclaredContracts,
   getExternalPluginProvidedContracts,
+  isExternalPluginKey,
 } from '@valtimo/plugin';
 import {PluginManagementStateService} from '../../services';
-import {deriveExternalPluginEgressOrigins} from '../../utils';
-import {buildExternalPluginPropertiesSkeleton} from '../../utils/external-plugin-properties-skeleton.util';
+import {
+  buildExternalPluginPropertiesSkeleton,
+  deriveExternalPluginEgressOrigins,
+} from '../../utils';
 import {PluginExternalPropertiesEditorComponent} from '../plugin-external-properties-editor/plugin-external-properties-editor.component';
 
 interface ExternalPluginSaveEvent {
@@ -101,8 +104,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
    * shows them so the full destination set is visible before activation.
    */
   @Output() public derivedEgressResolved = new EventEmitter<Array<string>>();
-  /** `permissions.contracts` — each must be bound before activation. */
-  @Output() public requiredContractsResolved = new EventEmitter<Array<string>>();
+  /** `permissions.contracts`; the permissions step lets the admin bind each or leave it unbound. */
+  @Output() public declaredContractsResolved = new EventEmitter<
+    Array<ExternalPluginDeclaredContract>
+  >();
   @Output() public providedContractsResolved = new EventEmitter<
     Array<ExternalPluginProvidedContract>
   >();
@@ -128,11 +133,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   private _configurationSchema: unknown = null;
   private readonly _subscriptions = new Subscription();
 
-  private readonly _translateService = inject(TranslateService);
-
   constructor(
     private readonly _stateService: PluginManagementStateService,
-    private readonly _externalPluginService: ExternalPluginService
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -156,7 +160,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 this.capabilitiesResolved.emit([]);
                 this.egressResolved.emit([]);
                 this.derivedEgressResolved.emit([]);
-                this.requiredContractsResolved.emit([]);
+                this.declaredContractsResolved.emit([]);
                 this.providedContractsResolved.emit([]);
                 this._contractBindings = [];
                 this._configurationSchema = null;
@@ -241,7 +245,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     this._grantedEgress = [...egress];
     this.egressResolved.emit(egress);
     this._contractBindings = [];
-    this.requiredContractsResolved.emit(definition.manifest?.permissions?.contracts ?? []);
+    this.declaredContractsResolved.emit(getExternalPluginDeclaredContracts(definition.manifest));
     this.providedContractsResolved.emit(
       getExternalPluginProvidedContracts(definition.manifest, this._translateService.currentLang)
     );
@@ -249,12 +253,17 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     // change, without re-fetching the definition.
     this._configurationSchema = definition.configurationSchema;
     this.$configurationSchema.set(definition.configurationSchema);
-    if (!configBundle) {
-      this._form.controls.properties.setValue(
-        buildExternalPluginPropertiesSkeleton(definition.configurationSchema)
-      );
+
+    if (configBundle) {
+      this._emitDerivedEgress(null);
+    } else {
+      const skeleton = buildExternalPluginPropertiesSkeleton(definition.configurationSchema);
+      this._form.controls.properties.setValue(JSON.stringify(skeleton, null, 2), {
+        emitEvent: false,
+      });
+      // Derives the egress the skeleton's defaults already point at
+      this._validateForm();
     }
-    this._emitDerivedEgress(null);
 
     this.$loading.set(false);
   }

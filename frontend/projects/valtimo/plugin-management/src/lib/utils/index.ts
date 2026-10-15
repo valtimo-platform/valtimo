@@ -19,3 +19,5 @@ export * from './external-plugin-compatibility.util';
 export * from './external-plugin-egress.util';
 export * from './iso-duration.util';
 export * from './contract-job-status.util';
+export * from './external-plugin-error.util';
+export * from './external-plugin-properties-skeleton.util';

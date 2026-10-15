@@ -33,6 +33,10 @@ object ExternalPluginManifestContracts {
         /** ISO-8601 duration as declared; only meaningful for [MODE_JOB]. */
         val timeout: String?,
         val outputs: List<String>,
+        /** JSON Schema the request payload must satisfy. */
+        val input: JsonNode? = null,
+        /** JSON Schema a completed result must satisfy. */
+        val output: JsonNode? = null,
     ) {
         val isJob: Boolean
             get() = mode == MODE_JOB
@@ -48,11 +52,24 @@ object ExternalPluginManifestContracts {
         val operations: List<Operation>,
     )
 
-    fun declaredContracts(manifest: JsonNode?): List<String> {
+    /** One `permissions.contracts` entry. Null [operations] (the string form) means any operation the provider offers. */
+    data class DeclaredContract(
+        val contract: String,
+        val operations: List<String>?,
+    )
+
+    /** First entry wins when a contract is declared twice. */
+    fun declaredContractEntries(manifest: JsonNode?): List<DeclaredContract> {
         val declared = manifest?.get("permissions")?.get("contracts") ?: return emptyList()
         if (!declared.isArray) return emptyList()
-        return declared.mapNotNull { node -> node.asText()?.trim()?.takeIf { it.isNotEmpty() } }.distinct()
+        return declared.mapNotNull(::declaredContract).distinctBy { it.contract }
     }
+
+    fun declaredContracts(manifest: JsonNode?): List<String> = declaredContractEntries(manifest).map { it.contract }
+
+    /** The operations a consumer limits itself to for [contract]; null when it may call any. */
+    fun declaredOperations(manifest: JsonNode?, contract: String): List<String>? =
+        declaredContractEntries(manifest).firstOrNull { it.contract == contract }?.operations
 
     fun providedContracts(manifest: JsonNode?): List<ProvidedContract> {
         val provides = manifest?.get("provides") ?: return emptyList()
@@ -71,6 +88,37 @@ object ExternalPluginManifestContracts {
         providedContracts(manifest).firstOrNull { it.contract == contract }
             ?.operations?.firstOrNull { it.key == operation }
 
+    /** [required] operations of [contract] that the provider manifest does not offer. */
+    fun missingOperations(providerManifest: JsonNode?, contract: String, required: List<String>?): List<String> {
+        if (required.isNullOrEmpty()) return emptyList()
+        val offered = providedContracts(providerManifest).firstOrNull { it.contract == contract }
+            ?.operations?.map { it.key }?.toSet().orEmpty()
+        return required.filterNot { it in offered }
+    }
+
+    /** Language → key → text, limited to the `contracts.<contract>.` keys of the manifest's `translations`. */
+    fun contractTranslations(manifest: JsonNode?, contract: String): Map<String, Map<String, String>> {
+        val translations = manifest?.get("translations")?.takeIf { it.isObject } ?: return emptyMap()
+        val prefix = "contracts.$contract."
+        return translations.properties().mapNotNull { (language, bucket) ->
+            if (!bucket.isObject) return@mapNotNull null
+            val entries = bucket.properties()
+                .filter { (key, value) -> key.startsWith(prefix) && value.isTextual }
+                .associate { (key, value) -> key to value.asText() }
+            if (entries.isEmpty()) null else language to entries
+        }.toMap()
+    }
+
+    private fun declaredContract(node: JsonNode): DeclaredContract? = when {
+        node.isTextual -> node.asText().trim().takeIf { it.isNotEmpty() }?.let { DeclaredContract(it, null) }
+        node.isObject -> node.get("contract")?.textOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.let { contract ->
+            val operations = node.get("operations")?.takeIf { it.isArray }
+                ?.mapNotNull { it.textOrNull()?.trim()?.takeIf(String::isNotEmpty) }?.distinct()
+            DeclaredContract(contract, operations)
+        }
+        else -> null
+    }
+
     private fun operation(node: JsonNode): Operation? {
         val key = node.get("key")?.asText()?.trim()?.takeIf { it.isNotEmpty() } ?: return null
         val mode = node.get("mode")?.textOrNull()?.takeIf { it == MODE_JOB } ?: MODE_SYNC
@@ -83,6 +131,8 @@ object ExternalPluginManifestContracts {
             mode = mode,
             timeout = node.get("timeout")?.textOrNull(),
             outputs = outputs,
+            input = node.get("input")?.takeUnless { it.isNull },
+            output = node.get("output")?.takeUnless { it.isNull },
         )
     }
 

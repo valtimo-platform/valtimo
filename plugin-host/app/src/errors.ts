@@ -26,7 +26,7 @@ export class InvalidPluginPackageError extends Error {}
 /** Unusable startup environment. Own type so entry points print the message alone — no stack. */
 export class ConfigurationError extends Error {}
 
-/** The loaded module lacks an optional export (e.g. a plugin built with an SDK that predates it). */
+/** The loaded module lacks an optional export (e.g. a plugin built without contract support). */
 export class MissingPluginExportError extends Error {
   constructor(readonly exportName: string, pluginId: string, version: string) {
     super(`${pluginId}@${version} does not export ${exportName}`);

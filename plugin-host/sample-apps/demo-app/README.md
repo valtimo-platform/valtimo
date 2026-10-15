@@ -19,8 +19,8 @@ the same three concerns as plain TypeScript functions in [`src/plugin.ts`](src/p
 | **Case tab (iframe)** | `frontend/case-tab.tsx` | Four communication levels side by side (see below). |
 | **Backend → GZAC (user vs service token)** | `handleRequest("/case-count-*")` | Case tab panels 4 & 5 compare token scopes. |
 | **Events** | `handleEvent` + `src/events.ts` | On `document.created` the app posts a note back to the document. |
-| **Contract provider** | `src/contracts.ts`, manifest `provides` | `nl.ritense.demo.echo@1`: `echo` answers at once; `slow-echo` is a job the app accepts and completes ~5 s later via `POST /api/v1/plugin-contract/jobs/{jobId}/complete`. |
-| **Contract replies** | `POST …/contract-replies` | Job outcomes GZAC delivers are logged and listed by `handleRequest("/contract-replies")`. |
+| **Contract provider** | `src/contracts.ts`, manifest `provides` | `nl.ritense.demo.echo@1`: `echo` answers at once, with `input`/`output` JSON Schemas GZAC checks the payload and result against; `slow-echo` is a job the app accepts and completes ~5 s later via `POST /api/v1/plugin-contract/jobs/{jobId}/complete`. |
+| **Contract replies** | `POST …/contract-replies` | Job outcomes GZAC delivers (with the provider's `providerErrorCode` on a failure) are logged and listed by `handleRequest("/contract-replies")`. |
 
 The case tab shows the four communication levels the platform supports:
 
@@ -99,12 +99,24 @@ headers `X-Valtimo-Signature` / `X-Valtimo-Timestamp`, ±5-min replay window —
   `[{ configurationId, pluginId, pluginVersion, ownerId }]` summaries (no tokens/properties/broker
   — one host may serve several GZAC instances). Implementing this route is what opts an app into
   GZAC's reconciliation; without it GZAC simply skips the pass.
-- `POST /plugins/:pluginId/:version/actions/:actionKey` — invoke an action
+- `POST /plugins/:pluginId/:version/actions/:actionKey` — invoke an action. The body's `replyHandle`
+  is an opaque, expiring handle naming the process instance: send it as `replyTo` with
+  `POST /api/v1/plugin-contract/jobs` to get the job's outcome back as a BPMN message
 - `POST /plugins/:pluginId/:version/contracts/:contract/:operation` — a contract call or job
-  delivery for an operation the manifest `provides`; answers `200 {status:"completed"|"accepted"|"error", …}`,
-  `404 CONTRACT_OPERATION_NOT_PROVIDED` for anything else
+  delivery for an operation the manifest `provides`. Body: `{configurationId, caller, payload,
+  chain?, timeoutMs?, jobId?, deadline?, documentId?, requestedBy?}` — a synchronous call carries
+  `timeoutMs` (milliseconds the caller still waits; the app turns it into a deadline on its own
+  clock), a job carries `jobId`, its `deadline` instant, and `documentId`/`requestedBy` when known.
+  Answers `200 {status:"completed"|"accepted"|"error", …}`; refuses with
+  `404 {status:"error", errorCode, errorMessage}` — `PLUGIN_NOT_LOADED` or
+  `CONFIGURATION_NOT_FOUND` (GZAC treats the provider as temporarily unavailable) and
+  `CONTRACT_OPERATION_NOT_PROVIDED`
 - `POST /plugins/:pluginId/:version/contract-replies` — the outcome of a job this configuration
-  requested; answer `200 {status:"completed"}` to acknowledge, `status:"error"` makes GZAC retry
+  requested, `providerErrorCode` included on a provider failure; answer `200 {status:"completed"}`
+  to acknowledge, `status:"error"` makes GZAC retry. Same coded 404s as above
+
+Both contract routes may carry `X-Valtimo-Correlation-Id` (`^[A-Za-z0-9-]{1,64}$`); the app labels
+its log lines with it.
 
 Public routes (CORS `*`, loaded by the sandboxed iframe):
 
@@ -117,8 +129,8 @@ Public routes (CORS `*`, loaded by the sandboxed iframe):
 
 ## Notes
 
-- The manifest's `provides` is part of the derived content pin, so adding it bumped the plugin
-  version to `1.1.0`; configurations of `1.0.0` need re-activating against the new version.
+- The whole manifest, `provides` included, feeds the derived content pin: change it under a new
+  plugin version, or GZAC deactivates the app until an admin re-accepts it.
 - Unlike a plugin host, an app has a single, natively-implemented plugin and does **not** accept
   uploads (GZAC's backend and UI both prevent uploading to an app).
 - HTTP status conventions match the plugin host: action success → `200 {status:"completed"}`,

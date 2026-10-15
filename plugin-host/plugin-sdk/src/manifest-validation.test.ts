@@ -622,8 +622,8 @@ describe("validatePluginManifest", () => {
 });
 
 /**
- * Contracts: `provides` (provider side) and `permissions.contracts` (requester side). Manifests
- * without either key must validate exactly as before — that is the backwards-compatibility rule.
+ * Contracts: `provides` (provider side) and `permissions.contracts` (requester side). Both keys are
+ * optional; a manifest without them is judged on the other rules alone.
  */
 describe("validatePluginManifest — contracts", () => {
   const base = () => ({
@@ -641,7 +641,7 @@ describe("validatePluginManifest — contracts", () => {
     provides: [{ contract: "nl.ritense.openplan@1", operations, ...extra }],
   });
 
-  it("accepts a manifest without contract keys, unchanged", () => {
+  it("accepts a manifest without contract keys", () => {
     expect(validatePluginManifest(base())).toEqual([]);
     expect(validatePluginManifest({ ...base(), permissions: { capabilities: ["log"] } })).toEqual([]);
   });
@@ -677,9 +677,93 @@ describe("validatePluginManifest — contracts", () => {
     expect(validatePluginManifest({ ...base(), permissions: { contracts: [contract] } })).toEqual([
       expect.stringContaining("manifest.json permissions.contracts[0] must be a contract name"),
     ]);
+    expect(
+      validatePluginManifest({ ...base(), permissions: { contracts: [{ contract, operations: ["list"] }] } })
+    ).toEqual([expect.stringContaining("manifest.json permissions.contracts[0].contract must be a contract name")]);
     expect(validatePluginManifest(provides([operation()], { contract }))).toEqual([
       expect.stringContaining("manifest.json provides[0].contract must be a contract name"),
     ]);
+  });
+
+  describe("declared operations (object form)", () => {
+    const declaring = (...contracts: unknown[]) => ({ ...base(), permissions: { contracts } });
+
+    it("accepts a contract limited to named operations, next to the string form", () => {
+      expect(
+        validatePluginManifest(
+          declaring("nl.ritense.bsn-lookup@1", {
+            contract: "nl.ritense.document.generate@1",
+            operations: ["render", "generate-pdf"],
+          })
+        )
+      ).toEqual([]);
+    });
+
+    it.each([
+      ["missing", undefined],
+      ["empty", []],
+      ["not an array", "render"],
+    ])("rejects operations that are %s", (_label, operations) => {
+      expect(validatePluginManifest(declaring({ contract: "nl.ritense.document.generate@1", operations }))).toEqual([
+        "manifest.json permissions.contracts[0].operations must be a non-empty array of operation keys",
+      ]);
+    });
+
+    it.each([["Render"], ["1render"], ["render_pdf"], [""], [7], [null]])("rejects operation key %j", (key) => {
+      expect(
+        validatePluginManifest(declaring({ contract: "nl.ritense.document.generate@1", operations: ["render", key] }))
+      ).toEqual([
+        "manifest.json permissions.contracts[0].operations[1] must start with a lowercase letter and contain only lowercase letters, digits and '-'",
+      ]);
+    });
+
+    it("rejects a duplicated operation key", () => {
+      expect(
+        validatePluginManifest(
+          declaring({ contract: "nl.ritense.document.generate@1", operations: ["render", "render"] })
+        )
+      ).toEqual(["manifest.json permissions.contracts[0].operations must contain unique keys; 'render' is duplicated"]);
+    });
+
+    it("reports both an invalid contract and invalid operations of one entry", () => {
+      expect(validatePluginManifest(declaring({ contract: "nope", operations: [] }))).toEqual([
+        expect.stringContaining("manifest.json permissions.contracts[0].contract must be a contract name"),
+        "manifest.json permissions.contracts[0].operations must be a non-empty array of operation keys",
+      ]);
+    });
+
+    it("keeps contract names unique across both forms", () => {
+      expect(
+        validatePluginManifest(
+          declaring("nl.ritense.document.generate@1", {
+            contract: "nl.ritense.document.generate@1",
+            operations: ["render"],
+          })
+        )
+      ).toEqual([
+        "manifest.json 'permissions.contracts' must contain unique contracts; 'nl.ritense.document.generate@1' is duplicated",
+      ]);
+      expect(
+        validatePluginManifest(
+          declaring(
+            { contract: "nl.ritense.document.generate@1", operations: ["render"] },
+            { contract: "nl.ritense.document.generate@1", operations: ["generate"] }
+          )
+        )
+      ).toEqual([
+        "manifest.json 'permissions.contracts' must contain unique contracts; 'nl.ritense.document.generate@1' is duplicated",
+      ]);
+    });
+
+    it.each([
+      ["null", null],
+      ["an array", ["nl.ritense.document.generate@1"]],
+      ["a boolean", true],
+    ])("rejects an entry that is %s", (_label, entry) => {
+      expect(validatePluginManifest(declaring(entry))).toEqual([
+        "manifest.json permissions.contracts[0] must be a contract name of the form 'name@major' or an object with 'contract' and 'operations'",
+      ]);
+    });
   });
 
   it("rejects duplicated contracts in permissions.contracts and in provides", () => {
@@ -803,5 +887,32 @@ describe("validatePluginManifest — contracts", () => {
     expect(validatePluginManifest(provides([operation({ description: 1 })]))).toEqual([
       "manifest.json provides[0].operations[0].description must be a string when present",
     ]);
+  });
+
+  describe("input and output schemas", () => {
+    it("accepts JSON Schema objects without judging their content", () => {
+      const manifest = provides([
+        operation({
+          input: { type: "object", required: ["resource"], properties: { resource: { type: "string" } } },
+          output: { type: "object", required: ["items"] },
+        }),
+        // GZAC compiles schemas; the pack tool only checks the shape.
+        operation({ key: "get", input: {}, output: { type: "no-such-type" } }),
+      ]);
+      expect(validatePluginManifest(manifest)).toEqual([]);
+    });
+
+    it.each([
+      ["an array", [{ type: "object" }]],
+      ["a string", "object"],
+      ["a boolean schema", true],
+      ["null", null],
+      ["a number", 1],
+    ])("rejects an input or output that is %s", (_label, schema) => {
+      expect(validatePluginManifest(provides([operation({ input: schema, output: schema })]))).toEqual([
+        "manifest.json provides[0].operations[0].input must be a JSON Schema object when present",
+        "manifest.json provides[0].operations[0].output must be a JSON Schema object when present",
+      ]);
+    });
   });
 });

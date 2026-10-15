@@ -22,6 +22,11 @@ export interface ActionInput {
   documentId: string;
   activityId: string;
   properties: Record<string, unknown>;
+  /**
+   * Opaque, expiring handle naming this process instance. Pass it as `replyTo` to `pluginRequest`
+   * to get the job's outcome back as a BPMN message; it authenticates nothing.
+   */
+  replyHandle?: string;
 }
 
 /**
@@ -170,6 +175,18 @@ export interface ManifestContractOperation {
   timeout?: string;
   /** Keys a completed result must contain (`null` values allowed). */
   outputs?: string[];
+  /** JSON Schema (2020-12) the request `payload` must satisfy; GZAC refuses others with `CONTRACT_INPUT_INVALID`. */
+  input?: Record<string, unknown>;
+  /** JSON Schema (2020-12) a completed `result` must satisfy; GZAC fails others with `PROVIDER_INVALID_RESULT`. */
+  output?: Record<string, unknown>;
+}
+
+/** A consumer declaration limited to the listed operations of one contract. */
+export interface ManifestDeclaredContract {
+  /** `name@major`, e.g. `nl.ritense.openplan@1`. */
+  contract: string;
+  /** Non-empty, unique operation keys. GZAC refuses any other operation with `OPERATION_NOT_DECLARED`. */
+  operations: string[];
 }
 
 export interface ManifestProvidedContract {
@@ -186,10 +203,7 @@ export interface ContractCaller {
   configurationId: string;
 }
 
-/**
- * Input to a provider's contract handler (`handle_contract_call`). `jobId` and `deadline` are only
- * present when GZAC delivers a job.
- */
+/** Input to a provider's contract handler (`handle_contract_call`). `jobId` is only present for a job. */
 export interface ContractCallInput {
   contract: string;
   operation: string;
@@ -198,7 +212,15 @@ export interface ContractCallInput {
   caller: ContractCaller;
   payload: unknown;
   jobId?: string;
+  /**
+   * ISO-8601 instant when the answer is due: for a synchronous call, the caller's remaining budget
+   * on the host's clock; for a job, the instant GZAC expires it.
+   */
   deadline?: string;
+  /** The case the job acts on, when known. Jobs only. */
+  documentId?: string;
+  /** Login of the user whose token requested the job. Jobs only. */
+  requestedBy?: string;
 }
 
 export interface ContractJobInput extends ContractCallInput {
@@ -234,6 +256,8 @@ export interface ContractReplyInput {
   status: "completed" | "failed" | "expired";
   result?: unknown;
   errorCode?: string;
+  /** The provider's own error code, when it reported a failure. */
+  providerErrorCode?: string;
   errorMessage?: string;
   requestedAt: string;
   completedAt?: string;
@@ -255,6 +279,8 @@ export interface ContractCallResult<T = unknown> {
   status: "completed" | "error";
   result?: T;
   errorCode?: string;
+  /** The provider's own error code, next to `errorCode: "PROVIDER_ERROR"`. */
+  providerErrorCode?: string;
   errorMessage?: string;
 }
 
@@ -376,11 +402,12 @@ export interface PluginManifest {
      */
     egress?: string[];
     /**
-     * Contracts (`name@major`) this plugin calls through `pluginCall` / `pluginRequest`. The admin
-     * binds each to a providing configuration at activation; the host refuses calls to any
-     * contract not in the pushed grant.
+     * Contracts this plugin calls through `pluginCall` / `pluginRequest`: a `name@major` string to
+     * call any operation the bound provider offers, or a {@link ManifestDeclaredContract} to call
+     * only the listed operations. The admin binds each to a providing configuration at activation;
+     * the host refuses calls to any contract not in the pushed grant.
      */
-    contracts?: string[];
+    contracts?: Array<string | ManifestDeclaredContract>;
   };
   /** Contracts this plugin serves to other configurations, via `onContractCall` / `onContractJob`. */
   provides?: ManifestProvidedContract[];

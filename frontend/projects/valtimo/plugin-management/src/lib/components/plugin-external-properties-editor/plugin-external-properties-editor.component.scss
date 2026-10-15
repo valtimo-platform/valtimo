@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// Typography comes from `cds--type-*` classes in the template. Border and outline widths have no
+// Carbon token; 1px and 2px match Carbon's own field borders and focus/invalid outlines.
+
 :host {
   display: block;
 }
@@ -21,16 +24,14 @@
 .plugin-external-properties-editor {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--cds-spacing-04);
 
   &__header .cds--label {
-    margin-bottom: 0.25rem;
+    margin-block-end: var(--cds-spacing-02);
   }
 
   &__helper {
     margin: 0;
-    font-size: 0.75rem;
-    line-height: 1.34;
     color: var(--cds-text-helper);
   }
 
@@ -45,25 +46,23 @@
 
   &__error {
     display: block;
-    margin-top: -0.25rem;
+    margin-block-start: calc(-1 * var(--cds-spacing-02));
     color: var(--cds-text-error);
   }
 
   &__fields {
-    padding: 1rem;
+    padding: var(--cds-spacing-05);
     background: var(--cds-layer-01);
   }
 
   &__fields-title {
-    margin: 0 0 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 600;
+    margin: 0 0 var(--cds-spacing-04);
   }
 
   &__field-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--cds-spacing-04);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -72,11 +71,11 @@
   &__field {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--cds-spacing-02);
 
     & + & {
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--cds-border-subtle);
+      padding-block-start: var(--cds-spacing-04);
+      border-block-start: 1px solid var(--cds-border-subtle);
     }
   }
 
@@ -84,17 +83,11 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
-  }
-
-  &__field-name {
-    font-size: 0.875rem;
-    font-weight: 600;
+    gap: var(--cds-spacing-03);
   }
 
   &__field-type {
-    margin-left: auto;
-    font-size: 0.75rem;
+    margin-inline-start: auto;
     color: var(--cds-text-secondary);
   }
 }

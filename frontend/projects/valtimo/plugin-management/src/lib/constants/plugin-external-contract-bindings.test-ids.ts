@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+/** Every id is suffixed with the contract name. */
 export const PLUGIN_EXTERNAL_CONTRACT_BINDINGS_TEST_IDS = {
-  /** Suffixed with the contract name. */
+  row: 'pluginExternalContractBindingsRow-',
   providerDropdown: 'pluginExternalContractBindingsProvider-',
-  /** Suffixed with the contract name. */
-  noProviderNotification: 'pluginExternalContractBindingsNoProvider-',
+  lookupError: 'pluginExternalContractBindingsLookupError-',
+  retryButton: 'pluginExternalContractBindingsRetryButton-',
 } as const;

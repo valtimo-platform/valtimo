@@ -340,40 +340,92 @@ grants, and the provider sees the caller GZAC stamped, never its token.
     {
       "contract": "nl.ritense.openplan@1",
       "operations": [
-        { "key": "list", "title": "List resources" },
+        {
+          "key": "list",
+          "title": "List resources",
+          "input": { "type": "object", "required": ["resource"], "properties": { "resource": { "type": "string" } } },
+          "output": { "type": "object", "required": ["items"] }
+        },
         { "key": "report", "title": "Generate a report", "mode": "job", "timeout": "PT2H", "outputs": ["documentRef"] }
       ]
     }
   ],
-  "permissions": { "contracts": ["nl.ritense.document.generate@1"] }
+  "permissions": {
+    "contracts": [
+      "nl.ritense.bsn-lookup@1",
+      { "contract": "nl.ritense.document.generate@1", "operations": ["render", "generate"] }
+    ]
+  }
 }
 ```
 
+- **Consumer side** — each `permissions.contracts` entry is a `name@major` string (call any
+  operation the bound provider offers) or `{contract, operations}` (call only these; GZAC refuses
+  any other with `OPERATION_NOT_DECLARED` and only binds a provider that offers all of them). A
+  contract name appears once, in either form. A declared contract may stay unbound.
+- **Provider side** — `input` and `output` are optional JSON Schemas (2020-12). GZAC refuses a
+  request whose `payload` fails `input` with `CONTRACT_INPUT_INVALID`, and fails a completed
+  `result` that does not satisfy `output` with `PROVIDER_INVALID_RESULT`. The pack tool only checks
+  that both are objects; GZAC compiles them. `mode: "job"` operations need a `timeout` (ISO-8601,
+  days to seconds — `PT2H`, `P1D`); `outputs` lists keys a completed result must contain (`null`
+  allowed; `undefined` values are sent as `null`).
+
 ```typescript
-import { completeJob, kv, onContractCall, onContractJob, onContractReply, pluginCall, pluginRequest } from "@valtimo/plugin-sdk";
+import { action, completeJob, kv, onContractCall, onContractJob, onContractReply, pluginCall, pluginRequest } from "@valtimo/plugin-sdk";
 
 // Provider: one handler per declared operation.
 onContractCall("nl.ritense.openplan@1", "list", (input) => ({ status: "completed", result: { items: [] } }));
 onContractJob("nl.ritense.openplan@1", "report", (job) => {
   kv.set(`job:${job.jobId}`, job.payload);
-  return { status: "accepted" };          // finish later: completeJob(job.jobId, { status: "completed", result })
+  return { status: "accepted" };   // a later invocation calls completeJob(job.jobId, { status: "completed", result })
 });
 
-// Requester: sync call, or a job whose outcome arrives later.
-const res = pluginCall("nl.ritense.document.generate@1", "render", { templateKey: "t" });
-const job = pluginRequest("nl.ritense.document.generate@1", "generate", { templateKey: "t" });
-onContractReply((reply) => ({ status: "completed" }));   // reply.status: completed | failed | expired
+// Consumer: a sync call, or a job whose outcome arrives later.
+action("prepare-letter", (input) => {
+  const person = pluginCall("nl.ritense.bsn-lookup@1", "lookup", { bsn: "999993653" });
+  if (person.status === "error") {
+    return { status: "error", errorCode: person.providerErrorCode ?? person.errorCode, errorMessage: person.errorMessage };
+  }
+  const job = pluginRequest("nl.ritense.document.generate@1", "generate", { person: person.result }, {
+    replyTo: input.replyHandle,                            // outcome back to this process instance
+    idempotencyKey: `letter-${input.processInstanceId}`,   // a retried action gets the same job back
+  });
+  return job.status === "accepted"
+    ? { status: "completed", variables: { letterJobId: job.jobId } }
+    : { status: "error", errorCode: job.errorCode, errorMessage: job.errorMessage };
+});
+onContractReply((reply) => ({ status: "completed" }));   // outcomes of jobs requested without replyTo
 ```
 
 - `pluginCall` / `pluginRequest` / `completeJob` never throw for remote failures: an unbound
   contract, an unavailable provider or a provider error comes back as
-  `{status: "error", errorCode, errorMessage}`. The host refuses a contract outside the pushed
-  grant with `CONTRACT_NOT_GRANTED` before anything leaves it.
-- `mode: "job"` operations need a `timeout` (ISO-8601, days to seconds — `PT2H`, `P1D`); `outputs`
-  lists keys a completed result must contain (`null` allowed; `undefined` values are sent as `null`).
+  `{status: "error", errorCode, errorMessage}`, with the provider's own code as `providerErrorCode`
+  next to `errorCode: "PROVIDER_ERROR"`. The host refuses a contract outside the pushed grant with
+  `CONTRACT_NOT_GRANTED` ("Contract '…' is not declared and bound for this configuration") before
+  anything leaves it.
+- **Replies to a process.** Every action input carries `replyHandle`, an opaque, expiring handle
+  naming the process instance; it authenticates nothing. Passed as `replyTo`, the job's outcome is
+  correlated to that process instance as a BPMN message — `contract-reply:<jobId>` when a catch event
+  waits for that name, otherwise `contract-reply:<contract>:<operation>` — with the outcome in the
+  local variable `contractReply` (`jobId`, `contract`, `operation`, `status`, `result`, `errorCode`,
+  `providerErrorCode`, `errorMessage`). Without `replyTo` the outcome goes to `onContractReply`.
+- **Idempotency.** `idempotencyKey` is 1-255 visible ASCII characters. Repeating a request with the
+  same key, contract and operation returns the existing job instead of starting another; the same
+  key for another contract or operation answers `IDEMPOTENCY_KEY_CONFLICT`. GZAC remembers a key as
+  long as it keeps the job.
+- **Deadlines.** Every invocation runs against a deadline: the host's Wasm timeout, or the time a
+  synchronous caller still waits when that ends first (`input.deadline` tells a provider when its
+  answer is due). Contract hops fit inside it — with less than 250 ms left, or still waiting at the
+  deadline, they answer `CONTRACT_DEADLINE_EXCEEDED`. A `pluginCall` hands the time it has left to
+  GZAC, so the provider's own onward calls stay within the caller's budget.
+- **Jobs have no timer.** A Wasm provider that answers `accepted` completes the job from a later
+  invocation — an action, event, request or submit handler — for instance by keeping the `jobId` in
+  `kv` until the awaited work is done. A job nobody completes expires at its `timeout`.
+- A reply that arrives without a registered `onContractReply` handler is logged as a warning and
+  acknowledged as `ignored`.
 - Contracts need no capability. The build only imports the `plugin_contract` host function when
-  `manifest.json` declares `provides` or `permissions.contracts`, so a contract-free plugin still
-  loads on hosts that predate it. A plugin with its own `index.d.ts` must declare
+  `manifest.json` declares `provides` or `permissions.contracts`, so a contract-free plugin's module
+  never imports it. A plugin with its own `index.d.ts` must declare
   `plugin_contract(input: PTR): PTR;` itself, plus the `handle_contract_call` /
   `handle_contract_reply` exports.
 

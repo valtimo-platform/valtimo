@@ -46,16 +46,8 @@
       </cds-list-header>
 
       <cds-list-row
-        *ngFor="let usage of usages; trackBy: trackByUsage"
-        [attr.data-test-id]="
-          'plugin-usage-' +
-          (usage.processLinkId ||
-            usage.widgetKey ||
-            usage.tabKey ||
-            usage.menuItemTitle ||
-            usage.buildingBlockKey ||
-            usage.parentType)
-        "
+        *ngFor="let usage of $rows(); trackBy: trackByKey"
+        [attr.data-test-id]="testIds.row + usage.key"
       >
         <cds-list-column nowrap="true">
           <div class="plugin-usage-modal__cell-main">
@@ -97,20 +89,24 @@
           >
             {{ 'pluginManagement.usageModal.menuPage' | translate }}
           </div>
-          <div
-            *ngIf="isContractUsage(usage) && !usage.activityId && !usage.tabKey"
-            class="plugin-usage-modal__cell-sub"
-          >
-            {{
-              (usage.parentType === 'CONTRACT_JOB'
-                ? 'pluginManagement.usageModal.contractJob'
-                : 'pluginManagement.usageModal.contractBinding'
-              ) | translate
-            }}
+          <div *ngIf="usage.contractKindKey" class="plugin-usage-modal__cell-sub">
+            {{ usage.contractKindKey | translate }}
+
             <ng-container *ngIf="usage.relatedConfigurationTitle">
               · {{ usage.relatedConfigurationTitle }}
             </ng-container>
           </div>
+
+          <a
+            *ngIf="usage.parentType === 'CONTRACT_JOB' && usage.contractJobId"
+            cdsLink
+            [attr.data-test-id]="testIds.contractJobLink + usage.key"
+            [queryParams]="{jobId: usage.contractJobId}"
+            [routerLink]="CONTRACT_JOBS_ROUTE"
+            class="plugin-usage-modal__cell-link"
+          >
+            {{ 'pluginManagement.usageModal.viewContractJob' | translate }}
+          </a>
         </cds-list-column>
 
         <cds-list-column nowrap="true">
@@ -118,8 +114,8 @@
         </cds-list-column>
 
         <cds-list-column nowrap="true">
-          <cds-tag [type]="parentTypeTagColor(usage.parentType)" size="sm">
-            <ng-container *ngIf="parentTypeLabelKey(usage.parentType) as labelKey; else rawType">
+          <cds-tag [type]="usage.typeTagColor" size="sm">
+            <ng-container *ngIf="usage.typeLabelKey as labelKey; else rawType">
               {{ labelKey | translate }}
             </ng-container>
 

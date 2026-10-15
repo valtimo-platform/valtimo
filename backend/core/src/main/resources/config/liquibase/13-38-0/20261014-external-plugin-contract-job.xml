@@ -44,14 +44,18 @@
                 <constraints nullable="false"/>
             </column>
             <column name="requested_by" type="VARCHAR(255)"/>
+            <column name="document_id" type="VARCHAR(255)"/>
+            <column name="idempotency_key" type="VARCHAR(255)"/>
             <column name="status" type="VARCHAR(32)">
                 <constraints nullable="false"/>
             </column>
+            <column name="outcome" type="VARCHAR(32)"/>
             <column name="request_payload" type="clob">
                 <constraints nullable="false"/>
             </column>
             <column name="result_payload" type="clob"/>
             <column name="error_code" type="VARCHAR(255)"/>
+            <column name="provider_error_code" type="VARCHAR(255)"/>
             <column name="error_message" type="clob"/>
             <column name="reply_to_process_instance_id" type="VARCHAR(64)"/>
             <column name="reply_to_business_key" type="VARCHAR(255)"/>
@@ -73,6 +77,11 @@
             <column name="next_attempt_at" type="DATETIME(6)"/>
             <column name="last_delivery_error" type="clob"/>
         </createTable>
+
+        <addUniqueConstraint
+            tableName="external_plugin_contract_job"
+            columnNames="requester_configuration_id, idempotency_key"
+            constraintName="ext_plugin_contract_job_idempotency_uq"/>
 
         <createIndex tableName="external_plugin_contract_job" indexName="ext_plugin_contract_job_status_next_idx">
             <column name="status"/>

@@ -68,6 +68,7 @@ export type {
   ManifestAction,
   ManifestActionProperty,
   ManifestContractOperation,
+  ManifestDeclaredContract,
   ManifestProvidedContract,
   ContractOperationMode,
   ContractCaller,

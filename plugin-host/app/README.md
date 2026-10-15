@@ -125,13 +125,13 @@ Note: When running fully containerized, GZAC must push `eventBroker.amqpUrl` usi
 | `DB_USER` | in production | `pluginhost` (local) | PostgreSQL username |
 | `DB_PASSWORD` | in production | `pluginhost` (local) | PostgreSQL password |
 | `DB_MIGRATE_ON_BOOT` | no | `true` | Whether the app applies pending migrations at boot. Set `false` when a pre-deploy job or init container runs `node dist/migrate.js` instead (see [Database migrations](#database-migrations)). Only `true`/`false` are accepted; anything else fails the boot. |
-| `WASM_TIMEOUT_MS` | no | `30000` | Hard wall-clock limit per Wasm plugin call; Extism cancels the call when exceeded and the route reports a `HOST_ERROR`. |
+| `WASM_TIMEOUT_MS` | no | `30000` | Hard wall-clock limit per Wasm plugin call; Extism cancels the call when exceeded and the route reports a `HOST_ERROR`. Also the invocation's deadline for `plugin_contract` hops, unless a synchronous contract delivery's `timeoutMs` ends sooner. GZAC's contract read timeout (`valtimo.external-plugin.contract.read-timeout`, 40 s) must stay above it. |
 | `WASM_MAX_MEMORY_PAGES` | no | `4096` | Cap on a plugin's linear memory in 64 KiB pages (default 256 MiB). `0` removes the cap. |
 | `WASM_INSTANCE_IDLE_TTL_MS` | no | `600000` | Idle Extism instances are closed after this long without a call (freed worker + memory; next call re-instantiates). `0` disables eviction. |
 | `WASM_POOL_MIN_INSTANCES` | no | `1` | Instances retained per plugin version while in use (creation is lazy; idle eviction may go below it). |
 | `WASM_POOL_MAX_INSTANCES` | no | `10` | Concurrent instances per plugin version; worst-case memory ≈ max × page cap. `1` serialises all calls to a version. |
 | `WASM_POOL_ACQUIRE_TIMEOUT_MS` | no | `30000` | Longest a call waits for a free pooled instance under load before failing. |
-| `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` and `plugin_contract` callback fetches into GZAC. |
+| `GZAC_API_TIMEOUT_MS` | no | `60000` | Timeout on the `gzac_api` and `plugin_contract` callback fetches into GZAC. A `plugin_contract` hop is also cut off at the invocation's deadline when that comes first. |
 | `USER_TOKEN_INTROSPECTION_TIMEOUT_MS` | no | `10000` | Timeout on the user-token introspection call the `/plugins/:id/:version/data` route makes against GZAC before executing Wasm. GZAC not answering within it fails the request with a 503 (fail closed). |
 | `UPLOAD_MAX_BYTES` | no | `104857600` | Maximum plugin package (.zip) upload size (100 MiB), enforced before the file is buffered for the HMAC check. GZAC applies its own 100 MB gate and its servlet multipart limit before forwarding, so raising this alone does not widen the end-to-end limit. |
 | `PLUGIN_MAX_UNCOMPRESSED_BYTES` | no | `268435456` | Maximum total **uncompressed** size of the files extracted from a plugin package (256 MiB). `UPLOAD_MAX_BYTES` bounds the compressed zip; this bounds what it expands to, so a small package declaring gigabytes is refused with a 400 before anything is inflated. Raise it only for genuinely large frontend bundles. |
@@ -716,6 +716,11 @@ curl -sS -X DELETE http://localhost:8090/api/host/configurations/my-config \
 
 ### `POST /plugins/:pluginId/:version/actions/:actionKey` — execute an action
 
+Body: `{configurationId, processInstanceId, documentId, activityId, properties, replyHandle?}`.
+`replyHandle` is GZAC's opaque reply handle for the process instance; the host passes it to the
+plugin unread, as `input.replyHandle` (see `pluginRequest` in the
+[SDK README](../plugin-sdk/README.md#contracts)).
+
 ```bash
 printf '%s' '{"configurationId":"my-config","processInstanceId":"p1","documentId":"d1","activityId":"a1","properties":{"titleField":"/name"}}' > /tmp/action.json
 host_sign POST /plugins/case-summary/0.1.0/actions/case-summary /tmp/action.json
@@ -727,19 +732,43 @@ curl -sS -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-s
 
 ### `POST /plugins/:pluginId/:version/contracts/:contract/:operation` — deliver a contract call or job
 
-GZAC brokering a contract call (or, with `jobId` + `deadline`, a job) to the provider. The contract
-segment is sent raw (`nl.ritense.openplan@1`) — `@` and `.` are path-safe, and the HMAC signs the
-bare path. Body: `{configurationId, caller: {pluginId, version, configurationId}, payload, jobId?,
-deadline?, chain?: string[]}`. The host appends the provider's own configuration id to `chain` and
-hands it to `plugin_contract` as `X-Valtimo-Contract-Chain`, so nested calls stay depth- and
-cycle-checked by GZAC.
+GZAC brokering a contract call (or, with `jobId`, a job) to the provider. The contract segment is
+sent raw (`nl.ritense.openplan@1`) — `@` and `.` are path-safe, and the HMAC signs the bare path.
+Body: `{configurationId, caller: {pluginId, version, configurationId}, payload, chain?: string[],
+timeoutMs?, jobId?, deadline?, documentId?, requestedBy?}`:
+
+- `timeoutMs` — synchronous calls only: the milliseconds the caller still waits. The host turns it
+  into a deadline on its own clock, hands that to the plugin as `input.deadline`, and — when it comes
+  before the Wasm timeout — uses it as the invocation's deadline (see
+  [Contract calls from plugins](#contract-calls-from-plugins-plugin_contract)). Anything but a
+  positive integer is ignored.
+- `deadline` — jobs only: the ISO-8601 instant GZAC expires the job at, passed to the plugin as
+  `input.deadline`. A value that is not an instant with a zone is dropped.
+- `documentId`, `requestedBy` — jobs only: the case the job acts on, and the login of the user whose
+  token requested it.
+- `chain` — the host appends the provider's own configuration id and hands it to `plugin_contract`
+  as `X-Valtimo-Contract-Chain`, so nested calls stay depth- and cycle-checked by GZAC.
+
+A valid `X-Valtimo-Correlation-Id` header (`^[A-Za-z0-9-]{1,64}$`; anything else is ignored) labels
+the route's log lines and travels with every `plugin_contract` hop the invocation makes.
 
 `200 {status: "completed" | "accepted" | "error", result?, errorCode?, errorMessage?}` for every
-plugin-level outcome. Refusals: `404` unknown plugin/configuration, `400` configuration targets
-another plugin version, `409` content pin mismatch, `404 CONTRACT_OPERATION_NOT_PROVIDED` when the
-loaded manifest's `provides` lacks the contract/operation, `500 MISSING_CALLBACK_CONTEXT`, `501
-CONTRACT_NOT_IMPLEMENTED` for a plugin built without the `handle_contract_call` export, `500
-HOST_ERROR`.
+plugin-level outcome. Host-level refusals:
+
+| Status | `errorCode` | When |
+|---|---|---|
+| 404 | `PLUGIN_NOT_LOADED` | The plugin version is not loaded. |
+| 404 | `CONFIGURATION_NOT_FOUND` | No configuration with that id was pushed. |
+| 404 | `CONTRACT_OPERATION_NOT_PROVIDED` | The loaded manifest's `provides` lacks the contract/operation. |
+| 400 | — | `configurationId` missing, or the configuration targets another plugin version (`{error}` body). |
+| 409 | `EXTERNAL_PLUGIN_CONTENT_CHANGED` | Content pin mismatch (`{error, errorCode, expectedContentHash, actualContentHash}`). |
+| 500 | `MISSING_CALLBACK_CONTEXT` | The configuration has no service token or GZAC base URL. |
+| 501 | `CONTRACT_NOT_IMPLEMENTED` | The module lacks the `handle_contract_call` export. |
+| 500 | `HOST_ERROR` | Execution failed, e.g. the Wasm timeout. |
+
+The 404s, 500s and the 501 are `{status: "error", errorCode, errorMessage}`. GZAC treats the two
+configuration-lookup 404s as a provider that is unavailable for now (retryable), and a 404 without a
+code as a host or app without the contract route.
 
 ```bash
 printf '%s' '{"configurationId":"my-config","caller":{"pluginId":"pdca","version":"0.2.0","configurationId":"other-config"},"payload":{"resource":"plan"}}' > /tmp/contract.json
@@ -753,9 +782,44 @@ curl -sS -X POST http://localhost:8090/plugins/openplan/0.1.0/contracts/nl.riten
 ### `POST /plugins/:pluginId/:version/contract-replies` — deliver a job outcome to its requester
 
 Body: `{configurationId, jobId, contract, operation, status: "completed" | "failed" | "expired",
-result?, errorCode?, errorMessage?, requestedAt, completedAt?}`. Runs `handle_contract_reply`;
-`200 {status: "completed" | "ignored" | "error", ...}` — GZAC retries on `error`. Same refusals as
-above, with `501 CONTRACT_REPLY_NOT_IMPLEMENTED` for a missing export.
+result?, errorCode?, providerErrorCode?, errorMessage?, requestedAt, completedAt?}` —
+`providerErrorCode` is the provider's own code when it reported a failure. Runs
+`handle_contract_reply`; `200 {status: "completed" | "ignored" | "error", ...}` — GZAC retries on
+`error`; `ignored` (no reply handler registered) is an acknowledgement. Same refusals and
+`X-Valtimo-Correlation-Id` handling as above, with `501 CONTRACT_REPLY_NOT_IMPLEMENTED` for a
+missing export.
+
+### Contract calls from plugins (`plugin_contract`)
+
+The `plugin_contract` host function behind the SDK's `pluginCall` (`POST
+/api/v1/plugin-contract/call`), `pluginRequest` (`…/jobs`) and `completeJob`
+(`…/jobs/{jobId}/complete`) needs no capability: it refuses any contract outside the pushed
+`grantedContracts` before anything leaves the host. Every hop carries the configuration's service
+token, plus:
+
+| Header | Sent |
+|---|---|
+| `X-Valtimo-Contract-Chain` | Inside a contract delivery: the chain it received, ending with this configuration. |
+| `X-Valtimo-Contract-Timeout-Ms` | `call` only: the milliseconds left in the invocation. Relative, so clock skew between the host and GZAC cannot distort it. |
+| `X-Valtimo-Correlation-Id` | When the invocation serves a delivery that carried one. |
+
+Every invocation has a deadline on this host's clock: `WASM_TIMEOUT_MS` from its start, or a
+synchronous delivery's `timeoutMs` from its arrival when earlier. A hop with less than 250 ms left is
+refused, and a hop still waiting at the deadline is cut off; both answer `CONTRACT_DEADLINE_EXCEEDED`.
+Otherwise the wait is bounded by `GZAC_API_TIMEOUT_MS`.
+
+Errors the host itself answers with, as `{status: "error", errorCode, errorMessage}` (GZAC's own
+envelope passes through untouched):
+
+| `errorCode` | Meaning |
+|---|---|
+| `INVALID_REQUEST` | Malformed request: unknown `kind`, missing `contract`/`operation`, a `jobId` GZAC could not have issued, a `replyTo` that is not a non-empty string of at most 4096 characters, an `idempotencyKey` that is not 1-255 visible ASCII characters. |
+| `CONTRACT_NOT_GRANTED` | The contract is not declared and bound for this configuration. |
+| `MISSING_CALLBACK_CONTEXT` | The configuration carries no service token or GZAC base URL. |
+| `CONTRACT_DEADLINE_EXCEEDED` | No time left within the invocation, or GZAC did not answer before its deadline. |
+| `GZAC_UNREACHABLE` | Network failure, or no answer within `GZAC_API_TIMEOUT_MS`. |
+| `GZAC_ERROR` | GZAC answered without a contract envelope (e.g. a bare 404 or a proxy error page). |
+| `HOST_ERROR` | No invocation context. |
 
 ### `GET /plugins/:pluginId/:version/plugin-manifest` — get plugin manifest
 

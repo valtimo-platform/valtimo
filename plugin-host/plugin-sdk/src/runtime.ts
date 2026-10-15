@@ -309,7 +309,8 @@ export function handleContractCall(inputJson: string): string {
 /**
  * Called by the Plugin Host when GZAC delivers the outcome of a job this configuration requested.
  * Input: JSON string with ContractReplyInput shape.
- * Output: JSON string with ContractReplyOutput shape. `ignored` when no reply handler is registered.
+ * Output: JSON string with ContractReplyOutput shape. Without a reply handler: a warning, then
+ * `ignored`.
  */
 export function handleContractReply(inputJson: string): string {
   try {
@@ -319,6 +320,12 @@ export function handleContractReply(inputJson: string): string {
 
     const handler = getContractReplyHandler();
     if (!handler) {
+      log.warn(`No onContractReply handler registered; ignoring the reply for job ${reply.jobId}`, {
+        jobId: reply.jobId,
+        contract: reply.contract,
+        operation: reply.operation,
+        status: reply.status,
+      });
       return JSON.stringify({ status: "ignored" } satisfies ContractReplyOutput);
     }
 

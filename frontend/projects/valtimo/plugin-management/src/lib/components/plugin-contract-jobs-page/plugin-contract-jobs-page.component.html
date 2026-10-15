@@ -20,14 +20,25 @@
 
 <div class="plugin-contract-jobs-page__filters" cdsLayer="1">
   <cds-dropdown
-    class="plugin-contract-jobs-page__filter"
     [appendInline]="true"
     [attr.data-test-id]="testIds.statusFilter"
     [label]="'pluginManagement.contractJobs.columns.status' | translate"
     [placeholder]="'pluginManagement.contractJobs.filterAll' | translate"
     (selected)="onStatusSelected($event)"
+    class="plugin-contract-jobs-page__filter"
   >
-    <cds-dropdown-list [items]="statusItems"></cds-dropdown-list>
+    <cds-dropdown-list [items]="$statusItems()"></cds-dropdown-list>
+  </cds-dropdown>
+
+  <cds-dropdown
+    [appendInline]="true"
+    [attr.data-test-id]="testIds.configurationFilter"
+    [label]="'pluginManagement.contractJobs.configurationFilter' | translate"
+    [placeholder]="'pluginManagement.contractJobs.filterAllConfigurations' | translate"
+    (selected)="onConfigurationSelected($event)"
+    class="plugin-contract-jobs-page__filter"
+  >
+    <cds-dropdown-list [items]="$configurationItems()"></cds-dropdown-list>
   </cds-dropdown>
 </div>
 
@@ -36,11 +47,11 @@
   [header]="false"
   [items]="$rows()"
   [loading]="$loading()"
-  [pagination]="pagination"
+  [pagination]="$pagination()"
   [paginatorConfig]="paginatorConfig"
-  paginationIdentifier="pluginContractJobs"
   (paginationClicked)="onPaginationClicked($event)"
   (rowClicked)="onRowClicked($event)"
+  paginationIdentifier="pluginContractJobs"
 >
   <ng-container carbonToolbarContent>
     <button
@@ -51,7 +62,7 @@
     >
       {{ 'pluginManagement.contractJobs.refresh' | translate }}
 
-      <svg cdsIcon="renew" size="16" class="cds--btn__icon"></svg>
+      <svg class="cds--btn__icon" cdsIcon="renew" size="16"></svg>
     </button>
   </ng-container>
 
@@ -64,10 +75,11 @@
   [jobId]="$selectedJobId()"
   [open]="$detailOpen()"
   (closeEvent)="onDetailClose()"
+  (jobChangedEvent)="onJobChanged()"
 ></valtimo-plugin-contract-job-detail-modal>
 
 <ng-template #statusTpl let-data="data">
-  <cds-tag size="sm" [type]="statusTagType(data.item.status)">
+  <cds-tag [type]="data.item.statusTagType" size="sm">
     {{ 'pluginManagement.contractJobs.status.' + data.item.status | translate }}
   </cds-tag>
 </ng-template>
@@ -85,5 +97,5 @@
 </ng-template>
 
 <ng-template #errorTpl let-data="data">
-  <span [title]="data.item.errorMessage ?? ''">{{ data.item.errorCode ?? '' }}</span>
+  <span [title]="data.item.errorMessage ?? ''">{{ data.item.errorLabel }}</span>
 </ng-template>

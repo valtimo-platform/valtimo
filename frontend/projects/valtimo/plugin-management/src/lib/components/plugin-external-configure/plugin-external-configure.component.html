@@ -39,11 +39,11 @@
       </div>
 
       <valtimo-plugin-external-properties-editor
-        class="plugin-external-configure__properties"
-        [value]="_form.controls.properties.value ?? '{}'"
-        [schema]="$configurationSchema()"
         [invalid]="$propertiesInvalid()"
+        [schema]="$configurationSchema()"
+        [value]="_form.controls.properties.value ?? '{}'"
         (valueChange)="_form.controls.properties.setValue($event)"
+        class="plugin-external-configure__properties"
       ></valtimo-plugin-external-properties-editor>
     </form>
   </ng-template>

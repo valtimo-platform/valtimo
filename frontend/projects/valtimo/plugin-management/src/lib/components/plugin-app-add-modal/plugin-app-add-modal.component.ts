@@ -44,6 +44,7 @@ import {
 } from '@valtimo/components';
 import {
   ExternalPluginContractBindingEntry,
+  ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
@@ -130,7 +131,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
   public readonly $capabilities = signal<Array<string>>([]);
   public readonly $egress = signal<Array<string>>([]);
   public readonly $derivedEgress = signal<Array<string>>([]);
-  public readonly $requiredContracts = signal<Array<string>>([]);
+  public readonly $declaredContracts = signal<Array<ExternalPluginDeclaredContract>>([]);
   public readonly $providedContracts = signal<Array<ExternalPluginProvidedContract>>([]);
   public readonly $contractBindingsValid = signal<boolean>(true);
 
@@ -301,9 +302,9 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
     this._configureComponent?.setGrantedEgress(targets);
   }
 
-  public onRequiredContractsResolved(contracts: Array<string>): void {
+  public onDeclaredContractsResolved(contracts: Array<ExternalPluginDeclaredContract>): void {
     this.$contractBindingsValid.set(contracts.length === 0);
-    this.$requiredContracts.set(contracts);
+    this.$declaredContracts.set(contracts);
   }
 
   public onProvidedContractsResolved(contracts: Array<ExternalPluginProvidedContract>): void {
@@ -469,7 +470,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
       this.$capabilities.set([]);
       this.$egress.set([]);
       this.$derivedEgress.set([]);
-      this.$requiredContracts.set([]);
+      this.$declaredContracts.set([]);
       this.$providedContracts.set([]);
       this.$contractBindingsValid.set(true);
       this.$conflict.set(null);

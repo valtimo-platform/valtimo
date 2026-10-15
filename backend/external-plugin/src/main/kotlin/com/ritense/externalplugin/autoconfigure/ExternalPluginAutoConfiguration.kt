@@ -48,8 +48,10 @@ import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
 import com.ritense.externalplugin.security.ExternalPluginCallbackHttpSecurityConfigurer
+import com.ritense.externalplugin.security.ExternalPluginContractRequestSizeFilter
 import com.ritense.externalplugin.security.ExternalPluginEndpointAllowlistFilter
 import com.ritense.externalplugin.security.ExternalPluginHttpSecurityConfigurer
+import com.ritense.externalplugin.security.ExternalPluginReplyHandleSigner
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenAuthenticator
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenFilter
 import com.ritense.externalplugin.security.ExternalPluginServiceTokenKeyProvider
@@ -84,6 +86,7 @@ import com.ritense.externalplugin.web.rest.ExternalPluginMenuPageResource
 import com.ritense.externalplugin.web.rest.ExternalPluginSidePanelResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenIntrospectionResource
 import com.ritense.externalplugin.web.rest.ExternalPluginUserTokenResource
+import com.ritense.externalplugin.web.rest.error.ExternalPluginConfigurationValidationExceptionMapper
 import com.ritense.externalplugin.web.rest.error.ExternalPluginHostValidationExceptionMapper
 import com.ritense.importer.Importer
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -95,6 +98,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.importer.ImportPreviewContributor
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverService
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -140,6 +144,22 @@ class ExternalPluginAutoConfiguration {
         .readTimeout(DurationStyle.detectAndParse(readTimeout))
         .build()
 
+    /**
+     * RestTemplate for contract deliveries and replies. Its read timeout must outlast the host's own
+     * Wasm timeout (`WASM_TIMEOUT_MS`, 30 s by default), or GZAC gives up on answers the host still
+     * produces. Not a default candidate, so by-type `RestTemplate` injection elsewhere is unaffected.
+     */
+    @Bean(name = ["externalPluginContractRestTemplate"], defaultCandidate = false)
+    @ConditionalOnMissingBean(name = ["externalPluginContractRestTemplate"])
+    fun externalPluginContractRestTemplate(
+        builder: RestTemplateBuilder,
+        @Value("\${valtimo.external-plugin.connect-timeout:PT2S}") connectTimeout: String,
+        @Value("\${valtimo.external-plugin.contract.read-timeout:PT40S}") readTimeout: String,
+    ): RestTemplate = builder
+        .connectTimeout(DurationStyle.detectAndParse(connectTimeout))
+        .readTimeout(DurationStyle.detectAndParse(readTimeout))
+        .build()
+
     @Bean
     @ConditionalOnMissingBean(PluginPropertyEncryptor::class)
     fun pluginPropertyEncryptor(encryptionService: EncryptionService) =
@@ -148,9 +168,10 @@ class ExternalPluginAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ExternalPluginHostClient::class)
     fun externalPluginHostClient(
-        @org.springframework.beans.factory.annotation.Qualifier("externalPluginRestTemplate") restTemplate: RestTemplate,
+        @Qualifier("externalPluginRestTemplate") restTemplate: RestTemplate,
+        @Qualifier("externalPluginContractRestTemplate") contractRestTemplate: RestTemplate,
         objectMapper: ObjectMapper,
-    ) = ExternalPluginHostClient(restTemplate, objectMapper)
+    ) = ExternalPluginHostClient(restTemplate, objectMapper, contractRestTemplate)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginHostUsageResolver::class)
@@ -281,6 +302,11 @@ class ExternalPluginAutoConfiguration {
     @ConditionalOnMissingBean(ExternalPluginHostValidationExceptionMapper::class)
     fun externalPluginHostValidationExceptionMapper() = ExternalPluginHostValidationExceptionMapper()
 
+    /** Same for a configuration create or update the admin can fix in the activation or edit screen. */
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginConfigurationValidationExceptionMapper::class)
+    fun externalPluginConfigurationValidationExceptionMapper() = ExternalPluginConfigurationValidationExceptionMapper()
+
     @Bean
     @ConditionalOnMissingBean(ExternalPluginServiceTokenKeyProvider::class)
     fun externalPluginServiceTokenKeyProvider(
@@ -301,6 +327,19 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginServiceTokenAuthenticator(
         configurationRepository: ExternalPluginConfigurationRepository,
     ) = ExternalPluginServiceTokenAuthenticator(configurationRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginReplyHandleSigner::class)
+    fun externalPluginReplyHandleSigner(
+        @Value("\${valtimo.plugin.encryption-secret}") secret: String,
+        @Value("\${valtimo.external-plugin.contract-job.reply-handle-ttl:P1D}") ttl: String,
+    ) = ExternalPluginReplyHandleSigner(secret, DurationStyle.detectAndParse(ttl))
+
+    @Bean
+    @ConditionalOnMissingBean(ExternalPluginContractRequestSizeFilter::class)
+    fun externalPluginContractRequestSizeFilter(
+        @Value("\${valtimo.external-plugin.contract.max-payload-bytes:262144}") maxPayloadBytes: Int,
+    ) = ExternalPluginContractRequestSizeFilter(maxPayloadBytes)
 
     @Bean
     @ConditionalOnMissingBean(ExternalPluginEndpointAllowlistFilter::class)
@@ -342,7 +381,7 @@ class ExternalPluginAutoConfiguration {
     ) = ExternalPluginUserTokenFilter(keyProvider, authenticator)
 
     /**
-     * The three external-plugin filters are exposed as `Filter`-typed beans (so the security
+     * The four external-plugin filters are exposed as `Filter`-typed beans (so the security
      * configurer can insert them at the right position in the Spring Security chain), which means
      * Spring Boot would *also* auto-register each of them as a plain servlet filter running on
      * every request. These disabled registrations suppress that second, chain-independent
@@ -364,6 +403,12 @@ class ExternalPluginAutoConfiguration {
     fun externalPluginEndpointAllowlistFilterRegistration(
         filter: ExternalPluginEndpointAllowlistFilter,
     ): FilterRegistrationBean<ExternalPluginEndpointAllowlistFilter> =
+        FilterRegistrationBean(filter).apply { isEnabled = false }
+
+    @Bean
+    fun externalPluginContractRequestSizeFilterRegistration(
+        filter: ExternalPluginContractRequestSizeFilter,
+    ): FilterRegistrationBean<ExternalPluginContractRequestSizeFilter> =
         FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean
@@ -393,7 +438,13 @@ class ExternalPluginAutoConfiguration {
         serviceTokenFilter: ExternalPluginServiceTokenFilter,
         userTokenFilter: ExternalPluginUserTokenFilter,
         allowlistFilter: ExternalPluginEndpointAllowlistFilter,
-    ) = ExternalPluginCallbackHttpSecurityConfigurer(serviceTokenFilter, userTokenFilter, allowlistFilter)
+        contractRequestSizeFilter: ExternalPluginContractRequestSizeFilter,
+    ) = ExternalPluginCallbackHttpSecurityConfigurer(
+        serviceTokenFilter,
+        userTokenFilter,
+        allowlistFilter,
+        contractRequestSizeFilter,
+    )
 
     /**
      * The configuration service only needs two fallbacks:
@@ -456,6 +507,8 @@ class ExternalPluginAutoConfiguration {
         objectMapper: ObjectMapper,
         @Value("\${valtimo.external-plugin.contract.max-depth:4}") maxDepth: Int,
         @Value("\${valtimo.external-plugin.contract.max-payload-bytes:262144}") maxPayloadBytes: Int,
+        @Value("\${valtimo.external-plugin.contract.read-timeout:PT40S}") readTimeout: String,
+        @Value("\${valtimo.external-plugin.contract.max-concurrent-calls:8}") maxConcurrentCalls: Int,
     ) = ExternalPluginContractService(
         configurationRepository,
         definitionRepository,
@@ -466,6 +519,8 @@ class ExternalPluginAutoConfiguration {
         objectMapper,
         maxDepth,
         maxPayloadBytes,
+        DurationStyle.detectAndParse(readTimeout),
+        maxConcurrentCalls,
     )
 
     @Bean
@@ -478,12 +533,12 @@ class ExternalPluginAutoConfiguration {
         encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
         transactionManager: PlatformTransactionManager,
-        runtimeService: org.operaton.bpm.engine.RuntimeService,
         documentService: com.ritense.document.service.impl.JsonSchemaDocumentService,
         authorizationService: com.ritense.authorization.AuthorizationService,
+        replyHandleSigner: ExternalPluginReplyHandleSigner,
+        eventPublisher: ApplicationEventPublisher,
         @Value("\${valtimo.external-plugin.contract-job.default-timeout:PT1H}") defaultTimeout: String,
         @Value("\${valtimo.external-plugin.contract-job.max-deadline:P1D}") maxDeadline: String,
-        @Value("\${valtimo.external-plugin.contract.max-payload-bytes:262144}") maxPayloadBytes: Int,
     ) = ExternalPluginContractJobService(
         jobRepository,
         configurationRepository,
@@ -492,12 +547,12 @@ class ExternalPluginAutoConfiguration {
         encryptionService,
         objectMapper,
         TransactionTemplate(transactionManager),
-        runtimeService,
         documentService,
         authorizationService,
+        replyHandleSigner,
+        eventPublisher,
         DurationStyle.detectAndParse(defaultTimeout),
         DurationStyle.detectAndParse(maxDeadline),
-        maxPayloadBytes,
     )
 
     @Bean
@@ -513,7 +568,7 @@ class ExternalPluginAutoConfiguration {
         encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
         transactionManager: PlatformTransactionManager,
-        correlationService: com.ritense.processdocument.service.CorrelationService,
+        runtimeService: org.operaton.bpm.engine.RuntimeService,
         @Value("\${valtimo.external-plugin.contract-job.retry-base:PT5S}") retryBase: String,
         @Value("\${valtimo.external-plugin.contract-job.retry-max:PT10M}") retryMax: String,
         @Value("\${valtimo.external-plugin.contract-job.max-reply-attempts:20}") maxReplyAttempts: Int,
@@ -530,7 +585,7 @@ class ExternalPluginAutoConfiguration {
         encryptionService,
         objectMapper,
         TransactionTemplate(transactionManager),
-        correlationService,
+        runtimeService,
         DurationStyle.detectAndParse(retryBase),
         DurationStyle.detectAndParse(retryMax),
         maxReplyAttempts,
@@ -750,6 +805,7 @@ class ExternalPluginAutoConfiguration {
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
         pluginActionResultHandler: PluginActionResultHandler,
+        replyHandleSigner: ExternalPluginReplyHandleSigner,
         buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
     ) = ExternalPluginServiceTaskStartListener(
         processLinkRepository,
@@ -760,6 +816,7 @@ class ExternalPluginAutoConfiguration {
         valueResolverService,
         objectMapper,
         pluginActionResultHandler,
+        replyHandleSigner,
         buildingBlockPluginConfigurationResolver,
     )
 

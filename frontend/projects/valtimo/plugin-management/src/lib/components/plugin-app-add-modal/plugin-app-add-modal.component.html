@@ -120,8 +120,8 @@
           (egressResolved)="onEgressResolved($event)"
           (endpointsResolved)="onEndpointsResolved($event)"
           (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
+          (declaredContractsResolved)="onDeclaredContractsResolved($event)"
           (providedContractsResolved)="onProvidedContractsResolved($event)"
-          (requiredContractsResolved)="onRequiredContractsResolved($event)"
           (saveEvent)="onExternalSave($event)"
           (validEvent)="onConfigValid($event)"
         ></valtimo-plugin-external-configure>
@@ -157,7 +157,7 @@
 
     <div [hidden]="$currentStep() !== 2">
       <valtimo-plugin-external-contract-bindings
-        [contracts]="$requiredContracts()"
+        [contracts]="$declaredContracts()"
         (bindingsChangeEvent)="onContractBindingsChange($event)"
         (validEvent)="onContractBindingsValid($event)"
       ></valtimo-plugin-external-contract-bindings>

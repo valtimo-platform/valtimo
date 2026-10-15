@@ -19,6 +19,26 @@
   color: var(--cds-text-secondary);
 }
 
+.plugin-contract-job-detail-modal__sub-block {
+  margin-block: var(--cds-spacing-02) var(--cds-spacing-04);
+  color: var(--cds-text-secondary);
+}
+
+.plugin-contract-job-detail-modal__notification {
+  display: block;
+  margin-block-end: var(--cds-spacing-05);
+}
+
+.plugin-contract-job-detail-modal__load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.plugin-contract-job-detail-modal__payloads {
+  margin-block-start: var(--cds-spacing-06);
+}
+
 .plugin-contract-job-detail-modal__label {
   margin-block: var(--cds-spacing-05) var(--cds-spacing-02);
   color: var(--cds-text-secondary);
@@ -35,6 +55,10 @@
   font-size: var(--cds-code-01-font-size);
   // Cap so long payloads scroll; no Carbon token applies to a block height.
   max-height: 240px;
+}
+
+:host ::ng-deep .plugin-contract-job-detail-modal__notification {
+  max-inline-size: unset;
 }
 
 // "Close" dismisses rather than commits, so it sits bottom-left (same as the log modal).
