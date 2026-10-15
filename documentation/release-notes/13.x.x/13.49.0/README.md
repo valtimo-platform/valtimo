@@ -14,9 +14,9 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Upload several documents at once
 
-New enhancement explanation.
+On a case's Documents tab you can now select several files in one go after clicking Upload. You fill in the metadata form once for all of them, and each file keeps its own filename and gets its own title.
 
 ---
 

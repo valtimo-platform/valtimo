@@ -52,6 +52,7 @@
           [accept]="acceptedFiles"
           (change)="onFileSelected($event)"
           hidden
+          multiple
           type="file"
           #fileInput
         />
@@ -85,6 +86,7 @@
   }
 
   <valtimo-documenten-api-metadata-modal
+    [batchFileNames]="batchFileNames()"
     [defaultValues]="obs.defaultValues"
     [disableAuthor]="obs.uploadFields?.auteur?.readonly"
     [disableConfidentialityLevel]="obs.uploadFields?.vertrouwelijkheidaanduiding?.readonly"

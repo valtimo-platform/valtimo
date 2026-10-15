@@ -38,6 +38,10 @@
       <h3 cdsModalHeaderHeading>
         {{ 'document.editMetadata' | translate }}
       </h3>
+    } @else if (batchFileNames) {
+      <h3 cdsModalHeaderHeading>
+        {{ 'document.fillInBatchMetadata' | translate: {count: batchFileNames.length} }}
+      </h3>
     } @else {
       <h3 cdsModalHeaderHeading>
         {{ 'document.fillInMetadata' | translate }}
@@ -52,6 +56,18 @@
         [notificationObj]="{type: 'error', message: uploadError, lowContrast: true}"
         (close)="uploadErrorDismiss.emit()"
       ></cds-inline-notification>
+    }
+
+    @if (obs.open && batchFileNames) {
+      <div class="documenten-metadata-batch-files">
+        <cds-label>{{ 'document.batchFiles' | translate }}</cds-label>
+
+        <ul>
+          @for (fileName of batchFileNames; track $index) {
+            <li class="cds--type-body-compact-01">{{ fileName }}</li>
+          }
+        </ul>
+      </div>
     }
 
     @if (obs.open) {
@@ -79,7 +95,7 @@
   <form [formGroup]="documentenApiMetadataForm">
     <div class="documenten-metadata-form-columns-container">
       <div class="documenten-metadata-form-column">
-        @if (!hideFields.includes('bestandsnaam')) {
+        @if (!hideFields.includes('bestandsnaam') && !batchFileNames) {
           <cds-text-label class="documenten-metada-form-input">
             {{ 'document.filename' | translate }}
             <cds-tooltip
@@ -240,7 +256,7 @@
       </div>
 
       <div class="documenten-metadata-form-column">
-        @if (!hideFields.includes('titel')) {
+        @if (!hideFields.includes('titel') && !batchFileNames) {
           <cds-text-label>
             {{ 'document.inputTitle' | translate }}
             <input
