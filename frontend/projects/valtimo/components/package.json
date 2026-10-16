@@ -35,7 +35,7 @@
     "flatpickr": "4.6.13",
     "lodash": "4.18.1",
     "jwt-decode": "4.0.0",
-    "deepmerge-ts": "7.1.5",
+    "deepmerge-ts": "8.0.2",
     "@carbon/charts-angular": "1.23.6",
     "@types/topojson": "3.2.6",
     "@tadashi/currency": "3.4.0",
