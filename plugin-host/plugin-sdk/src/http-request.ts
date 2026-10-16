@@ -16,7 +16,7 @@
 
 import type {HttpRequestResponse} from "./models/index.js";
 
-interface HttpRequestInput {
+export interface HttpRequestInput {
   method: string;
   url: string;
   body?: unknown;
@@ -66,7 +66,13 @@ export const httpRequest = {
   put<T = unknown>(url: string, body?: unknown, headers?: Record<string, string>): HttpRequestResponse<T> {
     return callHttpRequest({ method: "PUT", url, body, headers }) as HttpRequestResponse<T>;
   },
+  patch<T = unknown>(url: string, body?: unknown, headers?: Record<string, string>): HttpRequestResponse<T> {
+    return callHttpRequest({ method: "PATCH", url, body, headers }) as HttpRequestResponse<T>;
+  },
   delete<T = unknown>(url: string, headers?: Record<string, string>): HttpRequestResponse<T> {
     return callHttpRequest({ method: "DELETE", url, headers }) as HttpRequestResponse<T>;
+  },
+  request<T = unknown>(input: HttpRequestInput): HttpRequestResponse<T> {
+    return callHttpRequest(input) as HttpRequestResponse<T>;
   },
 };

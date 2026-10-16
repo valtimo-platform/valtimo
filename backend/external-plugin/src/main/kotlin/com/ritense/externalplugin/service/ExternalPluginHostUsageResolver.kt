@@ -19,8 +19,11 @@ package com.ritense.externalplugin.service
 import com.ritense.case_.service.CaseExternalPluginTabService
 import com.ritense.case_.service.CaseExternalPluginWidgetService
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractJobRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
@@ -45,6 +48,8 @@ class ExternalPluginHostUsageResolver(
     private val configurationRepository: ExternalPluginConfigurationRepository,
     private val processLinkRepository: ExternalPluginProcessLinkRepository,
     private val taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository,
+    private val contractBindingRepository: ExternalPluginContractBindingRepository,
+    private val contractJobRepository: ExternalPluginContractJobRepository,
     /** Shared with the embedded plugin module — resolves process-definition/parent/activity meta. */
     private val processDefinitionUsageMetaResolver: ProcessDefinitionUsageMetaResolver,
     /**
@@ -80,6 +85,8 @@ class ExternalPluginHostUsageResolver(
             buildCaseWidgetUsageDtos(configurations) +
             buildBuildingBlockMappingUsageDtos(configurations) +
             buildMenuPageUsageDtos(configurations) +
+            buildContractBindingUsageDtos(configurations) +
+            buildContractJobUsageDtos(configurations) +
             buildDefinitionReferenceUsageDtos(definitions)
     }
 
@@ -90,7 +97,69 @@ class ExternalPluginHostUsageResolver(
             buildCaseTabUsageDtos(listOf(configuration)) +
             buildCaseWidgetUsageDtos(listOf(configuration)) +
             buildBuildingBlockMappingUsageDtos(listOf(configuration)) +
-            buildMenuPageUsageDtos(listOf(configuration))
+            buildMenuPageUsageDtos(listOf(configuration)) +
+            buildContractBindingUsageDtos(listOf(configuration)) +
+            buildContractJobUsageDtos(listOf(configuration))
+    }
+
+    /**
+     * A binding is a usage of its target. Bindings among [configurations] themselves are skipped:
+     * deleting the whole set (a host) removes the binder along with the target.
+     */
+    private fun buildContractBindingUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {
+        if (configurations.isEmpty()) return emptyList()
+        val configById = configurations.associateBy { it.id }
+        val bindings = contractBindingRepository.findAllByTargetConfigurationIdIn(configById.keys)
+            .filter { it.configurationId !in configById }
+        if (bindings.isEmpty()) return emptyList()
+        val binders = configurationRepository.findAllById(bindings.map { it.configurationId }.toSet())
+            .associateBy { it.id }
+        return bindings.map { binding ->
+            val target = configById.getValue(binding.targetConfigurationId)
+            PluginUsageDto(
+                configurationId = target.id,
+                configurationTitle = target.title,
+                parentType = PluginUsageParentType.CONTRACT_BINDING,
+                parentKey = binding.contract,
+                parentVersionTag = null,
+                contract = binding.contract,
+                relatedConfigurationId = binding.configurationId,
+                relatedConfigurationTitle = binders[binding.configurationId]?.title,
+            )
+        }
+    }
+
+    /** Strict, never forced: an in-flight job blocks deleting either party. */
+    private fun buildContractJobUsageDtos(configurations: List<ExternalPluginConfiguration>): List<PluginUsageDto> {
+        if (configurations.isEmpty()) return emptyList()
+        val configById = configurations.associateBy { it.id }
+        val open = ExternalPluginContractJobStatus.OPEN
+        val asRequester = contractJobRepository.findAllByRequesterConfigurationIdInAndStatusIn(configById.keys, open)
+            .map { it to it.requesterConfigurationId }
+        val asProvider = contractJobRepository.findAllByProviderConfigurationIdInAndStatusIn(configById.keys, open)
+            .map { it to it.providerConfigurationId }
+        val entries = asRequester + asProvider
+        if (entries.isEmpty()) return emptyList()
+        val counterpartIds = entries.map { (job, self) ->
+            if (self == job.requesterConfigurationId) job.providerConfigurationId else job.requesterConfigurationId
+        }.toSet()
+        val counterparts = configurationRepository.findAllById(counterpartIds).associateBy { it.id }
+        return entries.map { (job, self) ->
+            val configuration = configById.getValue(self)
+            val counterpartId =
+                if (self == job.requesterConfigurationId) job.providerConfigurationId else job.requesterConfigurationId
+            PluginUsageDto(
+                configurationId = configuration.id,
+                configurationTitle = configuration.title,
+                parentType = PluginUsageParentType.CONTRACT_JOB,
+                parentKey = job.contract,
+                parentVersionTag = null,
+                contract = job.contract,
+                contractJobId = job.id,
+                relatedConfigurationId = counterpartId,
+                relatedConfigurationTitle = counterparts[counterpartId]?.title ?: configById[counterpartId]?.title,
+            )
+        }
     }
 
     /**

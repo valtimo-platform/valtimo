@@ -25,10 +25,13 @@ class ExternalPluginCallbackHttpSecurityConfigurer(
     private val serviceTokenFilter: ExternalPluginServiceTokenFilter,
     private val userTokenFilter: ExternalPluginUserTokenFilter,
     private val allowlistFilter: ExternalPluginEndpointAllowlistFilter,
+    private val contractRequestSizeFilter: ExternalPluginContractRequestSizeFilter,
 ) : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
+            // Same anchor as the token filters; insertion order puts the size cap ahead of them.
+            http.addFilterBefore(contractRequestSizeFilter, BearerTokenAuthenticationFilter::class.java)
             http.addFilterBefore(serviceTokenFilter, BearerTokenAuthenticationFilter::class.java)
             http.addFilterBefore(userTokenFilter, BearerTokenAuthenticationFilter::class.java)
             // Single allowlist filter, after authentication — it recognises both the service and the

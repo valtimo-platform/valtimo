@@ -52,6 +52,8 @@
           (capabilitiesResolved)="onCapabilitiesResolved($event)"
           (egressResolved)="onEgressResolved($event)"
           (derivedEgressResolved)="onDerivedEgressResolved($event)"
+          (declaredContractsResolved)="onDeclaredContractsResolved($event)"
+          (providedContractsResolved)="onProvidedContractsResolved($event)"
           (validEvent)="onValid($event)"
           (saveEvent)="onExternalSave($event)"
         ></valtimo-plugin-external-configure>
@@ -66,12 +68,19 @@
     </div>
 
     <div *ngIf="isExternal" [hidden]="currentStepIndex !== 2">
+      <valtimo-plugin-external-contract-bindings
+        [contracts]="declaredContracts$ | async"
+        (bindingsChangeEvent)="onContractBindingsChange($event)"
+        (validEvent)="onContractBindingsValid($event)"
+      ></valtimo-plugin-external-contract-bindings>
+
       <valtimo-plugin-external-permissions
         [endpoints]="endpoints$ | async"
         [eventSubscriptions]="eventSubscriptions$ | async"
         [capabilities]="capabilities$ | async"
         [egress]="egress$ | async"
         [derivedEgress]="derivedEgress$ | async"
+        [providedContracts]="providedContracts$ | async"
         (validEvent)="onPermissionsValid($event)"
         (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
         (grantedEventsChange)="onGrantedEventsChange($event)"
@@ -123,7 +132,11 @@
     <button
       *ngIf="currentStepIndex === 2 && isExternal"
       cdsButton="primary"
-      [disabled]="!(permissionsValid$ | async) || (inputDisabled$ | async)"
+      [disabled]="
+        !(permissionsValid$ | async) ||
+        !(contractBindingsValid$ | async) ||
+        (inputDisabled$ | async)
+      "
       (click)="complete()"
       [attr.data-test-id]="testIds.completeButton"
     >

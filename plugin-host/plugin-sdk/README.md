@@ -31,8 +31,9 @@ src/
   gzac-api.ts       # gzacApi (+ asUser)         http-request.ts # httpRequest
   kv.ts             # kv store facade            config.ts    # config.getAll()/get(key)
   host-functions.ts # log facade                 egress.ts    # egress-origin grammar
+  contracts.ts      # contract handler registries + pluginCall/pluginRequest/completeJob
   manifest-validation.ts  # shared validator (pack time + host upload)
-  runtime.ts        # Wasm dispatcher for all four exports (action/event/request/submit)
+  runtime.ts        # Wasm dispatcher for every export (action/event/request/submit/contract call/contract reply)
   frontend/         # ValtimoPluginSDK (@valtimo/plugin-sdk/frontend)
   scaffold/         # The plugin generator behind valtimo-plugin-init (@valtimo/plugin-sdk/scaffold)
   index.ts          # Public API barrel export
@@ -203,7 +204,9 @@ Steps performed:
 1. Bundles the source with esbuild (CJS format, required by QuickJS) using the esbuild installed
    in the plugin project
 2. Compiles the bundle to `.wasm` via the `extism-js` CLI (with binaryen on its `PATH`)
-3. If `index.d.ts` exists in the plugin directory, passes it to extism-js with `-i` to declare exports
+3. If `index.d.ts` exists in the plugin directory, passes it to extism-js with `-i` to declare exports;
+   otherwise generates the interface, importing `plugin_contract` only when `manifest.json` declares
+   `provides` or `permissions.contracts`
 
 The CLI locates `extism-js` in this order (see [Prerequisites](#prerequisites)):
 1. `VALTIMO_EXTISM_JS` (explicit path)
@@ -264,8 +267,10 @@ submit("review", (input) => ({ status: "completed" }));    // handle_submit: tas
 | `config.getAll()` / `config.get(key)` | The configuration's properties for this call |
 | `log.debug/info/warn/error(msg, data?)` | Structured entries in the admin Logs modal |
 | `gzacApi.{get,post,put,delete}` / `gzacApi.asUser.*` | Calls back into GZAC as the configuration, or as the logged-in user |
-| `httpRequest.{get,post,put,delete}` | Outbound HTTP, restricted to declared egress origins |
+| `httpRequest.{get,post,put,patch,delete,request}` | Outbound HTTP, restricted to declared egress origins |
 | `kv.{get,set,delete,list}` | Per-configuration key/value store |
+| `onContractCall(contract, op, handler)` / `onContractJob(contract, op, handler)` | Serves an operation declared under `provides` (see [Contracts](#contracts)) |
+| `pluginCall` / `pluginRequest` / `completeJob` / `onContractReply` | Calls a contract declared under `permissions.contracts`, starts or completes a job, receives job outcomes |
 
 Handler input/output types, execution semantics, and the sandbox's limits are documented in
 [Developing an external plugin](../../dev-docs/external-plugins/develop-a-plugin.md#step-3-backend-handlers-srcplugints).
@@ -321,6 +326,108 @@ Entries are **origins**, matched on scheme + host + port:
 
 Declaring `egress` alongside a `capabilities` list that lacks `http_request` fails validation, as
 does an unparseable entry — the pack tool catches both before the package is built.
+
+### Contracts
+
+Plugins call each other through **contracts**, always brokered by GZAC. A plugin names a contract
+(`name@major`, e.g. `nl.ritense.openplan@1`), never another plugin; the admin binds a providing
+configuration at activation. No authority moves between plugins: each side runs under its own
+grants, and the provider sees the caller GZAC stamped, never its token.
+
+```json
+{
+  "provides": [
+    {
+      "contract": "nl.ritense.openplan@1",
+      "operations": [
+        {
+          "key": "list",
+          "title": "List resources",
+          "input": { "type": "object", "required": ["resource"], "properties": { "resource": { "type": "string" } } },
+          "output": { "type": "object", "required": ["items"] }
+        },
+        { "key": "report", "title": "Generate a report", "mode": "job", "timeout": "PT2H", "outputs": ["documentRef"] }
+      ]
+    }
+  ],
+  "permissions": {
+    "contracts": [
+      "nl.ritense.bsn-lookup@1",
+      { "contract": "nl.ritense.document.generate@1", "operations": ["render", "generate"] }
+    ]
+  }
+}
+```
+
+- **Consumer side** — each `permissions.contracts` entry is a `name@major` string (call any
+  operation the bound provider offers) or `{contract, operations}` (call only these; GZAC refuses
+  any other with `OPERATION_NOT_DECLARED` and only binds a provider that offers all of them). A
+  contract name appears once, in either form. A declared contract may stay unbound.
+- **Provider side** — `input` and `output` are optional JSON Schemas (2020-12). GZAC refuses a
+  request whose `payload` fails `input` with `CONTRACT_INPUT_INVALID`, and fails a completed
+  `result` that does not satisfy `output` with `PROVIDER_INVALID_RESULT`. The pack tool only checks
+  that both are objects; GZAC compiles them. `mode: "job"` operations need a `timeout` (ISO-8601,
+  days to seconds — `PT2H`, `P1D`); `outputs` lists keys a completed result must contain (`null`
+  allowed; `undefined` values are sent as `null`).
+
+```typescript
+import { action, completeJob, kv, onContractCall, onContractJob, onContractReply, pluginCall, pluginRequest } from "@valtimo/plugin-sdk";
+
+// Provider: one handler per declared operation.
+onContractCall("nl.ritense.openplan@1", "list", (input) => ({ status: "completed", result: { items: [] } }));
+onContractJob("nl.ritense.openplan@1", "report", (job) => {
+  kv.set(`job:${job.jobId}`, job.payload);
+  return { status: "accepted" };   // a later invocation calls completeJob(job.jobId, { status: "completed", result })
+});
+
+// Consumer: a sync call, or a job whose outcome arrives later.
+action("prepare-letter", (input) => {
+  const person = pluginCall("nl.ritense.bsn-lookup@1", "lookup", { bsn: "999993653" });
+  if (person.status === "error") {
+    return { status: "error", errorCode: person.providerErrorCode ?? person.errorCode, errorMessage: person.errorMessage };
+  }
+  const job = pluginRequest("nl.ritense.document.generate@1", "generate", { person: person.result }, {
+    replyTo: input.replyHandle,                            // outcome back to this process instance
+    idempotencyKey: `letter-${input.processInstanceId}`,   // a retried action gets the same job back
+  });
+  return job.status === "accepted"
+    ? { status: "completed", variables: { letterJobId: job.jobId } }
+    : { status: "error", errorCode: job.errorCode, errorMessage: job.errorMessage };
+});
+onContractReply((reply) => ({ status: "completed" }));   // outcomes of jobs requested without replyTo
+```
+
+- `pluginCall` / `pluginRequest` / `completeJob` never throw for remote failures: an unbound
+  contract, an unavailable provider or a provider error comes back as
+  `{status: "error", errorCode, errorMessage}`, with the provider's own code as `providerErrorCode`
+  next to `errorCode: "PROVIDER_ERROR"`. The host refuses a contract outside the pushed grant with
+  `CONTRACT_NOT_GRANTED` ("Contract '…' is not declared and bound for this configuration") before
+  anything leaves it.
+- **Replies to a process.** Every action input carries `replyHandle`, an opaque, expiring handle
+  naming the process instance; it authenticates nothing. Passed as `replyTo`, the job's outcome is
+  correlated to that process instance as a BPMN message — `contract-reply:<jobId>` when a catch event
+  waits for that name, otherwise `contract-reply:<contract>:<operation>` — with the outcome in the
+  local variable `contractReply` (`jobId`, `contract`, `operation`, `status`, `result`, `errorCode`,
+  `providerErrorCode`, `errorMessage`). Without `replyTo` the outcome goes to `onContractReply`.
+- **Idempotency.** `idempotencyKey` is 1-255 visible ASCII characters. Repeating a request with the
+  same key, contract and operation returns the existing job instead of starting another; the same
+  key for another contract or operation answers `IDEMPOTENCY_KEY_CONFLICT`. GZAC remembers a key as
+  long as it keeps the job.
+- **Deadlines.** Every invocation runs against a deadline: the host's Wasm timeout, or the time a
+  synchronous caller still waits when that ends first (`input.deadline` tells a provider when its
+  answer is due). Contract hops fit inside it — with less than 250 ms left, or still waiting at the
+  deadline, they answer `CONTRACT_DEADLINE_EXCEEDED`. A `pluginCall` hands the time it has left to
+  GZAC, so the provider's own onward calls stay within the caller's budget.
+- **Jobs have no timer.** A Wasm provider that answers `accepted` completes the job from a later
+  invocation — an action, event, request or submit handler — for instance by keeping the `jobId` in
+  `kv` until the awaited work is done. A job nobody completes expires at its `timeout`.
+- A reply that arrives without a registered `onContractReply` handler is logged as a warning and
+  acknowledged as `ignored`.
+- Contracts need no capability. The build only imports the `plugin_contract` host function when
+  `manifest.json` declares `provides` or `permissions.contracts`, so a contract-free plugin's module
+  never imports it. A plugin with its own `index.d.ts` must declare
+  `plugin_contract(input: PTR): PTR;` itself, plus the `handle_contract_call` /
+  `handle_contract_reply` exports.
 
 ## Frontend SDK (`@valtimo/plugin-sdk/frontend`)
 

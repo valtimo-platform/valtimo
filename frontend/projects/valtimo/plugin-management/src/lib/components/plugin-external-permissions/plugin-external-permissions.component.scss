@@ -43,6 +43,10 @@
   color: var(--cds-text-secondary);
 }
 
+.plugin-external-permissions__operation {
+  margin-inline-end: var(--cds-spacing-02);
+}
+
 .plugin-external-permissions__acceptance {
   display: block;
   margin-block-start: var(--cds-spacing-05);
@@ -54,7 +58,7 @@
   }
 
   cds-inline-notification {
-    margin-bottom: 16px;
+    margin-block-end: var(--cds-spacing-05);
   }
 
   .cds--inline-notification {
