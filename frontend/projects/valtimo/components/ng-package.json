@@ -10,6 +10,7 @@
     "@foxythemes/bootstrap-datetime-picker-bs4",
     "bpmn-js",
     "jquery",
+    "dompurify",
     "moment",
     "heatmap.js-fixed",
     "@ngx-translate/core",
