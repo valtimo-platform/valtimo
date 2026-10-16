@@ -22,15 +22,16 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import {FormControl, FormGroup} from '@angular/forms';
 import {FormioCustomComponent} from '../../../../modules';
-import Currency from '@tadashi/currency';
-import {Subscription} from 'rxjs';
+import AutoNumeric from 'autonumeric';
+
+const DEFAULT_LOCALE = 'nl-NL';
+const DEFAULT_CURRENCY = 'EUR';
+const RAW_VALUE_MODIFIED_EVENT = 'autoNumeric:rawValueModified';
 
 /**
  * Custom formio component for currency number.
@@ -41,13 +42,9 @@ import {Subscription} from 'rxjs';
   standalone: false,
 })
 export class FormIoCurrencyComponent
-  implements FormioCustomComponent<number>, OnInit, AfterViewInit, OnChanges, OnDestroy
+  implements FormioCustomComponent<number>, AfterViewInit, OnChanges, OnDestroy
 {
   @ViewChild('currencyElement') currencyElement!: ElementRef<HTMLInputElement>;
-
-  public readonly currencyForm = new FormGroup({
-    currencyValue: new FormControl<string>(''),
-  });
 
   private _value: number | null = null;
 
@@ -56,114 +53,146 @@ export class FormIoCurrencyComponent
   }
 
   @Input() public set value(value: number) {
-    this._value = value;
-    // Rendering only — emitting here would write the rendered value back over the one form.io
-    // is about to hand a freshly redrawn component.
-    this.currencyForm.setValue(
-      {
-        currencyValue: Currency.masking(value, this.maskOpts),
-      },
-      {emitEvent: false}
-    );
+    this._value = typeof value === 'number' ? value : null;
+    this.renderValue();
   }
 
   @Output() public readonly valueChange = new EventEmitter<number>();
 
+  private _disabled = false;
+
+  public get disabled(): boolean {
+    return this._disabled;
+  }
+
   @Input() public set disabled(value: boolean) {
-    if (value) {
-      this.currencyForm.disable({emitEvent: false});
-    } else {
-      this.currencyForm.enable({emitEvent: false});
-    }
+    this._disabled = !!value;
   }
 
   @Input() public readonly currencyLocale: string;
   @Input() public readonly currencyCurrency: string;
   @Input() public readonly allowEmptyValue: boolean;
 
-  private _currencyInstance!: Currency;
+  private _autoNumeric: AutoNumeric | null = null;
 
-  private readonly _subscriptions = new Subscription();
+  private _rendering = false;
 
-  // A fresh object every call: Currency's constructor sets viaInput on the options it is handed.
-  private get maskOpts(): any {
-    return {
-      empty: this.allowEmptyValue || false,
-      locales: this.currencyLocale || 'nl-NL',
-      digits: 2,
-      options: {
-        style: 'currency',
-        currency: this.currencyCurrency || 'EUR',
-      },
-    };
-  }
-
-  public ngOnInit(): void {
-    this._subscriptions.add(
-      this.currencyForm.valueChanges.subscribe(() => {
-        // No mask yet: the value is being rendered, not typed, so there is nothing to write back.
-        if (!this._currencyInstance) {
-          return;
-        }
-
-        const unmasked = this._currencyInstance.getUnmasked(this.currencyForm.value.currencyValue);
-
-        if (unmasked === 0 && this.allowEmptyValue) {
-          this._value = null;
-          this.valueChange.emit(null);
-        } else {
-          this._value = unmasked;
-          this.valueChange.emit(unmasked);
-        }
-      })
-    );
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
+  private readonly _rawValueModifiedListener = (): void => this.onRawValueModified();
 
   public ngAfterViewInit(): void {
-    this._currencyInstance = new Currency(this.currencyElement.nativeElement, {
-      maskOpts: this.maskOpts,
-    });
+    const element = this.currencyElement.nativeElement;
 
-    // A value can arrive before the view exists, so its render is redone here with the mask in
-    // place.
-    if (typeof this._value === 'number') {
-      this.renderValue();
-    }
+    this._autoNumeric = new AutoNumeric(element, this.autoNumericOptions);
+    element.addEventListener(RAW_VALUE_MODIFIED_EVENT, this._rawValueModifiedListener);
+
+    this.renderValue();
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue) {
-      // ngOnChanges runs before ngAfterViewInit, which is where the mask is created from the
-      // current inputs, so there is nothing to update yet on the first run.
-      if (this._currencyInstance) {
-        if (typeof this.currencyLocale === 'string') {
-          this._currencyInstance.opts.maskOpts.locales = this.currencyLocale;
-        }
-
-        if (typeof this.currencyCurrency === 'string') {
-          this._currencyInstance.opts.maskOpts.options.currency = this.currencyCurrency;
-        }
-
-        if (typeof this.allowEmptyValue === 'boolean') {
-          this._currencyInstance.opts.maskOpts.empty = this.allowEmptyValue;
-        }
-      }
-
+    if (
+      this._autoNumeric &&
+      (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue)
+    ) {
+      this.withoutEmitting(() => this._autoNumeric.update(this.autoNumericOptions));
       this.renderValue();
     }
   }
 
-  private renderValue(): void {
-    this.currencyForm.setValue(
-      {
-        currencyValue:
-          typeof this._value === 'number' ? Currency.masking(this._value, this.maskOpts) : '',
-      },
-      {emitEvent: false}
+  public ngOnDestroy(): void {
+    if (!this._autoNumeric) {
+      return;
+    }
+
+    this.currencyElement.nativeElement.removeEventListener(
+      RAW_VALUE_MODIFIED_EVENT,
+      this._rawValueModifiedListener
     );
+    this._autoNumeric.remove();
+    this._autoNumeric = null;
+  }
+
+  /**
+   * Derives the AutoNumeric formatting from the Intl formatting of the configured locale and
+   * currency, so the input renders amounts exactly as that locale writes them.
+   */
+  private get autoNumericOptions(): AutoNumeric.Options {
+    const formatter = new Intl.NumberFormat(this.currencyLocale || DEFAULT_LOCALE, {
+      style: 'currency',
+      currency: this.currencyCurrency || DEFAULT_CURRENCY,
+    });
+
+    const parts = formatter.formatToParts(-1234567.89);
+    const partValue = (type: Intl.NumberFormatPartTypes): string =>
+      parts.find(part => part.type === type)?.value ?? '';
+    const indexOf = (type: Intl.NumberFormatPartTypes): number =>
+      parts.findIndex(part => part.type === type);
+
+    const currencyIndex = indexOf('currency');
+    const firstIntegerIndex = indexOf('integer');
+    const minusSignIndex = indexOf('minusSign');
+    const currencyIsPrefix = currencyIndex < firstIntegerIndex;
+
+    const spacing = parts[currencyIsPrefix ? currencyIndex + 1 : currencyIndex - 1];
+    const literal = spacing?.type === 'literal' ? spacing.value : '';
+    const currencySymbol = currencyIsPrefix
+      ? `${partValue('currency')}${literal}`
+      : `${literal}${partValue('currency')}`;
+
+    const negativePositiveSignPlacement = currencyIsPrefix
+      ? minusSignIndex < currencyIndex
+        ? 'l'
+        : 'r'
+      : minusSignIndex < firstIntegerIndex
+        ? 'p'
+        : minusSignIndex < currencyIndex
+          ? 'l'
+          : 's';
+
+    return {
+      currencySymbol,
+      currencySymbolPlacement: currencyIsPrefix ? 'p' : 's',
+      negativePositiveSignPlacement,
+      digitGroupSeparator: partValue('group'),
+      decimalCharacter: partValue('decimal') || '.',
+      decimalPlaces: formatter.resolvedOptions().maximumFractionDigits,
+      emptyInputBehavior: this.allowEmptyValue ? 'null' : 'zero',
+      modifyValueOnWheel: false,
+    };
+  }
+
+  private onRawValueModified(): void {
+    if (this._rendering || !this._autoNumeric) {
+      return;
+    }
+
+    const numericString = this._autoNumeric.getNumericString();
+    const isEmpty = numericString === null || numericString === '';
+    const value = isEmpty ? (this.allowEmptyValue ? null : 0) : Number(numericString);
+
+    this._value = value;
+    this.valueChange.emit(value);
+  }
+
+  private renderValue(): void {
+    if (!this._autoNumeric) {
+      return;
+    }
+
+    this.withoutEmitting(() => {
+      if (typeof this._value === 'number') {
+        this._autoNumeric.set(this._value);
+      } else {
+        this._autoNumeric.clear(true);
+      }
+    });
+  }
+
+  private withoutEmitting(action: () => void): void {
+    this._rendering = true;
+    try {
+      action();
+    } finally {
+      this._rendering = false;
+    }
   }
 }

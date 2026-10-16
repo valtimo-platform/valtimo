@@ -36,7 +36,7 @@
     "deepmerge-ts",
     "@carbon/charts-angular",
     "@types/topojson",
-    "@tadashi/currency",
+    "autonumeric",
     "semver",
     "muuri",
     "ajv",
