@@ -102,6 +102,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   private _paginationSubscription!: Subscription;
   private _canHaveAssigneeSubscription!: Subscription;
   private _searchFieldsSubscription!: Subscription;
+  private _queryParamsSubscription!: Subscription;
 
   constructor(
     private readonly assigneeService: CaseListAssigneeService,
@@ -129,6 +130,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.subscribeToPagination();
     this.subscribeToCanHaveAssignee();
     this.subscribeToSearchFields();
+    this.subscribeToQueryParams();
     this.resolveVisibleCaseTabs();
 
     if (!this.configService.config?.featureToggles?.enableGenericCaseList) {
@@ -141,6 +143,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this._paginationSubscription?.unsubscribe();
     this._canHaveAssigneeSubscription?.unsubscribe();
     this._searchFieldsSubscription?.unsubscribe();
+    this._queryParamsSubscription?.unsubscribe();
     this.pageTitleService.enableReset();
     this.breadcrumbService.unsuppressSecondBreadcrumb();
   }
@@ -159,11 +162,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
   public rowClick(item: any): void {
     this.listService.caseDefinitionKey$.pipe(take(1)).subscribe(caseDefinitionKey => {
-      this.breadcrumbService.cacheQueryParams(
-        `/cases/${caseDefinitionKey}`,
-        this.route.snapshot.queryParams
-      );
-
       if (item.ctrlClick) {
         window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
       } else {
@@ -321,15 +319,26 @@ export class CaseListComponent implements OnInit, OnDestroy {
         distinctUntilChanged()
       )
       .subscribe(caseDefinitionKey => {
-        if (this._previousCaseDefinitionKey) {
-          this.parameterService.clearParameters();
-          this.parameterService.clearSearchFieldValues();
-        }
+        if (this._previousCaseDefinitionKey) this.resetFilterToRoute();
         this._previousCaseDefinitionKey = caseDefinitionKey;
         this.paginationService.clearPagination();
         this.assigneeService.resetAssigneeFilter();
         this.listService.setCaseDefinitionKey(caseDefinitionKey);
         this.orchestration.setLoading();
+      });
+  }
+
+  private resetFilterToRoute(): void {
+    this.parameterService.resetParametersToRoute();
+
+    combineLatest([
+      this.parameterService.queryStatusParams$,
+      this.parameterService.queryCaseTagsParams$,
+    ])
+      .pipe(take(1))
+      .subscribe(([statusKeys, caseTagKeys]) => {
+        this.statusService.setSelectedStatuses(statusKeys ?? []);
+        this.caseListCaseTagService.setSelectedCaseTags(caseTagKeys ?? []);
       });
   }
 
@@ -350,6 +359,16 @@ export class CaseListComponent implements OnInit, OnDestroy {
   private subscribeToSearchFields(): void {
     this._searchFieldsSubscription = this.orchestration.searchFields$.subscribe(() => {
       this.orchestration.setLoadingSearchFields(false);
+    });
+  }
+
+  // The case's breadcrumb returns to the list as last shown, however the case is opened.
+  private subscribeToQueryParams(): void {
+    this._queryParamsSubscription = this.route.queryParams.subscribe(queryParams => {
+      this.breadcrumbService.cacheQueryParams(
+        `/cases/${this.route.snapshot.paramMap.get('caseDefinitionKey')}`,
+        queryParams
+      );
     });
   }
 

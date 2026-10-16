@@ -34,4 +34,5 @@ export {
   SCHEMA_EDITOR_REQUIRED_PROPERTY_TEST_ID_PREFIX,
   SEARCH_FIELDS_TEST_IDS,
   SEARCH_FIELD_TEST_ID_PREFIX,
+  QUICK_SEARCH_TEST_IDS,
 } from '../../frontend/projects/valtimo/components/src/lib/constants/components.test-ids';

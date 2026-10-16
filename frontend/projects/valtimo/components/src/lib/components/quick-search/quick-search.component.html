@@ -28,8 +28,19 @@
         type="blue"
         [valtimoContextMenu]="contextMenuTpl"
         [contextData]="item"
+        [attr.data-test-id]="testIds.tag"
         (click)="onItemClick(item)"
       >
+        @if (canSetDefault && item.isDefault) {
+          <svg
+            cdsIcon="star--filled"
+            cdsTagIcon
+            size="16"
+            [ariaLabel]="'quickSearch.default' | translate"
+            [attr.data-test-id]="testIds.defaultIcon"
+          ></svg>
+        }
+
         {{ item.title }}
       </cds-tag>
     </cds-tooltip>
@@ -51,10 +62,35 @@
   ></valtimo-confirmation-modal>
 
   <ng-template #contextMenuTpl let-data="data" let-close="close">
-    <v-overflow-menu-option (selected)="deleteItem(data); close()">
-      {{ 'interface.delete' | translate }}
+    <div class="quick-search-context-menu" role="menu">
+      @if (canSetDefault && data?.isDefault) {
+        <v-overflow-menu-option
+          [testId]="testIds.removeAsDefaultOption"
+          (selected)="removeDefault(); close()"
+        >
+          {{ 'quickSearch.removeAsDefault' | translate }}
 
-      <svg cdsIcon="trash-can" size="16"></svg>
-    </v-overflow-menu-option>
+          <svg cdsIcon="star" size="16"></svg>
+        </v-overflow-menu-option>
+      } @else if (canSetDefault) {
+        <v-overflow-menu-option
+          [testId]="testIds.setAsDefaultOption"
+          (selected)="setDefault(data); close()"
+        >
+          {{ 'quickSearch.setAsDefault' | translate }}
+
+          <svg cdsIcon="star--filled" size="16"></svg>
+        </v-overflow-menu-option>
+      }
+
+      <v-overflow-menu-option
+        [testId]="testIds.deleteOption"
+        (selected)="deleteItem(data); close()"
+      >
+        {{ 'interface.delete' | translate }}
+
+        <svg cdsIcon="trash-can" size="16"></svg>
+      </v-overflow-menu-option>
+    </div>
   </ng-template>
 </ng-container>

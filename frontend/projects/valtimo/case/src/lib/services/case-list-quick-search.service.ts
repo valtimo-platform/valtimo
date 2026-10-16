@@ -2,8 +2,20 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {IQuickSearchService, QuickSearchItem} from '@valtimo/components';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
-import {BehaviorSubject, Observable, filter, of, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  filter,
+  forkJoin,
+  map,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {CaseListQuickSearchParams} from '../models';
+import {CaseListDefaultQuickSearchService} from './case-list-default-quick-search.service';
 
 @Injectable()
 export class CaseListQuickSearchService
@@ -20,7 +32,8 @@ export class CaseListQuickSearchService
 
   constructor(
     protected readonly httpClient: HttpClient,
-    protected readonly configService: ConfigService
+    protected readonly configService: ConfigService,
+    private readonly defaultQuickSearchService: CaseListDefaultQuickSearchService
   ) {
     super(httpClient, configService);
   }
@@ -34,9 +47,19 @@ export class CaseListQuickSearchService
     return this.params$.pipe(
       take(1),
       switchMap((params: CaseListQuickSearchParams | null) =>
-        this.httpClient.get<QuickSearchItem[]>(
-          this.getApiUrl(`v1/case/${params?.caseDefinitionKey}/stored-quick-search`)
-        )
+        forkJoin([
+          this.httpClient.get<QuickSearchItem[]>(
+            this.getApiUrl(`v1/case/${params?.caseDefinitionKey}/stored-quick-search`)
+          ),
+          params?.caseDefinitionKey
+            ? this.defaultQuickSearchService
+                .getDefaultTitle(params.caseDefinitionKey)
+                .pipe(catchError(() => of(null)))
+            : of(null),
+        ])
+      ),
+      map(([quickSearchItems, defaultTitle]) =>
+        quickSearchItems.map(item => ({...item, isDefault: item.title === defaultTitle}))
       )
     );
   }
@@ -73,11 +96,48 @@ export class CaseListQuickSearchService
     return this.params$.pipe(
       take(1),
       switchMap((params: CaseListQuickSearchParams | null) =>
-        this.httpClient.delete<void>(
-          this.getApiUrl(
-            `v1/case/${params?.caseDefinitionKey}/stored-quick-search/${quickSearchItem.title}`
+        this.httpClient
+          .delete<void>(
+            this.getApiUrl(
+              `v1/case/${params?.caseDefinitionKey}/stored-quick-search/${quickSearchItem.title}`
+            )
           )
+          .pipe(
+            switchMap(() =>
+              this.defaultQuickSearchService.getDefaultTitle(params?.caseDefinitionKey).pipe(
+                switchMap(defaultTitle =>
+                  defaultTitle === quickSearchItem.title
+                    ? this.defaultQuickSearchService.setDefaultTitle(
+                        params?.caseDefinitionKey,
+                        null
+                      )
+                    : of(undefined)
+                ),
+                catchError(() => of(undefined))
+              )
+            )
+          )
+      )
+    );
+  }
+
+  public setDefaultQuickSearchItem(quickSearchItem: QuickSearchItem): Observable<void> {
+    return this.params$.pipe(
+      take(1),
+      switchMap((params: CaseListQuickSearchParams | null) =>
+        this.defaultQuickSearchService.setDefaultTitle(
+          params?.caseDefinitionKey,
+          quickSearchItem.title
         )
+      )
+    );
+  }
+
+  public clearDefaultQuickSearchItem(): Observable<void> {
+    return this.params$.pipe(
+      take(1),
+      switchMap((params: CaseListQuickSearchParams | null) =>
+        this.defaultQuickSearchService.setDefaultTitle(params?.caseDefinitionKey, null)
       )
     );
   }

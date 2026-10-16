@@ -4092,7 +4092,10 @@
     "deleteModalContent": "Are you sure you want to delete this quick search item? This change cannot be undone",
     "rightClickTooltip": "Right-click for options",
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
-    "duplicateError": "A quick search item with this title already exists"
+    "duplicateError": "A quick search item with this title already exists",
+    "default": "Default",
+    "setAsDefault": "Set as default",
+    "removeAsDefault": "Remove as default"
   },
   "externalPluginPage": {
     "loadError": "This plugin page could not be loaded."

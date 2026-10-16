@@ -150,6 +150,15 @@ export const SEARCH_FIELDS_TEST_IDS = {
  */
 export const SEARCH_FIELD_TEST_ID_PREFIX = 'searchField-';
 
+/** The saved quick searches above a list, and the options of their right-click menu. */
+export const QUICK_SEARCH_TEST_IDS = {
+  tag: 'quickSearchTag',
+  defaultIcon: 'quickSearchDefaultIcon',
+  setAsDefaultOption: 'quickSearchSetAsDefault',
+  removeAsDefaultOption: 'quickSearchRemoveAsDefault',
+  deleteOption: 'quickSearchDelete',
+} as const;
+
 export const SIDE_PANEL_TEST_IDS = {
   panel: 'sidePanel',
   closeButton: 'sidePanelCloseButton',

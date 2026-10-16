@@ -21,6 +21,7 @@ interface UserSettings {
   showUserNameInTopBar?: boolean;
   preferredTheme?: string;
   caseListPageSizes?: {[key: string]: number};
+  caseListDefaultQuickSearches?: {[caseDefinitionKey: string]: string};
   taskListPageSizes?: {[key: string]: number};
   taskPanelWidth?: number;
 }

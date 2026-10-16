@@ -161,31 +161,36 @@ export class BreadcrumbService {
   }
 
   private matchCachedQueryParams(breadcrumbItems: Array<BreadcrumbItem>): Array<BreadcrumbItem> {
-    let hasCachedParams = false;
+    this.dropCachedQueryParamsOfLeftRoutes();
 
-    const mappedItems = breadcrumbItems.map(breadCrumbItem => {
-      const cachedParamKey = Object.keys(this._cachedQueryParams).find(cachedQueryParamKey =>
-        this.routeStringToPlain(breadCrumbItem.href).includes(
+    return breadcrumbItems.map(breadCrumbItem => {
+      const cachedParamKey = Object.keys(this._cachedQueryParams).find(
+        cachedQueryParamKey =>
+          this.routeStringToPlain(breadCrumbItem.href) ===
           this.routeStringToPlain(cachedQueryParamKey)
-        )
       );
       const cachedParams = cachedParamKey && this._cachedQueryParams[cachedParamKey];
 
       if (cachedParams) {
         const tree = this.router.createUrlTree(breadCrumbItem.route, {queryParams: cachedParams});
         const serializedUrl = this.serializer.serialize(tree);
-        hasCachedParams = true;
         return {...breadCrumbItem, routeExtras: {queryParams: cachedParams}, href: serializedUrl};
       }
 
       return breadCrumbItem;
     });
+  }
 
-    if (hasCachedParams) {
-      this._cachedQueryParams = {};
-    }
+  // Cached parameters last while the user stays on the cached route or the pages below it.
+  private dropCachedQueryParamsOfLeftRoutes(): void {
+    const currentPath = this.routeStringToPlain(this.router.url.split('?')[0]);
 
-    return mappedItems;
+    this._cachedQueryParams = Object.fromEntries(
+      Object.entries(this._cachedQueryParams).filter(([routeMatchString]) => {
+        const cachedPath = this.routeStringToPlain(routeMatchString);
+        return currentPath === cachedPath || currentPath.startsWith(`${cachedPath}/`);
+      })
+    );
   }
 
   private routeStringToPlain(routeString: string): string {

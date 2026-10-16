@@ -50,7 +50,10 @@
 
   <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
 
-  <valtimo-quick-search (quickSearchEvent)="onQuickSearchEvent($event)"></valtimo-quick-search>
+  <valtimo-quick-search
+    [canSetDefault]="true"
+    (quickSearchEvent)="onQuickSearchEvent($event)"
+  ></valtimo-quick-search>
 
   <ng-container *ngIf="obs.loaded; else loading">
     <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
@@ -68,6 +71,7 @@
     [searchFields]="obs.searchFields"
     [caseDefinitionKey]="orchestration.caseDefinitionKey$ | async"
     [defaultValues]="orchestration.searchFieldValues$ | async"
+    [emitClearOnCaseDefinitionChange]="false"
     [inputDisabled]="!obs.loaded"
     [externalSearchField]="obs.showStatusSelector"
     (clearEvent)="onClearEvent()"

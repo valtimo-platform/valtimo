@@ -9,4 +9,6 @@ export interface IQuickSearchService<T> {
   updateQuickSearchItems(quickSearchItems: QuickSearchItem[]): Observable<QuickSearchItem[]>;
   editQuickSearchItem(quickSearchItem: QuickSearchItem): Observable<QuickSearchItem>;
   deleteQuickSearchItem(quickSearchItem: QuickSearchItem): Observable<void>;
+  setDefaultQuickSearchItem?(quickSearchItem: QuickSearchItem): Observable<void>;
+  clearDefaultQuickSearchItem?(): Observable<void>;
 }

@@ -65,6 +65,8 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public inputDisabled = false;
   @Input() public externalSearchField = false;
   @Input() public canSaveSearch = false;
+  /** When false, a case definition change only resets the fields, without emitting doSearch or clearEvent. */
+  @Input() public emitClearOnCaseDefinitionChange = true;
 
   @Output() public readonly doSearch: EventEmitter<SearchFieldValues> =
     new EventEmitter<SearchFieldValues>();
@@ -227,7 +229,13 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this._caseDefinitionKey$.subscribe(() => {
         this.collapse();
-        this.clear();
+
+        if (this.emitClearOnCaseDefinitionChange) {
+          this.clear();
+        } else {
+          this.clear$.next(null);
+          this.values$.next({});
+        }
       })
     );
   }

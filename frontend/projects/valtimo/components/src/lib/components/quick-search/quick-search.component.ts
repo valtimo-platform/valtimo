@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, EventEmitter, Inject, Output, signal} from '@angular/core';
-import {TrashCan16} from '@carbon/icons';
+import {Component, EventEmitter, Inject, Input, Output, signal} from '@angular/core';
+import {Star16, StarFilled16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   ContextMenuModule,
@@ -25,8 +25,9 @@ import {
   TooltipModule,
 } from 'carbon-components-angular';
 import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
-import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
 import {QUICK_SEARCH_SERVICE} from '../../constants/quick-search.constants';
+import {QUICK_SEARCH_TEST_IDS} from '../../constants/components.test-ids';
 import {ContextMenuDirective} from '../../directives/context-menu.directive';
 import {IQuickSearchService} from '../../interfaces';
 import {QuickSearchItem} from '../../models';
@@ -53,6 +54,10 @@ import {QuickSearchModalComponent} from './modal/quick-search-modal.component';
   ],
 })
 export class QuickSearchComponent {
+  protected readonly testIds = QUICK_SEARCH_TEST_IDS;
+
+  @Input() public canSetDefault = false;
+
   public readonly $modalOpen = this.quickSearchStateService.$modalOpen;
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly $itemToDelete = signal<QuickSearchItem | null>(null);
@@ -74,7 +79,7 @@ export class QuickSearchComponent {
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly quickSearchService: IQuickSearchService<any>
   ) {
-    this.iconService.register(TrashCan16);
+    this.iconService.registerAll([Star16, StarFilled16, TrashCan16]);
   }
 
   public deleteItem(item: QuickSearchItem): void {
@@ -86,6 +91,14 @@ export class QuickSearchComponent {
     this.quickSearchService.deleteQuickSearchItem(item).subscribe(() => {
       this._refresh$.next(null);
     });
+  }
+
+  public setDefault(item: QuickSearchItem): void {
+    this.refreshAfter(this.quickSearchService.setDefaultQuickSearchItem?.(item));
+  }
+
+  public removeDefault(): void {
+    this.refreshAfter(this.quickSearchService.clearDefaultQuickSearchItem?.());
   }
 
   public onItemClick(item: QuickSearchItem): void {
@@ -107,5 +120,9 @@ export class QuickSearchComponent {
         queryPath,
       })
       .subscribe(() => this._refresh$.next(null));
+  }
+
+  private refreshAfter(request$: Observable<void> | undefined): void {
+    request$?.subscribe(() => this._refresh$.next(null));
   }
 }

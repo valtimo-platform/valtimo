@@ -25,6 +25,7 @@ import {CaseInspectionComponent} from './case-inspection/case-inspection.compone
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
 import {caseDetailPendingChangesGuard} from './guards/case-detail-pending-changes.guard';
+import {caseListDefaultQuickSearchGuard} from './guards/case-list-default-quick-search.guard';
 
 const routes: Routes = [
   {
@@ -37,7 +38,7 @@ const routes: Routes = [
   {
     path: 'cases/:caseDefinitionKey',
     component: CaseListComponent,
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, caseListDefaultQuickSearchGuard],
     data: {title: 'Cases', roles: [ROLE_USER], customPageTitle: true},
   },
   {

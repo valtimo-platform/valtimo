@@ -25,7 +25,7 @@ import {
   Subscription,
   take,
 } from 'rxjs';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Router, UrlTree} from '@angular/router';
 import {AssigneeFilter, Direction, SearchFieldValues} from '@valtimo/shared';
 import {Pagination} from '@valtimo/components';
 
@@ -237,11 +237,23 @@ export class CaseParameterService implements OnDestroy {
 
   private openDossierParametersSubscription(): void {
     this._caseParametersSubscription = this.caseParameters$.subscribe(dossierParams => {
+      if (this.isNavigatingAway()) return;
+
       this.router.navigate([this.getUrlWithoutParams()], {
         queryParams: dossierParams,
         replaceUrl: true,
       });
     });
+  }
+
+  // A newer navigation of its own would cancel one that leaves this list, such as a menu click.
+  private isNavigatingAway(): boolean {
+    const navigation = this.router.getCurrentNavigation();
+
+    return (
+      !!navigation &&
+      new UrlTree(navigation.extractedUrl.root).toString() !== this.getUrlWithoutParams()
+    );
   }
 
   private objectToBase64(jsObject: object): string {
@@ -260,6 +272,16 @@ export class CaseParameterService implements OnDestroy {
   }
 
   public setCaseParameters(): void {
+    this.applyRouteParameters();
+    this.openDossierParametersSubscription();
+  }
+
+  public resetParametersToRoute(): void {
+    this._caseParameters$.next(undefined);
+    this.applyRouteParameters();
+  }
+
+  private applyRouteParameters(): void {
     combineLatest([
       this.queryPaginationParams$,
       this.querySearchParams$,
@@ -278,8 +300,6 @@ export class CaseParameterService implements OnDestroy {
             this.setSearchParameters(searchParams);
             this.setSearchFieldValues(searchParams);
           }
-
-          this.openDossierParametersSubscription();
         }
       );
   }

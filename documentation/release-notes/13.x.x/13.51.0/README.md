@@ -6,9 +6,11 @@ Release date: 21-10-2026
 
 ## New Features
 
-### New feature title
+### Default quick search on the case list
 
-New feature explanation.
+Users can make one of their own quick searches the default for a case list: right-click the quick search and choose **Set as default**, or **Remove as default** to undo it. The default quick search is marked with a star. It is applied automatically whenever the case list is opened without a filter, from the menu or straight after logging in. Defaults are personal and kept per case definition.
+
+The case list now also keeps the active filter when returning from a case, through the breadcrumb or the browser's back button.
 
 ---
 
