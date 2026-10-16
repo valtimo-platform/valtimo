@@ -15,7 +15,6 @@
  */
 
 import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
-import {ReactiveFormsModule} from '@angular/forms';
 import {FormIoCurrencyComponent} from './currency.component';
 
 describe('FormIoCurrencyComponent', () => {
@@ -25,7 +24,6 @@ describe('FormIoCurrencyComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [FormIoCurrencyComponent],
-      imports: [ReactiveFormsModule],
     }).compileComponents();
   }));
 
@@ -40,8 +38,15 @@ describe('FormIoCurrencyComponent', () => {
   });
 
   // The formatter separates the symbol with a non-breaking space, which is not what these assert on.
-  const renderedValue = (): string =>
-    (component.currencyForm.value.currencyValue ?? '').replace(/\s/g, ' ');
+  const renderedValueOf = (target: ComponentFixture<FormIoCurrencyComponent>): string =>
+    target.componentInstance.currencyElement.nativeElement.value.replace(/\s/g, ' ');
+
+  const renderedValue = (): string => renderedValueOf(fixture);
+
+  // Stands in for a user edit: a raw value change that does not come from rendering an input.
+  const enterValue = (value: number | null): void => {
+    (component as any)._autoNumeric.set(value);
+  };
 
   const emittedValues = (): Array<number> => {
     const values: Array<number> = [];
@@ -49,9 +54,9 @@ describe('FormIoCurrencyComponent', () => {
     return values;
   };
 
-  const applyInputs = (value?: number): void => {
-    fixture.componentRef.setInput('currencyLocale', 'nl-NL');
-    fixture.componentRef.setInput('currencyCurrency', 'EUR');
+  const applyInputs = (value?: number, locale = 'nl-NL', currency = 'EUR'): void => {
+    fixture.componentRef.setInput('currencyLocale', locale);
+    fixture.componentRef.setInput('currencyCurrency', currency);
 
     if (value !== undefined) {
       fixture.componentRef.setInput('value', value);
@@ -122,9 +127,7 @@ describe('FormIoCurrencyComponent', () => {
     it('should render the amount in full', () => {
       earlyFixture.detectChanges();
 
-      expect(
-        (earlyFixture.componentInstance.currencyForm.value.currencyValue ?? '').replace(/\s/g, ' ')
-      ).toBe('€ 100,00');
+      expect(renderedValueOf(earlyFixture)).toBe('€ 100,00');
     });
 
     it('should not write anything back to the model', () => {
@@ -134,6 +137,65 @@ describe('FormIoCurrencyComponent', () => {
       earlyFixture.detectChanges();
 
       expect(values).toEqual([]);
+    });
+  });
+
+  describe('the configured locale', () => {
+    it('should render an amount the way en-US writes it', () => {
+      applyInputs(1234.56, 'en-US', 'USD');
+
+      expect(renderedValue()).toBe('$1,234.56');
+    });
+
+    it('should render an amount the way de-DE writes it', () => {
+      applyInputs(1234.56, 'de-DE', 'EUR');
+
+      expect(renderedValue()).toBe('1.234,56 €');
+    });
+
+    it('should render a negative amount the way nl-NL writes it', () => {
+      applyInputs(-1234.56);
+
+      expect(renderedValue()).toBe('€ -1.234,56');
+    });
+
+    it('should rerender the amount when the locale changes', () => {
+      applyInputs(1234.56);
+      applyInputs(undefined, 'en-GB', 'GBP');
+
+      expect(renderedValue()).toBe('£1,234.56');
+    });
+
+    it('should not write anything back to the model when the locale changes', () => {
+      applyInputs(1234.56);
+      const values = emittedValues();
+
+      applyInputs(undefined, 'en-GB', 'GBP');
+
+      expect(values).toEqual([]);
+    });
+  });
+
+  describe('a value entered by the user', () => {
+    it('should be written to the model as a number', () => {
+      applyInputs(100);
+      const values = emittedValues();
+
+      enterValue(1234.5);
+
+      expect(values).toEqual([1234.5]);
+      expect(component.value).toBe(1234.5);
+    });
+
+    it('should be written to the model as null when emptied and empty values are allowed', () => {
+      fixture.componentRef.setInput('allowEmptyValue', true);
+      applyInputs(100);
+      const values = emittedValues();
+
+      enterValue(null);
+
+      expect(values).toEqual([null]);
+      expect(renderedValue()).toBe('');
     });
   });
 });
