@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-:host {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.case-definition-selection {
-  display: flex;
-  width: 250px;
+.valtimo-group-create {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 }

@@ -23,16 +23,21 @@ import {CaseUpdateComponent} from './components/case-update/case-update.componen
 import {ROLE_USER} from '@valtimo/shared';
 import {CaseInspectionComponent} from './case-inspection/case-inspection.component';
 import {CaseListComponent} from './components/case-list/case-list.component';
-import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
+import {CaseOverviewComponent} from './components/case-overview/case-overview.component';
 import {caseDetailPendingChangesGuard} from './guards/case-detail-pending-changes.guard';
 
 const routes: Routes = [
   {
-    path: 'cases',
-    component: GenericCaseListComponent,
+    path: 'cases-overview',
+    component: CaseOverviewComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'case.overview.title', roles: [ROLE_USER]},
+  },
+  {
+    path: 'groups/:groupKey',
+    component: CaseListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Cases', roles: [ROLE_USER], customPageTitle: true},
-    pathMatch: 'full',
   },
   {
     path: 'cases/:caseDefinitionKey',

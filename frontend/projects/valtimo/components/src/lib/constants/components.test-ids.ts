@@ -121,6 +121,24 @@ export const RIGHT_SIDEBAR_TEST_IDS = {
   themeDropdown: 'rightSidebarThemeDropdown',
 } as const;
 
+export const STATUS_SELECTOR_TEST_IDS = {
+  dropdown: 'statusSelectorDropdown',
+} as const;
+
+export const QUICK_SEARCH_TEST_IDS = {
+  item: 'quickSearchItem',
+  deleteOption: 'quickSearchDeleteOption',
+  modal: 'quickSearchModal',
+  titleInput: 'quickSearchTitleInput',
+  duplicateError: 'quickSearchDuplicateError',
+  cancelButton: 'quickSearchCancelButton',
+  saveButton: 'quickSearchSaveButton',
+} as const;
+
+export const LEFT_SIDEBAR_TEST_IDS = {
+  submenuChevron: 'leftSidebarSubmenuChevron',
+} as const;
+
 export const COLOR_PICKER_TEST_IDS = {
   label: 'colorPickerLabel',
   container: 'colorPickerContainer',

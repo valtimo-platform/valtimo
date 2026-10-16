@@ -23,6 +23,7 @@
     [disabled]="disabled"
     selectionFeedback="fixed"
     (selected)="itemSelected($event)"
+    [attr.data-test-id]="testIds.dropdown"
   >
     <cds-dropdown-list
       [items]="listItems"

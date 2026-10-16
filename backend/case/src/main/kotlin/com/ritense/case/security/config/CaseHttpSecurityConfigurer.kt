@@ -130,6 +130,38 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/properties")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}/version/{versionTag}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_STARTABLE_ITEMS_URL/{itemKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, CASE_DEFINITION_GROUP_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, CASE_DEFINITION_GROUP_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$CASE_DEFINITION_GROUP_URL/{groupKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/member")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$CASE_DEFINITION_GROUP_URL/{groupKey}/member")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "$CASE_DEFINITION_GROUP_URL/{groupKey}/member/{caseDefinitionKey}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}/member/order")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/list-column")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}/list-column")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/list-column/{columnKey}/path-mapping")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}/list-column/{columnKey}/path-mapping")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/search-field")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}/search-field")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/search-field/{fieldKey}/path-mapping")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$CASE_DEFINITION_GROUP_URL/{groupKey}/search-field/{fieldKey}/path-mapping")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$CASE_DEFINITION_GROUP_URL/{groupKey}/export")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$CASE_DEFINITION_GROUP_URL/import")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, USER_CASE_DEFINITION_GROUP_URL)).authenticated()
+                    .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/member")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/list-column")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/search-field")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/internal-status")).authenticated()
+                    .requestMatchers(antMatcher(POST, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/search")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/stored-quick-search")).authenticated()
+                    .requestMatchers(antMatcher(POST, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/stored-quick-search")).authenticated()
+                    .requestMatchers(antMatcher(DELETE, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/stored-quick-search/{title}")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/pinned-item")).authenticated()
+                    .requestMatchers(antMatcher(POST, "/api/v1/pinned-item")).authenticated()
+                    .requestMatchers(antMatcher(DELETE, "/api/v1/pinned-item/{itemType}/{itemKey}")).authenticated()
                     .requestMatchers(antMatcher(GET, MANAGEMENT_MIGRATION_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_MIGRATION_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_MIGRATION_URL/suggestion/activity-mapping")).hasAuthority(ADMIN)
@@ -174,5 +206,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
         private const val MANAGEMENT_MIGRATION_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/migration"
         private const val METROLINE_AVAILABLE_MODES_URL = "/api/management/v1/metroline/available-modes"
+        private const val CASE_DEFINITION_GROUP_URL = "/api/management/v1/case-definition-group"
+        private const val USER_CASE_DEFINITION_GROUP_URL = "/api/v1/case-definition-group"
     }
 }

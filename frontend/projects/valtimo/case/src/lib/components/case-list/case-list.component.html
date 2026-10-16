@@ -43,6 +43,7 @@
   } as obs"
 >
   <valtimo-case-list-actions
+    [groupMembers]="orchestration.startableGroupMembers$ | async"
     [loading]="!obs.loaded"
     (formFlowComplete)="forceRefresh()"
     (startButtonDisableEvent)="onStartButtonDisableEvent($event)"
@@ -66,7 +67,7 @@
     [disableSaveSearch]="obs.disableSaveSearch"
     [canSaveSearch]="true"
     [searchFields]="obs.searchFields"
-    [caseDefinitionKey]="orchestration.caseDefinitionKey$ | async"
+    [caseDefinitionKey]="(orchestration.context$ | async)?.key"
     [defaultValues]="orchestration.searchFieldValues$ | async"
     [inputDisabled]="!obs.loaded"
     [externalSearchField]="obs.showStatusSelector"

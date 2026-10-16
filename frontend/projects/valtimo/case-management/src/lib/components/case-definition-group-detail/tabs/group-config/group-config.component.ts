@@ -1,0 +1,297 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {DialogModule} from 'carbon-components-angular';
+import {Add16} from '@carbon/icons';
+import {CarbonListModule, ColorPickerComponent, ColorPickerConfig, SelectItem, SelectModule} from '@valtimo/components';
+import {DocumentService, DocumentDefinition} from '@valtimo/document';
+import {
+  ButtonModule,
+  DropdownModule,
+  IconModule,
+  IconService,
+  InputModule,
+  LayerModule,
+  PlaceholderModule,
+  TableModule,
+} from 'carbon-components-angular';
+import {GlobalNotificationService} from '@valtimo/shared';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  forkJoin,
+  map,
+  startWith,
+  Subscription,
+} from 'rxjs';
+import {CaseDefinitionGroupManagementService} from '../../../../services';
+import {GroupMember} from '../../../../models';
+import {
+  CASE_DEFINITION_GROUP_CONFIG_TEST_IDS,
+  CASE_MANAGEMENT_COLOR_TEST_IDS,
+} from '../../../../constants';
+import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
+
+interface MemberListItem {
+  caseDefinitionKey: string;
+  name: string;
+  version: string;
+  order: number;
+}
+
+const COLOR_SWATCHES = [
+  '#da1e28', '#ff8389', '#fa4d56', '#ff7eb6', '#ee538b', '#d12771',
+  '#6929c4', '#8a3ffc', '#a56eff', '#d4bbff',
+  '#0043ce', '#1192e8', '#33b1ff', '#82cfff',
+  '#005d5d', '#009d9a', '#3ddbd9',
+  '#0e6027', '#24a148', '#42be65',
+  '#b28600', '#f1c21b',
+  '#570408', '#002d9c',
+  '#525252', '#8d8d8d', '#161616',
+];
+
+@Component({
+  standalone: true,
+  selector: 'valtimo-group-config',
+  templateUrl: './group-config.component.html',
+  styleUrl: './group-config.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    DialogModule,
+    DropdownModule,
+    IconModule,
+    InputModule,
+    LayerModule,
+    PlaceholderModule,
+    TableModule,
+    CarbonListModule,
+    ColorPickerComponent,
+    SelectModule,
+  ],
+})
+export class GroupConfigComponent implements OnInit, OnDestroy {
+  protected readonly colorTestIds = CASE_MANAGEMENT_COLOR_TEST_IDS;
+  protected readonly testIds = CASE_DEFINITION_GROUP_CONFIG_TEST_IDS;
+
+  public readonly COLOR_SWATCHES = COLOR_SWATCHES;
+  public readonly colorPickerConfig: ColorPickerConfig = {
+    swatches: [],
+    lockOpacity: true,
+  };
+
+  @ViewChild('addWrapper') addWrapperRef: ElementRef<HTMLElement>;
+
+  private readonly _subscriptions = new Subscription();
+  public readonly group$ = this.detailService.group$;
+
+  private readonly _members$ = new BehaviorSubject<MemberListItem[]>([]);
+  public readonly members$ = this._members$.asObservable();
+
+  public readonly searchControl = new FormControl('');
+  public readonly filteredMembers$ = combineLatest([
+    this._members$,
+    this.searchControl.valueChanges.pipe(startWith('')),
+  ]).pipe(
+    map(([members, search]) => {
+      if (!search) return members;
+      const term = search.toLowerCase();
+      return members.filter(
+        m =>
+          m.name.toLowerCase().includes(term) ||
+          m.caseDefinitionKey.toLowerCase().includes(term)
+      );
+    })
+  );
+
+  private readonly _availableCaseDefinitions$ = new BehaviorSubject<SelectItem[]>([]);
+  public readonly availableCaseDefinitions$ = this._availableCaseDefinitions$.asObservable();
+
+  public selectedColor = '';
+  public selectedCaseDefinitionKey: string | null = null;
+  public showAddPanel = false;
+
+  constructor(
+    private readonly detailService: CaseDefinitionGroupDetailService,
+    private readonly groupService: CaseDefinitionGroupManagementService,
+    private readonly documentService: DocumentService,
+    private readonly translateService: TranslateService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly iconService: IconService,
+    private readonly cdr: ChangeDetectorRef
+  ) {
+    this.iconService.registerAll([Add16]);
+  }
+
+  public ngOnInit(): void {
+    this._subscribeToGroup();
+    this._loadAvailableCaseDefinitions();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  @HostListener('document:click', ['$event'])
+  public onPageClick(event: MouseEvent): void {
+    if (!this.showAddPanel || !this.addWrapperRef) return;
+
+    const target = event.target as HTMLElement;
+    const clickedInside = this.addWrapperRef.nativeElement.contains(target);
+    const clickedOnDropdown = target.closest('.cds--list-box__menu, .cds--list-box__menu-item');
+    if (!clickedInside && !clickedOnDropdown) {
+      this.showAddPanel = false;
+      this.selectedCaseDefinitionKey = null;
+      this.cdr.markForCheck();
+    }
+  }
+
+  public onColorChange(color: string): void {
+    if (color && color !== this.selectedColor) {
+      this.selectedColor = color;
+      this._saveColor(color);
+    }
+  }
+
+  public onSwatchClick(color: string): void {
+    this.selectedColor = color;
+    this._saveColor(color);
+  }
+
+  public toggleAddPanel(): void {
+    this.showAddPanel = !this.showAddPanel;
+    if (!this.showAddPanel) {
+      this.selectedCaseDefinitionKey = null;
+    }
+  }
+
+  public onCaseDefinitionSelected(value: string | number): void {
+    this.selectedCaseDefinitionKey = value ? String(value) : null;
+  }
+
+  public addMember(): void {
+    if (!this.selectedCaseDefinitionKey) return;
+
+    const groupKey = this.detailService.currentGroup?.key;
+    if (!groupKey) return;
+
+    this.groupService
+      .addMember(groupKey, {caseDefinitionKey: this.selectedCaseDefinitionKey})
+      .subscribe({
+        next: () => {
+          this.selectedCaseDefinitionKey = null;
+          this.showAddPanel = false;
+          this.detailService.reloadGroup();
+        },
+        error: () => {
+          this.notificationService.showToast({
+            type: 'error',
+            title: this.translateService.instant('caseManagement.groups.config.addMemberError'),
+          });
+        },
+      });
+  }
+
+  public removeMember(member: MemberListItem): void {
+    const groupKey = this.detailService.currentGroup?.key;
+    if (!groupKey) return;
+
+    this.groupService.removeMember(groupKey, member.caseDefinitionKey).subscribe({
+      next: () => this.detailService.reloadGroup(),
+    });
+  }
+
+  private _subscribeToGroup(): void {
+    this._subscriptions.add(
+      this.group$.pipe(filter(group => !!group)).subscribe(group => {
+        this.selectedColor = group.color ?? '';
+        this.cdr.markForCheck();
+      })
+    );
+
+    this._subscriptions.add(
+      this.group$
+        .pipe(
+          filter(group => !!group),
+          map(group => group.members),
+          distinctUntilChanged((previous, current) => JSON.stringify(previous) === JSON.stringify(current))
+        )
+        .subscribe(members => this._loadMemberDetails(members))
+    );
+  }
+
+  private _loadMemberDetails(members: GroupMember[]): void {
+    if (members.length === 0) {
+      this._members$.next([]);
+      return;
+    }
+
+    forkJoin(
+      members.map(m =>
+        this.documentService.getDocumentDefinitionForManagement(m.caseDefinitionKey).pipe(
+          map(def => ({
+            caseDefinitionKey: m.caseDefinitionKey,
+            name: def.schema?.title ?? m.caseDefinitionKey,
+            version: def.id?.blueprintId?.blueprintVersionTag ?? '-',
+            order: m.order,
+          }))
+        )
+      )
+    ).subscribe(memberItems => {
+      this._members$.next(memberItems.sort((a, b) => a.order - b.order));
+    });
+  }
+
+  private _loadAvailableCaseDefinitions(): void {
+    this._subscriptions.add(
+      combineLatest([this.documentService.getAllDefinitions(), this._members$]).subscribe(
+        ([definitions, members]) => {
+          const memberKeys = new Set(members.map(m => m.caseDefinitionKey));
+          const available: SelectItem[] = definitions.content
+            .filter(def => !memberKeys.has(def.id.name))
+            .map(def => ({
+              id: def.id.name,
+              text: def.schema?.title ?? def.id.name,
+            }));
+          this._availableCaseDefinitions$.next(available);
+        }
+      )
+    );
+  }
+
+  private _saveColor(color: string): void {
+    const group = this.detailService.currentGroup;
+    if (!group) return;
+
+    this.detailService
+      .updateGroup({
+        title: group.title,
+        description: group.description,
+        color,
+      })
+      .subscribe();
+  }
+}

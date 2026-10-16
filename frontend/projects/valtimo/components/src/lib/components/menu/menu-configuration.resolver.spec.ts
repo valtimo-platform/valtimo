@@ -27,6 +27,7 @@ describe('menu configuration resolver', () => {
     const [dashboard] = resolveMenuConfiguration(config);
 
     expect(dashboard).toEqual({
+      id: 'dashboard',
       title: 'Dashboard',
       roles: [ROLE_USER],
       link: ['/'],
@@ -307,7 +308,23 @@ describe('menu configuration reverse-seed mapper', () => {
 
     const resolved = resolveMenuConfiguration(buildMenuConfigurationFromRuntimeMenu(menu));
 
-    expect(resolved).toEqual(menu);
+    const withoutIds = (items: MenuItem[]): MenuItem[] =>
+      items.map(({id, ...item}) =>
+        item.children ? {...item, children: withoutIds(item.children)} : item
+      );
+    expect(withoutIds(resolved)).toEqual(menu);
+    expect(resolved.map(item => item.id)).toEqual([
+      'dashboard',
+      'cases',
+      'objects',
+      'admin',
+      undefined,
+    ]);
+    expect(resolved[3].children?.map(child => child.id)).toEqual([
+      undefined,
+      'adminSettings',
+      undefined,
+    ]);
   });
 
   it('captures a custom top-level section (no link, with children) as a group node, round-tripping', () => {

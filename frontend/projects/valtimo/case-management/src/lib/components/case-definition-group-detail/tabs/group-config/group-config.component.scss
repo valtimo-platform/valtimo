@@ -1,0 +1,240 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.valtimo-group-config {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 1rem;
+  align-items: start;
+
+  &__color-panel {
+    padding: 1.5rem;
+    background: var(--cds-layer-01);
+    height: fit-content;
+
+    h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      line-height: 1.125rem;
+      letter-spacing: 0.16px;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  &__color-description {
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  &__preview-row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 1.25rem;
+  }
+
+  &__preview-circle {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid var(--cds-border-subtle-01);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+  }
+
+  &__preview-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__preview-label {
+    font-size: 0.6875rem;
+    color: var(--cds-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.32px;
+    margin-bottom: 0.125rem;
+  }
+
+  &__preview-hex {
+    font-size: 0.875rem;
+    font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
+    font-weight: 600;
+    color: var(--cds-text-primary);
+  }
+
+  &__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__custom-color-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    // Empty picker label still reserves its 8px margin and pushes the swatch down.
+    ::ng-deep valtimo-color-picker .cds--label {
+      display: none;
+    }
+  }
+
+  &__custom-color-label {
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+  }
+
+  &__swatch {
+    width: 1.625rem;
+    height: 1.625rem;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.11s;
+    padding: 0;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__members-panel {
+    min-width: 0;
+  }
+
+  &__table-container {
+    background: var(--cds-layer-01);
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+  }
+
+  &__toolbar-spacer {
+    flex: 1;
+  }
+
+  &__add-wrapper {
+    position: relative;
+  }
+
+  &__add-btn {
+    height: 48px;
+    border-radius: 0;
+  }
+
+  &__add-panel {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 100;
+    width: 280px;
+    padding: 1rem;
+    background: var(--cds-layer-01);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--cds-border-subtle-01);
+  }
+
+  &__add-panel-title {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  &__add-panel-btn {
+    margin-top: 1rem;
+    width: 100%;
+  }
+
+  &__table-header {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    background: var(--cds-layer-accent-01);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.125rem;
+    letter-spacing: 0.16px;
+    color: var(--cds-text-primary);
+  }
+
+  &__table-row {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+    font-size: 0.875rem;
+    line-height: 1.125rem;
+    letter-spacing: 0.16px;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background: var(--cds-layer-hover-01);
+    }
+  }
+
+  &__table-cell {
+    padding: 0 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--name {
+      flex: 1;
+      color: var(--cds-text-primary);
+    }
+
+    &--key {
+      flex: 1;
+      color: var(--cds-text-primary);
+    }
+
+    &--version {
+      width: 120px;
+      color: var(--cds-text-primary);
+    }
+
+    &--actions {
+      width: 48px;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+  &__table-footer {
+    padding: 0.75rem 1rem;
+    color: var(--cds-text-secondary);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.32px;
+  }
+
+  &__members-empty {
+    padding: 3rem;
+    text-align: center;
+    color: var(--cds-text-secondary);
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+  }
+}

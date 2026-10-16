@@ -1,0 +1,103 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  valtimoCdsModal
+  [open]="open"
+  (close)="onCloseModal()"
+  class="valtimo-group-import"
+  showFooter="true"
+  [attr.data-test-id]="testIds.modal"
+>
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>{{ 'caseManagement.groups.import.title' | translate }}</h3>
+  </cds-modal-header>
+
+  <form [formGroup]="form" cdsModalContent class="valtimo-group-import__content">
+    <cds-file-uploader
+      [accept]="ACCEPTED_FILES"
+      [buttonText]="'caseManagement.groups.import.upload.buttonText' | translate"
+      [description]="'caseManagement.groups.import.upload.description' | translate"
+      [multiple]="false"
+      [title]="'caseManagement.groups.import.upload.title' | translate"
+      buttonType="primary"
+      class="valtimo-group-import__file-uploader"
+      formControlName="file"
+      [attr.data-test-id]="testIds.fileUploader"
+    ></cds-file-uploader>
+
+    @if ($hasFile()) {
+      <cds-inline-notification
+        [notificationObj]="{
+          type: 'warning',
+          title: 'interface.warning' | translate,
+          message: 'caseManagement.groups.import.overwriteWarning' | translate,
+          showClose: false,
+          lowContrast: true,
+        }"
+        [attr.data-test-id]="testIds.overwriteWarning"
+      ></cds-inline-notification>
+
+      <div>
+        <cds-checkbox
+          formControlName="overwriteConfirmed"
+          [attr.data-test-id]="testIds.overwriteCheckbox"
+        >
+          {{ 'caseManagement.groups.import.overwriteConfirm' | translate }}
+        </cds-checkbox>
+
+        @if ($showConfirmError()) {
+          <div class="valtimo-group-import__confirm-error">
+            <svg cdsIcon="warning--filled" size="16"></svg>
+            {{ 'caseManagement.groups.import.overwriteConfirmError' | translate }}
+          </div>
+        }
+      </div>
+    }
+
+    @if ($importError()) {
+      <cds-inline-notification
+        [notificationObj]="{
+          type: 'error',
+          title: 'caseManagement.groups.import.errorTitle' | translate,
+          message: 'caseManagement.groups.import.errorMessage' | translate,
+          showClose: false,
+          lowContrast: true,
+        }"
+        [attr.data-test-id]="testIds.error"
+      ></cds-inline-notification>
+    }
+  </form>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="secondary"
+      (click)="onCloseModal()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="!$hasFile() || $importing()"
+      (click)="onImport()"
+      [attr.data-test-id]="testIds.submitButton"
+    >
+      {{ 'caseManagement.groups.import.submit' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

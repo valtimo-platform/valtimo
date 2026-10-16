@@ -16,6 +16,7 @@
 
 import {APIRequestContext, expect, Page, Response} from '@playwright/test';
 import {CarbonToggle} from '../../shared/carbon-toggle/carbon-toggle.utils';
+import {ColorPanel} from '../../shared/color-panel/color-panel.utils';
 import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
 import {
   caseConfiguration,
@@ -165,6 +166,39 @@ export class CaseDetailsManagementPage {
     return this.page.getByRole('button', {name: 'Set as active version'});
   }
 
+  // Case color
+  get colorPanel(): ColorPanel {
+    return new ColorPanel(this.page);
+  }
+
+  async getCaseColorViaApi(): Promise<string | null> {
+    const {key, versionTag} = this.caseDefinitionFromUrl();
+    const settings = await apiGet<{color?: string | null}>(
+      `/api/management/v1/case-definition/${key}/version/${versionTag}/settings`
+    );
+    return settings.color ?? null;
+  }
+
+  /** Pass the version explicitly when the page may have moved to another (e.g. final) version. */
+  async setCaseColorViaApi(color: string, version?: {key: string; versionTag: string}): Promise<void> {
+    const {key, versionTag} = version ?? this.caseDefinitionFromUrl();
+    await apiPatch(`/api/management/v1/case-definition/${key}/version/${versionTag}/settings`, {
+      color,
+    });
+  }
+
+  /** Clicks a swatch and returns the body of the settings PATCH it triggers. */
+  async pickCaseColor(hex: string): Promise<Record<string, unknown>> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res => res.request().method() === 'PATCH' && /\/case-definition\/[^/]+\/version\/[^/]+\/settings$/.test(new URL(res.url()).pathname)
+      ),
+      this.colorPanel.swatch(hex).click(),
+    ]);
+    expect(response.ok()).toBeTruthy();
+    return response.request().postDataJSON();
+  }
+
   // Navigation
   // Navigate directly to the case-management list, then open the case.
   // Avoids the Admin menu + chart-heavy dashboard load, which can hang the
@@ -292,7 +326,7 @@ export class CaseDetailsManagementPage {
     );
   }
 
-  private caseDefinitionFromUrl(): {key: string; versionTag: string} {
+  caseDefinitionFromUrl(): {key: string; versionTag: string} {
     const match = CASE_DEFINITION_URL.exec(this.page.url());
     if (!match) {
       throw new Error(`[case-details] Not on a case definition page: ${this.page.url()}`);

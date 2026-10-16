@@ -14,28 +14,47 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {RenderInBodyComponent, ValtimoCdsModalDirective} from '@valtimo/components';
-import {CaseSettings, DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {
+  CaseDefinitionGroupMember,
+  CaseSettings,
+  DocumentService,
+  ProcessDefinitionCaseDefinition,
+} from '@valtimo/document';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {DialogModule, ModalModule, TilesModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
   filter,
+  forkJoin,
   map,
+  merge,
   Observable,
-  of,
+  Subject,
   Subscription,
   switchMap,
 } from 'rxjs';
 
+import {CASE_LIST_ACTIONS_TEST_IDS} from '../../constants/case.test-ids';
 import {CaseListService} from '../../services';
 import {CaseProcessStartModalComponent} from '../case-process-start-modal/case-process-start-modal.component';
 
-declare const $;
+interface CaseStartOptions {
+  caseSettings: CaseSettings;
+  processDefinitions: Array<ProcessDefinitionCaseDefinition>;
+}
 
 @Component({
   standalone: true,
@@ -53,7 +72,7 @@ declare const $;
     RenderInBodyComponent,
   ],
 })
-export class CaseListActionsComponent implements OnInit {
+export class CaseListActionsComponent implements OnInit, OnDestroy {
   @ViewChild('processStartModal') processStart: CaseProcessStartModalComponent;
 
   private readonly _loading$ = new BehaviorSubject<boolean>(true);
@@ -61,49 +80,44 @@ export class CaseListActionsComponent implements OnInit {
     this._loading$.next(value);
   }
   @Input() navigateAfterSubmit = true;
+  // Set in group context: start first asks which case type to create.
+  private readonly _groupMembers$ = new BehaviorSubject<CaseDefinitionGroupMember[] | null>(null);
+  @Input() set groupMembers(value: CaseDefinitionGroupMember[] | null) {
+    this._groupMembers$.next(value);
+  }
 
   @Output() public readonly formFlowComplete = new EventEmitter();
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
 
-  private readonly _caseSettings$ = new BehaviorSubject<CaseSettings | null>(null);
+  public readonly groupMembers$ = this._groupMembers$.asObservable();
+  public readonly memberSelectionModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly startSelectionModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly testIds = CASE_LIST_ACTIONS_TEST_IDS;
 
-  public readonly caseSettings$ = this._caseSettings$.pipe(filter(settings => !!settings));
+  private readonly _startOptions$ = new BehaviorSubject<CaseStartOptions | null>(null);
 
-  private get _caseSettings(): CaseSettings | null {
-    return this._caseSettings$.getValue();
-  }
+  public readonly caseSettings$: Observable<CaseSettings> = this._startOptions$.pipe(
+    filter(options => !!options),
+    map(options => options.caseSettings)
+  );
 
   public readonly associatedProcessDocumentDefinitions$: Observable<
     Array<ProcessDefinitionCaseDefinition>
-  > = this.listService.caseDefinitionKey$.pipe(
-    filter(caseDefinitionKey => !!caseDefinitionKey),
-    switchMap(caseDefinitionKey =>
-      combineLatest([
-        caseDefinitionKey
-          ? this.documentService.findProcessDefinitionCaseDefinitionsByCanInitializeDocument(
-              caseDefinitionKey,
-              true
-            )
-          : of([]),
-        this._loading$,
-        this.caseSettings$,
-      ])
-    ),
-    map(([processDocumentDefinitions, loading, caseSettings]) => {
-      this._cachedAssociatedProcessDocumentDefinitions = processDocumentDefinitions;
-      this.startButtonDisableEvent.emit(
-        loading || (processDocumentDefinitions.length === 0 && !caseSettings?.hasExternalStartForm)
-      );
-      return processDocumentDefinitions.filter(definition => definition.canInitializeDocument);
-    })
+  > = this._startOptions$.pipe(
+    map(options =>
+      (options?.processDefinitions ?? []).filter(definition => definition.canInitializeDocument)
+    )
   );
 
+  private readonly _selectedMemberKey$ = new Subject<string>();
+  private _startAfterLoad = false;
   private selectedProcessDefinitionCaseDefinition: ProcessDefinitionCaseDefinition | null = null;
-  public readonly startSelectionModalOpen$ = new BehaviorSubject<boolean>(false);
-
-  private _cachedAssociatedProcessDocumentDefinitions: Array<ProcessDefinitionCaseDefinition> = [];
 
   private readonly _subscriptions = new Subscription();
+
+  private get _caseSettings(): CaseSettings | null {
+    return this._startOptions$.getValue()?.caseSettings ?? null;
+  }
 
   constructor(
     private readonly documentService: DocumentService,
@@ -115,14 +129,43 @@ export class CaseListActionsComponent implements OnInit {
 
   public ngOnInit(): void {
     this._subscriptions.add(
-      this.listService.caseDefinitionKey$
+      merge(this.listService.caseDefinitionKey$, this._selectedMemberKey$)
         .pipe(
           filter(caseDefinitionKey => !!caseDefinitionKey),
-          switchMap(caseDefinitionKey => this.documentService.getCaseSettings(caseDefinitionKey))
+          switchMap(caseDefinitionKey =>
+            forkJoin({
+              caseSettings: this.documentService.getCaseSettings(caseDefinitionKey),
+              processDefinitions:
+                this.documentService.findProcessDefinitionCaseDefinitionsByCanInitializeDocument(
+                  caseDefinitionKey,
+                  true
+                ),
+            })
+          )
         )
-        .subscribe(caseSettings => {
-          this._caseSettings$.next(caseSettings);
+        .subscribe(startOptions => {
+          this._startOptions$.next(startOptions);
+
+          if (this._startAfterLoad) {
+            this._startAfterLoad = false;
+            this.startLoadedCaseDefinition();
+          }
         })
+    );
+
+    this._subscriptions.add(
+      combineLatest([this._loading$, this._startOptions$, this._groupMembers$]).subscribe(
+        ([loading, startOptions, groupMembers]) => {
+          // In group context options belong to the last picked member, not to the list.
+          const notStartable =
+            !groupMembers &&
+            !!startOptions &&
+            startOptions.processDefinitions.length === 0 &&
+            !startOptions.caseSettings?.hasExternalStartForm;
+
+          this.startButtonDisableEvent.emit(loading || notStartable);
+        }
+      )
     );
   }
 
@@ -131,16 +174,25 @@ export class CaseListActionsComponent implements OnInit {
   }
 
   public startCase(): void {
-    const associatedProcessDocumentDefinitions = this._cachedAssociatedProcessDocumentDefinitions;
-    const hasExternalStartForm = this._caseSettings?.hasExternalStartForm;
+    const groupMembers = this._groupMembers$.getValue();
 
-    if (hasExternalStartForm && associatedProcessDocumentDefinitions.length === 0) {
-      this.openExternalCaseStartForm();
-    } else if (associatedProcessDocumentDefinitions.length === 1 && !hasExternalStartForm) {
-      this.selectProcess(associatedProcessDocumentDefinitions[0]);
+    if (!groupMembers) {
+      this.startLoadedCaseDefinition();
+    } else if (groupMembers.length === 1) {
+      this.selectGroupMember(groupMembers[0]);
     } else {
-      this.startSelectionModalOpen$.next(true);
+      this.memberSelectionModalOpen$.next(true);
     }
+  }
+
+  public selectGroupMember(member: CaseDefinitionGroupMember): void {
+    this.memberSelectionModalOpen$.next(false);
+    this._startAfterLoad = true;
+    this._selectedMemberKey$.next(member.caseDefinitionKey);
+  }
+
+  public onCloseMemberSelect(): void {
+    this.memberSelectionModalOpen$.next(false);
   }
 
   public selectProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
@@ -180,6 +232,20 @@ export class CaseListActionsComponent implements OnInit {
     window.open(this._caseSettings?.externalStartFormUrl, '_blank');
 
     if (closeModal) this.startSelectionModalOpen$.next(false);
+  }
+
+  private startLoadedCaseDefinition(): void {
+    const associatedProcessDocumentDefinitions =
+      this._startOptions$.getValue()?.processDefinitions ?? [];
+    const hasExternalStartForm = this._caseSettings?.hasExternalStartForm;
+
+    if (hasExternalStartForm && associatedProcessDocumentDefinitions.length === 0) {
+      this.openExternalCaseStartForm();
+    } else if (associatedProcessDocumentDefinitions.length === 1 && !hasExternalStartForm) {
+      this.selectProcess(associatedProcessDocumentDefinitions[0]);
+    } else {
+      this.startSelectionModalOpen$.next(true);
+    }
   }
 
   private showStartProcessModal(): void {

@@ -132,11 +132,22 @@
   top: 8px;
   left: 13px;
   height: 0;
+  // Overlays the item; let clicks reach it
+  pointer-events: none;
 
   i {
     width: 0px;
     height: 16px;
   }
+}
+
+// Anchor only: zero-height strip on the header's top edge, the pane opens to its right.
+// Its empty trigger still overlaps the header, so it must not take clicks.
+.submenu-title-overflow {
+  display: block;
+  width: 100%;
+  height: 0;
+  pointer-events: none;
 }
 
 .menu-item--hidden {
@@ -153,6 +164,13 @@
   .menu-item-icon-container {
     display: none;
   }
+}
+
+// A pinned item's dot has to sit inside the label box, which the sidebar clips. Reclaiming its
+// width from the link padding keeps the label aligned with the items that have no dot.
+// Selector kept specific enough to beat Carbon's own padding rule for submenu links.
+::ng-deep .cds--side-nav__menu .cds--side-nav__menu-item a.cds--side-nav__link:has(.menu-item-dot) {
+  padding-left: calc(3.5rem - 0.875rem);
 }
 
 ::ng-deep .cds--side-nav__link[href*='javascript:return false;'] {
@@ -182,8 +200,16 @@
     padding-left: 3.5rem;
   }
 
+  // Carbon stretches the chevron over the free space, which then toggles instead of navigating
   .cds--side-nav__submenu-title {
+    flex: 1 1 auto;
+    min-width: 0;
     padding-right: 1.5rem;
+  }
+
+  .cds--side-nav__submenu .cds--side-nav__submenu-chevron {
+    flex: 0 0 auto;
+    padding-left: 1rem;
   }
 
   .cds--side-nav__items {
@@ -208,4 +234,32 @@
   display: flex;
   width: 100%;
   justify-content: center;
+}
+
+// Marks the section a route belongs to, e.g. Cases while on an unpinned group. Carbon's own
+// --active class is recomputed from the child items, so it cannot be driven from the outside.
+::ng-deep cds-sidenav-menu.menu-item--section-active {
+  .cds--side-nav__submenu {
+    background-color: var(--cds-background-selected);
+    color: var(--cds-text-primary);
+  }
+
+  .cds--side-nav__submenu-title {
+    color: var(--cds-text-primary);
+    font-weight: 600;
+  }
+}
+
+// Header owns the route itself (overview, unpinned group): no child carries Carbon's active bar
+::ng-deep cds-sidenav-menu.menu-item--section-current .cds--side-nav__submenu {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    background-color: var(--cds-border-interactive);
+    content: '';
+    inline-size: 3px;
+    inset-block: 0;
+    inset-inline-start: 0;
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,19 @@ import {Injectable} from '@angular/core';
 import {CaseListService} from './case-list.service';
 import {CaseStatusService, InternalCaseStatus} from '@valtimo/document';
 import {CaseParameterService} from './case-parameter.service';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {CASE_WITHOUT_STATUS_STATUS} from '../constants';
+import {CaseListContext} from '../models';
 
 @Injectable()
 export class CaseListStatusService {
@@ -28,12 +39,13 @@ export class CaseListStatusService {
   private readonly _showStatusSelector$ = new BehaviorSubject<boolean>(false);
 
   private readonly _caseStatuses$: Observable<Array<InternalCaseStatus>> =
-    this.caseListService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
+    this.caseListService.context$.pipe(
+      filter((ctx): ctx is CaseListContext => !!ctx),
+      switchMap(context =>
         combineLatest([
-          caseDefinitionKey
-            ? this.caseStatusService.getInternalCaseStatuses(caseDefinitionKey)
-            : this.caseStatusService.getAllInternalCaseStatuses(),
+          context.type === 'group'
+            ? this.caseStatusService.getGroupInternalCaseStatuses(context.key)
+            : this.caseStatusService.getInternalCaseStatuses(context.key),
           this.caseParameterService.queryStatusParams$,
         ]).pipe(take(1))
       ),
