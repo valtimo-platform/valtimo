@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 35        | 29         | 4              |
-| Admin Features (ROLE_ADMIN) | 15       | 382       | 369        | 7              |
-| **Total**                   | **20**   | **417**   | **398**    | **11**         |
+| Admin Features (ROLE_ADMIN) | 15       | 383       | 370        | 7              |
+| **Total**                   | **20**   | **418**   | **399**    | **11**         |
 
-**Coverage:** `398 / 417` — `95.4%`
+**Coverage:** `399 / 418` — `95.5%`
 
 > Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (2).
 
@@ -323,6 +323,7 @@
 | 6.116 | Manage group members                     | Empty state · add two members · select hides members · search · remove |    ✅    | case-management-groups.spec.ts                   |
 | 6.117 | Set group color                          | Swatch saves color · survives reload · replace                         |    ✅    | case-management-groups.spec.ts                   |
 | 6.118 | Import / export case group (API)         | Export zip path · import restores · idempotent · invalid file 400      |    ✅    | case-management-groups.spec.ts (API only, no UI) |
+| 6.129 | Import / export case group (UI)          | Export downloads zip · import restores deleted group · Import disabled without file · overwrite confirm required · invalid file error |    ✅    | case-management-groups.spec.ts                   |
 
 #### 6U · Case Groups — List Columns
 
@@ -806,9 +807,9 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   417   |
-| ✅ Covered by Playwright |   398   |
+| Total Functions          |   418   |
+| ✅ Covered by Playwright |   399   |
 | ❌ Not covered           |   11    |
 | ⏳ In progress           |    2    |
 | `N/A` Not applicable     |    6    |
-| **Coverage %**           | **95.4%** |
+| **Coverage %**           | **95.5%** |

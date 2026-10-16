@@ -15,6 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
+import {readFile} from 'fs/promises';
 import {apiGet, isApiStatus} from '../../utils/api.utils';
 import {
   CaseGroup,
@@ -90,7 +91,11 @@ test.describe('Case groups management', () => {
     test('opening ?tab=groups directly selects the Case groups tab', async () => {
       await groupsPage.goToGroupsTab();
       await expect(groupsPage.listTab('Case groups')).toHaveAttribute('aria-selected', 'true');
-      await groupsPage.groupsList.assertColumnHeaders(['Name', 'Key', 'Number of case definitions']);
+      await groupsPage.groupsList.assertColumnHeaders([
+        'Name',
+        'Key',
+        'Number of case definitions',
+      ]);
     });
   });
 
@@ -444,6 +449,108 @@ test.describe('Case groups management', () => {
         status = isApiStatus(error, 400) ? 400 : (error as {status?: number}).status;
       }
       expect(status).toBe(400);
+    });
+  });
+
+  // ─── 6.129 Import / export (UI) ──────────────────────────────────
+
+  test.describe('6.129 — Import / export (UI)', () => {
+    let group: CaseGroup;
+    let zip: Buffer;
+
+    test.beforeAll(async () => {
+      group = track(await createGroupViaApi(uniqueGroupTitle(), 'Exported from the UI'));
+      for (const memberKey of MEMBER_KEYS) await addMemberViaApi(group.key, memberKey);
+    });
+
+    test.describe('Success', () => {
+      test('Export downloads the group as a zip', async () => {
+        await groupsPage.goToGroup(group.key);
+
+        const download = await groupsPage.exportGroup();
+
+        expect(download.suggestedFilename()).toBe(`${group.key}.case-group.zip`);
+        zip = await readFile(await download.path());
+        expect(zip.subarray(0, 2).toString()).toBe('PK');
+        expect(zip.includes(Buffer.from(`${group.key}.case-group.json`))).toBe(true);
+      });
+
+      test('importing the downloaded zip restores a deleted group', async () => {
+        await deleteGroupViaApi(group.key);
+        await groupsPage.goToGroupsTab();
+        await expect(groupsPage.groupRow(group.title)).toHaveCount(0);
+
+        await groupsPage.openImportModal();
+        await groupsPage.selectImportFile(`${group.key}.case-group.zip`, zip);
+        await groupsPage.confirmOverwrite();
+        expect(await groupsPage.submitImport()).toBe(200);
+
+        await expect(groupsPage.importSubmitButton).toBeHidden();
+        const row = groupsPage.groupRow(group.title);
+        await expect(row).toBeVisible();
+        await expect(row).toContainText(`${MEMBER_KEYS.length}`);
+
+        await row.click();
+        await expect(groupsPage.heading).toHaveText(group.title);
+        for (const memberKey of MEMBER_KEYS) {
+          await expect(groupsPage.memberRow(memberKey)).toBeVisible();
+        }
+      });
+    });
+
+    test.describe('Failure scenarios', () => {
+      test('Import stays disabled until a file is selected', async () => {
+        await groupsPage.goToGroupsTab();
+        await groupsPage.openImportModal();
+
+        await expect(groupsPage.importSubmitButton).toBeDisabled();
+        await expect(groupsPage.importOverwriteWarning).toBeHidden();
+
+        await groupsPage.importCancelButton.click();
+        await expect(groupsPage.importSubmitButton).toBeHidden();
+      });
+
+      test('importing without confirming the overwrite is blocked', async () => {
+        const requests: string[] = [];
+        const onRequest = (request: {url: () => string}) => {
+          if (request.url().endsWith(`${GROUP_MANAGEMENT_ENDPOINT}/import`)) {
+            requests.push(request.url());
+          }
+        };
+        page.on('request', onRequest);
+
+        await groupsPage.goToGroupsTab();
+        await groupsPage.openImportModal();
+        await groupsPage.selectImportFile(`${group.key}.case-group.zip`, zip);
+        await groupsPage.importSubmitButton.click();
+
+        await expect(
+          groupsPage.importModal.getByText(
+            'Confirm that the existing case group may be overwritten'
+          )
+        ).toBeVisible();
+        expect(requests).toEqual([]);
+        page.off('request', onRequest);
+
+        await groupsPage.importCancelButton.click();
+        await expect(groupsPage.importSubmitButton).toBeHidden();
+      });
+
+      test('a file that is not a group export shows an error and keeps the modal open', async () => {
+        await groupsPage.goToGroupsTab();
+        await groupsPage.openImportModal();
+        await groupsPage.selectImportFile('broken.zip', Buffer.from('not a zip'));
+        await groupsPage.confirmOverwrite();
+
+        expect(await groupsPage.submitImport()).toBe(400);
+
+        await expect(groupsPage.importError).toBeVisible();
+        await expect(groupsPage.importError).toContainText('Import failed');
+        await expect(groupsPage.importSubmitButton).toBeVisible();
+
+        await groupsPage.importCancelButton.click();
+        await expect(groupsPage.importSubmitButton).toBeHidden();
+      });
     });
   });
 });

@@ -59,6 +59,19 @@
 <ng-container renderInPageHeader>
   <ng-template>
     <button
+      cdsButton="ghost"
+      [disabled]="$exporting()"
+      [size]="(compactMode$ | async) ? 'sm' : 'md'"
+      (click)="exportGroup()"
+      class="case-definition-group-detail__export-button"
+      [attr.data-test-id]="testIds.exportButton"
+    >
+      {{ 'caseManagement.groups.export.button' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
+
+    <button
       cdsButton="tertiary"
       [attr.data-test-id]="testIds.editButton"
       [size]="(compactMode$ | async) ? 'sm' : 'md'"

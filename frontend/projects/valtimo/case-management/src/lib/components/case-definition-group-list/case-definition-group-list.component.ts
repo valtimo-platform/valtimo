@@ -16,7 +16,7 @@
 
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
-import {Add16} from '@carbon/icons';
+import {Add16, Upload16} from '@carbon/icons';
 import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {IconModule, IconService, ButtonModule} from 'carbon-components-angular';
@@ -25,6 +25,7 @@ import {CaseDefinitionGroupManagementService} from '../../services';
 import {CaseDefinitionGroupResponse} from '../../models';
 import {CASE_DEFINITION_GROUP_LIST_TEST_IDS} from '../../constants';
 import {CaseDefinitionGroupCreateModalComponent} from '../case-definition-group-create-modal/case-definition-group-create-modal.component';
+import {CaseDefinitionGroupImportModalComponent} from '../case-definition-group-import-modal/case-definition-group-import-modal.component';
 import {CommonModule} from '@angular/common';
 
 interface GroupListItem {
@@ -45,6 +46,7 @@ interface GroupListItem {
     IconModule,
     ButtonModule,
     CaseDefinitionGroupCreateModalComponent,
+    CaseDefinitionGroupImportModalComponent,
   ],
 })
 export class CaseDefinitionGroupListComponent implements OnInit {
@@ -59,13 +61,14 @@ export class CaseDefinitionGroupListComponent implements OnInit {
   private readonly _refresh$ = new BehaviorSubject<void>(undefined);
   public readonly groups$ = new BehaviorSubject<GroupListItem[]>([]);
   public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showImportModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly groupService: CaseDefinitionGroupManagementService,
     private readonly router: Router,
     private readonly iconService: IconService
   ) {
-    this.iconService.registerAll([Add16]);
+    this.iconService.registerAll([Add16, Upload16]);
   }
 
   public ngOnInit(): void {
@@ -83,6 +86,15 @@ export class CaseDefinitionGroupListComponent implements OnInit {
   public onCloseCreateModal(created: boolean): void {
     this.showCreateModal$.next(false);
     if (created) this._loadGroups();
+  }
+
+  public showImportModal(): void {
+    this.showImportModal$.next(true);
+  }
+
+  public onCloseImportModal(imported: boolean): void {
+    this.showImportModal$.next(false);
+    if (imported) this._loadGroups();
   }
 
   private _loadGroups(): void {

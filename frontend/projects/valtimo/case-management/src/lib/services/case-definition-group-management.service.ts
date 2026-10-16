@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService, InterceptorSkipHeader} from '@valtimo/shared';
 import {GroupListColumn, GroupSearchField} from '@valtimo/document';
 import {Observable} from 'rxjs';
 import {
@@ -58,7 +58,10 @@ export class CaseDefinitionGroupManagementService extends BaseApiService {
   public createGroup(
     request: CaseDefinitionGroupCreateRequest
   ): Observable<CaseDefinitionGroupResponse> {
-    return this.httpClient.post<CaseDefinitionGroupResponse>(this.getApiUrl(this._basePath), request);
+    return this.httpClient.post<CaseDefinitionGroupResponse>(
+      this.getApiUrl(this._basePath),
+      request
+    );
   }
 
   public updateGroup(
@@ -73,6 +76,20 @@ export class CaseDefinitionGroupManagementService extends BaseApiService {
 
   public deleteGroup(groupKey: string): Observable<void> {
     return this.httpClient.delete<void>(this.getApiUrl(`${this._basePath}/${groupKey}`));
+  }
+
+  public exportGroup(groupKey: string): Observable<HttpResponse<Blob>> {
+    return this.httpClient.get<Blob>(this.getApiUrl(`${this._basePath}/${groupKey}/export`), {
+      observe: 'response',
+      responseType: 'blob' as 'json',
+      headers: InterceptorSkipHeader,
+    });
+  }
+
+  public importGroup(file: FormData): Observable<void> {
+    return this.httpClient.post<void>(this.getApiUrl(`${this._basePath}/import`), file, {
+      headers: InterceptorSkipHeader,
+    });
   }
 
   public getMembers(groupKey: string): Observable<GroupMember[]> {

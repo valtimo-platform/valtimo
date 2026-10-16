@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit, signal} from '@angular/core';
+import {CommonModule, DOCUMENT} from '@angular/common';
+import {HttpResponse} from '@angular/common/http';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {Edit16} from '@carbon/icons';
-import {TranslateModule} from '@ngx-translate/core';
+import {Download16, Edit16} from '@carbon/icons';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, filter, map, Subscription} from 'rxjs';
 import {CaseDefinitionGroupFormValue, CaseManagementListTab} from '../../models';
+import {CaseDefinitionGroupManagementService} from '../../services';
 import {CaseDefinitionGroupCreateModalComponent} from '../case-definition-group-create-modal/case-definition-group-create-modal.component';
 import {CaseDefinitionGroupDetailService} from './case-definition-group-detail.service';
 import {
@@ -70,6 +73,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
 
   public readonly group$ = this.detailService.group$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+  public readonly $exporting = signal(false);
 
   public readonly groupKey$ = this.route.params.pipe(map(params => params['groupKey'] as string));
 
@@ -85,9 +89,13 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     private readonly pageTitleService: PageTitleService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly pageHeaderService: PageHeaderService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly groupService: CaseDefinitionGroupManagementService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly translateService: TranslateService,
+    @Inject(DOCUMENT) private readonly document: Document
   ) {
-    this.iconService.registerAll([Edit16]);
+    this.iconService.registerAll([Download16, Edit16]);
   }
 
   public ngOnInit(): void {
@@ -128,8 +136,46 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     this.detailService.updateGroup({...value, color}).subscribe();
   }
 
+  public exportGroup(): void {
+    const groupKey: string = this.route.snapshot.params['groupKey'];
+    this.$exporting.set(true);
+
+    this.groupService.exportGroup(groupKey).subscribe({
+      next: response => {
+        this.$exporting.set(false);
+        this.notificationService.showNotification({
+          type: 'success',
+          title: this.translateService.instant('caseManagement.groups.export.successTitle'),
+          duration: 5000,
+        });
+        this.downloadZip(response, groupKey);
+      },
+      error: () => {
+        this.$exporting.set(false);
+        this.notificationService.showNotification({
+          type: 'error',
+          title: this.translateService.instant('caseManagement.groups.export.errorTitle'),
+          message: this.translateService.instant('caseManagement.groups.export.errorMessage'),
+          duration: 5000,
+        });
+      },
+    });
+  }
+
   public navigateToTab(tab: GroupTabEnum): void {
     const groupKey = this.route.snapshot.params['groupKey'];
     this.router.navigateByUrl(`/case-management/group/${groupKey}/${tab}`);
+  }
+
+  private downloadZip(response: HttpResponse<Blob>, groupKey: string): void {
+    const fileName = response.headers
+      .get('content-disposition')
+      ?.split('filename=')[1]
+      ?.replace(/"/g, '');
+    const link = this.document.createElement('a');
+    link.href = this.document.defaultView?.URL.createObjectURL(response.body as Blob) ?? '';
+    link.download = fileName || `${groupKey}.case-group.zip`;
+    link.click();
+    link.remove();
   }
 }

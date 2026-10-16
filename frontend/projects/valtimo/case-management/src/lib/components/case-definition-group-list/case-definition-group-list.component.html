@@ -14,11 +14,7 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-list
-  [items]="groups$ | async"
-  [fields]="fields"
-  (rowClicked)="onRowClick($event)"
->
+<valtimo-carbon-list [items]="groups$ | async" [fields]="fields" (rowClicked)="onRowClick($event)">
   <ng-container carbonToolbarContent [ngTemplateOutlet]="toolbarContent"></ng-container>
 
   <valtimo-no-results
@@ -29,7 +25,16 @@
 </valtimo-carbon-list>
 
 <ng-template #toolbarContent>
-  <button cdsButton="primary" (click)="showCreateModal()" [attr.data-test-id]="testIds.createButton">
+  <button cdsButton="ghost" (click)="showImportModal()" [attr.data-test-id]="testIds.uploadButton">
+    {{ 'caseManagement.groups.import.button' | translate }}
+    <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+  </button>
+
+  <button
+    cdsButton="primary"
+    (click)="showCreateModal()"
+    [attr.data-test-id]="testIds.createButton"
+  >
     {{ 'interface.create' | translate }}
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
@@ -39,3 +44,8 @@
   [open]="showCreateModal$ | async"
   (closeEvent)="onCloseCreateModal($event)"
 ></valtimo-case-definition-group-create-modal>
+
+<valtimo-case-definition-group-import-modal
+  [open]="(showImportModal$ | async) ?? false"
+  (closeEvent)="onCloseImportModal($event)"
+></valtimo-case-definition-group-import-modal>

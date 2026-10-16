@@ -172,6 +172,17 @@ export const CASE_MANAGEMENT_COLOR_TEST_IDS = {
 
 export const CASE_DEFINITION_GROUP_LIST_TEST_IDS = {
   createButton: 'caseDefinitionGroupListCreateButton',
+  uploadButton: 'caseDefinitionGroupListUploadButton',
+} as const;
+
+export const CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS = {
+  modal: 'caseDefinitionGroupImportModal',
+  fileUploader: 'caseDefinitionGroupImportFileUploader',
+  overwriteWarning: 'caseDefinitionGroupImportOverwriteWarning',
+  overwriteCheckbox: 'caseDefinitionGroupImportOverwriteCheckbox',
+  error: 'caseDefinitionGroupImportError',
+  cancelButton: 'caseDefinitionGroupImportCancelButton',
+  submitButton: 'caseDefinitionGroupImportSubmitButton',
 } as const;
 
 export const CASE_DEFINITION_GROUP_MODAL_TEST_IDS = {
@@ -184,6 +195,7 @@ export const CASE_DEFINITION_GROUP_MODAL_TEST_IDS = {
 
 export const CASE_DEFINITION_GROUP_DETAIL_TEST_IDS = {
   editButton: 'caseDefinitionGroupEditButton',
+  exportButton: 'caseDefinitionGroupExportButton',
   tabs: 'caseDefinitionGroupTabs',
 } as const;
 

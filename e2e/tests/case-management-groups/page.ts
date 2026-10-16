@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import {expect, Locator, Page} from '@playwright/test';
+import {Download, expect, Locator, Page} from '@playwright/test';
 import {
   CASE_DEFINITION_GROUP_CONFIG_TEST_IDS,
   CASE_DEFINITION_GROUP_DETAIL_TEST_IDS,
+  CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS,
   CASE_DEFINITION_GROUP_LIST_TEST_IDS,
   CASE_DEFINITION_GROUP_MODAL_TEST_IDS,
   CASE_MANAGEMENT_LIST_TEST_IDS,
@@ -279,5 +280,86 @@ export class CaseManagementGroupsPage {
     ]);
     expect(response.ok()).toBeTruthy();
     return response.request().postDataJSON();
+  }
+
+  // ─── Export / import ──────────────────────────────────────────────
+
+  get exportButton(): Locator {
+    return this.page.getByTestId(CASE_DEFINITION_GROUP_DETAIL_TEST_IDS.exportButton);
+  }
+
+  // Toolbar and the empty state both render the button; the toolbar one is always there
+  get uploadGroupButton(): Locator {
+    return this.groupsList.toolbar.getByTestId(CASE_DEFINITION_GROUP_LIST_TEST_IDS.uploadButton);
+  }
+
+  get importModal(): Locator {
+    return this.page.getByTestId(CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS.modal);
+  }
+
+  get importFileUploader(): Locator {
+    return this.importModal.getByTestId(CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS.fileUploader);
+  }
+
+  get importOverwriteWarning(): Locator {
+    return this.importModal.getByTestId(
+      CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS.overwriteWarning
+    );
+  }
+
+  get importOverwriteCheckbox(): Locator {
+    return this.importModal.getByTestId(
+      CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS.overwriteCheckbox
+    );
+  }
+
+  get importError(): Locator {
+    return this.importModal.getByTestId(CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS.error);
+  }
+
+  get importSubmitButton(): Locator {
+    return this.importModal.getByTestId(CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS.submitButton);
+  }
+
+  get importCancelButton(): Locator {
+    return this.importModal.getByTestId(CASE_DEFINITION_GROUP_IMPORT_MODAL_TEST_IDS.cancelButton);
+  }
+
+  async exportGroup(): Promise<Download> {
+    const [download] = await Promise.all([
+      this.page.waitForEvent('download'),
+      this.exportButton.click(),
+    ]);
+    return download;
+  }
+
+  async openImportModal() {
+    await this.uploadGroupButton.click();
+    await expect(this.importFileUploader).toBeVisible();
+  }
+
+  // cds-file-uploader keeps its native input internal; no test id can reach it
+  async selectImportFile(name: string, buffer: Buffer) {
+    await this.importFileUploader
+      .locator('input[type="file"]')
+      .setInputFiles({name, mimeType: 'application/zip', buffer});
+    await expect(this.importOverwriteWarning).toBeVisible();
+  }
+
+  async confirmOverwrite() {
+    await this.importOverwriteCheckbox.getByText(/overwritten/).click();
+    await expect(this.importOverwriteCheckbox.getByRole('checkbox')).toBeChecked();
+  }
+
+  async submitImport(): Promise<number> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.request().method() === 'POST' &&
+          new URL(res.url()).pathname === `${GROUP_MANAGEMENT_ENDPOINT}/import`
+      ),
+      this.importSubmitButton.click(),
+    ]);
+    return response.status();
   }
 }

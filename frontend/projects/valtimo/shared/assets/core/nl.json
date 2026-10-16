@@ -1161,7 +1161,29 @@
       "noMatchingCaseTypes": "Geen overeenkomende dossierdefinities gevonden",
       "showOnlyEmpty": "Alleen ontbrekende paden tonen",
       "showOnlyEmptyTooltip": "Als dit is aangevinkt, worden alleen dossierdefinities zonder pad getoond. Ingevulde rijen blijven zichtbaar tot dit wordt uitgezet.",
-      "noMembersHint": "Voeg eerst een dossierdefinitie toe aan deze groep, onder Configuratie."
+      "noMembersHint": "Voeg eerst een dossierdefinitie toe aan deze groep, onder Configuratie.",
+      "export": {
+        "button": "Exporteren",
+        "successTitle": "Download start binnenkort",
+        "errorTitle": "Oeps",
+        "errorMessage": "De dossiergroep kon niet worden geëxporteerd"
+      },
+      "import": {
+        "button": "Uploaden",
+        "title": "Dossiergroep importeren",
+        "submit": "Importeren",
+        "upload": {
+          "title": "Upload bestand",
+          "description": "Ondersteund bestandstype is ZIP, zoals geëxporteerd vanuit een dossiergroep.",
+          "buttonText": "Selecteer bestand"
+        },
+        "overwriteWarning": "Een dossiergroep met dezelfde key wordt overschreven, inclusief de dossierdefinities, lijstkolommen en zoekvelden. Dossierdefinities die niet in deze omgeving bestaan, worden overgeslagen.",
+        "overwriteConfirm": "Ik begrijp dat een bestaande dossiergroep met dezelfde key wordt overschreven",
+        "overwriteConfirmError": "Bevestig dat de bestaande dossiergroep overschreven mag worden",
+        "successTitle": "Dossiergroep geïmporteerd",
+        "errorTitle": "Importeren mislukt",
+        "errorMessage": "Het bestand kon niet als dossiergroep worden geïmporteerd. Controleer of het een geldige export van een dossiergroep is."
+      }
     },
     "needsConfiguration": "Configuratie vereist",
     "inactive": "Inactief",

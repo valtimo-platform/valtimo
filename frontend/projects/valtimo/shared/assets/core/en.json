@@ -1161,7 +1161,29 @@
       "noMatchingCaseTypes": "No matching case definitions found",
       "showOnlyEmpty": "Show only missing paths",
       "showOnlyEmptyTooltip": "If this is checked, only case definitions without a path are shown. Rows that are filled in stay visible until this is turned off.",
-      "noMembersHint": "Add a case definition to this group first, under Configuration."
+      "noMembersHint": "Add a case definition to this group first, under Configuration.",
+      "export": {
+        "button": "Export",
+        "successTitle": "Download will start shortly",
+        "errorTitle": "Error",
+        "errorMessage": "The case group could not be exported"
+      },
+      "import": {
+        "button": "Upload",
+        "title": "Import case group",
+        "submit": "Import",
+        "upload": {
+          "title": "Upload file",
+          "description": "Supported file type is ZIP, as exported from a case group.",
+          "buttonText": "Select file"
+        },
+        "overwriteWarning": "A case group with the same key will be overwritten, including its members, list columns and search fields. Case definitions that do not exist in this environment are skipped.",
+        "overwriteConfirm": "I understand that an existing case group with the same key will be overwritten",
+        "overwriteConfirmError": "Confirm that the existing case group may be overwritten",
+        "successTitle": "Case group imported",
+        "errorTitle": "Import failed",
+        "errorMessage": "The file could not be imported as a case group. Check that it is a valid case group export."
+      }
     },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",
