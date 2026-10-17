@@ -5,10 +5,10 @@
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
 |-----------------------------|----------|-----------|------------|----------------|
 | User Features (ROLE_USER)   | 5        | 26        | 21         | 4              |
-| Admin Features (ROLE_ADMIN) | 15       | 365       | 352        | 7              |
-| **Total**                   | **20**   | **391**   | **373**    | **11**         |
+| Admin Features (ROLE_ADMIN) | 15       | 369       | 356        | 7              |
+| **Total**                   | **20**   | **395**   | **377**    | **11**         |
 
-**Coverage:** `373 / 391` — `95.4%`
+**Coverage:** `377 / 395` — `95.4%`
 
 > Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (1).
 
@@ -569,6 +569,15 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | 13.45a | Reject incomplete action config | Complete stays disabled until *every* required property is filled, and again when one is cleared     |    ✅    | building-block-plugins.spec.ts (failure scenario)                                                                                                                                                                         |
 | 13.45b | Block unsupported link type    | A user task offers `ui-component` but renders it disabled                                           |    ✅    | building-block-plugins.spec.ts (failure scenario) — see `UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK`                                                                                                                 |
 
+#### 13F · BB References
+
+| #      | Function                    | Test Scenarios                                                                                                  | Coverage | Notes                                                                                                                                              |
+|:-------|:----------------------------|:----------------------------------------------------------------------------------------------------------------|:--------:|:---------------------------------------------------------------------------------------------------------------------------------------------------|
+| 13.46  | View references             | Direct references only · "Go to" opens the referencing building block's process                                  |    ✅    | building-block-details-management-references/building-block-reference-update.spec.ts — the building-block process route takes the process definition id, not the key                             |
+| 13.47  | Update references           | Opened from the building block list · Pick source building block and version · Draft chain selected by default · Opt in a finalized chain · Review lists drafts to create/modify and links to re-point · Confirm · Created and modified drafts · Remaining references |    ✅    | building-block-details-management-references/building-block-reference-update.spec.ts — chains are located by their exact top container key (`data-top-container`)                               |
+| 13.47a | Refuse a self-calling target | A target with the key of the building block holding the link is not updatable and cannot be selected             |    ✅    | building-block-details-management-references/building-block-reference-update.spec.ts (failure scenario) — asserted on the `SELF_REFERENCE` reason code (`data-reason-code`), not on translated text |
+| 13.47b | Reject an unprefixed input path | A required input mapped to a path without `doc:`/`case:` shows an inline error and blocks the Review step     |    ✅    | building-block-details-management-references/building-block-reference-update.spec.ts (failure scenario) — the target version adds a required document field |
+
 ---
 
 ### Feature 14 — Translation Management
@@ -765,8 +774,8 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   391   |
-| ✅ Covered by Playwright |   373   |
+| Total Functions          |   395   |
+| ✅ Covered by Playwright |   377   |
 | ❌ Not covered           |   11    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    6    |

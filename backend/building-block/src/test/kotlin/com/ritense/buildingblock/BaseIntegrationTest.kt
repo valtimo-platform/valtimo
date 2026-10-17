@@ -19,11 +19,15 @@ package com.ritense.buildingblock
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.contract.mail.MailSender
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
@@ -70,6 +74,18 @@ abstract class BaseIntegrationTest {
     @MockitoSpyBean
     lateinit var operatonRepositoryService: OperatonRepositoryService
 
+    @MockitoSpyBean
+    lateinit var operatonProcessService: OperatonProcessService
+
+    @MockitoSpyBean
+    lateinit var buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
+
+    @MockitoSpyBean
+    lateinit var buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService
+
+    @MockitoSpyBean
+    lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
+
     @Autowired
     lateinit var applicationEventPublisher: ApplicationEventPublisher
 
@@ -85,6 +101,10 @@ abstract class BaseIntegrationTest {
             buildingBlockProcessService,
             buildingBlockPluginDefinitionService,
             operatonRepositoryService,
+            operatonProcessService,
+            buildingBlockFormDefinitionService,
+            buildingBlockFormFlowDefinitionService,
+            buildingBlockDefinitionChecker,
             applicationEventPublisher
         ).filter { mockingDetails(it).isMock || mockingDetails(it).isSpy }
             .forEach { reset(it) }

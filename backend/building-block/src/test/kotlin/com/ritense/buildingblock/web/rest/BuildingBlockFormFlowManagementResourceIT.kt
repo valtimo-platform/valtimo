@@ -18,7 +18,7 @@ package com.ritense.buildingblock.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
-import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
 import com.ritense.formflow.domain.definition.FormFlowStep
@@ -29,7 +29,6 @@ import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.EntityManager
@@ -45,13 +44,13 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.UUID
 
 class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
@@ -60,12 +59,6 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     private val formFlowService: FormFlowService,
     private val entityManager: EntityManager,
 ) : BaseIntegrationTest() {
-
-    @MockitoSpyBean
-    lateinit var buildingBlockFormFlowDefinitionService: BuildingBlockFormFlowDefinitionService
-
-    @MockitoSpyBean
-    lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
 
     @Autowired
     lateinit var formFlowDefinitionRepository: FormFlowDefinitionRepository
@@ -80,6 +73,18 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
 
     @BeforeEach
     fun seedDatabase() {
+        // Sibling ITs deleteAll() building blocks; restore the config/ fixture
+        if (buildingBlockDefinitionRepository.findById(bbId).isEmpty) {
+            buildingBlockDefinitionRepository.saveAndFlush(
+                BuildingBlockDefinition(
+                    id = bbId,
+                    name = bbId.key,
+                    createdBy = "tester",
+                    createdDate = LocalDateTime.now(),
+                    basedOnVersionTag = null,
+                )
+            )
+        }
         // Both a building-block-linked and a case-linked form flow are present in the DB
         formFlowDefinitionRepository.save(FormFlowDefinition(bbDefinitionId, "start", emptySet()))
         formFlowDefinitionRepository.save(FormFlowDefinition(caseDefinitionId, "start", emptySet()))

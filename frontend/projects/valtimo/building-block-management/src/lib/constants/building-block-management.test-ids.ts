@@ -17,6 +17,7 @@
 export const BUILDING_BLOCK_MANAGEMENT_LIST_TEST_IDS = {
   uploadButton: 'buildingBlockUploadButton',
   createButton: 'buildingBlockCreateButton',
+  updateReferencesButton: 'buildingBlockUpdateReferencesButton',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_CREATE_TEST_IDS = {
@@ -38,8 +39,49 @@ export const BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS = {
   finishButton: 'buildingBlockUploadFinishButton',
 } as const;
 
+export const BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS = {
+  modal: 'buildingBlockReferenceUpdateModal',
+  progressIndicator: 'buildingBlockReferenceUpdateProgressIndicator',
+  sourceKeyComboBox: 'buildingBlockReferenceUpdateSourceKeyComboBox',
+  sourceVersionComboBox: 'buildingBlockReferenceUpdateSourceVersionComboBox',
+  noSourceVersions: 'buildingBlockReferenceUpdateNoSourceVersions',
+  targetKeyComboBox: 'buildingBlockReferenceUpdateTargetKeyComboBox',
+  targetComboBox: 'buildingBlockReferenceUpdateTargetComboBox',
+  draftsNotAllowed: 'buildingBlockReferenceUpdateDraftsNotAllowed',
+  previewFailed: 'buildingBlockReferenceUpdatePreviewFailed',
+  retryPreviewButton: 'buildingBlockReferenceUpdateRetryPreviewButton',
+  chain: 'buildingBlockReferenceUpdateChain',
+  chainCheckbox: 'buildingBlockReferenceUpdateChainCheckbox',
+  chainModifiesExistingDraft: 'buildingBlockReferenceUpdateChainModifiesExistingDraft',
+  chainNotUpdatable: 'buildingBlockReferenceUpdateChainNotUpdatable',
+  differences: 'buildingBlockReferenceUpdateDifferences',
+  inputMapping: 'buildingBlockReferenceUpdateInputMapping',
+  inputPathInvalid: 'buildingBlockReferenceUpdateInputPathInvalid',
+  pluginConfigurationDropdown: 'buildingBlockReferenceUpdatePluginConfigurationDropdown',
+  droppedMappings: 'buildingBlockReferenceUpdateDroppedMappings',
+  review: 'buildingBlockReferenceUpdateReview',
+  reviewDraftsToCreate: 'buildingBlockReferenceUpdateReviewDraftsToCreate',
+  reviewDraftsToModify: 'buildingBlockReferenceUpdateReviewDraftsToModify',
+  reviewLinksToRepoint: 'buildingBlockReferenceUpdateReviewLinksToRepoint',
+  confirmCheckbox: 'buildingBlockReferenceUpdateConfirmCheckbox',
+  result: 'buildingBlockReferenceUpdateResult',
+  resultDraftsCreated: 'buildingBlockReferenceUpdateResultDraftsCreated',
+  resultDraftsModified: 'buildingBlockReferenceUpdateResultDraftsModified',
+  draftLink: 'buildingBlockReferenceUpdateDraftLink',
+  remainingReferences: 'buildingBlockReferenceUpdateRemainingReferences',
+  cancelButton: 'buildingBlockReferenceUpdateCancelButton',
+  backButton: 'buildingBlockReferenceUpdateBackButton',
+  nextButton: 'buildingBlockReferenceUpdateNextButton',
+  executeButton: 'buildingBlockReferenceUpdateExecuteButton',
+  closeButton: 'buildingBlockReferenceUpdateCloseButton',
+} as const;
+
 export const BUILDING_BLOCK_MANAGEMENT_DETAIL_TEST_IDS = {
   tabs: 'buildingBlockTabs',
+} as const;
+
+export const BUILDING_BLOCK_MANAGEMENT_REFERENCES_TEST_IDS = {
+  referenceLink: 'buildingBlockReferenceLink',
 } as const;
 
 export const BUILDING_BLOCK_MANAGEMENT_PROCESSES_TEST_IDS = {
@@ -88,3 +130,19 @@ export const BUILDING_BLOCK_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS = {
  * `buildingBlockVersion-<versionTag>`, built in the version selector component.
  */
 export const BUILDING_BLOCK_VERSION_OPTION_TEST_ID_PREFIX = 'buildingBlockVersion-';
+
+/** Prefix for the options of the reference update wizard's source key combo box: `<prefix><key>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_KEY_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateSourceKey-';
+
+/** Prefix for the options of the reference update wizard's source version combo box: `<prefix><key>-<versionTag>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_SOURCE_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateSource-';
+
+/** Prefix for the options of the reference update wizard's target key combo box: `<prefix><key>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_KEY_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateTargetKey-';
+
+/** Prefix for the options of the reference update wizard's target combo box: `<prefix><versionTag>`. */
+export const BUILDING_BLOCK_REFERENCE_UPDATE_TARGET_OPTION_TEST_ID_PREFIX =
+  'buildingBlockReferenceUpdateTarget-';

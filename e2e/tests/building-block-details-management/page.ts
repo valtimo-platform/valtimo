@@ -45,6 +45,7 @@ export const BUILDING_BLOCK_TABS = {
   general: 'general',
   document: 'document',
   processes: 'process-definition',
+  references: 'references',
 } as const;
 
 export type BuildingBlockTab = (typeof BUILDING_BLOCK_TABS)[keyof typeof BUILDING_BLOCK_TABS];

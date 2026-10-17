@@ -18,7 +18,6 @@ package com.ritense.buildingblock.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
-import com.ritense.buildingblock.service.BuildingBlockFormDefinitionService
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.web.rest.dto.FormOption
@@ -34,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageImpl
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
@@ -47,9 +45,6 @@ class BuildingBlockFormManagementResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper
 ) : BaseIntegrationTest() {
-
-    @MockitoSpyBean
-    lateinit var buildingBlockFormDefinitionService: BuildingBlockFormDefinitionService
 
     private val base = "/api/management/v1/building-block"
     private val key = "my-bb"
