@@ -153,4 +153,62 @@ describe('FormioComponent', () => {
       expect(numberComponent.delimiter).toBe(',');
     });
   });
+
+  describe('double submit protection', () => {
+    let submitted: number;
+
+    beforeEach(() => {
+      submitted = 0;
+      component.submit.subscribe(() => submitted++);
+    });
+
+    it('should emit only the first of repeated submits', () => {
+      component.onSubmit({data: {}});
+      component.onSubmit({data: {}});
+
+      expect(submitted).toBe(1);
+    });
+
+    it('should allow a new submit after the host shows errors', () => {
+      component.onSubmit({data: {}});
+      component.showErrors(['error']);
+      component.onSubmit({data: {}});
+
+      expect(submitted).toBe(2);
+    });
+
+    it('should allow a new submit after errors arrive through the input', () => {
+      component.onSubmit({data: {}});
+      component.errors = ['error'];
+      component.onSubmit({data: {}});
+
+      expect(submitted).toBe(2);
+    });
+
+    it('should stay locked when the errors input is cleared', () => {
+      component.onSubmit({data: {}});
+      component.errors = [];
+      component.onSubmit({data: {}});
+
+      expect(submitted).toBe(1);
+    });
+
+    it('should allow a new submit after a new form is set', () => {
+      component.onSubmit({data: {}});
+      component.form = {components: []};
+      component.onSubmit({data: {}});
+
+      expect(submitted).toBe(2);
+    });
+
+    it('should reset the submit button through form.io on errors', () => {
+      const emit = jasmine.createSpy('emit');
+      component.formReady({formio: {emit}} as any);
+
+      component.onSubmit({data: {}});
+      component.showErrors(['error']);
+
+      expect(emit).toHaveBeenCalledOnceWith('submitError');
+    });
+  });
 });
