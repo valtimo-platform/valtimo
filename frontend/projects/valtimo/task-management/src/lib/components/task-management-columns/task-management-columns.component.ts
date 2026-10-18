@@ -106,6 +106,10 @@ export class TaskManagementColumnsComponent {
         displayTypeParameters: this.getDisplayTypeParametersView(
           column?.displayType?.displayTypeParameters
         ),
+        defaultVisible:
+          column.defaultVisible === false
+            ? this.translateService.instant('listColumn.sortableNo')
+            : this.translateService.instant('listColumn.sortableYes'),
       }))
     ),
     tap(() => {
@@ -161,6 +165,12 @@ export class TaskManagementColumnsComponent {
       sortable: false,
       key: 'defaultSort',
       label: 'listColumn.defaultSort',
+    },
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'defaultVisible',
+      label: 'listColumn.defaultVisibleField',
     },
   ];
 
