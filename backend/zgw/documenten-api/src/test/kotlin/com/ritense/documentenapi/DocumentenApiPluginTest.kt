@@ -47,6 +47,7 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
@@ -494,6 +495,39 @@ internal class DocumentenApiPluginTest {
             plugin.deleteInformatieObject(executionMock, documentUrl)
         }
         assertEquals("Failed to delete informatie object. Business key is null.", exception.message)
+    }
+
+    @Test
+    fun `should throw and not call Documenten API when document url does not belong to plugin for deleteInformatieObject plugin action`() {
+        val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher: ApplicationEventPublisher = mock()
+        val authenticationMock = mock<DocumentenApiAuthentication>()
+        val documentenApiVersionService: DocumentenApiVersionService = mock()
+        val executionMock = mock<DelegateExecution>()
+
+        val plugin = DocumentenApiPlugin(
+            client,
+            storageService,
+            applicationEventPublisher,
+            MapperSingleton.get(),
+            listOf(),
+            documentenApiVersionService,
+            pluginService
+        )
+        plugin.url = URI("http://some-url")
+        plugin.bronorganisatie = "123456789"
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        val documentUrl = URI("http://other-url/enkelvoudiginformatieobjecten/789")
+
+        val exception = assertThrows<IllegalStateException> {
+            plugin.deleteInformatieObject(executionMock, documentUrl)
+        }
+        assertEquals(
+            "Failed to delete informatie object with url 'http://other-url/enkelvoudiginformatieobjecten/789'. Document isn't part of Documenten API with url 'http://some-url'.",
+            exception.message
+        )
+        verify(client, never()).deleteInformatieObject(any(), any(), any())
     }
 
     @Test

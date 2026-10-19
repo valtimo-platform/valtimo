@@ -268,6 +268,10 @@ class DocumentenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty documentUrl: URI,
     ) {
+        check(documentUrl.toASCIIString().startsWith(url.toASCIIString())) {
+            "Failed to delete informatie object with url '$documentUrl'. Document isn't part of Documenten API with url '$url'."
+        }
+
         val caseDocumentId = execution.businessKey?.let { UUID.fromString(it) }
             ?: throw IllegalStateException("Failed to delete informatie object. Business key is null.")
 
