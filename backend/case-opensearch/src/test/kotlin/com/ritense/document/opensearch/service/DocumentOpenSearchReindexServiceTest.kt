@@ -100,7 +100,7 @@ class DocumentOpenSearchReindexServiceTest {
 
         assertThat(processed).isEqualTo(0L)
         verify(runService).stop(runId)
-        verify(runService, never()).complete(any(), any())
+        verify(runService, never()).complete(any(), any(), any())
     }
 
     private fun run(id: UUID) = OpenSearchReindexRun(

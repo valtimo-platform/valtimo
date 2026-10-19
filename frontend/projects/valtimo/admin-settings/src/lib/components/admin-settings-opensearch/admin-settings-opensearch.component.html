@@ -95,7 +95,7 @@
         </span>
         <cds-progress-bar
           [value]="data.totalCount > 0 ? (data.processedCount / data.totalCount) * 100 : 0"
-          [status]="data.status === 'RUNNING' && !data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : (data.status === 'RUNNING' ? 'finished' : 'error'))"
+          [status]="data.status === 'RUNNING' && !data.pruningPhase ? 'active' : ((data.status === 'COMPLETED' || data.status === 'COMPLETED_WITH_ERRORS') ? 'finished' : (data.status === 'RUNNING' ? 'finished' : 'error'))"
         ></cds-progress-bar>
         <div class="opensearch-reindex__progress-footer">
           <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.processedCount, total: data.totalCount} }}</span>
@@ -111,13 +111,24 @@
           </span>
           <cds-progress-bar
             [value]="data.pruneTotalCount > 0 ? (data.pruneCheckedCount / data.pruneTotalCount) * 100 : 0"
-            [status]="data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : 'error')"
+            [status]="data.pruningPhase ? 'active' : ((data.status === 'COMPLETED' || data.status === 'COMPLETED_WITH_ERRORS') ? 'finished' : 'error')"
           ></cds-progress-bar>
           <div class="opensearch-reindex__progress-footer">
             <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.pruneCheckedCount, total: data.pruneTotalCount || 0} }}</span>
             <span>{{ 'adminSettings.opensearch.reindex.pruningProgress' | translate:{removed: data.prunedCount || 0} }}</span>
           </div>
         </div>
+      }
+
+      @if (data.status === 'COMPLETED_WITH_ERRORS') {
+        <span class="opensearch-reindex__skipped-notice">
+          <svg cdsIcon="warning--alt" size="16"></svg>
+          {{ 'adminSettings.opensearch.reindex.completedWithErrors' | translate:{skipped: data.skippedCount || 0} }}
+        </span>
+        <a class="opensearch-reindex__error-link" (click)="navigateToLogs(data)">
+          {{ 'adminSettings.opensearch.reindex.viewErrorLogs' | translate }}
+          <svg cdsIcon="launch" size="16"></svg>
+        </a>
       }
 
       @if (data.status === 'FAILED') {

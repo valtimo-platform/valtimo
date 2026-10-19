@@ -26,5 +26,6 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
     <include file="20260928-add-color-to-case-definition.xml" relativeToChangelogFile="true"/>
     <include file="20260928-create-pinned-item-table.xml" relativeToChangelogFile="true"/>
     <include file="20261015-init-show-all-case-definitions-in-menu-toggle.xml" relativeToChangelogFile="true"/>
+    <include file="20261019-widen-reindex-run-status.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -30,8 +30,12 @@ import net.javacrumbs.shedlock.core.LockProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -77,7 +81,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
     @Autowired
     lateinit var transactionManager: PlatformTransactionManager
 
-    @Autowired
+    @MockitoSpyBean
     lateinit var converter: JsonSchemaDocumentOsConverter
 
     @AfterEach
@@ -100,6 +104,22 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(5L)
         ids.forEach { assertThat(findIndexedOptional(it.toString())).isPresent }
+    }
+
+    @Test
+    fun `re-index that skips a document finishes COMPLETED_WITH_ERRORS with a non-zero skipped count`() {
+        createDocument("indexable")
+        val poison = createDocument("poison")
+        clearIndex()
+
+        doThrow(RuntimeException("deliberately unconvertible document"))
+            .whenever(converter).toOsDocument(argThat { id() == poison.id() })
+
+        val (runId, _) = reindex(ReindexRequest(documentDefinitionName = "house"))
+
+        val run = reindexRunRepository.findById(runId).get()
+        assertThat(run.status).isEqualTo(ReindexRunStatus.COMPLETED_WITH_ERRORS)
+        assertThat(run.skippedCount).isGreaterThan(0L)
     }
 
     @Test

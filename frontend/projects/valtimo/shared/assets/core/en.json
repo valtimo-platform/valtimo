@@ -4534,10 +4534,12 @@
         "statuses": {
           "RUNNING": "Running",
           "COMPLETED": "Completed",
+          "COMPLETED_WITH_ERRORS": "Completed with errors",
           "FAILED": "Failed",
           "STOPPED": "Stopped",
           "PRUNING": "Pruning orphaned documents"
         },
+        "completedWithErrors": "Finished, but {{skipped}} document(s) could not be indexed and were skipped.",
         "pruningProgress": "Removed: {{removed}}",
         "tooltips": {
           "pruneOrphans": "Remove entries from OpenSearch that no longer exist in the database",

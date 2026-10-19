@@ -153,7 +153,7 @@ open class DocumentOpenSearchReindexService(
                 }
                 elasticsearchOperations.indexOps(indexCoordinatesFor(scope)).takeIf { it.exists() }?.refresh()
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
-                runService.complete(runId, processed + skipped)
+                runService.complete(runId, processed + skipped, skipped)
             }
         } catch (e: Exception) {
             runService.fail(runId, e.message)

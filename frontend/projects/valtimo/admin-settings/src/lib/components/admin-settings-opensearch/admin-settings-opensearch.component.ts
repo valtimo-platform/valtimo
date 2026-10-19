@@ -43,7 +43,7 @@ import {
   ProgressBarModule,
   TagModule,
 } from 'carbon-components-angular';
-import {Launch16} from '@carbon/icons';
+import {Launch16, WarningAlt16} from '@carbon/icons';
 import {CarbonListModule, ColumnConfig, Pagination, TooltipIconModule, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {AdminSettingsManagementApiService} from '../../services';
@@ -141,6 +141,7 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     private readonly _iconService: IconService
   ) {
     this._iconService.register(Launch16);
+    this._iconService.register(WarningAlt16);
   }
 
   public ngOnInit(): void {
@@ -215,6 +216,8 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
         return 'blue';
       case 'COMPLETED':
         return 'green';
+      case 'COMPLETED_WITH_ERRORS':
+        return 'orange';
       case 'FAILED':
         return 'red';
       case 'STOPPED':

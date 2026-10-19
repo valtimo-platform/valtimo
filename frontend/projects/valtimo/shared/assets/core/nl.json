@@ -4543,10 +4543,12 @@
         "statuses": {
           "RUNNING": "Bezig",
           "COMPLETED": "Voltooid",
+          "COMPLETED_WITH_ERRORS": "Voltooid met fouten",
           "FAILED": "Mislukt",
           "STOPPED": "Gestopt",
           "PRUNING": "Orphan documenten opschonen"
         },
+        "completedWithErrors": "Voltooid, maar {{skipped}} document(en) konden niet worden geïndexeerd en zijn overgeslagen.",
         "pruningProgress": "Verwijderd: {{removed}}",
         "tooltips": {
           "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",

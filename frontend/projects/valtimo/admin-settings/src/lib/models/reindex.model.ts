@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-type ReindexStatus = 'RUNNING' | 'COMPLETED' | 'FAILED' | 'STOPPED';
+type ReindexStatus = 'RUNNING' | 'COMPLETED' | 'COMPLETED_WITH_ERRORS' | 'FAILED' | 'STOPPED';
 
 interface ReindexScope {
   pruneOrphans?: boolean;
