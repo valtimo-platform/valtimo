@@ -360,6 +360,10 @@ class DocumentenApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty documentUrl: URI,
     ) {
+        check(documentUrl.toASCIIString().startsWith(url.toASCIIString())) {
+            "Failed to delete informatie object with url '$documentUrl'. Document isn't part of Documenten API with url '$url'."
+        }
+
         val documentId = execution.getJsonSchemaDocumentId()
         val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
 
