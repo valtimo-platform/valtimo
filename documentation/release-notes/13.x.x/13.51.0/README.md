@@ -17,7 +17,7 @@ New feature explanation.
 ### Long texts in forms can be saved
 
 A text of more than 4000 characters, such as a long description in a form text area, can now be saved
-and shown in a form again.
+and shown in a form.
 
 ---
 
