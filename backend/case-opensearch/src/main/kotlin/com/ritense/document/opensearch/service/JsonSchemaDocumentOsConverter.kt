@@ -20,20 +20,25 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.elasticsearch.BulkFailureException
 import org.springframework.data.elasticsearch.VersionConflictException
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 
 /**
  * Single, shared implementation of the [JsonSchemaDocument] → [JsonSchemaDocumentOsDocument] conversion
  * and of the poison-pill-isolated bulk indexing. Reused by the live event listener, the reconciler and
  * the admin re-index service so all three writers produce byte-identical OpenSearch documents and share
  * the same failure isolation.
+ *
+ * Writes are routed to the per-definition index resolved from each document's own `definitionId.name`, so
+ * the same `content.*` path may be a string in one case type and an object in another without colliding.
  */
 open class JsonSchemaDocumentOsConverter(
     private val objectMapper: ObjectMapper,
-    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+    private val operations: ElasticsearchOperations,
+    private val resolver: OpenSearchIndexNameResolver,
 ) {
 
     /**
@@ -65,17 +70,27 @@ open class JsonSchemaDocumentOsConverter(
      * @return the number of documents skipped in this chunk
      */
     open fun indexChunk(chunk: List<JsonSchemaDocumentOsDocument>): Long =
-        try {
-            openSearchRepository.saveAll(chunk)
+        chunk.groupBy { it.definitionId?.name }
+            .entries
+            .sumOf { (definitionName, documents) -> indexGroup(definitionName, documents) }
+
+    private fun indexGroup(definitionName: String?, documents: List<JsonSchemaDocumentOsDocument>): Long {
+        if (definitionName == null) {
+            documents.forEach { logger.warn { "Document ${it.id} has no definition name — skipping (cannot resolve index)" } }
+            return documents.size.toLong()
+        }
+        val index = IndexCoordinates.of(resolver.indexNameFor(definitionName))
+        return try {
+            operations.save(documents, index)
             0L
         } catch (e: BulkFailureException) {
-            val byId = chunk.associateBy { it.id }
+            val byId = documents.associateBy { it.id }
             var skipped = 0L
             e.failedDocuments.forEach { (id, details) ->
                 if (isVersionConflict(details)) return@forEach // benign: stored doc already ≥ this version
                 val document = byId[id] ?: return@forEach
                 try {
-                    openSearchRepository.save(document)
+                    operations.save(document, index)
                 } catch (ex: VersionConflictException) {
                     // benign: a newer/equal version won the race and is already indexed
                 } catch (ex: Exception) {
@@ -85,6 +100,7 @@ open class JsonSchemaDocumentOsConverter(
             }
             skipped
         }
+    }
 
     companion object {
         private val logger = KotlinLogging.logger {}

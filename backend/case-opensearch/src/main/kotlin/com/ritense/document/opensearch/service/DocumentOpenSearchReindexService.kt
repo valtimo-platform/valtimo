@@ -18,7 +18,6 @@ package com.ritense.document.opensearch.service
 
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.JoinType
@@ -32,6 +31,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
@@ -65,7 +65,7 @@ open class DocumentOpenSearchReindexService(
     private val transactionManager: PlatformTransactionManager,
     private val lockProvider: LockProvider,
     private val runService: OpenSearchReindexRunService,
-    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+    private val resolver: OpenSearchIndexNameResolver,
 ) : DisposableBean {
 
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -151,7 +151,7 @@ open class DocumentOpenSearchReindexService(
                     val pruned = pruneOrphans(runId, scope)
                     logger.info { "Pruned $pruned orphan document(s) from OpenSearch" }
                 }
-                indexOps().refresh()
+                elasticsearchOperations.indexOps(indexCoordinatesFor(scope)).takeIf { it.exists() }?.refresh()
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
                 runService.complete(runId, processed + skipped)
             }
@@ -211,23 +211,48 @@ open class DocumentOpenSearchReindexService(
         val totalOsCount = countOpenSearchDocs(scope)
         runService.startPruning(runId, totalOsCount)
 
-        scrollOpenSearchIds(scope, PRUNE_BATCH_SIZE) { osIds ->
-            if (cancelRequested) return@scrollOpenSearchIds false
+        scrollOpenSearchDocs(scope, PRUNE_BATCH_SIZE) { osDocs ->
+            if (cancelRequested) return@scrollOpenSearchDocs false
 
             val existingIds = txTemplate.execute {
-                findExistingIds(osIds.map { UUID.fromString(it) })
+                findExistingIds(osDocs.mapNotNull { it.id.toUuidOrNull() })
             }.orEmpty()
 
-            val orphans = osIds.filter { UUID.fromString(it) !in existingIds }
-            orphans.forEach { openSearchRepository.deleteById(it) }
+            val orphans = osDocs.filter { it.id.toUuidOrNull() !in existingIds }
+            orphans.forEach { deleteFromConcreteIndex(it) }
             pruned += orphans.size
-            checked += osIds.size
+            checked += osDocs.size
 
             runService.recordPruneProgress(runId, checked, pruned)
             true
         }
         return pruned
     }
+
+    /** Deletes an orphan from its own per-definition index (resolved from the indexed document). */
+    private fun deleteFromConcreteIndex(osDocument: JsonSchemaDocumentOsDocument) {
+        val definitionName = osDocument.definitionId?.name
+        if (definitionName == null) {
+            logger.warn { "Orphan document ${osDocument.id} has no definition name — cannot resolve index to prune it" }
+            return
+        }
+        elasticsearchOperations.delete(osDocument.id, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
+    }
+
+    private fun String.toUuidOrNull(): UUID? = try {
+        UUID.fromString(this)
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+
+    /**
+     * Resolves the OpenSearch index for a run: a scoped run (single definition) targets that definition's
+     * index; an unscoped run targets the shared read alias spanning every per-definition index.
+     */
+    private fun indexCoordinatesFor(scope: ReindexRequest): IndexCoordinates =
+        scope.documentDefinitionName
+            ?.let { IndexCoordinates.of(resolver.indexNameFor(it)) }
+            ?: IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
 
     private fun countOpenSearchDocs(scope: ReindexRequest): Long {
         val boolQuery = BoolQueryBuilder()
@@ -249,14 +274,19 @@ open class DocumentOpenSearchReindexService(
             .withQuery(boolQuery)
             .build()
 
-        return elasticsearchOperations.count(query, JsonSchemaDocumentOsDocument::class.java)
+        return elasticsearchOperations.count(query, JsonSchemaDocumentOsDocument::class.java, indexCoordinatesFor(scope))
     }
 
     /**
      * Scrolls through all OpenSearch documents matching [scope], invoking [handler] for each batch.
-     * Handler returns `true` to continue, `false` to stop early.
+     * Handler returns `true` to continue, `false` to stop early. The full document (not just its id) is
+     * carried so an orphan delete can route to the document's own per-definition index.
      */
-    private fun scrollOpenSearchIds(scope: ReindexRequest, batchSize: Int, handler: (List<String>) -> Boolean) {
+    private fun scrollOpenSearchDocs(
+        scope: ReindexRequest,
+        batchSize: Int,
+        handler: (List<JsonSchemaDocumentOsDocument>) -> Boolean
+    ) {
         val boolQuery = BoolQueryBuilder()
 
         scope.documentDefinitionName?.let {
@@ -277,13 +307,13 @@ open class DocumentOpenSearchReindexService(
             .withPageable(PageRequest.of(0, batchSize))
             .build()
 
-        elasticsearchOperations.searchForStream(query, JsonSchemaDocumentOsDocument::class.java).use { stream ->
+        elasticsearchOperations.searchForStream(query, JsonSchemaDocumentOsDocument::class.java, indexCoordinatesFor(scope)).use { stream ->
             val iterator = stream.iterator()
-            val batch = mutableListOf<String>()
+            val batch = mutableListOf<JsonSchemaDocumentOsDocument>()
 
             while (iterator.hasNext()) {
-                val id = iterator.next().id ?: continue
-                batch.add(id)
+                val content = iterator.next().content ?: continue
+                batch.add(content)
                 if (batch.size >= batchSize) {
                     if (!handler(batch.toList())) return
                     batch.clear()
@@ -302,8 +332,6 @@ open class DocumentOpenSearchReindexService(
             UUID::class.java
         ).setParameter("ids", ids).resultList.toSet()
     }
-
-    private fun indexOps() = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
 
     /** Signals an in-flight run to stop gracefully and shuts the executor down on context close. */
     override fun destroy() {

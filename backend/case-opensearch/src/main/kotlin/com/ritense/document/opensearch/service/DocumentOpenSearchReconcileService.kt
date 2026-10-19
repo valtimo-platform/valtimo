@@ -20,14 +20,17 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.domain.OpenSearchReconcileState
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import com.ritense.document.opensearch.repository.OpenSearchReconcileStateRepository
 import com.ritense.document.opensearch.repository.PendingIndexDeletionRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.core.LockProvider
+import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
+import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
@@ -53,7 +56,8 @@ import java.util.UUID
 open class DocumentOpenSearchReconcileService(
     private val entityManager: EntityManager,
     private val converter: JsonSchemaDocumentOsConverter,
-    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+    private val operations: ElasticsearchOperations,
+    private val resolver: OpenSearchIndexNameResolver,
     private val stateRepository: OpenSearchReconcileStateRepository,
     private val pendingIndexDeletionRepository: PendingIndexDeletionRepository,
     private val transactionManager: PlatformTransactionManager,
@@ -172,10 +176,27 @@ open class DocumentOpenSearchReconcileService(
             }.orEmpty()
             if (pendingDeletions.isEmpty()) break
 
-            pendingDeletions.forEach { openSearchRepository.deleteById(it.documentId.toString()) }
+            pendingDeletions.forEach { deleteFromConcreteIndex(it.documentId.toString()) }
             writeTemplate.execute { pendingIndexDeletionRepository.deleteAllById(pendingDeletions.map { it.documentId }) }
             logger.debug { "Drained ${pendingDeletions.size} pending index deletion(s) from OpenSearch" }
         }
+    }
+
+    /**
+     * Resolves the concrete per-definition index for [id] by reading the indexed document through the shared
+     * read alias, then deletes it there. A document that is already gone is a no-op.
+     */
+    private fun deleteFromConcreteIndex(id: String) {
+        val query = NativeSearchQueryBuilder()
+            .withQuery(QueryBuilders.idsQuery().addIds(id))
+            .build()
+        val hits = operations.search(
+            query,
+            JsonSchemaDocumentOsDocument::class.java,
+            IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
+        )
+        val definitionName = hits.searchHits.firstOrNull()?.content?.definitionId?.name ?: return
+        operations.delete(id, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
     }
 
     private fun currentWatermark(): LocalDateTime =

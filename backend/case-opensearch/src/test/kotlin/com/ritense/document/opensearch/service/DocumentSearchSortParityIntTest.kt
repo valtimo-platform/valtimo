@@ -315,7 +315,7 @@ class DocumentSearchSortParityIntTest : BaseOpenSearchIntegrationTest() {
         setDates(created.id().id, globalIndex)
         val jpaDoc = documentRepository.findById(created.id()).orElseThrow()
         val osContent = objectMapper.convertValue(jpaDoc.content().asJson(), object : TypeReference<Map<String, Any?>>() {})
-        openSearchRepository.save(converter.toOsDocument(jpaDoc).copy(content = osContent))
+        indexOsDocument(converter.toOsDocument(jpaDoc).copy(content = osContent))
     }
 
     private fun setDates(documentId: UUID, globalIndex: Int) {

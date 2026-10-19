@@ -18,10 +18,14 @@ package com.ritense.document.opensearch.service
 
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
+import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.elasticsearch.VersionConflictException
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.UUID
@@ -35,9 +39,10 @@ import java.util.UUID
  * responsible for isolating them. Any missed or failed write is repaired by the reconciler.
  */
 open class DocumentOpenSearchSyncService(
-    private val repository: JsonSchemaDocumentOpenSearchRepository,
+    private val operations: ElasticsearchOperations,
     private val documentRepository: JsonSchemaDocumentRepository,
     private val converter: JsonSchemaDocumentOsConverter,
+    private val resolver: OpenSearchIndexNameResolver,
     transactionManager: PlatformTransactionManager,
 ) {
 
@@ -58,8 +63,13 @@ open class DocumentOpenSearchSyncService(
             logger.debug { "Document $documentId not found on reload — skipping upsert (likely deleted)" }
             return
         }
+        val definitionName = osDocument.definitionId?.name
+        if (definitionName == null) {
+            logger.warn { "Document $documentId has no definition name — skipping upsert (cannot resolve index)" }
+            return
+        }
         try {
-            repository.save(osDocument)
+            operations.save(osDocument, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
             logger.debug { "Upserted document $documentId in OpenSearch" }
         } catch (e: VersionConflictException) {
             // A newer/equal version is already indexed (the reconciler or a later event won the race).
@@ -67,9 +77,32 @@ open class DocumentOpenSearchSyncService(
         }
     }
 
+    /**
+     * A delete only carries the document id. The indexed document itself carries its `definitionId.name`, so
+     * we read it by id through the shared read alias, resolve its concrete per-definition index and delete
+     * there — no delete-by-query fan-out. A document that is already gone is a no-op.
+     */
     open fun delete(documentId: UUID) {
-        repository.deleteById(documentId.toString())
+        val id = documentId.toString()
+        val definitionName = findIndexedDefinitionName(id)
+        if (definitionName == null) {
+            logger.debug { "Document $documentId not found in OpenSearch — nothing to delete" }
+            return
+        }
+        operations.delete(id, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
         logger.debug { "Deleted document $documentId from OpenSearch" }
+    }
+
+    private fun findIndexedDefinitionName(id: String): String? {
+        val query = NativeSearchQueryBuilder()
+            .withQuery(QueryBuilders.idsQuery().addIds(id))
+            .build()
+        val hits = operations.search(
+            query,
+            JsonSchemaDocumentOsDocument::class.java,
+            IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
+        )
+        return hits.searchHits.firstOrNull()?.content?.definitionId?.name
     }
 
     companion object {

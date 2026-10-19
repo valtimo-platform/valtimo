@@ -230,7 +230,7 @@ class JsonSchemaDocumentOpenSearchServiceMultiDefinitionIntTest : BaseOpenSearch
                 NewDocumentRequest(definitionName, definitionName, "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = contentMap,

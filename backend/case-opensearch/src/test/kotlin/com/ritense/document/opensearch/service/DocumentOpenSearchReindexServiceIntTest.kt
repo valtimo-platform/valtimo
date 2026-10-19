@@ -99,7 +99,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         assertThat(run.processedCount).isEqualTo(5L)
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(5L)
-        ids.forEach { assertThat(openSearchRepository.findById(it.toString())).isPresent }
+        ids.forEach { assertThat(findIndexedOptional(it.toString())).isPresent }
     }
 
     @Test
@@ -111,7 +111,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest())
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().internalStatus).isEqualTo("started")
     }
@@ -146,7 +146,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         assertThat(processed).isEqualTo(1L)
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(1L)
-        assertThat(openSearchRepository.findById(target.id().toString())).isPresent
+        assertThat(findIndexedOptional(target.id().toString())).isPresent
     }
 
     @Test
@@ -161,8 +161,8 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest(modifiedAfter = cutoff))
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(modified.id().toString())).isPresent
-        assertThat(openSearchRepository.findById(untouched.id().toString())).isEmpty
+        assertThat(findIndexedOptional(modified.id().toString())).isPresent
+        assertThat(findIndexedOptional(untouched.id().toString())).isEmpty
     }
 
     private fun setModifiedOn(documentId: JsonSchemaDocumentId, modifiedOn: LocalDateTime) {
@@ -203,7 +203,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
 
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(expectedIds.size.toLong())
-        expectedIds.forEach { assertThat(openSearchRepository.findById(it.toString())).isPresent }
+        expectedIds.forEach { assertThat(findIndexedOptional(it.toString())).isPresent }
         assertThat(reindexRunRepository.findById(seededRun.id).get().status).isEqualTo(ReindexRunStatus.COMPLETED)
     }
 
@@ -298,9 +298,9 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
 
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(1L)
-        assertThat(openSearchRepository.findById(doc1.id().toString())).isPresent
-        assertThat(openSearchRepository.findById(doc2.id().toString())).isEmpty
-        assertThat(openSearchRepository.findById(doc3.id().toString())).isEmpty
+        assertThat(findIndexedOptional(doc1.id().toString())).isPresent
+        assertThat(findIndexedOptional(doc2.id().toString())).isEmpty
+        assertThat(findIndexedOptional(doc3.id().toString())).isEmpty
 
         val run = reindexRunRepository.findById(runId).get()
         assertThat(run.prunedCount).isEqualTo(2L)
@@ -316,7 +316,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest(documentDefinitionName = "house", pruneOrphans = true))
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(houseDoc.id().toString())).isEmpty
+        assertThat(findIndexedOptional(houseDoc.id().toString())).isEmpty
     }
 
     @Test
@@ -329,13 +329,12 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest(pruneOrphans = false))
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(doc.id().toString())).isPresent
+        assertThat(findIndexedOptional(doc.id().toString())).isPresent
     }
 
     private fun indexDocuments(vararg documents: JsonSchemaDocument) {
         documents.forEach { doc ->
-            val osDoc = converter.toOsDocument(doc)
-            openSearchRepository.save(osDoc)
+            indexOsDocument(converter.toOsDocument(doc))
         }
         refreshIndex()
     }

@@ -67,7 +67,7 @@ class SearchEngineResource(
 
         if (useOpenSearch) {
             try {
-                indexInitializer.ensureIndex()
+                indexInitializer.ensureAllIndices()
             } catch (e: Exception) {
                 logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

@@ -127,7 +127,7 @@ class DocumentSearchGroupFilterParityIntTest : BaseOpenSearchIntegrationTest() {
         setCreatedOn(created.id().id, createdOn)
         val jpaDoc = documentRepository.findById(created.id()).orElseThrow()
         val osContent = objectMapper.convertValue(jpaDoc.content().asJson(), object : TypeReference<Map<String, Any?>>() {})
-        openSearchRepository.save(converter.toOsDocument(jpaDoc).copy(content = osContent))
+        indexOsDocument(converter.toOsDocument(jpaDoc).copy(content = osContent))
         ids[name] = created.id().toString()
     }
 
