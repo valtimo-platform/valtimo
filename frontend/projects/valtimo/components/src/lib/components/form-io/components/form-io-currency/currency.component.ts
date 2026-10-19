@@ -155,7 +155,7 @@ export class FormIoCurrencyComponent
       digitGroupSeparator: partValue('group'),
       decimalCharacter: partValue('decimal') || '.',
       decimalPlaces: formatter.resolvedOptions().maximumFractionDigits,
-      emptyInputBehavior: this.allowEmptyValue ? 'null' : 'zero',
+      emptyInputBehavior: 'always',
       modifyValueOnWheel: false,
     };
   }
@@ -182,7 +182,7 @@ export class FormIoCurrencyComponent
       if (typeof this._value === 'number') {
         this._autoNumeric.set(this._value);
       } else {
-        this._autoNumeric.clear(true);
+        this._autoNumeric.clear();
       }
     });
   }
