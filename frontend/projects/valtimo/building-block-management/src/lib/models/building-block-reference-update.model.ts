@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {BuildingBlockSyncTiming} from '@valtimo/shared';
 import {ListItem} from 'carbon-components-angular';
 
 interface ReferenceUpdateChainResolutionFormValue {
@@ -28,13 +29,38 @@ interface ReferenceUpdateSource {
   versionTag: string;
 }
 
+/** How a mapping of a link ends up after the update: carried over, removed, or added by the admin. */
+type ReferenceUpdateMappingStatus = 'kept' | 'dropped' | 'added';
+
+interface ReferenceUpdateInputRow {
+  status: ReferenceUpdateMappingStatus;
+  source: string;
+  target: string;
+}
+
+interface ReferenceUpdateOutputRow {
+  status: Exclude<ReferenceUpdateMappingStatus, 'added'>;
+  source: string;
+  target: string;
+  syncTiming: BuildingBlockSyncTiming;
+}
+
+interface ReferenceUpdateChainMappings {
+  inputs: ReferenceUpdateInputRow[];
+  outputs: ReferenceUpdateOutputRow[];
+}
+
 interface ReferenceUpdateVersionListItem extends ListItem {
   final: boolean;
   'data-test-id': string;
 }
 
 export {
+  ReferenceUpdateChainMappings,
   ReferenceUpdateChainResolutionFormValue,
+  ReferenceUpdateInputRow,
+  ReferenceUpdateMappingStatus,
+  ReferenceUpdateOutputRow,
   ReferenceUpdateResolutionFormValue,
   ReferenceUpdateSource,
   ReferenceUpdateVersionListItem,

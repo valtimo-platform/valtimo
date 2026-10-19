@@ -175,6 +175,7 @@ export interface BuildingBlockReferenceUpdateContainerDto {
 
 export interface BuildingBlockReferenceUpdateDifferencesDto {
     existingInputMappings: BuildingBlockInputMappingDto[];
+    existingOutputMappings: BuildingBlockOutputMappingDto[];
     missingRequiredInputs: string[];
     droppedInputMappings: BuildingBlockInputMappingDto[];
     droppedOutputMappings: BuildingBlockOutputMappingDto[];

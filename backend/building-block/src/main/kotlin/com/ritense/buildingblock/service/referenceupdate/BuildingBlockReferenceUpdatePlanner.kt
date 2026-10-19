@@ -65,6 +65,7 @@ data class NewDraft(override val original: ReferenceContainer) : WritableVersion
 
 data class ChainDifferences(
     val existingInputMappings: List<BuildingBlockInputMapping>,
+    val existingOutputMappings: List<BuildingBlockOutputMapping>,
     val missingRequiredInputs: List<String>,
     val droppedInputMappings: List<BuildingBlockInputMapping>,
     val droppedOutputMappings: List<BuildingBlockOutputMapping>,
@@ -284,6 +285,7 @@ class BuildingBlockReferenceUpdatePlanner(
             topLink = topLink,
             differences = ChainDifferences(
                 existingInputMappings = existingInputs,
+                existingOutputMappings = existingOutputs,
                 missingRequiredInputs = missingRequired,
                 droppedInputMappings = droppedInputs,
                 droppedOutputMappings = droppedOutputs,

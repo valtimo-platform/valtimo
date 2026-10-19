@@ -68,6 +68,9 @@ object BuildingBlockReferenceUpdateMapper {
         val differences = analysis.differences
         return BuildingBlockReferenceUpdateDifferencesDto(
             existingInputMappings = differences.existingInputMappings.map { BuildingBlockInputMappingDto(it.source, it.target) },
+            existingOutputMappings = differences.existingOutputMappings.map {
+                BuildingBlockOutputMappingDto(it.source, it.target, it.syncTiming)
+            },
             missingRequiredInputs = differences.missingRequiredInputs,
             droppedInputMappings = differences.droppedInputMappings.map { BuildingBlockInputMappingDto(it.source, it.target) },
             droppedOutputMappings = differences.droppedOutputMappings.map {

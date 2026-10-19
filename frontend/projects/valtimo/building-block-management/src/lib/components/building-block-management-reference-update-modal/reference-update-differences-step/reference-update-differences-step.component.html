@@ -15,13 +15,32 @@
   -->
 
 <p class="valtimo-building-block-reference-update__description">
-  {{ 'buildingBlockManagement.referenceUpdate.differences.description' | translate }}
+  {{
+    'buildingBlockManagement.referenceUpdate.differences.description'
+      | translate: {targetKey: $targetKey(), targetVersionTag: $target()}
+  }}
 </p>
 
 <valtimo-building-block-reference-update-preview-status></valtimo-building-block-reference-update-preview-status>
 
+@let targetLabel =
+  ('processLinkConfiguration.buildingBlock.buildingBlock' | translate) +
+  ': ' +
+  $targetKey() +
+  ' ' +
+  $target();
+
 <form [formGroup]="resolutionForm" class="valtimo-building-block-reference-update__list">
   @for (chain of $selectedChains(); track chain.id) {
+    @let mappings = $mappings()[chain.id];
+    @let containerLabel =
+      ('buildingBlockManagement.referenceUpdate.containerType.' + chain.link.container.type
+        | translate) +
+      ': ' +
+      chain.link.container.key +
+      ' ' +
+      chain.link.container.versionTag;
+
     <section
       [attr.data-test-id]="testIds.differences"
       [formGroupName]="chain.id"
@@ -46,44 +65,63 @@
         </cds-tag>
       </div>
 
-      @if (
-        chain.differences.missingRequiredInputs.length === 0 &&
-        chain.differences.missingPluginDefinitionKeys.length === 0 &&
-        chain.differences.droppedInputMappings.length === 0 &&
-        chain.differences.droppedOutputMappings.length === 0
-      ) {
-        <p class="valtimo-building-block-reference-update__secondary">
-          {{ 'buildingBlockManagement.referenceUpdate.differences.none' | translate }}
-        </p>
-      }
+      <div
+        [attr.data-test-id]="testIds.inputMappings"
+        class="valtimo-building-block-reference-update__section"
+      >
+        <h5 class="valtimo-building-block-reference-update__subheading">
+          {{ 'processLinkConfiguration.buildingBlock.inputTitle' | translate }}
+        </h5>
 
-      @if (chain.differences.missingRequiredInputs.length > 0) {
-        <div formGroupName="inputs" class="valtimo-building-block-reference-update__fields">
-          @for (field of chain.differences.missingRequiredInputs; track field) {
-            <div
-              [attr.data-field]="field"
-              [attr.data-test-id]="testIds.inputMapping"
-              class="valtimo-building-block-reference-update__input"
-            >
-              <div class="valtimo-building-block-reference-update__mapping">
-                <valtimo-value-path-selector
-                  [buildingBlockDefinitionKey]="
-                    $sourceContexts()[chain.id]?.buildingBlockKey ?? null
-                  "
-                  [buildingBlockDefinitionVersionTag]="
-                    $sourceContexts()[chain.id]?.buildingBlockVersionTag ?? null
-                  "
-                  [caseDefinitionKey]="$sourceContexts()[chain.id]?.caseDefinitionKey ?? null"
-                  [caseDefinitionVersionTag]="
-                    $sourceContexts()[chain.id]?.caseDefinitionVersionTag ?? null
-                  "
-                  [formControlName]="field"
-                  [label]="
-                    'buildingBlockManagement.referenceUpdate.differences.inputPath' | translate
-                  "
-                  [notation]="'slashes'"
-                  [prefixes]="SOURCE_PREFIXES"
-                ></valtimo-value-path-selector>
+        @if (mappings.inputs.length === 0) {
+          <p class="valtimo-building-block-reference-update__secondary">
+            {{ 'buildingBlockManagement.referenceUpdate.differences.noInputs' | translate }}
+          </p>
+        } @else {
+          <div
+            formGroupName="inputs"
+            class="valtimo-building-block-reference-update__mapping-table valtimo-building-block-reference-update__mapping-table--input"
+          >
+            <div class="valtimo-building-block-reference-update__mapping-header">
+              <span>{{ containerLabel }}</span>
+              <span></span>
+              <span>{{ targetLabel }}</span>
+              <span></span>
+            </div>
+
+            @for (row of mappings.inputs; track $index) {
+              <div
+                [attr.data-field]="row.target"
+                [attr.data-status]="row.status"
+                [attr.data-test-id]="
+                  row.status === 'added' ? testIds.inputMapping : testIds.inputMappingRow
+                "
+                [class.valtimo-building-block-reference-update__mapping-row--dropped]="
+                  row.status === 'dropped'
+                "
+                class="valtimo-building-block-reference-update__mapping-row"
+              >
+                @if (row.status === 'added') {
+                  <valtimo-value-path-selector
+                    [buildingBlockDefinitionKey]="
+                      $sourceContexts()[chain.id]?.buildingBlockKey ?? null
+                    "
+                    [buildingBlockDefinitionVersionTag]="
+                      $sourceContexts()[chain.id]?.buildingBlockVersionTag ?? null
+                    "
+                    [caseDefinitionKey]="$sourceContexts()[chain.id]?.caseDefinitionKey ?? null"
+                    [caseDefinitionVersionTag]="
+                      $sourceContexts()[chain.id]?.caseDefinitionVersionTag ?? null
+                    "
+                    [formControlName]="row.target"
+                    [notation]="'slashes'"
+                    [prefixes]="SOURCE_PREFIXES"
+                  ></valtimo-value-path-selector>
+                } @else {
+                  <span class="valtimo-building-block-reference-update__mapping-value">{{
+                    row.source
+                  }}</span>
+                }
 
                 <span
                   class="valtimo-building-block-reference-update__mapping-arrow"
@@ -91,124 +129,199 @@
                   >→</span
                 >
 
-                <cds-text-label>
-                  {{
-                    'buildingBlockManagement.referenceUpdate.differences.inputTarget' | translate
-                  }}
-                  <input cdsText [readonly]="true" [value]="field" />
-                </cds-text-label>
+                <span class="valtimo-building-block-reference-update__mapping-value">
+                  {{ row.target }}
+                  @if (row.status === 'added') {
+                    <span class="valtimo-building-block-reference-update__required">*</span>
+                  }
+                </span>
+
+                <ng-container
+                  *ngTemplateOutlet="statusTag; context: {$implicit: row.status}"
+                ></ng-container>
               </div>
 
-              @if ($invalidInputs()[chain.id]?.includes(field)) {
-                <span
-                  [attr.data-test-id]="testIds.inputPathInvalid"
-                  class="valtimo-building-block-reference-update__error"
-                >
-                  {{
-                    'buildingBlockManagement.referenceUpdate.differences.inputPathInvalid'
-                      | translate
-                  }}
-                </span>
-              } @else if (chain.differences.unresolvedRequiredInputs.includes(field)) {
-                <span class="valtimo-building-block-reference-update__error">
-                  {{
-                    'buildingBlockManagement.referenceUpdate.differences.inputRequired' | translate
-                  }}
-                </span>
+              @if (row.status === 'added') {
+                @if ($invalidInputs()[chain.id]?.includes(row.target)) {
+                  <span
+                    [attr.data-test-id]="testIds.inputPathInvalid"
+                    class="valtimo-building-block-reference-update__mapping-note valtimo-building-block-reference-update__error"
+                  >
+                    {{
+                      'buildingBlockManagement.referenceUpdate.differences.inputPathInvalid'
+                        | translate
+                    }}
+                  </span>
+                } @else {
+                  <span
+                    [class.valtimo-building-block-reference-update__error]="
+                      chain.differences.unresolvedRequiredInputs.includes(row.target)
+                    "
+                    class="valtimo-building-block-reference-update__mapping-note"
+                  >
+                    {{
+                      'buildingBlockManagement.referenceUpdate.differences.inputRequired'
+                        | translate: {targetKey: $targetKey(), targetVersionTag: $target()}
+                    }}
+                  </span>
+                }
               }
-            </div>
+            }
+          </div>
+
+          @if ($hasDropped()[chain.id]?.inputs) {
+            <p class="valtimo-building-block-reference-update__mapping-note">
+              {{
+                'buildingBlockManagement.referenceUpdate.differences.dropped'
+                  | translate: {targetKey: $targetKey(), targetVersionTag: $target()}
+              }}
+            </p>
           }
-        </div>
-      }
+        }
+      </div>
+
+      <div
+        [attr.data-test-id]="testIds.outputMappings"
+        class="valtimo-building-block-reference-update__section"
+      >
+        <h5 class="valtimo-building-block-reference-update__subheading">
+          {{ 'processLinkConfiguration.buildingBlock.outputTitle' | translate }}
+        </h5>
+
+        @if (mappings.outputs.length === 0) {
+          <p class="valtimo-building-block-reference-update__secondary">
+            {{ 'buildingBlockManagement.referenceUpdate.differences.noOutputs' | translate }}
+          </p>
+        } @else {
+          <div
+            class="valtimo-building-block-reference-update__mapping-table valtimo-building-block-reference-update__mapping-table--output"
+          >
+            <div class="valtimo-building-block-reference-update__mapping-header">
+              <span>{{ targetLabel }}</span>
+              <span></span>
+              <span>{{ containerLabel }}</span>
+              <span>{{ 'processLinkConfiguration.buildingBlock.sync.title' | translate }}</span>
+              <span></span>
+            </div>
+
+            @for (row of mappings.outputs; track $index) {
+              <div
+                [attr.data-status]="row.status"
+                [attr.data-test-id]="testIds.outputMappingRow"
+                [class.valtimo-building-block-reference-update__mapping-row--dropped]="
+                  row.status === 'dropped'
+                "
+                class="valtimo-building-block-reference-update__mapping-row"
+              >
+                <span class="valtimo-building-block-reference-update__mapping-value">{{
+                  row.source
+                }}</span>
+
+                <span
+                  class="valtimo-building-block-reference-update__mapping-arrow"
+                  aria-hidden="true"
+                  >→</span
+                >
+
+                <span class="valtimo-building-block-reference-update__mapping-value">{{
+                  row.target
+                }}</span>
+
+                <span>{{
+                  (row.syncTiming === 'END'
+                    ? 'processLinkConfiguration.buildingBlock.sync.end'
+                    : 'processLinkConfiguration.buildingBlock.sync.continuous'
+                  ) | translate
+                }}</span>
+
+                <ng-container
+                  *ngTemplateOutlet="statusTag; context: {$implicit: row.status}"
+                ></ng-container>
+              </div>
+            }
+          </div>
+
+          @if ($hasDropped()[chain.id]?.outputs) {
+            <p class="valtimo-building-block-reference-update__mapping-note">
+              {{
+                'buildingBlockManagement.referenceUpdate.differences.dropped'
+                  | translate: {targetKey: $targetKey(), targetVersionTag: $target()}
+              }}
+            </p>
+          }
+        }
+      </div>
 
       @if (chain.differences.missingPluginDefinitionKeys.length > 0) {
-        <div formGroupName="plugins" class="valtimo-building-block-reference-update__fields">
-          @for (
-            pluginDefinitionKey of chain.differences.missingPluginDefinitionKeys;
-            track pluginDefinitionKey
-          ) {
-            <cds-select
-              [attr.data-plugin-definition-key]="pluginDefinitionKey"
-              [attr.data-test-id]="testIds.pluginConfigurationDropdown"
-              [formControlName]="pluginDefinitionKey"
-              [helperText]="
-                chain.differences.pluginConfigurationLink
-                  ? ('buildingBlockManagement.referenceUpdate.differences.pluginLink'
-                    | translate
-                      : {
-                          container:
-                            chain.differences.pluginConfigurationLink.container.key +
-                            ' ' +
-                            chain.differences.pluginConfigurationLink.container.versionTag,
-                        })
-                  : ''
-              "
-              [invalid]="
-                chain.differences.unresolvedPluginDefinitionKeys.includes(pluginDefinitionKey)
-              "
-              [invalidText]="
-                ($pluginConfigurations()[pluginDefinitionKey]?.length ?? 0) === 0
-                  ? ('buildingBlockManagement.referenceUpdate.differences.noPluginConfigurations'
-                    | translate)
-                  : ('buildingBlockManagement.referenceUpdate.differences.pluginRequired'
-                    | translate)
-              "
-              [label]="
-                'buildingBlockManagement.referenceUpdate.differences.pluginConfiguration'
-                  | translate: {plugin: pluginDefinitionKey}
-              "
-            >
-              <option value="">
-                {{
-                  'buildingBlockManagement.referenceUpdate.differences.pluginPlaceholder'
-                    | translate
-                }}
-              </option>
-
-              @for (
-                configuration of $pluginConfigurations()[pluginDefinitionKey] ?? [];
-                track configuration.id
-              ) {
-                <option [value]="configuration.id">{{ configuration.title }}</option>
-              }
-            </cds-select>
-          }
-        </div>
-      }
-
-      @if (
-        chain.differences.droppedInputMappings.length > 0 ||
-        chain.differences.droppedOutputMappings.length > 0
-      ) {
-        <div
-          [attr.data-test-id]="testIds.droppedMappings"
-          class="valtimo-building-block-reference-update__section"
-        >
+        <div class="valtimo-building-block-reference-update__section">
           <h5 class="valtimo-building-block-reference-update__subheading">
-            {{ 'buildingBlockManagement.referenceUpdate.differences.dropped' | translate }}
+            {{ 'buildingBlockManagement.referenceUpdate.differences.pluginsTitle' | translate }}
           </h5>
 
-          <ul class="valtimo-building-block-reference-update__bullets">
-            @for (mapping of chain.differences.droppedInputMappings; track $index) {
-              <li>
-                {{
-                  'buildingBlockManagement.referenceUpdate.differences.droppedInput'
-                    | translate: {source: mapping.source, target: mapping.target}
-                }}
-              </li>
-            }
+          <div formGroupName="plugins" class="valtimo-building-block-reference-update__fields">
+            @for (
+              pluginDefinitionKey of chain.differences.missingPluginDefinitionKeys;
+              track pluginDefinitionKey
+            ) {
+              <cds-select
+                [attr.data-plugin-definition-key]="pluginDefinitionKey"
+                [attr.data-test-id]="testIds.pluginConfigurationDropdown"
+                [formControlName]="pluginDefinitionKey"
+                [helperText]="
+                  chain.differences.pluginConfigurationLink
+                    ? ('buildingBlockManagement.referenceUpdate.differences.pluginLink'
+                      | translate
+                        : {
+                            container:
+                              chain.differences.pluginConfigurationLink.container.key +
+                              ' ' +
+                              chain.differences.pluginConfigurationLink.container.versionTag,
+                          })
+                    : ''
+                "
+                [invalid]="
+                  chain.differences.unresolvedPluginDefinitionKeys.includes(pluginDefinitionKey)
+                "
+                [invalidText]="
+                  ($pluginConfigurations()[pluginDefinitionKey]?.length ?? 0) === 0
+                    ? ('buildingBlockManagement.referenceUpdate.differences.noPluginConfigurations'
+                      | translate)
+                    : ('buildingBlockManagement.referenceUpdate.differences.pluginRequired'
+                      | translate)
+                "
+                [label]="
+                  'buildingBlockManagement.referenceUpdate.differences.pluginConfiguration'
+                    | translate: {plugin: pluginDefinitionKey}
+                "
+              >
+                <option value="">
+                  {{
+                    'buildingBlockManagement.referenceUpdate.differences.pluginPlaceholder'
+                      | translate
+                  }}
+                </option>
 
-            @for (mapping of chain.differences.droppedOutputMappings; track $index) {
-              <li>
-                {{
-                  'buildingBlockManagement.referenceUpdate.differences.droppedOutput'
-                    | translate: {source: mapping.source, target: mapping.target}
-                }}
-              </li>
+                @for (
+                  configuration of $pluginConfigurations()[pluginDefinitionKey] ?? [];
+                  track configuration.id
+                ) {
+                  <option [value]="configuration.id">{{ configuration.title }}</option>
+                }
+              </cds-select>
             }
-          </ul>
+          </div>
         </div>
       }
     </section>
   }
 </form>
+
+<ng-template #statusTag let-status>
+  <cds-tag
+    [type]="status === 'dropped' ? 'red' : status === 'added' ? 'blue' : 'gray'"
+    class="cds-tag--no-margin"
+    size="sm"
+  >
+    {{ 'buildingBlockManagement.referenceUpdate.differences.status.' + status | translate }}
+  </cds-tag>
+</ng-template>

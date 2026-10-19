@@ -108,6 +108,7 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
       notUpdatableReasons: [],
       differences: {
         existingInputMappings: [],
+        existingOutputMappings: [],
         missingRequiredInputs: [],
         droppedInputMappings: [],
         droppedOutputMappings: [],
@@ -472,6 +473,50 @@ describe('BuildingBlockManagementReferenceUpdateModalComponent', () => {
 
       expect(wizard.$canProceed()).toBeTrue();
     }));
+
+    it('shows every input and sync mapping of a reference with its status after the update', () => {
+      chainOverrides['draft-chain'] = {
+        differences: {
+          ...chain('draft-chain', {}).differences,
+          existingInputMappings: [
+            {source: 'doc:/email', target: '/recipient'},
+            {source: 'doc:/old', target: '/legacy'},
+          ],
+          existingOutputMappings: [
+            {source: '/sent', target: 'doc:/sent', syncTiming: 'END'},
+            {source: '/legacy', target: 'doc:/legacy', syncTiming: 'CONTINUOUS'},
+          ],
+          missingRequiredInputs: ['/subject'],
+          droppedInputMappings: [{source: 'doc:/old', target: '/legacy'}],
+          droppedOutputMappings: [
+            {source: '/legacy', target: 'doc:/legacy', syncTiming: 'CONTINUOUS'},
+          ],
+        },
+      };
+      goToChains();
+      wizard.next();
+      fixture.detectChanges();
+
+      const rows = (selector: string): string[] =>
+        Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(selector)).map(
+          row => `${row.dataset['status']}:${row.textContent!.replace(/\s+/g, '')}`
+        );
+      const ids = BUILDING_BLOCK_MANAGEMENT_REFERENCE_UPDATE_TEST_IDS;
+
+      expect(rows(`[data-test-id="${ids.inputMappingRow}"], [data-test-id="${ids.inputMapping}"]`))
+        .withContext('input rows')
+        .toEqual([
+          jasmine.stringMatching(/^kept:doc:\/email→\/recipient/),
+          jasmine.stringMatching(/^dropped:doc:\/old→\/legacy/),
+          jasmine.stringMatching(/^added:.*→\/subject\*/),
+        ]);
+      expect(rows(`[data-test-id="${ids.outputMappingRow}"]`))
+        .withContext('sync rows')
+        .toEqual([
+          jasmine.stringMatching(/^kept:\/sent→doc:\/sent/),
+          jasmine.stringMatching(/^dropped:\/legacy→doc:\/legacy/),
+        ]);
+    });
 
     it('rejects input paths without a doc: or case: prefix and keeps them out of the preview', fakeAsync(() => {
       chainOverrides['draft-chain'] = {

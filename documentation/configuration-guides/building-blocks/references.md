@@ -96,18 +96,22 @@ version. Each container in the chain is marked **Draft** or **Finalized**.
 A container shared by several selected chains gets one new draft. Deselected chains keep using the
 current version. Select at least one reference to continue.
 
-### Differences
+### Input & Sync
 
-For each selected reference, the wizard compares this version with the target version. Each
-reference is marked **Configured** when no further input is needed.
+For each selected reference, the wizard shows the **Input** and **Sync** mappings of the link as they will
+be after the update, in the same layout as when you configure a building block link. Each mapping is
+marked with what happens to it. A reference is marked **Configured** when no further input is needed.
 
-<figure><img src="../../assets/configuration-guides/building-blocks/references/06-differences-step.png" alt=""><figcaption>Resolving differences</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/building-blocks/references/06-differences-step.png" alt=""><figcaption>Checking the input and sync mappings</figcaption></figure>
 
-| Difference                   | What to do                                                                                                            |
+| Mapping status               | Meaning                                                                                                               |
 |------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| Required input               | The target version requires an input the source did not. Enter the path that feeds it, starting with `doc:` or `case:` |
-| Plugin configuration         | The target version uses a plugin the source did not. Select a plugin configuration. Create one in plugin management first if none exists |
-| Dropped mappings             | Input or output mappings to fields that no longer exist in the target version. They are removed                       |
+| Unchanged                    | The mapping carries over to the target version as it is                                                              |
+| Removed                      | The target version does not have the building block field of this mapping. The mapping is removed                    |
+| New                          | The target version requires a field that is not mapped yet. Enter the path that feeds it, starting with `doc:` or `case:` |
+
+When the target version uses a plugin the source did not, select a configuration under **Plugin
+configurations**. Create one in plugin management first if none exists.
 
 You cannot continue while a reference is not fully configured.
 

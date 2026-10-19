@@ -88,22 +88,61 @@
     gap: var(--cds-spacing-04);
   }
 
-  &__input {
-    display: flex;
-    flex-direction: column;
-    gap: var(--cds-spacing-02);
+  // Rows use display: contents so every row shares the table's columns
+  &__mapping-table {
+    display: grid;
+    align-items: center;
+    column-gap: var(--cds-spacing-04);
+    row-gap: var(--cds-spacing-03);
+
+    &--input {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+    }
+
+    &--output {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto auto;
+    }
   }
 
-  &__mapping {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) auto minmax(0, 1fr);
-    align-items: end;
-    gap: var(--cds-spacing-04);
+  &__mapping-header,
+  &__mapping-row {
+    display: contents;
+  }
+
+  &__mapping-header > span {
+    font-size: var(--cds-label-01-font-size);
+    line-height: var(--cds-label-01-line-height);
+    letter-spacing: var(--cds-label-01-letter-spacing);
+    color: var(--cds-text-secondary);
+  }
+
+  &__mapping-value {
+    overflow-wrap: anywhere;
+    font-family: var(--cds-code-01-font-family);
+    font-size: var(--cds-code-01-font-size);
+    line-height: var(--cds-code-01-line-height);
+  }
+
+  &__mapping-row--dropped &__mapping-value {
+    color: var(--cds-text-secondary);
+    text-decoration: line-through;
   }
 
   &__mapping-arrow {
-    padding-bottom: var(--cds-spacing-03);
     color: var(--cds-icon-secondary);
+  }
+
+  &__mapping-note {
+    grid-column: 1 / -1;
+    margin-top: calc(-1 * var(--cds-spacing-02));
+    font-size: var(--cds-helper-text-01-font-size);
+    line-height: var(--cds-helper-text-01-line-height);
+    letter-spacing: var(--cds-helper-text-01-letter-spacing);
+    color: var(--cds-text-helper);
+  }
+
+  &__required {
+    color: var(--cds-text-error);
   }
 
   &__bullets {

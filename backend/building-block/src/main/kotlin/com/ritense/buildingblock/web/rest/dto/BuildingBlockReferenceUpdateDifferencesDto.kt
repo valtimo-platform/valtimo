@@ -21,6 +21,7 @@ import com.ritense.buildingblock.processlink.dto.BuildingBlockOutputMappingDto
 
 data class BuildingBlockReferenceUpdateDifferencesDto(
     val existingInputMappings: List<BuildingBlockInputMappingDto>,
+    val existingOutputMappings: List<BuildingBlockOutputMappingDto>,
     val missingRequiredInputs: List<String>,
     val droppedInputMappings: List<BuildingBlockInputMappingDto>,
     val droppedOutputMappings: List<BuildingBlockOutputMappingDto>,

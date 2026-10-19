@@ -253,6 +253,7 @@ class BuildingBlockReferenceUpdatePlannerTest {
         val differences = planner.analyze(planner.findChains().single()).differences
 
         assertThat(differences.existingInputMappings).containsExactly(keptInput, droppedInput)
+        assertThat(differences.existingOutputMappings).containsExactly(keptOutput, droppedOutput)
         assertThat(differences.droppedInputMappings).containsExactly(droppedInput)
         assertThat(differences.droppedOutputMappings).containsExactly(droppedOutput)
         assertThat(differences.missingRequiredInputs).isEmpty()
