@@ -38,11 +38,11 @@ export class DeleteInformatieObjectConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<DeleteInformatieObjectConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
@@ -58,7 +58,7 @@ export class DeleteInformatieObjectConfigurationComponent
     });
   }
 
-  formValueChange(formValue: DeleteInformatieObjectConfig): void {
+  public formValueChange(formValue: DeleteInformatieObjectConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
