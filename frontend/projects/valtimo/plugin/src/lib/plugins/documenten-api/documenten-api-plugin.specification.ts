@@ -166,6 +166,9 @@ const documentenApiPluginSpecification: PluginSpecification = {
       deleteInformatieObjectMessage:
         "Verwijdert een document (enkelvoudiginformatieobject) op basis van de opgegeven URL. " +
         "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
+      deleteInformatieObjectDocumentUrlTooltip:
+        "De volledige URL naar het enkelvoudiginformatieobject dat verwijderd moet worden, " +
+        "bijv. 'pv:documentUrl'",
     },
     en: {
       title: 'Documenten API',
@@ -288,6 +291,9 @@ const documentenApiPluginSpecification: PluginSpecification = {
       deleteInformatieObjectMessage:
         "Deletes a document (enkelvoudiginformatieobject) based on the given URL. " +
         "Process variables can be referenced using the notation 'pv:variableName'.",
+      deleteInformatieObjectDocumentUrlTooltip:
+        "The full URL to the enkelvoudiginformatieobject that should be deleted, " +
+        "e.g. 'pv:documentUrl'",
     },
   },
 };
