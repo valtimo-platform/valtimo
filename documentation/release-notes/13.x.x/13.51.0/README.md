@@ -31,4 +31,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Area name | New bugfix. |
-| Error responses | Error responses no longer include technical details such as stack traces for every client. These are now shown only for requests from the server itself. Check that your own `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`. |
+| Error responses | Error responses no longer include technical details such as stack traces for every client. Check that your own `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`. |
