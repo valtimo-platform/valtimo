@@ -152,10 +152,7 @@ export class DecisionTableManagementPage {
   // ─── Assertions ───────────────────────────────────────────────────
 
   async assertColumnHeaders(expected: string[]) {
-    const headers = (await this.page.locator('valtimo-carbon-list thead th').allInnerTexts()).map(h =>
-      h.trim()
-    );
-    for (const header of expected) expect(headers).toContain(header);
+    await new CarbonList(this.page).assertColumnHeadersContain(expected);
   }
 
   async assertDecisionVisible(key: string) {

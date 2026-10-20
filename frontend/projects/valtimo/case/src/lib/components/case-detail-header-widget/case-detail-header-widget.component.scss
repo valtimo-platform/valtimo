@@ -19,10 +19,14 @@
   width: 100%;
   justify-content: center;
   background: var(--cds-layer);
-  margin-top: 16px;
-  margin-bottom: 16px;
+  // Compact: the header is always in view, so it takes as little height as it can.
+  margin-block: var(--cds-spacing-03);
 
   &__loader {
-    margin: 16px;
+    margin: var(--cds-spacing-04);
+  }
+
+  > valtimo-widget-field {
+    padding-block: var(--cds-spacing-04);
   }
 }

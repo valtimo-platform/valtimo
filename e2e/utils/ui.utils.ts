@@ -1,5 +1,34 @@
 import { Locator, Page, expect } from '@playwright/test';
 
+export const TRANSLATION_TIMEOUT = 30_000;
+
+export async function readSettledLabels(
+  items: Locator,
+  timeout = TRANSLATION_TIMEOUT
+): Promise<string[]> {
+  let settledLabels: string[] = [];
+  await expect
+    .poll(async () => {
+      settledLabels = (await items.allInnerTexts()).map(label => label.trim());
+      return settledLabels.length > 0 && settledLabels.every(Boolean);
+    }, {timeout})
+    .toBe(true);
+
+  return settledLabels;
+}
+
+export async function expectSettledLabels(
+  items: Locator,
+  expected: unknown,
+  timeout = TRANSLATION_TIMEOUT
+): Promise<void> {
+  await expect
+    .poll(async () => (await items.allInnerTexts()).map(label => label.trim()).filter(Boolean), {
+      timeout,
+    })
+    .toEqual(expected);
+}
+
 /**
  * Fills an input and verifies the value survives.
  *
@@ -52,4 +81,19 @@ export async function switchVersion(page: Page, version: number) {
 export async function assertVersionIsVisible(page: Page, version: number) {
   const versionLabel = page.getByText(`Version: ${version}`, { exact: true });
   await expect(versionLabel).toBeVisible();
+}
+
+export async function openAndSelectOption(
+  combo: Locator,
+  option: Locator,
+  timeout = 30_000
+): Promise<void> {
+  await expect(combo).toBeVisible();
+
+  await expect(async () => {
+    if (!(await option.isVisible())) {
+      await combo.click({timeout: 5_000});
+    }
+    await option.click({timeout: 5_000});
+  }).toPass({timeout});
 }

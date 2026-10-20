@@ -35,6 +35,7 @@ import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {buildExternalPluginCompatibilityMessage} from '../../utils';
+import {PLUGIN_ADD_MODAL_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -66,6 +67,8 @@ export class PluginAddModalComponent implements OnDestroy {
   }
 
   @Output() public closeModal = new EventEmitter<boolean>();
+
+  protected readonly testIds = PLUGIN_ADD_MODAL_TEST_IDS;
 
   public readonly inputDisabled$ = this._stateService.inputDisabled$;
   public readonly selectedPluginDefinition$ = this._stateService.selectedPluginDefinition$;

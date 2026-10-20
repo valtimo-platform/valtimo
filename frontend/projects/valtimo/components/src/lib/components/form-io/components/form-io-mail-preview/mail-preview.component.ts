@@ -17,6 +17,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 import {FormioCustomComponent} from '../../../../modules';
+import {sanitizeEmailHtml} from './sanitize-email-html';
 
 @Component({
   selector: 'valtimo-mail-preview',
@@ -36,7 +37,7 @@ export class FormIoMailPreviewComponent implements FormioCustomComponent<string>
   @Input() public set value(v: string) {
     this._value = v;
     this.safeValue = this.sanitizer.bypassSecurityTrustHtml(
-      v ?? 'Hier wordt het e-mailvoorbeeld getoond.'
+      sanitizeEmailHtml(v ?? 'Hier wordt het e-mailvoorbeeld getoond.')
     );
   }
 

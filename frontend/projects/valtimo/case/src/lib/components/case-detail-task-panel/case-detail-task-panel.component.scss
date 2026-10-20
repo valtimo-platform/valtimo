@@ -1,0 +1,69 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Fills the side panel body; forms scroll inside so their back button stays in view.
+.case-detail-task-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  > valtimo-case-detail-task-detail {
+    display: block;
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+.start-form-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: var(--cds-spacing-03) var(--cds-spacing-05) var(--cds-spacing-05);
+
+  // Same height with or without the back button.
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+    min-height: var(--cds-spacing-09);
+  }
+
+  // A nested icon sits low in Carbon's icon-only padding.
+  &__back {
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  &__title {
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--cds-heading-compact-01-font-size);
+    font-weight: var(--cds-heading-compact-01-font-weight);
+    line-height: var(--cds-heading-compact-01-line-height);
+    color: var(--cds-text-primary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

@@ -16,25 +16,14 @@
 
 import {expect, type Locator} from '@playwright/test';
 
-/**
- * Wrapper for Carbon's `cds-toggle`.
- *
- * Two things make these toggles awkward to drive from a test:
- *
- *  - The clickable target is not obvious. The underlying `role="switch"` input is
- *    rendered 1x1px and visually hidden, and clicking the `.cds--toggle__switch`
- *    graphic is a no-op in some Carbon versions. The reliable targets are the
- *    `cds-toggle` host itself and its `<label>`, so `set()` alternates between
- *    them until the state actually flips.
- *  - The initial state is data-driven (it reflects whatever the backend returned),
- *    so a blind `click()` toggles in an unknown direction. `set()` always reads
- *    the current state first and only clicks when a change is needed, which also
- *    makes it idempotent.
- */
 export class CarbonToggle {
   constructor(private readonly host: Locator) {}
 
-  /** The visually hidden `role="switch"` input that carries the checked state. */
+  /**
+   * The `role="switch"` button that carries the checked state. Carbon renders it with
+   * `visually-hidden` (1x1px, `clip-path: inset(50%)`), so it can be read but never clicked —
+   * a real click on it always fails hit testing.
+   */
   get switchControl(): Locator {
     return this.host.getByRole('switch');
   }
@@ -63,15 +52,27 @@ export class CarbonToggle {
    * Drive the toggle to `checked`. No-op when it is already in that state.
    */
   async set(checked: boolean) {
-    const targets = [this.host, this.host.locator('label').first()];
     let attempt = 0;
 
     await expect(async () => {
-      if ((await this.isChecked()) !== checked) {
-        await targets[attempt++ % targets.length].click();
-      }
-      expect(await this.isChecked()).toBe(checked);
-    }).toPass({timeout: 15_000});
+      if ((await this.isChecked()) === checked) return;
+
+      await this.clickOnce(attempt++);
+      await expect(this.switchControl).toBeChecked({checked, timeout: 5_000});
+    }).toPass({timeout: 30_000});
+  }
+
+  async clickOnce(attempt = 0): Promise<void> {
+    // Park the pointer away so a tooltip from the previous interaction closes and stops eating clicks
+    await this.host.page().mouse.move(0, 0);
+
+    // Both targets are reachable. The visually hidden `role="switch"` button is not — a click on
+    // it can only ever time out, so it is deliberately absent here.
+    const targets = [this.host.locator('label').first(), this.host];
+    const target = targets[attempt % targets.length];
+
+    // A real click, hit testing included: a control a user cannot reach must fail the test.
+    await target.click({timeout: 5_000});
   }
 
   async enable() {
