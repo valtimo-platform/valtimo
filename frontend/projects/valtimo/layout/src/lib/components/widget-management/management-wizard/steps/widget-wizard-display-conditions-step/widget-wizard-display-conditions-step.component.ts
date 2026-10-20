@@ -15,7 +15,6 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed} from '@angular/core';
-import {toObservable} from '@angular/core/rxjs-interop';
 import {AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
@@ -32,7 +31,7 @@ import {
   StructuredListModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {filter, map, Observable, take} from 'rxjs';
+import {map, Observable, of} from 'rxjs';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
@@ -71,19 +70,15 @@ export class WidgetWizardDisplayConditionsStepComponent {
       )
     );
 
-  public readonly defaultConditionValues$ = toObservable(
-    this.widgetWizardService.$widgetDisplayConditions
+  public readonly defaultConditionValues$ = of(
+    this.widgetWizardService.$widgetDisplayConditions()
   ).pipe(
-    filter(conditions => !!conditions),
-    take(1),
-    map((conditions: Array<Condition<string>> | null) =>
-      !conditions
-        ? []
-        : conditions.map(condition => ({
-            key: condition.path,
-            dropdown: condition.operator,
-            value: condition.value,
-          }))
+    map((conditions: Array<Condition<string>> | null | undefined) =>
+      (conditions ?? []).map(condition => ({
+        key: condition.path,
+        dropdown: condition.operator,
+        value: condition.value,
+      }))
     )
   );
 

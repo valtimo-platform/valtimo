@@ -30,4 +30,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Widget management | Typing in the value field of a new widget display condition no longer makes the field lose focus. |
