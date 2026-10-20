@@ -528,6 +528,26 @@ test.describe('Case details - Process links', () => {
 
         await expect(processLinksPage.completeButton).toBeDisabled();
       });
+
+      test('Complete is disabled when the document URL is not an absolute URL', async () => {
+        await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+        await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+        await processLinksPage.clickNext();
+
+        await processLinksPage.deleteInformatieObjectDocumentUrlInput.fill('not-a-url');
+
+        await expect(processLinksPage.completeButton).toBeDisabled();
+      });
+
+      test('Complete is disabled when a resolver expression has no path', async () => {
+        await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+        await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+        await processLinksPage.clickNext();
+
+        await processLinksPage.deleteInformatieObjectDocumentUrlInput.fill('pv:');
+
+        await expect(processLinksPage.completeButton).toBeDisabled();
+      });
     });
 
     test.describe('Persisted link', () => {
