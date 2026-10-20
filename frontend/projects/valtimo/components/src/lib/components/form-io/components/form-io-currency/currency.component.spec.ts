@@ -44,7 +44,8 @@ describe('FormIoCurrencyComponent', () => {
   const renderedValue = (): string => renderedValueOf(fixture);
 
   // Stands in for a user edit: a raw value change that does not come from rendering an input.
-  const enterValue = (value: number | null): void => {
+  // An empty string stands in for the user clearing the input.
+  const enterValue = (value: number | ''): void => {
     (component as any)._autoNumeric.set(value);
   };
 
@@ -92,10 +93,10 @@ describe('FormIoCurrencyComponent', () => {
       expect(values).toEqual([]);
     });
 
-    it('should render an empty input when there is no value', () => {
+    it('should render a currency symbol, when there is no value', () => {
       applyInputs();
 
-      expect(renderedValue()).toBe('');
+      expect(renderedValue()).toBe('€ ');
     });
   });
 
@@ -192,10 +193,10 @@ describe('FormIoCurrencyComponent', () => {
       applyInputs(100);
       const values = emittedValues();
 
-      enterValue(null);
+      enterValue('');
 
       expect(values).toEqual([null]);
-      expect(renderedValue()).toBe('');
+      expect(renderedValue()).toBe('€ ');
     });
   });
 });
