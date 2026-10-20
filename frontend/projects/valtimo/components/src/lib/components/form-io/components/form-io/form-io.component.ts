@@ -65,15 +65,18 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.options$.next(optionsValue);
   }
   @Input() set submission(submissionValue: FormioSubmission) {
+    this.releaseSubmit();
     this.submission$.next(submissionValue);
   }
   @Input() set form(formValue: FormioForm) {
+    this.releaseSubmit();
     this._form$.next(formValue);
   }
   @Input() set readOnly(readOnlyValue: boolean) {
     this.readOnly$.next(readOnlyValue);
   }
   @Input() set errors(errorsValue: Array<string>) {
+    if (errorsValue?.length) this.failSubmit();
     this.errors$.next(errorsValue ?? []);
   }
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
@@ -155,6 +158,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     ? this.localStorageService.tokenSetInLocalStorage$
     : this._inMemoryTokenSet$.asObservable();
 
+  private _formioSource: FormIoSourceComponent | null = null;
+  private _submitting = false;
+
   private _tokenRefreshTimerSubscription!: Subscription;
   private _formRefreshSubscription!: Subscription;
 
@@ -206,15 +212,24 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public showErrors(errors: string[]): void {
+    this.failSubmit();
     this.errors$.next(errors);
   }
 
   public onSubmit(submission: FormioSubmission): void {
+    if (this._submitting) return;
+    if (this.submit.observed) this._submitting = true;
+
     this.errors$.next([]);
     this.submit.emit(submission);
   }
 
+  public releaseSubmit(): void {
+    this._submitting = false;
+  }
+
   public formReady(form: FormIoSourceComponent): void {
+    this._formioSource = form;
     this.stateService.currentForm = form;
   }
 
@@ -232,6 +247,13 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public prevPage(): void {
     this.scrollToTop();
+  }
+
+  private failSubmit(): void {
+    if (!this._submitting) return;
+
+    this.releaseSubmit();
+    this._formioSource?.formio?.emit('submitError');
   }
 
   private openReloadFormSubscription(): void {
