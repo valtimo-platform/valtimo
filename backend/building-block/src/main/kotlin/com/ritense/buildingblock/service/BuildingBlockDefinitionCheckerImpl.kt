@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,8 +77,12 @@ class BuildingBlockDefinitionCheckerImpl(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         final: Boolean
     ) {
-        if (!isDraftEnvironment()) {
+        if (!final && !isDraftEnvironment()) {
             error("Failed to create/update BuildingBlockDefinition $buildingBlockDefinitionId. This Valtimo environment does not support drafts. Missing one of the following Spring profiles: [$draftEnvironments]")
+        }
+        val existing = repository.findByIdOrNull(buildingBlockDefinitionId)
+        if (existing != null && existing.final) {
+            error("Failed to update BuildingBlockDefinition $buildingBlockDefinitionId. This building block definition is final.")
         }
     }
 

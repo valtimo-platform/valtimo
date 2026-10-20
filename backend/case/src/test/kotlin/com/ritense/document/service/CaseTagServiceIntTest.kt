@@ -22,14 +22,17 @@ import com.ritense.document.domain.CaseTagColor
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.exception.CaseTagAlreadyExistsException
+import com.ritense.document.exception.CaseTagInUseException
 import com.ritense.document.exception.CaseTagNotFoundException
 import com.ritense.document.repository.CaseTagRepository
 import com.ritense.document.web.rest.dto.CaseTagCreateRequestDto
 import com.ritense.document.web.rest.dto.CaseTagUpdateRequestDto
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import jakarta.persistence.EntityManager
 import jakarta.validation.ConstraintViolationException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.semver4j.Semver
@@ -44,7 +47,8 @@ import kotlin.test.assertNull
 @Transactional
 class CaseTagServiceIntTest @Autowired constructor(
     private val caseTagService: CaseTagService,
-    private val caseTagRepository: CaseTagRepository
+    private val caseTagRepository: CaseTagRepository,
+    private val entityManager: EntityManager,
 ) : BaseIntegrationTest() {
 
     @Test
@@ -480,6 +484,63 @@ class CaseTagServiceIntTest @Autowired constructor(
         assertThrows<AccessDeniedException> {
             caseTagService.delete(caseDefinitionId, "some-tag")
         }
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `deleteAll removes case tags that are in use`() {
+        val caseDefinitionId = caseDefinitionId()
+        AuthorizationContext.runWithoutAuthorization {
+            caseTagService.create(
+                caseDefinitionId,
+                CaseTagCreateRequestDto("some-tag", "Some Tag", CaseTagColor.MAGENTA)
+            )
+        }
+        val document = JsonSchemaDocument.create(
+            definition(),
+            JsonDocumentContent("{\"street\": \"Funenpark\"}"),
+            BaseTest.USERNAME,
+            documentSequenceGeneratorService,
+            null
+        ).resultingDocument().get()
+        documentRepository.save(document)
+        documentService.addCaseTag(document.id, "some-tag")
+        entityManager.flush()
+        entityManager.clear()
+        assertThrows<CaseTagInUseException> {
+            AuthorizationContext.runWithoutAuthorization { caseTagService.delete(caseDefinitionId, "some-tag") }
+        }
+
+        AuthorizationContext.runWithoutAuthorization { caseTagService.deleteAll(caseDefinitionId) }
+        entityManager.flush()
+        entityManager.clear()
+
+        assertTrue(caseTagRepository.findByIdCaseDefinitionIdOrderByOrder(caseDefinitionId).isEmpty())
+        assertTrue(documentService.findBy(document.id).get().caseTags().isEmpty())
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [ADMIN])
+    fun `deleteAll succeeds while a tagged document is loaded`() {
+        val caseDefinitionId = caseDefinitionId()
+        AuthorizationContext.runWithoutAuthorization {
+            caseTagService.create(caseDefinitionId, CaseTagCreateRequestDto("some-tag", "Some Tag", CaseTagColor.MAGENTA))
+        }
+        val document = JsonSchemaDocument.create(
+            definition(), JsonDocumentContent("{\"street\": \"Funenpark\"}"), BaseTest.USERNAME, documentSequenceGeneratorService, null
+        ).resultingDocument().get()
+        documentRepository.save(document)
+        documentService.addCaseTag(document.id, "some-tag")
+        entityManager.flush()
+        entityManager.clear()
+        val loaded = documentService.findBy(document.id).get()
+        assertEquals(1, loaded.caseTags().size)
+
+        AuthorizationContext.runWithoutAuthorization { caseTagService.deleteAll(caseDefinitionId) }
+        entityManager.flush()
+        entityManager.clear()
+
+        assertTrue(caseTagRepository.findByIdCaseDefinitionIdOrderByOrder(caseDefinitionId).isEmpty())
     }
 
     companion object {

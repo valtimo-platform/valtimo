@@ -22,8 +22,11 @@ import com.ritense.valtimo.repository.UserSettingsRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 public class UserSettingsService {
+
+    private static final int SAVE_ATTEMPTS = 3;
 
     private final UserSettingsRepository userSettingsRepository;
 
@@ -36,11 +39,24 @@ public class UserSettingsService {
     }
 
     public void saveUserSettings(ManageableUser user, Map<String, Object> settings) {
-        Map<String, Object> existing = userSettingsRepository.findById(user.getUsername())
+        for (int attempt = 1; attempt <= SAVE_ATTEMPTS; attempt++) {
+            try {
+                mergeAndSave(user, settings);
+                return;
+            } catch (DataIntegrityViolationException e) {
+                if (attempt == SAVE_ATTEMPTS) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    private void mergeAndSave(ManageableUser user, Map<String, Object> settings) {
+        Map<String, Object> merged = userSettingsRepository.findById(user.getUsername())
             .map(UserSettings::getSettings)
             .map(HashMap::new)
             .orElseGet(HashMap::new);
-        existing.putAll(settings);
-        userSettingsRepository.save(new UserSettings(user.getUsername(), existing));
+        merged.putAll(settings);
+        userSettingsRepository.saveAndFlush(new UserSettings(user.getUsername(), merged));
     }
 }

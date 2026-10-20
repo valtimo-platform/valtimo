@@ -182,6 +182,7 @@ export const FRONTEND_BUNDLE_TYPES = [
   "case-widget",
   "page",
   "task-form",
+  "side-panel",
 ] as const;
 
 export type FrontendBundleType = (typeof FRONTEND_BUNDLE_TYPES)[number];

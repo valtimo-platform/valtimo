@@ -30,3 +30,4 @@ export * from './user-interface.service';
 export * from './valtimo-modal.service';
 export * from './value-condition-tree.service';
 export * from './value-path-selector.service';
+export * from './side-panel.service';

@@ -20,6 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
+  groupWidgetData,
   MetrolineWidget,
   WidgetAction,
   WidgetDataGroupService,
@@ -65,7 +66,14 @@ export class CaseWidgetMetrolineComponent extends WidgetProcess {
 
   public readonly widgetData$: Observable<any[] | {} | null> = this.widgetConfiguration$.pipe(
     filter(widget => !!widget),
-    switchMap(widget => this.widgetDataGroupService.dataFor(widget.key)),
+    switchMap(widget =>
+      groupWidgetData(
+        this.widgetDataGroupService,
+        this.widgetLayoutService,
+        widget.key,
+        () => this.widgetUuid
+      )
+    ),
     tap(() => {
       this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
     }),

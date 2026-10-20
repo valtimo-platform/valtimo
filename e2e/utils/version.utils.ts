@@ -19,6 +19,17 @@ import {expect, Page} from '@playwright/test';
 const VERSION_DROPDOWN_TEST_ID = 'caseVersionSelectDropdown';
 
 /**
+ * Budgets for the waits inside one `SELECT_TIMEOUT` attempt.
+ *
+ * `toPass` cannot cancel an attempt that is already running — it only stops starting new ones. An
+ * inner wait that allows itself as much as the whole loop therefore overruns the loop and reports
+ * a bare predicate timeout, with nothing said about what the page was actually showing.
+ */
+const SELECT_TIMEOUT = 60_000;
+const SETTLE_TIMEOUT = 10_000;
+const READ_TIMEOUT = 10_000;
+
+/**
  * Waits until the URL stops changing.
  *
  * Selecting a version triggers a navigation that the app follows up with a redirect to the
@@ -31,18 +42,19 @@ async function waitForUrlToSettle(page: Page, quietMs = 750): Promise<void> {
     const before = page.url();
     await page.waitForTimeout(quietMs);
     expect(page.url()).toBe(before);
-  }).toPass({timeout: 20_000});
+  }).toPass({timeout: SETTLE_TIMEOUT});
 }
 
 async function getDropdownText(page: Page): Promise<string> {
   const dropdown = page.getByTestId(VERSION_DROPDOWN_TEST_ID);
-  await dropdown.waitFor({state: 'visible'});
+  await dropdown.waitFor({state: 'visible', timeout: READ_TIMEOUT});
   await page.waitForFunction(
     testId => {
       const el = document.querySelector(`[data-test-id="${testId}"]`);
       return el && /\d+\.\d+\.\d+/.test(el.textContent || '');
     },
-    VERSION_DROPDOWN_TEST_ID
+    VERSION_DROPDOWN_TEST_ID,
+    {timeout: READ_TIMEOUT}
   );
   return dropdown.innerText();
 }
@@ -64,14 +76,17 @@ export async function ensureDraftVersionSelected(page: Page): Promise<string> {
         .locator('[data-test-id^="caseVersion"]:has-text("DRAFT")')
         .first();
       await draftOption.click();
-      await page.waitForURL(url => url.toString() !== currentUrl);
+      await page.waitForURL(url => url.toString() !== currentUrl, {timeout: SETTLE_TIMEOUT});
     }
 
     // Only trust the selection once the navigation it triggers has finished: the app can still
     // redirect afterwards, which would otherwise strand the caller on the previous version.
     await waitForUrlToSettle(page);
-    expect(await getDropdownText(page)).toContain('DRAFT');
-  }).toPass({timeout: 60_000});
+    const selected = await getDropdownText(page);
+    expect(selected, `version dropdown should show a draft, showed "${selected}"`).toContain(
+      'DRAFT'
+    );
+  }).toPass({timeout: SELECT_TIMEOUT});
 
   return getVersionFromUrl(page);
 }
@@ -93,12 +108,16 @@ export async function ensureFinalVersionSelected(page: Page): Promise<string> {
         .locator('[data-test-id^="caseVersion"]:not(:has-text("DRAFT"))')
         .first();
       await finalOption.click();
-      await page.waitForURL(url => url.toString() !== currentUrl);
+      await page.waitForURL(url => url.toString() !== currentUrl, {timeout: SETTLE_TIMEOUT});
     }
 
     await waitForUrlToSettle(page);
-    expect(await getDropdownText(page)).not.toContain('DRAFT');
-  }).toPass({timeout: 60_000});
+    const selected = await getDropdownText(page);
+    expect(
+      selected,
+      `version dropdown should show a final version, showed "${selected}"`
+    ).not.toContain('DRAFT');
+  }).toPass({timeout: SELECT_TIMEOUT});
 
   return getVersionFromUrl(page);
 }

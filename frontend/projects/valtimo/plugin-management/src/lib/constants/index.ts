@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
+export * from './plugin-add-modal.test-ids';
 export * from './plugin-app-add-modal.test-ids';
 export * from './plugin-external-review-modal.test-ids';
