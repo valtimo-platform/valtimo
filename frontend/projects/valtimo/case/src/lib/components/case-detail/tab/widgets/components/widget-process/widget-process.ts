@@ -14,14 +14,24 @@
  * limitations under the License.
  */
 
-import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
-import {PermissionService} from '@valtimo/access-control';
-import {DocumentService, StartableItem} from '@valtimo/document';
+import {inject} from '@angular/core';
 import {
-  CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION,
-  WIDGET_PERMISSION_RESOURCE,
-} from '../../widgets.permissions';
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  filter,
+  map,
+  merge,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+} from 'rxjs';
+import {DocumentService, StartableItem} from '@valtimo/document';
 import {BasicWidget} from '@valtimo/layout';
+import {SseService} from '@valtimo/sse';
+import {TaskUpdateSseEvent} from '@valtimo/task';
+import {DocumentUpdatedSseEvent} from '../../../../../../models';
 
 export class WidgetProcess {
   private readonly _baseDocumentId$ = new BehaviorSubject<string | null>(null);
@@ -36,6 +46,14 @@ export class WidgetProcess {
     return this._baseDocumentId$.getValue();
   }
 
+  private readonly _sseService = inject(SseService);
+
+  /** The same case events on which the case's "start" menu reloads its startable items. */
+  private readonly _caseUpdates$: Observable<TaskUpdateSseEvent | DocumentUpdatedSseEvent> = merge(
+    this._sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
+    this._sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
+  );
+
   private readonly _startableItems$ = combineLatest([
     this._baseDocumentId$,
     this._baseWidgetConfiguration$,
@@ -48,39 +66,29 @@ export class WidgetProcess {
       ) {
         return of(null);
       }
-      return this.documentService.getStartableItems({caseDocumentId: documentId});
+      return this._caseUpdates$.pipe(
+        filter(event => event?.documentId === documentId),
+        debounceTime(300),
+        startWith(null),
+        switchMap(() => this.documentService.getStartableItems({caseDocumentId: documentId}))
+      );
     })
   );
 
+  /** The startable items are the same PBAC-aware source the case's "start" menu uses. */
   public readonly canCreateCamundaExecution$: Observable<boolean> = combineLatest([
     this._startableItems$,
     this._baseWidgetConfiguration$,
   ]).pipe(
-    switchMap(
-      ([startableItems, widgetConfiguration]: [
-        StartableItem[] | null,
-        BasicWidget | null,
-      ]) => {
-        const processDefinitionKey = widgetConfiguration?.actions?.[0]?.processDefinitionKey;
-        const requiredProcess = startableItems?.find(
-          (item: StartableItem) =>
-            item.key === processDefinitionKey && !!item.processDefinitionId
-        );
+    map(([startableItems, widgetConfiguration]: [StartableItem[] | null, BasicWidget | null]) => {
+      const processDefinitionKey = widgetConfiguration?.actions?.[0]?.processDefinitionKey;
 
-        if (!requiredProcess) {
-          return of(false);
-        }
-
-        return this.permissionService.requestPermission(CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION, {
-          resource: WIDGET_PERMISSION_RESOURCE.camundaProcessDefinition,
-          identifier: requiredProcess.processDefinitionId,
-        });
-      }
-    )
+      return !!startableItems?.some(
+        (item: StartableItem) =>
+          item.type === 'PROCESS' && item.key === processDefinitionKey && !!item.processDefinitionId
+      );
+    })
   );
 
-  constructor(
-    protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService
-  ) {}
+  constructor(protected readonly documentService: DocumentService) {}
 }

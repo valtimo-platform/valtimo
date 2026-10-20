@@ -17,7 +17,6 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
 import {MdiIconViewerComponent} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
@@ -93,14 +92,13 @@ export class CaseWidgetExternalPluginComponent extends WidgetProcess implements 
 
   constructor(
     protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
     private readonly caseTabService: CaseTabService,
     private readonly caseWidgetsApiService: CaseWidgetsApiService,
     private readonly widgetLayoutService: WidgetLayoutService,
     private readonly widgetsService: WidgetsService,
     protected readonly sessionService: ExternalPluginSessionService
   ) {
-    super(documentService, permissionService);
+    super(documentService);
   }
 
   public ngOnInit(): void {
