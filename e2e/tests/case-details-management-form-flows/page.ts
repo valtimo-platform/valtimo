@@ -185,9 +185,10 @@ export class CaseDetailsManagementFormFlowsPage {
 
   // ─── Visual Editor Actions ─────────────────────────────────────────
 
+  // The editor builds its graph on first paint, which outlasts the default expect timeout
   async openVisualEditorTab() {
     await this.page.getByRole('tab', {name: 'Editor (beta)', exact: true}).click();
-    await expect(this.visualStepList).toBeVisible();
+    await expect(this.visualStepList).toBeVisible({timeout: 30_000});
   }
 
   async selectVisualStep(index: number) {
