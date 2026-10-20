@@ -16,7 +16,9 @@
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TranslateModule} from '@ngx-translate/core';
+import {SidePanelService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/shared';
+import {of} from 'rxjs';
 import {ExternalPluginIframeComponent} from './external-plugin-iframe.component';
 
 describe('ExternalPluginIframeComponent', () => {
@@ -336,6 +338,151 @@ describe('ExternalPluginIframeComponent', () => {
       component.ngOnInit();
 
       expect(component.$trustedUrl()).toBeNull();
+    });
+  });
+  describe('side panel offers', () => {
+    let iframe: HTMLIFrameElement;
+    let sidePanelService: jasmine.SpyObj<SidePanelService>;
+
+    const sendPanelMessage = (event: string, payload: unknown): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event, payload},
+        source: iframe.contentWindow,
+      } as MessageEvent);
+
+    beforeEach(() => {
+      sidePanelService = jasmine.createSpyObj<SidePanelService>('SidePanelService', [
+        'offer',
+        'withdraw',
+      ]);
+      (sidePanelService as any).current$ = of(null);
+      (component as any)._sidePanelService = sidePanelService;
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+      component.configurationId = 'config-1';
+      component.context = {documentId: 'doc-1', caseDefinitionKey: 'plan'};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    it('offers a namespaced key with its case as origin and the trusted context over the plugin context', () => {
+      sendPanelMessage('offerPanel', {
+        bundleKey: 'evaluatie',
+        key: 'session-1',
+        title: 'Evaluatie',
+        subtitle: 'Plan A',
+        pinned: true,
+        context: {documentId: 'forged', evaluationId: 'e-1'},
+      });
+
+      const offer = sidePanelService.offer.calls.mostRecent().args[0];
+      expect(offer.key).toBe('external-plugin:config-1:evaluatie:session-1:doc-1');
+      expect(offer.origin?.route).toEqual(['/cases', 'plan', 'document', 'doc-1']);
+      expect(offer.pinned).toBeTrue();
+      expect(offer.inputs?.['context']).toEqual({
+        documentId: 'doc-1',
+        caseDefinitionKey: 'plan',
+        evaluationId: 'e-1',
+      });
+    });
+
+    it('keeps keys distinct when bundle key or key contains the separator', () => {
+      sendPanelMessage('offerPanel', {bundleKey: 'a:b', key: 'c', title: 'Evaluatie'});
+      sendPanelMessage('offerPanel', {bundleKey: 'a', key: 'b:c', title: 'Evaluatie'});
+
+      const [first, second] = sidePanelService.offer.calls.allArgs().map(([offer]) => offer.key);
+      expect(first).not.toBe(second);
+    });
+
+    it('does not pin unless the plugin asks', () => {
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie'});
+
+      expect(sidePanelService.offer.calls.mostRecent().args[0].pinned).toBeFalsy();
+    });
+
+    it('ignores an offer with a non-boolean pinned', () => {
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie', pinned: 'yes'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('ignores an offer without a title', () => {
+      sendPanelMessage('offerPanel', {key: 'session-1'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('ignores an offer from a surface without a configuration', () => {
+      component.configurationId = null;
+
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('gives the same key offered for another case its own panel', () => {
+      sendPanelMessage('offerPanel', {key: 'notes', title: 'Notes'});
+      component.context = {documentId: 'doc-2', caseDefinitionKey: 'plan'};
+      sendPanelMessage('offerPanel', {key: 'notes', title: 'Notes'});
+
+      const [first, second] = sidePanelService.offer.calls.allArgs().map(([offer]) => offer);
+      expect(first.key).not.toBe(second.key);
+      expect(second.inputs?.['context']).toEqual({documentId: 'doc-2', caseDefinitionKey: 'plan'});
+    });
+
+    it('ignores a case named by the plugin on a surface without a case', () => {
+      component.context = {};
+
+      sendPanelMessage('offerPanel', {
+        key: 'session-1',
+        title: 'Evaluatie',
+        context: {documentId: 'forged', caseDefinitionKey: 'forged', evaluationId: 'e-1'},
+      });
+
+      const offer = sidePanelService.offer.calls.mostRecent().args[0];
+      expect(offer.origin).toBeUndefined();
+      expect(offer.inputs?.['context']).toEqual({evaluationId: 'e-1'});
+    });
+
+    it('resolves the case of a surface that only knows its document', () => {
+      const documentService = jasmine.createSpyObj('DocumentService', [
+        'getDocument',
+        'getActiveCaseDefinition',
+        'getDocumentDefinition',
+      ]);
+      documentService.getDocument.and.returnValue(of({definitionId: {name: 'plan'}}));
+      (component as any)._injector = {get: () => documentService};
+      component.context = {documentId: 'doc-1', taskId: 'task-1'};
+
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie'});
+
+      const offer = sidePanelService.offer.calls.mostRecent().args[0];
+      expect(offer.origin?.route).toEqual(['/cases', 'plan', 'document', 'doc-1']);
+    });
+
+    it('withdraws its content offered for any case', () => {
+      (sidePanelService as any).current$ = of({
+        key: 'external-plugin:config-1:evaluatie:session-1:doc-9',
+      });
+
+      sendPanelMessage('withdrawPanel', {bundleKey: 'evaluatie', key: 'session-1'});
+
+      expect(sidePanelService.withdraw).toHaveBeenCalledWith(
+        'external-plugin:config-1:evaluatie:session-1:doc-9'
+      );
+    });
+
+    it('does not withdraw content of another configuration', () => {
+      (sidePanelService as any).current$ = of({
+        key: 'external-plugin:config-2:evaluatie:session-1:doc-1',
+      });
+
+      sendPanelMessage('withdrawPanel', {bundleKey: 'evaluatie', key: 'session-1'});
+
+      expect(sidePanelService.withdraw).not.toHaveBeenCalled();
     });
   });
 });

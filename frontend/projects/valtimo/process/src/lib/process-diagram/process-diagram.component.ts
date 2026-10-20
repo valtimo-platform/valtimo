@@ -28,6 +28,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import {Observable} from 'rxjs';
 import {ProcessService} from '../process.service';
 import {SkippableTimer} from '../models';
 
@@ -53,6 +54,8 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   @Output() public skipTimerEvent: EventEmitter<SkippableTimer> = new EventEmitter();
   @Input() public processDefinitionKey?: string;
   @Input() public processInstanceId?: string;
+  @Input() public caseId?: string;
+  @Input() public diagramScope: 'generic' | 'view' | 'inspect' = 'generic';
   @Input() public skippableTimers: SkippableTimer[] = [];
   @Input() public canSkipTimer = false;
   @Input() public skipTimerLabel = 'Skip timer';
@@ -129,6 +132,8 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
       this.loadProcessDefinitionFromKey(this.processDefinitionKey);
     } else if (changes['processInstanceId'] && this.processInstanceId) {
       this.loadProcessInstanceXml(this.processInstanceId);
+    } else if (changes['caseId'] && !changes['caseId'].firstChange && this.processInstanceId) {
+      this.loadProcessInstanceXml(this.processInstanceId);
     } else if (
       changes['reloadToken'] &&
       !changes['reloadToken'].firstChange &&
@@ -177,11 +182,21 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
 
   private loadProcessInstanceXml(processInstanceId) {
     this._imported = false;
-    this.processService.getProcessXml(processInstanceId).subscribe(response => {
+    this.getProcessInstanceXml$(processInstanceId).subscribe(response => {
       this.processDiagram = response;
       this.bpmnViewer.importXML(this.processDiagram.bpmn20Xml);
       this.bpmnViewer.attachTo(this.el.nativeElement);
     });
+  }
+
+  private getProcessInstanceXml$(processInstanceId: string): Observable<any> {
+    if (this.caseId && this.diagramScope === 'view') {
+      return this.processService.getCaseProcessInstanceXml(this.caseId, processInstanceId);
+    }
+    if (this.caseId && this.diagramScope === 'inspect') {
+      return this.processService.getCaseInspectionProcessInstanceXml(this.caseId, processInstanceId);
+    }
+    return this.processService.getProcessXml(processInstanceId);
   }
 
   private renderSkipTimerOverlays(): void {

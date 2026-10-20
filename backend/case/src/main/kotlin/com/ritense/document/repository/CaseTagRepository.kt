@@ -20,6 +20,7 @@ import com.ritense.document.domain.CaseTag
 import com.ritense.document.domain.CaseTagId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
@@ -63,4 +64,30 @@ interface CaseTagRepository : JpaRepository<CaseTag, CaseTagId> {
         @Param("caseDefinitionKey") caseDefinitionKey: String,
         @Param("caseDefinitionVersionTag") caseDefinitionVersionTag: String
     ): Boolean
+
+    @Modifying(flushAutomatically = true)
+    @Query(
+        value = """
+            DELETE FROM case_tag_link
+            WHERE case_definition_key = :caseDefinitionKey
+            AND case_definition_version_tag = :caseDefinitionVersionTag
+        """, nativeQuery = true
+    )
+    fun deleteCaseTagLinks(
+        @Param("caseDefinitionKey") caseDefinitionKey: String,
+        @Param("caseDefinitionVersionTag") caseDefinitionVersionTag: String
+    )
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM case_tag
+            WHERE case_definition_key = :caseDefinitionKey
+            AND case_definition_version_tag = :caseDefinitionVersionTag
+        """, nativeQuery = true
+    )
+    fun deleteCaseTags(
+        @Param("caseDefinitionKey") caseDefinitionKey: String,
+        @Param("caseDefinitionVersionTag") caseDefinitionVersionTag: String
+    )
 }
