@@ -161,6 +161,15 @@ class CaseTagService(
         reorder(caseDefinitionId)
     }
 
+    fun deleteAll(caseDefinitionId: CaseDefinitionId) {
+        denyManagementOperation()
+
+        // Bulk only: entity removal breaks flush of loaded documents still referencing the tags
+        val versionTag = SemverConverter.convertToDatabaseColumn(caseDefinitionId.versionTag)!!
+        caseTagRepository.deleteCaseTagLinks(caseDefinitionId.key, versionTag)
+        caseTagRepository.deleteCaseTags(caseDefinitionId.key, versionTag)
+    }
+
     private fun reorder(caseDefinitionId: CaseDefinitionId) {
         val caseTags = caseTagRepository.findByIdCaseDefinitionIdOrderByOrder(
             caseDefinitionId

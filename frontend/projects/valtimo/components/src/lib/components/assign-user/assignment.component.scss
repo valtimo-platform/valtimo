@@ -99,6 +99,26 @@
   width: 250px;
 }
 
+.assignment-container--compact {
+  // Square `md` icon button; the toggletip trigger loses Carbon's icon-only padding.
+  .assign-button,
+  .click-to-edit-button {
+    inline-size: var(--cds-spacing-08);
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .assigned-display {
+    justify-content: center;
+    gap: var(--cds-spacing-02);
+  }
+
+  .assignment-pill {
+    max-width: none;
+  }
+}
+
 .click-to-edit-button {
   width: 100%;
 }

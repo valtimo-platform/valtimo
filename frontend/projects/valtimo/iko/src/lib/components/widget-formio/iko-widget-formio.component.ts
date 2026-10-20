@@ -22,6 +22,7 @@ import {FormIoModule} from '@valtimo/components';
 import {ButtonModule} from 'carbon-components-angular';
 import {
   FormioWidgetWidgetWithUuid,
+  groupWidgetData,
   WidgetDataGroupService,
   WidgetFormioComponent,
   WidgetLayoutService,
@@ -51,7 +52,14 @@ export class IkoWidgetFormioComponent {
 
   public readonly widgetData$ = this.widgetConfiguration$.pipe(
     switchMap(widgetConfiguration =>
-      !widgetConfiguration ? of(null) : this.widgetDataGroupService.dataFor(widgetConfiguration.key)
+      !widgetConfiguration
+        ? of(null)
+        : groupWidgetData(
+            this.widgetDataGroupService,
+            this.widgetLayoutService,
+            widgetConfiguration.key,
+            () => this.widgetUuid
+          )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );

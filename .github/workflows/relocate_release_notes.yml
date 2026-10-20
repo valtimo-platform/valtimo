@@ -1,0 +1,362 @@
+name: Relocate release notes
+run-name: >-
+  Relocate release notes${{ inputs.only_pr && format(' for PR #{0}', inputs.only_pr) || '' }}
+
+# Moves an open PR's release note out of a shipped folder into the one its base branch is collecting.
+# detect (no secrets) -> relocate (Claude, no write token) -> push (App token, no AI).
+# Logic and tests: .github/scripts/release-notes. Prompt: .github/prompts/relocate-release-notes*.md.
+# Both are loaded from the workflow's own commit, never from a PR checkout.
+
+on:
+  # Every notes change on next-minor, not only the cut: a sweep is cheap, and PRs already attempted for this version are skipped.
+  # claude-code-action rejects push events, so a push only dispatches a run.
+  push:
+    branches:
+      - next-minor
+    paths:
+      - documentation/release-notes/**
+  # rc and next-major have no cut event to hang off; the weekly sweep covers them.
+  schedule:
+    - cron: "0 0 * * 4"
+  # Push and retry path: sweeps all lines, and with only_pr ignores earlier attempts.
+  workflow_dispatch:
+    inputs:
+      only_pr:
+        description: "Limit the run to a single PR number (blank = all stale PRs)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# A queued sweep replacing another is harmless: every sweep covers every line. A single-PR retry queues apart, so it never replaces one.
+concurrency:
+  group: relocate-release-notes${{ inputs.only_pr && format('-pr-{0}', inputs.only_pr) || '' }}
+  cancel-in-progress: false
+
+env:
+  NOTES_BASE: documentation/release-notes
+  SCRIPTS: .github/scripts/release-notes
+  CLAUDE_MODEL: claude-sonnet-5-5
+  MAX_PRS: "25"
+  # A contributor's branch is checked out; no git invocation may run its hooks.
+  GIT_CONFIG_COUNT: "1"
+  GIT_CONFIG_KEY_0: core.hooksPath
+  GIT_CONFIG_VALUE_0: /dev/null
+
+jobs:
+  redispatch:
+    name: Dispatch a sweep
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch this workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run relocate_release_notes.yml --repo "${GITHUB_REPOSITORY}" --ref "${GITHUB_REF_NAME}"
+
+  detect:
+    name: Find stale PRs
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      count: ${{ steps.matrix.outputs.count }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build the stale-PR matrix
+        id: matrix
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONLY_PR: ${{ inputs.only_pr }}
+        run: |
+          set -euo pipefail
+          # Every line on every run: the weekly run may be what replaced a queued post-cut sweep.
+          LINES="next-minor rc next-major"
+          # Oldest first; gh pages up to --limit, so set it well above how many PRs are ever open.
+          gh pr list --state open --limit 1000 --search "sort:created-asc" \
+            --json number,headRefName,headRefOid,baseRefName,headRepositoryOwner,labels > "${RUNNER_TEMP}/prs.json"
+          python3 -B "${SCRIPTS}/detect.py" --prs "${RUNNER_TEMP}/prs.json" --lines "${LINES}" \
+            --only-pr "${ONLY_PR}" --max-prs "${MAX_PRS}" --notes-base "${NOTES_BASE}" > "${RUNNER_TEMP}/detect.json"
+          echo "count=$(jq '.matrix | length' "${RUNNER_TEMP}/detect.json")" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(jq -c .matrix "${RUNNER_TEMP}/detect.json")" >> "$GITHUB_OUTPUT"
+
+  relocate:
+    name: "Relocate #${{ matrix.number }}"
+    needs: detect
+    if: needs.detect.result == 'success' && needs.detect.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Read-only token, and no App key in this job: Claude and its action never see a credential that writes.
+    permissions:
+      contents: read
+      pull-requests: read
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        # `|| '[]'`: strategy is evaluated before `if`.
+        include: ${{ fromJson(needs.detect.outputs.matrix || '[]') }}
+    env:
+      TARGET: ${{ matrix.notes_root }}/${{ matrix.current }}/README.md
+      TOOLS: /tmp/relocate/tools
+      WORK: /tmp/relocate/work
+      OUT: /tmp/relocate/out
+    steps:
+      - name: Checkout the PR at the detected commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ matrix.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load scripts from the workflow's commit
+        run: |
+          set -euo pipefail
+          git cat-file -e "${GITHUB_SHA}^{commit}" 2>/dev/null || git fetch -q origin "${GITHUB_SHA}"
+          mkdir -p "${TOOLS}"
+          git archive "${GITHUB_SHA}" "${SCRIPTS}" .github/prompts | tar -x -C "${TOOLS}"
+
+      - name: Prepare
+        id: prepare
+        env:
+          HEAD_SHA: ${{ matrix.head_sha }}
+          OLD_BASE: ${{ matrix.old_base }}
+          BASE_SHA: ${{ matrix.base_sha }}
+          NOTES_ROOT: ${{ matrix.notes_root }}
+          CURRENT: ${{ matrix.current }}
+        run: |
+          set -euo pipefail
+          python3 -B "${TOOLS}/${SCRIPTS}/prepare.py" --head-sha "${HEAD_SHA}" --old-base "origin/${OLD_BASE}" \
+            --base-sha "${BASE_SHA}" --notes-root "${NOTES_ROOT}" --current "${CURRENT}" \
+            --notes-base "${NOTES_BASE}" --out "${WORK}"
+          echo "status=$(jq -r .status "${WORK}/state.json")" >> "$GITHUB_OUTPUT"
+
+      - name: Build the prompt
+        if: steps.prepare.outputs.status == 'ready'
+        env:
+          CURRENT: ${{ matrix.current }}
+        run: |
+          set -euo pipefail
+          python3 -B "${TOOLS}/${SCRIPTS}/prompt.py" --prompts "${TOOLS}/.github/prompts" --work "${WORK}" \
+            --target "${TARGET}" --current "${CURRENT}" > "${RUNNER_TEMP}/prompt.md"
+          # Random: a delimiter the contributor can reproduce would let them append to GITHUB_ENV.
+          DELIM="PROMPT_$(openssl rand -hex 16)"
+          { echo "PROMPT<<${DELIM}"; cat "${RUNNER_TEMP}/prompt.md"; echo "${DELIM}"; } >> "$GITHUB_ENV"
+
+      # CLAUDE.md/AGENTS.md load whatever --setting-sources says, so the branch's copies go.
+      - name: Remove PR-supplied agent configuration
+        if: steps.prepare.outputs.status == 'ready'
+        run: |
+          set -euo pipefail
+          find . -path ./.git -prune -o \
+            \( -name CLAUDE.md -o -name AGENTS.md -o -name .claude -o -name .mcp.json \) -print0 \
+            | xargs -0 -r rm -rf
+
+      - name: Relocate with Claude
+        id: claude
+        if: steps.prepare.outputs.status == 'ready'
+        # Under the job's 15: a hung step then fails rather than cancelling the job, so its result is still collected.
+        timeout-minutes: 10
+        uses: anthropics/claude-code-action@97c53473391bff1901034d4b454b5bac7ab7a029 # v1
+        with:
+          anthropic_api_key: ${{ secrets.VALTIMO_ANTHROPIC_API_KEY }}
+          github_token: ${{ github.token }}
+          # A push-dispatched run's actor.
+          allowed_bots: github-actions
+          prompt: ${{ env.PROMPT }}
+          # The target file only; no shell, search or network. `user` keeps the branch's .claude/settings*.json out.
+          claude_args: >-
+            --model ${{ env.CLAUDE_MODEL }}
+            --max-turns 30
+            --setting-sources user
+            --allowedTools "Read(${{ env.TARGET }}),Edit(${{ env.TARGET }})"
+            --disallowedTools "Bash,Glob,Grep,Write,WebFetch,WebSearch,Task,NotebookEdit"
+            --json-schema '{"type":"object","properties":{"outcome":{"type":"string","enum":["moved","already-present","skipped"]},"explanation":{"type":"string"}},"required":["outcome","explanation"]}'
+
+      - name: Collect the result
+        if: ${{ !cancelled() }}
+        env:
+          RESULT: ${{ steps.claude.outputs.structured_output }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${OUT}"
+          if [ -f "${WORK}/state.json" ]; then
+            cp "${WORK}/state.json" "${OUT}/"
+            # Only when ready: prepare has then ruled out a symlink anywhere on the path.
+            if [ "$(jq -r .status "${WORK}/state.json")" = ready ]; then cp "${TARGET}" "${OUT}/target-after.md"; fi
+          fi
+          if ! jq -ce '{outcome: (.outcome // ""), explanation: (.explanation // "")}' <<<"${RESULT:-null}" \
+            > "${OUT}/result.json" 2>/dev/null; then
+            echo '{}' > "${OUT}/result.json"
+          fi
+          {
+            echo "### PR #${{ matrix.number }}: Claude"
+            jq -r '"**\(.outcome)**: \(.explanation)"' "${OUT}/result.json" || true
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the result
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: relocate-${{ matrix.number }}
+          path: /tmp/relocate/out
+          retention-days: 3
+
+  push:
+    name: "Push #${{ matrix.number }}"
+    needs: [detect, relocate]
+    # Also after a failed relocate leg, so the PR still hears about it.
+    if: ${{ !cancelled() && needs.detect.result == 'success' && needs.detect.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include: ${{ fromJson(needs.detect.outputs.matrix || '[]') }}
+    env:
+      PR_NUMBER: ${{ matrix.number }}
+      PR_HEAD: ${{ matrix.head }}
+      OLD_BASE: ${{ matrix.old_base }}
+      BASE: ${{ matrix.base }}
+      BASE_SHA: ${{ matrix.base_sha }}
+      NOTES_ROOT: ${{ matrix.notes_root }}
+      CURRENT: ${{ matrix.current }}
+      STALE: ${{ matrix.stale }}
+      TOOLS: /tmp/relocate/tools
+      WORK: /tmp/relocate/work
+      ARTIFACT: /tmp/relocate/artifact
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ matrix.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Load scripts from the workflow's commit
+        run: |
+          set -euo pipefail
+          git cat-file -e "${GITHUB_SHA}^{commit}" 2>/dev/null || git fetch -q origin "${GITHUB_SHA}"
+          mkdir -p "${TOOLS}"
+          git archive "${GITHUB_SHA}" "${SCRIPTS}" | tar -x -C "${TOOLS}"
+
+      - name: Download the relocate result
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: relocate-${{ matrix.number }}
+          path: /tmp/relocate/artifact
+
+      # GITHUB_TOKEN pushes do not re-trigger the PR's required checks.
+      - name: Generate App token
+        id: app_token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ secrets.VALTIMO_PLATFORM_APP_APPID }}
+          private-key: ${{ secrets.VALTIMO_PLATFORM_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      # Redo prepare at the branch's tip, lay Claude's README over it, guard, push. A moved branch
+      # (auto_update_pr.yml races us) is redone from scratch, never replayed.
+      - name: Apply and push
+        id: push
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TOKEN: ${{ steps.app_token.outputs.token }}
+        run: |
+          set -euo pipefail
+          finish() { echo "outcome=$1" >> "$GITHUB_OUTPUT"; exit 0; }
+
+          if [ "$(gh api "repos/${GITHUB_REPOSITORY}/branches/${PR_HEAD}" --jq .protected 2>/dev/null || echo gone)" != "false" ]; then
+            echo "::warning::${PR_HEAD} is protected or gone -- not pushing to it."
+            finish protected
+          fi
+
+          # Per invocation, never in .git/config.
+          REMOTE="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          for attempt in 1 2 3; do
+            # Old base too: the tip may have merged a newer one, and the stale folders reset to that.
+            git fetch -q origin "+refs/heads/${PR_HEAD}:refs/remotes/origin/${PR_HEAD}" \
+              "+refs/heads/${OLD_BASE}:refs/remotes/origin/${OLD_BASE}"
+            SHA="$(git rev-parse "origin/${PR_HEAD}")"
+            git merge --abort 2>/dev/null || true
+            git reset -q --hard && git clean -qfd
+            rm -rf "${WORK}"
+            python3 -B "${TOOLS}/${SCRIPTS}/prepare.py" --head-sha "${SHA}" --old-base "origin/${OLD_BASE}" \
+              --base-sha "${BASE_SHA}" --notes-root "${NOTES_ROOT}" --current "${CURRENT}" \
+              --notes-base "${NOTES_BASE}" --out "${WORK}"
+            python3 -B "${TOOLS}/${SCRIPTS}/apply.py" --artifact "${ARTIFACT}" --work "${WORK}" \
+              --notes-root "${NOTES_ROOT}" --current "${CURRENT}" --notes-base "${NOTES_BASE}" \
+              > "${RUNNER_TEMP}/apply.json"
+            OUTCOME="$(jq -r .outcome "${RUNNER_TEMP}/apply.json")"
+            jq -r '.errors[]' "${RUNNER_TEMP}/apply.json" | sed 's/^/  /' || true
+            [ "${OUTCOME}" = "committed" ] || finish "${OUTCOME}"
+
+            if git push "${REMOTE}" "HEAD:refs/heads/${PR_HEAD}" 2>&1 | tee "${RUNNER_TEMP}/push.log"; then
+              finish committed
+            fi
+            if ! grep -qE '\[rejected\]|non-fast-forward|fetch first' "${RUNNER_TEMP}/push.log"; then
+              echo "::error::Push to ${PR_HEAD} failed without a ref rejection."
+              finish failed
+            fi
+            echo "Branch moved (attempt ${attempt}/3) -- redoing on its new tip."
+            sleep $((attempt * 10))
+          done
+          finish changed
+
+      - name: Retarget the PR at the newest rc branch
+        id: retarget
+        if: >-
+          matrix.old_base != matrix.base
+          && (steps.push.outputs.outcome == 'committed' || steps.push.outputs.outcome == 'already-clean')
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+        run: |
+          set -euo pipefail
+          # Someone may have retargeted the PR since detect; their choice wins.
+          NOW="$(gh pr view "${PR_NUMBER}" --json baseRefName --jq .baseRefName)"
+          if [ "${NOW}" != "${OLD_BASE}" ]; then
+            echo "::warning::PR #${PR_NUMBER} now targets ${NOW}, not ${OLD_BASE} -- leaving its base alone."
+            exit 0
+          fi
+          gh pr edit "${PR_NUMBER}" --base "${BASE}"
+
+      - name: Report on the PR
+        if: ${{ !cancelled() && steps.app_token.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          OUTCOME: >-
+            ${{ steps.retarget.outcome == 'failure' && 'retarget-failed' || steps.push.outputs.outcome || 'failed' }}
+        run: |
+          set -euo pipefail
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          echo "PR #${PR_NUMBER}: ${OUTCOME}" | tee -a "$GITHUB_STEP_SUMMARY"
+          python3 -B "${TOOLS}/${SCRIPTS}/report.py" --outcome "${OUTCOME}" \
+            --apply-result "${RUNNER_TEMP}/apply.json" --claude-result "${ARTIFACT}/result.json" \
+            --stale "${STALE}" --current "${CURRENT}" --old-base "${OLD_BASE}" --base "${BASE}" \
+            --run-url "${RUN_URL}" \
+            --workflow-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/workflows/relocate_release_notes.yml" \
+            > "${RUNNER_TEMP}/comment.md"
+          [ -s "${RUNNER_TEMP}/comment.md" ] || exit 0
+          MARKER="<!-- relocate-release-notes:${CURRENT}:${OUTCOME} -->"
+          # Captured first: grep -q closing the pipe early would fail gh under pipefail and double-post.
+          COMMENTS="$(gh pr view "${PR_NUMBER}" --json comments --jq '.comments[].body')"
+          if grep -qF "${MARKER}" <<<"${COMMENTS}"; then
+            echo "Already reported -- not commenting again."
+            exit 0
+          fi
+          gh pr comment "${PR_NUMBER}" --body-file "${RUNNER_TEMP}/comment.md"

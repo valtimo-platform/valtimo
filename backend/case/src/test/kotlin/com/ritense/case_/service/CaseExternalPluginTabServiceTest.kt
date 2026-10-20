@@ -31,6 +31,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
+import org.springframework.security.access.AccessDeniedException
+import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -38,6 +44,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
@@ -152,6 +159,25 @@ class CaseExternalPluginTabServiceTest(
         service.handleCaseTabUpdatedEvent(CaseTabUpdatedEvent(tab))
 
         verify(caseExternalPluginTabRepository, never()).delete(any())
+    }
+
+    @Test
+    fun `should deny external plugin tab without document VIEW permission`() {
+        val documentId = UUID.randomUUID()
+        val document = mock<JsonSchemaDocument>()
+        whenever(documentService.findBy(any<Document.Id>())).thenReturn(Optional.of(document))
+        whenever(authorizationService.requirePermission(any<EntityAuthorizationRequest<JsonSchemaDocument>>()))
+            .thenThrow(AccessDeniedException("denied"))
+
+        assertThrows<AccessDeniedException> { service.getExternalPluginTab(documentId, "summary") }
+        verifyNoInteractions(caseExternalPluginTabRepository)
+    }
+
+    @Test
+    fun `should return null for unknown document`() {
+        whenever(documentService.findBy(any<Document.Id>())).thenReturn(Optional.empty())
+
+        assertThat(service.getExternalPluginTab(UUID.randomUUID(), "summary")).isNull()
     }
 
     @Test

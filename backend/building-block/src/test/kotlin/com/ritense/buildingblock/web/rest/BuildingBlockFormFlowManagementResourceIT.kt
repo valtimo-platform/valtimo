@@ -21,12 +21,19 @@ import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.service.BuildingBlockFormFlowDefinitionService
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
+import com.ritense.formflow.domain.definition.FormFlowStep
+import com.ritense.formflow.domain.definition.FormFlowStepId
+import com.ritense.formflow.domain.definition.configuration.FormFlowStepType
+import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
+import com.ritense.formflow.service.FormFlowService
 import com.ritense.formflow.web.rest.result.FormFlowDefinitionDto
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import jakarta.persistence.EntityManager
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,10 +51,14 @@ import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
+import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
+    private val formFlowService: FormFlowService,
+    private val entityManager: EntityManager,
 ) : BaseIntegrationTest() {
 
     @MockitoSpyBean
@@ -211,4 +222,31 @@ class BuildingBlockFormFlowManagementResourceIT @Autowired constructor(
             "bezwaar", "1.0.0", "readonly-flow")
             .andExpect { status { isForbidden() } }
     }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
+    fun `DELETE removes the form flow definition together with its instances`() {
+        val definitionId = FormFlowDefinitionId.existingId("bb-delete-flow", bbId)
+        val step = FormFlowStep(id = FormFlowStepId("start"), type = FormFlowStepType("form", FormStepTypeProperties("bb-form")))
+        val definition = formFlowDefinitionRepository.save(FormFlowDefinition(definitionId, "start", setOf(step)))
+        val instanceIds = (1..2).map {
+            formFlowService.save(definition.createInstance(mapOf("taskInstanceId" to UUID.randomUUID().toString()))).id.id
+        }
+        entityManager.flush()
+        entityManager.clear()
+
+        mockMvc.delete("$base/{key}/version/{versionTag}/form-flow-definition/{definitionKey}",
+            "bezwaar", "1.0.0", "bb-delete-flow")
+            .andExpect { status { isOk() } }
+        entityManager.flush()
+        entityManager.clear()
+
+        assertThat(formFlowDefinitionRepository.existsById(definitionId)).isFalse()
+        assertThat(count("SELECT count(i) FROM FormFlowInstance i WHERE i.id.id IN :ids", instanceIds)).isZero()
+        assertThat(count("SELECT count(s) FROM FormFlowStepInstance s WHERE s.instance.id.id IN :ids", instanceIds)).isZero()
+    }
+
+    private fun count(query: String, ids: List<UUID>): Long =
+        entityManager.createQuery(query, Long::class.javaObjectType).setParameter("ids", ids).singleResult
 }

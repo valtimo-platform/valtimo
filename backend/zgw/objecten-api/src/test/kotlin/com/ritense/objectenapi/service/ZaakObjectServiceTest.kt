@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import java.net.URI
 import java.util.Optional
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -90,6 +91,26 @@ internal class ZaakObjectServiceTest {
 
         assertEquals(objecttype1, zaakObjectTypes[0])
         assertEquals(objecttype2, zaakObjectTypes[1])
+    }
+
+    @Test
+    fun `isZaakObject should be true when object url belongs to the zaak`() {
+        val documentId = UUID.randomUUID()
+        val zaakInstanceUrl = setupZaakInstanceLink(documentId)
+        setupPlugins(zaakInstanceUrl)
+        val zaakObject = setupZaakObject(zaakInstanceUrl)
+
+        assertTrue(zaakObjectService.isZaakObject(documentId, zaakObject.objectUrl))
+    }
+
+    @Test
+    fun `isZaakObject should be false when object url does not belong to the zaak`() {
+        val documentId = UUID.randomUUID()
+        val zaakInstanceUrl = setupZaakInstanceLink(documentId)
+        setupPlugins(zaakInstanceUrl)
+        setupZaakObject(zaakInstanceUrl)
+
+        assertFalse(zaakObjectService.isZaakObject(documentId, URI("http://example.com/object/other")))
     }
 
     @Test

@@ -61,6 +61,7 @@ export class FormFlowOverviewComponent {
     },
     {
       callback: this.deleteFormFlow.bind(this),
+      disabledCallback: this.deleteDisabled.bind(this),
       label: 'interface.delete',
       type: 'danger',
     },
@@ -164,5 +165,9 @@ export class FormFlowOverviewComponent {
         });
         this._refresh$.next(null);
       });
+  }
+
+  private deleteDisabled(formFlowDefinition: ListFormFlowDefinition): boolean {
+    return !!formFlowDefinition.readOnly;
   }
 }

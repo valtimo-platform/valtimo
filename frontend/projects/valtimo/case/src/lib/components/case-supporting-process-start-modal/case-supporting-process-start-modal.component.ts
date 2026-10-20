@@ -108,7 +108,6 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     documentId: string;
     caseDefinitionKey: string;
     caseDefinitionVersionTag: string;
-    panelAvailable: boolean;
   } | null = null;
 
   public readonly modalTitle$ = combineLatest([
@@ -122,8 +121,6 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     )
   );
 
-  // Whether the active tab exposes a panel and the start form may render in it.
-  private _panelAvailable = false;
   // Whether the current start form is being rendered in the panel instead of the modal.
   private _displayInPanel = false;
 
@@ -205,7 +202,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   }
 
   private openStartForm(displayType: FormDisplayType | undefined, formSize: FormSize): void {
-    if (this._panelAvailable && displayType === 'panel') {
+    if (displayType === 'panel') {
       this._displayInPanel = true;
       combineLatest([this._startableItemKey$, this.processName$])
         .pipe(take(1))
@@ -237,16 +234,16 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     item: StartableItem,
     documentId: string,
     caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    panelAvailable = false
+    caseDefinitionVersionTag: string
   ): void {
+    this.caseDetailLayoutService.setStartFormPendingChanges(false);
+
     if (item.draft) {
       this._pendingStartableItem = {
         item,
         documentId,
         caseDefinitionKey,
         caseDefinitionVersionTag,
-        panelAvailable,
       };
       this.showDraftConfirmation$.next(true);
       return;
@@ -254,28 +251,16 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
 
     this._pendingStartableItem = null;
     this.showDraftConfirmation$.next(false);
-    this.proceedWithStartableItem(
-      item,
-      documentId,
-      caseDefinitionKey,
-      caseDefinitionVersionTag,
-      panelAvailable
-    );
+    this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
   }
 
   public onDraftConfirmationConfirm(): void {
     this.showDraftConfirmation$.next(false);
     if (this._pendingStartableItem) {
-      const {item, documentId, caseDefinitionKey, caseDefinitionVersionTag, panelAvailable} =
+      const {item, documentId, caseDefinitionKey, caseDefinitionVersionTag} =
         this._pendingStartableItem;
       this._pendingStartableItem = null;
-      this.proceedWithStartableItem(
-        item,
-        documentId,
-        caseDefinitionKey,
-        caseDefinitionVersionTag,
-        panelAvailable
-      );
+      this.proceedWithStartableItem(item, documentId, caseDefinitionKey, caseDefinitionVersionTag);
     }
   }
 
@@ -288,12 +273,10 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     item: StartableItem,
     documentId: string,
     caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    panelAvailable = false
+    caseDefinitionVersionTag: string
   ): void {
     // Reset any panel left open by a previous start so its content does not linger.
     this.closeStartForm();
-    this._panelAvailable = panelAvailable;
     this.isLoading$.next(true);
     this.documentId$.next(documentId);
     this.caseDefinitionKey$.next(caseDefinitionKey);
@@ -352,6 +335,11 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     }
   }
 
+  /** Form.io also emits on render and on programmatic updates; only user edits are changes. */
+  public onFormChange(event: {isModified?: boolean}): void {
+    if (event?.isModified) this.caseDetailLayoutService.setStartFormPendingChanges(true);
+  }
+
   public formSubmitted(): void {
     this.closeStartForm();
     this.formSubmit.emit();
@@ -363,7 +351,13 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this.closeStartForm();
   }
 
+  public closeModalOnTabSwitch(): void {
+    if (!this._displayInPanel) this.closeCdsModal();
+  }
+
   private closeStartForm(): void {
+    this.caseDetailLayoutService.setStartFormPendingChanges(false);
+
     if (this._displayInPanel) {
       this._displayInPanel = false;
       this.caseDetailLayoutService.closeStartFormPanel();
@@ -453,6 +447,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   }
 
   private closeCdsModal(): void {
+    this.caseDetailLayoutService.setStartFormPendingChanges(false);
     this.modalOpen$.next(false);
   }
 
