@@ -56,6 +56,40 @@
     flex: 1 0 auto;
     width: auto;
   }
+
+  // Opt-in: when the title and the actions don't fit on one row, the actions move to a row of
+  // their own instead of squeezing the title. A gap instead of the actions' left padding, so a
+  // wrapped row starts flush.
+  &--wrap-actions:not(.page-head--title-as-breadcrumb) {
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--cds-spacing-07);
+    row-gap: var(--cds-spacing-03);
+
+    // Renders elsewhere; its empty host would add a gap.
+    > valtimo-page-subtitle {
+      display: none;
+    }
+
+    .page-header-container {
+      width: max-content;
+      max-width: 100%;
+      // The small title continues the breadcrumb trail; boxes differ in height, text must line up.
+      align-items: baseline;
+    }
+
+    // Rows break on the actions' minimum width when they report one, else their natural width;
+    // either way they may get narrower than that, and adapt.
+    valtimo-page-actions {
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    ::ng-deep .page-actions--visible {
+      min-width: 0;
+      padding-left: 0;
+    }
+  }
 }
 
 .page-header-container {

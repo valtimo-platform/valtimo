@@ -15,7 +15,11 @@
  */
 
 export const CASE_DETAIL_PANEL_TEST_IDS = {
+  pendingChangesModal: 'casePendingChangesModal',
   startFormPanel: 'caseStartFormPanel',
   startFormPanelTitle: 'caseStartFormPanelTitle',
   startFormPanelCloseButton: 'caseStartFormPanelCloseButton',
+  taskDetailBackButton: 'caseTaskDetailBackButton',
+  taskPanel: 'caseTaskPanel',
+  taskPanelToggleButton: 'caseTaskPanelToggleButton',
 } as const;

@@ -50,6 +50,8 @@ export * from './lib/components/drag-drop-list/drag-drop-list.component';
 export * from './lib/components/right-sidebar/right-sidebar.component';
 export * from './lib/components/right-sidebar/right-sidebar.module';
 
+export * from './lib/components/side-panel/side-panel.component';
+
 export * from './lib/components/left-sidebar/left-sidebar.component';
 export * from './lib/components/left-sidebar/left-sidebar.module';
 

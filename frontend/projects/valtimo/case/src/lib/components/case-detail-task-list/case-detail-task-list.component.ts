@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
@@ -41,8 +41,6 @@ import {
 import {
   CAN_VIEW_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
-  TaskDetailModalComponent,
-  TaskModule,
   TaskUpdateSseEvent,
 } from '@valtimo/task';
 import {SseService} from '@valtimo/sse';
@@ -68,7 +66,6 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
     TranslateModule,
     WidgetModule,
     LoadingModule,
-    TaskModule,
     TilesModule,
     LayerModule,
     TagModule,
@@ -77,14 +74,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   ],
 })
 export class CaseDetailTaskListComponent {
-  @ViewChild('taskDetail') private readonly _taskDetailModal: TaskDetailModalComponent;
-
-  @Input() public set openTaskAndProcessLinkInModal(value: TaskWithProcessLink) {
-    if (value) this._taskDetailModal.openTaskAndProcessLinkDetails(value);
-  }
-
   @Output() public readonly taskClickEvent = new EventEmitter<TaskWithProcessLink>();
-  @Output() public readonly formSubmitEvent = new EventEmitter();
 
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
 
@@ -146,8 +136,6 @@ export class CaseDetailTaskListComponent {
     tap(() => this.loadingTasks$.next(false))
   );
 
-  public readonly formSize$ = this.caseDetailLayoutService.formDisplaySize$;
-
   constructor(
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
@@ -171,15 +159,6 @@ export class CaseDetailTaskListComponent {
     if (tasWithProcessLink.task.isLocked) return;
 
     this.taskClickEvent.emit(tasWithProcessLink);
-  }
-
-  public onFormSubmit(): void {
-    this.formSubmitEvent.emit();
-    this.refresh();
-  }
-
-  public refresh(): void {
-    this.caseDetailLayoutService.refreshTasks();
   }
 
   private mapTasksWithProcessLinks(

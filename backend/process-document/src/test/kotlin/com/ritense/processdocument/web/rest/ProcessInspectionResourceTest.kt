@@ -33,6 +33,8 @@ import com.ritense.processdocument.service.BuildingBlockProcessReference
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.ProcessInstanceDiagramService
+import com.ritense.valtimo.web.rest.dto.ProcessInstanceDiagramDto
 import com.ritense.valtimo.web.rest.dto.ProcessVariableMutationRequest
 import com.ritense.valtimo.web.rest.dto.ProcessVariableType
 import org.junit.jupiter.api.BeforeEach
@@ -75,6 +77,7 @@ class ProcessInspectionResourceTest {
     private lateinit var historyService: HistoryService
     private lateinit var managementService: ManagementService
     private lateinit var operatonTaskService: OperatonTaskService
+    private lateinit var processInstanceDiagramService: ProcessInstanceDiagramService
     private lateinit var buildingBlockProcessLookup: BuildingBlockProcessLookup
     private lateinit var eventPublisher: ApplicationEventPublisher
     private lateinit var objectMapper: ObjectMapper
@@ -92,6 +95,7 @@ class ProcessInspectionResourceTest {
         historyService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
         managementService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
         operatonTaskService = mock()
+        processInstanceDiagramService = mock()
         buildingBlockProcessLookup = mock()
         eventPublisher = mock()
         objectMapper = ObjectMapper()
@@ -109,12 +113,55 @@ class ProcessInspectionResourceTest {
             historyService = historyService,
             managementService = managementService,
             operatonTaskService = operatonTaskService,
+            processInstanceDiagramService = processInstanceDiagramService,
             buildingBlockProcessLookup = buildingBlockProcessLookup,
             eventPublisher = eventPublisher,
             objectMapper = objectMapper,
         )
 
         whenever(documentService.findBy(any<Document.Id>())).thenReturn(Optional.of(mock<JsonSchemaDocument>()))
+    }
+
+    @Test
+    fun `should return the diagram when the user may inspect the case`() {
+        val processInstanceId = UUID.randomUUID().toString()
+        val instance = newInstance(processInstanceId, "p", active = true, version = 1, latestVersion = 1, startedBy = null, startedOn = null)
+        whenever(processDocumentAssociationService.findProcessDocumentInstanceDtos(any<Document.Id>()))
+            .thenReturn(listOf(instance))
+        val diagram = mock<ProcessInstanceDiagramDto>()
+        whenever(processInstanceDiagramService.getProcessInstanceDiagram(processInstanceId)).thenReturn(diagram)
+
+        val response = resource.getProcessInstanceDiagram(caseId, processInstanceId)
+
+        assertEquals(200, response.statusCode.value())
+        assertEquals(diagram, response.body)
+        val captor = argumentCaptor<EntityAuthorizationRequest<JsonSchemaDocument>>()
+        verify(authorizationService).requirePermission(captor.capture())
+        assertEquals(JsonSchemaDocumentActionProvider.INSPECT, captor.firstValue.action)
+    }
+
+    @Test
+    fun `diagram should propagate INSPECT authorization failure without querying the diagram`() {
+        val processInstanceId = UUID.randomUUID().toString()
+        doThrow(RuntimeException("denied")).whenever(authorizationService)
+            .requirePermission(any<AuthorizationRequest<JsonSchemaDocument>>())
+
+        assertThrows<RuntimeException> { resource.getProcessInstanceDiagram(caseId, processInstanceId) }
+
+        verify(processInstanceDiagramService, never()).getProcessInstanceDiagram(any())
+    }
+
+    @Test
+    fun `diagram should return 404 when process instance does not belong to case`() {
+        val processInstanceId = UUID.randomUUID().toString()
+        whenever(processDocumentAssociationService.findProcessDocumentInstanceDtos(any<Document.Id>()))
+            .thenReturn(emptyList())
+
+        val ex = assertThrows<ResponseStatusException> {
+            resource.getProcessInstanceDiagram(caseId, processInstanceId)
+        }
+        assertEquals(404, ex.statusCode.value())
+        verify(processInstanceDiagramService, never()).getProcessInstanceDiagram(any())
     }
 
     @Test

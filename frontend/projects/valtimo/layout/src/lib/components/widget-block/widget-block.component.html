@@ -28,7 +28,7 @@
 >
   <div #widgetBlockContent class="widget-block__content">
     <!-- Stays in flow while the error shows, so the error cannot change the block height. -->
-    <div [class.widget-block__content-hidden]="hasDataError">
+    <div [class.widget-block__content-hidden]="hasDataError" class="widget-block__component">
       <ng-template #widgetComponent></ng-template>
     </div>
 

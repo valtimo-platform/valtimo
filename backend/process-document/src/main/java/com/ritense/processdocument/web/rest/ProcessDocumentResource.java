@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,14 @@ import static com.ritense.authorization.AuthorizationContext.runWithoutAuthoriza
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import com.ritense.authorization.AuthorizationService;
 import com.ritense.case_.service.ActiveCaseDefinitionService;
 import com.ritense.document.domain.Document;
+import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
+import com.ritense.document.service.DocumentService;
+import com.ritense.document.service.DocumentServiceExtKt;
+import com.ritense.document.service.JsonSchemaDocumentActionProvider;
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition;
 import com.ritense.processdocument.domain.ProcessDocumentInstance;
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
@@ -62,17 +67,23 @@ public class ProcessDocumentResource {
     private final ProcessDocumentAssociationService processDocumentAssociationService;
     private final ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService;
     private final ActiveCaseDefinitionService activeCaseDefinitionService;
+    private final DocumentService documentService;
+    private final AuthorizationService authorizationService;
 
     public ProcessDocumentResource(
         ProcessDocumentService processDocumentService,
         ProcessDocumentAssociationService processDocumentAssociationService,
         ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService,
-        ActiveCaseDefinitionService activeCaseDefinitionService
+        ActiveCaseDefinitionService activeCaseDefinitionService,
+        DocumentService documentService,
+        AuthorizationService authorizationService
     ) {
         this.processDocumentService = processDocumentService;
         this.processDocumentAssociationService = processDocumentAssociationService;
         this.processDefinitionCaseDefinitionService = processDefinitionCaseDefinitionService;
         this.activeCaseDefinitionService = activeCaseDefinitionService;
+        this.documentService = documentService;
+        this.authorizationService = authorizationService;
     }
 
     @Deprecated(since = "13.x", forRemoval = true)
@@ -109,6 +120,16 @@ public class ProcessDocumentResource {
         @RequestParam(value = "startableByUser", required = false) @Nullable Boolean startableByUser,
         @RequestParam(value = "canInitializeDocument", required = false) @Nullable Boolean canInitializeDocument
     ) {
+        var document = (JsonSchemaDocument) runWithoutAuthorization(() ->
+            DocumentServiceExtKt.findByOrNull(documentService, JsonSchemaDocumentId.existingId(documentId))
+        );
+        if (document != null) {
+            DocumentServiceExtKt.requireDocumentPermission(
+                authorizationService,
+                document,
+                JsonSchemaDocumentActionProvider.VIEW
+            );
+        }
         return ResponseEntity.ok(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(
             documentId,
             startableByUser,
