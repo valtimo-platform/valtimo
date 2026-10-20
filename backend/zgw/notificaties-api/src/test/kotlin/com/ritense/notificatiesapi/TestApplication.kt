@@ -16,10 +16,12 @@
 
 package com.ritense.notificatiesapi
 
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
+@EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
 class TestApplication
 
 fun main(args: Array<String>) {
