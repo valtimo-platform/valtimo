@@ -61,6 +61,7 @@
           <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonForm">
             <valtimo-external-plugin-iframe
               [bundleUrl]="bundleUrl"
+              [autoHeight]="true"
               [prefillConfiguration]="$prefillConfiguration()"
               (configurationChangedEvent)="onIframeConfigurationChanged($event)"
             ></valtimo-external-plugin-iframe>
