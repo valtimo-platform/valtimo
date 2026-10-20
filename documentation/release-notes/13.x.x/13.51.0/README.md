@@ -30,5 +30,5 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
 | Error responses | Error responses no longer include technical details such as stack traces for every client. Check that your own `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`. |
+| Building blocks | Importing a case definition with a building block again lists each of the building block's processes once on the Processes tab, instead of adding another row every import |
