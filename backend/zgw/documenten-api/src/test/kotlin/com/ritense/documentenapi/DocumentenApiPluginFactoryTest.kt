@@ -17,7 +17,6 @@
 package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationService
 import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.service.DocumentDeleteHandler
 import com.ritense.documentenapi.service.DocumentenApiVersionService
@@ -55,7 +54,6 @@ internal class DocumentenApiPluginFactoryTest {
         val documentenApiVersionService: DocumentenApiVersionService = mock()
         val runtimeService: OperatonRuntimeService = mock()
         val caseDocumentResolver: CaseDocumentResolver = mock()
-        val authorizationService: AuthorizationService = mock()
         whenever(pluginService.createInstance(any<PluginConfigurationId>())).thenReturn(authentication)
         whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
 
@@ -102,7 +100,6 @@ internal class DocumentenApiPluginFactoryTest {
             virusScanService,
             false,
             caseDocumentResolver,
-            authorizationService,
         )
 
         val plugin = factory.create(configuration)

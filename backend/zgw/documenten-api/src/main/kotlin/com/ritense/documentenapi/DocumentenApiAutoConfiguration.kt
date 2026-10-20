@@ -133,7 +133,6 @@ class DocumentenApiAutoConfiguration {
         @Value("\${valtimo.virusscan.clamav.DocumentenApiPlugin.enabled:false}")
         virusScanEnabledForDocumentenApiPlugin: Boolean,
         caseDocumentResolver: CaseDocumentResolver,
-        authorizationService: AuthorizationService,
     ): DocumentenApiPluginFactory {
         return DocumentenApiPluginFactory(
             pluginService,
@@ -147,7 +146,6 @@ class DocumentenApiAutoConfiguration {
             virusScanService,
             virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver,
-            authorizationService,
         )
     }
 

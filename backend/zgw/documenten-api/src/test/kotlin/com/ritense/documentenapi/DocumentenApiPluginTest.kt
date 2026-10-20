@@ -16,7 +16,6 @@
 
 package com.ritense.documentenapi
 
-import com.ritense.authorization.AuthorizationService
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.DOCUMENT_ID_PROCESS_VAR
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.DOCUMENT_URL_PROCESS_VAR
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.RESOURCE_ID_PROCESS_VAR
@@ -54,11 +53,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
-import org.springframework.security.access.AccessDeniedException
 import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -82,7 +79,6 @@ internal class DocumentenApiPluginTest {
     lateinit var runtimeService: OperatonRuntimeService
     lateinit var virusScanService: VirusScanService
     lateinit var caseDocumentResolver: CaseDocumentResolver
-    lateinit var authorizationService: AuthorizationService
 
     @BeforeEach
     fun setUp() {
@@ -107,7 +103,6 @@ internal class DocumentenApiPluginTest {
         virusScanService = mock()
         caseDocumentResolver = mock()
         whenever(caseDocumentResolver.resolveCaseDocumentId(any())).thenAnswer { it.getArgument(0) }
-        authorizationService = mock()
     }
 
     @Test
@@ -135,7 +130,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -199,7 +193,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -306,7 +299,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -384,7 +376,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -491,7 +482,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -571,7 +561,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -632,7 +621,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -676,7 +664,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -732,7 +719,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.authenticationPluginConfiguration = authenticationMock
@@ -772,7 +758,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
 
@@ -812,7 +797,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = virusScanEnabledForDocumentenApiPlugin,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
 
@@ -843,7 +827,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = false,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -1070,61 +1053,10 @@ internal class DocumentenApiPluginTest {
         val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
         whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
         val documentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/789")
-        whenever(client.getInformatieObject(authenticationMock, caseDocumentId, documentUrl)).thenReturn(
-            DocumentInformatieObject(
-                url = documentUrl,
-                bronorganisatie = Rsin("000000000"),
-                creatiedatum = LocalDate.now(),
-                titel = "titel",
-                auteur = "auteur",
-                taal = "taal",
-                beginRegistratie = OffsetDateTime.now(),
-                status = DEFINITIEF,
-            )
-        )
 
         plugin.deleteInformatieObject(execution, documentUrl)
 
-        verify(authorizationService).requirePermission<Any>(any())
         verify(client).deleteInformatieObject(authenticationMock, caseDocumentId, documentUrl)
-    }
-
-    @Test
-    fun `should throw and not delete when user lacks delete permission for deleteInformatieObject plugin action`() {
-        val authenticationMock = mock<DocumentenApiAuthentication>()
-        val documentenApiVersionService: DocumentenApiVersionService = mock()
-        val version = DocumentenApiVersion(version = "1.5.0-baseflow", supportsObjectInformatieObjecten = true)
-        whenever(documentenApiVersionService.getVersionByTag("1.5.0-baseflow")).thenReturn(version)
-
-        val plugin = createPlugin(
-            documentenApiVersionService = documentenApiVersionService,
-            authenticationMock = authenticationMock,
-            apiVersion = "1.5.0-baseflow"
-        )
-
-        val execution = mock<DelegateExecution>()
-        val caseDocumentId = UUID.fromString("123e4567-e89b-12d3-a456-426655440000")
-        whenever(execution.businessKey).thenReturn(caseDocumentId.toString())
-        val documentUrl = URI("http://some-url/enkelvoudiginformatieobjecten/789")
-        whenever(client.getInformatieObject(authenticationMock, caseDocumentId, documentUrl)).thenReturn(
-            DocumentInformatieObject(
-                url = documentUrl,
-                bronorganisatie = Rsin("000000000"),
-                creatiedatum = LocalDate.now(),
-                titel = "titel",
-                auteur = "auteur",
-                taal = "taal",
-                beginRegistratie = OffsetDateTime.now(),
-                status = DEFINITIEF,
-            )
-        )
-        doThrow(AccessDeniedException("Unauthorized")).whenever(authorizationService).requirePermission<Any>(any())
-
-        assertThrows<AccessDeniedException> {
-            plugin.deleteInformatieObject(execution, documentUrl)
-        }
-
-        verify(client, never()).deleteInformatieObject(any(), any(), any())
     }
 
     @Test
@@ -1153,7 +1085,6 @@ internal class DocumentenApiPluginTest {
         )
         verify(client, never()).getInformatieObject(any<DocumentenApiAuthentication>(), any<UUID>(), any<URI>())
         verify(client, never()).deleteInformatieObject(any(), any(), any())
-        verify(authorizationService, never()).requirePermission<Any>(any())
     }
 
     @Test
@@ -1203,7 +1134,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = false,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -1274,7 +1204,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = false,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -1442,7 +1371,6 @@ internal class DocumentenApiPluginTest {
             virusScanService = virusScanService,
             virusScanEnabledForDocumentenApiPlugin = false,
             caseDocumentResolver = caseDocumentResolver,
-            authorizationService = authorizationService,
         )
         plugin.url = URI("http://some-url")
 

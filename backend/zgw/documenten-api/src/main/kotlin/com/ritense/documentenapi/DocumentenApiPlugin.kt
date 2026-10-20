@@ -20,11 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.PLUGIN_KEY
-import com.ritense.documentenapi.authorization.ZgwDocument
-import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
 import com.ritense.documentenapi.client.AuditTrail
 import com.ritense.logging.withLoggingContext
 import com.ritense.documentenapi.client.BestandsdelenRequest
@@ -94,7 +90,6 @@ class DocumentenApiPlugin(
     private val virusScanService: VirusScanService,
     private val virusScanEnabledForDocumentenApiPlugin: Boolean,
     private val caseDocumentResolver: CaseDocumentResolver,
-    private val authorizationService: AuthorizationService,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -370,20 +365,6 @@ class DocumentenApiPlugin(
         withLoggingContext(
             "DOCUMENT_URL" to documentUrl.toString()
         ) {
-            val informatieObject = getInformatieObject(documentUrl, caseDocumentId)
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    ZgwDocument::class.java,
-                    ZgwDocumentActionProvider.DELETE,
-                    ZgwDocument(
-                        caseDocumentId = caseDocumentId,
-                        vertrouwelijkheidaanduiding = informatieObject.vertrouwelijkheidaanduiding?.key,
-                        status = informatieObject.status?.key,
-                        informatieobjecttypeUrl = informatieObject.informatieobjecttype,
-                    )
-                )
-            )
-
             deleteInformatieObject(caseDocumentId, documentUrl)
         }
     }
