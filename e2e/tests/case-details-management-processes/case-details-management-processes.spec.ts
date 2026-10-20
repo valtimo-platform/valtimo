@@ -25,6 +25,8 @@ const CASE_KEY = 'bezwaar';
 
 test.use({storageState: undefined});
 
+test.describe.configure({mode: 'serial'});
+
 test.describe('Case details - Processes tab', () => {
   let context;
   let page;

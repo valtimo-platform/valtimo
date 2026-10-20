@@ -54,6 +54,8 @@ test.describe('Feature 4 — Objects (User)', () => {
     }
     objectManagementId = configuration!.id;
 
+    await userObjectsPage.getObjectsViaApi(objectManagementId);
+
     await page.goto('/');
   });
 

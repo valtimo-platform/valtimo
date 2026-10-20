@@ -80,7 +80,9 @@ import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
+  EMPTY,
   filter,
   from,
   map,
@@ -210,7 +212,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.pageTitleService.setCustomPageTitle(selectedProcessDefinition?.name || '-');
       }),
       switchMap(selectedProcessDefinition =>
-        this.processService.getProcessDefinitionXml(selectedProcessDefinition.id)
+        this.processService.getProcessDefinitionXml(selectedProcessDefinition.id).pipe(
+          catchError(error => {
+            this.logger.error('Failed to load process definition XML', error);
+            this.loading$.next(false);
+            return EMPTY;
+          })
+        )
       ),
       tap(result => {
         this.cleanUpListenersOnModeler();
@@ -1580,30 +1588,17 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       this._selectedProcess$
         .pipe(
           filter(selectedProcess => selectedProcess !== null && selectedProcess !== 'create'),
-          distinctUntilChanged((previous, current) => isEqual(previous, current)),
-          tap(() => this.loading$.next(true))
+          distinctUntilChanged((previous, current) => isEqual(previous, current))
         )
         .subscribe(result => {
           const processDefinitionResult = result as ProcessDefinitionResult;
 
-          this.cleanUpListenersOnModeler();
-          this._autofilledElements = processDefinitionResult.autofilledElements ?? [];
-          this.processManagementEditorService.setAutofilledElements(this._autofilledElements);
-
-          this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
-            this.highlightAutofilledElements();
-          });
-          this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
-            this.highlightAutofilledElements();
-          });
-
+          // Diagram and loading owned by selectedProcessDefinitionXml$ — a second import re-rendered the panel
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
           );
           this.startableByUser$.next(!!processDefinitionResult?.processCaseLink?.startableByUser);
           this.draft$.next(!!processDefinitionResult?.draft);
-
-          this.loading$.next(false);
         })
     );
   }

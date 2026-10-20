@@ -31,6 +31,8 @@ export * from './lib/components/external-plugin-iframe/external-plugin-iframe.co
 /* external plugin routed page */
 export * from './lib/components/external-plugin-page/external-plugin-page.component';
 export * from './lib/external-plugin-page-routing.module';
+/* external plugin side panel */
+export * from './lib/components/external-plugin-side-panel/external-plugin-side-panel.component';
 /* plugin configuration mapping */
 export * from './lib/components/plugin-configuration-mapping/plugin-configuration-mapping.component';
 /* open-zaak plugin */
@@ -60,6 +62,7 @@ export * from './lib/plugins/documenten-api/components/link-document-to-object/l
 export * from './lib/plugins/documenten-api/components/delete-document-link/delete-document-link-configuration.component';
 export * from './lib/plugins/documenten-api/components/get-audit-trail/get-audit-trail-configuration.component';
 export * from './lib/plugins/documenten-api/components/add-document-trefwoord/add-document-trefwoord-configuration.component';
+export * from './lib/plugins/documenten-api/components/delete-informatie-object/delete-informatie-object-configuration.component';
 /* documenten api preview plugin */
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.module';
 export * from './lib/plugins/documenten-api-preview/documenten-api-preview-plugin.specification';

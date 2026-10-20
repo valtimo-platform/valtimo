@@ -1,0 +1,176 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '@carbon/styles/scss/components/ui-shell/functions' as ui-shell;
+@use '@carbon/styles/scss/utilities/z-index' as *;
+
+// Block size of Carbon's `.cds--header`.
+$header-height: ui-shell.mini-units(6);
+
+.valtimo-side-panel {
+  position: fixed;
+  inset-block: $header-height 0;
+  inset-inline-end: 0;
+  // Below the header and the settings panel, so the settings panel slides over it.
+  z-index: z('header') - 1;
+  display: flex;
+  flex-direction: column;
+  // Same surface as the left menu (`.cds--side-nav` in compatibility.scss), so it follows the theme.
+  background-color: var(--cds-layer);
+  border-inline-start: 1px solid var(--cds-border-subtle);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 110ms cubic-bezier(0.2, 0, 0.38, 0.9),
+    visibility 0s linear 110ms;
+
+  &--visible {
+    // `none`, not `translateX(0)`: a transform would trap fixed-position overlays in the content.
+    transform: none;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  // Iframes swallow mouse events, which would stall a drag over the panel content.
+  &--resizing {
+    user-select: none;
+
+    ::ng-deep iframe {
+      pointer-events: none;
+    }
+  }
+
+  // Mirrors the left menu's `.resize-border` (left-sidebar.component.scss).
+  &__resize-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 3px;
+    height: 100%;
+    cursor: col-resize;
+    background-color: var(--cds-border-strong);
+    opacity: 0;
+    transition: opacity 0.11s cubic-bezier(0.2, 0, 1, 0.9);
+    outline: none;
+
+    &:hover,
+    &:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  &--resizing &__resize-handle {
+    opacity: 1;
+  }
+
+  // As tall as the top bar; the close button fills its corner, like Carbon's modal close.
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--cds-spacing-03);
+    min-height: $header-height;
+    padding-inline-start: var(--cds-spacing-05);
+    border-block-end: 1px solid var(--cds-border-subtle);
+  }
+
+  &__titles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-02);
+    min-width: 0;
+    padding-block: var(--cds-spacing-03);
+  }
+
+  // A nested icon sits low in Carbon's icon-only padding.
+  &__close {
+    flex: none;
+    align-self: flex-start;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+    min-width: 0;
+  }
+
+  &__pin {
+    display: flex;
+    color: var(--cds-icon-secondary);
+    outline: none;
+
+    &:focus-visible {
+      outline: 2px solid var(--cds-focus);
+    }
+
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  &__origin {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cds-spacing-02) var(--cds-spacing-03);
+    font-size: var(--cds-body-compact-01-font-size);
+    color: var(--cds-text-secondary);
+  }
+
+  &__origin-link {
+    color: var(--cds-link-primary);
+  }
+
+  &__origin-tag {
+    margin: 0;
+  }
+
+  &__title {
+    font-size: var(--cds-heading-compact-02-font-size);
+    font-weight: var(--cds-heading-compact-02-font-weight);
+    line-height: var(--cds-heading-compact-02-line-height);
+    color: var(--cds-text-primary);
+  }
+
+  &__subtitle {
+    font-size: var(--cds-body-compact-01-font-size);
+    color: var(--cds-text-secondary);
+  }
+
+  a.valtimo-side-panel__subtitle {
+    color: var(--cds-link-primary);
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    font-size: var(--cds-body-compact-01-font-size);
+    font-weight: var(--cds-body-compact-01-font-weight);
+    line-height: var(--cds-body-compact-01-line-height);
+    letter-spacing: var(--cds-body-compact-01-letter-spacing);
+
+    ::ng-deep > * {
+      display: block;
+      height: 100%;
+    }
+  }
+}

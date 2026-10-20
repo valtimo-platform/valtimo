@@ -111,7 +111,10 @@ export class CaseDetailsManagementHeaderPage {
   }
 
   async selectFieldsWidgetType() {
-    await this.fieldsTypeTile.click();
+    await expect(async () => {
+      await this.fieldsTypeTile.click({timeout: 5_000});
+      await expect(this.wizardNextButton).toBeEnabled({timeout: 2_000});
+    }).toPass({timeout: 30_000});
   }
 
   async clickNext() {
