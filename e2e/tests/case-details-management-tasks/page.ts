@@ -20,7 +20,7 @@ import {VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 import * as ApiUtils from '../../utils/api.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {fillValuePathManually} from '../../utils/value-path-selector.utils';
-import {fillStable} from '../../utils/ui.utils';
+import {fillStable, openAndSelectOption} from '../../utils/ui.utils';
 
 export class CaseDetailsManagementTasksPage {
   constructor(
@@ -151,8 +151,10 @@ export class CaseDetailsManagementTasksPage {
   // ─── Helpers ──────────────────────────────────────────────────────
 
   async selectDropdownItem(dropdownLocator: Locator, itemText: string) {
-    await dropdownLocator.click();
-    await this.page.getByRole('listbox').getByText(itemText, {exact: true}).click();
+    await openAndSelectOption(
+      dropdownLocator,
+      this.page.getByRole('listbox').getByText(itemText, {exact: true})
+    );
     // Verify the dropdown reflects the selection (ensures Angular form control is updated)
     await expect(dropdownLocator).toContainText(itemText);
   }

@@ -97,8 +97,8 @@ test.describe('Task details', () => {
 
     await page.goto('/tasks');
     await taskListPage.waitForTaskListLoaded();
-    await taskListPage.selectTab('All tasks');
     await taskListPage.selectCaseFromDropdown('Auto assign test');
+    await taskListPage.selectTab('All tasks');
 
     const taskCell = page.locator(`td:has-text("${TASK_NAME}")`).first();
     try {
@@ -106,8 +106,8 @@ test.describe('Task details', () => {
     } catch {
       await page.reload();
       await taskListPage.waitForTaskListLoaded();
-      await taskListPage.selectTab('All tasks');
       await taskListPage.selectCaseFromDropdown('Auto assign test');
+      await taskListPage.selectTab('All tasks');
       await expect(taskCell).toBeVisible({timeout: 25_000});
     }
   });

@@ -1,0 +1,57 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div [attr.data-test-id]="testIds.taskPanel" class="case-detail-task-panel">
+  @if ($startFormPanel(); as startFormPanel) {
+    <div [attr.data-test-id]="testIds.startFormPanel" class="start-form-panel">
+      <section class="start-form-panel__header">
+        @if ($showTaskList()) {
+          <button
+            [attr.aria-label]="'case.taskPanel.back' | translate"
+            [attr.data-test-id]="testIds.startFormPanelCloseButton"
+            [iconOnly]="true"
+            (click)="onStartFormPanelClose()"
+            cdsButton="ghost"
+            class="start-form-panel__back"
+          >
+            <svg cdsIcon="arrow--left" class="cds--btn__icon" size="16"></svg>
+          </button>
+        }
+
+        <h3 [attr.data-test-id]="testIds.startFormPanelTitle" class="start-form-panel__title">
+          {{ startFormPanel.title }}
+        </h3>
+      </section>
+
+      <section class="start-form-panel__body">
+        <ng-container *ngTemplateOutlet="startFormPanel.template"></ng-container>
+      </section>
+    </div>
+  } @else if ($taskAndProcessLink()) {
+    <valtimo-case-detail-task-detail
+      [taskAndProcessLink]="$taskAndProcessLink()"
+      (activeChange)="onTaskFormActiveChange($event)"
+      (closeEvent)="onTaskClose()"
+      (closeRequestEvent)="onTaskCloseRequest()"
+      (dueDateChanged)="onDueDateChanged()"
+      (formSubmit)="onTaskFormSubmit()"
+    ></valtimo-case-detail-task-detail>
+  } @else {
+    <valtimo-case-detail-task-list
+      (taskClickEvent)="onTaskClick($event)"
+    ></valtimo-case-detail-task-list>
+  }
+</div>

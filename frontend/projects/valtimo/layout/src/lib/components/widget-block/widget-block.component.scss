@@ -38,4 +38,18 @@
   &__not-available {
     padding: 16px;
   }
+
+  &__content {
+    position: relative;
+  }
+
+  // Passes a filled content height on to widgets that fill their block.
+  &__component {
+    height: 100%;
+  }
+
+  // Keeps the widget's own height while the error covers it.
+  &__content-hidden {
+    visibility: hidden;
+  }
 }

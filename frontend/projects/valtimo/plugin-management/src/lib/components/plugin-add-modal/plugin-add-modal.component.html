@@ -81,7 +81,12 @@
     </div>
   </section>
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="hide()" [disabled]="inputDisabled$ | async">
+    <button
+      cdsButton="ghost"
+      [disabled]="inputDisabled$ | async"
+      (click)="hide()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
       {{ 'stepper.cancelButtonText' | translate }}
     </button>
 
@@ -90,6 +95,7 @@
       cdsButton="primary"
       [disabled]="!(selectedPluginDefinition$ | async) || (inputDisabled$ | async)"
       (click)="goToNextStep()"
+      [attr.data-test-id]="testIds.enterDataButton"
     >
       {{ 'pluginManagement.addSteps.step1' | translate }}
     </button>
@@ -99,6 +105,7 @@
       cdsButton="primary"
       [disabled]="!(configurationValid$ | async) || (inputDisabled$ | async)"
       (click)="goToNextStep()"
+      [attr.data-test-id]="testIds.permissionsButton"
     >
       {{ 'pluginManagement.addSteps.step2' | translate }}
     </button>
@@ -108,6 +115,7 @@
       cdsButton="primary"
       [disabled]="!(configurationValid$ | async) || (inputDisabled$ | async)"
       (click)="complete()"
+      [attr.data-test-id]="testIds.completeButton"
     >
       {{ 'pluginManagement.addSteps.complete' | translate }}
     </button>
@@ -117,6 +125,7 @@
       cdsButton="primary"
       [disabled]="!(permissionsValid$ | async) || (inputDisabled$ | async)"
       (click)="complete()"
+      [attr.data-test-id]="testIds.completeButton"
     >
       {{ 'pluginManagement.addSteps.complete' | translate }}
     </button>

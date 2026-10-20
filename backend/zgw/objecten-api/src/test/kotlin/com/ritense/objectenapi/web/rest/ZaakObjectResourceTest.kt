@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@
 package com.ritense.objectenapi.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.DocumentService
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.objectenapi.client.ObjectRecord
@@ -28,12 +33,17 @@ import com.ritense.valtimo.contract.json.MapperSingleton
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -44,6 +54,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.net.URI
+import java.util.Optional
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.util.UUID
@@ -54,11 +65,15 @@ internal class ZaakObjectResourceTest {
     lateinit var mockMvc: MockMvc
     lateinit var zaakObjectService: ZaakObjectService
     lateinit var zaakObjectResource: ZaakObjectResource
+    lateinit var documentService: DocumentService
+    lateinit var authorizationService: AuthorizationService
 
     @BeforeEach
     fun init() {
         zaakObjectService = mock()
-        zaakObjectResource = ZaakObjectResource(zaakObjectService)
+        documentService = mock()
+        authorizationService = mock()
+        zaakObjectResource = ZaakObjectResource(zaakObjectService, documentService, authorizationService)
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(zaakObjectResource)
@@ -66,9 +81,16 @@ internal class ZaakObjectResourceTest {
             .build()
     }
 
+    private fun existingDocument(documentId: UUID): JsonSchemaDocument {
+        val document = mock<JsonSchemaDocument>()
+        whenever(documentService.findBy(JsonSchemaDocumentId.existingId(documentId))).thenReturn(Optional.of(document))
+        return document
+    }
+
     @Test
     fun `should get objecttypes for documentId`() {
         val documentId = UUID.randomUUID()
+        existingDocument(documentId)
 
         val type1 = mock<Objecttype>()
         whenever(type1.url).thenReturn(URI("http://example.com/1"))
@@ -101,6 +123,7 @@ internal class ZaakObjectResourceTest {
     @Test
     fun `should get objects for documentId and objecttype`() {
         val documentId = UUID.randomUUID()
+        existingDocument(documentId)
 
         val object1 = mock<ObjectWrapper>()
         whenever(object1.url).thenReturn(URI("http://example.com/1"))
@@ -146,6 +169,8 @@ internal class ZaakObjectResourceTest {
     @Test
     fun `should get form for object`() {
         val documentId = UUID.randomUUID()
+        existingDocument(documentId)
+        whenever(zaakObjectService.isZaakObject(documentId, URI("http://example.com/object"))).thenReturn(true)
         val formId = UUID.randomUUID()
         val objectUrl = URI("http://example.com/object")
         val formDefinition = FormIoFormDefinition(
@@ -176,6 +201,8 @@ internal class ZaakObjectResourceTest {
     @Test
     fun `should return 404 when no form is found for object`() {
         val documentId = UUID.randomUUID()
+        existingDocument(documentId)
+        whenever(zaakObjectService.isZaakObject(documentId, URI("http://example.com/object"))).thenReturn(true)
         val objectUrl = URI("http://example.com/object")
 
         whenever(zaakObjectService.getZaakObjectForm(objectUrl)).thenReturn(null)
@@ -188,6 +215,65 @@ internal class ZaakObjectResourceTest {
                     .accept(MediaType.APPLICATION_JSON_VALUE)
             )
             .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `should return 403 when document view is denied`() {
+        val documentId = UUID.randomUUID()
+        existingDocument(documentId)
+        doThrow(AccessDeniedException("denied"))
+            .whenever(authorizationService)
+            .requirePermission(any<EntityAuthorizationRequest<JsonSchemaDocument>>())
+
+        assertThrows<AccessDeniedException> { zaakObjectResource.getZaakObjecttypes(documentId) }
+        verify(zaakObjectService, never()).getZaakObjectTypes(any())
+    }
+
+    @Test
+    fun `should deny zaak objects of type without document view permission`() {
+        val documentId = UUID.randomUUID()
+        existingDocument(documentId)
+        doThrow(AccessDeniedException("denied"))
+            .whenever(authorizationService)
+            .requirePermission(any<EntityAuthorizationRequest<JsonSchemaDocument>>())
+
+        assertThrows<AccessDeniedException> {
+            zaakObjectResource.getZaakObjecten(documentId, URI("http://example.com/type"))
+        }
+        verify(zaakObjectService, never()).getZaakObjectenOfType(any(), any())
+    }
+
+    @Test
+    fun `should deny object form without document view permission`() {
+        val documentId = UUID.randomUUID()
+        val objectUrl = URI("http://example.com/object")
+        existingDocument(documentId)
+        doThrow(AccessDeniedException("denied"))
+            .whenever(authorizationService)
+            .requirePermission(any<EntityAuthorizationRequest<JsonSchemaDocument>>())
+
+        assertThrows<AccessDeniedException> { zaakObjectResource.getZaakObjectForm(documentId, objectUrl) }
+        verify(zaakObjectService, never()).isZaakObject(any(), any())
+    }
+
+    @Test
+    fun `should return 404 when document does not exist`() {
+        assertThrows<NoSuchElementException> { zaakObjectResource.getZaakObjecttypes(UUID.randomUUID()) }
+    }
+
+    @Test
+    fun `should return 404 when object does not belong to the zaak`() {
+        val documentId = UUID.randomUUID()
+        val objectUrl = URI("http://example.com/object")
+        existingDocument(documentId)
+        whenever(zaakObjectService.isZaakObject(documentId, objectUrl)).thenReturn(false)
+
+        mockMvc
+            .perform(
+                get("/api/v1/document/$documentId/zaak/object/form?objectUrl=$objectUrl")
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
             .andExpect(status().isNotFound)
     }
 

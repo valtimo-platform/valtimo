@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,16 @@
 package com.ritense.valtimo.contract.hardening;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.ritense.valtimo.contract.hardening.config.HardeningProperties;
 import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import com.ritense.valtimo.contract.hardening.service.impl.HardeningServiceImpl;
@@ -31,9 +36,11 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 public class StacktraceHardeningServiceTest {
     private HardeningService hardeningService;
@@ -158,6 +165,36 @@ public class StacktraceHardeningServiceTest {
         assertTrue(numExceptionsInChainAsserted >= 2, "Throwable must have at least one nested exception");
         // asserted all the exceptions and their causes
         return;
+    }
+
+    @Test
+    public void warnsAtStartupWhenWhitelistHasWildcard() {
+        List<ILoggingEvent> events = captureWarningsDuringConstruction(Set.of("*"));
+
+        assertTrue(events.stream().anyMatch(e -> e.getLevel() == Level.WARN
+            && e.getFormattedMessage().contains("allowStacktraceOnIps contains '*'")));
+    }
+
+    @Test
+    public void doesNotWarnAtStartupWhenWhitelistHasNoWildcard() {
+        List<ILoggingEvent> events = captureWarningsDuringConstruction(Set.of("127.0.0.1", "0:0:0:0:0:0:0:1"));
+
+        assertFalse(events.stream().anyMatch(e -> e.getLevel() == Level.WARN));
+    }
+
+    private List<ILoggingEvent> captureWarningsDuringConstruction(Set<String> whitelist) {
+        Logger logger = (Logger) LoggerFactory.getLogger(HardeningServiceImpl.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            HardeningProperties properties = new HardeningProperties();
+            properties.setAllowStacktraceOnIps(whitelist);
+            new HardeningServiceImpl(properties);
+            return appender.list;
+        } finally {
+            logger.detachAppender(appender);
+        }
     }
 
 }
