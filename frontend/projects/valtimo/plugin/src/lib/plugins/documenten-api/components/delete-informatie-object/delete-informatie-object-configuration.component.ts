@@ -16,8 +16,20 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  Subscription,
+  take,
+} from 'rxjs';
 import {DeleteInformatieObjectConfig} from '../../models';
+import {DocumentenApiService} from '../../services';
+import {isValidDocumentReference} from '../../utils';
 import {DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS} from '../../../../constants';
 
 @Component({
@@ -38,39 +50,63 @@ export class DeleteInformatieObjectConfigurationComponent
 
   protected readonly testIds = DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS;
 
-  private saveSubscription!: Subscription;
+  private readonly _subscriptions = new Subscription();
   private readonly formValue$ = new BehaviorSubject<DeleteInformatieObjectConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
+  private readonly _resolverPrefixes$ = new BehaviorSubject<string[] | null>(null);
+
+  constructor(private readonly documentenApiService: DocumentenApiService) {}
 
   public ngOnInit(): void {
+    this.loadResolverPrefixes();
+    this.openValidSubscription();
     this.openSaveSubscription();
   }
 
   public ngOnDestroy(): void {
-    this.saveSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   public formValueChange(formValue: DeleteInformatieObjectConfig): void {
     this.formValue$.next(formValue);
-    this.handleValid(formValue);
   }
 
-  private handleValid(formValue: DeleteInformatieObjectConfig): void {
-    const valid = !!formValue.documentUrl;
+  private loadResolverPrefixes(): void {
+    // No prefixes on failure: literal URLs stay valid, expressions are rejected
+    this.documentenApiService
+      .getValueResolverPrefixes()
+      .pipe(catchError(() => of([])))
+      .subscribe(prefixes => this._resolverPrefixes$.next(prefixes));
+  }
 
-    this.valid$.next(valid);
-    this.valid.emit(valid);
+  private openValidSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.formValue$, this._resolverPrefixes$])
+        .pipe(
+          filter(([formValue]) => !!formValue),
+          map(([formValue, prefixes]) => this.isValid(formValue, prefixes))
+        )
+        .subscribe(valid => this.valid.emit(valid))
+    );
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(() => {
-      combineLatest([this.formValue$, this.valid$])
-        .pipe(take(1))
-        .subscribe(([formValue, valid]) => {
-          if (valid) {
-            this.configuration.emit(formValue);
-          }
-        });
-    });
+    if (!this.save$) return;
+
+    this._subscriptions.add(
+      this.save$.subscribe(() => {
+        combineLatest([this.formValue$, this._resolverPrefixes$])
+          .pipe(take(1))
+          .subscribe(([formValue, prefixes]) => {
+            if (this.isValid(formValue, prefixes)) this.configuration.emit(formValue!);
+          });
+      })
+    );
+  }
+
+  private isValid(
+    formValue: DeleteInformatieObjectConfig | null,
+    prefixes: string[] | null
+  ): boolean {
+    return !!formValue && !!prefixes && isValidDocumentReference(formValue.documentUrl, prefixes);
   }
 }
