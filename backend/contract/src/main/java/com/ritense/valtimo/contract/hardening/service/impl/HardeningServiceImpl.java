@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,13 @@ public class HardeningServiceImpl implements HardeningService {
 
     public HardeningServiceImpl(HardeningProperties hardeningProperties) {
         this.hardeningProperties = hardeningProperties;
+        final Set<String> whitelist = hardeningProperties.getAllowStacktraceOnIps();
+        if (whitelist != null && whitelist.contains("*")) {
+            logger.warn(
+                "valtimo.hardening.allowStacktraceOnIps contains '*': stack traces are returned to every client. " +
+                    "Do not use this setting in production."
+            );
+        }
     }
 
     public Throwable harden(Throwable ex, HttpServletRequest request) {

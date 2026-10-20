@@ -18,3 +18,4 @@ export * from './plugin';
 export * from './external-plugin.model';
 export * from './external-plugin-page.model';
 export * from './plugin-configuration-mapping';
+export * from './external-plugin-side-panel.model';

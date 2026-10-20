@@ -180,9 +180,13 @@ class ZakenApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ZaakDocumentResource::class)
     fun zaakDocumentResource(
-        zaakDocumentService: ZaakDocumentService
+        zaakDocumentService: ZaakDocumentService,
+        documentService: DocumentService,
+        authorizationService: AuthorizationService
     ) = ZaakDocumentResource(
-        zaakDocumentService
+        zaakDocumentService,
+        documentService,
+        authorizationService
     )
 
     @Bean
@@ -204,11 +208,13 @@ class ZakenApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ZaakValueResolverFactory::class)
     fun zaakValueResolverFactory(
-        zaakDocumentService: ZaakDocumentService,
-        processDocumentService: ProcessDocumentService
+        processDocumentService: ProcessDocumentService,
+        zaakUrlProvider: ZaakUrlProvider,
+        pluginService: PluginService,
     ) = ZaakValueResolverFactory(
-        zaakDocumentService,
-        processDocumentService
+        processDocumentService,
+        zaakUrlProvider,
+        pluginService
     )
 
     @Bean

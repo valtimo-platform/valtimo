@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@
 package com.ritense.dataprovider.defaultdataproviders.providers.dropdown
 
 import com.ritense.dataprovider.BaseIntegrationTest
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -52,6 +55,28 @@ internal class DropdownJsonFileDataProviderIntTest : BaseIntegrationTest() {
             .andExpect(jsonPath("$.u00007").value("Mary Johnson"))
             .andExpect(jsonPath("$.u00008").value("Patricia Williams"))
             .andExpect(jsonPath("$.u00009").value("Jennifer Smith"))
+    }
+
+    @Test
+    fun `should not read json file outside dropdown directory via path traversal`() {
+        mockMvc.perform(
+            get("/api/v1/data/dropdown-list")
+                .param("provider", "dropdownJsonFileDataProvider")
+                .param("key", "../../traversal-target")
+        )
+            .andDo(print())
+            .andExpect(content().string(not(containsString("traversal-secret-value"))))
+    }
+
+    @Test
+    fun `should not read json file from sibling directory with matching prefix via path traversal`() {
+        mockMvc.perform(
+            get("/api/v1/data/dropdown-list")
+                .param("provider", "dropdownJsonFileDataProvider")
+                .param("key", "../dropdown-sibling/list")
+        )
+            .andDo(print())
+            .andExpect(content().string(not(containsString("traversal-secret-value"))))
     }
 
 }

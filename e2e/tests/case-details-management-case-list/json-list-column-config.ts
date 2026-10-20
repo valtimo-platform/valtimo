@@ -75,14 +75,14 @@ export const REVERT_LIST_COLUMNS = [
 
 export const UI_COLUMN_1 = {
   title: 'Created By',
-  key: 'uiTestColumn1',
+  key: 'uitestcolumn1',
   path: 'case:createdBy',
   displayType: 'Text',
 };
 
 export const UI_COLUMN_2 = {
   title: 'Created On',
-  key: 'uiTestColumn2',
+  key: 'uitestcolumn2',
   path: 'case:createdOn',
   displayType: 'Date',
   sortable: true,
@@ -90,7 +90,7 @@ export const UI_COLUMN_2 = {
 
 export const UI_COLUMN_DATE = {
   title: 'Date Column',
-  key: 'uiTestDate',
+  key: 'uitestdate',
   path: 'case:createdOn',
   displayType: 'Date',
   sortable: true,
@@ -99,7 +99,7 @@ export const UI_COLUMN_DATE = {
 
 export const UI_COLUMN_ENUM = {
   title: 'Enum Column',
-  key: 'uiTestEnum',
+  key: 'uitestenum',
   path: 'case:createdBy',
   displayType: 'Enumeration',
   enumValues: [
@@ -110,7 +110,7 @@ export const UI_COLUMN_ENUM = {
 
 export const UI_COLUMN_TAGS = {
   title: 'Tags Column',
-  key: 'uiTestTags',
+  key: 'uitesttags',
   path: 'case:createdBy',
   displayType: 'Tags',
   tagAmount: 3,
@@ -118,7 +118,7 @@ export const UI_COLUMN_TAGS = {
 
 export const UI_COLUMN_DEFAULT_SORT = {
   title: 'Default Sort Column',
-  key: 'uiTestDefaultSort',
+  key: 'uitestdefaultsort',
   path: 'case:createdOn',
   displayType: 'Text',
   sortable: true,
@@ -127,9 +127,8 @@ export const UI_COLUMN_DEFAULT_SORT = {
 
 export const UI_COLUMN_EXPORTABLE = {
   title: 'Exportable Column',
-  key: 'uiTestExportable',
+  key: 'uitestexportable',
   path: 'case:createdBy',
   displayType: 'Text',
   exportable: true,
 };
-

@@ -167,12 +167,12 @@ class FormFlowService(
 
     fun deleteByKeyAndsCaseDefinition(definitionKey: String, caseDefinitionId: CaseDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-        formFlowDefinitionRepository.deleteById(FormFlowDefinitionId.existingId(definitionKey, caseDefinitionId))
+        deleteDefinition(FormFlowDefinitionId.existingId(definitionKey, caseDefinitionId))
     }
 
     fun deleteByKeyAndBuildingBlockDefinition(definitionKey: String, buildingBlockDefinitionId: BuildingBlockDefinitionId) {
         buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
-        formFlowDefinitionRepository.deleteById(FormFlowDefinitionId.existingId(definitionKey, buildingBlockDefinitionId))
+        deleteDefinition(FormFlowDefinitionId.existingId(definitionKey, buildingBlockDefinitionId))
     }
 
     fun deleteAllByCaseDefinitionId(caseDefinitionId: CaseDefinitionId) {
@@ -180,7 +180,7 @@ class FormFlowService(
         val definitions = formFlowDefinitionRepository.findAllByBlueprintId(
             BlueprintType.CASE, caseDefinitionId.key, caseDefinitionId.versionTag
         )
-        formFlowDefinitionRepository.deleteAll(definitions)
+        deleteDefinitions(definitions)
     }
 
     fun deleteAllByBuildingBlockDefinitionId(buildingBlockDefinitionId: BuildingBlockDefinitionId) {
@@ -188,6 +188,19 @@ class FormFlowService(
         val definitions = formFlowDefinitionRepository.findAllByBlueprintId(
             BlueprintType.BUILDING_BLOCK, buildingBlockDefinitionId.key, buildingBlockDefinitionId.versionTag
         )
+        deleteDefinitions(definitions)
+    }
+
+    private fun deleteDefinition(formFlowDefinitionId: FormFlowDefinitionId) {
+        formFlowDefinitionRepository.findByIdOrNull(formFlowDefinitionId)?.let { deleteDefinitions(listOf(it)) }
+    }
+
+    // Bulk deletes don't cascade: children first
+    private fun deleteDefinitions(definitions: List<FormFlowDefinition>) {
+        definitions.forEach { definition ->
+            formFlowInstanceRepository.deleteStepInstancesByFormFlowDefinition(definition)
+            formFlowInstanceRepository.deleteInstancesByFormFlowDefinition(definition)
+        }
         formFlowDefinitionRepository.deleteAll(definitions)
     }
 

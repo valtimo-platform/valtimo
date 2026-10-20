@@ -48,7 +48,7 @@ test.describe('Case detail — task panel headings', () => {
 
     await expect(myTasks).toHaveCount(1);
     await expect(
-      taskPanelPage.taskListPanel.getByRole('heading', {level: 2, name: 'My tasks', exact: true})
+      taskPanelPage.taskListPanel.getByRole('heading', {level: 3, name: 'My tasks', exact: true})
     ).toHaveCount(1);
     await expect(taskPanelPage.panelHeadings('Tasks')).toHaveCount(0);
     await expect(otherTasks).toHaveCount(1);
