@@ -25,6 +25,7 @@ import {LinkDocumentToObjectConfigurationComponent} from './components/link-docu
 import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
 import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
 import {AddDocumentTrefwoordConfigurationComponent} from './components/add-document-trefwoord/add-document-trefwoord-configuration.component';
+import {DeleteInformatieObjectConfigurationComponent} from './components/delete-informatie-object/delete-informatie-object-configuration.component';
 import {documentenApiActionFilterFunction} from './services';
 
 const documentenApiPluginSpecification: PluginSpecification = {
@@ -40,6 +41,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
     'delete-document-link': DeleteDocumentLinkConfigurationComponent,
     'get-audit-trail': GetAuditTrailConfigurationComponent,
     'add-document-trefwoord': AddDocumentTrefwoordConfigurationComponent,
+    'delete-informatie-object': DeleteInformatieObjectConfigurationComponent,
   },
   functionConfigurationComponentsFilter: documentenApiActionFilterFunction,
   pluginTranslations: {
@@ -160,6 +162,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
       trefwoord: 'Trefwoord',
       trefwoordTooltip:
         "Het trefwoord dat aan het document toegevoegd moet worden, bijv. 'Printstraat'.",
+      'delete-informatie-object': 'Informatieobject verwijderen',
+      deleteInformatieObjectMessage:
+        "Verwijdert een document (enkelvoudiginformatieobject) op basis van de opgegeven URL. " +
+        "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
+      deleteInformatieObjectDocumentUrlTooltip:
+        "De volledige URL naar het enkelvoudiginformatieobject dat verwijderd moet worden, " +
+        "bijv. 'pv:documentUrl'",
     },
     en: {
       title: 'Documenten API',
@@ -278,6 +287,13 @@ const documentenApiPluginSpecification: PluginSpecification = {
         "already exist on the document; if the trefwoord is already present, nothing happens.",
       trefwoord: 'Trefwoord',
       trefwoordTooltip: "The trefwoord to add to the document, e.g. 'Printstraat'.",
+      'delete-informatie-object': 'Delete informatie object',
+      deleteInformatieObjectMessage:
+        "Deletes a document (enkelvoudiginformatieobject) based on the given URL. " +
+        "Process variables can be referenced using the notation 'pv:variableName'.",
+      deleteInformatieObjectDocumentUrlTooltip:
+        "The full URL to the enkelvoudiginformatieobject that should be deleted, " +
+        "e.g. 'pv:documentUrl'",
     },
   },
 };
