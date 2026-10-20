@@ -19,21 +19,25 @@ import {
   Component,
   ComponentFactoryResolver,
   ElementRef,
+  HostListener,
   Inject,
+  inject,
   OnDestroy,
   Renderer2,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, NavigationStart, ParamMap, Params, Router} from '@angular/router';
-import {ChevronDown16, Close16} from '@carbon/icons';
+import {Add16, ChevronDown16, Close16, Task16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
   AssignmentChangeEvent,
+  borderBoxWidth,
   BreadcrumbService,
   CdsThemeService,
   CurrentCarbonTheme,
+  fromResizeObserver,
   ObserveSizeDirective,
   PageHeaderService,
   PageTitleService,
@@ -52,7 +56,7 @@ import {
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {SseService} from '@valtimo/sse';
-import {IntermediateSubmission, TaskUpdateSseEvent} from '@valtimo/task';
+import {IntermediateSubmission, TaskDetailModalComponent, TaskUpdateSseEvent} from '@valtimo/task';
 import {SplitGutterInteractionEvent} from 'angular-split';
 import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
@@ -61,6 +65,7 @@ import {
   BehaviorSubject,
   combineLatest,
   debounceTime,
+  distinctUntilChanged,
   filter,
   forkJoin,
   map,
@@ -79,6 +84,7 @@ import {
   CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
   CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
   CASE_DETAIL_GUTTER_SIZE,
+  CASE_DETAIL_PANEL_TEST_IDS,
   CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
 } from '../../constants';
 import {
@@ -98,6 +104,7 @@ import {
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
+import {CaseDetailTaskPanelService} from '../../services/case-detail-task-panel.service';
 import {resolveStartableItemTitle} from '../../utils';
 import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {WidgetsService} from './tab/widgets/widgets.service';
@@ -106,7 +113,12 @@ import {WidgetsService} from './tab/widgets/widgets.service';
   standalone: false,
   templateUrl: './case-detail.component.html',
   styleUrls: ['./case-detail.component.scss'],
-  providers: [CaseTabService, CaseDetailLayoutService, ObserveSizeDirective],
+  providers: [
+    CaseTabService,
+    CaseDetailLayoutService,
+    CaseDetailTaskPanelService,
+    ObserveSizeDirective,
+  ],
 })
 export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   @ViewChild('supportingProcessStartModal')
@@ -117,6 +129,9 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('tabContentContainer')
   private readonly _tabContentContainer!: ElementRef<HTMLDivElement>;
+
+  @ViewChild('taskDetailModal')
+  private readonly _taskDetailModal!: TaskDetailModalComponent;
 
   public document: ValtimoDocument | null = null;
   public caseDefinitionKey: string;
@@ -140,6 +155,13 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly startFormPanel$ = this.caseDetailLayoutService.startFormPanel$;
 
+  // Injected, not a constructor parameter, to keep the constructor signature for subclasses.
+  private readonly _caseDetailTaskPanelService = inject(CaseDetailTaskPanelService);
+
+  public readonly formDisplaySize$ = this.caseDetailLayoutService.formDisplaySize$;
+  public readonly taskPanelAvailable$ = this._caseDetailTaskPanelService.available$;
+  public readonly taskPanelVisible$ = this._caseDetailTaskPanelService.visible$;
+
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
 
   public readonly dropdownWidth$ = new BehaviorSubject<number>(
@@ -152,6 +174,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   public readonly _caseTags$ = new BehaviorSubject<CaseTag[] | null>(null);
 
   public readonly showDeleteModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  public readonly showPendingChangesModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly canView$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
@@ -331,12 +354,17 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     );
   }
 
+  /** @deprecated The task panel renders in the app-wide side panel; there is no split anymore. */
   public readonly CASE_DETAIL_GUTTER_SIZE = CASE_DETAIL_GUTTER_SIZE;
 
+  protected readonly testIds = CASE_DETAIL_PANEL_TEST_IDS;
+
+  /** @deprecated The task panel renders in the app-wide side panel; there is no split anymore. */
   public readonly caseDetailLayout$ = this.caseDetailLayoutService.caseDetailLayout$;
 
   public readonly openTaskAndProcessLinkInModal$ = new Subject<TaskWithProcessLink>();
 
+  /** @deprecated No longer used by the case detail. */
   public readonly isDarkMode$ = this.cdsThemeService.currentTheme$.pipe(
     map(currentTheme => currentTheme === CurrentCarbonTheme.G90)
   );
@@ -349,10 +377,10 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   private _activeChange = false;
   private _oldTabName: string;
   private _pendingTab: TabImpl;
-  private _observer!: ResizeObserver;
   private _tabsInit = false;
 
   private readonly _subscriptions = new Subscription();
+  private _leaveDecision$: Subject<boolean> | null = null;
 
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
@@ -388,15 +416,17 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   public ngAfterViewInit(): void {
     this.initTabLoader();
     this.initBreadcrumb();
-    this.openWidthObserver();
+    this.observeTabContentContainerWidth();
     this.pageTitleService.disableReset();
-    this.iconService.registerAll([ChevronDown16, Close16]);
+    this.iconService.registerAll([Add16, ChevronDown16, Close16, Task16]);
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
     this.openSmallTitleSubscription();
+    this.openTabContentContainerTopSubscription();
     this.openStartableItemsSseSubscription();
     this.openCaseStateSseSubscription();
+    this.openTaskPanel();
   }
 
   public ngOnDestroy(): void {
@@ -479,15 +509,12 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   public startItem(item: StartableItem): void {
-    this.showTaskList$.pipe(take(1)).subscribe(showTaskList => {
-      this.supportingProcessStart.openModalForStartableItem(
-        item,
-        this.documentId,
-        this.caseDefinitionKey,
-        this.caseDefinitionVersionTag,
-        showTaskList
-      );
-    });
+    this.supportingProcessStart.openModalForStartableItem(
+      item,
+      this.documentId,
+      this.caseDefinitionKey,
+      this.caseDefinitionVersionTag
+    );
   }
 
   public onStartFormPanelClose(): void {
@@ -565,6 +592,30 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     ]);
   }
 
+  /** Asks before leaving while a task or start form has unsaved edits. */
+  public canDeactivate(): boolean | Observable<boolean> {
+    if (!this.caseDetailLayoutService.hasPendingFormChanges) return true;
+
+    this._leaveDecision$?.next(false);
+    this._leaveDecision$ = new Subject<boolean>();
+    this.showPendingChangesModal$.next(true);
+    return this._leaveDecision$.pipe(take(1));
+  }
+
+  public onLeaveConfirm(): void {
+    this.caseDetailLayoutService.clearPendingFormChanges();
+    this.resolveLeaveDecision(true);
+  }
+
+  public onLeaveCancel(): void {
+    this.resolveLeaveDecision(false);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  public onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.caseDetailLayoutService.hasPendingFormChanges) event.preventDefault();
+  }
+
   public onConfirmDelete(): void {
     this.isDeleting$.next(true);
     this.documentService.deleteDocument(this.documentId).subscribe({
@@ -613,6 +664,10 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this._activeChange = event;
   }
 
+  public onTaskPanelToggle(): void {
+    this._caseDetailTaskPanelService.toggle();
+  }
+
   public onTabSelected(tab: TabImpl, activeTab: TabImpl): void {
     if (!this.tabLoader) return;
 
@@ -634,8 +689,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     //   return;
     // }
 
-    if (!tab.showTasks) this.openTaskAndProcessLinkInModal$.next(null);
-    this.supportingProcessStart.closePanel();
+    this.supportingProcessStart.closeModalOnTabSwitch();
     this.tabLoader.load(tab);
     this.setDocumentStyle();
   }
@@ -646,14 +700,21 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this.tabLoader?.refreshView();
   }
 
-  public onDueDateChanged(): void {
+  public onTaskChanged(): void {
     this.caseDetailLayoutService.refreshTasks();
+  }
+
+  /** @deprecated Use `onTaskChanged()`. */
+  public onDueDateChanged(): void {
+    this.onTaskChanged();
   }
 
   public onMainContentHeaderHeightChange(height: number): void {
     this.caseDetailLayoutService.setMainContentHeaderHeight(height);
+    this.measureTabContentContainerTop();
   }
 
+  /** @deprecated The task panel renders in the app-wide side panel; there is no split anymore. */
   public onSplitDragEnd(event: SplitGutterInteractionEvent): void {
     const taskPanelWidth = event.sizes[1];
 
@@ -738,35 +799,12 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private getNestedProperty(obj: any, path: string, defaultValue: any): any {
-    return (
-      path.split('.').reduce((currentObject, key) => currentObject?.[key], obj) || defaultValue
-    );
-  }
-
   private setBreadcrumb(): void {
     this.breadcrumbService.setSecondBreadcrumb({
       route: [`/cases/${this.caseDefinitionKey}`],
       content: this.documentDefinitionTitle,
       href: `/cases/${this.caseDefinitionKey}`,
     });
-  }
-
-  private openWidthObserver(): void {
-    if (!this._tabContentContainer.nativeElement) return;
-
-    this._observer = new ResizeObserver(event => {
-      this.observerMutation(event);
-    });
-    this._observer.observe(this._tabContentContainer.nativeElement);
-  }
-
-  private observerMutation(event: Array<ResizeObserverEntry>): void {
-    const elementWidth = event[0]?.borderBoxSize[0]?.inlineSize;
-
-    if (typeof elementWidth === 'number' && elementWidth !== 0) {
-      this.caseDetailLayoutService.setTabContentContainerWidth(elementWidth);
-    }
   }
 
   private setDocumentStyle(): void {
@@ -828,6 +866,82 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
           ? CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH.medium
           : CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH.large
     );
+  }
+
+  private openTaskPanel(): void {
+    this._caseDetailTaskPanelService.open();
+
+    this._subscriptions.add(
+      this.openTaskAndProcessLinkInModal$
+        .pipe(filter(taskWithProcessLink => !!taskWithProcessLink))
+        .subscribe(taskWithProcessLink =>
+          this._taskDetailModal.openTaskAndProcessLinkDetails(taskWithProcessLink)
+        )
+    );
+    this._subscriptions.add(
+      this.caseDetailLayoutService.taskSelected$.subscribe(taskWithProcessLink =>
+        this.onTaskClickEvent(taskWithProcessLink)
+      )
+    );
+    this._subscriptions.add(
+      this.caseDetailLayoutService.taskFormSubmitted$.subscribe(() => this.onFormSubmitEvent())
+    );
+    this._subscriptions.add(
+      this.caseDetailLayoutService.startFormPanelCloseRequested$
+        .pipe(
+          switchMap(() => this.confirmDiscardChanges()),
+          filter(Boolean)
+        )
+        .subscribe(() => this.onStartFormPanelClose())
+    );
+    this._subscriptions.add(
+      this.caseDetailLayoutService.taskCloseRequested$
+        .pipe(
+          switchMap(() => this.confirmDiscardChanges()),
+          filter(Boolean)
+        )
+        .subscribe(() => this.onTaskDetailsClose())
+    );
+  }
+
+  /** True at once without unsaved edits, else the user's answer to the pending changes modal. */
+  private confirmDiscardChanges(): Observable<boolean> {
+    const decision = this.canDeactivate();
+    return typeof decision === 'boolean' ? of(decision) : decision;
+  }
+
+  /** The page header above can wrap onto more rows; the tab content fills what remains. */
+  private openTabContentContainerTopSubscription(): void {
+    this._subscriptions.add(
+      this.pageHeaderService.pageHeadHeight$
+        .pipe(distinctUntilChanged())
+        .subscribe(() => this.measureTabContentContainerTop())
+    );
+  }
+
+  private measureTabContentContainerTop(): void {
+    const top = this._tabContentContainer?.nativeElement.getBoundingClientRect().top;
+    if (top) this.caseDetailLayoutService.setTabContentContainerTop(Math.round(top));
+  }
+
+  /** Feeds the deprecated `caseDetailLayout$`; observes only while that is subscribed to. */
+  private observeTabContentContainerWidth(): void {
+    const container = this._tabContentContainer?.nativeElement;
+    if (!container) return;
+
+    this.caseDetailLayoutService.observeTabContentContainerWidth(
+      fromResizeObserver(container).pipe(
+        map(entries => borderBoxWidth(entries[entries.length - 1])),
+        filter(width => width !== 0),
+        distinctUntilChanged()
+      )
+    );
+  }
+
+  private resolveLeaveDecision(leave: boolean): void {
+    this.showPendingChangesModal$.next(false);
+    this._leaveDecision$?.next(leave);
+    this._leaveDecision$ = null;
   }
 
   private openSmallTitleSubscription(): void {

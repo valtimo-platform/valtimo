@@ -35,6 +35,7 @@ import {ComboBoxModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
+  finalize,
   map,
   Observable,
   Subscription,
@@ -99,49 +100,61 @@ export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public selectProcess(item: {id: string}): void {
-    const processDefinitionKey = item?.id;
-    this.disabled$.next(true);
+  public selectProcess(item: ListItem | ListItem[] | null): void {
+    // Carbon emits the picked item, but an empty array on clear. "No selection" is stored as '',
+    // so normalise all three — otherwise clearing slips past the guard below.
+    const processDefinitionKey: string = (Array.isArray(item) ? '' : item?.id) ?? '';
     const currentSelectionId = this.selectedProcessKey$.getValue();
 
-    if (processDefinitionKey && processDefinitionKey !== currentSelectionId)
-      this.updateProcess(processDefinitionKey);
-    else if (!processDefinitionKey) this.deleteProcess();
+    // Picking what is already linked saves nothing. Disabling for a round-trip that never
+    // follows used to leave the combo box switched off for good.
+    if (processDefinitionKey === currentSelectionId) return;
+
+    this.disabled$.next(true);
+
+    if (processDefinitionKey) this.updateProcess(processDefinitionKey);
+    else this.deleteProcess();
   }
 
   private deleteProcess(): void {
-    this._caseParams$
-      .pipe(
-        take(1),
-        switchMap((params: CaseManagementParams | undefined) =>
-          this.documentenApiLinkProcessService.deleteLinkedUploadProcess(
-            params?.caseDefinitionKey ?? '',
-            params?.caseDefinitionVersionTag ?? ''
-          )
+    this._subscriptions.add(
+      this._caseParams$
+        .pipe(
+          take(1),
+          switchMap((params: CaseManagementParams | undefined) =>
+            this.documentenApiLinkProcessService.deleteLinkedUploadProcess(
+              params?.caseDefinitionKey ?? '',
+              params?.caseDefinitionVersionTag ?? ''
+            )
+          ),
+          // Re-enable even when the save fails — otherwise one failed request costs the user
+          // the control until they reload
+          finalize(() => this.disabled$.next(false))
         )
-      )
-      .subscribe(() => {
-        this.selectedProcessKey$.next('');
-        this.disabled$.next(false);
-      });
+        .subscribe(() => {
+          this.selectedProcessKey$.next('');
+        })
+    );
   }
 
   private updateProcess(processDefinitionKey: string): void {
-    this._caseParams$
-      .pipe(
-        take(1),
-        switchMap((params: CaseManagementParams | undefined) =>
-          this.documentenApiLinkProcessService.updateLinkedUploadProcess(
-            params?.caseDefinitionKey ?? '',
-            params?.caseDefinitionVersionTag ?? '',
-            processDefinitionKey
-          )
+    this._subscriptions.add(
+      this._caseParams$
+        .pipe(
+          take(1),
+          switchMap((params: CaseManagementParams | undefined) =>
+            this.documentenApiLinkProcessService.updateLinkedUploadProcess(
+              params?.caseDefinitionKey ?? '',
+              params?.caseDefinitionVersionTag ?? '',
+              processDefinitionKey
+            )
+          ),
+          finalize(() => this.disabled$.next(false))
         )
-      )
-      .subscribe(processLink => {
-        this.selectedProcessKey$.next(processLink.processDefinitionKey);
-        this.disabled$.next(false);
-      });
+        .subscribe(processLink => {
+          this.selectedProcessKey$.next(processLink.processDefinitionKey);
+        })
+    );
   }
 
   private setDocumentenApiUploaderProvider(config: ValtimoConfig): void {

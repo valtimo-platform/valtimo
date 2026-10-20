@@ -377,6 +377,13 @@ class ZaakDocumentService(
                         "informatieobject '${zaakInformatieObject.informatieobject}' was not found in the Documenten API"
                 }
                 null
+            } else if (e.statusCode == HttpStatus.FORBIDDEN) {
+                logger.warn(e) {
+                    "Skipping zaakinformatieobject '${zaakInformatieObject.url}' of case '$caseDocumentId': " +
+                        "GZAC is not authorized to view informatieobject '${zaakInformatieObject.informatieobject}' " +
+                        "in the Documenten API"
+                }
+                null
             } else {
                 throw e
             }

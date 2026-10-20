@@ -41,11 +41,11 @@ export class CaseDetailsProcessesPage {
   // Locators
 
   get uploadButton() {
-    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.uploadButton);
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.uploadButton).first();
   }
 
   get createProcessButton() {
-    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.createProcessButton);
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.createProcessButton).first();
   }
 
   get uploadModal() {
@@ -201,9 +201,12 @@ export class CaseDetailsProcessesPage {
   async appendTaskToStartEvent(startEventId: string = 'StartEvent_1') {
     const startEvent = this.elementShape(startEventId);
     await expect(startEvent).toBeVisible();
-    await startEvent.click();
 
-    await expect(this.appendTaskContextPadAction).toBeVisible();
+    await expect(async () => {
+      await startEvent.click();
+      await expect(this.appendTaskContextPadAction).toBeVisible({timeout: 2_000});
+    }).toPass({timeout: 20_000});
+
     await this.appendTaskContextPadAction.click();
     await this.page.keyboard.press('Escape');
   }

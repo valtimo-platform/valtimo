@@ -68,11 +68,11 @@ export class ProcessManagementPage {
   // ─── List locators ────────────────────────────────────────────────
 
   get uploadButton() {
-    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.uploadButton);
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.uploadButton).first();
   }
 
   get createProcessButton() {
-    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.createProcessButton);
+    return this.page.getByTestId(PROCESS_MANAGEMENT_LIST_TEST_IDS.createProcessButton).first();
   }
 
   // ─── Upload modal locators ────────────────────────────────────────
@@ -237,9 +237,15 @@ export class ProcessManagementPage {
    * renderer.
    */
   async goToProcessManagement() {
+    const processesLoaded = this.page.waitForResponse(
+      res =>
+        new URL(res.url()).pathname === PROCESS_MANAGEMENT_API.processDefinition &&
+        res.request().method() === 'GET'
+    );
     await this.page.goto('/processes');
     await this.page.waitForURL(/\/processes$/);
     await this.carbonList.waitForLoaded();
+    await processesLoaded;
   }
 
   async goToProcessBuilder(processKey: string) {
@@ -271,8 +277,7 @@ export class ProcessManagementPage {
    * overflow menu, so the empty headers are dropped before comparing.
    */
   async assertColumnHeaders(expectedHeaders: readonly string[]) {
-    const headers = await this.carbonList.table.locator('thead th').allInnerTexts();
-    expect(headers.map(header => header.trim()).filter(Boolean)).toEqual([...expectedHeaders]);
+    await this.carbonList.assertColumnHeaders(expectedHeaders);
   }
 
   /**
@@ -398,15 +403,28 @@ export class ProcessManagementPage {
    */
   async saveExpectingValidation(): Promise<Response> {
     await expect(this.deployButton).toBeEnabled();
-    const [response] = await Promise.all([
-      this.page.waitForResponse(
-        res =>
-          new URL(res.url()).pathname === PROCESS_MANAGEMENT_API.validate &&
-          res.request().method() === 'POST'
-      ),
-      this.deployButton.click(),
-    ]);
-    return response;
+
+    const isValidation = (url: string) =>
+      new URL(url).pathname === PROCESS_MANAGEMENT_API.validate;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const validated = this.page.waitForResponse(
+        res => isValidation(res.url()) && res.request().method() === 'POST'
+      );
+      validated.catch(() => undefined);
+
+      const sent = this.page
+        .waitForRequest(req => isValidation(req.url()) && req.method() === 'POST', {
+          timeout: 10_000,
+        })
+        .catch(() => undefined);
+
+      await this.deployButton.click();
+
+      if (await sent) return validated;
+    }
+
+    throw new Error('[process-management] Save did not trigger a validation request');
   }
 
   async validateProcess(): Promise<Response> {

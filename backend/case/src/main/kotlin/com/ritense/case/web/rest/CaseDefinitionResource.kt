@@ -22,6 +22,7 @@ import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
 import com.ritense.case.service.CaseDefinitionImportPreviewService
+import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationCheckResult
 import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
@@ -36,11 +37,9 @@ import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.dto.CaseVersionDto
 import com.ritense.case.web.rest.dto.HiddenCaseListColumnDto
-import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
-import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -84,8 +83,7 @@ class CaseDefinitionResource(
     private val service: CaseDefinitionService,
     private val activeCaseDefinitionService: ActiveCaseDefinitionService,
     private val exportService: ExportService,
-    private val importService: ImportService,
-    private val caseDefinitionRepository: CaseDefinitionRepository,
+    private val caseDefinitionImportService: CaseDefinitionImportService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
     private val configurationIssueRepository: CaseDefinitionConfigurationIssueRepository,
     private val caseDefinitionImportPreviewService: CaseDefinitionImportPreviewService,
@@ -505,15 +503,12 @@ class CaseDefinitionResource(
             val pluginConfigurationMappings: Map<UUID, UUID?>? = pluginConfigurationMappingsJson?.let {
                 jacksonObjectMapper().readValue<Map<UUID, UUID?>>(it)
             }
-            val skipImportOfCaseDefinitions = caseDefinitionRepository.findAllByFinalTrue().map { it.id }
-            val caseDefinitionId = importService.import(
+            val caseDefinitionId = caseDefinitionImportService.import(
                 file.inputStream,
-                skipImportOfCaseDefinitions,
                 key,
                 name,
                 pluginConfigurationMappings,
             )
-            service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok(CaseDefinitionImportResponse(caseDefinitionId))
         } catch (exception: ImportServiceException) {
             logger.info(exception) { "Import failed" }

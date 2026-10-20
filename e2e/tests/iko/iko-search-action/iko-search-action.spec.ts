@@ -23,10 +23,8 @@ import {
 } from '../iko-server/iko-server-config';
 import {IkoViewPage} from '../iko-view/page';
 import {IkoSearchActionPage} from './page';
-import {
-  IKO_SEARCH_ACTION_TITLE_PREFIX,
-  uniqueSearchActionTitle,
-} from './iko-search-action-config';
+import {IKO_SEARCH_ACTION_TITLE_PREFIX, uniqueSearchActionTitle} from './iko-search-action-config';
+import {runCleanups} from '../../../utils/cleanup.utils';
 
 test.use({storageState: undefined});
 
@@ -62,11 +60,14 @@ test.describe('Feature 15C — IKO Search Actions', () => {
   });
 
   test.afterAll(async () => {
-    // Actions → view → server. Children first.
-    await searchActionPage.cleanupTestActionsViaApi(parentViewKey, IKO_SEARCH_ACTION_TITLE_PREFIX);
-    await ikoViewPage.deleteViewViaApi(parentViewKey);
-    await ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX);
-    await context.close();
+    // Actions → view → server. Children first, and every step runs even if an earlier one throws.
+    await runCleanups(
+      () =>
+        searchActionPage.cleanupTestActionsViaApi(parentViewKey, IKO_SEARCH_ACTION_TITLE_PREFIX),
+      () => ikoViewPage.deleteViewViaApi(parentViewKey),
+      () => ikoServerPage.cleanupTestServersViaApi(IKO_SERVER_TITLE_PREFIX),
+      () => context.close()
+    );
   });
 
   // Guard against tests that fail mid-modal — leaving a stuck modal would

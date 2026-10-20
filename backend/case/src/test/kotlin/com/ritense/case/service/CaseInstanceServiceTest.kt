@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ class CaseInstanceServiceTest : BaseTest() {
         whenever(DOCUMENT.id()).thenReturn(JsonSchemaDocumentId.newId(UUID.randomUUID()))
         whenever(caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(CASE_DEFINITION_NAME))
             .thenReturn(listOf(FIRST_NAME_CASE_LIST_COLUMN))
-        whenever(valueResolverService.resolveValues(DOCUMENT.id().id.toString(), listOf("doc:firstName")))
+        whenever(valueResolverService.resolveValuesOrNull(DOCUMENT.id().id.toString(), listOf("doc:firstName")))
             .thenReturn(mapOf("doc:firstName" to "John"))
         whenever(DOCUMENT.definitionId()).thenReturn(
             JsonSchemaDocumentDefinitionId.existingId(
