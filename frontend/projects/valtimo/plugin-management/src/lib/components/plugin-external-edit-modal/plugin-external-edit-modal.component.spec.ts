@@ -35,13 +35,16 @@ describe('PluginExternalEditModalComponent', () => {
   let component: PluginExternalEditModalComponent;
   let externalPluginService: jasmine.SpyObj<ExternalPluginService>;
 
-  const definition = (manifest: ExternalPluginManifest): ExternalPluginDefinition =>
+  const definition = (
+    manifest: ExternalPluginManifest,
+    configurationSchema: unknown = null
+  ): ExternalPluginDefinition =>
     ({
       id: 'definition-id',
       pluginId: 'pdca',
       version: '1.0.0',
       baseUrl: 'http://plugin-host',
-      configurationSchema: null,
+      configurationSchema,
       awaitingDiscovery: false,
       manifest,
     }) as unknown as ExternalPluginDefinition;
@@ -64,9 +67,12 @@ describe('PluginExternalEditModalComponent', () => {
 
   const open = (
     manifest: ExternalPluginManifest,
-    detail: Partial<ExternalPluginConfigurationDetail> = {}
+    detail: Partial<ExternalPluginConfigurationDetail> = {},
+    configurationSchema: unknown = null
   ): void => {
-    externalPluginService.getDefinition.and.returnValue(of(definition(manifest)));
+    externalPluginService.getDefinition.and.returnValue(
+      of(definition(manifest, configurationSchema))
+    );
     externalPluginService.getConfiguration.and.returnValue(of(configurationDetail(detail)));
     component.configuration = {
       id: 'configuration-id',
@@ -124,19 +130,65 @@ describe('PluginExternalEditModalComponent', () => {
     it('keeps the admin on the first step while the configuration is invalid', () => {
       open({permissions: {capabilities: ['gzac_api']}});
 
-      component._form.controls.title.setValue('');
+      component.form.controls.title.setValue('');
       component.goToNextStep();
       expect(component.currentStepIndex).toBe(0);
 
-      component._form.controls.title.setValue('PDCA');
-      component._form.controls.properties.setValue('{not json');
+      component.form.controls.title.setValue('PDCA');
+      component.form.controls.properties.setValue('{not json');
       component.goToNextStep();
       expect(component.$propertiesInvalid()).toBeTrue();
       expect(component.currentStepIndex).toBe(0);
 
-      component._form.controls.properties.setValue('{}');
+      component.form.controls.properties.setValue('{}');
       component.goToNextStep();
       expect(component.currentStepIndex).toBe(1);
+    });
+  });
+
+  describe('generated form', () => {
+    const schema = {
+      type: 'object',
+      required: ['url', 'token'],
+      properties: {
+        url: {type: 'string', format: 'uri'},
+        token: {type: 'string', 'x-secret': true},
+      },
+    };
+
+    it('is used when the stored properties fit a flat schema', () => {
+      open({}, {properties: {url: 'https://openplan.example.com'}}, schema);
+
+      expect(component.$configStructure()?.fields.map(field => field.key)).toEqual([
+        'url',
+        'token',
+      ]);
+      expect(component.$initialProperties()).toEqual({url: 'https://openplan.example.com'});
+    });
+
+    it('leaves a stored key the schema does not declare to the JSON editor', () => {
+      open({}, {properties: {url: 'https://openplan.example.com', legacy: true}}, schema);
+
+      expect(component.$configStructure()).toBeNull();
+      expect(JSON.parse(component.form.controls.properties.value!)).toEqual({
+        url: 'https://openplan.example.com',
+        legacy: true,
+      });
+    });
+
+    it('saves what the form reports once it is valid', () => {
+      open({}, {properties: {url: 'https://openplan.example.com'}}, schema);
+
+      component.onGeneratedPropertiesChange({url: 'https://other.example.com'});
+      component.onSave();
+      expect(externalPluginService.updateConfiguration).not.toHaveBeenCalled();
+
+      component.onGeneratedPropertiesValid(true);
+      component.onSave();
+      expect(externalPluginService.updateConfiguration).toHaveBeenCalledWith('configuration-id', {
+        title: 'PDCA',
+        properties: {url: 'https://other.example.com'},
+      });
     });
   });
 

@@ -68,7 +68,7 @@
           </ng-container>
 
           <ng-template #jsonForm>
-            <form [formGroup]="_form">
+            <form [formGroup]="form">
               <div class="cds--form-item">
                 <label class="cds--label">{{
                   'pluginManagement.labels.configurationName' | translate
@@ -77,14 +77,26 @@
                 <input class="cds--text-input" formControlName="title" />
               </div>
 
-              <valtimo-plugin-external-properties-editor
-                [invalid]="$propertiesInvalid()"
-                [schema]="$configurationSchema()"
+              <valtimo-external-plugin-config-form
+                *ngIf="$configStructure() as structure; else jsonEditor"
                 [secretsKeptWhenEmpty]="true"
-                [value]="_form.controls.properties.value ?? '{}'"
-                (valueChange)="_form.controls.properties.setValue($event)"
+                [structure]="structure"
+                [value]="$initialProperties()"
+                (validEvent)="onGeneratedPropertiesValid($event)"
+                (valueChangeEvent)="onGeneratedPropertiesChange($event)"
                 class="plugin-external-edit-modal__section"
-              ></valtimo-plugin-external-properties-editor>
+              ></valtimo-external-plugin-config-form>
+
+              <ng-template #jsonEditor>
+                <valtimo-plugin-external-properties-editor
+                  [invalid]="$propertiesInvalid()"
+                  [schema]="$configurationSchema()"
+                  [secretsKeptWhenEmpty]="true"
+                  [value]="form.controls.properties.value ?? '{}'"
+                  (valueChange)="form.controls.properties.setValue($event)"
+                  class="plugin-external-edit-modal__section"
+                ></valtimo-plugin-external-properties-editor>
+              </ng-template>
             </form>
           </ng-template>
         </ng-template>

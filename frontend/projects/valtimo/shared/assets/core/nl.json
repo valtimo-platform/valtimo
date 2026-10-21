@@ -3347,6 +3347,10 @@
     "importConfiguration": "Configuratie importeren",
     "externalPlugin": "Externe plugin",
     "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe plugin actie als JSON. Klik op opslaan wanneer gereed.",
+    "externalPluginActionForm": "Configureer de eigenschappen van deze actie.",
+    "externalPluginActionFormHint": "Een eigenschap kan haar waarde ook uit het dossier of het proces halen wanneer de actie draait, bijvoorbeeld:",
+    "externalPluginActionFormDocumentExample": "doc:/pad",
+    "externalPluginActionFormProcessVariableExample": "pv:naam",
     "actionPropertiesJson": "Actie-eigenschappen (JSON)",
     "invalidJson": "Ongeldige JSON",
     "resultMappings": {
@@ -3444,6 +3448,25 @@
       "actionKey": "Actiesleutel",
       "actionProperties": "Actie-eigenschappen (JSON)",
       "actionPropertiesInvalidJson": "Actie-eigenschappen moeten geldige JSON zijn"
+    },
+    "configForm": {
+      "noFields": "Hier valt niets te configureren.",
+      "chooseOption": "Kies een optie",
+      "secretKept": "Versleuteld opgeslagen en niet getoond. Laat leeg om de huidige waarde te behouden.",
+      "errors": {
+        "required": "Dit veld is verplicht.",
+        "number": "Voer een getal in.",
+        "integer": "Voer een geheel getal in.",
+        "numberOrExpression": "Voer een getal in, of een waarde zoals pv:bedrag.",
+        "integerOrExpression": "Voer een geheel getal in, of een waarde zoals pv:aantal.",
+        "url": "Voer een volledige URL in, zoals https://voorbeeld.nl.",
+        "minLength": "Voer minstens {{value}} tekens in.",
+        "maxLength": "Voer hoogstens {{value}} tekens in.",
+        "minimum": "Voer {{value}} of meer in.",
+        "maximum": "Voer {{value}} of minder in.",
+        "pattern": "Deze waarde heeft niet het verwachte formaat.",
+        "invalid": "Deze waarde is niet geldig."
+      }
     }
   },
   "processLinkSteps": {

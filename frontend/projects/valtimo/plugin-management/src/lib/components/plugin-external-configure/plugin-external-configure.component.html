@@ -17,7 +17,7 @@
 <cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
 
 <ng-container *ngIf="!$loading()">
-  <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonFallback">
+  <ng-container *ngIf="$configBundleUrl() as bundleUrl; else propertiesForm">
     <valtimo-external-plugin-iframe
       [bundleUrl]="bundleUrl"
       [autoHeight]="true"
@@ -25,26 +25,38 @@
     ></valtimo-external-plugin-iframe>
   </ng-container>
 
-  <ng-template #jsonFallback>
-    <form [formGroup]="_form">
+  <ng-template #propertiesForm>
+    <form [formGroup]="form">
       <div class="cds--form-item">
         <label class="cds--label">{{
           'pluginManagement.labels.configurationName' | translate
         }}</label>
+
         <input
+          [placeholder]="'pluginManagement.propertiesEditor.titlePlaceholder' | translate"
           class="cds--text-input"
           formControlName="title"
-          [placeholder]="'pluginManagement.propertiesEditor.titlePlaceholder' | translate"
         />
       </div>
 
-      <valtimo-plugin-external-properties-editor
-        [invalid]="$propertiesInvalid()"
-        [schema]="$configurationSchema()"
-        [value]="_form.controls.properties.value ?? '{}'"
-        (valueChange)="_form.controls.properties.setValue($event)"
+      <valtimo-external-plugin-config-form
+        *ngIf="$configStructure() as structure; else jsonEditor"
+        [structure]="structure"
+        [value]="$initialProperties()"
+        (validEvent)="onGeneratedPropertiesValid($event)"
+        (valueChangeEvent)="onGeneratedPropertiesChange($event)"
         class="plugin-external-configure__properties"
-      ></valtimo-plugin-external-properties-editor>
+      ></valtimo-external-plugin-config-form>
+
+      <ng-template #jsonEditor>
+        <valtimo-plugin-external-properties-editor
+          [invalid]="$propertiesInvalid()"
+          [schema]="$configurationSchema()"
+          [value]="form.controls.properties.value ?? '{}'"
+          (valueChange)="form.controls.properties.setValue($event)"
+          class="plugin-external-configure__properties"
+        ></valtimo-plugin-external-properties-editor>
+      </ng-template>
     </form>
   </ng-template>
 </ng-container>

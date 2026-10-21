@@ -45,13 +45,28 @@ describe('PluginExternalConfigureComponent', () => {
     },
   };
 
-  const load = (manifest: Partial<ExternalPluginDefinition['manifest']>): void => {
+  const nestedConfigurationSchema = {
+    type: 'object',
+    properties: {
+      openPlanUrl: {
+        type: 'string',
+        default: 'http://host.docker.internal:7501',
+        'x-egress-target': true,
+      },
+      retry: {type: 'object', properties: {attempts: {type: 'integer'}}},
+    },
+  };
+
+  const load = (
+    manifest: Partial<ExternalPluginDefinition['manifest']>,
+    schema: object = configurationSchema
+  ): void => {
     externalPluginService.getDefinition.and.returnValue(
       of({
         id: 'definition-id',
         version: '1.0.0',
         baseUrl: 'http://plugin-host',
-        configurationSchema,
+        configurationSchema: schema,
         manifest,
       } as unknown as ExternalPluginDefinition)
     );
@@ -86,13 +101,52 @@ describe('PluginExternalConfigureComponent', () => {
     component.declaredContractsResolved.subscribe(declared => (declaredContracts = declared));
   });
 
-  it('starts from the non-secret defaults and derives the egress they point at', () => {
+  it('generates a form for a flat schema, starting from the non-secret defaults', () => {
     load({});
 
-    expect(JSON.parse(component._form.controls.properties.value!)).toEqual({
+    expect(component.$configStructure()?.fields.map(field => field.key)).toEqual([
+      'openPlanUrl',
+      'openPlanToken',
+    ]);
+    expect(component.$initialProperties()).toEqual({
       openPlanUrl: 'http://host.docker.internal:7501',
     });
     expect(derivedEgress).toEqual(['http://host.docker.internal:7501']);
+  });
+
+  it('keeps the JSON editor, prefilled with the defaults, for a nested schema', () => {
+    load({}, nestedConfigurationSchema);
+
+    expect(component.$configStructure()).toBeNull();
+    expect(JSON.parse(component.form.controls.properties.value!)).toEqual({
+      openPlanUrl: 'http://host.docker.internal:7501',
+    });
+    expect(derivedEgress).toEqual(['http://host.docker.internal:7501']);
+  });
+
+  it('saves what the generated form reports, valid only once the form is', () => {
+    let valid: boolean | null = null;
+    let savedProperties: Record<string, unknown> | null = null;
+    component.validEvent.subscribe(isValid => (valid = isValid));
+    component.saveEvent.subscribe(event => (savedProperties = event.properties));
+    load({});
+    component.form.controls.title.setValue('Open Plan');
+
+    expect(valid).toBeFalse();
+
+    component.onGeneratedPropertiesChange({
+      openPlanUrl: 'https://openplan.example.com',
+      openPlanToken: 's3cret',
+    });
+    component.onGeneratedPropertiesValid(true);
+    component.triggerSave();
+
+    expect(valid).toBeTrue();
+    expect(derivedEgress).toEqual(['https://openplan.example.com:443']);
+    expect(savedProperties).toEqual({
+      openPlanUrl: 'https://openplan.example.com',
+      openPlanToken: 's3cret',
+    });
   });
 
   it('derives no egress for a config bundle until it reports its values', () => {

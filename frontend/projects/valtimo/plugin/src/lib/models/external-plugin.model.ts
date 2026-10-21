@@ -111,6 +111,8 @@ interface ExternalPluginAction {
    * action may be linked to — a user-task form is the separate `task-form` surface, not an action.
    */
   activityTypes?: Array<string>;
+  /** The action's inputs; flat string/number/integer/boolean ones get a generated form. */
+  properties?: Array<ExternalPluginActionProperty>;
   /**
    * Keys the action's `result` object exposes for mapping. When present and non-empty, the
    * process-link stepper offers a dedicated output-mapping step with a dropdown of these keys as
@@ -118,6 +120,12 @@ interface ExternalPluginAction {
    * cannot use result mapping.
    */
   outputs?: Array<string>;
+}
+
+interface ExternalPluginActionProperty {
+  key: string;
+  type: string;
+  required?: boolean;
 }
 
 type ExternalPluginFrontendBundleType =
@@ -693,6 +701,7 @@ interface PluginLogPage {
 export {
   EXTERNAL_PLUGIN_KEY_PREFIX,
   ExternalPluginAction,
+  ExternalPluginActionProperty,
   ExternalPluginFrontendBundle,
   ExternalPluginFrontendBundleType,
   ExternalPluginEndpoint,

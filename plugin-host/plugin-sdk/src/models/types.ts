@@ -155,6 +155,12 @@ export interface ManifestAction {
   outputs?: string[];
 }
 
+/**
+ * Without a `process-link-action` bundle, GZAC generates the action's input form when every
+ * property is a `string`, `number`, `integer` or `boolean`; other types leave a JSON textarea.
+ * Labels come from `translations`: `action.<actionKey>.<key>.label` / `.tooltip` / `.placeholder`,
+ * falling back to `action.<key>.*`.
+ */
 export interface ManifestActionProperty {
   key: string;
   type: string;
@@ -363,7 +369,9 @@ export interface FrontendBundle {
  * description. The manifest has **no** top-level `name`/`description` — the plugin's identity is
  * defined per locale here so it can be rendered in the operator's language. Any additional keys are
  * free-form translation strings consumed by the frontend SDK's `t(key)` lookup inside the plugin's
- * iframes.
+ * iframes. GZAC itself reads `config.<property>.label` / `.tooltip` / `.placeholder` /
+ * `.options.<value>` (and the `action.*` equivalents) to label the forms it generates for plugins
+ * without a `config` or `process-link-action` bundle.
  */
 export interface PluginTranslations {
   name: string;

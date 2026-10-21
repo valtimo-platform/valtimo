@@ -82,11 +82,9 @@ export const manifest: PluginManifest = {
     en: {
       name: "Demo App",
       description: "Reference URL app: a remote service that serves its own single plugin — action, config, case tab, data and events — over the Valtimo contract.",
-      "config.title.label": "Configuration name",
-      "config.title.placeholder": "Enter a name for this configuration",
       "config.greetingPrefix.label": "Greeting prefix",
       "config.greetingPrefix.placeholder": "Hello",
-      "config.greetingPrefix.help": "Word the app puts in front of the name, e.g. \"Hello\" or \"Welcome\".",
+      "config.greetingPrefix.tooltip": "Word the app puts in front of the name, e.g. \"Hello\" or \"Welcome\".",
       "action.name.label": "Name to greet",
       "action.name.placeholder": "world",
       "action.name.help": "Static name to greet. Leave blank to greet the case (by document) or \"world\".",
@@ -116,11 +114,9 @@ export const manifest: PluginManifest = {
     nl: {
       name: "Demo-app",
       description: "Referentie-URL-app: een externe service die zijn eigen plugin aanbiedt — actie, configuratie, zaaktabblad, data en events — via het Valtimo-contract.",
-      "config.title.label": "Configuratienaam",
-      "config.title.placeholder": "Voer een naam in voor deze configuratie",
       "config.greetingPrefix.label": "Begroetingsprefix",
       "config.greetingPrefix.placeholder": "Hallo",
-      "config.greetingPrefix.help": "Woord dat de app vóór de naam plaatst, bv. \"Hallo\" of \"Welkom\".",
+      "config.greetingPrefix.tooltip": "Woord dat de app vóór de naam plaatst, bv. \"Hallo\" of \"Welkom\".",
       "action.name.label": "Naam om te begroeten",
       "action.name.placeholder": "wereld",
       "action.name.help": "Vaste naam om te begroeten. Leeg laten om de zaak (via document) of \"wereld\" te begroeten.",
@@ -168,7 +164,6 @@ export const manifest: PluginManifest = {
     ],
   },
   frontendBundles: [
-    { type: "config", path: "/bundles/config.html" },
     {
       type: "process-link-action",
       key: "greet",

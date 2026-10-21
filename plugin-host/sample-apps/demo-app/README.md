@@ -13,7 +13,7 @@ the same three concerns as plain TypeScript functions in [`src/plugin.ts`](src/p
 | Surface | Where | How to see it |
 |---|---|---|
 | **Discovery** | `GET /api/host/plugins` | The app appears CONNECTED with one plugin right after you add it. |
-| **Config UI (iframe)** | `frontend/config.tsx` | The "Configure plugin" step renders the app's own form. |
+| **Generated config form** | `configurationSchema` + `config.greetingPrefix.*` translations in `src/manifest.ts` | No `config` bundle: GZAC generates the "Configure plugin" step from the schema, with the translated label, placeholder and tooltip. `case-summary` shows the bundle variant. |
 | **Action** (`SERVICE_TASK_START`) | `runAction` + `frontend/action-config.tsx` | Bind `greet` to a BPMN service task; it writes a `greeting` process variable. |
 | **App-served data** | `handleRequest("/info")` | Shown in the case tab, panel 2. |
 | **Case tab (iframe)** | `frontend/case-tab.tsx` | Four communication levels side by side (see below). |

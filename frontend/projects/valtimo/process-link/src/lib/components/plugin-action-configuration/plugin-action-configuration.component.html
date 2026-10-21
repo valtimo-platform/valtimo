@@ -62,23 +62,56 @@
         ></valtimo-external-plugin-iframe>
 
         <div *ngIf="bundle.resolved && !bundle.url" class="external-action-config">
-          <p class="step-description">
-            {{ 'processLinkConfiguration.externalPluginActionProperties' | translate }}
-          </p>
-          <div class="cds--form-item">
-            <label class="cds--label">{{
-              'processLinkConfiguration.actionPropertiesJson' | translate
-            }}</label>
-            <textarea
-              [formControl]="externalActionPropertiesControl"
-              [class.cds--text-area--invalid]="!externalActionPropertiesValid"
-              class="cds--text-area"
-              rows="10"
-            ></textarea>
-            <div *ngIf="!externalActionPropertiesValid" class="cds--form-requirement">
-              {{ 'processLinkConfiguration.invalidJson' | translate }}
+          <ng-container *ngIf="$externalActionStructure() as structure; else jsonProperties">
+            <div class="external-action-config__intro">
+              <p class="step-description">
+                {{ 'processLinkConfiguration.externalPluginActionForm' | translate }}
+              </p>
+
+              <p class="external-action-config__hint">
+                {{ 'processLinkConfiguration.externalPluginActionFormHint' | translate }}
+
+                <code class="external-action-config__expression">{{
+                  'processLinkConfiguration.externalPluginActionFormDocumentExample' | translate
+                }}</code>
+
+                <code class="external-action-config__expression">{{
+                  'processLinkConfiguration.externalPluginActionFormProcessVariableExample'
+                    | translate
+                }}</code>
+              </p>
             </div>
-          </div>
+
+            <valtimo-external-plugin-config-form
+              [structure]="structure"
+              [value]="$externalActionFormValue()"
+              (validEvent)="onGeneratedActionPropertiesValid($event)"
+              (valueChangeEvent)="onGeneratedActionPropertiesChange($event)"
+            ></valtimo-external-plugin-config-form>
+          </ng-container>
+
+          <ng-template #jsonProperties>
+            <p class="step-description external-action-config__intro">
+              {{ 'processLinkConfiguration.externalPluginActionProperties' | translate }}
+            </p>
+
+            <div class="cds--form-item">
+              <label class="cds--label">{{
+                'processLinkConfiguration.actionPropertiesJson' | translate
+              }}</label>
+
+              <textarea
+                [class.cds--text-area--invalid]="!externalActionPropertiesValid"
+                [formControl]="externalActionPropertiesControl"
+                class="cds--text-area"
+                rows="10"
+              ></textarea>
+
+              <div *ngIf="!externalActionPropertiesValid" class="cds--form-requirement">
+                {{ 'processLinkConfiguration.invalidJson' | translate }}
+              </div>
+            </div>
+          </ng-template>
         </div>
       </ng-container>
     </ng-template>

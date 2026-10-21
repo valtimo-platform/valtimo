@@ -3338,6 +3338,10 @@
     "importConfiguration": "Import configuration",
     "externalPlugin": "External plugin",
     "externalPluginActionProperties": "Configure the action properties for this external plugin action as JSON. Click save when done.",
+    "externalPluginActionForm": "Configure the properties of this action.",
+    "externalPluginActionFormHint": "A property can also take its value from the case or the process when the action runs, for example:",
+    "externalPluginActionFormDocumentExample": "doc:/path",
+    "externalPluginActionFormProcessVariableExample": "pv:name",
     "actionPropertiesJson": "Action properties (JSON)",
     "invalidJson": "Invalid JSON",
     "resultMappings": {
@@ -3435,6 +3439,25 @@
       "actionKey": "Action key",
       "actionProperties": "Action properties (JSON)",
       "actionPropertiesInvalidJson": "Action properties must be valid JSON"
+    },
+    "configForm": {
+      "noFields": "There is nothing to configure here.",
+      "chooseOption": "Choose an option",
+      "secretKept": "Stored encrypted and not shown. Leave empty to keep the current value.",
+      "errors": {
+        "required": "This field is required.",
+        "number": "Enter a number.",
+        "integer": "Enter a whole number.",
+        "numberOrExpression": "Enter a number, or a value such as pv:amount.",
+        "integerOrExpression": "Enter a whole number, or a value such as pv:count.",
+        "url": "Enter a complete URL, such as https://example.com.",
+        "minLength": "Enter at least {{value}} characters.",
+        "maxLength": "Enter at most {{value}} characters.",
+        "minimum": "Enter {{value}} or more.",
+        "maximum": "Enter {{value}} or less.",
+        "pattern": "This value does not have the expected format.",
+        "invalid": "This value is not valid."
+      }
     }
   },
   "processLinkSteps": {
