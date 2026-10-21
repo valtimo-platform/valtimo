@@ -20,29 +20,23 @@ import java.lang.reflect.Field
 
 abstract class ReflectingPermissionCondition(type: PermissionConditionType) : PermissionCondition(type) {
     protected fun findEntityFieldValue(entity: Any, field: String): Any? {
-        var currentEntity: Any? = entity
+        var currentEntity: Any = entity
         val fields = field.split('.')
-        fields.forEachIndexed { index, value ->
-            if (currentEntity == null) {
-                throw NullPointerException("Field $fields not found in class ${entity.javaClass}")
-            }
+        for (value in fields) {
             val declaredField = findDeclaredField(currentEntity.javaClass, value)
-
-            if (declaredField == null) {
-                throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
-            }
+                ?: throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
             declaredField.trySetAccessible()
 
             // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
-            currentEntity = try {
+            val fieldValue = try {
                 declaredField.get(currentEntity)
-            } catch (npe: NullPointerException) {
-                if (index == fields.size - 1) {
-                    null
-                } else {
-                    throw npe
-                }
+            } catch (_: NullPointerException) {
+                null
             }
+
+            // A null value anywhere in the path (e.g. a case without an internalStatus) resolves the whole path to null,
+            // consistent with how the same condition behaves in database queries.
+            currentEntity = fieldValue ?: return null
         }
         return currentEntity
     }
