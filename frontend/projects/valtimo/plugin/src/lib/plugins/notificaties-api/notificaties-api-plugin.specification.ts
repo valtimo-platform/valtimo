@@ -43,6 +43,20 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       authHeader: 'Authenticatie header (herstart server vereist)',
       authHeaderTooltip:
         'Secret van de authenticatie header voor de callback URL. Als niet ingevuld wordt een random secret gegenereerd. Het abonnement moet opnieuw worden aangemaakt (na een herstart van de applicatie).',
+      abonnementRegistration: 'Registratie abonnement',
+      abonnementRegistrationTooltip:
+        'Automatisch: GZAC registreert het abonnement in Open Notificaties. Handmatig: een beheerder maakt het abonnement aan in Open Notificaties, bijvoorbeeld omdat het verkeer via een gateway met certificaten loopt.',
+      abonnementRegistrationAutomatic: 'Automatisch',
+      abonnementRegistrationManual: 'Handmatig',
+      sharedSecret: 'Gedeeld geheim',
+      sharedSecretTooltip:
+        'Vul hetzelfde geheim in bij het veld Auth van het abonnement in Open Notificaties. GZAC accepteert alleen notificaties met dit geheim. Gebruik een gewone waarde, zonder "Bearer ".',
+      manualAbonnementDescription:
+        'Het abonnement in Open Notificaties moet deze callback URL en deze kanalen met filters bevatten.',
+      manualAbonnementKanaal: 'Kanaal',
+      manualAbonnementNoKanalen: 'Er zijn nog geen kanalen nodig voor deze configuratie.',
+      manualAbonnementSaveFirst:
+        'Sla de configuratie op met handmatige registratie om te zien welke kanalen en filters het abonnement moet bevatten.',
       'publish-notificatie': 'Publiceer een notificatie',
       kanaal: 'Kanaal',
       kanaalTooltip: 'Het kanaal waarop de notificatie gepubliceerd wordt (max 50 tekens).',
@@ -85,6 +99,20 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       authHeader: 'Authentication header (restart server required)',
       authHeaderTooltip:
         'Secret value in Authentication header for the callback URL. When omitting this field, a random secret is generated. The abonnement needs to be recreated (after a restart of the application).',
+      abonnementRegistration: 'Abonnement registration',
+      abonnementRegistrationTooltip:
+        'Automatic: GZAC registers the abonnement in Open Notificaties. Manual: an administrator creates the abonnement in Open Notificaties, for example because traffic goes through a gateway that checks certificates.',
+      abonnementRegistrationAutomatic: 'Automatic',
+      abonnementRegistrationManual: 'Manual',
+      sharedSecret: 'Shared secret',
+      sharedSecretTooltip:
+        'Enter the same secret in the Auth field of the abonnement in Open Notificaties. GZAC only accepts notifications that carry this secret. Use a plain value, without "Bearer ".',
+      manualAbonnementDescription:
+        'The abonnement in Open Notificaties must contain this callback URL and these channels with their filters.',
+      manualAbonnementKanaal: 'Channel',
+      manualAbonnementNoKanalen: 'No channels are needed for this configuration yet.',
+      manualAbonnementSaveFirst:
+        'Save the configuration with manual registration to see which channels and filters the abonnement must contain.',
       'publish-notificatie': 'Publish a notification',
       kanaal: 'Channel',
       kanaalTooltip: 'The channel on which the notification is published (max 50 characters).',

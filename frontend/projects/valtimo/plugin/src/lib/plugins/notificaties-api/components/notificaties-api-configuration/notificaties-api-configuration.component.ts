@@ -16,9 +16,22 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
-import {NotificatiesApiConfig} from '../../models';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  defer,
+  distinctUntilChanged,
+  map,
+  Observable,
+  of,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
+import {NotificatiesApiConfig, NotificatiesApiManualAbonnement} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
+import {NotificatiesApiPluginService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {NOTIFICATIES_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 
@@ -56,6 +69,39 @@ export class NotificatiesApiConfigurationComponent
         }))
       )
     );
+  public readonly abonnementRegistrationSelectItems$: Observable<
+    Array<{id: string; text: string}>
+  > = this.translateService.stream('key').pipe(
+    map(() => [
+      {
+        id: 'automatic',
+        text: this.pluginTranslationService.instant(
+          'abonnementRegistrationAutomatic',
+          this.pluginId
+        ),
+      },
+      {
+        id: 'manual',
+        text: this.pluginTranslationService.instant('abonnementRegistrationManual', this.pluginId),
+      },
+    ])
+  );
+  public readonly manualRegistration$ = new BehaviorSubject<boolean>(false);
+  public readonly manualAbonnement$: Observable<NotificatiesApiManualAbonnement | null> = defer(
+    () =>
+      combineLatest([
+        this.manualRegistration$.pipe(distinctUntilChanged()),
+        this.savedManualConfigurationId$(),
+      ])
+  ).pipe(
+    switchMap(([manual, configurationId]) =>
+      manual && configurationId
+        ? this.notificatiesApiPluginService
+            .getManualAbonnement(configurationId)
+            .pipe(catchError(() => of(null)))
+        : of(null)
+    )
+  );
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<NotificatiesApiConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -63,7 +109,8 @@ export class NotificatiesApiConfigurationComponent
   constructor(
     private readonly pluginManagementService: PluginManagementService,
     private readonly translateService: TranslateService,
-    private readonly pluginTranslationService: PluginTranslationService
+    private readonly pluginTranslationService: PluginTranslationService,
+    private readonly notificatiesApiPluginService: NotificatiesApiPluginService
   ) {}
 
   public ngOnInit(): void {
@@ -76,7 +123,16 @@ export class NotificatiesApiConfigurationComponent
 
   public formValueChange(formValue: NotificatiesApiConfig): void {
     this.formValue$.next(formValue);
+    this.manualRegistration$.next(formValue.abonnementRegistration === 'manual');
     this.handleValid(formValue);
+  }
+
+  private savedManualConfigurationId$(): Observable<string | undefined> {
+    return (this.prefillConfiguration$ ?? of(null)).pipe(
+      map(prefill =>
+        prefill?.abonnementRegistration === 'manual' ? prefill.configurationId : undefined
+      )
+    );
   }
 
   private handleValid(formValue: NotificatiesApiConfig): void {
@@ -84,7 +140,8 @@ export class NotificatiesApiConfigurationComponent
       formValue.configurationTitle &&
       formValue.url &&
       formValue.callbackUrl &&
-      formValue.authenticationPluginConfiguration
+      formValue.authenticationPluginConfiguration &&
+      (formValue.abonnementRegistration !== 'manual' || formValue.authHeader?.trim())
     );
 
     this.valid$.next(valid);

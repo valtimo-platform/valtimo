@@ -19,6 +19,7 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    manual: manualRegistration$ | async,
   } as obs"
 >
   <v-input
@@ -60,15 +61,36 @@
     placeholder="https://{gzac-back-end-url}/api/v1/notificatiesapi/callback"
   >
   </v-input>
+  <ng-container
+    *ngIf="{registrationSelectItems: abonnementRegistrationSelectItems$ | async} as registrationObs"
+  >
+    <v-select
+      [clearable]="false"
+      [defaultSelectionId]="obs.prefill?.abonnementRegistration || 'automatic'"
+      [disabled]="obs.disabled"
+      [items]="registrationObs.registrationSelectItems"
+      [loading]="!registrationObs.registrationSelectItems"
+      [margin]="true"
+      [required]="true"
+      [title]="'abonnementRegistration' | pluginTranslate: pluginId | async"
+      [tooltip]="'abonnementRegistrationTooltip' | pluginTranslate: pluginId | async"
+      [attr.data-test-id]="testIds.abonnementRegistration"
+      name="abonnementRegistration"
+    ></v-select>
+  </ng-container>
+
   <v-input
     name="authHeader"
-    [title]="'authHeader' | pluginTranslate: pluginId | async"
+    [attr.data-test-id]="testIds.authHeader"
+    [title]="(obs.manual ? 'sharedSecret' : 'authHeader') | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.authHeader"
-    [required]="false"
+    [required]="obs.manual"
     [trim]="true"
-    [tooltip]="'authHeaderTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="
+      (obs.manual ? 'sharedSecretTooltip' : 'authHeaderTooltip') | pluginTranslate: pluginId | async
+    "
     type="password"
   >
   </v-input>
@@ -88,3 +110,9 @@
     ></v-select>
   </ng-container>
 </v-form>
+
+<valtimo-notificaties-api-manual-abonnement
+  *ngIf="manualRegistration$ | async"
+  [manualAbonnement]="manualAbonnement$ | async"
+  [pluginId]="pluginId"
+></valtimo-notificaties-api-manual-abonnement>

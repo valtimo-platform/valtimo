@@ -29,7 +29,6 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.events.PluginConfigurationCreatedEvent
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationUpdatedEvent
-import com.ritense.plugin.service.PluginConfigurationSearchParameters
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.event.ProcessLinkCreatedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
@@ -192,9 +191,8 @@ class PluginsDeployedEventListener(
             return
         }
 
-        val pluginConfigurations = pluginService
-            .getPluginConfigurations(PluginConfigurationSearchParameters(category = "notificaties-api-plugin"))
-            .map { pluginService.createInstance(it) as NotificatiesApiListener }
+        val kanaalFilters = NotificatiesApiKanaalFilters.fromPluginService(pluginService)
+        val pluginConfigurations = kanaalFilters.automaticListeners()
             .groupBy { it.getNotificatiesApiPlugin().url }
 
         val knownNotificatiesApiAbonnementLinks = notificatiesApiAbonnementLinkRepository.findAll()
@@ -208,7 +206,7 @@ class PluginsDeployedEventListener(
             ) {
                 retry(times = attemptsPerConfiguration) {
                     registerAbonnementenForPluginNotificatiesApiPlugins(
-                        notificatiesApiPluginInstance, knownNotificatiesApiAbonnementLinks, configurations
+                        notificatiesApiPluginInstance, knownNotificatiesApiAbonnementLinks, configurations, kanaalFilters
                     )
                 }
             }
@@ -216,6 +214,13 @@ class PluginsDeployedEventListener(
     }
 
     private fun removeAbonnementForDeletedConfiguration(deletedConfiguration: PluginConfiguration) {
+        val deletedPluginInstance =
+            runCatching { pluginService.createInstance(deletedConfiguration) as? NotificatiesApiPlugin }.getOrNull()
+        if (deletedPluginInstance?.isManualAbonnementRegistration() == true) {
+            removeLinkForDeletedManualConfiguration(deletedPluginInstance.notificatiesApiConfigurationId)
+            return
+        }
+
         if (!registerAbonnementen) {
             logger.info {
                 "Notificaties API abonnement registration is disabled (valtimo.zgw.register-abonnementen=false); skipping"
@@ -250,33 +255,41 @@ class PluginsDeployedEventListener(
         }
     }
 
+    private fun removeLinkForDeletedManualConfiguration(notificatiesApiConfigurationId: NotificatiesApiConfigurationId) {
+        val abonnementLink =
+            notificatiesApiAbonnementLinkRepository.findById(notificatiesApiConfigurationId).orElse(null) ?: return
+        requiresNewTransactionTemplate.executeWithoutResult {
+            notificatiesApiAbonnementLinkRepository.delete(abonnementLink)
+        }
+        logger.info {
+            "Removed the local abonnement link of manually registered plugin configuration " +
+                "'${notificatiesApiConfigurationId.id}'; its abonnement in the Notificaties API is left untouched"
+        }
+    }
+
     private fun registerAbonnementenForPluginNotificatiesApiPlugins(
         notificatiesApiPluginInstance: NotificatiesApiPlugin,
         knownNotificatiesApiAbonnementLinks: List<NotificatiesApiAbonnementLink>,
-        configurations: List<NotificatiesApiListener>
+        configurations: List<NotificatiesApiListener>,
+        kanaalFilters: NotificatiesApiKanaalFilters
     ) {
         val abonnementenInApi = client.getAbonnementen(
             authentication = notificatiesApiPluginInstance.authenticationPluginConfiguration,
             baseUrl = notificatiesApiPluginInstance.url
         )
 
-        abonnementenInApi
-            .filter { abonnement ->
-                abonnement.callbackUrl == notificatiesApiPluginInstance.callbackUrl.toString() &&
-                    knownNotificatiesApiAbonnementLinks.none { it.url == abonnement.url }
-            }.forEach { abonnement ->
-                client.deleteAbonnement(
-                    authentication = notificatiesApiPluginInstance.authenticationPluginConfiguration,
-                    baseUrl = notificatiesApiPluginInstance.url,
-                    abonnementId = abonnement.getId()!!
-                )
-                logger.info {
-                    "Successfully deleted stale abonnement with id '${abonnement.getId()}' not tracked locally"
-                }
+        // An administrator's abonnement for a manual configuration cannot be told apart from a stale one.
+        if (kanaalFilters.hasManualConfiguration(notificatiesApiPluginInstance.url)) {
+            logger.info {
+                "Not deleting untracked abonnementen in the Notificaties API, because a plugin configuration on the " +
+                    "same URL registers its abonnement manually"
             }
+        } else {
+            deleteStaleAbonnementen(notificatiesApiPluginInstance, abonnementenInApi, knownNotificatiesApiAbonnementLinks)
+        }
 
         val kanalen = configurations
-            .flatMap { it.getKanaalFilters() }
+            .flatMap { kanaalFilters.automaticKanaalFilters(it) }
             .distinct()
 
         val currentNotificatiesApiAbonnementLink = knownNotificatiesApiAbonnementLinks.firstOrNull {
@@ -366,6 +379,27 @@ class PluginsDeployedEventListener(
                 )
             )
         }
+    }
+
+    private fun deleteStaleAbonnementen(
+        notificatiesApiPluginInstance: NotificatiesApiPlugin,
+        abonnementenInApi: List<Abonnement>,
+        knownNotificatiesApiAbonnementLinks: List<NotificatiesApiAbonnementLink>
+    ) {
+        abonnementenInApi
+            .filter { abonnement ->
+                abonnement.callbackUrl == notificatiesApiPluginInstance.callbackUrl.toString() &&
+                    knownNotificatiesApiAbonnementLinks.none { it.url == abonnement.url }
+            }.forEach { abonnement ->
+                client.deleteAbonnement(
+                    authentication = notificatiesApiPluginInstance.authenticationPluginConfiguration,
+                    baseUrl = notificatiesApiPluginInstance.url,
+                    abonnementId = abonnement.getId()!!
+                )
+                logger.info {
+                    "Successfully deleted stale abonnement with id '${abonnement.getId()}' not tracked locally"
+                }
+            }
     }
 
     private fun ensureKanalenExist(

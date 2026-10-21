@@ -17,14 +17,19 @@
 package com.ritense.notificatiesapi
 
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
+import com.ritense.notificatiesapi.domain.AbonnementRegistration
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.valtimo.contract.json.MapperSingleton
+import jakarta.validation.ValidationException
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -89,5 +94,43 @@ internal class NotificatiesApiPluginTest {
 
         verify(notificatiesApiClient, times(1)).getKanalen(any(), any())
         verify(notificatiesApiClient, never()).createKanaal(any(), any(), any())
+    }
+
+    @Test
+    fun `should register the abonnement automatically when the registration is not configured`() {
+        assertThat(plugin.abonnementRegistration).isEqualTo(AbonnementRegistration.AUTOMATIC)
+        assertThat(plugin.isManualAbonnementRegistration()).isFalse()
+    }
+
+    @Test
+    fun `should read abonnement registration from its configuration value`() {
+        val mapper = MapperSingleton.get()
+
+        assertThat(mapper.readValue("\"manual\"", AbonnementRegistration::class.java))
+            .isEqualTo(AbonnementRegistration.MANUAL)
+        assertThat(mapper.readValue("\"automatic\"", AbonnementRegistration::class.java))
+            .isEqualTo(AbonnementRegistration.AUTOMATIC)
+        assertThat(mapper.writeValueAsString(AbonnementRegistration.MANUAL)).isEqualTo("\"manual\"")
+    }
+
+    @Test
+    fun `should refuse a manual registration without a shared secret`() {
+        plugin.abonnementRegistration = AbonnementRegistration.MANUAL
+        plugin.authHeader = " "
+
+        assertThrows<ValidationException> { plugin.validateAbonnementRegistration() }
+    }
+
+    @Test
+    fun `should accept a manual registration with a shared secret`() {
+        plugin.abonnementRegistration = AbonnementRegistration.MANUAL
+        plugin.authHeader = "shared-secret"
+
+        assertDoesNotThrow { plugin.validateAbonnementRegistration() }
+    }
+
+    @Test
+    fun `should accept an automatic registration without a shared secret`() {
+        assertDoesNotThrow { plugin.validateAbonnementRegistration() }
     }
 }

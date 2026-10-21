@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.logging.withLoggingContext
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.domain.Abonnement
+import com.ritense.notificatiesapi.domain.AbonnementRegistration
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.Notificatie
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
@@ -27,7 +28,9 @@ import com.ritense.notificatiesapi.listener.ReceiveNotificatieProperties
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
+import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
@@ -38,6 +41,7 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName.RECEIVE_TASK_END
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SEND_TASK_START
 import com.ritense.valtimo.contract.validation.Url
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.ValidationException
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -62,11 +66,23 @@ class NotificatiesApiPlugin(
     @PluginProperty(key = "callbackUrl", secret = false)
     lateinit var callbackUrl: URI
 
-    @PluginProperty(key = "authHeader", secret = false, required = false)
+    @PluginProperty(key = AUTH_HEADER_PROPERTY, secret = false, required = false)
     var authHeader: String? = null
 
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: NotificatiesApiAuthentication
+
+    @PluginProperty(key = ABONNEMENT_REGISTRATION_PROPERTY, secret = false, required = false)
+    var abonnementRegistration: AbonnementRegistration = AbonnementRegistration.AUTOMATIC
+
+    fun isManualAbonnementRegistration() = abonnementRegistration == AbonnementRegistration.MANUAL
+
+    @PluginEvent(invokedOn = [EventType.CREATE, EventType.UPDATE])
+    fun validateAbonnementRegistration() {
+        if (isManualAbonnementRegistration() && authHeader.isNullOrBlank()) {
+            throw ValidationException("A shared secret (authHeader) is required when the abonnement is registered manually")
+        }
+    }
 
     @PluginAction(
         key = "publish-notificatie",
@@ -115,11 +131,15 @@ class NotificatiesApiPlugin(
 
     override fun getNotificatiesApiPlugin(): NotificatiesApiPlugin = this
 
-    override fun getKanaalFilters(): List<Abonnement.Kanaal> {
+    override fun getKanaalFilters(): List<Abonnement.Kanaal> = getReceiveNotificatieKanaalFilters { true }
+
+    fun getReceiveNotificatieKanaalFilters(
+        linkedTo: (PluginConfigurationId?) -> Boolean
+    ): List<Abonnement.Kanaal> {
         return pluginProcessLinkRepository.findByPluginDefinitionKeyAndPluginActionDefinitionKey(
             NOTIFICATIES_API_PLUGIN_DEFINITION_KEY,
             RECEIVE_NOTIFICATIE_ACTION_KEY
-        ).mapNotNull { pluginProcessLink ->
+        ).filter { linkedTo(it.pluginConfigurationId) }.mapNotNull { pluginProcessLink ->
             val notificatie =
                 objectMapper.treeToValue(pluginProcessLink.actionProperties, ReceiveNotificatieProperties::class.java)
             val kanaal = notificatie.kanaal ?: return@mapNotNull null
@@ -152,5 +172,7 @@ class NotificatiesApiPlugin(
         private val logger = KotlinLogging.logger {}
         const val NOTIFICATIES_API_PLUGIN_DEFINITION_KEY = "notificatiesapi"
         const val RECEIVE_NOTIFICATIE_ACTION_KEY = "receive-notificatie"
+        const val AUTH_HEADER_PROPERTY = "authHeader"
+        const val ABONNEMENT_REGISTRATION_PROPERTY = "abonnementRegistration"
     }
 }

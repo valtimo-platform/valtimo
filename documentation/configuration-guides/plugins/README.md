@@ -12,6 +12,8 @@ covers two kinds:
 
 This section covers:
 
+- **[Notificaties API](notificaties-api.md)** — connect Valtimo to Open Notificaties, and register
+  its abonnement automatically or manually
 - **[External plugins](external-plugins/README.md)** — concepts of the admin screens, and how
   plugin hosts, apps, and plugin configurations fit together
 - **[Add a plugin host](external-plugins/add-a-plugin-host.md)** — connect a plugin host to

@@ -19,6 +19,7 @@ package com.ritense.notificatiesapi
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.config.NotificatiesApiAbonnementRegistrationProperties
 import com.ritense.notificatiesapi.domain.Abonnement
+import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.exception.NotificatiesApiAbonnementException
@@ -729,6 +730,104 @@ class PluginsDeployedEventListenerTest {
         verify(notificatiesApiAbonnementLinkRepository).save(any())
     }
 
+    @Test
+    fun `should not call the Notificaties API for a manually registered configuration`() {
+        val manualPlugin = mockNotificatiesApiPlugin(MANUAL_ID, manual = true)
+        val manualListener = mockListener(manualPlugin, Abonnement.Kanaal(naam = "objecten"))
+        stubListeners(manualPlugin, manualListener)
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verifyNoInteractions(client)
+        verify(notificatiesApiAbonnementLinkRepository, never()).save(any())
+    }
+
+    @Test
+    fun `should keep a manual configuration and its abonnement out of automatic registration on the same URL`(
+        output: CapturedOutput
+    ) {
+        val automaticPlugin = mockNotificatiesApiPlugin(AUTOMATIC_ID, manual = false)
+        val manualPlugin = mockNotificatiesApiPlugin(MANUAL_ID, manual = true)
+        val automaticKanaal = Abonnement.Kanaal(naam = "zaken", filters = mapOf("actie" to "create"))
+        val manualKanaal = Abonnement.Kanaal(naam = "objecten", filters = mapOf("objectType" to "m"))
+        val automaticListener = mockListener(automaticPlugin, automaticKanaal)
+        val manualListener = mockListener(manualPlugin, manualKanaal)
+        stubListeners(automaticPlugin, manualPlugin, automaticListener, manualListener)
+        val administratorsAbonnement = Abonnement(
+            url = "$NOTIFICATIES_API_URL/abonnement/admin",
+            callbackUrl = CALLBACK_URL,
+            auth = null,
+            kanalen = listOf(manualKanaal)
+        )
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(administratorsAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createAbonnement(any(), any(), any())).thenAnswer {
+            it.getArgument<Abonnement>(2).copy(url = "$NOTIFICATIES_API_URL/abonnement/automatic")
+        }
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(emptyList())
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client, never()).deleteAbonnement(any(), any(), any())
+        val created = argumentCaptor<Abonnement>()
+        verify(client).createAbonnement(any(), any(), created.capture())
+        assertThat(created.firstValue.kanalen).containsExactly(automaticKanaal)
+        val createdKanalen = argumentCaptor<Kanaal>()
+        verify(client).createKanaal(any(), any(), createdKanalen.capture())
+        assertThat(createdKanalen.allValues.map { it.naam }).containsExactly("zaken")
+        assertThat(output).contains("Not deleting untracked abonnementen in the Notificaties API")
+    }
+
+    @Test
+    fun `should only remove the local link when a manually registered configuration is deleted`() {
+        markApplicationFullyReady()
+        val configurationId = NotificatiesApiConfigurationId.existingId(MANUAL_ID)
+        val abonnementLink = NotificatiesApiAbonnementLink(
+            notificatiesApiConfigurationId = configurationId,
+            url = "$NOTIFICATIES_API_URL/abonnement/123",
+            auth = "old-generated-key"
+        )
+        val manualPlugin = mockNotificatiesApiPlugin(MANUAL_ID, manual = true)
+        whenever(notificatiesApiAbonnementLinkRepository.findById(configurationId))
+            .thenReturn(Optional.of(abonnementLink))
+        whenever(pluginService.createInstance(any<PluginConfiguration>())).thenReturn(manualPlugin)
+
+        pluginsDeployedEventListener.handlePluginConfigurationDeletedEvent(
+            PluginConfigurationDeletedEvent(notificatiesApiPluginConfiguration(MANUAL_ID))
+        )
+
+        verify(notificatiesApiAbonnementLinkRepository).delete(abonnementLink)
+        verifyNoInteractions(client)
+    }
+
+    private fun mockNotificatiesApiPlugin(id: UUID, manual: Boolean): NotificatiesApiPlugin {
+        val plugin: NotificatiesApiPlugin = mock()
+        val authentication: NotificatiesApiAuthentication = mock()
+        whenever(plugin.url).thenReturn(URI(NOTIFICATIES_API_URL))
+        whenever(plugin.callbackUrl).thenReturn(URI(CALLBACK_URL))
+        whenever(plugin.authenticationPluginConfiguration).thenReturn(authentication)
+        whenever(plugin.notificatiesApiConfigurationId).thenReturn(NotificatiesApiConfigurationId.existingId(id))
+        whenever(plugin.isManualAbonnementRegistration()).thenReturn(manual)
+        whenever(plugin.getNotificatiesApiPlugin()).thenReturn(plugin)
+        whenever(plugin.getReceiveNotificatieKanaalFilters(any())).thenReturn(emptyList())
+        return plugin
+    }
+
+    private fun mockListener(plugin: NotificatiesApiPlugin, kanaal: Abonnement.Kanaal): NotificatiesApiListener {
+        val listener: NotificatiesApiListener = mock()
+        whenever(listener.getNotificatiesApiPlugin()).thenReturn(plugin)
+        whenever(listener.getKanaalFilters()).thenReturn(listOf(kanaal))
+        return listener
+    }
+
+    private fun stubListeners(vararg listeners: NotificatiesApiListener) {
+        val configurations = listeners.map { mock<PluginConfiguration>() }
+        configurations.zip(listeners).forEach { (configuration, listener) ->
+            whenever(pluginService.createInstance(configuration)).thenReturn(listener)
+        }
+        whenever(pluginService.getPluginConfigurations(any())).thenReturn(configurations)
+    }
+
     /** Stubs one Notificaties API plugin configuration, leaving `client.getAbonnementen` to the caller. */
     private fun stubSinglePluginConfiguration() {
         val notificatiesApiPlugin: NotificatiesApiPlugin = mock()
@@ -788,4 +887,10 @@ class PluginsDeployedEventListenerTest {
         return configuration
     }
 
+    private companion object {
+        val AUTOMATIC_ID: UUID = UUID.fromString("a0000000-0000-4000-8000-000000000001")
+        val MANUAL_ID: UUID = UUID.fromString("b0000000-0000-4000-8000-000000000002")
+        const val NOTIFICATIES_API_URL = "http://localhost:9999/notificaties"
+        const val CALLBACK_URL = "http://localhost:8080/api/v1/notificatiesapi/callback"
+    }
 }

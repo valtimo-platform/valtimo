@@ -35,6 +35,10 @@ class NotificatiesApiHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/notificatiesapi/inbound-events/*/retry"))
                     .hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(GET, "/api/management/v1/notificatiesapi/configurations/*/manual-abonnement")
+                    )
+                    .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

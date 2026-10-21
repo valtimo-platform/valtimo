@@ -6,9 +6,9 @@ Release date: 28-10-2026
 
 ## New Features
 
-### New feature title
+### Manual abonnement registration for the Notificaties API
 
-New feature explanation.
+A Notificaties API plugin configuration can now be set to manual abonnement registration, for environments where traffic to Valtimo goes through a gateway that checks certificates. An administrator then creates the abonnement in Open Notificaties with a shared secret, and the configuration shows which channels and filters it must contain.
 
 ---
 

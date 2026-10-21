@@ -33,8 +33,10 @@ import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventIntakeServ
 import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventProcessingService
 import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventQueryService
 import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventWorker
+import com.ritense.notificatiesapi.service.NotificatiesApiManualAbonnementService
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiManagementResource
+import com.ritense.notificatiesapi.web.rest.NotificatiesApiManualAbonnementManagementResource
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
@@ -148,13 +150,15 @@ class NotificatiesApiAutoConfiguration {
         notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
         inboundEventIntakeService: NotificatiesApiInboundEventIntakeService,
         inboundEventProcessingService: NotificatiesApiInboundEventProcessingService,
-        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor
+        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor,
+        pluginService: PluginService
     ): NotificatiesApiService {
         return NotificatiesApiService(
             notificatiesApiAbonnementLinkRepository,
             inboundEventIntakeService,
             inboundEventProcessingService,
-            taskExecutor
+            taskExecutor,
+            pluginService
         )
     }
 
@@ -232,6 +236,19 @@ class NotificatiesApiAutoConfiguration {
             inboundEventQueryService,
             inboundEventAdminService
         )
+    }
+
+    @Bean
+    fun notificatiesApiManualAbonnementService(pluginService: PluginService): NotificatiesApiManualAbonnementService {
+        return NotificatiesApiManualAbonnementService(pluginService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(NotificatiesApiManualAbonnementManagementResource::class)
+    fun notificatiesApiManualAbonnementManagementResource(
+        manualAbonnementService: NotificatiesApiManualAbonnementService
+    ): NotificatiesApiManualAbonnementManagementResource {
+        return NotificatiesApiManualAbonnementManagementResource(manualAbonnementService)
     }
 
     @Bean

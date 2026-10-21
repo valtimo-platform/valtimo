@@ -17,7 +17,6 @@
 package com.ritense.notificatiesapi.web.rest
 
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
-import com.ritense.notificatiesapi.exception.AuthorizationException
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -51,11 +50,10 @@ class NotificatiesApiResource(
             if (notification.kanaal == "test") {
                 return ResponseEntity.noContent().build()
             }
-            try {
-                notificatiesApiService.findAbonnementSubscription(authHeader)
+            if (notificatiesApiService.isAuthorizedCallback(authHeader)) {
                 notificatiesApiService.registerNotification(notification)
                 ResponseEntity.noContent().build()
-            } catch (ex: AuthorizationException) {
+            } else {
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
             }
 

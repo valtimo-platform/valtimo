@@ -18,6 +18,7 @@ import {NgModule} from '@angular/core';
 import {NotificatiesApiConfigurationComponent} from './components/notificaties-api-configuration/notificaties-api-configuration.component';
 import {PublishNotificatieConfigurationComponent} from './components/publish-notificatie/publish-notificatie-configuration.component';
 import {ReceiveNotificatieConfigurationComponent} from './components/receive-notificatie/receive-notificatie-configuration.component';
+import {NotificatiesApiManualAbonnementComponent} from './components/manual-abonnement/notificaties-api-manual-abonnement.component';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {CommonModule} from '@angular/common';
 import {
@@ -33,6 +34,7 @@ import {NotificationModule} from 'carbon-components-angular';
   declarations: [NotificatiesApiConfigurationComponent, PublishNotificatieConfigurationComponent, ReceiveNotificatieConfigurationComponent],
   imports: [
     CommonModule,
+    NotificatiesApiManualAbonnementComponent,
     PluginTranslatePipeModule,
     FormModule,
     InputModule,
