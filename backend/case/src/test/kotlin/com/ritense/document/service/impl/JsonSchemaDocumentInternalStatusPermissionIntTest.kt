@@ -92,14 +92,28 @@ internal class JsonSchemaDocumentInternalStatusPermissionIntTest : BaseIntegrati
         assertThat(result.id()).isEqualTo(document.id())
     }
 
-    private fun setUpViewPermission(operator: PermissionConditionOperator, statusKey: String?) {
+    @Test
+    @WithMockUser(username = USERNAME, authorities = [USER])
+    fun `should not grant access through a non-existent field on a case without internal status`() {
+        setUpViewPermission(NOT_EQUAL_TO, "closed", field = "internalStatus.id.nonexistent")
+        val document = createCaseWithoutStatus()
+
+        assertThatThrownBy { documentService.getDocumentBy(document.id()) }
+            .hasRootCauseExactlyInstanceOf(NoSuchFieldException::class.java)
+    }
+
+    private fun setUpViewPermission(
+        operator: PermissionConditionOperator,
+        statusKey: String?,
+        field: String = "internalStatus.id.key"
+    ) {
         permissionRepository.deleteAll()
         permissionRepository.saveAndFlush(
             Permission(
                 UUID.randomUUID(),
                 JsonSchemaDocument::class.java,
                 mutableListOf(VIEW),
-                ConditionContainer(listOf(FieldPermissionCondition("internalStatus.id.key", operator, statusKey))),
+                ConditionContainer(listOf(FieldPermissionCondition(field, operator, statusKey))),
                 roleRepository.findByKey(USER)!!
             )
         )

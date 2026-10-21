@@ -20,23 +20,25 @@ import java.lang.reflect.Field
 
 abstract class ReflectingPermissionCondition(type: PermissionConditionType) : PermissionCondition(type) {
     protected fun findEntityFieldValue(entity: Any, field: String): Any? {
-        var currentEntity: Any = entity
+        var currentEntity: Any? = entity
+        var currentClass: Class<*> = entity.javaClass
         val fields = field.split('.')
         for (value in fields) {
-            val declaredField = findDeclaredField(currentEntity.javaClass, value)
+            // Null in path resolves to null, but remaining segments are still validated against declared types
+            val classToSearch = currentEntity?.javaClass ?: currentClass
+            val declaredField = findDeclaredField(classToSearch, value)
                 ?: throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
-            declaredField.trySetAccessible()
+            currentClass = declaredField.type
 
-            // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
-            val fieldValue = try {
-                declaredField.get(currentEntity)
-            } catch (_: NullPointerException) {
-                null
+            if (currentEntity != null) {
+                declaredField.trySetAccessible()
+                // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
+                currentEntity = try {
+                    declaredField.get(currentEntity)
+                } catch (_: NullPointerException) {
+                    null
+                }
             }
-
-            // A null value anywhere in the path (e.g. a case without an internalStatus) resolves the whole path to null,
-            // consistent with how the same condition behaves in database queries.
-            currentEntity = fieldValue ?: return null
         }
         return currentEntity
     }
