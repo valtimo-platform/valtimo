@@ -16,6 +16,7 @@
 
 package com.ritense.document.opensearch.web
 
+import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.ReindexRequest
 import org.assertj.core.api.Assertions.assertThat
@@ -31,11 +32,34 @@ import java.util.UUID
 class DocumentOpenSearchReindexResourceTest {
 
     private val reindexService: DocumentOpenSearchReindexService = mock()
+    private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
     private lateinit var resource: DocumentOpenSearchReindexResource
 
     @BeforeEach
     fun setUp() {
-        resource = DocumentOpenSearchReindexResource(reindexService)
+        resource = DocumentOpenSearchReindexResource(reindexService, indexInitializer)
+    }
+
+    @Test
+    fun `topology reports a legacy or stale topology`() {
+        whenever(indexInitializer.isLegacyOrStale()).thenReturn(true)
+
+        val response = resource.topology()
+
+        assertThat(response.statusCode.value()).isEqualTo(200)
+        assertThat(response.body?.get("legacyOrStale")).isEqualTo(true)
+        assertThat(response.body?.get("available")).isEqualTo(true)
+    }
+
+    @Test
+    fun `topology reports unavailable when the status cannot be determined`() {
+        whenever(indexInitializer.isLegacyOrStale()).thenThrow(RuntimeException("OpenSearch down"))
+
+        val response = resource.topology()
+
+        assertThat(response.statusCode.value()).isEqualTo(200)
+        assertThat(response.body?.get("legacyOrStale")).isEqualTo(false)
+        assertThat(response.body?.get("available")).isEqualTo(false)
     }
 
     @Test

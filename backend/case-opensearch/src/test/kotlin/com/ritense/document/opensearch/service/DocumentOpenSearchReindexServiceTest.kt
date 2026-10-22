@@ -44,6 +44,7 @@ class DocumentOpenSearchReindexServiceTest {
     private val lockProvider: LockProvider = mock()
     private val runService: OpenSearchReindexRunService = mock()
     private val resolver = OpenSearchIndexNameResolver()
+    private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
 
     private lateinit var service: DocumentOpenSearchReindexService
 
@@ -57,6 +58,7 @@ class DocumentOpenSearchReindexServiceTest {
             lockProvider,
             runService,
             resolver,
+            indexInitializer,
         )
     }
 

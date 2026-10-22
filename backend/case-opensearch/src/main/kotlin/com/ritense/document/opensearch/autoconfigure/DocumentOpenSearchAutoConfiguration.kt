@@ -27,6 +27,7 @@ import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditi
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCaseDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
+import com.ritense.document.opensearch.health.OpenSearchMappingHealthIndicator
 import com.ritense.document.opensearch.handler.DocumentDefinitionDeployedIndexListener
 import com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener
 import com.ritense.document.opensearch.handler.PendingIndexDeletionListener
@@ -173,6 +174,7 @@ class DocumentOpenSearchAutoConfiguration {
         lockProvider: LockProvider,
         openSearchReindexRunService: OpenSearchReindexRunService,
         resolver: OpenSearchIndexNameResolver,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
     ): DocumentOpenSearchReindexService =
         DocumentOpenSearchReindexService(
             entityManager,
@@ -182,6 +184,7 @@ class DocumentOpenSearchAutoConfiguration {
             lockProvider,
             openSearchReindexRunService,
             resolver,
+            indexInitializer,
         )
 
     @Bean
@@ -315,8 +318,9 @@ class DocumentOpenSearchAutoConfiguration {
     @ConditionalOnMissingBean
     fun documentOpenSearchReindexResource(
         reindexService: DocumentOpenSearchReindexService,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
     ): DocumentOpenSearchReindexResource =
-        DocumentOpenSearchReindexResource(reindexService)
+        DocumentOpenSearchReindexResource(reindexService, indexInitializer)
 
     @Bean
     @ConditionalOnMissingBean
@@ -388,6 +392,18 @@ class DocumentOpenSearchAutoConfiguration {
         openSearchProperties: OpenSearchProperties,
     ): OpenSearchHealthScheduler =
         OpenSearchHealthScheduler(healthService, openSearchProperties)
+
+    @org.springframework.context.annotation.Configuration
+    @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.AbstractHealthIndicator"])
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
+    class OpenSearchHealthIndicatorConfiguration {
+        @Bean
+        @ConditionalOnMissingBean(name = ["openSearchMappingHealthIndicator"])
+        fun openSearchMappingHealthIndicator(
+            indexInitializer: DocumentOpenSearchIndexInitializer,
+        ): OpenSearchMappingHealthIndicator =
+            OpenSearchMappingHealthIndicator(indexInitializer)
+    }
 
     companion object {
         private val logger = KotlinLogging.logger {}

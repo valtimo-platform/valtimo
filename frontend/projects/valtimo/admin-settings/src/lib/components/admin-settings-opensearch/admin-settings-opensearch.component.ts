@@ -40,6 +40,7 @@ import {
   IconService,
   ListItem,
   LoadingModule,
+  NotificationModule,
   ProgressBarModule,
   TagModule,
 } from 'carbon-components-angular';
@@ -63,6 +64,7 @@ import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-m
     ButtonModule,
     IconModule,
     LoadingModule,
+    NotificationModule,
     ProgressBarModule,
     TagModule,
     CarbonListModule,
@@ -131,6 +133,13 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
 
   public readonly hasRunningRun$: Observable<boolean> = this.runs$.pipe(
     map(page => page.content.some(run => run.status === 'RUNNING'))
+  );
+
+  public readonly legacyOrStale$: Observable<boolean> = this._manualRefresh$.pipe(
+    switchMap(() => this._apiService.getTopologyStatus()),
+    map(status => !!status?.available && !!status?.legacyOrStale),
+    startWith(false),
+    shareReplay(1)
   );
 
   constructor(

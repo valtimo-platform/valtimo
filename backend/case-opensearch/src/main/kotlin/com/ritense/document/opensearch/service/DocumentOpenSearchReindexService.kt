@@ -66,6 +66,7 @@ open class DocumentOpenSearchReindexService(
     private val lockProvider: LockProvider,
     private val runService: OpenSearchReindexRunService,
     private val resolver: OpenSearchIndexNameResolver,
+    private val indexInitializer: DocumentOpenSearchIndexInitializer,
 ) : DisposableBean {
 
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -119,6 +120,9 @@ open class DocumentOpenSearchReindexService(
         val pageSize = runService.pageSizeOf(runId)
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
 
+        // Resolve the rebuild/migrate topology work this run must do before and after filling the index.
+        val rebuild = prepareRebuild(scope)
+
         try {
             while (!cancelRequested) {
                 val cursor = lastId
@@ -136,7 +140,8 @@ open class DocumentOpenSearchReindexService(
                         null
                     }
                 }
-                skipped += docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).sumOf { converter.indexChunk(it) }
+                skipped += docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE)
+                    .sumOf { converter.indexChunk(it, rebuild?.targetIndex) }
 
                 processed += docs.size
                 lastId = batch.last().id().id
@@ -147,11 +152,15 @@ open class DocumentOpenSearchReindexService(
                 logger.info { "Re-index run $runId cancelled — marking STOPPED (processed=$processed, skipped=$skipped)" }
                 runService.stop(runId)
             } else {
-                if (scope.pruneOrphans) {
+                // Pruning is meaningless for a rebuild/migrate — the target index is freshly built from the
+                // source of truth and holds no orphans.
+                if (scope.pruneOrphans && rebuild == null) {
                     val pruned = pruneOrphans(runId, scope)
                     logger.info { "Pruned $pruned orphan document(s) from OpenSearch" }
                 }
-                elasticsearchOperations.indexOps(indexCoordinatesFor(scope)).takeIf { it.exists() }?.refresh()
+                val refreshTarget = rebuild?.targetIndex ?: indexCoordinatesFor(scope)
+                elasticsearchOperations.indexOps(refreshTarget).takeIf { it.exists() }?.refresh()
+                rebuild?.let { completeRebuild(it) }
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
                 runService.complete(runId, processed + skipped, skipped)
             }
@@ -162,6 +171,40 @@ open class DocumentOpenSearchReindexService(
         }
         return processed
     }
+
+    /**
+     * Topology plan for a `recreateIndex` run, resolved once up front:
+     * - **scoped** (a definition name) — build a fresh concrete index and fill it ([targetIndex]); on success
+     *   atomically swap the per-definition and read aliases onto it and drop the old one.
+     * - **unscoped** (migration off the legacy single index) — provision the per-definition indices now so the
+     *   routed writes land in them, then drop the legacy index on success.
+     *
+     * A non-recreate run returns `null` and behaves exactly as before.
+     */
+    private fun prepareRebuild(scope: ReindexRequest): RebuildPlan? {
+        if (!scope.recreateIndex) return null
+        val definitionName = scope.documentDefinitionName
+        if (definitionName != null) {
+            val newIndex = indexInitializer.prepareRebuildIndex(definitionName)
+            return RebuildPlan(definitionName = definitionName, targetIndex = IndexCoordinates.of(newIndex), newConcrete = newIndex)
+        }
+        indexInitializer.ensureAllIndices()
+        return RebuildPlan(definitionName = null, targetIndex = null, newConcrete = null)
+    }
+
+    private fun completeRebuild(plan: RebuildPlan) {
+        if (plan.definitionName != null && plan.newConcrete != null) {
+            indexInitializer.swapInRebuiltIndex(plan.definitionName, plan.newConcrete)
+        } else {
+            indexInitializer.dropLegacyIndex()
+        }
+    }
+
+    private data class RebuildPlan(
+        val definitionName: String?,
+        val targetIndex: IndexCoordinates?,
+        val newConcrete: String?,
+    )
 
     /** Status of a specific run (by id) or the most recent run when [runId] is null. */
     fun status(runId: UUID? = null): Map<String, Any?> = runService.toStatusMap(runId)

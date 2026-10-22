@@ -17,6 +17,12 @@ Release date: TBD
 * **Existing OpenSearch installations must rebuild their index**
 
   Installations that already use OpenSearch for document search hold a single legacy `json_schema_document` index.
-  After upgrading, run the document-search re-index from *Admin > Search* so the per-definition indices are created
-  and populated from the database. Until the re-index completes, document search keeps serving results from the
-  legacy index. Editing search-field configuration no longer triggers an index rebuild.
+  After upgrading, the *Admin > OpenSearch* screen shows a warning banner while the topology is still legacy or stale
+  (the `/actuator/health` endpoint reports the same via a non-fatal `WARN` status). Start a re-index with the new
+  **Rebuild / migrate index** option enabled to create and populate the per-definition indices from the database and
+  drop the legacy index. Until the migration completes, document search keeps serving results from the legacy index —
+  the migration never drops it on startup. Editing search-field configuration no longer triggers an index rebuild.
+
+  The same **Rebuild / migrate index** option, combined with a document-definition filter, rebuilds a single
+  definition's index zero-downtime: the documents are reindexed into a fresh index and the shared read alias is
+  swapped onto it atomically, so case lists never see a gap.

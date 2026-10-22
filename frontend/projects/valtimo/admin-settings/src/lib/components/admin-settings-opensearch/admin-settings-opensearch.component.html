@@ -22,9 +22,22 @@
     starting: startingReindex$ | async,
     documentDefinitions: documentDefinitions$ | async,
     showModal: showModal$ | async,
-    hasRunning: hasRunningRun$ | async
+    hasRunning: hasRunningRun$ | async,
+    legacyOrStale: legacyOrStale$ | async
   } as obs"
 >
+  @if (obs.legacyOrStale) {
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'warning',
+        title: 'adminSettings.opensearch.topology.legacyWarningTitle' | translate,
+        message: 'adminSettings.opensearch.topology.legacyWarningMessage' | translate,
+        showClose: false,
+        lowContrast: true
+      }"
+    ></cds-inline-notification>
+  }
+
   <valtimo-carbon-list
     [header]="false"
     [items]="obs.items || []"

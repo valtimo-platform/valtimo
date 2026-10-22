@@ -55,6 +55,12 @@ open class OpenSearchIndexNameResolver {
         /** Shared read alias spanning every per-definition index — serves the "All cases" list. */
         const val READ_ALIAS = "json_schema_document_all"
 
+        /**
+         * The single shared index used before the per-definition topology. Pre-fix installations still hold
+         * it; migration reindexes off it and then drops it. New installations never create it.
+         */
+        const val LEGACY_INDEX = "json_schema_document"
+
         private const val INDEX_PREFIX = "json_schema_document_"
 
         // OpenSearch index names are capped at 255 bytes; reserve room for the prefix and a hash suffix.

@@ -23,23 +23,27 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.security.test.context.support.WithMockUser
 
 /**
- * Verifies the per-definition index topology: each definition has its own `json_schema_document_<key>` index,
- * every index is joined to the shared read alias, and the index carries the content template (a string
- * content field is mapped with a `.keyword` sub-field).
+ * Verifies the per-definition index topology: each definition is fronted by a `json_schema_document_<key>`
+ * alias over a single concrete index, and that concrete index is also joined to the shared read alias (so the
+ * same stable name can be rebuilt and swapped atomically while "All cases" keeps serving).
  */
 @WithMockUser(username = BaseOpenSearchIntegrationTest.USERNAME, authorities = [BaseOpenSearchIntegrationTest.FULL_ACCESS_ROLE])
 class DocumentOpenSearchTopologyIntTest : BaseOpenSearchIntegrationTest() {
 
     @Test
-    fun `each test definition has its own index joined to the shared read alias`() {
+    fun `each test definition is fronted by its own alias over a concrete index joined to the shared read alias`() {
         TEST_DEFINITION_KEYS.forEach { key ->
-            val indexName = indexNameResolver.indexNameFor(key)
-            val indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName))
+            val perDefinitionAlias = indexNameResolver.indexNameFor(key)
+            val indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(perDefinitionAlias))
 
             assertThat(indexOps.exists()).isTrue()
 
-            val aliases = indexOps.getAliasesForIndex(indexName)[indexName].orEmpty().map { it.alias }
-            assertThat(aliases).contains(OpenSearchIndexNameResolver.READ_ALIAS)
+            // getAliasesForIndex on an alias resolves to the backing concrete index(es); assert exactly one
+            // concrete index backs the alias and that it carries both the per-definition and read aliases.
+            val byConcrete = indexOps.getAliasesForIndex(perDefinitionAlias)
+            assertThat(byConcrete).hasSize(1)
+            val aliases = byConcrete.values.flatten().map { it.alias }
+            assertThat(aliases).contains(perDefinitionAlias, OpenSearchIndexNameResolver.READ_ALIAS)
         }
     }
 

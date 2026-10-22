@@ -67,19 +67,30 @@ open class JsonSchemaDocumentOsConverter(
      * can never loop a run forever. Transport/connection errors are NOT caught here: they propagate so the
      * caller can react (mark the run FAILED, park the watermark, …).
      *
+     * When [overrideIndex] is set every document is written to that one index instead of being routed by its
+     * own definition — used by a scoped rebuild to fill a fresh concrete index before the alias is swapped
+     * onto it.
+     *
      * @return the number of documents skipped in this chunk
      */
-    open fun indexChunk(chunk: List<JsonSchemaDocumentOsDocument>): Long =
-        chunk.groupBy { it.definitionId?.name }
+    open fun indexChunk(chunk: List<JsonSchemaDocumentOsDocument>, overrideIndex: IndexCoordinates? = null): Long {
+        if (overrideIndex != null) {
+            return saveIsolated(overrideIndex, chunk)
+        }
+        return chunk.groupBy { it.definitionId?.name }
             .entries
             .sumOf { (definitionName, documents) -> indexGroup(definitionName, documents) }
+    }
 
     private fun indexGroup(definitionName: String?, documents: List<JsonSchemaDocumentOsDocument>): Long {
         if (definitionName == null) {
             documents.forEach { logger.warn { "Document ${it.id} has no definition name — skipping (cannot resolve index)" } }
             return documents.size.toLong()
         }
-        val index = IndexCoordinates.of(resolver.indexNameFor(definitionName))
+        return saveIsolated(IndexCoordinates.of(resolver.indexNameFor(definitionName)), documents)
+    }
+
+    private fun saveIsolated(index: IndexCoordinates, documents: List<JsonSchemaDocumentOsDocument>): Long {
         return try {
             operations.save(documents, index)
             0L
