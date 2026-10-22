@@ -21,7 +21,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
     logicalFilePath="config/liquibase/changelog/20261019-widen-reindex-run-status.xml">
 
-    <changeSet author="MvT" id="widen_document_opensearch_reindex_run_status">
+    <changeSet author="Ritense" id="widen_document_opensearch_reindex_run_status">
         <modifyDataType tableName="document_opensearch_reindex_run" columnName="status" newDataType="VARCHAR(50)"/>
     </changeSet>
 
