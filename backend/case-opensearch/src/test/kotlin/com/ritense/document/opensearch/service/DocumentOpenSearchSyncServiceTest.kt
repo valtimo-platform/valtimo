@@ -19,18 +19,24 @@ package com.ritense.document.opensearch.service
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import com.ritense.document.opensearch.domain.OsDefinitionId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.elasticsearch.VersionConflictException
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.SearchHit
+import org.springframework.data.elasticsearch.core.SearchHits
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
+import org.springframework.data.elasticsearch.core.query.Query
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.SimpleTransactionStatus
 import java.util.Optional
@@ -38,21 +44,24 @@ import java.util.UUID
 
 class DocumentOpenSearchSyncServiceTest {
 
-    private val repository: JsonSchemaDocumentOpenSearchRepository = mock()
+    private val operations: ElasticsearchOperations = mock()
     private val documentRepository: JsonSchemaDocumentRepository = mock()
     private val converter: JsonSchemaDocumentOsConverter = mock()
+    private val resolver = OpenSearchIndexNameResolver()
     private val transactionManager: PlatformTransactionManager = mock()
     private lateinit var service: DocumentOpenSearchSyncService
+
+    private val houseIndex = IndexCoordinates.of(resolver.indexNameFor("house"))
 
     @BeforeEach
     fun setUp() {
         // Let the read-only TransactionTemplate run its callback inline.
         whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
-        service = DocumentOpenSearchSyncService(repository, documentRepository, converter, transactionManager)
+        service = DocumentOpenSearchSyncService(operations, documentRepository, converter, resolver, transactionManager)
     }
 
     @Test
-    fun `upsertById reloads the document and saves the converted os document`() {
+    fun `upsertById reloads the document and saves it to the definition's index`() {
         val id = UUID.randomUUID()
         val document: JsonSchemaDocument = mock()
         val osDocument = osDocument(id.toString())
@@ -61,7 +70,7 @@ class DocumentOpenSearchSyncServiceTest {
 
         service.upsertById(id)
 
-        verify(repository).save(osDocument)
+        verify(operations).save(eq(osDocument), eq(houseIndex))
     }
 
     @Test
@@ -71,7 +80,7 @@ class DocumentOpenSearchSyncServiceTest {
         val osDocument = osDocument(id.toString())
         whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
         whenever(converter.toOsDocument(document)).thenReturn(osDocument)
-        whenever(repository.save(osDocument)).thenThrow(VersionConflictException("conflict"))
+        whenever(operations.save(eq(osDocument), eq(houseIndex))).thenThrow(VersionConflictException("conflict"))
 
         assertThatCode { service.upsertById(id) }.doesNotThrowAnyException()
     }
@@ -83,7 +92,7 @@ class DocumentOpenSearchSyncServiceTest {
         val osDocument = osDocument(id.toString())
         whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
         whenever(converter.toOsDocument(document)).thenReturn(osDocument)
-        whenever(repository.save(osDocument)).thenThrow(RuntimeException("transport error"))
+        whenever(operations.save(eq(osDocument), eq(houseIndex))).thenThrow(RuntimeException("transport error"))
 
         assertThatThrownBy { service.upsertById(id) }.isInstanceOf(RuntimeException::class.java)
     }
@@ -96,22 +105,44 @@ class DocumentOpenSearchSyncServiceTest {
         service.upsertById(id)
 
         verify(converter, never()).toOsDocument(any())
-        verify(repository, never()).save(any())
+        verify(operations, never()).save(any<JsonSchemaDocumentOsDocument>(), any<IndexCoordinates>())
     }
 
     @Test
-    fun `delete removes the document from opensearch by id`() {
+    fun `delete resolves the concrete index via the alias and deletes there`() {
         val id = UUID.randomUUID()
+        val osDocument = osDocument(id.toString())
+        val hit: SearchHit<JsonSchemaDocumentOsDocument> = mock()
+        val hits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(hit.content).thenReturn(osDocument)
+        whenever(hits.searchHits).thenReturn(listOf(hit))
+        whenever(
+            operations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())
+        ).thenReturn(hits)
 
         service.delete(id)
 
-        verify(repository).deleteById(id.toString())
+        verify(operations).delete(eq(id.toString()), eq(houseIndex))
+    }
+
+    @Test
+    fun `delete is a no-op when the document is not indexed`() {
+        val id = UUID.randomUUID()
+        val hits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(hits.searchHits).thenReturn(emptyList())
+        whenever(
+            operations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())
+        ).thenReturn(hits)
+
+        service.delete(id)
+
+        verify(operations, never()).delete(any<String>(), any<IndexCoordinates>())
     }
 
     private fun osDocument(id: String) = JsonSchemaDocumentOsDocument(
         id = id,
         content = null,
-        definitionId = null,
+        definitionId = OsDefinitionId(name = "house", version = null, blueprintId = null),
         createdOn = null,
         modifiedOn = null,
         createdBy = null,

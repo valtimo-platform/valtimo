@@ -122,7 +122,7 @@ class OpenSearchReindexRunServiceTest {
         val run = OpenSearchReindexRun(id = runId, pageSize = 100)
         whenever(repository.findById(runId)).thenReturn(Optional.of(run))
 
-        service.complete(runId, 42L)
+        service.complete(runId, 42L, 0L)
         assertThat(run.status).isEqualTo(ReindexRunStatus.COMPLETED)
         assertThat(run.finishedOn).isNotNull()
         assertThat(run.totalCount).isEqualTo(42L)
@@ -133,6 +133,18 @@ class OpenSearchReindexRunServiceTest {
 
         service.stop(runId)
         assertThat(run.status).isEqualTo(ReindexRunStatus.STOPPED)
+    }
+
+    @Test
+    fun `complete with skipped documents sets COMPLETED_WITH_ERRORS`() {
+        val runId = UUID.randomUUID()
+        val run = OpenSearchReindexRun(id = runId, pageSize = 100)
+        whenever(repository.findById(runId)).thenReturn(Optional.of(run))
+
+        service.complete(runId, 42L, 3L)
+
+        assertThat(run.status).isEqualTo(ReindexRunStatus.COMPLETED_WITH_ERRORS)
+        assertThat(run.finishedOn).isNotNull()
     }
 
     @Test

@@ -30,8 +30,12 @@ import net.javacrumbs.shedlock.core.LockProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -77,7 +81,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
     @Autowired
     lateinit var transactionManager: PlatformTransactionManager
 
-    @Autowired
+    @MockitoSpyBean
     lateinit var converter: JsonSchemaDocumentOsConverter
 
     @AfterEach
@@ -99,7 +103,23 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         assertThat(run.processedCount).isEqualTo(5L)
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(5L)
-        ids.forEach { assertThat(openSearchRepository.findById(it.toString())).isPresent }
+        ids.forEach { assertThat(findIndexedOptional(it.toString())).isPresent }
+    }
+
+    @Test
+    fun `re-index that skips a document finishes COMPLETED_WITH_ERRORS with a non-zero skipped count`() {
+        createDocument("indexable")
+        val poison = createDocument("poison")
+        clearIndex()
+
+        doThrow(RuntimeException("deliberately unconvertible document"))
+            .whenever(converter).toOsDocument(argThat { id() == poison.id() })
+
+        val (runId, _) = reindex(ReindexRequest(documentDefinitionName = "house"))
+
+        val run = reindexRunRepository.findById(runId).get()
+        assertThat(run.status).isEqualTo(ReindexRunStatus.COMPLETED_WITH_ERRORS)
+        assertThat(run.skippedCount).isGreaterThan(0L)
     }
 
     @Test
@@ -111,7 +131,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest())
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().internalStatus).isEqualTo("started")
     }
@@ -146,7 +166,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         assertThat(processed).isEqualTo(1L)
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(1L)
-        assertThat(openSearchRepository.findById(target.id().toString())).isPresent
+        assertThat(findIndexedOptional(target.id().toString())).isPresent
     }
 
     @Test
@@ -161,8 +181,8 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest(modifiedAfter = cutoff))
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(modified.id().toString())).isPresent
-        assertThat(openSearchRepository.findById(untouched.id().toString())).isEmpty
+        assertThat(findIndexedOptional(modified.id().toString())).isPresent
+        assertThat(findIndexedOptional(untouched.id().toString())).isEmpty
     }
 
     private fun setModifiedOn(documentId: JsonSchemaDocumentId, modifiedOn: LocalDateTime) {
@@ -203,7 +223,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
 
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(expectedIds.size.toLong())
-        expectedIds.forEach { assertThat(openSearchRepository.findById(it.toString())).isPresent }
+        expectedIds.forEach { assertThat(findIndexedOptional(it.toString())).isPresent }
         assertThat(reindexRunRepository.findById(seededRun.id).get().status).isEqualTo(ReindexRunStatus.COMPLETED)
     }
 
@@ -298,9 +318,9 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
 
         refreshIndex()
         assertThat(openSearchRepository.count()).isEqualTo(1L)
-        assertThat(openSearchRepository.findById(doc1.id().toString())).isPresent
-        assertThat(openSearchRepository.findById(doc2.id().toString())).isEmpty
-        assertThat(openSearchRepository.findById(doc3.id().toString())).isEmpty
+        assertThat(findIndexedOptional(doc1.id().toString())).isPresent
+        assertThat(findIndexedOptional(doc2.id().toString())).isEmpty
+        assertThat(findIndexedOptional(doc3.id().toString())).isEmpty
 
         val run = reindexRunRepository.findById(runId).get()
         assertThat(run.prunedCount).isEqualTo(2L)
@@ -316,7 +336,7 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest(documentDefinitionName = "house", pruneOrphans = true))
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(houseDoc.id().toString())).isEmpty
+        assertThat(findIndexedOptional(houseDoc.id().toString())).isEmpty
     }
 
     @Test
@@ -329,13 +349,12 @@ class DocumentOpenSearchReindexServiceIntTest : BaseOpenSearchIntegrationTest() 
         reindex(ReindexRequest(pruneOrphans = false))
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(doc.id().toString())).isPresent
+        assertThat(findIndexedOptional(doc.id().toString())).isPresent
     }
 
     private fun indexDocuments(vararg documents: JsonSchemaDocument) {
         documents.forEach { doc ->
-            val osDoc = converter.toOsDocument(doc)
-            openSearchRepository.save(osDoc)
+            indexOsDocument(converter.toOsDocument(doc))
         }
         refreshIndex()
     }

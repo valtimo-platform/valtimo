@@ -29,6 +29,9 @@ import java.util.UUID
  * @param documentIds explicit subset of document ids
  * @param pageSize DB keyset page size, clamped to [1, MAX_PAGE_SIZE] by [effectivePageSize]
  * @param resumeRunId continue a prior (FAILED/STOPPED) run from its persisted cursor instead of starting fresh
+ * @param recreateIndex rebuild into a fresh concrete index, then alias-swap onto it (scoped run), or run a
+ *   full migration off the legacy single index (unscoped run) — see
+ *   [com.ritense.document.opensearch.service.DocumentOpenSearchReindexService]
  */
 data class ReindexRequest(
     val modifiedAfter: LocalDateTime? = null,
@@ -38,6 +41,7 @@ data class ReindexRequest(
     val pageSize: Int = DEFAULT_PAGE_SIZE,
     val resumeRunId: UUID? = null,
     val pruneOrphans: Boolean = false,
+    val recreateIndex: Boolean = false,
 ) {
     fun effectivePageSize() = pageSize.coerceIn(1, MAX_PAGE_SIZE)
 

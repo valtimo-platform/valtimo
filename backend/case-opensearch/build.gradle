@@ -53,6 +53,9 @@ dependencies {
     // OpenSearch via spring-data-opensearch (Apache 2.0 licensed)
     implementation "org.opensearch.client:spring-data-opensearch-starter:${springDataOpenSearchVersion}"
 
+    // Actuator is optional at runtime: the mapping health indicator is only registered when it is present.
+    compileOnly "org.springframework.boot:spring-boot-starter-actuator"
+
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
     testImplementation project(':backend:test-utils-common')
@@ -63,6 +66,7 @@ dependencies {
         exclude(group: "com.ritense.valtimo", module: "case")
     }
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-starter-actuator"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.postgresql:postgresql"
     testImplementation "com.mysql:mysql-connector-j"

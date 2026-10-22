@@ -120,6 +120,18 @@
     }
   }
 
+  &__skipped-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--cds-text-error);
+    font-size: 14px;
+
+    svg {
+      fill: var(--cds-support-warning);
+    }
+  }
+
   &__error-link {
     display: inline-flex;
     align-items: center;

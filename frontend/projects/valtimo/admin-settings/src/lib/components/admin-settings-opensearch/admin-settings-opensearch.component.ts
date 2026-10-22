@@ -40,10 +40,11 @@ import {
   IconService,
   ListItem,
   LoadingModule,
+  NotificationModule,
   ProgressBarModule,
   TagModule,
 } from 'carbon-components-angular';
-import {Launch16} from '@carbon/icons';
+import {Launch16, WarningAlt16} from '@carbon/icons';
 import {CarbonListModule, ColumnConfig, Pagination, TooltipIconModule, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/shared';
 import {AdminSettingsManagementApiService} from '../../services';
@@ -63,6 +64,7 @@ import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-m
     ButtonModule,
     IconModule,
     LoadingModule,
+    NotificationModule,
     ProgressBarModule,
     TagModule,
     CarbonListModule,
@@ -133,6 +135,13 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     map(page => page.content.some(run => run.status === 'RUNNING'))
   );
 
+  public readonly legacyOrStale$: Observable<boolean> = this._manualRefresh$.pipe(
+    switchMap(() => this._apiService.getTopologyStatus()),
+    map(status => !!status?.available && !!status?.legacyOrStale),
+    startWith(false),
+    shareReplay(1)
+  );
+
   constructor(
     private readonly _apiService: AdminSettingsManagementApiService,
     private readonly _documentService: DocumentService,
@@ -141,6 +150,7 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     private readonly _iconService: IconService
   ) {
     this._iconService.register(Launch16);
+    this._iconService.register(WarningAlt16);
   }
 
   public ngOnInit(): void {
@@ -215,6 +225,8 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
         return 'blue';
       case 'COMPLETED':
         return 'green';
+      case 'COMPLETED_WITH_ERRORS':
+        return 'orange';
       case 'FAILED':
         return 'red';
       case 'STOPPED':

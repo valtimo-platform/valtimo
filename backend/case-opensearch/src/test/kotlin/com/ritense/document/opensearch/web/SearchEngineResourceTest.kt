@@ -85,7 +85,7 @@ class SearchEngineResourceTest {
         assertThat(response.body?.active).isEqualTo("POSTGRES")
         assertThat(toggle.get()).isEqualTo(SearchEngineToggle.Engine.POSTGRES)
         verify(featureToggleService).updateToggle(eq("useOpenSearchForDocumentSearch"), eq(false))
-        verify(indexInitializer, never()).ensureIndex()
+        verify(indexInitializer, never()).ensureAllIndices()
     }
 
     @Test
@@ -99,7 +99,7 @@ class SearchEngineResourceTest {
         assertThat(response.body?.active).isEqualTo("OPENSEARCH")
         assertThat(toggle.get()).isEqualTo(SearchEngineToggle.Engine.OPENSEARCH)
         verify(featureToggleService).updateToggle(eq("useOpenSearchForDocumentSearch"), eq(true))
-        verify(indexInitializer).ensureIndex()
+        verify(indexInitializer).ensureAllIndices()
     }
 
     @Test

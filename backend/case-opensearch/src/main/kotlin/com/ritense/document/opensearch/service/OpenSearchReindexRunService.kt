@@ -120,10 +120,10 @@ open class OpenSearchReindexRunService(
         repository.save(run)
     }
 
-    open fun complete(runId: UUID, totalCount: Long?) {
+    open fun complete(runId: UUID, totalCount: Long?, skipped: Long) {
         val run = requireRun(runId)
         run.totalCount = totalCount
-        run.complete(LocalDateTime.now())
+        run.complete(LocalDateTime.now(), skipped)
         repository.save(run)
         totalCountCache.remove(runId)
     }

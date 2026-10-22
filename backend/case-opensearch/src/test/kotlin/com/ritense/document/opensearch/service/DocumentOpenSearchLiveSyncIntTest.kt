@@ -57,7 +57,7 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         syncService.upsertById(document.id().id)
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().contentText).contains("live-street")
     }
@@ -71,7 +71,7 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         syncService.upsertById(document.id().id)
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().internalStatus).isEqualTo("started")
     }
@@ -83,7 +83,7 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         assertThatCode { syncService.upsertById(danglingId) }.doesNotThrowAnyException()
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(danglingId.toString())).isEmpty
+        assertThat(findIndexedOptional(danglingId.toString())).isEmpty
     }
 
     @Test
@@ -91,12 +91,12 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         val document = createDocument("to-be-deleted")
         syncService.upsertById(document.id().id)
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isPresent
+        assertThat(findIndexedOptional(document.id().toString())).isPresent
 
         syncService.delete(document.id().id)
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isEmpty
+        assertThat(findIndexedOptional(document.id().toString())).isEmpty
     }
 
     private fun clearIndex() {

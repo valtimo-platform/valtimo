@@ -4524,6 +4524,7 @@
         "errorTitle": "Fout",
         "viewErrorLogs": "Bekijk foutlogs",
         "pruneOrphans": "Verwijder orphan documenten",
+        "recreateIndex": "Index opnieuw opbouwen / migreren",
         "documentDefinitionName": "Documentdefinitie",
         "documentDefinitionPlaceholder": "Alle documentdefinities",
         "allDocumentDefinitions": "Alle documentdefinities",
@@ -4543,15 +4544,22 @@
         "statuses": {
           "RUNNING": "Bezig",
           "COMPLETED": "Voltooid",
+          "COMPLETED_WITH_ERRORS": "Voltooid met fouten",
           "FAILED": "Mislukt",
           "STOPPED": "Gestopt",
           "PRUNING": "Orphan documenten opschonen"
         },
+        "completedWithErrors": "Voltooid, maar {{skipped}} document(en) konden niet worden geïndexeerd en zijn overgeslagen.",
         "pruningProgress": "Verwijderd: {{removed}}",
         "tooltips": {
           "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",
-          "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd"
+          "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd",
+          "recreateIndex": "Bouw de index opnieuw op en wissel deze zonder downtime om. Een run zonder documentdefinitie migreert van de oude gedeelde index naar één index per zaakdefinitie."
         }
+      },
+      "topology": {
+        "legacyWarningTitle": "Index opnieuw opbouwen vereist",
+        "legacyWarningMessage": "Deze installatie gebruikt nog de oude documentzoekindex, of voor één of meer zaakdefinities ontbreekt een index. Start een herindexering met \"Index opnieuw opbouwen / migreren\" ingeschakeld om te migreren naar de indices per definitie. Zoeken blijft werken vanaf de huidige index totdat de migratie is voltooid."
       }
     }
   },

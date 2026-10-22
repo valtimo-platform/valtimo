@@ -89,7 +89,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         reconcileService.reconcile()
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isPresent
+        assertThat(findIndexedOptional(document.id().toString())).isPresent
         val watermark = stateRepository.findById(OpenSearchReconcileState.SINGLETON_ID).get().watermark
         assertThat(watermark).isAfter(LocalDateTime.now().minusMinutes(30))
     }
@@ -104,7 +104,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         reconcileService.reconcile()
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().internalStatus).isEqualTo("started")
     }
@@ -131,7 +131,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         }
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isEmpty
+        assertThat(findIndexedOptional(document.id().toString())).isEmpty
     }
 
     @Test
@@ -140,7 +140,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         val id = document.id().id
         syncService.upsertById(id)
         refreshIndex()
-        assertThat(openSearchRepository.findById(id.toString())).isPresent
+        assertThat(findIndexedOptional(id.toString())).isPresent
 
         // Delete from PostgreSQL and record the pending deletion the in-transaction listener would have written.
         runWithoutAuthorization { documentService.deleteDocument(document.id()) }
@@ -150,7 +150,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         reconcileService.reconcile()
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(id.toString())).isEmpty
+        assertThat(findIndexedOptional(id.toString())).isEmpty
         assertThat(pendingIndexDeletionRepository.count()).isZero()
     }
 
