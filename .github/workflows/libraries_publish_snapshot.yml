@@ -19,8 +19,15 @@ jobs:
     steps:
       - name: Compute snapshot version
         id: version
+        env:
+          PROJECT_VERSION: ${{ inputs.project_version }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
-          echo "snapshot_version=${{ inputs.project_version }}-SNAPSHOT.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          if [[ ! "$PROJECT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version format. Expected semantic version (e.g. 13.1.3)"
+            exit 1
+          fi
+          echo "snapshot_version=${PROJECT_VERSION}-SNAPSHOT.${RUN_NUMBER}" >> "$GITHUB_OUTPUT"
 
   # Backend jobs
   build_backend:
