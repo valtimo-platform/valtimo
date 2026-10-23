@@ -57,7 +57,7 @@
                     "id": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d1002",
                     "title": "Demo app",
                     "pluginId": "demo-app",
-                    "pluginVersion": "1.0.0",
+                    "pluginVersion": "1.1.0",
                     "properties": {
                         "greetingPrefix": "Hello"
                     },

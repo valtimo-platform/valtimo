@@ -25,6 +25,7 @@ import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.exception.ExternalPluginActionFailedException
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
+import com.ritense.externalplugin.security.ExternalPluginReplyHandleSigner
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginHostService
@@ -49,6 +50,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.BpmnError
 import org.operaton.bpm.engine.delegate.DelegateExecution
+import java.time.Duration
 import java.util.UUID
 
 class ExternalPluginServiceTaskStartListenerTest {
@@ -66,6 +68,7 @@ class ExternalPluginServiceTaskStartListenerTest {
     private val configurationId = UUID.randomUUID()
     private val definitionId = UUID.randomUUID()
     private val hostId = UUID.randomUUID()
+    private val replyHandleSigner = ExternalPluginReplyHandleSigner("test-encryption-secret", Duration.ofDays(1))
 
     @BeforeEach
     fun setUp() {
@@ -86,6 +89,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             valueResolverService,
             objectMapper,
             pluginActionResultHandler,
+            replyHandleSigner,
         )
 
         val configuration = mock<ExternalPluginConfiguration> {
@@ -199,6 +203,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             valueResolverService,
             objectMapper,
             pluginActionResultHandler,
+            replyHandleSigner,
             resolver,
         )
 
@@ -235,6 +240,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             valueResolverService,
             objectMapper,
             pluginActionResultHandler,
+            replyHandleSigner,
             resolver,
         )
 
@@ -263,6 +269,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             valueResolverService,
             objectMapper,
             pluginActionResultHandler,
+            replyHandleSigner,
             resolver,
         )
 
@@ -299,6 +306,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             valueResolverService,
             objectMapper,
             pluginActionResultHandler,
+            replyHandleSigner,
             resolver,
         )
 
@@ -337,6 +345,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             valueResolverService,
             objectMapper,
             pluginActionResultHandler,
+            replyHandleSigner,
             resolver,
         )
 
@@ -460,6 +469,7 @@ class ExternalPluginServiceTaskStartListenerTest {
             valueResolverService,
             objectMapper,
             pluginActionResultHandler,
+            replyHandleSigner,
             resolver,
         )
 
@@ -516,6 +526,55 @@ class ExternalPluginServiceTaskStartListenerTest {
         assertThat(properties.get("userName").asText()).isEqualTo("Alice")
         // The literal was never sent through the resolver.
         verify(valueResolverService).resolveValues(eq("process-instance-id"), eq(execution), eq(listOf("pv:userName")))
+    }
+
+    @Test
+    fun `the invocation carries a reply handle for this configuration, process instance and case`() {
+        val processLink = buildingBlockProcessLink(pluginId = "case-summary", version = "0.1.0").let {
+            ExternalPluginProcessLink(
+                id = it.id,
+                processDefinitionId = it.processDefinitionId,
+                activityId = it.activityId,
+                activityType = it.activityType,
+                externalPluginConfigurationId = configurationId,
+                actionKey = it.actionKey,
+                pluginConfigurationReference = PluginConfigurationReference(
+                    type = PluginConfigurationReferenceType.FIXED,
+                    pluginDefinitionKey = "case-summary",
+                    pluginDefinitionVersion = "0.1.0",
+                ),
+                actionProperties = null,
+            )
+        }
+        val execution = executionFor(processLink)
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listener.notify(OperatonExecutionEvent(execution, "start"))
+
+        val payload = argumentCaptor<com.fasterxml.jackson.databind.node.ObjectNode>()
+        verify(hostClient).invokeAction(any(), any(), any(), any(), payload.capture(), any())
+        val handle = replyHandleSigner.verify(payload.firstValue.get("replyHandle").asText(), configurationId)!!
+        assertThat(handle.processInstanceId).isEqualTo("process-instance-id")
+        assertThat(handle.businessKey).isEqualTo("business-key")
+        assertThat(payload.firstValue.get("processInstanceId").asText()).isEqualTo("process-instance-id")
+        assertThat(payload.firstValue.get("documentId").asText()).isEqualTo("business-key")
+    }
+
+    @Test
+    fun `a process without a case still gets a reply handle`() {
+        whenever(hostClient.invokeAction(any(), any(), any(), any(), any(), any())).thenReturn(
+            ExternalPluginHostClient.ActionResponse(status = 200, body = objectMapper.createObjectNode()),
+        )
+
+        listener.notify(globalProcessServiceTaskEvent())
+
+        val payload = argumentCaptor<com.fasterxml.jackson.databind.node.ObjectNode>()
+        verify(hostClient).invokeAction(any(), any(), any(), any(), payload.capture(), any())
+        val handle = replyHandleSigner.verify(payload.firstValue.get("replyHandle").asText(), configurationId)!!
+        assertThat(handle.businessKey).isNull()
+        assertThat(payload.firstValue.has("documentId")).isFalse()
     }
 
     private fun buildingBlockProcessLink(pluginId: String, version: String): ExternalPluginProcessLink =

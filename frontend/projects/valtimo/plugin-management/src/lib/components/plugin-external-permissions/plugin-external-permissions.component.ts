@@ -18,7 +18,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  inject,
   Input,
   OnChanges,
   Output,
@@ -34,12 +33,16 @@ import {
   TagModule,
 } from 'carbon-components-angular';
 import {
+  ExternalPluginDeclaredContract,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
   ExternalPluginEndpoint,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {EnrichedEndpoint} from '../../models';
+import {PLUGIN_EXTERNAL_PERMISSIONS_TEST_IDS} from '../../constants';
+import {PluginExternalProvidedContractsComponent} from '../plugin-external-provided-contracts/plugin-external-provided-contracts.component';
 
 /**
  * Lists the GZAC API endpoints, platform events, host capabilities and outbound destinations an
@@ -54,6 +57,11 @@ import {EnrichedEndpoint} from '../../models';
  * - {@link derivedEgress} — origins computed from the configuration values the admin just entered in
  *   properties marked `x-egress-target`. Not a separate grant: typing the URL *is* the grant, and it
  *   is shown so the admin sees the complete set of destinations the plugin will be able to reach.
+ *
+ * Contracts come in two halves too. {@link declaredContracts} are part of the grant (the plugin may
+ * call their operations once a contract is bound); flows that bind them render the contract binding
+ * selector instead and leave this input empty. {@link providedContracts} are informational — what
+ * the plugin answers for others — and never need acceptance.
  *
  * In `readonlyMode` (editing an existing configuration) the list is informational only — the
  * permissions were already accepted at activation — so no acknowledgement is required.
@@ -71,6 +79,7 @@ import {EnrichedEndpoint} from '../../models';
     NotificationModule,
     StructuredListModule,
     TagModule,
+    PluginExternalProvidedContractsComponent,
   ],
 })
 export class PluginExternalPermissionsComponent implements OnChanges {
@@ -81,6 +90,10 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   @Input() public egress: Array<string> = [];
   /** Origins derived from the admin's own `x-egress-target` configuration values. */
   @Input() public derivedEgress: Array<string> = [];
+  /** `permissions.contracts`, shown as part of the grant. */
+  @Input() public declaredContracts: Array<ExternalPluginDeclaredContract> = [];
+  /** Manifest `provides`, shown for information only. */
+  @Input() public providedContracts: Array<ExternalPluginProvidedContract> = [];
   @Input() public readonlyMode = false;
 
   @Output() public validEvent = new EventEmitter<boolean>();
@@ -98,8 +111,7 @@ export class PluginExternalPermissionsComponent implements OnChanges {
   public readonly $derivedEgress = signal<Array<string>>([]);
   public readonly $accepted = signal<boolean>(false);
 
-  private readonly _externalPluginService = inject(ExternalPluginService);
-  private readonly _translateService = inject(TranslateService);
+  protected readonly testIds = PLUGIN_EXTERNAL_PERMISSIONS_TEST_IDS;
 
   /**
    * True when the manifest requests nothing — no review or acknowledgement is needed then.
@@ -111,9 +123,15 @@ export class PluginExternalPermissionsComponent implements OnChanges {
       this.endpoints.length === 0 &&
       this.eventSubscriptions.length === 0 &&
       this.capabilities.length === 0 &&
-      this.egress.length === 0
+      this.egress.length === 0 &&
+      this.declaredContracts.length === 0
     );
   }
+
+  constructor(
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _translateService: TranslateService
+  ) {}
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (
@@ -122,6 +140,7 @@ export class PluginExternalPermissionsComponent implements OnChanges {
       changes['capabilities'] ||
       changes['egress'] ||
       changes['derivedEgress'] ||
+      changes['declaredContracts'] ||
       changes['readonlyMode']
     ) {
       this.$accepted.set(false);
@@ -245,7 +264,8 @@ export class PluginExternalPermissionsComponent implements OnChanges {
       this.$enrichedEndpoints().length === 0 &&
       this.$eventTypes().length === 0 &&
       this.$capabilities().length === 0 &&
-      this.$egress().length === 0;
+      this.$egress().length === 0 &&
+      this.declaredContracts.length === 0;
     const valid = this.readonlyMode || empty || this.$accepted();
     this.validEvent.emit(valid);
   }
