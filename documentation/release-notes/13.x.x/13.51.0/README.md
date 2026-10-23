@@ -6,13 +6,19 @@ Release date: 21-10-2026
 
 ## New Features
 
-### New feature title
+### Delete a document from a process
 
-New feature explanation.
+The Documenten API plugin has a new **Delete informatie object** action, so a process can delete a document straight from a service task by giving its URL. The same checks that already run when a document is deleted elsewhere in the application also run for this action.
 
 ---
 
 ## Enhancements
+
+### Currency field formatting
+
+The **Currency** form field now formats amounts exactly as the configured locale writes them, including the position of
+the currency symbol, the thousands and decimal separators, and negative amounts. For example, `nl-NL` shows
+`€ 1.234,56` and `en-US` shows `$1,234.56`.
 
 ### New enhancement title
 
@@ -24,27 +30,5 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
-
----
-
-## Migration
-
-* **Cases menu on existing installations**
-
-  The `enableGenericCaseList` feature toggle has been replaced by `showAllCaseDefinitionsInMenu`. When enabled, the
-  Cases menu lists every case definition the user has access to, instead of only the case groups and case types the
-  user pinned. Installations that were already started before this release have the toggle enabled during the
-  upgrade, so the Cases menu keeps showing all case definitions. A value that was already set for the toggle is left
-  unchanged. The toggle can be changed under *Settings > Feature toggles*.
-
-  The old `enableGenericCaseList` toggle is removed, including any value stored for it. An `enableGenericCaseList`
-  entry in the front-end environment configuration no longer has any effect.
-
----
-
-## Deprecations
-
-* The `GET /api/v1/internal-status` endpoint is deprecated and will be removed in a future release.
-* The `assigneeFilter` property of the `POST /api/v1/document-search` request body is deprecated and will be removed
-  in a future release.
+| Tasks | A task opened from the task list filtered on a case type now shows its assigned team and user. |
+| Error responses | Error responses no longer include technical details such as stack traces for every client. Check that your own `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`. |
