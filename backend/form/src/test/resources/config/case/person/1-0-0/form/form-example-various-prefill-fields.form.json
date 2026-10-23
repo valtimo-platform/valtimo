@@ -79,6 +79,18 @@
             "disabled": true
         },
         {
+            "label": "E-mail preview document",
+            "key": "mailPreview.body",
+            "type": "valtimo-mail-preview",
+            "input": true
+        },
+        {
+            "label": "E-mail preview process variable",
+            "key": "pv.mailPreview",
+            "type": "valtimo-mail-preview",
+            "input": true
+        },
+        {
             "label": "Legacy",
             "key": "legacy",
             "components": [

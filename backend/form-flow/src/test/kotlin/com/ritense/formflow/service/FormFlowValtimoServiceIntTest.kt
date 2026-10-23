@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,8 @@ internal class FormFlowValtimoServiceIntTest: BaseIntegrationTest() {
             {
                 "IllegalField1": "test",
                 "person":{"firstName":"Henk"},
-                "illegalField2":{"illegalField3":5}
+                "illegalField2":{"illegalField3":5},
+                "mailPreview": "<img src=x onerror=alert(1)>"
             }""".trimIndent())
 
         val filteredSubmissionData = formFlowValtimoService.getVerifiedSubmissionData(submissionData, formFlowInstance)
