@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Case detail | A completed task no longer stays visible in the task list of a case for a few seconds after completing it. |
