@@ -92,7 +92,7 @@ interface ValtimoConfigFeatureToggles {
   enablePbacDocumentenApiDocuments?: boolean;
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
-  enableGenericCaseList?: boolean;
+  showAllCaseDefinitionsInMenu?: boolean;
   enableManualTaskListRefresh?: boolean;
   menuCollapsedByDefault?: boolean;
   enableOpenSearch?: boolean;

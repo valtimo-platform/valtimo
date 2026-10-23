@@ -116,7 +116,8 @@ class CaseDefinitionService(
                 final = false,
                 createdBy = SecurityUtils.getCurrentUserLogin(),
                 createdDate = LocalDateTime.now(),
-                active = true
+                active = true,
+                color = request.color
             )
         } else {
             val basedOnCaseDefinition = getCaseDefinition(basedOnCaseDefinitionId)
@@ -131,7 +132,8 @@ class CaseDefinitionService(
                 createdBy = SecurityUtils.getCurrentUserLogin(),
                 createdDate = LocalDateTime.now(),
                 basedOnVersionTag = basedOnCaseDefinitionId.versionTag,
-                active = false
+                active = false,
+                color = request.color ?: basedOnCaseDefinition.color
             )
         }
         val newSavedCaseDefinition = caseDefinitionRepository.save(newCaseDefinition)
@@ -223,14 +225,23 @@ class CaseDefinitionService(
         return caseDefinitionRepository.findByActiveIsTrueAndIdKey(caseDefinitionKey)
     }
 
-    fun updateCaseDefinition(caseDefinitionId: CaseDefinitionId, name: String?, description: String?): CaseDefinition {
+    fun getActiveCaseDefinitions(caseDefinitionKeys: Collection<String>): Map<String, CaseDefinition> {
+        if (caseDefinitionKeys.isEmpty()) {
+            return emptyMap()
+        }
+        return caseDefinitionRepository.findByActiveIsTrueAndIdKeyIn(caseDefinitionKeys)
+            .associateBy { it.id.key }
+    }
+
+    fun updateCaseDefinition(caseDefinitionId: CaseDefinitionId, name: String?, description: String?, color: String? = null): CaseDefinition {
         denyManagementOperation()
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         val caseDefinition = getCaseDefinition(caseDefinitionId)
         return caseDefinitionRepository.save(
             caseDefinition.copy(
                 name = name ?: caseDefinition.name,
-                description = description ?: caseDefinition.description
+                description = description ?: caseDefinition.description,
+                color = color ?: caseDefinition.color
             )
         )
     }

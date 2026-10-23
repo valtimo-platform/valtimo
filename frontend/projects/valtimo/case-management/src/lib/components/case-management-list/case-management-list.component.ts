@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 import {AfterViewInit, Component, TemplateRef, ViewChild} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {ActivatedRoute, Params, Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
 import {Page, TemplatePayload} from '@valtimo/document';
@@ -22,9 +23,9 @@ import {EnvironmentService} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
 import {BehaviorSubject, combineLatest, map, switchMap, take} from 'rxjs';
-import {CaseListItem} from '../../models';
+import {CaseListItem, CaseManagementListTab} from '../../models';
 import {CaseManagementService} from '../../services';
-import {CASE_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
+import {CASE_MANAGEMENT_LIST_TAB_PARAM, CASE_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -38,6 +39,12 @@ export class CaseManagementListComponent implements AfterViewInit {
   @ViewChild('statusColumnTemplate') statusColumnTemplate: TemplateRef<any>;
 
   protected readonly testIds = CASE_MANAGEMENT_LIST_TEST_IDS;
+  public readonly CASE_MANAGEMENT_LIST_TAB = CaseManagementListTab;
+
+  public readonly $activeTab = toSignal(
+    this.route.queryParams.pipe(map(params => this.getTab(params))),
+    {initialValue: this.getTab(this.route.snapshot.queryParams)}
+  );
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
@@ -50,7 +57,7 @@ export class CaseManagementListComponent implements AfterViewInit {
     this.canUpdateGlobalConfiguration$,
     this._refresh$,
   ]).pipe(
-    switchMap(([params, canUpdate]) =>
+    switchMap(([{[CASE_MANAGEMENT_LIST_TAB_PARAM]: _tab, ...params}, canUpdate]) =>
       this.caseManagementService.getCaseDefinitions({
         ...params,
         final: canUpdate ? '' : true,
@@ -155,6 +162,20 @@ export class CaseManagementListComponent implements AfterViewInit {
     });
   }
 
+  // Carbon also emits for the already active tab on load, so only navigate on a real change.
+  public onTabSelected(tab: CaseManagementListTab): void {
+    if (tab === this.$activeTab()) return;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        [CASE_MANAGEMENT_LIST_TAB_PARAM]: tab === CaseManagementListTab.GROUPS ? tab : null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
   public redirectToDetails(caseListItem: CaseListItem): void {
     this.router.navigate([
       '/case-management/case',
@@ -170,5 +191,11 @@ export class CaseManagementListComponent implements AfterViewInit {
 
   public showCreateModal(): void {
     this.showCreateModal$.next(true);
+  }
+
+  private getTab(params: Params): CaseManagementListTab {
+    return params[CASE_MANAGEMENT_LIST_TAB_PARAM] === CaseManagementListTab.GROUPS
+      ? CaseManagementListTab.GROUPS
+      : CaseManagementListTab.CASES;
   }
 }

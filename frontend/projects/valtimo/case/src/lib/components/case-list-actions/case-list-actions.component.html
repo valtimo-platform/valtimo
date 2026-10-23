@@ -16,6 +16,31 @@
 
 <valtimo-render-in-body>
   <cds-modal
+    *ngIf="groupMembers$ | async as groupMembers"
+    valtimoCdsModal
+    [open]="memberSelectionModalOpen$ | async"
+    size="xs"
+    [attr.data-test-id]="testIds.memberSelectionModal"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseMemberSelect()">
+      <h3 cdsModalHeaderHeading>{{ 'case.startCase.selectCaseType' | translate }}</h3>
+    </cds-modal-header>
+
+    <section cdsModalContent class="start-modal-content" [cdsLayer]="1">
+      <cds-clickable-tile
+        *ngFor="let member of groupMembers"
+        [href]="null"
+        [attr.data-test-id]="testIds.memberTile"
+        (click)="selectGroupMember(member)"
+      >
+        {{ member.caseDefinitionName || member.caseDefinitionKey }}
+      </cds-clickable-tile>
+    </section>
+  </cds-modal>
+</valtimo-render-in-body>
+
+<valtimo-render-in-body>
+  <cds-modal
     valtimoCdsModal
     [open]="startSelectionModalOpen$ | async"
     size="xs"

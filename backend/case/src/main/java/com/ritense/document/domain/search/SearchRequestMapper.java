@@ -33,6 +33,7 @@ import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
 import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType;
 import com.ritense.document.exception.SearchConfigRequestException;
+import com.ritense.document.service.GlobalSearchFieldMeta;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -121,6 +122,22 @@ public class SearchRequestMapper {
         SearchRequestValidator.validate(otherFilter);
 
         return otherFilter;
+    }
+
+    public static AdvancedSearchRequest.OtherFilter toGroupOtherFilter(
+        SearchWithConfigRequest.SearchWithConfigFilter searchFilter,
+        GlobalSearchFieldMeta searchFieldMeta,
+        ZoneOffset zoneOffset
+    ) {
+        if (searchFieldMeta == null) {
+            // Unknown key: no path mapping either, so it matches nothing
+            var otherFilter = new AdvancedSearchRequest.OtherFilter();
+            otherFilter.setPath(searchFilter.getKey());
+            otherFilter.setSearchType(DatabaseSearchType.LIKE);
+            otherFilter.setSearchRequestValues(searchFilter.getSearchRequestValues());
+            return otherFilter;
+        }
+        return toOtherFilter(searchFilter, searchFieldMeta.toSearchField(searchFilter.getKey()), zoneOffset);
     }
 
     private static SearchRequestValue mapWhenTemporalField(SearchRequestValue field) {

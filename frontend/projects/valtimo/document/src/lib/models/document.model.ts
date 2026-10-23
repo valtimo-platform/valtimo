@@ -336,6 +336,7 @@ interface CaseSettings extends ExternalStartFormConfiguration {
   caseDefinitionVersionTag?: string;
   canHaveAssignee?: boolean;
   autoAssignTasks?: boolean;
+  color?: string;
 }
 
 interface OpenDocumentCount {
@@ -399,13 +400,60 @@ interface CaseDefinition {
   caseDefinitionVersionTag: string;
   canHaveAssignee: boolean;
   autoAssignTasks: boolean;
+  // Set per version in case management; absent until someone picks one.
+  color?: string;
+}
+
+interface CaseDefinitionGroup {
+  key: string;
+  title: string;
+  description?: string;
+  color?: string;
+  order: number;
+}
+
+interface CaseDefinitionGroupMember {
+  caseDefinitionKey: string;
+  caseDefinitionName: string;
+  order: number;
+}
+
+interface GroupListColumn {
+  key: string;
+  title?: string;
+  displayType: {type: string; displayTypeParameters?: any};
+  sortable: boolean;
+  defaultSort?: 'ASC' | 'DESC';
+  order?: number;
+  exportable: boolean;
+}
+
+interface GroupSearchField {
+  key: string;
+  title?: string;
+  dataType: string;
+  fieldType: string;
+  matchType?: string;
+  dropdownDataProvider?: string;
+  order?: number;
+}
+
+interface GroupCaseListRow {
+  id: string;
+  caseDefinitionKey: string;
+  items: Array<{key: string; value: any}>;
 }
 
 export {
   AssignHandlerToDocumentResult,
   BlueprintId,
   CaseDefinition,
+  CaseDefinitionGroup,
+  CaseDefinitionGroupMember,
   CaseDefinitionId,
+  GroupCaseListRow,
+  GroupListColumn,
+  GroupSearchField,
   CaseListColumn,
   CaseListColumnView,
   CaseSettings,

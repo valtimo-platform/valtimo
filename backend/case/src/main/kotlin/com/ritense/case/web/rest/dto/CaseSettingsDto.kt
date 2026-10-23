@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ data class CaseSettingsDto(
     val hasExternalStartForm: Boolean? = null,
     val externalStartFormUrl: String? = null,
     val externalStartFormDescription: String? = null,
+    val color: String? = null,
 ) {
     fun update(currentCaseDefinition: CaseDefinition): CaseDefinition {
         return currentCaseDefinition.copy(
@@ -47,7 +48,8 @@ data class CaseSettingsDto(
                     currentCaseDefinition.externalStartFormUrl,
                     this.externalStartFormDescription
                 )
-            }
+            },
+            color = getSettingForUpdate(currentCaseDefinition.color, this.color)
         )
     }
 
@@ -63,6 +65,7 @@ data class CaseSettingsDto(
             hasExternalStartForm = caseDefinition.hasExternalStartForm,
             externalStartFormUrl = caseDefinition.externalStartFormUrl,
             externalStartFormDescription = caseDefinition.externalStartFormDescription,
+            color = caseDefinition.color,
         )
     }
 }
