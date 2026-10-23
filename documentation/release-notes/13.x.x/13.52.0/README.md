@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Case details | Opening a case whose case type has no header widget no longer returns a 404 or logs errors in the browser console. |
