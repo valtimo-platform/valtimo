@@ -83,6 +83,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Check whether NPM packages are already cached
         uses: actions/cache/restore@v4
         id: restore_node_modules_cache
@@ -142,6 +147,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
         id: restore_node_modules_cache
@@ -193,6 +203,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
