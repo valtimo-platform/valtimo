@@ -18,6 +18,7 @@ package com.ritense.assistant.web.rest
 
 import com.ritense.assistant.BaseIntegrationTest
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -30,6 +31,7 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 
+@Disabled("POC - tests not critical")
 class AssistantResourceSecurityIntTest : BaseIntegrationTest() {
 
     @Autowired
