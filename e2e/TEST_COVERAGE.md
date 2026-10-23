@@ -2,15 +2,15 @@
 
 ## Summary
 
-| Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
-|-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 35        | 29         | 4              |
-| Admin Features (ROLE_ADMIN) | 15       | 383       | 370        | 7              |
-| **Total**                   | **20**   | **418**   | **399**    | **11**         |
+| Category                    | Features | Functions | ✅ Covered | ❌ Not Covered | ⏳ In Progress | `N/A` |
+|-----------------------------|----------|-----------|------------|----------------|----------------|-------|
+| User Features (ROLE_USER)   | 5        | 35        | 29         | 4              | 1              | 1     |
+| Admin Features (ROLE_ADMIN) | 15       | 384       | 371        | 7              | 1              | 5     |
+| **Total**                   | **20**   | **419**   | **400**    | **11**         | **2**          | **6** |
 
-**Coverage:** `399 / 418` — `95.5%`
+**Coverage:** `400 / 419` — `95.5%`
 
-> Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (2).
+> Counts are one per numbered row (lettered sub-rows such as `4.2a` count as their own row). Functions = ✅ + ❌ + ⏳ + `N/A`.
 
 ---
 
