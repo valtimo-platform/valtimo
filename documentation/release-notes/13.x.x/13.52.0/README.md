@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Tasks | Saving a task's progress a second time, or after reopening the task, now stores the latest changes instead of the previously saved values. |
