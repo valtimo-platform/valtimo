@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import org.hibernate.annotations.Type;
@@ -95,6 +96,14 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
             FormAutoConfiguration.isIgnoreDisabledFields()
                 && objectNode.has(DISABLED_KEY)
                 && objectNode.get(DISABLED_KEY).asBoolean()
+        );
+
+    public static final Set<String> DISPLAY_ONLY_COMPONENT_TYPES = Set.of("valtimo-mail-preview");
+
+    public static final Predicate<JsonNode> SUBMITTABLE = objectNode ->
+        !(
+            objectNode.has(TYPE_KEY)
+                && DISPLAY_ONLY_COMPONENT_TYPES.contains(objectNode.get(TYPE_KEY).asText())
         );
 
     // TODO: Do we want to remove the UUID and instead have a composite ID of formDefinition and caseDefinitionId?

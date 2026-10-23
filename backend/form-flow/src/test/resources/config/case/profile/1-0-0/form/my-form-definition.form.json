@@ -20,6 +20,12 @@
             "input": true
         },
         {
+            "label": "E-mail preview",
+            "key": "mailPreview",
+            "type": "valtimo-mail-preview",
+            "input": true
+        },
+        {
             "type": "button",
             "label": "Submit",
             "key": "submit",

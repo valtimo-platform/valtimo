@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
+import com.ritense.form.domain.FormSpringContextHelper
 import com.ritense.form.service.impl.DefaultFormSubmissionService
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.form.web.rest.dto.FormSubmissionResultFailed
@@ -69,6 +70,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationEventPublisher
 import java.net.URI
 import java.util.Optional
@@ -434,6 +436,57 @@ class DefaultFormSubmissionServiceTest {
         assertThat(captor.firstValue.newDocumentRequest().documentDefinitionName()).isEqualTo("person")
         assertThat(captor.firstValue.newDocumentRequest().buildingBlockDefinitionKey()).isEqualTo("bezwaar")
         assertThat(captor.firstValue.processDefinitionId()).isEqualTo(PROCESS_DEFINITION_ID)
+    }
+
+    @Test
+    fun `should not submit values of display-only components`() {
+        FormSpringContextHelper.setContext(mock<ApplicationContext>())
+        val formDefinition = FormIoFormDefinition(
+            UUID.randomUUID(),
+            "form-example",
+            """
+                {
+                  "display": "form",
+                  "components": [
+                    { "key": "voornaam", "type": "textfield", "input": true },
+                    { "key": "pv.other", "type": "textfield", "input": true },
+                    { "key": "mailPreview.body", "type": "valtimo-mail-preview", "input": true },
+                    { "key": "pv.mailPreview", "type": "valtimo-mail-preview", "input": true }
+                  ]
+                }
+            """,
+            FormDefinitionBlueprintId.forCase(caseDefinitionId),
+            false
+        )
+        whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
+            .thenReturn(Optional.of(formDefinition))
+        val formData = MapperSingleton.get().readTree(
+            """
+                {
+                  "voornaam": "jan",
+                  "mailPreview": { "body": "<img src=x onerror=alert(1)>" },
+                  "pv": { "other": "value", "mailPreview": "<img src=x onerror=alert(1)>" }
+                }
+            """
+        ) as ObjectNode
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultSucceeded(document))
+
+        val formSubmissionResult = defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink(START_EVENT_START).id,
+            formData = formData,
+            documentId = null,
+            taskInstanceId = null,
+            documentDefinitionName = "aName"
+        )
+
+        assertThat(formSubmissionResult).isInstanceOf(FormSubmissionResultSucceeded::class.java)
+        val captor = argumentCaptor<Map<String, Any?>>()
+        verify(valueResolverService, times(2)).preProcessValuesForNewDocument(captor.capture(), any())
+        val submittedKeys = captor.allValues.flatMap { it.keys }
+        assertThat(submittedKeys).contains("doc:/voornaam", "pv:other")
+        assertThat(submittedKeys).doesNotContain("doc:/mailPreview/body", "pv:mailPreview")
     }
 
     private fun formProcessLink(activityType: ActivityTypeWithEventName = USER_TASK_CREATE): FormProcessLink {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -212,6 +212,7 @@ class DefaultFormSubmissionService(
     ): CategorizedSubmitValues {
         val categorizedMap = formDefinition.inputFields
             .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
+            .filter { FormIoFormDefinition.SUBMITTABLE.test(it) }
             .filter { FormIoFormDefinition.isInputComponent(it) }
             .mapNotNull { field ->
                 getTargetKeyValuePair(field, formData)
@@ -382,7 +383,7 @@ class DefaultFormSubmissionService(
         formData: JsonNode
     ): Map<String, Map<String, JsonNode>> {
         return formDefinition.buildExternalFormFieldsMapFiltered(
-            FormIoFormDefinition.NOT_IGNORED.and { t ->
+            FormIoFormDefinition.NOT_IGNORED.and(FormIoFormDefinition.SUBMITTABLE).and { t ->
                 FormIoFormDefinition.getTargetKey(t).isEmpty && FormIoFormDefinition.getSourceKey(t).isEmpty
             }
         ).map { entry ->
