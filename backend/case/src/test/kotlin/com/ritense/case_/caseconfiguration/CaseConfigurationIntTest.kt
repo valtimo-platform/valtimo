@@ -91,6 +91,20 @@ class CaseConfigurationIntTest @Autowired constructor(
     }
 
     @Test
+    fun `should not restore the environment value when a deleted key is declared again`() {
+        val caseDefinitionId = createDraft("config-redeclare", "1.0.0")
+        runWithoutAuthorization {
+            service.createDeclaration(caseDefinitionId, "notificationEmail", "test@example.com")
+            service.setEnvironmentValue(caseDefinitionId, "notificationEmail", "afdeling@example.com")
+            service.deleteDeclaration(caseDefinitionId, "notificationEmail")
+            service.createDeclaration(caseDefinitionId, "notificationEmail", "test@example.com")
+        }
+
+        assertThat(service.getConfiguration(caseDefinitionId, "notificationEmail"))
+            .isEqualTo(CaseConfigurationItem("notificationEmail", "test@example.com", null))
+    }
+
+    @Test
     fun `should deny managing configuration without permission`() {
         val caseDefinitionId = createDraft("config-denied", "1.0.0")
         runWithoutAuthorization { service.createDeclaration(caseDefinitionId, "notificationEmail", null) }
@@ -208,11 +222,16 @@ class CaseConfigurationIntTest @Autowired constructor(
             caseDefinitionService.finalizeCaseDefinition(first)
         }
         val second = createDraft("config-delete", "1.1.0", "1.0.0")
+        runWithoutAuthorization {
+            service.createDeclaration(second, "mailProvider", "smtp")
+            service.setEnvironmentValue(second, "mailProvider", "api")
+        }
 
         runWithoutAuthorization { caseDefinitionService.deleteCaseDefinition(second) }
 
         assertThat(service.getDeclarations(second)).isEmpty()
-        assertThat(environmentValueRepository.findAllByIdCaseDefinitionKey("config-delete")).hasSize(1)
+        assertThat(environmentValueRepository.findAllByIdCaseDefinitionKey("config-delete").map { it.id.key })
+            .containsExactly("notificationEmail")
 
         val only = createDraft("config-delete-last", "1.0.0")
         runWithoutAuthorization {
