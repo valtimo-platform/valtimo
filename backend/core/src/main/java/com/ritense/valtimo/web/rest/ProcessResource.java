@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import com.ritense.valtimo.repository.camunda.dto.ProcessInstance;
 import com.ritense.valtimo.repository.camunda.dto.TaskInstanceWithIdentityLink;
 import com.ritense.valtimo.service.CamundaProcessService;
 import com.ritense.valtimo.service.CamundaTaskService;
+import com.ritense.valtimo.service.ProcessInstanceDiagramService;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
 import com.ritense.valtimo.web.rest.dto.CommentDto;
@@ -84,7 +85,6 @@ import org.camunda.bpm.engine.migration.MigrationPlanBuilder;
 import org.camunda.bpm.engine.rest.dto.batch.BatchDto;
 import org.camunda.bpm.engine.rest.dto.history.HistoricActivityInstanceDto;
 import org.camunda.bpm.engine.rest.dto.history.UserOperationLogEntryDto;
-import org.camunda.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
 import org.camunda.bpm.engine.rest.dto.runtime.ActivityInstanceDto;
 import org.camunda.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.camunda.bpm.engine.runtime.ProcessInstanceQuery;
@@ -123,6 +123,7 @@ public class ProcessResource extends AbstractProcessResource {
     private final ProcessShortTimerService processShortTimerService;
     private final CamundaSearchProcessInstanceRepository camundaSearchProcessInstanceRepository;
     private final ProcessPropertyService processPropertyService;
+    private final ProcessInstanceDiagramService processInstanceDiagramService;
 
     public ProcessResource(
             final HistoryService historyService,
@@ -134,7 +135,8 @@ public class ProcessResource extends AbstractProcessResource {
             final CamundaProcessService camundaProcessService,
             final ProcessShortTimerService processShortTimerService,
             final CamundaSearchProcessInstanceRepository camundaSearchProcessInstanceRepository,
-            final ProcessPropertyService processPropertyService
+            final ProcessPropertyService processPropertyService,
+            final ProcessInstanceDiagramService processInstanceDiagramService
     ) {
         super(camundaHistoryService, repositoryService, camundaRepositoryService, camundaTaskService);
         this.historyService = historyService;
@@ -145,6 +147,7 @@ public class ProcessResource extends AbstractProcessResource {
         this.processShortTimerService = processShortTimerService;
         this.camundaSearchProcessInstanceRepository = camundaSearchProcessInstanceRepository;
         this.processPropertyService = processPropertyService;
+        this.processInstanceDiagramService = processInstanceDiagramService;
     }
 
     @GetMapping("/v1/process/definition")
@@ -372,6 +375,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(processInstanceWithDefinition.getProcessInstanceDto());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @GetMapping("/v1/process/{processInstanceId}")
     public ResponseEntity<CamundaHistoricProcessInstanceDto> getProcessInstance(
         @LoggableResource(resourceType = CamundaExecution.class) @PathVariable String processInstanceId
@@ -385,6 +393,11 @@ public class ProcessResource extends AbstractProcessResource {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @GetMapping("/v1/process/{processInstanceId}/history")
     public ResponseEntity<List<HistoricActivityInstanceDto>> getProcessInstanceHistory(
         @LoggableResource(resourceType = CamundaExecution.class) @PathVariable String processInstanceId
@@ -405,6 +418,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @GetMapping("/v1/process/{processInstanceId}/log")
     public ResponseEntity<List<UserOperationLogEntryDto>> getProcessInstanceOperationLog(
         @LoggableResource(resourceType = CamundaExecution.class) @PathVariable String processInstanceId
@@ -418,6 +436,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * @deprecated Will be removed. Task data is available via the authorized task endpoints
+     *     (e.g. {@code GET /api/v2/task}).
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @GetMapping("/v1/process/{processInstanceId}/tasks")
     public ResponseEntity<List<TaskInstanceWithIdentityLink>> getProcessInstanceTasks(
         @LoggableResource(resourceType = CamundaExecution.class) @PathVariable String processInstanceId
@@ -431,6 +454,11 @@ public class ProcessResource extends AbstractProcessResource {
             );
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @GetMapping("/v1/process/{processInstanceId}/activetask")
     public ResponseEntity<CamundaTaskDto> getProcessInstanceActiveTask(
         @LoggableResource(resourceType = CamundaExecution.class) @PathVariable String processInstanceId
@@ -444,30 +472,30 @@ public class ProcessResource extends AbstractProcessResource {
                 .orElse(ResponseEntity.noContent().build());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use
+     *     {@code GET /api/v1/process-document/case/{caseId}/process-instance/{processInstanceId}/xml} (document VIEW).
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @GetMapping("/v1/process/{processInstanceId}/xml")
     public ResponseEntity<ProcessInstanceDiagramDto> getProcessInstanceXml(
         @LoggableResource(resourceType = CamundaExecution.class) @PathVariable String processInstanceId
     ) {
-        CamundaHistoricProcessInstance processInstance = runWithoutAuthorization(() ->
-            getHistoricProcessInstance(processInstanceId)
-        );
         try {
-            ProcessDefinitionDiagramDto definitionDiagramDto = createProcessDefinitionDiagramDto(
-                    processInstance.getProcessDefinitionId());
-            List<HistoricActivityInstance> historicActivityInstances = historyService.createHistoricActivityInstanceQuery()
-                    .processInstanceId(processInstanceId)
-                    .orderPartiallyByOccurrence()
-                    .asc()
-                    .list();
-            return Optional.ofNullable(definitionDiagramDto)
-                    .map(process -> ResponseEntity.ok(
-                            ProcessInstanceDiagramDto.create(definitionDiagramDto, historicActivityInstances)))
-                    .orElse(ResponseEntity.notFound().build());
+            ProcessInstanceDiagramDto diagram = processInstanceDiagramService.getProcessInstanceDiagram(processInstanceId);
+            return diagram != null
+                    ? ResponseEntity.ok(diagram)
+                    : ResponseEntity.notFound().build();
         } catch (UnsupportedEncodingException e) {
             return ResponseEntity.status(INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @GetMapping("/v1/process/{processInstanceId}/activities")
     public ResponseEntity<ActivityInstanceDto> getProcessInstanceActivity(
         @LoggableResource(resourceType = CamundaExecution.class) @PathVariable String processInstanceId
@@ -496,7 +524,8 @@ public class ProcessResource extends AbstractProcessResource {
     /**
      * Endpoint to search for process instances.
      *
-     * @deprecated since 12.0.0, use v2 instead
+     * @deprecated since 12.0.0. Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
      */
     @PostMapping("/v1/process/{processDefinitionName}/search")
     @Deprecated(since = "12.0.0", forRemoval = true)
@@ -515,6 +544,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @PostMapping("/v2/process/{processDefinitionName}/search")
     public ResponseEntity<Page<ProcessInstance>> searchProcessInstancesPaged(
         @LoggableResource(resourceTypeName = "processDefinitionName") @PathVariable String processDefinitionName,
@@ -529,6 +563,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(page);
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @PostMapping("/v1/process/{processDefinitionName}/count")
     public ResponseEntity<ResultCount> searchProcessInstanceCountV2(
         @LoggableResource(resourceTypeName = "processDefinitionName") @PathVariable String processDefinitionName,
@@ -606,6 +644,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators.
+     */
+    @Deprecated(since = "12.x", forRemoval = true)
     @PutMapping("/v1/process/definition/{processDefinitionId}/xml/timer")
     public ResponseEntity<Void> modifyProcessDefinitionIntoShortTimerVersionAndDeploy(
         @LoggableResource(resourceType = CamundaProcessDefinition.class) @PathVariable String processDefinitionId
