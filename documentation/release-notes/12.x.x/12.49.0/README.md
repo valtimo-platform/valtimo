@@ -40,3 +40,8 @@
   variables of a process instance are now only available to administrators. The process diagram in the case
   **Progress** tab now uses a new endpoint that requires `view` permission on the case, so it keeps working for users who
   can see the case. The process timer endpoints of the **Progress** tab now also require `view` permission on the case.
+
+* **Stack traces no longer returned to every client**
+
+  Error responses no longer include technical details such as stack traces for every client. Check that your own
+  `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`.
