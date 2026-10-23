@@ -1,0 +1,68 @@
+name: "Libraries (BE+FE) - Publish snapshot to S3"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_version:
+        description: "Version (e.g. 13.1.3 or 13.50.1-pdca)"
+        required: true
+
+jobs:
+  # Compute the full snapshot version with build number suffix
+  compute_version:
+    runs-on: ubuntu-latest
+    outputs:
+      snapshot_version: ${{ steps.version.outputs.snapshot_version }}
+    steps:
+      - name: Compute snapshot version
+        id: version
+        env:
+          PROJECT_VERSION: ${{ inputs.project_version }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [[ ! "$PROJECT_VERSION" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+            echo "::error::Invalid version format. Only alphanumeric, dots, dashes and underscores allowed."
+            exit 1
+          fi
+          echo "snapshot_version=${PROJECT_VERSION}-SNAPSHOT.${RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+  # Backend jobs
+  build_backend:
+    uses: ./.github/workflows/backend_build_test_libraries.yml
+    secrets: inherit
+
+  publish_backend:
+    needs:
+      - compute_version
+      - build_backend
+    uses: ./.github/workflows/backend_publish_to_s3.yml
+    with:
+      project_version: ${{ needs.compute_version.outputs.snapshot_version }}
+      s3_bucket: valtimo-snapshots
+      build_artifact_name: ${{ needs.build_backend.outputs.build_artifact_name }}
+    secrets:
+      s3_access_key_id: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_ID }}
+      s3_secret_access_key: ${{ secrets.VALTIMO_RELEASE_S3_BUCKET_ACCESS_KEY_SECRET }}
+
+  # Frontend jobs
+  build_frontend:
+    needs:
+      - compute_version
+    uses: ./.github/workflows/frontend_build_test_libraries.yml
+    with:
+      project_version: ${{ needs.compute_version.outputs.snapshot_version }}
+    secrets: inherit
+
+  publish_frontend:
+    needs:
+      - compute_version
+      - build_frontend
+    uses: ./.github/workflows/frontend_publish_to_s3.yml
+    with:
+      publish_type: snapshot
+      project_version: ${{ needs.compute_version.outputs.snapshot_version }}
+      frontend_libraries_build_artifact_name: ${{ needs.build_frontend.outputs.build_artifact_name }}
+    secrets: inherit
