@@ -51,6 +51,8 @@ export class DossierDetailTabProgressComponent {
     shareReplay({bufferSize: 1, refCount: true})
   );
 
+  public readonly documentId$: Observable<string | null> = this._documentId$;
+
   private readonly _reloadProcessInstances$ = new BehaviorSubject<void>(undefined);
 
   public readonly selectedProcessInstanceId$ = new BehaviorSubject<string | null>(null);
