@@ -10,6 +10,14 @@ Release date: 21-10-2026
 
 The Documenten API plugin has a new **Delete informatie object** action, so a process can delete a document straight from a service task by giving its URL. The same checks that already run when a document is deleted elsewhere in the application also run for this action.
 
+### Building block references
+
+Building block versions no longer have to be traced and updated by hand. The new **References** tab of a
+building block version lists every case and building block that references it, with a link to the process
+or actions tab where the reference is configured. **Update references**, on the building blocks list, opens a
+wizard that moves those references onto another version — newer or older — of the same building block,
+or onto another building block. See the [references documentation](../../../configuration-guides/building-blocks/references.md).
+
 ---
 
 ## Enhancements

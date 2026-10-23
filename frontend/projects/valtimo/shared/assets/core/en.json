@@ -4370,6 +4370,122 @@
   },
   "buildingBlockManagement": {
     "title": "Building blocks",
+    "referenceUpdate": {
+      "title": "Update references",
+      "button": "Update references",
+      "draft": "Draft",
+      "final": "Finalized",
+      "none": "None",
+      "reasons": {
+        "CYCLE": "The chain contains a cycle of building blocks referencing each other.",
+        "SELF_REFERENCE": "Building block {{container}} would call building block {{targetKey}}, which is itself.",
+        "TARGET_USES_CONTAINER": "Building block {{target}} uses {{container}}, so pointing that at {{target}} creates a cycle.",
+        "ALREADY_LINKS_TARGET": "{{container}} already links building block {{targetKey}}.",
+        "DRAFTS_NOT_ALLOWED": "This environment does not allow drafts, so no draft can be created or changed.",
+        "DRAFT_MISSING_REFERENCE": "Open draft {{draft}} no longer contains the reference {{location}} to building block {{buildingBlockKey}}; change that draft yourself.",
+        "CONFLICT_SECOND_DRAFT": "Conflicts with another selected reference: both would create a new draft of {{key}}. Update one version at a time.",
+        "CONFLICT_CHILD": "Conflicts with another selected reference: {{location}} in {{container}} would point to both {{first}} and {{second}}.",
+        "CONFLICT_INPUT": "Conflicts with another selected reference: input {{input}} of {{location}} in {{container}} gets two different sources.",
+        "CONFLICT_PLUGIN": "Conflicts with another selected reference: plugin {{plugin}} of {{location}} in {{container}} gets two different configurations."
+      },
+      "containerType": {
+        "CASE": "Case",
+        "BUILDING_BLOCK": "Building block"
+      },
+      "steps": {
+        "source": "Source",
+        "target": "Target",
+        "chains": "References",
+        "differences": "Input & Sync",
+        "review": "Review"
+      },
+      "source": {
+        "description": "Select the building block and the version whose references you want to update. Only versions that are referenced somewhere are listed.",
+        "keyLabel": "Building block",
+        "keyPlaceholder": "Search for a building block",
+        "versionLabel": "Source version",
+        "versionPlaceholder": "Search for a version",
+        "emptyTitle": "Nothing to update",
+        "emptyMessage": "No building block version is referenced by a case or another building block."
+      },
+      "target": {
+        "description": "Select the building block and version that should replace {{key}} {{versionTag}}. This can be an older or a newer version, or another building block.",
+        "keyLabel": "Target building block",
+        "keyPlaceholder": "Search for a building block",
+        "label": "Target version",
+        "placeholder": "Search for a version",
+        "emptyTitle": "No version",
+        "emptyMessage": "This building block has no other version to switch to."
+      },
+      "chains": {
+        "description": "Select which references of {{key}} {{sourceVersionTag}} should be updated to {{targetKey}} {{targetVersionTag}}. References through a finalized version create new drafts and are not selected by default.",
+        "via": "via",
+        "refersTo": "references",
+        "inActivity": "(activity {{activityId}})",
+        "willBeUpdatedTo": "and will be updated to use",
+        "empty": "No references found.",
+        "requiresDrafts": "Creates new drafts of finalized versions",
+        "modifiesExistingDraft": "Modifies existing draft {{key}} {{versionTag}} (based on {{basedOn}})",
+        "modifiesExistingDraftNoBase": "Modifies existing draft {{key}} {{versionTag}}",
+        "notUpdatable": "Cannot be updated:",
+        "selectAtLeastOne": "Select at least one reference to continue."
+      },
+      "differences": {
+        "description": "Check how the input and sync mappings of each selected reference carry over to {{targetKey}} {{targetVersionTag}}. Mappings to fields that {{targetKey}} {{targetVersionTag}} does not have are removed, and fields it requires that are not mapped yet need a source. You cannot continue while a reference is not fully configured.",
+        "configured": "Configured",
+        "notConfigured": "Not configured",
+        "noInputs": "This reference has no input mappings.",
+        "noOutputs": "This reference has no sync mappings.",
+        "status": {
+          "kept": "Unchanged",
+          "dropped": "Removed",
+          "added": "New"
+        },
+        "inputRequired": "{{targetKey}} {{targetVersionTag}} requires this field. Select where its value comes from.",
+        "inputPathInvalid": "Start the path with doc: or case: followed by a field, for example doc:/name.",
+        "dropped": "Removed mappings use fields that {{targetKey}} {{targetVersionTag}} does not have.",
+        "pluginsTitle": "Plugin configurations",
+        "pluginConfiguration": "Plugin configuration for {{plugin}}",
+        "pluginPlaceholder": "Select a plugin configuration",
+        "pluginRequired": "The target version needs a configuration of this plugin",
+        "noPluginConfigurations": "No configuration of this plugin exists yet. Create one in plugin management first.",
+        "pluginLink": "Saved on the link in {{container}}"
+      },
+      "review": {
+        "description": "Review all changes for updating the references of {{key}} {{sourceVersionTag}} to {{targetKey}} {{targetVersionTag}}. Nothing is finalized and no running case is changed.",
+        "draftsToCreate": "Drafts to create",
+        "draftsToModify": "Drafts to modify",
+        "draftVersion": "version {{versionTag}}, based on {{basedOn}}",
+        "draftVersionNoBase": "version {{versionTag}}",
+        "linksToRepoint": "References to re-point",
+        "containerReference": "Container reference",
+        "skipped": "References skipped",
+        "covered": "Also updated through a shared reference",
+        "confirm": "I have reviewed these changes and want to apply them",
+        "execute": "Update references"
+      },
+      "result": {
+        "title": "References updated",
+        "message": "References to {{key}} {{sourceVersionTag}} have been moved to {{targetKey}} {{targetVersionTag}} where selected.",
+        "updatedDirectly": "References updated directly",
+        "draftsCreated": "Drafts created",
+        "draftsModified": "Drafts modified",
+        "basedOn": "based on {{versionTag}}",
+        "remainingReferences": "Remaining references",
+        "noRemainingReferences": "Nothing refers to {{key}} {{versionTag}} anymore.",
+        "nextStepsTitle": "Next steps",
+        "nextSteps": "Review and finalize the drafts above, then plan a case migration to move existing cases to the new versions."
+      },
+      "previewFailed": {
+        "title": "The reference update preview could not be loaded",
+        "message": "Something went wrong while comparing the source and the target version.",
+        "retry": "Try again"
+      },
+      "draftsNotAllowed": {
+        "title": "Drafts are not allowed",
+        "message": "This environment does not allow drafts, so building block references cannot be updated here. Update them on an environment where configuration can be changed."
+      }
+    },
     "listColumns": {
       "name": "Name",
       "key": "Key",
@@ -4421,7 +4537,8 @@
       "forms": "Forms",
       "formFlows": "Form flows",
       "decisions": "Decision tables",
-      "migration": "Migration"
+      "migration": "Migration",
+      "references": "References"
     },
     "migration": {
       "addPlan": "Add migration plan",
@@ -4548,6 +4665,27 @@
       "export": "Export \"{{value}}\"",
       "exportSuccessTitle": "Download will start shortly",
       "preparingDownload": "Preparing download"
+    },
+    "references": {
+      "description": "All places that reference this version of the building block: process activities and case actions.",
+      "containerType": "Type",
+      "key": "Key",
+      "versionTag": "Version",
+      "status": "Status",
+      "location": "Location",
+      "caseLink": "Case action (Actions tab of the case)",
+      "processLink": "Process {{processDefinitionKey}}, activity {{activityId}}",
+      "goTo": "Go to",
+      "processDefinitionLink": "Process",
+      "actionsLink": "Actions",
+      "loadFailed": {
+        "title": "References could not be loaded",
+        "description": "It is unknown whether anything references this version. Reload the page to try again."
+      },
+      "noResults": {
+        "title": "No references",
+        "description": "No case or building block references this version."
+      }
     }
   },
   "migrationEditor": {

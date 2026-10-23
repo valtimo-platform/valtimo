@@ -41,7 +41,6 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.operaton.bpm.engine.RepositoryService
@@ -68,12 +67,11 @@ class BuildingBlockStartFormFlowIT @Autowired constructor(
     private val formFlowDefinitionRepository: FormFlowDefinitionRepository,
     private val processLinkActivityService: ProcessLinkActivityService,
     private val processDocumentService: ProcessDocumentService,
-    private val operatonProcessService: OperatonProcessService,
     private val formFlowResource: FormFlowResource,
     private val formFlowService: FormFlowService,
     private val repositoryService: RepositoryService,
     private val runtimeService: RuntimeService,
-    private val objectMapper: ObjectMapper,
+    private val objectMapper: ObjectMapper
 ) : BaseIntegrationTest() {
 
     @Test

@@ -1,0 +1,85 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<p class="valtimo-building-block-reference-update__description">
+  {{
+    'buildingBlockManagement.referenceUpdate.target.description'
+      | translate: {key: $source()?.key, versionTag: $source()?.versionTag}
+  }}
+</p>
+
+@if ($targetDefinitions() === null) {
+  <cds-loading size="sm" [isActive]="true"></cds-loading>
+} @else {
+  <div class="valtimo-building-block-reference-update__selectors">
+    <cds-combo-box
+      [appendInline]="false"
+      [attr.data-test-id]="testIds.targetKeyComboBox"
+      [dropUp]="false"
+      [items]="$targetKeyItems()"
+      [label]="'buildingBlockManagement.referenceUpdate.target.keyLabel' | translate"
+      [placeholder]="'buildingBlockManagement.referenceUpdate.target.keyPlaceholder' | translate"
+      (selected)="onTargetKeySelected($event)"
+    >
+      <cds-dropdown-list [listTpl]="keyTemplate"></cds-dropdown-list>
+    </cds-combo-box>
+
+    @if ($targetKey() !== null) {
+      @if ($targetVersions() === null) {
+        <cds-loading size="sm" [isActive]="true"></cds-loading>
+      } @else if ($targetItems().length === 0) {
+        <cds-inline-notification
+          [notificationObj]="{
+            type: 'info',
+            title: ('buildingBlockManagement.referenceUpdate.target.emptyTitle' | translate),
+            message: ('buildingBlockManagement.referenceUpdate.target.emptyMessage' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+        ></cds-inline-notification>
+      } @else {
+        <cds-combo-box
+          [appendInline]="false"
+          [attr.data-test-id]="testIds.targetComboBox"
+          [dropUp]="false"
+          [items]="$targetItems()"
+          [label]="'buildingBlockManagement.referenceUpdate.target.label' | translate"
+          [placeholder]="'buildingBlockManagement.referenceUpdate.target.placeholder' | translate"
+          (selected)="onTargetSelected($event)"
+        >
+          <cds-dropdown-list [listTpl]="versionTemplate"></cds-dropdown-list>
+        </cds-combo-box>
+      }
+    }
+  </div>
+}
+
+<ng-template #keyTemplate let-item="item">
+  <span [attr.data-test-id]="item?.['data-test-id']">{{ item?.content }}</span>
+</ng-template>
+
+<ng-template #versionTemplate let-item="item">
+  <div
+    [attr.data-test-id]="item?.['data-test-id']"
+    class="valtimo-building-block-reference-update__version"
+  >
+    <span>{{ item?.content }}</span>
+
+    <valtimo-building-block-reference-update-status-tag
+      [final]="item?.final"
+    ></valtimo-building-block-reference-update-status-tag>
+  </div>
+</ng-template>
