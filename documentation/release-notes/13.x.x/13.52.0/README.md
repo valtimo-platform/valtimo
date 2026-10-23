@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Dashboard | Gauge widgets now show the exact count instead of a decimal number for some value and total combinations (for example 45.99 instead of 46). |
