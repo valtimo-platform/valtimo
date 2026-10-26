@@ -37,5 +37,6 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
+| Tasks | A task opened from the task list filtered on a case type now shows its assigned team and user. |
 | Error responses | Error responses no longer include technical details such as stack traces for every client. Check that your own `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`. |
 | Notificaties API | With more than one server, notifications are no longer handled twice and the cleanup of handled notifications no longer fails |
