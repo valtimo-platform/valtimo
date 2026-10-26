@@ -20,10 +20,9 @@ The **Currency** form field now formats amounts exactly as the configured locale
 the currency symbol, the thousands and decimal separators, and negative amounts. For example, `nl-NL` shows
 `€ 1.234,56` and `en-US` shows `$1,234.56`.
 
-### Long texts in forms can be saved
+### New enhancement title
 
-A text of more than 4000 characters, such as a long description in a form text area, can now be saved
-and shown in a form.
+New enhancement explanation.
 
 ---
 

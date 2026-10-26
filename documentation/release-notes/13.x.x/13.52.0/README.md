@@ -14,9 +14,10 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Long texts in forms can be saved
 
-New enhancement explanation.
+A text of more than 4000 characters, such as a long description in a form text area, can now be saved
+and shown in a form.
 
 ---
 
