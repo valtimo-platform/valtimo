@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {
+  groupWidgetData,
   MapWidget,
   WidgetDataGroupService,
   WidgetLayoutService,
@@ -52,7 +53,14 @@ export class IkoWidgetMapComponent {
 
   public readonly widgetData$ = this.widgetConfiguration$.pipe(
     switchMap(widgetConfiguration =>
-      !widgetConfiguration ? of(null) : this.widgetDataGroupService.dataFor(widgetConfiguration.key)
+      !widgetConfiguration
+        ? of(null)
+        : groupWidgetData(
+            this.widgetDataGroupService,
+            this.widgetLayoutService,
+            widgetConfiguration.key,
+            () => this.widgetUuid
+          )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );

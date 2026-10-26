@@ -24,8 +24,10 @@ import org.operaton.bpm.model.dmn.instance.Decision
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.transaction.annotation.Transactional
 import java.util.function.Consumer
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class OperatonDecisionServiceIT(
     @Autowired
@@ -61,6 +63,37 @@ class OperatonDecisionServiceIT(
 
         assertEquals("Failed to delete decision definition delete-test-1 for case definition everything:1.0.0. " +
             "The deployment ${deployment.id} has more resources than only the single decision definition.", exception.message)
+    }
+
+    @Test
+    @Transactional
+    fun `should delete all decision definitions when one file holds multiple decisions`() {
+        val caseDefinitionId = CaseDefinitionId("everything", "1.0.0")
+        val dmnModel = Dmn.readModelFromStream(getMultiDecisionXml("delete-all-test-1", "delete-all-test-2").byteInputStream())
+        dmnModel.getDefinitions().getChildElementsByType(Decision::class.java).forEach { it.setVersionTag("CD:$caseDefinitionId") }
+        val deployment = repositoryService.createDeployment().addModelInstance("multi.dmn", dmnModel).deployWithResult()
+        assertEquals(2, repositoryService.createDecisionDefinitionQuery().deploymentId(deployment.id).count())
+
+        operatonDecisionService.deleteAllDecisionDefinitions(caseDefinitionId)
+
+        assertTrue(operatonDecisionService.getDecisionDefinitions(caseDefinitionId).isEmpty())
+    }
+
+    private fun getMultiDecisionXml(vararg keys: String): String {
+        val decisions = keys.joinToString("\n") { key ->
+            """
+            <decision id="$key" name="$key">
+              <decisionTable id="${key}_table">
+                <input id="${key}_input"><inputExpression id="${key}_expression" typeRef="string"><text>field</text></inputExpression></input>
+                <output id="${key}_output" name="out" typeRef="string" />
+              </decisionTable>
+            </decision>
+            """
+        }
+        return """<?xml version="1.0" encoding="UTF-8"?>
+            <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" id="multi" name="multi" namespace="http://camunda.org/schema/1.0/dmn">
+            $decisions
+            </definitions>"""
     }
 
     private fun getDecisionXml(key: String): String {

@@ -20,6 +20,8 @@ import {CaseDetailsManagementHeaderPage} from './page';
 
 test.use({storageState: undefined});
 
+test.describe.configure({mode: 'serial'});
+
 test.describe('Case details management — Header widgets', () => {
   let context;
   let page;

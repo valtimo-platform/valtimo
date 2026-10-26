@@ -28,7 +28,7 @@ import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {resolveWidgetLayout, ResolvedWidgetLayout, WidgetLayout} from '@valtimo/components';
 import Muuri from 'muuri';
-import {BehaviorSubject, delay, merge, Observable, Subject, Subscription, take} from 'rxjs';
+import {BehaviorSubject, delay, merge, Observable, take} from 'rxjs';
 import {filter} from 'rxjs/operators';
 import {v4 as uuid} from 'uuid';
 import {DEFAULT_WIDGET_COMPONENT_MAP} from '../../constants';
@@ -80,6 +80,8 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   }
 
   @Input({required: false}) public widgetParams: object = {};
+  /** Whether widgets animate into their positions; off places them instantly. */
+  @Input() public animated = true;
 
   public readonly loadingWidgetConfiguration$ = new BehaviorSubject<boolean>(true);
 
@@ -135,6 +137,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
         new Muuri(this._widgetsContainerRef.nativeElement, {
           layout: this._resolvedLayout.muuriLayout,
           layoutOnResize: false,
+          ...(!this.animated && {layoutDuration: 0, showDuration: 0, hideDuration: 0}),
         })
       );
     });

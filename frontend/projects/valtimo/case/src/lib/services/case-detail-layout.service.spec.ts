@@ -16,6 +16,7 @@
 
 import {TestBed} from '@angular/core/testing';
 import {PageHeaderService} from '@valtimo/components';
+import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserSettings, UserSettingsService} from '@valtimo/shared';
 import {of, ReplaySubject, Subject, throwError} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -29,13 +30,16 @@ describe('CaseDetailLayoutService', () => {
 
   const CONTAINER_WIDTH = 1600;
 
-  const createService = (settings: UserSettings): CaseDetailLayoutService => {
+  const createService = (
+    settings: UserSettings,
+    showTaskList = true
+  ): CaseDetailLayoutService => {
     userSettingsService.getUserSettings.and.returnValue(of(settings));
 
     TestBed.configureTestingModule({
       providers: [
         CaseDetailLayoutService,
-        {provide: CaseTabService, useValue: {showTaskList$: of(true)}},
+        {provide: CaseTabService, useValue: {showTaskList$: of(showTaskList)}},
         {provide: PageHeaderService, useValue: {compactMode$: of(false)}},
         {provide: UserSettingsService, useValue: userSettingsService},
       ],
@@ -106,7 +110,7 @@ describe('CaseDetailLayoutService', () => {
     service = createService({taskPanelWidth: 700});
     service.setFormDisplayType('panel');
     service.setFormDisplaySize('medium');
-    service.setTaskAndProcessLinkOpenedInPanel({} as any);
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
 
     layoutAfterContainerWidth(service, layout => {
       expect(layout.rightPanelWidth).toBe(700);
@@ -205,7 +209,7 @@ describe('CaseDetailLayoutService', () => {
     service = createService({taskPanelWidth: 700});
     service.setFormDisplayType('panel');
     service.setFormDisplaySize('medium');
-    service.setTaskAndProcessLinkOpenedInPanel({} as any);
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
 
     layoutAfterContainerWidth(
       service,
@@ -217,5 +221,120 @@ describe('CaseDetailLayoutService', () => {
       },
       200
     );
+  });
+
+  const startFormPanel = {template: {} as any, title: 'A start form'};
+
+  it('opens the start form panel and records the requested form size', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'large');
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBe(startFormPanel);
+
+      service.formDisplaySize$.pipe(take(1)).subscribe(size => {
+        expect(size).toBe('large');
+        done();
+      });
+    });
+  });
+
+  it('clears the start form panel only through closeStartFormPanel', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'medium');
+    service.closeStartFormPanel();
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBeNull();
+      done();
+    });
+  });
+
+  it('leaves the start form panel open when the task panel state is cleared', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'medium');
+    service.setTaskAndProcessLinkOpenedInPanel(null);
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBe(startFormPanel);
+      done();
+    });
+  });
+
+  it('keeps the right panel while a start form is open on a tab that hides the task list', done => {
+    service = createService({}, false);
+    service.openStartFormPanel(startFormPanel, 'medium');
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.showRightPanel).toBeTrue();
+      done();
+    });
+  });
+
+  it('keeps the right panel while a task form is in the panel on a tab that hides the task list', done => {
+    service = createService({}, false);
+    service.setFormDisplayType('panel');
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.showRightPanel).toBeTrue();
+      done();
+    });
+  });
+
+  it('hides the right panel on a task-hiding tab when no form is open', done => {
+    service = createService({}, false);
+
+    service.caseDetailLayout$.pipe(take(2)).subscribe(layout => {
+      if (Object.keys(layout).length === 0) return;
+      expect((layout as CaseDetailLayout).showRightPanel).toBeFalse();
+      done();
+    });
+    service.setTabContentContainerWidth(CONTAINER_WIDTH);
+  });
+
+  it('reports actions taken in the task panel to the case detail', () => {
+    service = createService({});
+    const selected = jasmine.createSpy('selected');
+    const submitted = jasmine.createSpy('submitted');
+    const closeRequested = jasmine.createSpy('closeRequested');
+    const taskCloseRequested = jasmine.createSpy('taskCloseRequested');
+    service.taskSelected$.subscribe(selected);
+    service.taskFormSubmitted$.subscribe(submitted);
+    service.startFormPanelCloseRequested$.subscribe(closeRequested);
+    service.taskCloseRequested$.subscribe(taskCloseRequested);
+    const task = {} as TaskWithProcessLink;
+
+    service.selectTask(task);
+    service.notifyTaskFormSubmitted();
+    service.requestStartFormPanelClose();
+    service.requestTaskClose();
+
+    expect(selected).toHaveBeenCalledWith(task);
+    expect(submitted).toHaveBeenCalled();
+    expect(closeRequested).toHaveBeenCalled();
+    expect(taskCloseRequested).toHaveBeenCalled();
+  });
+
+  it('exposes the saved task panel width', done => {
+    service = createService({taskPanelWidth: 700});
+
+    service.taskPanelWidth$.pipe(take(1)).subscribe(width => {
+      expect(width).toBe(700);
+      done();
+    });
+  });
+
+  it('has pending changes while a task or start form is edited, until cleared', () => {
+    service = createService({});
+    expect(service.hasPendingFormChanges).toBeFalse();
+
+    service.setTaskFormPendingChanges(true);
+    service.setStartFormPendingChanges(true);
+    service.setTaskFormPendingChanges(false);
+    expect(service.hasPendingFormChanges).toBeTrue();
+
+    service.clearPendingFormChanges();
+    expect(service.hasPendingFormChanges).toBeFalse();
   });
 });

@@ -52,9 +52,6 @@ class DecisionCaseEventListener(
     @RunWithoutAuthorization
     @EventListener(CaseDefinitionPreDeleteEvent::class)
     fun handleCaseDefinitionPreDeleteEvent(event: CaseDefinitionPreDeleteEvent) {
-        decisionService.getDecisionDefinitions(event.caseDefinitionId).map { it.key }.distinct()
-            .forEach { decisionKey ->
-                decisionService.deleteDecisionDefinition(event.caseDefinitionId, decisionKey)
-            }
+        decisionService.deleteAllDecisionDefinitions(event.caseDefinitionId)
     }
 }

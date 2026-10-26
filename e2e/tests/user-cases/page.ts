@@ -15,9 +15,11 @@
  */
 
 import {expect, Locator, Page} from '@playwright/test';
+import {CASE_DETAIL_PANEL_TEST_IDS, CONFIRMATION_MODAL_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {apiDelete, apiPost} from '../../utils/api.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
+import {openAndSelectOption} from '../../utils/ui.utils';
 
 export interface CreatedCase {
   documentId: string;
@@ -62,11 +64,31 @@ export class UserCasesPage {
 
   async goToCaseList() {
     await this.page.goto(`/cases/${USER_CASES_CONFIG.caseDefinitionKey}`);
+
+    await this.page.waitForURL(new RegExp(`/cases/${USER_CASES_CONFIG.caseDefinitionKey}(\\?|$)`), {
+      timeout: 30_000,
+    });
     await this.caseList.waitForLoaded();
   }
 
+  async waitForCaseRows(tabName: 'All cases' | 'My cases' | 'Unassigned cases' | 'Team cases') {
+    await expect(async () => {
+      if ((await this.caseList.rows.count()) === 0) {
+        await this.goToCaseList();
+        await this.selectCaseListTab(tabName);
+      }
+      await expect(this.caseList.rows).not.toHaveCount(0, {timeout: 8_000});
+    }).toPass({timeout: 60_000});
+  }
+
   async selectCaseListTab(tabName: 'All cases' | 'My cases' | 'Unassigned cases' | 'Team cases') {
-    await this.page.getByRole('tab', {name: tabName, exact: true}).click();
+    const tab = this.page.getByRole('tab', {name: tabName, exact: true});
+
+    await expect(async () => {
+      await tab.click({timeout: 5_000});
+      await expect(tab).toHaveAttribute('aria-selected', 'true', {timeout: 3_000});
+    }).toPass({timeout: 25_000});
+
     await this.caseList.waitForLoaded();
   }
 
@@ -190,10 +212,14 @@ export class UserCasesPage {
     );
   }
 
-  // ─── Task list (right panel) ─────────────────────────────────────
+  // ─── Task list (side panel) ──────────────────────────────────────
+
+  get taskPanel(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.taskPanel);
+  }
 
   get taskListPanel(): Locator {
-    return this.page.locator('valtimo-case-detail-task-list');
+    return this.taskPanel.locator('valtimo-case-detail-task-list');
   }
 
   taskTileByName(taskName: string): Locator {
@@ -238,23 +264,87 @@ export class UserCasesPage {
   // ─── Actions ─────────────────────────────────────────────────────
 
   async openStartProcessMenu() {
+    await expect(this.startCaseProcessButton).toBeEnabled({timeout: 30_000});
     await this.startCaseProcessButton.click();
   }
 
   async startSubProcess(displayName: string) {
-    await this.openStartProcessMenu();
     const item = this.startableMenuItem(displayName);
-    await expect(item).toBeVisible();
+
+    await expect(async () => {
+      if (!(await item.isVisible())) await this.openStartProcessMenu();
+      await expect(item).toBeVisible({timeout: 5_000});
+    }).toPass({timeout: 30_000});
+
     await item.click();
+  }
+
+  // ─── Start-form side panel ───────────────────────────────────────
+
+  get startFormPanel(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.startFormPanel);
+  }
+
+  get startFormPanelTitle(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.startFormPanelTitle);
+  }
+
+  get startFormPanelCloseButton(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.startFormPanelCloseButton);
+  }
+
+  // Start-form fields are rendered by the Form.io renderer, so they carry no
+  // Valtimo data-test-id — scope by accessible label inside the panel instead.
+  startFormField(label: string | RegExp): Locator {
+    return this.startFormPanel.getByRole('textbox', {name: label});
+  }
+
+  async openStartFormInPanel(displayName: string) {
+    await this.startSubProcess(displayName);
+    await expect(this.startFormPanel).toBeVisible({timeout: 15_000});
+  }
+
+  get pendingChangesConfirmButton(): Locator {
+    return this.page
+      .getByTestId(CASE_DETAIL_PANEL_TEST_IDS.pendingChangesModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton);
+  }
+
+  async closeStartFormPanel() {
+    await this.startFormPanelCloseButton.click();
+    await expect(this.startFormPanel).toHaveCount(0);
+  }
+
+  /** Closes a start form with entered data, confirming the pending changes prompt. */
+  async discardStartFormPanel() {
+    await this.startFormPanelCloseButton.click();
+    await expect(this.pendingChangesConfirmButton).toBeVisible();
+    await this.pendingChangesConfirmButton.click();
+    await expect(this.startFormPanel).toHaveCount(0);
+  }
+
+  // ─── Task detail opened in the side panel ────────────────────────
+
+  get taskDetailPanel(): Locator {
+    return this.taskPanel.locator('valtimo-case-detail-task-detail');
+  }
+
+  async openTaskInPanel(taskName: string) {
+    await this.taskTileByName(taskName).click();
+    await expect(this.taskDetailPanel).toBeVisible({timeout: 15_000});
   }
 
   async assignTaskToSelf() {
     await expect(this.page.getByText('Assign this task')).toBeVisible({timeout: 15_000});
     await this.page.getByText('Assign this task').click();
-    await this.page.getByRole('combobox', {name: 'Select user'}).click();
-    await this.page.getByRole('listbox').getByText('(me)').first().click();
-    await this.page.getByRole('combobox', {name: 'Select team'}).click();
-    await this.page.getByRole('listbox').getByRole('option').first().click();
+    await openAndSelectOption(
+      this.page.getByRole('combobox', {name: 'Select user'}),
+      this.page.getByRole('listbox').getByText('(me)').first()
+    );
+    await openAndSelectOption(
+      this.page.getByRole('combobox', {name: 'Select team'}),
+      this.page.getByRole('listbox').getByRole('option').first()
+    );
 
     // Confirm the assignment and wait for the backend call to succeed rather than
     // for the "Task assigned" pop-up: that pop-up is a transient toast

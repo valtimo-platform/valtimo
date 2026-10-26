@@ -28,6 +28,7 @@ import {PluginStateService} from './plugin-state.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
 import {
+  EXTERNAL_PLUGIN_PROCESS_LINK_TYPES,
   FORM_CUSTOM_COMPONENT_TOKEN,
   UNSUPPORTED_PROCESS_LINK_TYPES_IN_BUILDING_BLOCK,
 } from '../constants';
@@ -74,48 +75,16 @@ export class ProcessLinkStateService implements OnDestroy {
   public get availableProcessLinkTypes$(): Observable<ProcessLinkType[]> {
     return combineLatest([this._availableProcessLinkTypes$, this._context$]).pipe(
       map(([types, context]) => {
-        // The external plugin types get no tile of their own (see the filter below) — they are
-        // reached through the "Plugins & Apps" (plugin) tile, whose backend enablement only counts
-        // embedded plugin configurations. An enabled external type must therefore enable that tile
-        // itself, or add it when the activity type has no embedded plugin actions at all.
-        const externalPluginEnabled = types.some(
-          type =>
-            (type.processLinkType === 'external_plugin' ||
-              type.processLinkType === 'external_plugin_task_form') &&
-            type.enabled
-        );
-        let mergedTypes = types;
-        if (externalPluginEnabled && !types.some(type => type.processLinkType === 'plugin')) {
-          mergedTypes = [...types];
-          // The external types sit where the plugin tile belongs in the backend's order, so the
-          // added tile takes the first one's place (the filter below removes them anyway).
-          mergedTypes.splice(
-            types.findIndex(
-              type =>
-                type.processLinkType === 'external_plugin' ||
-                type.processLinkType === 'external_plugin_task_form'
-            ),
-            0,
-            {processLinkType: 'plugin', enabled: true}
-          );
-        }
+        const externalPluginEnabled = this.isExternalPluginEnabled(types);
 
         return (
           !this.formCustomComponentConfig
-            ? mergedTypes.map(type => ({
+            ? this.chooserProcessLinkTypes(types).map(type => ({
                 ...type,
                 enabled: type.processLinkType === 'ui-component' ? false : type.enabled,
               }))
-            : mergedTypes
+            : this.chooserProcessLinkTypes(types)
         )
-          .filter(
-            type =>
-              type.processLinkType !== 'url' &&
-              type.processLinkType !== 'external_plugin' &&
-              // No separate tile: an external plugin's task-form is offered inside the "Plugin" flow
-              // (pick the plugin on a user task → its task-form appears as the selectable option).
-              type.processLinkType !== 'external_plugin_task_form'
-          )
           .map(type =>
             type.processLinkType === 'plugin' && externalPluginEnabled
               ? {...type, enabled: true}
@@ -132,17 +101,19 @@ export class ProcessLinkStateService implements OnDestroy {
   }
 
   public get hideProgressIndicator$(): Observable<boolean> {
-    return this._availableProcessLinkTypes$
-      .asObservable()
-      .pipe(
-        map(
-          availableTypes =>
-            Array.isArray(availableTypes) &&
-            availableTypes.length === 1 &&
-            (availableTypes[0]?.processLinkType === 'form' ||
-              availableTypes[0]?.processLinkType === 'form-flow')
-        )
-      );
+    return this._availableProcessLinkTypes$.asObservable().pipe(
+      // Count the tiles, matching `setAvailableProcessLinkTypes` — on the raw list an untiled
+      // type such as `url` kept the indicator up for the single-form flow it must suppress.
+      map(availableTypes =>
+        this.chooserProcessLinkTypes(Array.isArray(availableTypes) ? availableTypes : [])
+      ),
+      map(
+        chooserTypes =>
+          chooserTypes.length === 1 &&
+          (chooserTypes[0]?.processLinkType === 'form' ||
+            chooserTypes[0]?.processLinkType === 'form-flow')
+      )
+    );
   }
   public get selectedProcessLinkTypeId$(): Observable<string> {
     return this._selectedProcessLinkTypeId$.asObservable();
@@ -196,12 +167,13 @@ export class ProcessLinkStateService implements OnDestroy {
   }
 
   public setAvailableProcessLinkTypes(processLinkTypes: Array<ProcessLinkType>): void {
-    const hasOneOption = processLinkTypes.length === 1;
+    const chooserTypes = this.chooserProcessLinkTypes(processLinkTypes);
+    const hasOneOption = chooserTypes.length === 1;
     this._availableProcessLinkTypes$.next(processLinkTypes);
     this.processLinkStepService.setHasOneProcessLinkType(hasOneOption);
 
     if (hasOneOption) {
-      this.selectProcessLinkType(processLinkTypes[0].processLinkType, hasOneOption);
+      this.selectProcessLinkType(chooserTypes[0].processLinkType, hasOneOption);
     }
   }
 
@@ -251,7 +223,7 @@ export class ProcessLinkStateService implements OnDestroy {
   public setInitial(): void {
     const availableTypes = this._availableProcessLinkTypes$.getValue();
     this.buttonService.resetButtons();
-    this.processLinkStepService.setInitialSteps(availableTypes);
+    this.processLinkStepService.setInitialSteps(this.chooserProcessLinkTypes(availableTypes));
   }
 
   public setModalParams(params: ModalParams): void {
@@ -296,10 +268,41 @@ export class ProcessLinkStateService implements OnDestroy {
     this._processLinkDeleteEvents$.next(event);
   }
 
+  private isExternalPluginEnabled(types: Array<ProcessLinkType>): boolean {
+    return types.some(
+      type => EXTERNAL_PLUGIN_PROCESS_LINK_TYPES.includes(type.processLinkType) && type.enabled
+    );
+  }
+
+  // Tiles the chooser actually renders — count these, not the raw list, to decide if there is a choice
+  private chooserProcessLinkTypes(types: Array<ProcessLinkType>): Array<ProcessLinkType> {
+    let mergedTypes = types;
+
+    if (
+      this.isExternalPluginEnabled(types) &&
+      !types.some(type => type.processLinkType === 'plugin')
+    ) {
+      mergedTypes = [...types];
+      // The added tile takes the first external type's place; the filter below drops those
+      mergedTypes.splice(
+        types.findIndex(type => EXTERNAL_PLUGIN_PROCESS_LINK_TYPES.includes(type.processLinkType)),
+        0,
+        {processLinkType: 'plugin', enabled: true}
+      );
+    }
+
+    return mergedTypes.filter(
+      type =>
+        type.processLinkType !== 'url' &&
+        // No separate tile — a task-form is offered inside the "Plugin" flow
+        !EXTERNAL_PLUGIN_PROCESS_LINK_TYPES.includes(type.processLinkType)
+    );
+  }
+
   private openAvailableProcessLinkTypesSubscription(): void {
     this._availableProcessLinkTypesSubscription = this._availableProcessLinkTypes$.subscribe(
       availableProcessLinkTypes => {
-        if (availableProcessLinkTypes.length > 1) {
+        if (this.chooserProcessLinkTypes(availableProcessLinkTypes).length > 1) {
           this.setInitial();
         }
       }

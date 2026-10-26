@@ -120,4 +120,83 @@ describe('ProcessLinkStateService', () => {
       ]);
     });
   });
+
+  describe('skipping the link type chooser', () => {
+    let stepService: jasmine.SpyObj<ProcessLinkStepService>;
+
+    beforeEach(() => {
+      stepService = TestBed.inject(ProcessLinkStepService) as jasmine.SpyObj<ProcessLinkStepService>;
+    });
+
+    // A service task offers 'plugin' and 'external_plugin', which collapse into one tile
+    it('skips the chooser when the untiled external types collapse onto the plugin tile', () => {
+      service.setAvailableProcessLinkTypes([
+        {processLinkType: 'plugin', enabled: true},
+        {processLinkType: 'external_plugin', enabled: true},
+      ]);
+
+      expect(currentTiles().length).toBe(1);
+      expect(stepService.setHasOneProcessLinkType).toHaveBeenCalledWith(true);
+      expect(stepService.setProcessLinkTypeSteps).toHaveBeenCalledWith('plugin', true);
+    });
+
+    it('selects the tile that renders, not the first raw type', () => {
+      // No embedded plugin actions, so the plugin tile is synthesised from the external type
+      service.setAvailableProcessLinkTypes([{processLinkType: 'external_plugin', enabled: true}]);
+
+      expect(stepService.setProcessLinkTypeSteps).toHaveBeenCalledWith('plugin', true);
+    });
+
+    it('keeps the chooser when more than one tile renders', () => {
+      service.setAvailableProcessLinkTypes([
+        {processLinkType: 'form', enabled: true},
+        {processLinkType: 'plugin', enabled: true},
+        {processLinkType: 'external_plugin', enabled: true},
+      ]);
+
+      expect(stepService.setHasOneProcessLinkType).toHaveBeenCalledWith(false);
+      expect(stepService.setProcessLinkTypeSteps).not.toHaveBeenCalled();
+    });
+
+    it('does not count the untiled url type as a choice', () => {
+      service.setAvailableProcessLinkTypes([
+        {processLinkType: 'plugin', enabled: true},
+        {processLinkType: 'url', enabled: true},
+      ]);
+
+      expect(stepService.setHasOneProcessLinkType).toHaveBeenCalledWith(true);
+    });
+  });
+
+  describe('hideProgressIndicator$', () => {
+    const currentlyHidden = (): boolean => {
+      let hidden = false;
+      service.hideProgressIndicator$.pipe(take(1)).subscribe(value => (hidden = value));
+      return hidden;
+    };
+
+    it('hides the indicator when the untiled url type leaves the form tile alone', () => {
+      service.setAvailableProcessLinkTypes([
+        {processLinkType: 'form', enabled: true},
+        {processLinkType: 'url', enabled: true},
+      ]);
+
+      expect(currentlyHidden()).toBe(true);
+    });
+
+    it('keeps the indicator when a second tile renders', () => {
+      service.setAvailableProcessLinkTypes([
+        {processLinkType: 'form', enabled: true},
+        {processLinkType: 'form-flow', enabled: true},
+      ]);
+
+      expect(currentlyHidden()).toBe(false);
+    });
+
+    it('keeps the indicator for a single tile that is not a form', () => {
+      service.setAvailableProcessLinkTypes([{processLinkType: 'plugin', enabled: true}]);
+
+      expect(currentlyHidden()).toBe(false);
+    });
+  });
 });

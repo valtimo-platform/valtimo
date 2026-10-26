@@ -24,13 +24,16 @@
     'page-head--no-margin': pageTitleHidden$ | async,
     'page-head--small-title': smallTitle$ | async,
     'page-head--title-as-breadcrumb': (titleAsBreadcrumb$ | async) && !(compactMode$ | async),
+    'page-head--wrap-actions': pageActionsWrap$ | async,
   }"
 >
   <ng-container #contentVcr></ng-container>
 
   <valtimo-page-subtitle></valtimo-page-subtitle>
 
-  <valtimo-page-actions></valtimo-page-actions>
+  <valtimo-page-actions
+    [style.flex-basis.px]="(pageActionsWrap$ | async) ? (pageActionsMinWidth$ | async) : null"
+  ></valtimo-page-actions>
 </div>
 
 <ng-container renderPageHeader>
