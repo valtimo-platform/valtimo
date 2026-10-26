@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Processes | A boundary error event now catches a BPMN error thrown by a plugin, also inside a building block. |
