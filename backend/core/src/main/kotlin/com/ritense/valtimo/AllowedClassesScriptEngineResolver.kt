@@ -18,6 +18,7 @@ package com.ritense.valtimo
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.HostAccess
 import org.operaton.bpm.engine.impl.scripting.engine.DefaultScriptEngineResolver
 import javax.script.ScriptEngine
@@ -25,8 +26,10 @@ import javax.script.ScriptEngineManager
 
 class AllowedClassesScriptEngineResolver(
     scriptEngineManager: ScriptEngineManager,
-    otherAllowedClasses: Set<String> = emptySet()
+    otherAllowedClasses: Set<String> = emptySet(),
+    polyglotEngine: Engine? = null
 ) : DefaultScriptEngineResolver(scriptEngineManager) {
+    private val sharedEngine: Engine by lazy { polyglotEngine ?: newPolyglotEngine() }
     private val effectiveAllowed = (ALLOWED + otherAllowedClasses) - BLOCKED
 
     override fun getJavaScriptScriptEngine(language: String?): ScriptEngine {
@@ -72,10 +75,14 @@ class AllowedClassesScriptEngineResolver(
             .allowHostAccess(hostAccess)
             .allowHostClassLookup(effectiveAllowed::contains)
 
-        return GraalJSScriptEngine.create(null, ctx)
+        return TrackingGraalJsScriptEngine(GraalJSScriptEngine.create(sharedEngine, ctx))
     }
 
     companion object {
+        fun newPolyglotEngine(): Engine = Engine.newBuilder("js")
+            .option("engine.WarnInterpreterOnly", "false")
+            .build()
+
         private val BLOCKED = setOf(
             "java.lang.Class",
             "java.lang.ClassLoader",
