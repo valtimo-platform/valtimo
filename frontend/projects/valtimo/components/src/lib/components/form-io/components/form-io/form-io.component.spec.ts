@@ -159,7 +159,17 @@ describe('FormioComponent', () => {
 
     beforeEach(() => {
       submitted = 0;
+      component.preventDoubleSubmit = true;
       component.submit.subscribe(() => submitted++);
+    });
+
+    it('should emit every submit when not enabled', () => {
+      component.preventDoubleSubmit = false;
+
+      component.onSubmit({data: {}});
+      component.onSubmit({data: {}});
+
+      expect(submitted).toBe(2);
     });
 
     it('should emit only the first of repeated submits', () => {
@@ -208,7 +218,7 @@ describe('FormioComponent', () => {
       component.onSubmit({data: {}});
       component.showErrors(['error']);
 
-      expect(emit).toHaveBeenCalledOnceWith('submitError');
+      expect(emit).toHaveBeenCalledOnceWith('submitError', '');
     });
   });
 });

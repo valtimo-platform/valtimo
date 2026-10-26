@@ -80,6 +80,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.errors$.next(errorsValue ?? []);
   }
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
+  @Input() preventDoubleSubmit = false;
 
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() submit = new EventEmitter<any>();
@@ -218,7 +219,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public onSubmit(submission: FormioSubmission): void {
     if (this._submitting) return;
-    if (this.submit.observed) this._submitting = true;
+    if (this.preventDoubleSubmit && this.submit.observed) this._submitting = true;
 
     this.errors$.next([]);
     this.submit.emit(submission);
@@ -253,7 +254,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     if (!this._submitting) return;
 
     this.releaseSubmit();
-    this._formioSource?.formio?.emit('submitError');
+    this._formioSource?.formio?.emit('submitError', '');
   }
 
   private openReloadFormSubscription(): void {
