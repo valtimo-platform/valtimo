@@ -34,6 +34,7 @@ class TrackingGraalJsScriptEngine(
     private fun trackDefaultContext() {
         if (defaultTracked.compareAndSet(false, true)) {
             GraalJsContextCleanup.track(delegate.getBindings(ScriptContext.ENGINE_SCOPE), ownContextOnly = true)
+            FilteringScriptBindings.removeInjectedGlobals(delegate.polyglotContext)
         }
     }
 
@@ -110,16 +111,16 @@ class TrackingGraalJsScriptEngine(
     }
 
     override fun eval(script: String, bindings: Bindings): Any? =
-        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, bindings)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, FilteringScriptBindings.wrap(bindings))) }
 
     override fun eval(reader: Reader, bindings: Bindings): Any? =
-        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, bindings)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, FilteringScriptBindings.wrap(bindings))) }
 
     override fun eval(script: String, context: ScriptContext): Any? =
-        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, context)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, FilteringScriptBindings.wrap(context))) }
 
     override fun eval(reader: Reader, context: ScriptContext): Any? =
-        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, context)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, FilteringScriptBindings.wrap(context))) }
 
     override fun compile(script: String): CompiledScript {
         trackDefaultContext()
@@ -133,9 +134,10 @@ class TrackingGraalJsScriptEngine(
 
     private fun wrap(compiled: CompiledScript): CompiledScript = object : CompiledScript() {
         override fun eval(context: ScriptContext): Any? =
-            GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(compiled.eval(context)) }
+            GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(compiled.eval(FilteringScriptBindings.wrap(context))) }
 
-        override fun eval(bindings: Bindings): Any? = GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(compiled.eval(bindings)) }
+        override fun eval(bindings: Bindings): Any? =
+            GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(compiled.eval(FilteringScriptBindings.wrap(bindings))) }
 
         override fun getEngine(): ScriptEngine = this@TrackingGraalJsScriptEngine
     }

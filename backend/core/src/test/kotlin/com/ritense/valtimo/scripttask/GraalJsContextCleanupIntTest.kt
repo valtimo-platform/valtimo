@@ -188,6 +188,21 @@ class GraalJsContextCleanupIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `dmn compiled script stays restricted with option-like variable`() {
+        repeat(2) { attempt ->
+            val variables = mutableMapOf<String, Any>("size" to 60)
+            if (attempt == 0) variables["polyglot.js.allowHostClassLookup"] = true
+            val error = assertThrows<Exception> {
+                decisionService
+                    .evaluateDecisionTableByKey("javascript-restricted-decision")
+                    .variables(variables)
+                    .evaluate()
+            }
+            assertTrue(generateSequence<Throwable>(error) { it.cause }.any { it.message?.contains("java.lang.System") == true })
+        }
+    }
+
+    @Test
     fun `dmn object output is readable after context is closed`() {
         val result = decisionService
             .evaluateDecisionTableByKey("javascript-object-output-decision")

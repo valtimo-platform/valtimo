@@ -20,7 +20,10 @@ import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.HostAccess
+import org.graalvm.polyglot.Value
 import org.operaton.bpm.engine.impl.scripting.engine.DefaultScriptEngineResolver
+import javax.script.Bindings
+import javax.script.ScriptContext
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
@@ -69,6 +72,18 @@ class AllowedClassesScriptEngineResolver(
             .denyAccess(org.operaton.bpm.engine.IdentityService::class.java)
             .denyAccess(org.operaton.bpm.engine.AuthorizationService::class.java)
             .denyAccess(org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl::class.java)
+            .denyAccess(Engine::class.java)
+            .denyAccess(Context::class.java)
+            .denyAccess(Value::class.java)
+            .denyAccess(ScriptEngine::class.java)
+            .denyAccess(ScriptContext::class.java)
+            .denyAccess(Bindings::class.java)
+            .denyAccess(AutoCloseable::class.java)
+            .denyAccess(javax.script.Compilable::class.java)
+            .denyAccess(javax.script.Invocable::class.java)
+            .denyAccess(javax.script.CompiledScript::class.java)
+            .denyAccess(java.util.AbstractMap::class.java)
+            .denyAccess(java.util.Map.Entry::class.java)
             .build()
 
         val ctx = Context.newBuilder("js")
@@ -99,6 +114,17 @@ class AllowedClassesScriptEngineResolver(
             "java.security.AccessController",
             "javax.script.ScriptEngine",
             "javax.script.ScriptEngineManager",
+            "javax.script.ScriptContext",
+            "javax.script.Bindings",
+            "java.lang.AutoCloseable",
+            "javax.script.Compilable",
+            "javax.script.Invocable",
+            "javax.script.CompiledScript",
+            "java.util.AbstractMap",
+            "java.util.Map.Entry",
+            "org.graalvm.polyglot.Engine",
+            "org.graalvm.polyglot.Context",
+            "org.graalvm.polyglot.Value",
         )
 
         private val ALLOWED = mutableSetOf<String?>(

@@ -36,7 +36,9 @@ class ScriptingWhitelistPlugin(
 
         processEngineConfiguration.setConfigureScriptEngineHostAccess(false)
         processEngineConfiguration.setEnableScriptEngineLoadExternalResources(false)
-        processEngineConfiguration.setScriptEngineResolver(AllowedClassesScriptEngineResolver(ScriptEngineManager(), allowedScriptingClasses, polyglotEngine))
+        val resolver = AllowedClassesScriptEngineResolver(ScriptEngineManager(), allowedScriptingClasses, polyglotEngine)
+        processEngineConfiguration.setScriptEngineResolver(resolver)
+        ScriptSandboxSelfCheck.run(resolver.getScriptEngine("javascript", true))
     }
 
     companion object {
