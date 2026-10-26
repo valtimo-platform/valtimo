@@ -22,6 +22,7 @@ import com.ritense.valtimo.GraalJsContextCleanup
 import com.ritense.valtimo.TrackingGraalJsScriptEngine
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
+import org.graalvm.polyglot.HostAccess
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -37,10 +38,15 @@ import org.operaton.bpm.engine.impl.interceptor.CommandContext
 import org.springframework.transaction.support.TransactionSynchronization
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.io.StringReader
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import javax.script.Bindings
 import javax.script.Compilable
 import javax.script.ScriptEngine
+import javax.script.ScriptContext
 import javax.script.ScriptEngineManager
+import javax.script.SimpleScriptContext
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -51,6 +57,7 @@ import org.operaton.bpm.engine.impl.context.Context as OperatonContext
 
 class ScriptEngineCleanupTest {
 
+    private val sharedEngine = AllowedClassesScriptEngineResolver.newPolyglotEngine()
     private val resolver = AllowedClassesScriptEngineResolver(ScriptEngineManager())
     private var commandContextSet = false
 
@@ -207,11 +214,13 @@ class ScriptEngineCleanupTest {
         val engine = resolver.getScriptEngine(LANGUAGE, true) as TrackingGraalJsScriptEngine
         val bindings = bindingsFor(engine)
 
-        engine.eval("function twice(x) { return x * 2 }")
+        GraalJsContextCleanup.closingAfter {
+            engine.eval("function twice(x) { return x * 2 }")
+            assertEquals(4, (engine.invokeFunction("twice", 2) as Number).toInt())
+        }
 
         assertNotNull(engine.factory)
         assertEquals("Graal.js", engine.factory.engineName)
-        assertEquals(4, (engine.invokeFunction("twice", 2) as Number).toInt())
         GraalJsContextCleanup.close(bindings)
     }
 
@@ -232,8 +241,8 @@ class ScriptEngineCleanupTest {
         val first = resolver.getScriptEngine(LANGUAGE, true)
         val second = resolver.getScriptEngine(LANGUAGE, true)
         val firstBindings = bindingsFor(first)
-        val secondBindings = bindingsFor(second)
         first.eval(SCRIPT, firstBindings)
+        val secondBindings = bindingsFor(second)
         second.eval(SCRIPT, secondBindings)
 
         assertSame(polyglotContext(firstBindings).engine, polyglotContext(secondBindings).engine)
@@ -246,6 +255,200 @@ class ScriptEngineCleanupTest {
         val engine = resolver.getScriptEngine("no-such-language", true)
 
         assertNull(engine)
+    }
+
+    @Test
+    fun `compiled script shared across wrappers closes bindings of the evaluating wrapper`() {
+        val first = resolver.getScriptEngine(LANGUAGE, true) as TrackingGraalJsScriptEngine
+        val second = resolver.getScriptEngine(LANGUAGE, true) as TrackingGraalJsScriptEngine
+        val compiled = first.compile(SCRIPT)
+        val bindings = bindingsFor(second)
+
+        compiled.eval(bindings)
+
+        assertTrue(isClosed(polyglotContext(bindings)))
+    }
+
+    @Test
+    fun `bindings of another thread are not closed by an evaluation`() {
+        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val created = CountDownLatch(1)
+        val otherDone = CountDownLatch(1)
+        val failure = AtomicReference<Throwable>()
+        val otherBindings = AtomicReference<Bindings>()
+        val thread = Thread {
+            try {
+                val bindings = bindingsFor(engine)
+                otherBindings.set(bindings)
+                created.countDown()
+                assertTrue(otherDone.await(30, TimeUnit.SECONDS))
+                engine.eval(SCRIPT, bindings)
+                assertTrue(isClosed(polyglotContext(bindings)))
+            } catch (e: Throwable) {
+                failure.set(e)
+                created.countDown()
+            }
+        }
+        thread.start()
+        assertTrue(created.await(30, TimeUnit.SECONDS))
+
+        val ownBindings = bindingsFor(engine)
+        engine.eval(SCRIPT, ownBindings)
+        assertTrue(isClosed(polyglotContext(ownBindings)))
+        otherDone.countDown()
+        thread.join(30_000)
+
+        assertNull(failure.get())
+    }
+
+    @Test
+    fun `nested evaluation does not close outer bindings`() {
+        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        var outer: Bindings? = null
+        var inner: Bindings? = null
+
+        GraalJsContextCleanup.closingAfter {
+            val outerBindings = bindingsFor(engine)
+            outer = outerBindings
+            GraalJsContextCleanup.closingAfter { engine.eval(SCRIPT, outerBindings) }
+            val innerBindings = bindingsFor(engine)
+            inner = innerBindings
+            engine.eval(SCRIPT, innerBindings)
+            assertFalse(isClosed(polyglotContext(outerBindings)))
+            assertFalse(isClosed(polyglotContext(innerBindings)))
+        }
+
+        assertTrue(isClosed(polyglotContext(requireNotNull(outer))))
+        assertTrue(isClosed(polyglotContext(requireNotNull(inner))))
+    }
+
+    @Test
+    fun `no pending bindings remain after outermost evaluation`() {
+        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val bindings = bindingsFor(engine)
+        engine.eval(SCRIPT, bindings)
+
+        assertEquals(0, GraalJsContextCleanup.pendingCount())
+    }
+
+    @Test
+    fun `compiled eval with script context closes the eval context`() {
+        val (wrapper, _) = newWrapper()
+        val compiled = wrapper.compile("({a: 1})")
+        val bindings = bindingsFor(wrapper)
+        val scriptContext = SimpleScriptContext()
+        scriptContext.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
+
+        val result = compiled.eval(scriptContext)
+
+        assertTrue(result is LinkedHashMap<*, *>)
+        assertEquals(1, (result as Map<*, *>)["a"])
+        assertTrue(isClosed(polyglotContext(bindings)))
+        assertEquals(0, GraalJsContextCleanup.pendingCount())
+    }
+
+    @Test
+    fun `default context is closed after eval of string`() {
+        val (wrapper, delegate) = newWrapper()
+
+        val result = wrapper.eval("1 + 2")
+        val context = delegate.polyglotContext
+
+        assertEquals(3, (result as Number).toInt())
+        assertTrue(isClosed(context))
+        assertEquals(0, GraalJsContextCleanup.pendingCount())
+    }
+
+    @Test
+    fun `put then eval uses and closes the default context`() {
+        val (wrapper, delegate) = newWrapper()
+
+        wrapper.put("x", 21)
+        val result = wrapper.eval("x * 2")
+
+        assertEquals(42, (result as Number).toInt())
+        assertTrue(isClosed(delegate.polyglotContext))
+        assertEquals(0, GraalJsContextCleanup.pendingCount())
+    }
+
+    @Test
+    fun `compile closes the default context after the first outermost eval`() {
+        val (first, firstDelegate) = newWrapper()
+        val compiled = first.compile("1 + 2")
+        val defaultContext = firstDelegate.polyglotContext
+        assertFalse(isClosed(defaultContext))
+
+        repeat(3) {
+            val (other, _) = newWrapper()
+            assertEquals(3, (compiled.eval(bindingsFor(other)) as Number).toInt())
+            if (it == 0) assertTrue(isClosed(defaultContext))
+        }
+    }
+
+    @Test
+    fun `invokeFunction within one outer closing scope works and closes afterwards`() {
+        val (wrapper, delegate) = newWrapper()
+        var context: Context? = null
+
+        GraalJsContextCleanup.closingAfter {
+            wrapper.eval("function f(a) { return a * 2 }")
+            assertEquals(4, (wrapper.invokeFunction("f", 2) as Number).toInt())
+            context = delegate.polyglotContext
+            assertFalse(isClosed(delegate.polyglotContext))
+        }
+
+        assertTrue(isClosed(requireNotNull(context)))
+    }
+
+    @Test
+    fun `default context stays open until spring transaction completes`() {
+        TransactionSynchronizationManager.initSynchronization()
+        val (wrapper, delegate) = newWrapper()
+
+        wrapper.eval("function f(a) { return a * 2 }")
+        val context = delegate.polyglotContext
+        assertEquals(4, (wrapper.invokeFunction("f", 2) as Number).toInt())
+        assertFalse(isClosed(context))
+
+        TransactionSynchronizationManager.getSynchronizations()
+            .forEach { it.afterCompletion(TransactionSynchronization.STATUS_COMMITTED) }
+
+        assertTrue(isClosed(context))
+    }
+
+    @Test
+    fun `setBindings closes both old and new default contexts`() {
+        val (wrapper, delegate) = newWrapper()
+        wrapper.put("x", 1)
+        val oldContext = delegate.polyglotContext
+        GraalJsContextCleanup.closingAfter {
+            wrapper.setBindings(delegate.createBindings(), ScriptContext.ENGINE_SCOPE)
+            val newContext = delegate.polyglotContext
+            assertEquals(2, (wrapper.eval("1 + 1") as Number).toInt())
+            assertFalse(isClosed(newContext))
+            contexts = listOf(oldContext, newContext)
+        }
+
+        contexts.forEach { assertTrue(isClosed(it)) }
+    }
+
+    @Test
+    fun `closing an untouched default context does not create one`() {
+        val (_, delegate) = newWrapper()
+        val untouched = delegate.getBindings(ScriptContext.ENGINE_SCOPE)
+
+        GraalJsContextCleanup.track(untouched, ownContextOnly = true)
+        GraalJsContextCleanup.closingAfter { }
+        GraalJsContextCleanup.close(untouched, ownContextOnly = true)
+
+        assertEquals(0, GraalJsContextCleanup.pendingCount())
+    }
+
+    private var contexts: List<Context> = emptyList()
+
+    private fun newWrapper(): Pair<TrackingGraalJsScriptEngine, GraalJSScriptEngine> {
+        val delegate = GraalJSScriptEngine.create(sharedEngine, Context.newBuilder("js").allowHostAccess(HostAccess.ALL))
+        return TrackingGraalJsScriptEngine(delegate) to delegate
     }
 
     private fun mockCommandContext(): MutableMap<TransactionState, TransactionListener> {

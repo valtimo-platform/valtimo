@@ -18,6 +18,7 @@ package com.ritense.valtimo
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import java.io.Reader
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.script.Bindings
 import javax.script.Compilable
 import javax.script.CompiledScript
@@ -28,46 +29,114 @@ import javax.script.ScriptEngine
 class TrackingGraalJsScriptEngine(
     private val delegate: GraalJSScriptEngine
 ) : ScriptEngine by delegate, Compilable, Invocable by delegate {
-    private val immediate = mutableListOf<Bindings>()
+    private val defaultTracked = AtomicBoolean(false)
+
+    private fun trackDefaultContext() {
+        if (defaultTracked.compareAndSet(false, true)) {
+            GraalJsContextCleanup.track(delegate.getBindings(ScriptContext.ENGINE_SCOPE), ownContextOnly = true)
+        }
+    }
+
+    override fun eval(script: String): Any? {
+        trackDefaultContext()
+        return GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(script)) }
+    }
+
+    override fun eval(reader: Reader): Any? {
+        trackDefaultContext()
+        return GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader)) }
+    }
+
+    override fun invokeFunction(name: String, vararg args: Any?): Any? {
+        trackDefaultContext()
+        return GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.invokeFunction(name, *args)) }
+    }
+
+    override fun invokeMethod(thiz: Any?, name: String, vararg args: Any?): Any? {
+        trackDefaultContext()
+        return GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.invokeMethod(thiz, name, *args)) }
+    }
+
+    override fun <T> getInterface(clasz: Class<T>): T? {
+        trackDefaultContext()
+        return delegate.getInterface(clasz)
+    }
+
+    override fun <T> getInterface(thiz: Any?, clasz: Class<T>): T? {
+        trackDefaultContext()
+        return delegate.getInterface(thiz, clasz)
+    }
+
+    override fun put(key: String, value: Any?) {
+        trackDefaultContext()
+        delegate.put(key, value)
+    }
+
+    override fun get(key: String): Any? {
+        trackDefaultContext()
+        return delegate.get(key)
+    }
+
+    override fun getContext(): ScriptContext {
+        trackDefaultContext()
+        return delegate.context
+    }
+
+    override fun getBindings(scope: Int): Bindings? {
+        if (scope == ScriptContext.ENGINE_SCOPE) trackDefaultContext()
+        return delegate.getBindings(scope)
+    }
+
+    override fun setBindings(bindings: Bindings, scope: Int) {
+        if (scope != ScriptContext.ENGINE_SCOPE) {
+            delegate.setBindings(bindings, scope)
+            return
+        }
+        trackDefaultContext()
+        delegate.setBindings(bindings, scope)
+        GraalJsContextCleanup.track(bindings, ownContextOnly = true)
+    }
+
+    override fun setContext(context: ScriptContext) {
+        trackDefaultContext()
+        delegate.context = context
+        GraalJsContextCleanup.track(delegate.getBindings(ScriptContext.ENGINE_SCOPE), ownContextOnly = true)
+    }
 
     override fun createBindings(): Bindings {
         val bindings = delegate.createBindings()
-        if (!GraalJsContextCleanup.registerDeferred(bindings)) {
-            synchronized(immediate) { immediate += bindings }
-        }
+        GraalJsContextCleanup.track(bindings)
         return bindings
     }
 
     override fun eval(script: String, bindings: Bindings): Any? =
-        closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, bindings)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, bindings)) }
 
     override fun eval(reader: Reader, bindings: Bindings): Any? =
-        closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, bindings)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, bindings)) }
 
     override fun eval(script: String, context: ScriptContext): Any? =
-        closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, context)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(script, context)) }
 
     override fun eval(reader: Reader, context: ScriptContext): Any? =
-        closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, context)) }
+        GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(delegate.eval(reader, context)) }
 
-    override fun compile(script: String): CompiledScript = wrap(delegate.compile(script))
-
-    override fun compile(reader: Reader): CompiledScript = wrap(delegate.compile(reader))
-
-    private fun wrap(compiled: CompiledScript): CompiledScript = object : CompiledScript() {
-        override fun eval(context: ScriptContext): Any? = GraalJsValueConverter.toJava(compiled.eval(context))
-
-        override fun eval(bindings: Bindings): Any? = closingAfter { GraalJsValueConverter.toJava(compiled.eval(bindings)) }
-
-        override fun getEngine(): ScriptEngine = this@TrackingGraalJsScriptEngine
+    override fun compile(script: String): CompiledScript {
+        trackDefaultContext()
+        return wrap(delegate.compile(script))
     }
 
-    private fun <T> closingAfter(block: () -> T): T {
-        try {
-            return block()
-        } finally {
-            val pending = synchronized(immediate) { immediate.toList().also { immediate.clear() } }
-            pending.forEach { GraalJsContextCleanup.close(it) }
-        }
+    override fun compile(reader: Reader): CompiledScript {
+        trackDefaultContext()
+        return wrap(delegate.compile(reader))
+    }
+
+    private fun wrap(compiled: CompiledScript): CompiledScript = object : CompiledScript() {
+        override fun eval(context: ScriptContext): Any? =
+            GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(compiled.eval(context)) }
+
+        override fun eval(bindings: Bindings): Any? = GraalJsContextCleanup.closingAfter { GraalJsValueConverter.toJava(compiled.eval(bindings)) }
+
+        override fun getEngine(): ScriptEngine = this@TrackingGraalJsScriptEngine
     }
 }

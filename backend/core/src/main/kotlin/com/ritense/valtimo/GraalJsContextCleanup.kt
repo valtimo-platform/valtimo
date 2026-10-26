@@ -29,28 +29,64 @@ object GraalJsContextCleanup {
     private val logger = KotlinLogging.logger {}
     private val RESOURCE_KEY = Any()
 
+    private class Tracked(val bindings: Bindings, val ownContextOnly: Boolean)
+
+    private class ThreadState {
+        val pending = mutableListOf<Tracked>()
+        var depth = 0
+    }
+
+    private val state = ThreadLocal<ThreadState>()
+
+    fun track(bindings: Bindings, ownContextOnly: Boolean = false) {
+        if (!registerDeferred(bindings, ownContextOnly)) {
+            currentState().pending += Tracked(bindings, ownContextOnly)
+        }
+    }
+
+    fun <T> closingAfter(block: () -> T): T {
+        val current = currentState()
+        current.depth++
+        try {
+            return block()
+        } finally {
+            current.depth--
+            if (current.depth == 0) {
+                val toClose = current.pending.toList()
+                state.remove()
+                toClose.forEach { close(it.bindings, it.ownContextOnly) }
+            }
+        }
+    }
+
+    internal fun pendingCount(): Int = state.get()?.pending?.size ?: 0
+
+    private fun currentState(): ThreadState = state.get() ?: ThreadState().also { state.set(it) }
+
     /**
      * Schedules closing of the bindings after the surrounding transaction completes.
      * Returns false when there is no transaction to defer to and the caller must close after use.
      */
-    fun registerDeferred(bindings: Bindings): Boolean {
+    fun registerDeferred(bindings: Bindings, ownContextOnly: Boolean = false): Boolean {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            registerWithSpring(bindings)
+            registerWithSpring(Tracked(bindings, ownContextOnly))
             return true
         }
         val commandContext = OperatonContext.getCommandContext() ?: return false
-        val listener = TransactionListener { close(bindings) }
+        val listener = TransactionListener { close(bindings, ownContextOnly) }
         val transactionContext = commandContext.transactionContext
         transactionContext.addTransactionListener(TransactionState.COMMITTED, listener)
         transactionContext.addTransactionListener(TransactionState.ROLLED_BACK, listener)
         return true
     }
 
-    fun close(bindings: Bindings) {
-        try {
-            (bindings[POLYGLOT_CONTEXT] as? Context)?.close()
-        } catch (e: Exception) {
-            logger.warn(e) { "Failed to close GraalJS polyglot context" }
+    fun close(bindings: Bindings, ownContextOnly: Boolean = false) {
+        if (!ownContextOnly) {
+            try {
+                (bindings[POLYGLOT_CONTEXT] as? Context)?.close()
+            } catch (e: Exception) {
+                logger.warn(e) { "Failed to close GraalJS polyglot context" }
+            }
         }
         try {
             (bindings as? AutoCloseable)?.close()
@@ -59,19 +95,19 @@ object GraalJsContextCleanup {
         }
     }
 
-    private fun registerWithSpring(bindings: Bindings) {
+    private fun registerWithSpring(tracked: Tracked) {
         @Suppress("UNCHECKED_CAST")
-        val existing = TransactionSynchronizationManager.getResource(RESOURCE_KEY) as? MutableList<Bindings>
+        val existing = TransactionSynchronizationManager.getResource(RESOURCE_KEY) as? MutableList<Tracked>
         if (existing != null) {
-            existing += bindings
+            existing += tracked
             return
         }
-        val holder = mutableListOf(bindings)
+        val holder = mutableListOf(tracked)
         TransactionSynchronizationManager.bindResource(RESOURCE_KEY, holder)
         TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
             override fun afterCompletion(status: Int) {
                 TransactionSynchronizationManager.unbindResourceIfPossible(RESOURCE_KEY)
-                holder.forEach { close(it) }
+                holder.forEach { close(it.bindings, it.ownContextOnly) }
                 holder.clear()
             }
         })
