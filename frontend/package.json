@@ -242,7 +242,7 @@
     "@ngx-translate/core": "16.0.4",
     "@ngx-translate/http-loader": "16.0.1",
     "@simonwep/pickr": "^1.9.1",
-    "@tadashi/currency": "3.4.0",
+    "autonumeric": "4.10.10",
     "@webcomponents/custom-elements": "1.6.0",
     "ajv": "8.17.1",
     "angular-split": "19.0.0",

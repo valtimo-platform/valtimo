@@ -84,6 +84,8 @@
 * [14.x.x](release-notes/14.x.x/)
   * [14.0.0](release-notes/14.x.x/14.0.0/README.md)
 * [13.x.x](release-notes/13.x.x/)
+  * [13.52.0](release-notes/13.x.x/13.52.0/README.md)
+  * [13.51.0](release-notes/13.x.x/13.51.0/README.md)
   * [13.50.0](release-notes/13.x.x/13.50.0/README.md)
     * [13.50.1](release-notes/13.x.x/13.50.1/README.md)
   * [13.49.0](release-notes/13.x.x/13.49.0/README.md)
