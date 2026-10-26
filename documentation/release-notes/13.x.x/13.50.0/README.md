@@ -20,26 +20,6 @@ A new side panel at the right edge of the screen shows supporting content next t
 - Users resize the panel by dragging its left edge. The width is remembered.
 - The case header actions adapt to the available width, collapsing to icon-only buttons when space runs out.
 
-### New feature title
-
-New feature explanation.
-
----
-
-## Enhancements
-
-### New enhancement title
-
-New enhancement explanation.
-
----
-
-## Bugfixes
-
-| Area | Fix |
-|------|-----|
-| Area name | New bugfix. |
-
 ---
 
 ## Security
