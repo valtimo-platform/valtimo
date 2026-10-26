@@ -186,10 +186,17 @@
     },
     "caseUpdated": "Case updated",
     "startSubProcess": "Start",
+    "noStartableProcesses": "No action",
     "noLinkedStartProcessNotification": "There is no start form linked",
     "noLinkedProcessNotification": "There is no form linked",
     "configure": "Configure",
     "claimAssigneeCase": "Claim",
+    "taskPanel": {
+      "title": "Tasks",
+      "show": "Show tasks",
+      "hide": "Hide tasks",
+      "back": "Back"
+    },
     "deleteConfirmation": {
       "title": "Delete file",
       "description": "Are you sure you want to delete this file?",
@@ -4116,6 +4123,16 @@
   },
   "externalPluginPage": {
     "loadError": "This plugin page could not be loaded."
+  },
+  "sidePanel": {
+    "close": "Close panel",
+    "loadError": "This panel could not be loaded.",
+    "resize": "Resize panel",
+    "pinned": "Stays open when you go to other pages",
+    "originFor": "For",
+    "originFallback": "the case",
+    "originElsewhere": "Not this page",
+    "originElsewhereDescription": "This panel belongs to {{label}}, not to the page you are on."
   },
   "adminSettings": {
     "title": "Settings",

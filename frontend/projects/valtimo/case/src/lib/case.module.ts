@@ -107,13 +107,11 @@ import {TabTranslatePipeModule} from './pipes';
 import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
 import {CaseDetailWidgetsComponent} from './components/case-detail/tab/widgets/widgets.component';
 import {CaseDetailExternalPluginTabComponent} from './components/case-detail/tab/external-plugin/external-plugin.component';
-import {CaseDetailTaskListComponent} from './components/case-detail-task-list/case-detail-task-list.component';
-import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
-import {AngularSplitModule} from 'angular-split';
 import {CaseDetailHeaderWidgetComponent} from './components/case-detail-header-widget/case-detail-header-widget.component';
 import {CaseListTabsComponent} from './components/case-list-tabs/case-list-tabs.component';
 import {CaseListToolbarComponent} from './components/case-list-toolbar/case-list-toolbar.component';
 import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
+import {CaseActionsLayoutDirective} from './directives/case-actions-layout.directive';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -190,6 +188,7 @@ export type TabsFactory = () => Map<string, object>;
     SkeletonModule,
     StatusSelectorComponent,
     RenderInPageHeaderDirective,
+    CaseActionsLayoutDirective,
     TagModule,
     DialogModule,
     OverflowMenuComponent,
@@ -197,9 +196,6 @@ export type TabsFactory = () => Map<string, object>;
     OverflowMenuTriggerComponent,
     CaseDetailWidgetsComponent,
     CaseDetailExternalPluginTabComponent,
-    CaseDetailTaskListComponent,
-    CaseDetailsTaskDetailComponent,
-    AngularSplitModule,
     CaseTagsSelectorComponent,
     ValtimoCdsModalDirective,
     TilesModule,

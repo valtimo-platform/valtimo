@@ -3,6 +3,7 @@
     "roles": [
         "ROLE_USER",
         "ROLE_ADMIN",
-        "ROLE_HOUSE_OWNER"
+        "ROLE_HOUSE_OWNER",
+        "ROLE_CASE_VIEWER"
     ]
 }

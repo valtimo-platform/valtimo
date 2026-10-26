@@ -30,6 +30,8 @@ import {PageHeaderService, PageTitleService} from '../../services';
 export class RenderInPageHeaderDirective implements OnInit, AfterContentInit, OnDestroy {
   @ContentChild(TemplateRef) templateRef;
   @Input() fullWidth = false;
+  /** Lets the actions move below the page title when both don't fit on one row. */
+  @Input() wrap = false;
 
   private readonly _subscriptions = new Subscription();
 
@@ -61,6 +63,7 @@ export class RenderInPageHeaderDirective implements OnInit, AfterContentInit, On
         pageActionsVcr.createEmbeddedView(this.templateRef);
         this.pageTitleService.setHasPageActions(true);
         this.pageTitleService.setPageActionsFullWidth(this.fullWidth);
+        this.pageTitleService.setPageActionsWrap(this.wrap);
       }
     });
   }

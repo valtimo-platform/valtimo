@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 package com.ritense.objectenapi.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.DocumentService
+import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.form.domain.FormDefinition
 import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objectenapi.web.rest.result.ObjectDto
@@ -42,7 +49,9 @@ import java.util.UUID
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ZaakObjectResource(
-    private val zaakObjectService: ZaakObjectService
+    private val zaakObjectService: ZaakObjectService,
+    private val documentService: DocumentService,
+    private val authorizationService: AuthorizationService
 ) {
     @EndpointDescription(
         en = "List zaak object types for document",
@@ -52,6 +61,7 @@ class ZaakObjectResource(
     fun getZaakObjecttypes(
         @PathVariable(name = "documentId") documentId: UUID
     ): ResponseEntity<List<ObjecttypeDto>> {
+        requireViewableDocument(documentId)
         val zaakObjectTypes = zaakObjectService.getZaakObjectTypes(documentId).map {
             ObjecttypeDto(it.url, it.name)
         }
@@ -67,6 +77,7 @@ class ZaakObjectResource(
         @PathVariable(name = "documentId") documentId: UUID,
         @RequestParam(name = "typeUrl") typeUrl: URI
     ): ResponseEntity<List<Any>>{
+        requireViewableDocument(documentId)
         val objectDtos = zaakObjectService.getZaakObjectenOfType(documentId, typeUrl)
             .map(ObjectDto::create)
         return ResponseEntity.ok(objectDtos)
@@ -81,9 +92,14 @@ class ZaakObjectResource(
         nl = "Objectformulier op object-URL ophalen",
     )
     @GetMapping("/v1/document/{documentId}/zaak/object/form")
-    fun getZaakObjecten(
+    fun getZaakObjectForm(
+        @PathVariable(name = "documentId") documentId: UUID,
         @RequestParam(name = "objectUrl") objectUrl: URI
     ): ResponseEntity<FormDefinition>{
+        requireViewableDocument(documentId)
+        if (!zaakObjectService.isZaakObject(documentId, objectUrl)) {
+            return ResponseEntity.notFound().build()
+        }
         val form = zaakObjectService.getZaakObjectForm(objectUrl)
         return form?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
@@ -139,5 +155,12 @@ class ZaakObjectResource(
     ): ResponseEntity<Any> {
         val status = zaakObjectService.deleteObject(objectManagementId, objectId, objectUrl)
         return ResponseEntity.status(status).build()
+    }
+
+    private fun requireViewableDocument(documentId: UUID) {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
+        } as JsonSchemaDocument? ?: throw NoSuchElementException("Document with id '$documentId' not found.")
+        authorizationService.requireDocumentPermission(document)
     }
 }

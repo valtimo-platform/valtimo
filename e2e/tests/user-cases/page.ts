@@ -15,7 +15,7 @@
  */
 
 import {expect, Locator, Page} from '@playwright/test';
-import {CASE_DETAIL_PANEL_TEST_IDS} from '../../constants';
+import {CASE_DETAIL_PANEL_TEST_IDS, CONFIRMATION_MODAL_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {apiDelete, apiPost} from '../../utils/api.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
@@ -212,10 +212,14 @@ export class UserCasesPage {
     );
   }
 
-  // ─── Task list (right panel) ─────────────────────────────────────
+  // ─── Task list (side panel) ──────────────────────────────────────
+
+  get taskPanel(): Locator {
+    return this.page.getByTestId(CASE_DETAIL_PANEL_TEST_IDS.taskPanel);
+  }
 
   get taskListPanel(): Locator {
-    return this.page.locator('valtimo-case-detail-task-list');
+    return this.taskPanel.locator('valtimo-case-detail-task-list');
   }
 
   taskTileByName(taskName: string): Locator {
@@ -300,15 +304,29 @@ export class UserCasesPage {
     await expect(this.startFormPanel).toBeVisible({timeout: 15_000});
   }
 
+  get pendingChangesConfirmButton(): Locator {
+    return this.page
+      .getByTestId(CASE_DETAIL_PANEL_TEST_IDS.pendingChangesModal)
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton);
+  }
+
   async closeStartFormPanel() {
     await this.startFormPanelCloseButton.click();
+    await expect(this.startFormPanel).toHaveCount(0);
+  }
+
+  /** Closes a start form with entered data, confirming the pending changes prompt. */
+  async discardStartFormPanel() {
+    await this.startFormPanelCloseButton.click();
+    await expect(this.pendingChangesConfirmButton).toBeVisible();
+    await this.pendingChangesConfirmButton.click();
     await expect(this.startFormPanel).toHaveCount(0);
   }
 
   // ─── Task detail opened in the side panel ────────────────────────
 
   get taskDetailPanel(): Locator {
-    return this.page.locator('.task-panel valtimo-case-detail-task-detail');
+    return this.taskPanel.locator('valtimo-case-detail-task-detail');
   }
 
   async openTaskInPanel(taskName: string) {

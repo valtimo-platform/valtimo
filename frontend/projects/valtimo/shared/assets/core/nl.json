@@ -186,10 +186,17 @@
     },
     "caseUpdated": "Dossier aangepast",
     "startSubProcess": "Start",
+    "noStartableProcesses": "Geen actie",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
     "configure": "Configureer",
     "claimAssigneeCase": "Claimen",
+    "taskPanel": {
+      "title": "Taken",
+      "show": "Taken tonen",
+      "hide": "Taken verbergen",
+      "back": "Terug"
+    },
     "deleteConfirmation": {
       "title": "Bestand verwijderen",
       "description": "Weet u zeker dat u dit bestand wilt verwijderen?",
@@ -4125,6 +4132,16 @@
   },
   "externalPluginPage": {
     "loadError": "Deze pluginpagina kon niet worden geladen."
+  },
+  "sidePanel": {
+    "close": "Paneel sluiten",
+    "loadError": "Dit paneel kon niet worden geladen.",
+    "resize": "Paneelbreedte aanpassen",
+    "pinned": "Blijft open als u naar andere pagina's gaat",
+    "originFor": "Voor",
+    "originFallback": "het dossier",
+    "originElsewhere": "Niet deze pagina",
+    "originElsewhereDescription": "Dit paneel hoort bij {{label}}, niet bij de pagina waarop u nu bent."
   },
   "adminSettings": {
     "title": "Instellingen",
