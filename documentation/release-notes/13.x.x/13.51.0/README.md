@@ -30,5 +30,5 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
+| Tasks | A task opened from the task list filtered on a case type now shows its assigned team and user. |
 | Error responses | Error responses no longer include technical details such as stack traces for every client. Check that your own `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`. |
-| Availability | An instance whose database has become unreachable now reports itself as unavailable, so it is taken out of service instead of being sent requests that fail |
