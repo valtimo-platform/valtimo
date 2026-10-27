@@ -43,5 +43,4 @@
 
 * **Stack traces no longer returned to every client**
 
-  Error responses no longer include technical details such as stack traces for every client. Check that your own
-  `valtimo.hardening.allowStacktraceOnIps` setting does not contain `*`.
+  Error responses no longer include technical details such as stack traces for every client.
