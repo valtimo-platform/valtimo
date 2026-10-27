@@ -36,4 +36,4 @@ New enhancement explanation.
 
 | Severity | Fix |
 |----------|-----|
-| Medium | Form submissions no longer accept values for the e-mail preview form component. |
+| High | Form submissions no longer accept values for the e-mail preview form component. |
