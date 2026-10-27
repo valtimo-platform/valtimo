@@ -54,9 +54,11 @@ describe('CaseDefinitionGroupDetailService', () => {
   beforeEach(() => {
     managementService = jasmine.createSpyObj('CaseDefinitionGroupManagementService', [
       'getGroup',
+      'getListColumns',
       'updateGroup',
     ]);
     managementService.getGroup.and.returnValue(of(group));
+    managementService.getListColumns.and.returnValue(of([]));
     managementService.updateGroup.and.callFake((_key: string, request: any) =>
       of(toResponse(request))
     );
@@ -78,6 +80,54 @@ describe('CaseDefinitionGroupDetailService', () => {
     service.reloadGroup();
 
     expect(managementService.getGroup).toHaveBeenCalledTimes(2);
+  });
+
+  describe('no list columns warning', () => {
+    let showWarning: boolean | undefined;
+
+    beforeEach(() => {
+      service.showNoListColumnsWarning$.subscribe(value => (showWarning = value));
+    });
+
+    it('shows when the group has members but no list columns', () => {
+      service.loadGroup('group-a');
+
+      expect(managementService.getListColumns).toHaveBeenCalledWith('group-a');
+      expect(showWarning).toBeTrue();
+    });
+
+    it('hides when the group has list columns', () => {
+      managementService.getListColumns.and.returnValue(of([{key: 'name'}]));
+
+      service.loadGroup('group-a');
+
+      expect(showWarning).toBeFalse();
+    });
+
+    it('hides when the group has no members', () => {
+      managementService.getGroup.and.returnValue(of({...group, members: []}));
+
+      service.loadGroup('group-a');
+
+      expect(showWarning).toBeFalse();
+    });
+
+    it('follows list column changes', () => {
+      service.loadGroup('group-a');
+
+      service.setHasListColumns(true);
+      expect(showWarning).toBeFalse();
+
+      service.setHasListColumns(false);
+      expect(showWarning).toBeTrue();
+    });
+
+    it('does not refetch list columns when reloading the same group', () => {
+      service.loadGroup('group-a');
+      service.reloadGroup();
+
+      expect(managementService.getListColumns).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('does not reload when no group is loaded', () => {

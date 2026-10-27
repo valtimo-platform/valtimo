@@ -196,6 +196,7 @@ export const CASE_DEFINITION_GROUP_MODAL_TEST_IDS = {
 export const CASE_DEFINITION_GROUP_DETAIL_TEST_IDS = {
   editButton: 'caseDefinitionGroupEditButton',
   exportButton: 'caseDefinitionGroupExportButton',
+  noListColumnsWarning: 'caseDefinitionGroupNoListColumnsWarning',
   tabs: 'caseDefinitionGroupTabs',
 } as const;
 

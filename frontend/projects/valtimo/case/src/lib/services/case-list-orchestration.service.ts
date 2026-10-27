@@ -356,6 +356,11 @@ export class CaseListOrchestrationService {
     tap(() => this._loadingFields$.next(false))
   );
 
+  public readonly noGroupListColumns$: Observable<boolean> = combineLatest([
+    this.listService.context$,
+    this.availableFields$,
+  ]).pipe(map(([context, fields]) => context?.type === 'group' && fields.length === 0));
+
   // --- Document items (the main data pipeline) ---
 
   private readonly _documentItems$ = new BehaviorSubject<any[] | null>(null);

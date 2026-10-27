@@ -18,6 +18,20 @@
   *ngIf="{currentTab: currentTab$ | async, group: group$ | async} as obs"
   class="case-definition-group-detail-container"
 >
+  @if (showNoListColumnsWarning$ | async) {
+    <cds-notification
+      [notificationObj]="{
+        type: 'warning',
+        title: ('caseManagement.groups.noListColumnsWarning.title' | translate),
+        message: ('caseManagement.groups.noListColumnsWarning.message' | translate),
+        showClose: false,
+        lowContrast: true
+      }"
+      class="case-definition-group-detail__no-list-columns-warning"
+      [attr.data-test-id]="testIds.noListColumnsWarning"
+    ></cds-notification>
+  }
+
   <cds-tabs class="case-management-tabs" type="inline" [attr.data-test-id]="testIds.tabs">
     <cds-tab
       class="no-padding-left-right main-content"

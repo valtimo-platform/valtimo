@@ -54,7 +54,6 @@ import {CaseDefinitionGroupDetailService} from '../../case-definition-group-deta
 interface MemberListItem {
   caseDefinitionKey: string;
   name: string;
-  version: string;
   order: number;
 }
 
@@ -255,7 +254,6 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
           map(def => ({
             caseDefinitionKey: m.caseDefinitionKey,
             name: def.schema?.title ?? m.caseDefinitionKey,
-            version: def.id?.blueprintId?.blueprintVersionTag ?? '-',
             order: m.order,
           }))
         )

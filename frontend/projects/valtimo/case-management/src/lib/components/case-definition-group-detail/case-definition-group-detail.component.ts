@@ -27,7 +27,13 @@ import {
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  NotificationModule,
+  TabsModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, filter, map, Subscription} from 'rxjs';
 import {CaseDefinitionGroupFormValue, CaseManagementListTab} from '../../models';
 import {CaseDefinitionGroupManagementService} from '../../services';
@@ -57,6 +63,7 @@ enum GroupTabEnum {
     TranslateModule,
     ButtonModule,
     IconModule,
+    NotificationModule,
     TabsModule,
     CaseDefinitionGroupCreateModalComponent,
     RenderInPageHeaderDirective,
@@ -72,6 +79,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   public readonly showEditModal$ = this._showEditModal$.asObservable();
 
   public readonly group$ = this.detailService.group$;
+  public readonly showNoListColumnsWarning$ = this.detailService.showNoListColumnsWarning$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
   public readonly $exporting = signal(false);
 

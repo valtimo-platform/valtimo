@@ -188,6 +188,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   public deleteColumn(column: GroupListColumn): void {
     const columns = this._columns$.value.filter(c => c.key !== column.key);
     this._columns$.next(columns);
+    this.detailService.setHasListColumns(columns.length > 0);
     this._saveColumnOrder(columns);
   }
 
@@ -215,6 +216,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
 
     this.groupService.getListColumns(groupKey).subscribe(columns => {
       this._columns$.next(columns.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+      this.detailService.setHasListColumns(columns.length > 0);
       this.loading$.next(false);
     });
   }

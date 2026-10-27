@@ -107,6 +107,10 @@
         "description": "Er zijn nog geen dossiers aan je teams toegewezen.",
         "title": "Geen teamdossiers"
       },
+      "noGroupListColumns": {
+        "description": "Deze dossiergroep heeft nog geen lijstkolommen. Neem contact op met je beheerder om ze te configureren.",
+        "title": "Geen lijstkolommen geconfigureerd"
+      },
       "search": {
         "description": "Er zijn geen dossiers die voldoen aan je zoekcriteria.",
         "title": "Geen dossiers gevonden"
@@ -1130,8 +1134,7 @@
         "noSearchResults": "Geen dossierdefinities gevonden",
         "columns": {
           "name": "Naam",
-          "key": "Key",
-          "version": "Versie"
+          "key": "Key"
         }
       },
       "pathMappings": {
@@ -1161,6 +1164,10 @@
       "noMatchingCaseTypes": "Geen overeenkomende dossierdefinities gevonden",
       "showOnlyEmpty": "Alleen ontbrekende paden tonen",
       "showOnlyEmptyTooltip": "Als dit is aangevinkt, worden alleen dossierdefinities zonder pad getoond. Ingevulde rijen blijven zichtbaar tot dit wordt uitgezet.",
+      "noListColumnsWarning": {
+        "title": "Geen lijstkolommen geconfigureerd",
+        "message": "Er zijn dossiers aan deze groep gekoppeld, maar er zijn nog geen lijstkolommen geconfigureerd. De dossierlijst van deze groep toont geen dossiergegevens totdat er lijstkolommen zijn toegevoegd."
+      },
       "noMembersHint": "Voeg eerst een dossierdefinitie toe aan deze groep, onder Configuratie.",
       "export": {
         "button": "Exporteren",

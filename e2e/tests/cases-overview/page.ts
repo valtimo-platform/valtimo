@@ -162,7 +162,7 @@ export class CasesOverviewPage {
     return this.casesMenu.locator('button[aria-haspopup="true"]');
   }
 
-  // Only the chevron expands the menu; it starts collapsed on every load.
+  // Starts collapsed on every load; the chevron toggles without navigating.
   async expandCasesMenu() {
     await expect(this.casesMenuToggle).toBeVisible();
     if ((await this.casesMenuToggle.getAttribute('aria-expanded')) !== 'true') {

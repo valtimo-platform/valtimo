@@ -70,19 +70,19 @@ describe('SubmenuTitleClickDirective', () => {
     fixture.detectChanges();
   });
 
-  it('emits on a title click without expanding the submenu', () => {
-    click('.cds--side-nav__submenu-title');
-
-    expect(host.titleClicks).toBe(1);
-    expect(expanded()).toBe(false);
-  });
-
-  it('does not collapse an open submenu on a title click', () => {
-    click('.cds--side-nav__submenu-chevron');
+  it('emits and expands the submenu on a title click', () => {
     click('.cds--side-nav__submenu-title');
 
     expect(host.titleClicks).toBe(1);
     expect(expanded()).toBe(true);
+  });
+
+  it('emits and collapses an open submenu on a title click', () => {
+    click('.cds--side-nav__submenu-title');
+    click('.cds--side-nav__submenu-title');
+
+    expect(host.titleClicks).toBe(2);
+    expect(expanded()).toBe(false);
   });
 
   it('toggles the submenu on a chevron click without emitting', () => {

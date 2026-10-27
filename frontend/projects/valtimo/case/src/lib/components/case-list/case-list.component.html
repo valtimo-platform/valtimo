@@ -40,6 +40,7 @@
     hiddenColumns: orchestration.hiddenColumns$ | async,
     disableStartButton: disableStartButton$ | async,
     invalidSearchFields: orchestration.invalidSearchFields$ | async,
+    noGroupListColumns: orchestration.noGroupListColumns$ | async,
   } as obs"
 >
   <valtimo-case-list-actions
@@ -102,7 +103,7 @@
     [isSearchable]="true"
     [searchDebounceMs]="2000"
     [searchFields]="obs.searchFields || []"
-    [items]="obs.documentItems"
+    [items]="obs.noGroupListColumns ? [] : obs.documentItems"
     [pagination]="pagination"
     lockedTooltipTranslationKey="case.rowLocked"
     [showSelectionColumn]="canHaveAssignee"
@@ -136,10 +137,18 @@
     </div>
 
     <valtimo-no-results
-      [action]="obs.noResultsMessage.isSearchResult ? null : caseListActionsNoResult"
-      [description]="obs.noResultsMessage.description | translate"
-      [title]="obs.noResultsMessage.title | translate"
+      *ngIf="obs.noGroupListColumns; else defaultNoResults"
+      [description]="'case.noResults.noGroupListColumns.description' | translate"
+      [title]="'case.noResults.noGroupListColumns.title' | translate"
     ></valtimo-no-results>
+
+    <ng-template #defaultNoResults>
+      <valtimo-no-results
+        [action]="obs.noResultsMessage.isSearchResult ? null : caseListActionsNoResult"
+        [description]="obs.noResultsMessage.description | translate"
+        [title]="obs.noResultsMessage.title | translate"
+      ></valtimo-no-results>
+    </ng-template>
 
     <div tabs *ngIf="canHaveAssignee">
       <valtimo-case-list-tabs

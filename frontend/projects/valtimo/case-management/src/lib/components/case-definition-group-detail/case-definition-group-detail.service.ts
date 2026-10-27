@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {PinnedItemsService, PinnedItemType} from '@valtimo/case';
-import {BehaviorSubject, map, Observable, tap, throwError} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, tap, throwError} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../services';
 import {
   CaseDefinitionGroupUpdateRequest,
@@ -30,6 +30,12 @@ export class CaseDefinitionGroupDetailService {
   );
   public readonly group$ = this._group$.asObservable();
 
+  private readonly _hasListColumns$ = new BehaviorSubject<boolean | null>(null);
+  public readonly showNoListColumnsWarning$: Observable<boolean> = combineLatest([
+    this._group$,
+    this._hasListColumns$,
+  ]).pipe(map(([group, hasListColumns]) => !!group?.members?.length && hasListColumns === false));
+
   public get currentGroup(): CaseDefinitionGroupWithMembersResponse | null {
     return this._group$.value;
   }
@@ -40,9 +46,19 @@ export class CaseDefinitionGroupDetailService {
   ) {}
 
   public loadGroup(groupKey: string): void {
-    if (this._group$.value?.key !== groupKey) this._group$.next(null);
+    if (this._group$.value?.key !== groupKey) {
+      this._group$.next(null);
+      this._hasListColumns$.next(null);
+      this.groupManagementService
+        .getListColumns(groupKey)
+        .subscribe(columns => this._hasListColumns$.next(columns.length > 0));
+    }
 
     this.groupManagementService.getGroup(groupKey).subscribe(group => this._group$.next(group));
+  }
+
+  public setHasListColumns(hasListColumns: boolean): void {
+    this._hasListColumns$.next(hasListColumns);
   }
 
   public reloadGroup(): void {

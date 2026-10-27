@@ -107,6 +107,10 @@
         "description": "No cases have been assigned to your teams yet.",
         "title": "No team cases"
       },
+      "noGroupListColumns": {
+        "description": "This case group has no list columns yet. Contact your administrator to configure them.",
+        "title": "No list columns configured"
+      },
       "search": {
         "description": "There are no cases that match your search criteria.",
         "title": "No cases found"
@@ -1130,8 +1134,7 @@
         "noSearchResults": "No case definitions match your search",
         "columns": {
           "name": "Name",
-          "key": "Key",
-          "version": "Version"
+          "key": "Key"
         }
       },
       "pathMappings": {
@@ -1161,6 +1164,10 @@
       "noMatchingCaseTypes": "No matching case definitions found",
       "showOnlyEmpty": "Show only missing paths",
       "showOnlyEmptyTooltip": "If this is checked, only case definitions without a path are shown. Rows that are filled in stay visible until this is turned off.",
+      "noListColumnsWarning": {
+        "title": "No list columns configured",
+        "message": "Cases are linked to this group, but no list columns are configured yet. The case list of this group will not show any case data until list columns are added."
+      },
       "noMembersHint": "Add a case definition to this group first, under Configuration.",
       "export": {
         "button": "Export",
