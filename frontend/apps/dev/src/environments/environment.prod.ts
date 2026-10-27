@@ -192,4 +192,5 @@ export const environment: ValtimoConfig = {
     showUserNameInTopBar: true,
     sortFilesByDate: true,
   },
+  translationResources: ['./assets/i18n/'],
 };
