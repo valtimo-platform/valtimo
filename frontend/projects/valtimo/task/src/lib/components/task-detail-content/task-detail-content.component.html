@@ -56,6 +56,7 @@
       (submit)="onSubmit($event)"
       (change)="onChange($event)"
       [options]="obs.formioOptions"
+      [preventDoubleSubmit]="true"
     ></valtimo-form-io>
 
     <valtimo-form-flow

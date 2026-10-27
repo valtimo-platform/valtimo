@@ -36,6 +36,7 @@
           #form
           [form]="formDefinition"
           [options]="options"
+          [preventDoubleSubmit]="true"
           (submit)="onSubmit($event)"
         >
         </valtimo-form-io>
