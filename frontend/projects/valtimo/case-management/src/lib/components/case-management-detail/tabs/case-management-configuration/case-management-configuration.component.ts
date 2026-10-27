@@ -47,7 +47,7 @@ import {
 import {CASE_MANAGEMENT_CONFIGURATION_TEST_IDS} from '../../../../constants';
 import {CaseConfigurationItem, StatusModalCloseEvent} from '../../../../models';
 import {CaseConfigurationApiService} from '../../../../services';
-import {CaseManagementConfigurationEnvironmentValueModalComponent} from './case-management-configuration-environment-value-modal/case-management-configuration-environment-value-modal.component';
+import {CaseManagementConfigurationEnvValueModalComponent} from './case-management-configuration-env-value-modal/case-management-configuration-env-value-modal.component';
 import {CaseManagementConfigurationModalComponent} from './case-management-configuration-modal/case-management-configuration-modal.component';
 
 @Component({
@@ -62,7 +62,7 @@ import {CaseManagementConfigurationModalComponent} from './case-management-confi
     ButtonModule,
     IconModule,
     CaseManagementConfigurationModalComponent,
-    CaseManagementConfigurationEnvironmentValueModalComponent,
+    CaseManagementConfigurationEnvValueModalComponent,
   ],
 })
 export class CaseManagementConfigurationComponent {

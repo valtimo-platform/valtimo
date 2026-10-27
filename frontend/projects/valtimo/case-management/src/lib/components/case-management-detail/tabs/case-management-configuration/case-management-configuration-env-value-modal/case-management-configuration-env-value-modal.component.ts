@@ -36,9 +36,9 @@ import {CaseConfigurationApiService} from '../../../../../services';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-case-management-configuration-environment-value-modal',
-  templateUrl: './case-management-configuration-environment-value-modal.component.html',
-  styleUrls: ['./case-management-configuration-environment-value-modal.component.scss'],
+  selector: 'valtimo-case-management-configuration-env-value-modal',
+  templateUrl: './case-management-configuration-env-value-modal.component.html',
+  styleUrls: ['./case-management-configuration-env-value-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
@@ -51,7 +51,7 @@ import {CaseConfigurationApiService} from '../../../../../services';
     LayerModule,
   ],
 })
-export class CaseManagementConfigurationEnvironmentValueModalComponent implements OnChanges {
+export class CaseManagementConfigurationEnvValueModalComponent implements OnChanges {
   @Input() public item: CaseConfigurationItem | null = null;
   @Input() public open = false;
   @Input() public params: CaseManagementParams | null = null;

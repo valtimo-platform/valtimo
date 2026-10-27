@@ -53,12 +53,12 @@
     (closeEvent)="onDeclarationModalClose($event)"
   ></valtimo-case-management-configuration-modal>
 
-  <valtimo-case-management-configuration-environment-value-modal
+  <valtimo-case-management-configuration-env-value-modal
     [item]="$environmentValueItem()"
     [open]="$environmentValueModalOpen()"
     [params]="obs.params"
     (closeEvent)="onEnvironmentValueModalClose($event)"
-  ></valtimo-case-management-configuration-environment-value-modal>
+  ></valtimo-case-management-configuration-env-value-modal>
 
   <ng-template #addButton>
     <button
