@@ -48,7 +48,7 @@ export class WidgetProcess {
 
   private readonly _sseService = inject(SseService);
 
-  /** The same case events on which the case's "start" menu reloads its startable items. */
+  // Mirrors Start menu reload triggers
   private readonly _caseUpdates$: Observable<TaskUpdateSseEvent | DocumentUpdatedSseEvent> = merge(
     this._sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
     this._sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
@@ -75,7 +75,7 @@ export class WidgetProcess {
     })
   );
 
-  /** The startable items are the same PBAC-aware source the case's "start" menu uses. */
+  // No separate permission check — startable items already apply PBAC
   public readonly canCreateCamundaExecution$: Observable<boolean> = combineLatest([
     this._startableItems$,
     this._baseWidgetConfiguration$,

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {RolePermission} from './widget-process-access.types';
+
 /**
  * Fixture for the widget process button access spec (gzac-issues#854).
  *
@@ -82,6 +84,6 @@ export const RESTRICTED_PROCESS_START_PERMISSIONS = [
   },
 ];
 
-export function isProcessStartPermission(permission: {resourceType: string; actions: string[]}) {
+export function isProcessStartPermission(permission: RolePermission) {
   return permission.resourceType === OPERATON_EXECUTION && permission.actions.includes('create');
 }
