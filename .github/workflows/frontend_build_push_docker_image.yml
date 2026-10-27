@@ -40,7 +40,7 @@ defaults:
     working-directory: frontend
 
 env:
-  NODE_VERSION: "20.x"
+  NODE_VERSION: "22.23.4"
 
 jobs:
   resolve_variant:
