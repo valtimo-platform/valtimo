@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import com.ritense.valtimo.service.BpmnModelService;
 import com.ritense.valtimo.service.CamundaProcessService;
 import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valtimo.service.CurrentUserServiceImpl;
+import com.ritense.valtimo.service.ProcessInstanceDiagramService;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
 import com.ritense.valtimo.service.UserSettingsService;
@@ -257,6 +258,20 @@ public class ValtimoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ProcessInstanceDiagramService.class)
+    public ProcessInstanceDiagramService processInstanceDiagramService(
+        final CamundaHistoryService camundaHistoryService,
+        final RepositoryService repositoryService,
+        final HistoryService historyService
+    ) {
+        return new ProcessInstanceDiagramService(
+            camundaHistoryService,
+            repositoryService,
+            historyService
+        );
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessResource.class)
     public ProcessResource processResource(
         final HistoryService historyService,
@@ -268,7 +283,8 @@ public class ValtimoAutoConfiguration {
         final CamundaProcessService camundaProcessService,
         final ProcessShortTimerService processShortTimerService,
         final CamundaSearchProcessInstanceRepository camundaSearchProcessInstanceRepository,
-        final ProcessPropertyService processPropertyService
+        final ProcessPropertyService processPropertyService,
+        final ProcessInstanceDiagramService processInstanceDiagramService
     ) {
         return new ProcessResource(
             historyService,
@@ -280,7 +296,8 @@ public class ValtimoAutoConfiguration {
             camundaProcessService,
             processShortTimerService,
             camundaSearchProcessInstanceRepository,
-            processPropertyService
+            processPropertyService,
+            processInstanceDiagramService
         );
     }
 
