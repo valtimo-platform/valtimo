@@ -35,7 +35,11 @@ import {
   TabsModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, filter, map, Subscription} from 'rxjs';
-import {CaseDefinitionGroupFormValue, CaseManagementListTab} from '../../models';
+import {
+  CaseDefinitionGroupFormValue,
+  CaseDefinitionGroupTabEnum,
+  CaseManagementListTab,
+} from '../../models';
 import {CaseDefinitionGroupManagementService} from '../../services';
 import {CaseDefinitionGroupCreateModalComponent} from '../case-definition-group-create-modal/case-definition-group-create-modal.component';
 import {CaseDefinitionGroupDetailService} from './case-definition-group-detail.service';
@@ -43,12 +47,6 @@ import {
   CASE_DEFINITION_GROUP_DETAIL_TEST_IDS,
   CASE_MANAGEMENT_LIST_TAB_PARAM,
 } from '../../constants';
-
-enum GroupTabEnum {
-  CONFIG = 'config',
-  LIST_COLUMNS = 'list-columns',
-  SEARCH_FIELDS = 'search-fields',
-}
 
 @Component({
   standalone: true,
@@ -70,7 +68,7 @@ enum GroupTabEnum {
   ],
 })
 export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
-  public readonly GroupTabEnum = GroupTabEnum;
+  public readonly GroupTabEnum = CaseDefinitionGroupTabEnum;
 
   protected readonly testIds = CASE_DEFINITION_GROUP_DETAIL_TEST_IDS;
 
@@ -87,7 +85,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
 
   public readonly currentTab$ = this.router.events.pipe(
     filter(() => !!this.route.firstChild),
-    map(() => this.route.firstChild?.snapshot.url[0]?.path ?? GroupTabEnum.CONFIG)
+    map(() => this.route.firstChild?.snapshot.url[0]?.path ?? CaseDefinitionGroupTabEnum.CONFIG)
   );
 
   constructor(
@@ -170,7 +168,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  public navigateToTab(tab: GroupTabEnum): void {
+  public navigateToTab(tab: CaseDefinitionGroupTabEnum): void {
     const groupKey = this.route.snapshot.params['groupKey'];
     this.router.navigateByUrl(`/case-management/group/${groupKey}/${tab}`);
   }

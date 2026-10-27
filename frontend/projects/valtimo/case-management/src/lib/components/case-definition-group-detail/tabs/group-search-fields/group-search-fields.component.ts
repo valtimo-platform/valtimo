@@ -36,15 +36,14 @@ import {
   take,
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
-import {GroupPathMapping} from '../../../../models';
-import {CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS} from '../../../../constants';
+import {GroupPathMapping, GroupSearchFieldWithMappings} from '../../../../models';
+import {
+  CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS,
+  EDITABLE_DROPDOWN_DATA_PROVIDER,
+} from '../../../../constants';
 import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
 import {GroupSearchFieldModalComponent} from './group-search-field-modal/group-search-field-modal.component';
 import {GroupPathMappingEditorComponent} from '../../shared/group-path-mapping-editor/group-path-mapping-editor.component';
-
-interface SearchFieldWithMappings extends GroupSearchField {
-  pathMappings?: GroupPathMapping[];
-}
 
 @Component({
   standalone: true,
@@ -70,7 +69,12 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
   public readonly searchControl = new FormControl('');
 
   public readonly fields: ColumnConfig[] = [
-    {viewType: ViewType.TEXT, sortable: false, key: 'name', label: 'caseManagement.listColumns.name'},
+    {
+      viewType: ViewType.TEXT,
+      sortable: false,
+      key: 'name',
+      label: 'caseManagement.listColumns.name',
+    },
     {viewType: ViewType.TEXT, sortable: false, key: 'key', label: 'caseManagement.listColumns.key'},
     {
       viewType: ViewType.TEXT,
@@ -98,7 +102,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
   ];
 
   private readonly _subscriptions = new Subscription();
-  private readonly _fields$ = new BehaviorSubject<SearchFieldWithMappings[]>([]);
+  private readonly _fields$ = new BehaviorSubject<GroupSearchFieldWithMappings[]>([]);
   private readonly _pathMappingsCache = new Map<string, Observable<GroupPathMapping[]>>();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -128,7 +132,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
   public readonly group$ = this.detailService.group$;
 
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
-  public readonly editingField$ = new BehaviorSubject<SearchFieldWithMappings | null>(null);
+  public readonly editingField$ = new BehaviorSubject<GroupSearchFieldWithMappings | null>(null);
 
   constructor(
     private readonly detailService: CaseDefinitionGroupDetailService,
@@ -154,7 +158,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     this.showModal$.next(true);
   }
 
-  public showEditModal(field: SearchFieldWithMappings): void {
+  public showEditModal(field: GroupSearchFieldWithMappings): void {
     this.pathMappings$(field.key)
       .pipe(take(1))
       .subscribe(pathMappings => {
@@ -186,7 +190,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     return this._pathMappingsCache.get(fieldKey) as Observable<GroupPathMapping[]>;
   }
 
-  public onItemsReordered(fields: SearchFieldWithMappings[]): void {
+  public onItemsReordered(fields: GroupSearchFieldWithMappings[]): void {
     const reordered = fields.map(field => this._findField(field.key));
     this._fields$.next(reordered);
     this._saveFieldOrder(reordered);
@@ -198,15 +202,15 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     this._saveFieldOrder(fields);
 
     const groupKey = this.detailService.currentGroup?.key;
-    if (groupKey && field.dropdownDataProvider === 'dropdownDatabaseDataProvider') {
+    if (groupKey && field.dropdownDataProvider === EDITABLE_DROPDOWN_DATA_PROVIDER) {
       this.documentService
         .deleteDropdownData(field.dropdownDataProvider, groupKey, field.key)
         .subscribe();
     }
   }
 
-  private _findField(key: string): SearchFieldWithMappings {
-    return this._fields$.value.find(f => f.key === key) as SearchFieldWithMappings;
+  private _findField(key: string): GroupSearchFieldWithMappings {
+    return this._fields$.value.find(f => f.key === key) as GroupSearchFieldWithMappings;
   }
 
   private _loadGroupAndFields(): void {
@@ -233,7 +237,7 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private _saveFieldOrder(fields: SearchFieldWithMappings[]): void {
+  private _saveFieldOrder(fields: GroupSearchFieldWithMappings[]): void {
     const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 

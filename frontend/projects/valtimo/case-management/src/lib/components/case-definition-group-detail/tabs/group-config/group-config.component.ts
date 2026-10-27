@@ -44,29 +44,13 @@ import {
   Subscription,
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
-import {GroupMember} from '../../../../models';
+import {GroupMember, GroupMemberListItem} from '../../../../models';
 import {
   CASE_DEFINITION_GROUP_CONFIG_TEST_IDS,
   CASE_MANAGEMENT_COLOR_TEST_IDS,
+  COLOR_SWATCHES,
 } from '../../../../constants';
 import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
-
-interface MemberListItem {
-  caseDefinitionKey: string;
-  name: string;
-  order: number;
-}
-
-const COLOR_SWATCHES = [
-  '#da1e28', '#ff8389', '#fa4d56', '#ff7eb6', '#ee538b', '#d12771',
-  '#6929c4', '#8a3ffc', '#a56eff', '#d4bbff',
-  '#0043ce', '#1192e8', '#33b1ff', '#82cfff',
-  '#005d5d', '#009d9a', '#3ddbd9',
-  '#0e6027', '#24a148', '#42be65',
-  '#b28600', '#f1c21b',
-  '#570408', '#002d9c',
-  '#525252', '#8d8d8d', '#161616',
-];
 
 @Component({
   standalone: true,
@@ -107,7 +91,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   private readonly _subscriptions = new Subscription();
   public readonly group$ = this.detailService.group$;
 
-  private readonly _members$ = new BehaviorSubject<MemberListItem[]>([]);
+  private readonly _members$ = new BehaviorSubject<GroupMemberListItem[]>([]);
   public readonly members$ = this._members$.asObservable();
 
   public readonly searchControl = new FormControl('');
@@ -214,7 +198,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
       });
   }
 
-  public removeMember(member: MemberListItem): void {
+  public removeMember(member: GroupMemberListItem): void {
     const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 

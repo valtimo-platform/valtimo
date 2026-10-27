@@ -56,23 +56,10 @@ import {
   canSortOnPaths,
   CASE_DEFINITION_GROUP_COLUMN_MODAL_TEST_IDS,
   CASE_DEFINITION_GROUP_ITEM_MODAL_TEST_IDS,
+  GROUP_COLUMN_DEFAULT_SORT_ITEMS,
+  GROUP_COLUMN_DISPLAY_TYPE_ITEMS,
+  GROUP_COLUMN_NO_DEFAULT_SORT,
 } from '../../../../../constants';
-
-const DISPLAY_TYPE_ITEMS = [
-  {content: 'text', value: 'text'},
-  {content: 'date', value: 'date'},
-  {content: 'boolean', value: 'boolean'},
-  {content: 'enum', value: 'enum'},
-  {content: 'tags', value: 'tags'},
-];
-
-const NO_DEFAULT_SORT = 'none';
-
-const DEFAULT_SORT_ITEMS = [
-  {content: 'listColumn.selectDefaultSort', value: NO_DEFAULT_SORT},
-  {content: 'listColumn.sortableAsc', value: 'ASC'},
-  {content: 'listColumn.sortableDesc', value: 'DESC'},
-];
 
 @Component({
   standalone: true,
@@ -145,7 +132,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       });
   }
 
-  public readonly DISPLAY_TYPE_ITEMS = DISPLAY_TYPE_ITEMS;
+  public readonly DISPLAY_TYPE_ITEMS = GROUP_COLUMN_DISPLAY_TYPE_ITEMS;
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   public formGroup: FormGroup = this.fb.group({
@@ -153,7 +140,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
     key: ['', Validators.required],
     displayType: ['text', Validators.required],
     sortable: [true],
-    defaultSort: [NO_DEFAULT_SORT],
+    defaultSort: [GROUP_COLUMN_NO_DEFAULT_SORT],
     dateFormat: [''],
     tagAmount: [1],
   });
@@ -171,7 +158,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
   public defaultEnumValues: {key: string; value: string}[] = [];
   public enumValues: {key: string; value: string}[] = [];
 
-  private _defaultSortIntent = NO_DEFAULT_SORT;
+  private _defaultSortIntent = GROUP_COLUMN_NO_DEFAULT_SORT;
   private _sortableIntent = true;
   private _emptyMemberKeys = new Set<string>();
 
@@ -185,12 +172,12 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.translateService
-      .stream(DEFAULT_SORT_ITEMS.map(item => item.content))
+      .stream(GROUP_COLUMN_DEFAULT_SORT_ITEMS.map(item => item.content))
       .pipe(takeUntil(this.destroy$))
       .subscribe(translations => {
         const control = this.formGroup.get('defaultSort');
         const selected = control?.value?.value ?? control?.value;
-        this.defaultSortItems = DEFAULT_SORT_ITEMS.map(item => ({
+        this.defaultSortItems = GROUP_COLUMN_DEFAULT_SORT_ITEMS.map(item => ({
           ...item,
           content: translations[item.content],
           selected: item.value === selected,
@@ -214,7 +201,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       .get('defaultSort')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(defaultSort => {
-        this._defaultSortIntent = defaultSort?.value ?? defaultSort ?? NO_DEFAULT_SORT;
+        this._defaultSortIntent = defaultSort?.value ?? defaultSort ?? GROUP_COLUMN_NO_DEFAULT_SORT;
       });
   }
 
@@ -334,7 +321,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
       defaultSortControl?.enable({emitEvent: false});
       defaultSortControl?.setValue(this._defaultSortIntent, {emitEvent: false});
     } else {
-      defaultSortControl?.setValue(NO_DEFAULT_SORT, {emitEvent: false});
+      defaultSortControl?.setValue(GROUP_COLUMN_NO_DEFAULT_SORT, {emitEvent: false});
       defaultSortControl?.disable({emitEvent: false});
     }
     this.cdr.markForCheck();
@@ -369,7 +356,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
 
   private _resetForm(): void {
     this._sortableIntent = this.column?.sortable ?? true;
-    this._defaultSortIntent = this.column?.defaultSort ?? NO_DEFAULT_SORT;
+    this._defaultSortIntent = this.column?.defaultSort ?? GROUP_COLUMN_NO_DEFAULT_SORT;
     if (this.column) {
       const params = this.column.displayType.displayTypeParameters ?? {};
       this.formGroup.patchValue(
@@ -378,7 +365,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
           key: this.column.key,
           displayType: this.column.displayType.type,
           sortable: this.column.sortable,
-          defaultSort: this.column.defaultSort ?? NO_DEFAULT_SORT,
+          defaultSort: this.column.defaultSort ?? GROUP_COLUMN_NO_DEFAULT_SORT,
           dateFormat: params.dateFormat ?? '',
           tagAmount: params.tagAmount ?? 1,
         },
@@ -403,7 +390,7 @@ export class GroupColumnModalComponent implements OnChanges, OnInit, OnDestroy {
         key: '',
         displayType: 'text',
         sortable: true,
-        defaultSort: NO_DEFAULT_SORT,
+        defaultSort: GROUP_COLUMN_NO_DEFAULT_SORT,
         dateFormat: '',
         tagAmount: 1,
       });

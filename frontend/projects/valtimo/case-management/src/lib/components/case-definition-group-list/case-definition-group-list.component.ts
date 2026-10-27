@@ -22,17 +22,11 @@ import {TranslateModule} from '@ngx-translate/core';
 import {IconModule, IconService, ButtonModule} from 'carbon-components-angular';
 import {BehaviorSubject, map} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../services';
-import {CaseDefinitionGroupResponse} from '../../models';
+import {CaseDefinitionGroupListItem, CaseDefinitionGroupResponse} from '../../models';
 import {CASE_DEFINITION_GROUP_LIST_TEST_IDS} from '../../constants';
 import {CaseDefinitionGroupCreateModalComponent} from '../case-definition-group-create-modal/case-definition-group-create-modal.component';
 import {CaseDefinitionGroupImportModalComponent} from '../case-definition-group-import-modal/case-definition-group-import-modal.component';
 import {CommonModule} from '@angular/common';
-
-interface GroupListItem {
-  key: string;
-  title: string;
-  memberCount: number;
-}
 
 @Component({
   standalone: true,
@@ -59,7 +53,7 @@ export class CaseDefinitionGroupListComponent implements OnInit {
   ];
 
   private readonly _refresh$ = new BehaviorSubject<void>(undefined);
-  public readonly groups$ = new BehaviorSubject<GroupListItem[]>([]);
+  public readonly groups$ = new BehaviorSubject<CaseDefinitionGroupListItem[]>([]);
   public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
   public readonly showImportModal$ = new BehaviorSubject<boolean>(false);
 
@@ -75,7 +69,7 @@ export class CaseDefinitionGroupListComponent implements OnInit {
     this._loadGroups();
   }
 
-  public onRowClick(item: GroupListItem): void {
+  public onRowClick(item: CaseDefinitionGroupListItem): void {
     this.router.navigate(['/case-management/group', item.key]);
   }
 

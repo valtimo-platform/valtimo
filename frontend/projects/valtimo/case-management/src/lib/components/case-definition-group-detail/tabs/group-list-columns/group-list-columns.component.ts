@@ -36,15 +36,11 @@ import {
   take,
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
-import {GroupPathMapping} from '../../../../models';
+import {GroupListColumnWithMappings, GroupPathMapping} from '../../../../models';
 import {CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS} from '../../../../constants';
 import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
 import {GroupColumnModalComponent} from './group-column-modal/group-column-modal.component';
 import {GroupPathMappingEditorComponent} from '../../shared/group-path-mapping-editor/group-path-mapping-editor.component';
-
-interface ColumnWithMappings extends GroupListColumn {
-  pathMappings?: GroupPathMapping[];
-}
 
 @Component({
   standalone: true,
@@ -92,7 +88,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   ];
 
   private readonly _subscriptions = new Subscription();
-  private readonly _columns$ = new BehaviorSubject<ColumnWithMappings[]>([]);
+  private readonly _columns$ = new BehaviorSubject<GroupListColumnWithMappings[]>([]);
   private readonly _pathMappingsCache = new Map<string, Observable<GroupPathMapping[]>>();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -122,7 +118,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   public readonly group$ = this.detailService.group$;
 
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
-  public readonly editingColumn$ = new BehaviorSubject<ColumnWithMappings | null>(null);
+  public readonly editingColumn$ = new BehaviorSubject<GroupListColumnWithMappings | null>(null);
 
   constructor(
     private readonly detailService: CaseDefinitionGroupDetailService,
@@ -147,7 +143,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
     this.showModal$.next(true);
   }
 
-  public showEditModal(column: ColumnWithMappings): void {
+  public showEditModal(column: GroupListColumnWithMappings): void {
     this.pathMappings$(column.key)
       .pipe(take(1))
       .subscribe(pathMappings => {
@@ -179,7 +175,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
     return this._pathMappingsCache.get(columnKey) as Observable<GroupPathMapping[]>;
   }
 
-  public onItemsReordered(columns: ColumnWithMappings[]): void {
+  public onItemsReordered(columns: GroupListColumnWithMappings[]): void {
     const reordered = columns.map(column => this._findColumn(column.key));
     this._columns$.next(reordered);
     this._saveColumnOrder(reordered);
@@ -192,8 +188,8 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
     this._saveColumnOrder(columns);
   }
 
-  private _findColumn(key: string): ColumnWithMappings {
-    return this._columns$.value.find(c => c.key === key) as ColumnWithMappings;
+  private _findColumn(key: string): GroupListColumnWithMappings {
+    return this._columns$.value.find(c => c.key === key) as GroupListColumnWithMappings;
   }
 
   private _loadGroupAndColumns(): void {
@@ -221,7 +217,7 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private _saveColumnOrder(columns: ColumnWithMappings[]): void {
+  private _saveColumnOrder(columns: GroupListColumnWithMappings[]): void {
     const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 

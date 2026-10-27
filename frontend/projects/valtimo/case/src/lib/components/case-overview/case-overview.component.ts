@@ -22,7 +22,7 @@ import {RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CaseDefinition, CaseDefinitionGroup, DocumentService} from '@valtimo/document';
 import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
-import {CASE_OVERVIEW_TEST_IDS} from '../../constants';
+import {CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY, CASE_OVERVIEW_TEST_IDS} from '../../constants';
 import {PinnedItemType} from '../../models';
 import {PinnedItemsService} from '../../services';
 import {
@@ -35,8 +35,6 @@ import {
   TilesModule,
 } from 'carbon-components-angular';
 import {catchError, map, Observable, of, shareReplay, switchMap} from 'rxjs';
-
-const PIN_INFO_DISMISSED_KEY = 'caseOverviewPinInfoDismissed';
 
 @Component({
   templateUrl: './case-overview.component.html',
@@ -177,7 +175,7 @@ export class CaseOverviewComponent {
     this.$pinInfoVisible.set(false);
 
     try {
-      localStorage.setItem(PIN_INFO_DISMISSED_KEY, 'true');
+      localStorage.setItem(CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY, 'true');
     } catch {
       // Storage blocked: tip returns on next load.
     }
@@ -247,7 +245,7 @@ export class CaseOverviewComponent {
 
   private isPinInfoDismissed(): boolean {
     try {
-      return localStorage.getItem(PIN_INFO_DISMISSED_KEY) === 'true';
+      return localStorage.getItem(CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY) === 'true';
     } catch {
       return false;
     }
