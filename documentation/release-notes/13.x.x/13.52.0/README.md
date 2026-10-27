@@ -30,6 +30,7 @@ Values returned by JavaScript in process scripts and decision tables now stay us
 
 | Area | Fix |
 |------|-----|
+| Forms | Clicking the submit button of a form more than once no longer submits the form multiple times; after a failed submit the button can be used again. |
 | Scripts | Running JavaScript in processes and decision tables no longer makes the application use more and more memory over time. Scripts also run faster. |
 
 ---
