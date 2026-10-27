@@ -42,13 +42,7 @@ import {CASE_MANAGEMENT_COLOR_TEST_IDS, COLOR_SWATCHES} from '../../../../../../
   templateUrl: './case-management-color.component.html',
   styleUrl: './case-management-color.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-    LayerModule,
-    ColorPickerComponent,
-  ],
+  imports: [CommonModule, FormsModule, TranslateModule, LayerModule, ColorPickerComponent],
 })
 export class CaseManagementColorComponent {
   protected readonly testIds = CASE_MANAGEMENT_COLOR_TEST_IDS;
@@ -102,7 +96,7 @@ export class CaseManagementColorComponent {
 
   public readonly selectedColor$: Observable<string> = combineLatest([
     this.currentSettings$.pipe(map(s => s?.color ?? null)),
-    this._userSelectedColor$
+    this._userSelectedColor$,
   ]).pipe(
     map(([loaded, user]) => user ?? loaded ?? ''),
     distinctUntilChanged()

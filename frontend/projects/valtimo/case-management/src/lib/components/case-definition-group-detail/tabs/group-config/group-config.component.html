@@ -14,7 +14,13 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{members: filteredMembers$ | async, allMembers: members$ | async, available: availableCaseDefinitions$ | async} as obs">
+<ng-container
+  *ngIf="{
+    members: filteredMembers$ | async,
+    allMembers: members$ | async,
+    available: availableCaseDefinitions$ | async,
+  } as obs"
+>
   <div class="valtimo-group-config">
     <div
       class="valtimo-group-config__color-panel"
@@ -37,9 +43,11 @@
           <span class="valtimo-group-config__preview-label">
             {{ 'caseManagement.groups.config.selected' | translate }}
           </span>
-          <span class="valtimo-group-config__preview-hex" [attr.data-test-id]="colorTestIds.previewHex">{{
-            selectedColor | uppercase
-          }}</span>
+          <span
+            class="valtimo-group-config__preview-hex"
+            [attr.data-test-id]="colorTestIds.previewHex"
+            >{{ selectedColor | uppercase }}</span
+          >
         </div>
       </div>
 
@@ -48,9 +56,15 @@
           *ngFor="let color of COLOR_SWATCHES"
           type="button"
           class="valtimo-group-config__swatch"
-          [class.valtimo-group-config__swatch--selected]="selectedColor?.toLowerCase() === color.toLowerCase()"
+          [class.valtimo-group-config__swatch--selected]="
+            selectedColor?.toLowerCase() === color.toLowerCase()
+          "
           [style.background-color]="color"
-          [style.box-shadow]="selectedColor?.toLowerCase() === color.toLowerCase() ? '0 0 0 2px white, 0 0 0 4px ' + color : 'none'"
+          [style.box-shadow]="
+            selectedColor?.toLowerCase() === color.toLowerCase()
+              ? '0 0 0 2px white, 0 0 0 4px ' + color
+              : 'none'
+          "
           (click)="onSwatchClick(color)"
           [attr.aria-label]="color | uppercase"
           [attr.aria-pressed]="selectedColor?.toLowerCase() === color.toLowerCase()"
@@ -134,7 +148,9 @@
           <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--key">
             {{ 'caseManagement.groups.config.columns.key' | translate }}
           </div>
-          <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--actions"></div>
+          <div
+            class="valtimo-group-config__table-cell valtimo-group-config__table-cell--actions"
+          ></div>
         </div>
 
         <div
@@ -178,7 +194,10 @@
         </div>
 
         <div class="valtimo-group-config__table-footer" [attr.data-test-id]="testIds.memberCount">
-          {{ 'caseManagement.groups.config.caseCount' | translate: {count: obs.allMembers?.length || 0} }}
+          {{
+            'caseManagement.groups.config.caseCount'
+              | translate: {count: obs.allMembers?.length || 0}
+          }}
         </div>
       </div>
     </div>

@@ -141,9 +141,7 @@ describe('GroupSearchFieldModalComponent', () => {
     it('returns the case definition key of the item', () => {
       setMembers();
 
-      expect(component.trackByMember(0, component.displayedMembers[1])).toBe(
-        'auto-assign-test'
-      );
+      expect(component.trackByMember(0, component.displayedMembers[1])).toBe('auto-assign-test');
     });
 
     it('returns a stable value for the same member across recomputed arrays', () => {

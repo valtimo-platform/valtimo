@@ -66,7 +66,12 @@ export class GroupListColumnsComponent implements OnInit, OnDestroy {
   public readonly searchControl = new FormControl('');
 
   public readonly fields: ColumnConfig[] = [
-    {viewType: ViewType.TEXT, sortable: false, key: 'name', label: 'caseManagement.listColumns.name'},
+    {
+      viewType: ViewType.TEXT,
+      sortable: false,
+      key: 'name',
+      label: 'caseManagement.listColumns.name',
+    },
     {viewType: ViewType.TEXT, sortable: false, key: 'key', label: 'caseManagement.listColumns.key'},
     {
       viewType: ViewType.TEXT,

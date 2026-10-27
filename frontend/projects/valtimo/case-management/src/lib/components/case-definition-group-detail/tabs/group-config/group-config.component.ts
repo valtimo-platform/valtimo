@@ -14,13 +14,28 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DialogModule} from 'carbon-components-angular';
 import {Add16} from '@carbon/icons';
-import {CarbonListModule, ColorPickerComponent, ColorPickerConfig, SelectItem, SelectModule} from '@valtimo/components';
+import {
+  CarbonListModule,
+  ColorPickerComponent,
+  ColorPickerConfig,
+  SelectItem,
+  SelectModule,
+} from '@valtimo/components';
 import {DocumentService, DocumentDefinition} from '@valtimo/document';
 import {
   ButtonModule,
@@ -103,9 +118,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
       if (!search) return members;
       const term = search.toLowerCase();
       return members.filter(
-        m =>
-          m.name.toLowerCase().includes(term) ||
-          m.caseDefinitionKey.toLowerCase().includes(term)
+        m => m.name.toLowerCase().includes(term) || m.caseDefinitionKey.toLowerCase().includes(term)
       );
     })
   );
@@ -220,7 +233,9 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
         .pipe(
           filter(group => !!group),
           map(group => group.members),
-          distinctUntilChanged((previous, current) => JSON.stringify(previous) === JSON.stringify(current))
+          distinctUntilChanged(
+            (previous, current) => JSON.stringify(previous) === JSON.stringify(current)
+          )
         )
         .subscribe(members => this._loadMemberDetails(members))
     );

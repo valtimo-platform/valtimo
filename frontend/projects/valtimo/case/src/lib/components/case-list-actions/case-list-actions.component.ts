@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {RenderInBodyComponent, ValtimoCdsModalDirective} from '@valtimo/components';
