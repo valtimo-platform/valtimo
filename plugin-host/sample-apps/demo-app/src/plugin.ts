@@ -15,6 +15,7 @@
  */
 
 import type { FastifyBaseLogger } from "fastify";
+import { contractReplies } from "./contracts.js";
 import { callGzac } from "./gzac.js";
 import type { ConfigRecord } from "./store.js";
 
@@ -30,6 +31,11 @@ export interface ActionInput {
   documentId?: string;
   activityId?: string;
   properties: Record<string, unknown>;
+  /**
+   * Opaque, expiring handle naming this process instance. Send it as `replyTo` with
+   * `POST /api/v1/plugin-contract/jobs` to get the job's outcome back as a BPMN message.
+   */
+  replyHandle?: string;
 }
 
 export type ActionOutput =
@@ -101,6 +107,7 @@ export async function runAction(
  * Request (`handle_request`): the app serves its own JSON data to the iframe. `/info` is app-served
  * data (no GZAC). `/case-count-as-user` and `/case-count-as-plugin` call back into GZAC with the
  * user token vs the service token so the tab can compare their scopes (levels 3 & 4).
+ * `/contract-replies` lists the job replies GZAC delivered to this configuration.
  */
 export async function handleRequest(record: ConfigRecord, req: RequestInput, log: FastifyBaseLogger): Promise<RequestOutput> {
   switch (req.path) {
@@ -117,6 +124,8 @@ export async function handleRequest(record: ConfigRecord, req: RequestInput, log
       return countCases(record, req, "user", log);
     case "/case-count-as-plugin":
       return countCases(record, req, "plugin", log);
+    case "/contract-replies":
+      return { status: 200, body: contractReplies.list(record.configurationId) };
     default:
       return { status: 404, body: { error: `No handler for ${req.path}` } };
   }

@@ -75,6 +75,7 @@ class ExternalPluginUploadCompatibilityTest {
             GzacCompatibilityChecker(GzacVersionProvider { "13.1.3" }),
             PluginPackageInspector(objectMapper),
             objectMapper,
+            mock(),
         )
     }
 

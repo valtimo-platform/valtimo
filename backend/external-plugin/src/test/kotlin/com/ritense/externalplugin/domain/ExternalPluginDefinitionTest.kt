@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.domain
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.assertj.core.api.Assertions.assertThat
@@ -110,6 +111,106 @@ class ExternalPluginDefinitionTest {
         assertThat(definition.requiresReacceptance).isFalse()
     }
 
+    @Test
+    fun `a manifest without contract keys declares no contract footprint`() {
+        val accepted = manifest(capabilities = listOf("gzac_api"), endpoints = listOf("GET" to "/api/v1/document/*"))
+        val pending = manifest(capabilities = listOf("gzac_api"), endpoints = listOf("GET" to "/api/v1/document/*"))
+
+        assertThat(definition(accepted, pending).pendingPermissionsChanged).isFalse()
+        assertThat(declaredPermissions(definition(accepted, null)))
+            .containsExactlyInAnyOrder("capability:gzac_api", "endpoint:GET:/api/v1/document/*")
+    }
+
+    @Test
+    fun `a newly declared consumed contract is a permission change`() {
+        val definition = definition(
+            accepted = manifest(capabilities = listOf("gzac_api")),
+            pending = manifest(capabilities = listOf("gzac_api"), contracts = listOf("nl.ritense.openplan@1")),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isTrue()
+    }
+
+    @Test
+    fun `operations a consumer limits itself to are part of its footprint`() {
+        val definition = definition(
+            accepted = manifest(
+                contracts = listOf(
+                    "nl.ritense.openplan@1",
+                    mapOf("contract" to "nl.ritense.document.generate@1", "operations" to listOf("generate", "archive")),
+                ),
+            ),
+            pending = null,
+        )
+
+        assertThat(declaredPermissions(definition)).contains(
+            "contract:nl.ritense.openplan@1",
+            "contract:nl.ritense.document.generate@1",
+            "contract-operation:nl.ritense.document.generate@1:generate",
+            "contract-operation:nl.ritense.document.generate@1:archive",
+        )
+        assertThat(declaredPermissions(definition).filter { it.toString().startsWith("contract-operation:nl.ritense.openplan@1") })
+            .isEmpty()
+    }
+
+    @Test
+    fun `a changed set of declared operations is a permission change`() {
+        val generate = "nl.ritense.document.generate@1"
+        val definition = definition(
+            accepted = manifest(contracts = listOf(mapOf("contract" to generate, "operations" to listOf("generate")))),
+            pending = manifest(contracts = listOf(mapOf("contract" to generate, "operations" to listOf("generate", "archive")))),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isTrue()
+    }
+
+    @Test
+    fun `narrowing a contract to declared operations is a permission change`() {
+        val generate = "nl.ritense.document.generate@1"
+        val definition = definition(
+            accepted = manifest(contracts = listOf(generate)),
+            pending = manifest(contracts = listOf(mapOf("contract" to generate, "operations" to listOf("generate")))),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isTrue()
+    }
+
+    @Test
+    fun `a newly provided operation is a permission change`() {
+        val definition = definition(
+            accepted = manifest(provides = mapOf("nl.ritense.openplan@1" to listOf("list" to null))),
+            pending = manifest(provides = mapOf("nl.ritense.openplan@1" to listOf("list" to null, "get" to null))),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isTrue()
+    }
+
+    @Test
+    fun `switching a provided operation to job mode is a permission change`() {
+        val definition = definition(
+            accepted = manifest(provides = mapOf("nl.ritense.document.generate@1" to listOf("generate" to null))),
+            pending = manifest(provides = mapOf("nl.ritense.document.generate@1" to listOf("generate" to "job"))),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isTrue()
+    }
+
+    @Test
+    fun `an explicit sync mode equals the default`() {
+        val definition = definition(
+            accepted = manifest(provides = mapOf("nl.ritense.openplan@1" to listOf("list" to null))),
+            pending = manifest(provides = mapOf("nl.ritense.openplan@1" to listOf("list" to "sync"))),
+        )
+
+        assertThat(definition.pendingPermissionsChanged).isFalse()
+    }
+
+    private fun declaredPermissions(definition: ExternalPluginDefinition): Set<*> {
+        val method = ExternalPluginDefinition::class.java.getDeclaredMethod("declaredPermissions", ObjectNode::class.java)
+        method.isAccessible = true
+        return method.invoke(definition, definition.manifestJson) as Set<*>
+    }
+
     private fun definition(accepted: ObjectNode?, pending: ObjectNode?) = ExternalPluginDefinition(
         id = UUID.randomUUID(),
         pluginId = "case-summary",
@@ -128,6 +229,8 @@ class ExternalPluginDefinitionTest {
         egress: List<String> = emptyList(),
         endpoints: List<Pair<String, String>> = emptyList(),
         events: List<String> = emptyList(),
+        contracts: List<Any>? = null,
+        provides: Map<String, List<Pair<String, String?>>>? = null,
     ): ObjectNode = objectMapper.createObjectNode().apply {
         putObject("permissions").apply {
             putArray("capabilities").apply { capabilities.forEach { add(it) } }
@@ -137,7 +240,19 @@ class ExternalPluginDefinitionTest {
                     addObject().put("method", method).put("pattern", pattern)
                 }
             }
+            contracts?.let { putArray("contracts").apply { it.forEach { contract -> add(objectMapper.valueToTree<JsonNode>(contract)) } } }
         }
         putArray("eventSubscriptions").apply { events.forEach { add(it) } }
+        provides?.let { declared ->
+            putArray("provides").apply {
+                declared.forEach { (contract, operations) ->
+                    addObject().put("contract", contract).putArray("operations").apply {
+                        operations.forEach { (key, mode) ->
+                            addObject().put("key", key).put("title", key).apply { mode?.let { put("mode", it) } }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

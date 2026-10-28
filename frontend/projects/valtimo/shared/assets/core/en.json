@@ -2661,7 +2661,7 @@
       "steps": {
         "connection": "Connect",
         "configuration": "Enter data",
-        "permissions": "Permissions"
+        "permissions": "Permissions & plugins"
       },
       "connect": "Connect",
       "connecting": "Connecting to the app…",
@@ -2789,15 +2789,17 @@
     },
     "editExternalConfiguration": "Edit external plugin configuration",
     "invalidJson": "Invalid JSON",
+    "saveFailed": "Saving the configuration failed",
+    "saveRejected": "The configuration was not accepted. Check its values and contract bindings.",
     "addSteps": {
       "step0": "Choose your plugin",
       "step1": "Enter data",
-      "step2": "Permissions",
+      "step2": "Permissions & plugins",
       "complete": "Save configuration"
     },
     "editSteps": {
       "step0": "Enter data",
-      "step1": "Permissions",
+      "step1": "Permissions & plugins",
       "save": "Save configuration"
     },
     "permissions": {
@@ -2825,7 +2827,11 @@
       "egressWildcard": "Any address under this domain — the plugin chooses which one it connects to",
       "egressFromManifest": "Required by the plugin",
       "egressFromConfiguration": "From a URL you entered in this configuration",
-      "accept": "I trust this plugin and accept the requested permissions"
+      "accept": "I trust this plugin and accept the requested permissions",
+      "declaredContractsHeading": "Called contracts",
+      "declaredContractsDescription": "This plugin may call these contracts' operations on the plugin configuration each contract is bound to. A contract without a binding cannot be called.",
+      "providedContractsHeading": "Provided contracts",
+      "providedContractsDescription": "Other plugins can be bound to this plugin for these contracts. This is not a permission: it shows what this plugin offers."
     },
     "logs": {
       "menuItem": "Logs",
@@ -2887,12 +2893,17 @@
       "parentType": {
         "CASE": "Case",
         "BUILDING_BLOCK": "Building block",
-        "GLOBAL": "Global"
+        "GLOBAL": "Global",
+        "CONTRACT_BINDING": "Contract binding",
+        "CONTRACT_JOB": "Contract job"
       },
       "caseTab": "Case tab",
       "caseWidget": "Case widget",
       "buildingBlockMapping": "Building block plugin mapping",
-      "menuPage": "Menu page"
+      "menuPage": "Menu page",
+      "contractBinding": "Bound to another plugin configuration through a contract",
+      "contractJob": "Contract job that is still open",
+      "viewContractJob": "View job"
     },
     "reviewRequired": {
       "tag": "Review required",
@@ -2903,7 +2914,9 @@
       "menuItem": "Review changes",
       "modalTitle": "Review changed app",
       "accept": "Accept changes",
-      "failed": "Accepting the changes failed"
+      "failed": "Accepting the changes failed",
+      "newContractsTitle": "New contracts",
+      "newContractsMessage": "This version also calls {{contracts}}. Accepting binds such a contract only where exactly one configuration provides every operation it calls. Everywhere else it stays unbound, and calls to it fail, until an admin binds it in the configuration."
     },
     "awaitingHost": {
       "modalTitle": "Plugin host not available yet",
@@ -2920,6 +2933,114 @@
       "current": "You're currently running {{current}}.",
       "minimum": "Minimum compatible version: {{min}}.",
       "maximum": "Maximum compatible version: {{max}}."
+    },
+    "contracts": {
+      "bindingsHeading": "Plugins this plugin calls",
+      "bindingsDescription": "This plugin calls other plugins through the contracts below. Choose the plugin configuration that answers each contract, or leave a contract unbound: calls to an unbound contract fail.",
+      "selectProvider": "Choose a plugin configuration",
+      "choiceRequired": "Choose a plugin configuration, or leave the contract unbound",
+      "leaveUnbound": "Leave unbound",
+      "unboundHint": "Calls to this contract fail while it is unbound.",
+      "noProvider": "No configuration provides this contract yet. Calls to it fail until you bind one.",
+      "noCompatibleProvider": "No configuration provides every operation this plugin calls. Calls to the contract fail until you bind one.",
+      "staleBinding": "Bound to {{title}}, which no longer provides this contract. Choose another configuration or leave the contract unbound.",
+      "incompatibleBinding": "Bound to {{title}}, which does not provide {{operations}}. Choose another configuration or leave the contract unbound.",
+      "missingOperations": "does not provide {{operations}}",
+      "declaredOperations": "Calls {{operations}}",
+      "providersLoadFailed": "The configurations that provide this contract could not be loaded.",
+      "retry": "Retry",
+      "unavailable": "unavailable",
+      "contract": "Contract",
+      "operation": "Operation",
+      "operations": "Operations",
+      "anyOperation": "Any operation the bound configuration provides",
+      "mode": "Mode",
+      "immediate": "Immediate",
+      "longRunning": "Long-running",
+      "longRunningUpTo": "Long-running, up to {{duration}}",
+      "durationUnits": {
+        "days": "{{value}} d",
+        "hours": "{{value}} h",
+        "minutes": "{{value}} min",
+        "seconds": "{{value}} s"
+      }
+    },
+    "contractJobs": {
+      "title": "Contract jobs",
+      "description": "Asynchronous requests between plugin configurations. An open job blocks deleting either configuration.",
+      "filterAll": "All",
+      "refresh": "Refresh",
+      "configurationFilter": "Configuration",
+      "filterAllConfigurations": "All configurations",
+      "retry": "Retry",
+      "loadFailed": "The job could not be loaded.",
+      "notFound": "This job does not exist. Finished jobs are removed after their retention period.",
+      "actionRefused": "The job changed in the meantime, so this is no longer possible. Its current state is shown below.",
+      "empty": "No contract jobs found",
+      "detailTitle": "Contract job",
+      "requestPayload": "Request",
+      "resultPayload": "Result",
+      "payloads": "Payloads",
+      "payloadsAudited": "The request and result can contain personal data. Showing them is recorded in the audit log.",
+      "showPayloads": "Show payloads",
+      "payloadsFailed": "The payloads could not be loaded.",
+      "actions": {
+        "cancelJob": "Cancel job",
+        "stopDelivery": "Stop delivery",
+        "redeliver": "Deliver again",
+        "back": "Go back"
+      },
+      "confirmCancelJob": {
+        "title": "Cancel this job?",
+        "content": "The job fails as cancelled and the requesting plugin is told. This cannot be undone."
+      },
+      "confirmStopDelivery": {
+        "title": "Stop delivering the reply?",
+        "content": "The requesting plugin does not get the reply and the job becomes undeliverable. You can deliver the reply again later."
+      },
+      "confirmRedeliver": {
+        "title": "Deliver the reply again?",
+        "content": "Delivery to the requesting plugin starts again from the first attempt."
+      },
+      "columns": {
+        "contract": "Contract",
+        "operation": "Operation",
+        "requester": "Requester",
+        "provider": "Provider",
+        "status": "Status",
+        "createdAt": "Created",
+        "deadline": "Deadline",
+        "attempts": "Attempts",
+        "error": "Error",
+        "requestedBy": "Requested by",
+        "outcome": "Outcome",
+        "documentId": "Case",
+        "idempotencyKey": "Idempotency key",
+        "providerErrorCode": "Provider error code",
+        "updatedAt": "Updated",
+        "completedAt": "Completed",
+        "deliveredAt": "Delivered",
+        "replyToProcessInstance": "Reply to process instance",
+        "lastDeliveryError": "Last delivery error"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "ACCEPTED": "Accepted",
+        "COMPLETED": "Completed",
+        "FAILED": "Failed",
+        "EXPIRED": "Expired",
+        "DELIVERED": "Delivered",
+        "UNDELIVERABLE": "Undeliverable"
+      }
+    },
+    "propertiesEditor": {
+      "helper": "JSON validated against the plugin's configuration schema. Hover a key for its description; Ctrl+Space suggests the declared fields.",
+      "fieldsTitle": "Fields this plugin expects",
+      "required": "Required",
+      "secret": "Secret",
+      "egressTarget": "Outbound destination",
+      "secretKept": "Stored encrypted and not shown; leave it out to keep the current value.",
+      "titlePlaceholder": "Enter a name for this configuration"
     }
   },
   "customerCases": {

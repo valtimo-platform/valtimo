@@ -44,6 +44,22 @@ export function guardHostCall<TReq>(
     };
   }
 
+  return readHostCall<TReq>(callContext, addr, ctx, capability);
+}
+
+/**
+ * Context + JSON parse without a capability gate — for host functions whose grant is not a
+ * capability (`plugin_contract` checks the pushed contract list itself).
+ */
+export function readHostCall<TReq>(
+  callContext: CallContext,
+  addr: bigint,
+  ctx: GzacApiCallContext | undefined,
+  name: string
+): HostCallGuardResult<TReq> {
+  if (!ctx) {
+    return { ok: false, status: 500, message: "No active invocation context" };
+  }
   const inputJson = callContext.read(addr)?.string() ?? "{}";
   try {
     return { ok: true, ctx, req: JSON.parse(inputJson) as TReq };
@@ -51,7 +67,7 @@ export function guardHostCall<TReq>(
     return {
       ok: false,
       status: 400,
-      message: `Invalid ${capability} request JSON: ${(err as Error).message}`,
+      message: `Invalid ${name} request JSON: ${(err as Error).message}`,
     };
   }
 }

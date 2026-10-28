@@ -16,13 +16,18 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   ExternalPluginConfiguration,
   ExternalPluginConfigurationCreateRequest,
   ExternalPluginConfigurationDetail,
   ExternalPluginConfigurationUpdateRequest,
+  ExternalPluginContractJobDetail,
+  ExternalPluginContractJobPayload,
+  ExternalPluginContractJobQuery,
+  ExternalPluginContractJobSummary,
+  ExternalPluginContractProvider,
   ExternalPluginDefinition,
   ExternalPluginEndpointDescription,
   ExternalPluginEndpointDescriptionQuery,
@@ -84,7 +89,8 @@ export class ExternalPluginService {
 
   /**
    * Returns what currently references any configuration under the host — BPMN process links,
-   * external-plugin case tabs and case widgets, and building-block mappings.
+   * external-plugin case tabs and case widgets, building-block mappings, menu pages, contract
+   * bindings from configurations on other hosts and open contract jobs.
    * Empty list = safe to delete. A non-empty list is also what the backend will attach to a
    * 409 if the user tries to delete anyway, so the UI uses this proactively to disable the
    * delete action.
@@ -190,13 +196,19 @@ export class ExternalPluginService {
     return this._http.post<ExternalPluginConfiguration>(`${this._baseUrl}/configuration`, request);
   }
 
+  /**
+   * `InterceptorSkip: 400,409` keeps a rejected update (e.g. contract bindings that would form a
+   * cycle) off the global error toast: the edit modal renders the backend's explanation inline.
+   */
   public updateConfiguration(
     configurationId: string,
     request: ExternalPluginConfigurationUpdateRequest
   ): Observable<ExternalPluginConfiguration> {
+    const headers = new HttpHeaders().set(InterceptorSkip, '400,409');
     return this._http.put<ExternalPluginConfiguration>(
       `${this._baseUrl}/configuration/${configurationId}`,
-      request
+      request,
+      {headers}
     );
   }
 
@@ -221,14 +233,70 @@ export class ExternalPluginService {
   /**
    * Same shape as [getHostUsages] but scoped to a single configuration. Empty list = safe to
    * delete. Non-empty = the configuration is referenced by one or more process links, case tabs,
-   * case widgets or building-block mappings, and `deleteConfiguration` would fail with a 409
-   * carrying these same entries.
+   * case widgets, building-block mappings, menu pages, contract bindings or open contract jobs,
+   * and `deleteConfiguration` would fail with a 409 carrying these same entries.
    */
   public getConfigurationUsages(
     configurationId: string
   ): Observable<Array<ExternalPluginHostUsage>> {
     return this._http.get<Array<ExternalPluginHostUsage>>(
       `${this._baseUrl}/configuration/${configurationId}/usages`
+    );
+  }
+
+  /** Configurations, across all integrations, whose accepted manifest provides the contract. */
+  public getContractProviders(contract: string): Observable<Array<ExternalPluginContractProvider>> {
+    return this._http.get<Array<ExternalPluginContractProvider>>(
+      `${this._baseUrl}/contract/${encodeURIComponent(contract)}/providers`
+    );
+  }
+
+  public getContractJobs(
+    query: ExternalPluginContractJobQuery
+  ): Observable<Page<ExternalPluginContractJobSummary>> {
+    let params = new HttpParams().set('page', query.page).set('size', query.size);
+    if (query.status) params = params.set('status', query.status);
+    if (query.configurationId) params = params.set('configurationId', query.configurationId);
+    return this._http.get<Page<ExternalPluginContractJobSummary>>(`${this._baseUrl}/contract-job`, {
+      params,
+    });
+  }
+
+  /** `InterceptorSkip: 404`: the detail modal tells the admin inline that the job is gone. */
+  public getContractJob(jobId: string): Observable<ExternalPluginContractJobDetail> {
+    const headers = new HttpHeaders().set(InterceptorSkip, '404');
+    return this._http.get<ExternalPluginContractJobDetail>(this._contractJobUrl(jobId), {headers});
+  }
+
+  /**
+   * An open job (`PENDING`, `ACCEPTED`) fails as cancelled and its requester is told. A finished
+   * job whose reply is not delivered yet (`COMPLETED`, `FAILED`, `EXPIRED`) stops delivery and
+   * becomes `UNDELIVERABLE`. `InterceptorSkip: 409` keeps the refusal for any other status off the
+   * global error toast — the detail modal renders it inline.
+   */
+  public cancelContractJob(jobId: string): Observable<ExternalPluginContractJobDetail> {
+    const headers = new HttpHeaders().set(InterceptorSkip, '409');
+    return this._http.post<ExternalPluginContractJobDetail>(
+      `${this._contractJobUrl(jobId)}/cancel`,
+      null,
+      {headers}
+    );
+  }
+
+  /** Delivers the reply of an `UNDELIVERABLE` job again, from the first attempt. 409 as for cancel. */
+  public redeliverContractJob(jobId: string): Observable<ExternalPluginContractJobDetail> {
+    const headers = new HttpHeaders().set(InterceptorSkip, '409');
+    return this._http.post<ExternalPluginContractJobDetail>(
+      `${this._contractJobUrl(jobId)}/redeliver`,
+      null,
+      {headers}
+    );
+  }
+
+  /** The decrypted request and result. GZAC records every read as a payload-viewed event. */
+  public getContractJobPayload(jobId: string): Observable<ExternalPluginContractJobPayload> {
+    return this._http.get<ExternalPluginContractJobPayload>(
+      `${this._contractJobUrl(jobId)}/payload`
     );
   }
 
@@ -268,5 +336,9 @@ export class ExternalPluginService {
       formData,
       {headers, params}
     );
+  }
+
+  private _contractJobUrl(jobId: string): string {
+    return `${this._baseUrl}/contract-job/${encodeURIComponent(jobId)}`;
   }
 }

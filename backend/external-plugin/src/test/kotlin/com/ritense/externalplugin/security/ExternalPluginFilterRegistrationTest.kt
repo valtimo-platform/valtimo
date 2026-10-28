@@ -43,12 +43,13 @@ class ExternalPluginFilterRegistrationTest {
         ExternalPluginAutoConfiguration::externalPluginServiceTokenFilterRegistration,
         ExternalPluginAutoConfiguration::externalPluginUserTokenFilterRegistration,
         ExternalPluginAutoConfiguration::externalPluginEndpointAllowlistFilterRegistration,
+        ExternalPluginAutoConfiguration::externalPluginContractRequestSizeFilterRegistration,
     )
 
     @Test
     fun `every plugin filter has a registration bean, so none is silently left auto-registered`() {
-        // Three filters exist (service token, user token, allowlist); each needs its own opt-out.
-        assertThat(registrationBeanMethods).hasSize(3)
+        // Four filters exist (service token, user token, allowlist, contract size cap); each needs its own opt-out.
+        assertThat(registrationBeanMethods).hasSize(4)
         registrationBeanMethods.forEach { method ->
             assertThat(method.javaMethod!!.returnType).isEqualTo(FilterRegistrationBean::class.java)
         }
@@ -74,6 +75,14 @@ class ExternalPluginFilterRegistrationTest {
     fun `the allowlist filter is not auto-registered as a bare servlet filter`() {
         val registration = ExternalPluginAutoConfiguration::externalPluginEndpointAllowlistFilterRegistration
         val filter = ExternalPluginEndpointAllowlistFilter(mock())
+
+        assertThat(registration.call(autoConfiguration(), filter).isEnabled).isFalse()
+    }
+
+    @Test
+    fun `the contract request size filter is not auto-registered as a bare servlet filter`() {
+        val registration = ExternalPluginAutoConfiguration::externalPluginContractRequestSizeFilterRegistration
+        val filter = ExternalPluginContractRequestSizeFilter(262_144)
 
         assertThat(registration.call(autoConfiguration(), filter).isEnabled).isFalse()
     }

@@ -28,6 +28,7 @@ import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
@@ -110,6 +111,7 @@ class ExternalPluginConfigurationServiceAcceptContentTest {
             mock<ExternalPluginHostUsageResolver>(),
             "gzac.events",
             "http://localhost:8080",
+            mock<ExternalPluginContractBindingRepository>(),
         )
     }
 

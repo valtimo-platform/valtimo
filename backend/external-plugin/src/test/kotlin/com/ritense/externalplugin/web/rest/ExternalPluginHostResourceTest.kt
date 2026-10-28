@@ -88,6 +88,7 @@ class ExternalPluginHostResourceTest {
             compatibilityChecker = GzacCompatibilityChecker { null },
             pluginPackageInspector = PluginPackageInspector(ObjectMapper()),
             objectMapper = ObjectMapper(),
+            contractJobService = mock(),
         )
     }
 
