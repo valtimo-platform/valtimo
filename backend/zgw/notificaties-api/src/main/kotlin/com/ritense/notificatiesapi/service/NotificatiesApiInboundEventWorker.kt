@@ -17,10 +17,15 @@
 package com.ritense.notificatiesapi.service
 
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
 import java.util.concurrent.atomic.AtomicBoolean
+import org.springframework.stereotype.Component
 
+@SkipComponentScan
+@Component
 class NotificatiesApiInboundEventWorker(
     private val processingProperties: NotificatiesApiProcessingProperties,
     private val processingService: NotificatiesApiInboundEventProcessingService
@@ -43,6 +48,23 @@ class NotificatiesApiInboundEventWorker(
             logger.error(ex) { "Unexpected error while processing inbound notificaties api events" }
         } finally {
             running.set(false)
+        }
+    }
+
+    @Scheduled(fixedDelayString = "\${valtimo.notificaties-api.processing.poll-interval:PT1M}")
+    @SchedulerLock(
+        name = "NotificatiesApiInboundEventWorker_runMaintenance",
+        lockAtLeastFor = "PT5S",
+        lockAtMostFor = "PT30M",
+    )
+    fun runMaintenance() {
+        if (!processingProperties.enabled) {
+            return
+        }
+        try {
+            processingService.runMaintenance()
+        } catch (ex: Exception) {
+            logger.error(ex) { "Unexpected error during maintenance of inbound notificaties api events" }
         }
     }
 
