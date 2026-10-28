@@ -43,10 +43,17 @@ the initiator and the documents, starts the handling process, and removes the ve
 The plugin only subscribes to notifications for the objecttypes used by its verzoek types, and only
 to the `create` action. Notifications for other objecttypes or actions are ignored.
 
-Creating the case and starting the process happen together. If any step fails, nothing is created and
-the verzoek object stays in the Objecten API. Valtimo keeps the notification and retries it on its
-own — three times by default, with a growing delay between attempts. Notifications that keep failing
-are listed under **Admin** > **Notifications**, where they can also be retried by hand.
+Creating the case and starting the process happen together, up to the first point where the process
+continues in the background. With the Create Zaakdossier process that is everything up to and including
+the **Create Zaak** task. If a step in that part fails, nothing is created and the verzoek object
+stays in the Objecten API. Valtimo keeps the notification and processes it again on its own — up to
+three attempts in total by default, with a growing delay between attempts. Notifications that keep
+failing are listed under **Admin** > **Notifications**, where they can also be retried by hand.
+
+If a later task of the Create Zaakdossier process fails, the case and the zaak remain, and the
+verzoek object stays in the Objecten API until the **Delete Verzoek from ObjectsAPI** task has run.
+The notification is not retried for such a failure and is not listed under **Admin** >
+**Notifications**; the failure shows up on the process instance of the case instead.
 
 <details>
 
@@ -294,8 +301,8 @@ are available:
 - `pv:` makes the value available as a process variable, for example `pv:voornaam`. A leading slash
   is allowed: `pv:/voornaam` and `pv:voornaam` both produce a variable named `voornaam`.
 
-A source that is not present in the verzoek is skipped for `doc:` targets, and results in an empty
-process variable for `pv:` targets.
+A source that is not present in the verzoek is skipped for `doc:` targets, and results in a process
+variable with the value `null` for `pv:` targets.
 
 {% hint style="warning" %}
 Mappings are checked when the configuration is saved. A target without a `doc:` or `pv:` prefix is
@@ -366,7 +373,7 @@ with the same process variables.
 | `rolTypeUrl` | The role type from the verzoek type |
 | `rolDescription` | The role description from the verzoek type |
 | `verzoekObjectUrl` | The URL of the verzoek object in the Objecten API |
-| `initiatorType` | `bsn`, `kvk`, or empty when the verzoek has neither |
+| `initiatorType` | `bsn`, `kvk`, or `null` when the verzoek has neither |
 | `initiatorValue` | The BSN or KvK number of the requester. Absent when the verzoek has neither |
 | `processDefinitionKey` | The handling process from the verzoek type |
 | `documentUrls` | The document URLs from `pdf_url` and `attachments`, in that order. Use it as the collection of a multi-instance task |
@@ -399,11 +406,15 @@ The last two messages below appear when the configuration is saved. The rest app
 | `JsonPointer '<path>' doesn't point to any property inside document definition '<name>'` | A `doc:` target points at a property the document definition does not have |
 
 {% hint style="info" %}
-Nothing happening at all — no case, and no entry under **Admin** > **Notifications** — means the
-notification never reached Valtimo. The subscription in the Notificaties API is registered by Valtimo
-itself every time a Verzoek configuration is saved, so there is nothing to set up by hand. Check that
-the object management configuration points at the right objecttype, and that the Notificaties API can
-reach this environment on the callback URL of the Notificaties API configuration.
+Nothing happening at all — no case, and no entry under **Admin** > **Notifications** — means either
+that the notification never reached Valtimo, or that the plugin ignored it. A notification that fails
+one of the checks under **Check the notification** in *What the plugin does step by step* is ignored
+without an error, and so is a verzoek without a `type`; neither leaves an entry under **Admin** >
+**Notifications**. The subscription in the Notificaties API is registered by Valtimo itself every
+time a Verzoek configuration is saved, so there is nothing to set up by hand. Check that the object
+management configuration points at the right objecttype and is used by a Verzoek configuration, that
+the verzoek has a `type`, and that the Notificaties API can reach this environment on the callback
+URL of the Notificaties API configuration.
 
 A case that is created without a zaak points the other way: the tasks of the Create Zaakdossier
 process have no process links. An unlinked task is skipped without an error.
