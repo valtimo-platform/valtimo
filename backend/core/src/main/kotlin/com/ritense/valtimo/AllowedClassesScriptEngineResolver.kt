@@ -18,15 +18,21 @@ package com.ritense.valtimo
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
 import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.HostAccess
+import org.graalvm.polyglot.Value
 import org.operaton.bpm.engine.impl.scripting.engine.DefaultScriptEngineResolver
+import javax.script.Bindings
+import javax.script.ScriptContext
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
 class AllowedClassesScriptEngineResolver(
     scriptEngineManager: ScriptEngineManager,
-    otherAllowedClasses: Set<String> = emptySet()
+    otherAllowedClasses: Set<String> = emptySet(),
+    polyglotEngine: Engine? = null
 ) : DefaultScriptEngineResolver(scriptEngineManager) {
+    private val sharedEngine: Engine by lazy { polyglotEngine ?: newPolyglotEngine() }
     private val effectiveAllowed = (ALLOWED + otherAllowedClasses) - BLOCKED
 
     override fun getJavaScriptScriptEngine(language: String?): ScriptEngine {
@@ -66,16 +72,30 @@ class AllowedClassesScriptEngineResolver(
             .denyAccess(org.operaton.bpm.engine.IdentityService::class.java)
             .denyAccess(org.operaton.bpm.engine.AuthorizationService::class.java)
             .denyAccess(org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl::class.java)
+            .denyAccess(Engine::class.java)
+            .denyAccess(Context::class.java)
+            .denyAccess(Value::class.java)
+            .denyAccess(ScriptEngine::class.java)
+            .denyAccess(ScriptContext::class.java)
+            .denyAccess(Bindings::class.java)
+            .denyAccess(AutoCloseable::class.java, false)
+            .denyAccess(javax.script.Compilable::class.java)
+            .denyAccess(javax.script.Invocable::class.java)
+            .denyAccess(javax.script.CompiledScript::class.java)
             .build()
 
         val ctx = Context.newBuilder("js")
             .allowHostAccess(hostAccess)
             .allowHostClassLookup(effectiveAllowed::contains)
 
-        return GraalJSScriptEngine.create(null, ctx)
+        return TrackingGraalJsScriptEngine(GraalJSScriptEngine.create(sharedEngine, ctx))
     }
 
     companion object {
+        fun newPolyglotEngine(): Engine = Engine.newBuilder("js")
+            .option("engine.WarnInterpreterOnly", "false")
+            .build()
+
         private val BLOCKED = setOf(
             "java.lang.Class",
             "java.lang.ClassLoader",
@@ -92,6 +112,15 @@ class AllowedClassesScriptEngineResolver(
             "java.security.AccessController",
             "javax.script.ScriptEngine",
             "javax.script.ScriptEngineManager",
+            "javax.script.ScriptContext",
+            "javax.script.Bindings",
+            "java.lang.AutoCloseable",
+            "javax.script.Compilable",
+            "javax.script.Invocable",
+            "javax.script.CompiledScript",
+            "org.graalvm.polyglot.Engine",
+            "org.graalvm.polyglot.Context",
+            "org.graalvm.polyglot.Value",
         )
 
         private val ALLOWED = mutableSetOf<String?>(
