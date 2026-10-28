@@ -14,6 +14,12 @@
   finished. Lists, sets and key-value maps returned by a script keep their contents; previously some of them came
   back empty.
 
+  Lists and maps that a script fills with its own objects now also stay readable after the script has finished.
+  They come back as copies made of plain data. Very large results stop the script with a clear error.
+
+  **Hint:** objects a script puts into existing data without returning it are not converted. Return the value or
+  store it as a process variable.
+
   **Behaviour change:** a script must return plain data, such as text, numbers, dates, lists or objects. Scripts
   that return something else, for example a function or a promise, now stop with a clear error message instead of
   silently returning an unusable value. Check scripts that return such values and change them to return plain data.

@@ -223,6 +223,19 @@ class GraalJsContextCleanupIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `dmn java list output with js objects is readable after context is closed`() {
+        val result = decisionService
+            .evaluateDecisionTableByKey("javascript-java-list-output-decision")
+            .variables(mapOf("size" to 60))
+            .evaluate()
+
+        val entry = result.singleResult.getEntry<Any>("result")
+
+        assertEquals(listOf(mapOf("level" to "High", "size" to 60)), entry)
+        assertAllClosed()
+    }
+
+    @Test
     fun `should close contexts when transaction rolls back`() {
         val businessKey = UUID.randomUUID().toString()
 

@@ -19,6 +19,8 @@ package com.ritense.valtimo.scripttask
 
 import com.ritense.valtimo.AllowedClassesScriptEngineResolver
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import java.util.concurrent.TimeUnit
 import java.util.Date
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
@@ -27,6 +29,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class GraalJsValueConverterTest {
@@ -35,6 +38,26 @@ class GraalJsValueConverterTest {
         AllowedClassesScriptEngineResolver(ScriptEngineManager()).getScriptEngine("javascript", true)
 
     private fun eval(script: String): Any? = engine.eval(script, engine.createBindings())
+
+    private fun eval(script: String, vars: Map<String, Any?>): Any? {
+        val bindings = engine.createBindings()
+        bindings.putAll(vars)
+        return engine.eval(script, bindings)
+    }
+
+    private class CountingList : java.util.AbstractList<Any?>() {
+        var calls = 0
+        override val size: Int get() = 1
+        override fun get(index: Int): Any? {
+            calls++
+            return "x"
+        }
+
+        override fun iterator(): MutableIterator<Any?> {
+            calls++
+            return super.iterator()
+        }
+    }
 
     @Test
     fun `converts objects and arrays to plain java values`() {
@@ -134,5 +157,81 @@ class GraalJsValueConverterTest {
         )
         assertFailsWith<ScriptException> { eval("(function* () { yield 1 })()") }
         assertFailsWith<ScriptException> { eval("new Map([[1, 2]]).entries()") }
+    }
+
+    @Test
+    fun `converts js values inside returned java list`() {
+        val result = eval("var l = new (Java.type('java.util.ArrayList'))(); l.add({a: 1, b: [1, 2]}); l")
+
+        assertIs<ArrayList<*>>(result)
+        assertEquals<List<*>>(listOf(mapOf("a" to 1, "b" to listOf(1, 2))), result)
+    }
+
+    @Test
+    fun `converts js values inside returned java map`() {
+        val result = eval("m.put('k', {a: 1}); m", mapOf("m" to HashMap<Any?, Any?>()))
+
+        assertEquals(mapOf("k" to mapOf("a" to 1)), result)
+    }
+
+    @Test
+    fun `converts js values inside returned java set`() {
+        val result = eval("s.add({a: 1}); s", mapOf("s" to HashSet<Any?>()))
+
+        assertIs<LinkedHashSet<*>>(result)
+        assertEquals<Set<*>>(setOf(mapOf("a" to 1)), result)
+    }
+
+    @Test
+    fun `converts js values inside stream results`() {
+        val result = eval("list.stream().map(x => ({v: x})).toList()", mapOf("list" to listOf(1, 2)))
+
+        assertEquals(listOf(mapOf("v" to 1), mapOf("v" to 2)), result)
+    }
+
+    @Test
+    fun `converts nested java collections`() {
+        val result = eval("m.put('o', {a: 1}); l.add(m); l", mapOf("m" to HashMap<Any?, Any?>(), "l" to ArrayList<Any?>()))
+
+        assertEquals(listOf(mapOf("o" to mapOf("a" to 1))), result)
+    }
+
+    @Test
+    fun `keeps java collections without js values unchanged`() {
+        val list = arrayListOf<Any?>("a", 1, mapOf("k" to "v"))
+
+        assertSame(list, eval("l", mapOf("l" to list)))
+    }
+
+    @Test
+    fun `nulls functions inside java collections`() {
+        assertEquals(listOf<Any?>(null), eval("l.add(function () {}); l", mapOf("l" to ArrayList<Any?>())))
+    }
+
+    @Test
+    fun `does not walk non java util collections`() {
+        val list = CountingList()
+
+        assertSame(list, eval("l", mapOf("l" to list)))
+        assertEquals(0, list.calls)
+    }
+
+    @Test
+    fun `fails on cyclic java collections`() {
+        assertFailsWith<ScriptException> { eval("l.add(l); l", mapOf("l" to ArrayList<Any?>())) }
+    }
+
+    @Test
+    @Timeout(60, unit = TimeUnit.SECONDS)
+    fun `fails on oversized results`() {
+        assertFailsWith<ScriptException> {
+            eval(
+                "var A = Java.type('java.util.ArrayList'); var p = new A(); p.add({}); " +
+                    "for (var i = 0; i < 40; i++) { var c = new A(); c.add(p); c.add(p); p = c; } p"
+            )
+        }
+        assertFailsWith<ScriptException> {
+            eval("var o = {}; for (var i = 0; i < 40; i++) { o = {a: o, b: o}; } o")
+        }
     }
 }

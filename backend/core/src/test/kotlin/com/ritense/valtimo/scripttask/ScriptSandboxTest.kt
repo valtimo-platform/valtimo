@@ -42,6 +42,13 @@ class ScriptSandboxTest {
 
     private fun engine(): ScriptEngine = resolver.getScriptEngine("javascript", true)
 
+    private val mapResolver = AllowedClassesScriptEngineResolver(
+        ScriptEngineManager(),
+        setOf("java.util.HashMap", "java.util.LinkedHashMap", "java.util.TreeMap")
+    )
+
+    private fun mapEngine(): ScriptEngine = mapResolver.getScriptEngine("javascript", true)
+
     @Test
     fun `polyglot context is not a script global and injected objects expose nothing callable`() {
         val probe = "var out = []; for (var n of ['engine', 'context']) { var o = globalThis[n]; " +
@@ -105,8 +112,11 @@ class ScriptSandboxTest {
         assertTrue(bindings.isEmpty())
     }
 
-    private fun assertNotCallable(setup: (ScriptEngine, SimpleBindings) -> Unit, probe: String) {
-        val engine = engine()
+    private fun assertNotCallable(
+        setup: (ScriptEngine, SimpleBindings) -> Unit,
+        probe: String,
+        engine: ScriptEngine = engine()
+    ) {
         val bindings = SimpleBindings()
         setup(engine, bindings)
         val result = try {
@@ -136,10 +146,6 @@ class ScriptSandboxTest {
     @Test
     fun `compiled script eval is not callable`() =
         assertNotCallable({ e, b -> b["compiled"] = (e as Compilable).compile("1") }, "typeof compiled.eval")
-
-    @Test
-    fun `map entry getKey is not callable`() =
-        assertNotCallable({ _, b -> b["entry"] = mapOf("k" to "v").entries.first() }, "typeof entry.getKey")
 
     @Test
     fun `engine globals are not defined for default scope eval`() {
@@ -257,10 +263,6 @@ class ScriptSandboxTest {
         assertThrows<Exception> { engine().eval("Java.type('java.lang.Runtime')", SimpleBindings()) }
     }
 
-    class InheritingMap : java.util.AbstractMap<String, String>() {
-        override val entries: MutableSet<MutableMap.MutableEntry<String, String>> = mutableSetOf()
-    }
-
     private class RecordingBindings : SimpleBindings() {
         private var context: Context? = null
         private var lastSeen: Boolean? = null
@@ -317,6 +319,102 @@ class ScriptSandboxTest {
     }
 
     @Test
-    fun `map style members are not callable`() =
-        assertNotCallable({ _, b -> b["map"] = InheritingMap() }, "typeof map.keySet")
+    fun `allowed map classes can be created and used`() {
+        for (type in listOf("HashMap", "LinkedHashMap", "TreeMap")) {
+            val result = mapEngine().eval(
+                "var M = Java.type('java.util.$type'); var m = new M(); m.put('a', 1); m.put('b', 2); " +
+                    "[m.get('a'), m.size(), m.containsKey('b'), m.keySet().size(), String(m.toString()).length > 0].join()",
+                SimpleBindings()
+            )
+
+            assertEquals("1,2,true,2,true", result, type)
+        }
+    }
+
+    @Test
+    fun `map entries can be iterated`() {
+        val bindings = SimpleBindings()
+        bindings["kotlinMap"] = linkedMapOf("x" to "y")
+        val result = mapEngine().eval(
+            "var M = Java.type('java.util.HashMap'); var m = new M(); m.put('a', '1'); var out = []; " +
+                "for (var e of m.entrySet()) { out.push(e.getKey() + '=' + e.getValue()); } " +
+                "for (var e of kotlinMap.entrySet()) { out.push(e.getKey() + '=' + e.getValue()); } out.join()",
+            bindings
+        )
+
+        assertEquals("a=1,x=y", result)
+    }
+
+    @Test
+    fun `list streams can be used`() {
+        val bindings = SimpleBindings()
+        bindings["list"] = listOf(1, 2, 3, 4)
+        val result = engine().eval(
+            "var L = Java.type('java.util.ArrayList'); var created = new L(); created.add('a'); created.add('bb'); " +
+                "[String(list.stream().filter(function (x) { return x % 2 == 0; }).map(function (x) { return x * 10; }).toList()), " +
+                "created.stream().map(function (s) { return s.length; }).reduce(0, function (a, b) { return a + b; }), " +
+                "list.stream().count()].join('|')",
+            bindings
+        )
+
+        assertEquals("[20, 40]|3|4", result)
+    }
+
+    @Test
+    fun `streams do not open reflection`() =
+        assertNotCallable({ _, b -> b["list"] = listOf(1) }, "typeof list.stream().getClass().forName")
+
+    @Test
+    fun `map classes outside the allow list stay blocked`() {
+        assertThrows<Exception> {
+            mapEngine().eval("Java.type('java.util.concurrent.ConcurrentHashMap')", SimpleBindings())
+        }
+        assertThrows<Exception> { mapEngine().eval("Java.type('java.util.Hashtable')", SimpleBindings()) }
+    }
+
+    @Test
+    fun `created maps do not open reflection`() {
+        assertNotCallable(
+            { _, _ -> },
+            "var M = Java.type('java.util.HashMap'); typeof new M().getClass().getClassLoader",
+            mapEngine()
+        )
+        assertNotCallable(
+            { _, b -> b["entry"] = mapOf("k" to "v").entries.first() },
+            "typeof entry.getClass().forName",
+            mapEngine()
+        )
+    }
+
+    @Test
+    fun `host bindings handed to a script expose nothing usable`() {
+        val engine = mapEngine()
+        val polyglotContext = Context.create("js")
+        try {
+            val host = engine.createBindings()
+            host["scriptEngine"] = engine
+            host["scriptContext"] = engine.context
+            host["polyglotContext"] = polyglotContext
+            val bindings = SimpleBindings()
+            bindings["host"] = host
+            val probe = """
+                var out = [];
+                var reached = 0;
+                var names = ['eval', 'getBindings', 'getContext', 'getEngine', 'getPolyglotContext', 'close'];
+                function check(label, v) {
+                    reached++;
+                    for (var n of names) { if (typeof v[n] === 'function') out.push(label + '.' + n); }
+                    if (typeof v.getClass().forName === 'function') out.push(label + '.forName');
+                }
+                for (var v of host.values()) check('values', v);
+                for (var e of host.entrySet()) check('entrySet', e.getValue());
+                for (var k of host.keySet()) { check('get', host.get(k)); check('getOrDefault', host.getOrDefault(k, null)); }
+                out.join() + '|' + reached
+            """.trimIndent()
+
+            assertEquals("|12", engine.eval(probe, bindings))
+        } finally {
+            polyglotContext.close()
+        }
+    }
 }
