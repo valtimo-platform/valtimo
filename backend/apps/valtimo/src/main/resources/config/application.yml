@@ -139,9 +139,9 @@ valtimo:
     oauth:
         identifier-field: username
     hardening:
-        removeStacktracesFromReturnedExceptions: true
         allowStacktraceOnIps:
-            - "*"
+            - 127.0.0.1
+            - 0:0:0:0:0:0:0:1
     openapi:
         enabled: false
         title: Valtimo Implementation API
