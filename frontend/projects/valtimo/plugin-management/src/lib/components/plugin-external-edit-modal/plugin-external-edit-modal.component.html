@@ -27,7 +27,7 @@
     ></cds-progress-indicator>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent [cdsLayer]="1">
     <cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
 
     <cds-inline-notification
@@ -70,11 +70,16 @@
           <ng-template #jsonForm>
             <form [formGroup]="form">
               <div class="cds--form-item">
-                <label class="cds--label">{{
-                  'pluginManagement.labels.configurationName' | translate
-                }}</label>
+                <v-input-label
+                  [required]="true"
+                  titleTranslationKey="pluginManagement.labels.configurationName"
+                ></v-input-label>
 
-                <input class="cds--text-input" formControlName="title" />
+                <input
+                  [placeholder]="'pluginManagement.propertiesEditor.titlePlaceholder' | translate"
+                  class="cds--text-input"
+                  formControlName="title"
+                />
               </div>
 
               <valtimo-external-plugin-config-form

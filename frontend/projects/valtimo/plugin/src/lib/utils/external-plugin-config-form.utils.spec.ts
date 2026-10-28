@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {ExternalPluginManifest} from '../models/external-plugin.model';
+import {ExternalPluginDefinition, ExternalPluginManifest} from '../models/external-plugin.model';
 import {
   canRenderExternalPluginConfigValue,
   getExternalPluginActionStructure,
   getExternalPluginConfigFieldTexts,
   getExternalPluginConfigurationStructure,
   isExternalPluginValueExpression,
+  resolveExternalPluginFormMode,
 } from './external-plugin-config-form.utils';
 
 describe('external plugin config form utils', () => {
@@ -219,6 +220,61 @@ describe('external plugin config form utils', () => {
         {value: 'fast', label: 'Fast'},
         {value: 'safe', label: 'safe'},
       ]);
+    });
+  });
+
+  describe('resolveExternalPluginFormMode', () => {
+    const definition = (frontendBundles: Array<object> = []): ExternalPluginDefinition =>
+      ({
+        baseUrl: 'https://host.example',
+        version: '1.0.0',
+        configurationSchema: schema,
+        manifest: {...manifest, frontendBundles},
+      }) as unknown as ExternalPluginDefinition;
+
+    it('prefers the plugin bundle for the target', () => {
+      const withBundles = definition([
+        {type: 'config', path: '/config.html'},
+        {type: 'process-link-action', key: 'echo', path: '/echo.html'},
+      ]);
+
+      expect(resolveExternalPluginFormMode(withBundles, {type: 'config'}, {})).toEqual({
+        kind: 'bundle',
+        url: 'https://host.example/1.0.0/config.html',
+      });
+      expect(
+        resolveExternalPluginFormMode(
+          withBundles,
+          {type: 'process-link-action', actionKey: 'echo'},
+          {}
+        )
+      ).toEqual({kind: 'bundle', url: 'https://host.example/1.0.0/echo.html'});
+    });
+
+    it("takes a keyless action bundle for every action, but not another action's", () => {
+      const keyless = definition([{type: 'process-link-action', path: '/action.html'}]);
+      const keyed = definition([{type: 'process-link-action', key: 'echo', path: '/echo.html'}]);
+      const greet = {type: 'process-link-action', actionKey: 'greet'} as const;
+
+      expect(resolveExternalPluginFormMode(keyless, greet, {}).kind).toBe('bundle');
+      expect(resolveExternalPluginFormMode(keyed, greet, {}).kind).toBe('form');
+    });
+
+    it('generates a form only when it can hold the value', () => {
+      const plain = definition();
+      const greet = {type: 'process-link-action', actionKey: 'greet'} as const;
+
+      expect(resolveExternalPluginFormMode(plain, {type: 'config'}, {currency: 'EUR'}).kind).toBe(
+        'form'
+      );
+      expect(resolveExternalPluginFormMode(plain, {type: 'config'}, {unknown: 1}).kind).toBe(
+        'json'
+      );
+      expect(resolveExternalPluginFormMode(plain, greet, {loud: 'pv:loud'}).kind).toBe('json');
+      expect(
+        resolveExternalPluginFormMode(plain, {type: 'process-link-action', actionKey: 'store'}, {})
+          .kind
+      ).toBe('json');
     });
   });
 

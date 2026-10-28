@@ -82,7 +82,20 @@ interface ExternalPluginConfigFieldView {
   minimum: number | null;
 }
 
+/** The admin form to resolve: a configuration's properties, or one action's properties. */
+type ExternalPluginFormTarget =
+  | {type: 'config'}
+  | {type: 'process-link-action'; actionKey: string | null};
+
+/** How a host renders that form: the plugin's own bundle, a generated form, or the JSON editor. */
+type ExternalPluginFormMode =
+  | {kind: 'bundle'; url: string}
+  | {kind: 'form'; structure: ExternalPluginConfigStructure}
+  | {kind: 'json'};
+
 export {
+  ExternalPluginFormTarget,
+  ExternalPluginFormMode,
   ExternalPluginConfigFieldType,
   ExternalPluginConfigFieldWidget,
   ExternalPluginConfigField,

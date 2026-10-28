@@ -1,8 +1,8 @@
 # Case Summary Plugin
 
 Reference external plugin exercising the full SDK surface: an action with declared outputs,
-`gzacApi` callbacks (service-token and as-user), request handlers backing ten frontend bundles of
-five types, a task-form submit hook, an event handler, `kv` and `http_request` usage, and en/nl
+`gzacApi` callbacks (service-token and as-user), request handlers backing nine frontend bundles of
+four types, a task-form submit hook, an event handler, `kv` and `http_request` usage, and en/nl
 translations.
 
 ## What It Does
@@ -36,11 +36,13 @@ Beyond the action, the plugin exercises the rest of the SDK surface:
   (posting a note on the document).
 - `kv` usage (per-document view counters, aggregated by `/kv-stats`) and `http_request` egress to
   the declared `jsonplaceholder.typicode.com` plus the admin-configured `externalApiUrl`.
-- Ten frontend bundles covering five types — config, two case tabs, two case widgets, three task
-  forms (Levels 0/1/2), two pages — with en/nl translations and a logo.
-- No `process-link-action` bundle: GZAC generates the action's input form from
-  `actions[].properties`, labeled from the `action.<property>.label` / `.tooltip` / `.placeholder`
-  translations. The demo app shows the bundle variant.
+- Nine frontend bundles covering four types — two case tabs, two case widgets, three task forms
+  (Levels 0/1/2), two pages — with en/nl translations and a logo.
+- No `config` or `process-link-action` bundle: GZAC generates the settings form from
+  `configurationSchema` and the action's input form from `actions[].properties`, labelled from the
+  `config.<property>.*` and `action.<property>.*` (`.label` / `.tooltip` / `.placeholder`)
+  translations. The demo app shows the `process-link-action` bundle variant;
+  `valtimo-plugin-init --bundles config` shows the `config` one.
 
 That breadth makes this the reference rather than a starting point. For the minimal counterpart,
 scaffold a project with `valtimo-plugin-init` — see

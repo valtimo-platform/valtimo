@@ -30,6 +30,7 @@ export interface PluginManifest {
   compatibility?: { minGzacVersion?: string; maxGzacVersion?: string };
   configurationSchema?: Record<string, unknown>;
   permissions?: {
+    capabilities?: string[];
     endpoints?: Array<{ method: string; pattern: string }>;
     contracts?: Array<string | { contract: string; operations: string[] }>;
   };
@@ -87,10 +88,10 @@ export const manifest: PluginManifest = {
       "config.greetingPrefix.tooltip": "Word the app puts in front of the name, e.g. \"Hello\" or \"Welcome\".",
       "action.name.label": "Name to greet",
       "action.name.placeholder": "world",
-      "action.name.help": "Static name to greet. Leave blank to greet the case (by document) or \"world\".",
+      "action.name.tooltip": "Static name to greet. Leave blank to greet the case (by document) or \"world\".",
       "action.greetingVariable.label": "Greeting variable name",
       "action.greetingVariable.placeholder": "greeting",
-      "action.greetingVariable.help": "Process variable the generated greeting is written to (default: greeting).",
+      "action.greetingVariable.tooltip": "Process variable the generated greeting is written to (default: greeting).",
       "caseTab.hello.title": "Hello world",
       "caseTab.hello": "This panel is rendered by the demo app's case-tab bundle, running in a sandboxed iframe.",
       "caseTab.loading": "Loading…",
@@ -119,10 +120,10 @@ export const manifest: PluginManifest = {
       "config.greetingPrefix.tooltip": "Woord dat de app vóór de naam plaatst, bv. \"Hallo\" of \"Welkom\".",
       "action.name.label": "Naam om te begroeten",
       "action.name.placeholder": "wereld",
-      "action.name.help": "Vaste naam om te begroeten. Leeg laten om de zaak (via document) of \"wereld\" te begroeten.",
+      "action.name.tooltip": "Vaste naam om te begroeten. Leeg laten om de zaak (via document) of \"wereld\" te begroeten.",
       "action.greetingVariable.label": "Naam begroetingsvariabele",
       "action.greetingVariable.placeholder": "greeting",
-      "action.greetingVariable.help": "Procesvariabele waarin de gegenereerde begroeting wordt geschreven (standaard: greeting).",
+      "action.greetingVariable.tooltip": "Procesvariabele waarin de gegenereerde begroeting wordt geschreven (standaard: greeting).",
       "caseTab.hello.title": "Hallo wereld",
       "caseTab.hello": "Dit paneel wordt weergegeven door de case-tab-bundle van de demo-app, in een sandboxed iframe.",
       "caseTab.loading": "Laden…",
@@ -157,6 +158,9 @@ export const manifest: PluginManifest = {
     additionalProperties: false,
   },
   permissions: {
+    // Native code, so nothing enforces these on the app side — they tell the admin what the app
+    // does: call back into GZAC with its service token, and serve its case tab through `/data`.
+    capabilities: ["gzac_api", "frontend_data"],
     endpoints: [
       { method: "GET", pattern: "/api/v1/document/*" },
       { method: "POST", pattern: "/api/v1/document/*/note" },

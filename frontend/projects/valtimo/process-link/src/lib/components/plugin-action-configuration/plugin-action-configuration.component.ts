@@ -34,16 +34,15 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import {
-  canRenderExternalPluginConfigValue,
   ExternalPluginConfigStructure,
   ExternalPluginDefinition,
   ExternalPluginService,
   extractExternalDefinitionId,
-  getExternalPluginActionStructure,
   isExternalPluginKey,
   PluginConfiguration,
   PluginConfigurationData,
   PluginFunction,
+  resolveExternalPluginFormMode,
 } from '@valtimo/plugin';
 import {
   ExternalPluginProcessLinkCreateDto,
@@ -437,13 +436,17 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           }
 
           const {extDef, actionKey, savedActionKey} = result;
-          const actionBundle = extDef.manifest?.frontendBundles?.find(
-            b => b.type === 'process-link-action' && (!b.key || b.key === actionKey)
+          // Saved properties belong to the saved action; another action starts empty.
+          const properties = actionKey === savedActionKey ? this.externalActionProperties : {};
+          const mode = resolveExternalPluginFormMode(
+            extDef,
+            {type: 'process-link-action', actionKey},
+            properties
           );
 
-          if (actionBundle) {
-            const bundleUrl = `${extDef.baseUrl}/${extDef.version}${actionBundle.path}`;
-            this.externalActionBundleUrl$.next(bundleUrl);
+          if (mode.kind === 'bundle') {
+            this.$externalActionStructure.set(null);
+            this.externalActionBundleUrl$.next(mode.url);
 
             // Set up prefill for editing existing process links
             if (
@@ -457,28 +460,12 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             }
           } else {
             // Before the URL: resolving the bundle reveals the configuration step.
-            this.applyExternalActionStructure(extDef, actionKey, savedActionKey);
+            if (mode.kind === 'form') this.$externalActionFormValue.set(properties);
+            this.$externalActionStructure.set(mode.kind === 'form' ? mode.structure : null);
             this.externalActionBundleUrl$.next(null);
           }
         })
     );
-  }
-
-  private applyExternalActionStructure(
-    definition: ExternalPluginDefinition,
-    actionKey: string | null,
-    savedActionKey: string | null
-  ): void {
-    const structure = getExternalPluginActionStructure(definition.manifest, actionKey);
-    // Saved properties belong to the saved action; another action starts empty.
-    const properties = actionKey === savedActionKey ? this.externalActionProperties : {};
-
-    if (structure && canRenderExternalPluginConfigValue(structure, properties)) {
-      this.$externalActionFormValue.set(properties);
-      this.$externalActionStructure.set(structure);
-    } else {
-      this.$externalActionStructure.set(null);
-    }
   }
 
   private updateProcessLink(configuration: PluginConfigurationData): void {

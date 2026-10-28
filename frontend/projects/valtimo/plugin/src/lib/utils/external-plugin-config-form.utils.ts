@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {ExternalPluginManifest} from '../models/external-plugin.model';
+import {ExternalPluginDefinition, ExternalPluginManifest} from '../models/external-plugin.model';
 import {
   ExternalPluginConfigField,
   ExternalPluginConfigFieldTexts,
   ExternalPluginConfigFieldType,
   ExternalPluginConfigStructure,
+  ExternalPluginFormMode,
+  ExternalPluginFormTarget,
 } from '../models/external-plugin-config-form.model';
 import {
   EXTERNAL_PLUGIN_CONFIG_FIELD_TYPES,
@@ -27,6 +29,33 @@ import {
   EXTERNAL_PLUGIN_CONFIG_SCHEMA_NESTING_KEYWORDS,
   EXTERNAL_PLUGIN_VALUE_EXPRESSION_PATTERN,
 } from '../constants/external-plugin-config-form.constants';
+
+/**
+ * The plugin's own bundle when it ships one for the target, else the generated form when the
+ * structure is flat and can hold `value`, else the JSON editor — so no stored value is lost.
+ */
+function resolveExternalPluginFormMode(
+  definition: ExternalPluginDefinition,
+  target: ExternalPluginFormTarget,
+  value: unknown
+): ExternalPluginFormMode {
+  const bundle = definition.manifest?.frontendBundles?.find(
+    ({type, key}) =>
+      type === target.type && (target.type === 'config' || !key || key === target.actionKey)
+  );
+  if (bundle) {
+    return {kind: 'bundle', url: `${definition.baseUrl}/${definition.version}${bundle.path}`};
+  }
+
+  const structure =
+    target.type === 'config'
+      ? getExternalPluginConfigurationStructure(definition.configurationSchema, definition.manifest)
+      : getExternalPluginActionStructure(definition.manifest, target.actionKey);
+
+  return structure && canRenderExternalPluginConfigValue(structure, value)
+    ? {kind: 'form', structure}
+    : {kind: 'json'};
+}
 
 /**
  * The configuration schema as a flat structure for the generated form, or null when the schema
@@ -288,6 +317,7 @@ function numberOrNull(value: unknown): number | null {
 }
 
 export {
+  resolveExternalPluginFormMode,
   getExternalPluginConfigurationStructure,
   getExternalPluginActionStructure,
   canRenderExternalPluginConfigValue,

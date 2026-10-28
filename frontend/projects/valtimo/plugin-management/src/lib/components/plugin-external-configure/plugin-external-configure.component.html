@@ -28,9 +28,10 @@
   <ng-template #propertiesForm>
     <form [formGroup]="form">
       <div class="cds--form-item">
-        <label class="cds--label">{{
-          'pluginManagement.labels.configurationName' | translate
-        }}</label>
+        <v-input-label
+          [required]="true"
+          titleTranslationKey="pluginManagement.labels.configurationName"
+        ></v-input-label>
 
         <input
           [placeholder]="'pluginManagement.propertiesEditor.titlePlaceholder' | translate"

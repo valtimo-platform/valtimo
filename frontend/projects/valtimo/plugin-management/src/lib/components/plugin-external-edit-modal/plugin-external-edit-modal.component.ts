@@ -28,17 +28,17 @@ import {
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {
   ButtonModule,
+  LayerModule,
   LoadingModule,
   ModalModule,
   NotificationModule,
   ProgressIndicatorModule,
 } from 'carbon-components-angular';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
+import {CARBON_CONSTANTS, InputLabelModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
-  canRenderExternalPluginConfigValue,
   ExternalPluginConfigFormComponent,
   ExternalPluginConfigStructure,
   ExternalPluginConfigurationUpdateRequest,
@@ -50,10 +50,11 @@ import {
   ExternalPluginEndpoint,
   ExternalPluginProvidedContract,
   ExternalPluginService,
-  getExternalPluginConfigurationStructure,
+  externalPluginRequiredTextValidator,
   getExternalPluginDeclaredContracts,
   getExternalPluginDisplayName,
   getExternalPluginProvidedContracts,
+  resolveExternalPluginFormMode,
 } from '@valtimo/plugin';
 import {PluginExternalPropertiesEditorComponent} from '../plugin-external-properties-editor/plugin-external-properties-editor.component';
 import {UnifiedPluginConfigurationRow} from '../../models';
@@ -76,6 +77,8 @@ import {externalPluginErrorDetail} from '../../utils';
     ReactiveFormsModule,
     ModalModule,
     ButtonModule,
+    InputLabelModule,
+    LayerModule,
     LoadingModule,
     NotificationModule,
     ProgressIndicatorModule,
@@ -100,7 +103,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   public progressSteps: Array<{label: string; complete: boolean}> = [];
 
   public readonly form = new FormGroup({
-    title: new FormControl('', Validators.required),
+    title: new FormControl('', externalPluginRequiredTextValidator),
     properties: new FormControl('{}'),
   });
 
@@ -221,7 +224,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     // Permissions are accepted at activation and are immutable afterwards, so they are not sent
     // on update — the backend leaves the granted endpoints unchanged when they are omitted.
     this._update({
-      title: this.form.value.title ?? '',
+      title: this.form.value.title?.trim() ?? '',
       properties,
       ...this._changedContractBindings(),
     });
@@ -356,16 +359,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
         next: ([configDetail, definition]) => {
           this._setDefinition(definition);
           this._$configurationSchema.set(definition.configurationSchema);
-          this._resolveConfigBundleUrl(definition);
-
-          if (this.$configBundleUrl()) {
-            this.$prefillConfiguration.set({
-              title: configDetail.title,
-              configuration: configDetail.properties ?? {},
-            });
-          } else {
-            this._applyProperties(definition, configDetail.title, configDetail.properties ?? {});
-          }
+          this._applyFormMode(definition, configDetail.title, configDetail.properties ?? {});
 
           // Egress comes off the configuration, not the manifest: the manifest-declared grants are
           // what was accepted at activation, and the derived ones follow the values actually stored.
@@ -387,7 +381,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
         next: definition => {
           this._setDefinition(definition);
           this._$configurationSchema.set(definition.configurationSchema);
-          this._resolveConfigBundleUrl(definition);
+          this._applyFormMode(definition, this.configuration?.title ?? '', {});
           this._applyPermissions(definition, definition.manifest?.permissions?.egress ?? [], []);
           this._applyContracts(definition, []);
           this._finishLoading();
@@ -414,25 +408,27 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       }) ?? null;
   }
 
-  // The JSON editor stays whenever the form could not hold every stored value, so nothing is lost.
-  private _applyProperties(
+  private _applyFormMode(
     definition: ExternalPluginDefinition,
     title: string,
     properties: Record<string, unknown>
   ): void {
-    const structure = getExternalPluginConfigurationStructure(
-      definition.configurationSchema,
-      definition.manifest
-    );
+    const mode = resolveExternalPluginFormMode(definition, {type: 'config'}, properties);
 
-    if (structure && canRenderExternalPluginConfigValue(structure, properties)) {
-      this._generatedProperties = properties;
-      this._$generatedPropertiesValid.set(false);
-      this.$initialProperties.set(properties);
-      this.$configStructure.set(structure);
-      this.form.patchValue({title});
-    } else {
-      this.form.patchValue({title, properties: JSON.stringify(properties, null, 2)});
+    switch (mode.kind) {
+      case 'bundle':
+        this.$configBundleUrl.set(mode.url);
+        this.$prefillConfiguration.set({title, configuration: properties});
+        break;
+      case 'form':
+        this._generatedProperties = properties;
+        this._$generatedPropertiesValid.set(false);
+        this.$initialProperties.set(properties);
+        this.$configStructure.set(mode.structure);
+        this.form.patchValue({title});
+        break;
+      case 'json':
+        this.form.patchValue({title, properties: JSON.stringify(properties, null, 2)});
     }
   }
 
@@ -482,13 +478,6 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$definitionName.set(
       definition ? getExternalPluginDisplayName(definition, this._translateService.currentLang) : ''
     );
-  }
-
-  private _resolveConfigBundleUrl(definition: ExternalPluginDefinition): void {
-    const configBundle = definition.manifest?.frontendBundles?.find(b => b.type === 'config');
-    if (configBundle) {
-      this.$configBundleUrl.set(`${definition.baseUrl}/${definition.version}${configBundle.path}`);
-    }
   }
 
   /**

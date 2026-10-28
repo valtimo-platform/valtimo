@@ -25,13 +25,13 @@ import {
   signal,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {LoadingModule} from 'carbon-components-angular';
 import {Subscription} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
+import {InputLabelModule} from '@valtimo/components';
 import {
-  canRenderExternalPluginConfigValue,
   ExternalPluginConfigFormComponent,
   ExternalPluginConfigStructure,
   ExternalPluginContractBindingEntry,
@@ -43,11 +43,12 @@ import {
   ExternalPluginEndpoint,
   ExternalPluginProvidedContract,
   ExternalPluginService,
+  externalPluginRequiredTextValidator,
   extractExternalDefinitionId,
-  getExternalPluginConfigurationStructure,
   getExternalPluginDeclaredContracts,
   getExternalPluginProvidedContracts,
   isExternalPluginKey,
+  resolveExternalPluginFormMode,
 } from '@valtimo/plugin';
 import {ExternalPluginSaveEvent} from '../../models';
 import {PluginManagementStateService} from '../../services';
@@ -78,6 +79,7 @@ import {PluginExternalPropertiesEditorComponent} from '../plugin-external-proper
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    InputLabelModule,
     LoadingModule,
     ExternalPluginConfigFormComponent,
     ExternalPluginIframeComponent,
@@ -117,7 +119,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   public readonly $initialProperties = signal<Record<string, unknown>>({});
 
   public readonly form = new FormGroup({
-    title: new FormControl('', Validators.required),
+    title: new FormControl('', externalPluginRequiredTextValidator),
     properties: new FormControl('{}'),
   });
 
@@ -129,7 +131,6 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   private _grantedCapabilities: Array<string> = [];
   private _grantedEgress: Array<string> = [];
   private _contractBindings: Array<ExternalPluginContractBindingEntry> = [];
-  private _configurationSchema: unknown = null;
   private _generatedProperties: Record<string, unknown> = {};
   private _generatedPropertiesValid = false;
   private readonly _subscriptions = new Subscription();
@@ -164,7 +165,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 this.declaredContractsResolved.emit([]);
                 this.providedContractsResolved.emit([]);
                 this._contractBindings = [];
-                this._configurationSchema = null;
+                this.$configurationSchema.set(null);
                 this.$configStructure.set(null);
                 return [];
               }
@@ -239,13 +240,9 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   }
 
   private _applyDefinition(definition: ExternalPluginDefinition): void {
-    const configBundle = definition.manifest?.frontendBundles?.find(b => b.type === 'config');
-
-    if (configBundle) {
-      this.$configBundleUrl.set(`${definition.baseUrl}/${definition.version}${configBundle.path}`);
-    } else {
-      this.$configBundleUrl.set(null);
-    }
+    const skeleton = buildExternalPluginPropertiesSkeleton(definition.configurationSchema);
+    const mode = resolveExternalPluginFormMode(definition, {type: 'config'}, skeleton);
+    this.$configBundleUrl.set(mode.kind === 'bundle' ? mode.url : null);
 
     const endpoints = definition.manifest?.permissions?.endpoints ?? [];
     this.endpointsResolved.emit(endpoints);
@@ -263,25 +260,18 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     );
     // Kept so the derived destinations can be recomputed whenever the configuration values
     // change, without re-fetching the definition.
-    this._configurationSchema = definition.configurationSchema;
     this.$configurationSchema.set(definition.configurationSchema);
 
-    if (configBundle) {
+    if (mode.kind === 'bundle') {
       this.$configStructure.set(null);
       this._emitDerivedEgress(null);
     } else {
-      const skeleton = buildExternalPluginPropertiesSkeleton(definition.configurationSchema);
-      const structure = getExternalPluginConfigurationStructure(
-        definition.configurationSchema,
-        definition.manifest
-      );
-
-      if (structure && canRenderExternalPluginConfigValue(structure, skeleton)) {
+      if (mode.kind === 'form') {
         // Invalid until the form reports in: required fields may still be empty.
         this._generatedProperties = skeleton;
         this._generatedPropertiesValid = false;
         this.$initialProperties.set(skeleton);
-        this.$configStructure.set(structure);
+        this.$configStructure.set(mode.structure);
       } else {
         this.$configStructure.set(null);
         this.form.controls.properties.setValue(JSON.stringify(skeleton, null, 2), {
@@ -297,14 +287,14 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
 
   private _emitDerivedEgress(properties: Record<string, unknown> | null): void {
     this.derivedEgressResolved.emit(
-      deriveExternalPluginEgressOrigins(this._configurationSchema, properties)
+      deriveExternalPluginEgressOrigins(this.$configurationSchema(), properties)
     );
   }
 
   private _validateForm(): void {
     if (this.$configBundleUrl()) return;
 
-    const titleValid = !!this.form.value.title?.trim();
+    const titleValid = this.form.controls.title.valid;
 
     if (this.$configStructure()) {
       this._emitDerivedEgress(this._generatedProperties);

@@ -31,7 +31,7 @@ function ActionConfigForm() {
 
   return (
     <div style={{fontFamily: "IBM Plex Sans, sans-serif"}}>
-      <label htmlFor="greeting">{sdk.t("actionConfig.greeting.label")}</label>
+      <label htmlFor="greeting">{sdk.t("action.greeting.label")}</label>
       <input
         id="greeting"
         type="text"
@@ -40,9 +40,9 @@ function ActionConfigForm() {
           setGreeting(e.target.value);
           emit(e.target.value);
         }}
-        placeholder={sdk.t("actionConfig.greeting.placeholder")}
+        placeholder={sdk.t("action.greeting.placeholder")}
       />
-      <p>{sdk.t("actionConfig.greeting.help")}</p>
+      <p>{sdk.t("action.greeting.tooltip")}</p>
     </div>
   );
 }

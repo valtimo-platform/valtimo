@@ -10,14 +10,12 @@
     "en": {
       "name": "Case Summary",
       "description": "POC plugin that builds a one-line summary from the running case's document",
-      "config.title.label": "Configuration name",
-      "config.title.placeholder": "Enter a name for this configuration",
       "config.currency.label": "Currency code",
       "config.currency.placeholder": "EUR",
-      "config.currency.help": "Currency code used when formatting amounts (e.g. EUR, USD, GBP)",
+      "config.currency.tooltip": "Currency code used when formatting amounts (e.g. EUR, USD, GBP)",
       "config.externalApiUrl.label": "External API URL",
       "config.externalApiUrl.placeholder": "https://dummyjson.com/todos/1",
-      "config.externalApiUrl.help": "The plugin fetches extra case details from this URL. Whatever you enter here becomes an outbound destination the plugin is allowed to reach.",
+      "config.externalApiUrl.tooltip": "The plugin fetches extra case details from this URL. Whatever you enter here becomes an outbound destination the plugin is allowed to reach.",
       "action.titleField.label": "Title field (JSON Pointer)",
       "action.titleField.placeholder": "/applicantName",
       "action.titleField.tooltip": "JSON Pointer path to the title field in the case document (e.g. /applicantName)",
@@ -109,14 +107,12 @@
     "nl": {
       "name": "Zaaksamenvatting",
       "description": "POC-plugin die een samenvatting van één regel opbouwt uit het document van de lopende zaak",
-      "config.title.label": "Configuratienaam",
-      "config.title.placeholder": "Voer een naam in voor deze configuratie",
       "config.currency.label": "Valutacode",
       "config.currency.placeholder": "EUR",
-      "config.currency.help": "Valutacode gebruikt bij het opmaken van bedragen (bv. EUR, USD, GBP)",
+      "config.currency.tooltip": "Valutacode gebruikt bij het opmaken van bedragen (bv. EUR, USD, GBP)",
       "config.externalApiUrl.label": "URL externe API",
       "config.externalApiUrl.placeholder": "https://dummyjson.com/todos/1",
-      "config.externalApiUrl.help": "De plugin haalt aanvullende zaakgegevens op via deze URL. Wat u hier invult, wordt een uitgaande bestemming die de plugin mag bereiken.",
+      "config.externalApiUrl.tooltip": "De plugin haalt aanvullende zaakgegevens op via deze URL. Wat u hier invult, wordt een uitgaande bestemming die de plugin mag bereiken.",
       "action.titleField.label": "Titelveld (JSON Pointer)",
       "action.titleField.placeholder": "/applicantName",
       "action.titleField.tooltip": "JSON Pointer-pad naar het titelveld in het dossierdocument (bv. /applicantName)",
@@ -236,10 +232,6 @@
     ]
   },
   "frontendBundles": [
-    {
-      "type": "config",
-      "path": "/bundles/config.html"
-    },
     {
       "type": "case-tab",
       "key": "summary",

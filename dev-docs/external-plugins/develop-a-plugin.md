@@ -121,18 +121,19 @@ Start from what you are trying to achieve, not from the API list:
 | Give a user a form to fill in on a user task | A **task form** | a `task-form` bundle, optionally `submit()` |
 | Add a screen to the main navigation, not tied to a case | A **page** | a `page` bundle + `request()` |
 | Keep something at hand while the user moves through the whole app | A **side panel** | a `side-panel` bundle, offered from another surface with `offerPanel()` |
-| Let an administrator configure your plugin through a real form | A **config bundle** | a `config` bundle + `configurationSchema` |
-| Give an administrator a real form for an action's inputs | A **process-link-action bundle** | a `process-link-action` bundle |
+| Let an administrator configure your plugin | A **configuration schema** — GZAC generates the settings form from it | `configurationSchema` + `config.*` translations |
+| Replace that generated settings form with your own | A **config bundle** | a `config` bundle |
+| Replace the generated action-input form with your own | A **process-link-action bundle** | a `process-link-action` bundle |
 
-Most plugins combine several. An action plus a `config` bundle is the common minimum; a case tab is
-useless without a `request()` handler to feed it.
+Most plugins combine several. An action plus a `configurationSchema` is the common minimum; a case
+tab is useless without a `request()` handler to feed it.
 
-> **The `config` and `process-link-action` bundles are not cosmetic.** Without a `config` bundle,
-> the administrator activating your plugin is shown a bare **Properties (JSON)** textarea and has to
-> hand-write JSON that satisfies your schema. Without a `process-link-action` bundle, the same is
-> true of your action's inputs in the process-link modeler. GZAC does not generate a form from
-> `configurationSchema` or from `actions[].properties`. If your plugin will be configured by
-> functional administrators rather than developers, ship both.
+> **You get forms for free, within limits.** GZAC generates the **Enter data** form from a flat
+> `configurationSchema` and the action-input form from `actions[].properties`, labelled from your
+> `translations` — see [The generated forms](#the-generated-forms). Anything the generated form
+> cannot hold (nested objects, arrays, `oneOf`, …) falls back to a raw JSON textarea the
+> administrator fills in by hand. Ship a `config` or `process-link-action` bundle when you need
+> more than flat fields — lookups, dependent fields, previews — not to get labels.
 
 ### Valtimo concepts your handlers receive
 
@@ -195,8 +196,8 @@ whether to add an event handler, and which of the six frontend bundle types to g
 
 | Bundle type | Renders | Backend counterpart generated |
 |---|---|---|
-| `config` | The settings form in the admin's **Configure plugin** modal | `configurationSchema` in the manifest |
-| `process-link-action` | The action-input form in the process-link modeler | – |
+| `config` | Your own settings form in the admin's **Configure plugin** modal, in place of the generated one | `configurationSchema` in the manifest |
+| `process-link-action` | Your own action-input form in the process-link modeler, in place of the generated one | – |
 | `case-tab` | A tab on the case detail page | shared `request()` handler + `frontend_data` |
 | `case-widget` | A card on a widgets tab | shared `request()` handler + `frontend_data` |
 | `task-form` | The form for a user task | `submit()` hook (`submitHandler: true`) |
@@ -266,7 +267,7 @@ broken down section by section below:
 | `key` | Identifies the action; the URL segment GZAC invokes (`…/actions/{key}`) and the value handed to your `action(key, …)` registration. |
 | `title` / `description` | Shown in the process-link "choose action" step. |
 | `activityTypes` | Where the action may be linked (e.g. `SERVICE_TASK_START`). GZAC only offers the action on matching activities — an action can never be bound where it cannot run. |
-| `properties` | The action's input fields: `{key, type, required?}`. Values arrive resolved in `ActionInput.properties`. Note that GZAC does **not** build a form from this — without a `process-link-action` bundle the administrator types the properties as raw JSON, so this declaration documents the shape rather than producing a UI. |
+| `properties` | The action's input fields: `{key, type, required?}`. Without a `process-link-action` bundle GZAC generates the input form from them when every `type` is `string`, `number`, `integer` or `boolean` — any other type leaves a raw JSON textarea — labelled from your `action.*` translation keys ([The generated forms](#the-generated-forms)). Values arrive resolved in `ActionInput.properties`: the administrator may enter a value-resolver expression (`doc:/applicant/name`, `pv:amount`) instead of a literal, and a number field accepts either. |
 | `outputs` | Keys your `result` object exposes. Declaring them gives the admin a guided output-mapping step (dropdown of these keys → `doc:`/`pv:`/`case:` targets). **Contract:** a completed action must return a `result` containing *every* declared key — missing keys fail the invocation; `null` values are fine (the runtime serialises `undefined` as `null`). |
 
 ### Frontend bundles (`frontendBundles[]`)
@@ -296,7 +297,9 @@ your machine, not the administrator's. Write it to these rules:
   bounds on the Valtimo versions you support —
   [Version compatibility](./README.md#version-compatibility) maps those onto host and SDK versions.
 - **Declare capabilities consistently**: `permissions.endpoints` requires the `gzac_api`
-  capability, and `permissions.egress` requires `http_request`.
+  capability, and `permissions.egress` requires `http_request`. Leaving `capabilities` out
+  altogether grants nothing, so it fails the same check. An app's native code is not gated by
+  these, but it declares them for the same reason: they are what the administrator accepts.
 - **Name contracts `name@major`** in lowercase reverse-DNS form (`nl.ritense.openplan@1`), unique
   within `provides` and within `permissions.contracts`. A `permissions.contracts` entry is the name,
   or `{ "contract": "<name>", "operations": ["<key>", …] }` to declare exactly which operations you
@@ -318,6 +321,60 @@ every handler as `input.configuration`. Two `x-` keywords change how GZAC treats
 - `"x-egress-target": true` (on a `"format": "uri"` string) — the value's origin joins the
   plugin's outbound allowlist. Use it for per-environment endpoints only the admin knows; fixed
   endpoints belong in `permissions.egress`.
+
+### The generated forms
+
+Without a `config` bundle, GZAC builds the **Enter data** step from `configurationSchema`; without
+a `process-link-action` bundle, it builds the action-input step from `actions[].properties`. Both
+work the same way and share one limit: a flat object whose every property is a `string`, `number`,
+`integer` or `boolean` (a `["string", "null"]` union counts as a string). A schema with nested
+objects, arrays, `$ref`, `oneOf`/`anyOf`/`allOf`, `if`/`then`, `const` or an
+`additionalProperties` schema — or an action property of any other type — falls back to the raw
+JSON textarea for the whole form. The same fallback applies on edit when a stored value no longer
+fits the form, so nothing is lost.
+
+What a property turns into:
+
+| Declared | Rendered as |
+|---|---|
+| `"type": "string"` | Text input, trimmed on save |
+| `"type": "number"` / `"integer"` | Number input; on an action property a text input that also takes a `pv:…`/`doc:…` expression |
+| `"type": "boolean"` | Checkbox; `required` is ignored, unchecked saves `false` |
+| `"enum": [...]` on a string or number | Dropdown; can be left empty unless `required` |
+| `"x-secret": true` | Password input; on edit, leaving it empty keeps the stored value |
+| `"format": "uri"` or `"x-egress-target": true` | Text input that must hold an absolute URL |
+| `required`, `minLength`, `maxLength`, `minimum`, `maximum`, `pattern` | Checked as the administrator types, with messages in their language |
+| `default` | Prefilled when the configuration is created |
+
+An empty optional field is left out of the saved object rather than sent as `""` or `null`, so the
+schema's `required` keeps its meaning. GZAC validates the saved object against the schema
+regardless of how it was entered.
+
+#### Labelling the generated forms
+
+Labels, tooltips and placeholders come from your `translations` buckets, so the administrator
+sees them in their own language. Per property, the form looks up:
+
+| Form | Key | Shown as |
+|---|---|---|
+| Configuration | `config.<property>.label` | The field label |
+| | `config.<property>.tooltip` | The tooltip next to the label |
+| | `config.<property>.placeholder` | The placeholder of a text, number or password input |
+| | `config.<property>.options.<value>` | The dropdown label of that `enum` value |
+| Action input | `action.<actionKey>.<property>.label` / `.tooltip` / `.placeholder` / `.options.<value>` | The same, for one specific action |
+| | `action.<property>.label` / `.tooltip` / `.placeholder` / `.options.<value>` | Fallback shared by every action of the plugin |
+
+The administrator's language is tried first, then `en`. Without a translation the label falls back
+to the schema property's `title`, the tooltip to its `description`, and finally to the property
+key; a missing placeholder is simply absent, and a missing option label shows the raw value.
+Action properties carry no `title`/`description`, so without `action.*` keys the administrator
+sees bare keys.
+
+A `config` or `process-link-action` bundle reads the same buckets through `sdk.t(key)`, but nothing
+forces it to use these names. Use them anyway: a bundle you later drop leaves a fully labelled
+generated form behind, and the scaffold's bundles already read `config.<property>.*` and
+`action.<property>.*`. Older bundles kept their explanatory text under `.help`; the generated form
+reads `.tooltip`.
 
 ## Step 3: Backend handlers (`src/plugin.ts`)
 
@@ -739,8 +796,9 @@ while looking things up elsewhere. The panel is generic: it does not know what i
 ### The `config` bundle contract
 
 A `config` bundle **is** the **Enter data** step of the admin's **Configure plugin** modal
-([admin guide](https://docs.valtimo.nl/configuration-guides/plugins/external-plugins/configure-a-plugin)) —
-including the configuration-name field, so your form controls the whole step:
+([admin guide](https://docs.valtimo.nl/configuration-guides/plugins/external-plugins/configure-a-plugin)).
+It replaces the [generated form](#the-generated-forms) entirely, including the configuration-name
+field, so your form controls the whole step:
 
 1. On load, register `sdk.onPrefillConfiguration(({title, configuration}) => …)` — it fires in
    edit mode (and when a wizard step is revisited) with the current values. Secret properties are
@@ -753,7 +811,8 @@ including the configuration-name field, so your form controls the whole step:
    sent), so keep the reported data current instead of deferring work to save time.
 
 A `process-link-action` bundle works the same way for an action's input form in the process-link
-modeler: prefill in, `setConfiguration(valid, "", properties)` out. A process link has nothing to
+modeler, replacing the form generated from `actions[].properties`: prefill in,
+`setConfiguration(valid, "", properties)` out. A process link has nothing to
 name, so the modeler reads only `valid` and `data` — pass an empty string for the title.
 
 ### Containment constraints

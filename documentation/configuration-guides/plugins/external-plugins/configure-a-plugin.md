@@ -36,8 +36,11 @@ External plugins appear alongside embedded ones, with their logo, version, and d
 In **Enter data**, name the configuration and fill in the plugin's settings
 
 When the plugin ships its own settings screen, this step shows it, so the plugin can explain and
-validate its own fields. A plugin without one gets a generic form instead: a configuration name
-plus the settings as JSON — see [Plugins without a settings form](#plugins-without-a-settings-form).
+validate its own fields. Otherwise Valtimo builds the form from the plugin's declared settings: a
+configuration name plus one field per setting, with the plugin's own labels, tooltips and
+placeholders in your language. Required fields and limits are checked as you type. Only when the
+settings are too complex for such a form does the step ask for JSON instead — see
+[Plugins without a settings form](#plugins-without-a-settings-form).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
 {% endstep %}
@@ -55,8 +58,14 @@ the requested permissions**, and click **Save configuration**
 
 ## Plugins without a settings form
 
-When a plugin provides no settings screen of its own, the **Enter data** step shows a
-**Properties (JSON)** text area, and the settings must be entered as a JSON object.
+When a plugin provides no settings screen of its own, Valtimo generates one from the settings the
+plugin declares: text, number, checkbox and dropdown fields, with the plugin's labels, tooltips and
+placeholders. A secret setting is shown as a password field and, when editing, can be left empty to
+keep the stored value.
+
+Only when a plugin declares settings too complex for that form — nested structures or lists, for
+example — does the **Enter data** step show a **Properties (JSON)** text area instead, and the
+settings must be entered as a JSON object.
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/22-configure-plugin-properties-json.png" alt=""><figcaption>Properties as JSON</figcaption></figure>
 
@@ -66,8 +75,9 @@ properties *are*, however — that comes from the plugin's supplier.
 
 {% hint style="info" %}
 Ask the supplier for the property names, their types, and an example. A plugin intended for
-functional administrators should ship a settings form; if one does not, that is worth raising with
-the supplier rather than working around permanently.
+functional administrators should keep its settings simple enough for the generated form, or ship a
+settings form of its own; if it does neither, that is worth raising with the supplier rather than
+working around permanently.
 {% endhint %}
 
 The same applies to an action's inputs in the process modeler — see
