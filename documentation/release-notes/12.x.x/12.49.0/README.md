@@ -33,15 +33,22 @@
 
 ## Security
 
-Follow-up to the allowed-class restrictions for JavaScript introduced in 12.46.0.
+* **JavaScript can no longer get around its allowed classes**
 
-* **High** — A JavaScript script task or decision table expression can no longer get around the list of classes it
-  is allowed to use, and so can no longer reach the rest of the application or the server it runs on.
-* **Low** — A process or decision variable can no longer influence the restrictions that apply to JavaScript,
-  either during its own run or during later ones.
-* Scripts can no longer use the `engine` and `context` objects that the script engine previously made available.
-  These were never part of the supported scripting interface. A script that uses one of them now fails and must be
-  rewritten using process variables or `execution`.
+  A JavaScript script task or decision table expression can no longer get around the list of classes it is allowed to
+  use, and so can no longer reach the rest of the application or the server it runs on. This follows up on the
+  allowed-class restrictions for JavaScript introduced in 12.46.0.
+
+* **Variables can no longer change the JavaScript restrictions**
+
+  A process or decision variable can no longer influence the restrictions that apply to JavaScript, either during its
+  own run or during later ones.
+
+* **`engine` and `context` objects no longer available in scripts**
+
+  Scripts can no longer use the `engine` and `context` objects that the script engine previously made available. These
+  were never part of the supported scripting interface. A script that uses one of them now fails and must be rewritten
+  using process variables or `execution`.
 
 * **Process instance search and count restricted to administrators**
 
