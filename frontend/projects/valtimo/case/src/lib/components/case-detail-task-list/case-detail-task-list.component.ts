@@ -24,6 +24,7 @@ import {
   combineLatest,
   filter,
   map,
+  merge,
   Observable,
   of,
   startWith,
@@ -92,7 +93,14 @@ export class CaseDetailTaskListComponent {
     startWith(null)
   );
 
-  public readonly processInstanceTasks$: Observable<{
+  // Drop stale tasks on refresh
+  private readonly _clearTasksOnRefresh$: Observable<null> =
+    this.caseDetailLayoutService.refreshTasks$.pipe(
+      tap(() => this.loadingTasks$.next(true)),
+      map(() => null)
+    );
+
+  private readonly _fetchedTasks$: Observable<{
     myTasks: TaskWithProcessLink[];
     otherTasks: TaskWithProcessLink[];
   }> = combineLatest([this.caseDetailLayoutService.refreshTasks$, this._taskUpdateSseEvent$]).pipe(
@@ -135,6 +143,11 @@ export class CaseDetailTaskListComponent {
     map(tasksWithProcessLinks => this.sortTasksWithProcessLinksOnPermission(tasksWithProcessLinks)),
     tap(() => this.loadingTasks$.next(false))
   );
+
+  public readonly processInstanceTasks$: Observable<{
+    myTasks: TaskWithProcessLink[];
+    otherTasks: TaskWithProcessLink[];
+  } | null> = merge(this._clearTasksOnRefresh$, this._fetchedTasks$);
 
   constructor(
     private readonly documentService: DocumentService,

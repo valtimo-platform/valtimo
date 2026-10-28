@@ -17,10 +17,12 @@ import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {
+  catchError,
   combineLatest,
   distinctUntilChanged,
   filter,
   map,
+  of,
   startWith,
   Subject,
   Subscription,
@@ -62,7 +64,9 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
   private readonly _fetchData$ = new Subject<null>();
 
   public readonly headerWidget$ = this._documentId$.pipe(
-    switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidget(documentId)),
+    switchMap(documentId =>
+      this.caseHeaderWidgetApiService.getHeaderWidget(documentId).pipe(catchError(() => of(null)))
+    ),
     tap(widget => {
       if (!!widget) {
         this._fetchData$.next(null);
