@@ -37,3 +37,4 @@ New enhancement explanation.
 | Severity | Fix |
 |----------|-----|
 | High | Form submissions no longer accept values for the e-mail preview form component, including when it is placed inside a datagrid, editgrid or container. |
+| Medium | Intermediate submissions no longer store or return e-mail preview content. As a consequence, the intermediate submission endpoint (`/api/v1/form/intermediate/submission`) now returns 404 for tasks without a form process link. |

@@ -97,6 +97,10 @@ Configure the component and press **Save**, then save the form
 }
 ```
 
+## Intermediate saves
+
+The preview content is never stored in intermediate submissions; it is always taken from the current process data when the form is opened.
+
 ## Dark mode
 
 E-mails are authored against a light background. Like an e-mail client, the preview surface
