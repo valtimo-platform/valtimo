@@ -8,14 +8,6 @@ This release contains security fixes. See [Security](#security) for details.
 
 ---
 
-## New Features
-
-### New feature title
-
-New feature explanation.
-
----
-
 ## Enhancements
 
 ### More reliable JavaScript results
