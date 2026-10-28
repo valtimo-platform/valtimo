@@ -11,7 +11,8 @@ sent or after it has been stored on the case.
 
 The component is read-only: it does not collect input, it only renders the HTML value found
 at the configured variable key. Values submitted for this component are ignored by the backend,
-so a form submission can never overwrite the previewed variable.
+so a form submission can never overwrite the previewed variable. This also applies when the
+component is placed inside a datagrid, editgrid or container.
 
 ## How it works
 

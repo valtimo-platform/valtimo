@@ -69,6 +69,64 @@ internal class FormFlowValtimoServiceTest {
         assertEquals("""{"person":{"firstName":"Henk"}}""", filteredSubmissionData.toString())
     }
 
+    @Test
+    fun `should filter nested display-only components from submissionData`() {
+        assertEquals(
+            """{"person":{"firstName":"Henk","children":[{"name":"a"}]},"address":{"street":"b"}}""",
+            verifiedNested(formFlowValtimoService).toString()
+        )
+    }
+
+    @Test
+    fun `should filter nested display-only components when submission data filtering is disabled`() {
+        val service = FormFlowValtimoService(formDefinitionService, MapperSingleton.get(), mock(), mock(), false)
+        val result = verifiedNested(service)
+        assertEquals(false, result.toString().contains("Preview"))
+        assertEquals("b", result.at("/address/street").asText())
+    }
+
+    private fun verifiedNested(service: FormFlowValtimoService): com.fasterxml.jackson.databind.JsonNode {
+        val formFlowInstance = mock<FormFlowInstance>(defaultAnswer = RETURNS_DEEP_STUBS)
+        whenever(formFlowInstance.getCurrentStep().definition.type.properties)
+            .thenReturn(FormStepTypeProperties("my-form"))
+        whenever(formFlowInstance.formFlowDefinition.id.blueprintId)
+            .thenReturn(FormFlowDefinitionBlueprintId.of(caseDefinitionId))
+        whenever(formDefinitionService.getFormDefinitionByName(eq("my-form"), any<BlueprintId>()))
+            .thenReturn(Optional.of(nestedFormDefinition()))
+        val submissionData = MapperSingleton.get().readTree(
+            """
+                {
+                  "person": { "firstName": "Henk", "children": [ { "name": "a", "childPreview": "<img src=x>" } ] },
+                  "address": { "street": "b", "addressPreview": "<img src=x>" }
+                }
+            """
+        )
+        return requireNotNull(service.getVerifiedSubmissionData(submissionData, formFlowInstance))
+    }
+
+    private fun nestedFormDefinition() = FormIoFormDefinition(
+        UUID.randomUUID(),
+        "my-form",
+        """
+            {
+              "display": "form",
+              "components": [
+                { "key": "person.firstName", "type": "textfield", "input": true },
+                { "key": "person.children", "type": "datagrid", "input": true, "components": [
+                  { "key": "name", "type": "textfield", "input": true },
+                  { "key": "childPreview", "type": "valtimo-mail-preview", "input": true }
+                ]},
+                { "key": "address", "type": "container", "input": true, "components": [
+                  { "key": "street", "type": "textfield", "input": true },
+                  { "key": "addressPreview", "type": "valtimo-mail-preview", "input": true }
+                ]}
+              ]
+            }
+        """,
+        FormDefinitionBlueprintId.forCase(caseDefinitionId),
+        false
+    )
+
     private fun formDefinition() = FormIoFormDefinition(
         UUID.randomUUID(),
         "my-form",

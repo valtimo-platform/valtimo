@@ -407,6 +407,60 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return Collections.unmodifiableList(inputFields);
     }
 
+    public JsonNode removeNonSubmittableData(JsonNode formData) {
+        return removeNonSubmittableData(asJson(), formData);
+    }
+
+    public static JsonNode removeNonSubmittableData(JsonNode formDefinition, JsonNode formData) {
+        final JsonNode copy = formData.deepCopy();
+        removeDisplayOnlyValues(formDefinition, List.of(copy));
+        return copy;
+    }
+
+    private static void removeDisplayOnlyValues(JsonNode definitionNode, List<JsonNode> scopes) {
+        if (scopes.isEmpty()) {
+            return;
+        }
+        if (definitionNode.isObject() && definitionNode.has(TYPE_KEY)) {
+            final var key = getKey(definitionNode);
+            if (key.isPresent() && DISPLAY_ONLY_COMPONENT_TYPES.contains(definitionNode.get(TYPE_KEY).asText())) {
+                scopes.forEach(scope -> removeValueAtPath(scope, key.get()));
+                return;
+            }
+            final JsonNode children = definitionNode.get(COMPONENTS_KEY);
+            if (key.isPresent() && isInputComponent(definitionNode) && children != null && children.isArray()
+                && !children.isEmpty()) {
+                final var nestedScopes = new ArrayList<JsonNode>();
+                final var pointer = toJsonPointer(key.get());
+                scopes.forEach(scope -> {
+                    final JsonNode value = scope.at(pointer);
+                    if (value.isArray()) {
+                        value.forEach(row -> {
+                            if (row.isObject()) {
+                                nestedScopes.add(row);
+                            }
+                        });
+                    } else if (value.isObject()) {
+                        nestedScopes.add(value);
+                    }
+                });
+                removeDisplayOnlyValues(children, nestedScopes);
+                return;
+            }
+        }
+        if (definitionNode.isContainerNode()) {
+            definitionNode.forEach(child -> removeDisplayOnlyValues(child, scopes));
+        }
+    }
+
+    private static void removeValueAtPath(JsonNode scope, String key) {
+        final int lastDot = key.lastIndexOf('.');
+        final JsonNode parent = lastDot < 0 ? scope : scope.at(toJsonPointer(key.substring(0, lastDot)));
+        if (parent instanceof ObjectNode objectNode) {
+            objectNode.remove(lastDot < 0 ? key : key.substring(lastDot + 1));
+        }
+    }
+
     public List<ObjectNode> getInputFields() {
         return getInputFields(asJson());
     }

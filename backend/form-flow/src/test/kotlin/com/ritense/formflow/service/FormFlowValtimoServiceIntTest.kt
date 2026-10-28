@@ -89,6 +89,26 @@ internal class FormFlowValtimoServiceIntTest: BaseIntegrationTest() {
         assertEquals("""{"person":{"firstName":"Henk"}}""", filteredSubmissionData.toString())
     }
 
+    @Test
+    fun `should filter nested display-only fields from submissionData`() {
+        linkFormFlowToUserTask("inkomens_loket_alternate")
+        val documentAndProcess = newDocumentAndStartProcess()
+        val processInstanceId = documentAndProcess.resultingProcessInstanceId().get()
+        val formFlowInstance = openTasks(processInstanceId).single()
+        val submissionData = objectMapper.readTree("""
+            {
+                "person":{"firstName":"Henk","children":[{"name":"a","childPreview":"<img src=x onerror=alert(1)>"}]},
+                "address":{"street":"b","addressPreview":"<img src=x onerror=alert(1)>"}
+            }""".trimIndent())
+
+        val filteredSubmissionData = formFlowValtimoService.getVerifiedSubmissionData(submissionData, formFlowInstance)
+
+        assertEquals(
+            """{"person":{"firstName":"Henk","children":[{"name":"a"}]},"address":{"street":"b"}}""",
+            filteredSubmissionData.toString()
+        )
+    }
+
     private fun linkFormFlowToUserTask(formFlowDefinitionId: String) {
         processLinkService.createProcessLink(
             FormFlowProcessLinkCreateRequestDto(

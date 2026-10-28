@@ -122,6 +122,7 @@ class DefaultFormSubmissionService(
                 ?: resolveDocumentDefinitionName(processDefinition)
             val processVariables = getProcessVariables(taskInstanceId)
             val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
+            val formData = formDefinition.removeNonSubmittableData(formData)
 
             val formFields = getFormFields(formDefinition, formData)
             preProcessFormFields(formFields, document)

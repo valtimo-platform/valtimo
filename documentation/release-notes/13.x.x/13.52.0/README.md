@@ -36,4 +36,4 @@ New enhancement explanation.
 
 | Severity | Fix |
 |----------|-----|
-| High | Form submissions no longer accept values for the e-mail preview form component. |
+| High | Form submissions no longer accept values for the e-mail preview form component, including when it is placed inside a datagrid, editgrid or container. |

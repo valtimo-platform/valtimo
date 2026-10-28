@@ -237,6 +237,33 @@
                             "key": "containerProperty3",
                             "type": "textfield",
                             "input": true
+                        },
+                        {
+                            "label": "Container preview",
+                            "key": "rowPreview",
+                            "type": "valtimo-mail-preview",
+                            "input": true
+                        }
+                    ]
+                },
+                {
+                    "label": "Grid",
+                    "key": "docGrid",
+                    "type": "datagrid",
+                    "input": true,
+                    "tableView": false,
+                    "components": [
+                        {
+                            "label": "Grid name",
+                            "key": "gridName",
+                            "type": "textfield",
+                            "input": true
+                        },
+                        {
+                            "label": "Grid preview",
+                            "key": "rowPreview",
+                            "type": "valtimo-mail-preview",
+                            "input": true
                         }
                     ]
                 },

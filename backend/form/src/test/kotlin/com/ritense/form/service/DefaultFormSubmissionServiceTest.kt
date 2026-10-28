@@ -451,7 +451,15 @@ class DefaultFormSubmissionServiceTest {
                     { "key": "voornaam", "type": "textfield", "input": true },
                     { "key": "pv.other", "type": "textfield", "input": true },
                     { "key": "mailPreview.body", "type": "valtimo-mail-preview", "input": true },
-                    { "key": "pv.mailPreview", "type": "valtimo-mail-preview", "input": true }
+                    { "key": "pv.mailPreview", "type": "valtimo-mail-preview", "input": true },
+                    { "key": "doc.grid", "type": "datagrid", "input": true, "components": [
+                      { "key": "name", "type": "textfield", "input": true },
+                      { "key": "rowPreview", "type": "valtimo-mail-preview", "input": true }
+                    ]},
+                    { "key": "pv.container", "type": "container", "input": true, "components": [
+                      { "key": "name", "type": "textfield", "input": true },
+                      { "key": "preview", "type": "valtimo-mail-preview", "input": true }
+                    ]}
                   ]
                 }
             """,
@@ -465,7 +473,9 @@ class DefaultFormSubmissionServiceTest {
                 {
                   "voornaam": "jan",
                   "mailPreview": { "body": "<img src=x onerror=alert(1)>" },
-                  "pv": { "other": "value", "mailPreview": "<img src=x onerror=alert(1)>" }
+                  "pv": { "other": "value", "mailPreview": "<img src=x onerror=alert(1)>",
+                    "container": { "name": "n", "preview": "<img src=x onerror=alert(1)>" } },
+                  "doc": { "grid": [ { "name": "a", "rowPreview": "<img src=x onerror=alert(1)>" } ] }
                 }
             """
         ) as ObjectNode
@@ -487,6 +497,8 @@ class DefaultFormSubmissionServiceTest {
         val submittedKeys = captor.allValues.flatMap { it.keys }
         assertThat(submittedKeys).contains("doc:/voornaam", "pv:other")
         assertThat(submittedKeys).doesNotContain("doc:/mailPreview/body", "pv:mailPreview")
+        val submitted = captor.allValues.fold(emptyMap<String, Any?>()) { acc, map -> acc + map }
+        assertThat(submitted.toString()).doesNotContain("rowPreview", "onerror", "preview=")
     }
 
     private fun formProcessLink(activityType: ActivityTypeWithEventName = USER_TASK_CREATE): FormProcessLink {

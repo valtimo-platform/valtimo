@@ -63,21 +63,27 @@ class FormFlowValtimoService(
             }
 
             val currentStepTypeProperties = formFlowInstance.getCurrentStep().definition.type.properties
-            if (currentStepTypeProperties !is FormStepTypeProperties || !doSubmissionDataFiltering) {
+            if (currentStepTypeProperties !is FormStepTypeProperties) {
                 return@withLoggingContext submissionData
+            }
+
+            val formDefinition = getFormDefinition(formFlowInstance, currentStepTypeProperties.definition)
+            val sanitizedSubmissionData = formDefinition.removeNonSubmittableData(submissionData)
+            if (!doSubmissionDataFiltering) {
+                return@withLoggingContext sanitizedSubmissionData
             }
 
             val jsonPatchBuilder = JsonPatchBuilder()
             val verifiedSubmissionData = objectMapper.createObjectNode()
 
-            val validJsonPointers = getFormDefinition(formFlowInstance, currentStepTypeProperties.definition)
+            val validJsonPointers = formDefinition
                 .inputFields
                 .filter { FormIoFormDefinition.SUBMITTABLE.test(it) }
                 .mapNotNull { field -> FormIoFormDefinition.getKey(field).getOrNull() }
                 .map { fieldKey -> JsonPointer.valueOf("/${fieldKey.replace('.', '/')}") }
 
             validJsonPointers.forEach { validJsonPointer ->
-                val verifiedSubmissionNode = submissionData.at(validJsonPointer)
+                val verifiedSubmissionNode = sanitizedSubmissionData.at(validJsonPointer)
                 if (verifiedSubmissionNode !is MissingNode) {
                     jsonPatchBuilder.addJsonNodeValue(verifiedSubmissionData, validJsonPointer, verifiedSubmissionNode)
                 }
