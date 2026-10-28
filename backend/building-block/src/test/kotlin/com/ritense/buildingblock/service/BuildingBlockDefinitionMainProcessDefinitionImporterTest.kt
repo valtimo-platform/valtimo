@@ -17,7 +17,12 @@
 package com.ritense.buildingblock.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.buildingblock.domain.BuildingBlockDefinitionMainProcessDefinitionDto
+import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_DEFINITION
+import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -25,6 +30,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @ExtendWith(MockitoExtension::class)
 class BuildingBlockDefinitionMainProcessDefinitionImporterTest(
@@ -63,6 +72,44 @@ class BuildingBlockDefinitionMainProcessDefinitionImporterTest(
         assertThat(importer.supports("/building-block/not/building-block-definition-main-process-definition.json")).isFalse()
         assertThat(importer.supports("/building-block/building-block-definition-main-process-definition-json")).isFalse()
     }
+
+    @Test
+    fun `should link the latest deployed version as main process`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId("bezwaar", "1.0.0")
+        whenever(objectMapper.readValue(any<String>(), eq(BuildingBlockDefinitionMainProcessDefinitionDto::class.java)))
+            .thenReturn(BuildingBlockDefinitionMainProcessDefinitionDto("sub"))
+        whenever(operatonProcessService.getDefinitionsByKeyAndBlueprint(buildingBlockDefinitionId, "sub"))
+            .thenReturn(listOf(processDefinition("sub:1:aaa", 1), processDefinition("sub:2:bbb", 2)))
+
+        importer.import(
+            ImportRequest(FILENAME, "{}".toByteArray(), buildingBlockDefinitionId = buildingBlockDefinitionId)
+        )
+
+        verify(buildingBlockDefinitionProcessDefinitionService).setMainLink(
+            buildingBlockDefinitionId,
+            null,
+            ProcessDefinitionId.of("sub:2:bbb"),
+            true
+        )
+    }
+
+    private fun processDefinition(id: String, version: Int) = OperatonProcessDefinition(
+        id,
+        null,
+        null,
+        "sub",
+        "sub",
+        version,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        true
+    )
 
     private companion object {
         const val FILENAME = "/building-block/building-block-definition-main-process-definition.json"
