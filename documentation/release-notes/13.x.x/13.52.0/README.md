@@ -29,6 +29,7 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Forms | Clicking the submit button of a form more than once no longer submits the form multiple times; after a failed submit the button can be used again. |
+| Availability | An instance whose database has become unreachable now reports itself as unavailable, so it is taken out of service instead of being sent requests that fail |
 
 ---
 
