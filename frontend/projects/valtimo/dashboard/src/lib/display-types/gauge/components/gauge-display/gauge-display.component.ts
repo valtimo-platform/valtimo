@@ -91,6 +91,7 @@ export class GaugeDisplayComponent implements DisplayComponent {
       return `${this.translateService.instant('dashboard.of')} ${scopeData?.total || 0} ${scope.displayTypeProperties.label} `;
     }
 
-    return Math.round(value * (scopeData?.total || 0)) / 100.0 + '';
+    // Carbon passes the percentage rounded to two decimals; show the exact count instead
+    return `${scopeData?.value || 0}`;
   }
 }
