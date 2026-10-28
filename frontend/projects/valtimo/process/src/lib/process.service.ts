@@ -159,6 +159,9 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated This endpoint is restricted to administrators and will be removed.
+   */
   getProcessInstances(key: string, page: number, size: number, sort: string): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())

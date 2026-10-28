@@ -8,7 +8,8 @@
 # packages this host should serve by baking them in or mounting a directory over it (see
 # PLUGIN_PREINSTALL_DIR in app/README.md).
 
-FROM node:22-alpine AS builder
+#Pin node version to fix CVE-2026-111497
+FROM node:22.23.4-alpine AS builder
 WORKDIR /build
 
 # SDK first, manifests before sources so a dependency-only change reuses the install layer.
@@ -24,7 +25,8 @@ COPY app/ ./app/
 RUN npm --prefix app run build
 
 
-FROM node:22-alpine AS runtime
+#Pin node version to fix CVE-2026-111497
+FROM node:22.23.4-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
