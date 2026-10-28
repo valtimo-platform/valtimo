@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 
 package com.ritense.valtimo.autoconfigure;
 
+import com.ritense.valtimo.AllowedClassesScriptEngineResolver;
 import com.ritense.valtimo.CamundaWhitelistedBeansPlugin;
 import com.ritense.valtimo.ScriptingWhitelistPlugin;
 import com.ritense.valtimo.contract.annotation.ProcessBean;
 import java.util.Map;
 import java.util.Set;
+import org.graalvm.polyglot.Engine;
 import org.camunda.bpm.spring.boot.starter.configuration.Ordering;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -43,12 +46,19 @@ public class CamundaContextConfiguration {
         return new CamundaWhitelistedBeansPlugin(processBeans, applicationContext);
     }
 
+    @Bean(destroyMethod = "close")
+    @ConditionalOnMissingBean(Engine.class)
+    public Engine valtimoScriptingPolyglotEngine() {
+        return AllowedClassesScriptEngineResolver.Companion.newPolyglotEngine();
+    }
+
     @Bean
     @Order(Ordering.DEFAULT_ORDER - 1)
     public ScriptingWhitelistPlugin scriptingWhitelistPlugin(
-        @Value("${valtimo.camunda.scripting.allowedClasses:}") Set<String> allowedScriptingClasses
+        @Value("${valtimo.camunda.scripting.allowedClasses:}") Set<String> allowedScriptingClasses,
+        Engine polyglotEngine
     ) {
-        return new ScriptingWhitelistPlugin(allowedScriptingClasses);
+        return new ScriptingWhitelistPlugin(allowedScriptingClasses, polyglotEngine);
     }
 
 }
