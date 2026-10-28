@@ -22,6 +22,11 @@ export interface ActionInput {
   documentId: string;
   activityId: string;
   properties: Record<string, unknown>;
+  /**
+   * Opaque, expiring handle naming this process instance. Pass it as `replyTo` to `pluginRequest`
+   * to get the job's outcome back as a BPMN message; it authenticates nothing.
+   */
+  replyHandle?: string;
 }
 
 /**
@@ -150,10 +155,159 @@ export interface ManifestAction {
   outputs?: string[];
 }
 
+/**
+ * Without a `process-link-action` bundle, GZAC generates the action's input form when every
+ * property is a `string`, `number`, `integer` or `boolean`; other types leave a JSON textarea.
+ * Labels come from `translations`: `action.<actionKey>.<key>.label` / `.tooltip` / `.placeholder`,
+ * falling back to `action.<key>.*`.
+ */
 export interface ManifestActionProperty {
   key: string;
   type: string;
   required?: boolean;
+}
+
+/** `sync`: answered within the call. `job`: GZAC keeps a ledger row; the provider may complete later. */
+export type ContractOperationMode = "sync" | "job";
+
+export interface ManifestContractOperation {
+  /** `/^[a-z][a-z0-9-]*$/`, unique within its contract. */
+  key: string;
+  title: string;
+  description?: string;
+  /** Defaults to `sync`. */
+  mode?: ContractOperationMode;
+  /** ISO-8601 duration (e.g. `PT2H`); only allowed with `mode: "job"`. */
+  timeout?: string;
+  /** Keys a completed result must contain (`null` values allowed). */
+  outputs?: string[];
+  /** JSON Schema (2020-12) the request `payload` must satisfy; GZAC refuses others with `CONTRACT_INPUT_INVALID`. */
+  input?: Record<string, unknown>;
+  /** JSON Schema (2020-12) a completed `result` must satisfy; GZAC fails others with `PROVIDER_INVALID_RESULT`. */
+  output?: Record<string, unknown>;
+}
+
+/** A consumer declaration limited to the listed operations of one contract. */
+export interface ManifestDeclaredContract {
+  /** `name@major`, e.g. `nl.ritense.openplan@1`. */
+  contract: string;
+  /** Non-empty, unique operation keys. GZAC refuses any other operation with `OPERATION_NOT_DECLARED`. */
+  operations: string[];
+}
+
+export interface ManifestProvidedContract {
+  /** `name@major`, e.g. `nl.ritense.openplan@1`. */
+  contract: string;
+  title?: string;
+  operations: ManifestContractOperation[];
+}
+
+/** Identity of the calling configuration, stamped by GZAC from the caller's token. */
+export interface ContractCaller {
+  pluginId: string;
+  version: string;
+  configurationId: string;
+}
+
+/** Input to a provider's contract handler (`handle_contract_call`). `jobId` is only present for a job. */
+export interface ContractCallInput {
+  contract: string;
+  operation: string;
+  configurationId: string;
+  configuration: Record<string, unknown>;
+  caller: ContractCaller;
+  payload: unknown;
+  jobId?: string;
+  /**
+   * ISO-8601 instant when the answer is due: for a synchronous call, the caller's remaining budget
+   * on the host's clock; for a job, the instant GZAC expires it.
+   */
+  deadline?: string;
+  /** The case the job acts on, when known. Jobs only. */
+  documentId?: string;
+  /** Login of the user whose token requested the job. Jobs only. */
+  requestedBy?: string;
+}
+
+export interface ContractJobInput extends ContractCallInput {
+  jobId: string;
+}
+
+/**
+ * `accepted` is only meaningful for a job: the provider took it and completes it later with
+ * `completeJob`. `undefined` values on an object `result` are serialised as `null`.
+ */
+export interface ContractCallOutput {
+  status: "completed" | "accepted" | "error";
+  result?: unknown;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+export type ContractCallHandler = (
+  input: ContractCallInput
+) => ContractCallOutput | Promise<ContractCallOutput>;
+
+export type ContractJobHandler = (
+  input: ContractJobInput
+) => ContractCallOutput | Promise<ContractCallOutput>;
+
+/** A job's outcome, delivered to the requester's `handle_contract_reply`. */
+export interface ContractReplyInput {
+  configurationId: string;
+  configuration: Record<string, unknown>;
+  jobId: string;
+  contract: string;
+  operation: string;
+  status: "completed" | "failed" | "expired";
+  result?: unknown;
+  errorCode?: string;
+  /** The provider's own error code, when it reported a failure. */
+  providerErrorCode?: string;
+  errorMessage?: string;
+  requestedAt: string;
+  completedAt?: string;
+}
+
+/** `error` makes GZAC retry the delivery; anything else acknowledges it. */
+export interface ContractReplyOutput {
+  status: "completed" | "ignored" | "error";
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+export type ContractReplyHandler = (
+  reply: ContractReplyInput
+) => ContractReplyOutput | void | Promise<ContractReplyOutput | void>;
+
+/** Result of `pluginCall`. Remote failures arrive here as `status: "error"`, never as a throw. */
+export interface ContractCallResult<T = unknown> {
+  status: "completed" | "error";
+  result?: T;
+  errorCode?: string;
+  /** The provider's own error code, next to `errorCode: "PROVIDER_ERROR"`. */
+  providerErrorCode?: string;
+  errorMessage?: string;
+}
+
+/** Result of `pluginRequest`. */
+export type ContractRequestResult =
+  | { status: "accepted"; jobId: string }
+  | { status: "error"; errorCode?: string; errorMessage?: string };
+
+/** What a provider reports through `completeJob`. */
+export interface ContractJobOutcome {
+  status: "completed" | "failed";
+  result?: unknown;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+/** Result of `completeJob`. */
+export interface ContractCompleteResult {
+  status: "completed" | "error";
+  errorCode?: string;
+  errorMessage?: string;
 }
 
 export interface Endpoint {
@@ -215,7 +369,9 @@ export interface FrontendBundle {
  * description. The manifest has **no** top-level `name`/`description` — the plugin's identity is
  * defined per locale here so it can be rendered in the operator's language. Any additional keys are
  * free-form translation strings consumed by the frontend SDK's `t(key)` lookup inside the plugin's
- * iframes.
+ * iframes. GZAC itself reads `config.<property>.label` / `.tooltip` / `.placeholder` /
+ * `.options.<value>` (and the `action.*` equivalents) to label the forms it generates for plugins
+ * without a `config` or `process-link-action` bundle.
  */
 export interface PluginTranslations {
   name: string;
@@ -253,7 +409,16 @@ export interface PluginManifest {
      * admin supplies it at activation instead of the package being rebuilt per deployment.
      */
     egress?: string[];
+    /**
+     * Contracts this plugin calls through `pluginCall` / `pluginRequest`: a `name@major` string to
+     * call any operation the bound provider offers, or a {@link ManifestDeclaredContract} to call
+     * only the listed operations. The admin binds each to a providing configuration at activation;
+     * the host refuses calls to any contract not in the pushed grant.
+     */
+    contracts?: Array<string | ManifestDeclaredContract>;
   };
+  /** Contracts this plugin serves to other configurations, via `onContractCall` / `onContractJob`. */
+  provides?: ManifestProvidedContract[];
   frontendBundles?: FrontendBundle[];
   /**
    * Filename of the plugin logo relative to the plugin root (e.g. `logo.svg`). Written by the

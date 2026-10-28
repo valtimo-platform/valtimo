@@ -120,6 +120,8 @@
           (egressResolved)="onEgressResolved($event)"
           (endpointsResolved)="onEndpointsResolved($event)"
           (eventSubscriptionsResolved)="onEventSubscriptionsResolved($event)"
+          (declaredContractsResolved)="onDeclaredContractsResolved($event)"
+          (providedContractsResolved)="onProvidedContractsResolved($event)"
           (saveEvent)="onExternalSave($event)"
           (validEvent)="onConfigValid($event)"
         ></valtimo-plugin-external-configure>
@@ -154,12 +156,19 @@
     </div>
 
     <div [hidden]="$currentStep() !== 2">
+      <valtimo-plugin-external-contract-bindings
+        [contracts]="$declaredContracts()"
+        (bindingsChangeEvent)="onContractBindingsChange($event)"
+        (validEvent)="onContractBindingsValid($event)"
+      ></valtimo-plugin-external-contract-bindings>
+
       <valtimo-plugin-external-permissions
         [capabilities]="$capabilities()"
         [derivedEgress]="$derivedEgress()"
         [egress]="$egress()"
         [endpoints]="$endpoints()"
         [eventSubscriptions]="$eventSubscriptions()"
+        [providedContracts]="$providedContracts()"
         (grantedCapabilitiesChange)="onGrantedCapabilitiesChange($event)"
         (grantedEgressChange)="onGrantedEgressChange($event)"
         (grantedEndpointsChange)="onGrantedEndpointsChange($event)"
@@ -239,7 +248,7 @@
       <button
         cdsButton="primary"
         [attr.data-test-id]="testIds.completeButton"
-        [disabled]="!$permissionsValid() || $saving()"
+        [disabled]="!$permissionsValid() || !$contractBindingsValid() || $saving()"
         (click)="onComplete()"
       >
         {{ 'pluginManagement.appAdd.complete' | translate }}

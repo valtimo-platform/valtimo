@@ -27,6 +27,7 @@ import com.ritense.externalplugin.domain.ExternalPluginGrantedCapability
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEgress
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
@@ -100,6 +101,7 @@ class ExternalPluginConfigurationServiceTest {
             mock<ExternalPluginHostUsageResolver>(),
             "gzac.events",
             "http://localhost:8080",
+            mock<ExternalPluginContractBindingRepository>(),
         )
     }
 
@@ -406,6 +408,7 @@ class ExternalPluginConfigurationServiceTest {
         mock<ExternalPluginHostUsageResolver>(),
         "gzac.events",
         "http://localhost:8080",
+        mock<ExternalPluginContractBindingRepository>(),
     )
 
     private fun secretSchema(): ObjectNode = objectMapper.readTree(

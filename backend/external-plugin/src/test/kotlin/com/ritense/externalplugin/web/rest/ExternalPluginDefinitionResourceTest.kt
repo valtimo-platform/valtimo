@@ -77,6 +77,7 @@ class ExternalPluginDefinitionResourceTest {
             compatibilityChecker = GzacCompatibilityChecker { currentGzacVersion },
             pluginPackageInspector = PluginPackageInspector(objectMapper),
             objectMapper = objectMapper,
+            contractJobService = mock(),
         )
     }
 

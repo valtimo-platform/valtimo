@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyBaseLogger, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AppConfig } from "./config.js";
 import { createHmacAuthHook } from "./hmac.js";
+import { contractReplies, runContractCall } from "./contracts.js";
 import { manifest, PLUGIN_ID, PLUGIN_VERSION } from "./manifest.js";
 import { handleRequest, runAction } from "./plugin.js";
 import type { ConfigRecord, ConfigStore, EventBrokerConfig } from "./store.js";
@@ -42,6 +43,22 @@ const MIME_TYPES: Record<string, string> = {
 
 const MIN_QUEUE_TTL_MS = 3_600_000;
 const MAX_QUEUE_TTL_MS = 2_592_000_000;
+const CORRELATION_ID_PATTERN = /^[A-Za-z0-9-]{1,64}$/;
+
+/** The request's logger, labelled with GZAC's `X-Valtimo-Correlation-Id` when well-formed. */
+function withCorrelationId(request: FastifyRequest): FastifyBaseLogger {
+  const value = request.headers["x-valtimo-correlation-id"];
+  return typeof value === "string" && CORRELATION_ID_PATTERN.test(value)
+    ? request.log.child({ correlationId: value })
+    : request.log;
+}
+
+/** A synchronous call's `timeoutMs`, as a deadline on this app's own clock. */
+function deadlineFromTimeout(timeoutMs: unknown): string | undefined {
+  return typeof timeoutMs === "number" && Number.isSafeInteger(timeoutMs) && timeoutMs > 0
+    ? new Date(Date.now() + timeoutMs).toISOString()
+    : undefined;
+}
 
 /** Mirrors the plugin host's defensive normalisation of the pushed broker block. */
 function normalizeEventBroker(raw: unknown): EventBrokerConfig | null {
@@ -302,6 +319,7 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
             documentId: body.documentId as string | undefined,
             activityId: body.activityId as string | undefined,
             properties: (body.properties as Record<string, unknown>) ?? {},
+            replyHandle: typeof body.replyHandle === "string" ? body.replyHandle : undefined,
           },
           request.log,
         );
@@ -311,6 +329,126 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
         request.log.error({ err }, "[demo-app] action failed");
         reply.code(500).send({ status: "error", errorCode: "HOST_ERROR", errorMessage: (err as Error).message });
       }
+    },
+  );
+
+  // ---- Contract calls and job replies (HMAC) ----
+  // Mirrors the plugin host's plugin-contracts routes: GZAC brokers a call or job delivery to this
+  // provider, and delivers job outcomes back to it as a requester. Plugin-level outcomes all
+  // answer 200; non-200s are refusals. The coded 404s tell GZAC "temporarily unavailable" apart from
+  // a bare 404 ("no contract route at all").
+  const lookupRecord = (
+    params: { pluginId: string; version: string },
+    configurationId: unknown,
+    reply: FastifyReply,
+  ): ConfigRecord | null => {
+    if (params.pluginId !== PLUGIN_ID || params.version !== PLUGIN_VERSION) {
+      reply.code(404).send({
+        status: "error",
+        errorCode: "PLUGIN_NOT_LOADED",
+        errorMessage: `Plugin not loaded: ${params.pluginId}@${params.version}`,
+      });
+      return null;
+    }
+    if (typeof configurationId !== "string" || !configurationId) {
+      reply.code(400).send({ error: "Missing configurationId" });
+      return null;
+    }
+    const record = store.get(configurationId);
+    if (!record) {
+      reply.code(404).send({
+        status: "error",
+        errorCode: "CONFIGURATION_NOT_FOUND",
+        errorMessage: `Configuration not found: ${configurationId}`,
+      });
+      return null;
+    }
+    if (record.pluginId !== PLUGIN_ID || record.pluginVersion !== PLUGIN_VERSION) {
+      reply.code(400).send({
+        error: `Configuration ${configurationId} targets ${record.pluginId}@${record.pluginVersion}, not ${PLUGIN_ID}@${PLUGIN_VERSION}`,
+      });
+      return null;
+    }
+    return record;
+  };
+
+  fastify.post<{
+    Params: { pluginId: string; version: string; contract: string; operation: string };
+    Body: Record<string, unknown>;
+  }>(
+    `${pluginBase}/contracts/:contract/:operation`,
+    { preHandler: hmac, config: { rawBody: true } },
+    async (request, reply) => {
+      const { contract, operation } = request.params;
+      const body = (request.body ?? {}) as Record<string, unknown>;
+      const record = lookupRecord(request.params, body.configurationId, reply);
+      if (!record) return;
+
+      const provided = manifest.provides
+        ?.find((p) => p.contract === contract)
+        ?.operations.some((op) => op.key === operation);
+      if (!provided) {
+        reply.code(404).send({
+          status: "error",
+          errorCode: "CONTRACT_OPERATION_NOT_PROVIDED",
+          errorMessage: `${PLUGIN_ID}@${PLUGIN_VERSION} does not provide operation '${operation}' of '${contract}'`,
+        });
+        return;
+      }
+
+      const optional = (value: unknown) => (typeof value === "string" && value ? value : undefined);
+      const output = runContractCall(
+        record,
+        store,
+        contract,
+        operation,
+        {
+          caller: (body.caller as Record<string, unknown>) ?? {},
+          payload: body.payload,
+          jobId: optional(body.jobId),
+          deadline: optional(body.deadline) ?? deadlineFromTimeout(body.timeoutMs),
+          documentId: optional(body.documentId),
+          requestedBy: optional(body.requestedBy),
+        },
+        withCorrelationId(request),
+      );
+      reply.code(200).send(output);
+    },
+  );
+
+  fastify.post<{ Params: { pluginId: string; version: string }; Body: Record<string, unknown> }>(
+    `${pluginBase}/contract-replies`,
+    { preHandler: hmac, config: { rawBody: true } },
+    async (request, reply) => {
+      const body = (request.body ?? {}) as Record<string, unknown>;
+      const record = lookupRecord(request.params, body.configurationId, reply);
+      if (!record) return;
+      for (const field of ["jobId", "contract", "operation", "status"]) {
+        if (typeof body[field] !== "string" || !body[field]) {
+          reply.code(400).send({ error: `Missing required field: ${field}` });
+          return;
+        }
+      }
+      const optional = (value: unknown) => (typeof value === "string" ? value : undefined);
+      contractReplies.add({
+        configurationId: record.configurationId,
+        jobId: body.jobId as string,
+        contract: body.contract as string,
+        operation: body.operation as string,
+        status: body.status as string,
+        result: body.result,
+        errorCode: optional(body.errorCode),
+        providerErrorCode: optional(body.providerErrorCode),
+        errorMessage: optional(body.errorMessage),
+        requestedAt: optional(body.requestedAt),
+        completedAt: optional(body.completedAt),
+        receivedAt: new Date().toISOString(),
+      });
+      withCorrelationId(request).info(
+        { jobId: body.jobId, contract: body.contract, operation: body.operation, status: body.status },
+        "[demo-app] contract reply received",
+      );
+      reply.code(200).send({ status: "completed" });
     },
   );
 

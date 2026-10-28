@@ -43,11 +43,14 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {
+  ExternalPluginContractBindingEntry,
+  ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
   ExternalPluginEndpoint,
   ExternalPluginHost,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
@@ -56,6 +59,7 @@ import {catchError, switchMap} from 'rxjs/operators';
 import {PluginHostConnectionFormComponent} from '../plugin-host-connection-form/plugin-host-connection-form.component';
 import {PluginExternalConfigureComponent} from '../plugin-external-configure/plugin-external-configure.component';
 import {PluginExternalPermissionsComponent} from '../plugin-external-permissions/plugin-external-permissions.component';
+import {PluginExternalContractBindingsComponent} from '../plugin-external-contract-bindings/plugin-external-contract-bindings.component';
 import {cspAllowsFrameOrigin} from '../../utils';
 import {PLUGIN_APP_ADD_MODAL_TEST_IDS} from '../../constants';
 
@@ -95,6 +99,7 @@ const APP_ALREADY_REGISTERED_CODE = 'APP_PLUGIN_ALREADY_REGISTERED';
     PluginHostConnectionFormComponent,
     PluginExternalConfigureComponent,
     PluginExternalPermissionsComponent,
+    PluginExternalContractBindingsComponent,
   ],
 })
 export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
@@ -126,6 +131,9 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
   public readonly $capabilities = signal<Array<string>>([]);
   public readonly $egress = signal<Array<string>>([]);
   public readonly $derivedEgress = signal<Array<string>>([]);
+  public readonly $declaredContracts = signal<Array<ExternalPluginDeclaredContract>>([]);
+  public readonly $providedContracts = signal<Array<ExternalPluginProvidedContract>>([]);
+  public readonly $contractBindingsValid = signal<boolean>(true);
 
   /** Details of the conflicting registration, shown when connecting is rejected with a 409. */
   public readonly $conflict = signal<{pluginId: string; hostName: string} | null>(null);
@@ -294,12 +302,29 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
     this._configureComponent?.setGrantedEgress(targets);
   }
 
+  public onDeclaredContractsResolved(contracts: Array<ExternalPluginDeclaredContract>): void {
+    this.$contractBindingsValid.set(contracts.length === 0);
+    this.$declaredContracts.set(contracts);
+  }
+
+  public onProvidedContractsResolved(contracts: Array<ExternalPluginProvidedContract>): void {
+    this.$providedContracts.set(contracts);
+  }
+
+  public onContractBindingsChange(bindings: Array<ExternalPluginContractBindingEntry>): void {
+    this._configureComponent?.setContractBindings(bindings);
+  }
+
+  public onContractBindingsValid(valid: boolean): void {
+    this.$contractBindingsValid.set(valid);
+  }
+
   public goToPermissionsStep(): void {
     if (this.$configValid()) this.$currentStep.set(2);
   }
 
   public onComplete(): void {
-    if (!this.$permissionsValid() || this.$saving()) return;
+    if (!this.$permissionsValid() || !this.$contractBindingsValid() || this.$saving()) return;
     this._configureComponent?.triggerSave();
   }
 
@@ -311,6 +336,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
     grantedEvents: Array<ExternalPluginGrantedEventEntry>;
     grantedCapabilities: Array<string>;
     grantedEgress: Array<string>;
+    contractBindings: Array<ExternalPluginContractBindingEntry>;
   }): void {
     this.$saving.set(true);
     this._externalPluginService
@@ -322,6 +348,7 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
         grantedEvents: event.grantedEvents,
         grantedCapabilities: event.grantedCapabilities,
         grantedEgress: event.grantedEgress,
+        contractBindings: event.contractBindings,
       })
       .subscribe({
         next: () => {
@@ -443,6 +470,9 @@ export class PluginAppAddModalComponent implements OnChanges, OnDestroy {
       this.$capabilities.set([]);
       this.$egress.set([]);
       this.$derivedEgress.set([]);
+      this.$declaredContracts.set([]);
+      this.$providedContracts.set([]);
+      this.$contractBindingsValid.set(true);
       this.$conflict.set(null);
       this.$connectError.set(null);
       this.refreshModalOpen$.next(false);

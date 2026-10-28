@@ -23,12 +23,16 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.compatibility.CompatibilityResult
 import com.ritense.externalplugin.compatibility.GzacCompatibilityChecker
 import com.ritense.externalplugin.compatibility.PluginPackageInspector
+import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
+import com.ritense.externalplugin.exception.ExternalPluginConfigurationValidationException
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointQuery
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
+import com.ritense.externalplugin.service.ExternalPluginContractJobService
+import com.ritense.externalplugin.service.ExternalPluginContractJobService.AdminJobResult
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
@@ -38,6 +42,10 @@ import com.ritense.externalplugin.web.rest.dto.ConfigurationCreateRequest
 import com.ritense.externalplugin.web.rest.dto.ConfigurationDetailResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationResponse
 import com.ritense.externalplugin.web.rest.dto.ConfigurationUpdateRequest
+import com.ritense.externalplugin.web.rest.dto.ContractJobDetailResponse
+import com.ritense.externalplugin.web.rest.dto.ContractJobPayloadResponse
+import com.ritense.externalplugin.web.rest.dto.ContractJobSummaryResponse
+import com.ritense.externalplugin.web.rest.dto.ContractProviderResponse
 import com.ritense.externalplugin.web.rest.dto.DefinitionResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedCapabilityResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEgressResponse
@@ -51,12 +59,16 @@ import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostResponse
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.properties.bind.Bindable
 import org.springframework.boot.context.properties.bind.Binder
 import org.springframework.core.env.Environment
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -88,6 +100,7 @@ class ExternalPluginManagementResource(
     private val compatibilityChecker: GzacCompatibilityChecker,
     private val pluginPackageInspector: PluginPackageInspector,
     private val objectMapper: ObjectMapper,
+    private val contractJobService: ExternalPluginContractJobService,
 ) {
 
     @RunWithoutAuthorization
@@ -519,6 +532,7 @@ class ExternalPluginManagementResource(
                 grantedCapabilities = grantedCapabilities.map(GrantedCapabilityResponse::from),
                 grantedEgress = grantedEgress.map(GrantedEgressResponse::from),
                 derivedEgress = configurationService.getDerivedEgress(configuration),
+                contractBindings = configurationService.getContractBindings(configurationId),
                 createdAt = configuration.createdAt,
             )
         )
@@ -533,15 +547,18 @@ class ExternalPluginManagementResource(
     fun createConfiguration(
         @RequestBody request: ConfigurationCreateRequest,
     ): ResponseEntity<ConfigurationResponse> {
-        val configuration = configurationService.create(
-            request.definitionId,
-            request.title,
-            request.properties,
-            request.grantedEndpoints,
-            request.grantedEvents,
-            request.grantedCapabilities,
-            request.grantedEgress,
-        )
+        val configuration = validating {
+            configurationService.create(
+                request.definitionId,
+                request.title,
+                request.properties,
+                request.grantedEndpoints,
+                request.grantedEvents,
+                request.grantedCapabilities,
+                request.grantedEgress,
+                contractBindings = request.contractBindings,
+            )
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(ConfigurationResponse.from(configuration))
     }
 
@@ -555,12 +572,15 @@ class ExternalPluginManagementResource(
         @PathVariable configurationId: UUID,
         @RequestBody request: ConfigurationUpdateRequest,
     ): ResponseEntity<ConfigurationResponse> {
-        val configuration = configurationService.update(
-            configurationId,
-            request.title,
-            request.properties,
-            request.grantedEndpoints,
-        )
+        val configuration = validating {
+            configurationService.update(
+                configurationId,
+                request.title,
+                request.properties,
+                request.grantedEndpoints,
+                request.contractBindings,
+            )
+        }
         return ResponseEntity.ok(ConfigurationResponse.from(configuration))
     }
 
@@ -636,6 +656,82 @@ class ExternalPluginManagementResource(
 
     @RunWithoutAuthorization
     @EndpointDescription(
+        en = "List configurations that provide a plugin contract",
+        nl = "Configuraties ophalen die een plugincontract aanbieden",
+    )
+    @GetMapping("/contract/{contract}/providers")
+    fun listContractProviders(
+        @PathVariable contract: String,
+    ): ResponseEntity<List<ContractProviderResponse>> =
+        ResponseEntity.ok(configurationService.findContractProviders(contract))
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List contract jobs between external plugins",
+        nl = "Contracttaken tussen externe plugins ophalen",
+    )
+    @GetMapping("/contract-job")
+    fun listContractJobs(
+        @RequestParam(required = false) status: ExternalPluginContractJobStatus?,
+        @RequestParam(required = false) configurationId: UUID?,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<Page<ContractJobSummaryResponse>> {
+        val pageable = PageRequest.of(page.coerceAtLeast(0), size.coerceIn(1, 200), Sort.by(Sort.Direction.DESC, "createdAt"))
+        return ResponseEntity.ok(contractJobService.list(status, configurationId, pageable))
+    }
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get a contract job between external plugins",
+        nl = "Contracttaak tussen externe plugins ophalen",
+    )
+    @GetMapping("/contract-job/{jobId}")
+    fun getContractJob(
+        @PathVariable jobId: UUID,
+    ): ResponseEntity<ContractJobDetailResponse> {
+        val job = contractJobService.detail(jobId) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(job)
+    }
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "View the decrypted payloads of a contract job between external plugins",
+        nl = "Ontsleutelde gegevens van een contracttaak tussen externe plugins bekijken",
+    )
+    @GetMapping("/contract-job/{jobId}/payload")
+    fun getContractJobPayload(
+        @PathVariable jobId: UUID,
+    ): ResponseEntity<ContractJobPayloadResponse> {
+        val payload = contractJobService.payload(jobId, AuditHelper.getActor()) ?: return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(payload)
+    }
+
+    /** An open job fails as cancelled (its reply still goes out); a finished job's reply is abandoned. */
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Cancel a contract job between external plugins",
+        nl = "Contracttaak tussen externe plugins annuleren",
+    )
+    @PostMapping("/contract-job/{jobId}/cancel")
+    fun cancelContractJob(
+        @PathVariable jobId: UUID,
+    ): ResponseEntity<ContractJobDetailResponse> =
+        contractJobService.cancel(jobId, AuditHelper.getActor()).toResponse()
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Deliver the reply of an undeliverable contract job again",
+        nl = "Het antwoord van een onbestelbare contracttaak opnieuw afleveren",
+    )
+    @PostMapping("/contract-job/{jobId}/redeliver")
+    fun redeliverContractJob(
+        @PathVariable jobId: UUID,
+    ): ResponseEntity<ContractJobDetailResponse> =
+        contractJobService.redeliver(jobId, AuditHelper.getActor()).toResponse()
+
+    @RunWithoutAuthorization
+    @EndpointDescription(
         en = "Resolve endpoint descriptions",
         nl = "Endpoint-beschrijvingen ophalen",
     )
@@ -645,6 +741,19 @@ class ExternalPluginManagementResource(
         @RequestParam(defaultValue = "en") locale: String,
     ): ResponseEntity<List<com.ritense.externalplugin.service.EndpointDescription>> =
         ResponseEntity.ok(endpointDescriptionService.resolveDescriptions(endpoints, locale))
+
+    private fun AdminJobResult.toResponse(): ResponseEntity<ContractJobDetailResponse> = when (this) {
+        is AdminJobResult.Updated -> ResponseEntity.ok(job)
+        AdminJobResult.NotFound -> ResponseEntity.notFound().build()
+        AdminJobResult.Conflict -> ResponseEntity.status(HttpStatus.CONFLICT).build()
+    }
+
+    /** Validation failures of a create or update become a 400 the admin can read. */
+    private fun <T> validating(action: () -> T): T = try {
+        action()
+    } catch (e: IllegalArgumentException) {
+        throw ExternalPluginConfigurationValidationException(e.message ?: "The configuration is not valid")
+    }
 
     private fun toDefinitionResponse(definition: ExternalPluginDefinition): DefinitionResponse {
         val compatibility = compatibilityChecker.check(definition.minGzacVersion, definition.maxGzacVersion)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal} from '@angular/core';
 import {FormControl} from '@angular/forms';
 import {
   PluginStateService,
@@ -34,6 +34,7 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import {
+  ExternalPluginConfigStructure,
   ExternalPluginDefinition,
   ExternalPluginService,
   extractExternalDefinitionId,
@@ -41,6 +42,7 @@ import {
   PluginConfiguration,
   PluginConfigurationData,
   PluginFunction,
+  resolveExternalPluginFormMode,
 } from '@valtimo/plugin';
 import {
   ExternalPluginProcessLinkCreateDto,
@@ -151,6 +153,13 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   public readonly externalActionPropertiesControl = new FormControl<string>('{}', {
     nonNullable: true,
   });
+
+  /**
+   * Set when the action's declared properties get a generated form instead of the JSON textarea:
+   * no `process-link-action` bundle, flat properties, and saved values the form can hold.
+   */
+  public readonly $externalActionStructure = signal<ExternalPluginConfigStructure | null>(null);
+  public readonly $externalActionFormValue = signal<Record<string, unknown>>({});
 
   /**
    * `actionResultMappings` (#771): row-based JSON-pointer -> value-resolver-target write-back
@@ -331,6 +340,19 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     this.applyActionPropertiesValidity();
   }
 
+  public onGeneratedActionPropertiesChange(properties: Record<string, unknown>): void {
+    this.externalActionProperties = properties;
+    // Programmatic update: properties are set directly, so skip re-parsing.
+    this.externalActionPropertiesControl.setValue(JSON.stringify(properties, null, 2), {
+      emitEvent: false,
+    });
+  }
+
+  public onGeneratedActionPropertiesValid(valid: boolean): void {
+    this.externalActionPropertiesValid = valid;
+    this.applyActionPropertiesValidity();
+  }
+
   /**
    * The action-properties step's validity gates whichever button is visible on it: `Save` when the
    * action has no pending output-mapping step, `Next` when it does (Save only appears on the
@@ -394,9 +416,11 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
 
             const actionKey = selectedFunction?.key || selectedProcessLink?.actionKey || null;
 
+            const savedActionKey = selectedProcessLink?.actionKey ?? null;
+
             const definitionId = extractExternalDefinitionId(definition.key);
             return this._externalPluginService.getDefinition(definitionId).pipe(
-              map((extDef: ExternalPluginDefinition) => ({extDef, actionKey})),
+              map((extDef: ExternalPluginDefinition) => ({extDef, actionKey, savedActionKey})),
               // A failed bundle resolve must not break the flow: emit null so the subscriber
               // marks the lookup as resolved without a bundle URL, which makes the template fall
               // back to the raw-JSON textarea configuration mode.
@@ -406,18 +430,23 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         )
         .subscribe(result => {
           if (!result) {
+            this.$externalActionStructure.set(null);
             this.externalActionBundleUrl$.next(null);
             return;
           }
 
-          const {extDef, actionKey} = result;
-          const actionBundle = extDef.manifest?.frontendBundles?.find(
-            b => b.type === 'process-link-action' && (!b.key || b.key === actionKey)
+          const {extDef, actionKey, savedActionKey} = result;
+          // Saved properties belong to the saved action; another action starts empty.
+          const properties = actionKey === savedActionKey ? this.externalActionProperties : {};
+          const mode = resolveExternalPluginFormMode(
+            extDef,
+            {type: 'process-link-action', actionKey},
+            properties
           );
 
-          if (actionBundle) {
-            const bundleUrl = `${extDef.baseUrl}/${extDef.version}${actionBundle.path}`;
-            this.externalActionBundleUrl$.next(bundleUrl);
+          if (mode.kind === 'bundle') {
+            this.$externalActionStructure.set(null);
+            this.externalActionBundleUrl$.next(mode.url);
 
             // Set up prefill for editing existing process links
             if (
@@ -430,6 +459,9 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
               });
             }
           } else {
+            // Before the URL: resolving the bundle reveals the configuration step.
+            if (mode.kind === 'form') this.$externalActionFormValue.set(properties);
+            this.$externalActionStructure.set(mode.kind === 'form' ? mode.structure : null);
             this.externalActionBundleUrl$.next(null);
           }
         })

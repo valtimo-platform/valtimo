@@ -133,10 +133,21 @@ class ExternalPluginDefinition(
             "endpoint:${method.uppercase()}:$pattern"
         }.orEmpty()
         val events = manifest.get("eventSubscriptions")?.mapNotNull { it.asText() }.orEmpty()
+        val declaredContracts = ExternalPluginManifestContracts.declaredContractEntries(manifest)
+        val contracts = declaredContracts.map { "contract:${it.contract}" }
+        val contractOperations = declaredContracts.flatMap { declared ->
+            declared.operations.orEmpty().map { "contract-operation:${declared.contract}:$it" }
+        }
+        val provides = ExternalPluginManifestContracts.providedContracts(manifest).flatMap { provided ->
+            provided.operations.map { "provides:${provided.contract}:${it.key}:${it.mode}" }
+        }
         return (capabilities.map { "capability:$it" } +
             egress.map { "egress:$it" } +
             endpoints +
-            events.map { "event:$it" }).toSet()
+            events.map { "event:$it" } +
+            contracts +
+            contractOperations +
+            provides).toSet()
         }
 
     /**

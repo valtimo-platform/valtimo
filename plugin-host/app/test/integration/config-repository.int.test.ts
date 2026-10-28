@@ -43,6 +43,7 @@ function config(overrides: Partial<PluginConfiguration> = {}): PluginConfigurati
     eventSubscriptions: ["com.ritense.valtimo.document.created"],
     grantedCapabilities: [],
     allowedEgress: [],
+    grantedContracts: [],
     eventBroker: {
       amqpUrl: "amqp://broker",
       exchange: "valtimo-events",
@@ -104,6 +105,14 @@ describe("ConfigRepository against real Postgres", () => {
     // deny-by-default, so an absent list and an empty list mean the same thing.
     await repo.set("cfg-2", config({ configurationId: "cfg-2", allowedEgress: undefined }));
     expect((await repo.get("cfg-2"))?.allowedEgress).toEqual([]);
+  });
+
+  it("round-trips granted contracts, and an absent list rehydrates as none granted", async () => {
+    await repo.set("cfg-1", config({ grantedContracts: ["nl.ritense.openplan@1"] }));
+    expect((await repo.get("cfg-1"))?.grantedContracts).toEqual(["nl.ritense.openplan@1"]);
+
+    await repo.set("cfg-2", config({ configurationId: "cfg-2", grantedContracts: undefined }));
+    expect((await repo.get("cfg-2"))?.grantedContracts).toEqual([]);
   });
 
   it("round-trips granted capabilities and endpoints; an absent endpoint list stays absent", async () => {

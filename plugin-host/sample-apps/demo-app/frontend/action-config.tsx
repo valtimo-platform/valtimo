@@ -69,7 +69,7 @@ function ActionConfigForm() {
             emit(e.target.value, greetingVariable);
           }}
         />
-        <p style={helpTextStyle}>{sdk.t("action.name.help")}</p>
+        <p style={helpTextStyle}>{sdk.t("action.name.tooltip")}</p>
       </div>
       <div style={{ marginBottom: "16px" }}>
         <label style={labelStyle}>{sdk.t("action.greetingVariable.label")}</label>
@@ -83,7 +83,7 @@ function ActionConfigForm() {
             emit(name, e.target.value);
           }}
         />
-        <p style={helpTextStyle}>{sdk.t("action.greetingVariable.help")}</p>
+        <p style={helpTextStyle}>{sdk.t("action.greetingVariable.tooltip")}</p>
       </div>
     </div>
   );

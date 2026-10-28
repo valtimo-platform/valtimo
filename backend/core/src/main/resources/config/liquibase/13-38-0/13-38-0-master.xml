@@ -29,5 +29,7 @@ xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liqui
     <include file="20260713-backfill-modified-on.xml" relativeToChangelogFile="true"/>
     <include file="20260717-add-prune-progress.xml" relativeToChangelogFile="true"/>
     <include file="20260827-external-plugin-pending-manifest.xml" relativeToChangelogFile="true"/>
+    <include file="20261014-external-plugin-contract-binding.xml" relativeToChangelogFile="true"/>
+    <include file="20261014-external-plugin-contract-job.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

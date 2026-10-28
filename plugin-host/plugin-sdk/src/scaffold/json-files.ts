@@ -39,6 +39,25 @@ import {hasFrontend, selectedParts} from "./parts.js";
 const DEFAULT_ACTIVITY_TYPES = ["SERVICE_TASK_START"];
 
 /**
+ * Strings every project carries: the labels of the base action's `greeting` property. GZAC's
+ * generated action form reads `action.<property>.label` / `.placeholder` / `.tooltip`, and the
+ * optional `process-link-action` bundle reads the same keys, so neither selection ships an
+ * unlabelled field. English is the fallback bucket for a locale without its own strings.
+ */
+const BASE_STRINGS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  en: {
+    "action.greeting.label": "Greeting",
+    "action.greeting.placeholder": "Hello",
+    "action.greeting.tooltip": "Written to the greeting process variable by this action.",
+  },
+  nl: {
+    "action.greeting.label": "Begroeting",
+    "action.greeting.placeholder": "Hallo",
+    "action.greeting.tooltip": "Wordt door deze actie naar de procesvariabele greeting geschreven.",
+  },
+};
+
+/**
  * The base manifest declares **every** key in its final order, including the ones only a part
  * fills, and the unused slots are dropped at the end. Assigning a fresh key would append it, so a
  * plugin's manifest would come out in a different key order depending on what was selected.
@@ -94,6 +113,7 @@ function buildTranslations(options: ScaffoldOptions): Record<string, PluginTrans
     const bucket: PluginTranslations = {
       name: options.name,
       description: options.description,
+      ...(BASE_STRINGS[locale] ?? BASE_STRINGS.en),
     };
     for (const {descriptor, ctx} of selectedParts(options)) {
       const titleKey = descriptor.titleKey(ctx);

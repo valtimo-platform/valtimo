@@ -133,20 +133,6 @@ const CONFIG_STRINGS = {
   },
 };
 
-const ACTION_CONFIG_STRINGS = {
-  en: {
-    "actionConfig.greeting.label": "Greeting",
-    "actionConfig.greeting.placeholder": "Hello",
-    "actionConfig.greeting.help": "Written to the greeting process variable by this action.",
-  },
-  nl: {
-    "actionConfig.greeting.label": "Begroeting",
-    "actionConfig.greeting.placeholder": "Hallo",
-    "actionConfig.greeting.help":
-      "Wordt door deze actie naar de procesvariabele greeting geschreven.",
-  },
-};
-
 const CASE_TAB_STRINGS = {
   en: {
     "caseTab.loading": "Loading…",
@@ -268,7 +254,9 @@ export const PARTS: Record<PartId, PartDescriptor> = {
     frontend: {templateDir: "frontend-process-link-action", stem: "action-config"},
     readmeFragment: "fragments/readme-process-link-action.md",
     capabilities: [],
-    strings: ACTION_CONFIG_STRINGS,
+    // Reads the base `action.greeting.*` strings — the same keys GZAC's generated form reads when
+    // this bundle is absent, so one set labels both.
+    strings: {},
     titleKey: () => null,
     applyToManifest(manifest, ctx) {
       addBundle(manifest, {

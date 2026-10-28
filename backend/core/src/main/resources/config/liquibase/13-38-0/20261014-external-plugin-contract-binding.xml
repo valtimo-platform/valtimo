@@ -1,0 +1,61 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="config/liquibase/13-38-0/20261014-external-plugin-contract-binding.xml">
+
+    <!-- No FK on target_configuration_id: usages guard deleting a bound provider. -->
+    <changeSet author="Ritense" id="1">
+        <createTable tableName="external_plugin_contract_binding">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="ext_plugin_contract_binding_pk"/>
+            </column>
+            <column name="configuration_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="contract" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_configuration_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bound_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+            tableName="external_plugin_contract_binding"
+            columnNames="configuration_id, contract"
+            constraintName="ext_plugin_contract_binding_config_contract_uq"/>
+
+        <addForeignKeyConstraint
+            baseTableName="external_plugin_contract_binding"
+            baseColumnNames="configuration_id"
+            referencedTableName="external_plugin_configuration"
+            referencedColumnNames="id"
+            constraintName="ext_plugin_contract_binding_config_fk"
+            onDelete="CASCADE"/>
+
+        <createIndex tableName="external_plugin_contract_binding" indexName="ext_plugin_contract_binding_target_idx">
+            <column name="target_configuration_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

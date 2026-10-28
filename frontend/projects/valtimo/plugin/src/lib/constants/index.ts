@@ -16,3 +16,5 @@
 
 export * from './injection-tokens';
 export * from './plugin.test-ids';
+export * from './external-plugin-config-form.test-ids';
+export * from './external-plugin-config-form.constants';

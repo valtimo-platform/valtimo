@@ -48,7 +48,9 @@ import java.util.concurrent.ConcurrentHashMap
  * registration), user-token minting, role/permission management and user-account mutations — from
  * plugin tokens **regardless of what was granted**. One narrow exception: a **user** token may
  * always `GET` the user-token introspection endpoint, which the plugin host needs to validate the
- * token before executing Wasm (see the carve-out in [doFilterInternal]).
+ * token before executing Wasm (see the carve-out in [doFilterInternal]). Service principals also always
+ * reach everything under `/api/v1/plugin-contract`, whose controller is the gate for contract calls and
+ * jobs; a user principal reaches it only through its granted endpoints, like any other path.
  *
  * Granted endpoints are compiled into request matchers and cached per configuration id for a short
  * TTL so the per-request cost is a map lookup instead of a DB query. An invalid stored pattern is
@@ -83,6 +85,14 @@ class ExternalPluginEndpointAllowlistFilter(
         // endpoint is read-only (exact path, GET only) and leaks nothing beyond the token's own
         // claims. Service-token principals get no carve-out — introspection is meaningless for them.
         if (principal is ExternalPluginUserPrincipal && USER_TOKEN_INTROSPECT_MATCHER.matches(request)) {
+            filterChain.doFilter(request, response)
+            return
+        }
+
+        // Carve-out: the contract surface needs no endpoint grant for the service token — its controller
+        // authorizes against the calling configuration's own bindings and jobs. A user token acts for a
+        // person, so it stays bounded by the grants.
+        if (principal is ExternalPluginServicePrincipal && PLUGIN_CONTRACT_MATCHER.matches(request)) {
             filterChain.doFilter(request, response)
             return
         }
@@ -176,6 +186,9 @@ class ExternalPluginEndpointAllowlistFilter(
         /** Exact-path, GET-only carve-out for user-token introspection (see [doFilterInternal]). */
         private val USER_TOKEN_INTROSPECT_MATCHER =
             AntPathRequestMatcher("/api/v1/external-plugin/user-token/introspect", "GET")
+
+        /** Service-token contract calls and jobs (see the carve-out in [doFilterInternal]). */
+        private val PLUGIN_CONTRACT_MATCHER = AntPathRequestMatcher("/api/v1/plugin-contract/**")
 
         private val kLogger = KotlinLogging.logger {}
     }

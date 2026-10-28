@@ -25,6 +25,7 @@ import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.exception.ExternalPluginConfigurationInUseException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
@@ -82,6 +83,7 @@ class ExternalPluginConfigurationServiceDeleteTest {
             hostUsageResolver,
             "valtimo-events",
             "http://localhost:8080",
+            mock<ExternalPluginContractBindingRepository>(),
         )
     }
 

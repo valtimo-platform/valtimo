@@ -29,7 +29,27 @@ export interface PluginManifest {
   provider?: string;
   compatibility?: { minGzacVersion?: string; maxGzacVersion?: string };
   configurationSchema?: Record<string, unknown>;
-  permissions?: { endpoints?: Array<{ method: string; pattern: string }> };
+  permissions?: {
+    capabilities?: string[];
+    endpoints?: Array<{ method: string; pattern: string }>;
+    contracts?: Array<string | { contract: string; operations: string[] }>;
+  };
+  provides?: Array<{
+    contract: string;
+    title?: string;
+    operations: Array<{
+      key: string;
+      title: string;
+      description?: string;
+      mode?: "sync" | "job";
+      timeout?: string;
+      outputs?: string[];
+      /** JSON Schema (2020-12) GZAC checks the request payload against. */
+      input?: Record<string, unknown>;
+      /** JSON Schema (2020-12) GZAC checks a completed result against. */
+      output?: Record<string, unknown>;
+    }>;
+  }>;
   frontendBundles?: Array<{
     type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page" | "task-form" | "side-panel";
     key?: string;
@@ -50,7 +70,9 @@ export interface PluginManifest {
 }
 
 export const PLUGIN_ID = "demo-app";
-export const PLUGIN_VERSION = "1.0.0";
+// An app's content pin is derived from its manifest: change the manifest under a new version, or the
+// app deactivates until an admin re-accepts it.
+export const PLUGIN_VERSION = "1.1.0";
 
 export const manifest: PluginManifest = {
   pluginId: PLUGIN_ID,
@@ -61,17 +83,15 @@ export const manifest: PluginManifest = {
     en: {
       name: "Demo App",
       description: "Reference URL app: a remote service that serves its own single plugin — action, config, case tab, data and events — over the Valtimo contract.",
-      "config.title.label": "Configuration name",
-      "config.title.placeholder": "Enter a name for this configuration",
       "config.greetingPrefix.label": "Greeting prefix",
       "config.greetingPrefix.placeholder": "Hello",
-      "config.greetingPrefix.help": "Word the app puts in front of the name, e.g. \"Hello\" or \"Welcome\".",
+      "config.greetingPrefix.tooltip": "Word the app puts in front of the name, e.g. \"Hello\" or \"Welcome\".",
       "action.name.label": "Name to greet",
       "action.name.placeholder": "world",
-      "action.name.help": "Static name to greet. Leave blank to greet the case (by document) or \"world\".",
+      "action.name.tooltip": "Static name to greet. Leave blank to greet the case (by document) or \"world\".",
       "action.greetingVariable.label": "Greeting variable name",
       "action.greetingVariable.placeholder": "greeting",
-      "action.greetingVariable.help": "Process variable the generated greeting is written to (default: greeting).",
+      "action.greetingVariable.tooltip": "Process variable the generated greeting is written to (default: greeting).",
       "caseTab.hello.title": "Hello world",
       "caseTab.hello": "This panel is rendered by the demo app's case-tab bundle, running in a sandboxed iframe.",
       "caseTab.loading": "Loading…",
@@ -95,17 +115,15 @@ export const manifest: PluginManifest = {
     nl: {
       name: "Demo-app",
       description: "Referentie-URL-app: een externe service die zijn eigen plugin aanbiedt — actie, configuratie, zaaktabblad, data en events — via het Valtimo-contract.",
-      "config.title.label": "Configuratienaam",
-      "config.title.placeholder": "Voer een naam in voor deze configuratie",
       "config.greetingPrefix.label": "Begroetingsprefix",
       "config.greetingPrefix.placeholder": "Hallo",
-      "config.greetingPrefix.help": "Woord dat de app vóór de naam plaatst, bv. \"Hallo\" of \"Welkom\".",
+      "config.greetingPrefix.tooltip": "Woord dat de app vóór de naam plaatst, bv. \"Hallo\" of \"Welkom\".",
       "action.name.label": "Naam om te begroeten",
       "action.name.placeholder": "wereld",
-      "action.name.help": "Vaste naam om te begroeten. Leeg laten om de zaak (via document) of \"wereld\" te begroeten.",
+      "action.name.tooltip": "Vaste naam om te begroeten. Leeg laten om de zaak (via document) of \"wereld\" te begroeten.",
       "action.greetingVariable.label": "Naam begroetingsvariabele",
       "action.greetingVariable.placeholder": "greeting",
-      "action.greetingVariable.help": "Procesvariabele waarin de gegenereerde begroeting wordt geschreven (standaard: greeting).",
+      "action.greetingVariable.tooltip": "Procesvariabele waarin de gegenereerde begroeting wordt geschreven (standaard: greeting).",
       "caseTab.hello.title": "Hallo wereld",
       "caseTab.hello": "Dit paneel wordt weergegeven door de case-tab-bundle van de demo-app, in een sandboxed iframe.",
       "caseTab.loading": "Laden…",
@@ -140,6 +158,9 @@ export const manifest: PluginManifest = {
     additionalProperties: false,
   },
   permissions: {
+    // Native code, so nothing enforces these on the app side — they tell the admin what the app
+    // does: call back into GZAC with its service token, and serve its case tab through `/data`.
+    capabilities: ["gzac_api", "frontend_data"],
     endpoints: [
       { method: "GET", pattern: "/api/v1/document/*" },
       { method: "POST", pattern: "/api/v1/document/*/note" },
@@ -147,7 +168,6 @@ export const manifest: PluginManifest = {
     ],
   },
   frontendBundles: [
-    { type: "config", path: "/bundles/config.html" },
     {
       type: "process-link-action",
       key: "greet",
@@ -169,4 +189,50 @@ export const manifest: PluginManifest = {
     },
   ],
   eventSubscriptions: ["com.ritense.valtimo.document.created"],
+  provides: [
+    {
+      contract: "nl.ritense.demo.echo@1",
+      title: "Demo echo",
+      operations: [
+        {
+          key: "echo",
+          title: "Echo the payload",
+          description: "Answers at once with the payload and the caller GZAC stamped.",
+          outputs: ["echo", "caller"],
+          input: {
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            type: "object",
+            properties: {
+              message: { type: "string", maxLength: 1000 },
+            },
+          },
+          output: {
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            type: "object",
+            required: ["echo", "caller"],
+            properties: {
+              echo: { description: "The payload, as received." },
+              caller: {
+                type: "object",
+                required: ["pluginId", "version", "configurationId"],
+                properties: {
+                  pluginId: { type: "string" },
+                  version: { type: "string" },
+                  configurationId: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        {
+          key: "slow-echo",
+          title: "Echo the payload, later",
+          description: "Accepts the job and completes it a few seconds later through GZAC.",
+          mode: "job",
+          timeout: "PT10M",
+          outputs: ["echo", "completedAt"],
+        },
+      ],
+    },
+  ],
 };
