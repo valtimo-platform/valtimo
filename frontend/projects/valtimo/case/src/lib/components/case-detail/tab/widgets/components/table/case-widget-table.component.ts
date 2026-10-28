@@ -38,7 +38,6 @@ import {
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {DocumentService} from '@valtimo/document';
-import {PermissionService} from '@valtimo/access-control';
 import {WidgetsService} from '../../widgets.service';
 import {
   TableWidget,
@@ -136,13 +135,12 @@ export class CaseWidgetTableComponent extends WidgetProcess {
 
   constructor(
     protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
     private readonly caseWidgetsApiService: CaseWidgetsApiService,
     private readonly widgetsService: WidgetsService,
     private readonly caseTabService: CaseTabService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {
-    super(documentService, permissionService);
+    super(documentService);
   }
 
   public onPaginationEvent(event: PaginationModel): void {
