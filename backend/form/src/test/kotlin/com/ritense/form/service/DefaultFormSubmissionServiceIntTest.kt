@@ -109,6 +109,7 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
         assertThat(json, hasNoJsonPath("""${'$'}.containerArray[0].container.rowPreview"""))
         assertThat(json, hasJsonPath("""${'$'}.docGrid[0].gridName""", equalTo("row1")))
         assertThat(json, hasNoJsonPath("""${'$'}.docGrid[0].rowPreview"""))
+        assertThat(json, hasNoJsonPath("""${'$'}.docGrid[0]['mailPreview.ontvangstbevestiging']"""))
         assertThat(json, hasNoJsonPath("""${'$'}.containerProperty1"""))
         assertThat(json, hasNoJsonPath("""${'$'}.containerProperty2"""))
         assertThat(json, hasNoJsonPath("""${'$'}.containerProperty3"""))
@@ -233,7 +234,7 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
                 "property2": "property2",
                 "verzoek": {"jaartallen":"2010","toelichting":"From 2010"},
                 "container": {"containerProperty1":"containerProperty1","containerProperty2":"containerProperty2","rowPreview":"<img src=x onerror=alert(1)>"},
-                "docGrid": [{"gridName":"row1","rowPreview":"<img src=x onerror=alert(1)>"}],
+                "docGrid": [{"gridName":"row1","rowPreview":"<img src=x onerror=alert(1)>","mailPreview.ontvangstbevestiging":"<img src=x onerror=alert(1)>"}],
                 "aanvrager":{"geslacht":"M","persoonsgegevens":{"voornaam":"Henk"}},
                 "mailPreview": {"body":"<img src=x onerror=alert(1)>"},
                 "pv": {

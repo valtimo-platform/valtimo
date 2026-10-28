@@ -649,4 +649,55 @@ class FormIoFormDefinitionTest extends BaseTest {
             """), result);
         assertEquals(original, data);
     }
+
+    @Test
+    void removeNonSubmittableDataShouldRemoveFlatDottedKeys() throws JsonProcessingException {
+        final var definition = MapperSingleton.get().readTree("""
+            {
+              "components": [
+                { "key": "mailPreview.top", "type": "valtimo-mail-preview", "input": true },
+                { "key": "keep", "type": "textfield", "input": true },
+                { "key": "mails", "type": "datagrid", "input": true, "components": [
+                  { "key": "subject", "type": "textfield", "input": true },
+                  { "key": "mailPreview.ontvangstbevestiging", "type": "valtimo-mail-preview", "input": true }
+                ]},
+                { "key": "edit", "type": "editgrid", "input": true, "components": [
+                  { "key": "subject", "type": "textfield", "input": true },
+                  { "key": "mailPreview.ontvangstbevestiging", "type": "valtimo-mail-preview", "input": true }
+                ]},
+                { "key": "doc.items", "type": "datagrid", "input": true, "components": [
+                  { "key": "n", "type": "textfield", "input": true },
+                  { "key": "preview", "type": "valtimo-mail-preview", "input": true }
+                ]}
+              ]
+            }
+            """);
+        final var data = MapperSingleton.get().readTree("""
+            {
+              "mailPreview.top": "x",
+              "mailPreview": { "top": "x" },
+              "keep": "k",
+              "mails": [
+                { "subject": "a", "mailPreview.ontvangstbevestiging": "x" },
+                { "subject": "b", "mailPreview": { "ontvangstbevestiging": "x" }, "mailPreview.ontvangstbevestiging": "x" }
+              ],
+              "edit": [ { "subject": "c", "mailPreview.ontvangstbevestiging": "x" } ],
+              "doc.items": [ { "n": "a", "preview": "x" } ]
+            }
+            """);
+        final var original = data.deepCopy();
+
+        final var result = FormIoFormDefinition.removeNonSubmittableData(definition, data);
+
+        assertEquals(MapperSingleton.get().readTree("""
+            {
+              "mailPreview": {},
+              "keep": "k",
+              "mails": [ { "subject": "a" }, { "subject": "b", "mailPreview": {} } ],
+              "edit": [ { "subject": "c" } ],
+              "doc.items": [ { "n": "a" } ]
+            }
+            """), result);
+        assertEquals(original, data);
+    }
 }

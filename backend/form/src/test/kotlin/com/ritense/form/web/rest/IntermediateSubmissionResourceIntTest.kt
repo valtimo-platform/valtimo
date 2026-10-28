@@ -219,6 +219,38 @@ class IntermediateSubmissionResourceIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser
+    fun `should strip flat dotted preview keys inside grid rows when storing intermediate submission`() {
+        runWithoutAuthorization {
+            val submission = objectMapper.readTree(
+                """
+                {
+                  "docGrid": [ { "gridName": "g1", "mailPreview.ontvangstbevestiging": "<img src=x onerror=alert(1)>" } ]
+                }
+                """
+            )
+            val requestJson = jacksonObjectMapper().writeValueAsString(
+                IntermediateSaveRequest(submission = submission as com.fasterxml.jackson.databind.node.ObjectNode, taskInstanceId = "taskInstanceId")
+            )
+            mockMvc.perform(
+                post(BASE_URL)
+                    .accept(APPLICATION_JSON_UTF8_VALUE)
+                    .content(requestJson)
+                    .contentType(APPLICATION_JSON_UTF8_VALUE)
+            ).andExpect(status().isOk)
+                .andExpect(jsonPath("$.submission.docGrid[0].gridName").value("g1"))
+                .andExpect(jsonPath("$.submission.docGrid[0]['mailPreview.ontvangstbevestiging']").doesNotExist())
+
+            mockMvc.perform(
+                get("$BASE_URL?taskInstanceId=taskInstanceId")
+                    .accept(APPLICATION_JSON_UTF8_VALUE)
+            ).andExpect(status().isOk)
+                .andExpect(jsonPath("$.submission.docGrid[0].gridName").value("g1"))
+                .andExpect(jsonPath("$.submission.docGrid[0]['mailPreview.ontvangstbevestiging']").doesNotExist())
+        }
+    }
+
+    @Test
+    @WithMockUser
     fun `should strip preview values from legacy intermediate submission on get`() {
         runWithoutAuthorization {
             val content = objectMapper.readTree(

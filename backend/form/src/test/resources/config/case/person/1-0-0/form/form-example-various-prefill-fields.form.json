@@ -264,6 +264,12 @@
                             "key": "rowPreview",
                             "type": "valtimo-mail-preview",
                             "input": true
+                        },
+                        {
+                            "label": "Mail preview",
+                            "key": "mailPreview.ontvangstbevestiging",
+                            "type": "valtimo-mail-preview",
+                            "input": true
                         }
                     ]
                 },

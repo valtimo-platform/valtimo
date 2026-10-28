@@ -109,6 +109,26 @@ internal class FormFlowValtimoServiceIntTest: BaseIntegrationTest() {
         )
     }
 
+    @Test
+    fun `should filter flat dotted display-only keys from submissionData`() {
+        linkFormFlowToUserTask("inkomens_loket_alternate")
+        val documentAndProcess = newDocumentAndStartProcess()
+        val processInstanceId = documentAndProcess.resultingProcessInstanceId().get()
+        val formFlowInstance = openTasks(processInstanceId).single()
+        val submissionData = objectMapper.readTree("""
+            {
+                "person":{"firstName":"Henk","children":[{"name":"a","mailPreview.ontvangstbevestiging":"<img src=x onerror=alert(1)>"}]},
+                "address":{"street":"b"}
+            }""".trimIndent())
+
+        val filteredSubmissionData = formFlowValtimoService.getVerifiedSubmissionData(submissionData, formFlowInstance)
+
+        assertEquals(
+            """{"person":{"firstName":"Henk","children":[{"name":"a"}]},"address":{"street":"b"}}""",
+            filteredSubmissionData.toString()
+        )
+    }
+
     private fun linkFormFlowToUserTask(formFlowDefinitionId: String) {
         processLinkService.createProcessLink(
             FormFlowProcessLinkCreateRequestDto(

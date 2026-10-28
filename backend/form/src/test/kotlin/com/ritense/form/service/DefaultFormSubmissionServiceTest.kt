@@ -454,7 +454,8 @@ class DefaultFormSubmissionServiceTest {
                     { "key": "pv.mailPreview", "type": "valtimo-mail-preview", "input": true },
                     { "key": "doc.grid", "type": "datagrid", "input": true, "components": [
                       { "key": "name", "type": "textfield", "input": true },
-                      { "key": "rowPreview", "type": "valtimo-mail-preview", "input": true }
+                      { "key": "rowPreview", "type": "valtimo-mail-preview", "input": true },
+                      { "key": "mailPreview.ontvangstbevestiging", "type": "valtimo-mail-preview", "input": true }
                     ]},
                     { "key": "pv.container", "type": "container", "input": true, "components": [
                       { "key": "name", "type": "textfield", "input": true },
@@ -475,7 +476,8 @@ class DefaultFormSubmissionServiceTest {
                   "mailPreview": { "body": "<img src=x onerror=alert(1)>" },
                   "pv": { "other": "value", "mailPreview": "<img src=x onerror=alert(1)>",
                     "container": { "name": "n", "preview": "<img src=x onerror=alert(1)>" } },
-                  "doc": { "grid": [ { "name": "a", "rowPreview": "<img src=x onerror=alert(1)>" } ] }
+                  "doc": { "grid": [ { "name": "a", "rowPreview": "<img src=x onerror=alert(1)>",
+                    "mailPreview.ontvangstbevestiging": "<img src=x onerror=alert(1)>" } ] }
                 }
             """
         ) as ObjectNode
@@ -498,7 +500,7 @@ class DefaultFormSubmissionServiceTest {
         assertThat(submittedKeys).contains("doc:/voornaam", "pv:other")
         assertThat(submittedKeys).doesNotContain("doc:/mailPreview/body", "pv:mailPreview")
         val submitted = captor.allValues.fold(emptyMap<String, Any?>()) { acc, map -> acc + map }
-        assertThat(submitted.toString()).doesNotContain("rowPreview", "onerror", "preview=")
+        assertThat(submitted.toString()).doesNotContain("rowPreview", "onerror", "preview=", "ontvangstbevestiging")
     }
 
     private fun formProcessLink(activityType: ActivityTypeWithEventName = USER_TASK_CREATE): FormProcessLink {

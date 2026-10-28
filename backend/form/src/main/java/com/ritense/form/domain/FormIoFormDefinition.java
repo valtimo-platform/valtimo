@@ -431,9 +431,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
             if (key.isPresent() && isInputComponent(definitionNode) && children != null && children.isArray()
                 && !children.isEmpty()) {
                 final var nestedScopes = new ArrayList<JsonNode>();
-                final var pointer = toJsonPointer(key.get());
-                scopes.forEach(scope -> {
-                    final JsonNode value = scope.at(pointer);
+                scopes.forEach(scope -> resolveValues(scope, key.get()).forEach(value -> {
                     if (value.isArray()) {
                         value.forEach(row -> {
                             if (row.isObject()) {
@@ -443,7 +441,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
                     } else if (value.isObject()) {
                         nestedScopes.add(value);
                     }
-                });
+                }));
                 removeDisplayOnlyValues(children, nestedScopes);
                 return;
             }
@@ -453,11 +451,29 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         }
     }
 
+    private static List<JsonNode> resolveValues(JsonNode scope, String key) {
+        final var values = new ArrayList<JsonNode>();
+        final JsonNode nested = scope.at(toJsonPointer(key));
+        if (!nested.isMissingNode() && !nested.isNull()) {
+            values.add(nested);
+        }
+        if (key.contains(".") && scope.isObject()) {
+            final JsonNode flat = scope.get(key);
+            if (flat != null && !flat.isNull()) {
+                values.add(flat);
+            }
+        }
+        return values;
+    }
+
     private static void removeValueAtPath(JsonNode scope, String key) {
         final int lastDot = key.lastIndexOf('.');
         final JsonNode parent = lastDot < 0 ? scope : scope.at(toJsonPointer(key.substring(0, lastDot)));
         if (parent instanceof ObjectNode objectNode) {
             objectNode.remove(lastDot < 0 ? key : key.substring(lastDot + 1));
+        }
+        if (lastDot >= 0 && scope instanceof ObjectNode scopeObject) {
+            scopeObject.remove(key);
         }
     }
 
