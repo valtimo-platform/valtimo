@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,12 +44,14 @@ import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocument
 import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentDeploymentService;
 import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentService;
 import com.ritense.processdocument.service.impl.DocumentDefinitionProcessLinkServiceImpl;
+import com.ritense.processdocument.web.rest.CaseProcessDiagramResource;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
 import com.ritense.processdocument.web.rest.ProcessTimerResource;
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.service.CamundaProcessService;
 import com.ritense.valtimo.service.CamundaTaskService;
+import com.ritense.valtimo.service.ProcessInstanceDiagramService;
 import com.ritense.valueresolver.ValueResolverFactory;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.ManagementService;
@@ -190,15 +192,33 @@ public class ProcessDocumentAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(CaseProcessDiagramResource.class)
+    public CaseProcessDiagramResource caseProcessDiagramResource(
+        ProcessInstanceCaseAccessService processInstanceCaseAccessService,
+        DocumentService documentService,
+        AuthorizationService authorizationService,
+        ProcessInstanceDiagramService processInstanceDiagramService
+    ) {
+        return new CaseProcessDiagramResource(
+            processInstanceCaseAccessService,
+            documentService,
+            authorizationService,
+            processInstanceDiagramService
+        );
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ProcessTimerResource.class)
     public ProcessTimerResource processTimerResource(
         ProcessInstanceCaseAccessService processInstanceCaseAccessService,
+        DocumentService documentService,
         AuthorizationService authorizationService,
         ManagementService managementService,
         ApplicationEventPublisher eventPublisher
     ) {
         return new ProcessTimerResource(
             processInstanceCaseAccessService,
+            documentService,
             authorizationService,
             managementService,
             eventPublisher
