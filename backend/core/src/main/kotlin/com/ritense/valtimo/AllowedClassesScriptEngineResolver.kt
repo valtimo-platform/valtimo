@@ -78,12 +78,10 @@ class AllowedClassesScriptEngineResolver(
             .denyAccess(ScriptEngine::class.java)
             .denyAccess(ScriptContext::class.java)
             .denyAccess(Bindings::class.java)
-            .denyAccess(AutoCloseable::class.java)
+            .denyAccess(AutoCloseable::class.java, false)
             .denyAccess(javax.script.Compilable::class.java)
             .denyAccess(javax.script.Invocable::class.java)
             .denyAccess(javax.script.CompiledScript::class.java)
-            .denyAccess(java.util.AbstractMap::class.java)
-            .denyAccess(java.util.Map.Entry::class.java)
             .build()
 
         val ctx = Context.newBuilder("js")
@@ -120,8 +118,6 @@ class AllowedClassesScriptEngineResolver(
             "javax.script.Compilable",
             "javax.script.Invocable",
             "javax.script.CompiledScript",
-            "java.util.AbstractMap",
-            "java.util.Map.Entry",
             "org.graalvm.polyglot.Engine",
             "org.graalvm.polyglot.Context",
             "org.graalvm.polyglot.Value",
