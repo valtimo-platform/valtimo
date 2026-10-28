@@ -44,8 +44,10 @@ Lists and maps that a script fills with its own objects now also stay readable a
 
 | Severity | Fix |
 |----------|-----|
+| High | Form submissions no longer accept values for the e-mail preview form component, including when it is placed inside a datagrid, editgrid or container. |
 | High | A JavaScript script task or decision table expression can no longer get around the list of classes it is allowed to use, and so can no longer reach the rest of the application or the server it runs on |
 | High | The process instance search and count endpoints no longer let any logged-in user list the process instances of all cases or search their process variables. They are now only available to administrators. The search endpoints and the count by process definition name will be removed in a future version. |
+| Medium | Intermediate submissions no longer store or return e-mail preview content. As a consequence, the intermediate submission endpoint (`/api/v1/form/intermediate/submission`) now returns 404 for tasks without a form process link. |
 | Medium | Adding a comment to a process instance is now only available to administrators, and will be removed in a future version. |
 | Medium | Deploying a version of a process definition with shortened timers is now only available to administrators, and will be removed in a future version. |
 | Low | A process or decision variable can no longer influence the restrictions that apply to JavaScript, either during its own run or during later ones |

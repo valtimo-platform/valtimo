@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,16 @@ package com.ritense.form.domain.submission.formfield
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.form.BaseTest
+import com.ritense.form.domain.FormDefinitionBlueprintId
+import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormIoFormDefinition.NOT_IGNORED
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import java.util.UUID
 
 internal class FormFieldTest : BaseTest() {
 
@@ -83,6 +87,36 @@ internal class FormFieldTest : BaseTest() {
         assertEquals("UploadField", dataGrid.childFormFields[3].javaClass.simpleName)
         assertTrue(dataGrid.childFormFields[3].value.toString().contains(""""filename":"img4.jpg""""))
         assertEquals("/documentenApiFile2", dataGrid.childFormFields[3].pointer.toString())
+    }
+
+    @Test
+    fun `should not get FormFields for display-only components`() {
+        val formDefinition = FormIoFormDefinition(
+            UUID.randomUUID(),
+            "form-example",
+            """
+                {
+                  "display": "form",
+                  "components": [
+                    { "key": "textField", "type": "textfield", "input": true },
+                    { "key": "mailPreview", "type": "valtimo-mail-preview", "input": true }
+                  ]
+                }
+            """,
+            FormDefinitionBlueprintId.forCase(CaseDefinitionId.of("person", "1.0.0")),
+            false
+        )
+        val formData = MapperSingleton.get().readValue<JsonNode>("""
+            {
+              "textField" : "1234",
+              "mailPreview" : "<img src=x onerror=alert(1)>"
+            }
+        """)
+
+        val formFields = FormField.getFormFields(formDefinition, formData, mock())
+
+        assertEquals(1, formFields.size)
+        assertEquals("/textField", formFields[0].pointer.toString())
     }
 
 }
