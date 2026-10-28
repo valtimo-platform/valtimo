@@ -109,8 +109,7 @@ class ExternalPluginServiceTaskStartListenerTest {
     /**
      * A global (no-case) process has a null business key, so a case-bound plugin returns a 4xx. The
      * listener must surface the plugin's real error as a plain [ExternalPluginActionFailedException]
-     * — never a BpmnError, which the @Transactional event bridge would mask as an opaque
-     * "Transaction silently rolled back" incident (see #769).
+     * — a technical failure on the job incident, not a BpmnError (see #769).
      */
     @Test
     fun `4xx plugin error surfaces as ExternalPluginActionFailedException with the real message`() {
