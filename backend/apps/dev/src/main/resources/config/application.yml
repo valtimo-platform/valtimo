@@ -168,6 +168,9 @@ mailing:
     sendRedirectedMailsTo:
 
 valtimo:
+    camunda:
+        scripting:
+            allowedClasses: java.util.HashMap,java.util.LinkedHashMap,java.util.TreeMap
     app:
         scheme: http
     database: postgres

@@ -109,4 +109,53 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
             }
         }
     }
+
+    @Test
+    fun `engine objects are not defined in script tasks`() {
+        val processInstance = runWithoutAuthorization {
+            camundaProcessService.startProcess(
+                "javascript-script-task-process-engine-objects",
+                UUID.randomUUID().toString(),
+                emptyMap()
+            ).processInstanceDto
+        }
+
+        val result = historyService.createHistoricVariableInstanceQuery()
+            .processInstanceId(processInstance.id)
+            .variableName("result")
+            .singleResult()
+            .value
+        assertEquals("undefined,undefined,undefined", result)
+    }
+
+    @Test
+    fun `option-like process variable does not enable class lookup`() {
+        assertThrows<ScriptEvaluationException> {
+            runWithoutAuthorization {
+                camundaProcessService.startProcess(
+                    "javascript-script-task-process-unallowed",
+                    UUID.randomUUID().toString(),
+                        mapOf("polyglot.js.allowHostClassLookup" to true)
+                ).processInstanceDto
+            }
+        }
+    }
+
+    @Test
+    fun `option-like process variable does not break the script`() {
+        val processInstance = runWithoutAuthorization {
+            camundaProcessService.startProcess(
+                "javascript-script-task-process",
+                UUID.randomUUID().toString(),
+                mapOf("a" to 1, "b" to 2, "polyglot.js.allowHostClassLookup" to true)
+            ).processInstanceDto
+        }
+
+        val c = historyService.createHistoricVariableInstanceQuery()
+            .processInstanceId(processInstance.id)
+            .variableName("c")
+            .singleResult()
+            .value
+        assertEquals(3, c)
+    }
 }
