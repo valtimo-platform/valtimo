@@ -10,9 +10,9 @@ This release contains security fixes. See [Security](#security) for details.
 
 ## New Features
 
-### Manual abonnement registration for the Notificaties API
+### New feature title
 
-A Notificaties API plugin configuration can now be set to manual abonnement registration, for environments where traffic to Valtimo goes through a gateway that checks certificates. An administrator then creates the abonnement in Open Notificaties with a shared secret, and the configuration shows which channels and filters it must contain.
+New feature explanation.
 
 ---
 
