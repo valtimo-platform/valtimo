@@ -34,14 +34,13 @@ Lists and maps that a script fills with its own objects now also stay readable a
 
 | Area | Fix |
 |------|-----|
-| Access control | Opening a case no longer fails with an error when a permission condition checks the case's internal status and the case has no status yet |
 | Case details | Opening a case whose case type has no header widget no longer returns a 404 or logs errors in the browser console. |
-| Case details | A completed task no longer stays visible in the task list of a case for a few seconds after completing it. |
-| Dashboard | Gauge widgets now show the exact count instead of a decimal number for some value and total combinations (for example 46 instead of 45.99). |
 | Forms | Clicking the submit button of a form more than once no longer submits the form multiple times; after a failed submit the button can be used again. |
 | Processes | A boundary error event now catches a BPMN error thrown by a plugin, also inside a building block. |
 | Scripts | Running JavaScript in processes and decision tables no longer makes the application use more and more memory over time. Scripts also run faster. |
+| Dashboard | Gauge widgets now show the exact count instead of a decimal number for some value and total combinations (for example 46 instead of 45.99). |
 | Tasks | Saving a task's progress a second time, or after reopening the task, now stores the latest changes instead of the previously saved values. |
+| Case detail | A completed task no longer stays visible in the task list of a case for a few seconds after completing it. |
 
 ---
 
