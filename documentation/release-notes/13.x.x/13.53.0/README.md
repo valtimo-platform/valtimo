@@ -14,9 +14,11 @@ New feature explanation.
 
 ## Enhancements
 
-### New enhancement title
+### Hide document actions that aren't available
 
-New enhancement explanation.
+Row actions in the case document list can now be hidden entirely instead of only shown disabled,
+and plugins can contribute their own actions to that list. The **Preview** action is hidden
+rather than shown disabled when no preview plugin is configured for the document's Documenten API.
 
 ---
 
