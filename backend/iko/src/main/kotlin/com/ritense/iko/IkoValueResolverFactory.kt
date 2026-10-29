@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.case_.service.CaseWidgetService
-import com.ritense.case_.widget.collection.CollectionCaseWidget
+import com.ritense.case_.widget.collection.CollectionCaseWidgetDto
+import com.ritense.case_.widget.interactivetable.InteractiveTableCaseWidgetDto
 import com.ritense.case_.widget.table.TableCaseWidgetDto
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.iko.IkoServerRepository.Companion.AGGREGATED_DATA_PROFILE_NAME
@@ -99,7 +100,7 @@ class IkoValueResolverFactory(
 
     private fun getIkoViewDataById(properties: Map<String, Any>): Function<String, Any?>? {
         val ikoViewKey = properties[IKO_VIEW_KEY]?.toString() ?: return null
-        val tabKey = properties[TAB_KEY]?.toString()
+        val tabKey = if (isCaseWidgetContext(properties)) null else properties[TAB_KEY]?.toString()
         val id = properties[ID]?.toString() ?: return null
         val config = ikoTabService.getIkoTabConfig(ikoViewKey, tabKey)
         val data = ikoServerRepository.findById(
@@ -126,7 +127,16 @@ class IkoValueResolverFactory(
     }
 
     private fun getContainerParams(properties: Map<String, Any>): List<ContainerParam> {
-        return listOfNotNull(getIkoTableContainerParam(properties) ?: getCaseTableContainerParam(properties))
+        val param = if (isCaseWidgetContext(properties)) {
+            getCaseTableContainerParam(properties)
+        } else {
+            getIkoTableContainerParam(properties)
+        }
+        return listOfNotNull(param)
+    }
+
+    private fun isCaseWidgetContext(properties: Map<String, Any>): Boolean {
+        return properties[DOCUMENT_ID] != null && properties[TAB_KEY] != null && properties[WIDGET_KEY] != null
     }
 
     private fun getIkoTableContainerParam(properties: Map<String, Any>): ContainerParam? {
@@ -171,7 +181,15 @@ class IkoValueResolverFactory(
                 filters = emptyMap()
             )
 
-            is CollectionCaseWidget -> ContainerParam(
+            is InteractiveTableCaseWidgetDto -> ContainerParam(
+                containerId = widget.key,
+                pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
+                filters = widget.properties.filters
+                    .flatMap { ContainerParam.fromFilter(it, properties[it.key]) }
+                    .toMap()
+            )
+
+            is CollectionCaseWidgetDto -> ContainerParam(
                 containerId = widget.key,
                 pageable = pageable ?: PageRequest.of(0, widget.properties.defaultPageSize),
                 filters = emptyMap()

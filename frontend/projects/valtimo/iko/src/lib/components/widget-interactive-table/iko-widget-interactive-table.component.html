@@ -21,7 +21,7 @@
   } as obs"
   [widgetData]="obs.widgetData"
   [widgetConfiguration]="obs.widgetConfiguration"
-  (actionEvent)="onActionEvent($event, obs.widgetData.resolved)"
+  (actionEvent)="onActionEvent($event, obs.widgetData)"
   (rowClickEvent)="onRowClickEvent($event, obs.widgetConfiguration)"
   (caseStartEvent)="onCaseStartEvent($event)"
   (queryParamsEvent)="onQueryParamsEvent($event)"
