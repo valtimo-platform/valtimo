@@ -52,7 +52,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       operator: 'Operator',
       value: 'Waarde',
       conditions: 'Condities',
-      conditionsHelperText: `Geef optionele condities op voor het ophalen van het aantal zaken voor het geselecteerde dossiertype. ${CONDITIONS_HELPER_TEXTS.NL()}}`,
+      conditionsHelperText: `Geef optionele condities op voor het ophalen van het aantal dossiers voor het geselecteerde dossiertype. ${CONDITIONS_HELPER_TEXTS.NL()}}`,
       addCondition: 'Conditie toevoegen',
     },
   },

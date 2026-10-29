@@ -16,7 +16,7 @@
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}",
-    "CaseMigratedEvent": "Zaak gemigreerd van {{fromVersionTag}} naar {{toVersionTag}}",
+    "CaseMigratedEvent": "Dossier gemigreerd van {{fromVersionTag}} naar {{toVersionTag}}",
     "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
@@ -355,8 +355,8 @@
         "loading": "Metadata laden...",
         "documentId": "Document ID",
         "definitionName": "Definitie",
-        "definitionKey": "Dossier definitiesleutel",
-        "definitionVersionTag": "Dossier definitieversie",
+        "definitionKey": "Dossierdefinitiesleutel",
+        "definitionVersionTag": "Dossierdefinitieversie",
         "sequence": "Volgnummer",
         "version": "Versie",
         "createdBy": "Aangemaakt door",
@@ -465,7 +465,7 @@
         },
         "zaakdetails": {
           "title": "Zaakdetails sync-object",
-          "notConfigured": "Geen portaal-synchronisatie geconfigureerd voor dit zaaktype.",
+          "notConfigured": "Geen portaal-synchronisatie geconfigureerd voor deze dossierdefinitie.",
           "objectManagementTitle": "Objectbeheer-configuratie",
           "caseDefinitionKey": "Dossierdefinitie",
           "enabled": "Ingeschakeld",
@@ -2032,7 +2032,7 @@
     "fieldLabels": {
       "created": "Aanmaakdatum",
       "name": "Naam",
-      "valtimoAssignee.fullName": "Eigenaar",
+      "valtimoAssignee.fullName": "Behandelaar",
       "due": "Opleveringsdatum",
       "context": "Context",
       "case": "Dossier"
@@ -2297,7 +2297,7 @@
     "startableWithinCaseTooltip": "Wanneer deze optie is geselecteerd zal deze procesdefinitie beschikbaar zijn om te starten onder een bestaand dossier. Dit kan via het subproces-menu op de detailpagina van het dossier."
   },
   "openZaak": {
-    "links": "Gekoppeld zaak type",
+    "links": "Gekoppeld zaaktype",
     "documentenApi": {
       "title": "Documenten API",
       "documentenApiVersion": "De Documenten API-plugin gebruikt versie",
@@ -2318,8 +2318,8 @@
       "serviceTaskUnlinkFailed": "Kan servicetaak niet ontkoppelen"
     },
     "linkZaakType": "Zaaktype koppelen",
-    "linkSuccessful": "Zaaktype succesvol gekoppeld aan zaak",
-    "linkFailed": "Zaaktype kan niet aan zaak worden gekoppeld",
+    "linkSuccessful": "Zaaktype succesvol gekoppeld aan dossier",
+    "linkFailed": "Zaaktype kan niet aan dossier worden gekoppeld",
     "delinkSuccessful": "Zaaktype succesvol losgekoppeld",
     "delinkFailed": "Zaaktype kan niet worden losgekoppeld",
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
@@ -2358,10 +2358,10 @@
     "submitButton": "Configureer zaak-synchronisatie",
     "editModal": {
       "title": "Zaak-synchronisatie",
-      "assigneeSyncEnabled": "Dossier behandelaar synchroniseren als ZaakRol",
+      "assigneeSyncEnabled": "Dossierbehandelaar synchroniseren als ZaakRol",
       "roltypeUrl": "Roltype URL",
       "roltypeUrlPlaceholder": "Voer een roltype URL in",
-      "noteSyncEnabled": "Dossier notities synchroniseren als ZaakNotitie",
+      "noteSyncEnabled": "Dossiernotities synchroniseren als ZaakNotitie",
       "noteSubject": "Onderwerp van ZaakNotitie",
       "noteSubjectPlaceholder": "Voer een onderwerp in"
     },
@@ -2630,8 +2630,8 @@
       "title": "Apps"
     },
     "customercases": {
-      "title": "Zaken",
-      "description": "Op deze pagina kun je de zaken van een specifieke klant inzien."
+      "title": "Dossiers",
+      "description": "Op deze pagina kun je de dossiers van een specifieke klant inzien."
     }
   },
   "pluginSteps": {
@@ -2929,7 +2929,7 @@
     }
   },
   "customerCases": {
-    "tableItemsText": "zaken",
+    "tableItemsText": "dossiers",
     "labels": {
       "zaakNummer": "Zaaknummer",
       "zaakStatus": "Status",
@@ -3738,7 +3738,7 @@
   },
   "caseMigration": {
     "warningBeta": "Dossier migratie is nog in bèta. Het migreren van dossiers kan onverwachte resultaten opleveren. Wees voorzichtig.",
-    "caseDefinition": "Dossier definitie",
+    "caseDefinition": "Dossierdefinitie",
     "sourceCaseDefinitionKey": "Bron dossierdefinitie-naam",
     "sourceCaseDefinitionVersionTag": "Bron dossierdefinitie-versie",
     "targetCaseDefinitionKey": "Doel dossierdefinitie-naam",
@@ -3786,7 +3786,7 @@
         "title": "Optioneel. Wordt getoond in het kruimelpad terwijl een gebruiker de form flow doorloopt.",
         "type": "Wat deze stap toont: \"form\" toont een Form.io-formulier, \"custom-component\" toont een Angular-component die door deze implementatie is geregistreerd. Andere waarden worden afgehandeld door een bijpassende staptype-handler in de backend.",
         "typeNoComponents": "\"custom-component\" is niet beschikbaar omdat deze implementatie geen custom componenten heeft geregistreerd.",
-        "definition": "Het formulier van deze zaakdefinitie of building block dat voor deze stap wordt getoond.",
+        "definition": "Het formulier van deze dossierdefinitie of dit bouwblok dat voor deze stap wordt getoond.",
         "componentId": "De geregistreerde Angular-component die voor deze stap wordt getoond.",
         "targetStep": "De stap waar de gebruiker naartoe gaat wanneer deze overgang wordt gekozen.",
         "condition": "Optionele SpEL-expressie tussen ${ en }. Overgangen worden van boven naar beneden geëvalueerd; laat leeg om dit de standaardroute te maken."
@@ -3810,7 +3810,7 @@
       "multipleDefaultTransitions": "Slechts één overgang mag zonder conditie zijn; die overgang is de standaard.",
       "conditionExamplesTitle": "Condities zijn Spring Expression Language (SpEL)-expressies tussen ${ en }. Ze kunnen gebruikmaken van:",
       "conditionExampleSubmission": "waarden die de gebruiker in deze stap heeft ingevuld, via step.submissionData",
-      "conditionExampleContext": "zaak- en procescontext, via additionalProperties (de exacte waarden staan hieronder)",
+      "conditionExampleContext": "dossier- en procescontext, via additionalProperties (de exacte waarden staan hieronder)",
       "conditionExampleDefault": "Vergelijkingsoperatoren zoals ==, !=, >, >= en booleaanse operatoren zoals && en || worden ondersteund. Een overgang zonder conditie is de standaardroute.",
       "additionalPropertiesTitle": "Beschikbaar in additionalProperties:",
       "additionalPropertiesUserTask": "Wanneer de form flow gekoppeld is aan een gebruikerstaak:",
@@ -3820,9 +3820,9 @@
         "processInstanceId": "het id van de procesinstantie waar de taak bij hoort",
         "processInstanceBusinessKey": "de business key van die procesinstantie",
         "taskInstanceId": "het id van de gebruikerstaak die deze form flow heeft geopend",
-        "documentId": "het id van de zaak, wanneer het proces bij een zaak hoort",
+        "documentId": "het id van het dossier, wanneer het proces bij een dossier hoort",
         "processDefinitionKey": "de key van de procesdefinitie die gestart wordt",
-        "documentDefinitionName": "de documentdefinitie van de nieuwe zaak, bij het starten van een nieuwe zaak"
+        "documentDefinitionName": "de documentdefinitie van het nieuwe dossier, bij het starten van een nieuw dossier"
       },
       "actions": "Acties",
       "actionsDescription": "Acties worden op de server uitgevoerd op vaste momenten in de levenscyclus van de stap, bijvoorbeeld om formulieren vooraf in te vullen, inzendingen op te slaan, taken af te ronden of processen te starten.",
@@ -3832,12 +3832,12 @@
         "intro": "Condities en acties zijn Spring Expression Language (SpEL)-expressies tussen ${ en }. Ze worden op de server geëvalueerd terwijl de form flow draait.",
         "conditionsHeading": "Condities",
         "actionsHeading": "Acties",
-        "actionsBody": "Acties worden uitgevoerd op vaste momenten in de levenscyclus van een stap: bij het openen, bij het afronden en wanneer de gebruiker teruggaat. Ze kunnen de geregistreerde form flow-functies aanroepen uit het menu \"Actie toevoegen\", en kunnen de ingevulde gegevens lezen via step.submissionData en de zaak- en procescontext via additionalProperties. Gebruik ze om formulieren vooraf in te vullen, inzendingen op te slaan, taken af te ronden of processen te starten.",
+        "actionsBody": "Acties worden uitgevoerd op vaste momenten in de levenscyclus van een stap: bij het openen, bij het afronden en wanneer de gebruiker teruggaat. Ze kunnen de geregistreerde form flow-functies aanroepen uit het menu \"Actie toevoegen\", en kunnen de ingevulde gegevens lezen via step.submissionData en de dossier- en procescontext via additionalProperties. Gebruik ze om formulieren vooraf in te vullen, inzendingen op te slaan, taken af te ronden of processen te starten.",
         "dataHeading": "Beschikbare gegevens",
         "conditionsInlineTitle": "Condities zijn expressies.",
         "conditionsInlineMessage": "Bijvoorbeeld ${step.submissionData.leeftijd >= 21}. Laat de conditie leeg voor de standaardroute.",
         "actionsInlineTitle": "Acties zijn expressies.",
-        "actionsInlineMessage": "Ze kunnen geregistreerde functies aanroepen en ingevulde gegevens en zaakcontext lezen."
+        "actionsInlineMessage": "Ze kunnen geregistreerde functies aanroepen en ingevulde gegevens en dossiercontext lezen."
       },
       "onOpen": "Bij openen van de stap",
       "onOpenDescription": "Wordt uitgevoerd wanneer de gebruiker deze stap opent, bijvoorbeeld om het formulier vooraf in te vullen.",
