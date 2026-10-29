@@ -46,6 +46,8 @@ import com.ritense.document.service.requireDocumentPermission
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
 import com.ritense.valtimo.contract.plugin.PluginConfigurationMappingResolver
 import com.ritense.valueresolver.ValueResolverCache
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
@@ -154,7 +156,13 @@ class CaseWidgetService(
     }
 
     @Transactional
-    fun getCaseWidgetData(documentId: UUID, tabKey: String, widgetKey: String, pageable: Pageable): Any? {
+    fun getCaseWidgetData(
+        documentId: UUID,
+        tabKey: String,
+        widgetKey: String,
+        pageable: Pageable,
+        properties: Map<String, Any> = emptyMap()
+    ): Any? {
         val document = findViewableDocument(JsonSchemaDocumentId.existingId(documentId)) ?: return null
         val caseDefinitionId = document.definitionId().caseDefinitionId()
         checkCaseTabAccess(caseDefinitionId, tabKey, VIEW, document)
@@ -178,7 +186,14 @@ class CaseWidgetService(
             return null
         }
 
-        return callCaseWidgetDataProvider(widget, document, pageable, widgetTab.id.caseDefinitionId)
+
+        return callCaseWidgetDataProvider(
+            widget,
+            document,
+            pageable,
+            widgetTab.id.caseDefinitionId,
+            properties + mapOf(TAB_KEY to tabKey, WIDGET_KEY to widgetKey)
+        )
     }
 
     /** Widget key to the id of the upstream request it needs. */
@@ -379,11 +394,17 @@ class CaseWidgetService(
     private fun hasDataProvider(widget: Any): Boolean =
         caseWidgetDataProviders.any { provider -> provider.supports(widget) }
 
-    private fun callCaseWidgetDataProvider(widget: Any, document: Document, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Any? {
+    private fun callCaseWidgetDataProvider(
+        widget: Any,
+        document: Document,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId,
+        properties: Map<String, Any> = emptyMap()
+    ): Any? {
         return runWithoutAuthorization {
             caseWidgetDataProviders
                 .first { provider -> provider.supports(widget) }
-                .getData(document.id().id, widget, pageable, caseDefinitionId)
+                .getData(document.id().id, widget, pageable, caseDefinitionId, properties)
         }
     }
 

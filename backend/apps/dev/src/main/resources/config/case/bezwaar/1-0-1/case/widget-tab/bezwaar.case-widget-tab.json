@@ -349,6 +349,60 @@
                 }
             },
             {
+                "type": "interactive-table",
+                "key": "zaken-interactief",
+                "title": "Zaken (interactief)",
+                "width": 4,
+                "highContrast": false,
+                "isCompact": null,
+                "properties": {
+                    "collection": "iko:/lopende_zaken?ikoViewKey=demo&id=999990755",
+                    "defaultPageSize": 5,
+                    "columns": [
+                        {
+                            "key": "type",
+                            "title": "Type",
+                            "value": "type",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            },
+                            "sortable": true,
+                            "defaultSort": "ASC"
+                        },
+                        {
+                            "key": "beschrijving",
+                            "title": "Beschrijving",
+                            "value": "beschrijving",
+                            "displayProperties": {
+                                "type": "text",
+                                "hideWhenEmpty": false
+                            },
+                            "sortable": true
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "key": "type",
+                            "title": "Type",
+                            "dataType": "text",
+                            "fieldType": "single"
+                        },
+                        {
+                            "key": "beschrijving",
+                            "title": "Beschrijving",
+                            "dataType": "text",
+                            "fieldType": "single"
+                        }
+                    ],
+                    "firstColumnAsTitle": false,
+                    "rowClickAction": {
+                        "name": "Open klant",
+                        "navigateTo": "/iko/demo/bsn/details/999990755"
+                    }
+                }
+            },
+            {
                 "type": "custom",
                 "key": "clock",
                 "title": "Clock",
