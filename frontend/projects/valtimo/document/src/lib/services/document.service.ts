@@ -32,7 +32,12 @@ import {
   AssignHandlerToDocumentResult,
   AuditRecord,
   CaseDefinition,
+  CaseDefinitionGroup,
+  CaseDefinitionGroupMember,
   CaseListColumn,
+  GroupCaseListRow,
+  GroupListColumn,
+  GroupSearchField,
   CaseSettings,
   CreateDocumentDefinitionResponse,
   Document,
@@ -156,10 +161,14 @@ export class DocumentService {
 
   public getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
     return this.http
-      .post<Documents>(`${this.valtimoEndpointUri}v1/document-search`, documentSearchRequest.asHttpBody(), {
-        params: documentSearchRequest.asHttpParams(),
-        headers: new HttpHeaders().set(InterceptorSkip, '500'),
-      })
+      .post<Documents>(
+        `${this.valtimoEndpointUri}v1/document-search`,
+        documentSearchRequest.asHttpBody(),
+        {
+          params: documentSearchRequest.asHttpParams(),
+          headers: new HttpHeaders().set(InterceptorSkip, '500'),
+        }
+      )
       .pipe(
         tap(() => this._invalidSearchFields$.next([])),
         catchError((error: HttpErrorResponse) => {
@@ -370,6 +379,49 @@ export class DocumentService {
     return this.http.get<CaseDefinition[]>(`${this.valtimoEndpointUri}v1/case-definition`, {
       params,
     });
+  }
+
+  public getCaseDefinitionGroups(): Observable<CaseDefinitionGroup[]> {
+    return this.http.get<CaseDefinitionGroup[]>(
+      `${this.valtimoEndpointUri}v1/case-definition-group`
+    );
+  }
+
+  /** The case types that make up a group, filtered to what the user may see. */
+  public getCaseDefinitionGroupMembers(groupKey: string): Observable<CaseDefinitionGroupMember[]> {
+    return this.http.get<CaseDefinitionGroupMember[]>(
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/member`
+    );
+  }
+
+  public getCaseDefinitionGroup(groupKey: string): Observable<CaseDefinitionGroup> {
+    return this.http.get<CaseDefinitionGroup>(
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}`
+    );
+  }
+
+  public getGroupListColumns(groupKey: string): Observable<GroupListColumn[]> {
+    return this.http.get<GroupListColumn[]>(
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/list-column`
+    );
+  }
+
+  public getGroupSearchFields(groupKey: string): Observable<GroupSearchField[]> {
+    return this.http.get<GroupSearchField[]>(
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/search-field`
+    );
+  }
+
+  public searchGroupCases(
+    groupKey: string,
+    searchRequest: any,
+    params?: any
+  ): Observable<Page<GroupCaseListRow>> {
+    return this.http.post<Page<GroupCaseListRow>>(
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/search`,
+      searchRequest,
+      {params, headers: new HttpHeaders().set(InterceptorSkip, '400,500')}
+    );
   }
 
   /**

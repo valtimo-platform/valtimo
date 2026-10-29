@@ -28,6 +28,7 @@
     <button
       *ngIf="!loadingExport"
       data-testid="case-list-export-button"
+      [attr.data-test-id]="testIds.exportButton"
       cdsButton="ghost"
       iconOnly="true"
       (click)="exportEvent.emit()"
@@ -42,6 +43,7 @@
     cdsButton="primary"
     [disabled]="disableStart"
     (click)="startCaseEvent.emit()"
+    [attr.data-test-id]="testIds.startCaseButton"
   >
     {{ 'Start Case' | translate }}
 

@@ -103,7 +103,12 @@ import {
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
-import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
+import {
+  CaseDetailLayoutService,
+  CaseListOriginService,
+  CaseService,
+  CaseTabService,
+} from '../../services';
 import {CaseDetailTaskPanelService} from '../../services/case-detail-task-panel.service';
 import {resolveStartableItemTitle} from '../../utils';
 import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
@@ -389,6 +394,7 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     private readonly componentFactoryResolver: ComponentFactoryResolver,
     private readonly documentService: DocumentService,
     private readonly caseDetailLayoutService: CaseDetailLayoutService,
+    private readonly caseListOriginService: CaseListOriginService,
     private readonly caseService: CaseService,
     private readonly caseTabService: CaseTabService,
     private readonly iconService: IconService,
@@ -800,11 +806,13 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   private setBreadcrumb(): void {
-    this.breadcrumbService.setSecondBreadcrumb({
-      route: [`/cases/${this.caseDefinitionKey}`],
-      content: this.documentDefinitionTitle,
-      href: `/cases/${this.caseDefinitionKey}`,
-    });
+    this.breadcrumbService.setSecondBreadcrumb(
+      this.caseListOriginService.getListBreadcrumb(
+        this.documentId,
+        this.caseDefinitionKey,
+        this.documentDefinitionTitle
+      )
+    );
   }
 
   private setDocumentStyle(): void {

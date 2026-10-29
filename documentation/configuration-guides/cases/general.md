@@ -1,8 +1,8 @@
 # General
 
 The General tab configures case-level settings that affect how the case behaves across the
-application. These settings include case handler assignment, external start forms, and document
-upload handling.
+application. These settings include the case color, case handler assignment, external start forms,
+and document upload handling.
 
 ---
 
@@ -28,6 +28,19 @@ Click the **General** tab
 {% hint style="info" %}
 Settings on this tab can only be modified in draft versions. Published versions are read-only.
 {% endhint %}
+
+### Case color
+
+{% hint style="success" %}
+Available since Valtimo `13.52.0`
+{% endhint %}
+
+Choose the color that represents this case type for end users, for example as the dot in front of
+a pinned case type in the left sidebar. Click one of the predefined colors, or click the square
+next to **Choose your own color** to pick any color. See
+[Cases overview & pinning](cases-overview.md#case-colors).
+
+<figure><img src="../../assets/configuration-guides/cases/cases-overview/06-case-definition-color.png" alt=""><figcaption>Case color</figcaption></figure>
 
 ### Link upload process to case
 

@@ -131,6 +131,7 @@ function resolveCatalogItem(
     .filter((child): child is MenuItem => child !== null);
 
   return buildMenuItem({
+    id: item.itemId,
     title: item.title ?? entry.defaultTitleKey,
     link: stringToLink(entry.link),
     iconClass: item.icon ?? entry.defaultIcon,
@@ -202,6 +203,7 @@ function menuContainsLink(items: MenuItem[], normalisedLink: string): boolean {
 }
 
 interface MenuItemParts {
+  id?: string;
   title: string;
   link?: string[];
   iconClass?: string;
@@ -213,6 +215,7 @@ interface MenuItemParts {
 /** Builds a `MenuItem` with only the keys that are actually set, so resolved items match the static menu shape. */
 function buildMenuItem(parts: MenuItemParts): MenuItem {
   const item: MenuItem = {title: parts.title};
+  if (parts.id) item.id = parts.id;
   const roles = parts.roles ?? [ROLE_USER];
   item.roles = roles;
   if (parts.link) item.link = parts.link;

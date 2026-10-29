@@ -20,7 +20,43 @@
     "ProcessTimerSkippedEvent": "Timer overgeslagen > {{activityId}}"
   },
   "case": {
-    "allCases": "Alle dossiers",
+    "menu": {
+      "pinPlaceholder": "Zet items vast om ze hier te tonen"
+    },
+    "overview": {
+      "title": "Dossieroverzicht",
+      "pin": "Vastzetten in de zijbalk",
+      "unpin": "Losmaken uit de zijbalk",
+      "search": {
+        "label": "Zoek dossiertypen en dossiergroepen",
+        "placeholder": "Zoek dossiertypen en dossiergroepen..."
+      },
+      "groups": {
+        "title": "Dossiergroepen",
+        "noResults": "Geen dossiergroepen gevonden voor je zoekopdracht.",
+        "open": "{{title}} openen",
+        "pin": "Vastzetten in de zijbalk",
+        "pinnedToast": "De dossiergroep '{{name}}' staat nu onder 'Dossiers' in de linkerzijbalk.",
+        "unpinnedToast": "De dossiergroep '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk.",
+        "pinErrorToast": "Het vastzetten van '{{name}}' is mislukt. Probeer het opnieuw.",
+        "unpinErrorToast": "Het losmaken van '{{name}}' is mislukt. Probeer het opnieuw."
+      },
+      "types": {
+        "title": "Dossiertypen",
+        "name": "Naam",
+        "noResults": "Geen dossiertypen gevonden voor je zoekopdracht.",
+        "open": "{{name}} openen",
+        "pin": "Vastzetten in de zijbalk",
+        "pinnedToast": "Het dossiertype '{{name}}' staat nu onder 'Dossiers' in de linkerzijbalk.",
+        "unpinnedToast": "Het dossiertype '{{name}}' staat niet meer onder 'Dossiers' in de linkerzijbalk.",
+        "pinErrorToast": "Het vastzetten van '{{name}}' is mislukt. Probeer het opnieuw.",
+        "unpinErrorToast": "Het losmaken van '{{name}}' is mislukt. Probeer het opnieuw."
+      },
+      "pinInfo": {
+        "title": "Zet de dossiergroepen die je vaak gebruikt in je zijbalk:",
+        "message": "klik op het pin-icoon bij een dossiergroep of dossiertype. Het verschijnt dan links onder Dossiers, zodat je er vanaf elke pagina in één klik bij bent."
+      }
+    },
     "exportButtonTooltip": "Exporteer huidige dossier lijst",
     "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {
@@ -70,6 +106,10 @@
       "TEAM": {
         "description": "Er zijn nog geen dossiers aan je teams toegewezen.",
         "title": "Geen teamdossiers"
+      },
+      "noGroupListColumns": {
+        "description": "Deze dossiergroep heeft nog geen lijstkolommen. Neem contact op met je beheerder om ze te configureren.",
+        "title": "Geen lijstkolommen geconfigureerd"
       },
       "search": {
         "description": "Er zijn geen dossiers die voldoen aan je zoekcriteria.",
@@ -188,6 +228,13 @@
     "startSubProcess": "Start",
     "noStartableProcesses": "Geen actie",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
+    "searchError": {
+      "title": "Zoeken mislukt",
+      "description": "De dossiers konden niet doorzocht worden. Controleer de zoekvelden of probeer het later opnieuw."
+    },
+    "startCase": {
+      "selectCaseType": "Kies dossiertype"
+    },
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
     "configure": "Configureer",
     "claimAssigneeCase": "Claimen",
@@ -1014,6 +1061,137 @@
       "draft": "Concept",
       "status": "Status"
     },
+    "listTabs": {
+      "cases": "Dossierdefinities",
+      "caseGroups": "Dossiergroepen"
+    },
+    "groups": {
+      "listColumns": {
+        "title": "Lijstkolommen",
+        "key": "Key",
+        "memberCount": "Aantal dossierdefinities",
+        "noColumns": "Geen kolommen geconfigureerd",
+        "addColumn": "Kolom toevoegen",
+        "editColumn": "Kolom bewerken",
+        "columnKey": "Key",
+        "columnKeyPlaceholder": "Voer een unieke key in",
+        "columnTitle": "Titel",
+        "columnTitlePlaceholder": "Voer een weergavetitel in",
+        "displayType": "Weergavetype",
+        "sortable": "Sorteerbaar",
+        "sortableCaseFieldsOnly": "Alleen kolommen die naar één gedeeld dossierveld verwijzen (bijvoorbeeld case:createdOn) kunnen sorteerbaar zijn.",
+        "exportable": "Exporteerbaar",
+        "pathPerCase": "Pad (per dossierdefinitie)",
+        "pathPerCaseTooltip": "Pad naar de eigenschap om weer te geven voor elke dossierdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor dossiereigenschappen.",
+        "saveError": "Opslaan van kolommen mislukt",
+        "searchPlaceholder": "Zoek kolommen..."
+      },
+      "searchFields": {
+        "title": "Zoekvelden",
+        "noFields": "Geen zoekvelden geconfigureerd",
+        "addField": "Zoekveld toevoegen",
+        "editField": "Zoekveld bewerken",
+        "fieldKey": "Key",
+        "fieldKeyPlaceholder": "Voer een unieke key in",
+        "fieldTitle": "Titel",
+        "fieldTitlePlaceholder": "Voer een weergavetitel in",
+        "dataType": "Datatype",
+        "fieldType": "Veldtype",
+        "matchType": "Matchtype",
+        "dropdownDataProvider": "Dropdown data provider",
+        "dropdownDataProviderPlaceholder": "Selecteer een dropdown-dataprovider",
+        "saveError": "Opslaan van zoekvelden mislukt",
+        "searchPlaceholder": "Zoek velden...",
+        "fieldKeyTooltip": "Verplicht. Unieke identificatie voor dit zoekveld.",
+        "fieldTitleTooltip": "Optioneel. Weergavenaam voor gebruikers.",
+        "dataTypeTooltip": "Verplicht. Het datatype van de veldwaarden.",
+        "fieldTypeTooltip": "Verplicht. Hoe de zoekinvoer wordt weergegeven.",
+        "matchTypeTooltip": "Optioneel. Hoe waarden worden gematcht (exact of gedeeltelijk).",
+        "dropdownDataProviderTooltip": "Optioneel. Naam van de class die de dropdownopties levert.",
+        "pathPerCaseTooltip": "Pad naar de eigenschap om op te zoeken voor elke dossierdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor dossiereigenschappen.",
+        "unsupportedPathPrefix": "Alleen document- (doc:) en dossierpaden (case:) kunnen doorzocht worden."
+      },
+      "tabs": {
+        "config": "Configuratie",
+        "listColumns": "Lijstkolommen",
+        "searchFields": "Zoekvelden"
+      },
+      "config": {
+        "color": "Groepskleur",
+        "colorDescription": "Kies een weergavekleur voor deze dossiergroep",
+        "selected": "Geselecteerd",
+        "customColorLabel": "Kies je eigen kleur:",
+        "chooseFreely": "Kies vrij",
+        "assignedCases": "Toegewezen dossierdefinities",
+        "addCase": "Dossierdefinitie toevoegen",
+        "selectCase": "Selecteer dossierdefinitie",
+        "selectCasePlaceholder": "Kies dossierdefinitie...",
+        "addToGroup": "Toevoegen aan groep",
+        "noMembers": "Geen dossierdefinities toegewezen. Klik \"Dossierdefinitie toevoegen\" om er een toe te voegen.",
+        "addMemberError": "Toevoegen van dossierdefinitie mislukt",
+        "caseCount": "{{count}} dossierdefinities in deze groep",
+        "searchPlaceholder": "Filter dossierdefinities...",
+        "noSearchResults": "Geen dossierdefinities gevonden",
+        "columns": {
+          "name": "Naam",
+          "key": "Key"
+        }
+      },
+      "pathMappings": {
+        "title": "Padkoppelingen",
+        "caseDefinition": "Dossierdefinitie",
+        "path": "Pad",
+        "pathPlaceholder": "bijv. doc:name of case:createdOn",
+        "noMembers": "Voeg eerst dossierdefinities toe aan de groep",
+        "saveError": "Opslaan van padkoppelingen mislukt"
+      },
+      "noResults": {
+        "title": "Geen dossiergroepen",
+        "description": "Er zijn nog geen dossiergroepen aangemaakt"
+      },
+      "editModal": {
+        "title": "Dossiergroep bewerken"
+      },
+      "createModal": {
+        "title": "Dossiergroep aanmaken",
+        "name": "Naam",
+        "namePlaceholder": "Voer een naam in",
+        "description": "Beschrijving",
+        "descriptionPlaceholder": "Voer een beschrijving in"
+      },
+      "pathCounter": "{{filled}} van {{total}} dossierdefinities ingevuld",
+      "searchCaseTypes": "Dossierdefinities filteren...",
+      "noMatchingCaseTypes": "Geen overeenkomende dossierdefinities gevonden",
+      "showOnlyEmpty": "Alleen ontbrekende paden tonen",
+      "showOnlyEmptyTooltip": "Als dit is aangevinkt, worden alleen dossierdefinities zonder pad getoond. Ingevulde rijen blijven zichtbaar tot dit wordt uitgezet.",
+      "noListColumnsWarning": {
+        "title": "Geen lijstkolommen geconfigureerd",
+        "message": "Er zijn dossiers aan deze groep gekoppeld, maar er zijn nog geen lijstkolommen geconfigureerd. De dossierlijst van deze groep toont geen dossiergegevens totdat er lijstkolommen zijn toegevoegd."
+      },
+      "noMembersHint": "Voeg eerst een dossierdefinitie toe aan deze groep, onder Configuratie.",
+      "export": {
+        "button": "Exporteren",
+        "successTitle": "Download start binnenkort",
+        "errorTitle": "Oeps",
+        "errorMessage": "De dossiergroep kon niet worden geëxporteerd"
+      },
+      "import": {
+        "button": "Uploaden",
+        "title": "Dossiergroep importeren",
+        "submit": "Importeren",
+        "upload": {
+          "title": "Upload bestand",
+          "description": "Ondersteund bestandstype is ZIP, zoals geëxporteerd vanuit een dossiergroep.",
+          "buttonText": "Selecteer bestand"
+        },
+        "overwriteWarning": "Een dossiergroep met dezelfde key wordt overschreven, inclusief de dossierdefinities, lijstkolommen en zoekvelden. Dossierdefinities die niet in deze omgeving bestaan, worden overgeslagen.",
+        "overwriteConfirm": "Ik begrijp dat een bestaande dossiergroep met dezelfde key wordt overschreven",
+        "overwriteConfirmError": "Bevestig dat de bestaande dossiergroep overschreven mag worden",
+        "successTitle": "Dossiergroep geïmporteerd",
+        "errorTitle": "Importeren mislukt",
+        "errorMessage": "Het bestand kon niet als dossiergroep worden geïmporteerd. Controleer of het een geldige export van een dossiergroep is."
+      }
+    },
     "needsConfiguration": "Configuratie vereist",
     "inactive": "Inactief",
     "globalActiveVersionModal": {
@@ -1186,6 +1364,12 @@
             "onText": "Ja",
             "offText": "Nee"
           }
+        },
+        "color": {
+          "title": "Dossierkleur",
+          "description": "Kies een weergavekleur voor deze dossierdefinitie",
+          "selected": "Geselecteerd",
+          "customColorLabel": "Kies je eigen kleur:"
         }
       },
       "caseListTab": {
@@ -2130,6 +2314,7 @@
   "Overview of all Cases": "Overzicht van alle Dossiers",
   "Start Case": "Creëer Nieuw Dossier",
   "Case details": "Dossier details",
+  "Case group": "Dossiergroep",
   "Related documents": "Gerelateerde documenten",
   "Overview of all documents in this case": "Overzicht van documenten in dit dossier",
   "Basics": "Basis",
@@ -4312,9 +4497,9 @@
           "title": "Menu standaard ingeklapt",
           "description": "Start met het navigatiemenu ingeklapt in plaats van uitgeklapt."
         },
-        "enableGenericCaseList": {
-          "title": "Generieke dossierlijst inschakelen",
-          "description": "Toon één dossierlijstweergave met een dropdown om tussen dossierdefinities te wisselen."
+        "showAllCaseDefinitionsInMenu": {
+          "title": "Alle dossiertypen in het menu tonen",
+          "description": "Toon elk dossiertype waar de gebruiker toegang toe heeft in het Dossiers-menu, in plaats van alleen de vastgezette dossiergroepen en dossiertypen. Vastzetten is dan uitgeschakeld."
         },
         "enableManualTaskListRefresh": {
           "title": "Handmatig verversen takenlijst inschakelen",

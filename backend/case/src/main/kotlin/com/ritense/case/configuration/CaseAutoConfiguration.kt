@@ -23,10 +23,18 @@ import com.ritense.case.listener.CaseDefinitionConfigurationIssueListener
 import com.ritense.case.listener.StartableItemCaseEventListener
 import com.ritense.case.mapper.ConfigurationIssueSseEventMapper
 import com.ritense.case.repository.CaseDefinitionConfigurationIssueRepository
+import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
+import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
+import com.ritense.case.repository.GroupListColumnPathMappingRepository
+import com.ritense.case.repository.GroupListColumnRepository
+import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
+import com.ritense.case.repository.GroupQuickSearchRepository
+import com.ritense.case.repository.GroupSearchFieldRepository
+import com.ritense.case.repository.PinnedItemRepository
 import com.ritense.case.repository.HiddenTaskListColumnRepository
 import com.ritense.case.repository.QuickSearchRepository
 import com.ritense.case.repository.StartableItemRepository
@@ -35,6 +43,9 @@ import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
+import com.ritense.case.service.CaseDefinitionGroupService
+import com.ritense.case.service.GroupCaseInstanceService
+import com.ritense.case.service.PinnedItemService
 import com.ritense.case.service.CaseDefinitionImportPreviewService
 import com.ritense.case.service.CaseDefinitionImportService
 import com.ritense.case.service.CaseDefinitionImporter
@@ -44,6 +55,8 @@ import com.ritense.case.service.CaseInstanceService
 import com.ritense.case.service.CaseListExporter
 import com.ritense.case.service.CaseListImporter
 import com.ritense.case.service.CaseListRowMapper
+import com.ritense.case.service.CaseDefinitionGroupExporter
+import com.ritense.case.service.CaseDefinitionGroupImporter
 import com.ritense.case.service.CaseTabExporter
 import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
@@ -57,6 +70,9 @@ import com.ritense.case.service.StartableItemProvider
 import com.ritense.case.service.StartableItemService
 import com.ritense.case.service.TaskColumnService
 import com.ritense.case.service.finalization.CaseDefinitionFinalizationChecker
+import com.ritense.case.web.rest.CaseDefinitionGroupManagementResource
+import com.ritense.case.web.rest.CaseDefinitionGroupResource
+import com.ritense.case.web.rest.PinnedItemResource
 import com.ritense.case.web.rest.CaseDefinitionResource
 import com.ritense.case.web.rest.CaseInstanceResource
 import com.ritense.case.web.rest.CaseTabManagementResource
@@ -64,6 +80,8 @@ import com.ritense.case.web.rest.CaseTabResource
 import com.ritense.case.web.rest.StartableItemManagementResource
 import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
+import com.ritense.case.web.rest.error.InvalidGroupListColumnSortExceptionMapper
+import com.ritense.case.web.rest.error.InvalidGroupSearchFieldExceptionMapper
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.listener.CaseMigrationCaseEventListener
 import com.ritense.case_.repository.CaseDefinitionMigrationExecutionRepository
@@ -91,11 +109,13 @@ import com.ritense.case_.service.migration.MigrationPlanExporter
 import com.ritense.case_.service.migration.MigrationPlanImporter
 import com.ritense.case_.service.migration.MigrationSuggestionService
 import com.ritense.case_.service.migration.MigrationTriggerScheduler
+import com.ritense.dataprovider.service.DataProviderService
 import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
@@ -144,9 +164,16 @@ import org.springframework.transaction.support.TransactionTemplate
         CaseTabRepository::class,
         CaseDefinitionConfigurationIssueRepository::class,
         StartableItemRepository::class,
+        CaseDefinitionGroupRepository::class,
+        CaseDefinitionGroupMemberRepository::class,
+        GroupListColumnRepository::class,
+        GroupListColumnPathMappingRepository::class,
+        GroupSearchFieldRepository::class,
+        GroupSearchFieldPathMappingRepository::class,
+        PinnedItemRepository::class,
     ]
 )
-@EntityScan(basePackages = ["com.ritense.case.domain"])
+@EntityScan(basePackages = ["com.ritense.case.domain", "com.ritense.case.domain.group"])
 class CaseAutoConfiguration {
 
     @Bean
@@ -590,6 +617,152 @@ class CaseAutoConfiguration {
         objectMapper: ObjectMapper,
         startableItemRepository: StartableItemRepository,
     ) = StartableItemImporter(objectMapper, startableItemRepository)
+
+    @Bean
+    @ConditionalOnMissingBean(InvalidGroupListColumnSortExceptionMapper::class)
+    fun invalidGroupListColumnSortExceptionMapper() = InvalidGroupListColumnSortExceptionMapper()
+
+    @Bean
+    @ConditionalOnMissingBean(InvalidGroupSearchFieldExceptionMapper::class)
+    fun invalidGroupSearchFieldExceptionMapper() = InvalidGroupSearchFieldExceptionMapper()
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionGroupService::class)
+    fun caseDefinitionGroupService(
+        groupRepository: CaseDefinitionGroupRepository,
+        memberRepository: CaseDefinitionGroupMemberRepository,
+        listColumnRepository: GroupListColumnRepository,
+        listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
+        searchFieldRepository: GroupSearchFieldRepository,
+        searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+        caseDefinitionRepository: CaseDefinitionRepository,
+        authorizationService: AuthorizationService,
+        dataProviderService: DataProviderService
+    ): CaseDefinitionGroupService {
+        return CaseDefinitionGroupService(
+            groupRepository,
+            memberRepository,
+            listColumnRepository,
+            listColumnPathMappingRepository,
+            searchFieldRepository,
+            searchFieldPathMappingRepository,
+            caseDefinitionRepository,
+            authorizationService,
+            dataProviderService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionGroupExporter::class)
+    fun caseDefinitionGroupExporter(
+        objectMapper: ObjectMapper,
+        groupService: CaseDefinitionGroupService,
+    ) = CaseDefinitionGroupExporter(objectMapper, groupService)
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionGroupImporter::class)
+    fun caseDefinitionGroupImporter(
+        objectMapper: ObjectMapper,
+        groupRepository: CaseDefinitionGroupRepository,
+        memberRepository: CaseDefinitionGroupMemberRepository,
+        listColumnRepository: GroupListColumnRepository,
+        listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
+        searchFieldRepository: GroupSearchFieldRepository,
+        searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+        caseDefinitionRepository: CaseDefinitionRepository,
+        dataProviderService: DataProviderService,
+    ) = CaseDefinitionGroupImporter(
+        objectMapper,
+        groupRepository,
+        memberRepository,
+        listColumnRepository,
+        listColumnPathMappingRepository,
+        searchFieldRepository,
+        searchFieldPathMappingRepository,
+        caseDefinitionRepository,
+        dataProviderService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionGroupManagementResource::class)
+    fun caseDefinitionGroupManagementResource(
+        groupService: CaseDefinitionGroupService,
+        caseDefinitionService: CaseDefinitionService,
+        exportService: ExportService,
+        importService: ValtimoImportService,
+    ): CaseDefinitionGroupManagementResource {
+        return CaseDefinitionGroupManagementResource(
+            groupService,
+            caseDefinitionService,
+            exportService,
+            importService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(GroupCaseInstanceService::class)
+    fun groupCaseInstanceService(
+        groupRepository: CaseDefinitionGroupRepository,
+        memberRepository: CaseDefinitionGroupMemberRepository,
+        listColumnRepository: GroupListColumnRepository,
+        listColumnPathMappingRepository: GroupListColumnPathMappingRepository,
+        searchFieldRepository: GroupSearchFieldRepository,
+        searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
+        quickSearchRepository: GroupQuickSearchRepository,
+        documentSearchService: DocumentSearchService,
+        valueResolverService: ValueResolverService,
+        authorizationService: AuthorizationService,
+        caseDefinitionService: CaseDefinitionService,
+        internalCaseStatusService: InternalCaseStatusService
+    ): GroupCaseInstanceService {
+        return GroupCaseInstanceService(
+            groupRepository,
+            memberRepository,
+            listColumnRepository,
+            listColumnPathMappingRepository,
+            searchFieldRepository,
+            searchFieldPathMappingRepository,
+            quickSearchRepository,
+            documentSearchService,
+            valueResolverService,
+            authorizationService,
+            caseDefinitionService,
+            internalCaseStatusService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CaseDefinitionGroupResource::class)
+    fun caseDefinitionGroupResource(
+        groupCaseInstanceService: GroupCaseInstanceService,
+        caseDefinitionService: CaseDefinitionService
+    ): CaseDefinitionGroupResource {
+        return CaseDefinitionGroupResource(groupCaseInstanceService, caseDefinitionService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PinnedItemService::class)
+    fun pinnedItemService(
+        pinnedItemRepository: PinnedItemRepository,
+        caseDefinitionService: CaseDefinitionService,
+        groupRepository: CaseDefinitionGroupRepository,
+        authorizationService: AuthorizationService
+    ): PinnedItemService {
+        return PinnedItemService(
+            pinnedItemRepository,
+            caseDefinitionService,
+            groupRepository,
+            authorizationService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PinnedItemResource::class)
+    fun pinnedItemResource(
+        pinnedItemService: PinnedItemService
+    ): PinnedItemResource {
+        return PinnedItemResource(pinnedItemService)
+    }
 
     @Bean
     @ConditionalOnMissingBean(DataMigrationComponentDeployer::class)
