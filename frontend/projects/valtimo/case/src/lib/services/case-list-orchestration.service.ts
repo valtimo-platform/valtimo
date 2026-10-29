@@ -116,6 +116,7 @@ export class CaseListOrchestrationService {
   ]);
   private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
   private readonly _refreshHiddenColumns$ = new BehaviorSubject<null>(null);
+  private _groupTitle: string | null = null;
 
   public readonly noResultsMessage$ = new BehaviorSubject<CarbonListNoResultsMessage>(
     CASE_LIST_NO_RESULTS_MESSAGE
@@ -169,6 +170,7 @@ export class CaseListOrchestrationService {
       if (context.type === 'group') {
         return this.documentService.getCaseDefinitionGroup(context.key).pipe(
           tap(group => {
+            this._groupTitle = group.title;
             if (group.title) {
               this.pageTitleService.setCustomPageTitle(group.title, true);
             }
@@ -435,6 +437,10 @@ export class CaseListOrchestrationService {
       this._loadingDocumentItems$.next(false);
     })
   );
+
+  public get groupTitle(): string | null {
+    return this._groupTitle;
+  }
 
   constructor(
     private readonly assigneeService: CaseListAssigneeService,

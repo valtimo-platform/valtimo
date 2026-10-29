@@ -46,6 +46,7 @@ import {
   CaseListAssigneeService,
   CaseListCaseTagService,
   CaseListOrchestrationService,
+  CaseListOriginService,
   CaseListPaginationService,
   CaseListQuickSearchService,
   CaseListSearchService,
@@ -109,6 +110,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly bulkAssignService: CaseBulkAssignService,
     private readonly caseExportService: CaseExportService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
+    private readonly caseListOriginService: CaseListOriginService,
     private readonly listService: CaseListService,
     private readonly pageTitleService: PageTitleService,
     private readonly paginationService: CaseListPaginationService,
@@ -159,8 +161,18 @@ export class CaseListComponent implements OnInit, OnDestroy {
       const caseDefKey = item.caseDefinitionKey || context?.key;
       if (!caseDefKey) return;
 
+      if (context?.type === 'group') {
+        this.caseListOriginService.setGroupOrigin(
+          item.id,
+          context.key,
+          this.orchestration.groupTitle || context.key
+        );
+      } else {
+        this.caseListOriginService.clear();
+      }
+
       this.breadcrumbService.cacheQueryParams(
-        `/cases/${caseDefKey}`,
+        context?.type === 'group' ? `/groups/${context.key}` : `/cases/${caseDefKey}`,
         this.route.snapshot.queryParams
       );
 
@@ -216,9 +228,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   // --- Bulk assign ---
 
   public showAssignModal(): void {
-    this.selectedCaseIds$.next(
-      this.carbonList.selectedItems.map(document => document.id)
-    );
+    this.selectedCaseIds$.next(this.carbonList.selectedItems.map(document => document.id));
     this.showAssignModal$.next(true);
   }
 
@@ -226,10 +236,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.showAssignModal$.next(false);
     if (!bulkAssign?.assigneeId && !bulkAssign?.assignedTeamKey) return;
 
-    this.bulkAssignService.bulkAssign(bulkAssign.ids, bulkAssign.assigneeId, bulkAssign.assignedTeamKey).subscribe(() => {
-      this.carbonList.model.selectAll(false);
-      this.forceRefresh();
-    });
+    this.bulkAssignService
+      .bulkAssign(bulkAssign.ids, bulkAssign.assigneeId, bulkAssign.assignedTeamKey)
+      .subscribe(() => {
+        this.carbonList.model.selectAll(false);
+        this.forceRefresh();
+      });
   }
 
   // --- Actions ---
@@ -367,8 +379,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     const tabs = this.configService.config?.visibleCaseListTabs || DEFAULT_CASE_LIST_TABS;
 
     this.teamsApiService.getCurrentUserTeams().subscribe(teams => {
-      this.visibleCaseTabs =
-        teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
+      this.visibleCaseTabs = teams.length > 0 ? tabs : tabs.filter(tab => tab !== CaseListTab.TEAM);
     });
   }
 }

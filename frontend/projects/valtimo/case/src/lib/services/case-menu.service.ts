@@ -112,9 +112,7 @@ export class CaseMenuService {
             iconClass: 'icon mdi mdi-dot-circle',
             sequence: index,
             show: true,
-            count$: this._openCaseCounts$.pipe(
-              map(counts => counts.get(caseDefinition.caseDefinitionKey) ?? 0)
-            ),
+            count$: this.getOpenCaseCount(caseDefinition.caseDefinitionKey),
             testId: CASE_MENU_TEST_IDS.caseDefinitionItem,
           }))
       )
@@ -143,10 +141,17 @@ export class CaseMenuService {
         color: pinnedItem.color || PINNED_ITEM_FALLBACK_COLOR,
         sequence: index,
         show: true,
+        ...(pinnedItem.itemType === PinnedItemType.CASE_DEFINITION && {
+          count$: this.getOpenCaseCount(pinnedItem.itemKey),
+        }),
         testId: CASE_MENU_TEST_IDS.pinnedItem,
       }));
 
     return menuItems.length > 0 ? menuItems : [this.getPlaceholderMenuItem()];
+  }
+
+  private getOpenCaseCount(caseDefinitionKey: string): Observable<number> {
+    return this._openCaseCounts$.pipe(map(counts => counts.get(caseDefinitionKey) ?? 0));
   }
 
   private getPlaceholderMenuItem(): MenuItem {

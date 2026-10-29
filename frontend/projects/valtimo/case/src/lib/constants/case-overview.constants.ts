@@ -15,3 +15,6 @@
  */
 
 export const CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY = 'caseOverviewPinInfoDismissed';
+
+// Typical double-click window
+export const CASE_OVERVIEW_PIN_CLICK_GUARD_MS = 500;

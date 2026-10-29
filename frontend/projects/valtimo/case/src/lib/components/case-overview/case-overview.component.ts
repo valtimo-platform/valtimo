@@ -22,7 +22,11 @@ import {RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CaseDefinition, CaseDefinitionGroup, DocumentService} from '@valtimo/document';
 import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
-import {CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY, CASE_OVERVIEW_TEST_IDS} from '../../constants';
+import {
+  CASE_OVERVIEW_PIN_CLICK_GUARD_MS,
+  CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY,
+  CASE_OVERVIEW_TEST_IDS,
+} from '../../constants';
 import {PinnedItemType} from '../../models';
 import {PinnedItemsService} from '../../services';
 import {
@@ -68,6 +72,7 @@ export class CaseOverviewComponent {
   );
 
   private _pinToast: Notification | null = null;
+  private _lastPinToggleAt = 0;
 
   // Reloaded when the set of pinned items changes; sorting happens in the signals below.
   public readonly caseDefinitionGroups$: Observable<CaseDefinitionGroup[]> =
@@ -191,6 +196,11 @@ export class CaseOverviewComponent {
     name: string,
     color?: string
   ): void {
+    // Pinning re-sorts the list at once: a fast second click would hit the item moved under the cursor
+    const now = Date.now();
+    if (now - this._lastPinToggleAt < CASE_OVERVIEW_PIN_CLICK_GUARD_MS) return;
+    this._lastPinToggleAt = now;
+
     const pinning = !this.isPinned(itemType, itemKey);
     const section = itemType === PinnedItemType.CASE_DEFINITION_GROUP ? 'groups' : 'types';
 

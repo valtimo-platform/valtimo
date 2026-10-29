@@ -64,6 +64,7 @@
 </div>
 
 <valtimo-case-definition-group-create-modal
+  [editMode]="true"
   [group]="group$ | async"
   [open]="(showEditModal$ | async) ?? false"
   (closeEvent)="onCloseEditModal()"
@@ -88,6 +89,7 @@
     <button
       cdsButton="tertiary"
       [attr.data-test-id]="testIds.editButton"
+      [disabled]="(group$ | async) === null"
       [size]="(compactMode$ | async) ? 'sm' : 'md'"
       (click)="openEditModal()"
     >

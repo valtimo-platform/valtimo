@@ -62,9 +62,12 @@ export class CaseListPaginationService {
     });
   }
 
-  public pageSizeChange(newPageSize: number): void {
+  // The list emits the size as a string on init, so compare as numbers
+  public pageSizeChange(pageSize: number | string): void {
+    const newPageSize = Number(pageSize);
+
     this._pagination$.pipe(take(1)).subscribe(pagination => {
-      if (pagination && pagination.size !== newPageSize) {
+      if (pagination && Number(pagination.size) !== newPageSize) {
         const amountOfAvailablePages = Math.ceil(+pagination.collectionSize / newPageSize);
         const newPage =
           amountOfAvailablePages < pagination.page ? amountOfAvailablePages : pagination.page;

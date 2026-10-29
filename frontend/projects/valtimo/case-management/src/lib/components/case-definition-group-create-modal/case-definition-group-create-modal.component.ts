@@ -50,6 +50,7 @@ import {CASE_DEFINITION_GROUP_MODAL_TEST_IDS} from '../../constants';
   ],
 })
 export class CaseDefinitionGroupCreateModalComponent implements OnChanges {
+  @Input() editMode = false;
   @Input() open = false;
   @Input() group: Pick<CaseDefinitionGroupResponse, 'title' | 'description'> | null = null;
   @Output() closeEvent = new EventEmitter<boolean>();
@@ -70,7 +71,7 @@ export class CaseDefinitionGroupCreateModalComponent implements OnChanges {
   ) {}
 
   public get isEditMode(): boolean {
-    return !!this.group;
+    return this.editMode;
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
