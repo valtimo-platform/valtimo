@@ -30,3 +30,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Notificaties API | A changed **Authentication header** is now passed on to Open Notificaties on save, so notificaties keep arriving |
+| Widgets | A widget display condition with a number value, such as `0`, now compares numerically against a number field. The `${0}` workaround is no longer needed. |
