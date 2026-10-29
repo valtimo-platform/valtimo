@@ -48,7 +48,7 @@ const verzoekPluginSpecification: PluginSpecification = {
         'Configuratie van de Notificaties API die wordt gebruikt om te communiceren tussen GZAC en andere applicaties.',
       objectManagementIdTooltip:
         'Configuratie van het object dat wordt gebruikt om een verzoek op te slaan.',
-      processToStartTooltip: 'Het proces dat een zaak aanmaakt wanneer een notificatie binnenkomt.',
+      processToStartTooltip: 'Het proces dat een dossier aanmaakt wanneer een notificatie binnenkomt.',
       rsinTooltip: 'Dit nummer moet voldoen aan dezelfde specificaties als een BSN-nummer.',
       typeTooltip:
         "Het type van het verzoek dat wordt gebruikt om het object te identificeren. Bv. 'verzoek'.",

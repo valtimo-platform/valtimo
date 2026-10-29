@@ -465,7 +465,7 @@
         },
         "zaakdetails": {
           "title": "Zaakdetails sync object",
-          "notConfigured": "No portal sync configured for this case type.",
+          "notConfigured": "No portal sync configured for this case definition.",
           "objectManagementTitle": "Object management configuration",
           "caseDefinitionKey": "Case definition",
           "enabled": "Enabled",
