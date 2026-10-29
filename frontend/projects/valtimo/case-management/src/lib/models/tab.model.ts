@@ -46,4 +46,5 @@ export enum TabEnum {
   TASKS = 'tasks',
   HEADER = 'header',
   MIGRATION = 'migration',
+  CONFIGURATION = 'configuration',
 }

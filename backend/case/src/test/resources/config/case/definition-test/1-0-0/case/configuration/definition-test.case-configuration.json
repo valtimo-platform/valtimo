@@ -1,0 +1,10 @@
+[
+    {
+        "key": "notificationEmail",
+        "defaultValue": "${valtimo.case-configuration-test.notification-email}"
+    },
+    {
+        "key": "mailProvider",
+        "defaultValue": "smtp"
+    }
+]

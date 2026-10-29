@@ -21,6 +21,7 @@ export const CASE_MANAGEMENT_LIST_TEST_IDS = {
 
 export const CASE_MANAGEMENT_DETAIL_TEST_IDS = {
   tabs: 'caseManagementTabs',
+  configurationTab: 'caseManagementConfigurationTab',
 } as const;
 
 export const CASE_MANAGEMENT_UPLOAD_TEST_IDS = {
@@ -157,4 +158,23 @@ export const CASE_MANAGEMENT_TAGS_TEST_IDS = {
 
 export const CASE_MANAGEMENT_DOCUMENT_TEST_IDS = {
   downloadButton: 'caseManagementDocumentDownloadButton',
+} as const;
+
+export const CASE_MANAGEMENT_CONFIGURATION_TEST_IDS = {
+  list: 'caseConfigurationList',
+  addButton: 'caseConfigurationAddButton',
+} as const;
+
+export const CASE_MANAGEMENT_CONFIGURATION_MODAL_TEST_IDS = {
+  keyInput: 'caseConfigurationKeyInput',
+  defaultValueInput: 'caseConfigurationDefaultValueInput',
+  cancelButton: 'caseConfigurationCancelButton',
+  addConfirmButton: 'caseConfigurationAddConfirmButton',
+  saveButton: 'caseConfigurationSaveButton',
+} as const;
+
+export const CASE_MANAGEMENT_CONFIGURATION_ENVIRONMENT_VALUE_MODAL_TEST_IDS = {
+  valueInput: 'caseConfigurationEnvironmentValueInput',
+  cancelButton: 'caseConfigurationEnvironmentValueCancelButton',
+  saveButton: 'caseConfigurationEnvironmentValueSaveButton',
 } as const;
