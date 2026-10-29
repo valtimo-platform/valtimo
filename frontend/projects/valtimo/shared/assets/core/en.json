@@ -176,7 +176,7 @@
       "maxFilesReached": "The maximum number of files ({{maxFiles}}) has been reached. No more files can be uploaded.",
       "navigateToCaseAdmin": "Configure Zaak",
       "noZaakFoundTitle": "No Zaak found",
-      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
+      "noZaakFound": "No files could be retrieved because no Zaak was found for this case.",
       "noFilesTitle": "No files",
       "noFiles": "No files found for this case.",
       "uploadSuccessful": "Successfully uploaded document",
@@ -580,7 +580,7 @@
     "otherTasks": "Other tasks",
     "taskOpen": "Open",
     "taskCreated": "Created",
-    "noResultsMyTasks": "No tasks available for to this user.",
+    "noResultsMyTasks": "No tasks available for this user.",
     "noResultsOtherTasks": "No tasks available to other users.",
     "taskIsAssigned": "Task is assigned"
   },
@@ -1063,7 +1063,7 @@
       "finalizeDraftConfirmationModal": {
         "loadingText": "Finalizing draft version...",
         "title": "Finalize draft",
-        "description": "You are about to finalize {{caseDefinitionKey}} {{caseDefinitionVersionTag}} After finalization you can't make any more changes. Are you sure?",
+        "description": "You are about to finalize {{caseDefinitionKey}} {{caseDefinitionVersionTag}}. After finalization you can't make any more changes. Are you sure?",
         "confirm": "Finalize",
         "successMessage": "Draft finalized",
         "errorTitle": "Error",
@@ -1223,7 +1223,7 @@
         "tabNameLabel": "Tab name (optional)",
         "title": "Create new tab in {{documentDefinitionName}}",
         "uniqueKeyError": "The key for this tab must be unique.",
-        "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
+        "invalidKeyError": "The key for this tab can only contain letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
         "externalPlugin": "Plugins & Apps",
         "externalPluginDisabled": "There are no activated plugins or apps with a case tab, or they have all been added already.",
@@ -1987,7 +1987,7 @@
       },
       "list": {
         "noResultsTitle": "No upload fields",
-        "noResultsDescription": "Add a upload field to start"
+        "noResultsDescription": "Add an upload field to start"
       },
       "search": {
         "noResultsTitle": "No results",
@@ -2150,7 +2150,7 @@
     "noResults": {
       "title": "No processes found",
       "caseDescription": "Click here to create a process associated with this case",
-      "independentDescription": "Click here to create an standalone process"
+      "independentDescription": "Click here to create a standalone process"
     },
     "deleteModal": {
       "title": "Delete process",
@@ -2580,7 +2580,7 @@
     "show": "Show",
     "entries": "entries",
     "noMatchingItems": "No matching items found for ",
-    "noFieldDefinitions": "No fields definitions defined",
+    "noFieldDefinitions": "No field definitions defined",
     "noResults": "No result found",
     "showingResults": "Showing {{number}} of {{total}} results",
     "showingResult": "Showing {{number}} result",
@@ -3113,7 +3113,7 @@
     "close": "Close",
     "save": "Save object",
     "delete": "Delete object",
-    "deleteObjectConfirmation": "Are you sure you want to delete this object",
+    "deleteObjectConfirmation": "Are you sure you want to delete this object?",
     "messages": {
       "objectCreated": "Object created successfully",
       "objectCreationError": "An error occurred while creating the object",
@@ -3178,7 +3178,8 @@
     },
     "formioFormViewModelComponent": {
       "submitError": "Invalid submissions"
-    }
+    },
+    "Send": "Send"
   },
   "viewTypeConverter": {
     "Yes": "Yes",
@@ -3743,7 +3744,7 @@
     "checkPatches": "Verify patches",
     "migrate": "Migrate cases",
     "modalTitle": "Migrate cases",
-    "modalContent": "Are you sure you migrate the cases? Some changes can not be undone."
+    "modalContent": "Are you sure you want to migrate the cases? Some changes can not be undone."
   },
   "formFlow": {
     "title": "All form flows",

@@ -27,16 +27,16 @@ export const bigNumberSpecification: DisplayTypeSpecification = {
   translations: {
     nl: {
       title: 'Groot getal',
-      formTitle: 'Titel (vereist)',
+      formTitle: 'Titel (verplicht)',
       formTitleHelperText: 'De titel die wordt weergegeven in de widget',
       subtitle: 'Ondertitel',
-      subtitleHelperText: 'De ondertitel weergegeven in de widget',
+      subtitleHelperText: 'De ondertitel die wordt weergegeven in de widget',
       label: 'Label',
       labelHelperText: 'Het label dat wordt weergegeven in de widget',
       useKPI: 'KPI gebruiken',
-      lowSeverityThreshold: 'Lage ernstdrempel (vereist)',
-      mediumSeverityThreshold: 'Middelmatige ernstdrempel (vereist)',
-      highSeverityThreshold: 'Hoge ernstdrempel (vereist)',
+      lowSeverityThreshold: 'Lage ernstdrempel (verplicht)',
+      mediumSeverityThreshold: 'Gemiddelde ernstdrempel (verplicht)',
+      highSeverityThreshold: 'Hoge ernstdrempel (verplicht)',
     },
     en: {
       title: 'Big number',
