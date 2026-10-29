@@ -6,7 +6,7 @@ its document structure, linked processes, forms, and how it appears to end users
 
 From here you can configure:
 
-- **[General](general.md)** — Case handler settings and external start form
+- **[General](general.md)** — Case color, case handler settings and external start form
 - **[Processes](processes.md)** — BPMN process definitions linked to the case
 - **[Actions](actions.md)** — Startable items (processes and building blocks) users can trigger from a case
 - **[Decision tables](decision-tables.md)** — DMN decision tables for automated decisions
@@ -15,6 +15,8 @@ From here you can configure:
 - **[Forms](forms.md)** — Form definitions available for the case
 - **[Form flows](form-flows.md)** — Multi-step form sequences
 - **[Tasks](tasks/README.md)** — Task list column and search field configuration
+- **[Case groups](case-groups/README.md)** — Shared case lists that combine several case definitions
+- **[Cases overview & pinning](cases-overview.md)** — How end users find case types and case groups, and pin them to the sidebar
 - **[Case list](case-list/README.md)** — End-user case list columns and search fields
 - **[Case details](case-details/README.md)** — Tabs, statuses, tags, and header configuration
 - **[ZGW](zgw/README.md)** — Dutch government standards integration
@@ -44,6 +46,7 @@ Use the tabs to navigate between configuration areas
 
 The cases list shows all defined case types with their name, key, current version, and status.
 Cases marked "Needs configuration" have unresolved configuration issues that should be addressed.
+The **Case groups** tab next to it contains the [case groups](case-groups/README.md).
 
 ### Creating a case
 
