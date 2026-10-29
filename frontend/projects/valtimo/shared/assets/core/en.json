@@ -2801,13 +2801,13 @@
       "save": "Save configuration"
     },
     "permissions": {
-      "description": "By accepting these permissions you trust this plugin to act within your environment. A granted capability, endpoint, or event gives the plugin access to platform data and services — only proceed if you trust the plugin's source and have reviewed what it requests.",
+      "description": "By accepting these permissions you trust this plugin to act within your environment. The plugin calls the granted endpoints with its own service token, which is not limited by the permissions of the user working with it. It can therefore access all data those endpoints expose and may pass that data on to its external connections or show it to users who are not otherwise allowed to see it. Only proceed if you trust the plugin's source and have thoroughly reviewed its code and the permissions it requests.",
       "descriptionReadonly": "The following permissions were accepted when this configuration was activated. They define what the plugin is allowed to do within your environment.",
       "noEndpoints": "This plugin does not require any permissions.",
       "capabilitiesHeading": "Host capabilities",
       "capabilityHeading": "Capability",
       "capability": {
-        "gzac_api": "Make authenticated API calls to the GZAC instance (read and write case data, tasks, documents, etc.)",
+        "gzac_api": "Make API calls to the GZAC instance on the granted endpoints, using the plugin's own service token. These calls are not limited by the current user's permissions.",
         "http_request": "Make outbound HTTP requests to external services",
         "kv": "Store and retrieve persistent key–value data scoped to this configuration",
         "log": "Write structured log entries visible to administrators",
