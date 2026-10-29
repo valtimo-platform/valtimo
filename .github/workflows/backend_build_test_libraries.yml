@@ -149,7 +149,7 @@ jobs:
   unit-testing:
     needs: [determine-tests, check_cache, build_libraries]
     if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         unit_test_suite: ${{ fromJson(needs.determine-tests.outputs.unit_test_matrix) }}
@@ -170,7 +170,7 @@ jobs:
         run: ./gradlew ${{ matrix.unit_test_suite }}
 
   integration-testing:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [determine-tests, check_cache, build_libraries]
     if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
     strategy:
@@ -193,7 +193,7 @@ jobs:
         run: ./gradlew ${{ matrix.integration_test_suite }}
 
   integration-testing-mysql:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [determine-tests, check_cache, build_libraries]
     # Heavy job: run only when there is no build cache AND the run is either a
     # PR from a feature/* branch or one of the main integration branches. Regular
@@ -254,7 +254,7 @@ jobs:
           github.ref_name == 'next-major'
         )
       )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -272,7 +272,7 @@ jobs:
         run: ./gradlew ${{ matrix.security_test_suite }}
 
   cache-libraries-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     # Run if security-testing was either successful or skipped
     if: >
       always() &&
