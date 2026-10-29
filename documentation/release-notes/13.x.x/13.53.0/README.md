@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Access control | Opening a case no longer fails with an error when a permission condition checks the case's internal status and the case has no status yet |
