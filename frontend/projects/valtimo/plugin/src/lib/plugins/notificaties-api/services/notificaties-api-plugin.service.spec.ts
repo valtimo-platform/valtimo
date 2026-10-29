@@ -34,4 +34,24 @@ describe('NotificatiesApiPluginService', () => {
     );
     expect(options.headers.get(InterceptorSkip)).toBe('404');
   });
+
+  it('should build the default callback URL from the Valtimo API endpoint', () => {
+    const service = new NotificatiesApiPluginService(jasmine.createSpyObj('HttpClient', ['get']), {
+      config: {valtimoApi: {endpointUri: 'http://localhost:8080/api/'}},
+    } as ConfigService);
+
+    expect(service.getDefaultCallbackUrl()).toBe(
+      'http://localhost:8080/api/v1/notificatiesapi/callback'
+    );
+  });
+
+  it('should make the default callback URL absolute when the Valtimo API endpoint is relative', () => {
+    const service = new NotificatiesApiPluginService(jasmine.createSpyObj('HttpClient', ['get']), {
+      config: {valtimoApi: {endpointUri: '/api/'}},
+    } as ConfigService);
+
+    expect(service.getDefaultCallbackUrl()).toBe(
+      `${window.location.origin}/api/v1/notificatiesapi/callback`
+    );
+  });
 });

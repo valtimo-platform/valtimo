@@ -36,12 +36,11 @@ export const NOTIFICATIES_API_CONFIGURATION_TEST_IDS = {
   authenticationPluginConfiguration: 'notificatiesApiAuthenticationPluginConfiguration',
   abonnementRegistration: 'notificatiesApiAbonnementRegistration',
   authHeader: 'notificatiesApiAuthHeader',
-} as const;
-
-export const NOTIFICATIES_API_MANUAL_ABONNEMENT_TEST_IDS = {
-  panel: 'notificatiesApiManualAbonnement',
-  callbackUrl: 'notificatiesApiManualAbonnementCallbackUrl',
-  kanaal: 'notificatiesApiManualAbonnementKanaal',
+  manualAbonnement: 'notificatiesApiManualAbonnement',
+  manualAbonnementCallbackUrl: 'notificatiesApiManualAbonnementCallbackUrl',
+  manualAbonnementDefaultCallbackUrlTooltip:
+    'notificatiesApiManualAbonnementDefaultCallbackUrlTooltip',
+  manualAbonnementKanaal: 'notificatiesApiManualAbonnementKanaal',
 } as const;
 
 export const OPEN_NOTIFICATIES_CONFIGURATION_TEST_IDS = {

@@ -64,7 +64,6 @@ class NotificatiesApiManualAbonnementIT : BaseIntegrationTest() {
     @MockBean
     lateinit var pluginService: PluginService
 
-    // Swallows the startup registration task; this test is about the callback and the management endpoint.
     @MockBean(name = "notificatiesApiAbonnementRegistrationExecutor")
     lateinit var registrationExecutor: TaskExecutor
 
@@ -158,10 +157,10 @@ class NotificatiesApiManualAbonnementIT : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(authorities = [ADMIN])
-    fun `should show an admin the callback URL and the kanalen of a manual configuration only`() {
+    fun `should show an admin the kanalen of a manual configuration only`() {
         mockMvc.perform(get(MANUAL_ABONNEMENT_PATH, manualId))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.callbackUrl").value(MANUAL_CALLBACK_URL))
+            .andExpect(jsonPath("$.callbackUrl").doesNotExist())
             .andExpect(jsonPath("$.kanalen.length()").value(2))
             .andExpect(jsonPath("$.kanalen[0].naam").value("zaken"))
             .andExpect(jsonPath("$.kanalen[0].filters.actie").value("create"))
@@ -203,7 +202,7 @@ class NotificatiesApiManualAbonnementIT : BaseIntegrationTest() {
         NotificatiesApiPlugin(PluginConfigurationId.existingId(id), mock(), MapperSingleton.get(), pluginProcessLinkRepository)
             .apply {
                 url = URI("http://localhost:9999/notificaties/api/v1/")
-                callbackUrl = URI(if (registration == AbonnementRegistration.MANUAL) MANUAL_CALLBACK_URL else AUTOMATIC_CALLBACK_URL)
+                if (registration == AbonnementRegistration.AUTOMATIC) callbackUrl = URI(AUTOMATIC_CALLBACK_URL)
                 authenticationPluginConfiguration = mock()
                 abonnementRegistration = registration
                 authHeader = if (registration == AbonnementRegistration.MANUAL) SHARED_SECRET else null
@@ -232,7 +231,6 @@ class NotificatiesApiManualAbonnementIT : BaseIntegrationTest() {
     private companion object {
         const val SHARED_SECRET = "a-plain-shared-secret"
         const val MANUAL_ABONNEMENT_PATH = "/api/management/v1/notificatiesapi/configurations/{id}/manual-abonnement"
-        const val MANUAL_CALLBACK_URL = "https://gateway.example.com/api/v1/notificatiesapi/callback"
         const val AUTOMATIC_CALLBACK_URL = "http://localhost:8080/api/v1/notificatiesapi/callback"
         const val VERZOEK_OBJECT_TYPE = "http://localhost:8011/api/v2/objecttypes/1"
         val VERZOEK_KANAAL = Abonnement.Kanaal(

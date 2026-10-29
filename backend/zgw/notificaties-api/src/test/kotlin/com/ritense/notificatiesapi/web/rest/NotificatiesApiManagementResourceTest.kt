@@ -16,10 +16,13 @@
 
 package com.ritense.notificatiesapi.web.rest
 
+import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventAdminService
 import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventQueryService
+import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.notificatiesapi.web.dto.NotificatiesApiInboundEventResponse
+import com.ritense.notificatiesapi.web.dto.NotificatiesApiManualAbonnementResponse
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
@@ -28,6 +31,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -36,7 +40,8 @@ class NotificatiesApiManagementResourceTest {
 
     private val queryService: NotificatiesApiInboundEventQueryService = mock()
     private val adminService: NotificatiesApiInboundEventAdminService = mock()
-    private val resource = NotificatiesApiManagementResource(queryService, adminService)
+    private val notificatiesApiService: NotificatiesApiService = mock()
+    private val resource = NotificatiesApiManagementResource(queryService, adminService, notificatiesApiService)
 
     @Test
     fun `returns failed events page`() {
@@ -74,5 +79,38 @@ class NotificatiesApiManagementResourceTest {
         resource.retryFailedEvent(id)
 
         verify(adminService).retryFailedEvent(id)
+    }
+
+    @Test
+    fun `returns the manual abonnement of a manual configuration`() {
+        val configurationId = UUID.randomUUID()
+        val manualAbonnement = NotificatiesApiManualAbonnementResponse(
+            callbackUrl = "https://gzac.example.com/api/v1/notificatiesapi/callback",
+            kanalen = listOf(Abonnement.Kanaal(naam = "zaken", filters = mapOf("actie" to "create")))
+        )
+        doReturn(manualAbonnement).whenever(notificatiesApiService).getManualAbonnement(configurationId)
+
+        val response = resource.getManualAbonnement(configurationId)
+
+        assertEquals(HttpStatus.OK, response.statusCode)
+        assertEquals(manualAbonnement, response.body)
+    }
+
+    @Test
+    fun `returns not found when the configuration is not manual`() {
+        val configurationId = UUID.randomUUID()
+        doReturn(null).whenever(notificatiesApiService).getManualAbonnement(configurationId)
+
+        val response = resource.getManualAbonnement(configurationId)
+
+        assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
+    }
+
+    @Test
+    fun `returns not found without a notificaties api service`() {
+        val response = NotificatiesApiManagementResource(queryService, adminService)
+            .getManualAbonnement(UUID.randomUUID())
+
+        assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
     }
 }

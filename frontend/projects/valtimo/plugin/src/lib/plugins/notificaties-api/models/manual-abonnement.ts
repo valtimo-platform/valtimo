@@ -20,7 +20,7 @@ interface NotificatiesApiKanaal {
 }
 
 interface NotificatiesApiManualAbonnement {
-  callbackUrl: string;
+  callbackUrl: string | null;
   kanalen: Array<NotificatiesApiKanaal>;
 }
 

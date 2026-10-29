@@ -18,6 +18,7 @@ import {NO_ERRORS_SCHEMA, Pipe, PipeTransform} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TranslateService} from '@ngx-translate/core';
 import {Observable, of, Subject} from 'rxjs';
+import {NOTIFICATIES_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {
   NotificatiesApiAbonnementRegistration,
@@ -48,6 +49,7 @@ describe('NotificatiesApiConfigurationComponent', () => {
     notificatiesApiPluginService = jasmine.createSpyObj<NotificatiesApiPluginService>(
       'NotificatiesApiPluginService',
       {
+        getDefaultCallbackUrl: 'http://localhost:8080/api/v1/notificatiesapi/callback',
         getManualAbonnement: of(MANUAL_ABONNEMENT),
       }
     );
@@ -120,7 +122,7 @@ describe('NotificatiesApiConfigurationComponent', () => {
     expect(emittedConfigurations).toEqual([]);
   });
 
-  it('should save a manual configuration with a shared secret', () => {
+  it('should save a manual configuration with a shared secret and without a callback URL', () => {
     const manualConfiguration = {
       ...CONFIGURATION_WITH_AUTHENTICATION,
       abonnementRegistration: 'manual',
@@ -132,7 +134,37 @@ describe('NotificatiesApiConfigurationComponent', () => {
     component.formValueChange(manualConfiguration);
     save$.next();
 
-    expect(emittedConfigurations).toEqual([manualConfiguration]);
+    expect(emittedConfigurations).toEqual([{...manualConfiguration, callbackUrl: null}]);
+  });
+
+  it('should save a manual configuration that has no callback URL field', () => {
+    const {callbackUrl, ...withoutCallbackUrl} = CONFIGURATION_WITH_AUTHENTICATION;
+    const emittedConfigurations: NotificatiesApiConfig[] = [];
+    component.configuration.subscribe(configuration => emittedConfigurations.push(configuration));
+
+    component.formValueChange({
+      ...withoutCallbackUrl,
+      abonnementRegistration: 'manual',
+      authHeader: 'shared-secret',
+    } as NotificatiesApiConfig);
+    save$.next();
+
+    expect(emittedConfigurations.length).toBe(1);
+    expect(emittedConfigurations[0].callbackUrl).toBeNull();
+  });
+
+  it('should not save an automatic configuration without a callback URL', () => {
+    const emittedConfigurations: NotificatiesApiConfig[] = [];
+    component.configuration.subscribe(configuration => emittedConfigurations.push(configuration));
+
+    component.formValueChange({
+      ...CONFIGURATION_WITH_AUTHENTICATION,
+      callbackUrl: '',
+      abonnementRegistration: 'automatic',
+    });
+    save$.next();
+
+    expect(emittedConfigurations).toEqual([]);
   });
 
   it('should save an automatic configuration without a shared secret', () => {
@@ -214,10 +246,16 @@ class PluginTranslateStubPipe implements PipeTransform {
 
 describe('NotificatiesApiConfigurationComponent template', () => {
   let fixture: ComponentFixture<NotificatiesApiConfigurationComponent>;
+  const testIds = NOTIFICATIES_API_CONFIGURATION_TEST_IDS;
 
   const element = (selector: string): any => fixture.nativeElement.querySelector(selector);
+  const byTestId = (testId: string): HTMLElement[] =>
+    Array.from(fixture.nativeElement.querySelectorAll(`[data-test-id="${testId}"]`));
+
+  let manualAbonnementCallbackUrl: string | null;
 
   beforeEach(async () => {
+    manualAbonnementCallbackUrl = 'https://gateway.example.com/api/v1/notificatiesapi/callback';
     await TestBed.configureTestingModule({
       declarations: [NotificatiesApiConfigurationComponent, PluginTranslateStubPipe],
       providers: [
@@ -230,8 +268,18 @@ describe('NotificatiesApiConfigurationComponent template', () => {
         {
           provide: NotificatiesApiPluginService,
           useValue: {
+            getDefaultCallbackUrl: () => 'http://localhost:8080/api/v1/notificatiesapi/callback',
             getManualAbonnement: () =>
-              of({callbackUrl: 'https://gateway.example.com/callback', kanalen: []}),
+              of({
+                callbackUrl: manualAbonnementCallbackUrl,
+                kanalen: [
+                  {naam: 'zaken', filters: {actie: 'create'}},
+                  {
+                    naam: 'objecten',
+                    filters: {objectType: 'https://objecttypen.example.com/1', actie: 'update'},
+                  },
+                ],
+              }),
           },
         },
       ],
@@ -284,30 +332,59 @@ describe('NotificatiesApiConfigurationComponent template', () => {
 
     expect(authHeader.required).toBeFalse();
     expect(authHeader.title).toBe('authHeader');
-    expect(element('valtimo-notificaties-api-manual-abonnement')).toBeNull();
+    expect(element('v-input[name="callbackUrl"]').required).toBeTrue();
+    expect(byTestId(testIds.manualAbonnement).length).toBe(0);
   });
 
-  it('should require the shared secret and show the manual panel when manual', () => {
+  it('should require the shared secret, hide the callback URL and show the manual panel when manual', () => {
     render('manual');
     switchToManual();
 
     const authHeader = element('v-input[name="authHeader"]');
-    const panel = element('valtimo-notificaties-api-manual-abonnement');
     expect(authHeader.required).toBeTrue();
     expect(authHeader.title).toBe('sharedSecret');
-    expect(panel).not.toBeNull();
-    expect(panel.manualAbonnement).toEqual({
-      callbackUrl: 'https://gateway.example.com/callback',
-      kanalen: [],
-    });
+    expect(element('v-input[name="callbackUrl"]')).toBeNull();
+    expect(byTestId(testIds.manualAbonnement).length).toBe(1);
+  });
+
+  it('should show the default Valtimo callback URL when the manual configuration has none', () => {
+    manualAbonnementCallbackUrl = null;
+    render('manual');
+    switchToManual();
+
+    expect(byTestId(testIds.manualAbonnementCallbackUrl)[0].textContent.trim()).toBe(
+      'http://localhost:8080/api/v1/notificatiesapi/callback'
+    );
+    expect((byTestId(testIds.manualAbonnementDefaultCallbackUrlTooltip)[0] as any).tooltip).toBe(
+      'manualAbonnementDefaultCallbackUrlTooltip'
+    );
+  });
+
+  it('should show the callback URL and every kanaal with its filters of a saved manual configuration', () => {
+    render('manual');
+    switchToManual();
+
+    expect(byTestId(testIds.manualAbonnementCallbackUrl)[0].textContent.trim()).toBe(
+      'https://gateway.example.com/api/v1/notificatiesapi/callback'
+    );
+    expect(element('.manual-abonnement__list dt').textContent.trim()).toBe('callbackUrl');
+    expect(byTestId(testIds.manualAbonnementDefaultCallbackUrlTooltip).length).toBe(0);
+    const kanalen = byTestId(testIds.manualAbonnementKanaal);
+    expect(kanalen.length).toBe(2);
+    expect(kanalen[0].querySelector('strong').textContent.trim()).toBe('zaken');
+    expect(kanalen[0].textContent).toContain('actie = create');
+    expect(kanalen[1].querySelector('strong').textContent.trim()).toBe('objecten');
+    expect(kanalen[1].textContent).toContain('objectType = https://objecttypen.example.com/1');
+    expect(kanalen[1].textContent).toContain('actie = update');
+    expect(fixture.nativeElement.textContent).not.toContain('manualAbonnementSaveFirst');
   });
 
   it('should ask to save first when an automatic configuration is switched to manual', () => {
     render('automatic');
     switchToManual();
 
-    const panel = element('valtimo-notificaties-api-manual-abonnement');
-    expect(panel).not.toBeNull();
-    expect(panel.manualAbonnement).toBeNull();
+    expect(byTestId(testIds.manualAbonnement).length).toBe(1);
+    expect(byTestId(testIds.manualAbonnementCallbackUrl).length).toBe(0);
+    expect(fixture.nativeElement.textContent).toContain('manualAbonnementSaveFirst');
   });
 });

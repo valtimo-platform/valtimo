@@ -18,7 +18,9 @@ package com.ritense.notificatiesapi.web.rest
 
 import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventAdminService
 import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventQueryService
+import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.notificatiesapi.web.dto.NotificatiesApiInboundEventResponse
+import com.ritense.notificatiesapi.web.dto.NotificatiesApiManualAbonnementResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
@@ -35,9 +37,10 @@ import java.util.UUID
 @RestController
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
-class NotificatiesApiManagementResource(
+class NotificatiesApiManagementResource @JvmOverloads constructor(
     private val inboundEventQueryService: NotificatiesApiInboundEventQueryService,
-    private val inboundEventAdminService: NotificatiesApiInboundEventAdminService
+    private val inboundEventAdminService: NotificatiesApiInboundEventAdminService,
+    private val notificatiesApiService: NotificatiesApiService? = null
 ) {
 
     @EndpointDescription(
@@ -67,5 +70,16 @@ class NotificatiesApiManagementResource(
     fun retryFailedEvent(@PathVariable id: UUID): ResponseEntity<Void> {
         inboundEventAdminService.retryFailedEvent(id)
         return ResponseEntity.accepted().build()
+    }
+
+    @EndpointDescription(
+        en = "Get the kanalen and filters a manually registered Notificaties API abonnement must cover",
+        nl = "Kanalen en filters ophalen die een handmatig geregistreerd Notificaties API-abonnement moet bevatten",
+    )
+    @GetMapping("/v1/notificatiesapi/configurations/{configurationId}/manual-abonnement")
+    fun getManualAbonnement(
+        @PathVariable configurationId: UUID
+    ): ResponseEntity<NotificatiesApiManualAbonnementResponse> {
+        return ResponseEntity.ofNullable(notificatiesApiService?.getManualAbonnement(configurationId))
     }
 }

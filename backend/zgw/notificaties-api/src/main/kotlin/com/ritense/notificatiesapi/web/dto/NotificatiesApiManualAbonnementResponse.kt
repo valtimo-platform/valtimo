@@ -19,6 +19,6 @@ package com.ritense.notificatiesapi.web.dto
 import com.ritense.notificatiesapi.domain.Abonnement
 
 data class NotificatiesApiManualAbonnementResponse(
-    val callbackUrl: String,
+    val callbackUrl: String?,
     val kanalen: List<Abonnement.Kanaal>
 )

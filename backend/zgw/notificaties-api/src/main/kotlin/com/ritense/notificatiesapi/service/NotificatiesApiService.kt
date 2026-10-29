@@ -16,6 +16,7 @@
 
 package com.ritense.notificatiesapi.service
 
+import com.ritense.notificatiesapi.NotificatiesApiKanaalFilters
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
 import com.ritense.notificatiesapi.NotificatiesApiPlugin.Companion.ABONNEMENT_REGISTRATION_PROPERTY
 import com.ritense.notificatiesapi.NotificatiesApiPlugin.Companion.AUTH_HEADER_PROPERTY
@@ -24,6 +25,8 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
 import com.ritense.notificatiesapi.exception.AuthorizationException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
+import com.ritense.notificatiesapi.web.dto.NotificatiesApiManualAbonnementResponse
+import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -92,6 +95,19 @@ class NotificatiesApiService @JvmOverloads constructor(
         return service.findPluginConfigurations(NotificatiesApiPlugin::class.java) { properties ->
             properties.path(ABONNEMENT_REGISTRATION_PROPERTY).textValue() == AbonnementRegistration.MANUAL.value
         }.associate { it.id.id to it.properties?.path(AUTH_HEADER_PROPERTY)?.textValue() }
+    }
+
+    fun getManualAbonnement(configurationId: UUID): NotificatiesApiManualAbonnementResponse? {
+        val service = pluginService ?: return null
+        val configuration = service.findPluginConfiguration(PluginConfigurationId.existingId(configurationId))
+            ?: return null
+        val plugin = service.createInstance(configuration) as? NotificatiesApiPlugin ?: return null
+        if (!plugin.isManualAbonnementRegistration()) return null
+
+        return NotificatiesApiManualAbonnementResponse(
+            callbackUrl = plugin.callbackUrlOrNull()?.toASCIIString(),
+            kanalen = NotificatiesApiKanaalFilters.fromPluginService(service).manualKanaalFilters(configurationId)
+        )
     }
 
     private fun secretsMatch(expected: String, actual: String) =

@@ -63,7 +63,7 @@ class NotificatiesApiPlugin(
     lateinit var url: URI
 
     @Url
-    @PluginProperty(key = "callbackUrl", secret = false)
+    @PluginProperty(key = CALLBACK_URL_PROPERTY, secret = false, required = false)
     lateinit var callbackUrl: URI
 
     @PluginProperty(key = AUTH_HEADER_PROPERTY, secret = false, required = false)
@@ -75,11 +75,15 @@ class NotificatiesApiPlugin(
     @PluginProperty(key = ABONNEMENT_REGISTRATION_PROPERTY, secret = false, required = false)
     var abonnementRegistration: AbonnementRegistration = AbonnementRegistration.AUTOMATIC
 
-    fun isManualAbonnementRegistration() = abonnementRegistration == AbonnementRegistration.MANUAL
-
     @PluginEvent(invokedOn = [EventType.CREATE, EventType.UPDATE])
     fun validateAbonnementRegistration() {
-        if (isManualAbonnementRegistration() && authHeader.isNullOrBlank()) {
+        if (!isManualAbonnementRegistration()) {
+            if (callbackUrlOrNull() == null) {
+                throw ValidationException("A callback URL is required when the abonnement is registered automatically")
+            }
+            return
+        }
+        if (authHeader.isNullOrBlank()) {
             throw ValidationException("A shared secret (authHeader) is required when the abonnement is registered manually")
         }
     }
@@ -157,6 +161,13 @@ class NotificatiesApiPlugin(
     fun ensureKanalenExist(kanalen: Set<String>) = withLoggingContext(
         PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.toString()
     ) {
+        if (isManualAbonnementRegistration()) {
+            logger.info {
+                "Not creating Notificaties API kanalen '$kanalen': the abonnement of this configuration is registered " +
+                    "manually, so an administrator creates its kanalen in the Notificaties API"
+            }
+            return@withLoggingContext
+        }
         logger.debug { "Ensuring Notificaties API kanalen '$kanalen' exist" }
         val existingKanalen = client.getKanalen(authenticationPluginConfiguration, url).map { it.naam }
         kanalen
@@ -168,11 +179,16 @@ class NotificatiesApiPlugin(
             }
     }
 
+    fun isManualAbonnementRegistration() = abonnementRegistration == AbonnementRegistration.MANUAL
+
+    fun callbackUrlOrNull(): URI? = if (this::callbackUrl.isInitialized) callbackUrl else null
+
     companion object {
         private val logger = KotlinLogging.logger {}
         const val NOTIFICATIES_API_PLUGIN_DEFINITION_KEY = "notificatiesapi"
         const val RECEIVE_NOTIFICATIE_ACTION_KEY = "receive-notificatie"
         const val AUTH_HEADER_PROPERTY = "authHeader"
+        const val CALLBACK_URL_PROPERTY = "callbackUrl"
         const val ABONNEMENT_REGISTRATION_PROPERTY = "abonnementRegistration"
     }
 }

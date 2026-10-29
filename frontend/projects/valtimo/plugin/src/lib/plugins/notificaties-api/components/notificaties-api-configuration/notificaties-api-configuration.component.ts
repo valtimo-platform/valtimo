@@ -86,6 +86,7 @@ export class NotificatiesApiConfigurationComponent
       },
     ])
   );
+  public readonly defaultCallbackUrl = this.notificatiesApiPluginService.getDefaultCallbackUrl();
   public readonly manualRegistration$ = new BehaviorSubject<boolean>(false);
   public readonly manualAbonnement$: Observable<NotificatiesApiManualAbonnement | null> = defer(
     () =>
@@ -139,9 +140,10 @@ export class NotificatiesApiConfigurationComponent
     const valid = !!(
       formValue.configurationTitle &&
       formValue.url &&
-      formValue.callbackUrl &&
       formValue.authenticationPluginConfiguration &&
-      (formValue.abonnementRegistration !== 'manual' || formValue.authHeader?.trim())
+      (formValue.abonnementRegistration === 'manual'
+        ? formValue.authHeader?.trim()
+        : formValue.callbackUrl)
     );
 
     this.valid$.next(valid);
@@ -153,7 +155,11 @@ export class NotificatiesApiConfigurationComponent
       ?.pipe(switchMap(() => combineLatest([this.formValue$, this.valid$]).pipe(take(1))))
       .subscribe(([formValue, valid]) => {
         if (valid) {
-          this.configuration.emit(formValue);
+          this.configuration.emit(
+            formValue.abonnementRegistration === 'manual'
+              ? {...formValue, callbackUrl: null}
+              : formValue
+          );
         }
       });
   }

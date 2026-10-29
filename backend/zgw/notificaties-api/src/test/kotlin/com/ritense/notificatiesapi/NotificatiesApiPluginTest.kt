@@ -130,6 +130,38 @@ internal class NotificatiesApiPluginTest {
     }
 
     @Test
+    fun `should refuse an automatic registration without a callback URL`() {
+        val withoutCallbackUrl = NotificatiesApiPlugin(
+            pluginConfigurationId, notificatiesApiClient, MapperSingleton.get(), mock<PluginProcessLinkRepository>()
+        )
+
+        assertThat(withoutCallbackUrl.callbackUrlOrNull()).isNull()
+        assertThrows<ValidationException> { withoutCallbackUrl.validateAbonnementRegistration() }
+    }
+
+    @Test
+    fun `should accept a manual registration without a callback URL`() {
+        val withoutCallbackUrl = NotificatiesApiPlugin(
+            pluginConfigurationId, notificatiesApiClient, MapperSingleton.get(), mock<PluginProcessLinkRepository>()
+        ).apply {
+            abonnementRegistration = AbonnementRegistration.MANUAL
+            authHeader = "shared-secret"
+        }
+
+        assertDoesNotThrow { withoutCallbackUrl.validateAbonnementRegistration() }
+    }
+
+    @Test
+    fun `should not create kanalen for a manually registered configuration`() {
+        plugin.abonnementRegistration = AbonnementRegistration.MANUAL
+
+        plugin.ensureKanalenExist(setOf("objecten"))
+
+        verify(notificatiesApiClient, never()).getKanalen(any(), any())
+        verify(notificatiesApiClient, never()).createKanaal(any(), any(), any())
+    }
+
+    @Test
     fun `should accept an automatic registration without a shared secret`() {
         assertDoesNotThrow { plugin.validateAbonnementRegistration() }
     }

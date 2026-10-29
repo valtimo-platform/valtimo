@@ -40,9 +40,9 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
-      authHeader: 'Authenticatie header (herstart server vereist)',
+      authHeader: 'Authenticatie header',
       authHeaderTooltip:
-        'Secret van de authenticatie header voor de callback URL. Als niet ingevuld wordt een random secret gegenereerd. Het abonnement moet opnieuw worden aangemaakt (na een herstart van de applicatie).',
+        'Secret van de authenticatie header voor de callback URL. Als niet ingevuld blijft de sleutel van het bestaande abonnement in gebruik, of wordt een random secret gegenereerd. Een wijziging wordt bij het opslaan naar het abonnement gestuurd.',
       abonnementRegistration: 'Registratie abonnement',
       abonnementRegistrationTooltip:
         'Automatisch: GZAC registreert het abonnement in Open Notificaties. Handmatig: een beheerder maakt het abonnement aan in Open Notificaties, bijvoorbeeld omdat het verkeer via een gateway met certificaten loopt.',
@@ -53,6 +53,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
         'Vul hetzelfde geheim in bij het veld Auth van het abonnement in Open Notificaties. GZAC accepteert alleen notificaties met dit geheim. Gebruik een gewone waarde, zonder "Bearer ".',
       manualAbonnementDescription:
         'Het abonnement in Open Notificaties moet deze callback URL en deze kanalen met filters bevatten.',
+      manualAbonnementDefaultCallbackUrlTooltip:
+        'Deze voorgestelde callback URL kan onjuist zijn. Hij is afgeleid van het adres van deze browser en klopt niet achter een gateway.',
       manualAbonnementKanaal: 'Kanaal',
       manualAbonnementNoKanalen: 'Er zijn nog geen kanalen nodig voor deze configuratie.',
       manualAbonnementSaveFirst:
@@ -96,9 +98,9 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
-      authHeader: 'Authentication header (restart server required)',
+      authHeader: 'Authentication header',
       authHeaderTooltip:
-        'Secret value in Authentication header for the callback URL. When omitting this field, a random secret is generated. The abonnement needs to be recreated (after a restart of the application).',
+        'Secret value in Authentication header for the callback URL. When omitting this field, the key of the existing abonnement stays in use, or a random secret is generated. A change is sent to the abonnement when saving.',
       abonnementRegistration: 'Abonnement registration',
       abonnementRegistrationTooltip:
         'Automatic: GZAC registers the abonnement in Open Notificaties. Manual: an administrator creates the abonnement in Open Notificaties, for example because traffic goes through a gateway that checks certificates.',
@@ -109,6 +111,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
         'Enter the same secret in the Auth field of the abonnement in Open Notificaties. GZAC only accepts notifications that carry this secret. Use a plain value, without "Bearer ".',
       manualAbonnementDescription:
         'The abonnement in Open Notificaties must contain this callback URL and these channels with their filters.',
+      manualAbonnementDefaultCallbackUrlTooltip:
+        "This suggested callback URL might be wrong. It is derived from this browser's address and does not apply behind a gateway.",
       manualAbonnementKanaal: 'Channel',
       manualAbonnementNoKanalen: 'No channels are needed for this configuration yet.',
       manualAbonnementSaveFirst:

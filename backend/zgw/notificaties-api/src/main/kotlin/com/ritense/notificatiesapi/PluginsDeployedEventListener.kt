@@ -278,11 +278,15 @@ class PluginsDeployedEventListener(
             baseUrl = notificatiesApiPluginInstance.url
         )
 
-        // An administrator's abonnement for a manual configuration cannot be told apart from a stale one.
         if (kanaalFilters.hasManualConfiguration(notificatiesApiPluginInstance.url)) {
             logger.info {
                 "Not deleting untracked abonnementen in the Notificaties API, because a plugin configuration on the " +
                     "same URL registers its abonnement manually"
+            }
+        } else if (kanaalFilters.mayHaveManualAbonnementOn(notificatiesApiPluginInstance.callbackUrl)) {
+            logger.info {
+                "Not deleting untracked abonnementen in the Notificaties API, because a plugin configuration that " +
+                    "registers its abonnement manually has the same callback URL, or none"
             }
         } else {
             deleteStaleAbonnementen(notificatiesApiPluginInstance, abonnementenInApi, knownNotificatiesApiAbonnementLinks)
@@ -331,7 +335,8 @@ class PluginsDeployedEventListener(
         } else {
             val desiredCallbackUrl = notificatiesApiPluginInstance.callbackUrl.toASCIIString()
             val abonnementUnchanged = currentNotificatiesApiAbonnement.callbackUrl == desiredCallbackUrl &&
-                currentNotificatiesApiAbonnement.kanalen.toSet() == kanalen.toSet()
+                currentNotificatiesApiAbonnement.kanalen.toSet() == kanalen.toSet() &&
+                currentNotificatiesApiAbonnementLink!!.auth == authKey
 
             if (abonnementUnchanged) {
                 logger.debug {

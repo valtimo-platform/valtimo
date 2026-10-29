@@ -23,7 +23,6 @@ import com.ritense.plugin.service.PluginService
 import java.net.URI
 import java.util.UUID
 
-/** Attributes each kanaal filter to its Notificaties API configuration, keeping a manual one's filters out of automatic abonnementen. */
 class NotificatiesApiKanaalFilters(
     private val listeners: List<NotificatiesApiListener>
 ) {
@@ -39,7 +38,12 @@ class NotificatiesApiKanaalFilters(
         listeners.filter { !isManual(it.getNotificatiesApiPlugin()) }
 
     fun hasManualConfiguration(url: URI): Boolean =
-        manualConfigurations.any { it.url.toString().trimEnd('/') == url.toString().trimEnd('/') }
+        manualConfigurations.any { normalize(it.url) == normalize(url) }
+
+    fun mayHaveManualAbonnementOn(callbackUrl: URI): Boolean =
+        manualConfigurations.any { manual ->
+            manual.callbackUrlOrNull()?.let { normalize(it) == normalize(callbackUrl) } ?: true
+        }
 
     fun automaticKanaalFilters(listener: NotificatiesApiListener): List<Abonnement.Kanaal> =
         kanaalFilters(listener) { it?.id !in manualConfigurationIds }
@@ -59,6 +63,8 @@ class NotificatiesApiKanaalFilters(
         } else {
             listener.getKanaalFilters()
         }
+
+    private fun normalize(url: URI) = url.toString().trim().trimEnd('/')
 
     private fun isManual(plugin: NotificatiesApiPlugin) =
         plugin.notificatiesApiConfigurationId.id in manualConfigurationIds

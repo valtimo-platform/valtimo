@@ -250,7 +250,7 @@ class PluginsDeployedEventListenerTest {
         val existingAbonnementLink = NotificatiesApiAbonnementLink(
             notificatiesApiConfigurationId = configurationId,
             url = abonnementUrl,
-            auth = "test"
+            auth = "12345"
         )
         val existingAbonnement = Abonnement(
             url = abonnementUrl,
@@ -467,7 +467,7 @@ class PluginsDeployedEventListenerTest {
         val existingAbonnementLink = NotificatiesApiAbonnementLink(
             notificatiesApiConfigurationId = configurationId,
             url = abonnementUrl,
-            auth = "test"
+            auth = "12345"
         )
         val existingAbonnement = Abonnement(
             url = abonnementUrl,
@@ -800,11 +800,127 @@ class PluginsDeployedEventListenerTest {
         verifyNoInteractions(client)
     }
 
+    @Test
+    fun `should update abonnement when the auth key has changed`() {
+        val plugin = mockNotificatiesApiPlugin(AUTOMATIC_ID, manual = false)
+        whenever(plugin.authHeader).thenReturn("new-secret")
+        stubListeners(plugin)
+        val abonnementUrl = "$NOTIFICATIES_API_URL/abonnement/123"
+        whenever(client.getAbonnementen(any(), any())).thenReturn(
+            listOf(Abonnement(url = abonnementUrl, callbackUrl = CALLBACK_URL, auth = null, kanalen = emptyList()))
+        )
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.updateAbonnement(any(), any(), any(), any())).thenAnswer {
+            it.getArgument<Abonnement>(3).copy(url = abonnementUrl)
+        }
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(
+            listOf(
+                NotificatiesApiAbonnementLink(
+                    notificatiesApiConfigurationId = NotificatiesApiConfigurationId.existingId(AUTOMATIC_ID),
+                    url = abonnementUrl,
+                    auth = "old-key"
+                )
+            )
+        )
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        val updated = argumentCaptor<Abonnement>()
+        verify(client).updateAbonnement(any(), any(), eq("123"), updated.capture())
+        assertThat(updated.firstValue.auth).isEqualTo("new-secret")
+        val saved = argumentCaptor<NotificatiesApiAbonnementLink>()
+        verify(notificatiesApiAbonnementLinkRepository).save(saved.capture())
+        assertThat(saved.firstValue.auth).isEqualTo("new-secret")
+    }
+
+    @Test
+    fun `should not delete untracked abonnementen when a manual configuration on another URL has the same callback URL`(
+        output: CapturedOutput
+    ) {
+        val automaticPlugin = mockNotificatiesApiPlugin(AUTOMATIC_ID, manual = false)
+        val manualPlugin = mockNotificatiesApiPlugin(MANUAL_ID, manual = true)
+        whenever(manualPlugin.url).thenReturn(URI("http://gateway.example.com/notificaties"))
+        whenever(manualPlugin.callbackUrlOrNull()).thenReturn(URI("$CALLBACK_URL/"))
+        stubListeners(automaticPlugin, manualPlugin)
+        val administratorsAbonnement = Abonnement(
+            url = "$NOTIFICATIES_API_URL/abonnement/admin",
+            callbackUrl = CALLBACK_URL,
+            auth = null,
+            kanalen = emptyList()
+        )
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(administratorsAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createAbonnement(any(), any(), any())).thenAnswer {
+            it.getArgument<Abonnement>(2).copy(url = "$NOTIFICATIES_API_URL/abonnement/automatic")
+        }
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(emptyList())
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client, never()).deleteAbonnement(any(), any(), any())
+        verify(client).createAbonnement(any(), any(), any())
+        assertThat(output).contains("registers its abonnement manually has the same callback URL, or none")
+    }
+
+    @Test
+    fun `should not delete untracked abonnementen when a manual configuration on another URL has no callback URL`(
+        output: CapturedOutput
+    ) {
+        val automaticPlugin = mockNotificatiesApiPlugin(AUTOMATIC_ID, manual = false)
+        val manualPlugin = mockNotificatiesApiPlugin(MANUAL_ID, manual = true)
+        whenever(manualPlugin.url).thenReturn(URI("http://gateway.example.com/notificaties"))
+        whenever(manualPlugin.callbackUrlOrNull()).thenReturn(null)
+        stubListeners(automaticPlugin, manualPlugin)
+        val untrackedAbonnement = Abonnement(
+            url = "$NOTIFICATIES_API_URL/abonnement/admin",
+            callbackUrl = CALLBACK_URL,
+            auth = null,
+            kanalen = emptyList()
+        )
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(untrackedAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createAbonnement(any(), any(), any())).thenAnswer {
+            it.getArgument<Abonnement>(2).copy(url = "$NOTIFICATIES_API_URL/abonnement/automatic")
+        }
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(emptyList())
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client, never()).deleteAbonnement(any(), any(), any())
+        assertThat(output).contains("registers its abonnement manually has the same callback URL, or none")
+    }
+
+    @Test
+    fun `should delete untracked abonnementen when a manual configuration on another URL has another callback URL`() {
+        val automaticPlugin = mockNotificatiesApiPlugin(AUTOMATIC_ID, manual = false)
+        val manualPlugin = mockNotificatiesApiPlugin(MANUAL_ID, manual = true)
+        whenever(manualPlugin.url).thenReturn(URI("http://gateway.example.com/notificaties"))
+        whenever(manualPlugin.callbackUrlOrNull()).thenReturn(URI("https://gateway.example.com/callback"))
+        stubListeners(automaticPlugin, manualPlugin)
+        val staleAbonnement = Abonnement(
+            url = "$NOTIFICATIES_API_URL/abonnement/stale",
+            callbackUrl = CALLBACK_URL,
+            auth = null,
+            kanalen = emptyList()
+        )
+        whenever(client.getAbonnementen(any(), any())).thenReturn(listOf(staleAbonnement))
+        whenever(client.getKanalen(any(), any())).thenReturn(emptyList())
+        whenever(client.createAbonnement(any(), any(), any())).thenAnswer {
+            it.getArgument<Abonnement>(2).copy(url = "$NOTIFICATIES_API_URL/abonnement/automatic")
+        }
+        whenever(notificatiesApiAbonnementLinkRepository.findAll()).thenReturn(emptyList())
+
+        pluginsDeployedEventListener.registerAbonnementenForNotificatiesApiPlugins()
+
+        verify(client).deleteAbonnement(any(), any(), eq("stale"))
+    }
+
     private fun mockNotificatiesApiPlugin(id: UUID, manual: Boolean): NotificatiesApiPlugin {
         val plugin: NotificatiesApiPlugin = mock()
         val authentication: NotificatiesApiAuthentication = mock()
         whenever(plugin.url).thenReturn(URI(NOTIFICATIES_API_URL))
         whenever(plugin.callbackUrl).thenReturn(URI(CALLBACK_URL))
+        whenever(plugin.callbackUrlOrNull()).thenReturn(URI(CALLBACK_URL))
         whenever(plugin.authenticationPluginConfiguration).thenReturn(authentication)
         whenever(plugin.notificatiesApiConfigurationId).thenReturn(NotificatiesApiConfigurationId.existingId(id))
         whenever(plugin.isManualAbonnementRegistration()).thenReturn(manual)

@@ -8,7 +8,12 @@ Release date: 04-11-2026
 
 ### Manual abonnement registration for the Notificaties API
 
-A Notificaties API plugin configuration can now be set to manual abonnement registration, for environments where traffic to Valtimo goes through a gateway that checks certificates. An administrator then creates the abonnement in Open Notificaties with a shared secret, and the configuration shows which channels and filters it must contain.
+Valtimo can now receive notificaties from Open Notificaties when all traffic passes through a
+gateway that checks certificates. Set a Notificaties API configuration to **Manual** abonnement
+registration and create the abonnement in Open Notificaties yourself: Valtimo shows the callback
+URL, channels and filters it needs. See the
+[Notificaties API documentation](../../../configuration-guides/plugins/notificaties-api.md) for
+details.
 
 ---
 
@@ -24,4 +29,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Notificaties API | A changed **Authentication header** is now passed on to Open Notificaties on save, so notificaties keep arriving |
