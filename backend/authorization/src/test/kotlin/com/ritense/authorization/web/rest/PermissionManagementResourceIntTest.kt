@@ -79,4 +79,23 @@ class PermissionManagementResourceIntTest : BaseIntegrationTest() {
             .andExpect(jsonPath("$[0].roleKey", equalTo("ROLE_USER")))
     }
 
+    @Test
+    fun `should return context fields for a context-bearing role`() {
+        mockMvc.perform(
+            post("/api/management/v1/permissions/search")
+                .characterEncoding(UTF_8)
+                .content(convertObjectToJsonBytes(SearchPermissionsRequest(listOf("EXPRESSION_CONTAINS_ROLE_FOR_CONTEXT"))))
+                .contentType(APPLICATION_JSON_VALUE)
+                .accept(APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$[0].contextResourceType", equalTo("com.ritense.authorization.testimpl.TestDocument")))
+            .andExpect(jsonPath("$[0].contextConditions[0].type", equalTo("field")))
+            .andExpect(jsonPath("$[0].contextConditions[0].field", equalTo("name")))
+            .andExpect(jsonPath("$[0].contextConditions[0].operator", equalTo("in")))
+            .andExpect(jsonPath("$[0].contextConditions[0].value[0]", equalTo("loan")))
+            .andExpect(jsonPath("$[0].contextConditions[0].value[1]", equalTo("gift")))
+    }
+
 }

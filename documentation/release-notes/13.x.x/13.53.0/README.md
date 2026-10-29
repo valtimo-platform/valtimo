@@ -25,3 +25,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Widgets | A widget display condition with a number value, such as `0`, now compares numerically against a number field. The `${0}` workaround is no longer needed. |
+| Access control | Exporting a role now includes context-scoped permission fields. |
