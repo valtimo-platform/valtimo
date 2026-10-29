@@ -26,11 +26,11 @@ export const donutSpecification: DisplayTypeSpecification = {
   height: 2,
   translations: {
     nl: {
-      title: 'Donut-diagram',
-      formTitle: 'Titel (vereist)',
+      title: 'Donutdiagram',
+      formTitle: 'Titel (verplicht)',
       formTitleHelperText: 'De titel die wordt weergegeven in de widget',
       subtitle: 'Ondertitel',
-      subtitleHelperText: 'De ondertitel weergegeven in de widget',
+      subtitleHelperText: 'De ondertitel die wordt weergegeven in de widget',
       label: 'Label',
       labelHelperText: 'Het label dat wordt weergegeven in de widget',
     },

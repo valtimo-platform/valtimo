@@ -53,59 +53,59 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'API voor opslag en ontsluiting van zaaktype-catalogi, zaaktypen en onderliggende typen.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
-      authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+        'De naam van de huidige pluginconfiguratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
+      authenticationPluginConfiguration: 'Configuratie authenticatieplugin',
       'get-statustypen': 'Statustypen opvragen',
       getStatustypenInformation:
-        'De Statustypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+        'De statustypen die bij het zaaktype horen, worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-statustype': 'Statustype opvragen',
       getStatustypeInformation:
-        'De statustype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
+        'Het statustype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
       statustype: 'Statustype',
       statustypeTooltip: 'Generieke aanduiding van de aard van een status.',
       processVariable: 'Naam procesvariabele',
       processVariableTooltip:
-        'Nadat de statustype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+        'Nadat het statustype is opgehaald, wordt het opgeslagen in een procesvariabele met deze naam.',
       'get-besluittype': 'Besluittype opvragen',
       getBesluittypeInformation:
         'Het besluittype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
       besluittype: 'Besluittype',
       besluittypeTooltip: 'Omschrijving van de aard van het besluit.',
       besluitProcessVariableTooltip:
-        'Nadat de besluittype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+        'Nadat het besluittype is opgehaald, wordt het opgeslagen in een procesvariabele met deze naam.',
       'get-resultaattypen': 'Resultaattypen opvragen',
       getResultaattypenInformation:
-        'De Resultaattypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+        'De resultaattypen die bij het zaaktype horen, worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-resultaattype': 'Resultaattype opvragen',
       getResultaattypeInformation:
         'Het resultaattype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
       resultaattype: 'Resultaattype',
       resultaattypeTooltip: 'Omschrijving van de aard van het resultaat.',
       reslutaatProcessVariableTooltip:
-        'Nadat de resultaattype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+        'Nadat het resultaattype is opgehaald, wordt het opgeslagen in een procesvariabele met deze naam.',
       'get-eigenschap': 'Eigenschap opvragen',
       getEigenschapInformation:
         'De eigenschap wordt opgehaald en daarna opgeslagen in een procesvariabele',
       eigenschap: 'Eigenschap',
-      eigenschapTooltip: 'Naam van de aard van het eigenschaap.',
+      eigenschapTooltip: 'Naam van de aard van de eigenschap.',
       eigenschapProcessVariableTooltip:
         'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
       zaaktypeUrl: 'Zaaktype URL',
       zaaktypeUrlTooltip:
-        'Specificeer hier de URL van het betreffende Zaaktype indien deze afwijkt van de aan het Dossier gekoppelde Zaak',
+        'Voer hier de URL van het betreffende zaaktype in als dit afwijkt van het zaaktype van de zaak die aan het dossier is gekoppeld',
       'get-informatieobjecttype': 'Informatieobjecttype opvragen',
       getInformatieobjecttypeInformation:
         'Het informatieobjecttype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
       informatieobjecttype: 'Informatieobjecttype',
       informatieobjecttypeTooltip: 'Omschrijving van het informatieobjecttype.',
       informatieobjecttypeProcessVariableTooltip:
-        'Nadat het informatieobjecttype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+        'Nadat het informatieobjecttype is opgehaald, wordt het opgeslagen in een procesvariabele met deze naam.',
       'get-informatieobjecttypen': 'Informatieobjecttypen opvragen',
       getInformatieobjecttypenInformation:
-        'De Informatieobjecttypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+        'De informatieobjecttypen die bij het zaaktype horen, worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-roltypen': 'Roltypen opvragen',
       getRoltypenInformation:
-        'De Roltypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+        'De roltypen die bij het zaaktype horen, worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-roltype': 'Roltype opvragen',
       getRoltypeInformation:
         'Het roltype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
