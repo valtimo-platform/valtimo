@@ -209,6 +209,22 @@
           </cds-dropdown>
         </cds-label>
       </div>
+
+      <div class="cds--text-input__field-wrapper">
+        <div class="checkbox-with-tooltip">
+          <cds-checkbox
+            data-testid="task-management-column-defaultVisible"
+            formControlName="defaultVisible"
+            [disabled]="obs.disabled"
+            >{{ 'listColumn.defaultVisibleField' | translate }}
+          </cds-checkbox>
+
+          <v-tooltip-icon
+            [tooltip]="'listColumn.defaultVisibleTooltip' | translate"
+            [disabled]="obs.disabled"
+          ></v-tooltip-icon>
+        </div>
+      </div>
     </form>
 
     <cds-modal-footer>
