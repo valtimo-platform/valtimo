@@ -1,0 +1,42 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+enum REFERENCE_UPDATE_STEP {
+  SOURCE = 'source',
+  TARGET = 'target',
+  CHAINS = 'chains',
+  DIFFERENCES = 'differences',
+  REVIEW = 'review',
+}
+
+const REFERENCE_UPDATE_STEPS = [
+  REFERENCE_UPDATE_STEP.SOURCE,
+  REFERENCE_UPDATE_STEP.TARGET,
+  REFERENCE_UPDATE_STEP.CHAINS,
+  REFERENCE_UPDATE_STEP.DIFFERENCES,
+  REFERENCE_UPDATE_STEP.REVIEW,
+];
+
+const REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS = 300;
+
+const REFERENCE_UPDATE_INPUT_SOURCE_PREFIXES = ['doc:', 'case:'];
+
+export {
+  REFERENCE_UPDATE_INPUT_SOURCE_PREFIXES,
+  REFERENCE_UPDATE_PREVIEW_DEBOUNCE_MS,
+  REFERENCE_UPDATE_STEP,
+  REFERENCE_UPDATE_STEPS,
+};

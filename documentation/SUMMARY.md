@@ -54,6 +54,7 @@
     * [General](configuration-guides/building-blocks/general.md)
     * [Document](configuration-guides/building-blocks/document.md)
     * [Migration](configuration-guides/building-blocks/migration.md)
+    * [References](configuration-guides/building-blocks/references.md)
     * [Processes](configuration-guides/building-blocks/processes.md)
     * [Forms](configuration-guides/building-blocks/forms.md)
     * [Form flows](configuration-guides/building-blocks/form-flows.md)

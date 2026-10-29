@@ -20,4 +20,6 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
-interface BuildingBlockProcessLinkRepository : JpaRepository<BuildingBlockProcessLink, UUID>
+interface BuildingBlockProcessLinkRepository : JpaRepository<BuildingBlockProcessLink, UUID> {
+    fun findAllByBuildingBlockDefinitionIdKey(buildingBlockDefinitionKey: String): List<BuildingBlockProcessLink>
+}

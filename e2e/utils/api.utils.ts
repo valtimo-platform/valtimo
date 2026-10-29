@@ -167,6 +167,22 @@ export async function apiPut<T = unknown>(
   return parseBody<T>(res);
 }
 
+type Multipart = NonNullable<Parameters<APIRequestContext['put']>[1]>['multipart'];
+
+export async function apiPutMultipart<T = unknown>(
+  url: string,
+  multipart: Multipart,
+): Promise<T> {
+  let ctx = await getContext();
+  let res = await send('PUT', () => ctx.put(url, { multipart }));
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await send('PUT', () => ctx.put(url, { multipart }));
+  }
+  await assertOk('PUT', url, res);
+  return parseBody<T>(res);
+}
+
 export async function apiPatch<T = unknown>(
   url: string,
   body: unknown,

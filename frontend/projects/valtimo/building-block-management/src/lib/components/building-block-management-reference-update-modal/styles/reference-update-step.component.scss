@@ -1,0 +1,169 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.valtimo-building-block-reference-update {
+  &__selectors {
+    display: grid;
+    // No Carbon token for column width — stacks the combo boxes on narrow screens
+    grid-template-columns: repeat(auto-fit, minmax(256px, 1fr));
+    gap: var(--cds-spacing-05);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-05);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__subheading {
+    margin: 0;
+    font-size: var(--cds-heading-compact-01-font-size);
+    font-weight: var(--cds-heading-compact-01-font-weight);
+    line-height: var(--cds-heading-compact-01-line-height);
+    letter-spacing: var(--cds-heading-compact-01-letter-spacing);
+  }
+
+  &__description,
+  &__secondary {
+    margin: 0;
+    color: var(--cds-text-secondary);
+  }
+
+  &__version,
+  &__path,
+  &__path-item,
+  &__chain-header,
+  &__chain-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__path {
+    row-gap: var(--cds-spacing-02);
+  }
+
+  &__chain-header {
+    justify-content: space-between;
+  }
+
+  &__chain-details .cds--tag {
+    max-inline-size: none;
+  }
+
+  &__chain {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+    padding: var(--cds-spacing-05);
+    border: 1px solid var(--cds-border-subtle);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-04);
+  }
+
+  // Rows use display: contents so every row shares the table's columns
+  &__mapping-table {
+    display: grid;
+    align-items: center;
+    column-gap: var(--cds-spacing-04);
+    row-gap: var(--cds-spacing-03);
+
+    &--input {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+    }
+
+    &--output {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto auto;
+    }
+  }
+
+  &__mapping-header,
+  &__mapping-row {
+    display: contents;
+  }
+
+  &__mapping-header > span {
+    font-size: var(--cds-label-01-font-size);
+    line-height: var(--cds-label-01-line-height);
+    letter-spacing: var(--cds-label-01-letter-spacing);
+    color: var(--cds-text-secondary);
+  }
+
+  &__mapping-value {
+    overflow-wrap: anywhere;
+    font-family: var(--cds-code-01-font-family);
+    font-size: var(--cds-code-01-font-size);
+    line-height: var(--cds-code-01-line-height);
+  }
+
+  &__mapping-row--dropped &__mapping-value {
+    color: var(--cds-text-secondary);
+    text-decoration: line-through;
+  }
+
+  &__mapping-arrow {
+    color: var(--cds-icon-secondary);
+  }
+
+  &__mapping-note {
+    grid-column: 1 / -1;
+    margin-top: calc(-1 * var(--cds-spacing-02));
+    font-size: var(--cds-helper-text-01-font-size);
+    line-height: var(--cds-helper-text-01-line-height);
+    letter-spacing: var(--cds-helper-text-01-letter-spacing);
+    color: var(--cds-text-helper);
+  }
+
+  &__required {
+    color: var(--cds-text-error);
+  }
+
+  &__bullets {
+    margin: 0;
+    list-style: disc;
+    padding-inline-start: var(--cds-spacing-06);
+  }
+
+  &__error {
+    font-size: var(--cds-helper-text-01-font-size);
+    line-height: var(--cds-helper-text-01-line-height);
+    letter-spacing: var(--cds-helper-text-01-letter-spacing);
+    color: var(--cds-text-error);
+  }
+}
+
+// Carbon caps inline notifications at a narrow width; fill the modal instead
+cds-inline-notification {
+  max-inline-size: none;
+}
+
+.cds-tag--no-margin {
+  margin: 0;
+}

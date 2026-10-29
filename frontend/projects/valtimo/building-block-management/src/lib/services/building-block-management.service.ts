@@ -23,6 +23,8 @@ export class BuildingBlockManagementService {
   public readonly showCreateModal$ = this._showCreateModal$.asObservable();
   private readonly _showUploadModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = this._showUploadModal$.asObservable();
+  private readonly _showReferenceUpdateModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showReferenceUpdateModal$ = this._showReferenceUpdateModal$.asObservable();
   private readonly _usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly usedKeys$ = this._usedKeys$.asObservable();
   private readonly _reload$ = new BehaviorSubject<null>(null);
@@ -40,6 +42,13 @@ export class BuildingBlockManagementService {
   }
   public hideUploadModal(): void {
     this._showUploadModal$.next(false);
+  }
+
+  public showReferenceUpdateModal(): void {
+    this._showReferenceUpdateModal$.next(true);
+  }
+  public hideReferenceUpdateModal(): void {
+    this._showReferenceUpdateModal$.next(false);
   }
 
   public setUsedKeys(keys: string[]): void {

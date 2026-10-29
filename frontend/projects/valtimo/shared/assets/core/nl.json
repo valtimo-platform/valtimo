@@ -4379,6 +4379,122 @@
   },
   "buildingBlockManagement": {
     "title": "Bouwblokken",
+    "referenceUpdate": {
+      "title": "Referenties bijwerken",
+      "button": "Referenties bijwerken",
+      "draft": "Concept",
+      "final": "Definitief",
+      "none": "Geen",
+      "reasons": {
+        "CYCLE": "De keten bevat een kringloop van bouwblokken die naar elkaar verwijzen.",
+        "SELF_REFERENCE": "Bouwblok {{container}} zou bouwblok {{targetKey}} aanroepen, en dat is zichzelf.",
+        "TARGET_USES_CONTAINER": "Bouwblok {{target}} gebruikt {{container}}, dus die naar {{target}} laten verwijzen geeft een kringloop.",
+        "ALREADY_LINKS_TARGET": "{{container}} is al gekoppeld aan bouwblok {{targetKey}}.",
+        "DRAFTS_NOT_ALLOWED": "Deze omgeving staat geen concepten toe, dus er kan geen concept worden aangemaakt of gewijzigd.",
+        "DRAFT_MISSING_REFERENCE": "Openstaand concept {{draft}} bevat de verwijzing {{location}} naar bouwblok {{buildingBlockKey}} niet meer; pas dat concept zelf aan.",
+        "CONFLICT_SECOND_DRAFT": "Botst met een andere geselecteerde verwijzing: beide zouden een nieuw concept van {{key}} aanmaken. Werk één versie tegelijk bij.",
+        "CONFLICT_CHILD": "Botst met een andere geselecteerde verwijzing: {{location}} in {{container}} zou naar zowel {{first}} als {{second}} verwijzen.",
+        "CONFLICT_INPUT": "Botst met een andere geselecteerde verwijzing: invoer {{input}} van {{location}} in {{container}} krijgt twee verschillende bronnen.",
+        "CONFLICT_PLUGIN": "Botst met een andere geselecteerde verwijzing: plugin {{plugin}} van {{location}} in {{container}} krijgt twee verschillende configuraties."
+      },
+      "containerType": {
+        "CASE": "Dossier",
+        "BUILDING_BLOCK": "Bouwblok"
+      },
+      "steps": {
+        "source": "Bron",
+        "target": "Doel",
+        "chains": "Referenties",
+        "differences": "Input & Sync",
+        "review": "Controleren"
+      },
+      "source": {
+        "description": "Selecteer het bouwblok en de versie waarvan je de verwijzingen wilt bijwerken. Alleen versies waarnaar ergens verwezen wordt staan in de lijst.",
+        "keyLabel": "Bouwblok",
+        "keyPlaceholder": "Zoek een bouwblok",
+        "versionLabel": "Bronversie",
+        "versionPlaceholder": "Zoek een versie",
+        "emptyTitle": "Niets bij te werken",
+        "emptyMessage": "Geen enkele bouwblokversie wordt gebruikt door een dossier of een ander bouwblok."
+      },
+      "target": {
+        "description": "Selecteer het bouwblok en de versie die {{key}} {{versionTag}} moet vervangen. Dit kan een oudere of een nieuwere versie zijn, of een ander bouwblok.",
+        "keyLabel": "Doelbouwblok",
+        "keyPlaceholder": "Zoek een bouwblok",
+        "label": "Doelversie",
+        "placeholder": "Zoek een versie",
+        "emptyTitle": "Geen versie",
+        "emptyMessage": "Dit bouwblok heeft geen andere versie om naar over te stappen."
+      },
+      "chains": {
+        "description": "Selecteer welke referenties van {{key}} {{sourceVersionTag}} naar {{targetKey}} {{targetVersionTag}} bijgewerkt moeten worden. Referenties via een definitieve versie maken nieuwe concepten aan en zijn standaard niet geselecteerd.",
+        "via": "via",
+        "refersTo": "verwijst naar",
+        "inActivity": "(activiteit {{activityId}})",
+        "willBeUpdatedTo": "en gaat over naar",
+        "empty": "Geen referenties gevonden.",
+        "requiresDrafts": "Maakt nieuwe concepten van definitieve versies",
+        "modifiesExistingDraft": "Wijzigt bestaand concept {{key}} {{versionTag}} (gebaseerd op {{basedOn}})",
+        "modifiesExistingDraftNoBase": "Wijzigt bestaand concept {{key}} {{versionTag}}",
+        "notUpdatable": "Kan niet bijgewerkt worden:",
+        "selectAtLeastOne": "Selecteer minstens één referentie om verder te gaan."
+      },
+      "differences": {
+        "description": "Controleer per geselecteerde referentie hoe de input- en sync-mappings overgaan naar {{targetKey}} {{targetVersionTag}}. Mappings naar velden die {{targetKey}} {{targetVersionTag}} niet heeft, vervallen. Velden die verplicht zijn maar nog niet gemapt, hebben een bron nodig. Je kunt niet verder zolang een referentie niet volledig geconfigureerd is.",
+        "configured": "Geconfigureerd",
+        "notConfigured": "Niet geconfigureerd",
+        "noInputs": "Deze referentie heeft geen input-mappings.",
+        "noOutputs": "Deze referentie heeft geen sync-mappings.",
+        "status": {
+          "kept": "Ongewijzigd",
+          "dropped": "Vervalt",
+          "added": "Nieuw"
+        },
+        "inputRequired": "{{targetKey}} {{targetVersionTag}} vereist dit veld. Kies waar de waarde vandaan komt.",
+        "inputPathInvalid": "Begin het pad met doc: of case: gevolgd door een veld, bijvoorbeeld doc:/naam.",
+        "dropped": "Vervallen mappings gebruiken velden die {{targetKey}} {{targetVersionTag}} niet heeft.",
+        "pluginsTitle": "Pluginconfiguraties",
+        "pluginConfiguration": "Pluginconfiguratie voor {{plugin}}",
+        "pluginPlaceholder": "Selecteer een pluginconfiguratie",
+        "pluginRequired": "De doelversie heeft een configuratie van deze plugin nodig",
+        "noPluginConfigurations": "Er bestaat nog geen configuratie van deze plugin. Maak er eerst een aan in pluginbeheer.",
+        "pluginLink": "Opgeslagen op de koppeling in {{container}}"
+      },
+      "review": {
+        "description": "Controleer alle wijzigingen voor het bijwerken van de referenties van {{key}} {{sourceVersionTag}} naar {{targetKey}} {{targetVersionTag}}. Er wordt niets definitief gemaakt en er verandert niets aan lopende dossiers.",
+        "draftsToCreate": "Aan te maken concepten",
+        "draftsToModify": "Te wijzigen concepten",
+        "draftVersion": "versie {{versionTag}}, gebaseerd op {{basedOn}}",
+        "draftVersionNoBase": "versie {{versionTag}}",
+        "linksToRepoint": "Om te zetten referenties",
+        "containerReference": "Referentie naar container",
+        "skipped": "Overgeslagen referenties",
+        "covered": "Ook bijgewerkt via een gedeelde referentie",
+        "confirm": "Ik heb deze wijzigingen gecontroleerd en wil ze doorvoeren",
+        "execute": "Referenties bijwerken"
+      },
+      "result": {
+        "title": "Referenties bijgewerkt",
+        "message": "Referenties naar {{key}} {{sourceVersionTag}} zijn waar geselecteerd omgezet naar {{targetKey}} {{targetVersionTag}}.",
+        "updatedDirectly": "Direct bijgewerkte referenties",
+        "draftsCreated": "Aangemaakte concepten",
+        "draftsModified": "Gewijzigde concepten",
+        "basedOn": "gebaseerd op {{versionTag}}",
+        "remainingReferences": "Resterende referenties",
+        "noRemainingReferences": "Niets verwijst nog naar {{key}} {{versionTag}}.",
+        "nextStepsTitle": "Volgende stappen",
+        "nextSteps": "Controleer de concepten hierboven en maak ze definitief, en plan daarna een dossiermigratie om bestaande dossiers naar de nieuwe versies te verplaatsen."
+      },
+      "previewFailed": {
+        "title": "Het voorbeeld kon niet geladen worden",
+        "message": "Er ging iets mis bij het vergelijken van de bron- en de doelversie.",
+        "retry": "Opnieuw proberen"
+      },
+      "draftsNotAllowed": {
+        "title": "Concepten zijn niet toegestaan",
+        "message": "Deze omgeving staat geen concepten toe, dus referenties naar bouwblokken kunnen hier niet bijgewerkt worden. Werk ze bij op een omgeving waar configuratie gewijzigd kan worden."
+      }
+    },
     "listColumns": {
       "name": "Naam",
       "key": "Sleutel",
@@ -4430,7 +4546,8 @@
       "forms": "Formulieren",
       "formFlows": "Form flows",
       "decisions": "Beslistabellen",
-      "migration": "Migratie"
+      "migration": "Migratie",
+      "references": "Referenties"
     },
     "migration": {
       "addPlan": "Migratieplan toevoegen",
@@ -4557,6 +4674,27 @@
       "export": "Exporteer \"{{value}}\"",
       "exportSuccessTitle": "Download start binnenkort",
       "preparingDownload": "Download aan het voorbereiden"
+    },
+    "references": {
+      "description": "Alle plekken die naar deze versie van het bouwblok verwijzen: procesactiviteiten en dossieracties.",
+      "containerType": "Type",
+      "key": "Sleutel",
+      "versionTag": "Versie",
+      "status": "Status",
+      "location": "Locatie",
+      "caseLink": "Dossieractie (tabblad Acties van het dossier)",
+      "processLink": "Proces {{processDefinitionKey}}, activiteit {{activityId}}",
+      "goTo": "Ga naar",
+      "processDefinitionLink": "Proces",
+      "actionsLink": "Acties",
+      "loadFailed": {
+        "title": "Verwijzingen konden niet worden geladen",
+        "description": "Onbekend is of iets naar deze versie verwijst. Herlaad de pagina om het opnieuw te proberen."
+      },
+      "noResults": {
+        "title": "Geen referenties",
+        "description": "Geen dossier of bouwblok verwijst naar deze versie."
+      }
     }
   },
   "migrationEditor": {
