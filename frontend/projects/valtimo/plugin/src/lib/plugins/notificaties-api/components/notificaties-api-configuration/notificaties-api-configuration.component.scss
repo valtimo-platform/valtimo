@@ -13,3 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.manual-abonnement {
+  margin-top: var(--cds-spacing-05);
+
+  &__list {
+    dt {
+      display: flex;
+      align-items: center;
+      margin-top: var(--cds-spacing-03);
+    }
+
+    dd ul {
+      list-style: disc;
+      margin-left: var(--cds-spacing-05);
+    }
+  }
+}

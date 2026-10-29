@@ -148,13 +148,15 @@ class NotificatiesApiAutoConfiguration {
         notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
         inboundEventIntakeService: NotificatiesApiInboundEventIntakeService,
         inboundEventProcessingService: NotificatiesApiInboundEventProcessingService,
-        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor
+        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor,
+        pluginService: PluginService
     ): NotificatiesApiService {
         return NotificatiesApiService(
             notificatiesApiAbonnementLinkRepository,
             inboundEventIntakeService,
             inboundEventProcessingService,
-            taskExecutor
+            taskExecutor,
+            pluginService
         )
     }
 
@@ -226,11 +228,13 @@ class NotificatiesApiAutoConfiguration {
     @ConditionalOnMissingBean(NotificatiesApiManagementResource::class)
     fun notificatiesApiManagementResource(
         inboundEventQueryService: NotificatiesApiInboundEventQueryService,
-        inboundEventAdminService: NotificatiesApiInboundEventAdminService
+        inboundEventAdminService: NotificatiesApiInboundEventAdminService,
+        notificatiesApiService: NotificatiesApiService
     ): NotificatiesApiManagementResource {
         return NotificatiesApiManagementResource(
             inboundEventQueryService,
-            inboundEventAdminService
+            inboundEventAdminService,
+            notificatiesApiService
         )
     }
 

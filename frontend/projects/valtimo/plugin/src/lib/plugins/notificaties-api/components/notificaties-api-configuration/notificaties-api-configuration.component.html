@@ -19,6 +19,7 @@
   *ngIf="{
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    manual: manualRegistration$ | async,
   } as obs"
 >
   <v-input
@@ -47,7 +48,25 @@
     placeholder="https://opennotificaties.example.com/api/v1/"
   >
   </v-input>
+  <ng-container
+    *ngIf="{registrationSelectItems: abonnementRegistrationSelectItems$ | async} as registrationObs"
+  >
+    <v-select
+      [clearable]="false"
+      [defaultSelectionId]="obs.prefill?.abonnementRegistration || 'automatic'"
+      [disabled]="obs.disabled"
+      [items]="registrationObs.registrationSelectItems"
+      [loading]="!registrationObs.registrationSelectItems"
+      [margin]="true"
+      [required]="true"
+      [title]="'abonnementRegistration' | pluginTranslate: pluginId | async"
+      [tooltip]="'abonnementRegistrationTooltip' | pluginTranslate: pluginId | async"
+      [attr.data-test-id]="testIds.abonnementRegistration"
+      name="abonnementRegistration"
+    ></v-select>
+  </ng-container>
   <v-input
+    *ngIf="!obs.manual"
     name="callbackUrl"
     [attr.data-test-id]="testIds.callbackUrl"
     [title]="'callbackUrl' | pluginTranslate: pluginId | async"
@@ -60,15 +79,19 @@
     placeholder="https://{gzac-back-end-url}/api/v1/notificatiesapi/callback"
   >
   </v-input>
+
   <v-input
     name="authHeader"
-    [title]="'authHeader' | pluginTranslate: pluginId | async"
+    [attr.data-test-id]="testIds.authHeader"
+    [title]="(obs.manual ? 'sharedSecret' : 'authHeader') | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.authHeader"
-    [required]="false"
+    [required]="obs.manual"
     [trim]="true"
-    [tooltip]="'authHeaderTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="
+      (obs.manual ? 'sharedSecretTooltip' : 'authHeaderTooltip') | pluginTranslate: pluginId | async
+    "
     type="password"
   >
   </v-input>
@@ -88,3 +111,59 @@
     ></v-select>
   </ng-container>
 </v-form>
+
+<div
+  *ngIf="manualRegistration$ | async"
+  [attr.data-test-id]="testIds.manualAbonnement"
+  class="manual-abonnement"
+>
+  <ng-container *ngIf="manualAbonnement$ | async as manualAbonnement; else saveFirst">
+    <v-paragraph [margin]="true">
+      {{ 'manualAbonnementDescription' | pluginTranslate: pluginId | async }}
+    </v-paragraph>
+
+    <dl class="manual-abonnement__list">
+      <dt class="cds--type-heading-compact-01">
+        {{ 'callbackUrl' | pluginTranslate: pluginId | async }}
+
+        <v-tooltip-icon
+          *ngIf="!manualAbonnement.callbackUrl"
+          [attr.data-test-id]="testIds.manualAbonnementDefaultCallbackUrlTooltip"
+          [tooltip]="
+            'manualAbonnementDefaultCallbackUrlTooltip' | pluginTranslate: pluginId | async
+          "
+        ></v-tooltip-icon>
+      </dt>
+
+      <dd [attr.data-test-id]="testIds.manualAbonnementCallbackUrl">
+        {{ manualAbonnement.callbackUrl || defaultCallbackUrl }}
+      </dd>
+
+      <ng-container *ngFor="let kanaal of manualAbonnement.kanalen">
+        <dt class="cds--type-heading-compact-01">
+          {{ 'manualAbonnementKanaal' | pluginTranslate: pluginId | async }}
+        </dt>
+
+        <dd [attr.data-test-id]="testIds.manualAbonnementKanaal">
+          <strong>{{ kanaal.naam }}</strong>
+
+          <ul>
+            <li *ngFor="let filter of kanaal.filters | keyvalue">
+              {{ filter.key }} = {{ filter.value }}
+            </li>
+          </ul>
+        </dd>
+      </ng-container>
+    </dl>
+
+    <v-paragraph *ngIf="manualAbonnement.kanalen.length === 0" [italic]="true">
+      {{ 'manualAbonnementNoKanalen' | pluginTranslate: pluginId | async }}
+    </v-paragraph>
+  </ng-container>
+
+  <ng-template #saveFirst>
+    <v-paragraph [italic]="true">
+      {{ 'manualAbonnementSaveFirst' | pluginTranslate: pluginId | async }}
+    </v-paragraph>
+  </ng-template>
+</div>
