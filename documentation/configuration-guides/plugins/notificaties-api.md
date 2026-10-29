@@ -10,10 +10,10 @@ receives these notificaties when it has a subscription (abonnement) in Open Noti
 
 Each configuration of the plugin sets who creates that abonnement:
 
-| Abonnement registration | Who creates the abonnement | When to use |
-|-------------------------|----------------------------|-------------|
-| **Automatic** | Valtimo creates and maintains the abonnement itself. | In most environments. This is the default. |
-| **Manual** | An administrator creates the abonnement in Open Notificaties. | When all traffic to Valtimo passes through a gateway that checks certificates. Such a gateway blocks the test message that Open Notificaties sends when Valtimo creates the abonnement itself. |
+| Abonnement registration | Who creates the abonnement                                    | When to use                                                                                                                                                                                    |
+|-------------------------|---------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Automatic**           | Valtimo creates and maintains the abonnement itself.          | In most environments. This is the default.                                                                                                                                                     |
+| **Manual**              | An administrator creates the abonnement in Open Notificaties. | When all traffic to Valtimo passes through a gateway that checks certificates. Such a gateway blocks the test message that Open Notificaties sends when Valtimo creates the abonnement itself. |
 
 ---
 
@@ -37,15 +37,15 @@ Fill in the properties and click **Save configuration**
 
 To change an existing configuration, click its row on the **Plugins** page.
 
-| Property | Description |
-|----------|-------------|
-| Configuration name | The name under which the configuration appears elsewhere in Valtimo. |
-| Notificaties API URL | The address of Open Notificaties, for example `https://opennotificaties.example.com/api/v1/`. |
-| Abonnement registration | **Automatic** or **Manual**, see the table above. Existing configurations use **Automatic**. |
-| Callback URL | Only with **Automatic**. The address at which Open Notificaties reaches Valtimo. It ends in `/api/v1/notificatiesapi/callback`. |
-| Authentication header | Only with **Automatic**, optional. A secret that Open Notificaties sends along with every notificatie. Leave it empty to let Valtimo choose one. A changed value is passed on to Open Notificaties when you save. |
-| Shared secret | Only with **Manual**, required. The secret that you also enter in the abonnement in Open Notificaties. |
-| Authentication plugin configuration | The configuration that Valtimo uses to log in to Open Notificaties. |
+| Property                            | Description                                                                                                                                                                                                       |
+|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Configuration name                  | The name under which the configuration appears elsewhere in Valtimo.                                                                                                                                              |
+| Notificaties API URL                | The address of Open Notificaties, for example `https://opennotificaties.example.com/api/v1/`.                                                                                                                     |
+| Abonnement registration             | **Automatic** or **Manual**, see the table above. Existing configurations use **Automatic**.                                                                                                                      |
+| Callback URL                        | Only with **Automatic**. The address at which Open Notificaties reaches Valtimo. It ends in `/api/v1/notificatiesapi/callback`.                                                                                   |
+| Authentication header               | Only with **Automatic**, optional. A secret that Open Notificaties sends along with every notificatie. Leave it empty to let Valtimo choose one. A changed value is passed on to Open Notificaties when you save. |
+| Shared secret                       | Only with **Manual**, required. The secret that you also enter in the abonnement in Open Notificaties.                                                                                                            |
+| Authentication plugin configuration | The configuration that Valtimo uses to log in to Open Notificaties.                                                                                                                                               |
 
 ---
 

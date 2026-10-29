@@ -90,13 +90,6 @@ class NotificatiesApiService @JvmOverloads constructor(
         return abonnementLink.notificatiesApiConfigurationId.id !in manualSecrets.keys
     }
 
-    private fun findManualAbonnementSecrets(): Map<UUID, String?> {
-        val service = pluginService ?: return emptyMap()
-        return service.findPluginConfigurations(NotificatiesApiPlugin::class.java) { properties ->
-            properties.path(ABONNEMENT_REGISTRATION_PROPERTY).textValue() == AbonnementRegistration.MANUAL.value
-        }.associate { it.id.id to it.properties?.path(AUTH_HEADER_PROPERTY)?.textValue() }
-    }
-
     fun getManualAbonnement(configurationId: UUID): NotificatiesApiManualAbonnementResponse? {
         val service = pluginService ?: return null
         val configuration = service.findPluginConfiguration(PluginConfigurationId.existingId(configurationId))
@@ -108,6 +101,13 @@ class NotificatiesApiService @JvmOverloads constructor(
             callbackUrl = plugin.callbackUrlOrNull()?.toASCIIString(),
             kanalen = NotificatiesApiKanaalFilters.fromPluginService(service).manualKanaalFilters(configurationId)
         )
+    }
+
+    private fun findManualAbonnementSecrets(): Map<UUID, String?> {
+        val service = pluginService ?: return emptyMap()
+        return service.findPluginConfigurations(NotificatiesApiPlugin::class.java) { properties ->
+            properties.path(ABONNEMENT_REGISTRATION_PROPERTY).textValue() == AbonnementRegistration.MANUAL.value
+        }.associate { it.id.id to it.properties?.path(AUTH_HEADER_PROPERTY)?.textValue() }
     }
 
     private fun secretsMatch(expected: String, actual: String) =
