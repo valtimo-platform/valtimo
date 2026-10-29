@@ -16,13 +16,17 @@
 
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BehaviorSubject, combineLatest, filter, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, filter, Observable, of, switchMap, tap} from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule} from 'carbon-components-angular';
-import {CustomWidget, WidgetCustomComponent, WidgetLayoutService} from '@valtimo/layout';
-import {IkoWidgetParams} from '../../models';
-import {IkoApiService} from '../../services';
+import {
+  CustomWidget,
+  groupWidgetData,
+  WidgetCustomComponent,
+  WidgetDataGroupService,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-iko-widget-custom',
@@ -37,11 +41,6 @@ export class IkoWidgetCustomComponent {
     this._widgetConfigSubject$.next(value);
   }
 
-  private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
-  @Input() public set widgetParams(value: IkoWidgetParams) {
-    this._widgetParams$.next(value);
-  }
-
   @Input() public readonly widgetUuid: string;
 
   private readonly _widgetConfigSubject$ = new BehaviorSubject<CustomWidget | null>(null);
@@ -50,25 +49,22 @@ export class IkoWidgetCustomComponent {
     return this._widgetConfigSubject$.pipe(filter(config => config !== null));
   }
 
-  public readonly widgetData$ = combineLatest([
-    this._widgetConfigSubject$,
-    this._widgetParams$,
-  ]).pipe(
-    switchMap(([widgetConfiguration, widgetParams]) =>
-      !widgetParams || !widgetConfiguration
+  public readonly widgetData$ = this._widgetConfigSubject$.pipe(
+    switchMap(widgetConfiguration =>
+      !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
+        : groupWidgetData(
+            this.widgetDataGroupService,
+            this.widgetLayoutService,
             widgetConfiguration.key,
-            widgetParams.entryId
+            () => this.widgetUuid
           )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
 
   constructor(
-    private readonly ikoApiService: IkoApiService,
+    private readonly widgetDataGroupService: WidgetDataGroupService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {}
 }

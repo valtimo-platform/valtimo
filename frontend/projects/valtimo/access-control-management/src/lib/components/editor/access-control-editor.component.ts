@@ -39,6 +39,7 @@ import {AccessControlEditorTab, Permission, Role} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
 import {GlobalNotificationService} from '@valtimo/shared';
+import {ACCESS_CONTROL_ROLES_TEST_IDS} from '../../constants';
 
 @Component({
   standalone: false,
@@ -58,6 +59,7 @@ export class AccessControlEditorComponent
   public readonly moreDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
+  public readonly testIds = ACCESS_CONTROL_ROLES_TEST_IDS;
   public readonly selectedRowKeys$ = new BehaviorSubject<Array<string> | null>(null);
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 

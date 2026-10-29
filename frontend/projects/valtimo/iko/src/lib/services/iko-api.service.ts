@@ -16,14 +16,23 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {
+  BaseApiService,
+  ConfigService,
+  GlobalNotificationService,
+  InterceptorSkip,
+} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoView, IkoSearchActionUser, IkoListResponse, IkoTab} from '../models';
+import {WidgetAction, WidgetDataGroupResponse} from '@valtimo/layout';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class IkoApiService extends BaseApiService {
+  private readonly WIDGET_DATA_SKIP_TOAST_STATUSES = '500,502,503,504';
+
   private readonly _cachedMenuItems$ = new BehaviorSubject<IkoView[]>([]);
 
   public get cachedMenuItems$(): Observable<IkoView[]> {
@@ -36,7 +45,9 @@ export class IkoApiService extends BaseApiService {
 
   constructor(
     protected readonly httpClient: HttpClient,
-    protected readonly configService: ConfigService
+    protected readonly configService: ConfigService,
+    protected readonly globalNotificationService: GlobalNotificationService,
+    protected readonly router: Router
   ) {
     super(httpClient, configService);
   }
@@ -85,7 +96,32 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get(
       this.getApiUrl(
         `/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}${!queryParams ? '' : '&' + queryParams.toString()}`
-      )
+      ),
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, this.WIDGET_DATA_SKIP_TOAST_STATUSES),
+      }
+    );
+  }
+
+  /** Every widget in the group in one request. Paging and filtering use getIkoWidgetData. */
+  public getIkoWidgetDataGroup(
+    ikoViewKey: string,
+    tabKey: string,
+    group: string,
+    id: string
+  ): Observable<WidgetDataGroupResponse> {
+    const params = new HttpParams().set('group', group).set('id', id);
+
+    return this.httpClient.get<WidgetDataGroupResponse>(
+      this.getApiUrl(`/v1/iko-view/${ikoViewKey}/tab/${tabKey}/widget/data?${params.toString()}`),
+      // An unrecognised group falls back to per-widget requests, and the widgets of a group that
+      // could not be filled say so themselves — neither warrants a global error toast
+      {
+        headers: new HttpHeaders().set(
+          InterceptorSkip,
+          `404,${this.WIDGET_DATA_SKIP_TOAST_STATUSES}`
+        ),
+      }
     );
   }
 
@@ -110,5 +146,57 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get<object>(
       this.getApiUrl(`/v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
     );
+  }
+
+  public handleAction(action: WidgetAction, resolved: {[key: string]: string} = null) {
+    if (!action) return;
+
+    const navigateTo = this.resolveProperty(action?.navigateTo, resolved);
+    if (navigateTo) {
+      this.navigateTo(navigateTo);
+      return;
+    }
+
+    const caseDefinitionKey = this.resolveProperty(action?.caseDefinitionKey, resolved);
+
+    if (caseDefinitionKey) this.startCase(caseDefinitionKey);
+
+    const processDefinitionKey = this.resolveProperty(action?.processDefinitionKey, resolved);
+
+    if (processDefinitionKey) {
+      this.globalNotificationService.showToast({
+        title: 'An unexpected error occurred',
+        caption: `Unsupported action: Start process ${processDefinitionKey}`,
+        type: 'error',
+      });
+    }
+  }
+
+  private navigateTo(navigateTo: string) {
+    if (navigateTo.startsWith(window.location.origin)) {
+      this.router.navigateByUrl(navigateTo.substring(window.location.origin.length));
+    } else if (navigateTo.startsWith('/')) {
+      this.router.navigateByUrl(navigateTo);
+    } else if (navigateTo.startsWith('http')) {
+      window.open(navigateTo, '_blank');
+    } else {
+      this.globalNotificationService.showToast({
+        title: 'An unexpected error occurred',
+        caption: `Unable to navigate to ${navigateTo}`,
+        type: 'error',
+      });
+    }
+  }
+
+  private startCase(caseDefinitionKey: string) {
+    this.globalNotificationService.showToast({
+      title: 'Test',
+      caption: `Start case ${caseDefinitionKey}`,
+      type: 'info',
+    });
+  }
+
+  private resolveProperty(property: string, resolved: {[key: string]: any}): string {
+    return property ? (resolved ? String(resolved[property]) : property) : null;
   }
 }

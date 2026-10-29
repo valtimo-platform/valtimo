@@ -14,32 +14,6 @@
  * limitations under the License.
  */
 
-import {Inject, Injectable} from '@angular/core';
-import {BehaviorSubject, filter, Observable} from 'rxjs';
-import {FormFlowCustomComponentDefinition} from '../models';
-import {FORM_FLOW_COMPONENT_TOKEN} from '../constants';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class FormFlowComponentService {
-  private readonly _supportedComponents$ =
-    new BehaviorSubject<Array<FormFlowCustomComponentDefinition> | null>(null);
-
-  public get supportedComponents$(): Observable<Array<FormFlowCustomComponentDefinition>> {
-    return this._supportedComponents$.pipe(filter(components => !!components));
-  }
-
-  constructor(
-    @Inject(FORM_FLOW_COMPONENT_TOKEN)
-    private readonly supportedCustomComponents: Array<FormFlowCustomComponentDefinition>
-  ) {
-    this.setSupportedComponents(supportedCustomComponents);
-  }
-
-  private setSupportedComponents(
-    supportedComponents: Array<FormFlowCustomComponentDefinition>
-  ): void {
-    this._supportedComponents$.next(supportedComponents);
-  }
-}
+// Moved to @valtimo/form-flow-management (the owning library); re-exported here for backwards
+// compatibility.
+export {FormFlowComponentService} from '@valtimo/form-flow-management';

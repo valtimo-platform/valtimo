@@ -55,7 +55,17 @@ class BuildingBlockFieldService(
         return jsonSchemaDocumentDefinitionRepository.findById(documentDefinitionId).orElse(null)
     }
 
-    private fun Schema.walkFields(path: String, requiredInParent: Boolean): List<BuildingBlockFieldDto> {
+    private fun Schema.walkFields(
+        path: String,
+        requiredInParent: Boolean,
+        ancestors: List<Schema> = emptyList()
+    ): List<BuildingBlockFieldDto> {
+        // A self-referencing schema would recurse forever, so stop when one reappears on its ancestor chain.
+        if (ancestors.any { it === this }) {
+            return emptyList()
+        }
+        val branch = ancestors + this
+
         // The root schema itself (empty path) is not a selectable field, but every nested node -
         // including object and array container nodes - is, so a whole subtree can be mapped in a
         // single mapping (e.g. doc:/applicantAddress) in addition to its individual leaf properties.
@@ -68,18 +78,31 @@ class BuildingBlockFieldService(
         return when (this) {
             is ObjectSchema ->
                 self + propertySchemas.flatMap { (key, sub) ->
-                    sub.walkFields(path = "$path/$key", requiredInParent = key in requiredProperties)
+                    sub.walkFields(
+                        path = "$path/$key",
+                        requiredInParent = key in requiredProperties,
+                        ancestors = branch
+                    )
                 }
 
             is ArraySchema ->
-                self + allItemSchema?.walkFields(path = path, requiredInParent = false).orEmpty()
+                self + allItemSchema?.walkFields(
+                    path = path,
+                    requiredInParent = false,
+                    ancestors = branch
+                ).orEmpty()
 
             is ReferenceSchema ->
-                referredSchema?.walkFields(path = path, requiredInParent = requiredInParent).orEmpty()
+                referredSchema?.walkFields(
+                    path = path,
+                    requiredInParent = requiredInParent,
+                    ancestors = branch
+                ).orEmpty()
 
             is CombinedSchema ->
-                subschemas.flatMap { it.walkFields(path = path, requiredInParent = requiredInParent) }
-                    .distinctBy { it.name }
+                subschemas.flatMap {
+                    it.walkFields(path = path, requiredInParent = requiredInParent, ancestors = branch)
+                }.distinctBy { it.name }
 
             is StringSchema, is NumberSchema, is BooleanSchema, is EnumSchema, is ConstSchema ->
                 self

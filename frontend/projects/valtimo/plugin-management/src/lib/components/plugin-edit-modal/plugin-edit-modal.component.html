@@ -35,11 +35,17 @@
     ></valtimo-plugin-edit>
   </section>
   <cds-modal-footer>
-    <button cdsButton="danger" (click)="delete()" [disabled]="inputDisabled$ | async">
+    <button
+      cdsButton="danger"
+      [attr.data-test-id]="testIds.deleteButton"
+      (click)="delete()"
+      [disabled]="inputDisabled$ | async"
+    >
       {{ 'pluginManagement.remove' | translate }}
     </button>
     <button
       cdsButton="primary"
+      [attr.data-test-id]="testIds.saveButton"
       [disabled]="(configurationValid$ | async) === false || (inputDisabled$ | async)"
       (click)="save()"
     >

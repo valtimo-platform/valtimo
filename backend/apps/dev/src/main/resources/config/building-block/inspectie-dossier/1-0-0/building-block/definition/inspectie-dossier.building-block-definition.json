@@ -1,0 +1,7 @@
+{
+    "key": "inspectie-dossier",
+    "name": "Inspectiedossier",
+    "description": "Vervangt de bouwsteen inspectie-fotos. Let op: deze bouwsteen heeft GEEN basedOnVersionTag — hij is geen nieuwe versie van inspectie-fotos maar een andere bouwsteen. Alleen het migratieplan op deze versie (met source inspectie-fotos:1.0.1) verbindt de twee, en dat plan is dus de enige manier waarop een lopende foto-bouwsteen hier terechtkomt.",
+    "versionTag": "1.0.0",
+    "final": false
+}

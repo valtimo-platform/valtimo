@@ -36,4 +36,6 @@ data class MapCaseWidgetDto(
     override val actions: List<WidgetAction>? = emptyList(),
     override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: MapWidgetProperties
-) : CaseWidgetTabWidgetDto
+) : CaseWidgetTabWidgetDto {
+    override var dataGroupId: String? = null
+}

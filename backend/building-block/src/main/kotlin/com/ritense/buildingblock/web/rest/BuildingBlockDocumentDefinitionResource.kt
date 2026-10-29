@@ -27,6 +27,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
@@ -46,6 +47,10 @@ class BuildingBlockDocumentDefinitionResource(
     private val mapper: ObjectMapper
 ) {
 
+    @EndpointDescription(
+        en = "Get building block document definition",
+        nl = "Documentdefinitie van bouwblok ophalen",
+    )
     @GetMapping("/{key}/version/{versionTag}/document")
     fun getDocumentDefinition(
         @PathVariable key: String,
@@ -60,6 +65,10 @@ class BuildingBlockDocumentDefinitionResource(
         return ResponseEntity.ok(definition.schema())
     }
 
+    @EndpointDescription(
+        en = "Update building block document definition",
+        nl = "Documentdefinitie van bouwblok bijwerken",
+    )
     @PutMapping("/{key}/version/{versionTag}/document", consumes = [APPLICATION_JSON_UTF8_VALUE])
     @Transactional
     fun updateDocumentDefinition(

@@ -1,0 +1,76 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="expression-list">
+  <div class="expression-list__header">
+    <h6>{{ label }}</h6>
+
+    <p class="expression-list__description">{{ description }}</p>
+  </div>
+
+  @for (control of expressionControls; track control; let index = $index) {
+    <div class="expression-list__row">
+      <input
+        cdsText
+        [formControl]="control"
+        [invalid]="control.invalid && revealErrors"
+        [attr.data-test-id]="testIds.expressionInput"
+        placeholder="${valtimoFormFlow.completeTask(additionalProperties)}"
+      />
+
+      @if (!readOnly) {
+        <button
+          cdsButton="ghost"
+          size="md"
+          [iconOnly]="true"
+          [attr.aria-label]="'interface.delete' | translate"
+          (click)="removeExpression(index)"
+        >
+          <svg cdsIcon="trash-can" size="16"></svg>
+        </button>
+      }
+    </div>
+  } @empty {
+    <p class="expression-list__empty">{{ 'formFlow.uiEditor.noExpressions' | translate }}</p>
+  }
+
+  @if (!readOnly) {
+    <div class="expression-list__add">
+      <v-overflow-menu placement="bottom-start">
+        <button
+          cdsButton="tertiary"
+          size="sm"
+          overflowTrigger
+          [attr.data-test-id]="testIds.addExpressionButton"
+        >
+          {{ 'formFlow.uiEditor.addExpression' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+
+        <v-overflow-menu-option (selected)="addExpression()">{{
+          'formFlow.uiEditor.blankExpression' | translate
+        }}</v-overflow-menu-option>
+
+        @for (suggestion of suggestions; track suggestion.label) {
+          <v-overflow-menu-option (selected)="addExpression(suggestion.expression)">{{
+            suggestion.label
+          }}</v-overflow-menu-option>
+        }
+      </v-overflow-menu>
+    </div>
+  }
+</div>

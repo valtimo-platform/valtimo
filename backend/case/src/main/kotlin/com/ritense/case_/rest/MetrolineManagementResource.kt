@@ -20,6 +20,7 @@ import com.ritense.case_.widget.metroline.MetrolineMode
 import com.ritense.case_.widget.metroline.ZaakMetrolineDataService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,6 +33,10 @@ class MetrolineManagementResource(
     private val zaakMetrolineDataService: ZaakMetrolineDataService?,
 ) {
 
+    @EndpointDescription(
+        en = "List available timeline modes",
+        nl = "Beschikbare tijdlijnmodi ophalen",
+    )
     @GetMapping("/v1/metroline/available-modes")
     fun getAvailableModes(): ResponseEntity<List<MetrolineMode>> {
         val modes = mutableListOf(MetrolineMode.INTERNAL_CASE_STATUS)

@@ -1,0 +1,22 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Nazorg uitvoeren",
+            "content": "Rond de nazorg af.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Nazorg afronden",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

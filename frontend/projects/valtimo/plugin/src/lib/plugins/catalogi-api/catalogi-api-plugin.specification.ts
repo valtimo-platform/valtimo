@@ -24,6 +24,8 @@ import {GetResultaattypeConfigurationComponent} from './components/get-resultaat
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
 import {GetInformatieobjecttypeConfigurationComponent} from './components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 import {GetInformatieobjecttypenConfigurationComponent} from './components/get-informatieobjecttypen/get-informatieobjecttypen-configuration.component';
+import {GetRoltypenConfigurationComponent} from './components/get-roltypen/get-roltypen-configuration.component';
+import {GetRoltypeConfigurationComponent} from './components/get-roltype/get-roltype-configuration.component';
 import {CATALOGI_API_PLUGIN_LOGO_BASE64} from './assets';
 
 const catalogiApiPluginSpecification: PluginSpecification = {
@@ -39,6 +41,8 @@ const catalogiApiPluginSpecification: PluginSpecification = {
     'get-eigenschap': GetEigenschapConfigurationComponent,
     'get-informatieobjecttype': GetInformatieobjecttypeConfigurationComponent,
     'get-informatieobjecttypen': GetInformatieobjecttypenConfigurationComponent,
+    'get-roltypen': GetRoltypenConfigurationComponent,
+    'get-roltype': GetRoltypeConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -99,6 +103,14 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       'get-informatieobjecttypen': 'Informatieobjecttypen opvragen',
       getInformatieobjecttypenInformation:
         'De Informatieobjecttypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+      'get-roltypen': 'Roltypen opvragen',
+      getRoltypenInformation:
+        'De Roltypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+      'get-roltype': 'Roltype opvragen',
+      getRoltypeInformation:
+        'Het roltype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
+      roltype: 'Roltype',
+      roltypeTooltip: 'De omschrijving van het roltype, of een volledige URL naar het roltype.',
     },
     en: {
       title: 'Catalogi API',
@@ -156,6 +168,13 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       'get-informatieobjecttypen': 'Retrieve informatieobjecttypen',
       getInformatieobjecttypenInformation:
         'The Informatieobjecttypen belonging to the Zaaktype are retrieved and then stored in a process variable.',
+      'get-roltypen': 'Retrieve roltypen',
+      getRoltypenInformation:
+        'The Roltypen belonging to the Zaaktype are retrieved and then stored in a process variable.',
+      'get-roltype': 'Retrieve roltype',
+      getRoltypeInformation: 'The roltype is retrieved and then stored in a process variable.',
+      roltype: 'Roltype',
+      roltypeTooltip: 'The omschrijving of the roltype, or a full URL to the roltype.',
     },
   },
 };

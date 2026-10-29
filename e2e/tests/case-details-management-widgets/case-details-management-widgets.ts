@@ -46,6 +46,25 @@ export function createJsonEditorDividerData() {
   };
 }
 
+/**
+ * Data for the display-conditions test (6.94).
+ *
+ * `operatorLabel` is what the dropdown shows; `operator` is what the backend stores for it —
+ * the test asserts the stored value, so both are needed.
+ */
+export function createConditionWidgetTestData() {
+  const id = generateId();
+  return {
+    widgetTitle: `E2e Condition Widget ${id}`,
+    fieldTitle: 'Condition Field',
+    valuePath: 'case:definitionId.key',
+    conditionPath: 'case:createdBy',
+    operatorLabel: 'Equal to',
+    operator: '==',
+    conditionValue: 'admin',
+  };
+}
+
 export function createReorderTestData() {
   const idA = generateId();
   const idB = generateId();

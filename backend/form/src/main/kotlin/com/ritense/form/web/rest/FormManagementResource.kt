@@ -23,6 +23,7 @@ import com.ritense.form.service.FormDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -48,6 +49,10 @@ import java.util.UUID
 class FormManagementResource(
     private val formDefinitionService: FormDefinitionService,
 ) {
+    @EndpointDescription(
+        en = "Query form definitions for case definition",
+        nl = "Formulierdefinities voor dossierdefinitie ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form")
     fun getFormDefinitions(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -64,6 +69,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Get form definition by id for case definition",
+        nl = "Formulierdefinitie op id voor dossierdefinitie ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{formDefinitionId}")
     fun getFormDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -79,6 +88,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Create form definition for case definition",
+        nl = "Formulierdefinitie voor dossierdefinitie aanmaken",
+    )
     @PostMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form")
     fun createFormDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -93,6 +106,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Update form definition for case definition",
+        nl = "Formulierdefinitie voor dossierdefinitie bijwerken",
+    )
     @PutMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form")
     fun updateFormDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -107,6 +124,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Delete form definition for case definition",
+        nl = "Formulierdefinitie voor dossierdefinitie verwijderen",
+    )
     @DeleteMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{formDefinitionId}")
     fun deleteFormDefinition(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -120,6 +141,10 @@ class FormManagementResource(
         return ResponseEntity.noContent().build();
     }
 
+    @EndpointDescription(
+        en = "Check form definition name exists for case definition",
+        nl = "Controleren of formulierdefinitienaam bestaat voor dossierdefinitie",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{name}/exists")
     fun formDefinitionExists(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
@@ -134,6 +159,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "List or search form definitions",
+        nl = "Formulierdefinities ophalen of zoeken",
+    )
     @GetMapping("/management/v1/form")
     fun getFormDefinitions(
         @RequestParam(required = false) searchTerm: String?,
@@ -146,6 +175,10 @@ class FormManagementResource(
         }
     }
 
+    @EndpointDescription(
+        en = "Check form definition name exists",
+        nl = "Controleren of formulierdefinitienaam bestaat",
+    )
     @GetMapping("/management/v1/form/exists/{name}")
     fun formDefinitionExists(
         @PathVariable("name") formName: String,
@@ -157,6 +190,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Create form definition",
+        nl = "Formulierdefinitie aanmaken",
+    )
     @PostMapping("/management/v1/form")
     fun createFormDefinition(
         @Valid @RequestBody formDefinition: CreateFormDefinitionRequest,
@@ -168,6 +205,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Get form definition by id",
+        nl = "Formulierdefinitie op id ophalen",
+    )
     @GetMapping("/management/v1/form/{formDefinitionId}")
     fun getFormDefinition(
         @PathVariable("formDefinitionId") formDefinitionId: String,
@@ -180,6 +221,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Update form definition",
+        nl = "Formulierdefinitie bijwerken",
+    )
     @PutMapping("/management/v1/form")
     fun updateFormDefinition(
         @Valid @RequestBody formDefinition: ModifyFormDefinitionRequest,
@@ -191,6 +236,10 @@ class FormManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Delete form definition",
+        nl = "Formulierdefinitie verwijderen",
+    )
     @DeleteMapping("/management/v1/form/{formDefinitionId}")
     fun deleteFormDefinition(
         @PathVariable("formDefinitionId") formDefinitionId: String,

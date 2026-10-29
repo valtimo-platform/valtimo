@@ -1,0 +1,154 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="migration-tab" [formGroup]="form">
+  @if (descriptionKey) {
+    <p class="migration-tab__description">{{ descriptionKey | translate }}</p>
+  }
+
+  <div class="migration-tab__items" formArrayName="instructions">
+    @for (instruction of instructionsArray.controls; track instruction) {
+      <div
+        class="migration-tab__card"
+        [class.migration-tab__card--incomplete]="isIncomplete(instruction)"
+        [formGroupName]="$index"
+      >
+        <div class="migration-tab__card-header">
+          <!-- The whole header is the toggle: a suggested plan carries one instruction per process, and hunting a 16px target on each is the opposite of what collapsing is for. -->
+          <button
+            type="button"
+            class="migration-tab__card-toggle"
+            [attr.aria-expanded]="isExpanded(instruction)"
+            [title]="
+              (isExpanded(instruction) ? 'interface.collapse' : 'interface.expand') | translate
+            "
+            [attr.data-test-id]="testIds?.toggleInstructionButton"
+            (click)="toggleExpanded(instruction)"
+          >
+            <svg
+              [cdsIcon]="isExpanded(instruction) ? 'chevron--up' : 'chevron--down'"
+              size="16"
+            ></svg>
+
+            <span class="migration-tab__card-index">#{{ $index + 1 }}</span>
+
+            <!-- A collapsed card shows only this header, so the missing target is marked here by icon and colour. The sentence stays on the field inside, where it is acted on. -->
+            @if (isIncomplete(instruction)) {
+              <span
+                class="migration-tab__card-warning"
+                [title]="'migrationEditor.processMigration.missingTarget' | translate"
+              >
+                <svg cdsIcon="warning--filled" size="16"></svg>
+              </span>
+            }
+
+            <span
+              class="migration-tab__card-summary"
+              [class.migration-tab__card-summary--incomplete]="isIncomplete(instruction)"
+            >
+              {{ summaryOf(instruction) || ('migrationEditor.card.unnamed' | translate) }}
+            </span>
+          </button>
+
+          <button
+            cdsButton="danger--ghost"
+            size="sm"
+            [iconOnly]="true"
+            [title]="'interface.delete' | translate"
+            [attr.data-test-id]="testIds?.deleteInstructionButton"
+            (click)="removeInstruction($index)"
+          >
+            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
+
+        @if (isExpanded(instruction)) {
+          <div class="migration-tab__grid">
+            <cds-select
+              formControlName="sourceProcessDefinitionKey"
+              [label]="'migrationEditor.processMigration.sourceProcess' | translate"
+            >
+              <option value="">
+                {{ 'migrationEditor.processMigration.selectProcess' | translate }}
+              </option>
+              @for (key of processKeyOptions(instruction, 'source'); track key) {
+                <option [value]="key">{{ key }}</option>
+              }
+            </cds-select>
+
+            <cds-select
+              formControlName="targetProcessDefinitionKey"
+              [invalid]="isIncomplete(instruction)"
+              [invalidText]="'migrationEditor.processMigration.missingTarget' | translate"
+              [label]="'migrationEditor.processMigration.targetProcess' | translate"
+            >
+              <option value="">
+                {{ 'migrationEditor.processMigration.selectProcess' | translate }}
+              </option>
+              @for (key of processKeyOptions(instruction, 'target'); track key) {
+                <option [value]="key">{{ key }}</option>
+              }
+            </cds-select>
+          </div>
+
+          <valtimo-migration-activity-mapping
+            [api]="api"
+            [hintKey]="activityMappingHintKey"
+            [mappings]="mapActivitiesArray(instruction)"
+            [request]="mappingRequestFor(instruction)"
+            [suggest]="isSuggestPending(instruction)"
+            [testIds]="testIds"
+            (mappingsChange)="onMappingsChange()"
+            (suggestSettledEvent)="onSuggestSettled(instruction, $event)"
+          ></valtimo-migration-activity-mapping>
+
+          <valtimo-migration-process-variables
+            [sourceContext]="sourceContext"
+            [sourcePrefixes]="sourcePrefixes"
+            [subscriptions]="subscriptions"
+            [testIds]="testIds"
+            [variables]="setProcessVariablesOf(instruction)"
+          ></valtimo-migration-process-variables>
+
+          <!-- Options -->
+          <div class="migration-tab__toggles">
+            <cds-checkbox formControlName="skipCustomListeners">
+              {{ 'migrationEditor.processMigration.skipCustomListeners' | translate }}
+            </cds-checkbox>
+
+            <cds-checkbox formControlName="skipIoMappings">
+              {{ 'migrationEditor.processMigration.skipIoMappings' | translate }}
+            </cds-checkbox>
+          </div>
+        }
+      </div>
+    } @empty {
+      <p class="migration-tab__empty">
+        {{ 'migrationEditor.processMigration.empty' | translate }}
+      </p>
+    }
+  </div>
+
+  <button
+    cdsButton="tertiary"
+    size="sm"
+    [attr.data-test-id]="testIds.addInstructionButton"
+    (click)="addInstruction()"
+  >
+    {{ 'migrationEditor.processMigration.addInstruction' | translate }}
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>

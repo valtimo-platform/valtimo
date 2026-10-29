@@ -18,6 +18,7 @@ package com.ritense.authorization.web
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
@@ -30,6 +31,10 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class PermissionSchemaResource {
 
+    @EndpointDescription(
+        en = "Get permission schema",
+        nl = "Permissieschema ophalen",
+    )
     @GetMapping("/v1/permissions/schema")
     fun getSchema(): ResponseEntity<Resource> = ResponseEntity.ok(ClassPathResource(SCHEMA_PATH))
 

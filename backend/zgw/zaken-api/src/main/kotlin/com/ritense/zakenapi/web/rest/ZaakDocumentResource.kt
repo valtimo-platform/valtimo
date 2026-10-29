@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,14 @@
 
 package com.ritense.zakenapi.web.rest
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
 import com.ritense.document.domain.RelatedFile
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.DocumentService
+import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
 import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
@@ -25,6 +31,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.service.ZaakDocumentService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -50,32 +57,53 @@ import java.util.UUID
 @SkipComponentScan
 @RequestMapping(value = ["/api"], produces = [APPLICATION_JSON_UTF8_VALUE])
 class ZaakDocumentResource(
-    private val zaakDocumentService: ZaakDocumentService
+    private val zaakDocumentService: ZaakDocumentService,
+    private val documentService: DocumentService,
+    private val authorizationService: AuthorizationService
 ) {
 
+    @EndpointDescription(
+        en = "Get document files for zaak",
+        nl = "Documentbestanden voor zaak ophalen",
+    )
     @GetMapping("/v1/zaken-api/document/{documentId}/files")
     fun getFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
     ): List<RelatedFile> {
+        requireViewableDocument(documentId)
         return zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
     }
 
+    @EndpointDescription(
+        en = "Search document files page for zaak",
+        nl = "Documentbestandenpagina voor zaak zoeken",
+    )
     @GetMapping("/v2/zaken-api/document/{documentId}/files")
     fun getFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID,
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable,
     ): Page<DocumentenApiDocumentDto> {
+        requireViewableDocument(documentId)
         return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(documentId, documentSearchRequest, pageable)
     }
 
+    @EndpointDescription(
+        en = "Get zaak metadata for document",
+        nl = "Zaakmetadata voor document ophalen",
+    )
     @GetMapping("/v1/zaken-api/document/{documentId}/zaak")
     fun getZaakMetadata(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
     ): ZaakResponse? {
+        requireViewableDocument(documentId)
         return zaakDocumentService.getZaakByCaseDocumentId(documentId)
     }
 
+    @EndpointDescription(
+        en = "Delete document from zaak",
+        nl = "Document uit zaak verwijderen",
+    )
     @DeleteMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")
     fun deleteDocument(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
@@ -92,6 +120,10 @@ class ZaakDocumentResource(
             .build()
     }
 
+    @EndpointDescription(
+        en = "Modify document metadata for zaak",
+        nl = "Documentmetadata voor zaak bijwerken",
+    )
     @PutMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}")
     fun modifyDocument(
         @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
@@ -111,6 +143,10 @@ class ZaakDocumentResource(
             )
     }
 
+    @EndpointDescription(
+        en = "Download document file for zaak",
+        nl = "Documentbestand voor zaak downloaden",
+    )
     @GetMapping("/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download")
     fun downloadDocument(
         @PathVariable(name = "caseDocumentId") caseDocumentId: UUID,
@@ -138,6 +174,13 @@ class ZaakDocumentResource(
             .headers(responseHeaders)
             .contentType(documentMediaType)
             .body(InputStreamResource(documentInputStream))
+    }
+
+    private fun requireViewableDocument(documentId: UUID) {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
+        } as JsonSchemaDocument? ?: throw NoSuchElementException("Document with id '$documentId' not found.")
+        authorizationService.requireDocumentPermission(document)
     }
 
     companion object {

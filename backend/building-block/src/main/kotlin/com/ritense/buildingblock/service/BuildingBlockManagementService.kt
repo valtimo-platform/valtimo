@@ -24,6 +24,8 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionSpecificationHelper.Companion.byIds
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionSpecificationHelper.Companion.bySearchTerm
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
@@ -36,7 +38,9 @@ import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -55,28 +59,89 @@ class BuildingBlockManagementService(
     fun getLatestPerKey(includeArtwork: Boolean = false): List<BuildingBlockDefinitionDto> {
         denyAuthorization()
 
-        val all = buildingBlockDefinitionRepository.findAll()
-        val latestPerKey = all
-            .groupBy { it.id.key }
-            .values
-            .mapNotNull { defsForKey ->
-                defsForKey.maxWithOrNull { a, b ->
-                    a.id.versionTag.compareTo(b.id.versionTag)
-                }
-            }
-        return latestPerKey.map {
-            BuildingBlockDefinitionDto(
-                key = it.id.key,
-                versionTag = it.id.versionTag.toString(),
-                name = it.name,
-                description = it.description,
-                createdBy = it.createdBy,
-                createdDate = it.createdDate,
-                basedOnVersionTag = it.basedOnVersionTag?.toString(),
-                final = it.final,
-                imageBase64 = if (includeArtwork) it.artwork?.imageBase64 else null,
-            )
+        return latestPerKey(buildingBlockDefinitionRepository.findAll()) { it.id }
+            .map { BuildingBlockDefinitionDto.from(it, includeArtwork) }
+    }
+
+    /**
+     * Latest version per key, narrowed by [searchTerm], ordered by [Pageable.getSort] and paged.
+     *
+     * Only the SemVer ranking happens in Kotlin; search, ordering and paging are left to the database.
+     * Resolving latest versions first keeps the search honest, since a name may differ between versions.
+     *
+     * @throws IllegalArgumentException when [Pageable.getSort] names a property that is not sortable
+     */
+    @Transactional(readOnly = true)
+    fun searchLatestPerKey(
+        searchTerm: String?,
+        pageable: Pageable
+    ): Page<BuildingBlockDefinitionDto> {
+        denyAuthorization()
+
+        // Validated first, so a bad sort is refused even on an empty table.
+        val requestedSort = if (pageable.sort.isSorted) pageable.sort else BY_NAME_ASCENDING
+        val entitySort = withStableTieBreaker(toEntitySort(requestedSort))
+
+        /*
+           The returned page reports the sort the caller asked for, not the entity paths it was
+           translated to. Reporting 'id.key' would hand back a property this endpoint refuses as
+           input, so a client could not feed its own page metadata back to it.
+         */
+        val responsePageable = pageable.withSort(requestedSort)
+
+        val latestIds = latestIdPerKey()
+        if (latestIds.isEmpty()) {
+            return PageImpl(emptyList(), responsePageable, 0)
         }
+
+        val page = buildingBlockDefinitionRepository
+            .findAll(byIds(latestIds).and(bySearchTerm(searchTerm)), pageable.withSort(entitySort))
+
+        return PageImpl(
+            page.content.map { BuildingBlockDefinitionDto.from(it) },
+            responsePageable,
+            page.totalElements
+        )
+    }
+
+    private fun Pageable.withSort(sort: Sort): Pageable =
+        if (isUnpaged) Pageable.unpaged(sort) else PageRequest.of(pageNumber, pageSize, sort)
+
+    private fun latestIdPerKey(): List<BuildingBlockDefinitionId> =
+        latestPerKey(buildingBlockDefinitionRepository.findAllIds()) { it }
+
+    /**
+     * Highest version tag per key by SemVer; shared by the id-only and entity variants so they cannot drift.
+     */
+    private fun <T> latestPerKey(items: Iterable<T>, id: (T) -> BuildingBlockDefinitionId): List<T> {
+        return items
+            .groupBy { id(it).key }
+            .values
+            .mapNotNull { forKey ->
+                forKey.maxWithOrNull { a, b -> id(a).versionTag.compareTo(id(b).versionTag) }
+            }
+    }
+
+    private fun withStableTieBreaker(entitySort: Sort): Sort =
+        if (entitySort.getOrderFor(KEY_PATH) != null) {
+            entitySort
+        } else {
+            entitySort.and(Sort.by(Sort.Order.asc(KEY_PATH)))
+        }
+
+    /**
+     * Maps the requested sort onto entity paths, refusing anything outside [SORT_PROPERTIES]; case-insensitive.
+     */
+    private fun toEntitySort(sort: Sort): Sort {
+        return Sort.by(
+            sort.map { order ->
+                val property = requireNotNull(SORT_PROPERTIES[order.property]) {
+                    "Cannot sort building block definitions on '${order.property}'. " +
+                        "Sortable properties are: ${SORT_PROPERTIES.keys.joinToString()}."
+                }
+                Sort.Order(order.direction, property).ignoreCase()
+            }.toList()
+        )
     }
 
     @Transactional
@@ -113,16 +178,7 @@ class BuildingBlockManagementService(
             )
         )
 
-        return BuildingBlockDefinitionDto(
-            key = saved.id.key,
-            versionTag = saved.id.versionTag.toString(),
-            name = saved.name,
-            description = saved.description,
-            createdBy = saved.createdBy,
-            createdDate = saved.createdDate,
-            basedOnVersionTag = saved.basedOnVersionTag?.toString(),
-            final = saved.final
-        )
+        return BuildingBlockDefinitionDto.from(saved)
     }
 
     @Transactional
@@ -164,7 +220,7 @@ class BuildingBlockManagementService(
             )
         )
 
-        return savedDraft.toDto()
+        return BuildingBlockDefinitionDto.from(savedDraft)
     }
 
     @Transactional
@@ -189,16 +245,7 @@ class BuildingBlockManagementService(
 
         val saved = buildingBlockDefinitionRepository.save(updated)
 
-        return BuildingBlockDefinitionDto(
-            key = saved.id.key,
-            versionTag = saved.id.versionTag.toString(),
-            name = saved.name,
-            description = saved.description,
-            createdBy = saved.createdBy,
-            createdDate = saved.createdDate,
-            basedOnVersionTag = saved.basedOnVersionTag?.toString(),
-            final = saved.final
-        )
+        return BuildingBlockDefinitionDto.from(saved)
     }
 
     @Transactional
@@ -210,11 +257,11 @@ class BuildingBlockManagementService(
             ?: throw UnknownBuildingBlockDefinitionException(id)
 
         if (existing.final) {
-            return existing.toDto()
+            return BuildingBlockDefinitionDto.from(existing)
         }
 
         val finalized = buildingBlockDefinitionRepository.save(existing.copy(final = true))
-        return finalized.toDto()
+        return BuildingBlockDefinitionDto.from(finalized)
     }
 
     @Transactional(readOnly = true)
@@ -236,6 +283,7 @@ class BuildingBlockManagementService(
         denyAuthorization()
 
         val buildingBlocks = buildingBlockDefinitionRepository.findAllByIdKeyOrderByIdVersionTag(key)
+            .sortedByDescending { it.id.versionTag }
 
         return PageImpl(
             buildingBlocks.map {
@@ -254,5 +302,20 @@ class BuildingBlockManagementService(
                 Action.deny()
             )
         )
+    }
+
+    companion object {
+        private const val KEY_PATH: String = "id.key"
+
+        /**
+         * Sort property -> entity path. The version tag is absent by design: sorting it in SQL would be
+         * lexicographic, not SemVer. Anything else is refused rather than silently ignored.
+         */
+        private val SORT_PROPERTIES: Map<String, String> = mapOf(
+            "name" to "name",
+            "key" to KEY_PATH,
+        )
+
+        private val BY_NAME_ASCENDING: Sort = Sort.by(Sort.Order.asc("name"))
     }
 }

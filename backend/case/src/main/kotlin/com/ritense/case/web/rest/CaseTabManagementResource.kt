@@ -18,6 +18,7 @@ package com.ritense.case.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.service.CaseTabService
+import com.ritense.case.service.exception.InvalidTabContentKeyException
 import com.ritense.case.service.exception.TabAlreadyExistsException
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case.web.rest.dto.CaseTabUpdateDto
@@ -28,6 +29,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -48,6 +50,10 @@ class CaseTabManagementResource(
     private val userManagementService: UserManagementService,
 ) {
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create case tab",
+        nl = "Dossiertabblad aanmaken",
+    )
     @PostMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun createCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -62,25 +68,39 @@ class CaseTabManagementResource(
             ResponseEntity.ok(CaseTabWithMetadataDto.of(caseTab, userManagementService))
         } catch (ex: TabAlreadyExistsException) {
             ResponseEntity.status(HttpStatus.CONFLICT).build()
+        } catch (ex: InvalidTabContentKeyException) {
+            ResponseEntity.badRequest().build()
         }
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case tab order",
+        nl = "Volgorde dossiertabbladen bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun updateOrderCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
         @Valid @RequestBody caseTabDtos: List<CaseTabUpdateOrderDto>
     ): ResponseEntity<List<CaseTabWithMetadataDto>> {
-        val caseTabs = caseTabService.updateCaseTabs(
-            CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
-            caseTabDtos
-        )
-            .map { CaseTabWithMetadataDto.of(it, userManagementService) }
-        return ResponseEntity.ok(caseTabs)
+        return try {
+            val caseTabs = caseTabService.updateCaseTabs(
+                CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
+                caseTabDtos
+            )
+                .map { CaseTabWithMetadataDto.of(it, userManagementService) }
+            ResponseEntity.ok(caseTabs)
+        } catch (ex: InvalidTabContentKeyException) {
+            ResponseEntity.badRequest().build()
+        }
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update case tab",
+        nl = "Dossiertabblad bijwerken",
+    )
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab/{tabKey}")
     fun updateCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -88,15 +108,23 @@ class CaseTabManagementResource(
         @PathVariable tabKey: String,
         @Valid @RequestBody caseTab: CaseTabUpdateDto
     ): ResponseEntity<Unit> {
-        caseTabService.updateCaseTab(
-            CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
-            tabKey,
-            caseTab
-        )
-        return ResponseEntity.noContent().build()
+        return try {
+            caseTabService.updateCaseTab(
+                CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
+                tabKey,
+                caseTab
+            )
+            ResponseEntity.noContent().build()
+        } catch (ex: InvalidTabContentKeyException) {
+            ResponseEntity.badRequest().build()
+        }
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete case tab",
+        nl = "Dossiertabblad verwijderen",
+    )
     @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab/{tabKey}")
     fun deleteCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
@@ -108,6 +136,10 @@ class CaseTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List case tabs (management)",
+        nl = "Dossiertabbladen ophalen (beheer)",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab")
     fun getCaseTabs(
         @LoggableResource("caseDefinitionName") @PathVariable caseDefinitionKey: String,
@@ -119,6 +151,10 @@ class CaseTabManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get case tab",
+        nl = "Dossiertabblad ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab/{tabKey}")
     fun getCaseTab(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,

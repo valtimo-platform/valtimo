@@ -85,6 +85,7 @@ import {
   documentenApiPluginSpecification,
   DocumentenApiPreviewPluginModule,
   documentenApiPreviewPluginSpecification,
+  ExternalPluginPageRoutingModule,
   NotificatiesApiPluginModule,
   notificatiesApiPluginSpecification,
   ObjectenApiPluginModule,
@@ -190,6 +191,7 @@ export function tabsFactory() {
     MigrationModule,
     // management
     PluginManagementModule,
+    ExternalPluginPageRoutingModule,
     ObjectManagementModule,
     ObjectModule,
     AccessControlManagementModule,

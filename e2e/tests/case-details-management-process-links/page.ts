@@ -18,16 +18,39 @@ import {type APIRequestContext, type Locator, type Page, expect} from '@playwrig
 import path from 'path';
 import {
   BB_MAPPINGS_TEST_IDS,
+  DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS,
+  PROCESS_LINK_PANEL_TEST_IDS,
+  PROCESS_MANAGEMENT_BUILDER_TEST_IDS,
   VALUE_PATH_SELECTOR_TEST_IDS,
 } from '../../constants';
+import {BpmnModeler} from '../../shared/bpmn-modeler/bpmn-modeler.utils';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost} from '../../utils/api.utils';
+import {expectNotificationMessage, openAndSelectOption} from '../../utils/ui.utils';
 import {ensureDraftVersionSelected} from '../../utils/version.utils';
 
 const BPMN_ASSET_PATH = path.resolve(__dirname, '../../assets/e2e-test-process.bpmn');
+const PLUGIN_CONFIGURATION_ENDPOINT = '/api/v1/plugin/configuration';
+
+export const PLUGIN_STEPS_BPMN_ASSET_PATH = path.resolve(
+  __dirname,
+  '../../assets/e2e-plugin-steps-process.bpmn'
+);
+
+export interface CaseProcessDefinitionResponse {
+  processDefinition: {id: string; key: string};
+  processLinks: Record<string, any>[];
+}
+
+interface PluginConfigurationResponse {
+  id: string;
+  title: string;
+  pluginDefinition: {key: string};
+}
 
 export class CaseDetailsProcessLinksPage {
   readonly carbonList: CarbonList;
+  readonly modeler: BpmnModeler;
   private readonly processListScope: Locator;
 
   constructor(
@@ -36,6 +59,7 @@ export class CaseDetailsProcessLinksPage {
   ) {
     this.processListScope = page.locator('valtimo-process-management-list');
     this.carbonList = new CarbonList(page, this.processListScope);
+    this.modeler = new BpmnModeler(page);
   }
 
   // ─── Navigation + process setup ───────────────────────────────────
@@ -55,13 +79,13 @@ export class CaseDetailsProcessLinksPage {
     return draftVersion;
   }
 
-  async uploadTestProcess() {
+  async uploadTestProcess(filePath: string = BPMN_ASSET_PATH) {
     const uploadButton = this.carbonList.toolbar.getByRole('button').filter({hasText: /^$/}).first();
     await uploadButton.click();
     const modal = this.page.locator('valtimo-process-management-upload cds-modal');
     const submit = modal.getByRole('button', {name: 'Upload', exact: true});
     const fileInput = modal.locator('input[type="file"]');
-    await fileInput.setInputFiles(BPMN_ASSET_PATH);
+    await fileInput.setInputFiles(filePath);
     await expect(submit).toBeEnabled();
     await submit.click();
     await expect(submit).not.toBeVisible();
@@ -160,7 +184,7 @@ export class CaseDetailsProcessLinksPage {
     return this.page.locator('valtimo-choose-process-link-type');
   }
 
-  typeButton(label: 'Form' | 'FormFlow' | 'Plugin' | 'Building block') {
+  typeButton(label: 'Form' | 'FormFlow' | 'Plugins & Apps' | 'Building block') {
     return this.typeChooserDescription.getByRole('button', {name: label, exact: true});
   }
 
@@ -373,30 +397,24 @@ export class CaseDetailsProcessLinksPage {
 
   // ─── Interactions ─────────────────────────────────────────────────
 
-  async chooseLinkType(type: 'Form' | 'FormFlow' | 'Plugin' | 'Building block') {
+  async chooseLinkType(type: 'Form' | 'FormFlow' | 'Plugins & Apps' | 'Building block') {
     await this.typeButton(type).click();
   }
 
-  async selectFormByName(formName: string) {
-    await expect(this.formComboBox).toBeVisible();
-    await this.formComboBox.click();
-    await this.page
+  private optionByText(text: string) {
+    return this.page
       .getByRole('listbox')
       .locator('[role="option"]')
-      .filter({hasText: formName})
-      .first()
-      .click();
+      .filter({hasText: text})
+      .first();
+  }
+
+  async selectFormByName(formName: string) {
+    await openAndSelectOption(this.formComboBox, this.optionByText(formName));
   }
 
   async selectFormFlowByKey(flowKey: string) {
-    await expect(this.formFlowComboBox).toBeVisible();
-    await this.formFlowComboBox.click();
-    await this.page
-      .getByRole('listbox')
-      .locator('[role="option"]')
-      .filter({hasText: flowKey})
-      .first()
-      .click();
+    await openAndSelectOption(this.formFlowComboBox, this.optionByText(flowKey));
   }
 
   async selectPluginConfigurationByTitle(title: string) {
@@ -454,6 +472,83 @@ export class CaseDetailsProcessLinksPage {
       .click();
   }
 
+  // ─── Documenten API: Delete informatie object action ──────────────
+
+  /** Test id sits on the `v-input` host; the field is one level down. */
+  get deleteInformatieObjectDocumentUrlInput() {
+    return this.page
+      .getByTestId(DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS.documentUrl)
+      .locator('input');
+  }
+
+  async advanceToPluginActionStep(pluginConfigurationTitle: string, elementId: string) {
+    await this.openProcessLinkModalForServiceTask(elementId);
+    await this.selectPluginConfigurationByTitle(pluginConfigurationTitle);
+    await this.clickNext();
+    await expect(this.selectPluginActionComponent).toBeVisible();
+  }
+
+  // ─── Builder: real properties panel + save ────────────────────────
+
+  get createProcessLinkButton() {
+    return this.page.getByTestId(PROCESS_LINK_PANEL_TEST_IDS.createButton);
+  }
+
+  get editProcessLinkButton() {
+    return this.page.getByTestId(PROCESS_LINK_PANEL_TEST_IDS.editButton);
+  }
+
+  get builderSaveButton() {
+    return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.deployButton);
+  }
+
+  get draftToggle() {
+    return this.page.getByTestId(PROCESS_MANAGEMENT_BUILDER_TEST_IDS.draftToggle);
+  }
+
+  async openCreateProcessLinkFromPanel(elementId: string) {
+    await this.openProcessLinkFromPanel(elementId, this.createProcessLinkButton);
+  }
+
+  async openEditProcessLinkFromPanel(elementId: string) {
+    await this.openProcessLinkFromPanel(elementId, this.editProcessLinkButton);
+  }
+
+  private async openProcessLinkFromPanel(elementId: string, button: Locator) {
+    await this.modeler.withSelectedElement(elementId, async () => {
+      await this.modeler.expandGroup('Process link', 5_000);
+      await button.click({timeout: 5_000});
+      await expect(this.modalFooter).toBeVisible({timeout: 5_000});
+    });
+  }
+
+  /** Draft skips deploy validation — the plugin-steps diagram has unlinked steps. */
+  async enableDraft() {
+    const switchControl = this.draftToggle.getByRole('switch');
+    if (!(await switchControl.isChecked())) {
+      await this.draftToggle.locator('.cds--toggle__switch').click();
+    }
+    await expect(switchControl).toBeChecked();
+  }
+
+  /** Case context navigates back to the process list after a deploy. */
+  async saveProcessAsDraft() {
+    await this.enableDraft();
+    await expect(this.builderSaveButton).toBeEnabled();
+    await this.builderSaveButton.click();
+    await expectNotificationMessage(this.page, 'deployed');
+    await this.page.waitForURL(/\/processes$/);
+    await this.carbonList.waitForLoaded();
+  }
+
+  async getProcessLink(activityId: string): Promise<Record<string, any> | undefined> {
+    return this.page.evaluate(id => {
+      const service = (window as any).processManagementEditorService;
+      const links = service?.processLinksForSelectedDefinition || [];
+      return links.find((l: {activityId: string}) => l.activityId === id);
+    }, activityId);
+  }
+
   async clickNext() {
     await expect(this.nextButton).toBeEnabled();
     await this.nextButton.click();
@@ -489,7 +584,46 @@ export class CaseDetailsProcessLinksPage {
     expect(exists, `expected a process link for activity "${activityId}"`).toBe(true);
   }
 
-  // ─── API cleanup ──────────────────────────────────────────────────
+  // ─── API setup + cleanup ──────────────────────────────────────────
+
+  async getCaseProcessViaApi(
+    caseKey: string,
+    version: string,
+    processKey: string
+  ): Promise<CaseProcessDefinitionResponse> {
+    return apiGet<CaseProcessDefinitionResponse>(
+      `/api/management/v1/case-definition/${caseKey}/version/${version}/process-definition/key/${processKey}`
+    );
+  }
+
+  async findPluginConfigurationViaApi(
+    definitionKey: string
+  ): Promise<PluginConfigurationResponse | undefined> {
+    const configurations = await apiGet<PluginConfigurationResponse[]>(
+      PLUGIN_CONFIGURATION_ENDPOINT
+    );
+    return configurations.find(c => c.pluginDefinition?.key === definitionKey);
+  }
+
+  async createPluginConfigurationViaApi(
+    definitionKey: string,
+    title: string,
+    properties: Record<string, unknown>
+  ): Promise<PluginConfigurationResponse> {
+    return apiPost<PluginConfigurationResponse>(PLUGIN_CONFIGURATION_ENDPOINT, {
+      definitionKey,
+      title,
+      properties,
+    });
+  }
+
+  async deletePluginConfigurationViaApi(id: string) {
+    try {
+      await apiDelete(`${PLUGIN_CONFIGURATION_ENDPOINT}/${id}`);
+    } catch {
+      // Ignore — configuration may not exist
+    }
+  }
 
   async deleteProcessViaApi(caseKey: string, version: string, processKey: string) {
     try {

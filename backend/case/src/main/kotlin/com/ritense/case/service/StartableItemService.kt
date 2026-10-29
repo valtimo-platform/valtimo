@@ -58,7 +58,7 @@ class StartableItemService(
 
         val allItems = startableItemProviders.flatMap { provider ->
             provider.getStartableItems(caseDefinitionId, caseDocument)
-        }
+        }.filter { it.startableByUser }
 
         val sortOrderMap = startableItemRepository
             .findAllByIdCaseDefinitionId(caseDefinitionId)

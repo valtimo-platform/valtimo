@@ -1,0 +1,15 @@
+{
+    "scenario": "operators",
+    "aanvrager": {
+        "naam": "Kees Peters"
+    },
+    "nieuwAdres": "Testlaan 1, 1000 AA Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 1,
+    "oppervlakte": 60,
+    "documenten": [
+        "paspoort",
+        "loonstrook"
+    ]
+}

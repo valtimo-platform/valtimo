@@ -17,5 +17,6 @@ package com.ritense.processdocument.domain
 
 class CaseDefinitionProcess(
     val processDefinitionKey: String,
-    val processName: String
+    val processName: String,
+    val processDefinitionVersion: Int? = null
 )

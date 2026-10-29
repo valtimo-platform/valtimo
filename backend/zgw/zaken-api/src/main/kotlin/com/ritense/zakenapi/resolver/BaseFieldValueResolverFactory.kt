@@ -19,12 +19,17 @@ package com.ritense.zakenapi.resolver
 import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valueresolver.ValueResolverFactory
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import org.operaton.bpm.engine.delegate.VariableScope
 import java.util.function.Function
 
 abstract class BaseFieldValueResolverFactory(
     private val processDocumentService: ProcessDocumentService,
 ) : ValueResolverFactory {
+
+    override fun resolverCacheKey(properties: Map<String, Any>): Any? {
+        return properties[DOCUMENT_ID]?.toString()
+    }
 
     override fun createResolver(
         processInstanceId: String,

@@ -14,16 +14,21 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="dashboards$ | async as dashboards" class="dashboards-container">
+<div
+  *ngIf="dashboards$ | async as dashboards"
+  class="dashboards-container"
+  [attr.data-test-id]="testIds.container"
+>
   <valtimo-no-results
     *ngIf="!dashboards.length"
+    [attr.data-test-id]="testIds.noDashboards"
     [title]="'dashboard.noDashboards' | translate"
     [description]="'dashboard.noDashboardsDescription' | translate"
     illustration="valtimo-layout/img/no-dashboards.svg"
   ></valtimo-no-results>
 
   <div *ngIf="dashboards.length === 1">
-    <h4>{{ dashboards[0].title }}</h4>
+    <h4 [attr.data-test-id]="testIds.title">{{ dashboards[0].title }}</h4>
 
     <valtimo-widget-dashboard-content
       [dashboard]="dashboards[0]"

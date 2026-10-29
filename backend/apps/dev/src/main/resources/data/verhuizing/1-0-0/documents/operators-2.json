@@ -1,0 +1,15 @@
+{
+    "scenario": "operators",
+    "aanvrager": {
+        "naam": "Merel Visser"
+    },
+    "nieuwAdres": "Testlaan 2, 1000 AA Testdorp",
+    "status": "in_behandeling",
+    "spoed": false,
+    "aantalPersonen": 4,
+    "oppervlakte": 120.75,
+    "documenten": [
+        "paspoort",
+        "loonstrook"
+    ]
+}

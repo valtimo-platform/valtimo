@@ -38,6 +38,8 @@ interface ValuePathSelectorCache {
 interface ValuePathItem {
   path: string;
   children?: string[];
+  /** Set when the path comes only from an extra version tag, not from the one being configured. */
+  notInThisVersion?: boolean;
 }
 
 type DocumentDefinitionItemsCache = ListItem[];

@@ -28,6 +28,7 @@ import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.iko.PropertyField
 import jakarta.validation.Valid
 import java.time.LocalDateTime
@@ -59,6 +60,10 @@ class IkoViewManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO view property fields by type",
+        nl = "Eigenschapsvelden van IKO-weergave ophalen per type",
+    )
     @GetMapping("/v1/iko-property-fields/{type}/view")
     fun getIkoViewPropertyFields(
         @PathVariable type: String,
@@ -67,6 +72,10 @@ class IkoViewManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO views for management",
+        nl = "IKO-weergaven ophalen voor beheer",
+    )
     @GetMapping("/v1/iko-view")
     fun getIkoViewsForManagement(
         @RequestParam key: String?,
@@ -84,6 +93,10 @@ class IkoViewManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO view by key",
+        nl = "IKO-weergave ophalen op sleutel",
+    )
     @GetMapping("/v1/iko-view/{key}")
     fun getIkoView(
         @PathVariable key: String,
@@ -93,6 +106,10 @@ class IkoViewManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create IKO view",
+        nl = "IKO-weergave aanmaken",
+    )
     @PostMapping("/v1/iko-view/{key}")
     fun createIkoView(
         @PathVariable key: String,
@@ -108,6 +125,10 @@ class IkoViewManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO view",
+        nl = "IKO-weergave bijwerken",
+    )
     @PutMapping("/v1/iko-view/{key}")
     fun updateIkoView(
         @PathVariable key: String,
@@ -123,6 +144,10 @@ class IkoViewManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete IKO view",
+        nl = "IKO-weergave verwijderen",
+    )
     @DeleteMapping("/v1/iko-view/{key}")
     fun deleteIkoView(
         @PathVariable key: String,
@@ -132,6 +157,10 @@ class IkoViewManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Export IKO view",
+        nl = "IKO-weergave exporteren",
+    )
     @GetMapping(
         "/v1/iko-view/{key}/export",
         produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE]
@@ -148,6 +177,10 @@ class IkoViewManagementResource(
             .body(baos.toByteArray())
     }
 
+    @EndpointDescription(
+        en = "Import IKO view",
+        nl = "IKO-weergave importeren",
+    )
     @PostMapping("/v1/iko-view/import")
     @RunWithoutAuthorization
     fun import(

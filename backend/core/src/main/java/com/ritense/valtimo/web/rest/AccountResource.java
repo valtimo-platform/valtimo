@@ -24,6 +24,7 @@ import com.ritense.valtimo.contract.authentication.CurrentUserService;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.authentication.model.Profile;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
@@ -45,18 +46,30 @@ public class AccountResource {
         this.currentUserService = currentUserService;
     }
 
+    @EndpointDescription(
+        en = "Get the current user account",
+        nl = "Account van huidige gebruiker ophalen"
+    )
     @GetMapping("/v1/account")
     public ResponseEntity<ManageableUser> getAccount() throws IllegalAccessException {
         final ManageableUser currentUser = currentUserService.getCurrentUser();
         return ResponseEntity.ok(currentUser);
     }
 
+    @EndpointDescription(
+        en = "Update the current user profile",
+        nl = "Profiel van huidige gebruiker bijwerken"
+    )
     @PostMapping("/v1/account/profile")
     public ResponseEntity<Void> updateProfile(@Valid @RequestBody Profile profile) throws IllegalAccessException {
         currentUserService.updateProfile(profile);
         return ResponseEntity.ok().build();
     }
 
+    @EndpointDescription(
+        en = "Change the current user password",
+        nl = "Wachtwoord van huidige gebruiker wijzigen"
+    )
     @PostMapping(value = "/v1/account/change_password", produces = TEXT_PLAIN_UTF8_VALUE)
     public ResponseEntity<Void> changePassword(@RequestBody String password) throws IllegalAccessException {
         currentUserService.changePassword(password);

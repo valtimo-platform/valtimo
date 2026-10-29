@@ -1,0 +1,8 @@
+{
+    "key": "case-summary-demo",
+    "name": "Case Summary Demo",
+    "versionTag": "1.0.0",
+    "final": false,
+    "canHaveAssignee": true,
+    "autoAssignTasks": false
+}

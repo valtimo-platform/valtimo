@@ -7,3 +7,4 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/playwright/migration-ui-replay-report.json

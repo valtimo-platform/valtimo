@@ -135,6 +135,15 @@
     >
     </cds-tab>
 
+    <cds-tab
+      class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.MIGRATION"
+      [active]="obs.currentTab === TabEnum.MIGRATION"
+      [heading]="'caseManagement.tabs.migration' | translate"
+      (selected)="navigateToTab(TabEnum.MIGRATION)"
+    >
+    </cds-tab>
+
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
       @if (injectedTab.enabled$ | async) {
         <ng-template #injectedTabHeading>

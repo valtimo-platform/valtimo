@@ -32,7 +32,9 @@ import com.ritense.formflow.web.rest.dto.FormFlowProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.formflow.service.FormFlowRegistryService
 import java.util.UUID
+import org.assertj.core.api.Assertions.assertThat
 import org.operaton.bpm.engine.RepositoryService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -66,6 +68,9 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
 
     @Autowired
     lateinit var formFlowService: FormFlowService
+
+    @Autowired
+    lateinit var formFlowRegistryService: FormFlowRegistryService
 
     @Test
     fun `should not create form flow instance when Operaton user task is created`() {
@@ -172,6 +177,91 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
         assertEquals(additionalProperties["documentDefinitionName"], "some-document")
         assertEquals(additionalProperties["processDefinitionKey"], "formflow-one-task-process")
         assertEquals(additionalProperties["processDefinitionId"], processDefinition.id)
+    }
+
+    @Test
+    @WithMockUser(username = TEST_USER, authorities = [USER])
+    fun `should only put registry-declared additional properties on task-opened instances`() {
+        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
+        val processDefinition = repositoryService.createProcessDefinitionQuery()
+            .latestVersion()
+            .processDefinitionKey("formflow-one-task-process")
+            .singleResult()
+
+        processLinkService.createProcessLink(
+            FormFlowProcessLinkCreateRequestDto(
+                processDefinitionId = processDefinition.id,
+                activityId = "do-something",
+                activityType = ActivityTypeWithEventName.USER_TASK_START,
+                formFlowDefinitionKey = "inkomens_loket_alternate"
+            ),
+            caseDefinitionId
+        )
+        val processInstance = runWithoutAuthorization {
+            operatonProcessService.startProcess(
+                processDefinition.key,
+                UUID.randomUUID().toString(),
+                caseDefinitionId,
+                mapOf()
+            )
+        }
+        val task = taskService.findTask(byProcessInstanceId(processInstance.processInstanceDto.id))
+
+        processLinkActivityService.openTask(UUID.fromString(task.id))
+
+        // Guards against drift between what the handler populates and what the registry documents
+        // for the editor.
+        val declaredUserTaskProperties = formFlowRegistryService.getRegistry()
+            .additionalProperties
+            .filter { it.context == "userTask" }
+            .map { it.name }
+        val instanceProperties = formFlowInstanceRepository.findAll().single().getAdditionalProperties().keys
+
+        assertThat(instanceProperties).isNotEmpty
+        assertThat(declaredUserTaskProperties).containsAll(instanceProperties)
+    }
+
+    @Test
+    fun `should only put registry-declared additional properties on start-event instances`() {
+        val processDefinition = repositoryService.createProcessDefinitionQuery()
+            .latestVersion()
+            .processDefinitionKey("formflow-one-task-process")
+            .singleResult()
+        val formFlowDefinition = formFlowService.findDefinition(
+            "inkomens_loket_alternate",
+            CaseDefinitionId("profile", "1.0.0")
+        )
+        val processLink: ProcessLink = FormFlowProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = processDefinition.id,
+            activityId = "some_activity_id",
+            activityType = ActivityTypeWithEventName.START_EVENT_START,
+            formFlowDefinitionKey = formFlowDefinition?.id?.key!!,
+            formDisplayType = FormDisplayType.modal,
+            formSize = FormSizes.large,
+            subtitles = listOf()
+        )
+
+        processLinkActivityHandler.getStartEventObject(
+            processDefinition.id,
+            null,
+            "some-document",
+            processLink
+        )
+
+        // Guards against drift between what the handler populates and what the registry documents
+        // for the editor.
+        val declaredStartEventProperties = formFlowRegistryService.getRegistry()
+            .additionalProperties
+            .filter { it.context == "startEvent" }
+            .map { it.name }
+        val instanceProperties = formFlowInstanceRepository.findAll()
+            .single { it.formFlowDefinition.id.toString() == "inkomens_loket_alternate" }
+            .getAdditionalProperties()
+            .keys
+
+        assertThat(instanceProperties).isNotEmpty
+        assertThat(declaredStartEventProperties).containsAll(instanceProperties)
     }
 
     companion object {

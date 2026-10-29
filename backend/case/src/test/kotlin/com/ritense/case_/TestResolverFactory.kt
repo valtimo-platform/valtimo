@@ -17,6 +17,7 @@
 package com.ritense.case_
 
 import com.ritense.valueresolver.ValueResolverFactory
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import org.operaton.bpm.engine.delegate.VariableScope
 import java.util.function.Function
 
@@ -34,6 +35,11 @@ class TestResolverFactory(
 
     override fun supportedPrefix(): String {
         return prefix
+    }
+
+    // Mirrors the doc:/zaak: factories — one document, one fetch
+    override fun resolverCacheKey(properties: Map<String, Any>): Any? {
+        return properties[DOCUMENT_ID]?.toString()
     }
 
     override fun createResolver(

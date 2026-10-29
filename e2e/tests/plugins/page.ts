@@ -14,13 +14,37 @@
  * limitations under the License.
  */
 
-import {APIRequestContext, expect, Page} from '@playwright/test';
-import {PluginFieldMap, pluginTestConfiguration, pluginTypes} from './plugin-config';
-import {STEPPER_FOOTER_STEP_TEST_IDS} from '../../constants';
+import {APIRequestContext, expect, Locator, Page} from '@playwright/test';
+import {
+  PluginFieldMap,
+  pluginDetailTestData,
+  pluginTestConfiguration,
+  pluginTypes,
+} from './plugin-config';
+import {
+  CONFIRMATION_MODAL_TEST_IDS,
+  DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS,
+  PLUGIN_ADD_MODAL_TEST_IDS,
+  PLUGIN_CATALOG_TEST_IDS,
+  PLUGIN_EDIT_MODAL_TEST_IDS,
+} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import * as ApiUtils from '../../utils/api.utils';
+
+export interface PluginConfigurationResponse {
+  id: string;
+  title: string;
+  properties: Record<string, string>;
+  pluginDefinition: {key: string; title: string; description: string};
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class PluginPage {
-  constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
+  constructor(
+    private readonly page: Page,
+    private readonly request: APIRequestContext
+  ) {}
 
   // UI Elements
   get configureButton() {
@@ -28,11 +52,14 @@ export class PluginPage {
   }
 
   get enterDataButton() {
-    return this.page.getByRole('button', {name: 'Enter data'});
+    return this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.enterDataButton);
   }
 
+  /** Add wizard or, when duplicating, the edit modal — both in the DOM, so scope to the open one. */
   get saveButton() {
-    return this.page.getByRole('button', {name: 'Save configuration'});
+    return this.visibleModal
+      .getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.completeButton)
+      .or(this.visibleModal.getByTestId(PLUGIN_EDIT_MODAL_TEST_IDS.saveButton));
   }
 
   // Navigation
@@ -60,31 +87,32 @@ export class PluginPage {
     await this.verifyStepperStep2();
   }
 
-  // Stepper checks
+  // Stepper checks — the wizard header is a Carbon progress indicator
+  get stepper() {
+    return this.page.locator('.cds--progress');
+  }
+
+  stepperStep(index: number) {
+    return this.stepper.locator('.cds--progress-step').nth(index);
+  }
+
   async verifyStepperStep1() {
-    const stepper = this.page.locator('.stepper-header');
-    await expect(stepper).toBeVisible();
+    await expect(this.stepper).toBeVisible();
 
-    const step1 = stepper.locator('.stepper-header__step').first();
-    await expect(step1).toHaveClass(/stepper-header__step--active/);
-    await expect(step1.locator('.stepper-header__step-number')).toHaveText('1');
-    await expect(step1.locator('.stepper-header__step-title')).toHaveText('Choose your plugin');
+    const step1 = this.stepperStep(0);
+    await expect(step1).toHaveClass(/cds--progress-step--current/);
+    await expect(step1.locator('.cds--progress-label')).toHaveText('Choose your plugin');
 
-    const step2 = stepper.locator('.stepper-header__step').nth(1);
-    await expect(step2).not.toHaveClass(/stepper-header__step--active/);
+    await expect(this.stepperStep(1)).not.toHaveClass(/cds--progress-step--current/);
 
     await expect(this.enterDataButton).toBeDisabled();
   }
 
   async verifyStepperStep2() {
-    const stepper = this.page.locator('.stepper-header');
-    await expect(stepper).toBeVisible();
+    await expect(this.stepper).toBeVisible();
 
-    const step1 = stepper.locator('.stepper-header__step').first();
-    await expect(step1).toHaveClass(/stepper-header__step--active/);
-
-    const step2 = stepper.locator('.stepper-header__step').nth(1);
-    await expect(step2).toHaveClass(/stepper-header__step--active/);
+    await expect(this.stepperStep(0)).toHaveClass(/cds--progress-step--complete/);
+    await expect(this.stepperStep(1)).toHaveClass(/cds--progress-step--current/);
 
     await expect(this.saveButton).toBeDisabled();
   }
@@ -141,14 +169,12 @@ export class PluginPage {
     expect(response500.status()).toBe(500);
 
     try {
-      const errorToast = this.page
-        .locator('.cds--toast-notification__details')
-        .first();
+      const errorToast = this.page.locator('.cds--toast-notification__details').first();
 
       await expect(errorToast).toBeVisible({timeout: 10_000});
     } finally {
       // Always close the wizard, even if the assertion fails
-      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+      await this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton).click();
     }
   }
 
@@ -166,14 +192,12 @@ export class PluginPage {
     expect(response500.status()).toBe(500);
 
     try {
-      const errorToast = this.page
-        .locator('.cds--toast-notification__details')
-        .first();
+      const errorToast = this.page.locator('.cds--toast-notification__details').first();
 
       await expect(errorToast).toBeVisible({timeout: 10_000});
     } finally {
       // Always close the wizard, even if the assertion fails
-      await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+      await this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton).click();
     }
   }
 
@@ -229,15 +253,24 @@ export class PluginPage {
   }
 
   async deletePlugin(pluginIdentifier: string): Promise<void> {
-    await this.page
-      .locator(`tr:has(td:has-text("${pluginIdentifier}"))`)
-      .first()
-      .locator('.v-overflow-menu__trigger')
-      .click();
+    const row = this.page.locator(`tr:has(td:has-text("${pluginIdentifier}"))`).first();
+    if (!(await row.count())) return;
+
+    await row.locator('.v-overflow-menu__trigger').click({timeout: 10_000});
     await this.page.getByRole('menu').getByRole('menuitem', {name: 'Delete'}).click();
+    await this.confirmDeletion();
     await this.page.waitForResponse(
       res => res.url().includes('/api/v1/plugin/configuration') && res.request().method() === 'GET'
     );
+  }
+
+  /** Confirm deletion; the page holds several confirmation modals, so address the open one. */
+  async confirmDeletion(): Promise<void> {
+    const confirmButton = this.page
+      .locator('.cds--modal.is-visible')
+      .getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton);
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
   }
 
   async deleteZakenApiExpectingError(): Promise<void> {
@@ -341,7 +374,7 @@ export class PluginPage {
   }
 
   async closeWizard(): Promise<void> {
-    await this.page.getByTestId(STEPPER_FOOTER_STEP_TEST_IDS.cancelButton).click();
+    await this.page.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton).click();
   }
 
   async assertPluginDeleted(pluginType: string): Promise<void> {
@@ -362,15 +395,34 @@ export class PluginPage {
       }
     }
 
+    // One stuck plugin type must not cost the others their cleanup, so failures are collected
+    // and raised once every type has had its turn.
+    const failures: string[] = [];
+
     for (const type of pluginTypes) {
       if (type === 'Besluiten API') continue;
 
-      const rows = this.page.locator(
-        `tr:has(td:has-text("${pluginTestConfiguration[type].pluginIdentifier}"))`
-      );
-      while ((await rows.count()) > 0) {
-        await this.deletePlugin(pluginTestConfiguration[type].pluginIdentifier);
+      const identifier = pluginTestConfiguration[type].pluginIdentifier;
+      const rows = this.page.locator(`tr:has(td:has-text("${identifier}"))`);
+
+      try {
+        let remaining = await rows.count();
+        while (remaining > 0) {
+          await this.deletePlugin(identifier);
+
+          // The delete response can land before the table redraws, so an immediate read still
+          // shows the old count. Wait for it to drop, and fail rather than leave the plugin
+          // behind for the next run.
+          await expect.poll(() => rows.count(), {timeout: 10_000}).toBeLessThan(remaining);
+          remaining = await rows.count();
+        }
+      } catch (error) {
+        failures.push(`${identifier}: ${(error as Error).message}`);
       }
+    }
+
+    if (failures.length) {
+      throw new Error(`[plugins] Could not delete every configuration:\n${failures.join('\n')}`);
     }
   }
 
@@ -378,5 +430,199 @@ export class PluginPage {
     await this.page.getByRole('button', {name: 'Add verzoek type'}).click();
 
     // TODO: fill subform
+  }
+
+  // ─── Configuration Details (9.12, 9.17, 9.19, 9.21, 9.23–9.25) ────
+  //
+  // Both the add wizard and the edit modal render the same plugin configuration form, so all
+  // field locators are scoped to whichever modal is currently visible.
+
+  get visibleModal(): Locator {
+    return this.page.locator('.cds--modal.is-visible');
+  }
+
+  get configurationIdInput(): Locator {
+    return this.visibleModal
+      .getByTestId(DEFAULT_PLUGIN_CONFIGURATION_TEST_IDS.configurationId)
+      .locator('input');
+  }
+
+  get editModalSaveButton(): Locator {
+    return this.visibleModal.getByTestId(PLUGIN_EDIT_MODAL_TEST_IDS.saveButton);
+  }
+
+  get cancelWizardButton(): Locator {
+    return this.visibleModal.getByTestId(PLUGIN_ADD_MODAL_TEST_IDS.cancelButton);
+  }
+
+  /**
+   * Selects a catalog tile by its exact title. `selectPluginType` matches anywhere in the tile
+   * (title *and* description), so it picks the wrong tile for short names such as "OpenZaak",
+   * which also appears in other plugins' descriptions.
+   */
+  async selectPluginTypeByTitle(title: string): Promise<void> {
+    const tile = this.catalogTiles.filter({
+      has: this.page.getByTestId(PLUGIN_CATALOG_TEST_IDS.tileTitle).filter({
+        hasText: new RegExp(`^\\s*${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`),
+      }),
+    });
+    await tile.first().click();
+    await this.enterDataButton.click();
+    await this.verifyStepperStep2();
+  }
+
+  /** Returns the labels currently offered by an authentication (or any other) v-select. */
+  async getSelectOptionLabels(testId: string): Promise<string[]> {
+    const select = this.visibleModal.getByTestId(testId);
+    await select.locator('cds-combo-box').click();
+    const options = select.getByRole('option');
+    await expect(options.first()).toBeVisible();
+    const labels = await options.allInnerTexts();
+    await this.page.keyboard.press('Escape');
+    return labels.map(label => label.trim());
+  }
+
+  async selectSelectOption(testId: string, optionLabel: string): Promise<void> {
+    const select = this.visibleModal.getByTestId(testId);
+    await select.locator('cds-combo-box').click();
+    await select.getByRole('option').getByText(optionLabel, {exact: true}).click();
+    await expect(select.locator('input')).toHaveValue(optionLabel);
+  }
+
+  async fillModalInput(testId: string, value: string): Promise<void> {
+    const input = this.visibleModal.getByTestId(testId).locator('input');
+    await input.fill(value);
+    await expect(input).toHaveValue(value);
+  }
+
+  /**
+   * Creates a second OpenZaak authentication configuration so that authentication dropdowns
+   * offer more than the single seeded option.
+   */
+  async createOpenZaakAuthConfiguration(
+    titleTestId: string,
+    clientIdTestId: string,
+    clientSecretTestId: string
+  ): Promise<void> {
+    await this.openWizard();
+    await this.selectPluginTypeByTitle('OpenZaak');
+    await this.fillModalInput(titleTestId, pluginDetailTestData.altAuthTitle);
+    await this.fillModalInput(clientIdTestId, pluginDetailTestData.clientId);
+    await this.fillModalInput(clientSecretTestId, pluginDetailTestData.clientSecret);
+    await this.saveConfiguration();
+  }
+
+  /** Opens the edit modal for an existing configuration by clicking its row. */
+  async openEditModal(configurationTitle: string): Promise<void> {
+    await this.page.locator(`tr:has(td:has-text("${configurationTitle}"))`).first().click();
+    await expect(this.configurationIdInput).toBeVisible();
+  }
+
+  /** Dismisses the edit modal via its header close button, discarding any changes. */
+  async closeEditModal(): Promise<void> {
+    await this.visibleModal.locator('button.cds--modal-close').click();
+    await expect(this.visibleModal).toHaveCount(0);
+  }
+
+  /**
+   * Clicks save in the edit modal expecting the backend to reject the update, and asserts the
+   * modal stays open (the save did not go through).
+   *
+   * Note: unlike the create path, the update path shows no error toast — the only user-visible
+   * signal is that the modal does not close. The assertion therefore does not look for one.
+   */
+  async expectEditSaveError(): Promise<void> {
+    await expect(this.editModalSaveButton).toBeEnabled();
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/v1/plugin/configuration') &&
+          res.request().method() === 'PUT' &&
+          !res.ok()
+      ),
+      this.editModalSaveButton.click(),
+    ]);
+    expect(response.status()).toBe(500);
+    await expect(this.visibleModal).toHaveCount(1);
+  }
+
+  async saveEditModal(): Promise<void> {
+    await expect(this.editModalSaveButton).toBeEnabled();
+    await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.url().includes('/api/v1/plugin/configuration') &&
+          res.request().method() === 'PUT' &&
+          res.ok()
+      ),
+      this.editModalSaveButton.click(),
+    ]);
+    await expect(this.visibleModal).toHaveCount(0);
+  }
+
+  // ─── Configuration Detail Assertions ──────────────────────────────
+
+  async assertConfigurationIdIsGeneratedUuid(configurationTitle: string): Promise<string> {
+    const configuration = await this.getConfigurationByTitle(configurationTitle);
+    expect(configuration, `no plugin configuration titled "${configurationTitle}"`).toBeTruthy();
+    expect(configuration!.id).toMatch(UUID_PATTERN);
+    return configuration!.id;
+  }
+
+  async assertConfigurationIdDisplayed(expectedId: string): Promise<void> {
+    await expect(this.configurationIdInput).toHaveValue(expectedId);
+    expect(expectedId).toMatch(UUID_PATTERN);
+  }
+
+  async assertConfigurationProperty(
+    configurationTitle: string,
+    property: string,
+    expectedValue: string
+  ): Promise<void> {
+    // The list refreshes after a save, so poll until the API reflects the new value.
+    await expect
+      .poll(
+        async () => (await this.getConfigurationByTitle(configurationTitle))?.properties[property],
+        {message: `plugin configuration property "${property}" never became "${expectedValue}"`}
+      )
+      .toBe(expectedValue);
+  }
+
+  async assertConfigurationCount(expectedCount: number): Promise<void> {
+    const configurations = await this.getAllConfigurations();
+    expect(configurations.length).toBe(expectedCount);
+  }
+
+  // ─── Configuration Detail API Helpers ─────────────────────────────
+
+  async getAllConfigurations(): Promise<PluginConfigurationResponse[]> {
+    return ApiUtils.apiGet<PluginConfigurationResponse[]>('/api/v1/plugin/configuration');
+  }
+
+  async getConfigurationByTitle(title: string): Promise<PluginConfigurationResponse | undefined> {
+    const configurations = await this.getAllConfigurations();
+    return configurations.find(configuration => configuration.title === title);
+  }
+
+  /**
+   * Deletes every configuration with one of the given titles. Safe to call repeatedly.
+   * Titles are processed in the order given, so dependants (e.g. an API configuration) must be
+   * listed before the authentication configuration they reference.
+   */
+  async deleteConfigurationsByTitleViaApi(titles: string[]): Promise<void> {
+    try {
+      const configurations = await this.getAllConfigurations();
+      for (const title of titles) {
+        for (const configuration of configurations.filter(({title: t}) => t === title)) {
+          try {
+            await ApiUtils.apiDelete(`/api/v1/plugin/configuration/${configuration.id}`);
+          } catch {
+            // configuration may already be gone, or is still referenced by another config
+          }
+        }
+      }
+    } catch {
+      // the API may be unavailable during teardown
+    }
   }
 }

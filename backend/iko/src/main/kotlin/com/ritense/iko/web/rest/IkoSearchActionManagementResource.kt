@@ -24,6 +24,7 @@ import com.ritense.iko.web.rest.request.IkoSearchActionUpdateRequest
 import com.ritense.iko.web.rest.response.IkoSearchActionResponse
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.iko.PropertyField
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -45,6 +46,10 @@ class IkoSearchActionManagementResource(
 ) {
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO search action property fields by type",
+        nl = "Eigenschapsvelden van IKO-zoekactie ophalen per type",
+    )
     @GetMapping("/v1/iko-property-fields/{type}/search-action")
     fun getIkoRepositoryConfigPropertyFields(
         @PathVariable type: String,
@@ -53,6 +58,10 @@ class IkoSearchActionManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "List IKO search actions for management",
+        nl = "IKO-zoekacties ophalen voor beheer",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/search-action")
     fun getIkoSearchActionsForManagement(
         @PathVariable ikoViewKey: String,
@@ -64,6 +73,10 @@ class IkoSearchActionManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Get IKO search action by key",
+        nl = "IKO-zoekactie ophalen op sleutel",
+    )
     @GetMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
     fun getIkoSearchAction(
         @PathVariable ikoViewKey: String,
@@ -75,6 +88,10 @@ class IkoSearchActionManagementResource(
 
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Create IKO search action",
+        nl = "IKO-zoekactie aanmaken",
+    )
     @PostMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
     fun createIkoSearchAction(
         @PathVariable ikoViewKey: String,
@@ -92,6 +109,10 @@ class IkoSearchActionManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO search action",
+        nl = "IKO-zoekactie bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
     fun updateIkoSearchAction(
         @PathVariable ikoViewKey: String,
@@ -110,6 +131,10 @@ class IkoSearchActionManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Update IKO search actions order",
+        nl = "Volgorde van IKO-zoekacties bijwerken",
+    )
     @PutMapping("/v1/iko-view/{ikoViewKey}/search-action")
     fun updateIkoSearchActionsOrder(
         @PathVariable ikoViewKey: String,
@@ -129,6 +154,10 @@ class IkoSearchActionManagementResource(
     }
 
     @RunWithoutAuthorization
+    @EndpointDescription(
+        en = "Delete IKO search action",
+        nl = "IKO-zoekactie verwijderen",
+    )
     @DeleteMapping("/v1/iko-view/{ikoViewKey}/search-action/{key}")
     fun deleteIkoSearchAction(
         @PathVariable ikoViewKey: String,

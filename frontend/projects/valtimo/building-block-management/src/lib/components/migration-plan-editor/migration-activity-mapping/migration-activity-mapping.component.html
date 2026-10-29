@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<h5 class="migration-tab__subheading">
+  {{ 'migrationEditor.processMigration.activityMapping' | translate }}
+</h5>
+
+@if (hintKey) {
+  <p class="migration-tab__hint">{{ hintKey | translate }}</p>
+}
+
+@if (activities.loading) {
+  <p class="migration-tab__hint">{{ 'interface.loading' | translate }}</p>
+}
+
+<div class="migration-tab__mapping">
+  <!-- Each row binds its own group: this component is the top of its form tree, so there is no FormArrayName above to index into. -->
+  @for (mapping of mappings.controls; track mapping) {
+    <div class="migration-tab__mapping-row" [formGroup]="asGroup(mapping)">
+      @if (activities.sourceNodes.length) {
+        <cds-select
+          formControlName="source"
+          [label]="'migrationEditor.processMigration.sourceActivity' | translate"
+        >
+          <option value="">–</option>
+          @for (node of activities.sourceNodes; track node.id) {
+            <option [value]="node.id">{{ node.label }}</option>
+          }
+        </cds-select>
+      } @else {
+        <cds-text-label>
+          {{ 'migrationEditor.processMigration.sourceActivity' | translate }}
+          <input cdsText formControlName="source" />
+        </cds-text-label>
+      }
+
+      <span class="migration-tab__mapping-arrow">→</span>
+
+      @if (activities.targetNodes.length) {
+        <cds-select
+          formControlName="target"
+          [invalid]="errorsFor(mapping).length > 0"
+          [invalidText]="errorsFor(mapping)[0]"
+          [label]="'migrationEditor.processMigration.targetActivity' | translate"
+        >
+          <option value="">–</option>
+          @for (node of activities.targetNodes; track node.id) {
+            <option [value]="node.id">{{ node.label }}</option>
+          }
+        </cds-select>
+      } @else {
+        <cds-text-label>
+          {{ 'migrationEditor.processMigration.targetActivity' | translate }}
+          <input cdsText formControlName="target" />
+        </cds-text-label>
+      }
+
+      <button
+        cdsButton="danger--ghost"
+        size="sm"
+        [iconOnly]="true"
+        [title]="'interface.delete' | translate"
+        [attr.data-test-id]="testIds?.deleteMappingButton"
+        (click)="removeMapping($index)"
+      >
+        <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </div>
+
+    <!-- The engine's own reason, not a guess at it: a mapping can fail for more than one thing. -->
+    @for (error of errorsFor(mapping); track error) {
+      <p class="migration-tab__mapping-error">{{ error }}</p>
+    }
+  }
+</div>
+
+<button
+  cdsButton="ghost"
+  size="sm"
+  [attr.data-test-id]="testIds?.addMappingButton"
+  (click)="addMapping()"
+>
+  {{ 'migrationEditor.processMigration.addMapping' | translate }}
+  <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+</button>

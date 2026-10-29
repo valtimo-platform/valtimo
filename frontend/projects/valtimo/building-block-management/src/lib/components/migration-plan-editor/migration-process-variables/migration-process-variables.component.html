@@ -1,0 +1,124 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<h5 class="migration-tab__subheading">
+  {{ 'migrationEditor.processMigration.setProcessVariables' | translate }}
+</h5>
+<p class="migration-tab__hint">
+  {{ 'migrationEditor.processMigration.setProcessVariablesHint' | translate }}
+</p>
+
+<div class="migration-tab__patches">
+  <!-- Each row binds its own group: this component is the top of its form tree, so there is no FormArrayName above to index into. -->
+  @for (variable of variables.controls; track variable) {
+    <div class="migration-tab__patch" [formGroup]="asGroup(variable)">
+      <!-- Source (left) -->
+      <div class="migration-tab__patch-side migration-tab__patch-side--from">
+        <cds-select
+          formControlName="mode"
+          [label]="'migrationEditor.processMigration.variableMode' | translate"
+        >
+          @for (mode of MODES; track mode) {
+            <option [value]="mode">
+              {{ 'migrationEditor.dataMigration.mode_' + mode | translate }}
+            </option>
+          }
+        </cds-select>
+
+        @switch (variable.get('mode')?.value) {
+          @case ('path') {
+            <valtimo-value-path-selector
+              formControlName="source"
+              [caseDefinitionKey]="sourceContext?.caseDefinitionKey ?? null"
+              [caseDefinitionVersionTag]="sourceContext?.caseDefinitionVersionTag ?? null"
+              [buildingBlockDefinitionKey]="sourceContext?.buildingBlockKey ?? null"
+              [buildingBlockDefinitionVersionTag]="sourceContext?.buildingBlockVersionTag ?? null"
+              [label]="'migrationEditor.processMigration.variableSource' | translate"
+              [prefixes]="sourcePrefixes"
+              [notation]="'slashes'"
+            ></valtimo-value-path-selector>
+          }
+          @case ('value') {
+            <cds-text-label>
+              {{ 'migrationEditor.processMigration.variableValue' | translate }}
+              <input
+                cdsText
+                formControlName="value"
+                [placeholder]="
+                  'migrationEditor.processMigration.variableValuePlaceholder' | translate
+                "
+              />
+            </cds-text-label>
+          }
+          @default {
+            <span class="migration-tab__null-hint">
+              {{ 'migrationEditor.dataMigration.nullHint' | translate }}
+            </span>
+          }
+        }
+      </div>
+
+      <span class="migration-tab__mapping-arrow" aria-hidden="true">→</span>
+
+      <!-- Target (right) — a plain pv: path, no value selector -->
+      <div class="migration-tab__patch-side migration-tab__patch-side--to">
+        <cds-text-label>
+          {{ 'migrationEditor.processMigration.variableTarget' | translate }}
+          <input
+            cdsText
+            formControlName="target"
+            [placeholder]="'migrationEditor.processMigration.variableTargetPlaceholder' | translate"
+          />
+        </cds-text-label>
+
+        @if (variable.get('mode')?.value !== 'null') {
+          <cds-select
+            formControlName="targetType"
+            [label]="'migrationEditor.processMigration.variableTargetType' | translate"
+          >
+            <option value="">
+              {{ 'migrationEditor.dataMigration.targetTypeAuto' | translate }}
+            </option>
+            @for (type of TARGET_TYPES; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </cds-select>
+        }
+      </div>
+
+      <button
+        cdsButton="danger--ghost"
+        size="sm"
+        [iconOnly]="true"
+        [title]="'interface.delete' | translate"
+        [attr.data-test-id]="testIds?.deleteVariableButton"
+        (click)="removeVariable($index)"
+      >
+        <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </div>
+  }
+</div>
+
+<button
+  cdsButton="ghost"
+  size="sm"
+  [attr.data-test-id]="testIds?.addVariableButton"
+  (click)="addVariable()"
+>
+  {{ 'migrationEditor.processMigration.addVariable' | translate }}
+  <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+</button>

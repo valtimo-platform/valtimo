@@ -66,6 +66,8 @@ export interface CaseDefinitionConfigurationIssue {
   resolvedAt: string | null;
 }
 
+export type PluginConfigurationPreviewSource = 'embedded' | 'external';
+
 export interface PluginConfigurationPreview {
   pluginConfigurationId: string;
   pluginDefinitionKey: string | null;
@@ -73,6 +75,8 @@ export interface PluginConfigurationPreview {
   processDefinitionKey: string;
   activityId: string;
   existsInTargetEnvironment: boolean;
+  source?: PluginConfigurationPreviewSource;
+  pluginDefinitionVersion?: string | null;
 }
 
 export interface CaseDefinitionImportPreview {
@@ -86,6 +90,8 @@ export interface CaseDefinitionImportPreview {
 export interface DanglingPluginConfiguration {
   pluginDefinitionKey: string | null;
   sourcePluginConfigurationIds: string[];
+  source?: PluginConfigurationPreviewSource;
+  pluginDefinitionVersion?: string | null;
 }
 
 export type PluginMappingStatus = 'available' | 'no-configurations' | 'not-installed';
@@ -96,6 +102,14 @@ export interface MappingRow {
   sourcePluginConfigurationIds: string[];
   selectItems: SelectItem[];
   status: PluginMappingStatus;
+  source?: PluginConfigurationPreviewSource;
+  pluginDefinitionVersion?: string | null;
+  /**
+   * External configuration id -> actual definition version, populated only for options whose
+   * version differs from `pluginDefinitionVersion` (D3 non-blocking warning). Empty/undefined for
+   * embedded rows and exact-version-only sets.
+   */
+  mismatchedVersionsById?: Map<string, string>;
 }
 
 export interface ConfigurationIssueUpdatedSseEvent {

@@ -14,7 +14,12 @@
   ~ limitations under the License.
   -->
 
-<cds-toggletip align="right-bottom" [autoAlign]="true" [isOpen]="open$ | async">
+<cds-toggletip
+  *ngIf="!(readOnly$ | async)"
+  align="right-bottom"
+  [autoAlign]="true"
+  [isOpen]="open$ | async"
+>
   <button
     class="process-link-configuration-import-button"
     [disabled]="((compatiblePluginProcessLinks$ | async) || []).length === 0"

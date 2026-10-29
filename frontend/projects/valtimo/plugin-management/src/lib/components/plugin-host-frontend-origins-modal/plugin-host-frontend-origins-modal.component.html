@@ -1,0 +1,63 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal *ngIf="open && host" [open]="open" size="sm" valtimoCdsModal>
+  <cds-modal-header (closeSelect)="onClose()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'pluginManagement.editHostFrontendOriginsModalTitle' | translate: {name: host.name} }}
+    </h3>
+  </cds-modal-header>
+
+  <form
+    [formGroup]="form"
+    cdsModalContent
+    [cdsLayer]="1"
+    class="plugin-host-frontend-origins-modal__content"
+  >
+    <div formArrayName="frontendOrigins">
+      <div
+        *ngFor="let originControl of originControls; let i = index"
+        class="plugin-host-frontend-origins-modal__row"
+      >
+        <input cdsText [formControlName]="i" placeholder="https://valtimo.example.com" />
+
+        <button cdsButton="ghost" type="button" (click)="removeOrigin(i)">
+          {{ 'interface.delete' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <button cdsButton="ghost" type="button" (click)="addOrigin()">
+      {{ 'pluginManagement.addFrontendOrigin' | translate }}
+    </button>
+
+    <small>{{ 'pluginManagement.hints.frontendOrigins' | translate }}</small>
+
+    <small *ngIf="originControls.length === 0">
+      {{ 'pluginManagement.hints.noFrontendOrigins' | translate }}
+    </small>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="secondary" (click)="onClose()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="form.invalid" (click)="onSubmit()">
+      {{ 'pluginManagement.saveFrontendOrigins' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

@@ -1,0 +1,32 @@
+{
+    "$id": "inspectie-dossier.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Inspectiedossier",
+    "type": "object",
+    "properties": {
+        "aanvragerNaam": {
+            "type": "string",
+            "description": "Naam van de aanvrager, overgenomen uit de inspectiebouwsteen"
+        },
+        "dossierStatus": {
+            "type": "string",
+            "description": "Status van het inspectiedossier (opvolger van fotoStatus)"
+        },
+        "aantalBijlagen": {
+            "type": "integer",
+            "description": "Aantal bijlagen in het dossier (opvolger van aantalFotos)"
+        },
+        "toelichting": {
+            "type": ["string", "null"],
+            "description": "Toelichting bij het dossier"
+        },
+        "dossierKwaliteit": {
+            "type": "string",
+            "description": "Beoordeling van de dossierkwaliteit"
+        },
+        "gemigreerdVan": {
+            "type": "string",
+            "description": "Bouwsteen en versie waarvandaan dit dossier is gemigreerd"
+        }
+    }
+}

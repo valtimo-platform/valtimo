@@ -21,24 +21,16 @@ import {PermissionService} from '@valtimo/access-control';
 import {CarbonListModule} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
+  groupWidgetData,
   MapWidget,
   WidgetAction,
-  WidgetMapComponent,
+  WidgetDataGroupService,
   WidgetLayoutService,
+  WidgetMapComponent,
 } from '@valtimo/layout';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {
-  BehaviorSubject,
-  catchError,
-  combineLatest,
-  Observable,
-  of,
-  startWith,
-  switchMap,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, Observable, catchError, filter, of, switchMap, tap} from 'rxjs';
 
-import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetsService} from '../../widgets.service';
 import {WidgetProcess} from '../widget-process/widget-process';
 
@@ -73,17 +65,16 @@ export class CaseWidgetMapComponent extends WidgetProcess {
   @Input() public readonly widgetUuid: string;
 
   public readonly widgetConfiguration$ = new BehaviorSubject<MapWidget | null>(null);
-  public readonly tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
-  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
-  public readonly widgetData$: Observable<any[] | {} | null> = combineLatest([
-    this.widgetConfiguration$,
-    this.tabKey$,
-    this._documentId$,
-    this._refresh$,
-  ]).pipe(
-    switchMap(([widget, tabkey, documentId]) =>
-      this.caseWidgetApiService.getWidgetData(documentId, tabkey, widget.key, undefined)
+  public readonly widgetData$: Observable<any[] | {} | null> = this.widgetConfiguration$.pipe(
+    filter(widget => !!widget),
+    switchMap(widget =>
+      groupWidgetData(
+        this.widgetDataGroupService,
+        this.widgetLayoutService,
+        widget.key,
+        () => this.widgetUuid
+      )
     ),
     tap(() => {
       this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
@@ -99,9 +90,8 @@ export class CaseWidgetMapComponent extends WidgetProcess {
     protected readonly documentService: DocumentService,
     protected readonly permissionService: PermissionService,
     private readonly widgetsService: WidgetsService,
-    private readonly caseTabService: CaseTabService,
-    private readonly caseWidgetApiService: CaseWidgetsApiService,
-    private readonly widgetLayoutService: WidgetLayoutService
+    private readonly widgetLayoutService: WidgetLayoutService,
+    private readonly widgetDataGroupService: WidgetDataGroupService
   ) {
     super(documentService, permissionService);
   }

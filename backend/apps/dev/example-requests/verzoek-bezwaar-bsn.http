@@ -1,0 +1,26 @@
+POST {{objects_api_url}}
+Authorization: Token {{token}}
+Content-Crs: EPSG:4326
+Content-Type: application/json
+
+{
+    "type": "{{bezwaar_objecttypes_api_url}}",
+    "record": {
+        "typeVersion": "{{bezwaar_objecttypes_version}}",
+        "data": {
+            "bsn": "111111110",
+            "data": {
+                "voornaam": "Jan",
+                "achternaam": "Pieter",
+                "straatnaam": "Hoofdstraat"
+            },
+            "type": "Bezwaar",
+            "attachments": [],
+            "language_code": "nl",
+            "submission_id": "12345-abcde-67890",
+            "public_reference": "OF-{{$random.alphanumeric(8)}}"
+        },
+        "startAt": "2026-09-01",
+        "registrationAt": "2026-09-01"
+    }
+}

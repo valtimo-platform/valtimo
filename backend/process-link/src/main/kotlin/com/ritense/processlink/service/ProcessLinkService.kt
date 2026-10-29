@@ -27,6 +27,7 @@ import com.ritense.processlink.event.ProcessLinkDeletedEvent
 import com.ritense.processlink.event.ProcessLinkUpdatedEvent
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.exception.ProcessLinkNotFoundException
+import com.ritense.processlink.importer.ProcessLinkImportScope.isDeferringRecheck
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
@@ -131,7 +132,9 @@ class ProcessLinkService(
             }
 
             processLinkRepository.save(newProcessLink).also {
-                applicationEventPublisher.publishEvent(ProcessLinkCreatedEvent(createRequest.processLinkType, it.processDefinitionId))
+                applicationEventPublisher.publishEvent(
+                    ProcessLinkCreatedEvent(createRequest.processLinkType, it.processDefinitionId, isDeferringRecheck())
+                )
             }
         }
     }
@@ -155,7 +158,9 @@ class ProcessLinkService(
                 processLinkRepository.delete(processLinkToUpdate)
             }
             processLinkRepository.save(processLinkUpdated).also {
-                applicationEventPublisher.publishEvent(ProcessLinkUpdatedEvent(updateRequest.processLinkType, it.processDefinitionId))
+                applicationEventPublisher.publishEvent(
+                    ProcessLinkUpdatedEvent(updateRequest.processLinkType, it.processDefinitionId, isDeferringRecheck())
+                )
             }
         }
     }
@@ -167,7 +172,9 @@ class ProcessLinkService(
         val processLink = processLinkRepository.findByIdOrNull(id)
         processLinkRepository.deleteById(id)
         if (processLink != null) {
-            applicationEventPublisher.publishEvent(ProcessLinkDeletedEvent(processLink.processLinkType, processLink.processDefinitionId))
+            applicationEventPublisher.publishEvent(
+                ProcessLinkDeletedEvent(processLink.processLinkType, processLink.processDefinitionId, isDeferringRecheck())
+            )
         }
     }
 
@@ -179,7 +186,7 @@ class ProcessLinkService(
         // deleted link would only trigger the same work again for every link of the same type.
         deletedProcessLinks.distinctBy { it.processLinkType }.forEach { processLink ->
             applicationEventPublisher.publishEvent(
-                ProcessLinkDeletedEvent(processLink.processLinkType, processDefinitionId)
+                ProcessLinkDeletedEvent(processLink.processLinkType, processDefinitionId, isDeferringRecheck())
             )
         }
     }

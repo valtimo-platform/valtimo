@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form class="valtimo-widget-management-external-plugin" [formGroup]="form">
+  <div class="valtimo-widget-management-external-plugin__title-container">
+    <cds-text-label class="valtimo-widget-management-external-plugin__title-input">
+      <v-input-label
+        [title]="'widgetTabManagement.content.widgetTitle' | translate"
+        [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+      >
+      </v-input-label>
+
+      <input
+        cdsText
+        formControlName="widgetTitle"
+        [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+        type="text"
+      />
+    </cds-text-label>
+
+    <valtimo-mdi-icon-selector
+      [cdsLayer]="0"
+      formControlName="widgetIcon"
+    ></valtimo-mdi-icon-selector>
+  </div>
+
+  <ng-content></ng-content>
+
+  <ng-container *ngIf="$tokenAvailable(); else pluginUnavailable">
+    <cds-combo-box
+      [cdsLayer]="1"
+      [dropUp]="false"
+      [items]="$configItems()"
+      itemValueKey="configId"
+      [label]="'widgetTabManagement.content.externalPlugin.configLabel' | translate"
+      [placeholder]="'widgetTabManagement.content.externalPlugin.configPlaceholder' | translate"
+      (selected)="onConfigSelected($event)"
+    >
+      <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
+    </cds-combo-box>
+
+    <cds-combo-box
+      *ngIf="$showBundleSelect()"
+      [cdsLayer]="1"
+      [dropUp]="false"
+      [items]="$bundleItems()"
+      itemValueKey="bundleKey"
+      [label]="'widgetTabManagement.content.externalPlugin.bundleLabel' | translate"
+      [placeholder]="'widgetTabManagement.content.externalPlugin.bundlePlaceholder' | translate"
+      (selected)="onBundleSelected($event)"
+    >
+      <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
+    </cds-combo-box>
+  </ng-container>
+
+  <ng-template #pluginUnavailable>
+    <p class="valtimo-widget-management-external-plugin__unavailable">
+      {{ 'widgetTabManagement.content.externalPlugin.unavailableMessage' | translate }}
+    </p>
+  </ng-template>
+</form>

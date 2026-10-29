@@ -43,6 +43,7 @@ import {
   ReplacedElement,
   ReplacedElementType,
 } from '../../models';
+import {PROCESS_MANAGEMENT_UPLOAD_TEST_IDS} from '../../constants';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 
 enum UPLOAD_STEP {
@@ -84,6 +85,8 @@ export class ProcessManagementUploadComponent {
   public readonly ACCEPTED_FILES: string[] = ['.bpmn', '.zip'];
 
   public readonly UPLOAD_STEP = UPLOAD_STEP;
+
+  public readonly testIds = PROCESS_MANAGEMENT_UPLOAD_TEST_IDS;
 
   public readonly form = this.formBuilder.group({
     file: this.formBuilder.control(new Set<any>(), [Validators.required]),

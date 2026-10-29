@@ -23,6 +23,7 @@ import com.ritense.resource.web.rest.response.ResourceDto
 import com.ritense.resource.web.rest.response.StorageMetadataValue
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
@@ -43,6 +44,10 @@ class TemporaryResourceStorageResource(
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
+    @EndpointDescription(
+        en = "Upload temporary resource with metadata",
+        nl = "Tijdelijk bestand uploaden met metadata",
+    )
     @PostMapping("/v1/resource/temp", consumes = [MULTIPART_FORM_DATA_VALUE])
     fun uploadFileWithMetadata(
         @RequestParam("file") file: MultipartFile,
@@ -66,6 +71,10 @@ class TemporaryResourceStorageResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Get temporary resource metadata value",
+        nl = "Metadata-waarde van tijdelijk bestand ophalen",
+    )
     @GetMapping("/v1/resource-storage/{resourceStorageFieldId}/metadata/{metadataKey}")
     fun getMetadataValue(
         @PathVariable("resourceStorageFieldId") resourceStorageFieldId: String,

@@ -34,13 +34,19 @@
   @if (!obs.loadingArtwork && obs.artwork) {
     <div class="building-block-management-artwork__preview">
       <img
+        [attr.data-test-id]="testIds.image"
         class="building-block-management-artwork__image"
         [src]="'data:image/png;base64,' + obs.artwork.imageBase64"
       />
     </div>
 
     <div class="building-block-management-artwork__buttons">
-      <button cdsButton="danger" (click)="onDeleteButtonClick()" [disabled]="formGroup.disabled">
+      <button
+        [attr.data-test-id]="testIds.deleteButton"
+        cdsButton="danger"
+        (click)="onDeleteButtonClick()"
+        [disabled]="formGroup.disabled"
+      >
         {{ 'interface.delete' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
@@ -51,6 +57,7 @@
   @if (!obs.loadingArtwork && !obs.artwork) {
     <cds-file-uploader
       *ngIf="!obs.loadingArtwork && !obs.artwork"
+      [attr.data-test-id]="testIds.fileUploader"
       [accept]="ACCEPTED_FILES"
       [multiple]="false"
       buttonType="primary"
@@ -63,6 +70,7 @@
 
     <div class="building-block-management-artwork__buttons">
       <button
+        [attr.data-test-id]="testIds.uploadButton"
         cdsButton="primary"
         [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
         (click)="onSave()"

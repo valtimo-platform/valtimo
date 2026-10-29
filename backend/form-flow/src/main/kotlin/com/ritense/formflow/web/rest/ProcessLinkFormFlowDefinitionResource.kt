@@ -20,6 +20,7 @@ import com.ritense.formflow.service.FormFlowService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -33,6 +34,10 @@ class ProcessLinkFormFlowDefinitionResource(
     val formFlowService: FormFlowService
 ) {
 
+    @EndpointDescription(
+        en = "List form flow process link options",
+        nl = "Proceskoppelingsopties voor form flow ophalen",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-flow-definition/process-link-option")
     fun getFormLinkOptions(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,

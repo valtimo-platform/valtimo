@@ -24,6 +24,7 @@ import com.ritense.note.web.rest.dto.NoteResponseDto
 import com.ritense.note.web.rest.dto.NoteUpdateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -48,6 +49,10 @@ class NoteResource(
     private val noteService: NoteService,
     private val documentService: DocumentService,
 ) {
+    @EndpointDescription(
+        en = "List notes for a document",
+        nl = "Notities van een document ophalen",
+    )
     @GetMapping("/v1/document/{documentId}/note")
     fun getNotes(
         @PathVariable(name = "documentId") documentId: UUID,
@@ -63,6 +68,10 @@ class NoteResource(
         return ResponseEntity.ok(notes.map { note -> NoteResponseDto(note) })
     }
 
+    @EndpointDescription(
+        en = "Create a note for a document",
+        nl = "Notitie voor een document aanmaken",
+    )
     @PostMapping("/v1/document/{documentId}/note")
     fun createNote(
         @PathVariable(name = "documentId") documentId: UUID,
@@ -77,6 +86,10 @@ class NoteResource(
         return ResponseEntity.ok(NoteResponseDto(note))
     }
 
+    @EndpointDescription(
+        en = "Update a note",
+        nl = "Notitie bijwerken",
+    )
     @PutMapping("/v1/note/{noteId}")
     fun editNote(
         @PathVariable(name = "noteId") noteId: UUID,
@@ -86,6 +99,10 @@ class NoteResource(
         return ResponseEntity.ok(NoteResponseDto(note))
     }
 
+    @EndpointDescription(
+        en = "Delete a note",
+        nl = "Notitie verwijderen",
+    )
     @DeleteMapping("/v1/note/{noteId}")
     fun deleteNote(
         @PathVariable(name = "noteId") noteId: UUID

@@ -50,6 +50,11 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
+        fun byIdIn(ids: Collection<String>) = Specification<OperatonProcessDefinition> { root, _, _ ->
+            root.get<Any>(ID).`in`(ids)
+        }
+
+        @JvmStatic
         fun byKey(processDefinitionKey: String) = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.equal(root.get<Any>(KEY), processDefinitionKey)
         }

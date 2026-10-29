@@ -18,6 +18,7 @@ package com.ritense.plugin.web.rest.request
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.plugin.domain.PluginActionResultMapping
 import com.ritense.plugin.domain.PluginConfigurationReferenceType
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -34,6 +35,7 @@ data class PluginProcessLinkCreateDto(
     override val activityType: ActivityTypeWithEventName,
     val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
     val pluginDefinitionKey: String? = null,
+    val actionResultMappings: List<PluginActionResultMapping> = emptyList(),
 ) : ProcessLinkCreateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_PLUGIN

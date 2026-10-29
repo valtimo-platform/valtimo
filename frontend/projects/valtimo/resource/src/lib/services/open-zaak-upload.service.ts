@@ -40,9 +40,9 @@ export class OpenZaakUploadService implements UploadService {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
-  uploadFile(file: File, caseDefinitionKey: string): Observable<ResourceFile> {
+  uploadFile(file: File, caseDefinitionKey: string, documentId?: string): Observable<ResourceFile> {
     return this.openZaakService
-      .upload(new File([file], file.name, {type: file.type}), caseDefinitionKey)
+      .upload(new File([file], file.name, {type: file.type}), caseDefinitionKey, documentId)
       .pipe(map(result => this.getResourceFile(result)));
   }
 

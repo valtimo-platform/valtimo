@@ -93,6 +93,7 @@ interface ValtimoConfigFeatureToggles {
   enableSuppressDocumentError?: boolean;
   enableIkoType?: boolean;
   enableGenericCaseList?: boolean;
+  enableManualTaskListRefresh?: boolean;
   menuCollapsedByDefault?: boolean;
   enableOpenSearch?: boolean;
   /**

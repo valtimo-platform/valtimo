@@ -1,0 +1,11 @@
+{
+    "$id": "case-summary-demo.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Case Summary Demo",
+    "type": "object",
+    "properties": {
+        "applicantName": { "type": "string" },
+        "requestedAmount": { "type": "number" },
+        "caseSummary": { "type": "string" }
+    }
+}

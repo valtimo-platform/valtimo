@@ -15,10 +15,14 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {MetrolineWidget, WidgetLayoutService, WidgetMetrolineComponent} from '@valtimo/layout';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
-import {IkoWidgetParams} from '../../models';
-import {IkoApiService} from '../../services';
+import {
+  groupWidgetData,
+  MetrolineWidget,
+  WidgetDataGroupService,
+  WidgetLayoutService,
+  WidgetMetrolineComponent,
+} from '@valtimo/layout';
+import {BehaviorSubject, of, switchMap, tap} from 'rxjs';
 
 @Component({
   selector: 'valtimo-iko-widget-metroline',
@@ -33,34 +37,26 @@ export class IkoWidgetMetrolineComponent {
     this.widgetConfiguration$.next(value);
   }
 
-  private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
-  @Input() public set widgetParams(value: IkoWidgetParams) {
-    this._widgetParams$.next(value);
-  }
-
   @Input() public readonly widgetUuid: string;
 
   public readonly widgetConfiguration$ = new BehaviorSubject<MetrolineWidget | null>(null);
 
-  public readonly widgetData$ = combineLatest([
-    this.widgetConfiguration$,
-    this._widgetParams$,
-  ]).pipe(
-    switchMap(([widgetConfiguration, widgetParams]) =>
-      !widgetParams || !widgetConfiguration
+  public readonly widgetData$ = this.widgetConfiguration$.pipe(
+    switchMap(widgetConfiguration =>
+      !widgetConfiguration
         ? of(null)
-        : this.ikoApiService.getIkoWidgetData(
-            widgetParams.ikoViewKey,
-            widgetParams.tabKey,
+        : groupWidgetData(
+            this.widgetDataGroupService,
+            this.widgetLayoutService,
             widgetConfiguration.key,
-            widgetParams.entryId
+            () => this.widgetUuid
           )
     ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
 
   constructor(
-    private readonly ikoApiService: IkoApiService,
+    private readonly widgetDataGroupService: WidgetDataGroupService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {}
 }

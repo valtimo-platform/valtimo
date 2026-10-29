@@ -50,6 +50,10 @@ class AdminSettingsHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .authenticated()
                     .requestMatchers(antMatcher(PUT, "/api/management/v1/admin-settings/accent-colors"))
                     .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/v1/admin-settings/menu-configuration"))
+                    .authenticated()
+                    .requestMatchers(antMatcher(PUT, "/api/management/v1/admin-settings/menu-configuration"))
+                    .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

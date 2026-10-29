@@ -26,6 +26,8 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
 import {LinkDocumentToObjectConfigurationComponent} from './components/link-document-to-object/link-document-to-object-configuration.component';
 import {DeleteDocumentLinkConfigurationComponent} from './components/delete-document-link/delete-document-link-configuration.component';
 import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/get-audit-trail-configuration.component';
+import {AddDocumentTrefwoordConfigurationComponent} from './components/add-document-trefwoord/add-document-trefwoord-configuration.component';
+import {DeleteInformatieObjectConfigurationComponent} from './components/delete-informatie-object/delete-informatie-object-configuration.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +39,8 @@ import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/
     LinkDocumentToObjectConfigurationComponent,
     DeleteDocumentLinkConfigurationComponent,
     GetAuditTrailConfigurationComponent,
+    AddDocumentTrefwoordConfigurationComponent,
+    DeleteInformatieObjectConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -56,6 +60,8 @@ import {GetAuditTrailConfigurationComponent} from './components/get-audit-trail/
     LinkDocumentToObjectConfigurationComponent,
     DeleteDocumentLinkConfigurationComponent,
     GetAuditTrailConfigurationComponent,
+    AddDocumentTrefwoordConfigurationComponent,
+    DeleteInformatieObjectConfigurationComponent,
   ],
 })
 export class DocumentenApiPluginModule {}

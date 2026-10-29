@@ -37,6 +37,7 @@
         [title]="'processManagement.upload.title' | translate"
         buttonType="primary"
         formControlName="file"
+        [attr.data-test-id]="testIds.fileUploader"
       >
       </cds-file-uploader>
 
@@ -121,13 +122,18 @@
 
     <cds-modal-footer>
       <ng-container *ngIf="obs.activeStep === UPLOAD_STEP.FILE_SELECT">
-        <button cdsButton="secondary" (click)="closeModal()">
+        <button
+          cdsButton="secondary"
+          [attr.data-test-id]="testIds.cancelButton"
+          (click)="closeModal()"
+        >
           {{ 'interface.cancel' | translate }}
         </button>
 
         <button
           cdsButton="primary"
           [disabled]="(fileSelected$ | async) === false || obs.importing"
+          [attr.data-test-id]="testIds.submitButton"
           (click)="uploadProcessBpmn()"
         >
           {{ 'interface.upload' | translate }}
@@ -135,13 +141,18 @@
       </ng-container>
 
       <ng-container *ngIf="obs.activeStep === UPLOAD_STEP.REVIEW">
-        <button cdsButton="secondary" (click)="onBackClick()">
+        <button
+          cdsButton="secondary"
+          [attr.data-test-id]="testIds.backButton"
+          (click)="onBackClick()"
+        >
           {{ 'interface.back' | translate }}
         </button>
 
         <button
           cdsButton="primary"
           [disabled]="obs.preview?.canImport === false || obs.importing"
+          [attr.data-test-id]="testIds.importButton"
           (click)="importProcessPackage()"
         >
           {{ 'interface.upload' | translate }}
@@ -151,6 +162,7 @@
       <button
         *ngIf="obs.activeStep === UPLOAD_STEP.SUMMARY"
         cdsButton="primary"
+        [attr.data-test-id]="testIds.closeButton"
         (click)="closeModal()"
       >
         {{ 'interface.close' | translate }}

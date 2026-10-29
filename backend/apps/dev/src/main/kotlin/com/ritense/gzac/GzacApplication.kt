@@ -25,6 +25,7 @@ import org.springframework.boot.runApplication
 import org.springframework.core.env.Environment
 import org.springframework.scheduling.annotation.EnableScheduling
 import java.net.InetAddress
+import org.springframework.beans.factory.getBean
 
 @SpringBootApplication
 @EnableScheduling
@@ -49,9 +50,9 @@ fun main(args: Array<String>) {
         """.trimIndent()
     }
 
-    // Development-only demo data for the "Present images as thumbnails" (GH-289) feature.
-    // Runs after the context is fully initialised so the bezwaar case definition is deployed.
+    // Development-only demo data, after context init so the case definitions are deployed first.
     if (environment.activeProfiles.contains("dev")) {
-        applicationContext.getBean(BezwaarImageDemoDataService::class.java).deployBezwaarWithImages()
+        applicationContext.getBean<BezwaarImageDemoDataService>().deployBezwaarWithImages()
+        applicationContext.getBean<DemoDataService>().deployDemoData()
     }
 }

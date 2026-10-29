@@ -22,7 +22,22 @@ data class PluginDefinitionsWithDependenciesDto(
     val plugins: List<PluginWithDependenciesDto>
 )
 
+/**
+ * [source] discriminates embedded plugin definitions (identified by [pluginDefinitionKey] alone,
+ * unversioned) from external plugin definitions referenced via a `BUILDING_BLOCK`
+ * `PluginConfigurationReference` (identified by [pluginDefinitionKey] == `pluginId` +
+ * [pluginDefinitionVersion]). Defaults to [PluginRequirementSource.EMBEDDED] and leaves
+ * [pluginDefinitionVersion] `null` so existing frontend consumers built against the embedded-only
+ * shape keep working unchanged.
+ */
 data class PluginWithDependenciesDto(
     val pluginDefinitionKey: String,
-    val dependencies: List<PluginDependency>
+    val dependencies: List<PluginDependency>,
+    val source: PluginRequirementSource = PluginRequirementSource.EMBEDDED,
+    val pluginDefinitionVersion: String? = null,
 )
+
+enum class PluginRequirementSource {
+    EMBEDDED,
+    EXTERNAL,
+}

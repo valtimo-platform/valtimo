@@ -1,0 +1,35 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+                   logicalFilePath="config/liquibase/13-32-0/20260812-external-plugin-frontend-origins.xml">
+
+    <!--
+      Browser origins allowed to embed this host's plugin screens, as a comma-separated list of
+      `scheme://host[:port]` entries. GZAC pushes them to the plugin host, which serves them as the
+      `frame-ancestors` CSP directive. NULL means none registered yet — existing hosts keep that
+      until an admin edits them, and their bundles are not framable in the meantime (fail closed).
+    -->
+    <changeSet id="1" author="Ritense">
+        <addColumn tableName="external_plugin_host">
+            <column name="frontend_origins" type="VARCHAR(2000)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

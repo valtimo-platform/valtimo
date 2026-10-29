@@ -16,6 +16,8 @@
 
 import {BuildingBlockInputMapping, BuildingBlockOutputMapping} from '@valtimo/process-link';
 
+export {StartableItemOrderEntry, UpdateStartableItemOrderRequest} from '@valtimo/shared';
+
 export enum StartableItemType {
   PROCESS = 'PROCESS',
   BUILDING_BLOCK = 'BUILDING_BLOCK',
@@ -28,17 +30,7 @@ export interface ManagementStartableItem {
   versionTag: string | null;
   processDefinitionId: string | null;
   sortOrder: number | null;
-}
-
-export interface StartableItemOrderEntry {
-  key: string;
-  type: StartableItemType;
-  versionTag: string | null;
-  sortOrder: number;
-}
-
-export interface UpdateStartableItemOrderRequest {
-  items: StartableItemOrderEntry[];
+  startableByUser: boolean;
 }
 
 export interface CreateStartableItemRequest {
@@ -53,10 +45,17 @@ export interface CreateStartableItemProcessProperties {
 export interface CreateStartableItemBuildingBlockProperties {
   buildingBlockDefinitionKey: string;
   buildingBlockDefinitionVersionTag: string;
+  inputMappings?: Array<BuildingBlockInputMapping>;
+  outputMappings?: Array<BuildingBlockOutputMapping>;
+  pluginConfigurationMappings?: Record<string, string>;
+  startableByUser?: boolean;
 }
 
 export interface BuildingBlockItemProperties {
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
   inputMappings: Array<BuildingBlockInputMapping>;
   outputMappings: Array<BuildingBlockOutputMapping>;
   pluginConfigurationMappings: Record<string, string>;
+  startableByUser: boolean;
 }

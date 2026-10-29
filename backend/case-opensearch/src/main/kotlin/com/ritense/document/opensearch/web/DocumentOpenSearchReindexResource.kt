@@ -18,6 +18,7 @@ package com.ritense.document.opensearch.web
 
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.ReindexRequest
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
@@ -36,6 +37,10 @@ class DocumentOpenSearchReindexResource(
     private val reindexService: DocumentOpenSearchReindexService,
 ) {
 
+    @EndpointDescription(
+        en = "Start document re-index",
+        nl = "Herindexering van documenten starten",
+    )
     @PostMapping("/reindex")
     fun reindex(@RequestBody(required = false) request: ReindexRequest?): ResponseEntity<Map<String, Any?>> {
         val runId = reindexService.start(request ?: ReindexRequest())
@@ -43,6 +48,10 @@ class DocumentOpenSearchReindexResource(
         return ResponseEntity.accepted().body(mapOf("status" to "started", "runId" to runId))
     }
 
+    @EndpointDescription(
+        en = "List document re-index runs",
+        nl = "Herindexeringsruns van documenten ophalen",
+    )
     @GetMapping("/reindex/runs")
     fun listRuns(
         @RequestParam(defaultValue = "0") page: Int,
@@ -50,9 +59,17 @@ class DocumentOpenSearchReindexResource(
     ): ResponseEntity<Page<Map<String, Any?>>> =
         ResponseEntity.ok(reindexService.listRuns(PageRequest.of(page, size)))
 
+    @EndpointDescription(
+        en = "Get document re-index status",
+        nl = "Status van documentherindexering ophalen",
+    )
     @GetMapping("/reindex/status")
     fun status(): ResponseEntity<Map<String, Any?>> = ResponseEntity.ok(reindexService.status())
 
+    @EndpointDescription(
+        en = "Get document re-index run by id",
+        nl = "Herindexeringsrun van documenten ophalen op id",
+    )
     @GetMapping("/reindex/{runId}")
     fun statusById(@PathVariable runId: UUID): ResponseEntity<Map<String, Any?>> =
         ResponseEntity.ok(reindexService.status(runId))

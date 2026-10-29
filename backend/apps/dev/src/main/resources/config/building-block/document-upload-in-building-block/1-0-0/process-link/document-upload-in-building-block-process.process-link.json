@@ -1,0 +1,14 @@
+[
+    {
+        "activityId": "StartEvent",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-document-upload-in-building-block"
+    },
+    {
+        "activityId": "UploadDocumentUserTask",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "document-upload-in-building-block-upload"
+    }
+]

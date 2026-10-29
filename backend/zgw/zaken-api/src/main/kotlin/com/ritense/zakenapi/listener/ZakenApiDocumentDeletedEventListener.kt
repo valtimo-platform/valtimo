@@ -26,7 +26,9 @@ import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.service.ZaakDocumentService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
+import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.client.HttpClientErrorException
 
 @AllOpen
 class ZakenApiDocumentDeletedEventListener(
@@ -55,7 +57,18 @@ class ZakenApiDocumentDeletedEventListener(
                     ZakenApiPlugin::class.java,
                     ZakenApiPlugin.findConfigurationByUrl(link.zaakInstanceUrl)
                 )
-                plugin?.deleteZaak(link.zaakInstanceUrl)
+                try {
+                    plugin?.deleteZaak(link.zaakInstanceUrl)
+                } catch (e: HttpClientErrorException) {
+                    if (e.statusCode == HttpStatus.NOT_FOUND) {
+                        logger.warn(e) {
+                            "Skipping deletion of zaak '${link.zaakInstanceUrl}' of case " +
+                                "'${event.caseDocumentId}': it was not found in the Zaken API"
+                        }
+                    } else {
+                        throw e
+                    }
+                }
             }
 
         }

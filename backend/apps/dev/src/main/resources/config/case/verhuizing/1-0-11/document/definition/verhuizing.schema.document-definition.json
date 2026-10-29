@@ -1,0 +1,96 @@
+{
+    "$id": "verhuizing.schema",
+    "type": "object",
+    "title": "Verhuizing",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+        "aanvrager",
+        "status",
+        "scenario"
+    ],
+    "properties": {
+        "scenario": {
+            "type": "string"
+        },
+        "aanvrager": {
+            "type": "object",
+            "required": [
+                "naam"
+            ],
+            "properties": {
+                "naam": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "nieuwAdres": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "status": {
+            "type": "string"
+        },
+        "spoed": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "aantalPersonen": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "verhuisdatum": {
+            "type": "string",
+            "format": "date"
+        },
+        "woning": {
+            "type": "object",
+            "properties": {
+                "oppervlakte": {
+                    "type": "number"
+                },
+                "energielabel": {
+                    "type": "string"
+                }
+            }
+        },
+        "migratedFrom": {
+            "type": "string"
+        },
+        "gemigreerdDoor": {
+            "type": "string"
+        },
+        "toelichting": {
+            "type": "string"
+        },
+        "notitie": {
+            "type": "string"
+        },
+        "inspectieStatus": {
+            "type": "string"
+        },
+        "inspectieAkkoord": {
+            "type": "boolean"
+        },
+        "afgerond": {
+            "type": "boolean"
+        },
+        "aantalKamers": {
+            "type": "integer"
+        },
+        "sequenceNummer": {
+            "type": "integer"
+        },
+        "geschatteWaarde": {
+            "type": "number"
+        }
+    }
+}

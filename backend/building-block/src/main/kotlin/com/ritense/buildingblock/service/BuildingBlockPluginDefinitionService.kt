@@ -20,6 +20,8 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.result.PluginDefinitionsWithDependenciesDto
+import com.ritense.plugin.web.rest.result.PluginRequirementSource
+import com.ritense.plugin.web.rest.result.PluginWithDependenciesDto
 import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -85,12 +87,70 @@ class BuildingBlockPluginDefinitionService(
         return keys.toSet()
     }
 
+    /**
+     * External plugin references (`external_plugin` process links with a `BUILDING_BLOCK`
+     * reference) required by a building block, keyed by `pluginId` + manifest version, including
+     * references from nested building blocks.
+     */
+    fun getExternalPluginReferencesForBuildingBlock(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ): Set<Pair<String, String>> {
+        return getExternalPluginReferencesForBuildingBlockRecursive(buildingBlockDefinitionId, mutableSetOf())
+    }
+
+    private fun getExternalPluginReferencesForBuildingBlockRecursive(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        visitedBuildingBlocks: MutableSet<BuildingBlockDefinitionId>
+    ): Set<Pair<String, String>> {
+        if (visitedBuildingBlocks.contains(buildingBlockDefinitionId)) {
+            return emptySet()
+        }
+        visitedBuildingBlocks.add(buildingBlockDefinitionId)
+
+        val processDefinitionIds = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+            .map { it.id.processDefinitionId.id }
+
+        if (processDefinitionIds.isEmpty()) {
+            return emptySet()
+        }
+
+        val directReferences = pluginProcessLinkRepository
+            .findExternalPluginReferencesByProcessDefinitionIds(processDefinitionIds)
+            .map { it.getPluginDefinitionKey() to it.getPluginDefinitionVersion() }
+            .toSet()
+
+        val nestedBuildingBlockDefinitionIds = processDefinitionIds.flatMap { processDefinitionId ->
+            processLinkService.getProcessLinks(processDefinitionId)
+                .filterIsInstance<BuildingBlockProcessLink>()
+                .map { it.buildingBlockDefinitionId }
+        }.toSet()
+
+        val nestedReferences = nestedBuildingBlockDefinitionIds.flatMap { nestedBuildingBlockId ->
+            getExternalPluginReferencesForBuildingBlockRecursive(nestedBuildingBlockId, visitedBuildingBlocks)
+        }.toSet()
+
+        return directReferences + nestedReferences
+    }
+
     fun getPluginDefinitionsWithDependenciesForBuildingBlock(
         buildingBlockId: BuildingBlockDefinitionId
     ): PluginDefinitionsWithDependenciesDto {
         val pluginKeys = getPluginDefinitionKeysForBuildingBlock(buildingBlockId)
+        val embedded = pluginService.getPluginDefinitionsWithDependencies(pluginKeys)
 
-        return pluginService
-            .getPluginDefinitionsWithDependencies(pluginKeys)
+        val externalReferences = getExternalPluginReferencesForBuildingBlock(buildingBlockId)
+        val external = externalReferences.map { (pluginId, version) ->
+            PluginWithDependenciesDto(
+                pluginDefinitionKey = pluginId,
+                dependencies = emptyList(),
+                source = PluginRequirementSource.EXTERNAL,
+                pluginDefinitionVersion = version,
+            )
+        }
+
+        return PluginDefinitionsWithDependenciesDto(
+            plugins = embedded.plugins + external
+        )
     }
 }

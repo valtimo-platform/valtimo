@@ -24,8 +24,7 @@ import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION_PROCESS_LINK
 import com.ritense.processdocument.domain.config.CaseDefinitionProcessLinkConfigItem
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
-import com.ritense.processdocument.domain.CaseDefinitionProcessLink
-import com.ritense.processdocument.domain.CaseDefinitionProcessLinkId.Companion.newId
+import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
@@ -33,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class CaseDefinitionProcessLinkImporter(
     private val caseDefinitionProcessLinkRepository: CaseDefinitionProcessLinkRepository,
+    private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
     private val objectMapper: ObjectMapper,
 ) : Importer {
 
@@ -61,11 +61,11 @@ class CaseDefinitionProcessLinkImporter(
             }
 
             logger.info { "Deploying case-definition-process-link: ${item.linkType} -> ${item.processDefinitionKey} for case ${caseDefinitionId.key}" }
-            caseDefinitionProcessLinkRepository.save(
-                CaseDefinitionProcessLink(
-                    newId(caseDefinitionId, item.processDefinitionKey),
-                    item.linkType
-                )
+            // Version numbers are engine-local, so the pin comes from this environment, not the exporting one.
+            caseDefinitionProcessLinkService.saveDocumentDefinitionProcessLink(
+                caseDefinitionId,
+                item.processDefinitionKey,
+                item.linkType
             )
         }
     }

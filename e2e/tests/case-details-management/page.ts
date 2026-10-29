@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {APIRequestContext, expect, Page} from '@playwright/test';
+import {APIRequestContext, expect, Page, Response} from '@playwright/test';
+import {CarbonToggle} from '../../shared/carbon-toggle/carbon-toggle.utils';
 import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
 import {
   caseConfiguration,
@@ -28,15 +29,32 @@ import {
   CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS,
   ZGW_LINK_UPLOAD_PROCESS_TEST_IDS,
 } from '../../constants';
+import {apiGet, apiPatch} from '../../utils/api.utils';
+import {ensureDraftVersionSelected} from '../../utils/version.utils';
+import {openAndSelectOption} from '../../utils/ui.utils';
 
 const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
+
+const CASE_DEFINITION_URL = /\/case-management\/case\/([^/]+)\/version\/([^/]+)\//;
+
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export interface CaseHandlerSettings {
+  canHaveAssignee: boolean;
+  autoAssignTasks: boolean;
+}
 
 export interface UploadCaseOptions {
   archiveName?: string;
 }
 
 export class CaseDetailsManagementPage {
-  constructor(private readonly page: Page, private readonly request: APIRequestContext) {}
+  constructor(
+    private readonly page: Page,
+    private readonly request: APIRequestContext
+  ) {}
 
   // UI Elements
   get versionSelectDropdown() {
@@ -63,28 +81,45 @@ export class CaseDetailsManagementPage {
     return this.page.getByTestId('caseSeeAllVersionsButton');
   }
 
-  get caseHandlerCanHaveHandlerToggle() {
-    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.canHaveHandler).locator('.cds--toggle__switch');
-  }
-
   get caseHandlerCanHaveHandler() {
     return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.canHaveHandler);
   }
 
-  get caseHandlerAutomaticallyAssignToggle() {
-    return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.automaticallyAssign).locator('.cds--toggle__switch');
+  get caseHandlerCanHaveHandlerToggle(): CarbonToggle {
+    return new CarbonToggle(this.caseHandlerCanHaveHandler);
   }
 
   get caseHandlerAutomaticallyAssign() {
     return this.page.getByTestId(CASE_MANAGEMENT_CASE_HANDLER_TEST_IDS.automaticallyAssign);
   }
 
+  get caseHandlerAutomaticallyAssignToggle(): CarbonToggle {
+    return new CarbonToggle(this.caseHandlerAutomaticallyAssign);
+  }
+
   get hasExternalForm() {
-    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm).getByRole('switch');
+    return this.page
+      .getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm)
+      .getByRole('switch');
   }
 
   get hasExternalFormToggle() {
-    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm).locator('.cds--toggle__switch');
+    return this.page
+      .getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.hasExternalForm)
+      .locator('.cds--toggle__switch');
+  }
+
+  async setExternalStartForm(enabled: boolean): Promise<void> {
+    const expected = String(enabled);
+
+    await expect(async () => {
+      if ((await this.hasExternalForm.getAttribute('aria-checked')) === expected) return;
+
+      await this.hasExternalFormToggle.click({timeout: 5_000});
+      await expect(this.hasExternalForm).toHaveAttribute('aria-checked', expected, {
+        timeout: 5_000,
+      });
+    }).toPass({timeout: 20_000});
   }
 
   get externalFormUrl() {
@@ -92,7 +127,9 @@ export class CaseDetailsManagementPage {
   }
 
   get externalFormDescription() {
-    return this.page.getByTestId(CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormDescription);
+    return this.page.getByTestId(
+      CASE_MANAGEMENT_EXTERNAL_START_FORM_TEST_IDS.externalFormDescription
+    );
   }
 
   get externalFormSave() {
@@ -141,8 +178,10 @@ export class CaseDetailsManagementPage {
   }
 
   async switchCaseVersionViaDropdown(caseVersion: string) {
-    await this.versionSelectDropdown.click();
-    await this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`).click();
+    await openAndSelectOption(
+      this.versionSelectDropdown,
+      this.page.getByRole('listbox').getByTestId(`caseVersion${caseVersion}`)
+    );
   }
 
   async switchCaseVersionViaList() {
@@ -195,12 +234,12 @@ export class CaseDetailsManagementPage {
 
   async selectUploadProcess(processName: string) {
     await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
-    await this.linkUploadProcessMenuButton.click();
     // Use exact matching: "Bezwaar" is a prefix of "Bezwaar ad-hoc FVM" etc.,
     // so a non-exact name match resolves to multiple options.
-    await this.linkUploadProcessListbox
-      .getByRole('option', {name: processName, exact: true})
-      .click();
+    await openAndSelectOption(
+      this.linkUploadProcessMenuButton,
+      this.linkUploadProcessListbox.getByRole('option', {name: processName, exact: true})
+    );
     // Selecting triggers a save round-trip that briefly disables the combo box.
     await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
   }
@@ -209,5 +248,124 @@ export class CaseDetailsManagementPage {
     await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
     await this.linkUploadProcessClearButton.click();
     await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
+  }
+
+  // ─── Case handler settings ───────────────────────────────────────
+  //
+  // `valtimo-case-management-case-handler` binds `[checked]` one-way to the case
+  // settings it fetches, and only `[disabled]` to its own in-flight state. So the
+  // toggles render *enabled and unchecked* in the window between paint and the
+  // settings GET resolving, and then snap to the persisted value. Reading the
+  // toggle in that window reports a state that was never real, which is why these
+  // assertions have to be anchored on the settings request rather than on
+  // "the switch is enabled".
+
+  private isCaseSettingsRequest(response: Response, method: 'GET' | 'PATCH'): boolean {
+    return (
+      /\/api\/management\/v1\/case-definition\/[^/]+\/version\/[^/]+\/settings$/.test(
+        response.url()
+      ) && response.request().method() === method
+    );
+  }
+
+  async openDraftVersionWithSettings(): Promise<string> {
+    await this.page.reload();
+    await this.page.waitForURL(CASE_DEFINITION_URL, {timeout: 30_000});
+
+    const versionTag = await ensureDraftVersionSelected(this.page);
+    await this.waitForCaseSettingsApplied();
+    return versionTag;
+  }
+
+  async waitForCaseSettingsApplied(): Promise<void> {
+    const settings = await this.getCaseHandlerSettingsViaApi();
+
+    await this.caseHandlerCanHaveHandlerToggle.assertEnabled();
+    await this.caseHandlerCanHaveHandlerToggle.assertChecked(!!settings.canHaveAssignee);
+    await this.caseHandlerAutomaticallyAssignToggle.assertChecked(!!settings.autoAssignTasks);
+  }
+
+  async getCaseHandlerSettingsViaApi(): Promise<CaseHandlerSettings> {
+    const {key, versionTag} = this.caseDefinitionFromUrl();
+    return apiGet<CaseHandlerSettings>(
+      `/api/management/v1/case-definition/${key}/version/${versionTag}/settings`
+    );
+  }
+
+  private caseDefinitionFromUrl(): {key: string; versionTag: string} {
+    const match = CASE_DEFINITION_URL.exec(this.page.url());
+    if (!match) {
+      throw new Error(`[case-details] Not on a case definition page: ${this.page.url()}`);
+    }
+    return {key: match[1], versionTag: match[2]};
+  }
+
+  async setCaseHandlerSettingsViaApi(settings: CaseHandlerSettings): Promise<void> {
+    const {key, versionTag} = this.caseDefinitionFromUrl();
+    await apiPatch(
+      `/api/management/v1/case-definition/${key}/version/${versionTag}/settings`,
+      settings
+    );
+
+    await this.page.goto(`/case-management/case/${key}/version/${versionTag}/general`);
+    await this.page.waitForURL(
+      new RegExp(`/case/${escapeForRegExp(key)}/version/${escapeForRegExp(versionTag)}/`),
+      {timeout: 30_000}
+    );
+    await this.waitForCaseSettingsApplied();
+  }
+
+  /**
+   * Flip a case-handler toggle and wait for the PATCH *and* the refresh GET that
+   * re-feeds `[checked]`. Without waiting for both, the assertion races the
+   * server: Carbon flips optimistically, then the refresh overwrites it.
+   */
+  private async toggleCaseHandlerSetting(
+    toggle: CarbonToggle,
+    field: keyof CaseHandlerSettings,
+    checked: boolean
+  ): Promise<void> {
+    let attempt = 0;
+
+    await expect(async () => {
+      if ((await this.getCaseHandlerSettingsViaApi())[field] === checked) return;
+
+      const patched = this.page
+        .waitForResponse(response => this.isCaseSettingsRequest(response, 'PATCH'), {
+          timeout: 15_000,
+        })
+        .catch(() => undefined);
+      const refreshed = this.page
+        .waitForResponse(response => this.isCaseSettingsRequest(response, 'GET'), {timeout: 15_000})
+        .catch(() => undefined);
+
+      await toggle.clickOnce(attempt++);
+
+      const patchResponse = await patched;
+      if (patchResponse) {
+        expect(patchResponse.ok(), 'case settings PATCH should succeed').toBeTruthy();
+        await refreshed;
+      }
+
+      expect((await this.getCaseHandlerSettingsViaApi())[field]).toBe(checked);
+    }).toPass({timeout: 45_000});
+
+    await toggle.assertChecked(checked);
+  }
+
+  async setCanHaveHandler(checked: boolean): Promise<void> {
+    await this.toggleCaseHandlerSetting(
+      this.caseHandlerCanHaveHandlerToggle,
+      'canHaveAssignee',
+      checked
+    );
+  }
+
+  async setAutomaticallyAssign(checked: boolean): Promise<void> {
+    await this.toggleCaseHandlerSetting(
+      this.caseHandlerAutomaticallyAssignToggle,
+      'autoAssignTasks',
+      checked
+    );
   }
 }

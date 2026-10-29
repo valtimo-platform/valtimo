@@ -33,6 +33,7 @@ import com.ritense.document.web.rest.dto.DocumentInspectionDto;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
@@ -66,6 +67,10 @@ public class JsonSchemaDocumentInspectionResource {
         this.eventPublisher = eventPublisher;
     }
 
+    @EndpointDescription(
+        en = "Get case for inspection",
+        nl = "Dossier voor inspectie ophalen"
+    )
     @GetMapping("/v1/case/{caseId}")
     public ResponseEntity<DocumentInspectionDto> getForInspection(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable("caseId") UUID caseId
@@ -81,6 +86,10 @@ public class JsonSchemaDocumentInspectionResource {
         return ResponseEntity.ok(DocumentInspectionDto.from(document));
     }
 
+    @EndpointDescription(
+        en = "Modify case for inspection",
+        nl = "Dossier voor inspectie bijwerken"
+    )
     @PutMapping("/v1/case/{caseId}")
     public ResponseEntity<ModifyDocumentResult> modifyForInspection(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable("caseId") UUID caseId,

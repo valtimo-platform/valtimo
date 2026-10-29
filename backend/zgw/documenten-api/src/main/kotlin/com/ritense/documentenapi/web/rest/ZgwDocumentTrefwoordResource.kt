@@ -21,6 +21,7 @@ import com.ritense.documentenapi.service.ZgwDocumentTrefwoordService
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -40,6 +41,10 @@ class ZgwDocumentTrefwoordResource(
     val zgwDocumentTrefwoordService: ZgwDocumentTrefwoordService
 ) {
 
+    @EndpointDescription(
+        en = "Get document trefwoorden for case definition",
+        nl = "Documenttrefwoorden voor dossierdefinitie ophalen",
+    )
     @GetMapping("/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")
     fun getTrefwoorden(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
@@ -48,6 +53,10 @@ class ZgwDocumentTrefwoordResource(
         return ResponseEntity.ok(trefwoorden)
     }
 
+    @EndpointDescription(
+        en = "Search document trefwoorden for case definition",
+        nl = "Documenttrefwoorden voor dossierdefinitie zoeken",
+    )
     @GetMapping("/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")
     fun getTrefwoorden(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -58,6 +67,10 @@ class ZgwDocumentTrefwoordResource(
         return ResponseEntity.ok(page)
     }
 
+    @EndpointDescription(
+        en = "Create document trefwoord",
+        nl = "Documenttrefwoord aanmaken",
+    )
     @PostMapping("/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord/{trefwoord}")
     fun createTrefwoord(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -67,6 +80,10 @@ class ZgwDocumentTrefwoordResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Delete document trefwoord",
+        nl = "Documenttrefwoord verwijderen",
+    )
     @DeleteMapping("/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord/{trefwoord}")
     fun deleteTrefwoord(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
@@ -76,6 +93,10 @@ class ZgwDocumentTrefwoordResource(
         return ResponseEntity.noContent().build()
     }
 
+    @EndpointDescription(
+        en = "Delete multiple document trefwoorden",
+        nl = "Meerdere documenttrefwoorden verwijderen",
+    )
     @DeleteMapping("/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord")
     fun deleteTrefwoorden(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,

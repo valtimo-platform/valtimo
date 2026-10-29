@@ -45,7 +45,7 @@ class ProcessDefinitionChangedEventListenerTest {
 
     @BeforeEach
     fun before() {
-        listener = ProcessDefinitionChangedEventListener(pluginConfigurationMappingResolver)
+        listener = ProcessDefinitionChangedEventListener(listOf(pluginConfigurationMappingResolver))
     }
 
     @Test

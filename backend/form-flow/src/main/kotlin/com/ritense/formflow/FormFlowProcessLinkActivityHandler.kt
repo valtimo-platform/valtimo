@@ -105,13 +105,13 @@ class FormFlowProcessLinkActivityHandler(
                 resolveFormFlowDefinition(processDefinition, processLink.formFlowDefinitionKey, documentId)
 
             val additionalProperties = mutableMapOf<String, Any>(
-                "processDefinitionKey" to processDefinition.key,
+                PROCESS_DEFINITION_KEY to processDefinition.key,
                 // The key alone cannot identify a version: every building block version redeploys the same
                 // process definition key. Pass the id on so submitting starts the linked version.
-                "processDefinitionId" to processDefinition.id,
+                PROCESS_DEFINITION_ID to processDefinition.id,
             )
-            documentId?.let { additionalProperties["documentId"] = it }
-            documentDefinitionName?.let { additionalProperties["documentDefinitionName"] = it }
+            documentId?.let { additionalProperties[DOCUMENT_ID] = it }
+            documentDefinitionName?.let { additionalProperties[DOCUMENT_DEFINITION_NAME] = it }
 
             ProcessLinkActivityResult(
                 processLink.id,

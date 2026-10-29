@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ export class MdiIconSelectorComponent implements ControlValueAccessor {
   @Input() public placeholderTranslationKey: string = 'interface.iconPlaceholder';
   @Input() public appendInline = true;
   @Input() public dropUp = false;
+  @Input() public fullWidth = false;
 
   public readonly $disabled = signal<boolean>(false);
 

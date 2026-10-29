@@ -25,6 +25,7 @@
     <div class="valtimo-building-block-management-list__actions">
       <button
         cdsButton="ghost"
+        [attr.data-test-id]="testIds.uploadButton"
         (click)="showUploadModal()"
         [disabled]="(isFinal$ | async) || $loading()"
       >
@@ -35,6 +36,7 @@
 
       <button
         cdsButton="primary"
+        [attr.data-test-id]="testIds.createButton"
         (click)="onCreateClick()"
         [disabled]="(isFinal$ | async) || $loading()"
       >

@@ -29,6 +29,8 @@ export class PageTitleService implements OnDestroy {
   private readonly _customPageSubtitleSet$ = new BehaviorSubject<boolean>(false);
   private readonly _hasPageActions$ = new BehaviorSubject<boolean>(false);
   private readonly _pageActionsFullWidth$ = new BehaviorSubject<boolean>(false);
+  private readonly _pageActionsWrap$ = new BehaviorSubject<boolean>(false);
+  private readonly _pageActionsMinWidth$ = new BehaviorSubject<number | null>(null);
 
   private readonly _pageActionsViewContainerRef$ = new BehaviorSubject<ViewContainerRef | null>(
     null
@@ -68,6 +70,14 @@ export class PageTitleService implements OnDestroy {
 
   public get pageActionsFullWidth$(): Observable<boolean> {
     return this._pageActionsFullWidth$.asObservable();
+  }
+
+  public get pageActionsWrap$(): Observable<boolean> {
+    return this._pageActionsWrap$.asObservable();
+  }
+
+  public get pageActionsMinWidth$(): Observable<number | null> {
+    return this._pageActionsMinWidth$.asObservable();
   }
 
   public get pageTitleHidden$(): Observable<boolean> {
@@ -121,6 +131,18 @@ export class PageTitleService implements OnDestroy {
     this._pageActionsFullWidth$.next(value);
   }
 
+  public setPageActionsWrap(value: boolean): void {
+    this._pageActionsWrap$.next(value);
+  }
+
+  /**
+   * The narrowest width wrapping page actions can adapt to. They stay beside the title as long as
+   * this fits; null means their natural width.
+   */
+  public setPageActionsMinWidth(width: number | null): void {
+    this._pageActionsMinWidth$.next(width);
+  }
+
   public setCustomPageTitleSet(set: boolean): void {
     this._customPageTitleSet$.next(set);
   }
@@ -161,6 +183,8 @@ export class PageTitleService implements OnDestroy {
           if (pageActionsViewContainerRef && !preventReset) {
             pageActionsViewContainerRef.clear();
             this.setHasPageActions(false);
+            this.setPageActionsWrap(false);
+            this.setPageActionsMinWidth(null);
           }
         })
       )

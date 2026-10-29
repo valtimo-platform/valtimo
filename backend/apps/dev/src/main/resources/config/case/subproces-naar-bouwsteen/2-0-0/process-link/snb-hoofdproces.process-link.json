@@ -1,0 +1,16 @@
+[
+    {
+        "activityId": "CallBehandeling",
+        "activityType": "bpmn:CallActivity:start",
+        "processLinkType": "building-block",
+        "buildingBlockDefinitionKey": "snb-behandeling-bouwsteen",
+        "buildingBlockDefinitionVersionTag": "1.0.0",
+        "inputMappings": [
+            {
+                "source": "doc:/onderwerp",
+                "target": "doc:/onderwerp"
+            }
+        ],
+        "outputMappings": []
+    }
+]

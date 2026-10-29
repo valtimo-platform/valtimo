@@ -1,0 +1,75 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Beoordelen verhuizing",
+            "content": "Beoordeel de aangevraagde verhuizing.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvrager.naam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "disabled": true,
+            "attributes": {
+                "data-testid": "beoordelen-verhuizing-naam"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
+        },
+        {
+            "key": "nieuwAdres",
+            "type": "textfield",
+            "input": true,
+            "label": "Nieuw adres",
+            "tableView": true,
+            "disabled": true,
+            "attributes": {
+                "data-testid": "beoordelen-verhuizing-nieuw-adres"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "Dorpsstraat 1, 1234 AB Testdorp"
+        },
+        {
+            "key": "status",
+            "type": "select",
+            "input": true,
+            "label": "Beoordeling",
+            "tableView": true,
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "beoordelen-verhuizing-status"
+            },
+            "data": {
+                "values": [
+                    {
+                        "label": "Goedgekeurd",
+                        "value": "Goedgekeurd"
+                    },
+                    {
+                        "label": "Afgekeurd",
+                        "value": "Afgekeurd"
+                    }
+                ]
+            },
+            "dataSrc": "values",
+            "defaultValue": "Goedgekeurd"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Beoordeling opslaan",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

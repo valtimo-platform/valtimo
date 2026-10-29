@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {map, Observable} from 'rxjs';
 import {
+  FlowNodeMigration,
   ProcessDefinition,
   ProcessDefinitionStartForm,
   ProcessDefinitionStartProcessLink,
@@ -41,8 +42,14 @@ export class ProcessService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  getProcessDefinitions(): Observable<ProcessDefinition[]> {
-    return this.http.get<ProcessDefinition[]>(`${this.valtimoEndpointUri}v1/process/definition`);
+  /**
+   * A suspended process still has running instances, so migration needs them offered even though nothing else should.
+   */
+  getProcessDefinitions(includeSuspended = false): Observable<ProcessDefinition[]> {
+    return this.http.get<ProcessDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process/definition`,
+      includeSuspended ? {params: {includeSuspended: true}} : {}
+    );
   }
 
   getProcessDefinitionVersions(key: string): Observable<ProcessDefinition[]> {
@@ -103,8 +110,34 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated The generic endpoint is restricted to administrators. Use
+   * {@link getCaseProcessInstanceXml} (document VIEW) or {@link getCaseInspectionProcessInstanceXml}
+   * (document INSPECT) for case-related process diagrams.
+   */
   getProcessXml(id: string): Observable<any> {
     return this.http.get(`${this.valtimoEndpointUri}v1/process/${id}/xml`);
+  }
+
+  getCaseProcessInstanceXml(caseId: string, processInstanceId: string): Observable<any> {
+    return this.http.get(
+      `${this.valtimoEndpointUri}v1/process-document/case/${caseId}/process-instance/${processInstanceId}/xml`
+    );
+  }
+
+  getCaseInspectionProcessInstanceXml(caseId: string, processInstanceId: string): Observable<any> {
+    return this.http.get(
+      `${this.valtimoEndpointUri}management/v1/case/${caseId}/process-instance/${processInstanceId}/xml`
+    );
+  }
+
+  getFlowNodes(
+    sourceProcessDefinitionId: string,
+    targetProcessDefinitionId: string
+  ): Observable<FlowNodeMigration> {
+    return this.http.get<FlowNodeMigration>(
+      `${this.valtimoEndpointUri}v1/process/definition/${sourceProcessDefinitionId}/${targetProcessDefinitionId}/flownodes`
+    );
   }
 
   getProcessCount(id: string): Observable<any> {
@@ -126,6 +159,9 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated This endpoint is restricted to administrators and will be removed.
+   */
   getProcessInstances(key: string, page: number, size: number, sort: string): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
@@ -139,6 +175,9 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated This endpoint is restricted to administrators and will be removed.
+   */
   getProcessInstance(processInstanceId: string): Observable<ProcessInstance> {
     return this.http.get<ProcessInstance>(
       `${this.valtimoEndpointUri}v1/process/${processInstanceId}`,
@@ -146,12 +185,18 @@ export class ProcessService {
     );
   }
 
+  /**
+   * @deprecated This endpoint will be removed. Use the authorized task endpoints instead.
+   */
   getProcessInstanceTasks(id: string): Observable<ProcessInstanceTask[]> {
     return this.http
       .get<ProcessInstanceTask[]>(`${this.valtimoEndpointUri}v1/process/${id}/tasks`, {})
       .pipe(map(res => res || []));
   }
 
+  /**
+   * @deprecated This endpoint is restricted to administrators and will be removed.
+   */
   getProcessInstanceVariables(id: string, variableNames: Array<any>): Observable<any> {
     return this.http.post(
       `${this.valtimoEndpointUri}v1/process-instance/${id}/variables`,

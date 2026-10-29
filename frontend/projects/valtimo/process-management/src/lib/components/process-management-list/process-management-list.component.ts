@@ -89,8 +89,11 @@ export class ProcessManagementListComponent {
         if (def.draft) {
           tags.push({content: this.translateService.instant('processManagement.draft'), type: 'red'});
         }
-        if (def.processDefinition?.readOnly) {
-          tags.push({content: this.translateService.instant('processManagement.readOnly'), type: 'gray'});
+        if (def.processDefinition?.systemProcess) {
+          tags.push({
+            content: this.translateService.instant('processManagement.systemProcess'),
+            type: 'blue',
+          });
         }
         return {...def, statusTags: tags};
       })

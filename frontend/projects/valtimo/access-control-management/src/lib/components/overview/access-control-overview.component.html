@@ -35,7 +35,11 @@
       <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
     </button>
 
-    <button cdsButton="primary" (click)="showExportModal()">
+    <button
+      cdsButton="primary"
+      [attr.data-test-id]="testIds.exportButton"
+      (click)="showExportModal()"
+    >
       {{ 'interface.export' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>

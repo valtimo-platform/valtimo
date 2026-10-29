@@ -16,15 +16,23 @@
 
 package com.ritense.valtimo.contract.autoconfigure
 
+import com.ritense.valtimo.contract.annotation.AnnotationScanner
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.core.Ordered.LOWEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 
 @AutoConfiguration
 class ContractAutoConfiguration {
+
+    @ConditionalOnMissingBean(AnnotationScanner::class)
+    @Bean
+    fun annotationScanner(context: ApplicationContext): AnnotationScanner {
+        return AnnotationScanner(context)
+    }
 
     @Order(LOWEST_PRECEDENCE)
     @ConditionalOnMissingBean(CaseDefinitionChecker::class)

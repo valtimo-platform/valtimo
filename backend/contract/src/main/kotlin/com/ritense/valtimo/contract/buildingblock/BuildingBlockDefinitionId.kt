@@ -18,6 +18,7 @@ package com.ritense.valtimo.contract.buildingblock
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.domain.AbstractId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.repository.SemverConverter
@@ -51,6 +52,10 @@ data class BuildingBlockDefinitionId(
     }
 
     override fun getIdKey() = key
+
+    override fun blueprintType() = BlueprintType.BUILDING_BLOCK
+
+    override fun blueprintVersionTag() = versionTag
 
     init {
         require(key.isNotBlank()) { "[buildingBlockId.key] was blank!" }

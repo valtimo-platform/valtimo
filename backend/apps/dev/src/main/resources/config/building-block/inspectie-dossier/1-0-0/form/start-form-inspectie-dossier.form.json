@@ -1,0 +1,31 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "html",
+            "type": "htmlelement",
+            "input": false,
+            "label": "Dossier aanleggen",
+            "content": "Leg het inspectiedossier aan.",
+            "tableView": false,
+            "refreshOnChange": false
+        },
+        {
+            "key": "aanvragerNaam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam aanvrager",
+            "tableView": true,
+            "applyMaskOn": "change",
+            "defaultValue": "Jan Jansen"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Dossier starten",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

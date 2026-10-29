@@ -1,0 +1,15 @@
+{
+    "scenario": "keten",
+    "aanvrager": {
+        "naam": "Aydin Keten",
+        "email": "keten1@example.com"
+    },
+    "nieuwAdres": "Ketenstraat 1, 1000 AA Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 2,
+    "woning": {
+        "oppervlakte": 80,
+        "energielabel": "B"
+    }
+}

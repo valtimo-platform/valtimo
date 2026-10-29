@@ -1,0 +1,33 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.valtimo.contract.blueprint.migration
+
+import com.ritense.valtimo.contract.BlueprintId
+import com.ritense.valtimo.contract.blueprint.BlueprintType
+import java.util.UUID
+
+/** Enumerates the instances a plan runs over, for one [BlueprintType]. Implement only where plans can be started standalone — there is deliberately no building-block implementation, so the compiler enforces it. */
+interface MigrationCandidateProvider {
+
+    fun supports(blueprintType: BlueprintType): Boolean
+
+    /** At most [limit] ids on [source] after [afterId] (null = first batch), in stable id order. A cursor, not an offset: a run shrinks its own set. */
+    fun findCandidateIds(source: BlueprintId, afterId: UUID?, limit: Int): List<UUID>
+
+    /** Whether [instanceId] currently sits on [blueprintId] — what tells an already-migrated case apart from one that was moved back. */
+    fun isHomedOn(instanceId: UUID, blueprintId: BlueprintId): Boolean
+}

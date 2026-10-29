@@ -18,6 +18,7 @@ export * from './fields/widget-management-fields.component';
 export * from './table/widget-management-table.component';
 export * from './collection/widget-management-collection.component';
 export * from './custom/widget-management-custom.component';
+export * from './external-plugin/widget-management-external-plugin.component';
 export * from './map/widget-management-map.component';
 export * from './person-card/widget-management-person-card.component';
 export * from './metroline/widget-management-metroline.component';

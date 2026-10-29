@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.operaton.domain.OperatonExecution;
 import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,15 @@ public class ProcessInstanceResource {
         this.runtimeService = runtimeService;
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
+    @EndpointDescription(
+        en = "Get process instance variables",
+        nl = "Procesinstantie-variabelen ophalen"
+    )
     @PostMapping("/v1/process-instance/{id}/variables")
     public ResponseEntity<Map<String, Object>> getProcessInstanceVariables(
         @LoggableResource(resourceType = OperatonExecution.class) @PathVariable String id,

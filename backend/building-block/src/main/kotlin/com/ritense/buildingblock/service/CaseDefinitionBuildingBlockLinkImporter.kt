@@ -71,7 +71,8 @@ class CaseDefinitionBuildingBlockLinkImporter(
                 ),
                 inputMappings = dto.inputMappings,
                 outputMappings = dto.outputMappings,
-                pluginConfigurationMappings = dto.pluginConfigurationMappings
+                pluginConfigurationMappings = dto.pluginConfigurationMappings,
+                startableByUser = dto.startableByUser
             )
             linkRepository.save(link)
         }

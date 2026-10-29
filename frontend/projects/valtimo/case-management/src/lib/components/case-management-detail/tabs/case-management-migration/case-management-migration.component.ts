@@ -1,0 +1,353 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {CommonModule} from '@angular/common';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  computed,
+  OnDestroy,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {ActivatedRoute, Router, RouterModule} from '@angular/router';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
+import {migrationStatusTagType} from '@valtimo/building-block-management';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  EMPTY,
+  map,
+  merge,
+  Observable,
+  of,
+  shareReplay,
+  startWith,
+  Subject,
+  Subscription,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+  timer,
+} from 'rxjs';
+import {catchError} from 'rxjs/operators';
+import {CASE_MANAGEMENT_MIGRATION_TEST_IDS} from '../../../../constants';
+import {MigrationPlanManagement, MigrationPlanViewModel} from '../../../../models';
+import {CaseMigrationApiService} from '../../../../services';
+import {CaseMigrationDetailModalComponent} from './case-migration-detail-modal/case-migration-detail-modal.component';
+
+const POLL_INTERVAL_MS = 3000;
+
+const isRunInProgress = (plan: MigrationPlanViewModel): boolean =>
+  plan.status?.status === 'RUNNING' || plan.dryRun?.status === 'RUNNING';
+
+/** The migration plans of one case definition version: the list, the actions on a plan, and the confirmations each of them needs. What a plan's run produced is the detail modal's. */
+@Component({
+  standalone: true,
+  selector: 'valtimo-case-management-migration',
+  templateUrl: './case-management-migration.component.html',
+  styleUrls: ['./case-management-migration.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    CarbonListModule,
+    ButtonModule,
+    IconModule,
+    TagModule,
+    ConfirmationModalModule,
+    CaseMigrationDetailModalComponent,
+  ],
+})
+export class CaseManagementMigrationComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('statusColumn') public statusColumnTemplate!: TemplateRef<unknown>;
+  @ViewChild('progressColumn') public progressColumnTemplate!: TemplateRef<unknown>;
+
+  public readonly ACTION_ITEMS: ActionItem[] = [
+    {
+      label: 'caseManagement.migration.startNow',
+      callback: this.onStartPlan.bind(this),
+      disabledCallback: (plan: MigrationPlanViewModel) => !plan.triggers.triggeredByButton,
+    },
+    {label: 'caseManagement.migration.dryRun', callback: this.onDryRunPlan.bind(this)},
+    {label: 'interface.edit', callback: this.onEditPlan.bind(this)},
+    {label: 'interface.duplicate', callback: this.onDuplicatePlan.bind(this)},
+    {label: 'interface.delete', callback: this.onDeletePlan.bind(this), type: 'danger'},
+  ];
+
+  public readonly $fields = signal<ColumnConfig[]>([]);
+  public readonly $loading = signal<boolean>(true);
+  public readonly $showDetailModal = signal<boolean>(false);
+
+  public readonly $planToDelete = signal<MigrationPlanViewModel | null>(null);
+  public readonly $planToStart = signal<MigrationPlanViewModel | null>(null);
+  public readonly $planToDryRun = signal<MigrationPlanViewModel | null>(null);
+
+  // Streams, not signals: Cancel never resets them, so reopening relies on re-emitting `true`, which a signal drops.
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showStartModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showDryRunModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly $selectedPlan = computed(
+    () => this._$plans().find(plan => plan.migrationKey === this._$selectedKey()) ?? null
+  );
+
+  protected readonly testIds = CASE_MANAGEMENT_MIGRATION_TEST_IDS;
+  protected readonly statusTagType = migrationStatusTagType;
+
+  private _params: CaseManagementParams | undefined;
+  private readonly _subscriptions = new Subscription();
+  private readonly _refresh$ = new Subject<void>();
+  private readonly _$selectedKey = signal<string | null>(null);
+  // True while any plan on this version has a run in progress.
+  private readonly _polling$ = new BehaviorSubject<boolean>(false);
+
+  // Declared before the streams that take until it — a field initialiser cannot reach one below it.
+  private readonly _destroy$ = new Subject<void>();
+
+  private readonly _params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route).pipe(
+      tap(params => (this._params = params)),
+      takeUntil(this._destroy$),
+      shareReplay(1)
+    );
+
+  /** Refreshes on a manual action and, while a run is in progress, on a timer — a run is dispatched to a background thread and takes hours, so the start response is only its first moment. Polling stops when nothing runs. */
+  public readonly plans$: Observable<MigrationPlanViewModel[]> = this._params$.pipe(
+    switchMap(params =>
+      !params
+        ? of<MigrationPlanViewModel[]>([])
+        : merge(
+            this._refresh$,
+            this._polling$.pipe(
+              distinctUntilChanged(),
+              switchMap(running => (running ? timer(POLL_INTERVAL_MS, POLL_INTERVAL_MS) : EMPTY))
+            )
+          ).pipe(
+            startWith(undefined),
+            switchMap(() => this.fetchPlans(params)),
+            // Deduplicated above, so a run that is still going does not resubscribe the timer on every tick.
+            tap(plans => this._polling$.next(plans.some(plan => isRunInProgress(plan))))
+          )
+    ),
+    tap(() => this.$loading.set(false)),
+    // Before shareReplay, which does not refCount: without this the poll timer outlives the component and keeps fetching for the rest of the run.
+    takeUntil(this._destroy$),
+    shareReplay(1)
+  );
+
+  // Last field: toSignal subscribes right here, and the stream reads the fields above.
+  private readonly _$plans = toSignal(this.plans$, {initialValue: []});
+
+  /** Where the detail modal links a failed case. Null until the route resolves. */
+  public get caseDefinitionKey(): string | null {
+    return this._params?.caseDefinitionKey ?? null;
+  }
+
+  constructor(
+    private readonly cd: ChangeDetectorRef,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly caseMigrationApiService: CaseMigrationApiService,
+    private readonly translateService: TranslateService
+  ) {}
+
+  public ngAfterViewInit(): void {
+    this.cd.detectChanges();
+    this.setFields();
+    this._subscriptions.add(this._params$.subscribe());
+  }
+
+  public ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    this._subscriptions.unsubscribe();
+  }
+
+  public onRowClicked(plan: MigrationPlanViewModel): void {
+    // Keeping _$selectedKey set means the modal keeps live-updating from the polled list while it is open.
+    this._$selectedKey.set(plan.migrationKey);
+    this.$showDetailModal.set(true);
+  }
+
+  public onCloseDetail(): void {
+    this.$showDetailModal.set(false);
+    this._$selectedKey.set(null);
+  }
+
+  public onAddPlan(): void {
+    if (!this._params) return;
+
+    this.router.navigate([
+      'case-management',
+      'case',
+      this._params.caseDefinitionKey,
+      'version',
+      this._params.caseDefinitionVersionTag,
+      'migration',
+      'create',
+    ]);
+  }
+
+  public onEditPlan(plan: MigrationPlanManagement): void {
+    if (!this._params) return;
+
+    this.router.navigate([
+      'case-management',
+      'case',
+      this._params.caseDefinitionKey,
+      'version',
+      this._params.caseDefinitionVersionTag,
+      'migration',
+      plan.migrationKey,
+    ]);
+  }
+
+  public onDuplicatePlan(plan: MigrationPlanViewModel): void {
+    if (!this._params) return;
+    const params = this._params;
+
+    combineLatest([
+      this.caseMigrationApiService.getPlanJson(params, plan.migrationKey),
+      this.plans$,
+    ])
+      .pipe(
+        take(1),
+        switchMap(([json, plans]) => {
+          const existingKeys = new Set(plans.map(existing => existing.migrationKey));
+          const baseKey =
+            typeof json['key'] === 'string' ? (json['key'] as string) : plan.migrationKey;
+          const baseTitle =
+            typeof json['title'] === 'string' ? (json['title'] as string) : plan.name;
+          const copy = {
+            ...json,
+            key: this.uniqueKey(baseKey, existingKeys),
+            title: `${baseTitle} (${this.translateService.instant('caseManagement.migration.duplicateSuffix')})`,
+          };
+          return this.caseMigrationApiService.savePlan(params, copy);
+        }),
+        catchError(() => of(null))
+      )
+      .subscribe(() => this._refresh$.next());
+  }
+
+  public onDeletePlan(plan: MigrationPlanViewModel): void {
+    this.$planToDelete.set(plan);
+    this.showDeleteModal$.next(true);
+  }
+
+  public onDeleteConfirm(plan: MigrationPlanViewModel): void {
+    if (!this._params || !plan) return;
+
+    this.caseMigrationApiService
+      .deletePlan(this._params, plan.migrationKey)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this.showDeleteModal$.next(false);
+        if (this._$selectedKey() === plan.migrationKey) this._$selectedKey.set(null);
+        this._refresh$.next();
+      });
+  }
+
+  public onStartPlan(plan: MigrationPlanViewModel): void {
+    // Close the details modal first so the start confirmation isn't stacked behind it.
+    this.$showDetailModal.set(false);
+    this.$planToStart.set(plan);
+    this.showStartModal$.next(true);
+  }
+
+  public onStartConfirm(plan: MigrationPlanViewModel): void {
+    if (!this._params || !plan) return;
+
+    this.caseMigrationApiService
+      .startMigration(this._params, plan.migrationKey)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this.showStartModal$.next(false);
+        this._refresh$.next();
+      });
+  }
+
+  public onDryRunPlan(plan: MigrationPlanViewModel): void {
+    // Close the details modal first so the dry-run confirmation isn't stacked behind it.
+    this.$showDetailModal.set(false);
+    this.$planToDryRun.set(plan);
+    this.showDryRunModal$.next(true);
+  }
+
+  public onDryRunConfirm(plan: MigrationPlanViewModel): void {
+    if (!this._params || !plan) return;
+
+    this.caseMigrationApiService
+      .startDryRun(this._params, plan.migrationKey)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this.showDryRunModal$.next(false);
+        this._refresh$.next();
+      });
+  }
+
+  private uniqueKey(base: string, existingKeys: Set<string>): string {
+    let candidate = `${base}-copy`;
+    let counter = 2;
+    while (existingKeys.has(candidate)) candidate = `${base}-copy-${counter++}`;
+    return candidate;
+  }
+
+  private fetchPlans(params: CaseManagementParams): Observable<MigrationPlanViewModel[]> {
+    return this.caseMigrationApiService.getPlans(params).pipe(
+      // Ignore a failed fetch so the list keeps its last value instead of flashing empty.
+      catchError(() => EMPTY),
+      map(plans => plans.map(plan => ({...plan, name: plan.title || plan.migrationKey})))
+    );
+  }
+
+  private setFields(): void {
+    this.$fields.set([
+      {key: 'name', label: 'caseManagement.migration.columns.plan', viewType: ViewType.TEXT},
+      {key: 'source', label: 'caseManagement.migration.columns.source', viewType: ViewType.TEXT},
+      {key: 'target', label: 'caseManagement.migration.columns.target', viewType: ViewType.TEXT},
+      {
+        key: '',
+        label: 'caseManagement.migration.columns.status',
+        viewType: ViewType.TEMPLATE,
+        template: this.statusColumnTemplate,
+      },
+      {
+        key: '',
+        label: 'caseManagement.migration.columns.progress',
+        viewType: ViewType.TEMPLATE,
+        template: this.progressColumnTemplate,
+      },
+    ]);
+  }
+}

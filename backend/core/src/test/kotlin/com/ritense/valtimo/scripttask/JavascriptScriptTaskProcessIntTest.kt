@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,5 +102,71 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
                 ).processInstanceDto
             }
         }
+    }
+
+    @Test
+    fun `reflection bypass via getClass should be blocked`() {
+        assertThrows<ScriptEvaluationException> {
+            runWithoutAuthorization {
+                operatonProcessService.startProcess(
+                    "javascript-script-task-process-reflection-bypass",
+                    UUID.randomUUID().toString(),
+                    caseDefinitionId,
+                    emptyMap()
+                ).processInstanceDto
+            }
+        }
+    }
+
+    @Test
+    fun `engine objects are not defined in script tasks`() {
+        val processInstance = runWithoutAuthorization {
+            operatonProcessService.startProcess(
+                "javascript-script-task-process-engine-objects",
+                UUID.randomUUID().toString(),
+                caseDefinitionId,
+                emptyMap()
+            ).processInstanceDto
+        }
+
+        val result = historyService.createHistoricVariableInstanceQuery()
+            .processInstanceId(processInstance.id)
+            .variableName("result")
+            .singleResult()
+            .value
+        assertEquals("undefined,undefined,undefined", result)
+    }
+
+    @Test
+    fun `option-like process variable does not enable class lookup`() {
+        assertThrows<ScriptEvaluationException> {
+            runWithoutAuthorization {
+                operatonProcessService.startProcess(
+                    "javascript-script-task-process-unallowed",
+                    UUID.randomUUID().toString(),
+                    caseDefinitionId,
+                    mapOf("polyglot.js.allowHostClassLookup" to true)
+                ).processInstanceDto
+            }
+        }
+    }
+
+    @Test
+    fun `option-like process variable does not break the script`() {
+        val processInstance = runWithoutAuthorization {
+            operatonProcessService.startProcess(
+                "javascript-script-task-process",
+                UUID.randomUUID().toString(),
+                caseDefinitionId,
+                mapOf("a" to 1, "b" to 2, "polyglot.js.allowHostClassLookup" to true)
+            ).processInstanceDto
+        }
+
+        val c = historyService.createHistoricVariableInstanceQuery()
+            .processInstanceId(processInstance.id)
+            .variableName("c")
+            .singleResult()
+            .value
+        assertEquals(3, c)
     }
 }

@@ -145,6 +145,16 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._autofilledElements$.getValue().find(e => e.activityId === activityId);
   }
 
+  private readonly _editingAllowed$ = new BehaviorSubject<boolean>(true);
+
+  public get editingAllowed(): boolean {
+    return this._editingAllowed$.getValue();
+  }
+
+  public setEditingAllowed(editingAllowed: boolean): void {
+    this._editingAllowed$.next(editingAllowed);
+  }
+
   private _updateBpmnViewFunction!: () => void;
 
   private _updatingBpmnView = false;
@@ -191,8 +201,8 @@ export class ProcessManagementEditorService implements OnDestroy {
   public updateProcessLink(event: ProcessLinkUpdateEvent): void {
     this.setProcessLinksForSelectedDefinition(
       this.processLinksForSelectedDefinition.map(processLink => {
-        if (processLink.activityId === event.activityId) {
-          return {...processLink, ...(event as any)};
+        if (processLink.id === event.id) {
+          return {...processLink, ...event} as ProcessLink;
         }
 
         return processLink;

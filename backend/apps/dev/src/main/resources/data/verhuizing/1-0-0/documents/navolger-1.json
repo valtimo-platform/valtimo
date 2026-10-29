@@ -1,0 +1,13 @@
+{
+    "scenario": "navolger",
+    "aanvrager": {
+        "naam": "Navolger Geval",
+        "emailadres": "navolger@example.com"
+    },
+    "nieuwAdres": "Volgstraat 1, 3333 CC Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 1,
+    "oppervlakte": 40,
+    "documenten": []
+}

@@ -23,6 +23,7 @@ import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.repository.ExpressionOperator
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -81,6 +82,48 @@ class ConditionTest {
         assertThat(value).isNotNull
         assertThat(value.value).isEqualTo("69")
         assertThat(value.value).isNotEqualTo(69)
+    }
+
+    @Test
+    fun `should reject a list value for a comparison operator`() {
+        listOf("==", "!=", ">", ">=", "<", "<=").forEach { operator ->
+            assertThatThrownBy {
+                MapperSingleton.get().readValue(
+                    """
+                    {
+                        "queryPath": "/xyz",
+                        "queryOperator": "$operator",
+                        "queryValue": ["A", "B"]
+                    }
+                """.trimIndent(), Condition::class.java
+                )
+            }
+                .hasRootCauseInstanceOf(IllegalArgumentException::class.java)
+                .hasMessageContaining("does not accept a list value")
+        }
+    }
+
+    @Test
+    fun `should accept a list value for the in and list_contains operators`() {
+        listOf("in", "list_contains").forEach { operator ->
+            val condition = MapperSingleton.get().readValue(
+                """
+                {
+                    "queryPath": "/xyz",
+                    "queryOperator": "$operator",
+                    "queryValue": ["A", "B"]
+                }
+            """.trimIndent(), Condition::class.java
+            )
+
+            assertThat(condition.value).isEqualTo(ComparableList(listOf("A", "B")))
+        }
+    }
+
+    @Test
+    fun `should evaluate in operator against a ComparableList value`() {
+        assertThat(ExpressionOperator.IN.evaluate("A", ComparableList(listOf("A", "B")))).isTrue()
+        assertThat(ExpressionOperator.IN.evaluate("C", ComparableList(listOf("A", "B")))).isFalse()
     }
 
     @Test

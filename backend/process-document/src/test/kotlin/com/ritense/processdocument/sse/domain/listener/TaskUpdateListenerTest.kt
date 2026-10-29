@@ -24,17 +24,23 @@ import com.ritense.processdocument.sse.event.TaskUpdateSseEvent
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.valtimo.contract.event.TaskTeamAssignedEvent
 import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.security.exceptions.TaskNotFoundException
+import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.operaton.bpm.spring.boot.starter.event.TaskEvent
+import java.util.Optional
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -45,6 +51,7 @@ class TaskUpdateListenerTest {
     lateinit var caseDocumentResolver: CaseDocumentResolver
     lateinit var documentService: DocumentService
     lateinit var operatonTaskService: OperatonTaskService
+    lateinit var operatonProcessService: OperatonProcessService
     lateinit var taskUpdateListener: TaskUpdateListener
 
     @BeforeEach
@@ -54,12 +61,14 @@ class TaskUpdateListenerTest {
         caseDocumentResolver = mock()
         documentService = mock()
         operatonTaskService = mock()
+        operatonProcessService = mock()
         taskUpdateListener = TaskUpdateListener(
             sseSubscriptionService,
             processDocumentService,
             caseDocumentResolver,
             documentService,
             operatonTaskService,
+            operatonProcessService,
         )
     }
 
@@ -171,6 +180,53 @@ class TaskUpdateListenerTest {
         assertEquals(taskId, sseEvent.taskId)
         assertEquals(caseDocumentId.toString(), sseEvent.documentId)
         assertEquals(caseDefinitionKey, sseEvent.caseDefinitionKey)
+    }
+
+    @Test
+    fun `should not notify when the process instance has already ended`() {
+        val taskId = UUID.randomUUID().toString()
+        val processInstanceId = UUID.randomUUID().toString()
+
+        val taskEvent = mock<TaskEvent>()
+        whenever(taskEvent.id).thenReturn(taskId)
+        whenever(taskEvent.processInstanceId).thenReturn(processInstanceId)
+
+        whenever(processDocumentService.getDocument(any(), anyOrNull()))
+            .thenThrow(RuntimeException("Process instance not found by id $processInstanceId"))
+        whenever(operatonProcessService.findProcessInstanceById(processInstanceId)).thenReturn(Optional.empty())
+
+        taskUpdateListener.handle(taskEvent)
+
+        verify(sseSubscriptionService, never()).notifySubscribers(any())
+    }
+
+    @Test
+    fun `should rethrow when the document cannot be resolved for a running process instance`() {
+        val taskId = UUID.randomUUID().toString()
+        val processInstanceId = UUID.randomUUID().toString()
+
+        val taskEvent = mock<TaskEvent>()
+        whenever(taskEvent.id).thenReturn(taskId)
+        whenever(taskEvent.processInstanceId).thenReturn(processInstanceId)
+
+        whenever(processDocumentService.getDocument(any(), anyOrNull())).thenThrow(RuntimeException("Something broke"))
+        whenever(operatonProcessService.findProcessInstanceById(processInstanceId))
+            .thenReturn(Optional.of(mock<ProcessInstance>()))
+
+        assertThrows<RuntimeException> { taskUpdateListener.handle(taskEvent) }
+
+        verify(sseSubscriptionService, never()).notifySubscribers(any())
+    }
+
+    @Test
+    fun `should not notify when the team assigned task can no longer be found`() {
+        val taskId = UUID.randomUUID().toString()
+
+        whenever(operatonTaskService.findTaskById(taskId)).thenThrow(TaskNotFoundException(taskId))
+
+        taskUpdateListener.handleTeamAssignment(TaskTeamAssignedEvent(taskId, null, null, "INTAKE_TEAM", "Intake Team"))
+
+        verify(sseSubscriptionService, never()).notifySubscribers(any())
     }
 
     private fun mockDocument(documentId: UUID, definitionName: String): Document {

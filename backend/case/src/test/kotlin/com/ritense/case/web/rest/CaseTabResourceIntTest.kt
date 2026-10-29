@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import java.util.UUID
 
 @Transactional
 class CaseTabResourceIntTest : BaseIntegrationTest() {
@@ -123,6 +124,26 @@ class CaseTabResourceIntTest : BaseIntegrationTest() {
         val document = createDocument(caseDefinitionName)
         mockMvc.perform(
             get("/api/v1/document/{documentId}/tab", document.id.id)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        ).andExpect(status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isEmpty)
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_ONLY_TEST_WIDGETS"])
+    fun `should not get case tabs without document view permission`() {
+        val document = createDocument("some-case-type")
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/tab", document.id.id)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "user@ritense.com", authorities = [USER])
+    fun `should get empty case tabs for unknown document`() {
+        mockMvc.perform(
+            get("/api/v1/document/{documentId}/tab", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$").isEmpty)

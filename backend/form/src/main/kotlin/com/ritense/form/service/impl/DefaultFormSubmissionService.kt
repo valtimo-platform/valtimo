@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,6 +122,7 @@ class DefaultFormSubmissionService(
                 ?: resolveDocumentDefinitionName(processDefinition)
             val processVariables = getProcessVariables(taskInstanceId)
             val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
+            val formData = formDefinition.removeNonSubmittableData(formData)
 
             val formFields = getFormFields(formDefinition, formData)
             preProcessFormFields(formFields, document)
@@ -212,6 +213,7 @@ class DefaultFormSubmissionService(
     ): CategorizedSubmitValues {
         val categorizedMap = formDefinition.inputFields
             .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
+            .filter { FormIoFormDefinition.SUBMITTABLE.test(it) }
             .filter { FormIoFormDefinition.isInputComponent(it) }
             .mapNotNull { field ->
                 getTargetKeyValuePair(field, formData)
@@ -347,9 +349,7 @@ class DefaultFormSubmissionService(
         formDefinition: FormIoFormDefinition,
         formData: JsonNode
     ): List<FormField> {
-        return formDefinition.inputFields
-            .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
-            .mapNotNull { field -> FormField.getFormField(formData, field, applicationEventPublisher) }
+        return FormField.getFormFields(formDefinition, formData, applicationEventPublisher)
     }
 
     private fun preProcessFormFields(formFields: List<FormField>, document: Document?) {
@@ -384,7 +384,7 @@ class DefaultFormSubmissionService(
         formData: JsonNode
     ): Map<String, Map<String, JsonNode>> {
         return formDefinition.buildExternalFormFieldsMapFiltered(
-            FormIoFormDefinition.NOT_IGNORED.and { t ->
+            FormIoFormDefinition.NOT_IGNORED.and(FormIoFormDefinition.SUBMITTABLE).and { t ->
                 FormIoFormDefinition.getTargetKey(t).isEmpty && FormIoFormDefinition.getSourceKey(t).isEmpty
             }
         ).map { entry ->

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,11 @@ interface ValueResolverService {
         requestedValues: Collection<String>
     ): Map<String, Any?>
 
+    fun resolveValuesOrNull(
+        documentInstanceId: String,
+        requestedValues: Collection<String>
+    ): Map<String, Any?> = resolveValues(documentInstanceId, requestedValues)
+
     /**
      * This method provides a way of resolving requestedValues into values using defined resolvers.
      * requestedValues are typically prefixed, like 'pv:propertyName'.
@@ -89,6 +94,18 @@ interface ValueResolverService {
         properties: Map<String, Any>,
         requestedValues: Collection<String>
     ): Map<String, Any?> = throw NotImplementedError()
+
+    /**
+     * What resolving [requestedValues] depends on. Prefixes whose factory declares no cache key are
+     * reported apart, so "depends on nothing" stays distinct from "cannot tell".
+     *
+     * @param properties A map containing additional details about the value that needs to be resolved.
+     * @param requestedValues The requestedValues whose dependencies should be determined.
+     */
+    fun resolverDependencies(
+        properties: Map<String, Any>,
+        requestedValues: Collection<String>
+    ): ValueResolverDependencies = ValueResolverDependencies.NONE
 
     /**
      * Handle values. Usually by storing them somewhere.

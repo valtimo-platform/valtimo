@@ -60,14 +60,14 @@
   </div>
 
   <div role="footer" class="metadata-modal-footer">
-    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled || uploading">
       {{ 'document.cancel' | translate }}
     </button>
 
     <button
       cdsButton="primary"
       type="submit"
-      [disabled]="obs.disabled || !documentenApiMetadataForm.valid || obs.editDisabled"
+      [disabled]="obs.disabled || uploading || !documentenApiMetadataForm.valid || obs.editDisabled"
       (click)="save()"
     >
       {{ 'document.save' | translate }}

@@ -16,17 +16,9 @@
 
 import {ValtimoConfigFeatureToggles} from '@valtimo/shared';
 
-interface FeatureToggleOverridesDto {
-  overrides: {[key: string]: boolean};
-}
-
-interface UpdateFeatureToggleDto {
-  key: string;
-  enabled: boolean;
-}
-
 interface FeatureToggleDefinition {
   key: keyof ValtimoConfigFeatureToggles;
 }
 
-export {FeatureToggleOverridesDto, UpdateFeatureToggleDto, FeatureToggleDefinition};
+export {FeatureToggleOverridesDto, UpdateFeatureToggleDto} from '@valtimo/shared';
+export {FeatureToggleDefinition};

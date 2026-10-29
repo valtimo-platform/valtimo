@@ -16,11 +16,13 @@
 
 import {CaseDefinitionId} from '@valtimo/document';
 
+/** @deprecated Part of 'Case migration (beta)', replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 interface LoadedValue<T> {
   isLoading: boolean;
   value?: T;
 }
 
+/** @deprecated Part of 'Case migration (beta)', replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 interface DocumentMigrationConflictRequest {
   documentDefinitionNameSource: string;
   caseDefinitionIdSource: CaseDefinitionId;
@@ -29,6 +31,7 @@ interface DocumentMigrationConflictRequest {
   patches: DocumentMigrationPatch[];
 }
 
+/** @deprecated Part of 'Case migration (beta)', replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 interface DocumentMigrationConflictResponse {
   documentDefinitionNameSource: string;
   caseDefinitionIdSource: CaseDefinitionId;
@@ -39,6 +42,7 @@ interface DocumentMigrationConflictResponse {
   documentCount: number;
 }
 
+/** @deprecated Part of 'Case migration (beta)', replaced by the migration feature in `@valtimo/case-management`. Will be removed in a future release. */
 interface DocumentMigrationPatch {
   source: string;
   target?: string;

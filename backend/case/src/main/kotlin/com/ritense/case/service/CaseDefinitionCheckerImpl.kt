@@ -58,6 +58,12 @@ class CaseDefinitionCheckerImpl(
         return !caseDefinition.final
     }
 
+    override fun isCaseDefinitionFinal(caseDefinitionId: CaseDefinitionId): Boolean {
+        val caseDefinition = caseDefinitionRepository.findById(caseDefinitionId).orElse(null)
+            ?: return false
+        return caseDefinition.final
+    }
+
     override fun canUpdateGlobalConfiguration(): Boolean {
         if (ImportContext.isImporting()) {
             return true
@@ -83,17 +89,23 @@ class CaseDefinitionCheckerImpl(
     }
 
     override fun assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId: CaseDefinitionId, configurationType: String) {
+        assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId, listOf(configurationType))
+    }
+
+    override fun assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId: CaseDefinitionId, configurationTypes: Collection<String>) {
         assertCanUpdateGlobalConfiguration()
         val caseDefinition = caseDefinitionRepository.findById(caseDefinitionId).orElse(null)
             ?: error("CaseDefinition $caseDefinitionId does not exist.")
         if (!caseDefinition.final) {
             return
         }
-        val hasUnresolvedIssue = configurationIssueRepository.findUnresolvedByCaseDefinitionIdAndIssueType(
-            caseDefinitionId, configurationType
-        ) != null
+        val hasUnresolvedIssue = configurationTypes.any { configurationType ->
+            configurationIssueRepository.findUnresolvedByCaseDefinitionIdAndIssueType(
+                caseDefinitionId, configurationType
+            ) != null
+        }
         require(hasUnresolvedIssue) {
-            "Failed to update CaseDefinition $caseDefinitionId. This case definition is final and has no unresolved configuration issues of type '$configurationType'."
+            "Failed to update CaseDefinition $caseDefinitionId. This case definition is final and has no unresolved configuration issues of type(s) '${configurationTypes.joinToString()}'."
         }
     }
 

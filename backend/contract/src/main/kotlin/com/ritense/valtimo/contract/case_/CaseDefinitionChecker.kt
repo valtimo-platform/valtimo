@@ -24,6 +24,12 @@ interface CaseDefinitionChecker {
 
     fun canUpdateCaseDefinition(caseDefinitionId: CaseDefinitionId): Boolean = false
 
+    /**
+     * Whether the case definition is final - unlike [canUpdateCaseDefinition], which is also false for a
+     * draft that merely cannot be edited here (drafts disabled, or an import in progress).
+     */
+    fun isCaseDefinitionFinal(caseDefinitionId: CaseDefinitionId): Boolean = false
+
     fun canUpdateGlobalConfiguration(): Boolean = false
 
     fun assertCaseDefinitionExists(caseDefinitionId: CaseDefinitionId) {
@@ -47,6 +53,16 @@ interface CaseDefinitionChecker {
     }
 
     fun assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId: CaseDefinitionId, configurationType: String) {
+        assertCanUpdateCaseDefinition(caseDefinitionId)
+    }
+
+    /**
+     * Multi-type variant for callers that repair several configuration-issue types in one operation
+     * (e.g. an external-plugin resolve that fixes service-task links, task-form links and case tabs
+     * together): a final case definition may be updated when *any* of the given types has an
+     * unresolved issue.
+     */
+    fun assertCanUpdateCaseDefinitionConfiguration(caseDefinitionId: CaseDefinitionId, configurationTypes: Collection<String>) {
         assertCanUpdateCaseDefinition(caseDefinitionId)
     }
 }

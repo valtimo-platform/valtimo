@@ -78,11 +78,12 @@ import {
   TaskListService,
 } from '../../services';
 import {isEqual} from 'lodash';
-import {ListItem} from 'carbon-components-angular';
+import {Renew16} from '@carbon/icons';
+import {IconService, ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
 import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
-import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE} from '../../constants';
+import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE, TASK_LIST_TEST_IDS} from '../../constants';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -168,6 +169,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.taskListSortService.sortStateForCurrentTaskType$;
 
   public readonly overrideSortState$ = this.taskListSortService.overrideSortState$;
+
+  public readonly manualRefresh$ = this.configService.getFeatureToggleObservable(
+    'enableManualTaskListRefresh'
+  );
+
+  protected readonly testIds = TASK_LIST_TEST_IDS;
 
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
@@ -306,9 +313,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly quickSearchStateService: QuickSearchStateService,
     private readonly sseService: SseService,
     private readonly teamsApiService: TeamsApiService,
+    private readonly iconService: IconService,
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly quickSearchService: IQuickSearchService<TaskListQuickSearchParams>
-  ) {}
+  ) {
+    this.iconService.registerAll([Renew16]);
+  }
 
   public ngOnInit(): void {
     this.taskListColumnService.resetTaskListFields();
@@ -327,10 +337,17 @@ export class TaskListComponent implements OnInit, OnDestroy {
         .pipe(
           filter(
             ([event, caseDefinitionKey]) =>
-              caseDefinitionKey === null || event.caseDefinitionKey === caseDefinitionKey
+              !caseDefinitionKey ||
+              caseDefinitionKey === this.ALL_CASES_ID ||
+              event.caseDefinitionKey === caseDefinitionKey
           )
         )
-        .subscribe(() => this.reload())
+        .subscribe(() => {
+          // Manual refresh: leave the list as-is until the user asks for it
+          if (this.configService.getFeatureToggle('enableManualTaskListRefresh')) return;
+
+          this.reload(true);
+        })
     );
   }
 
@@ -411,9 +428,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
     }
   }
 
-  public reload(): void {
-    this.enableLoadingAnimation();
+  public reload(silent = false): void {
+    if (!silent) this.enableLoadingAnimation();
+
     this._reload$.next(!this._reload$.getValue());
+  }
+
+  public onRefreshTasksClick(): void {
+    this.reload(true);
   }
 
   public search(searchFieldValues: SearchFieldValues): void {

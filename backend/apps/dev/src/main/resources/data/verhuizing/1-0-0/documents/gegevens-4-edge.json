@@ -1,0 +1,16 @@
+{
+    "scenario": "gegevens",
+    "aanvrager": {
+        "naam": "A",
+        "emailadres": "a@b.c"
+    },
+    "nieuwAdres": "",
+    "status": "afgehandeld",
+    "spoed": true,
+    "aantalPersonen": 0,
+    "oppervlakte": 0.01,
+    "verhuisdatum": "2026-12-31",
+    "documenten": [
+        "x"
+    ]
+}

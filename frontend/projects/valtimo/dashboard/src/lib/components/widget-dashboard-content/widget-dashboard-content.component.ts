@@ -32,7 +32,11 @@ import {Dashboard, DashboardWidgetConfiguration, DisplayComponent, WidgetData} f
 import {WidgetService} from '../../services';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {resolveWidgetLayout, ResolvedWidgetLayout} from '@valtimo/components';
-import {WIDGET_1X_HEIGHT} from '../../constants';
+import {
+  DASHBOARD_TEST_IDS,
+  DASHBOARD_WIDGET_TEST_ID_PREFIX,
+  WIDGET_1X_HEIGHT,
+} from '../../constants';
 import Muuri from 'muuri';
 import {Router} from '@angular/router';
 
@@ -67,6 +71,12 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
 
   public readonly widgetConfigurations$ =
     new BehaviorSubject<Array<DashboardWidgetConfiguration> | null>(null);
+
+  public readonly testIds = DASHBOARD_TEST_IDS;
+
+  public widgetTestId(widgetKey: string): string {
+    return `${DASHBOARD_WIDGET_TEST_ID_PREFIX}${widgetKey}`;
+  }
 
   private _observer!: ResizeObserver;
   private _subscriptions = new Subscription();

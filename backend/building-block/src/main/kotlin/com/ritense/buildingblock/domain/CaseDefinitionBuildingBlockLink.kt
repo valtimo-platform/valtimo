@@ -52,7 +52,10 @@ class CaseDefinitionBuildingBlockLink(
 
     @Type(value = JsonType::class)
     @Column(name = "plugin_configuration_mappings", columnDefinition = "json")
-    var pluginConfigurationMappings: Map<String, UUID> = emptyMap()
+    var pluginConfigurationMappings: Map<String, UUID> = emptyMap(),
+
+    @Column(name = "startable_by_user", nullable = false)
+    var startableByUser: Boolean = true
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

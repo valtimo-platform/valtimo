@@ -36,10 +36,13 @@ import com.ritense.processdocument.web.rest.dto.TaskInspectionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
 import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.ProcessInstanceDiagramService
 import com.ritense.valtimo.web.rest.dto.IncidentDto
+import com.ritense.valtimo.web.rest.dto.ProcessInstanceDiagramDto
 import com.ritense.valtimo.web.rest.dto.ProcessVariableDto
 import com.ritense.valtimo.web.rest.dto.ProcessVariableMutationRequest
 import jakarta.validation.Valid
@@ -74,11 +77,16 @@ class ProcessInspectionResource(
     private val historyService: HistoryService,
     private val managementService: ManagementService,
     private val operatonTaskService: OperatonTaskService,
+    private val processInstanceDiagramService: ProcessInstanceDiagramService,
     private val buildingBlockProcessLookup: BuildingBlockProcessLookup?,
     private val eventPublisher: ApplicationEventPublisher,
     private val objectMapper: ObjectMapper,
 ) {
 
+    @EndpointDescription(
+        en = "Get case process inspection",
+        nl = "Procesinspectie van dossier ophalen",
+    )
     @GetMapping("/v1/case/{caseId}/processes")
     fun getProcessInspection(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID
@@ -98,6 +106,29 @@ class ProcessInspectionResource(
         return ResponseEntity.ok(rows)
     }
 
+    @EndpointDescription(
+        en = "Get the BPMN diagram of a process instance belonging to a case (inspection)",
+        nl = "Het BPMN-diagram van een procesinstantie van een zaak ophalen (inspectie)",
+    )
+    @GetMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/xml")
+    fun getProcessInstanceDiagram(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
+        @PathVariable processInstanceId: String,
+    ): ResponseEntity<ProcessInstanceDiagramDto> {
+        loadAndAuthorize(caseId, JsonSchemaDocumentActionProvider.INSPECT)
+        caseAccessService.requireBelongsToCase(caseId, processInstanceId)
+
+        val diagram = runWithoutAuthorization {
+            processInstanceDiagramService.getProcessInstanceDiagram(processInstanceId)
+        }
+
+        return diagram?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
+    }
+
+    @EndpointDescription(
+        en = "Create process instance variable",
+        nl = "Procesvariabele aanmaken",
+    )
     @PostMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables")
     fun createVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -131,6 +162,10 @@ class ProcessInspectionResource(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @EndpointDescription(
+        en = "Update process instance variable",
+        nl = "Procesvariabele bijwerken",
+    )
     @PutMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}")
     fun updateVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
@@ -163,6 +198,10 @@ class ProcessInspectionResource(
         return ResponseEntity.ok().build()
     }
 
+    @EndpointDescription(
+        en = "Delete process instance variable",
+        nl = "Procesvariabele verwijderen",
+    )
     @DeleteMapping("/v1/case/{caseId}/process-instance/{processInstanceId}/variables/{name}")
     fun deleteVariable(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,

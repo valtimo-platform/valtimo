@@ -80,7 +80,9 @@ import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
+  EMPTY,
   filter,
   from,
   map,
@@ -114,7 +116,13 @@ import {
   getLatestProcessDefinition,
   initBreadcrumbsForContext,
 } from '../../utils';
-import {ValtimoPropertiesProviderModule, ExpressionAutocompleteModule, ExpressionAutocomplete} from './panel';
+import {
+  ValtimoPropertiesProviderModule,
+  ReadOnlyPropertiesPanelModule,
+  ExpressionAutocompleteModule,
+  ExpressionAutocomplete,
+} from './panel';
+import {AutoIdBehavior, AutoIdBehaviorModule} from './behaviors';
 import {PluginTranslationService} from '@valtimo/plugin';
 import {ProcessBeanService} from '../../services';
 import {View16, ViewOff16} from '@carbon/icons';
@@ -173,6 +181,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private _activityMarkerUpdateTimeout: any = null;
   private _autofilledElements: AutofilledElement[] = [];
   private _autofilledElementIds: string[] = [];
+  private _viewerActive = false;
+
+  private get activeEditor(): Modeler | NavigatedViewer {
+    return this._viewerActive ? this._bpmnViewer : this._bpmnModeler;
+  }
+
+  private get loadedEditors(): (Modeler | NavigatedViewer)[] {
+    return [this._bpmnModeler, this._bpmnViewer].filter(editor => !!editor);
+  }
 
   public readonly isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public readonly isSystemProcess$ = new BehaviorSubject<boolean>(false);
@@ -195,7 +212,13 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.pageTitleService.setCustomPageTitle(selectedProcessDefinition?.name || '-');
       }),
       switchMap(selectedProcessDefinition =>
-        this.processService.getProcessDefinitionXml(selectedProcessDefinition.id)
+        this.processService.getProcessDefinitionXml(selectedProcessDefinition.id).pipe(
+          catchError(error => {
+            this.logger.error('Failed to load process definition XML', error);
+            this.loading$.next(false);
+            return EMPTY;
+          })
+        )
       ),
       tap(result => {
         this.cleanUpListenersOnModeler();
@@ -251,6 +274,14 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         )
       );
     })
+  );
+
+  public readonly viewerActive$: Observable<boolean> = combineLatest([
+    this.isReadOnlyProcess$,
+    this.hasEditPermissions$,
+  ]).pipe(
+    map(([isReadOnlyProcess, hasEditPermissions]) => isReadOnlyProcess || !hasEditPermissions),
+    distinctUntilChanged()
   );
 
   private readonly _reload$ = new Subject<null>();
@@ -333,6 +364,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.subscribeToProcessLinkCreateEvents();
     this.subscribeToProcessLinkDeleteEvents();
     this.subscribeToAutofillDismissEvents();
+    this.subscribeToViewerActive();
     this.initEditing();
   }
 
@@ -534,8 +566,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
           switch (context) {
             case 'independent':
-              return this.processLinkService.createProcessDefinition(mappedProcessLinks, xml
-              );
+              return this.processLinkService.createProcessDefinition(mappedProcessLinks, xml);
             case 'buildingBlock':
               const buildingBlockParams = params as BuildingBlockManagementParams;
               return this.processLinkService.createProcessDefinitionForBuildingBlock(
@@ -758,7 +789,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.clearValidationErrors();
     this.processManagementEditorService.setValidationErrors(errors);
 
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     const canvas = modeler.get('canvas') as any;
     const overlays = modeler.get('overlays') as any;
 
@@ -886,9 +917,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
             let entry: Element | null = null;
 
             if (listenerEntryId) {
-              const listenerEntry = document.querySelector(
-                `[data-entry-id="${listenerEntryId}"]`
-              );
+              const listenerEntry = document.querySelector(`[data-entry-id="${listenerEntryId}"]`);
               if (listenerEntry) {
                 entry = listenerEntry.querySelector(`[data-entry-id="${fieldId}"]`);
               }
@@ -926,15 +955,17 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           }
 
           const wrapper = scopeElement
-            ? scopeElement.querySelector('.expression-editor-wrapper') as HTMLElement
-            : document.querySelector('.expression-editor-wrapper') as HTMLElement;
+            ? (scopeElement.querySelector('.expression-editor-wrapper') as HTMLElement)
+            : (document.querySelector('.expression-editor-wrapper') as HTMLElement);
           if (wrapper) {
             wrapper.dataset.invalidArgs = JSON.stringify(error.invalidArguments);
           }
 
           for (const idx of error.invalidArguments) {
             const paramInput = scopeElement
-              ? scopeElement.querySelector(`.expression-editor-param input[data-param-index="${idx}"]`)
+              ? scopeElement.querySelector(
+                  `.expression-editor-param input[data-param-index="${idx}"]`
+                )
               : document.querySelector(`.expression-editor-param input[data-param-index="${idx}"]`);
 
             if (paramInput) {
@@ -955,7 +986,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearValidationErrors(): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
 
     if (!modeler) return;
 
@@ -1013,7 +1044,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     if (!this._autofilledElements?.length) return;
 
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1034,7 +1065,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearAutofilledHighlights(): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1079,9 +1110,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     const extensionElements = element?.businessObject?.extensionElements;
     const values = extensionElements?.values || [];
 
-    const executionListeners = values.filter(
-      (v: any) => v.$type === 'camunda:ExecutionListener'
-    );
+    const executionListeners = values.filter((v: any) => v.$type === 'camunda:ExecutionListener');
     const taskListeners = values.filter((v: any) => v.$type === 'camunda:TaskListener');
 
     return {
@@ -1106,7 +1135,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     if (!this.$markersVisible()) return;
 
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1187,7 +1216,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     return {top: -12, right: 12};
   }
 
-  private buildActivityMarkerBadges(info: ActivityMarkerInfo, elementId: string): HTMLElement | null {
+  private buildActivityMarkerBadges(
+    info: ActivityMarkerInfo,
+    elementId: string
+  ): HTMLElement | null {
     const container = document.createElement('div');
     container.className = 'activity-marker-overlay';
     container.dataset.elementId = elementId;
@@ -1197,7 +1229,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       container.appendChild(this.buildMarkerBadge('process-link', 'P', tooltip));
     }
     if (info.hasExecutionListener) {
-      const countSuffix = info.executionListenerCount > 1 ? ` (${info.executionListenerCount})` : '';
+      const countSuffix =
+        info.executionListenerCount > 1 ? ` (${info.executionListenerCount})` : '';
       const tooltip =
         this.translateService.instant('processManagement.markers.executionListener') + countSuffix;
       container.appendChild(this.buildMarkerBadge('execution-listener', 'E', tooltip));
@@ -1232,7 +1265,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private clearActivityMarkers(): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1275,6 +1308,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         camundaPlatformBehaviors,
         ValtimoPropertiesProviderModule,
         ExpressionAutocompleteModule,
+        AutoIdBehaviorModule,
       ],
       moddleExtensions: {camunda: CamundaBpmnModdle},
       propertiesPanel: {parent: this.modelerPanelElementRef.nativeElement},
@@ -1283,7 +1317,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._bpmnModeler?.attachTo(this.modelerElementRef.nativeElement);
 
     // Initialize expression autocomplete
-    this._expressionAutocomplete = this._bpmnModeler.get('expressionAutocomplete') as ExpressionAutocomplete;
+    this._expressionAutocomplete = this._bpmnModeler.get(
+      'expressionAutocomplete'
+    ) as ExpressionAutocomplete;
     this._expressionAutocomplete?.setPanelContainer(this.modelerPanelElementRef.nativeElement);
     this.loadProcessBeansForAutocomplete();
 
@@ -1326,7 +1362,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       additionalModules: [
         DisableBpmnWriteModule,
         BpmnPropertiesPanelModule,
+        BpmnPropertiesProviderModule,
+        CamundaPlatformPropertiesProviderModule,
         ValtimoPropertiesProviderModule,
+        ReadOnlyPropertiesPanelModule,
       ],
       moddleExtensions: {camunda: CamundaBpmnModdle},
       propertiesPanel: {parent: this.viewerPanelElementRef.nativeElement},
@@ -1353,6 +1392,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.processLinkStateService.setModalParams(event?.modalParams);
     this.processLinkStateService.setElementName(event?.modalParams?.element?.name ?? '');
     this.processLinkStateService.selectProcessLink(event.processLink);
+    this.processLinkStateService.setReadOnly(!this.processManagementEditorService.editingAllowed);
     this.processLinkStateService.showModal();
   }
 
@@ -1443,6 +1483,23 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     );
   }
 
+  private subscribeToViewerActive(): void {
+    this._subscriptions.add(
+      this.viewerActive$.subscribe(viewerActive => {
+        this._viewerActive = viewerActive;
+
+        this.updateActivityMarkers();
+        this.highlightAutofilledElements();
+      })
+    );
+
+    this._subscriptions.add(
+      this.hasEditPermissions$.subscribe(hasEditPermissions =>
+        this.processManagementEditorService.setEditingAllowed(hasEditPermissions)
+      )
+    );
+  }
+
   private subscribeToAutofillDismissEvents(): void {
     this._subscriptions.add(
       this.processManagementEditorService.autofillDismissed$.subscribe(activityId => {
@@ -1452,7 +1509,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private removeAutofillOverlay(activityId: string): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     if (!modeler) return;
 
     const overlays = modeler.get('overlays') as any;
@@ -1472,7 +1529,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     if (this._selectedProcess$.getValue() !== 'create') return;
 
     this.creatingNewProcess$.next(true);
-    this._bpmnModeler?.importXML(EMPTY_BPMN);
+    this._bpmnModeler
+      ?.importXML(EMPTY_BPMN)
+      .then(() => (this._bpmnModeler?.get('autoIdBehavior') as AutoIdBehavior)?.adoptAll());
     this.isReadOnlyProcess$.next(false);
     this.isSystemProcess$.next(false);
     this.loading$.next(false);
@@ -1529,30 +1588,17 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       this._selectedProcess$
         .pipe(
           filter(selectedProcess => selectedProcess !== null && selectedProcess !== 'create'),
-          distinctUntilChanged((previous, current) => isEqual(previous, current)),
-          tap(() => this.loading$.next(true))
+          distinctUntilChanged((previous, current) => isEqual(previous, current))
         )
         .subscribe(result => {
           const processDefinitionResult = result as ProcessDefinitionResult;
 
-          this.cleanUpListenersOnModeler();
-          this._autofilledElements = processDefinitionResult.autofilledElements ?? [];
-          this.processManagementEditorService.setAutofilledElements(this._autofilledElements);
-
-          this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
-            this.highlightAutofilledElements();
-          });
-          this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml).then(() => {
-            this.highlightAutofilledElements();
-          });
-
+          // Diagram and loading owned by selectedProcessDefinitionXml$ — a second import re-rendered the panel
           this.canInitializeDocument$.next(
             !!processDefinitionResult?.processCaseLink?.canInitializeDocument
           );
           this.startableByUser$.next(!!processDefinitionResult?.processCaseLink?.startableByUser);
           this.draft$.next(!!processDefinitionResult?.draft);
-
-          this.loading$.next(false);
         })
     );
   }
@@ -1651,9 +1697,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     buildingBlockDefinitionKey: string,
     buildingBlockDefinitionVersionTag: string
   ): void {
-    const editor = this._bpmnModeler || this._bpmnViewer;
+    const editors = this.loadedEditors;
 
-    if (!editor) {
+    if (!editors.length) {
       return;
     }
 
@@ -1666,23 +1712,24 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         next: (mainProcessDefinitionKey: string) => {
           const versionTag = `BB:${buildingBlockDefinitionKey}:${buildingBlockDefinitionVersionTag}`;
 
-          applyBuildingBlockCalledElement(editor, activityId, mainProcessDefinitionKey, versionTag);
+          editors.forEach(editor =>
+            applyBuildingBlockCalledElement(
+              editor,
+              activityId,
+              mainProcessDefinitionKey,
+              versionTag
+            )
+          );
         },
       });
   }
 
   private unsetCalledElementForBuildingBlockProcessLink(activityId: string): void {
-    const editor = this._bpmnModeler || this._bpmnViewer;
-
-    if (!editor) {
-      return;
-    }
-
-    clearBuildingBlockCalledElement(editor, activityId);
+    this.loadedEditors.forEach(editor => clearBuildingBlockCalledElement(editor, activityId));
   }
 
   public onValidationErrorClick(elementId: string): void {
-    const modeler = this.isReadOnlyProcess$.getValue() ? this._bpmnViewer : this._bpmnModeler;
+    const modeler = this.activeEditor;
     const canvas = modeler.get('canvas') as any;
     const selection = modeler.get('selection') as any;
     const elementRegistry = modeler.get('elementRegistry') as any;

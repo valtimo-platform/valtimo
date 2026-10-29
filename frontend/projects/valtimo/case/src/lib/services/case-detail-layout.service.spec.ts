@@ -1,0 +1,340 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {TestBed} from '@angular/core/testing';
+import {PageHeaderService} from '@valtimo/components';
+import {TaskWithProcessLink} from '@valtimo/process-link';
+import {UserSettings, UserSettingsService} from '@valtimo/shared';
+import {of, ReplaySubject, Subject, throwError} from 'rxjs';
+import {take} from 'rxjs/operators';
+import {CaseDetailLayout} from '../models';
+import {CaseDetailLayoutService} from './case-detail-layout.service';
+import {CaseTabService} from './case-tab.service';
+
+describe('CaseDetailLayoutService', () => {
+  let service: CaseDetailLayoutService;
+  let userSettingsService: jasmine.SpyObj<UserSettingsService>;
+
+  const CONTAINER_WIDTH = 1600;
+
+  const createService = (
+    settings: UserSettings,
+    showTaskList = true
+  ): CaseDetailLayoutService => {
+    userSettingsService.getUserSettings.and.returnValue(of(settings));
+
+    TestBed.configureTestingModule({
+      providers: [
+        CaseDetailLayoutService,
+        {provide: CaseTabService, useValue: {showTaskList$: of(showTaskList)}},
+        {provide: PageHeaderService, useValue: {compactMode$: of(false)}},
+        {provide: UserSettingsService, useValue: userSettingsService},
+      ],
+    });
+
+    return TestBed.inject(CaseDetailLayoutService);
+  };
+
+  /** Builds the service against a settings response the test controls the timing of. */
+  const createServiceWithPendingSettings = (
+    settings$: Subject<UserSettings>
+  ): CaseDetailLayoutService => {
+    userSettingsService.getUserSettings.and.returnValue(settings$);
+
+    TestBed.configureTestingModule({
+      providers: [
+        CaseDetailLayoutService,
+        {provide: CaseTabService, useValue: {showTaskList$: of(true)}},
+        {provide: PageHeaderService, useValue: {compactMode$: of(false)}},
+        {provide: UserSettingsService, useValue: userSettingsService},
+      ],
+    });
+
+    return TestBed.inject(CaseDetailLayoutService);
+  };
+
+  /** The layout only emits once the case detail view has reported its container width. */
+  const layoutAfterContainerWidth = (
+    layoutService: CaseDetailLayoutService,
+    onLayout: (layout: CaseDetailLayout) => void,
+    containerWidth: number = CONTAINER_WIDTH
+  ): void => {
+    layoutService.caseDetailLayout$.pipe(take(2)).subscribe(layout => {
+      if ((layout as CaseDetailLayout).showRightPanel) onLayout(layout);
+    });
+    layoutService.setTabContentContainerWidth(containerWidth);
+  };
+
+  beforeEach(() => {
+    userSettingsService = jasmine.createSpyObj('UserSettingsService', [
+      'getUserSettings',
+      'saveUserSettings',
+    ]);
+    userSettingsService.saveUserSettings.and.returnValue(of(null));
+  });
+
+  it('lets the task list panel be resized, at its default width when nothing is saved', done => {
+    service = createService({});
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.widthAdjustable).toBeTrue();
+      expect(layout.rightPanelWidth).toBe(412);
+      expect(layout.rightPanelMinWidth).toBe(320);
+      done();
+    });
+  });
+
+  it('opens the task list panel at the width the user saved earlier', done => {
+    service = createService({taskPanelWidth: 700});
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.rightPanelWidth).toBe(700);
+      done();
+    });
+  });
+
+  it('opens a task form at the saved width instead of the minimum for its form size', done => {
+    service = createService({taskPanelWidth: 700});
+    service.setFormDisplayType('panel');
+    service.setFormDisplaySize('medium');
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.rightPanelWidth).toBe(700);
+      done();
+    });
+  });
+
+  it('shrinks a saved width that no longer fits to the space the panel has', done => {
+    service = createService({taskPanelWidth: 5000});
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.rightPanelWidth).toBe(1248);
+      expect(layout.rightPanelMaxWidth).toBe(1248);
+      done();
+    });
+  });
+
+  it('stores a dragged width in the user settings, keeping the other settings', () => {
+    service = createService({compactMode: true, taskPanelWidth: 412});
+
+    service.saveTaskPanelWidth(683.4);
+
+    expect(userSettingsService.saveUserSettings).toHaveBeenCalledWith({
+      compactMode: true,
+      taskPanelWidth: 683,
+    });
+  });
+
+  it('does not store a width that is already the saved one', () => {
+    service = createService({taskPanelWidth: 683});
+
+    service.saveTaskPanelWidth(683);
+
+    expect(userSettingsService.saveUserSettings).not.toHaveBeenCalled();
+  });
+
+  it('ends on the width the user stopped at when two drags follow each other quickly', () => {
+    const settings$ = new ReplaySubject<UserSettings>(1);
+    service = createServiceWithPendingSettings(settings$);
+
+    service.saveTaskPanelWidth(600);
+    service.saveTaskPanelWidth(700);
+    settings$.next({compactMode: true, taskPanelWidth: 412});
+
+    const savedWidths = userSettingsService.saveUserSettings.calls
+      .allArgs()
+      .map(([settings]) => (settings as UserSettings).taskPanelWidth);
+
+    expect(savedWidths).toEqual([600, 700]);
+    expect(userSettingsService.saveUserSettings.calls.mostRecent().args[0]).toEqual({
+      compactMode: true,
+      taskPanelWidth: 700,
+    });
+  });
+
+  it('stores the width again when the previous attempt to store it failed', () => {
+    service = createService({taskPanelWidth: 412});
+    userSettingsService.saveUserSettings.and.returnValue(throwError(() => new Error('offline')));
+
+    service.saveTaskPanelWidth(700);
+    userSettingsService.saveUserSettings.and.returnValue(of(null));
+    service.saveTaskPanelWidth(700);
+
+    expect(userSettingsService.saveUserSettings).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps a width the user just dragged when the settings arrive afterwards', done => {
+    const settings$ = new Subject<UserSettings>();
+    service = createServiceWithPendingSettings(settings$);
+
+    service.saveTaskPanelWidth(800);
+    settings$.next({taskPanelWidth: 412});
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.rightPanelWidth).toBe(800);
+      done();
+    });
+  });
+
+  it('never asks for a negative task list width when the container is too narrow', done => {
+    service = createService({taskPanelWidth: 700});
+
+    layoutAfterContainerWidth(
+      service,
+      layout => {
+        expect(layout.rightPanelMinWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelMaxWidth).toBeGreaterThanOrEqual(0);
+        done();
+      },
+      200
+    );
+  });
+
+  it('never asks for a negative task form width when the container is too narrow', done => {
+    service = createService({taskPanelWidth: 700});
+    service.setFormDisplayType('panel');
+    service.setFormDisplaySize('medium');
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
+
+    layoutAfterContainerWidth(
+      service,
+      layout => {
+        expect(layout.rightPanelMinWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelWidth).toBeGreaterThanOrEqual(0);
+        expect(layout.rightPanelMaxWidth).toBeGreaterThanOrEqual(0);
+        done();
+      },
+      200
+    );
+  });
+
+  const startFormPanel = {template: {} as any, title: 'A start form'};
+
+  it('opens the start form panel and records the requested form size', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'large');
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBe(startFormPanel);
+
+      service.formDisplaySize$.pipe(take(1)).subscribe(size => {
+        expect(size).toBe('large');
+        done();
+      });
+    });
+  });
+
+  it('clears the start form panel only through closeStartFormPanel', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'medium');
+    service.closeStartFormPanel();
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBeNull();
+      done();
+    });
+  });
+
+  it('leaves the start form panel open when the task panel state is cleared', done => {
+    service = createService({});
+    service.openStartFormPanel(startFormPanel, 'medium');
+    service.setTaskAndProcessLinkOpenedInPanel(null);
+
+    service.startFormPanel$.pipe(take(1)).subscribe(panel => {
+      expect(panel).toBe(startFormPanel);
+      done();
+    });
+  });
+
+  it('keeps the right panel while a start form is open on a tab that hides the task list', done => {
+    service = createService({}, false);
+    service.openStartFormPanel(startFormPanel, 'medium');
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.showRightPanel).toBeTrue();
+      done();
+    });
+  });
+
+  it('keeps the right panel while a task form is in the panel on a tab that hides the task list', done => {
+    service = createService({}, false);
+    service.setFormDisplayType('panel');
+    service.setTaskAndProcessLinkOpenedInPanel({} as TaskWithProcessLink);
+
+    layoutAfterContainerWidth(service, layout => {
+      expect(layout.showRightPanel).toBeTrue();
+      done();
+    });
+  });
+
+  it('hides the right panel on a task-hiding tab when no form is open', done => {
+    service = createService({}, false);
+
+    service.caseDetailLayout$.pipe(take(2)).subscribe(layout => {
+      if (Object.keys(layout).length === 0) return;
+      expect((layout as CaseDetailLayout).showRightPanel).toBeFalse();
+      done();
+    });
+    service.setTabContentContainerWidth(CONTAINER_WIDTH);
+  });
+
+  it('reports actions taken in the task panel to the case detail', () => {
+    service = createService({});
+    const selected = jasmine.createSpy('selected');
+    const submitted = jasmine.createSpy('submitted');
+    const closeRequested = jasmine.createSpy('closeRequested');
+    const taskCloseRequested = jasmine.createSpy('taskCloseRequested');
+    service.taskSelected$.subscribe(selected);
+    service.taskFormSubmitted$.subscribe(submitted);
+    service.startFormPanelCloseRequested$.subscribe(closeRequested);
+    service.taskCloseRequested$.subscribe(taskCloseRequested);
+    const task = {} as TaskWithProcessLink;
+
+    service.selectTask(task);
+    service.notifyTaskFormSubmitted();
+    service.requestStartFormPanelClose();
+    service.requestTaskClose();
+
+    expect(selected).toHaveBeenCalledWith(task);
+    expect(submitted).toHaveBeenCalled();
+    expect(closeRequested).toHaveBeenCalled();
+    expect(taskCloseRequested).toHaveBeenCalled();
+  });
+
+  it('exposes the saved task panel width', done => {
+    service = createService({taskPanelWidth: 700});
+
+    service.taskPanelWidth$.pipe(take(1)).subscribe(width => {
+      expect(width).toBe(700);
+      done();
+    });
+  });
+
+  it('has pending changes while a task or start form is edited, until cleared', () => {
+    service = createService({});
+    expect(service.hasPendingFormChanges).toBeFalse();
+
+    service.setTaskFormPendingChanges(true);
+    service.setStartFormPendingChanges(true);
+    service.setTaskFormPendingChanges(false);
+    expect(service.hasPendingFormChanges).toBeTrue();
+
+    service.clearPendingFormChanges();
+    expect(service.hasPendingFormChanges).toBeFalse();
+  });
+});

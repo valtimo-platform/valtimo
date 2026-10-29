@@ -38,6 +38,14 @@ describe('TaskDetailModalComponent', () => {
     businessKey: 'business-key',
     created: '2026-01-01',
     assignee: null,
+    assignedTeam: null,
+  } as unknown as Task;
+
+  const caseListRowTask = {
+    id: 'task-3',
+    name: 'Case list task',
+    businessKey: 'business-key',
+    created: '01 Jan 2026 00:00',
   } as unknown as Task;
 
   const secondTask = {...task, id: 'task-2', name: 'Second task'} as unknown as Task;
@@ -119,6 +127,39 @@ describe('TaskDetailModalComponent', () => {
 
     expect(component.canAssignUserToTask$.getValue()).toBeTrue();
     expect(component.modalOpen$.getValue()).toBeTrue();
+  }));
+
+  it('loads the assignment when a case-specific list row is opened', fakeAsync(() => {
+    const assignedTeam = {key: 'team-a', title: 'Team A'};
+    taskService.getTask.and.returnValue(
+      of({task: {id: caseListRowTask.id, assignee: null, assignedTeam}})
+    );
+
+    component.openTaskDetails(caseListRowTask);
+    tick();
+
+    expect(taskService.getTask).toHaveBeenCalledWith(caseListRowTask.id, ['403', '404']);
+    expect(component.task$.getValue()?.assignedTeam).toEqual(assignedTeam as any);
+    expect(component.task$.getValue()?.name).toBe('Case list task');
+    flush();
+  }));
+
+  it('keeps the list row when the task no longer exists', fakeAsync(() => {
+    taskService.getTask.and.returnValue(of(null));
+
+    component.openTaskDetails(caseListRowTask);
+    tick();
+
+    expect(component.task$.getValue()?.name).toBe('Case list task');
+    flush();
+  }));
+
+  it('does not refetch a task that already holds its assignment', fakeAsync(() => {
+    component.openTaskDetails(task);
+    tick();
+
+    expect(taskService.getTask).not.toHaveBeenCalled();
+    flush();
   }));
 
   it('re-evaluates the assign permission after an assignment change', fakeAsync(() => {

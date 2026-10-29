@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_InspectieDossier" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0">
+  <bpmn:collaboration id="Collaboration_InspectieDossier">
+    <bpmn:participant id="InspectieDossierParticipant" name="Inspectiedossier" processRef="inspectie-dossier-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="inspectie-dossier-process" name="Inspectiedossier proces" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent" name="Start dossier">
+      <bpmn:outgoing>Flow_Start_To_Vaststellen</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="DossierVaststellenTask" name="Dossier vaststellen">
+      <bpmn:incoming>Flow_Start_To_Vaststellen</bpmn:incoming>
+      <bpmn:outgoing>Flow_Vaststellen_To_Kwaliteit</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="RegistreerDossierstatusTask" name="Registreer dossierstatus" camunda:expression="${valueResolverDelegateService.handleValue(execution, 'doc:/dossierStatus', 'vastgesteld')}">
+      <bpmn:incoming>Flow_Vaststellen_To_Kwaliteit</bpmn:incoming>
+      <bpmn:outgoing>Flow_Kwaliteit_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent" name="Dossier afgerond">
+      <bpmn:incoming>Flow_Kwaliteit_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_To_Vaststellen" sourceRef="StartEvent" targetRef="DossierVaststellenTask" />
+    <bpmn:sequenceFlow id="Flow_Vaststellen_To_Kwaliteit" sourceRef="DossierVaststellenTask" targetRef="RegistreerDossierstatusTask" />
+    <bpmn:sequenceFlow id="Flow_Kwaliteit_To_End" sourceRef="RegistreerDossierstatusTask" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_InspectieDossier">
+      <bpmndi:BPMNShape id="InspectieDossierParticipant_di" bpmnElement="InspectieDossierParticipant" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="620" height="200" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_di" bpmnElement="StartEvent">
+        <dc:Bounds x="212" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="203" y="175" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DossierVaststellenTask_di" bpmnElement="DossierVaststellenTask">
+        <dc:Bounds x="300" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RegistreerDossierstatusTask_di" bpmnElement="RegistreerDossierstatusTask">
+        <dc:Bounds x="460" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
+        <dc:Bounds x="622" y="132" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="603" y="175" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_To_Vaststellen_di" bpmnElement="Flow_Start_To_Vaststellen">
+        <di:waypoint x="248" y="150" />
+        <di:waypoint x="300" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vaststellen_To_Kwaliteit_di" bpmnElement="Flow_Vaststellen_To_Kwaliteit">
+        <di:waypoint x="400" y="150" />
+        <di:waypoint x="460" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Kwaliteit_To_End_di" bpmnElement="Flow_Kwaliteit_To_End">
+        <di:waypoint x="560" y="150" />
+        <di:waypoint x="622" y="150" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

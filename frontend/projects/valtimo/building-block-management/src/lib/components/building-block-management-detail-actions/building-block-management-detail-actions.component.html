@@ -30,12 +30,13 @@
       [menuWidth]="250"
       placement="bottom-end"
     >
-      <button overflowTrigger cdsButton="tertiary">
+      <button [attr.data-test-id]="testIds.moreButton" overflowTrigger cdsButton="tertiary">
         {{ 'buildingBlockManagement.actions.more' | translate }}
         <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>
       </button>
 
       <v-overflow-menu-option
+        [attr.data-test-id]="testIds.exportButton"
         optionId="exportBuildingBlock"
         (selected)="export()"
         [disabled]="(actionInProgress$ | async) || (exporting$ | async)"
@@ -48,6 +49,7 @@
 
       <v-overflow-menu-option
         *ngIf="!obs.isFinal"
+        [attr.data-test-id]="testIds.makeFinalButton"
         [disabled]="actionInProgress$ | async"
         (selected)="finalizeDraft()"
       >
@@ -56,6 +58,7 @@
 
       <v-overflow-menu-option
         *ngIf="obs.isFinal"
+        [attr.data-test-id]="testIds.createDraftButton"
         [disabled]="actionInProgress$ | async"
         (selected)="openDraftModal()"
       >
@@ -98,6 +101,7 @@
         </span>
 
         <input
+          [attr.data-test-id]="testIds.draftVersionInput"
           formControlName="versionTag"
           cdsText
           placeholder="{{ 'buildingBlockManagement.actions.draft.placeholder' | translate }}"
@@ -107,11 +111,16 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="closeDraftModal()">
+    <button
+      [attr.data-test-id]="testIds.draftCancelButton"
+      cdsButton="secondary"
+      (click)="closeDraftModal()"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
+      [attr.data-test-id]="testIds.draftConfirmButton"
       cdsButton="primary"
       [disabled]="draftForm.invalid || (actionInProgress$ | async)"
       (click)="createDraft()"

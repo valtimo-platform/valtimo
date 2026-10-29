@@ -20,6 +20,10 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.DocumentService
+import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.logging.LoggableResource
 import com.ritense.processdocument.event.ProcessTimerSkippedEvent
 import com.ritense.processdocument.service.ProcessInstanceCaseAccessService
@@ -28,6 +32,7 @@ import com.ritense.processdocument.web.rest.dto.JobType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.operaton.authorization.OperatonTimerActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonTimer
@@ -50,17 +55,23 @@ import java.util.UUID
 @RequestMapping("/api/v1/process-document", produces = [APPLICATION_JSON_UTF8_VALUE])
 class ProcessTimerResource(
     private val caseAccessService: ProcessInstanceCaseAccessService,
+    private val documentService: DocumentService,
     private val authorizationService: AuthorizationService,
     private val managementService: ManagementService,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional(readOnly = true)
+    @EndpointDescription(
+        en = "List skippable timers of a process instance",
+        nl = "Overslaanbare timers van procesinstantie ophalen",
+    )
     @GetMapping("/case/{caseId}/process-instance/{processInstanceId}/timers")
     fun getSkippableTimers(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
         @PathVariable processInstanceId: String,
     ): ResponseEntity<List<JobInspectionDto>> {
+        requireViewableCase(caseId)
         caseAccessService.requireBelongsToCase(caseId, processInstanceId)
 
         val timers = getTimerJobs(processInstanceId)
@@ -71,12 +82,17 @@ class ProcessTimerResource(
     }
 
     @Transactional
+    @EndpointDescription(
+        en = "Skip a timer of a process instance",
+        nl = "Timer van procesinstantie overslaan",
+    )
     @PostMapping("/case/{caseId}/process-instance/{processInstanceId}/timer/{jobId}/skip")
     fun skipTimer(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable caseId: UUID,
         @PathVariable processInstanceId: String,
         @PathVariable jobId: String,
     ): ResponseEntity<Void> {
+        requireViewableCase(caseId)
         caseAccessService.requireBelongsToCase(caseId, processInstanceId)
 
         val timer = getTimerJobs(processInstanceId).find { it.dto.id == jobId }
@@ -99,6 +115,13 @@ class ProcessTimerResource(
         )
 
         return ResponseEntity.noContent().build()
+    }
+
+    private fun requireViewableCase(caseId: UUID) {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(caseId))
+        } as JsonSchemaDocument? ?: return
+        authorizationService.requireDocumentPermission(document)
     }
 
     private fun hasCompletePermission(timer: OperatonTimer) =

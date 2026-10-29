@@ -30,6 +30,7 @@ import com.ritense.document.service.result.DocumentVersionsResult;
 import com.ritense.document.service.result.UndeployDocumentDefinitionResult;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -49,35 +50,63 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
 public interface DocumentDefinitionResource {
 
+    @EndpointDescription(
+        en = "Retrieve a list of document definitions",
+        nl = "Haal een lijst met documentdefinities op"
+    )
     @GetMapping("/v1/document-definition")
     ResponseEntity<Page<? extends DocumentDefinition>> getDocumentDefinitions(
         @PageableDefault(sort = {"id_name"}, direction = ASC) Pageable pageable
     );
 
+    @EndpointDescription(
+        en = "Generate a JSON schema template for a document definition",
+        nl = "Genereer een JSON-schemasjabloon voor een documentdefinitie"
+    )
     @PostMapping(value = "/management/v1/document-definition-template", consumes = APPLICATION_JSON_VALUE)
     ResponseEntity<Object> getDocumentDefinitionTemplate(@Valid @RequestBody DocumentDefinitionTemplateRequestDto requestDto) throws
         JsonProcessingException;
 
+    @EndpointDescription(
+        en = "Retrieve a list of document definitions for management",
+        nl = "Haal een lijst met documentdefinities op voor beheer"
+    )
     @GetMapping("/management/v1/document-definition")
     ResponseEntity<Page<? extends DocumentDefinition>> getDocumentDefinitionsForManagement(
         @PageableDefault(sort = {"id_name"}, direction = ASC) Pageable pageable
     );
 
+    @EndpointDescription(
+        en = "Retrieve a document definition by name for management",
+        nl = "Haal een documentdefinitie op naam op voor beheer"
+    )
     @GetMapping("/management/v1/document-definition/{name}")
     ResponseEntity<? extends DocumentDefinition> getDocumentDefinitionForManagement(
         @LoggableResource("documentDefinitionName") @PathVariable String name
     );
 
+    @EndpointDescription(
+        en = "Retrieve a document definition by name",
+        nl = "Haal een documentdefinitie op naam op"
+    )
     @GetMapping("/v1/document-definition/{name}")
     ResponseEntity<? extends DocumentDefinition> getDocumentDefinition(
         @LoggableResource("documentDefinitionName") @PathVariable String name
     );
 
+    @EndpointDescription(
+        en = "Retrieve the versions of a document definition",
+        nl = "Haal de versies van een documentdefinitie op"
+    )
     @GetMapping("/management/v1/document-definition/{name}/version")
     ResponseEntity<DocumentVersionsResult> getDocumentDefinitionVersions(
         @LoggableResource("documentDefinitionName") @PathVariable String name
     );
 
+    @EndpointDescription(
+        en = "Retrieve the number of unassigned documents per document definition",
+        nl = "Haal het aantal niet-toegewezen documenten per documentdefinitie op"
+    )
     @GetMapping("/v1/document-definition/open/count")
     ResponseEntity<List<UnassignedDocumentCountDto>> getUnassignedDocumentCount();
 }

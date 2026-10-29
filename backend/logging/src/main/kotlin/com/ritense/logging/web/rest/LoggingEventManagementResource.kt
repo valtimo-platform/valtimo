@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.ritense.logging.web.rest.dto.LoggingEventResponse
 import com.ritense.logging.web.rest.dto.LoggingEventSearchRequest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -42,6 +43,10 @@ class LoggingEventManagementResource(
 ) {
 
     @Transactional(readOnly = true)
+    @EndpointDescription(
+        en = "Search logging events",
+        nl = "Logging-events zoeken",
+    )
     @PostMapping("/v1/logging")
     fun searchLoggingEvents(
         @Valid @RequestBody searchRequest: LoggingEventSearchRequest,

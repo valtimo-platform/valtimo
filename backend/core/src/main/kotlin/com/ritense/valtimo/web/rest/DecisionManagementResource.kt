@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.decision.OperatonDecisionService
 import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.web.rest.dto.DecisionDefinitionResponseDto
@@ -47,6 +48,10 @@ class DecisionManagementResource(
     private val operatonDecisionService: OperatonDecisionService,
 ) {
 
+    @EndpointDescription(
+        en = "List decision definitions for a case definition",
+        nl = "Beslisdefinities voor een dossierdefinitie ophalen",
+    )
     @GetMapping(
         value = ["/v1/decision-definition"],
         produces = [MediaType.APPLICATION_JSON_VALUE]
@@ -61,6 +66,10 @@ class DecisionManagementResource(
         })
     }
 
+    @EndpointDescription(
+        en = "List the decision definitions available for a case definition version",
+        nl = "Beslissingsdefinities voor een zaakdefinitieversie ophalen",
+    )
     @GetMapping(
         value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/decision-definition"],
         produces = [MediaType.APPLICATION_JSON_VALUE]
@@ -79,6 +88,10 @@ class DecisionManagementResource(
         })
     }
 
+    @EndpointDescription(
+        en = "Deploy a decision definition",
+        nl = "Beslisdefinitie uitrollen",
+    )
     @PostMapping(
         value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/decision-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -112,6 +125,10 @@ class DecisionManagementResource(
         )
     }
 
+    @EndpointDescription(
+        en = "Delete a decision definition",
+        nl = "Beslisdefinitie verwijderen",
+    )
     @DeleteMapping(
         value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/decision-definition/{decisionDefinitionKey}"],
     )

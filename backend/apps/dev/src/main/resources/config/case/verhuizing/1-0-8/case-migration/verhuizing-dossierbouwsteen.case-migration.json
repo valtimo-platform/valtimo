@@ -1,0 +1,29 @@
+{
+    "title": "Fotobouwsteen wordt dossierbouwsteen \u2014 dezelfde call activity, andere sleutel",
+    "key": "verhuizing-dossierbouwsteen",
+    "source": {
+        "key": "verhuizing",
+        "versionTag": "1.0.7"
+    },
+    "migrationTriggers": {
+        "triggeredByButton": true
+    },
+    "conditions": [],
+    "dataMigration": [
+        {
+            "target": "doc:/migratedFrom",
+            "value": "1.0.7",
+            "targetType": "string"
+        }
+    ],
+    "processMigration": [
+        {
+            "sourceProcessDefinitionKey": "verhuizing",
+            "targetProcessDefinitionKey": "verhuizing",
+            "mapActivities": {},
+            "setProcessVariables": [],
+            "skipCustomListeners": false,
+            "skipIoMappings": false
+        }
+    ]
+}

@@ -30,18 +30,16 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(':backend:case')
-    implementation project(':backend:contract')
-    implementation project(':backend:core')
-    implementation project(":backend:document-generation")
-    implementation project(':backend:process-document')
-    implementation project(':backend:resource')
-    implementation project(':backend:resource:temporary-resource-storage')
-    implementation project(':backend:value-resolver')
+    compileOnly project(':backend:case')
+    compileOnly project(':backend:contract')
+    compileOnly project(':backend:core')
+    compileOnly project(':backend:plugin')
+    compileOnly project(':backend:process-document')
+    compileOnly project(':backend:resource')
+    compileOnly project(':backend:resource:temporary-resource-storage')
+    compileOnly project(':backend:value-resolver')
 
     api project(':backend:document-generation')
-
-    compileOnly project(':backend:plugin')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
@@ -65,6 +63,14 @@ dependencies {
 
     implementation "org.apache.commons:commons-text:${commonsText}"
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+
+    testImplementation project(':backend:case')
+    testImplementation project(':backend:contract')
+    testImplementation project(':backend:core')
+    testImplementation project(':backend:process-document')
+    testImplementation project(':backend:resource')
+    testImplementation project(':backend:resource:temporary-resource-storage')
+    testImplementation project(':backend:value-resolver')
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"

@@ -18,9 +18,12 @@ package com.ritense.document.repository.impl;
 
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.repository.DocumentRepository;
+import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import jakarta.persistence.LockModeType;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.semver4j.Semver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -35,6 +38,34 @@ public interface JsonSchemaDocumentRepository extends DocumentRepository<JsonSch
     JpaSpecificationExecutor<JsonSchemaDocument> {
 
     Page<JsonSchemaDocument> findAllByDocumentDefinitionIdName(Pageable pageable, String definitionName);
+
+    /** Projects only the document ids homed on one specific blueprint version, in id order after {@code afterId} ({@code null} for the first batch). The version tag is part of the filter: selecting by definition name alone would sweep up every version and skip the plans in between. A cursor, not an offset: a run re-homes what it migrates, so the set shrinks under it. */
+    @Query("SELECT d.id.id FROM JsonSchemaDocument d "
+        + "WHERE d.documentDefinitionId.blueprintId.blueprintType = :blueprintType "
+        + "AND d.documentDefinitionId.blueprintId.blueprintKey = :blueprintKey "
+        + "AND d.documentDefinitionId.blueprintId.blueprintVersionTag = :versionTag "
+        + "AND (:afterId IS NULL OR d.id.id > :afterId) "
+        + "ORDER BY d.id.id")
+    List<UUID> findCaseIdsByBlueprintVersionAfter(
+        @Param("blueprintType") BlueprintType blueprintType,
+        @Param("blueprintKey") String blueprintKey,
+        @Param("versionTag") Semver versionTag,
+        @Param("afterId") UUID afterId,
+        Pageable pageable
+    );
+
+    /** Whether one document is currently homed on exactly this blueprint version. */
+    @Query("SELECT count(d) > 0 FROM JsonSchemaDocument d "
+        + "WHERE d.id.id = :caseId "
+        + "AND d.documentDefinitionId.blueprintId.blueprintType = :blueprintType "
+        + "AND d.documentDefinitionId.blueprintId.blueprintKey = :blueprintKey "
+        + "AND d.documentDefinitionId.blueprintId.blueprintVersionTag = :versionTag")
+    boolean isCaseHomedOnBlueprintVersion(
+        @Param("caseId") UUID caseId,
+        @Param("blueprintType") BlueprintType blueprintType,
+        @Param("blueprintKey") String blueprintKey,
+        @Param("versionTag") Semver versionTag
+    );
 
     @Query(" SELECT  doc " +
         "    FROM    JsonSchemaDocument doc " +

@@ -1,0 +1,14 @@
+[
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "processLinkType": "form",
+        "formDefinitionName": "start-form-verhuizing"
+    },
+    {
+        "activityId": "beoordelen_verhuizing",
+        "activityType": "bpmn:UserTask:create",
+        "processLinkType": "form",
+        "formDefinitionName": "beoordelen-verhuizing"
+    }
+]

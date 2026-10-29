@@ -34,21 +34,23 @@ interface FormFlowDefinitionId {
 
 interface FormFlowStep {
   key: string;
-  nextSteps: Array<FormFlowNextStep>;
-  onBack: Array<string>;
-  onOpen: Array<string>;
-  onComplete: Array<string>;
+  title?: string;
+  nextStep?: string;
+  nextSteps?: Array<FormFlowNextStep>;
+  onBack?: Array<string>;
+  onOpen?: Array<string>;
+  onComplete?: Array<string>;
   type: FormFlowStepType;
 }
 
 interface FormFlowNextStep {
-  condition?: string;
+  condition?: string | null;
   step: string;
 }
 
 interface FormFlowStepType {
   name: string;
-  properties: FormStepTypeProperties | CustomComponentStepTypeProperties;
+  properties: FormStepTypeProperties | CustomComponentStepTypeProperties | Record<string, string>;
 }
 
 interface FormStepTypeProperties {

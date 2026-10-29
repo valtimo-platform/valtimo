@@ -62,7 +62,16 @@ export class NewFormFlowModalComponent {
     this.closeEvent.emit({
       key: this.key.value ?? '',
       startStep: 'start-step',
-      steps: [],
+      // Every form flow needs a start step, so create one up front: without it the editor opens on a
+      // "start step does not exist" error for a flow the user has only just named. The form
+      // definition is intentionally left blank — the editor flags it as the field still to fill in.
+      steps: [
+        {
+          key: 'start-step',
+          type: {name: 'form', properties: {definition: ''}},
+          nextSteps: [],
+        },
+      ],
     });
     this.resetForm();
   }

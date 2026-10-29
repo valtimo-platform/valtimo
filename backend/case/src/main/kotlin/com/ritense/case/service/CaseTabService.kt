@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,25 @@ import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.CaseTab
 import com.ritense.case.domain.CaseTabId
+import com.ritense.case.domain.CaseTabType
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationHelper.Companion.TAB_ORDER
 import com.ritense.case.repository.CaseTabSpecificationHelper.Companion.byCaseDefinitionId
 import com.ritense.case.repository.CaseTabSpecificationHelper.Companion.byCaseDefinitionIdAndTabKey
+import com.ritense.case.service.exception.InvalidTabContentKeyException
 import com.ritense.case.service.exception.TabAlreadyExistsException
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case.web.rest.dto.CaseTabUpdateDto
 import com.ritense.case.web.rest.dto.CaseTabUpdateOrderDto
+import com.ritense.case_.domain.tab.CaseExternalPluginTab
 import com.ritense.case_.service.event.CaseTabCreatedEvent
+import com.ritense.case_.service.event.CaseTabUpdatedEvent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
@@ -97,7 +102,9 @@ class CaseTabService(
 
     @Transactional
     fun getCaseTabs(documentId: JsonSchemaDocumentId): List<CaseTab> {
-        val document = runWithoutAuthorization { documentService.findByOrNull(documentId) }
+        val document = runWithoutAuthorization { documentService.findByOrNull(documentId) } as JsonSchemaDocument?
+            ?: return emptyList()
+        authorizationService.requireDocumentPermission(document)
 
         val spec = authorizationService.getAuthorizationSpecification(
             EntityAuthorizationRequest(
@@ -106,7 +113,7 @@ class CaseTabService(
             ).withContext(
                 AuthorizationResourceContext(
                     JsonSchemaDocument::class.java,
-                    document as JsonSchemaDocument
+                    document
                 )
             )
         )
@@ -133,6 +140,8 @@ class CaseTabService(
             throw TabAlreadyExistsException(caseTabDto.key)
         }
 
+        validateContentKey(caseTabDto.key, caseTabDto.type, caseTabDto.contentKey)
+
         val caseTab = CaseTab(
             CaseTabId(caseDefinitionId, caseTabDto.key),
             caseTabDto.name,
@@ -155,9 +164,11 @@ class CaseTabService(
         denyAuthorization()
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
 
+        validateContentKey(tabKey, caseTab.type, caseTab.contentKey)
+
         val existingTab = caseTabRepository.findOne(byCaseDefinitionIdAndTabKey(caseDefinitionId, tabKey)).get()
 
-        caseTabRepository.save(
+        val savedTab = caseTabRepository.save(
             existingTab.copy(
                 name = caseTab.name,
                 type = caseTab.type,
@@ -165,6 +176,8 @@ class CaseTabService(
                 showTasks = caseTab.showTasks
             )
         )
+
+        applicationEventPublisher.publishEvent(CaseTabUpdatedEvent(savedTab))
     }
 
     fun updateCaseTabs(caseDefinitionId: CaseDefinitionId, caseTabDtos: List<CaseTabUpdateOrderDto>): List<CaseTab> {
@@ -179,6 +192,7 @@ class CaseTabService(
         val updatedTabs = caseTabDtos.mapIndexed { index, caseTabDto ->
             val existingTab = existingTabs.find { it.id.key == caseTabDto.key }
                 ?: throw IllegalStateException("Failed to update tabs. Reason: tab with key '${caseTabDto.key}' doesn't exist.")
+            validateContentKey(caseTabDto.key, caseTabDto.type, caseTabDto.contentKey)
             existingTab.copy(
                 name = caseTabDto.name,
                 tabOrder = index,
@@ -188,7 +202,9 @@ class CaseTabService(
             )
         }
 
-        return caseTabRepository.saveAll(updatedTabs)
+        val savedTabs = caseTabRepository.saveAll(updatedTabs)
+        savedTabs.forEach { applicationEventPublisher.publishEvent(CaseTabUpdatedEvent(it)) }
+        return savedTabs
     }
 
     fun deleteCaseTab(caseDefinitionId: CaseDefinitionId, tabKey: String) {
@@ -214,6 +230,15 @@ class CaseTabService(
         val caseTabs = caseTabRepository.findAll(byCaseDefinitionId(caseDefinitionId), Sort.by(TAB_ORDER))
             .mapIndexed { index, caseTab -> caseTab.copy(tabOrder = index) }
         caseTabRepository.saveAll(caseTabs)
+    }
+
+    private fun validateContentKey(tabKey: String, type: CaseTabType, contentKey: String) {
+        if (type == CaseTabType.EXTERNAL_PLUGIN && !CaseExternalPluginTab.isValidContentKey(contentKey)) {
+            throw InvalidTabContentKeyException(
+                tabKey,
+                "contentKey of an ${CaseTabType.EXTERNAL_PLUGIN} tab must match '<configurationId>[:<bundleKey>]'"
+            )
+        }
     }
 
     private fun denyAuthorization() {

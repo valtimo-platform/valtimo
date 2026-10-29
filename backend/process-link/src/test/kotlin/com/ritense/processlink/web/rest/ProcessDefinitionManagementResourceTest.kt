@@ -263,8 +263,8 @@ internal class ProcessDefinitionManagementResourceTest {
     @Test
     fun `should refuse to import when a reference blocks the import`() {
         val missingReference = MissingReferenceDto(
-            type = MissingReferenceType.READ_ONLY_SYSTEM_PROCESS,
-            reference = "my-process",
+            type = MissingReferenceType.FORM,
+            reference = "my-form",
         )
         whenever(processDefinitionImportPreviewService.preview(any())).thenReturn(
             ProcessDefinitionImportPreviewResponseDto(
@@ -279,8 +279,8 @@ internal class ProcessDefinitionManagementResourceTest {
         )
             .andDo(print())
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.missingReferences.[0].type").value("READ_ONLY_SYSTEM_PROCESS"))
-            .andExpect(jsonPath("$.missingReferences.[0].reference").value("my-process"))
+            .andExpect(jsonPath("$.missingReferences.[0].type").value("FORM"))
+            .andExpect(jsonPath("$.missingReferences.[0].reference").value("my-form"))
 
         verify(importService, never()).importGlobal(any(), anyOrNull())
     }

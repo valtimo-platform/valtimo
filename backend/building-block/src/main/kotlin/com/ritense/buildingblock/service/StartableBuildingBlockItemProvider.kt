@@ -74,7 +74,8 @@ class StartableBuildingBlockItemProvider(
                     key = link.buildingBlockDefinitionId.key,
                     versionTag = link.buildingBlockDefinitionId.versionTag.toString(),
                     processDefinitionId = processDefinitionId,
-                    draft = buildingBlock?.final != true
+                    draft = buildingBlock?.final != true,
+                    startableByUser = link.startableByUser
                 )
             }
     }
@@ -97,7 +98,8 @@ class StartableBuildingBlockItemProvider(
             key = linkDto.buildingBlockDefinitionKey,
             versionTag = linkDto.buildingBlockDefinitionVersionTag,
             processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id,
-            draft = buildingBlock?.final != true
+            draft = buildingBlock?.final != true,
+            startableByUser = linkDto.startableByUser
         )
     }
 
@@ -108,10 +110,14 @@ class StartableBuildingBlockItemProvider(
         properties: JsonNode
     ): StartableItemDto {
         requireNotNull(versionTag) { "versionTag is required for building block items" }
-        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(itemKey, versionTag)
+        val currentId = BuildingBlockDefinitionId.of(itemKey, versionTag)
         val dto = objectMapper.treeToValue(properties, UpdateCaseDefinitionBuildingBlockLinkDto::class.java)
-        val linkDto = caseDefinitionBuildingBlockLinkService.updateLink(caseDefinitionId, buildingBlockDefinitionId, dto)
+        val linkDto = caseDefinitionBuildingBlockLinkService.updateLink(caseDefinitionId, currentId, dto)
 
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            linkDto.buildingBlockDefinitionKey,
+            linkDto.buildingBlockDefinitionVersionTag
+        )
         val mainProcessLink = processDefinitionBuildingBlockDefinitionRepository
             .findByIdBuildingBlockDefinitionIdAndMain(buildingBlockDefinitionId, true)
         val buildingBlock = buildingBlockDefinitionRepository.findByIdOrNull(buildingBlockDefinitionId)
@@ -122,7 +128,8 @@ class StartableBuildingBlockItemProvider(
             key = linkDto.buildingBlockDefinitionKey,
             versionTag = linkDto.buildingBlockDefinitionVersionTag,
             processDefinitionId = mainProcessLink?.id?.processDefinitionId?.id,
-            draft = buildingBlock?.final != true
+            draft = buildingBlock?.final != true,
+            startableByUser = linkDto.startableByUser
         )
     }
 

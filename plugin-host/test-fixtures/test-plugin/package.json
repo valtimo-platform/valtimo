@@ -1,0 +1,17 @@
+{
+  "name": "test-plugin-fixture",
+  "version": "1.0.0",
+  "description": "Deterministic fixture plugin compiled to Wasm for the plugin-host L3 tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "valtimo-plugin-build --input src/plugin.ts --output dist/plugin.wasm"
+  },
+  "devDependencies": {
+    "@extism/js-pdk": "^1.1.0",
+    "@valtimo/plugin-sdk": "file:../../plugin-sdk",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.4.0"
+  },
+  "license": "EUPL-1.2"
+}

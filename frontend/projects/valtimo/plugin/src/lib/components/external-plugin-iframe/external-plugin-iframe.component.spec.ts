@@ -1,0 +1,488 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {TranslateModule} from '@ngx-translate/core';
+import {SidePanelService} from '@valtimo/components';
+import {ConfigService} from '@valtimo/shared';
+import {of} from 'rxjs';
+import {ExternalPluginIframeComponent} from './external-plugin-iframe.component';
+
+describe('ExternalPluginIframeComponent', () => {
+  let fixture: ComponentFixture<ExternalPluginIframeComponent>;
+  let component: ExternalPluginIframeComponent;
+
+  const configServiceMock = {
+    config: {valtimoApi: {endpointUri: '/api/'}},
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [ExternalPluginIframeComponent, TranslateModule.forRoot()],
+      providers: [{provide: ConfigService, useValue: configServiceMock}],
+    });
+
+    fixture = TestBed.createComponent(ExternalPluginIframeComponent);
+    component = fixture.componentInstance;
+    component.userToken = 'test-user-token';
+  });
+
+  const proxyToGzac = (method: string, path: string): Promise<{status: number; body: unknown}> =>
+    (component as any)._proxyToGzac(method, path, undefined);
+
+  describe('same-origin enforcement', () => {
+    it('rejects an absolute cross-origin URL with a 403 response', async () => {
+      const fetchSpy = spyOn(window, 'fetch');
+
+      const result = await proxyToGzac('GET', 'https://evil.example/api/v1/steal');
+
+      expect(result.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('rejects a protocol-relative URL with a 403 response', async () => {
+      const fetchSpy = spyOn(window, 'fetch');
+
+      const result = await proxyToGzac('GET', '//evil.example/api/v1/steal');
+
+      expect(result.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('rejects a javascript: URL with a 403 response', async () => {
+      const fetchSpy = spyOn(window, 'fetch');
+
+      const result = await proxyToGzac('GET', 'javascript:alert(1)');
+
+      expect(result.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('rejects a malformed URL with a 403 response', async () => {
+      const fetchSpy = spyOn(window, 'fetch');
+
+      const result = await proxyToGzac('GET', 'http://');
+
+      expect(result.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('API base path enforcement', () => {
+    it('rejects a same-origin path outside the API base path', async () => {
+      const fetchSpy = spyOn(window, 'fetch');
+
+      const result = await proxyToGzac('GET', '/other/endpoint');
+
+      expect(result.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('accepts a valid API path and fetches the normalized same-origin path with the user token', async () => {
+      const fetchSpy = spyOn(window, 'fetch').and.resolveTo(
+        new Response(JSON.stringify({ok: true}), {status: 200})
+      );
+
+      const result = await proxyToGzac('GET', `${window.location.origin}/api/v1/documents?page=1`);
+
+      expect(result.status).toBe(200);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      const [requestPath, init] = fetchSpy.calls.mostRecent().args;
+      expect(requestPath).toBe('/api/v1/documents?page=1');
+      expect((init?.headers as Record<string, string>)['Authorization']).toBe(
+        'Bearer test-user-token'
+      );
+    });
+  });
+
+  describe('allowlist precheck', () => {
+    let fetchSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      fetchSpy = spyOn(window, 'fetch').and.resolveTo(new Response('{}', {status: 200}));
+    });
+
+    it('skips the precheck when no allowlist input is provided', async () => {
+      component.allowedEndpoints = undefined;
+
+      const result = await proxyToGzac('GET', '/api/v1/documents');
+
+      expect(result.status).toBe(200);
+      expect(fetchSpy).toHaveBeenCalled();
+    });
+
+    it('denies every call when an empty allowlist is provided', async () => {
+      component.allowedEndpoints = [];
+
+      const result = await proxyToGzac('GET', '/api/v1/documents');
+
+      expect(result.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('allows a call matching a granted endpoint pattern', async () => {
+      component.allowedEndpoints = [{method: 'GET', pattern: '/api/v1/documents/**'}];
+
+      const result = await proxyToGzac('GET', '/api/v1/documents/abc/sub');
+
+      expect(result.status).toBe(200);
+    });
+
+    it('denies a call whose method does not match the granted endpoint', async () => {
+      component.allowedEndpoints = [{method: 'GET', pattern: '/api/v1/documents/**'}];
+
+      const result = await proxyToGzac('POST', '/api/v1/documents/abc');
+
+      expect(result.status).toBe(403);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('treats a single wildcard as one path segment', async () => {
+      component.allowedEndpoints = [{method: 'GET', pattern: '/api/v1/documents/*'}];
+
+      expect((await proxyToGzac('GET', '/api/v1/documents/abc')).status).toBe(200);
+      expect((await proxyToGzac('GET', '/api/v1/documents/abc/def')).status).toBe(403);
+    });
+  });
+
+  describe('plugin data proxy', () => {
+    const proxyToPlugin = (method: string, path: string): Promise<{status: number; body: unknown}> =>
+      (component as any)._proxyToPlugin(method, path, undefined, undefined);
+
+    beforeEach(() => {
+      component.pluginDataUrl = 'https://host.example/plugins/p/1.0.0/data';
+      component.configurationId = 'cfg-1';
+    });
+
+    it('answers locally with a 401 when no user token is available yet', async () => {
+      const fetchSpy = spyOn(window, 'fetch');
+      component.userToken = null;
+
+      const result = await proxyToPlugin('GET', '/summary');
+
+      expect(result.status).toBe(401);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('POSTs to the host with the configurationId and the user token', async () => {
+      const fetchSpy = spyOn(window, 'fetch').and.resolveTo(
+        new Response(JSON.stringify({ok: true}), {status: 200})
+      );
+
+      const result = await proxyToPlugin('GET', '/summary');
+
+      expect(result.status).toBe(200);
+      const [url, init] = fetchSpy.calls.mostRecent().args;
+      expect(url).toBe('https://host.example/plugins/p/1.0.0/data');
+      const payload = JSON.parse(init?.body as string);
+      expect(payload.configurationId).toBe('cfg-1');
+      expect(payload.userToken).toBe('test-user-token');
+    });
+  });
+
+  describe('message filtering', () => {
+    let iframe: HTMLIFrameElement;
+
+    beforeEach(() => {
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    const emitMessage = (data: unknown, source: MessageEventSource | null): void =>
+      (component as any)._onMessage({data, source} as MessageEvent);
+
+    it('handles a message coming from the iframe contentWindow', () => {
+      const readySpy = spyOn(component.readyEvent, 'emit');
+
+      emitMessage({source: 'valtimo-plugin', event: 'ready'}, iframe.contentWindow);
+
+      expect(readySpy).toHaveBeenCalled();
+    });
+
+    it('ignores messages whose source is not the iframe contentWindow', () => {
+      const readySpy = spyOn(component.readyEvent, 'emit');
+
+      emitMessage({source: 'valtimo-plugin', event: 'ready'}, window);
+
+      expect(readySpy).not.toHaveBeenCalled();
+    });
+
+    it('ignores messages without the valtimo-plugin source marker', () => {
+      const readySpy = spyOn(component.readyEvent, 'emit');
+
+      emitMessage({source: 'something-else', event: 'ready'}, iframe.contentWindow);
+
+      expect(readySpy).not.toHaveBeenCalled();
+    });
+
+    it('posts an init message without any token fields', () => {
+      const postMessageSpy = spyOn(iframe.contentWindow as Window, 'postMessage');
+
+      component.onIframeLoad();
+
+      expect(postMessageSpy).toHaveBeenCalledTimes(1);
+      const message = postMessageSpy.calls.mostRecent().args[0] as {
+        event: string;
+        payload: Record<string, unknown>;
+      };
+      expect(message.event).toBe('init');
+      expect('accessToken' in message.payload).toBeFalse();
+      expect('token' in message.payload).toBeFalse();
+      expect('userToken' in message.payload).toBeFalse();
+    });
+  });
+
+  /**
+   * The iframe is at an opaque origin, so a reported height is the only way the parent can size it —
+   * and it is untrusted input from plugin-authored code. These cover both halves: that an opted-in
+   * surface grows, and that a bad value cannot push the surrounding page around.
+   */
+  describe('auto height', () => {
+    let iframe: HTMLIFrameElement;
+
+    beforeEach(() => {
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    const sendResizeFrom = (payload: unknown, source: MessageEventSource | null): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event: 'resize', payload},
+        source,
+      } as MessageEvent);
+
+    const sendResize = (payload: unknown): void => sendResizeFrom(payload, iframe.contentWindow);
+
+    it('leaves the height to CSS unless the surface opted in', () => {
+      sendResize({height: 640});
+
+      expect(iframe.style.height).toBe('');
+    });
+
+    it('grows the iframe to the reported height when opted in', () => {
+      component.autoHeight = true;
+
+      sendResize({height: 640});
+
+      expect(iframe.style.height).toBe('640px');
+    });
+
+    it('clamps a height that would turn the page into an endless scroll', () => {
+      component.autoHeight = true;
+
+      sendResize({height: 10000000});
+
+      expect(iframe.style.height).toBe('20000px');
+    });
+
+    it('ignores a height that is not a usable number', () => {
+      component.autoHeight = true;
+
+      for (const height of [0, -100, NaN, Infinity, '600', null, undefined]) {
+        sendResize({height});
+        expect(iframe.style.height).toBe('');
+      }
+
+      sendResize(null);
+      expect(iframe.style.height).toBe('');
+    });
+
+    it('ignores a resize posted by a window that is not the iframe', () => {
+      component.autoHeight = true;
+
+      sendResizeFrom({height: 900}, window);
+
+      expect(iframe.style.height).toBe('');
+    });
+  });
+
+  describe('bundle URL validation', () => {
+    afterEach(() => {
+      component.ngOnDestroy();
+    });
+
+    it('trusts an https bundle URL', () => {
+      component.bundleUrl = 'https://plugins.example.com/bundles/tab.html';
+
+      component.ngOnInit();
+
+      expect(component.$trustedUrl()).not.toBeNull();
+    });
+
+    it('does not trust a javascript: bundle URL', () => {
+      component.bundleUrl = 'javascript:alert(1)';
+
+      component.ngOnInit();
+
+      expect(component.$trustedUrl()).toBeNull();
+    });
+  });
+  describe('side panel offers', () => {
+    let iframe: HTMLIFrameElement;
+    let sidePanelService: jasmine.SpyObj<SidePanelService>;
+
+    const sendPanelMessage = (event: string, payload: unknown): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event, payload},
+        source: iframe.contentWindow,
+      } as MessageEvent);
+
+    beforeEach(() => {
+      sidePanelService = jasmine.createSpyObj<SidePanelService>('SidePanelService', [
+        'offer',
+        'withdraw',
+      ]);
+      (sidePanelService as any).current$ = of(null);
+      (component as any)._sidePanelService = sidePanelService;
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+      component.configurationId = 'config-1';
+      component.context = {documentId: 'doc-1', caseDefinitionKey: 'plan'};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    it('offers a namespaced key with its case as origin and the trusted context over the plugin context', () => {
+      sendPanelMessage('offerPanel', {
+        bundleKey: 'evaluatie',
+        key: 'session-1',
+        title: 'Evaluatie',
+        subtitle: 'Plan A',
+        pinned: true,
+        context: {documentId: 'forged', evaluationId: 'e-1'},
+      });
+
+      const offer = sidePanelService.offer.calls.mostRecent().args[0];
+      expect(offer.key).toBe('external-plugin:config-1:evaluatie:session-1:doc-1');
+      expect(offer.origin?.route).toEqual(['/cases', 'plan', 'document', 'doc-1']);
+      expect(offer.pinned).toBeTrue();
+      expect(offer.inputs?.['context']).toEqual({
+        documentId: 'doc-1',
+        caseDefinitionKey: 'plan',
+        evaluationId: 'e-1',
+      });
+    });
+
+    it('keeps keys distinct when bundle key or key contains the separator', () => {
+      sendPanelMessage('offerPanel', {bundleKey: 'a:b', key: 'c', title: 'Evaluatie'});
+      sendPanelMessage('offerPanel', {bundleKey: 'a', key: 'b:c', title: 'Evaluatie'});
+
+      const [first, second] = sidePanelService.offer.calls.allArgs().map(([offer]) => offer.key);
+      expect(first).not.toBe(second);
+    });
+
+    it('does not pin unless the plugin asks', () => {
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie'});
+
+      expect(sidePanelService.offer.calls.mostRecent().args[0].pinned).toBeFalsy();
+    });
+
+    it('ignores an offer with a non-boolean pinned', () => {
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie', pinned: 'yes'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('ignores an offer without a title', () => {
+      sendPanelMessage('offerPanel', {key: 'session-1'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('ignores an offer from a surface without a configuration', () => {
+      component.configurationId = null;
+
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie'});
+
+      expect(sidePanelService.offer).not.toHaveBeenCalled();
+    });
+
+    it('gives the same key offered for another case its own panel', () => {
+      sendPanelMessage('offerPanel', {key: 'notes', title: 'Notes'});
+      component.context = {documentId: 'doc-2', caseDefinitionKey: 'plan'};
+      sendPanelMessage('offerPanel', {key: 'notes', title: 'Notes'});
+
+      const [first, second] = sidePanelService.offer.calls.allArgs().map(([offer]) => offer);
+      expect(first.key).not.toBe(second.key);
+      expect(second.inputs?.['context']).toEqual({documentId: 'doc-2', caseDefinitionKey: 'plan'});
+    });
+
+    it('ignores a case named by the plugin on a surface without a case', () => {
+      component.context = {};
+
+      sendPanelMessage('offerPanel', {
+        key: 'session-1',
+        title: 'Evaluatie',
+        context: {documentId: 'forged', caseDefinitionKey: 'forged', evaluationId: 'e-1'},
+      });
+
+      const offer = sidePanelService.offer.calls.mostRecent().args[0];
+      expect(offer.origin).toBeUndefined();
+      expect(offer.inputs?.['context']).toEqual({evaluationId: 'e-1'});
+    });
+
+    it('resolves the case of a surface that only knows its document', () => {
+      const documentService = jasmine.createSpyObj('DocumentService', [
+        'getDocument',
+        'getActiveCaseDefinition',
+        'getDocumentDefinition',
+      ]);
+      documentService.getDocument.and.returnValue(of({definitionId: {name: 'plan'}}));
+      (component as any)._injector = {get: () => documentService};
+      component.context = {documentId: 'doc-1', taskId: 'task-1'};
+
+      sendPanelMessage('offerPanel', {key: 'session-1', title: 'Evaluatie'});
+
+      const offer = sidePanelService.offer.calls.mostRecent().args[0];
+      expect(offer.origin?.route).toEqual(['/cases', 'plan', 'document', 'doc-1']);
+    });
+
+    it('withdraws its content offered for any case', () => {
+      (sidePanelService as any).current$ = of({
+        key: 'external-plugin:config-1:evaluatie:session-1:doc-9',
+      });
+
+      sendPanelMessage('withdrawPanel', {bundleKey: 'evaluatie', key: 'session-1'});
+
+      expect(sidePanelService.withdraw).toHaveBeenCalledWith(
+        'external-plugin:config-1:evaluatie:session-1:doc-9'
+      );
+    });
+
+    it('does not withdraw content of another configuration', () => {
+      (sidePanelService as any).current$ = of({
+        key: 'external-plugin:config-2:evaluatie:session-1:doc-1',
+      });
+
+      sendPanelMessage('withdrawPanel', {bundleKey: 'evaluatie', key: 'session-1'});
+
+      expect(sidePanelService.withdraw).not.toHaveBeenCalled();
+    });
+  });
+});

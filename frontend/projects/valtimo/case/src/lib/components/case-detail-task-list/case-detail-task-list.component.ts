@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
@@ -24,6 +24,7 @@ import {
   combineLatest,
   filter,
   map,
+  merge,
   Observable,
   of,
   startWith,
@@ -41,8 +42,6 @@ import {
 import {
   CAN_VIEW_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
-  TaskDetailModalComponent,
-  TaskModule,
   TaskUpdateSseEvent,
 } from '@valtimo/task';
 import {SseService} from '@valtimo/sse';
@@ -68,7 +67,6 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
     TranslateModule,
     WidgetModule,
     LoadingModule,
-    TaskModule,
     TilesModule,
     LayerModule,
     TagModule,
@@ -77,14 +75,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   ],
 })
 export class CaseDetailTaskListComponent {
-  @ViewChild('taskDetail') private readonly _taskDetailModal: TaskDetailModalComponent;
-
-  @Input() public set openTaskAndProcessLinkInModal(value: TaskWithProcessLink) {
-    if (value) this._taskDetailModal.openTaskAndProcessLinkDetails(value);
-  }
-
   @Output() public readonly taskClickEvent = new EventEmitter<TaskWithProcessLink>();
-  @Output() public readonly formSubmitEvent = new EventEmitter();
 
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
 
@@ -102,7 +93,14 @@ export class CaseDetailTaskListComponent {
     startWith(null)
   );
 
-  public readonly processInstanceTasks$: Observable<{
+  // Drop stale tasks on refresh
+  private readonly _clearTasksOnRefresh$: Observable<null> =
+    this.caseDetailLayoutService.refreshTasks$.pipe(
+      tap(() => this.loadingTasks$.next(true)),
+      map(() => null)
+    );
+
+  private readonly _fetchedTasks$: Observable<{
     myTasks: TaskWithProcessLink[];
     otherTasks: TaskWithProcessLink[];
   }> = combineLatest([this.caseDetailLayoutService.refreshTasks$, this._taskUpdateSseEvent$]).pipe(
@@ -146,7 +144,10 @@ export class CaseDetailTaskListComponent {
     tap(() => this.loadingTasks$.next(false))
   );
 
-  public readonly formSize$ = this.caseDetailLayoutService.formDisplaySize$;
+  public readonly processInstanceTasks$: Observable<{
+    myTasks: TaskWithProcessLink[];
+    otherTasks: TaskWithProcessLink[];
+  } | null> = merge(this._clearTasksOnRefresh$, this._fetchedTasks$);
 
   constructor(
     private readonly documentService: DocumentService,
@@ -171,15 +172,6 @@ export class CaseDetailTaskListComponent {
     if (tasWithProcessLink.task.isLocked) return;
 
     this.taskClickEvent.emit(tasWithProcessLink);
-  }
-
-  public onFormSubmit(): void {
-    this.formSubmitEvent.emit();
-    this.refresh();
-  }
-
-  public refresh(): void {
-    this.caseDetailLayoutService.refreshTasks();
   }
 
   private mapTasksWithProcessLinks(

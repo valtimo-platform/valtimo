@@ -1,0 +1,32 @@
+{
+    "$id": "verhuizing-dossier.schema",
+    "type": "object",
+    "title": "Verhuizingdossier",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+        "dossierhouder"
+    ],
+    "properties": {
+        "dossierhouder": {
+            "type": "string"
+        },
+        "dossierStatus": {
+            "type": "string"
+        },
+        "dossierAdres": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "aantalBewoners": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "gemigreerdVan": {
+            "type": "string"
+        }
+    }
+}

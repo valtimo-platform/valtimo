@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 export const endpoints = {
   dashboard: {
     getAll: '/api/management/v1/dashboard',
@@ -9,6 +25,16 @@ export const endpoints = {
     widgetConfiguration: (dashboardKey: string, widgetKey: string) =>
       `/api/management/v1/dashboard/${dashboardKey}/widget-configuration/${widgetKey}`,
     dataSources: '/api/management/v1/dashboard/widget-data-sources',
+  },
+
+  /**
+   * User-facing dashboard endpoints (as consumed by the dashboard shown on `/`).
+   * These are filtered by the caller's role via access-control permissions, so they
+   * only return dashboards the current user is allowed to view.
+   */
+  userDashboard: {
+    getAll: '/api/v1/dashboard',
+    data: (dashboardKey: string) => `/api/v1/dashboard/${dashboardKey}/data`,
   },
 
   formFlow: {
@@ -68,6 +94,7 @@ export const endpoints = {
     getActiveTask: (id: string) => `/api/v1/process/${id}/activetask`,
     delete: (id: string) => `/api/v1/process/${id}/delete`,
     comment: (id: string) => `/api/v1/process/${id}/comment`,
+    variables: (id: string) => `/api/v1/process-instance/${id}/variables`,
   },
 
   form: {

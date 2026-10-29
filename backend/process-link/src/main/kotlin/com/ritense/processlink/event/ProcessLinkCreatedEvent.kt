@@ -18,5 +18,11 @@ package com.ritense.processlink.event
 
 class ProcessLinkCreatedEvent(
     val processLinkType: String,
-    val processDefinitionId: String
-)
+    val processDefinitionId: String,
+    /** The writer rechecks the whole case definition once when the import finishes. */
+    val recheckDeferred: Boolean,
+) {
+    // Kept so callers compiled against an older version keep working
+    constructor(processLinkType: String, processDefinitionId: String) :
+        this(processLinkType, processDefinitionId, false)
+}

@@ -106,6 +106,29 @@ export const ZAKEN_API_CONFIGURATION_TEST_IDS = {
   authenticationPluginConfiguration: 'zakenApiAuthenticationPluginConfiguration',
 } as const;
 
+/**
+ * Required properties of the Zaken API "Create zaak" *action*, configured in the
+ * last step of the process link wizard. Both are bound to the `v-input` host, so
+ * a test reaches the field itself through `.locator('input')`.
+ */
+export const ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS = {
+  rsin: 'zakenApiCreateZaakRsin',
+  zaaktypeUrl: 'zakenApiCreateZaakZaaktypeUrl',
+} as const;
+
+/**
+ * Required property of the Documenten API "Delete informatie object" *action*. Bound to the
+ * `v-input` host, so a test reaches the field itself through `.locator('input')`.
+ */
+export const DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS = {
+  documentUrl: 'documentenApiDeleteInformatieObjectDocumentUrl',
+} as const;
+
+export const PLUGIN_EDIT_MODAL_TEST_IDS = {
+  saveButton: 'pluginEditModalSaveButton',
+  deleteButton: 'pluginEditModalDeleteButton',
+} as const;
+
 export const PLUGIN_CATALOG_TEST_IDS = {
   tileGrid: 'pluginCatalogTileGrid',
   tileLogo: 'pluginCatalogTileLogo',

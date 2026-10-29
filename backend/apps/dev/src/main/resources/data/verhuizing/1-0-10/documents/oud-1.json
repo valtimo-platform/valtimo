@@ -1,0 +1,15 @@
+{
+    "scenario": "oud",
+    "aanvrager": {
+        "naam": "Yusuf Demir",
+        "email": "oud1@example.com"
+    },
+    "nieuwAdres": "Oudestraat 1, 7000 GG Testdorp",
+    "status": "ingediend",
+    "spoed": false,
+    "aantalPersonen": 2,
+    "woning": {
+        "oppervlakte": 90,
+        "energielabel": "C"
+    }
+}

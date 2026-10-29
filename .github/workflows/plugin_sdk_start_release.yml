@@ -1,0 +1,97 @@
+name: Plugin SDK - Start release
+run-name: Start plugin-sdk release ${{ inputs.version }} from ${{ inputs.source_branch }}
+
+# Convenience entrypoint for cutting a @valtimo/plugin-sdk release. It creates the
+# release/plugin-sdk/<version> branch from the chosen source branch and then dispatches
+# `plugin_sdk_publish_release.yml` ON that new branch, which re-derives the version from
+# the branch name. Mirrors start_release.yml, but in its own branch namespace so the SDK
+# releases independently of the Valtimo platform version.
+
+permissions:
+  contents: write
+  actions: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "SDK version to release (e.g. 1.0.0 or 1.0.0-rc.1)"
+        required: true
+        type: string
+      source_branch:
+        description: "Branch to cut the release from"
+        required: true
+        type: string
+        default: next-minor
+      dry_run:
+        description: "Build, test and pack only — no npm publish, tag, release or PR"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  start:
+    name: Create release branch and start release
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+      SOURCE_BRANCH: ${{ inputs.source_branch }}
+    steps:
+      - name: Validate version
+        run: |
+          set -euo pipefail
+          # Prerelease suffix allowed (1.0.0-rc.1): the worker publishes those under the
+          # npm 'next' dist-tag instead of 'latest'.
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::Version must be <semver> with an optional prerelease suffix (e.g. 1.0.0 or 1.0.0-rc.1). Got: '${VERSION}'."
+            exit 1
+          fi
+
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          # Push with the valtimo-platform PAT — not GITHUB_TOKEN — so the new
+          # release/plugin-sdk/<version> branch can be created despite the repository
+          # ruleset that restricts branch creation (GITHUB_TOKEN is not on the bypass list).
+          token: ${{ secrets.VALTIMO_RELEASE_PIPELINE_VALTIMOPLATFORM }}
+          ref: ${{ inputs.source_branch }}
+          fetch-depth: 0
+
+      - name: Create and push release branch
+        env:
+          RELEASE_BRANCH: release/plugin-sdk/${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          # Idempotent: reuse an existing release branch so a re-run just re-dispatches the
+          # pipeline on it. Also covers running straight from the release branch itself.
+          if git ls-remote --exit-code --heads origin "refs/heads/${RELEASE_BRANCH}" >/dev/null 2>&1; then
+            echo "::notice::Branch '${RELEASE_BRANCH}' already exists on origin; reusing it (idempotent re-run)."
+            exit 0
+          fi
+          if [[ "${SOURCE_BRANCH}" == "${RELEASE_BRANCH}" ]]; then
+            echo "::error::Source branch '${RELEASE_BRANCH}' does not exist on origin."
+            exit 1
+          fi
+          git checkout -b "${RELEASE_BRANCH}"
+          git push origin "${RELEASE_BRANCH}"
+          echo "Created and pushed ${RELEASE_BRANCH} from ${SOURCE_BRANCH}."
+
+      - name: Trigger SDK release pipeline on the new branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_BRANCH: release/plugin-sdk/${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          # The branch push may take a moment to propagate before the workflow file is
+          # resolvable on the new ref; retry a few times.
+          for attempt in 1 2 3 4 5; do
+            if gh workflow run plugin_sdk_publish_release.yml --ref "${RELEASE_BRANCH}" -f dry_run="${DRY_RUN}"; then
+              echo "Dispatched plugin_sdk_publish_release.yml on ${RELEASE_BRANCH} (dry_run=${DRY_RUN})."
+              exit 0
+            fi
+            echo "Dispatch attempt ${attempt} failed; retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Failed to dispatch plugin_sdk_publish_release.yml on ${RELEASE_BRANCH}."
+          exit 1

@@ -1,0 +1,12 @@
+[
+    {
+        "processDefinitionKey": "snb-hoofdproces",
+        "canInitializeDocument": true,
+        "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "snb-behandeling",
+        "canInitializeDocument": false,
+        "startableByUser": false
+    }
+]

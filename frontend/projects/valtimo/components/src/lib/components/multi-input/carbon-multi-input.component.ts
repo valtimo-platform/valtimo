@@ -36,10 +36,12 @@ import {
   ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
 } from '../../models';
+import {ButtonType} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
+import {MULTI_INPUT_TEST_IDS} from '../../constants';
 
 @Component({
   selector: 'valtimo-carbon-multi-input',
@@ -72,6 +74,12 @@ export class CarbonMultiInputComponent implements ControlValueAccessor, OnInit, 
     this._defaultValues$.next(value);
   }
 
+  /**
+   * Carbon paints a danger button red in its resting state. A form with one delete button per row
+   * can therefore read as a form full of errors, which 'danger--ghost' avoids without giving up the
+   * destructive styling on hover.
+   */
+  @Input() public deleteButtonType: ButtonType = 'danger';
   @Input() public deleteRowText = '';
   @Input() public deleteRowTranslationKey = '';
   public readonly $disabled = signal<boolean>(false);
@@ -109,6 +117,8 @@ export class CarbonMultiInputComponent implements ControlValueAccessor, OnInit, 
   @Input() public readonly valueColumnFlex = 1;
 
   @Output() public valueChange: EventEmitter<MultiInputOutput> = new EventEmitter();
+
+  public readonly testIds = MULTI_INPUT_TEST_IDS;
   @Output() public allValuesValidEvent: EventEmitter<boolean> = new EventEmitter();
 
   private _amountOfArbitraryValues!: number;

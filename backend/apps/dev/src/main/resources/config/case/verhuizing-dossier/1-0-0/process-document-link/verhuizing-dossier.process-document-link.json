@@ -1,0 +1,7 @@
+[
+    {
+        "processDefinitionKey": "verhuizing-dossier",
+        "canInitializeDocument": true,
+        "startableByUser": false
+    }
+]

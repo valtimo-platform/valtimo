@@ -35,6 +35,7 @@ import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.Team;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -71,6 +72,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
 
     @Transactional
     @Override
+    @EndpointDescription(
+        en = "Get document by id",
+        nl = "Document ophalen"
+    )
     @GetMapping("/v1/document/{id}")
     public ResponseEntity<? extends Document> getDocument(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "id") UUID id) {
@@ -83,6 +88,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Create new document",
+        nl = "Document aanmaken"
+    )
     @PostMapping(value = "/v1/document", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreateDocumentResult> createNewDocument(
         @RequestBody @Valid NewDocumentRequest request
@@ -91,6 +100,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Modify document content",
+        nl = "Documentinhoud bijwerken"
+    )
     @PutMapping(value = "/v1/document", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ModifyDocumentResult> modifyDocumentContent(
         @RequestBody @Valid ModifyDocumentRequest request
@@ -99,6 +112,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Delete document",
+        nl = "Document verwijderen"
+    )
     @DeleteMapping(value = "/v1/document/{id}")
     public ResponseEntity<Void> deleteDocument(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "id") UUID id
@@ -108,6 +125,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Assign resource to document",
+        nl = "Bestand aan document koppelen"
+    )
     @PostMapping(value = "/v1/document/{document-id}/resource/{resource-id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> assignResource(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "document-id") UUID documentId,
@@ -118,6 +139,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Remove related file from document",
+        nl = "Gekoppeld bestand verwijderen"
+    )
     @DeleteMapping(value = "/v1/document/{document-id}/resource/{resource-id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> removeRelatedFile(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "document-id") UUID documentId,
@@ -128,6 +153,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Assign handler to document",
+        nl = "Behandelaar aan document toewijzen"
+    )
     @PostMapping("/v1/document/{documentId}/assign")
     public ResponseEntity<Void> assignHandlerToDocument(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "documentId") UUID documentId,
@@ -152,6 +181,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Assign handler to documents",
+        nl = "Behandelaar aan documenten toewijzen"
+    )
     @PostMapping("/v1/document/assign")
     public ResponseEntity<Void> assignHandlerToDocuments(@RequestBody @Valid AssignToDocumentsRequest request) {
         if (request.getAssigneeId() != null) {
@@ -164,6 +197,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "Unassign handler from document",
+        nl = "Behandelaar van document ontkoppelen"
+    )
     @PostMapping("/v1/document/{documentId}/unassign")
     public ResponseEntity<Void> unassignHandlerFromDocument(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "documentId") UUID documentId) {
@@ -179,6 +216,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
         }
     }
 
+    @EndpointDescription(
+        en = "List candidate teams for document",
+        nl = "Kandidaat-teams voor document ophalen"
+    )
     @GetMapping("/v1/document/{document-id}/candidate-team")
     @Override
     public ResponseEntity<Page<Team>> getCandidateTeams(
@@ -190,6 +231,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "List candidate users for document",
+        nl = "Kandidaat-gebruikers voor document ophalen"
+    )
     @GetMapping("/v1/document/{document-id}/candidate-user")
     public ResponseEntity<List<NamedUser>> getCandidateUsers(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "document-id") UUID documentId
@@ -199,6 +244,10 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @EndpointDescription(
+        en = "List candidate users for documents",
+        nl = "Kandidaat-gebruikers voor documenten ophalen"
+    )
     @PostMapping("/v1/document/candidate-user")
     public ResponseEntity<List<NamedUser>> getCandidateUsersForMultipleDocuments(
         @RequestBody @Valid GetDocumentCandidateUsersRequest request

@@ -30,6 +30,7 @@ import com.ritense.tab.service.TabService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.iko.IkoRepository
 import com.ritense.valtimo.contract.iko.PropertyField
+import com.ritense.valueresolver.ValueResolverCache
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -46,12 +47,14 @@ class IkoTabService(
 ) {
 
     fun getIkoTabConfig(ikoViewKey: String, tabKey: String?): Map<String, Any?> {
-        val ikoView = runWithoutAuthorization { ikoViewService.getByKey(ikoViewKey) }
-        ikoViewService.requirePermission(ikoView, IkoViewActionProvider.VIEW)
-        val ikoTabProperties = tabKey?.let { getByKey(ikoViewKey, tabKey) }?.properties ?: emptyMap()
-        return ikoView.ikoRepositoryConfig.properties
-            .deepMerge(ikoView.properties)
-            .deepMerge(ikoTabProperties)
+        return ValueResolverCache.value(TAB_CONFIG_CACHE, listOf(ikoViewKey, tabKey)) {
+            val ikoView = runWithoutAuthorization { ikoViewService.getByKey(ikoViewKey) }
+            ikoViewService.requirePermission(ikoView, IkoViewActionProvider.VIEW)
+            val ikoTabProperties = tabKey?.let { getByKey(ikoViewKey, tabKey) }?.properties ?: emptyMap()
+            ikoView.ikoRepositoryConfig.properties
+                .deepMerge(ikoView.properties)
+                .deepMerge(ikoTabProperties)
+        }
     }
 
     fun getIkoTabPropertyFields(type: Any): List<PropertyField> {
@@ -117,4 +120,7 @@ class IkoTabService(
         return updatedTab
     }
 
+    companion object {
+        private const val TAB_CONFIG_CACHE = "ikoTabConfig"
+    }
 }

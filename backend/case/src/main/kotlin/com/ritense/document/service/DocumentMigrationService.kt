@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.ritense.document.service
 
 import com.fasterxml.jackson.core.JsonPointer
@@ -55,6 +57,10 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 @Service
 @SkipComponentScan
+@Deprecated(
+    "Backs the 'Case migration (beta)' admin screen, which has been replaced by the case " +
+        "definition migration feature. Will be removed in a future release."
+)
 class DocumentMigrationService(
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
     private val documentRepository: JsonSchemaDocumentRepository,

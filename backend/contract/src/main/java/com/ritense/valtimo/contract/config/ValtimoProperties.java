@@ -17,6 +17,7 @@
 package com.ritense.valtimo.contract.config;
 
 import com.ritense.valtimo.contract.OauthConfigHolder;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
@@ -207,14 +208,28 @@ public class ValtimoProperties {
     }
 
     public static class Process {
-        private boolean systemProcessUpdatable = false;
+        private boolean systemProcessUpdatable = true;
         private int callDepthWarningThreshold = 50;
 
+        /**
+         * @deprecated a system process is always updatable, so this has no effect. Case definitions are
+         *     protected by the version their process link pins, not by making the process read-only.
+         */
+        @Deprecated(since = "13.45.0", forRemoval = true)
         public boolean isSystemProcessUpdatable() {
             return systemProcessUpdatable;
         }
 
+        @Deprecated(since = "13.45.0", forRemoval = true)
         public void setSystemProcessUpdatable(boolean systemProcessUpdatable) {
+            if (!systemProcessUpdatable) {
+                // Warned rather than ignored: whoever set this wanted that protection, and it is gone.
+                LoggerFactory.getLogger(Process.class).warn(
+                    "valtimo.process.systemProcessUpdatable=false no longer has any effect. "
+                        + "System processes can always be updated. Case definitions are protected by "
+                        + "the process definition version their process link pins instead."
+                );
+            }
             this.systemProcessUpdatable = systemProcessUpdatable;
         }
 

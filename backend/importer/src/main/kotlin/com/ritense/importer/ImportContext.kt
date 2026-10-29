@@ -23,8 +23,19 @@ class ImportContext {
     companion object {
         private val importingThreadLocal = ThreadLocal.withInitial { false }
 
+        private val claimedThreadLocal = ThreadLocal.withInitial { mutableSetOf<Any>() }
+
         @JvmStatic
         fun isImporting(): Boolean = importingThreadLocal.get()
+
+        /**
+         * True the first time [key] is claimed in this run. Lets a per-file hook do its wider work once.
+         * Outside a run there is nothing to claim, so every call gets true.
+         */
+        @JvmStatic
+        fun claimOncePerRun(key: Any): Boolean {
+            return !isImporting() || claimedThreadLocal.get().add(key)
+        }
 
         @JvmStatic
         fun <T> runImporter(callable: Callable<T>): T {
@@ -32,10 +43,13 @@ class ImportContext {
                 return callable.call()
             } else {
                 try {
+                    // No claim outlives its run, not even on a pooled thread
+                    claimedThreadLocal.remove()
                     importingThreadLocal.set(true)
                     callable.call()
                 } finally {
                     importingThreadLocal.set(false)
+                    claimedThreadLocal.remove()
                 }
             }
         }

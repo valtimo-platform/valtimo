@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-carbon-list
+  [actionItems]="ACTION_ITEMS"
+  [fields]="$fields()"
+  [items]="plans$ | async"
+  [loading]="$loading()"
+  (rowClicked)="onRowClicked($event)"
+>
+  <ng-container carbonToolbarContent>
+    <button cdsButton="primary" [attr.data-test-id]="testIds.addButton" (click)="onAddPlan()">
+      {{ 'caseManagement.migration.addPlan' | translate }}
+    </button>
+  </ng-container>
+
+  <valtimo-no-results
+    [title]="'caseManagement.migration.noResults.title' | translate"
+    [description]="'caseManagement.migration.noResults.description' | translate"
+  ></valtimo-no-results>
+</valtimo-carbon-list>
+
+<valtimo-confirmation-modal
+  [confirmButtonTextTranslationKey]="'interface.delete'"
+  [contentTranslationKey]="'caseManagement.migration.deleteModal.content'"
+  [outputOnConfirm]="$planToDelete()"
+  [showModalSubject$]="showDeleteModal$"
+  [titleTranslationKey]="'caseManagement.migration.deleteModal.title'"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [confirmButtonTextTranslationKey]="'caseManagement.migration.startNow'"
+  [contentTranslationKey]="'caseManagement.migration.startModal.content'"
+  [outputOnConfirm]="$planToStart()"
+  [showModalSubject$]="showStartModal$"
+  [titleTranslationKey]="'caseManagement.migration.startModal.title'"
+  (confirmEvent)="onStartConfirm($event)"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [confirmButtonTextTranslationKey]="'caseManagement.migration.dryRun'"
+  [contentTranslationKey]="'caseManagement.migration.dryRunModal.content'"
+  [outputOnConfirm]="$planToDryRun()"
+  [showModalSubject$]="showDryRunModal$"
+  [titleTranslationKey]="'caseManagement.migration.dryRunModal.title'"
+  (confirmEvent)="onDryRunConfirm($event)"
+></valtimo-confirmation-modal>
+
+<valtimo-case-migration-detail-modal
+  [caseDefinitionKey]="caseDefinitionKey"
+  [open]="$showDetailModal()"
+  [plan]="$selectedPlan()"
+  (closeEvent)="onCloseDetail()"
+  (dryRunEvent)="onDryRunPlan($event)"
+  (startEvent)="onStartPlan($event)"
+></valtimo-case-migration-detail-modal>
+
+<ng-template #statusColumn let-data="data">
+  <cds-tag class="cds-tag--no-margin" [type]="statusTagType(data.item.status.status)">
+    {{ 'caseManagement.migration.status.' + data.item.status.status | translate }}
+  </cds-tag>
+</ng-template>
+
+<ng-template #progressColumn let-data="data">
+  <span class="migration-progress">
+    {{ data.item.status.casesMigrated }} / {{ data.item.status.casesTotal }}
+  </span>
+  @if (data.item.status.casesWithErrors > 0) {
+    <cds-tag class="cds-tag--no-margin" type="red">
+      {{
+        'caseManagement.migration.errorCount' | translate: {count: data.item.status.casesWithErrors}
+      }}
+    </cds-tag>
+  }
+  @if (data.item.status.casesWithWarnings > 0) {
+    <cds-tag class="cds-tag--no-margin" type="warm-gray">
+      {{
+        'caseManagement.migration.warningCount'
+          | translate: {count: data.item.status.casesWithWarnings}
+      }}
+    </cds-tag>
+  }
+</ng-template>

@@ -19,6 +19,7 @@ package com.ritense.valtimo.web.rest;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan;
+import com.ritense.valtimo.contract.endpoint.EndpointDescription;
 import com.ritense.valtimo.domain.choicefield.ChoiceField;
 import com.ritense.valtimo.service.ChoiceFieldService;
 import com.ritense.valtimo.web.rest.dto.ChoiceFieldCreateRequestDTO;
@@ -60,6 +61,10 @@ public class ChoiceFieldResource {
         this.choiceFieldService = choiceFieldService;
     }
 
+    @EndpointDescription(
+        en = "Create a choice field",
+        nl = "Keuzeveld aanmaken"
+    )
     @PostMapping("/v1/choice-fields")
     public ResponseEntity<ChoiceField> createChoiceField(
         @Valid @RequestBody ChoiceFieldCreateRequestDTO choiceFieldCreateRequestDTO
@@ -71,6 +76,10 @@ public class ChoiceFieldResource {
             .body(result);
     }
 
+    @EndpointDescription(
+        en = "Update a choice field",
+        nl = "Keuzeveld bijwerken"
+    )
     @PutMapping("/v1/choice-fields")
     public ResponseEntity<ChoiceField> updateChoiceField(@Valid @RequestBody ChoiceFieldUpdateRequestDTO choiceFieldUpdateRequestDTO) {
         logger.debug("REST request to update ChoiceField : {}", choiceFieldUpdateRequestDTO);
@@ -85,6 +94,10 @@ public class ChoiceFieldResource {
      *
      * @deprecated since 12.0.0, use v2 instead
      */
+    @EndpointDescription(
+        en = "List all choice fields",
+        nl = "Alle keuzevelden ophalen"
+    )
     @GetMapping("/v1/choice-fields")
     @Deprecated(since = "12.0.0", forRemoval = true)
     public ResponseEntity<List<ChoiceField>> getAllChoiceFields(Pageable pageable) {
@@ -94,6 +107,10 @@ public class ChoiceFieldResource {
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
+    @EndpointDescription(
+        en = "List all choice fields paged",
+        nl = "Alle keuzevelden gepagineerd ophalen"
+    )
     @GetMapping("/v2/choice-fields")
     public ResponseEntity<Page<ChoiceField>> getAllChoiceFieldsPaged(Pageable pageable) {
         logger.debug("REST request to get a page of ChoiceFields");
@@ -101,6 +118,10 @@ public class ChoiceFieldResource {
         return ResponseEntity.ok(page);
     }
 
+    @EndpointDescription(
+        en = "Get a choice field by id",
+        nl = "Keuzeveld op id ophalen"
+    )
     @GetMapping("/v1/choice-fields/{id}")
     public ResponseEntity<ChoiceField> getChoiceField(@PathVariable Long id) {
         logger.debug("REST request to get ChoiceField : {}", id);
@@ -110,6 +131,10 @@ public class ChoiceFieldResource {
             .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @EndpointDescription(
+        en = "Get a choice field by name",
+        nl = "Keuzeveld op naam ophalen"
+    )
     @GetMapping("/v1/choice-fields/name/{name}")
     public ResponseEntity<ChoiceFieldDTO> getChoiceFieldByName(@PathVariable String name) {
         logger.debug("REST request to get ChoiceField : {}", name);
@@ -119,6 +144,10 @@ public class ChoiceFieldResource {
             .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @EndpointDescription(
+        en = "Delete a choice field",
+        nl = "Keuzeveld verwijderen"
+    )
     @DeleteMapping("/v1/choice-fields/{id}")
     public ResponseEntity<Void> deleteChoiceField(@PathVariable Long id) {
         logger.debug("REST request to delete ChoiceField : {}", id);

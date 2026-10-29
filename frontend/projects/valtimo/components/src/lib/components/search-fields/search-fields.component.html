@@ -20,6 +20,7 @@
 <ng-container *ngIf="!loading">
   <cds-accordion>
     <cds-accordion-item
+      [attr.data-test-id]="testIds.accordionItem"
       [title]="'searchFields.searchButtonText' | translate"
       (selected)="toggleExpanded()"
       [expanded]="expanded$ | async"
@@ -226,6 +227,7 @@
   <v-input
     *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
     [dataTestId]="'search-field-' + searchField.key"
+    [attr.data-test-id]="searchFieldTestIdPrefix + searchField.key"
     [name]="searchField.key"
     [title]="title"
     [fullWidth]="true"
@@ -609,6 +611,7 @@
         *ngIf="obs.expanded"
         cdsButton="tertiary"
         data-testid="search-fields-clear-button"
+        [attr.data-test-id]="testIds.clearButton"
         (click)="clear()"
         [disabled]="loading || noSearchFields || inputDisabled"
         type="button"
@@ -623,6 +626,7 @@
         *ngIf="obs.expanded && canSaveSearch"
         cdsButton="secondary"
         data-testid="search-fields-save-button"
+        [attr.data-test-id]="testIds.saveButton"
         [disabled]="disableSaveSearch && obs.isSearchEmpty"
         (click)="saveSearch()"
         type="button"
@@ -637,6 +641,7 @@
         *ngIf="obs.expanded"
         cdsButton="primary"
         data-testid="search-fields-search-button"
+        [attr.data-test-id]="testIds.searchButton"
         (click)="search()"
         [disabled]="
           loading || noSearchFields || (hasValidValues$ | async) === false || inputDisabled
@@ -654,7 +659,7 @@
 
 <ng-template #noSearchFieldsTemplate let-noSearchFields="noSearchFields">
   <div class="no-search-fields-message" *ngIf="noSearchFields">
-    <v-paragraph dataTestId="search-fields-no-fields" [fullWidth]="true" [center]="true">{{
+    <v-paragraph dataTestId="search-fields-no-fields" [attr.data-test-id]="testIds.noFieldsMessage" [fullWidth]="true" [center]="true">{{
       'searchFields.noneConfigured' | translate
     }}</v-paragraph>
   </div>

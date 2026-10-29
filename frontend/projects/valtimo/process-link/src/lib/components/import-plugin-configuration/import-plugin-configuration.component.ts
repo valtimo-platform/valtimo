@@ -18,7 +18,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, Validators} from '@angular/forms';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, Subject} from 'rxjs';
 import {CompatiblePluginProcessLinks, ProcessLink} from '../../models';
-import {ProcessLinkService} from '../../services';
+import {ProcessLinkService, ProcessLinkStateService} from '../../services';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
 import {CdsThemeService} from '@valtimo/components';
@@ -41,6 +41,7 @@ export class ImportPluginConfigurationComponent {
 
   public readonly open$ = new Subject<boolean>();
   public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
+  public readonly readOnly$ = this.stateService.readOnly$;
 
   private readonly _compatiblePluginProcessLinksSubject$ = new BehaviorSubject<
     CompatiblePluginProcessLinks[]
@@ -121,7 +122,8 @@ export class ImportPluginConfigurationComponent {
     private readonly cdsThemeService: CdsThemeService,
     private readonly formBuilder: FormBuilder,
     private readonly processLinkService: ProcessLinkService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly stateService: ProcessLinkStateService
   ) {
     this.iconService.register(Upload16);
   }

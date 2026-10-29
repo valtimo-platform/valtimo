@@ -15,7 +15,7 @@
   -->
 
 <valtimo-widget-management
-  [availableWidgetTypes]="AVAILABLE_WIDGET_TYPES"
+  [availableWidgetTypes]="availableWidgetTypes$ | async"
   [params]="params$ | async"
 ></valtimo-widget-management>
 

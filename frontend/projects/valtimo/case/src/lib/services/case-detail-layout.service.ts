@@ -14,20 +14,39 @@
  * limitations under the License.
  */
 
-import {Injectable, TemplateRef} from '@angular/core';
+import {Injectable, OnDestroy, TemplateRef} from '@angular/core';
 import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
-import {BehaviorSubject, combineLatest, filter, map, Observable, startWith} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  concatMap,
+  distinctUntilChanged,
+  EMPTY,
+  filter,
+  map,
+  merge,
+  Observable,
+  startWith,
+  Subject,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {
   CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
   CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
   CASE_DETAIL_GUTTER_SIZE,
   CASE_DETAIL_LEFT_PANEL_MIN_WIDTH,
   CASE_DETAIL_RIGHT_PANEL_MIN_WIDTHS,
+  CASE_DETAIL_TASK_LIST_MIN_WIDTH,
   CASE_DETAIL_TASK_LIST_WIDTH,
 } from '../constants';
 import {CaseDetailLayout} from '../models';
 import {CaseTabService} from './case-tab.service';
 import {PageHeaderService} from '@valtimo/components';
+import {UserSettingsService} from '@valtimo/shared';
 
 export interface StartFormPanel {
   template: TemplateRef<any>;
@@ -35,8 +54,18 @@ export interface StartFormPanel {
 }
 
 @Injectable()
-export class CaseDetailLayoutService {
+export class CaseDetailLayoutService implements OnDestroy {
   private readonly _tabContentContainerWidth$ = new BehaviorSubject<number | null>(null);
+  private readonly _tabContentContainerWidthSource$ = new BehaviorSubject<Observable<number>>(
+    EMPTY
+  );
+  private readonly _taskPanelWidth$ = new BehaviorSubject<number | null>(null);
+  private readonly _taskPanelWidthToSave$ = new Subject<number>();
+  private readonly _saveTaskPanelWidthSubscription: Subscription;
+  /** The width the backend last confirmed, so a failed save can be retried for the same width. */
+  private _persistedTaskPanelWidth: number | null = null;
+  /** Once the user has dragged, a settings response that was already in flight is stale. */
+  private _taskPanelWidthEditedLocally = false;
   private readonly _showTaskList$ = this.caseTabService.showTaskList$;
   private readonly _taskAndProcessLinkOpenedInPanel$ =
     new BehaviorSubject<TaskWithProcessLink | null>(null);
@@ -50,13 +79,55 @@ export class CaseDetailLayoutService {
   private readonly _refreshTasks$ = new BehaviorSubject<null>(null);
   private readonly _mainContentHeaderHeight$ = new BehaviorSubject<number>(0);
   private readonly _hasCaseTags$ = new BehaviorSubject<boolean>(false);
+  private readonly _tabContentContainerTop$ = new BehaviorSubject<number | null>(null);
+  private _startFormPendingChanges = false;
+  private _taskFormPendingChanges = false;
+  private readonly _startFormPanelCloseRequested$ = new Subject<void>();
+  private readonly _taskCloseRequested$ = new Subject<void>();
+  private readonly _taskFormSubmitted$ = new Subject<void>();
+  private readonly _taskSelected$ = new Subject<TaskWithProcessLink>();
 
   public get refreshTasks$(): Observable<null> {
     return this._refreshTasks$.asObservable();
   }
 
+  /** Whether a task or start form has user edits that leaving the case would discard. */
+  public get hasPendingFormChanges(): boolean {
+    return this._startFormPendingChanges || this._taskFormPendingChanges;
+  }
+
+  /** The task panel width the user saved, or null when none is saved yet. */
+  public get taskPanelWidth$(): Observable<number | null> {
+    return this._taskPanelWidth$.asObservable();
+  }
+
+  // The task panel renders in the app-wide side panel, outside the case detail view, so actions
+  // taken in it are reported here for the case detail to handle.
+
+  public get startFormPanelCloseRequested$(): Observable<void> {
+    return this._startFormPanelCloseRequested$.asObservable();
+  }
+
+  public get taskCloseRequested$(): Observable<void> {
+    return this._taskCloseRequested$.asObservable();
+  }
+
+  public get taskFormSubmitted$(): Observable<void> {
+    return this._taskFormSubmitted$.asObservable();
+  }
+
+  public get taskSelected$(): Observable<TaskWithProcessLink> {
+    return this._taskSelected$.asObservable();
+  }
+
   public get tabContentContainerWidth$(): Observable<number | null> {
-    return this._tabContentContainerWidth$.pipe(filter(width => typeof width === 'number'));
+    return merge(
+      this._tabContentContainerWidth$,
+      this._tabContentContainerWidthSource$.pipe(switchMap(source => source))
+    ).pipe(
+      filter(width => typeof width === 'number'),
+      distinctUntilChanged()
+    );
   }
 
   public get taskAndProcessLinkOpenedInPanel$(): Observable<TaskWithProcessLink | null> {
@@ -76,20 +147,38 @@ export class CaseDetailLayoutService {
       this.pageHeaderService.compactMode$,
       this._mainContentHeaderHeight$,
       this._hasCaseTags$,
+      this._tabContentContainerTop$,
     ]).pipe(
-      map(([compactMode, mainContentHeaderHeight, hasCaseTags]) =>
-        !compactMode && !hasCaseTags
+      map(([compactMode, mainContentHeaderHeight, hasCaseTags, top]) => {
+        // Measured, so it follows a page header that wraps onto more rows.
+        if (top !== null) return `calc(100vh - ${top}px)`;
+
+        return !compactMode && !hasCaseTags
           ? `calc(100vh - ${202 + mainContentHeaderHeight}px)`
-          : `calc(100vh - ${160 + mainContentHeaderHeight}px)`
-      )
+          : `calc(100vh - ${160 + mainContentHeaderHeight}px)`;
+      }),
+      distinctUntilChanged()
     );
   }
 
   constructor(
     private readonly caseTabService: CaseTabService,
-    private readonly pageHeaderService: PageHeaderService
-  ) {}
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly userSettingsService: UserSettingsService
+  ) {
+    this._saveTaskPanelWidthSubscription = this.openTaskPanelWidthSaveQueue();
+    this.loadTaskPanelWidth();
+  }
 
+  public ngOnDestroy(): void {
+    this._taskPanelWidthToSave$.complete();
+    this._saveTaskPanelWidthSubscription.unsubscribe();
+  }
+
+  /**
+   * @deprecated No longer drives the case detail: the task panel renders in the app-wide side
+   * panel. Kept for backwards compatibility.
+   */
   public readonly caseDetailLayout$: Observable<CaseDetailLayout | any> = combineLatest([
     this.tabContentContainerWidth$,
     this._showTaskList$,
@@ -97,6 +186,7 @@ export class CaseDetailLayoutService {
     this._startFormPanel$,
     this._formDisplayType$,
     this._formDisplaySize$,
+    this._taskPanelWidth$,
   ]).pipe(
     map(
       ([
@@ -106,21 +196,34 @@ export class CaseDetailLayoutService {
         startFormPanel,
         formDisplayType,
         formDisplaySize,
+        taskPanelWidth,
       ]) => {
-        if (!showTaskList) {
+        const panelFormOpen =
+          !!startFormPanel ||
+          (!!taskAndProcessLinkOpenedInPanel && formDisplayType === 'panel');
+
+        if (!showTaskList && !panelFormOpen) {
           return this.getInitialLayout();
         }
 
         if (startFormPanel) {
-          return this.getPanelLayout(tabContentContainerWidth ?? 0, formDisplaySize);
+          return this.getPanelLayout(
+            tabContentContainerWidth ?? 0,
+            formDisplaySize,
+            taskPanelWidth
+          );
         }
 
         if (!taskAndProcessLinkOpenedInPanel) {
-          return this.getTaskListLayout();
+          return this.getTaskListLayout(tabContentContainerWidth ?? 0, taskPanelWidth);
         }
 
         if (taskAndProcessLinkOpenedInPanel && formDisplayType === 'panel') {
-          return this.getPanelLayout(tabContentContainerWidth ?? 0, formDisplaySize);
+          return this.getPanelLayout(
+            tabContentContainerWidth ?? 0,
+            formDisplaySize,
+            taskPanelWidth
+          );
         }
 
         return {} as CaseDetailLayout;
@@ -131,6 +234,11 @@ export class CaseDetailLayoutService {
 
   public setTabContentContainerWidth(width: number): void {
     this._tabContentContainerWidth$.next(width);
+  }
+
+  /** A source of container widths, subscribed to only while the width is listened to. */
+  public observeTabContentContainerWidth(source: Observable<number>): void {
+    this._tabContentContainerWidthSource$.next(source);
   }
 
   public setTaskAndProcessLinkOpenedInPanel(value: TaskWithProcessLink | null): void {
@@ -147,6 +255,35 @@ export class CaseDetailLayoutService {
     this._startFormPanel$.next(null);
   }
 
+  public clearPendingFormChanges(): void {
+    this._startFormPendingChanges = false;
+    this._taskFormPendingChanges = false;
+  }
+
+  public setStartFormPendingChanges(pending: boolean): void {
+    this._startFormPendingChanges = pending;
+  }
+
+  public setTaskFormPendingChanges(pending: boolean): void {
+    this._taskFormPendingChanges = pending;
+  }
+
+  public requestStartFormPanelClose(): void {
+    this._startFormPanelCloseRequested$.next();
+  }
+
+  public requestTaskClose(): void {
+    this._taskCloseRequested$.next();
+  }
+
+  public notifyTaskFormSubmitted(): void {
+    this._taskFormSubmitted$.next();
+  }
+
+  public selectTask(taskWithProcessLink: TaskWithProcessLink): void {
+    this._taskSelected$.next(taskWithProcessLink);
+  }
+
   public setFormDisplayType(type: FormDisplayType): void {
     this._formDisplayType$.next(type);
   }
@@ -159,12 +296,28 @@ export class CaseDetailLayoutService {
     this._refreshTasks$.next(null);
   }
 
+  public saveTaskPanelWidth(width: number): void {
+    const widthToSave = Math.round(width);
+
+    this._taskPanelWidthEditedLocally = true;
+
+    if (widthToSave === this._persistedTaskPanelWidth) return;
+
+    this._taskPanelWidth$.next(widthToSave);
+    this._taskPanelWidthToSave$.next(widthToSave);
+  }
+
   public setMainContentHeaderHeight(height: number): void {
     this._mainContentHeaderHeight$.next(height);
   }
 
   public setHasCaseTags(hasCaseTags: boolean): void {
     this._hasCaseTags$.next(hasCaseTags);
+  }
+
+  /** The tab content container's distance from the top of the viewport. */
+  public setTabContentContainerTop(top: number): void {
+    this._tabContentContainerTop$.next(top);
   }
 
   private getInitialLayout(): CaseDetailLayout {
@@ -176,36 +329,96 @@ export class CaseDetailLayoutService {
     };
   }
 
-  private getTaskListLayout(): CaseDetailLayout {
+  private getTaskListLayout(
+    tabContentContainerWidth: number,
+    taskPanelWidth: number | null
+  ): CaseDetailLayout {
+    const rightPanelMaxWidth = this.getRightPanelMaxWidth(tabContentContainerWidth);
+    const rightPanelMinWidth = Math.min(CASE_DETAIL_TASK_LIST_MIN_WIDTH, rightPanelMaxWidth);
+
     return {
       unit: 'pixel',
       showRightPanel: true,
-      widthAdjustable: false,
-      rightPanelMaxWidth: CASE_DETAIL_TASK_LIST_WIDTH,
-      rightPanelMinWidth: CASE_DETAIL_TASK_LIST_WIDTH,
-      rightPanelWidth: CASE_DETAIL_TASK_LIST_WIDTH,
+      widthAdjustable: true,
+      rightPanelMinWidth,
+      rightPanelWidth: this.clampPanelWidth(
+        taskPanelWidth ?? CASE_DETAIL_TASK_LIST_WIDTH,
+        rightPanelMinWidth,
+        rightPanelMaxWidth
+      ),
+      rightPanelMaxWidth,
       leftPanelWidth: '*',
     };
   }
 
   private getPanelLayout(
     tabContentContainerWidth: number,
-    formDisplaySize: FormSize
+    formDisplaySize: FormSize,
+    taskPanelWidth: number | null
   ): CaseDetailLayout {
-    const rightPanelMaxWidth =
-      tabContentContainerWidth - CASE_DETAIL_GUTTER_SIZE - CASE_DETAIL_LEFT_PANEL_MIN_WIDTH;
-    const rightPanelMinWidth = CASE_DETAIL_RIGHT_PANEL_MIN_WIDTHS[formDisplaySize];
-    const rightPanelMinWidthToUse =
-      rightPanelMinWidth < rightPanelMaxWidth ? rightPanelMinWidth : rightPanelMaxWidth;
+    const rightPanelMaxWidth = this.getRightPanelMaxWidth(tabContentContainerWidth);
+    const rightPanelMinWidth = Math.min(
+      CASE_DETAIL_RIGHT_PANEL_MIN_WIDTHS[formDisplaySize],
+      rightPanelMaxWidth
+    );
 
     return {
       unit: 'pixel',
       showRightPanel: true,
       widthAdjustable: true,
-      rightPanelMinWidth: rightPanelMinWidthToUse,
-      rightPanelWidth: rightPanelMinWidthToUse,
+      rightPanelMinWidth,
+      rightPanelWidth: this.clampPanelWidth(
+        taskPanelWidth ?? rightPanelMinWidth,
+        rightPanelMinWidth,
+        rightPanelMaxWidth
+      ),
       rightPanelMaxWidth,
       leftPanelWidth: '*',
     };
+  }
+
+  private getRightPanelMaxWidth(tabContentContainerWidth: number): number {
+    return Math.max(
+      0,
+      tabContentContainerWidth - CASE_DETAIL_GUTTER_SIZE - CASE_DETAIL_LEFT_PANEL_MIN_WIDTH
+    );
+  }
+
+  private clampPanelWidth(width: number, minWidth: number, maxWidth: number): number {
+    return Math.min(Math.max(width, minWidth), maxWidth);
+  }
+
+  /**
+   * Saves run one at a time, each waiting for the one before it to finish. Cancelling a request
+   * instead would not be enough: the server may already have received it, and as it reads and
+   * rewrites the whole settings record it could still store an earlier width after a newer one.
+   */
+  private openTaskPanelWidthSaveQueue(): Subscription {
+    return this._taskPanelWidthToSave$
+      .pipe(
+        concatMap(widthToSave =>
+          this.userSettingsService.getUserSettings().pipe(
+            take(1),
+            switchMap(settings =>
+              this.userSettingsService.saveUserSettings({...settings, taskPanelWidth: widthToSave})
+            ),
+            tap(() => (this._persistedTaskPanelWidth = widthToSave)),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+      .subscribe();
+  }
+
+  private loadTaskPanelWidth(): void {
+    this.userSettingsService
+      .getUserSettings()
+      .pipe(take(1))
+      .subscribe(settings => {
+        if (this._taskPanelWidthEditedLocally || !settings?.taskPanelWidth) return;
+
+        this._persistedTaskPanelWidth = settings.taskPanelWidth;
+        this._taskPanelWidth$.next(settings.taskPanelWidth);
+      });
   }
 }

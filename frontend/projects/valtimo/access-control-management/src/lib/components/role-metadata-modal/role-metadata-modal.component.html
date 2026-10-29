@@ -45,6 +45,7 @@
           <input
             formControlName="key"
             cdsText
+            [attr.data-test-id]="testIds.metadataKeyInput"
             placeholder="{{ 'accessControl.roles.name' | translate }}"
             [attr.modal-primary-focus]="true"
             [invalid]="key.dirty && key.invalid"
@@ -66,6 +67,7 @@
         <button
           class="role-metadata-modal__mode-switch"
           cdsButton="ghost"
+          [attr.data-test-id]="testIds.metadataKeyModeSwitch"
           size="sm"
           type="button"
           (click)="onKeyManualToggle(!$keyManual())"
@@ -82,11 +84,20 @@
   </section>
 
   <cds-modal-footer [cdsLayer]="1">
-    <button cdsButton="secondary" (click)="onCancel()">
+    <button
+      cdsButton="secondary"
+      [attr.data-test-id]="testIds.metadataCancelButton"
+      (click)="onCancel()"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" (click)="onConfirm()" cdsButton="primary">
+    <button
+      [disabled]="this.form.invalid"
+      [attr.data-test-id]="testIds.metadataConfirmButton"
+      (click)="onConfirm()"
+      cdsButton="primary"
+    >
       {{ vars.isAdd ? ('interface.create' | translate) : ('interface.save' | translate) }}
     </button>
   </cds-modal-footer>
