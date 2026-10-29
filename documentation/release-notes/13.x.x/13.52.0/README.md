@@ -41,7 +41,6 @@ Lists and maps that a script fills with its own objects now also stay readable a
 | Dashboard | Gauge widgets now show the exact count instead of a decimal number for some value and total combinations (for example 46 instead of 45.99). |
 | Tasks | Saving a task's progress a second time, or after reopening the task, now stores the latest changes instead of the previously saved values. |
 | Case detail | A completed task no longer stays visible in the task list of a case for a few seconds after completing it. |
-| Widgets | A widget display condition with a number value, such as `0`, now compares numerically against a number field. The `${0}` workaround is no longer needed. |
 
 ---
 
