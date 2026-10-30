@@ -16,7 +16,7 @@
 
 import flatpickr from 'flatpickr';
 import {Dutch} from 'flatpickr/dist/l10n/nl';
-import {Formio} from 'formiojs';
+import {Formio} from '@formio/js';
 
 /**
  * Formio only set the language on the first load.
