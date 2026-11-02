@@ -228,13 +228,11 @@ class NotificatiesApiAutoConfiguration {
     @ConditionalOnMissingBean(NotificatiesApiManagementResource::class)
     fun notificatiesApiManagementResource(
         inboundEventQueryService: NotificatiesApiInboundEventQueryService,
-        inboundEventAdminService: NotificatiesApiInboundEventAdminService,
-        notificatiesApiService: NotificatiesApiService
+        inboundEventAdminService: NotificatiesApiInboundEventAdminService
     ): NotificatiesApiManagementResource {
         return NotificatiesApiManagementResource(
             inboundEventQueryService,
-            inboundEventAdminService,
-            notificatiesApiService
+            inboundEventAdminService
         )
     }
 

@@ -26,7 +26,6 @@ import {
   InputModule,
   ParagraphModule,
   SelectModule,
-  TooltipIconModule,
 } from '@valtimo/components';
 import {NotificationModule} from 'carbon-components-angular';
 
@@ -41,7 +40,6 @@ import {NotificationModule} from 'carbon-components-angular';
     ParagraphModule,
     CarbonMultiInputModule,
     NotificationModule,
-    TooltipIconModule,
   ],
   exports: [NotificatiesApiConfigurationComponent, PublishNotificatieConfigurationComponent, ReceiveNotificatieConfigurationComponent],
 })

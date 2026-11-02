@@ -76,7 +76,7 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'callbackUrlTooltip' | pluginTranslate: pluginId | async"
-    placeholder="https://{gzac-back-end-url}/api/v1/notificatiesapi/callback"
+    [placeholder]="callbackUrlPlaceholder"
   >
   </v-input>
 
@@ -117,53 +117,17 @@
   [attr.data-test-id]="testIds.manualAbonnement"
   class="manual-abonnement"
 >
-  <ng-container *ngIf="manualAbonnement$ | async as manualAbonnement; else saveFirst">
-    <v-paragraph [margin]="true">
-      {{ 'manualAbonnementDescription' | pluginTranslate: pluginId | async }}
-    </v-paragraph>
+  <v-paragraph [margin]="true">
+    {{ 'manualAbonnementDescription' | pluginTranslate: pluginId | async }}
+  </v-paragraph>
 
-    <dl class="manual-abonnement__list">
-      <dt class="cds--type-heading-compact-01">
-        {{ 'callbackUrl' | pluginTranslate: pluginId | async }}
+  <code
+    [attr.data-test-id]="testIds.manualAbonnementCallbackUrl"
+    class="manual-abonnement__callback-url"
+    >{{ callbackUrlPlaceholder }}</code
+  >
 
-        <v-tooltip-icon
-          *ngIf="!manualAbonnement.callbackUrl"
-          [attr.data-test-id]="testIds.manualAbonnementDefaultCallbackUrlTooltip"
-          [tooltip]="
-            'manualAbonnementDefaultCallbackUrlTooltip' | pluginTranslate: pluginId | async
-          "
-        ></v-tooltip-icon>
-      </dt>
-
-      <dd [attr.data-test-id]="testIds.manualAbonnementCallbackUrl">
-        {{ manualAbonnement.callbackUrl || defaultCallbackUrl }}
-      </dd>
-
-      <ng-container *ngFor="let kanaal of manualAbonnement.kanalen">
-        <dt class="cds--type-heading-compact-01">
-          {{ 'manualAbonnementKanaal' | pluginTranslate: pluginId | async }}
-        </dt>
-
-        <dd [attr.data-test-id]="testIds.manualAbonnementKanaal">
-          <strong>{{ kanaal.naam }}</strong>
-
-          <ul>
-            <li *ngFor="let filter of kanaal.filters | keyvalue">
-              {{ filter.key }} = {{ filter.value }}
-            </li>
-          </ul>
-        </dd>
-      </ng-container>
-    </dl>
-
-    <v-paragraph *ngIf="manualAbonnement.kanalen.length === 0" [italic]="true">
-      {{ 'manualAbonnementNoKanalen' | pluginTranslate: pluginId | async }}
-    </v-paragraph>
-  </ng-container>
-
-  <ng-template #saveFirst>
-    <v-paragraph [italic]="true">
-      {{ 'manualAbonnementSaveFirst' | pluginTranslate: pluginId | async }}
-    </v-paragraph>
-  </ng-template>
+  <v-paragraph>
+    {{ 'manualAbonnementKanalen' | pluginTranslate: pluginId | async }}
+  </v-paragraph>
 </div>

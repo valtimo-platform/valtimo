@@ -137,7 +137,7 @@ class NotificatiesApiServiceTest {
     fun `isAuthorizedCallback accepts the shared secret of a manual configuration`() {
         stubNotificatiesApiConfigurations(configuration(UUID.randomUUID(), "manual", "shared-secret"))
 
-        assertTrue(createServiceWithPlugins().isAuthorizedCallback("shared-secret"))
+        assertTrue(createService().isAuthorizedCallback("shared-secret"))
     }
 
     @Test
@@ -145,7 +145,7 @@ class NotificatiesApiServiceTest {
         stubNotificatiesApiConfigurations(configuration(UUID.randomUUID(), "manual", "shared-secret"))
         whenever(abonnementLinkRepository.findByAuth(any())) doReturn null
 
-        val service = createServiceWithPlugins()
+        val service = createService()
 
         assertFalse(service.isAuthorizedCallback("shared-secret-2"))
         assertFalse(service.isAuthorizedCallback("Shared-secret"))
@@ -156,7 +156,7 @@ class NotificatiesApiServiceTest {
         stubNotificatiesApiConfigurations(configuration(UUID.randomUUID(), "automatic", "configured-secret"))
         whenever(abonnementLinkRepository.findByAuth("configured-secret")) doReturn null
 
-        assertFalse(createServiceWithPlugins().isAuthorizedCallback("configured-secret"))
+        assertFalse(createService().isAuthorizedCallback("configured-secret"))
     }
 
     @Test
@@ -164,7 +164,7 @@ class NotificatiesApiServiceTest {
         stubNotificatiesApiConfigurations(configuration(UUID.randomUUID(), "manual", ""))
         whenever(abonnementLinkRepository.findByAuth(any())) doReturn null
 
-        val service = createServiceWithPlugins()
+        val service = createService()
 
         assertFalse(service.isAuthorizedCallback(""))
         assertFalse(service.isAuthorizedCallback("  "))
@@ -177,7 +177,7 @@ class NotificatiesApiServiceTest {
         whenever(abonnementLinkRepository.findByAuth("generated-key")) doReturn
             NotificatiesApiAbonnementLink(NotificatiesApiConfigurationId(automaticId), "url", "generated-key")
 
-        assertTrue(createServiceWithPlugins().isAuthorizedCallback("generated-key"))
+        assertTrue(createService().isAuthorizedCallback("generated-key"))
     }
 
     @Test
@@ -187,15 +187,7 @@ class NotificatiesApiServiceTest {
         whenever(abonnementLinkRepository.findByAuth("old-generated-key")) doReturn
             NotificatiesApiAbonnementLink(NotificatiesApiConfigurationId(manualId), "url", "old-generated-key")
 
-        assertFalse(createServiceWithPlugins().isAuthorizedCallback("old-generated-key"))
-    }
-
-    @Test
-    fun `isAuthorizedCallback falls back to abonnement links without a plugin service`() {
-        whenever(abonnementLinkRepository.findByAuth("generated-key")) doReturn
-            NotificatiesApiAbonnementLink(NotificatiesApiConfigurationId(UUID.randomUUID()), "url", "generated-key")
-
-        assertTrue(createService().isAuthorizedCallback("generated-key"))
+        assertFalse(createService().isAuthorizedCallback("old-generated-key"))
     }
 
     private fun stubNotificatiesApiConfigurations(vararg configurations: PluginConfiguration) {
@@ -215,22 +207,13 @@ class NotificatiesApiServiceTest {
         return configuration
     }
 
-    private fun createServiceWithPlugins(): NotificatiesApiService {
-        return NotificatiesApiService(
-            abonnementLinkRepository,
-            intakeService,
-            processingService,
-            TaskExecutor { it.run() },
-            pluginService
-        )
-    }
-
     private fun createService(taskExecutor: TaskExecutor = TaskExecutor { it.run() }): NotificatiesApiService {
         return NotificatiesApiService(
             abonnementLinkRepository,
             intakeService,
             processingService,
-            taskExecutor
+            taskExecutor,
+            pluginService
         )
     }
 

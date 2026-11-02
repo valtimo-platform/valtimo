@@ -20,23 +20,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {Observable, of, Subject} from 'rxjs';
 import {NOTIFICATIES_API_CONFIGURATION_TEST_IDS} from '../../../../constants';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
-import {
-  NotificatiesApiAbonnementRegistration,
-  NotificatiesApiConfig,
-  NotificatiesApiManualAbonnement,
-} from '../../models';
-import {NotificatiesApiPluginService} from '../../services';
+import {NotificatiesApiAbonnementRegistration, NotificatiesApiConfig} from '../../models';
 import {NotificatiesApiConfigurationComponent} from './notificaties-api-configuration.component';
 
 describe('NotificatiesApiConfigurationComponent', () => {
   let component: NotificatiesApiConfigurationComponent;
   let save$: Subject<void>;
-  let notificatiesApiPluginService: jasmine.SpyObj<NotificatiesApiPluginService>;
-
-  const MANUAL_ABONNEMENT: NotificatiesApiManualAbonnement = {
-    callbackUrl: 'https://gateway.example.com/api/v1/notificatiesapi/callback',
-    kanalen: [{naam: 'zaken', filters: {actie: 'create'}}],
-  };
 
   const CONFIGURATION_WITHOUT_AUTHENTICATION = {
     configurationTitle: 'Notificaties API Plugin',
@@ -46,21 +35,12 @@ describe('NotificatiesApiConfigurationComponent', () => {
 
   beforeEach(() => {
     save$ = new Subject<void>();
-    notificatiesApiPluginService = jasmine.createSpyObj<NotificatiesApiPluginService>(
-      'NotificatiesApiPluginService',
-      {
-        getDefaultCallbackUrl: 'http://localhost:8080/api/v1/notificatiesapi/callback',
-        getManualAbonnement: of(MANUAL_ABONNEMENT),
-      }
-    );
-
     component = new NotificatiesApiConfigurationComponent(
       jasmine.createSpyObj('PluginManagementService', {
         getPluginConfigurationsByCategory: of([]),
       }),
       jasmine.createSpyObj('TranslateService', {stream: of('key')}),
-      jasmine.createSpyObj('PluginTranslationService', {instant: 'title'}),
-      notificatiesApiPluginService
+      jasmine.createSpyObj('PluginTranslationService', {instant: 'title'})
     );
     component.save$ = save$;
     component.ngOnInit();
@@ -180,61 +160,6 @@ describe('NotificatiesApiConfigurationComponent', () => {
 
     expect(emittedConfigurations).toEqual([automaticConfiguration]);
   });
-
-  it('should load the kanalen and filters of a saved manual configuration', () => {
-    component.prefillConfiguration$ = of({
-      ...CONFIGURATION_WITH_AUTHENTICATION,
-      configurationId: 'b2f4c1d0-0000-4000-8000-000000000001',
-      abonnementRegistration: 'manual',
-    });
-    const manualAbonnementEmissions: Array<NotificatiesApiManualAbonnement | null> = [];
-    component.manualAbonnement$.subscribe(abonnement => manualAbonnementEmissions.push(abonnement));
-
-    component.formValueChange({
-      ...CONFIGURATION_WITH_AUTHENTICATION,
-      abonnementRegistration: 'manual',
-    });
-
-    expect(notificatiesApiPluginService.getManualAbonnement).toHaveBeenCalledOnceWith(
-      'b2f4c1d0-0000-4000-8000-000000000001'
-    );
-    expect(manualAbonnementEmissions).toEqual([null, MANUAL_ABONNEMENT]);
-  });
-
-  it('should not load kanalen and filters before an automatic configuration is saved as manual', () => {
-    component.prefillConfiguration$ = of({
-      ...CONFIGURATION_WITH_AUTHENTICATION,
-      configurationId: 'b2f4c1d0-0000-4000-8000-000000000001',
-      abonnementRegistration: 'automatic',
-    });
-    const manualAbonnementEmissions: Array<NotificatiesApiManualAbonnement | null> = [];
-    component.manualAbonnement$.subscribe(abonnement => manualAbonnementEmissions.push(abonnement));
-
-    component.formValueChange({
-      ...CONFIGURATION_WITH_AUTHENTICATION,
-      abonnementRegistration: 'manual',
-    });
-
-    expect(notificatiesApiPluginService.getManualAbonnement).not.toHaveBeenCalled();
-    expect(manualAbonnementEmissions.every(abonnement => abonnement === null)).toBeTrue();
-  });
-
-  it('should not load kanalen and filters for an automatic configuration', () => {
-    component.prefillConfiguration$ = of({
-      ...CONFIGURATION_WITH_AUTHENTICATION,
-      configurationId: 'b2f4c1d0-0000-4000-8000-000000000001',
-    });
-    const manualAbonnementEmissions: Array<NotificatiesApiManualAbonnement | null> = [];
-    component.manualAbonnement$.subscribe(abonnement => manualAbonnementEmissions.push(abonnement));
-
-    component.formValueChange({
-      ...CONFIGURATION_WITH_AUTHENTICATION,
-      abonnementRegistration: 'automatic',
-    });
-
-    expect(notificatiesApiPluginService.getManualAbonnement).not.toHaveBeenCalled();
-    expect(manualAbonnementEmissions).toEqual([null]);
-  });
 });
 
 @Pipe({name: 'pluginTranslate', standalone: false})
@@ -252,10 +177,7 @@ describe('NotificatiesApiConfigurationComponent template', () => {
   const byTestId = (testId: string): HTMLElement[] =>
     Array.from(fixture.nativeElement.querySelectorAll(`[data-test-id="${testId}"]`));
 
-  let manualAbonnementCallbackUrl: string | null;
-
   beforeEach(async () => {
-    manualAbonnementCallbackUrl = 'https://gateway.example.com/api/v1/notificatiesapi/callback';
     await TestBed.configureTestingModule({
       declarations: [NotificatiesApiConfigurationComponent, PluginTranslateStubPipe],
       providers: [
@@ -265,23 +187,6 @@ describe('NotificatiesApiConfigurationComponent template', () => {
         },
         {provide: TranslateService, useValue: {stream: () => of('key')}},
         {provide: PluginTranslationService, useValue: {instant: (key: string) => key}},
-        {
-          provide: NotificatiesApiPluginService,
-          useValue: {
-            getDefaultCallbackUrl: () => 'http://localhost:8080/api/v1/notificatiesapi/callback',
-            getManualAbonnement: () =>
-              of({
-                callbackUrl: manualAbonnementCallbackUrl,
-                kanalen: [
-                  {naam: 'zaken', filters: {actie: 'create'}},
-                  {
-                    naam: 'objecten',
-                    filters: {objectType: 'https://objecttypen.example.com/1', actie: 'update'},
-                  },
-                ],
-              }),
-          },
-        },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -347,44 +252,14 @@ describe('NotificatiesApiConfigurationComponent template', () => {
     expect(byTestId(testIds.manualAbonnement).length).toBe(1);
   });
 
-  it('should show the default Valtimo callback URL when the manual configuration has none', () => {
-    manualAbonnementCallbackUrl = null;
-    render('manual');
-    switchToManual();
-
-    expect(byTestId(testIds.manualAbonnementCallbackUrl)[0].textContent.trim()).toBe(
-      'http://localhost:8080/api/v1/notificatiesapi/callback'
-    );
-    expect((byTestId(testIds.manualAbonnementDefaultCallbackUrlTooltip)[0] as any).tooltip).toBe(
-      'manualAbonnementDefaultCallbackUrlTooltip'
-    );
-  });
-
-  it('should show the callback URL and every kanaal with its filters of a saved manual configuration', () => {
-    render('manual');
-    switchToManual();
-
-    expect(byTestId(testIds.manualAbonnementCallbackUrl)[0].textContent.trim()).toBe(
-      'https://gateway.example.com/api/v1/notificatiesapi/callback'
-    );
-    expect(element('.manual-abonnement__list dt').textContent.trim()).toBe('callbackUrl');
-    expect(byTestId(testIds.manualAbonnementDefaultCallbackUrlTooltip).length).toBe(0);
-    const kanalen = byTestId(testIds.manualAbonnementKanaal);
-    expect(kanalen.length).toBe(2);
-    expect(kanalen[0].querySelector('strong').textContent.trim()).toBe('zaken');
-    expect(kanalen[0].textContent).toContain('actie = create');
-    expect(kanalen[1].querySelector('strong').textContent.trim()).toBe('objecten');
-    expect(kanalen[1].textContent).toContain('objectType = https://objecttypen.example.com/1');
-    expect(kanalen[1].textContent).toContain('actie = update');
-    expect(fixture.nativeElement.textContent).not.toContain('manualAbonnementSaveFirst');
-  });
-
-  it('should ask to save first when an automatic configuration is switched to manual', () => {
+  it('should show generic help with the placeholder callback URL as soon as manual is selected', () => {
     render('automatic');
     switchToManual();
 
-    expect(byTestId(testIds.manualAbonnement).length).toBe(1);
-    expect(byTestId(testIds.manualAbonnementCallbackUrl).length).toBe(0);
-    expect(fixture.nativeElement.textContent).toContain('manualAbonnementSaveFirst');
+    expect(byTestId(testIds.manualAbonnementCallbackUrl)[0].textContent.trim()).toBe(
+      'https://{gzac-back-end-url}/api/v1/notificatiesapi/callback'
+    );
+    expect(fixture.nativeElement.textContent).toContain('manualAbonnementDescription');
+    expect(fixture.nativeElement.textContent).toContain('manualAbonnementKanalen');
   });
 });

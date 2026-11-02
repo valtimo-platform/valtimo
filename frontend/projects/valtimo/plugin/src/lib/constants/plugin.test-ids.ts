@@ -38,9 +38,6 @@ export const NOTIFICATIES_API_CONFIGURATION_TEST_IDS = {
   authHeader: 'notificatiesApiAuthHeader',
   manualAbonnement: 'notificatiesApiManualAbonnement',
   manualAbonnementCallbackUrl: 'notificatiesApiManualAbonnementCallbackUrl',
-  manualAbonnementDefaultCallbackUrlTooltip:
-    'notificatiesApiManualAbonnementDefaultCallbackUrlTooltip',
-  manualAbonnementKanaal: 'notificatiesApiManualAbonnementKanaal',
 } as const;
 
 export const OPEN_NOTIFICATIES_CONFIGURATION_TEST_IDS = {

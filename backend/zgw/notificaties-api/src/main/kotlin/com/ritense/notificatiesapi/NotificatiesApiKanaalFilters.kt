@@ -48,12 +48,6 @@ class NotificatiesApiKanaalFilters(
     fun automaticKanaalFilters(listener: NotificatiesApiListener): List<Abonnement.Kanaal> =
         kanaalFilters(listener) { it?.id !in manualConfigurationIds }
 
-    fun manualKanaalFilters(configurationId: UUID): List<Abonnement.Kanaal> =
-        listeners
-            .filter { it.getNotificatiesApiPlugin().notificatiesApiConfigurationId.id == configurationId }
-            .flatMap { listener -> kanaalFilters(listener) { it?.id == configurationId } }
-            .distinct()
-
     private fun kanaalFilters(
         listener: NotificatiesApiListener,
         linkedTo: (PluginConfigurationId?) -> Boolean

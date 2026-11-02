@@ -52,13 +52,9 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       sharedSecretTooltip:
         'Vul hetzelfde geheim in bij het veld Auth van het abonnement in Open Notificaties. GZAC accepteert alleen notificaties met dit geheim. Gebruik een gewone waarde, zonder "Bearer ".',
       manualAbonnementDescription:
-        'Het abonnement in Open Notificaties moet deze callback URL en deze kanalen met filters bevatten.',
-      manualAbonnementDefaultCallbackUrlTooltip:
-        'Deze voorgestelde callback URL kan onjuist zijn. Hij is afgeleid van het adres van deze browser en klopt niet achter een gateway.',
-      manualAbonnementKanaal: 'Kanaal',
-      manualAbonnementNoKanalen: 'Er zijn nog geen kanalen nodig voor deze configuratie.',
-      manualAbonnementSaveFirst:
-        'Sla de configuratie op met handmatige registratie om te zien welke kanalen en filters het abonnement moet bevatten.',
+        'Maak het abonnement zelf aan in Open Notificaties. Gebruik als callback URL het adres waarop Open Notificaties GZAC bereikt, en vul het gedeelde geheim in bij het veld Auth:',
+      manualAbonnementKanalen:
+        'Voeg de kanalen toe die de processen en plug-ins van deze configuratie gebruiken, met de filters die zij nodig hebben. Werk het abonnement bij wanneer die veranderen.',
       'publish-notificatie': 'Publiceer een notificatie',
       kanaal: 'Kanaal',
       kanaalTooltip: 'Het kanaal waarop de notificatie gepubliceerd wordt (max 50 tekens).',
@@ -110,13 +106,9 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       sharedSecretTooltip:
         'Enter the same secret in the Auth field of the abonnement in Open Notificaties. GZAC only accepts notifications that carry this secret. Use a plain value, without "Bearer ".',
       manualAbonnementDescription:
-        'The abonnement in Open Notificaties must contain this callback URL and these channels with their filters.',
-      manualAbonnementDefaultCallbackUrlTooltip:
-        "This suggested callback URL might be wrong. It is derived from this browser's address and does not apply behind a gateway.",
-      manualAbonnementKanaal: 'Channel',
-      manualAbonnementNoKanalen: 'No channels are needed for this configuration yet.',
-      manualAbonnementSaveFirst:
-        'Save the configuration with manual registration to see which channels and filters the abonnement must contain.',
+        'Create the abonnement in Open Notificaties yourself. Use the address at which Open Notificaties reaches GZAC as callback URL, and enter the shared secret in the Auth field:',
+      manualAbonnementKanalen:
+        'Add the channels used by the processes and plugins of this configuration, with the filters they need. Update the abonnement when those change.',
       'publish-notificatie': 'Publish a notification',
       kanaal: 'Channel',
       kanaalTooltip: 'The channel on which the notification is published (max 50 characters).',

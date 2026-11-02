@@ -10,8 +10,8 @@ Release date: 04-11-2026
 
 Valtimo can now receive notificaties from Open Notificaties when all traffic passes through a
 gateway that checks certificates. Set a Notificaties API configuration to **Manual** abonnement
-registration and create the abonnement in Open Notificaties yourself: Valtimo shows the callback
-URL, channels and filters it needs. See the
+registration and create the abonnement in Open Notificaties yourself, with the callback URL that
+the configuration shows. See the
 [Notificaties API documentation](../../../configuration-guides/plugins/notificaties-api.md) for
 details.
 

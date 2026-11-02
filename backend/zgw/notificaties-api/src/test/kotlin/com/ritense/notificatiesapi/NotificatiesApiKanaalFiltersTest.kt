@@ -82,14 +82,6 @@ class NotificatiesApiKanaalFiltersTest {
     }
 
     @Test
-    fun `should return only the filters that belong to a manual configuration`() {
-        assertThat(kanaalFilters.manualKanaalFilters(manualId)).containsExactlyInAnyOrder(
-            Abonnement.Kanaal(naam = "documenten", filters = mapOf("actie" to "update")),
-            MANUAL_LISTENER_KANAAL,
-        )
-    }
-
-    @Test
     fun `should report a manual configuration on its Notificaties API URL only`() {
         assertThat(kanaalFilters.hasManualConfiguration(URI(NOTIFICATIES_API_URL))).isTrue()
         assertThat(kanaalFilters.hasManualConfiguration(URI(NOTIFICATIES_API_URL.trimEnd('/')))).isTrue()

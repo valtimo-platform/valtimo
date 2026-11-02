@@ -64,35 +64,22 @@ Open a new or existing Notificaties API configuration
 {% step %}
 Select **Manual** in **Abonnement registration**
 
-The **Callback URL** field disappears. With **Manual**, the callback URL is only entered in Open
-Notificaties.
+The **Callback URL** field disappears, because with **Manual** the callback URL is only entered
+in Open Notificaties. Instead, a help text appears below the properties. It shows the callback URL
+to use, and reminds you to add the channels and filters to the abonnement. You do not have to save
+first to see it.
 {% endstep %}
 {% step %}
 Enter a **Shared secret**
 
 Choose a long, random value. Do not start it with `Bearer `, or Valtimo refuses the notificaties.
 
-<figure><img src="../../assets/configuration-guides/plugins/notificaties-api/03-manual-registration-form.png" alt=""><figcaption>Manual registration with a shared secret</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/plugins/notificaties-api/03-manual-registration-form.png" alt=""><figcaption>Manual registration with a shared secret, and the help text below it</figcaption></figure>
 {% endstep %}
 {% step %}
 Click **Save configuration**
 {% endstep %}
 {% endstepper %}
-
-### Viewing what the abonnement needs
-
-Open the saved configuration again. Below the properties, Valtimo lists what the abonnement in
-Open Notificaties must contain: the callback URL, and the channels (kanalen) with their filters.
-
-<figure><img src="../../assets/configuration-guides/plugins/notificaties-api/04-manual-abonnement-panel.png" alt=""><figcaption>Callback URL and channels with filters</figcaption></figure>
-
-- **Callback URL** — a suggestion, based on the address in your browser. The **?** icon next to it
-  marks this. When Open Notificaties reaches Valtimo through another address, such as a gateway,
-  use that address instead.
-- **Channels** — the channels needed by the processes and plugins that use this configuration,
-  such as **Verzoek** and **Portaaltaak**. A channel can appear more than once, each time with
-  other filters. When such a process or plugin changes, the list changes too; update the
-  abonnement to match.
 
 ### Creating the abonnement in Open Notificaties
 
@@ -100,22 +87,23 @@ In the admin of Open Notificaties:
 
 {% stepper %}
 {% step %}
-Check that every channel in the list exists, and that it allows the filters listed for it.
-Open Notificaties refuses an abonnement with filters that its channel does not allow.
-{% endstep %}
-{% step %}
 Create an abonnement with the callback URL
+`https://{gzac-back-end-url}/api/v1/notificatiesapi/callback`. Replace `{gzac-back-end-url}`
+with the address at which Open Notificaties reaches Valtimo, such as the address of the gateway.
 {% endstep %}
 {% step %}
 Enter the **Shared secret** in the **Auth** field of the abonnement. Leave the authorization type
 on **API key**.
 {% endstep %}
 {% step %}
-Add every channel in the list, with exactly the filters shown for it. A line such as
-`actie = create` is a filter with key `actie` and value `create`. Add a channel that appears more
-than once as a separate entry for each set of filters.
+Add the channels (kanalen) that the processes and plugins using this configuration listen to,
+such as **Verzoek** and **Portaaltaak**, each with the filters they need. Check that every channel
+exists and allows those filters; Open Notificaties refuses an abonnement with filters that its
+channel does not allow.
 {% endstep %}
 {% endstepper %}
+
+When such a process or plugin changes, update the abonnement to match.
 
 ### Good to know
 
