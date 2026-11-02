@@ -110,13 +110,13 @@ module dependency.
 
 ## The verzoek object
 
-The plugin reads a fixed set of fields from the verzoek object. Only `type` is required; the rest
-are optional and change what the plugin can do.
+The plugin reads a fixed set of fields from the verzoek object. `type` and `data` are required; the
+rest are optional and change what the plugin can do.
 
 | Field | Required | Purpose | When it is missing |
 |---|---|---|---|
 | `type` | Yes | Selects which verzoek type configuration handles this request | The verzoek is ignored |
-| `data` | Yes, in practice | The submitted form data. This is what ends up in the case document | The plugin reports that `/record/data/data` cannot be found |
+| `data` | Yes | The submitted form data. This is what ends up in the case document. Required for every copy strategy, also when all mappings use `object:` sources | The plugin reports that `/record/data/data` cannot be found |
 | `bsn` | No | Citizen service number of the requester. Used as the initiator of the zaak | No initiator is recorded, unless `kvk` has a value |
 | `kvk` | No | Chamber of Commerce number of the requester. Takes precedence over `bsn` | The `bsn` field is used instead. An empty `kvk` counts as missing |
 | `pdf_url` | No | URL of the submission PDF in the Documenten API | The PDF is not linked to the zaak |
@@ -141,7 +141,7 @@ process as variables of the same name:
     "data": {
       "type": "Bezwaar",
       "bsn": "999999999",
-      "pdf_url": "https://openforms.example.nl/media/submission.pdf",
+      "pdf_url": "https://documenten.example.nl/api/v1/enkelvoudiginformatieobjecten/2",
       "attachments": [
         "https://documenten.example.nl/api/v1/enkelvoudiginformatieobjecten/1"
       ],
@@ -162,7 +162,7 @@ A matching objecttype schema in the Objecttypen API:
 ```json
 {
   "title": "Verzoek",
-  "required": ["type"],
+  "required": ["type", "data"],
   "properties": {
     "type": {
       "type": "string",
@@ -387,10 +387,12 @@ its own name, as are all `pv:` mappings.
 
 ## Troubleshooting
 
-A verzoek that fails leaves nothing behind in the case list, so the place to look is **Admin** >
-**Notifications**. It lists the notifications that could not be handled, with the moment they came
-in, how many retries are left, and the error below. Click a row to see the full message and the
-verzoek object that came with it, and to retry the notification once the cause is resolved.
+A verzoek that fails up to and including the **Create Zaak** task leaves nothing behind in the case
+list, so the place to look is **Admin** > **Notifications**. It lists the notifications that could
+not be handled, with the moment they came in, how many retries are left, and the error below. Click
+a row to see the full message and the verzoek object that came with it, and to retry the
+notification once the cause is resolved. A failure in a later task keeps the case and the zaak, and
+shows up on the process instance of the case instead.
 
 The last two messages below appear when the configuration is saved. The rest appear on this page.
 
