@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_jsmap" name="DRD" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="javascript-map-output-decision" name="Javascript map output decision" camunda:historyTimeToLive="180">
+    <decisionTable id="decisionTable_1" hitPolicy="FIRST">
+      <input id="input_1" label="size">
+        <inputExpression id="inputExpression_1" typeRef="integer">
+          <text>size</text>
+        </inputExpression>
+      </input>
+      <output id="output_1" label="result" name="result" />
+      <rule id="rule_1">
+        <inputEntry id="in_1">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="out_1" expressionLanguage="javascript">
+          <text>new Map([['level', 'High'], ['size', size]])</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>
