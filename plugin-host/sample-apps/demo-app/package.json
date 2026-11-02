@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "amqplib": "^0.10.9",
-    "fastify": "^5.8.5",
+    "fastify": "^5.12.5",
     "fastify-raw-body": "^5.0.0",
     "zod": "^3.24.4"
   },
