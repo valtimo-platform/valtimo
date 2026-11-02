@@ -27,4 +27,5 @@ rather than shown disabled when no preview plugin is configured for the document
 | Area | Fix |
 |------|-----|
 | Widgets | A widget display condition with a number value, such as `0`, now compares numerically against a number field. The `${0}` workaround is no longer needed. |
+| Dashboard | A long dashboard widget subtitle is now cut off with `...` instead of running out of the widget, the full title and subtitle show on hover, and the subtitle has more space between it and the chart. |
 | Process editor | Expression fields in the BPMN editor now remember the Manual mode after saving, and chained expressions open in Manual mode instead of the Dropdown. |

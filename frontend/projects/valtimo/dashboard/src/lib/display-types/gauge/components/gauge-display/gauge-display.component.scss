@@ -26,6 +26,10 @@
 }
 
 .valtimo-gauge-widget {
+  &__header {
+    margin-bottom: 16px;
+  }
+
   &__title,
   &__subtitle {
     white-space: nowrap;
@@ -38,7 +42,9 @@
     margin-bottom: 12px;
   }
   &__subtitle {
+    display: block;
     font-size: 14px;
+    line-height: 18px;
   }
 
   &__label {
