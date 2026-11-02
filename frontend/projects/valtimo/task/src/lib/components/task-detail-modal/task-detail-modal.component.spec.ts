@@ -253,6 +253,29 @@ describe('TaskDetailModalComponent', () => {
     flush();
   }));
 
+  it('GH-402 keeps an open form flow task open on a task update event right after case creation', fakeAsync(() => {
+    const formFlowTaskWithProcessLink = {
+      task,
+      processLinkActivityResult: {
+        processLinkId: 'process-link-1',
+        type: 'form-flow',
+        properties: {formFlowInstanceId: 'form-flow-instance-1'},
+      },
+    } as unknown as TaskWithProcessLink;
+    component.openTaskAndProcessLinkDetails(formFlowTaskWithProcessLink);
+    tick();
+    const modalClosedSpy = spyOn(component.modalClosed, 'emit');
+
+    taskService.getTask.and.returnValue(of({task: {id: task.id, assignee: null}}));
+    sseEvents$.next({taskId: task.id, documentId: task.businessKey} as TaskUpdateSseEvent);
+    tick(CARBON_CONSTANTS.modalAnimationMs);
+
+    expect(component.modalOpen$.getValue()).toBeTrue();
+    expect(modalClosedSpy).not.toHaveBeenCalled();
+    expect(component.taskAndProcessLink$.getValue()).toBe(formFlowTaskWithProcessLink);
+    flush();
+  }));
+
   it('clears the task state after the modal close animation', fakeAsync(() => {
     const intermediateSaveService = TestBed.inject(
       TaskIntermediateSaveService
