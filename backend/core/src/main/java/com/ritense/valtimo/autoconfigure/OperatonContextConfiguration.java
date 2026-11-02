@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 
 package com.ritense.valtimo.autoconfigure;
 
+import com.ritense.valtimo.AllowedClassesScriptEngineResolver;
 import com.ritense.valtimo.OperatonWhitelistedBeansPlugin;
 import com.ritense.valtimo.ScriptingWhitelistPlugin;
 import com.ritense.valtimo.contract.annotation.ProcessBean;
 import java.util.Set;
+import org.graalvm.polyglot.Engine;
 import org.operaton.bpm.spring.boot.starter.configuration.Ordering;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -41,13 +43,20 @@ public class OperatonContextConfiguration {
         return new OperatonWhitelistedBeansPlugin(applicationContext);
     }
 
+    @Bean(destroyMethod = "close")
+    @ConditionalOnMissingBean(Engine.class)
+    public Engine valtimoScriptingPolyglotEngine() {
+        return AllowedClassesScriptEngineResolver.Companion.newPolyglotEngine();
+    }
+
     @ConditionalOnMissingBean(ScriptingWhitelistPlugin.class)
     @Bean
     @Order(Ordering.DEFAULT_ORDER - 1)
     public ScriptingWhitelistPlugin scriptingWhitelistPlugin(
-        @Value("${valtimo.operaton.scripting.allowedClasses:}") Set<String> allowedScriptingClasses
+        @Value("${valtimo.operaton.scripting.allowedClasses:}") Set<String> allowedScriptingClasses,
+        Engine polyglotEngine
     ) {
-        return new ScriptingWhitelistPlugin(allowedScriptingClasses);
+        return new ScriptingWhitelistPlugin(allowedScriptingClasses, polyglotEngine);
     }
 
 }
