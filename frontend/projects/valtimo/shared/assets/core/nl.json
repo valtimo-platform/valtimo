@@ -2807,13 +2807,13 @@
       "save": "Configuratie opslaan"
     },
     "permissions": {
-      "description": "Door deze rechten te accepteren vertrouwt u deze plugin om binnen uw omgeving te handelen. Een toegekende capaciteit, endpoint of event geeft de plugin toegang tot platformgegevens en -diensten — ga alleen akkoord als u de bron van de plugin vertrouwt en heeft beoordeeld wat deze aanvraagt.",
+      "description": "Door deze rechten te accepteren vertrouwt u deze plugin om binnen uw omgeving te handelen. De plugin roept de toegekende endpoints aan met een eigen servicetoken, dat niet beperkt wordt door de rechten van de gebruiker die met de plugin werkt. De plugin heeft daardoor toegang tot alle gegevens die deze endpoints ontsluiten en kan die gegevens doorsturen naar zijn externe verbindingen of tonen aan gebruikers die er zelf geen toegang toe hebben. Ga alleen akkoord als u de bron van de plugin vertrouwt en de code en de gevraagde rechten grondig heeft beoordeeld.",
       "descriptionReadonly": "De volgende rechten zijn geaccepteerd bij het activeren van deze configuratie. Ze bepalen wat de plugin mag doen binnen uw omgeving.",
       "noEndpoints": "Deze plugin heeft geen rechten nodig.",
       "capabilitiesHeading": "Hostcapaciteiten",
       "capabilityHeading": "Capaciteit",
       "capability": {
-        "gzac_api": "Geauthenticeerde API-aanroepen doen naar de GZAC-instantie (dossiergegevens, taken, documenten lezen en schrijven, enz.)",
+        "gzac_api": "API-aanroepen doen naar de GZAC-instantie op de toegekende endpoints, met het eigen servicetoken van de plugin. Deze aanroepen worden niet beperkt door de rechten van de huidige gebruiker.",
         "http_request": "Uitgaande HTTP-verzoeken doen naar externe diensten",
         "kv": "Persistente sleutel-waardeparen opslaan en ophalen, beperkt tot deze configuratie",
         "log": "Gestructureerde logboekregels schrijven die zichtbaar zijn voor beheerders",
