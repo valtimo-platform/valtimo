@@ -65,9 +65,8 @@ Open a new or existing Notificaties API configuration
 Select **Manual** in **Abonnement registration**
 
 The **Callback URL** field disappears, because with **Manual** the callback URL is only entered
-in Open Notificaties. Instead, a help text appears below the properties. It shows the callback URL
-to use, and reminds you to add the channels and filters to the abonnement. You do not have to save
-first to see it.
+in Open Notificaties. Instead, a help text appears below the properties. It shows the channel and
+callback URL to use. You do not have to save first to see it.
 {% endstep %}
 {% step %}
 Enter a **Shared secret**
@@ -87,7 +86,7 @@ In the admin of Open Notificaties:
 
 {% stepper %}
 {% step %}
-Create an abonnement with the callback URL
+Create an abonnement for the channel (kanaal) **objecten** with the callback URL
 `https://{gzac-back-end-url}/api/v1/notificatiesapi/callback`. Replace `{gzac-back-end-url}`
 with the address at which Open Notificaties reaches Valtimo, such as the address of the gateway.
 {% endstep %}
@@ -96,14 +95,10 @@ Enter the **Shared secret** in the **Auth** field of the abonnement. Leave the a
 on **API key**.
 {% endstep %}
 {% step %}
-Add the channels (kanalen) that the processes and plugins using this configuration listen to,
-such as **Verzoek** and **Portaaltaak**, each with the filters they need. Check that every channel
-exists and allows those filters; Open Notificaties refuses an abonnement with filters that its
-channel does not allow.
+Optional: add filters for all object types that this Valtimo instance uses. Open Notificaties
+refuses an abonnement with filters that its channel does not allow.
 {% endstep %}
 {% endstepper %}
-
-When such a process or plugin changes, update the abonnement to match.
 
 ### Good to know
 

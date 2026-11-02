@@ -260,6 +260,6 @@ describe('NotificatiesApiConfigurationComponent template', () => {
       'https://{gzac-back-end-url}/api/v1/notificatiesapi/callback'
     );
     expect(fixture.nativeElement.textContent).toContain('manualAbonnementDescription');
-    expect(fixture.nativeElement.textContent).toContain('manualAbonnementKanalen');
+    expect(fixture.nativeElement.textContent).toContain('manualAbonnementFilters');
   });
 });
