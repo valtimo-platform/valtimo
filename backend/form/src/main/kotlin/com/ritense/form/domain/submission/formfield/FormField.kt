@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ abstract class FormField(
         ): List<FormField> {
             return formDefinition.inputFields
                 .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
+                .filter { FormIoFormDefinition.SUBMITTABLE.test(it) }
                 .mapNotNull { field -> getFormField(formData, field, applicationEventPublisher) }
         }
 
