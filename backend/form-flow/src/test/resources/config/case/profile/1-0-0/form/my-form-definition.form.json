@@ -20,6 +20,58 @@
             "input": true
         },
         {
+            "label": "E-mail preview",
+            "key": "mailPreview",
+            "type": "valtimo-mail-preview",
+            "input": true
+        },
+        {
+            "label": "Children",
+            "key": "person.children",
+            "type": "datagrid",
+            "input": true,
+            "components": [
+                {
+                    "label": "Name",
+                    "key": "name",
+                    "type": "textfield",
+                    "input": true
+                },
+                {
+                    "label": "Child preview",
+                    "key": "childPreview",
+                    "type": "valtimo-mail-preview",
+                    "input": true
+                },
+                {
+                    "label": "Mail preview",
+                    "key": "mailPreview.ontvangstbevestiging",
+                    "type": "valtimo-mail-preview",
+                    "input": true
+                }
+            ]
+        },
+        {
+            "label": "Address",
+            "key": "address",
+            "type": "container",
+            "input": true,
+            "components": [
+                {
+                    "label": "Street",
+                    "key": "street",
+                    "type": "textfield",
+                    "input": true
+                },
+                {
+                    "label": "Address preview",
+                    "key": "addressPreview",
+                    "type": "valtimo-mail-preview",
+                    "input": true
+                }
+            ]
+        },
+        {
             "type": "button",
             "label": "Submit",
             "key": "submit",
