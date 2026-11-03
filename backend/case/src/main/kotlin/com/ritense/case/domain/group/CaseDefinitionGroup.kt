@@ -73,4 +73,11 @@ data class CaseDefinitionGroup(
     }
 
     override fun hashCode(): Int = key.hashCode()
+
+    companion object {
+        const val MAX_KEY_LENGTH = 255
+        val KEY_REGEX = Regex("^[a-z0-9][a-z0-9_-]*\$")
+
+        fun isValidKey(key: String): Boolean = key.length <= MAX_KEY_LENGTH && KEY_REGEX.matches(key)
+    }
 }

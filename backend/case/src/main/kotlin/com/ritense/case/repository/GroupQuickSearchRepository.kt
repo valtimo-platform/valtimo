@@ -24,4 +24,5 @@ interface GroupQuickSearchRepository : JpaRepository<GroupQuickSearch, UUID> {
     fun findAllByGroupKeyAndUserId(groupKey: String, userId: String): List<GroupQuickSearch>
     fun existsByGroupKeyAndUserIdAndTitle(groupKey: String, userId: String, title: String): Boolean
     fun deleteByGroupKeyAndUserIdAndTitle(groupKey: String, userId: String, title: String)
+    fun deleteByGroupKey(groupKey: String)
 }

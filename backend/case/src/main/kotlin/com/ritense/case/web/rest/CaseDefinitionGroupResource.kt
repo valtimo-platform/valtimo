@@ -24,6 +24,7 @@ import com.ritense.case.web.rest.dto.GroupCaseListRowDto
 import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.GroupMemberDto
 import com.ritense.case.web.rest.dto.GroupSearchFieldDto
+import com.ritense.case.web.rest.dto.HiddenGroupListColumnDto
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.web.rest.dto.InternalCaseStatusResponseDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -56,8 +57,8 @@ class CaseDefinitionGroupResource(
     )
     @GetMapping
     fun getGroups(): ResponseEntity<List<CaseDefinitionGroupResponseDto>> {
-        val groups = groupCaseInstanceService.getAccessibleGroups()
-            .map { CaseDefinitionGroupResponseDto.of(it) }
+        val groups = groupCaseInstanceService.getAccessibleGroupsWithMemberCount()
+            .map { CaseDefinitionGroupResponseDto.of(it.group, it.memberCount) }
         return ResponseEntity.ok(groups)
     }
 
@@ -69,8 +70,10 @@ class CaseDefinitionGroupResource(
     fun getGroup(
         @PathVariable groupKey: String
     ): ResponseEntity<CaseDefinitionGroupResponseDto> {
-        val group = groupCaseInstanceService.getGroup(groupKey)
-        return ResponseEntity.ok(CaseDefinitionGroupResponseDto.of(group))
+        val accessibleGroup = groupCaseInstanceService.getAccessibleGroup(groupKey)
+        return ResponseEntity.ok(
+            CaseDefinitionGroupResponseDto.of(accessibleGroup.group, accessibleGroup.memberCount)
+        )
     }
 
     @EndpointDescription(
@@ -81,7 +84,7 @@ class CaseDefinitionGroupResource(
     fun getMembers(
         @PathVariable groupKey: String
     ): ResponseEntity<List<GroupMemberDto>> {
-        val members = groupCaseInstanceService.getAccessibleMembers(groupKey)
+        val members = groupCaseInstanceService.requireAccessibleMembers(groupKey)
             .map { member ->
                 val caseDef = caseDefinitionService.getActiveCaseDefinition(member.id.caseDefinitionKey)
                 GroupMemberDto.of(member, caseDef?.name)
@@ -99,6 +102,32 @@ class CaseDefinitionGroupResource(
     ): ResponseEntity<List<GroupListColumnDto>> {
         val columns = groupCaseInstanceService.getListColumns(groupKey)
         return ResponseEntity.ok(columns)
+    }
+
+    @EndpointDescription(
+        en = "List hidden case group list columns",
+        nl = "Verborgen lijstkolommen van dossiergroep ophalen",
+    )
+    @GetMapping("/{groupKey}/hidden-list-column")
+    fun getHiddenListColumns(
+        @PathVariable groupKey: String
+    ): ResponseEntity<List<GroupListColumnDto>> {
+        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
+        return ResponseEntity.ok(groupCaseInstanceService.getHiddenListColumns(groupKey, currentUserId))
+    }
+
+    @EndpointDescription(
+        en = "Save hidden case group list columns",
+        nl = "Verborgen lijstkolommen van dossiergroep opslaan",
+    )
+    @PostMapping("/{groupKey}/hidden-list-column")
+    fun saveHiddenListColumns(
+        @PathVariable groupKey: String,
+        @Valid @RequestBody hiddenColumns: List<HiddenGroupListColumnDto>
+    ): ResponseEntity<Void> {
+        val currentUserId = UserManagementServiceHolder.currentInstance.currentUserId
+        groupCaseInstanceService.saveHiddenListColumns(groupKey, hiddenColumns, currentUserId)
+        return ResponseEntity.ok().build()
     }
 
     @EndpointDescription(

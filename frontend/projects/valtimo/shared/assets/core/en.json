@@ -107,6 +107,10 @@
         "description": "No cases have been assigned to your teams yet.",
         "title": "No team cases"
       },
+      "groupNotFound": {
+        "description": "This case group does not exist anymore, or you do not have access to it.",
+        "title": "Case group not available"
+      },
       "noGroupListColumns": {
         "description": "This case group has no list columns yet. Contact your administrator to configure them.",
         "title": "No list columns configured"

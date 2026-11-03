@@ -20,6 +20,7 @@ import {CaseStatusService, InternalCaseStatus} from '@valtimo/document';
 import {CaseParameterService} from './case-parameter.service';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   map,
@@ -28,9 +29,11 @@ import {
   switchMap,
   take,
   tap,
+  throwError,
 } from 'rxjs';
 import {CASE_WITHOUT_STATUS_STATUS} from '../constants';
 import {CaseListContext} from '../models';
+import {isGroupUnavailable} from '../utils';
 
 @Injectable()
 export class CaseListStatusService {
@@ -44,7 +47,15 @@ export class CaseListStatusService {
       switchMap(context =>
         combineLatest([
           context.type === 'group'
-            ? this.caseStatusService.getGroupInternalCaseStatuses(context.key)
+            ? this.caseStatusService
+                .getGroupInternalCaseStatuses(context.key)
+                .pipe(
+                  catchError(error =>
+                    isGroupUnavailable(error)
+                      ? of([] as InternalCaseStatus[])
+                      : throwError(() => error)
+                  )
+                )
             : this.caseStatusService.getInternalCaseStatuses(context.key),
           this.caseParameterService.queryStatusParams$,
         ]).pipe(take(1))

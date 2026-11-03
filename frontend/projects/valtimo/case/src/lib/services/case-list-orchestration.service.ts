@@ -67,6 +67,7 @@ import {
   switchMap,
   take,
   tap,
+  throwError,
 } from 'rxjs';
 import {CASE_LIST_NO_RESULTS_MESSAGE} from '../constants';
 import {CaseListContext, CaseListQuickSearchParams} from '../models';
@@ -76,7 +77,7 @@ import {
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../permissions';
-import {mapCaseTagColumnValue} from '../utils';
+import {isGroupUnavailable, mapCaseTagColumnValue} from '../utils';
 import {CaseColumnService} from './case-column.service';
 import {CaseListAssigneeService} from './case-list-assignee.service';
 import {CaseListCaseTagService} from './case-list-case-tag.service';
@@ -86,6 +87,7 @@ import {CaseListSearchService} from './case-list-search.service';
 import {CaseListService} from './case-list.service';
 import {CaseListStatusService} from './case-list-status.service';
 import {CaseParameterService} from './case-parameter.service';
+import {PinnedItemsService} from './pinned-items.service';
 
 @Injectable()
 export class CaseListOrchestrationService {
@@ -116,6 +118,7 @@ export class CaseListOrchestrationService {
   ]);
   private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
   private readonly _refreshHiddenColumns$ = new BehaviorSubject<null>(null);
+  private readonly _groupNotFound$ = new BehaviorSubject<boolean>(false);
   private _groupTitle: string | null = null;
 
   public readonly noResultsMessage$ = new BehaviorSubject<CarbonListNoResultsMessage>(
@@ -157,16 +160,27 @@ export class CaseListOrchestrationService {
   public readonly showStatusSelector$ = this.statusService.showStatusSelector$;
   public readonly showCaseTagsSelector$ = this.caseListCaseTagService.showCaseTagsSelector$;
 
+  public readonly groupNotFound$: Observable<boolean> = this._groupNotFound$.asObservable();
+
   public readonly hiddenColumns$: Observable<ListField[]> = this._refreshHiddenColumns$.pipe(
     switchMap(() => this.listService.context$),
     switchMap((context: CaseListContext | null) =>
-      context ? this.caseListHiddenColumnsService.getHiddenColumns(context.key) : of([])
+      context
+        ? this.caseListHiddenColumnsService
+            .getHiddenColumns(context)
+            .pipe(
+              catchError(error =>
+                context.type === 'group' ? of([] as ListField[]) : throwError(() => error)
+              )
+            )
+        : of([] as ListField[])
     )
   );
 
   public readonly schema$ = this.listService.context$.pipe(
     filter((context): context is CaseListContext => !!context),
     switchMap((context: CaseListContext) => {
+      this._groupNotFound$.next(false);
       if (context.type === 'group') {
         return this.documentService.getCaseDefinitionGroup(context.key).pipe(
           tap(group => {
@@ -175,7 +189,17 @@ export class CaseListOrchestrationService {
               this.pageTitleService.setCustomPageTitle(group.title, true);
             }
           }),
-          map(() => null)
+          map(() => null),
+          catchError((error: HttpErrorResponse) => {
+            if (!isGroupUnavailable(error)) return throwError(() => error);
+            this._groupNotFound$.next(true);
+            this.pageTitleService.setCustomPageTitle(
+              this.translateService.instant('case.noResults.groupNotFound.title'),
+              true
+            );
+            this.pinnedItemsService.refresh();
+            return of(null);
+          })
         );
       }
       return forkJoin({
@@ -243,7 +267,17 @@ export class CaseListOrchestrationService {
 
   private readonly _columns$: Observable<Array<DefinitionColumn>> = this.listService.context$.pipe(
     filter((context): context is CaseListContext => !!context),
-    switchMap(context => this.columnService.getColumnsForContext(context)),
+    switchMap(context =>
+      this.columnService
+        .getColumnsForContext(context)
+        .pipe(
+          catchError((error: HttpErrorResponse) =>
+            context.type === 'group' && isGroupUnavailable(error)
+              ? of({columns: [] as Array<DefinitionColumn>, hasApiConfig: true})
+              : throwError(() => error)
+          )
+        )
+    ),
     map(res => {
       this.hasApiColumnConfig$.next(res.hasApiConfig);
       return res.columns;
@@ -361,7 +395,13 @@ export class CaseListOrchestrationService {
   public readonly noGroupListColumns$: Observable<boolean> = combineLatest([
     this.listService.context$,
     this.availableFields$,
-  ]).pipe(map(([context, fields]) => context?.type === 'group' && fields.length === 0));
+    this.groupNotFound$,
+  ]).pipe(
+    map(
+      ([context, fields, groupNotFound]) =>
+        context?.type === 'group' && fields.length === 0 && !groupNotFound
+    )
+  );
 
   // --- Document items (the main data pipeline) ---
 
@@ -403,6 +443,7 @@ export class CaseListOrchestrationService {
       ]).pipe(debounceTime(50))
     ),
     distinctUntilChanged(this.areDocumentRequestsEqual),
+    filter(() => !this._groupNotFound$.value),
     switchMap(
       ([
         searchRequestWithContext,
@@ -455,6 +496,7 @@ export class CaseListOrchestrationService {
     private readonly paginationService: CaseListPaginationService,
     private readonly parameterService: CaseParameterService,
     private readonly permissionService: PermissionService,
+    private readonly pinnedItemsService: PinnedItemsService,
     private readonly searchService: CaseListSearchService,
     private readonly statusService: CaseListStatusService,
     private readonly translateService: TranslateService,
@@ -499,11 +541,12 @@ export class CaseListOrchestrationService {
   }
 
   public saveHiddenColumns(hiddenColumns: ListHiddenColumn[]): void {
-    this.caseDefinitionKey$
+    this.listService.context$
       .pipe(
+        filter((context): context is CaseListContext => !!context),
         take(1),
-        switchMap((caseDefinitionKey: string) =>
-          this.caseListHiddenColumnsService.saveHiddenColumns(caseDefinitionKey, hiddenColumns)
+        switchMap((context: CaseListContext) =>
+          this.caseListHiddenColumnsService.saveHiddenColumns(context, hiddenColumns)
         )
       )
       .subscribe(() => this._refreshHiddenColumns$.next(null));
@@ -607,9 +650,10 @@ export class CaseListOrchestrationService {
           {
             page: documentSearchRequest.page,
             size: documentSearchRequest.size,
-            sort: documentSearchRequest.sort
-              ? `${documentSearchRequest.sort.state.name},${documentSearchRequest.sort.state.direction}`
-              : undefined,
+            ...(documentSearchRequest.sort?.isSorting &&
+              documentSearchRequest.sort.state?.name && {
+                sort: `${documentSearchRequest.sort.state.name},${documentSearchRequest.sort.state.direction}`,
+              }),
           }
         )
         .pipe(

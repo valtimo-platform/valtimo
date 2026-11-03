@@ -154,6 +154,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/member")).authenticated()
                     .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/list-column")).authenticated()
                     .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/search-field")).authenticated()
+                    .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/hidden-list-column")).authenticated()
+                    .requestMatchers(antMatcher(POST, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/hidden-list-column")).authenticated()
                     .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/internal-status")).authenticated()
                     .requestMatchers(antMatcher(POST, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/search")).authenticated()
                     .requestMatchers(antMatcher(GET, "$USER_CASE_DEFINITION_GROUP_URL/{groupKey}/stored-quick-search")).authenticated()

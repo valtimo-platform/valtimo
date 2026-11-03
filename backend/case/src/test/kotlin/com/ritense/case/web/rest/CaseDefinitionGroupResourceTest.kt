@@ -23,6 +23,7 @@ import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupSearchField
+import com.ritense.case.exception.CaseDefinitionGroupNotFoundException
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.GroupCaseInstanceService
 import com.ritense.case.web.rest.dto.GroupListColumnDto
@@ -86,7 +87,8 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
     @Test
     fun `should return accessible groups`() {
         val group = createGroup("my-group", "My Group")
-        whenever(groupCaseInstanceService.getAccessibleGroups()).thenReturn(listOf(group))
+        whenever(groupCaseInstanceService.getAccessibleGroupsWithMemberCount())
+            .thenReturn(listOf(GroupCaseInstanceService.AccessibleGroup(group, 2)))
 
         mockMvc.perform(get("/api/v1/case-definition-group"))
             .andDo(print())
@@ -95,14 +97,16 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
             .andExpect(jsonPath("$[0].key").value("my-group"))
             .andExpect(jsonPath("$[0].title").value("My Group"))
             .andExpect(jsonPath("$[0].order").value(0))
+            .andExpect(jsonPath("$[0].memberCount").value(2))
 
-        verify(groupCaseInstanceService).getAccessibleGroups()
+        verify(groupCaseInstanceService).getAccessibleGroupsWithMemberCount()
     }
 
     @Test
     fun `should return single group`() {
         val group = createGroup("my-group", "My Group", description = "Test description", color = "#FF5733")
-        whenever(groupCaseInstanceService.getGroup("my-group")).thenReturn(group)
+        whenever(groupCaseInstanceService.getAccessibleGroup("my-group"))
+            .thenReturn(GroupCaseInstanceService.AccessibleGroup(group, 3))
 
         mockMvc.perform(get("/api/v1/case-definition-group/{groupKey}", "my-group"))
             .andDo(print())
@@ -111,20 +115,24 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
             .andExpect(jsonPath("$.title").value("My Group"))
             .andExpect(jsonPath("$.description").value("Test description"))
             .andExpect(jsonPath("$.color").value("#FF5733"))
+            .andExpect(jsonPath("$.memberCount").value(3))
 
-        verify(groupCaseInstanceService).getGroup("my-group")
+        verify(groupCaseInstanceService).getAccessibleGroup("my-group")
     }
 
     @Test
     fun `should throw exception for unknown group`() {
-        whenever(groupCaseInstanceService.getGroup("unknown")).thenThrow(NoSuchElementException("Group not found"))
+        whenever(groupCaseInstanceService.getAccessibleGroup("unknown"))
+            .thenThrow(CaseDefinitionGroupNotFoundException("unknown"))
 
-        org.junit.jupiter.api.assertThrows<jakarta.servlet.ServletException> {
+        val exception = org.junit.jupiter.api.assertThrows<jakarta.servlet.ServletException> {
             mockMvc.perform(get("/api/v1/case-definition-group/{groupKey}", "unknown"))
-                .andDo(print())
         }
 
-        verify(groupCaseInstanceService).getGroup("unknown")
+        val cause = exception.cause as CaseDefinitionGroupNotFoundException
+        org.junit.jupiter.api.Assertions.assertEquals(org.zalando.problem.Status.NOT_FOUND, cause.status)
+
+        verify(groupCaseInstanceService).getAccessibleGroup("unknown")
     }
 
     @Test
@@ -135,7 +143,7 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
         )
         val caseDefinition = caseDefinition(name = "My Case Definition")
 
-        whenever(groupCaseInstanceService.getAccessibleMembers("my-group")).thenReturn(listOf(member))
+        whenever(groupCaseInstanceService.requireAccessibleMembers("my-group")).thenReturn(listOf(member))
         whenever(caseDefinitionService.getActiveCaseDefinition("my-case")).thenReturn(caseDefinition)
 
         mockMvc.perform(get("/api/v1/case-definition-group/{groupKey}/member", "my-group"))
@@ -146,7 +154,7 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
             .andExpect(jsonPath("$[0].caseDefinitionName").value("My Case Definition"))
             .andExpect(jsonPath("$[0].order").value(0))
 
-        verify(groupCaseInstanceService).getAccessibleMembers("my-group")
+        verify(groupCaseInstanceService).requireAccessibleMembers("my-group")
         verify(caseDefinitionService).getActiveCaseDefinition("my-case")
     }
 

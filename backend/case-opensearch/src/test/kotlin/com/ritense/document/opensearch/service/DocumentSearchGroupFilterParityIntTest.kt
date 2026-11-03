@@ -22,6 +22,7 @@ import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
 import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
+import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.domain.search.SearchWithConfigRequest.SearchWithConfigFilter
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
@@ -79,6 +80,10 @@ class DocumentSearchGroupFilterParityIntTest : BaseOpenSearchIntegrationTest() {
         seed("person2", "person", """{"score": 2, "flag": false}""", IN_2026)
         seed("personNull", "person", """{"score": null, "flag": null}""", IN_2026)
         seed("personEmpty", "person", "{}", IN_2026)
+        seed("houseAmsterdam", "house", """{"street": "Amsterdam"}""", IN_2026)
+        seed("houseRotterdam", "house", """{"street": "Rotterdam"}""", IN_2026)
+        seed("personAmsterdam", "person", """{"firstName": "Amsterdam"}""", IN_2026)
+        seed("personUtrecht", "person", """{"firstName": "Utrecht"}""", IN_2026)
         refreshIndex()
     }
 
@@ -104,6 +109,33 @@ class DocumentSearchGroupFilterParityIntTest : BaseOpenSearchIntegrationTest() {
             assertThat(jpa).describedAs("JPA").isEqualTo(scenario.expected)
             assertThat(openSearch).describedAs("OpenSearch").isEqualTo(scenario.expected)
         }
+    }
+
+    @TestFactory
+    fun `global search returns the same cases on JPA and OpenSearch`(): List<DynamicTest> = listOf(
+        GlobalScenario("term matches across definitions", "amster", NAME_MAPPINGS, setOf("houseAmsterdam", "personAmsterdam")),
+        GlobalScenario("nonsense term", "zzzznonsense", NAME_MAPPINGS, emptySet()),
+        GlobalScenario("definition without mapping is excluded", "amster", mapOf("name" to mapOf("house" to "doc:street")), setOf("houseAmsterdam")),
+    ).map { scenario ->
+        DynamicTest.dynamicTest(scenario.name) {
+            val jpa = globalSearch(jpaSearchService, scenario)
+            val openSearch = globalSearch(openSearchSearchService, scenario)
+
+            assertThat(jpa).describedAs("JPA").isEqualTo(scenario.expected)
+            assertThat(openSearch).describedAs("OpenSearch").isEqualTo(scenario.expected)
+        }
+    }
+
+    private fun globalSearch(service: DocumentSearchService, scenario: GlobalScenario): Set<String> {
+        val idToName = ids.entries.associate { (name, id) -> id to name }
+        return service.search(
+            listOf("house", "person"),
+            BlueprintType.CASE,
+            SearchWithConfigRequest().apply { globalSearchFilter = scenario.term },
+            scenario.mappings,
+            mapOf("name" to GlobalSearchFieldMeta(SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE)),
+            PageRequest.of(0, 50)
+        ).content.mapNotNull { idToName[it.id().toString()] }.toSet()
     }
 
     private fun search(service: DocumentSearchService, filter: SearchWithConfigFilter): Set<String> {
@@ -140,6 +172,13 @@ class DocumentSearchGroupFilterParityIntTest : BaseOpenSearchIntegrationTest() {
         entityManager.clear()
     }
 
+    private data class GlobalScenario(
+        val name: String,
+        val term: String,
+        val mappings: Map<String, Map<String, String>>,
+        val expected: Set<String>
+    )
+
     private data class Scenario(
         val name: String,
         val key: String,
@@ -150,6 +189,8 @@ class DocumentSearchGroupFilterParityIntTest : BaseOpenSearchIntegrationTest() {
     companion object {
         private val IN_2020 = LocalDateTime.of(2020, 6, 1, 12, 0, 0)
         private val IN_2026 = LocalDateTime.of(2026, 6, 1, 12, 0, 0)
+
+        private val NAME_MAPPINGS = mapOf("name" to mapOf("house" to "doc:street", "person" to "doc:firstName"))
 
         private val PATH_MAPPINGS = mapOf(
             "amount" to mapOf("house" to "doc:housenumber", "person" to "doc:score"),

@@ -30,4 +30,6 @@ interface PinnedItemRepository : JpaRepository<PinnedItem, UUID> {
     fun deleteByUserIdAndItemTypeAndItemKey(userId: String, itemType: PinnedItemType, itemKey: String)
 
     fun existsByUserIdAndItemTypeAndItemKey(userId: String, itemType: PinnedItemType, itemKey: String): Boolean
+
+    fun deleteByItemTypeAndItemKey(itemType: PinnedItemType, itemKey: String)
 }

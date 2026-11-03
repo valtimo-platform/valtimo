@@ -107,6 +107,10 @@
         "description": "Er zijn nog geen dossiers aan je teams toegewezen.",
         "title": "Geen teamdossiers"
       },
+      "groupNotFound": {
+        "description": "Deze dossiergroep bestaat niet meer, of je hebt er geen toegang toe.",
+        "title": "Dossiergroep niet beschikbaar"
+      },
       "noGroupListColumns": {
         "description": "Deze dossiergroep heeft nog geen lijstkolommen. Neem contact op met je beheerder om ze te configureren.",
         "title": "Geen lijstkolommen geconfigureerd"
