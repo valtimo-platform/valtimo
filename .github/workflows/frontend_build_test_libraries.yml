@@ -87,7 +87,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.4
 
       - name: Check whether NPM packages are already cached
         uses: actions/cache/restore@v4
@@ -151,7 +151,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.4
 
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
@@ -208,7 +208,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.4
 
       - name: Get node_modules from cache
         uses: actions/cache/restore@v4
