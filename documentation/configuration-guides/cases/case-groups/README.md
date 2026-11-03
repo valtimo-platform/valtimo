@@ -1,7 +1,7 @@
 # Case groups
 
 {% hint style="success" %}
-Available since Valtimo `13.52.0`
+Available since Valtimo `13.53.0`
 {% endhint %}
 
 A case group combines several case definitions into one shared case list, so users can work on

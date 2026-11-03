@@ -1,7 +1,7 @@
 # List columns
 
 {% hint style="success" %}
-Available since Valtimo `13.52.0`
+Available since Valtimo `13.53.0`
 {% endhint %}
 
 List columns determine which data is shown in the case list of a case group. Each column has one

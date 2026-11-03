@@ -1,7 +1,7 @@
 # Search fields
 
 {% hint style="success" %}
-Available since Valtimo `13.52.0`
+Available since Valtimo `13.53.0`
 {% endhint %}
 
 Search fields determine which filters are available in the case list of a case group. Like list

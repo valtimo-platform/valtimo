@@ -32,7 +32,7 @@ Settings on this tab can only be modified in draft versions. Published versions 
 ### Case color
 
 {% hint style="success" %}
-Available since Valtimo `13.52.0`
+Available since Valtimo `13.53.0`
 {% endhint %}
 
 Choose the color that represents this case type for end users, for example as the dot in front of

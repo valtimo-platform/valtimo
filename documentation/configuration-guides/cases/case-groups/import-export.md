@@ -1,7 +1,7 @@
 # Import and export
 
 {% hint style="success" %}
-Available since Valtimo `13.52.0`
+Available since Valtimo `13.53.0`
 {% endhint %}
 
 A case group can be exported to a ZIP file and imported in another environment, for example to

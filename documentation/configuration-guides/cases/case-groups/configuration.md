@@ -1,7 +1,7 @@
 # Configuration
 
 {% hint style="success" %}
-Available since Valtimo `13.52.0`
+Available since Valtimo `13.53.0`
 {% endhint %}
 
 The **Config** tab of a case group defines which case definitions belong to the group and which

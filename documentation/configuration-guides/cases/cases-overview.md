@@ -1,7 +1,7 @@
 # Cases overview & pinning
 
 {% hint style="success" %}
-Available since Valtimo `13.52.0`
+Available since Valtimo `13.53.0`
 {% endhint %}
 
 The Cases overview is the starting point for end users to find their cases. It lists all
@@ -114,7 +114,7 @@ When the toggle is on:
 <figure><img src="../../assets/configuration-guides/cases/cases-overview/08-menu-all-case-definitions.png" alt=""><figcaption>Menu with all case definitions</figcaption></figure>
 
 {% hint style="info" %}
-Existing installations that upgrade to Valtimo `13.52.0` get this toggle switched **on**, so the
+Existing installations that upgrade to Valtimo `13.53.0` get this toggle switched **on**, so the
 menu keeps showing all case definitions as before. New installations start with the toggle
 **off** and use pinning. The toggle replaces the earlier generic case list ("All cases"), which is
 no longer available.
