@@ -20,6 +20,11 @@ Row actions in the case document list can now be hidden entirely instead of only
 and plugins can contribute their own actions to that list. The **Preview** action is hidden
 rather than shown disabled when no preview plugin is configured for the document's Documenten API.
 
+### Long texts in forms can be saved
+
+A text of more than 4000 characters, such as a long description in a form text area, can now be saved
+and shown in a form.
+
 ---
 
 ## Bugfixes
