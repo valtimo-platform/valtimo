@@ -27,4 +27,5 @@ rather than shown disabled when no preview plugin is configured for the document
 | Area | Fix |
 |------|-----|
 | Widgets | A widget display condition with a number value, such as `0`, now compares numerically against a number field. The `${0}` workaround is no longer needed. |
+| Forms | A form that a process link uses can no longer be deleted. Previously this left the case definition impossible to export or create a draft from once it was final. |
 | Process editor | Expression fields in the BPMN editor now remember the Manual mode after saving, and chained expressions open in Manual mode instead of the Dropdown. |

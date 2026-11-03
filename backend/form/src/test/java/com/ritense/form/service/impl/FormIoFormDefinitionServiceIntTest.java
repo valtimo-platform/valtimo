@@ -23,8 +23,9 @@ import com.ritense.form.BaseIntegrationTest;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
-import java.util.Optional;
+import com.ritense.form.repository.FormProcessLinkRepository;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +37,13 @@ class FormIoFormDefinitionServiceIntTest extends BaseIntegrationTest {
     private FormIoFormDefinitionService formIoFormDefinitionService;
     @Autowired
     private CaseDefinitionChecker caseDefinitionChecker;
+    @Autowired
+    private FormProcessLinkRepository formProcessLinkRepository;
 
     @BeforeEach
     void setUp() {
-        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository, caseDefinitionChecker);
+        formIoFormDefinitionService = new FormIoFormDefinitionService(
+            formDefinitionRepository, caseDefinitionChecker, formProcessLinkRepository);
     }
 
     @Test

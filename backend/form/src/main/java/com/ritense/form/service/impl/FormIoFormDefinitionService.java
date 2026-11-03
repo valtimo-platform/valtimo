@@ -23,7 +23,9 @@ import com.ritense.form.domain.FormDefinitionBlueprintId;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
+import com.ritense.form.exception.FormDefinitionInUseException;
 import com.ritense.form.repository.FormDefinitionRepository;
+import com.ritense.form.repository.FormProcessLinkRepository;
 import com.ritense.form.service.FormDefinitionService;
 import com.ritense.form.web.rest.dto.FormOption;
 import com.ritense.logging.LoggableResource;
@@ -43,13 +45,16 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
 
     private final FormDefinitionRepository formDefinitionRepository;
     private final CaseDefinitionChecker caseDefinitionChecker;
+    private final FormProcessLinkRepository formProcessLinkRepository;
 
     public FormIoFormDefinitionService(
         final FormDefinitionRepository formDefinitionRepository,
-        final CaseDefinitionChecker caseDefinitionChecker
+        final CaseDefinitionChecker caseDefinitionChecker,
+        final FormProcessLinkRepository formProcessLinkRepository
     ) {
         this.formDefinitionRepository = formDefinitionRepository;
         this.caseDefinitionChecker = caseDefinitionChecker;
+        this.formProcessLinkRepository = formProcessLinkRepository;
     }
 
     @Override
@@ -261,6 +266,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
         @LoggableResource(resourceType = FormIoFormDefinition.class) UUID formDefinitionId
     ) {
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
+        assertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
     }
 
@@ -268,7 +274,15 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
     @Transactional
     public void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID formDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
+        assertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
+    }
+
+    private void assertNotInUse(UUID formDefinitionId) {
+        var processLinks = formProcessLinkRepository.findByFormDefinitionId(formDefinitionId);
+        if (!processLinks.isEmpty()) {
+            throw new FormDefinitionInUseException(formDefinitionId, processLinks);
+        }
     }
 
     @Override
