@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 public class FormIoFormDefinitionService implements FormDefinitionService {
@@ -266,6 +267,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
         @LoggableResource(resourceType = FormIoFormDefinition.class) UUID formDefinitionId
     ) {
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
+        formDefinitionRepository.findByIdForUpdate(formDefinitionId);
         assertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
     }
@@ -274,6 +276,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
     @Transactional
     public void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID formDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
+        formDefinitionRepository.findByIdForUpdate(formDefinitionId);
         assertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
     }
@@ -297,6 +300,14 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
         @LoggableResource(resourceType = FormIoFormDefinition.class) UUID id
     ) {
         return formDefinitionRepository.existsById(id);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean formDefinitionExistsByIdWithLock(
+        @LoggableResource(resourceType = FormIoFormDefinition.class) UUID id
+    ) {
+        return formDefinitionRepository.findByIdForShare(id).isPresent();
     }
 
     @Override

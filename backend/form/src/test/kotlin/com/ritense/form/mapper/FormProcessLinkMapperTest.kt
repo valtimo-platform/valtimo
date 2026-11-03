@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@ internal class FormProcessLinkMapperTest {
             formSize = FormSizes.small,
             subtitles = SUBTITLES,
         )
-        whenever(formDefinitionService.formDefinitionExistsById(createRequestDto.formDefinitionId)).thenReturn(true)
+        whenever(formDefinitionService.formDefinitionExistsByIdWithLock(createRequestDto.formDefinitionId)).thenReturn(true)
 
         val formProcessLink = formProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
 
@@ -141,7 +141,7 @@ internal class FormProcessLinkMapperTest {
             formSize = FormSizes.small,
             subtitles = SUBTITLES
         )
-        whenever(formDefinitionService.formDefinitionExistsById(updateRequestDto.formDefinitionId)).thenReturn(true)
+        whenever(formDefinitionService.formDefinitionExistsByIdWithLock(updateRequestDto.formDefinitionId)).thenReturn(true)
 
         val formProcessLink = formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
 

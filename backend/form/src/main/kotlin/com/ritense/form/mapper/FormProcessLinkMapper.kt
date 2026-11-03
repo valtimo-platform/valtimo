@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ class FormProcessLinkMapper(
 
     override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
         createRequestDto as FormProcessLinkCreateRequestDto
-        if (!formDefinitionService.formDefinitionExistsById(createRequestDto.formDefinitionId)) {
+        if (!formDefinitionService.formDefinitionExistsByIdWithLock(createRequestDto.formDefinitionId)) {
             throw RuntimeException("Form definition not found with id ${createRequestDto.formDefinitionId}")
         }
         return FormProcessLink(
@@ -152,7 +152,7 @@ class FormProcessLinkMapper(
     ): ProcessLink {
         updateRequestDto as FormProcessLinkUpdateRequestDto
         require(processLinkToUpdate.id == updateRequestDto.id)
-        if (!formDefinitionService.formDefinitionExistsById(updateRequestDto.formDefinitionId)) {
+        if (!formDefinitionService.formDefinitionExistsByIdWithLock(updateRequestDto.formDefinitionId)) {
             throw RuntimeException("Form definition not found with id ${updateRequestDto.formDefinitionId}")
         }
         return FormProcessLink(
