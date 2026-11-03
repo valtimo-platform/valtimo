@@ -61,4 +61,3 @@ Scripts can no longer use the `engine` and `context` objects that the script eng
 made available. These were never part of the supported scripting interface. A script that uses
 one of them now fails and must be rewritten using process variables or `execution`.
 {% endhint %}
-| Case widgets | A process button on a widget respects access rules based on the case's status, instead of staying hidden while the same process could be started under **Start** |
