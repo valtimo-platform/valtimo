@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CaseDetailsProcessLinksPage} from './page';
+import {CaseDetailsProcessLinksPage, PLUGIN_STEPS_BPMN_ASSET_PATH} from './page';
 
 const CASE_KEY = 'bezwaar';
 const TEST_PROCESS_KEY = 'e2e-test-process';
@@ -27,6 +27,13 @@ const LINKED_BUILDING_BLOCK_NAME = 'Subsidie Berekening';
 const LINKED_BUILDING_BLOCK_VERSION = '1.0.0';
 const LINKED_BB_PLUGIN_LABEL = 'Zaken API';
 const LINKED_BB_PLUGIN_CONFIG = 'Zaken API';
+const DOCUMENTEN_API_DEFINITION_KEY = 'documentenapi';
+const DELETE_INFORMATIE_OBJECT_ACTION_KEY = 'delete-informatie-object';
+const DELETE_INFORMATIE_OBJECT_ACTION_TITLE = 'Delete informatie object';
+const DELETE_INFORMATIE_OBJECT_DEFAULT_URL = 'pv:documentUrl';
+const PLUGIN_STEPS_PROCESS_KEY = 'e2e-plugin-steps-process';
+const PLUGIN_STEPS_PROCESS_NAME = 'E2E Plugin Steps Process';
+const PLUGIN_STEPS_SERVICE_TASK_ID = 'ServiceTask_1';
 
 test.use({storageState: undefined});
 
@@ -413,6 +420,202 @@ test.describe('Case details - Process links', () => {
       await processLinksPage.clickComplete();
       await processLinksPage.waitForModalClosed();
       await processLinksPage.assertLinkExists(START_EVENT_ID);
+    });
+  });
+
+  test.describe('6.36 — Documenten API: Delete informatie object action', () => {
+    const createdPluginConfigurationIds: string[] = [];
+    let documentenApiTitle: string;
+
+    test.beforeAll(async () => {
+      const existing = await processLinksPage.findPluginConfigurationViaApi(
+        DOCUMENTEN_API_DEFINITION_KEY
+      );
+      if (existing) {
+        documentenApiTitle = existing.title;
+        return;
+      }
+
+      // Not seeded in this environment — create Documenten API + its auth dependency
+      const authentication = await processLinksPage.createPluginConfigurationViaApi(
+        'openzaak',
+        'E2E OpenZaak Authentication',
+        {clientId: 'e2e-client', clientSecret: 'e2e-client-secret-e2e-client-secret'}
+      );
+      createdPluginConfigurationIds.push(authentication.id);
+
+      const documentenApi = await processLinksPage.createPluginConfigurationViaApi(
+        DOCUMENTEN_API_DEFINITION_KEY,
+        'E2E Documenten API',
+        {
+          url: 'http://localhost:8001/documenten/api/v1/',
+          bronorganisatie: '051845623',
+          authenticationPluginConfiguration: authentication.id,
+          apiVersion: '1.4.2-maykin-1.13.0',
+        }
+      );
+      createdPluginConfigurationIds.push(documentenApi.id);
+      documentenApiTitle = documentenApi.title;
+
+      // Plugin configurations are fetched when the modal opens; reload so the new one is listed
+      await page.reload();
+      await page.waitForFunction(
+        () => !!(window as any).processManagementEditorService?.selectionProcessDefinition
+      );
+    });
+
+    test.afterAll(async () => {
+      // Dependents first: Documenten API before its authentication configuration
+      for (const id of [...createdPluginConfigurationIds].reverse()) {
+        await processLinksPage.deletePluginConfigurationViaApi(id);
+      }
+    });
+
+    test('Action is offered for a Documenten API configuration on a service task', async () => {
+      await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+
+      await expect(
+        processLinksPage.selectPluginActionComponent
+          .locator('cds-selection-tile')
+          .filter({hasText: DELETE_INFORMATIE_OBJECT_ACTION_TITLE})
+      ).toBeVisible();
+    });
+
+    test('Configure step shows the document URL field prefilled with the process variable default', async () => {
+      await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+      await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+      await processLinksPage.clickNext();
+
+      await expect(processLinksPage.deleteInformatieObjectDocumentUrlInput).toHaveValue(
+        DELETE_INFORMATIE_OBJECT_DEFAULT_URL
+      );
+      await expect(processLinksPage.completeButton).toBeEnabled();
+    });
+
+    test('Complete saves the link with the action key and the configured document URL', async () => {
+      const documentUrl = 'pv:e2eDocumentUrl';
+
+      await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+      await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+      await processLinksPage.clickNext();
+
+      await processLinksPage.deleteInformatieObjectDocumentUrlInput.fill(documentUrl);
+      await processLinksPage.clickComplete();
+      await processLinksPage.waitForModalClosed();
+
+      const link = await processLinksPage.getProcessLink(START_EVENT_ID);
+      expect(link?.pluginActionDefinitionKey).toBe(DELETE_INFORMATIE_OBJECT_ACTION_KEY);
+      expect(link?.actionProperties?.documentUrl).toBe(documentUrl);
+    });
+
+    test.describe('Failure scenarios', () => {
+      test('Complete is disabled when the document URL is empty', async () => {
+        await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+        await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+        await processLinksPage.clickNext();
+
+        await processLinksPage.deleteInformatieObjectDocumentUrlInput.clear();
+
+        await expect(processLinksPage.completeButton).toBeDisabled();
+      });
+
+      test('Whitespace-only document URL is trimmed and keeps Complete disabled', async () => {
+        await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+        await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+        await processLinksPage.clickNext();
+
+        await processLinksPage.deleteInformatieObjectDocumentUrlInput.fill('   ');
+
+        await expect(processLinksPage.completeButton).toBeDisabled();
+      });
+
+      test('Complete is disabled when the document URL is not an absolute URL', async () => {
+        await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+        await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+        await processLinksPage.clickNext();
+
+        await processLinksPage.deleteInformatieObjectDocumentUrlInput.fill('not-a-url');
+
+        await expect(processLinksPage.completeButton).toBeDisabled();
+      });
+
+      test('Complete is disabled when a resolver expression has no path', async () => {
+        await processLinksPage.advanceToPluginActionStep(documentenApiTitle, START_EVENT_ID);
+        await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+        await processLinksPage.clickNext();
+
+        await processLinksPage.deleteInformatieObjectDocumentUrlInput.fill('pv:');
+
+        await expect(processLinksPage.completeButton).toBeDisabled();
+      });
+    });
+
+    test.describe('Persisted link', () => {
+      const persistedDocumentUrl = 'pv:e2ePersistedDocumentUrl';
+
+      test.beforeAll(async () => {
+        await processLinksPage.goToCaseProcesses(CASE_KEY);
+        await processLinksPage.deleteProcessViaApi(
+          CASE_KEY,
+          draftVersion,
+          PLUGIN_STEPS_PROCESS_KEY
+        );
+        await processLinksPage.uploadTestProcess(PLUGIN_STEPS_BPMN_ASSET_PATH);
+      });
+
+      test.afterAll(async () => {
+        await processLinksPage.deleteProcessViaApi(
+          CASE_KEY,
+          draftVersion,
+          PLUGIN_STEPS_PROCESS_KEY
+        );
+      });
+
+      test('Saving the process stores the link with the action key and document URL', async () => {
+        await processLinksPage.openProcessInBuilder(PLUGIN_STEPS_PROCESS_NAME);
+        await processLinksPage.modeler.waitForLoaded();
+
+        await processLinksPage.openCreateProcessLinkFromPanel(PLUGIN_STEPS_SERVICE_TASK_ID);
+        await processLinksPage.selectPluginConfigurationByTitle(documentenApiTitle);
+        await processLinksPage.clickNext();
+        await processLinksPage.selectPluginActionByLabel(DELETE_INFORMATIE_OBJECT_ACTION_TITLE);
+        await processLinksPage.clickNext();
+        await processLinksPage.deleteInformatieObjectDocumentUrlInput.fill(persistedDocumentUrl);
+        await processLinksPage.clickComplete();
+        await processLinksPage.waitForModalClosed();
+
+        // Link only lives in the modeler until the diagram is saved
+        await expect(processLinksPage.editProcessLinkButton).toBeVisible();
+        await processLinksPage.saveProcessAsDraft();
+
+        const saved = await processLinksPage.getCaseProcessViaApi(
+          CASE_KEY,
+          draftVersion,
+          PLUGIN_STEPS_PROCESS_KEY
+        );
+        const link = saved.processLinks.find(
+          l => l.activityId === PLUGIN_STEPS_SERVICE_TASK_ID
+        );
+        expect(link).toMatchObject({
+          activityType: 'bpmn:ServiceTask:start',
+          processLinkType: 'plugin',
+          pluginActionDefinitionKey: DELETE_INFORMATIE_OBJECT_ACTION_KEY,
+          actionProperties: {documentUrl: persistedDocumentUrl},
+        });
+      });
+
+      test('Reopening the saved link shows the stored document URL', async () => {
+        await processLinksPage.openProcessInBuilder(PLUGIN_STEPS_PROCESS_NAME);
+        await processLinksPage.modeler.waitForLoaded();
+
+        await processLinksPage.openEditProcessLinkFromPanel(PLUGIN_STEPS_SERVICE_TASK_ID);
+
+        await expect(processLinksPage.deleteInformatieObjectDocumentUrlInput).toHaveValue(
+          persistedDocumentUrl
+        );
+
+        await processLinksPage.cancelModal();
+      });
     });
   });
 });

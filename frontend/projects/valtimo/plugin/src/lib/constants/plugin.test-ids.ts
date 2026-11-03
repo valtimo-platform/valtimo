@@ -116,6 +116,14 @@ export const ZAKEN_API_CREATE_ZAAK_ACTION_TEST_IDS = {
   zaaktypeUrl: 'zakenApiCreateZaakZaaktypeUrl',
 } as const;
 
+/**
+ * Required property of the Documenten API "Delete informatie object" *action*. Bound to the
+ * `v-input` host, so a test reaches the field itself through `.locator('input')`.
+ */
+export const DOCUMENTEN_API_DELETE_INFORMATIE_OBJECT_ACTION_TEST_IDS = {
+  documentUrl: 'documentenApiDeleteInformatieObjectDocumentUrl',
+} as const;
+
 export const PLUGIN_EDIT_MODAL_TEST_IDS = {
   saveButton: 'pluginEditModalSaveButton',
   deleteButton: 'pluginEditModalDeleteButton',

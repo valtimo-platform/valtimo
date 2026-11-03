@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import org.hibernate.annotations.Type;
@@ -95,6 +96,14 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
             FormAutoConfiguration.isIgnoreDisabledFields()
                 && objectNode.has(DISABLED_KEY)
                 && objectNode.get(DISABLED_KEY).asBoolean()
+        );
+
+    public static final Set<String> DISPLAY_ONLY_COMPONENT_TYPES = Set.of("valtimo-mail-preview");
+
+    public static final Predicate<JsonNode> SUBMITTABLE = objectNode ->
+        !(
+            objectNode.has(TYPE_KEY)
+                && DISPLAY_ONLY_COMPONENT_TYPES.contains(objectNode.get(TYPE_KEY).asText())
         );
 
     // TODO: Do we want to remove the UUID and instead have a composite ID of formDefinition and caseDefinitionId?
@@ -396,6 +405,76 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
             }
         }));
         return Collections.unmodifiableList(inputFields);
+    }
+
+    public JsonNode removeNonSubmittableData(JsonNode formData) {
+        return removeNonSubmittableData(asJson(), formData);
+    }
+
+    public static JsonNode removeNonSubmittableData(JsonNode formDefinition, JsonNode formData) {
+        final JsonNode copy = formData.deepCopy();
+        removeDisplayOnlyValues(formDefinition, List.of(copy));
+        return copy;
+    }
+
+    private static void removeDisplayOnlyValues(JsonNode definitionNode, List<JsonNode> scopes) {
+        if (scopes.isEmpty()) {
+            return;
+        }
+        if (definitionNode.isObject() && definitionNode.has(TYPE_KEY)) {
+            final var key = getKey(definitionNode);
+            if (key.isPresent() && DISPLAY_ONLY_COMPONENT_TYPES.contains(definitionNode.get(TYPE_KEY).asText())) {
+                scopes.forEach(scope -> removeValueAtPath(scope, key.get()));
+                return;
+            }
+            final JsonNode children = definitionNode.get(COMPONENTS_KEY);
+            if (key.isPresent() && isInputComponent(definitionNode) && children != null && children.isArray()
+                && !children.isEmpty()) {
+                final var nestedScopes = new ArrayList<JsonNode>();
+                scopes.forEach(scope -> resolveValues(scope, key.get()).forEach(value -> {
+                    if (value.isArray()) {
+                        value.forEach(row -> {
+                            if (row.isObject()) {
+                                nestedScopes.add(row);
+                            }
+                        });
+                    } else if (value.isObject()) {
+                        nestedScopes.add(value);
+                    }
+                }));
+                removeDisplayOnlyValues(children, nestedScopes);
+                return;
+            }
+        }
+        if (definitionNode.isContainerNode()) {
+            definitionNode.forEach(child -> removeDisplayOnlyValues(child, scopes));
+        }
+    }
+
+    private static List<JsonNode> resolveValues(JsonNode scope, String key) {
+        final var values = new ArrayList<JsonNode>();
+        final JsonNode nested = scope.at(toJsonPointer(key));
+        if (!nested.isMissingNode() && !nested.isNull()) {
+            values.add(nested);
+        }
+        if (key.contains(".") && scope.isObject()) {
+            final JsonNode flat = scope.get(key);
+            if (flat != null && !flat.isNull()) {
+                values.add(flat);
+            }
+        }
+        return values;
+    }
+
+    private static void removeValueAtPath(JsonNode scope, String key) {
+        final int lastDot = key.lastIndexOf('.');
+        final JsonNode parent = lastDot < 0 ? scope : scope.at(toJsonPointer(key.substring(0, lastDot)));
+        if (parent instanceof ObjectNode objectNode) {
+            objectNode.remove(lastDot < 0 ? key : key.substring(lastDot + 1));
+        }
+        if (lastDot >= 0 && scope instanceof ObjectNode scopeObject) {
+            scopeObject.remove(key);
+        }
     }
 
     public List<ObjectNode> getInputFields() {

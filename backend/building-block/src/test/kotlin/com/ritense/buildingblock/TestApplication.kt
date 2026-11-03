@@ -40,6 +40,11 @@ class TestApplication {
             return TestMailPluginFactory(pluginService)
         }
 
+        @Bean
+        fun testBpmnErrorPluginFactory(pluginService: PluginService): PluginFactory<TestBpmnErrorPlugin> {
+            return TestBpmnErrorPluginFactory(pluginService)
+        }
+
         /** Run migrations on the calling thread instead of the background pool — an integration test asserts straight after the call, which against a dispatched run would be a race. */
         @Bean
         fun caseMigrationRunner(caseMigrationService: CaseMigrationService) =

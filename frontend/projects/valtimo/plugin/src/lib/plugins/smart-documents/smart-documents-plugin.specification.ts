@@ -40,15 +40,15 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       url: 'SmartDocuments URL',
       username: 'Gebruikersnaam',
       password: 'Wachtwoord',
-      templateGroup: 'Template groep',
-      templateName: 'Template naam',
-      templateGroupName: 'Template groepsnaam',
+      templateGroup: 'Templategroep',
+      templateName: 'Templatenaam',
+      templateGroupName: 'Templategroepsnaam',
       resultingTemplateNameListProcessVariableName:
-        'Naam van process variable om lijst in op te slaan',
+        'Naam van procesvariabele om de lijst in op te slaan',
       templateDataTooltip:
-        'De rechter value-kolom ondersteunt ook het gebruik van procesvariabelen zoals pv: en doc:',
+        'De rechterkolom (Waarde) ondersteunt ook het gebruik van procesvariabelen zoals pv: en doc:',
       format: 'Documentformaat',
-      templateData: 'Template-data',
+      templateData: 'Templatedata',
       resultingDocumentProcessVariableName: 'Naam procesvariabele voor opslag document',
       resultingDocumentProcessVariableNameTooltip:
         'De locatie van het gegenereerde document wordt opgeslagen in een procesvariabele. Deze procesvariabele kan gebruikt worden om het document te verwerken in een andere BPMN-taak.',
