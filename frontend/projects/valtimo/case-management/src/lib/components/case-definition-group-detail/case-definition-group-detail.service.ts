@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 
+import {HttpErrorResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {PinnedItemsService, PinnedItemType} from '@valtimo/case';
-import {BehaviorSubject, combineLatest, map, Observable, tap, throwError} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  EMPTY,
+  map,
+  Observable,
+  Subject,
+  tap,
+  throwError,
+} from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../services';
 import {
   CaseDefinitionGroupUpdateRequest,
@@ -36,6 +47,9 @@ export class CaseDefinitionGroupDetailService {
     this._hasListColumns$,
   ]).pipe(map(([group, hasListColumns]) => !!group?.members?.length && hasListColumns === false));
 
+  private readonly _groupNotFound$ = new Subject<string>();
+  public readonly groupNotFound$ = this._groupNotFound$.asObservable();
+
   public get currentGroup(): CaseDefinitionGroupWithMembersResponse | null {
     return this._group$.value;
   }
@@ -46,15 +60,34 @@ export class CaseDefinitionGroupDetailService {
   ) {}
 
   public loadGroup(groupKey: string): void {
-    if (this._group$.value?.key !== groupKey) {
+    const isNewGroup = this._group$.value?.key !== groupKey;
+
+    if (isNewGroup) {
       this._group$.next(null);
       this._hasListColumns$.next(null);
-      this.groupManagementService
-        .getListColumns(groupKey)
-        .subscribe(columns => this._hasListColumns$.next(columns.length > 0));
     }
 
-    this.groupManagementService.getGroup(groupKey).subscribe(group => this._group$.next(group));
+    this.groupManagementService
+      .getGroup(groupKey)
+      .pipe(
+        catchError((error: unknown) => {
+          if (error instanceof HttpErrorResponse && error.status === 404) {
+            this.pinnedItemsService.refresh();
+            this._groupNotFound$.next(groupKey);
+            return EMPTY;
+          }
+          return throwError(() => error);
+        })
+      )
+      .subscribe(group => {
+        this._group$.next(group);
+
+        if (isNewGroup) {
+          this.groupManagementService
+            .getListColumns(groupKey)
+            .subscribe(columns => this._hasListColumns$.next(columns.length > 0));
+        }
+      });
   }
 
   public setHasListColumns(hasListColumns: boolean): void {

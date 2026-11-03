@@ -34,7 +34,7 @@ import {
   NotificationModule,
   TabsModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, filter, map, Subscription} from 'rxjs';
+import {BehaviorSubject, filter, map, Subscription, take} from 'rxjs';
 import {
   CaseDefinitionGroupFormValue,
   CaseDefinitionGroupTabEnum,
@@ -117,6 +117,10 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     );
 
     this._subscriptions.add(
+      this.detailService.groupNotFound$.subscribe(() => this.redirectToGroupList())
+    );
+
+    this._subscriptions.add(
       this.group$
         .pipe(filter((group): group is NonNullable<typeof group> => !!group))
         .subscribe(group => this.pageTitleService.setCustomPageTitle(group.title, true))
@@ -171,6 +175,19 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   public navigateToTab(tab: CaseDefinitionGroupTabEnum): void {
     const groupKey = this.route.snapshot.params['groupKey'];
     this.router.navigateByUrl(`/case-management/group/${groupKey}/${tab}`);
+  }
+
+  private redirectToGroupList(): void {
+    this.router.navigate(['/case-management'], {
+      queryParams: {[CASE_MANAGEMENT_LIST_TAB_PARAM]: CaseManagementListTab.GROUPS},
+      replaceUrl: true,
+    });
+    this.translateService
+      .get('caseManagement.groups.notFound')
+      .pipe(take(1))
+      .subscribe(title =>
+        this.notificationService.showNotification({type: 'info', title, duration: 5000})
+      );
   }
 
   private downloadZip(response: HttpResponse<Blob>, groupKey: string): void {

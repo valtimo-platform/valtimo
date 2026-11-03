@@ -15,7 +15,8 @@
  */
 
 import {PinnedItemType} from '@valtimo/case';
-import {of} from 'rxjs';
+import {HttpErrorResponse} from '@angular/common/http';
+import {of, throwError} from 'rxjs';
 import {CaseDefinitionGroupResponse, CaseDefinitionGroupWithMembersResponse} from '../../models';
 import {CaseDefinitionGroupDetailService} from './case-definition-group-detail.service';
 
@@ -73,6 +74,27 @@ describe('CaseDefinitionGroupDetailService', () => {
 
     expect(managementService.getGroup).toHaveBeenCalledWith('group-a');
     expect(current).toEqual(group);
+  });
+
+  it('loads list columns once after the group loaded', () => {
+    service.loadGroup('group-a');
+
+    expect(managementService.getListColumns).toHaveBeenCalledOnceWith('group-a');
+  });
+
+  it('emits not found, skips list columns and refreshes pins on a 404', () => {
+    managementService.getGroup.and.returnValue(
+      throwError(() => new HttpErrorResponse({status: 404}))
+    );
+    const notFound: string[] = [];
+    service.groupNotFound$.subscribe(key => notFound.push(key));
+
+    service.loadGroup('missing');
+
+    expect(notFound).toEqual(['missing']);
+    expect(managementService.getListColumns).not.toHaveBeenCalled();
+    expect(pinnedItemsService.refresh).toHaveBeenCalled();
+    expect(current).toBeNull();
   });
 
   it('reloads the current group', () => {

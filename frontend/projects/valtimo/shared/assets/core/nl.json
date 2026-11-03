@@ -1070,6 +1070,7 @@
       "caseGroups": "Dossiergroepen"
     },
     "groups": {
+      "notFound": "Deze dossiergroep bestaat niet",
       "listColumns": {
         "title": "Lijstkolommen",
         "key": "Key",

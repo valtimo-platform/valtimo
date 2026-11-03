@@ -1070,6 +1070,7 @@
       "caseGroups": "Case groups"
     },
     "groups": {
+      "notFound": "This case group does not exist",
       "listColumns": {
         "title": "List columns",
         "key": "Key",
