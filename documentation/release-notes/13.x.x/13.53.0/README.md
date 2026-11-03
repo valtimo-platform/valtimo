@@ -28,5 +28,4 @@ rather than shown disabled when no preview plugin is configured for the document
 |------|-----|
 | Widgets | A widget display condition with a number value, such as `0`, now compares numerically against a number field. The `${0}` workaround is no longer needed. |
 | Process editor | Expression fields in the BPMN editor now remember the Manual mode after saving, and chained expressions open in Manual mode instead of the Dropdown. |
-| Building blocks | Editing a process in a draft building block version no longer prevents the application from starting. |
 | Building blocks | Importing a case definition that uses a building block lists each building block process once on the **Processes** tab again, instead of adding a duplicate row on every import. |
