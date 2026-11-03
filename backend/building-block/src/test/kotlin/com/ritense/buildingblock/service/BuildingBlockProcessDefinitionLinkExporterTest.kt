@@ -29,13 +29,17 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.never
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyVararg
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.operaton.bpm.engine.repository.ProcessDefinitionQuery
+import org.operaton.bpm.model.bpmn.Bpmn
 
 @ExtendWith(MockitoExtension::class)
 class BuildingBlockProcessDefinitionLinkExporterTest(
@@ -72,9 +76,11 @@ class BuildingBlockProcessDefinitionLinkExporterTest(
             ),
             main = false
         )
-        val mainProcessDefinition = org.mockito.kotlin.mock<ProcessDefinition>()
-        whenever(mainProcessDefinition.key).thenReturn("main-process-key")
-        whenever(mainProcessDefinition.id).thenReturn("main-process-id")
+        val mainProcessDefinition = processDefinition("main-process-id", "main-process-key", "main-deployment")
+        stubProcessDefinitionQuery(
+            mainProcessDefinition,
+            processDefinition("secondary-process-id", "secondary-process-key", "secondary-deployment")
+        )
 
         whenever(
             processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(
@@ -121,6 +127,7 @@ class BuildingBlockProcessDefinitionLinkExporterTest(
             )
         )
             .thenReturn(listOf(link))
+        stubProcessDefinitionQuery(processDefinition("process-id", "process-key", "deployment"))
 
         val result = exporter.export(
             BuildingBlockDocumentDefinitionExportRequest(
@@ -134,5 +141,22 @@ class BuildingBlockProcessDefinitionLinkExporterTest(
             BuildingBlockProcessDefinitionExportRequest("process-id", buildingBlockDefinitionId)
         )
         verify(repositoryService, never()).getProcessDefinition(any())
+    }
+
+    private fun processDefinition(id: String, key: String, deploymentId: String): ProcessDefinition {
+        val processDefinition = org.mockito.kotlin.mock<ProcessDefinition>()
+        Mockito.lenient().`when`(processDefinition.id).thenReturn(id)
+        Mockito.lenient().`when`(processDefinition.key).thenReturn(key)
+        Mockito.lenient().`when`(processDefinition.deploymentId).thenReturn(deploymentId)
+        Mockito.lenient().`when`(repositoryService.getBpmnModelInstance(id))
+            .thenReturn(Bpmn.createExecutableProcess(key).startEvent().done())
+        return processDefinition
+    }
+
+    private fun stubProcessDefinitionQuery(vararg processDefinitions: ProcessDefinition) {
+        val query = org.mockito.kotlin.mock<ProcessDefinitionQuery>()
+        whenever(query.processDefinitionIdIn(anyVararg())).thenReturn(query)
+        whenever(query.list()).thenReturn(processDefinitions.toList())
+        whenever(repositoryService.createProcessDefinitionQuery()).thenReturn(query)
     }
 }

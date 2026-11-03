@@ -27,7 +27,9 @@ import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecific
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService.DETACHED_PROCESS_DEFINITION_PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.FlowNode
+import org.operaton.bpm.model.bpmn.instance.Process
 import org.operaton.bpm.model.xml.instance.ModelElementInstance
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -53,8 +55,7 @@ class CopyProcessLinkOnProcessDeploymentListener(
             val modelInstance = event.processDefinitionModelInstance
 
             val newLinks = processLinkRepository.findByProcessDefinitionId(originalProcessDefinitionId)
-                // Typed overload compiles to a checkcast, so a non-flow-node id throws rather than filtering the link out.
-                .filter { link -> modelInstance.getModelElementById<ModelElementInstance>(link.activityId) is FlowNode }
+                .filter { link -> isFlowNodeOfProcess(modelInstance, link.activityId, event.processDefinitionKey) }
                 .filter { link ->
                     processLinkRepository.findByProcessDefinitionIdAndActivityId(
                         event.processDefinitionId,
@@ -82,7 +83,15 @@ class CopyProcessLinkOnProcessDeploymentListener(
         }
     }
 
-    // A multi-process file is copied in one deployment, so every process gets the same original: resolve it per key.
+    private fun isFlowNodeOfProcess(modelInstance: BpmnModelInstance, activityId: String, processKey: String): Boolean {
+        // Typed overload compiles to a checkcast, so a non-flow-node id throws rather than filtering the link out.
+        val flowNode = modelInstance.getModelElementById<ModelElementInstance>(activityId) as? FlowNode ?: return false
+        return generateSequence<ModelElementInstance>(flowNode) { it.parentElement }
+            .filterIsInstance<Process>()
+            .firstOrNull()
+            ?.id == processKey
+    }
+
     private fun originalWithSameKey(
         originalProcessDefinitionId: String,
         event: ProcessDefinitionDeployedEvent

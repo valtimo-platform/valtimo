@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <changeSet author="Ritense" id="1">
+        <sql>
+            UPDATE process_definition_building_block_definition
+            SET main = true
+            WHERE (process_definition_id, building_block_definition_key, building_block_definition_version_tag) IN (
+                SELECT process_definition_id, building_block_definition_key, building_block_definition_version_tag
+                FROM (
+                    SELECT
+                        link.process_definition_id,
+                        link.building_block_definition_key,
+                        link.building_block_definition_version_tag,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY link.building_block_definition_key, link.building_block_definition_version_tag, pd.key_
+                            ORDER BY
+                                CASE WHEN pd.version_tag_ = CONCAT('BB:', link.building_block_definition_key, ':', link.building_block_definition_version_tag) THEN 0 ELSE 1 END,
+                                pd.version_ DESC
+                        ) AS link_rank,
+                        MAX(CASE WHEN link.main THEN 1 ELSE 0 END) OVER (
+                            PARTITION BY link.building_block_definition_key, link.building_block_definition_version_tag, pd.key_
+                        ) AS has_main
+                    FROM process_definition_building_block_definition link
+                    JOIN act_re_procdef pd ON pd.id_ = link.process_definition_id
+                ) ranked
+                WHERE ranked.link_rank = 1 AND ranked.has_main = 1
+            )
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <sql>
+            DELETE FROM process_definition_building_block_definition
+            WHERE (process_definition_id, building_block_definition_key, building_block_definition_version_tag) IN (
+                SELECT process_definition_id, building_block_definition_key, building_block_definition_version_tag
+                FROM (
+                    SELECT
+                        link.process_definition_id,
+                        link.building_block_definition_key,
+                        link.building_block_definition_version_tag,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY link.building_block_definition_key, link.building_block_definition_version_tag, pd.key_
+                            ORDER BY
+                                CASE WHEN pd.version_tag_ = CONCAT('BB:', link.building_block_definition_key, ':', link.building_block_definition_version_tag) THEN 0 ELSE 1 END,
+                                pd.version_ DESC
+                        ) AS link_rank
+                    FROM process_definition_building_block_definition link
+                    JOIN act_re_procdef pd ON pd.id_ = link.process_definition_id
+                ) ranked
+                WHERE ranked.link_rank > 1
+            )
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="3">
+        <sql>
+            UPDATE process_definition_building_block_definition AS link
+            SET process_definition_id = (
+                SELECT latest.id_
+                FROM act_re_procdef linked_pd
+                JOIN act_re_procdef latest ON latest.key_ = linked_pd.key_
+                WHERE linked_pd.id_ = link.process_definition_id
+                    AND latest.version_tag_ = CONCAT('BB:', link.building_block_definition_key, ':', link.building_block_definition_version_tag)
+                ORDER BY latest.version_ DESC
+                LIMIT 1
+            )
+            WHERE EXISTS (
+                SELECT 1
+                FROM act_re_procdef linked_pd
+                JOIN act_re_procdef latest ON latest.key_ = linked_pd.key_
+                WHERE linked_pd.id_ = link.process_definition_id
+                    AND latest.version_tag_ = CONCAT('BB:', link.building_block_definition_key, ':', link.building_block_definition_version_tag)
+                    AND latest.version_ &gt; linked_pd.version_
+            )
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4">
+        <sql>
+            INSERT INTO process_definition_building_block_definition (
+                process_definition_id,
+                building_block_definition_key,
+                building_block_definition_version_tag,
+                main
+            )
+            SELECT
+                candidate.id_,
+                candidate.building_block_definition_key,
+                candidate.building_block_definition_version_tag,
+                false
+            FROM (
+                SELECT
+                    sibling.id_,
+                    link.building_block_definition_key,
+                    link.building_block_definition_version_tag,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY link.building_block_definition_key, link.building_block_definition_version_tag, sibling.key_
+                        ORDER BY sibling.version_ DESC
+                    ) AS candidate_rank
+                FROM process_definition_building_block_definition link
+                JOIN act_re_procdef pd ON pd.id_ = link.process_definition_id
+                JOIN act_re_procdef sibling
+                    ON sibling.deployment_id_ = pd.deployment_id_
+                    AND sibling.version_tag_ = pd.version_tag_
+                WHERE pd.version_tag_ = CONCAT('BB:', link.building_block_definition_key, ':', link.building_block_definition_version_tag)
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM process_definition_building_block_definition other_link
+                        JOIN act_re_procdef other_pd ON other_pd.id_ = other_link.process_definition_id
+                        WHERE other_link.building_block_definition_key = link.building_block_definition_key
+                            AND other_link.building_block_definition_version_tag = link.building_block_definition_version_tag
+                            AND other_pd.key_ = sibling.key_
+                    )
+            ) candidate
+            WHERE candidate.candidate_rank = 1
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

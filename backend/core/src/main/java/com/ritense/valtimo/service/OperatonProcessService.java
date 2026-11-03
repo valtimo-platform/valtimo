@@ -25,7 +25,6 @@ import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionS
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byActive;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byBlueprintId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKeyIn;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKeyOfUnlinkedProcess;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
@@ -649,8 +648,8 @@ public class OperatonProcessService {
                 );
             }
             if (blueprintId != null) {
-                // clean up previous process definitions, can only be triggered when we're deploying a draft version
-                for (OperatonProcessDefinition superseded : getSupersededProcessesForFile(blueprintId, bpmnModel, latestProcessDefinition)) {
+                // clean up previous process definition, can only be triggered when we're deploying a draft version
+                for (OperatonProcessDefinition superseded : getSupersededProcessesForFile(blueprintId, fileName, bpmnModel, latestProcessDefinition)) {
                     applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
                         superseded.getId(),
                         blueprintId
@@ -835,9 +834,9 @@ public class OperatonProcessService {
         return processDefinitions.isEmpty() ? null : processDefinitions.getFirst();
     }
 
-    /** A building block links every process of a file, so every process it still holds is superseded. */
     private List<OperatonProcessDefinition> getSupersededProcessesForFile(
         BlueprintId blueprintId,
+        String fileName,
         BpmnModelInstance bpmnModel,
         @Nullable OperatonProcessDefinition latestProcessDefinition
     ) {
@@ -847,10 +846,20 @@ public class OperatonProcessService {
         Set<String> processDefinitionKeys = bpmnModel.getModelElementsByType(Process.class).stream()
             .map(Process::getId)
             .collect(Collectors.toSet());
-
-        return operatonRepositoryService.findProcessDefinitions(
-            byKeyIn(processDefinitionKeys).and(byVersionTag(blueprintId.getTagPrefix() + blueprintId))
+        List<OperatonProcessDefinition> attached = operatonRepositoryService.findProcessDefinitions(
+            byVersionTag(blueprintId.getTagPrefix() + blueprintId)
         );
+        Set<String> supersededFileDeploymentIds = attached.stream()
+            .filter(processDefinition -> processDefinitionKeys.contains(processDefinition.getKey()))
+            .filter(processDefinition -> fileName.equals(processDefinition.getResourceName()))
+            .map(OperatonProcessDefinition::getDeploymentId)
+            .collect(Collectors.toSet());
+
+        return attached.stream()
+            .filter(processDefinition -> processDefinitionKeys.contains(processDefinition.getKey())
+                || (supersededFileDeploymentIds.contains(processDefinition.getDeploymentId())
+                    && fileName.equals(processDefinition.getResourceName())))
+            .toList();
     }
 
     /** All deployed versions of the process in this file, latest version first. */

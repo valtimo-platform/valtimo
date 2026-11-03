@@ -97,23 +97,20 @@ class BuildingBlockDefinitionEventListener(
         newId: BuildingBlockDefinitionId
     ): List<String> {
         val originals = findOriginalProcessDefinitions(basedOnId)
-        val mainProcessDefinitionKeys = originals.filterValues { main -> main }.keys.map { it.key }.toSet()
+        val mainByKey = originals.entries.associate { (original, main) -> original.key to main }
 
-        // Each process of a multi-process file is linked, but the file is deployed once.
-        val deployedProcessDefinitions = originals.keys
+        return originals.keys
             .distinctBy { it.deploymentId to it.resourceName }
             .flatMap { deployCopy(it, newId) }
-
-        // A key deployed twice keeps only its latest version, the one the second deployment left attached.
-        return deployedProcessDefinitions
+            .filter { it.key in mainByKey }
             .groupBy { it.key }
-            .values
-            .map { versions -> versions.maxBy { it.version } }
-            .onEach { linkProcessDefinition(newId, it.id, it.key in mainProcessDefinitionKeys) }
-            .map { it.id }
+            .map { (key, versions) ->
+                versions.maxBy { it.version }
+                    .also { linkProcessDefinition(newId, it.id, mainByKey.getValue(key)) }
+                    .id
+            }
     }
 
-    // Per key, the latest version still attached to the building block: a stale link may point to a superseded one.
     private fun findOriginalProcessDefinitions(
         basedOnId: BuildingBlockDefinitionId
     ): Map<OperatonProcessDefinition, Boolean> {
