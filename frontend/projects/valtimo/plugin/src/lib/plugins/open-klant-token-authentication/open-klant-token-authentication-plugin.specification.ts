@@ -25,14 +25,14 @@ const openKlantTokenAuthenticationPluginSpecification: PluginSpecification = {
 
   pluginTranslations: {
     nl: {
-      title: 'OpenKlant token authenticatie',
-      description: 'Auhenticatie met behulp van tokens voor gebruik door OpenKlant.',
+      title: 'OpenKlant-tokenauthenticatie',
+      description: 'Authenticatie met behulp van tokens voor gebruik door OpenKlant.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Onder deze naam zal de plug-in te herkennen zijn in de rest van de applicatie',
+        'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       token: 'Token',
       tokenTooltip:
-        'Het token is een sleutel waarmee toestemmingen verleend zijn om specifieke open-klant data te mogen ophalen',
+        'Het token is een sleutel die toegang geeft tot specifieke gegevens in OpenKlant',
     },
     en: {
       title: 'OpenKlant token authentication',
