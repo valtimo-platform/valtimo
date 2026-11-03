@@ -59,7 +59,14 @@ interface IframeToParentEvents {
   ready: Record<string, never>;
   resize: { height: number };
   configurationChanged: { valid: boolean; title: string; data: Record<string, unknown> };
-  /** Reserved: current GZAC frontends do not act on this event. */
+  /**
+   * Ask the Angular parent to open a GZAC case page. Only these routes are followed:
+   * `/cases/<caseDefinitionKey>`, `/cases/<caseDefinitionKey>/document/<documentId>` and
+   * `/cases/<caseDefinitionKey>/document/<documentId>/<tab>`, where the key and tab are
+   * `[A-Za-z0-9][A-Za-z0-9_-]*` and the document id is a UUID — no query string, fragment or
+   * encoded characters. The parent navigates only during transient user activation, so emit it
+   * directly from a click handler; any other request is ignored.
+   */
   navigate: { route: string };
   /** Reserved: current GZAC frontends do not act on this event. */
   notification: { type: "success" | "warning" | "error" | "info"; message: string };

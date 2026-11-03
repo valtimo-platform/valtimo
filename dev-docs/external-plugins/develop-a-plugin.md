@@ -689,7 +689,8 @@ policy.
 | `emit("taskCompleted", {})` | Level 2 only: tell the parent *you* completed the task (via `gzacApi.asUser`), so it closes and refreshes. |
 | `offerPanel({bundleKey?, key, title, subtitle?, pinned?, context?})` | Show one of your `side-panel` bundles in GZAC's app-wide side panel (next section). |
 | `withdrawPanel(key, bundleKey?)` | Remove the panel content you offered under `key`. |
-| `emit("notification", …)` / `emit("navigate", …)` | **Reserved** — defined in the message schema, but current GZAC frontends do not act on them. |
+| `emit("navigate", {route})` | Open a GZAC case page, for example from a "Dossier" button (see [Opening a case page](#opening-a-case-page)). |
+| `emit("notification", …)` | **Reserved** — defined in the message schema, but current GZAC frontends do not act on it. |
 | `setConfiguration(valid, title, data)` / `onPrefillConfiguration(h)` | The `config` bundle contract — next section. |
 | `destroy()` | Detach listeners (hot-reload/dev). |
 
@@ -735,6 +736,28 @@ while looking things up elsewhere. The panel is generic: it does not know what i
   text. When the user is on another page, the case is marked "Not this page", so they do not
   mistake your content for the case they are looking at. GZAC resolves the case name itself, so
   you don't need to put it in your `subtitle`.
+
+### Opening a case page
+
+A bundle cannot navigate the GZAC page itself (the iframe is sandboxed). Instead it asks the
+parent with `sdk.emit("navigate", {route})`, which GZAC follows through its own router:
+
+```ts
+button.addEventListener("click", () =>
+  sdk.emit("navigate", { route: `/cases/${ctx.caseDefinitionKey}/document/${ctx.documentId}` })
+);
+```
+
+- **Case pages only.** `route` must be one of `/cases/<caseDefinitionKey>`,
+  `/cases/<caseDefinitionKey>/document/<documentId>` or
+  `/cases/<caseDefinitionKey>/document/<documentId>/<tab>`. The key and tab are
+  `[A-Za-z0-9][A-Za-z0-9_-]*` (at most 128 characters), the document id is a UUID. Query strings,
+  fragments, encoded characters and anything else are ignored.
+- **Only on a user action.** GZAC navigates only while the page has transient user activation,
+  which a click inside your iframe gives it. Emit from the click handler itself: a request sent
+  without a click, or after a slow async call, is ignored. Browsers without
+  `navigator.userActivation` never navigate.
+- The usual route guards and permissions of the target page apply.
 
 ### The `config` bundle contract
 

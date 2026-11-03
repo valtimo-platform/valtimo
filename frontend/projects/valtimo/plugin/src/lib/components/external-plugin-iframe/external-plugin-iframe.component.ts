@@ -30,6 +30,7 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import {Router} from '@angular/router';
 import {
   catchError,
   defer,
@@ -64,6 +65,16 @@ const MAX_PANEL_TEXT_LENGTH = 200;
 
 /** Context keys that name the case; only GZAC's surface context may set them. */
 const CASE_CONTEXT_KEYS = ['documentId', 'caseDefinitionKey'];
+
+const MAX_NAVIGATE_ROUTE_LENGTH = 512;
+
+/**
+ * The only routes a plugin may navigate to: a case list, a case, or a tab of a case. The character
+ * classes leave no room for a scheme, host, query, fragment, percent-encoding, dot segments,
+ * backslashes or empty segments.
+ */
+const NAVIGATE_ROUTE_PATTERN =
+  /^\/cases\/[A-Za-z0-9][A-Za-z0-9_-]{0,127}(?:\/document\/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}(?:\/[A-Za-z0-9][A-Za-z0-9_-]{0,127})?)?$/;
 
 @Component({
   standalone: true,
@@ -251,7 +262,38 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
       case 'withdrawPanel':
         this._withdrawPanel(data.payload);
         break;
+      case 'navigate':
+        this._navigate(data.payload);
+        break;
     }
+  }
+
+  /**
+   * Opens a case page the plugin asked for. Only routes matching {@link NAVIGATE_ROUTE_PATTERN} are
+   * followed, and only through the router, so the target is always a page of this app.
+   *
+   * Requires transient user activation: a click inside the iframe also activates this window, so a
+   * button in the plugin works, while a plugin cannot move the user away on its own. Browsers that
+   * do not expose `navigator.userActivation` never navigate.
+   */
+  private _navigate(payload: unknown): void {
+    const route = (payload as {route?: unknown} | null)?.route;
+    if (
+      typeof route !== 'string' ||
+      route.length > MAX_NAVIGATE_ROUTE_LENGTH ||
+      !NAVIGATE_ROUTE_PATTERN.test(route)
+    ) {
+      console.warn('Ignored navigate request from external plugin: route not allowed');
+      return;
+    }
+
+    const userActivation = (navigator as {userActivation?: {isActive?: boolean}}).userActivation;
+    if (userActivation?.isActive !== true) {
+      console.warn('Ignored navigate request from external plugin: no user activation');
+      return;
+    }
+
+    void this._injector.get(Router).navigateByUrl(route);
   }
 
   /**
