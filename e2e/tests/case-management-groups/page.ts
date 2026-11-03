@@ -28,7 +28,7 @@ import {ColorPanel} from '../../shared/color-panel/color-panel.utils';
 import {fillStable} from '../../utils/ui.utils';
 import {CaseGroup, GROUP_MANAGEMENT_ENDPOINT} from '../../utils/case-group.utils';
 
-export type GroupDetailTab = 'Config' | 'List columns' | 'Search fields';
+export type GroupDetailTab = 'General' | 'List columns' | 'Search fields';
 
 export class CaseManagementGroupsPage {
   readonly colorPanel: ColorPanel;

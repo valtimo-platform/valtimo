@@ -20,9 +20,7 @@ The generic case list ("All cases") has been removed. Existing installations get
 toggle **Show all case definitions in the menu** switched on during the upgrade, so the menu
 keeps listing all case definitions.
 
-More information:
-[Case groups](../../../configuration-guides/cases/case-groups/README.md) and
-[Cases overview & pinning](../../../configuration-guides/cases/cases-overview.md).
+More information: [Case groups](../../../configuration-guides/cases/case-groups/README.md).
 
 ---
 

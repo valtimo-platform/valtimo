@@ -16,7 +16,6 @@ From here you can configure:
 - **[Form flows](form-flows.md)** — Multi-step form sequences
 - **[Tasks](tasks/README.md)** — Task list column and search field configuration
 - **[Case groups](case-groups/README.md)** — Shared case lists that combine several case definitions
-- **[Cases overview & pinning](cases-overview.md)** — How end users find case types and case groups, and pin them to the sidebar
 - **[Case list](case-list/README.md)** — End-user case list columns and search fields
 - **[Case details](case-details/README.md)** — Tabs, statuses, tags, and header configuration
 - **[ZGW](zgw/README.md)** — Dutch government standards integration

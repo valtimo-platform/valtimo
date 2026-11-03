@@ -1,11 +1,35 @@
-# Configuration
+# General
 
 {% hint style="success" %}
 Available since Valtimo `13.53.0`
 {% endhint %}
 
-The **Config** tab of a case group defines which case definitions belong to the group and which
+The **General** tab of a case group defines which case definitions belong to the group and which
 color represents the group in the Cases overview and the left sidebar.
+
+---
+
+## Configuring general settings
+
+{% stepper %}
+{% step %}
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click the **Case groups** tab
+{% endstep %}
+{% step %}
+Click a case group to open it
+{% endstep %}
+{% step %}
+Click the **General** tab
+
+<figure><img src="../../../assets/configuration-guides/cases/case-groups/12-general-tab-overview.png" alt=""><figcaption>General tab overview</figcaption></figure>
+{% endstep %}
+{% endstepper %}
 
 ---
 
@@ -13,7 +37,13 @@ color represents the group in the Cases overview and the left sidebar.
 
 {% stepper %}
 {% step %}
-Go to **Admin** > **Cases** and click the **Case groups** tab
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click the **Case groups** tab
 {% endstep %}
 {% step %}
 Click **Create**
@@ -38,8 +68,20 @@ The key of the case group is generated from the name (for example, `citizen_requ
 
 ### Editing a case group
 
-Open the case group and click **Edit** in the header to change the name or description. Click
-**Save** to apply the changes.
+{% stepper %}
+{% step %}
+Open the case group
+{% endstep %}
+{% step %}
+Click **Edit** in the header
+{% endstep %}
+{% step %}
+Change the name or description
+{% endstep %}
+{% step %}
+Click **Save**
+{% endstep %}
+{% endstepper %}
 
 ---
 
@@ -64,15 +106,15 @@ Case definitions have a color of their own. It is set in the **Case color** pane
 
 {% stepper %}
 {% step %}
-Open the case group and go to the **Config** tab
-{% endstep %}
-{% step %}
 Click **Add case definition**
 {% endstep %}
 {% step %}
-Select a case definition and click **Add to group**
+Select a case definition
 
 <figure><img src="../../../assets/configuration-guides/cases/case-groups/04-add-case-definition.png" alt=""><figcaption>Add case definition</figcaption></figure>
+{% endstep %}
+{% step %}
+Click **Add to group**
 {% endstep %}
 {% endstepper %}
 
@@ -89,6 +131,14 @@ configured** and its case list shows no case data. Add list columns on the
 
 ### Removing a case definition
 
-Click the overflow menu (**⋮**) of a case definition and select **Delete**. The case definition is
-removed from the group immediately, without a confirmation. The case definition itself and its
+{% stepper %}
+{% step %}
+Click the overflow menu (**⋮**) of a case definition
+{% endstep %}
+{% step %}
+Select **Delete**
+{% endstep %}
+{% endstepper %}
+
+The case definition is removed from the group immediately, without a confirmation. The case definition itself and its
 cases are not affected.

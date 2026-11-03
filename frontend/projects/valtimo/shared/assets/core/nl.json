@@ -1117,7 +1117,7 @@
         "unsupportedPathPrefix": "Alleen document- (doc:) en dossierpaden (case:) kunnen doorzocht worden."
       },
       "tabs": {
-        "config": "Configuratie",
+        "general": "Algemeen",
         "listColumns": "Lijstkolommen",
         "searchFields": "Zoekvelden"
       },

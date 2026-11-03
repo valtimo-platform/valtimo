@@ -14,7 +14,13 @@ different place in each case definition.
 
 {% stepper %}
 {% step %}
-Go to **Admin** > **Cases** and click the **Case groups** tab
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click the **Case groups** tab
 {% endstep %}
 {% step %}
 Click a case group to open it
@@ -31,7 +37,7 @@ Click the arrow in front of a column to see its path for each case definition.
 
 {% hint style="info" %}
 The **Add** button is disabled until the case group contains at least one case definition. Add
-case definitions first on the [Config](configuration.md#adding-case-definitions) tab.
+case definitions first on the [General](configuration.md#adding-case-definitions) tab.
 {% endhint %}
 
 ### Creating a column
@@ -41,16 +47,22 @@ case definitions first on the [Config](configuration.md#adding-case-definitions)
 Click **Add**
 {% endstep %}
 {% step %}
-Fill in the title. The key is generated from the title; click the pencil icon to change it.
+Fill in the title
+{% endstep %}
+{% step %}
+Optionally, click the pencil icon to change the key that is generated from the title
 {% endstep %}
 {% step %}
 Fill in a path for each case definition, either by selecting it from the dropdown or by typing it
-after switching on **Manual**
+after switching the toggle from **Dropdown** to **Manual**
 
 <figure><img src="../../../assets/configuration-guides/cases/case-groups/06-add-column-modal.png" alt=""><figcaption>Add column</figcaption></figure>
 {% endstep %}
 {% step %}
-Select a display type and, if applicable, the sorting options
+Select a display type
+{% endstep %}
+{% step %}
+Optionally, select the sorting options
 {% endstep %}
 {% step %}
 Click **Save**
@@ -89,7 +101,14 @@ definition.
 
 ### Editing or deleting a column
 
-Click the overflow menu (**⋮**) of a column and select **Edit** or **Delete**.
+{% stepper %}
+{% step %}
+Click the overflow menu (**⋮**) of a column
+{% endstep %}
+{% step %}
+Select **Edit** or **Delete**
+{% endstep %}
+{% endstepper %}
 
 ### Reordering columns
 

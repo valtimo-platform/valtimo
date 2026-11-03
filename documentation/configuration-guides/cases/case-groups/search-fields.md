@@ -14,7 +14,13 @@ field in every case definition of the group.
 
 {% stepper %}
 {% step %}
-Go to **Admin** > **Cases** and click the **Case groups** tab
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **Cases** under the Configuration section
+{% endstep %}
+{% step %}
+Click the **Case groups** tab
 {% endstep %}
 {% step %}
 Click a case group to open it
@@ -36,7 +42,10 @@ Click the arrow in front of a search field to see its path for each case definit
 Click **Add**
 {% endstep %}
 {% step %}
-Fill in the title. The key is generated from the title; click the pencil icon to change it.
+Fill in the title
+{% endstep %}
+{% step %}
+Optionally, click the pencil icon to change the key that is generated from the title
 {% endstep %}
 {% step %}
 Fill in a path for each case definition
@@ -44,7 +53,13 @@ Fill in a path for each case definition
 <figure><img src="../../../assets/configuration-guides/cases/case-groups/09-add-search-field-modal.png" alt=""><figcaption>Add search field</figcaption></figure>
 {% endstep %}
 {% step %}
-Select the data type, field type, and, optionally, the match type
+Select the data type
+{% endstep %}
+{% step %}
+Select the field type
+{% endstep %}
+{% step %}
+Optionally, select the match type
 {% endstep %}
 {% step %}
 Click **Save**
@@ -70,7 +85,14 @@ supports the single field type.
 
 ### Editing or deleting a search field
 
-Click the overflow menu (**⋮**) of a search field and select **Edit** or **Delete**.
+{% stepper %}
+{% step %}
+Click the overflow menu (**⋮**) of a search field
+{% endstep %}
+{% step %}
+Select **Edit** or **Delete**
+{% endstep %}
+{% endstepper %}
 
 ### Reordering search fields
 

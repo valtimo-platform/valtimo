@@ -1117,7 +1117,7 @@
         "unsupportedPathPrefix": "Only document (doc:) and case (case:) paths can be searched."
       },
       "tabs": {
-        "config": "Config",
+        "general": "General",
         "listColumns": "List columns",
         "searchFields": "Search fields"
       },
