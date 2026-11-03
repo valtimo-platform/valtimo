@@ -23,11 +23,7 @@ import {
   RESTRICTED_PROCESS_START_PERMISSIONS,
   WIDGET_PROCESS_ACCESS_CONFIG as CONFIG,
 } from './widget-process-access-config';
-
-interface RolePermission {
-  resourceType: string;
-  actions: string[];
-}
+import {RolePermission} from './widget-process-access.types';
 
 export class WidgetProcessAccessPage {
   private originalPermissions: RolePermission[] | null = null;
