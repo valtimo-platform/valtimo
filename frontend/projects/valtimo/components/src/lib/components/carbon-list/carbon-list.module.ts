@@ -35,6 +35,7 @@ import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option
 import {OverflowMenuTriggerComponent} from '../overflow-menu/overflow-menu-trigger/overflow-menu-trigger.component';
 import {ViewContentModule} from '../view-content/view-content.module';
 import {ActionItemDisabledPipe} from './action-item-disabled.pipe';
+import {ActionItemHiddenPipe} from './action-item-hidden.pipe';
 import {CarbonListComponent} from './carbon-list.component';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonNoResultsComponent} from './no-results/carbon-no-results.component';
@@ -43,6 +44,7 @@ import {CarbonTagsModalComponent} from './tags-modal/tags-modal.component';
 @NgModule({
   declarations: [
     ActionItemDisabledPipe,
+    ActionItemHiddenPipe,
     CarbonListComponent,
     CarbonListFilterPipe,
     CarbonNoResultsComponent,
