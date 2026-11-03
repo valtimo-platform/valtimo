@@ -18,10 +18,14 @@ package com.ritense.buildingblock.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.BaseIntegrationTest
+import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
+import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.importer.ImportContext
 import com.ritense.importer.ImportRequest
+import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersionTag
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -57,6 +61,104 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
         assertThat(processDefinitions.single().main).isTrue()
     }
 
+    @Test
+    fun `should link every process of a BPMN file with more than one process`() {
+        importBuildingBlock(twoProcessBpmn("Second"), mainProcessKey = FIRST_PROCESS_KEY)
+        importBuildingBlock(twoProcessBpmn("Second, edited"), mainProcessKey = FIRST_PROCESS_KEY)
+
+        val processDefinitions = runWithoutAuthorization {
+            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(
+                BUILDING_BLOCK_KEY,
+                BUILDING_BLOCK_VERSION
+            )
+        }
+
+        assertThat(processDefinitions.map { it.key to it.main })
+            .containsExactlyInAnyOrder(FIRST_PROCESS_KEY to true, SECOND_PROCESS_KEY to false)
+    }
+
+    @Test
+    fun `should link every process of a BPMN file with more than one process in a new version`() {
+        importBuildingBlock(twoProcessBpmn("Second"), mainProcessKey = FIRST_PROCESS_KEY)
+
+        val processDefinitions = runWithoutAuthorization {
+            buildingBlockManagementService.finalize(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
+            buildingBlockManagementService.createDraft(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION, DRAFT_VERSION)
+            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(BUILDING_BLOCK_KEY, DRAFT_VERSION)
+        }
+
+        assertThat(processDefinitions.map { it.key to it.main })
+            .containsExactlyInAnyOrder(FIRST_PROCESS_KEY to true, SECOND_PROCESS_KEY to false)
+        assertThat(processDefinitions.map { it.versionTag }).containsOnly("BB:$BUILDING_BLOCK_KEY:$DRAFT_VERSION")
+    }
+
+    @Test
+    fun `should copy a single main link to a new version when a stale link to an older version exists`() {
+        importBuildingBlock("Building block process")
+        val staleProcessDefinitionId = linkedProcessDefinitionIds().single()
+        importBuildingBlock("Building block process, edited")
+        // State left behind by gzac-issues 900: the superseded version is still linked, as main.
+        linkRepository.save(
+            ProcessDefinitionBuildingBlockDefinition(
+                ProcessDefinitionBuildingBlockDefinitionId(
+                    ProcessDefinitionId.of(staleProcessDefinitionId),
+                    buildingBlockDefinitionId()
+                ),
+                true
+            )
+        )
+
+        val processDefinitions = runWithoutAuthorization {
+            buildingBlockManagementService.finalize(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
+            buildingBlockManagementService.createDraft(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION, DRAFT_VERSION)
+            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(BUILDING_BLOCK_KEY, DRAFT_VERSION)
+        }
+
+        assertThat(processDefinitions.map { it.key to it.main }).containsExactly(PROCESS_KEY to true)
+        assertThat(processDefinitions.single().name).isEqualTo("Building block process, edited")
+    }
+
+    @Test
+    fun `should copy the attached version to a new version when only a superseded version is linked`() {
+        importBuildingBlock("Building block process")
+        val staleProcessDefinitionId = linkedProcessDefinitionIds().single()
+        importBuildingBlock("Building block process, edited")
+        // State left behind by gzac-issues 900: the attached version is not linked, the superseded one is.
+        linkRepository.deleteAll(linkRepository.findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId()))
+        linkRepository.save(
+            ProcessDefinitionBuildingBlockDefinition(
+                ProcessDefinitionBuildingBlockDefinitionId(
+                    ProcessDefinitionId.of(staleProcessDefinitionId),
+                    buildingBlockDefinitionId()
+                ),
+                true
+            )
+        )
+
+        val processDefinitions = runWithoutAuthorization {
+            buildingBlockManagementService.finalize(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION)
+            buildingBlockManagementService.createDraft(BUILDING_BLOCK_KEY, BUILDING_BLOCK_VERSION, DRAFT_VERSION)
+            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(BUILDING_BLOCK_KEY, DRAFT_VERSION)
+        }
+
+        assertThat(processDefinitions.map { it.key to it.main }).containsExactly(PROCESS_KEY to true)
+        assertThat(processDefinitions.single().name).isEqualTo("Building block process, edited")
+    }
+
+    @Test
+    fun `should detach every process of a BPMN file with more than one process`() {
+        importBuildingBlock(twoProcessBpmn("Second"), mainProcessKey = FIRST_PROCESS_KEY)
+        importBuildingBlock(twoProcessBpmn("Second, edited"), mainProcessKey = FIRST_PROCESS_KEY)
+
+        val attached = runWithoutAuthorization {
+            operatonRepositoryService.findProcessDefinitions(
+                byVersionTag("BB:$BUILDING_BLOCK_KEY:$BUILDING_BLOCK_VERSION")
+            )
+        }
+
+        assertThat(attached.map { it.key }).containsExactlyInAnyOrder(FIRST_PROCESS_KEY, SECOND_PROCESS_KEY)
+    }
+
     // The process name varies per import so the engine deploys a new version, as two differing exports do.
     private fun importBuildingBlock(processName: String) {
         val bpmn = resource("config/building-block/bezwaar/1-0-0/bpmn/$PROCESS_KEY.bpmn")
@@ -64,6 +166,10 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
             .replace("name=\"Building block process\"", "name=\"$processName\"")
             .toByteArray()
 
+        importBuildingBlock(bpmn, PROCESS_KEY)
+    }
+
+    private fun importBuildingBlock(bpmn: ByteArray, mainProcessKey: String) {
         ImportContext.runImporter {
             runWithoutAuthorization {
                 buildingBlockDefinitionImporter.import(
@@ -82,13 +188,25 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
                 mainProcessDefinitionImporter.import(
                     ImportRequest(
                         "/building-block/building-block-definition-main-process-definition.json",
-                        """{"processDefinitionKey":"$PROCESS_KEY"}""".toByteArray(),
+                        """{"processDefinitionKey":"$mainProcessKey"}""".toByteArray(),
                         buildingBlockDefinitionId = buildingBlockDefinitionId()
                     )
                 )
             }
         }
     }
+
+    private fun twoProcessBpmn(secondProcessName: String) = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+          <bpmn:process id="$FIRST_PROCESS_KEY" name="First" isExecutable="true">
+            <bpmn:startEvent id="FirstStart" />
+          </bpmn:process>
+          <bpmn:process id="$SECOND_PROCESS_KEY" name="$secondProcessName" isExecutable="true">
+            <bpmn:startEvent id="SecondStart" />
+          </bpmn:process>
+        </bpmn:definitions>
+    """.trimIndent().toByteArray()
 
     private fun linkedProcessDefinitionIds() = linkRepository
         .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId())
@@ -109,6 +227,9 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
         // Deliberately distinctive so no fixture or other integration test can have created it.
         const val BUILDING_BLOCK_KEY = "import-dup-check"
         const val BUILDING_BLOCK_VERSION = "7.3.1"
+        const val DRAFT_VERSION = "7.3.2"
         const val PROCESS_KEY = "building-block-process"
+        const val FIRST_PROCESS_KEY = "import-dup-check-first"
+        const val SECOND_PROCESS_KEY = "import-dup-check-second"
     }
 }

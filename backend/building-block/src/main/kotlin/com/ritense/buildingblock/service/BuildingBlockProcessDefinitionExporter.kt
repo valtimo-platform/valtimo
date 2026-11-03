@@ -23,6 +23,8 @@ import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
+import org.operaton.bpm.model.bpmn.BpmnModelInstance
+import org.operaton.bpm.model.bpmn.instance.Process
 import java.io.ByteArrayOutputStream
 
 class BuildingBlockProcessDefinitionExporter(
@@ -50,7 +52,7 @@ class BuildingBlockProcessDefinitionExporter(
                 PATH.format(
                     request.buildingBlockDefinitionId.key,
                     formattedCaseDefinitionVersion,
-                    processDefinition.key
+                    fileKey(bpmnModelInstance)
                 ),
                 it.toByteArray()
             )
@@ -60,6 +62,10 @@ class BuildingBlockProcessDefinitionExporter(
             emptySet()
         )
     }
+
+    // Every process of a multi-process file exports the same path, so the file is written once.
+    private fun fileKey(bpmnModelInstance: BpmnModelInstance): String =
+        bpmnModelInstance.definitions.getChildElementsByType(Process::class.java).first().id
 
     companion object {
         private const val PATH =
