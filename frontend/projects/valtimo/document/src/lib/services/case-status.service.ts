@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
-import {HttpClient} from '@angular/common/http';
+import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {InternalCaseStatus} from '../models';
 
@@ -37,9 +37,15 @@ export class CaseStatusService extends BaseApiService {
     );
   }
 
+  /** @deprecated Only used by the removed generic case list. Will be removed in a future release. */
   public getAllInternalCaseStatuses(): Observable<InternalCaseStatus[]> {
+    return this.httpClient.get<InternalCaseStatus[]>(this.getApiUrl('/v1/internal-status'));
+  }
+
+  public getGroupInternalCaseStatuses(groupKey: string): Observable<InternalCaseStatus[]> {
     return this.httpClient.get<InternalCaseStatus[]>(
-      this.getApiUrl('/v1/internal-status')
+      this.getApiUrl(`/v1/case-definition-group/${groupKey}/internal-status`),
+      {headers: new HttpHeaders().set(InterceptorSkip, '403,404')}
     );
   }
 
