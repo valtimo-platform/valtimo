@@ -17,7 +17,6 @@ import {CommonModule} from '@angular/common';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input, OnDestroy} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
 import {DocumentService} from '@valtimo/document';
 import {
   groupWidgetData,
@@ -117,7 +116,6 @@ export class CaseWidgetImageComponent extends WidgetProcess implements OnDestroy
 
   constructor(
     protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
     private readonly widgetsService: WidgetsService,
     private readonly widgetLayoutService: WidgetLayoutService,
     private readonly uploadProviderService: UploadProviderService,
@@ -125,7 +123,7 @@ export class CaseWidgetImageComponent extends WidgetProcess implements OnDestroy
     private readonly httpClient: HttpClient,
     private readonly widgetDataGroupService: WidgetDataGroupService
   ) {
-    super(documentService, permissionService);
+    super(documentService);
   }
 
   public ngOnDestroy(): void {

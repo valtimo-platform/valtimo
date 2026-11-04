@@ -17,6 +17,7 @@
 <cds-sidenav
   *ngIf="{
     closestSequence: closestSequence$ | async,
+    activeParentSequence: activeParentSequence$ | async,
     overflowMenuSequence: overflowMenuSequence$ | async,
     sideBarExpanded: sideBarExpanded$ | async,
     menuItemsLoaded: menuItemsLoaded$ | async,
@@ -60,9 +61,32 @@
         }">
           <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
 
+          <v-overflow-menu
+            *ngIf="menuItem.titleLink"
+            class="submenu-title-overflow"
+            [menuWidth]="208"
+            [open]="obs.overflowMenuSequence === '' + menuItem.sequence"
+            placement="right-start"
+            [portalToBody]="true"
+            [useHostAsReference]="true"
+            (openChange)="!$event && onOverflowMenuClosed('' + menuItem.sequence)"
+          >
+            <v-overflow-menu-option (selected)="openInNewTab(menuItem.titleLink)">{{
+              'interface.openInNewTab' | translate
+            }}</v-overflow-menu-option>
+          </v-overflow-menu>
+
           <cds-sidenav-menu
+            [ngClass]="{
+              'menu-item--section-active': obs.activeParentSequence === '' + menuItem.sequence,
+              'menu-item--section-current': obs.closestSequence === '' + menuItem.sequence,
+            }"
             [title]="menuItem | menuItemTranslate | async"
+            [valtimoSubmenuTitleClick]="!!menuItem.titleLink"
+            (submenuTitleClickEvent)="onSubmenuTitleClick(menuItem, $event)"
+            (submenuTitleContextMenuEvent)="onRightClick('' + menuItem.sequence)"
             [attr.data-testid]="'sidenav-item-' + menuItem.title"
+            [attr.data-test-id]="menuItem.testId"
           >
             <ng-container
               *ngFor="let childMenuItem of menuItem.children; trackBy: trackByMenuItem"
@@ -76,8 +100,9 @@
               >
                 <cds-sidenav-item
                   [attr.data-testid]="'sidenav-item-' + childMenuItem?.title"
+                  [attr.data-test-id]="childMenuItem?.testId"
                   [title]="
-                    menuItem.title === 'Cases' || menuItem.title === 'Dossiers'
+                    menuItem.id === casesMenuItemId
                       ? (childMenuItem | menuItemTranslate | async)
                       : null
                   "
@@ -129,6 +154,7 @@
     ><cds-sidenav-item
       *ngIf="!menuItem.children"
       [attr.data-testid]="'sidenav-item-' + menuItem.title"
+      [attr.data-test-id]="menuItem.testId"
       [ngClass]="{
         'menu-item--hidden': menuItem.includeFunction !== undefined,
         'menu-item--visible':
