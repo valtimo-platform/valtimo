@@ -42,6 +42,7 @@ import {
 } from 'carbon-components-angular';
 
 import {CARBON_CONSTANTS} from '../../../constants';
+import {QUICK_SEARCH_TEST_IDS} from '../../../constants/components.test-ids';
 import {ValtimoCdsModalDirective} from '../../../directives/valtimo-cds-modal/valtimo-cds-modal.directive';
 import {QuickSearchItem} from '../../../models';
 import {QuickSearchStateService} from '../../../services';
@@ -70,6 +71,8 @@ export class QuickSearchModalComponent {
 
   public readonly $modalOpen = this.quickSearchStateService.$modalOpen;
   public readonly $showDuplicateError = signal<boolean>(false);
+
+  protected readonly testIds = QUICK_SEARCH_TEST_IDS;
   public readonly formGroup = this.fb.group({
     title: this.fb.control('', [
       Validators.required,

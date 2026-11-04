@@ -194,7 +194,30 @@ class CopyProcessLinkOnProcessDeploymentListenerTest {
         listener.copyProcessLinks(event)
 
         assertEquals(1, savedLinks().size)
-        verify(operatonRepositoryService, never()).findProcessDefinitionById(any())
+        verify(operatonRepositoryService, never()).findProcessDefinitionById(PREVIOUS_PROCESS_DEFINITION_ID)
+    }
+
+    @Test
+    fun `should copy process links from the original process definition with the same key`() {
+        val event = deploymentEvent(
+            versionTag = "BB:bijstand-uitvoeren:1.0.1",
+            previousVersionTag = "BB:bijstand-uitvoeren:1.0.0",
+            source = OperatonDeploymentSource(false, "BB:bijstand-uitvoeren:1.0.0", OTHER_PROCESS_DEFINITION_ID)
+        )
+        val otherProcessDefinition: OperatonProcessDefinition = mock()
+        whenever(otherProcessDefinition.key).thenReturn("other-process")
+        whenever(otherProcessDefinition.deploymentId).thenReturn("original-deployment")
+        whenever(operatonRepositoryService.findProcessDefinitionById(OTHER_PROCESS_DEFINITION_ID))
+            .thenReturn(otherProcessDefinition)
+        val originalProcessDefinition: OperatonProcessDefinition = mock()
+        whenever(originalProcessDefinition.id).thenReturn(ORIGINAL_PROCESS_DEFINITION_ID)
+        whenever(operatonRepositoryService.findProcessDefinition(any())).thenReturn(originalProcessDefinition)
+
+        listener.copyProcessLinks(event)
+
+        verify(processLinkRepository, never()).findByProcessDefinitionId(OTHER_PROCESS_DEFINITION_ID)
+        assertEquals(1, savedLinks().size)
+        assertEquals(NEW_PROCESS_DEFINITION_ID, savedLinks().single().processDefinitionId)
     }
 
     @Test
@@ -279,5 +302,6 @@ class CopyProcessLinkOnProcessDeploymentListenerTest {
         private const val PREVIOUS_PROCESS_DEFINITION_ID = "service-task-process:1:previous"
         private const val NEW_PROCESS_DEFINITION_ID = "service-task-process:2:new"
         private const val ORIGINAL_PROCESS_DEFINITION_ID = "service-task-process:1:original"
+        private const val OTHER_PROCESS_DEFINITION_ID = "other-process:1:original"
     }
 }

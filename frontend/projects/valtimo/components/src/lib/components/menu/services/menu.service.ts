@@ -32,6 +32,7 @@ import {
 import {distinctUntilChanged, filter, map, tap} from 'rxjs/operators';
 import {PendingChangesService} from '../../pending-changes/pending-changes.service';
 import {AppendMenuItemsFunction} from '../../../models';
+import {getMenuLinkMatchScore} from '../menu-route-match.util';
 import {isEqual} from 'lodash';
 import {KeycloakService} from 'keycloak-angular';
 
@@ -74,18 +75,13 @@ export class MenuService implements OnDestroy {
     return combineLatest([this.currentRoute$, this.menuItems$]).pipe(
       filter(() => !this.pendingChangesService.pendingChanges),
       map(([currentRoute, menuItems]) => {
-        let closestSequence = '0';
+        // No match means no highlight. Defaulting to '0' marked the first item -- the dashboard --
+        // as active on every route no item owns.
+        let closestSequence = '';
         let highestDiff = 0;
 
-        const normalize = (value: string): string =>
-          ('/' + decodeURIComponent(value).toLowerCase().replace(/^\/+/, '')).replace(/\/+$/, '');
-
-        const normalizedCurrent = normalize(currentRoute);
-
         const checkItemMatch = (rawUrl: string, seq: string, parentSeq?: string): void => {
-          const normalizedUrl = normalize(rawUrl);
-          const diff =
-            normalizedCurrent.length - normalizedCurrent.replace(normalizedUrl, '').length;
+          const diff = getMenuLinkMatchScore(currentRoute, rawUrl);
 
           if (diff > highestDiff) {
             highestDiff = diff;
@@ -97,6 +93,15 @@ export class MenuService implements OnDestroy {
         menuItems.forEach(item => {
           const topLink = Array.isArray(item.link) ? item.link.join('/') : '';
           checkItemMatch(topLink, `${item.sequence}`);
+
+          // Parent sequence is passed as its own parent, so the item shows up as a breadcrumb.
+          if (Array.isArray(item.titleLink))
+            checkItemMatch(item.titleLink.join('/'), `${item.sequence}`, `${item.sequence}`);
+
+          // Routes the item owns without having a menu entry of their own, e.g. an unpinned group.
+          item.sectionLinks?.forEach(sectionLink =>
+            checkItemMatch(sectionLink, `${item.sequence}`, `${item.sequence}`)
+          );
 
           item.children?.forEach(child => {
             if (Array.isArray(child.link)) {
