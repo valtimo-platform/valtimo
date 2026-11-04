@@ -20,7 +20,43 @@
     "ProcessTimerSkippedEvent": "Timer skipped > {{activityId}}"
   },
   "case": {
-    "allCases": "All cases",
+    "menu": {
+      "pinPlaceholder": "Pin items to show them here"
+    },
+    "overview": {
+      "title": "Cases overview",
+      "pin": "Pin to sidebar",
+      "unpin": "Unpin from sidebar",
+      "search": {
+        "label": "Search case types and case groups",
+        "placeholder": "Search case types and case groups..."
+      },
+      "groups": {
+        "title": "Case groups",
+        "noResults": "No case groups match your search.",
+        "open": "Open {{title}}",
+        "pin": "Pin to sidebar",
+        "pinnedToast": "Case group '{{name}}' now appears under 'Cases' in the left sidebar.",
+        "unpinnedToast": "Case group '{{name}}' no longer appears under 'Cases' in the left sidebar.",
+        "pinErrorToast": "Pinning '{{name}}' failed. Please try again.",
+        "unpinErrorToast": "Unpinning '{{name}}' failed. Please try again."
+      },
+      "types": {
+        "title": "Case types",
+        "name": "Name",
+        "noResults": "No case types match your search.",
+        "open": "Open {{name}}",
+        "pin": "Pin to sidebar",
+        "pinnedToast": "Case type '{{name}}' now appears under 'Cases' in the left sidebar.",
+        "unpinnedToast": "Case type '{{name}}' no longer appears under 'Cases' in the left sidebar.",
+        "pinErrorToast": "Pinning '{{name}}' failed. Please try again.",
+        "unpinErrorToast": "Unpinning '{{name}}' failed. Please try again."
+      },
+      "pinInfo": {
+        "title": "Put the case groups you use most in your sidebar:",
+        "message": "click the pin icon on a case group or case type. It then appears on the left under Cases, so you can reach it from any page in a single click."
+      }
+    },
     "exportButtonTooltip": "Export current case list",
     "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
     "bulkAssign": {
@@ -70,6 +106,14 @@
       "TEAM": {
         "description": "No cases have been assigned to your teams yet.",
         "title": "No team cases"
+      },
+      "groupNotFound": {
+        "description": "This case group does not exist anymore, or you do not have access to it.",
+        "title": "Case group not available"
+      },
+      "noGroupListColumns": {
+        "description": "This case group has no list columns yet. Contact your administrator to configure them.",
+        "title": "No list columns configured"
       },
       "search": {
         "description": "There are no cases that match your search criteria.",
@@ -176,7 +220,7 @@
       "maxFilesReached": "The maximum number of files ({{maxFiles}}) has been reached. No more files can be uploaded.",
       "navigateToCaseAdmin": "Configure Zaak",
       "noZaakFoundTitle": "No Zaak found",
-      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
+      "noZaakFound": "No files could be retrieved because no Zaak was found for this case.",
       "noFilesTitle": "No files",
       "noFiles": "No files found for this case.",
       "uploadSuccessful": "Successfully uploaded document",
@@ -188,6 +232,13 @@
     "startSubProcess": "Start",
     "noStartableProcesses": "No action",
     "noLinkedStartProcessNotification": "There is no start form linked",
+    "searchError": {
+      "title": "Search failed",
+      "description": "The cases could not be searched. Check the search fields or try again later."
+    },
+    "startCase": {
+      "selectCaseType": "Select case type"
+    },
     "noLinkedProcessNotification": "There is no form linked",
     "configure": "Configure",
     "claimAssigneeCase": "Claim",
@@ -465,7 +516,7 @@
         },
         "zaakdetails": {
           "title": "Zaakdetails sync object",
-          "notConfigured": "No portal sync configured for this case type.",
+          "notConfigured": "No portal sync configured for this case definition.",
           "objectManagementTitle": "Object management configuration",
           "caseDefinitionKey": "Case definition",
           "enabled": "Enabled",
@@ -580,7 +631,7 @@
     "otherTasks": "Other tasks",
     "taskOpen": "Open",
     "taskCreated": "Created",
-    "noResultsMyTasks": "No tasks available for to this user.",
+    "noResultsMyTasks": "No tasks available for this user.",
     "noResultsOtherTasks": "No tasks available to other users.",
     "taskIsAssigned": "Task is assigned"
   },
@@ -1014,6 +1065,138 @@
       "draft": "Draft",
       "status": "Status"
     },
+    "listTabs": {
+      "cases": "Case definitions",
+      "caseGroups": "Case groups"
+    },
+    "groups": {
+      "notFound": "This case group does not exist",
+      "listColumns": {
+        "title": "List columns",
+        "key": "Key",
+        "memberCount": "Number of case definitions",
+        "noColumns": "No columns configured",
+        "addColumn": "Add column",
+        "editColumn": "Edit column",
+        "columnKey": "Key",
+        "columnKeyPlaceholder": "Enter a unique key",
+        "columnTitle": "Title",
+        "columnTitlePlaceholder": "Enter a display title",
+        "displayType": "Display type",
+        "sortable": "Sortable",
+        "sortableCaseFieldsOnly": "Only columns that map to a single shared case field (for example case:createdOn) can be sortable.",
+        "exportable": "Exportable",
+        "pathPerCase": "Path (per case definition)",
+        "pathPerCaseTooltip": "Path to the property to display for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties.",
+        "saveError": "Failed to save columns",
+        "searchPlaceholder": "Search columns..."
+      },
+      "searchFields": {
+        "title": "Search fields",
+        "noFields": "No search fields configured",
+        "addField": "Add search field",
+        "editField": "Edit search field",
+        "fieldKey": "Key",
+        "fieldKeyPlaceholder": "Enter a unique key",
+        "fieldTitle": "Title",
+        "fieldTitlePlaceholder": "Enter a display title",
+        "dataType": "Data type",
+        "fieldType": "Field type",
+        "matchType": "Match type",
+        "dropdownDataProvider": "Dropdown data provider",
+        "dropdownDataProviderPlaceholder": "Select a dropdown data provider",
+        "saveError": "Failed to save search fields",
+        "searchPlaceholder": "Search fields...",
+        "fieldKeyTooltip": "Required. Unique identifier for this search field.",
+        "fieldTitleTooltip": "Optional. Display name shown to users.",
+        "dataTypeTooltip": "Required. The data type of the field values.",
+        "fieldTypeTooltip": "Required. How the search input is displayed.",
+        "matchTypeTooltip": "Optional. How values are matched (exact or partial).",
+        "dropdownDataProviderTooltip": "Optional. Class name providing dropdown options.",
+        "pathPerCaseTooltip": "Path to the property to search on for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties.",
+        "unsupportedPathPrefix": "Only document (doc:) and case (case:) paths can be searched."
+      },
+      "tabs": {
+        "general": "General",
+        "listColumns": "List columns",
+        "searchFields": "Search fields"
+      },
+      "config": {
+        "color": "Group color",
+        "colorDescription": "Choose a display color for this case group",
+        "selected": "Selected",
+        "customColorLabel": "Choose your own color:",
+        "chooseFreely": "Choose freely",
+        "assignedCases": "Assigned case definitions",
+        "addCase": "Add case definition",
+        "selectCase": "Select case definition",
+        "selectCasePlaceholder": "Choose case definition...",
+        "addToGroup": "Add to group",
+        "noMembers": "No case definitions assigned. Click \"Add case definition\" to add one.",
+        "addMemberError": "Failed to add case definition",
+        "caseCount": "{{count}} case definitions in this group",
+        "searchPlaceholder": "Filter case definitions...",
+        "noSearchResults": "No case definitions match your search",
+        "columns": {
+          "name": "Name",
+          "key": "Key"
+        }
+      },
+      "pathMappings": {
+        "title": "Path mappings",
+        "caseDefinition": "Case definition",
+        "path": "Path",
+        "pathPlaceholder": "e.g. doc:name or case:createdOn",
+        "noMembers": "Add case definitions to the group first",
+        "saveError": "Failed to save path mappings"
+      },
+      "noResults": {
+        "title": "No case groups",
+        "description": "No case groups have been created yet"
+      },
+      "editModal": {
+        "title": "Edit case group"
+      },
+      "createModal": {
+        "title": "Create case group",
+        "name": "Name",
+        "namePlaceholder": "Enter a name",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter a description"
+      },
+      "pathCounter": "{{filled}} of {{total}} case definitions filled",
+      "searchCaseTypes": "Filter case definitions...",
+      "noMatchingCaseTypes": "No matching case definitions found",
+      "showOnlyEmpty": "Show only missing paths",
+      "showOnlyEmptyTooltip": "If this is checked, only case definitions without a path are shown. Rows that are filled in stay visible until this is turned off.",
+      "noListColumnsWarning": {
+        "title": "No list columns configured",
+        "message": "Cases are linked to this group, but no list columns are configured yet. The case list of this group will not show any case data until list columns are added."
+      },
+      "noMembersHint": "Add a case definition to this group first, under Configuration.",
+      "export": {
+        "button": "Export",
+        "successTitle": "Download will start shortly",
+        "errorTitle": "Error",
+        "errorMessage": "The case group could not be exported"
+      },
+      "import": {
+        "button": "Upload",
+        "title": "Import case group",
+        "submit": "Import",
+        "upload": {
+          "title": "Upload file",
+          "description": "Supported file type is ZIP, as exported from a case group.",
+          "buttonText": "Select file"
+        },
+        "overwriteWarning": "A case group with the same key will be overwritten, including its members, list columns and search fields. Case definitions that do not exist in this environment are skipped.",
+        "overwriteConfirm": "I understand that an existing case group with the same key will be overwritten",
+        "overwriteConfirmError": "Confirm that the existing case group may be overwritten",
+        "successTitle": "Case group imported",
+        "errorTitle": "Import failed",
+        "errorMessage": "The file could not be imported as a case group. Check that it is a valid case group export."
+      }
+    },
     "needsConfiguration": "Needs configuration",
     "inactive": "Inactive",
     "globalActiveVersionModal": {
@@ -1063,7 +1246,7 @@
       "finalizeDraftConfirmationModal": {
         "loadingText": "Finalizing draft version...",
         "title": "Finalize draft",
-        "description": "You are about to finalize {{caseDefinitionKey}} {{caseDefinitionVersionTag}} After finalization you can't make any more changes. Are you sure?",
+        "description": "You are about to finalize {{caseDefinitionKey}} {{caseDefinitionVersionTag}}. After finalization you can't make any more changes. Are you sure?",
         "confirm": "Finalize",
         "successMessage": "Draft finalized",
         "errorTitle": "Error",
@@ -1186,6 +1369,12 @@
             "onText": "Yes",
             "offText": "No"
           }
+        },
+        "color": {
+          "title": "Case color",
+          "description": "Choose a display color for this case definition",
+          "selected": "Selected",
+          "customColorLabel": "Choose your own color:"
         }
       },
       "caseListTab": {
@@ -1223,7 +1412,7 @@
         "tabNameLabel": "Tab name (optional)",
         "title": "Create new tab in {{documentDefinitionName}}",
         "uniqueKeyError": "The key for this tab must be unique.",
-        "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
+        "invalidKeyError": "The key for this tab can only contain letters, numbers and dashes.",
         "widgetsComponent": "Widgets component",
         "externalPlugin": "Plugins & Apps",
         "externalPluginDisabled": "There are no activated plugins or apps with a case tab, or they have all been added already.",
@@ -1987,7 +2176,7 @@
       },
       "list": {
         "noResultsTitle": "No upload fields",
-        "noResultsDescription": "Add a upload field to start"
+        "noResultsDescription": "Add an upload field to start"
       },
       "search": {
         "noResultsTitle": "No results",
@@ -2123,6 +2312,7 @@
   "Overview of all Cases": "Overview of all Cases",
   "Start Case": "Create New Case",
   "Case details": "Case details",
+  "Case group": "Case group",
   "Related documents": "Related documents",
   "Overview of all documents in this case": "Overview of all documents in this case",
   "Basics": "Basics",
@@ -2150,7 +2340,7 @@
     "noResults": {
       "title": "No processes found",
       "caseDescription": "Click here to create a process associated with this case",
-      "independentDescription": "Click here to create an standalone process"
+      "independentDescription": "Click here to create a standalone process"
     },
     "deleteModal": {
       "title": "Delete process",
@@ -2580,7 +2770,7 @@
     "show": "Show",
     "entries": "entries",
     "noMatchingItems": "No matching items found for ",
-    "noFieldDefinitions": "No fields definitions defined",
+    "noFieldDefinitions": "No field definitions defined",
     "noResults": "No result found",
     "showingResults": "Showing {{number}} of {{total}} results",
     "showingResult": "Showing {{number}} result",
@@ -3113,7 +3303,7 @@
     "close": "Close",
     "save": "Save object",
     "delete": "Delete object",
-    "deleteObjectConfirmation": "Are you sure you want to delete this object",
+    "deleteObjectConfirmation": "Are you sure you want to delete this object?",
     "messages": {
       "objectCreated": "Object created successfully",
       "objectCreationError": "An error occurred while creating the object",
@@ -3178,7 +3368,8 @@
     },
     "formioFormViewModelComponent": {
       "submitError": "Invalid submissions"
-    }
+    },
+    "Send": "Send"
   },
   "viewTypeConverter": {
     "Yes": "Yes",
@@ -3743,7 +3934,7 @@
     "checkPatches": "Verify patches",
     "migrate": "Migrate cases",
     "modalTitle": "Migrate cases",
-    "modalContent": "Are you sure you migrate the cases? Some changes can not be undone."
+    "modalContent": "Are you sure you want to migrate the cases? Some changes can not be undone."
   },
   "formFlow": {
     "title": "All form flows",
@@ -4303,9 +4494,9 @@
           "title": "Menu collapsed by default",
           "description": "Start with the navigation menu collapsed instead of expanded."
         },
-        "enableGenericCaseList": {
-          "title": "Enable generic case list",
-          "description": "Show a single case list view with a dropdown to switch between case definitions."
+        "showAllCaseDefinitionsInMenu": {
+          "title": "Show all case definitions in the menu",
+          "description": "Show every case definition the user has access to in the Cases menu, instead of only their pinned case groups and case types. Pinning is turned off."
         },
         "enableManualTaskListRefresh": {
           "title": "Enable manual task list refresh",

@@ -108,10 +108,11 @@ export class ColorPickerComponent
   public writeValue(value: string | null): void {
     this._value = value || null;
 
-    if (this._pickr && this._initialized) {
-      if (value) {
-        this._pickr.setColor(value);
-      }
+    // Silent: a non-silent setColor emits 'save', which would re-save the incoming value.
+    // Silent setColor skips applyColor, so repaint the button explicitly.
+    if (this._pickr && this._initialized && value) {
+      this._pickr.setColor(value, true);
+      this._pickr.applyColor(true);
     }
   }
 
