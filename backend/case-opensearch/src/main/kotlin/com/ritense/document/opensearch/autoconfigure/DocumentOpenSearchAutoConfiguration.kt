@@ -49,6 +49,7 @@ import com.ritense.document.opensearch.service.OpenSearchHealthService
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
 import com.ritense.document.opensearch.web.SearchEngineResource
+import com.ritense.document.repository.InternalCaseStatusRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
@@ -250,11 +251,12 @@ class DocumentOpenSearchAutoConfiguration {
         outboxService: OutboxService,
         objectMapper: ObjectMapper,
         caseDefinitionService: CaseDefinitionService,
+        internalCaseStatusRepository: InternalCaseStatusRepository,
     ): JsonSchemaDocumentOpenSearchService =
         JsonSchemaDocumentOpenSearchService(
             elasticsearchOperations, translator, authorizationService,
             jpaRepository, userManagementService, searchFieldService, outboxService, objectMapper,
-            caseDefinitionService,
+            caseDefinitionService, internalCaseStatusRepository,
         )
 
     @Bean("jpaDocumentSearchService")

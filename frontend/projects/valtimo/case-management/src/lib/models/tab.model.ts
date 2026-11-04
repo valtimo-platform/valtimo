@@ -48,3 +48,9 @@ export enum TabEnum {
   MIGRATION = 'migration',
   CONFIGURATION = 'configuration',
 }
+
+export enum CaseDefinitionGroupTabEnum {
+  CONFIG = 'config',
+  LIST_COLUMNS = 'list-columns',
+  SEARCH_FIELDS = 'search-fields',
+}
