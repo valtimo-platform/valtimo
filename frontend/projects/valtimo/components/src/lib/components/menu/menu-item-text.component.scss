@@ -28,10 +28,38 @@
   .v-overflow-menu__pane {
     pointer-events: auto;
   }
+
+  // Trigger is inline-flex and grows with its text; cap it so long titles get an ellipsis
+  .v-overflow-menu,
+  .v-overflow-menu__trigger {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .menu-item-text-container {
   display: flex;
+  width: 100%;
+  min-width: 0;
+
+  // Flex drops the whitespace between the dot and the title, which otherwise adds a space after
+  // the dot that labels without one don't get.
+  .menu-item-label {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  // Makes the text the label's baseline; the empty dot would otherwise lower it by half a pixel.
+  // Ellipsis lives here: a flex container (the label) ignores text-overflow.
+  .menu-item-title {
+    align-self: baseline;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   .menu-item-icon-container {
     position: absolute;
@@ -41,5 +69,17 @@
 
   .empty-menu-icon-text {
     font-weight: 600 !important;
+  }
+
+  // Own element rather than the icon container, which the sidebar collapses to zero width.
+  // It has to stay inside the label box: the sidebar clips anything outside it (overflow: hidden).
+  .menu-item-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: 0.375rem;
+    flex-shrink: 0;
+    align-self: center;
+    border-radius: 50%;
   }
 }
