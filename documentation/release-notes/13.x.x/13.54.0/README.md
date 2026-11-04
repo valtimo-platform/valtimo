@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Dashboard | A long dashboard widget subtitle is now cut off with `...` instead of running out of the widget, the full title and subtitle show on hover, and the subtitle has more space between it and the chart. |
