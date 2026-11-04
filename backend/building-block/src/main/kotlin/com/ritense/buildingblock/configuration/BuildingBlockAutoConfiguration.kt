@@ -23,6 +23,7 @@ import com.ritense.buildingblock.listener.BuildingBlockContinuousSyncListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.listener.BuildingBlockDocumentPreDeleteListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
+import com.ritense.buildingblock.listener.BuildingBlockProcessDefinitionDetachedListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
 import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
 import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
@@ -282,6 +283,12 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDecisionService,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessDefinitionDetachedListener::class)
+    fun buildingBlockProcessDefinitionDetachedListener(
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    ) = BuildingBlockProcessDefinitionDetachedListener(processDefinitionBuildingBlockDefinitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkService::class)

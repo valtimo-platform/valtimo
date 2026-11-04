@@ -35,5 +35,6 @@ and shown in a form.
 | Case import | Importing a case type no longer fails when one of its building blocks already exists as final. |
 | Process editor | Expression fields in the BPMN editor now remember the Manual mode after saving, and chained expressions open in Manual mode instead of the Dropdown. |
 | Widgets | A widget display condition with a number value, such as `0`, now compares numerically against a number field. The `${0}` workaround is no longer needed. |
+| Building blocks | Importing a case definition that uses a building block lists each building block process once on the **Processes** tab again, instead of adding a duplicate row on every import. |
 | Case widgets | A process button on a widget respects access rules based on the case's status, instead of staying hidden while the same process could be started under **Start** |
 | Widgets | Typing in the value field of a new widget display condition no longer makes the field lose focus. |

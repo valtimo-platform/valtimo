@@ -29,6 +29,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -38,6 +39,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -206,4 +208,42 @@ class BuildingBlockDefinitionProcessDefinitionServiceTest {
         verify(operatonProcessService).deleteProcessDefinition("existing-id")
         verify(processLinkService).deleteProcessLinksForProcessDefinition("existing-id")
     }
+
+    @Test
+    fun `setMainLink marks the requested process definition as main`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId("bezwaar", "1.0.0")
+        val existingLink = link(buildingBlockDefinitionId, "sub:1:aaa", main = false)
+
+        whenever(
+            processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(
+                buildingBlockDefinitionId
+            )
+        ).thenReturn(listOf(existingLink))
+        doNothing().whenever(buildingBlockDefinitionChecker).assertCanUpdateBuildingBlockDefinition(
+            buildingBlockDefinitionId
+        )
+
+        service.setMainLink(
+            buildingBlockDefinitionId,
+            null,
+            ProcessDefinitionId.of("sub:1:aaa"),
+            true
+        )
+
+        val saved = argumentCaptor<ProcessDefinitionBuildingBlockDefinition>()
+        verify(processDefinitionBuildingBlockDefinitionRepository).save(saved.capture())
+        assertThat(saved.firstValue.main).isTrue()
+    }
+
+    private fun link(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        processDefinitionId: String,
+        main: Boolean
+    ) = ProcessDefinitionBuildingBlockDefinition(
+        ProcessDefinitionBuildingBlockDefinitionId(
+            ProcessDefinitionId.of(processDefinitionId),
+            buildingBlockDefinitionId
+        ),
+        main
+    )
 }
