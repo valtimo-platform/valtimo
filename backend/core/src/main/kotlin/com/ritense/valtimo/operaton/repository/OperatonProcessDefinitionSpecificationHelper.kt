@@ -65,6 +65,11 @@ class OperatonProcessDefinitionSpecificationHelper {
         }
 
         @JvmStatic
+        fun byDeploymentId(deploymentId: String) = Specification<OperatonProcessDefinition> { root, _, cb ->
+            cb.equal(root.get<Any>(DEPLOYMENT_ID), deploymentId)
+        }
+
+        @JvmStatic
         fun byVersion(version: Int) = Specification<OperatonProcessDefinition> { root, _, cb ->
             cb.equal(root.get<Any>(VERSION), version)
         }
