@@ -104,8 +104,10 @@ class BuildingBlockDefinitionEventListener(
         return originals
             .map { (_, original) -> original }
             .distinctBy { it.deploymentId to it.resourceName }
-            .flatMap { deployCopy(it, newId) }
-            .onEach { linkProcessDefinition(newId, it.id, it.key in mainProcessDefinitionKeys) }
+            .flatMap { original ->
+                deployCopy(original, newId)
+                    .onEach { linkProcessDefinition(newId, it.id, it.key in mainProcessDefinitionKeys) }
+            }
             .map { it.id }
     }
 

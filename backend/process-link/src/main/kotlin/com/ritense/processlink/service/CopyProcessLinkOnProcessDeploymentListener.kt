@@ -82,7 +82,6 @@ class CopyProcessLinkOnProcessDeploymentListener(
         }
     }
 
-    // A multi-process file is copied in one deployment, so every process gets the same original: resolve it per key.
     private fun originalWithSameKey(
         originalProcessDefinitionId: String,
         event: ProcessDefinitionDeployedEvent

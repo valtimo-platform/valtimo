@@ -63,7 +63,6 @@ class BuildingBlockProcessDefinitionExporter(
         )
     }
 
-    // Every process of a multi-process file exports the same path, so the file is written once.
     private fun fileKey(bpmnModelInstance: BpmnModelInstance): String =
         bpmnModelInstance.definitions.getChildElementsByType(Process::class.java).first().id
 

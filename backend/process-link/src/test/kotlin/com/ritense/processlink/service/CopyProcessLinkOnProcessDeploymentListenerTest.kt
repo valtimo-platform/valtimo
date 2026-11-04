@@ -199,7 +199,6 @@ class CopyProcessLinkOnProcessDeploymentListenerTest {
 
     @Test
     fun `should copy process links from the original process definition with the same key`() {
-        // a multi-process file is copied in one deployment, which names the original of its first process only
         val event = deploymentEvent(
             versionTag = "BB:bijstand-uitvoeren:1.0.1",
             previousVersionTag = "BB:bijstand-uitvoeren:1.0.0",

@@ -649,7 +649,7 @@ public class OperatonProcessService {
                 );
             }
             if (blueprintId != null) {
-                // clean up previous process definitions, can only be triggered when we're deploying a draft version
+                // clean up previous process definition, can only be triggered when we're deploying a draft version
                 for (OperatonProcessDefinition superseded : getSupersededProcessesForFile(blueprintId, bpmnModel, latestProcessDefinition)) {
                     applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
                         superseded.getId(),
@@ -835,7 +835,6 @@ public class OperatonProcessService {
         return processDefinitions.isEmpty() ? null : processDefinitions.getFirst();
     }
 
-    /** A building block links every process of a file, so every process it still holds is superseded. */
     private List<OperatonProcessDefinition> getSupersededProcessesForFile(
         BlueprintId blueprintId,
         BpmnModelInstance bpmnModel,

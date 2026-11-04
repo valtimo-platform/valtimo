@@ -27,7 +27,9 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersionTag
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.operaton.bpm.model.bpmn.Bpmn
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -47,7 +49,26 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
 
         importBuildingBlock("Building block process, edited")
 
-        // Guard: the second import really deployed another version, which is what used to add a second row.
+        assertThat(linkedProcessDefinitionIds()).doesNotContain(firstProcessDefinitionId)
+        assertThat(linkedKeysAndMain()).containsExactly(PROCESS_KEY to true)
+    }
+
+    @Test
+    fun `should keep the main link once after editing the main process`() {
+        importBuildingBlock(minimalBpmn("Minimal"), PROCESS_KEY)
+        val firstProcessDefinitionId = linkedProcessDefinitionIds().single()
+
+        runWithoutAuthorization {
+            buildingBlockProcessService.deployProcessDefinitionAndProcessLinks(
+                BUILDING_BLOCK_KEY,
+                BUILDING_BLOCK_VERSION,
+                MockMultipartFile("file", "$PROCESS_KEY.bpmn", "text/xml", minimalBpmn("Minimal, edited")),
+                emptyList(),
+                firstProcessDefinitionId,
+                false
+            )
+        }
+
         assertThat(linkedProcessDefinitionIds()).doesNotContain(firstProcessDefinitionId)
         assertThat(linkedKeysAndMain()).containsExactly(PROCESS_KEY to true)
     }
@@ -89,7 +110,6 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
             .containsExactly("config/building-block/$BUILDING_BLOCK_KEY/7-3-1/bpmn/$FIRST_PROCESS_KEY.bpmn")
     }
 
-    // The process name varies per import so the engine deploys a new version, as two differing exports do.
     private fun importBuildingBlock(processName: String) {
         val bpmn = resource("config/building-block/bezwaar/1-0-0/bpmn/$PROCESS_KEY.bpmn")
             .decodeToString()
@@ -162,6 +182,10 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
         </bpmn:definitions>
     """.trimIndent().toByteArray()
 
+    private fun minimalBpmn(processName: String) = Bpmn.convertToString(
+        Bpmn.createExecutableProcess(PROCESS_KEY).name(processName).startEvent().endEvent().done()
+    ).toByteArray()
+
     private fun linkedProcessDefinitionIds() = linkRepository
         .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId())
         .map { it.id.processDefinitionId.id }
@@ -178,7 +202,6 @@ class BuildingBlockImportProcessDefinitionLinkIT @Autowired constructor(
             .use { it.readBytes() }
 
     private companion object {
-        // Deliberately distinctive so no fixture or other integration test can have created it.
         const val BUILDING_BLOCK_KEY = "import-dup-check"
         const val BUILDING_BLOCK_VERSION = "7.3.1"
         const val DRAFT_VERSION = "7.3.2"
