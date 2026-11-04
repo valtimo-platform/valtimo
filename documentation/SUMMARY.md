@@ -37,6 +37,10 @@
     * [Tasks](configuration-guides/cases/tasks/README.md)
         * [Columns](configuration-guides/cases/tasks/columns.md)
         * [Search fields](configuration-guides/cases/tasks/search-fields.md)
+    * [Case groups](configuration-guides/cases/case-groups/README.md)
+        * [General](configuration-guides/cases/case-groups/configuration.md)
+        * [List columns](configuration-guides/cases/case-groups/list-columns.md)
+        * [Search fields](configuration-guides/cases/case-groups/search-fields.md)
     * [Case list](configuration-guides/cases/case-list/README.md)
         * [List columns](configuration-guides/cases/case-list/list-columns.md)
         * [Search fields](configuration-guides/cases/case-list/search-fields.md)
@@ -82,6 +86,7 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
+  * [13.53.0](release-notes/13.x.x/13.53.0/README.md)
   * [13.52.0](release-notes/13.x.x/13.52.0/README.md)
   * [13.51.0](release-notes/13.x.x/13.51.0/README.md)
   * [13.50.0](release-notes/13.x.x/13.50.0/README.md)

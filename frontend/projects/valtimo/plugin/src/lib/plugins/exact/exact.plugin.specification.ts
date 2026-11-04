@@ -33,7 +33,7 @@ const exactPluginSpecification: PluginSpecification = {
   pluginTranslations: {
     nl: {
       title: 'Exact Plugin',
-      description: 'Plugin to set up Exact API connection',
+      description: 'Plugin voor het instellen van een verbinding met de Exact API',
       configurationTitle: 'Configuratienaam',
       clientId: 'Client Id',
       clientSecret: 'Client Secret',
@@ -41,13 +41,13 @@ const exactPluginSpecification: PluginSpecification = {
       'exact-post-request': 'Exact POST request',
       'exact-put-request': 'Exact PUT request',
       uri: 'URI',
-      bean: 'Service class',
+      bean: 'Serviceklasse',
       content: 'Bericht',
     },
     en: {
       title: 'Exact Plugin',
       description: 'Plugin to set up Exact API connection',
-      configurationTitle: 'Configuratienaam',
+      configurationTitle: 'Configuration name',
       clientId: 'Client Id',
       clientSecret: 'Client Secret',
       'exact-get-request': 'Exact GET request',

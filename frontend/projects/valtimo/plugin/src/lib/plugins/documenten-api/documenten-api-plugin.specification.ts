@@ -49,24 +49,24 @@ const documentenApiPluginSpecification: PluginSpecification = {
       title: 'Documenten API',
       description: 'API voor opslag en ontsluiting van documenten en daarbij behorende metadata.',
       'store-temp-document': 'Document opslaan',
-      'store-uploaded-document': 'Geupload document opslaan',
-      'store-uploaded-document-in-parts': 'Geupload document opslaan in bestandsdelen',
-      'download-document': 'Download document',
+      'store-uploaded-document': 'Geüpload document opslaan',
+      'store-uploaded-document-in-parts': 'Geüpload document in bestandsdelen opslaan',
+      'download-document': 'Document downloaden',
       'link-document-to-object': 'Document koppelen aan object',
       'delete-document-link': 'Documentkoppeling verwijderen',
       storeUploadedDocumentMessage:
-        'Het opslaan van een geupload document heeft geen configuratie nodig.',
+        'Het opslaan van een geüpload document heeft geen configuratie nodig.',
       storeUploadedDocumentInPartsMessage:
-        'Het opslaan van een geupload document in bestandsdelen heeft geen configuratie nodig',
+        'Het opslaan van een geüpload document in bestandsdelen heeft geen configuratie nodig.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Hier kunt je een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
+        'Hier kun je een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       url: 'Documenten API URL',
       urlTooltip:
-        'In dit veld moet de verwijzing komen naar de REST API van Documenten. Deze url moet dus eindigen op /documenten/api/v1/',
+        'In dit veld moet de verwijzing komen naar de REST API van Documenten. Deze URL moet dus eindigen op /documenten/api/v1/',
       bronorganisatie: 'Bronorganisatie RSIN',
       bronorganisatieTooltip:
-        'Vul hier het RSIN van de organisatie in die verantwoordelijk is voor de documenten',
+        'Voer hier het RSIN in van de organisatie die verantwoordelijk is voor de documenten. Het RSIN is een Nederlands identificatienummer voor rechtspersonen en samenwerkingsverbanden',
       fileName: 'Bestandsnaam',
       fileNameTooltip:
         'De naam van het fysieke bestand waarin de inhoud van het document is vastgelegd, inclusief extensie',
@@ -75,7 +75,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Aanduiding van de mate waarin het document voor de openbaarheid bestemd is',
       confidentialityLevelInputType: 'Invoertype vertrouwelijkheidsaanduiding',
       confidentialityLevelTextTooltip:
-        'Voer een waarde-resolver expressie in die tijdens runtime wordt opgelost (bijv. doc:confidentialityLevel)',
+        'Voer een waarde-resolverexpressie in die tijdens runtime wordt opgelost (bijv. doc:confidentialityLevel)',
       selection: 'Selectie',
       text: 'Tekst (waarde-resolver)',
       inputTitle: 'Titel',
@@ -92,41 +92,41 @@ const documentenApiPluginSpecification: PluginSpecification = {
       zeer_geheim: 'Zeer geheim',
       localDocumentLocation: 'Naam procesvariabele met document',
       localDocumentLocationTooltip:
-        'Hier moet de procesvariabele ingevuld worden die wijst naar de locatie waar het document lokaal staat opgeslagen',
+        'Voer de procesvariabele in die verwijst naar de locatie waar het document lokaal is opgeslagen',
       storedDocumentUrl: 'Naam procesvariabele voor opslag document-URL',
       storeDocumentUrlTooltip:
-        'Nadat het document geupload is naar de Documenten API zal de applicatie in deze procesvariabele de URL naar het document opslaan.',
+        'Nadat het document geüpload is naar de Documenten API zal de applicatie in deze procesvariabele de URL naar het document opslaan.',
       taal: 'Taal',
       languageInputType: 'Invoertype taal',
       taalTextTooltip:
-        'Voer een waarde-resolver expressie in die tijdens runtime wordt opgelost (bijv. doc:taal)',
+        'Voer een waarde-resolverexpressie in die tijdens runtime wordt opgelost (bijv. doc:taal)',
       status: 'Status',
       statusInputType: 'Invoertype status',
       statusTextTooltip:
-        'Voer een waarde-resolver expressie in die tijdens runtime wordt opgelost (bijv. doc:status)',
+        'Voer een waarde-resolverexpressie in die tijdens runtime wordt opgelost (bijv. doc:status)',
       informatieobjecttype: 'URL naar het informatieobjecttype',
       informatieobjecttypeTooltip:
-        'Vul in dit veld de volledige URL naar een informatieobjecttype van een Zaak catalogus. Deze URL moet dus eindigen op /catalogi/api/v1/informatieobjecttypen/{uuid}',
+        'Voer in dit veld de volledige URL in naar een informatieobjecttype van een zaaktypecatalogus. Deze URL moet dus eindigen op /catalogi/api/v1/informatieobjecttypen/{uuid}',
       nld: 'Nederlands',
       in_bewerking: 'In bewerking',
       ter_vaststelling: 'Ter vaststelling',
       definitief: 'Definitief',
       gearchiveerd: 'Gearchiveerd',
-      authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+      authenticationPluginConfiguration: 'Configuratie authenticatieplugin',
       authenticationPluginConfigurationTooltip:
-        'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
-      apiVersion: 'Documenten API versie',
+        'Selecteer de plugin die de authenticatie kan afhandelen. Als het selectievak leeg blijft, moet de authenticatieplugin (bv. OpenZaak) eerst worden aangemaakt',
+      apiVersion: 'Documenten API-versie',
       apiVersionTooltip: 'Selecteer de versie van de Documenten API',
       downloadDocumentMessage:
         "Downloadt een document vanuit de Documenten API en slaat dit op als tijdelijk document. " +
         "Het te downloaden document wordt bepaald op basis van de procesvariabele 'documentUrl' of 'documentId'; " +
         "als beide aanwezig zijn heeft 'documentUrl' voorrang.",
       processVariableName:
-        'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
+        'Wat is de naam van de procesvariabele waarnaar je het document wilt downloaden?',
       processVariableTooltip:
         'De naam van de procesvariabele waarin de referentie naar het gedownloade document wordt opgeslagen.',
       linkDocumentToObjectMessage:
-        "Koppelt het document waarvan de URL is opgeslagen in de procesvariabele 'documentUrl' aan een object. " +
+        "Koppelt het document waarvan de URL is opgeslagen in de procesvariabele 'documentUrl' aan een object. Gebruik voor zaken de Zaken API om achterwaartse compatibiliteit te garanderen. " +
         "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
       linkDocumentToObjectExperimentalWarning:
         '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
@@ -136,19 +136,19 @@ const documentenApiPluginSpecification: PluginSpecification = {
         "Procesvariabelen kunnen worden gebruikt met de notatie 'pv:variabelenaam'.",
       deleteDocumentLinkExperimentalWarning:
         '⚠ Experimentele functie: deze actie maakt gebruik van de objectinformatieobjecten-API.',
-      objectUrl: 'Object URL',
+      objectUrl: 'Object-URL',
       objectUrlTooltip:
         "De URL van het object waaraan het document gekoppeld moet worden. " +
-        "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren, bijv. 'pv:objectUrl'.",
+        "Gebruik 'pv:variabelenaam' om naar een procesvariabele te verwijzen, bijv. 'pv:objectUrl'.",
       objectType: 'Objecttype',
       objectTypeTooltip:
         "Het type van het object, bijv. 'zaak', 'besluit' of 'apiname'. " +
-        "Gebruik 'pv:variabelenaam' om een procesvariabele te refereren.",
-      objectInformatieObjectUrl: 'Objectinformatieobject URL',
+        "Gebruik 'pv:variabelenaam' om naar een procesvariabele te verwijzen.",
+      objectInformatieObjectUrl: 'Objectinformatieobject-URL',
       objectInformatieObjectUrlTooltip:
-        "De URL van de objectinformatieobject-koppeling die verwijderd moet worden. ",
+        "De URL van de objectinformatieobject-koppeling die verwijderd moet worden. De voorgaande actie slaat deze URL op in de procesvariabele 'objectInformatieObjectUrl'.",
       'get-audit-trail': 'Audit trail ophalen',
-      documentUrl: 'Document URL',
+      documentUrl: 'Document-URL',
       documentUrlTooltip:
         'De volledige URL naar het enkelvoudiginformatieobject waarvoor de audit trail opgehaald moet worden',
       auditTrailProcessVariableName: 'Naam procesvariabele voor audit trail',
@@ -191,7 +191,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'This field must contain the URL to the REST API of Documenten, therefore this URL should end with /documenten/api/v1/',
       bronorganisatie: 'Organisation RSIN',
       bronorganisatieTooltip:
-        'Enter here the RSIN of the organization responsible for the documents. The RSIN is a dutch identification number for legal entities and partnerships ',
+        'Enter here the RSIN of the organization responsible for the documents. The RSIN is a Dutch identification number for legal entities and partnerships ',
       fileName: 'File name',
       fileNameTooltip:
         'The name of the physical file in which the content of the document is captured, including extension',
@@ -229,7 +229,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       statusInputType: 'Status input type',
       statusTextTooltip:
         'Enter a value resolver expression that will be resolved at runtime (e.g. doc:status)',
-      informatieobjecttype: 'URL to the informationobjecttype',
+      informatieobjecttype: 'URL to the informatieobjecttype',
       informatieobjecttypeTooltip:
         'Enter the full URL to an information object type of a Zaak catalog in this field. So this URL must end with /catalogi/api/v1/informatieobjecttypen/{uuid}',
       nld: 'Dutch',
@@ -251,7 +251,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       processVariableTooltip:
         'The name of the process variable in which the reference to the downloaded document is stored.',
       linkDocumentToObjectMessage:
-        "Links the document whose URL is stored in the process variable 'documentUrl' to an object. For Zaak items use the Zaken API to ensure backwards compatibility." +
+        "Links the document whose URL is stored in the process variable 'documentUrl' to an object. For Zaak items use the Zaken API to ensure backwards compatibility. " +
         "Process variables can be referenced using the notation 'pv:variableName'.",
       linkDocumentToObjectExperimentalWarning:
         '⚠ Experimental feature: this action uses the objectinformatieobjecten API.',
