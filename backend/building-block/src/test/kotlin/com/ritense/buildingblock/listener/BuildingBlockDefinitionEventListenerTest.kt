@@ -131,6 +131,7 @@ class BuildingBlockDefinitionEventListenerTest {
         )
         val newProcessDefinition = mock<ProcessDefinition> {
             on { id } doReturn "new-pid"
+            on { key } doReturn "process-key"
         }
         val deployment = mock<DeploymentWithDefinitions> {
             on { deployedProcessDefinitions } doReturn listOf(newProcessDefinition)

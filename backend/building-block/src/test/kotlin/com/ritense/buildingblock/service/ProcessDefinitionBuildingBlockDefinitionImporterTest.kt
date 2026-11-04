@@ -16,7 +16,10 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_DEFINITION
+import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -24,6 +27,14 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.repository.DeploymentWithDefinitions
+import org.operaton.bpm.engine.repository.ProcessDefinition
 
 @ExtendWith(MockitoExtension::class)
 class ProcessDefinitionBuildingBlockDefinitionImporterTest(
@@ -60,6 +71,33 @@ class ProcessDefinitionBuildingBlockDefinitionImporterTest(
     fun `should not support invalid document definition fileName`() {
         assertThat(importer.supports("/bpmn/test.dmn")).isFalse()
         assertThat(importer.supports("/bpmn/test-bpmn")).isFalse()
+    }
+
+    @Test
+    fun `should link every process in the BPMN file`() {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId("bezwaar", "1.0.0")
+        val first = mock<ProcessDefinition> { on { id } doReturn "first:1:aaa" }
+        val second = mock<ProcessDefinition> { on { id } doReturn "second:1:bbb" }
+        val deployment = mock<DeploymentWithDefinitions> {
+            on { deployedProcessDefinitions } doReturn listOf(first, second)
+        }
+        whenever(operatonProcessService.deploy(eq(buildingBlockDefinitionId), eq("test.bpmn"), any()))
+            .thenReturn(deployment)
+
+        importer.import(ImportRequest(FILENAME, ByteArray(0), buildingBlockDefinitionId = buildingBlockDefinitionId))
+
+        verify(buildingBlockDefinitionProcessDefinitionService).setMainLink(
+            buildingBlockDefinitionId,
+            null,
+            ProcessDefinitionId.of("first:1:aaa"),
+            false
+        )
+        verify(buildingBlockDefinitionProcessDefinitionService).setMainLink(
+            buildingBlockDefinitionId,
+            null,
+            ProcessDefinitionId.of("second:1:bbb"),
+            false
+        )
     }
 
     private companion object {
