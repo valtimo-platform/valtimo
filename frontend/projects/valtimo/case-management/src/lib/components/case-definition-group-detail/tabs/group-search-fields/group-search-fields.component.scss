@@ -1,0 +1,60 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Fixed layout so the expanded row can mirror the data columns. Carbon gives the expanded cell
+// colspan = columns + 2, a phantom trailing column; equal percentages on the data columns
+// over-claim the width and collapse it. Column order: expand, drag, data..., actions.
+:host ::ng-deep .valtimo-group-search-fields {
+  .cds--data-table {
+    table-layout: fixed;
+  }
+
+  // The over-claim shrinks the other columns to their padding: pad them to 3rem each.
+  thead th.cds--table-expand,
+  thead th.valtimo-carbon-list__actions {
+    padding-inline: 1.5rem;
+  }
+
+  // Trailing actions column: fit the 40px overflow trigger plus cell padding.
+  thead th.valtimo-carbon-list__actions:last-child {
+    padding-inline: 2.25rem;
+  }
+
+  thead th:not(.cds--table-expand):not(.valtimo-carbon-list__actions) {
+    width: 20%;
+  }
+
+  // Inset past the expand + drag columns and before the actions column; beats Carbon's own inset.
+  tr[data-child-row] > td {
+    padding: 0 4.5rem 0 6rem !important;
+  }
+
+  valtimo-group-path-mapping-editor {
+    display: block;
+    padding-block: 1rem;
+
+    // One mapping per data column; 1rem inset matches Carbon's cell padding.
+    .valtimo-path-mapping-editor__grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1rem 0;
+    }
+
+    .valtimo-path-mapping-editor__item,
+    .valtimo-path-mapping-editor__empty {
+      padding-inline: 1rem;
+    }
+  }
+}

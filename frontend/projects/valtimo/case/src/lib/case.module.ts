@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import {
   InputModule,
   IsArrayPipe,
   ListColumnViewComponent,
-  MenuService,
   ModalModule,
   ObserveSizeDirective,
   OverflowMenuComponent,
@@ -110,7 +109,6 @@ import {CaseDetailExternalPluginTabComponent} from './components/case-detail/tab
 import {CaseDetailHeaderWidgetComponent} from './components/case-detail-header-widget/case-detail-header-widget.component';
 import {CaseListTabsComponent} from './components/case-list-tabs/case-list-tabs.component';
 import {CaseListToolbarComponent} from './components/case-list-toolbar/case-list-toolbar.component';
-import {GenericCaseListComponent} from './components/generic-case-list/generic-case-list.component';
 import {CaseActionsLayoutDirective} from './directives/case-actions-layout.directive';
 
 export type TabsFactory = () => Map<string, object>;
@@ -133,7 +131,6 @@ export type TabsFactory = () => Map<string, object>;
     CaseDetailTabFormioComponent,
     CaseListTabsComponent,
     CaseListToolbarComponent,
-    GenericCaseListComponent,
   ],
   imports: [
     CommonModule,
@@ -223,10 +220,6 @@ export class CaseModule {
     };
   }
 
-  constructor(
-    private readonly caseMenuService: CaseMenuService,
-    private readonly menuService: MenuService
-  ) {
-    this.menuService.registerAppendMenuItemsFunction(this.caseMenuService.appendCaseMenuItems);
-  }
+  // CaseMenuService registers its own append function; injecting it here is what instantiates it.
+  constructor(private readonly _caseMenuService: CaseMenuService) {}
 }

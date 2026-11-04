@@ -1,0 +1,178 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
+                   logicalFilePath="config/liquibase/changelog/20260901-add-case-definition-group-tables.xml">
+
+    <changeSet author="Ritense" id="1">
+        <createTable tableName="case_definition_group">
+            <column name="key" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="sort_order" type="${intType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="created_on" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2">
+        <createTable tableName="case_definition_group_member">
+            <column name="group_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_definition_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="${intType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="case_definition_group_member"
+                       columnNames="group_key, case_definition_key"
+                       constraintName="pk_case_definition_group_member"/>
+        <addForeignKeyConstraint baseTableName="case_definition_group_member"
+                                 baseColumnNames="group_key"
+                                 constraintName="fk_group_member_group_key"
+                                 referencedTableName="case_definition_group"
+                                 referencedColumnNames="key"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="3">
+        <createTable tableName="group_list_column">
+            <column name="group_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="column_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="display_type" type="${jsonType}"/>
+            <column name="sortable" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="default_sort" type="VARCHAR(10)"/>
+            <column name="column_order" type="${intType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exportable" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="group_list_column"
+                       columnNames="group_key, column_key"
+                       constraintName="pk_group_list_column"/>
+        <addForeignKeyConstraint baseTableName="group_list_column"
+                                 baseColumnNames="group_key"
+                                 constraintName="fk_group_list_column_group_key"
+                                 referencedTableName="case_definition_group"
+                                 referencedColumnNames="key"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4">
+        <createTable tableName="group_list_column_path_mapping">
+            <column name="group_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="column_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_definition_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="group_list_column_path_mapping"
+                       columnNames="group_key, column_key, case_definition_key"
+                       constraintName="pk_group_list_column_path_mapping"/>
+        <addForeignKeyConstraint baseTableName="group_list_column_path_mapping"
+                                 baseColumnNames="group_key, column_key"
+                                 constraintName="fk_group_list_column_path_mapping_column"
+                                 referencedTableName="group_list_column"
+                                 referencedColumnNames="group_key, column_key"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5">
+        <createTable tableName="group_search_field">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="group_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="data_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="match_type" type="VARCHAR(50)"/>
+            <column name="dropdown_data_provider" type="VARCHAR(255)"/>
+            <column name="field_order" type="${intType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="group_search_field"
+                                 baseColumnNames="group_key"
+                                 constraintName="fk_group_search_field_group_key"
+                                 referencedTableName="case_definition_group"
+                                 referencedColumnNames="key"
+                                 onDelete="CASCADE"/>
+        <createIndex tableName="group_search_field" indexName="idx_group_search_field_group_key">
+            <column name="group_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Ritense" id="6">
+        <createTable tableName="group_search_field_path_mapping">
+            <column name="group_search_field_id" type="${uuidType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_definition_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="group_search_field_path_mapping"
+                       columnNames="group_search_field_id, case_definition_key"
+                       constraintName="pk_group_search_field_path_mapping"/>
+        <addForeignKeyConstraint baseTableName="group_search_field_path_mapping"
+                                 baseColumnNames="group_search_field_id"
+                                 constraintName="fk_group_search_field_path_mapping_field"
+                                 referencedTableName="group_search_field"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>
