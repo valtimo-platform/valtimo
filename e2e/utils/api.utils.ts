@@ -153,6 +153,20 @@ export async function apiPost<T = unknown>(
   return parseBody<T>(res);
 }
 
+export async function apiPostMultipart<T = unknown>(
+  url: string,
+  multipart: Record<string, string | { name: string; mimeType: string; buffer: Buffer }>,
+): Promise<T> {
+  let ctx = await getContext();
+  let res = await ctx.post(url, { multipart });
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await ctx.post(url, { multipart });
+  }
+  await assertOk('POST', url, res);
+  return (await res.json()) as T;
+}
+
 export async function apiPut<T = unknown>(
   url: string,
   body: unknown,
@@ -189,6 +203,30 @@ export async function apiDelete(url: string): Promise<void> {
     res = await send('DELETE', () => ctx.delete(url));
   }
   await assertOk('DELETE', url, res);
+}
+
+export async function apiGetBuffer(url: string): Promise<Buffer> {
+  let ctx = await getContext();
+  let res = await send('GET', () => ctx.get(url));
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await send('GET', () => ctx.get(url));
+  }
+  await assertOk('GET', url, res);
+  return res.body();
+}
+
+export async function apiPostMultipart(
+  url: string,
+  multipart: Record<string, string | {name: string; mimeType: string; buffer: Buffer}>
+): Promise<void> {
+  let ctx = await getContext();
+  let res = await send('POST', () => ctx.post(url, {multipart}));
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await send('POST', () => ctx.post(url, {multipart}));
+  }
+  await assertOk('POST', url, res);
 }
 
 /* ------------------------------------------------------------------ */

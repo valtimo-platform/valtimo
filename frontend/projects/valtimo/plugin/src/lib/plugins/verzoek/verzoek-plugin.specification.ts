@@ -29,33 +29,33 @@ const verzoekPluginSpecification: PluginSpecification = {
         'De Verzoek-plugin handelt aanvragen af en maakt een Zaakdossier aan. Een Verzoek is een Object in de Objecten API en wordt meestal met behulp van een portaal aangemaakt.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
+        'De naam van de huidige pluginconfiguratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       notificatiesApiPluginConfiguration: 'Notificaties API-configuratie',
-      objectManagementId: 'Object management-configuratie',
+      objectManagementId: 'Objectbeheerconfiguratie',
       processToStart: 'Proces',
       rsin: 'RSIN',
       verzoekProperties: 'Verzoektypen',
       type: 'Type',
       caseDefinitionKey: 'Dossierdefinitie',
-      caseDefinitionVersionTag: 'Dossierdefinitie versie',
+      caseDefinitionVersionTag: 'Dossierdefinitieversie',
       initiatorRoltypeUrl: 'Roltype',
       processDefinitionKey: 'Procesdefinitie',
       initiatorRolDescription: 'Rolbeschrijving',
       addVerzoekType: 'Verzoektype toevoegen',
       verzoekPropertiesTooltip:
-        'De verzoektypen die aangemaakt worden wannneer er een notificatie binnenkomt.',
+        'De verzoektypen die aangemaakt worden wanneer er een notificatie binnenkomt.',
       notificatiesApiPluginConfigurationTooltip:
         'Configuratie van de Notificaties API die wordt gebruikt om te communiceren tussen GZAC en andere applicaties.',
       objectManagementIdTooltip:
         'Configuratie van het object dat wordt gebruikt om een verzoek op te slaan.',
-      processToStartTooltip: 'Het proces dat een zaak aanmaakt wanneer een notificatie binnenkomt.',
+      processToStartTooltip: 'Het proces dat een dossier aanmaakt wanneer een notificatie binnenkomt.',
       rsinTooltip: 'Dit nummer moet voldoen aan dezelfde specificaties als een BSN-nummer.',
       typeTooltip:
         "Het type van het verzoek dat wordt gebruikt om het object te identificeren. Bv. 'verzoek'.",
       caseDefinitionKeyTooltip:
         'Selecteer hier het dossiertype waarvan een instantie gestart moet worden wanneer er een verzoek binnenkomt.',
       caseDefinitionVersionTagTooltip:
-        'Vul hier de versie in van het dossiertype waarvan een instantie gestart moet worden wanneer er een verzoek binnenkomt.',
+        'Voer hier de versie in van het dossiertype waarvan een instantie gestart moet worden wanneer er een verzoek binnenkomt.',
       initiatorRoltypeUrlTooltip:
         'Het roltype van de aanvrager die wordt opgeslagen wanneer er een verzoek binnenkomt.',
       initiatorRolDescriptionTooltip:
@@ -64,9 +64,9 @@ const verzoekPluginSpecification: PluginSpecification = {
         'Selecteer hier het proces dat gestart moet worden wanneer het eerder geselecteerde systeemproces afgerond is.',
       copyStrategy: 'Kopieerstrategie',
       copyStrategyTooltip:
-        'Met deze optie wordt bepaald of het volledige Verzoek-object in het document terecht komt, of slechts de gespecifieerde velden.',
+        'Met deze optie wordt bepaald of het volledige Verzoek-object in het document terechtkomt, of alleen de gespecificeerde velden.',
       full: 'Volledig',
-      specified: 'Gespecifieerde velden',
+      specified: 'Gespecificeerde velden',
       mapping: 'Mapping',
       setMapping: 'Mapping instellen',
       mappingTooltip:
