@@ -42,12 +42,14 @@ class ProcessDefinitionBuildingBlockDefinitionImporter(
                 it
             )?: return
 
-            buildingBlockDefinitionProcessDefinitionService.setMainLink(
-                request.buildingBlockDefinitionId!!,
-                null,
-                ProcessDefinitionId(deployment.deployedProcessDefinitions.first().id),
-                false
-            )
+            deployment.deployedProcessDefinitions.forEach { processDefinition ->
+                buildingBlockDefinitionProcessDefinitionService.setMainLink(
+                    request.buildingBlockDefinitionId!!,
+                    null,
+                    ProcessDefinitionId(processDefinition.id),
+                    false
+                )
+            }
         }
     }
 

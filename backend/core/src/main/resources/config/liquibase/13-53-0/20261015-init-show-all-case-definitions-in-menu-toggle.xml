@@ -1,0 +1,79 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
+                   logicalFilePath="config/liquibase/changelog/20261015-init-show-all-case-definitions-in-menu-toggle.xml">
+
+    <!-- The feature toggle was repurposed and renamed to showAllCaseDefinitionsInMenu -->
+    <changeSet author="Ritense" id="1" dbms="postgresql">
+        <sql>
+            UPDATE admin_settings_feature_toggle_overrides
+            SET overrides = (overrides::jsonb - 'enableGenericCaseList')::text
+            WHERE jsonb_exists(overrides::jsonb, 'enableGenericCaseList');
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="2" dbms="mysql">
+        <sql>
+            UPDATE admin_settings_feature_toggle_overrides
+            SET overrides = JSON_REMOVE(overrides, '$.enableGenericCaseList')
+            WHERE JSON_CONTAINS_PATH(overrides, 'one', '$.enableGenericCaseList') = 1;
+        </sql>
+    </changeSet>
+
+    <!--
+        Case definitions are deployed after Liquibase has run, so they only exist here when the application has been
+        started before. Those installations keep showing every case definition in the menu, unless the toggle was set.
+        MARK_RAN makes sure a fresh installation is not switched over on its next start.
+    -->
+    <changeSet author="Ritense" id="3" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT CASE WHEN EXISTS (SELECT 1 FROM case_definition) THEN 1 ELSE 0 END
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO admin_settings_feature_toggle_overrides (id, overrides)
+            VALUES ('singleton', '{}')
+            ON CONFLICT (id) DO NOTHING;
+
+            UPDATE admin_settings_feature_toggle_overrides
+            SET overrides = (overrides::jsonb || '{"showAllCaseDefinitionsInMenu": true}'::jsonb)::text
+            WHERE id = 'singleton'
+            AND NOT jsonb_exists(overrides::jsonb, 'showAllCaseDefinitionsInMenu');
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="4" dbms="mysql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT CASE WHEN EXISTS (SELECT 1 FROM case_definition) THEN 1 ELSE 0 END
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT IGNORE INTO admin_settings_feature_toggle_overrides (id, overrides)
+            VALUES ('singleton', '{}');
+
+            UPDATE admin_settings_feature_toggle_overrides
+            SET overrides = JSON_SET(overrides, '$.showAllCaseDefinitionsInMenu', CAST('true' AS JSON))
+            WHERE id = 'singleton'
+            AND JSON_CONTAINS_PATH(overrides, 'one', '$.showAllCaseDefinitionsInMenu') = 0;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
