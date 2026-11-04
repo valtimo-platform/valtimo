@@ -199,6 +199,7 @@ class CopyProcessLinkOnProcessDeploymentListenerTest {
 
     @Test
     fun `should copy process links from the original process definition with the same key`() {
+        // a multi-process file is copied in one deployment, which names the original of its first process only
         val event = deploymentEvent(
             versionTag = "BB:bijstand-uitvoeren:1.0.1",
             previousVersionTag = "BB:bijstand-uitvoeren:1.0.0",
@@ -218,35 +219,6 @@ class CopyProcessLinkOnProcessDeploymentListenerTest {
         verify(processLinkRepository, never()).findByProcessDefinitionId(OTHER_PROCESS_DEFINITION_ID)
         assertEquals(1, savedLinks().size)
         assertEquals(NEW_PROCESS_DEFINITION_ID, savedLinks().single().processDefinitionId)
-    }
-
-    @Test
-    fun `should NOT copy a process link whose activity moved to another process in the same file`() {
-        val event = deploymentEvent(
-            versionTag = "BB:bijstand-uitvoeren:1.0.1",
-            previousVersionTag = "BB:bijstand-uitvoeren:1.0.0"
-        )
-        whenever(event.processDefinitionModelInstance).thenReturn(
-            Bpmn.readModelFromStream(
-                """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
-                  <bpmn:process id="$PROCESS_DEFINITION_KEY" isExecutable="true">
-                    <bpmn:startEvent id="start" />
-                  </bpmn:process>
-                  <bpmn:process id="other-process" isExecutable="true">
-                    <bpmn:subProcess id="sub-process">
-                      <bpmn:serviceTask id="$ACTIVITY_ID" />
-                    </bpmn:subProcess>
-                  </bpmn:process>
-                </bpmn:definitions>
-                """.trimIndent().byteInputStream()
-            )
-        )
-
-        listener.copyProcessLinks(event)
-
-        assertEquals(0, savedLinks().size)
     }
 
     @Test

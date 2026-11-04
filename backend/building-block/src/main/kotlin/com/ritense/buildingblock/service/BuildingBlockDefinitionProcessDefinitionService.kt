@@ -41,7 +41,6 @@ import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.impl.util.IoUtil
 import org.operaton.bpm.engine.repository.DeploymentWithDefinitions
-import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.Process
@@ -267,30 +266,6 @@ class BuildingBlockDefinitionProcessDefinitionService(
         }
     }
 
-    @Transactional
-    fun unlinkProcessesRemovedFromFile(
-        buildingBlockDefinitionId: BuildingBlockDefinitionId,
-        resourceName: String,
-        deployedProcessDefinitionKeys: Set<String>
-    ) {
-        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
-        val links = processDefinitionBuildingBlockDefinitionRepository
-            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
-        if (links.isEmpty()) return
-
-        val attachedVersionTag = buildingBlockDefinitionId.getTagPrefix() + buildingBlockDefinitionId
-        val linksByProcessDefinitionId = links.associateBy { it.id.processDefinitionId.id }
-        processDefinitionsByIds(linksByProcessDefinitionId.keys)
-            .filter {
-                it.resourceName == resourceName &&
-                    it.key !in deployedProcessDefinitionKeys &&
-                    it.versionTag != attachedVersionTag
-            }
-            .forEach {
-                processDefinitionBuildingBlockDefinitionRepository.delete(linksByProcessDefinitionId.getValue(it.id))
-            }
-    }
-
     @Transactional(readOnly = true)
     fun isBuildingBlockProcess(processDefinitionId: String): Boolean {
         return processDefinitionBuildingBlockDefinitionRepository
@@ -415,6 +390,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
             )
     }
 
+    // Resolves keys through the engine rather than the entity's @Formula, which is null for a link saved in this transaction.
     private fun findLinksBySameProcessDefinitionKey(
         buildingBlockDefinitionId: BuildingBlockDefinitionId,
         deployedProcessDefinitionId: ProcessDefinitionId
@@ -424,19 +400,20 @@ class BuildingBlockDefinitionProcessDefinitionService(
             .filter { it.id.processDefinitionId != deployedProcessDefinitionId }
         if (otherLinks.isEmpty()) return emptyList()
 
-        val keysById = processDefinitionsByIds(
+        val keysById = processDefinitionKeysById(
             otherLinks.map { it.id.processDefinitionId.id } + deployedProcessDefinitionId.id
-        ).associate { it.id to it.key }
+        )
         val deployedProcessDefinitionKey = keysById[deployedProcessDefinitionId.id] ?: return emptyList()
 
         return otherLinks.filter { keysById[it.id.processDefinitionId.id] == deployedProcessDefinitionKey }
     }
 
-    private fun processDefinitionsByIds(processDefinitionIds: Collection<String>): List<ProcessDefinition> {
+    private fun processDefinitionKeysById(processDefinitionIds: List<String>): Map<String, String> {
         return repositoryService
             .createProcessDefinitionQuery()
             .processDefinitionIdIn(*processDefinitionIds.toTypedArray())
             .list()
+            .associate { it.id to it.key }
     }
 
     private fun createOrReplaceLink(

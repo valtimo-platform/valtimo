@@ -26,8 +26,10 @@ import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.BuildingBlockDocumentDefinitionExportRequest
 import com.ritense.exporter.request.BuildingBlockProcessDefinitionExportRequest
 import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.springframework.transaction.annotation.Transactional
 import java.io.ByteArrayOutputStream
+import java.util.stream.Collectors
 
 @Transactional(readOnly = true)
 class BuildingBlockProcessDefinitionLinkExporter(
@@ -41,14 +43,14 @@ class BuildingBlockProcessDefinitionLinkExporter(
         val processDefinitionBuildingBlockDefinitions = processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(request.buildingBlockDefinitionId)
 
-        val processDefinitionExportRequests =
-            currentProcessDefinitionIds(processDefinitionBuildingBlockDefinitions.map { it.id.processDefinitionId.id })
-                .mapTo(mutableSetOf()) {
-                    BuildingBlockProcessDefinitionExportRequest(it, request.buildingBlockDefinitionId)
-                }
-        val mainProcessDefinition = processDefinitionBuildingBlockDefinitions
-            .lastOrNull { it.main }
-            ?.let { repositoryService.getProcessDefinition(it.id.processDefinitionId.id) }
+        var mainProcessDefinition: ProcessDefinition? = null
+
+        val processDefinitionExportRequests = processDefinitionBuildingBlockDefinitions.stream().map {
+            if (it.main) {
+                mainProcessDefinition = repositoryService.getProcessDefinition(it.id.processDefinitionId.id)
+            }
+            BuildingBlockProcessDefinitionExportRequest(it.id.processDefinitionId.id, request.buildingBlockDefinitionId)
+        }.collect(Collectors.toSet())
 
         if (mainProcessDefinition == null) {
             return ExportResult(null, processDefinitionExportRequests)
@@ -77,24 +79,6 @@ class BuildingBlockProcessDefinitionLinkExporter(
 
         return ExportResult(exportFile, processDefinitionExportRequests)
 
-    }
-
-    private fun currentProcessDefinitionIds(linkedProcessDefinitionIds: List<String>): Set<String> {
-        if (linkedProcessDefinitionIds.isEmpty()) return emptySet()
-        val linkedProcessDefinitions = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionIdIn(*linkedProcessDefinitionIds.toTypedArray())
-            .list()
-        val linkedKeys = linkedProcessDefinitions.mapTo(mutableSetOf()) { it.key }
-
-        return linkedProcessDefinitions
-            .groupBy { it.deploymentId }
-            .values
-            .filter { processDefinitions ->
-                val fileKey = firstProcessKey(repositoryService.getBpmnModelInstance(processDefinitions.first().id))
-                fileKey !in linkedKeys || processDefinitions.any { it.key == fileKey }
-            }
-            .flatten()
-            .mapTo(mutableSetOf()) { it.id }
     }
 
     companion object {

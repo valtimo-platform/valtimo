@@ -16,7 +16,6 @@
 
 package com.ritense.valtimo.operaton;
 
-import com.ritense.valtimo.operaton.domain.OperatonDeploymentSource;
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent;
 import java.util.ArrayList;
@@ -59,21 +58,13 @@ public class ProcessDefinitionDeployedEventPublisher implements Deployer {
         if (deployment.isNew() && deployment.getDeployedArtifacts() != null) {
             final var processDefinitions = deployment.getDeployedArtifacts(ProcessDefinitionEntity.class);
             if (processDefinitions != null) {
-                final var deploymentSource = operatonDeploymentSourceHelper.retrieve(deployment.getSource());
-                processDefinitions.forEach(definition -> publishEvent(deployment, definition, deploymentSource));
+                processDefinitions.forEach(definition -> publishEvent(deployment, definition));
             }
         }
     }
 
     public void publishEvent(DeploymentEntity deployment, ProcessDefinitionEntity processDefinition) {
-        publishEvent(deployment, processDefinition, operatonDeploymentSourceHelper.retrieve(deployment.getSource()));
-    }
-
-    private void publishEvent(
-        DeploymentEntity deployment,
-        ProcessDefinitionEntity processDefinition,
-        OperatonDeploymentSource deploymentSource
-    ) {
+        final var deploymentSource = operatonDeploymentSourceHelper.retrieve(deployment.getSource());
         final var event = new ProcessDefinitionDeployedEvent(deployment, processDefinition, deploymentSource);
         if (isApplicationReady) {
             withLoggingContext(OperatonProcessDefinition.class, event.getProcessDefinitionId(), () ->

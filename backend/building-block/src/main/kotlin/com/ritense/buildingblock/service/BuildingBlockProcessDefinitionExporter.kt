@@ -52,7 +52,7 @@ class BuildingBlockProcessDefinitionExporter(
                 PATH.format(
                     request.buildingBlockDefinitionId.key,
                     formattedCaseDefinitionVersion,
-                    firstProcessKey(bpmnModelInstance)
+                    fileKey(bpmnModelInstance)
                 ),
                 it.toByteArray()
             )
@@ -63,11 +63,12 @@ class BuildingBlockProcessDefinitionExporter(
         )
     }
 
+    // Every process of a multi-process file exports the same path, so the file is written once.
+    private fun fileKey(bpmnModelInstance: BpmnModelInstance): String =
+        bpmnModelInstance.definitions.getChildElementsByType(Process::class.java).first().id
+
     companion object {
         private const val PATH =
             "config/building-block/%s/%s/bpmn/%s.bpmn"
     }
 }
-
-internal fun firstProcessKey(bpmnModelInstance: BpmnModelInstance): String =
-    bpmnModelInstance.definitions.getChildElementsByType(Process::class.java).first().id

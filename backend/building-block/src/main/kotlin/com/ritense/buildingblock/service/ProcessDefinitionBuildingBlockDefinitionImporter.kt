@@ -35,28 +35,21 @@ class ProcessDefinitionBuildingBlockDefinitionImporter(
 
     override fun import(request: ImportRequest) {
         request.content.inputStream().use {
-            val fileName = fileNameWithoutPath(request.fileName)
 
             val deployment = operatonProcessService.deploy(
                 request.buildingBlockDefinitionId,
-                fileName,
+                fileNameWithoutPath(request.fileName),
                 it
             )?: return
 
-            val buildingBlockDefinitionId = request.buildingBlockDefinitionId!!
             deployment.deployedProcessDefinitions.forEach { processDefinition ->
                 buildingBlockDefinitionProcessDefinitionService.setMainLink(
-                    buildingBlockDefinitionId,
+                    request.buildingBlockDefinitionId!!,
                     null,
                     ProcessDefinitionId(processDefinition.id),
                     false
                 )
             }
-            buildingBlockDefinitionProcessDefinitionService.unlinkProcessesRemovedFromFile(
-                buildingBlockDefinitionId,
-                fileName,
-                deployment.deployedProcessDefinitions.map { it.key }.toSet()
-            )
         }
     }
 

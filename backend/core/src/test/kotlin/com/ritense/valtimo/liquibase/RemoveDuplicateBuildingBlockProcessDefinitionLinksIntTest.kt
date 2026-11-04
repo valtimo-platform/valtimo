@@ -18,10 +18,12 @@ package com.ritense.valtimo.liquibase
 
 import com.ritense.valtimo.BaseIntegrationTest
 import com.ritense.valtimo.contract.config.LiquibaseRunner
+import com.ritense.valtimo.contract.repository.SemverConverter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.operaton.bpm.engine.RepositoryService
+import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.transaction.PlatformTransactionManager
@@ -59,7 +61,7 @@ class RemoveDuplicateBuildingBlockProcessDefinitionLinksIntTest : BaseIntegratio
     }
 
     @Test
-    fun `changeset should keep one link per process on its latest version, keep the main flag and link every process of a file`() {
+    fun `changeset should keep the latest linked version per process and keep the main flag`() {
         val txTemplate = TransactionTemplate(transactionManager)
         txTemplate.execute {
             jdbcTemplate.update(
@@ -69,35 +71,26 @@ class RemoveDuplicateBuildingBlockProcessDefinitionLinksIntTest : BaseIntegratio
                 VALUES (?, ?, 'Duplicate links', false)
                 """.trimIndent(),
                 BUILDING_BLOCK_KEY,
-                BUILDING_BLOCK_VERSION
+                STORED_BUILDING_BLOCK_VERSION
             )
         }
         val staleMain = deploy("dedup-main", DETACHED_TAG)
         val attachedMain = deploy("dedup-main", ATTACHED_TAG)
-        val olderDetachedSub = deploy("dedup-sub", DETACHED_TAG)
-        val newerDetachedSub = deploy("dedup-sub", DETACHED_TAG)
-        val attachedOlder = deploy("dedup-attached", ATTACHED_TAG)
-        val detachedNewer = deploy("dedup-attached", DETACHED_TAG)
+        val olderSub = deploy("dedup-sub", DETACHED_TAG)
+        val newerSub = deploy("dedup-sub", DETACHED_TAG)
+        val firstOfThree = deploy("dedup-three", DETACHED_TAG)
+        val secondOfThree = deploy("dedup-three", DETACHED_TAG)
+        val latestOfThree = deploy("dedup-three", ATTACHED_TAG)
         val solo = deploy("dedup-solo", ATTACHED_TAG)
-        val supersededOnly = deploy("dedup-superseded-only", DETACHED_TAG)
-        val attachedUnlinked = deploy("dedup-superseded-only", ATTACHED_TAG)
-        val attachedFile = deployFile(ATTACHED_TAG, "dedup-file-first", "dedup-file-second")
-        val detachedFile = deployFile(DETACHED_TAG, "dedup-old-file-first", "dedup-old-file-second")
-        val changedFileV1 = deployFile(ATTACHED_TAG, "dedup-changed-first", "dedup-changed-main", "dedup-changed-third")
-        val changedFileV2 = deployFile(ATTACHED_TAG, "dedup-changed-first", "dedup-changed-main", "dedup-changed-third")
         txTemplate.execute {
             link(staleMain, main = true)
             link(attachedMain, main = false)
-            link(olderDetachedSub, main = false)
-            link(newerDetachedSub, main = false)
-            link(attachedOlder, main = false)
-            link(detachedNewer, main = false)
+            link(olderSub, main = false)
+            link(newerSub, main = false)
+            link(firstOfThree, main = false)
+            link(secondOfThree, main = false)
+            link(latestOfThree, main = false)
             link(solo, main = false)
-            link(supersededOnly, main = false)
-            link(attachedFile.getValue("dedup-file-first"), main = false)
-            link(detachedFile.getValue("dedup-old-file-first"), main = false)
-            link(changedFileV2.getValue("dedup-changed-first"), main = false)
-            link(changedFileV1.getValue("dedup-changed-main"), main = true)
         }
 
         txTemplate.execute {
@@ -114,43 +107,28 @@ class RemoveDuplicateBuildingBlockProcessDefinitionLinksIntTest : BaseIntegratio
 
         assertThat(links()).containsExactlyInAnyOrder(
             attachedMain to true,
-            newerDetachedSub to false,
-            attachedOlder to false,
+            newerSub to false,
+            latestOfThree to false,
             solo to false,
-            attachedUnlinked to false,
-            attachedFile.getValue("dedup-file-first") to false,
-            attachedFile.getValue("dedup-file-second") to false,
-            detachedFile.getValue("dedup-old-file-first") to false,
-            changedFileV2.getValue("dedup-changed-first") to false,
-            changedFileV2.getValue("dedup-changed-main") to true,
-            changedFileV2.getValue("dedup-changed-third") to false,
         )
     }
 
-    private fun deploy(processKey: String, versionTag: String): String =
-        deployFile(versionTag, processKey).getValue(processKey)
-
-    private fun deployFile(versionTag: String, vararg processKeys: String): Map<String, String> {
-        val processes = processKeys.joinToString("\n") { processKey ->
-            """
-              <bpmn:process id="$processKey" isExecutable="true" camunda:versionTag="$versionTag">
-                <bpmn:startEvent id="$processKey-start" />
-              </bpmn:process>
-            """
-        }
+    private fun deploy(processKey: String, versionTag: String): String {
         val bpmn = """
             <?xml version="1.0" encoding="UTF-8"?>
             <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
-            $processes
+              <bpmn:process id="$processKey" isExecutable="true" camunda:versionTag="$versionTag">
+                <bpmn:startEvent id="$processKey-start" />
+              </bpmn:process>
             </bpmn:definitions>
         """.trimIndent()
         val deployment = TransactionTemplate(transactionManager).execute {
             repositoryService.createDeployment()
-                .addString("${processKeys.first()}.bpmn", bpmn)
+                .addString("$processKey.bpmn", bpmn)
                 .deployWithResult()
         }!!
         deploymentIds += deployment.id
-        return deployment.deployedProcessDefinitions.associate { it.key to it.id }
+        return deployment.deployedProcessDefinitions.single().id
     }
 
     private fun link(processDefinitionId: String, main: Boolean) {
@@ -162,7 +140,7 @@ class RemoveDuplicateBuildingBlockProcessDefinitionLinksIntTest : BaseIntegratio
             """.trimIndent(),
             processDefinitionId,
             BUILDING_BLOCK_KEY,
-            BUILDING_BLOCK_VERSION,
+            STORED_BUILDING_BLOCK_VERSION,
             main
         )
     }
@@ -174,12 +152,13 @@ class RemoveDuplicateBuildingBlockProcessDefinitionLinksIntTest : BaseIntegratio
         """.trimIndent(),
         { rs, _ -> rs.getString("process_definition_id") to rs.getBoolean("main") },
         BUILDING_BLOCK_KEY,
-        BUILDING_BLOCK_VERSION
+        STORED_BUILDING_BLOCK_VERSION
     )
 
     private companion object {
         const val BUILDING_BLOCK_KEY = "dedup-links"
-        const val BUILDING_BLOCK_VERSION = "1.0.0"
+        const val BUILDING_BLOCK_VERSION = "12.10.0"
+        val STORED_BUILDING_BLOCK_VERSION = SemverConverter.convertToDatabaseColumn(Semver(BUILDING_BLOCK_VERSION))!!
         const val ATTACHED_TAG = "BB:$BUILDING_BLOCK_KEY:$BUILDING_BLOCK_VERSION"
         const val DETACHED_TAG = "DETACHED:$BUILDING_BLOCK_KEY:$BUILDING_BLOCK_VERSION"
     }

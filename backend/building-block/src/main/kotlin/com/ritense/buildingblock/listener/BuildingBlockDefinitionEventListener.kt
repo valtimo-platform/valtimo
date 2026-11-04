@@ -96,35 +96,17 @@ class BuildingBlockDefinitionEventListener(
         basedOnId: BuildingBlockDefinitionId,
         newId: BuildingBlockDefinitionId
     ): List<String> {
-        val originals = findOriginalProcessDefinitions(basedOnId)
-        val mainByKey = originals.entries.associate { (original, main) -> original.key to main }
-
-        return originals.keys
-            .distinctBy { it.deploymentId to it.resourceName }
-            .flatMap { deployCopy(it, newId) }
-            .filter { it.key in mainByKey }
-            .groupBy { it.key }
-            .map { (key, versions) ->
-                versions.maxBy { it.version }
-                    .also { linkProcessDefinition(newId, it.id, mainByKey.getValue(key)) }
-                    .id
-            }
-    }
-
-    private fun findOriginalProcessDefinitions(
-        basedOnId: BuildingBlockDefinitionId
-    ): Map<OperatonProcessDefinition, Boolean> {
-        return processDefinitionBuildingBlockDefinitionRepository
+        val originals = processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(basedOnId)
             .map { link -> link to operatonProcessService.getProcessDefinitionById(link.id.processDefinitionId.id) }
-            .groupBy { (_, processDefinition) -> processDefinition.key }
-            .map { (key, linked) ->
-                val original = operatonProcessService.getDefinitionsByKeyAndBlueprint(basedOnId, key)
-                    .maxByOrNull { it.version }
-                    ?: linked.maxBy { (_, processDefinition) -> processDefinition.version }.second
-                original to linked.any { (link, _) -> link.main }
-            }
-            .toMap()
+        val mainProcessDefinitionKeys = originals.filter { (link, _) -> link.main }.map { (_, original) -> original.key }
+
+        return originals
+            .map { (_, original) -> original }
+            .distinctBy { it.deploymentId to it.resourceName }
+            .flatMap { deployCopy(it, newId) }
+            .onEach { linkProcessDefinition(newId, it.id, it.key in mainProcessDefinitionKeys) }
+            .map { it.id }
     }
 
     private fun deployCopy(
