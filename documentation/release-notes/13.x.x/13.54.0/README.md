@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Forms | A form that a process link uses can no longer be deleted. Previously this left the case definition impossible to export or create a draft from once it was final. |
