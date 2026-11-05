@@ -86,6 +86,17 @@ class DocumentOpenSearchReindexResourceTest {
     }
 
     @Test
+    fun `reindex returns 400 when the request is rejected as invalid`() {
+        whenever(reindexService.start(any()))
+            .thenThrow(IllegalArgumentException("recreateIndex cannot be combined with subset filters"))
+
+        val response = resource.reindex(ReindexRequest(recreateIndex = true))
+
+        assertThat(response.statusCode.value()).isEqualTo(400)
+        assertThat(response.body?.get("error")).isEqualTo("recreateIndex cannot be combined with subset filters")
+    }
+
+    @Test
     fun `reindex returns 409 when a re-index is already running`() {
         whenever(reindexService.start(any())).thenReturn(null)
 

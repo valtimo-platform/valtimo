@@ -22,6 +22,7 @@ import jakarta.persistence.EntityManager
 import net.javacrumbs.shedlock.core.LockProvider
 import net.javacrumbs.shedlock.core.SimpleLock
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -85,6 +86,28 @@ class DocumentOpenSearchReindexServiceTest {
         verify(runService).startOrResume(any())
         // The dispatched run finishes (here it terminates early against the mocks); the lock must be released.
         verify(simpleLock, timeout(5_000)).unlock()
+    }
+
+    @Test
+    fun `start rejects recreateIndex combined with subset filters before acquiring the lock`() {
+        val request = ReindexRequest(recreateIndex = true, modifiedAfter = java.time.LocalDateTime.now())
+
+        assertThatThrownBy { service.start(request) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+
+        verify(lockProvider, never()).lock(any())
+        verify(runService, never()).startOrResume(any())
+    }
+
+    @Test
+    fun `start allows recreateIndex scoped to a single definition`() {
+        val simpleLock: SimpleLock = mock()
+        whenever(lockProvider.lock(any())).thenReturn(Optional.of(simpleLock))
+        whenever(runService.startOrResume(any())).thenReturn(run(UUID.randomUUID()))
+
+        val runId = service.start(ReindexRequest(documentDefinitionName = "house", recreateIndex = true))
+
+        assertThat(runId).isNotNull()
     }
 
     @Test

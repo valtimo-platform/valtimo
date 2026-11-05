@@ -82,6 +82,11 @@ open class DocumentOpenSearchReindexService(
      * the cluster.
      */
     fun start(request: ReindexRequest): UUID? {
+        require(!(request.recreateIndex && request.hasSubsetFilters())) {
+            "recreateIndex cannot be combined with modifiedAfter, modifiedBefore or documentIds — " +
+                "a filtered rebuild would replace the index with only the matching subset"
+        }
+
         val lock = lockProvider.lock(
             LockConfiguration(Instant.now(), LOCK_NAME, LOCK_AT_MOST_FOR, Duration.ZERO)
         )
@@ -161,7 +166,7 @@ open class DocumentOpenSearchReindexService(
                 }
                 val refreshTarget = rebuild?.targetIndex ?: indexCoordinatesFor(scope)
                 elasticsearchOperations.indexOps(refreshTarget).takeIf { it.exists() }?.refresh()
-                rebuild?.let { completeRebuild(it) }
+                rebuild?.let { publishOrAbandonRebuild(it, skipped) }
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
                 runService.complete(runId, processed + skipped, skipped)
             }
@@ -191,6 +196,31 @@ open class DocumentOpenSearchReindexService(
         }
         indexInitializer.ensureAllIndices()
         return RebuildPlan(definitionName = null, targetIndex = null, newConcrete = null)
+    }
+
+    /**
+     * Publishes a completed rebuild, or abandons it when documents were skipped. A skipped document is absent
+     * from the freshly built index, so swapping it in (scoped) or dropping the legacy index (migrate) would make
+     * that document unsearchable. On skips the existing index keeps serving every document and the operator can
+     * resolve the skips and re-run; for a scoped rebuild the unpublished partial index is dropped to avoid a leak.
+     */
+    private fun publishOrAbandonRebuild(plan: RebuildPlan, skipped: Long) {
+        if (skipped == 0L) {
+            completeRebuild(plan)
+            return
+        }
+        if (plan.newConcrete != null) {
+            logger.warn {
+                "Rebuild for definition '${plan.definitionName}' skipped $skipped document(s) — keeping the existing " +
+                    "index and dropping the unpublished partial index '${plan.newConcrete}'"
+            }
+            indexInitializer.dropIndex(plan.newConcrete)
+        } else {
+            logger.warn {
+                "Migration skipped $skipped document(s) — keeping the legacy index " +
+                    "'${OpenSearchIndexNameResolver.LEGACY_INDEX}' in place; resolve the skips and re-run to complete it"
+            }
+        }
     }
 
     private fun completeRebuild(plan: RebuildPlan) {

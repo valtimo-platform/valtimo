@@ -22,15 +22,23 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.domain.ReindexRunStatus
 import com.ritense.valtimo.contract.blueprint.BlueprintType
+import jakarta.persistence.EntityManager
+import net.javacrumbs.shedlock.core.LockProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -56,6 +64,15 @@ class DocumentOpenSearchMigrationIntTest : BaseOpenSearchIntegrationTest() {
 
     @Autowired
     lateinit var openSearchService: JsonSchemaDocumentOpenSearchService
+
+    @Autowired
+    lateinit var entityManager: EntityManager
+
+    @Autowired
+    lateinit var transactionManager: PlatformTransactionManager
+
+    @Autowired
+    lateinit var lockProvider: LockProvider
 
     @AfterEach
     fun cleanUp() {
@@ -117,6 +134,36 @@ class DocumentOpenSearchMigrationIntTest : BaseOpenSearchIntegrationTest() {
         indexOsDocument(converter.toOsDocument(extra))
         refreshIndex()
         assertThat(countInIndex(OpenSearchIndexNameResolver.READ_ALIAS)).isEqualTo(5L)
+    }
+
+    @Test
+    fun `a migrate run that skips a document keeps the legacy index in place`() {
+        elasticsearchOperations.indexOps(IndexCoordinates.of(OpenSearchIndexNameResolver.LEGACY_INDEX)).create()
+        val docs = (1..3).map { createHouseDocument("street-$it") }
+        clearIndex()
+        assertThat(indexInitializer.isLegacyOrStale()).isTrue()
+
+        val failingId = docs.first().id().id
+        val skippingConverter = spy(converter)
+        doThrow(RuntimeException("conversion boom"))
+            .whenever(skippingConverter).toOsDocument(argThat { id().id == failingId })
+
+        reindexWith(skippingConverter, ReindexRequest(recreateIndex = true)).also { runId ->
+            // A skipped document means the freshly built topology is missing it, so the legacy index must stay.
+            assertThat(legacyExists()).isTrue()
+            assertThat(indexInitializer.isLegacyOrStale()).isTrue()
+            assertThat(reindexRunService.toStatusMap(runId)["status"]).isEqualTo(ReindexRunStatus.COMPLETED_WITH_ERRORS)
+        }
+    }
+
+    private fun reindexWith(converter: JsonSchemaDocumentOsConverter, request: ReindexRequest): java.util.UUID {
+        val service = DocumentOpenSearchReindexService(
+            entityManager, converter, elasticsearchOperations, transactionManager,
+            lockProvider, reindexRunService, indexNameResolver, indexInitializer,
+        )
+        val run = reindexRunService.startOrResume(request)
+        service.reindex(run.id)
+        return run.id
     }
 
     private fun concreteBehindHouseAlias(): String {

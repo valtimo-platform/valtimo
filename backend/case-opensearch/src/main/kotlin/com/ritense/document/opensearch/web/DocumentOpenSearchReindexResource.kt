@@ -46,8 +46,11 @@ class DocumentOpenSearchReindexResource(
     )
     @PostMapping("/reindex")
     fun reindex(@RequestBody(required = false) request: ReindexRequest?): ResponseEntity<Map<String, Any?>> {
-        val runId = reindexService.start(request ?: ReindexRequest())
-            ?: return ResponseEntity.status(409).body(mapOf("error" to "Re-index already in progress"))
+        val runId = try {
+            reindexService.start(request ?: ReindexRequest())
+        } catch (e: IllegalArgumentException) {
+            return ResponseEntity.badRequest().body(mapOf("error" to e.message))
+        } ?: return ResponseEntity.status(409).body(mapOf("error" to "Re-index already in progress"))
         return ResponseEntity.accepted().body(mapOf("status" to "started", "runId" to runId))
     }
 
