@@ -20,6 +20,7 @@ import com.ritense.form.domain.FormDefinition;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.valtimo.contract.blueprint.BlueprintType;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +28,7 @@ import org.semver4j.Semver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,6 +36,14 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FormDefinitionRepository extends JpaRepository<FormIoFormDefinition, UUID> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT f FROM FormIoFormDefinition f WHERE f.id = :id")
+    Optional<FormIoFormDefinition> findByIdForUpdate(@Param("id") UUID id);
+
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("SELECT f FROM FormIoFormDefinition f WHERE f.id = :id")
+    Optional<FormIoFormDefinition> findByIdForShare(@Param("id") UUID id);
 
     List<FormIoFormDefinition> findAllByOrderByNameAsc();
 

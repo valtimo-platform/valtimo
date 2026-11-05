@@ -24,6 +24,7 @@ import com.ritense.form.domain.FormSpringContextHelper;
 import com.ritense.form.mapper.FormProcessLinkMapper;
 import com.ritense.form.processlink.FormProcessLinkActivityHandler;
 import com.ritense.form.repository.FormDefinitionRepository;
+import com.ritense.form.repository.FormProcessLinkRepository;
 import com.ritense.form.service.FormDefinitionService;
 import com.ritense.form.service.FormLoaderService;
 import com.ritense.form.service.PrefillFormService;
@@ -78,8 +79,10 @@ public class FormAutoConfiguration {
     @ConditionalOnMissingBean(FormDefinitionService.class)
     public FormIoFormDefinitionService formDefinitionService(
         final FormDefinitionRepository formDefinitionRepository,
-        final CaseDefinitionChecker caseDefinitionChecker) {
-        return new FormIoFormDefinitionService(formDefinitionRepository, caseDefinitionChecker);
+        final CaseDefinitionChecker caseDefinitionChecker,
+        final FormProcessLinkRepository formProcessLinkRepository) {
+        return new FormIoFormDefinitionService(
+            formDefinitionRepository, caseDefinitionChecker, formProcessLinkRepository);
     }
 
     @Bean
