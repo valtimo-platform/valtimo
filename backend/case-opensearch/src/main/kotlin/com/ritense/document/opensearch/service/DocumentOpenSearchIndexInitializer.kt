@@ -62,10 +62,14 @@ open class DocumentOpenSearchIndexInitializer(
         val alias = resolver.indexNameFor(definitionKey)
         if (exists(alias)) return
 
-        val concrete = createConcreteIndex(alias)
+        // Deterministic first-index name, created idempotently, so concurrent provisioning across nodes
+        // converges on one concrete index. A unique (timestamped) name per node would let each node create its
+        // own, leaving the alias spanning several indices with no write index — then every write fails.
+        val concrete = "${alias}_$INITIAL_INDEX_SUFFIX"
+        createConcreteIndexIfAbsent(concrete)
         attachAliases(concrete, alias)
         logger.info {
-            "Created OpenSearch index '$concrete' for definition '$definitionKey', fronted by alias '$alias' " +
+            "Ensured OpenSearch index '$concrete' for definition '$definitionKey', fronted by alias '$alias' " +
                 "and joined to '${OpenSearchIndexNameResolver.READ_ALIAS}'"
         }
     }
@@ -125,6 +129,24 @@ open class DocumentOpenSearchIndexInitializer(
 
     private fun createConcreteIndex(alias: String): String {
         val name = newConcreteName(alias)
+        writeConcreteIndex(name)
+        return name
+    }
+
+    /**
+     * Creates [name] with the production settings/mapping, treating a concurrent creation by another node as
+     * success — the loser of the race simply reuses the index the winner created.
+     */
+    private fun createConcreteIndexIfAbsent(name: String) {
+        try {
+            writeConcreteIndex(name)
+        } catch (e: Exception) {
+            if (!exists(name)) throw e
+            logger.debug { "Concrete index '$name' already exists (created concurrently) — reusing it" }
+        }
+    }
+
+    private fun writeConcreteIndex(name: String) {
         val indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(name))
 
         val settings = Document.create()
@@ -147,7 +169,6 @@ open class DocumentOpenSearchIndexInitializer(
             ))
         )
         indexOps.putMapping(annotatedMapping)
-        return name
     }
 
     private fun attachAliases(concrete: String, perDefinitionAlias: String) {
@@ -186,5 +207,8 @@ open class DocumentOpenSearchIndexInitializer(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
+        /** Deterministic suffix for the first concrete index behind a per-definition alias — see [ensureIndex]. */
+        private const val INITIAL_INDEX_SUFFIX = "000001"
     }
 }

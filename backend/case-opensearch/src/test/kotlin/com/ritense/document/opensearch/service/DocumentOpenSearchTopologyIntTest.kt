@@ -56,4 +56,43 @@ class DocumentOpenSearchTopologyIntTest : BaseOpenSearchIntegrationTest() {
 
         assertThat(elasticsearchOperations.indexOps(IndexCoordinates.of(indexName)).exists()).isTrue()
     }
+
+    @Test
+    fun `ensureIndex names the first concrete index deterministically`() {
+        val alias = indexNameResolver.indexNameFor(RACE_KEY)
+        try {
+            indexInitializer.ensureIndex(RACE_KEY)
+
+            val backing = elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias)
+            assertThat(backing.keys).containsExactly("${alias}_000001")
+        } finally {
+            indexInitializer.dropIndex("${alias}_000001")
+        }
+    }
+
+    @Test
+    fun `ensureIndex reuses the index another node already created instead of adding a second`() {
+        val alias = indexNameResolver.indexNameFor(RACE_KEY)
+        val deterministic = "${alias}_000001"
+        try {
+            // Simulate the losing node: the first index already exists (another node created it) but the alias
+            // is not attached yet, so this call still enters the create path.
+            elasticsearchOperations.indexOps(IndexCoordinates.of(deterministic)).create()
+
+            indexInitializer.ensureIndex(RACE_KEY)
+
+            // Exactly one concrete backs the alias, and it carries both aliases — no second index, no multi-index
+            // alias that would break writes.
+            val backing = elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias)
+            assertThat(backing.keys).containsExactly(deterministic)
+            val aliases = backing.values.flatten().map { it.alias }
+            assertThat(aliases).contains(alias, OpenSearchIndexNameResolver.READ_ALIAS)
+        } finally {
+            indexInitializer.dropIndex(deterministic)
+        }
+    }
+
+    companion object {
+        private const val RACE_KEY = "topology-race-test"
+    }
 }
