@@ -43,14 +43,7 @@ class PermissionManagementResource(
     fun searchPermissions(@Valid @RequestBody searchRequest: SearchPermissionsRequest): ResponseEntity<List<PermissionDto>> {
         val rolePermissions = permissionRepository
             .findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(searchRequest.roles)
-            .map {
-                PermissionDto(
-                    it.resourceType,
-                    it.actions.map { it.key },
-                    it.conditionContainer.conditions,
-                    it.role.key
-                )
-            }
+            .map { PermissionDto.from(it) }
         return ResponseEntity.ok(rolePermissions)
     }
 

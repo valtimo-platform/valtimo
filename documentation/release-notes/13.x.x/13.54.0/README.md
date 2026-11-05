@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Access control | Exporting a role now includes the context (resource type and conditions) configured on its permissions. |
