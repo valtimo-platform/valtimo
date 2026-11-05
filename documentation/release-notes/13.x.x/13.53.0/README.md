@@ -50,4 +50,3 @@ and shown in a form.
 | Building blocks | Importing a case definition that uses a building block lists each building block process once on the **Processes** tab again, instead of adding a duplicate row on every import. |
 | Case widgets | A process button on a widget respects access rules based on the case's status, instead of staying hidden while the same process could be started under **Start** |
 | Widgets | Typing in the value field of a new widget display condition no longer makes the field lose focus. |
-| Dashboard | A bar chart widget with many categories no longer overflows its widget and overlaps other widgets. The legend now scrolls inside the widget. |
