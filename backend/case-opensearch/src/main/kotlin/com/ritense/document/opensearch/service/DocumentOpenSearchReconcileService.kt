@@ -170,6 +170,9 @@ open class DocumentOpenSearchReconcileService(
         val batchSize = properties.reconcile.pendingDeletionBatchSize
         val readTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
         val writeTemplate = TransactionTemplate(transactionManager)
+        // The id-resolution search below is near-real-time; refresh so a just-indexed document is visible and
+        // cannot be orphaned when we drop its pending row. A post-refresh miss then truly means it is already gone.
+        operations.indexOps(IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)).refresh()
         while (true) {
             val pendingDeletions = readTemplate.execute {
                 pendingIndexDeletionRepository.findByOrderByDeletedOnAsc(PageRequest.of(0, batchSize))
