@@ -208,7 +208,10 @@ open class DocumentOpenSearchIndexInitializer(
     companion object {
         private val logger = KotlinLogging.logger {}
 
-        /** Deterministic suffix for the first concrete index behind a per-definition alias — see [ensureIndex]. */
-        private const val INITIAL_INDEX_SUFFIX = "000001"
+        /**
+         * Deterministic suffix for the first concrete index behind a per-definition alias — see [ensureIndex].
+         * Not a rollover counter: rebuilds mint timestamped names, so this never increments.
+         */
+        private const val INITIAL_INDEX_SUFFIX = "initial"
     }
 }

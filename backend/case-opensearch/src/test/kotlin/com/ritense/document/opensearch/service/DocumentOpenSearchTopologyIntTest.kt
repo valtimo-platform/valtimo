@@ -64,16 +64,16 @@ class DocumentOpenSearchTopologyIntTest : BaseOpenSearchIntegrationTest() {
             indexInitializer.ensureIndex(RACE_KEY)
 
             val backing = elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias)
-            assertThat(backing.keys).containsExactly("${alias}_000001")
+            assertThat(backing.keys).containsExactly("${alias}_initial")
         } finally {
-            indexInitializer.dropIndex("${alias}_000001")
+            indexInitializer.dropIndex("${alias}_initial")
         }
     }
 
     @Test
     fun `ensureIndex reuses the index another node already created instead of adding a second`() {
         val alias = indexNameResolver.indexNameFor(RACE_KEY)
-        val deterministic = "${alias}_000001"
+        val deterministic = "${alias}_initial"
         try {
             // Simulate the losing node: the first index already exists (another node created it) but the alias
             // is not attached yet, so this call still enters the create path.
