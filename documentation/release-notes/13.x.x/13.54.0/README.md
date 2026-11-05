@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Case management | Actions hidden from the start menu stay hidden after creating a new version of the case type or changing the building block version of the action. |
