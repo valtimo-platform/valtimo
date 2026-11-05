@@ -135,7 +135,9 @@ open class DocumentOpenSearchIndexInitializer(
 
     /**
      * Creates [name] with the production settings/mapping, treating a concurrent creation by another node as
-     * success — the loser of the race simply reuses the index the winner created.
+     * success — the loser of the race simply reuses the index the winner created. Safe only because
+     * [writeConcreteIndex] creates the index and its mapping atomically, so an existing index is always fully
+     * mapped; do not widen this to swallow a mapping failure on a half-provisioned index.
      */
     private fun createConcreteIndexIfAbsent(name: String) {
         try {
@@ -155,10 +157,9 @@ open class DocumentOpenSearchIndexInitializer(
         // residual within-definition scalar type-drift. No-op for text/object, so it never alters the
         // behaviour the content_fields_as_text template already handles for strings.
         settings["index.mapping.ignore_malformed"] = true
-        indexOps.create(settings)
 
-        val annotatedMapping = indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java)
-        annotatedMapping["dynamic_templates"] = listOf(
+        val mapping = indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java)
+        mapping["dynamic_templates"] = listOf(
             mapOf("content_fields_as_text" to mapOf(
                 "path_match" to "content.*",
                 "match_mapping_type" to "string",
@@ -168,7 +169,10 @@ open class DocumentOpenSearchIndexInitializer(
                 )
             ))
         )
-        indexOps.putMapping(annotatedMapping)
+
+        // Single atomic create: the index never exists without its mapping, so a failure never leaves a
+        // half-provisioned index and the concurrent-create fallback can safely reuse an index that exists.
+        indexOps.create(settings, mapping)
     }
 
     private fun attachAliases(concrete: String, perDefinitionAlias: String) {
