@@ -24,9 +24,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.data.elasticsearch.BulkFailureException
 import org.springframework.data.elasticsearch.BulkFailureException.FailureDetails
@@ -39,13 +41,14 @@ class JsonSchemaDocumentOsConverterTest {
     private val objectMapper: ObjectMapper = mock()
     private val operations: ElasticsearchOperations = mock()
     private val resolver = OpenSearchIndexNameResolver()
+    private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
     private lateinit var converter: JsonSchemaDocumentOsConverter
 
     private val index = IndexCoordinates.of(resolver.indexNameFor(DEFINITION))
 
     @BeforeEach
     fun setUp() {
-        converter = JsonSchemaDocumentOsConverter(objectMapper, operations, resolver)
+        converter = JsonSchemaDocumentOsConverter(objectMapper, operations, resolver, indexInitializer)
     }
 
     @Test
@@ -121,6 +124,28 @@ class JsonSchemaDocumentOsConverterTest {
 
         verify(operations).save(eq(listOf(house)), eq(IndexCoordinates.of(resolver.indexNameFor("house"))))
         verify(operations).save(eq(listOf(person)), eq(IndexCoordinates.of(resolver.indexNameFor("person"))))
+    }
+
+    @Test
+    fun `indexChunk ensures each definition's index before saving to it`() {
+        val house = osDocument("h", definitionName = "house")
+
+        converter.indexChunk(listOf(house))
+
+        inOrder(indexInitializer, operations) {
+            verify(indexInitializer).ensureIndex("house")
+            verify(operations).save(eq(listOf(house)), eq(IndexCoordinates.of(resolver.indexNameFor("house"))))
+        }
+    }
+
+    @Test
+    fun `indexChunk with an override index does not provision (the scoped rebuild already did)`() {
+        val override = IndexCoordinates.of("some_rebuild_index")
+
+        converter.indexChunk(listOf(osDocument("a")), override)
+
+        verify(operations).save(eq(listOf(osDocument("a"))), eq(override))
+        verifyNoInteractions(indexInitializer)
     }
 
     private fun osDocument(id: String, definitionName: String = DEFINITION) = JsonSchemaDocumentOsDocument(

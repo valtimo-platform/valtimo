@@ -43,6 +43,7 @@ open class DocumentOpenSearchSyncService(
     private val documentRepository: JsonSchemaDocumentRepository,
     private val converter: JsonSchemaDocumentOsConverter,
     private val resolver: OpenSearchIndexNameResolver,
+    private val indexInitializer: DocumentOpenSearchIndexInitializer,
     transactionManager: PlatformTransactionManager,
 ) {
 
@@ -68,6 +69,9 @@ open class DocumentOpenSearchSyncService(
             logger.warn { "Document $documentId has no definition name — skipping upsert (cannot resolve index)" }
             return
         }
+        // Provision first: a write to a missing alias auto-creates a bare, unmapped index (auto_create_index).
+        // On failure the upsert is skipped (the listener isolates it) and the reconciler retries.
+        indexInitializer.ensureIndex(definitionName)
         try {
             operations.save(osDocument, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
             logger.debug { "Upserted document $documentId in OpenSearch" }

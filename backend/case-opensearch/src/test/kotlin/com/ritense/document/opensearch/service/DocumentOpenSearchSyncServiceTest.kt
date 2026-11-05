@@ -26,7 +26,9 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -48,6 +50,7 @@ class DocumentOpenSearchSyncServiceTest {
     private val documentRepository: JsonSchemaDocumentRepository = mock()
     private val converter: JsonSchemaDocumentOsConverter = mock()
     private val resolver = OpenSearchIndexNameResolver()
+    private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
     private val transactionManager: PlatformTransactionManager = mock()
     private lateinit var service: DocumentOpenSearchSyncService
 
@@ -57,7 +60,34 @@ class DocumentOpenSearchSyncServiceTest {
     fun setUp() {
         // Let the read-only TransactionTemplate run its callback inline.
         whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
-        service = DocumentOpenSearchSyncService(operations, documentRepository, converter, resolver, transactionManager)
+        service = DocumentOpenSearchSyncService(operations, documentRepository, converter, resolver, indexInitializer, transactionManager)
+    }
+
+    @Test
+    fun `upsertById ensures the definition's index before saving`() {
+        val id = UUID.randomUUID()
+        val document: JsonSchemaDocument = mock()
+        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
+        whenever(converter.toOsDocument(document)).thenReturn(osDocument(id.toString()))
+
+        service.upsertById(id)
+
+        inOrder(indexInitializer, operations) {
+            verify(indexInitializer).ensureIndex("house")
+            verify(operations).save(any<JsonSchemaDocumentOsDocument>(), eq(houseIndex))
+        }
+    }
+
+    @Test
+    fun `upsertById does not save when provisioning the index fails`() {
+        val id = UUID.randomUUID()
+        val document: JsonSchemaDocument = mock()
+        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
+        whenever(converter.toOsDocument(document)).thenReturn(osDocument(id.toString()))
+        doThrow(RuntimeException("OpenSearch down")).whenever(indexInitializer).ensureIndex("house")
+
+        assertThatThrownBy { service.upsertById(id) }.isInstanceOf(RuntimeException::class.java)
+        verify(operations, never()).save(any<JsonSchemaDocumentOsDocument>(), any<IndexCoordinates>())
     }
 
     @Test

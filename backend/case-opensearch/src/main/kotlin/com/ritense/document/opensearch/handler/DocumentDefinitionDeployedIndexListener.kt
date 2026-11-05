@@ -43,7 +43,7 @@ open class DocumentDefinitionDeployedIndexListener(
         try {
             indexInitializer.ensureIndex(definitionKey)
         } catch (e: Exception) {
-            logger.warn(e) { "Failed to create OpenSearch index for deployed definition '$definitionKey' — the reconciler/reindex will repair it" }
+            logger.warn(e) { "Failed to create OpenSearch index for deployed definition '$definitionKey' — every writer provisions on demand, so it is created on the first write" }
         }
     }
 

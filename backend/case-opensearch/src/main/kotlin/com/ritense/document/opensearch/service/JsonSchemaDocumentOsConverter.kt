@@ -39,6 +39,7 @@ open class JsonSchemaDocumentOsConverter(
     private val objectMapper: ObjectMapper,
     private val operations: ElasticsearchOperations,
     private val resolver: OpenSearchIndexNameResolver,
+    private val indexInitializer: DocumentOpenSearchIndexInitializer,
 ) {
 
     /**
@@ -87,6 +88,8 @@ open class JsonSchemaDocumentOsConverter(
             documents.forEach { logger.warn { "Document ${it.id} has no definition name — skipping (cannot resolve index)" } }
             return documents.size.toLong()
         }
+        // Provision first: a write to a missing alias auto-creates a bare, unmapped index (auto_create_index).
+        indexInitializer.ensureIndex(definitionName)
         return saveIsolated(IndexCoordinates.of(resolver.indexNameFor(definitionName)), documents)
     }
 

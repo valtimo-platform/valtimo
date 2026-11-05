@@ -132,8 +132,9 @@ class DocumentOpenSearchAutoConfiguration {
         objectMapper: ObjectMapper,
         elasticsearchOperations: ElasticsearchOperations,
         resolver: OpenSearchIndexNameResolver,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
     ): JsonSchemaDocumentOsConverter =
-        JsonSchemaDocumentOsConverter(objectMapper, elasticsearchOperations, resolver)
+        JsonSchemaDocumentOsConverter(objectMapper, elasticsearchOperations, resolver, indexInitializer)
 
     @Bean
     @ConditionalOnMissingBean
@@ -142,9 +143,10 @@ class DocumentOpenSearchAutoConfiguration {
         documentRepository: JsonSchemaDocumentRepository,
         converter: JsonSchemaDocumentOsConverter,
         resolver: OpenSearchIndexNameResolver,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
         transactionManager: PlatformTransactionManager,
     ): DocumentOpenSearchSyncService =
-        DocumentOpenSearchSyncService(elasticsearchOperations, documentRepository, converter, resolver, transactionManager)
+        DocumentOpenSearchSyncService(elasticsearchOperations, documentRepository, converter, resolver, indexInitializer, transactionManager)
 
     @Bean
     @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
