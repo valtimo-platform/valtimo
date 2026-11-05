@@ -33,5 +33,5 @@ New enhancement explanation.
 
 * **Existing OpenSearch installations must rebuild their index.** After upgrading, the *Admin > OpenSearch* screen
   shows a banner until an operator runs a re-index with the new **Rebuild / migrate index** option. Run it promptly —
-  until it finishes, case lists can be incomplete. No data is lost, and changing search-field configuration no longer
-  triggers a rebuild.
+  until it completes successfully, case lists can be incomplete. If documents are skipped, resolve them and run the
+  migration again. No data is lost, and changing search-field configuration no longer triggers a rebuild.

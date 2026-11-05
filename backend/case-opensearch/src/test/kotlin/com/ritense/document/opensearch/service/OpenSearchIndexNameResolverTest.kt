@@ -67,6 +67,15 @@ class OpenSearchIndexNameResolverTest {
     }
 
     @Test
+    fun `a resolved name leaves room for the concrete index suffix within the byte budget`() {
+        val name = resolver.indexNameFor("x".repeat(400))
+
+        // Worst-case concrete name the initializer builds: "<alias>_<epoch millis>_<same-ms collision int>".
+        val worstCaseConcreteName = name + "_" + "9".repeat(14) + "_" + "9".repeat(10)
+        assertThat(worstCaseConcreteName.toByteArray(Charsets.UTF_8).size).isLessThanOrEqualTo(255)
+    }
+
+    @Test
     fun `the read alias is the shared all-cases alias`() {
         assertThat(OpenSearchIndexNameResolver.READ_ALIAS).isEqualTo("json_schema_document_all")
     }

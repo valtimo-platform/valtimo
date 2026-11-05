@@ -66,9 +66,13 @@ open class OpenSearchIndexNameResolver {
 
         private const val INDEX_PREFIX = "json_schema_document_"
 
-        // OpenSearch index names are capped at 255 bytes; reserve room for the prefix and a hash suffix.
+        // OpenSearch index names are capped at 255 bytes. The resolved value is an alias; the concrete index
+        // behind it is "<alias>_<suffix>", so reserve room for the prefix, a hash suffix, AND the longest
+        // concrete suffix the initializer appends — "_" + epoch millis (<=14 digits) and, on a same-millisecond
+        // collision, "_" + a positive Int (<=10 digits) — so the concrete name, not just the alias, fits.
         private const val HASH_BYTES = 4
-        private const val MAX_KEY_LENGTH = 255 - INDEX_PREFIX.length - (HASH_BYTES * 2) - 1
+        private const val MAX_CONCRETE_SUFFIX = 1 + 14 + 1 + 10
+        private const val MAX_KEY_LENGTH = 255 - INDEX_PREFIX.length - MAX_CONCRETE_SUFFIX - (HASH_BYTES * 2) - 1
 
         private val ILLEGAL_CHARS = Regex("[^a-z0-9_.-]")
     }
