@@ -25,7 +25,8 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Area name | New bugfix. |
-| OpenSearch document search | Case lists that use OpenSearch no longer come back empty when two case types store differently-typed values on the same field; each case type is now indexed separately (gzac-issues #924). |
+| OpenSearch document search | Case lists that use OpenSearch no longer come back empty when two case types store differently-typed values on the same field; each case type is now indexed separately. |
+| OpenSearch document search | A full re-index no longer fails with `Limit of total fields [1000] has been exceeded` as the number of case types grows; each case type now has its own index. |
 
 ---
 
