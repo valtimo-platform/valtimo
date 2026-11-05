@@ -29,8 +29,11 @@ import net.javacrumbs.shedlock.core.LockProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.whenever
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
@@ -154,6 +157,35 @@ class DocumentOpenSearchMigrationIntTest : BaseOpenSearchIntegrationTest() {
             assertThat(indexInitializer.isLegacyOrStale()).isTrue()
             assertThat(reindexRunService.toStatusMap(runId)["status"]).isEqualTo(ReindexRunStatus.COMPLETED_WITH_ERRORS)
         }
+    }
+
+    @Test
+    fun `a scoped rebuild re-indexes a write that landed in the old index during the rebuild`() {
+        val document = createHouseDocument("concurrent")
+        val id = document.id().id
+        clearIndex()
+
+        // Spy the initializer so that, when the swap runs (after the whole fill has indexed the pre-change state),
+        // a concurrent write mutates the document in Postgres — the write that would land in the dropped old index.
+        val spyInitializer = spy(indexInitializer)
+        doAnswer { invocation ->
+            runWithoutAuthorization { documentService.setInternalStatus(document.id(), "started") }
+            invocation.callRealMethod()
+        }.whenever(spyInitializer).swapInRebuiltIndex(eq("house"), any())
+
+        val service = DocumentOpenSearchReindexService(
+            entityManager, converter, elasticsearchOperations, transactionManager,
+            lockProvider, reindexRunService, indexNameResolver, spyInitializer,
+        )
+        val run = reindexRunService.startOrResume(ReindexRequest(documentDefinitionName = "house", recreateIndex = true))
+        service.reindex(run.id)
+
+        refreshIndex()
+        // The post-swap catch-up re-read the latest Postgres state, so the concurrent status change is present
+        // in the swapped index — not lost with the dropped old index (where the fill's status-less copy would be).
+        val indexed = findIndexedOptional(id.toString())
+        assertThat(indexed).isPresent
+        assertThat(indexed.get().internalStatus).isEqualTo("started")
     }
 
     private fun reindexWith(converter: JsonSchemaDocumentOsConverter, request: ReindexRequest): java.util.UUID {

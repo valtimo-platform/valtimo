@@ -125,6 +125,10 @@ open class DocumentOpenSearchReindexService(
         val pageSize = runService.pageSizeOf(runId)
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
 
+        // Lower bound for the post-swap catch-up: any document whose changedOn moved at/after this may have
+        // taken a live write into the old index that the swap drops. The overlap absorbs node clock skew.
+        val catchUpFrom = LocalDateTime.now().minus(CATCH_UP_OVERLAP)
+
         try {
             // Inside the try so a preparation failure (index create, definition query) marks the run FAILED
             // instead of leaving it stuck RUNNING until stale-run reconciliation.
@@ -167,6 +171,11 @@ open class DocumentOpenSearchReindexService(
                 val refreshTarget = rebuild?.targetIndex ?: indexCoordinatesFor(scope)
                 elasticsearchOperations.indexOps(refreshTarget).takeIf { it.exists() }?.refresh()
                 rebuild?.let { publishOrAbandonRebuild(it, skipped) }
+                // A published scoped rebuild (newConcrete != null, nothing skipped) just dropped the old index;
+                // re-index anything changed during the rebuild so a concurrent write to that old index is not lost.
+                if (skipped == 0L && rebuild?.newConcrete != null) {
+                    catchUpConcurrentWrites(rebuild.definitionName!!, catchUpFrom, pageSize)
+                }
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
                 runService.complete(runId, processed + skipped, skipped)
             }
@@ -235,6 +244,87 @@ open class DocumentOpenSearchReindexService(
         val definitionName: String?,
         val targetIndex: IndexCoordinates?,
         val newConcrete: String?,
+    )
+
+    /**
+     * After a scoped rebuild has swapped the alias onto the fresh index and dropped the old one, re-index every
+     * document of [definitionName] whose `changedOn` moved at/after [from] (i.e. during the rebuild) from
+     * PostgreSQL into the now-live index. A live write during the rebuild landed in the dropped old index; this
+     * restores it. Re-reading the latest state and routing by definition (plain [JsonSchemaDocumentOsConverter.indexChunk])
+     * is race-free: external versioning ([JsonSchemaDocumentOsDocument.indexVersion]) means the catch-up write
+     * either wins or is a benign version conflict against a concurrent live write. A failure here is logged, not
+     * fatal — the rebuild already succeeded and the reconciler remains the backstop.
+     */
+    private fun catchUpConcurrentWrites(definitionName: String, from: LocalDateTime, pageSize: Int) {
+        val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+        var lastChangedOn: LocalDateTime? = null
+        var lastId: UUID? = null
+        var caughtUp = 0L
+        try {
+            while (!cancelRequested) {
+                val cursorChangedOn = lastChangedOn
+                val cursorId = lastId
+                val page = txTemplate.execute {
+                    val batch = fetchChangedSince(definitionName, from, cursorChangedOn, cursorId, pageSize)
+                    if (batch.isEmpty()) {
+                        null
+                    } else {
+                        val osDocuments = batch.mapNotNull { jpaDoc ->
+                            try {
+                                converter.toOsDocument(jpaDoc)
+                            } catch (e: Exception) {
+                                logger.warn(e) { "Failed to convert document ${jpaDoc.id().id} during catch-up — skipping" }
+                                null
+                            }
+                        }
+                        CatchUpPage(osDocuments, batch.last().changedOn(), batch.last().id().id).also { entityManager.clear() }
+                    }
+                } ?: break
+
+                page.osDocuments.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).forEach { converter.indexChunk(it) }
+                caughtUp += page.osDocuments.size
+                lastChangedOn = page.lastChangedOn
+                lastId = page.lastId
+            }
+            if (caughtUp > 0) {
+                logger.info { "Re-indexed $caughtUp concurrently-changed document(s) into the rebuilt '$definitionName' index" }
+            }
+        } catch (e: Exception) {
+            logger.warn(e) { "Catch-up after rebuilding '$definitionName' failed — the reconciler will repair any missed write" }
+        }
+    }
+
+    /** Keyset scan (by `changedOn`, then id) of a single definition's documents changed at/after [from]. */
+    private fun fetchChangedSince(
+        definitionName: String,
+        from: LocalDateTime,
+        lastChangedOn: LocalDateTime?,
+        lastId: UUID?,
+        pageSize: Int,
+    ): List<JsonSchemaDocument> {
+        val hasCursor = lastChangedOn != null && lastId != null
+        val jpql = buildString {
+            append("SELECT d FROM JsonSchemaDocument d LEFT JOIN FETCH d.internalStatus")
+            append(" WHERE d.documentDefinitionId.name = :definitionName AND d.changedOn >= :from")
+            if (hasCursor) {
+                append(" AND (d.changedOn > :lastChangedOn OR (d.changedOn = :lastChangedOn AND d.id.id > :lastId))")
+            }
+            append(" ORDER BY d.changedOn ASC, d.id.id ASC")
+        }
+        val query = entityManager.createQuery(jpql, JsonSchemaDocument::class.java)
+        query.setParameter("definitionName", definitionName)
+        query.setParameter("from", from)
+        if (hasCursor) {
+            query.setParameter("lastChangedOn", lastChangedOn)
+            query.setParameter("lastId", lastId)
+        }
+        return query.setMaxResults(pageSize).resultList
+    }
+
+    private data class CatchUpPage(
+        val osDocuments: List<JsonSchemaDocumentOsDocument>,
+        val lastChangedOn: LocalDateTime,
+        val lastId: UUID,
     )
 
     /** Status of a specific run (by id) or the most recent run when [runId] is null. */
@@ -436,5 +526,8 @@ open class DocumentOpenSearchReindexService(
 
         private const val SHUTDOWN_TIMEOUT_SECONDS = 30L
         private const val PRUNE_BATCH_SIZE = 1000
+
+        /** Clock-skew margin on the post-swap catch-up lower bound. Over-inclusion is harmless (idempotent). */
+        private val CATCH_UP_OVERLAP: Duration = Duration.ofSeconds(10)
     }
 }
