@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.ritense.document.web.rest;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -147,7 +148,7 @@ class JsonSchemaDocumentSearchResourceTest extends BaseTest {
         statusFilter.add(null);
         request.setStatusFilter(statusFilter);
 
-        doReturn(documentPage).when(documentSearchService).search(any(), any(), any(SearchWithConfigRequest.class), any());
+        doReturn(documentPage).when(documentSearchService).search(anyString(), any(), any(SearchWithConfigRequest.class), any());
 
         var jsonRequest = MapperSingleton.INSTANCE.get().writeValueAsString(request);
 
