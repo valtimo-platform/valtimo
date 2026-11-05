@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Forms | Disabled fields in forms now show their value in readable text, styled as read-only instead of faded grey. |
