@@ -34,18 +34,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {CASE_MANAGEMENT_COLOR_TEST_IDS} from '../../../../../../constants';
-
-const COLOR_SWATCHES = [
-  '#da1e28', '#ff8389', '#fa4d56', '#ff7eb6', '#ee538b', '#d12771',
-  '#6929c4', '#8a3ffc', '#a56eff', '#d4bbff',
-  '#0043ce', '#1192e8', '#33b1ff', '#82cfff',
-  '#005d5d', '#009d9a', '#3ddbd9',
-  '#0e6027', '#24a148', '#42be65',
-  '#b28600', '#f1c21b',
-  '#570408', '#002d9c',
-  '#525252', '#8d8d8d', '#161616',
-];
+import {CASE_MANAGEMENT_COLOR_TEST_IDS, COLOR_SWATCHES} from '../../../../../../constants';
 
 @Component({
   standalone: true,
@@ -53,13 +42,7 @@ const COLOR_SWATCHES = [
   templateUrl: './case-management-color.component.html',
   styleUrl: './case-management-color.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-    LayerModule,
-    ColorPickerComponent,
-  ],
+  imports: [CommonModule, FormsModule, TranslateModule, LayerModule, ColorPickerComponent],
 })
 export class CaseManagementColorComponent {
   protected readonly testIds = CASE_MANAGEMENT_COLOR_TEST_IDS;
@@ -113,7 +96,7 @@ export class CaseManagementColorComponent {
 
   public readonly selectedColor$: Observable<string> = combineLatest([
     this.currentSettings$.pipe(map(s => s?.color ?? null)),
-    this._userSelectedColor$
+    this._userSelectedColor$,
   ]).pipe(
     map(([loaded, user]) => user ?? loaded ?? ''),
     distinctUntilChanged()

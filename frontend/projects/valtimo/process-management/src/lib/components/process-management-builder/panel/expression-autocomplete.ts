@@ -30,9 +30,15 @@ class ExpressionAutocomplete {
   private stylesInjected = false;
   private observer: MutationObserver | null = null;
   private documentClickHandlers: Array<(e: MouseEvent) => void> = [];
+  private selectedElementId: string | null = null;
+  private readonly manualModeKeys = new Set<string>();
 
   constructor(eventBus: any) {
     this.injectStyles();
+
+    eventBus.on('selection.changed', (event: any) => {
+      this.selectedElementId = event?.newSelection?.[0]?.id ?? null;
+    });
 
     eventBus.on('diagram.destroy', () => {
       this.dispose();
@@ -46,6 +52,7 @@ class ExpressionAutocomplete {
       this.observer = null;
     }
     this.panelContainer = null;
+    this.manualModeKeys.clear();
   }
 
   private cleanupClickHandlers(): void {
@@ -96,7 +103,10 @@ class ExpressionAutocomplete {
 
   private isExpressionField(input: HTMLInputElement | HTMLTextAreaElement): boolean {
     const type = input.type?.toLowerCase();
-    if (input.tagName !== 'TEXTAREA' && !(input.tagName === 'INPUT' && (!type || type === 'text'))) {
+    if (
+      input.tagName !== 'TEXTAREA' &&
+      !(input.tagName === 'INPUT' && (!type || type === 'text'))
+    ) {
       return false;
     }
 
@@ -155,7 +165,8 @@ class ExpressionAutocomplete {
 
     const parsed = this.parseExpression(input.value);
     const canUseDropdown = !input.value || (parsed.beanName !== null && parsed.methodName !== null);
-    const initialMode = canUseDropdown ? 'simple' : 'technical';
+    const initialMode =
+      canUseDropdown && !this.manualModeKeys.has(this.getModeKey(input)) ? 'simple' : 'technical';
     wrapper.dataset.mode = initialMode;
 
     input.parentNode?.insertBefore(wrapper, input);
@@ -199,6 +210,13 @@ class ExpressionAutocomplete {
   ): void {
     wrapper.dataset.mode = mode;
 
+    const modeKey = this.getModeKey(input);
+    if (mode === 'technical') {
+      this.manualModeKeys.add(modeKey);
+    } else {
+      this.manualModeKeys.delete(modeKey);
+    }
+
     wrapper.querySelectorAll('.expression-editor-toggle__btn').forEach(btn => {
       btn.classList.toggle('active', (btn as HTMLButtonElement).dataset.mode === mode);
     });
@@ -236,7 +254,17 @@ class ExpressionAutocomplete {
     }
   }
 
-  private renderSimpleMode(container: HTMLElement, input: HTMLInputElement | HTMLTextAreaElement): void {
+  // Panel re-renders on save; key survives new input elements
+  private getModeKey(input: HTMLInputElement | HTMLTextAreaElement): string {
+    const entryId =
+      input.closest('.bio-properties-panel-entry')?.getAttribute('data-entry-id') || '';
+    return `${this.selectedElementId}|${entryId}|${input.name || input.id}`;
+  }
+
+  private renderSimpleMode(
+    container: HTMLElement,
+    input: HTMLInputElement | HTMLTextAreaElement
+  ): void {
     this.cleanupClickHandlers();
 
     const parsed = this.parseExpression(input.value);
@@ -272,7 +300,13 @@ class ExpressionAutocomplete {
     }
 
     if (parsed.beanName && parsed.methodName) {
-      this.renderParameterInputs(container, parsed.beanName, parsed.methodName, parsed.parameters, input);
+      this.renderParameterInputs(
+        container,
+        parsed.beanName,
+        parsed.methodName,
+        parsed.parameters,
+        input
+      );
     }
   }
 
@@ -491,12 +525,35 @@ class ExpressionAutocomplete {
 
   private parseExpression(expr: string): ParsedExpression {
     const match = expr.match(/^\$\{([a-zA-Z_]\w*)\.([a-zA-Z_]\w*)\((.*)\)\}$/);
-    if (!match) return {beanName: null, methodName: null, parameters: []};
+    if (!match || !this.isSingleCallArguments(match[3])) {
+      return {beanName: null, methodName: null, parameters: []};
+    }
     return {
       beanName: match[1],
       methodName: match[2],
       parameters: this.parseParameters(match[3]),
     };
+  }
+
+  // Chained calls like `a.b(x).c()` close the first call early
+  private isSingleCallArguments(paramsStr: string): boolean {
+    let depth = 0;
+    let inString = false;
+    let stringChar = '';
+
+    for (const char of paramsStr) {
+      if (!inString && (char === '"' || char === "'")) {
+        inString = true;
+        stringChar = char;
+      } else if (inString && char === stringChar) {
+        inString = false;
+      } else if (!inString && char === '(') {
+        depth++;
+      } else if (!inString && char === ')' && --depth < 0) {
+        return false;
+      }
+    }
+    return depth === 0;
   }
 
   private parseParameters(paramsStr: string): string[] {
@@ -547,9 +604,7 @@ class ExpressionAutocomplete {
   }
 
   private camelCaseToReadable(text: string): string {
-    return text
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      .replace(/^./, str => str.toUpperCase());
+    return text.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, str => str.toUpperCase());
   }
 
   private injectStyles(): void {

@@ -28,6 +28,11 @@ import {caseDetailPendingChangesGuard} from './guards/case-detail-pending-change
 
 const routes: Routes = [
   {
+    path: 'cases',
+    redirectTo: 'cases-overview',
+    pathMatch: 'full',
+  },
+  {
     path: 'cases-overview',
     component: CaseOverviewComponent,
     canActivate: [AuthGuardService],

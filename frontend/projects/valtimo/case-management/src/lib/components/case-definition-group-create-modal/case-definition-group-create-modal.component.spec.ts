@@ -35,11 +35,22 @@ describe('CaseDefinitionGroupCreateModalComponent', () => {
 
   describe('edit mode', () => {
     beforeEach(() => {
+      component.editMode = true;
       component.group = {title: 'Group A', description: 'Description'};
     });
 
-    it('is in edit mode when a group is set', () => {
+    it('is in edit mode when editMode is set', () => {
       expect(component.isEditMode).toBeTrue();
+    });
+
+    it('never creates a group when the edited group is not loaded', () => {
+      component.group = null;
+      open();
+      component.formGroup.patchValue({title: 'Renamed', description: ''});
+
+      component.onCloseModal(true);
+
+      expect(groupService.createGroup).not.toHaveBeenCalled();
     });
 
     it('prefills the form when opened', () => {
@@ -82,7 +93,7 @@ describe('CaseDefinitionGroupCreateModalComponent', () => {
   });
 
   describe('create mode', () => {
-    it('is not in edit mode without a group', () => {
+    it('is not in edit mode by default', () => {
       expect(component.isEditMode).toBeFalse();
     });
 

@@ -23,7 +23,12 @@
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
-      {{ (field ? 'caseManagement.groups.searchFields.editField' : 'caseManagement.groups.searchFields.addField') | translate }}
+      {{
+        (field
+          ? 'caseManagement.groups.searchFields.editField'
+          : 'caseManagement.groups.searchFields.addField'
+        ) | translate
+      }}
     </h3>
   </cds-modal-header>
 
@@ -31,7 +36,9 @@
     <cds-label>
       <span>
         {{ 'caseManagement.groups.searchFields.fieldTitle' | translate }}
-        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.fieldTitleTooltip' | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.groups.searchFields.fieldTitleTooltip' | translate"
+        ></v-tooltip-icon>
       </span>
 
       <input
@@ -56,7 +63,9 @@
     <div class="valtimo-group-search-field-modal__path-section" *ngIf="members.length > 0">
       <p class="valtimo-group-search-field-modal__path-title">
         {{ 'caseManagement.groups.listColumns.pathPerCase' | translate }}
-        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.pathPerCaseTooltip' | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.groups.searchFields.pathPerCaseTooltip' | translate"
+        ></v-tooltip-icon>
       </p>
 
       <cds-tile class="valtimo-group-search-field-modal__path-tile" [cdsLayer]="1">
@@ -70,8 +79,14 @@
               [attr.data-test-id]="testIds.pathSearch"
             />
 
-            <span class="valtimo-group-search-field-modal__path-counter" [attr.data-test-id]="testIds.pathCounter">
-              {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
+            <span
+              class="valtimo-group-search-field-modal__path-counter"
+              [attr.data-test-id]="testIds.pathCounter"
+            >
+              {{
+                'caseManagement.groups.pathCounter'
+                  | translate: {filled: filledPathCount, total: totalMemberCount}
+              }}
             </span>
 
             <div class="valtimo-group-search-field-modal__show-empty">
@@ -95,8 +110,12 @@
             [attr.data-test-id]="testIds.pathRow"
           >
             <div class="valtimo-group-search-field-modal__case-label">
-              <span class="valtimo-group-search-field-modal__case-name">{{ item.member.caseDefinitionName || item.member.caseDefinitionKey }}</span>
-              <span class="valtimo-group-search-field-modal__case-key">({{ item.member.caseDefinitionKey }})</span>
+              <span class="valtimo-group-search-field-modal__case-name">{{
+                item.member.caseDefinitionName || item.member.caseDefinitionKey
+              }}</span>
+              <span class="valtimo-group-search-field-modal__case-key"
+                >({{ item.member.caseDefinitionKey }})</span
+              >
             </div>
             <valtimo-value-path-selector
               [caseDefinitionKey]="item.member.caseDefinitionKey"
@@ -127,7 +146,9 @@
     <div class="valtimo-group-search-field-modal__dropdown-field">
       <span class="cds--label">
         {{ 'caseManagement.groups.searchFields.dataType' | translate }}
-        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.dataTypeTooltip' | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.groups.searchFields.dataTypeTooltip' | translate"
+        ></v-tooltip-icon>
       </span>
       <cds-dropdown
         formControlName="dataType"
@@ -141,7 +162,9 @@
     <div class="valtimo-group-search-field-modal__dropdown-field">
       <span class="cds--label">
         {{ 'caseManagement.groups.searchFields.fieldType' | translate }}
-        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.fieldTypeTooltip' | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.groups.searchFields.fieldTypeTooltip' | translate"
+        ></v-tooltip-icon>
       </span>
       <cds-dropdown
         formControlName="fieldType"
@@ -155,7 +178,9 @@
     <div class="valtimo-group-search-field-modal__dropdown-field" *ngIf="showMatchType">
       <span class="cds--label">
         {{ 'caseManagement.groups.searchFields.matchType' | translate }}
-        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.matchTypeTooltip' | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.groups.searchFields.matchTypeTooltip' | translate"
+        ></v-tooltip-icon>
       </span>
       <cds-dropdown
         formControlName="matchType"
@@ -172,12 +197,16 @@
     >
       <span class="cds--label">
         {{ 'caseManagement.groups.searchFields.dropdownDataProvider' | translate }}
-        <v-tooltip-icon [tooltip]="'caseManagement.groups.searchFields.dropdownDataProviderTooltip' | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.groups.searchFields.dropdownDataProviderTooltip' | translate"
+        ></v-tooltip-icon>
       </span>
       <cds-dropdown
         formControlName="dropdownDataProvider"
         [itemValueKey]="'value'"
-        [placeholder]="'caseManagement.groups.searchFields.dropdownDataProviderPlaceholder' | translate"
+        [placeholder]="
+          'caseManagement.groups.searchFields.dropdownDataProviderPlaceholder' | translate
+        "
         [attr.data-test-id]="searchFieldTestIds.dropdownDataProviderInput"
       >
         <cds-dropdown-list [items]="dropdownDataProviderItems"></cds-dropdown-list>
@@ -198,7 +227,11 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCloseModal()" [attr.data-test-id]="testIds.cancelButton">
+    <button
+      cdsButton="secondary"
+      (click)="onCloseModal()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 

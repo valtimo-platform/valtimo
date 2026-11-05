@@ -120,6 +120,50 @@ class CaseDefinitionGroupImporterTest {
     }
 
     @Test
+    fun `should reject group key with invalid characters`() {
+        val json = """
+            {"key": "../evil\"x", "title": "Evil", "order": 0, "members": [], "listColumns": [], "searchFields": []}
+        """.trimIndent()
+
+        org.junit.jupiter.api.assertThrows<IllegalStateException> {
+            importer.import(
+                ImportRequest(fileName = "/global/case-group/evil/evil.case-group.json", content = json.toByteArray())
+            )
+        }
+        verify(groupRepository, never()).save(any<CaseDefinitionGroup>())
+    }
+
+    @Test
+    fun `should reject group key that does not match file name`() {
+        val json = """
+            {"key": "other", "title": "Other", "order": 0, "members": [], "listColumns": [], "searchFields": []}
+        """.trimIndent()
+
+        org.junit.jupiter.api.assertThrows<IllegalStateException> {
+            importer.import(createImportRequest(json))
+        }
+        verify(groupRepository, never()).save(any<CaseDefinitionGroup>())
+    }
+
+    @Test
+    fun `should reject duplicate search field keys`() {
+        val json = """
+            {
+                "key": "my-group", "title": "G", "order": 0, "members": [], "listColumns": [],
+                "searchFields": [
+                    {"key": "f", "title": "F", "dataType": "TEXT", "fieldType": "SINGLE", "order": 0, "pathMappings": []},
+                    {"key": "f", "title": "F2", "dataType": "TEXT", "fieldType": "SINGLE", "order": 1, "pathMappings": []}
+                ]
+            }
+        """.trimIndent()
+
+        org.junit.jupiter.api.assertThrows<IllegalStateException> {
+            importer.import(createImportRequest(json))
+        }
+        verify(groupRepository, never()).save(any<CaseDefinitionGroup>())
+    }
+
+    @Test
     fun `should import group with basic data`() {
         val json = """
             {

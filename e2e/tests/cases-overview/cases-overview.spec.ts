@@ -99,21 +99,28 @@ test.describe('Cases overview and pinned items', () => {
       await expect(page).toHaveURL(/\/cases-overview$/);
     });
 
-    test('clicking the Cases title opens the overview without toggling the menu', async () => {
+    test('clicking the Cases title opens the overview and toggles the menu', async () => {
       await page.goto('/tasks');
       await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'false');
 
       await overviewPage.casesMenuTitle.click();
 
       await expect(page).toHaveURL(/\/cases-overview$/);
-      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'false');
-
-      await page.goto('/cases/bezwaar');
-      await overviewPage.expandCasesMenu();
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'true');
 
       await overviewPage.casesMenuTitle.click();
 
       await expect(page).toHaveURL(/\/cases-overview$/);
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    test('the Cases menu stays open when navigating to another menu item', async () => {
+      await page.goto('/tasks');
+      await overviewPage.expandCasesMenu();
+
+      await page.locator('cds-sidenav').getByRole('link', {name: /Dashboard/}).click();
+
+      await expect.poll(() => new URL(page.url()).pathname).toBe('/');
       await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'true');
     });
 

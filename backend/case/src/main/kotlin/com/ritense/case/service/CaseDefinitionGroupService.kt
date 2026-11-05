@@ -20,6 +20,7 @@ import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.ColumnDefaultSort
+import com.ritense.case.domain.PinnedItemType
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
@@ -32,11 +33,15 @@ import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.domain.group.GroupSearchFieldPathMapping
 import com.ritense.case.domain.group.GroupSearchFieldPathMappingId
 import com.ritense.case.domain.group.SortableCaseField
+import com.ritense.case.exception.CaseDefinitionGroupNotFoundException
 import com.ritense.case.exception.InvalidGroupListColumnSortException
+import com.ritense.case.exception.InvalidGroupListColumnException
 import com.ritense.case.exception.InvalidGroupSearchFieldException
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
+import com.ritense.case.repository.GroupQuickSearchRepository
+import com.ritense.case.repository.PinnedItemRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
@@ -66,7 +71,9 @@ class CaseDefinitionGroupService(
     private val searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val authorizationService: AuthorizationService,
-    private val dataProviderService: DataProviderService
+    private val dataProviderService: DataProviderService,
+    private val pinnedItemRepository: PinnedItemRepository,
+    private val quickSearchRepository: GroupQuickSearchRepository
 ) {
 
     @Transactional(readOnly = true)
@@ -85,7 +92,13 @@ class CaseDefinitionGroupService(
     fun getGroup(groupKey: String): CaseDefinitionGroup {
         denyAuthorization()
         return groupRepository.findById(groupKey)
-            .orElseThrow { IllegalArgumentException("No group found with key '$groupKey'") }
+            .orElseThrow { CaseDefinitionGroupNotFoundException(groupKey) }
+    }
+
+    private fun requireGroupExists(groupKey: String) {
+        if (!groupRepository.existsByKey(groupKey)) {
+            throw CaseDefinitionGroupNotFoundException(groupKey)
+        }
     }
 
     fun createGroup(title: String, description: String?, color: String? = null): CaseDefinitionGroup {
@@ -117,6 +130,9 @@ class CaseDefinitionGroupService(
 
     fun deleteGroup(groupKey: String) {
         denyAuthorization()
+        requireGroupExists(groupKey)
+        pinnedItemRepository.deleteByItemTypeAndItemKey(PinnedItemType.CASE_DEFINITION_GROUP, groupKey)
+        quickSearchRepository.deleteByGroupKey(groupKey)
         groupRepository.deleteById(groupKey)
         updateGroupOrder()
     }
@@ -124,6 +140,7 @@ class CaseDefinitionGroupService(
     @Transactional(readOnly = true)
     fun getMembers(groupKey: String): List<CaseDefinitionGroupMember> {
         denyAuthorization()
+        requireGroupExists(groupKey)
         return memberRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
     }
 
@@ -166,12 +183,14 @@ class CaseDefinitionGroupService(
     @Transactional(readOnly = true)
     fun getListColumns(groupKey: String): List<GroupListColumn> {
         denyAuthorization()
+        requireGroupExists(groupKey)
         return listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
     }
 
     fun updateListColumns(groupKey: String, columns: List<GroupListColumnDto>): List<GroupListColumn> {
         denyAuthorization()
         val group = getGroup(groupKey)
+        requireUniqueKeys(columns.map { it.key }, "list column", groupKey, ::InvalidGroupListColumnException)
 
         val existingMappings = mutableMapOf<String, List<GroupListColumnPathMapping>>()
         listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey).forEach { column ->
@@ -234,12 +253,14 @@ class CaseDefinitionGroupService(
     @Transactional(readOnly = true)
     fun getListColumnPathMappings(groupKey: String, columnKey: String): List<GroupListColumnPathMapping> {
         denyAuthorization()
+        requireListColumnExists(groupKey, columnKey)
         return listColumnPathMappingRepository.findByIdGroupKeyAndIdColumnKey(groupKey, columnKey)
     }
 
     @Transactional(readOnly = true)
     fun getListColumnsWithMappings(groupKey: String): List<Pair<GroupListColumn, List<GroupListColumnPathMapping>>> {
         denyAuthorization()
+        requireGroupExists(groupKey)
         val columns = listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
         val allMappings = listColumnPathMappingRepository.findByIdGroupKey(groupKey)
         val mappingsByColumn = allMappings.groupBy { it.id.columnKey }
@@ -255,8 +276,7 @@ class CaseDefinitionGroupService(
         mappings: List<GroupListColumnPathMappingDto>
     ): List<GroupListColumnPathMapping> {
         denyAuthorization()
-        val column = listColumnRepository.findById(GroupListColumnId(groupKey, columnKey))
-            .orElseThrow { IllegalArgumentException("No column found with key '$columnKey' in group '$groupKey'") }
+        val column = requireListColumnExists(groupKey, columnKey)
 
         if (column.sortable && SortableCaseField.sortPathOf(mappings.map { it.path }) == null) {
             throw InvalidGroupListColumnSortException(
@@ -284,12 +304,14 @@ class CaseDefinitionGroupService(
     @Transactional(readOnly = true)
     fun getSearchFields(groupKey: String): List<GroupSearchField> {
         denyAuthorization()
+        requireGroupExists(groupKey)
         return searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)
     }
 
     fun updateSearchFields(groupKey: String, fields: List<GroupSearchFieldDto>): List<GroupSearchField> {
         denyAuthorization()
         val group = getGroup(groupKey)
+        requireUniqueKeys(fields.map { it.key }, "search field", groupKey, ::InvalidGroupSearchFieldException)
         validateDropdownSearchFields(fields)
 
         val existingMappings = mutableMapOf<String, List<GroupSearchFieldPathMapping>>()
@@ -298,6 +320,7 @@ class CaseDefinitionGroupService(
         }
 
         searchFieldRepository.deleteByGroupKey(groupKey)
+        searchFieldRepository.flush()
 
         return fields.mapIndexed { index, dto ->
             val field = searchFieldRepository.save(
@@ -348,14 +371,14 @@ class CaseDefinitionGroupService(
     @Transactional(readOnly = true)
     fun getSearchFieldPathMappings(groupKey: String, fieldKey: String): List<GroupSearchFieldPathMapping> {
         denyAuthorization()
-        val field = searchFieldRepository.findByGroupKeyAndKey(groupKey, fieldKey)
-            ?: throw IllegalArgumentException("No search field found with key '$fieldKey' in group '$groupKey'")
+        val field = requireSearchFieldExists(groupKey, fieldKey)
         return searchFieldPathMappingRepository.findByIdGroupSearchFieldId(field.id)
     }
 
     @Transactional(readOnly = true)
     fun getSearchFieldsWithMappings(groupKey: String): List<Pair<GroupSearchField, List<GroupSearchFieldPathMapping>>> {
         denyAuthorization()
+        requireGroupExists(groupKey)
         val fields = searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)
         val allMappings = searchFieldPathMappingRepository.findByIdGroupSearchFieldIdIn(fields.map { it.id })
         val mappingsByField = allMappings.groupBy { it.id.groupSearchFieldId }
@@ -371,8 +394,7 @@ class CaseDefinitionGroupService(
         mappings: List<GroupSearchFieldPathMappingDto>
     ): List<GroupSearchFieldPathMapping> {
         denyAuthorization()
-        val field = searchFieldRepository.findByGroupKeyAndKey(groupKey, fieldKey)
-            ?: throw IllegalArgumentException("No search field found with key '$fieldKey' in group '$groupKey'")
+        val field = requireSearchFieldExists(groupKey, fieldKey)
 
         searchFieldPathMappingRepository.deleteByIdGroupSearchFieldId(field.id)
 
@@ -386,6 +408,32 @@ class CaseDefinitionGroupService(
                     searchField = field,
                     path = dto.path
                 )
+            )
+        }
+    }
+
+    private fun requireListColumnExists(groupKey: String, columnKey: String): GroupListColumn {
+        requireGroupExists(groupKey)
+        return listColumnRepository.findById(GroupListColumnId(groupKey, columnKey))
+            .orElseThrow { CaseDefinitionGroupNotFoundException(groupKey, "List column '$columnKey'") }
+    }
+
+    private fun requireSearchFieldExists(groupKey: String, fieldKey: String): GroupSearchField {
+        requireGroupExists(groupKey)
+        return searchFieldRepository.findByGroupKeyAndKey(groupKey, fieldKey)
+            ?: throw CaseDefinitionGroupNotFoundException(groupKey, "Search field '$fieldKey'")
+    }
+
+    private fun requireUniqueKeys(
+        keys: List<String>,
+        kind: String,
+        groupKey: String,
+        exceptionFactory: (String) -> RuntimeException
+    ) {
+        val duplicates = keys.groupingBy { it }.eachCount().filterValues { it > 1 }.keys
+        if (duplicates.isNotEmpty()) {
+            throw exceptionFactory(
+                "Duplicate $kind keys in group '$groupKey': ${duplicates.joinToString(", ")}"
             )
         }
     }
@@ -445,15 +493,19 @@ class CaseDefinitionGroupService(
     }
 
     private fun generateGroupKey(title: String): String {
-        val baseKey = title
+        val normalized = title
             .lowercase()
             .replace("(^[^a-z]+)|([^0-9a-z]+\$)".toRegex(), "")
             .replace("[^0-9a-z]+".toRegex(), "_")
+            .take(MAX_BASE_KEY_LENGTH)
+            .trimEnd('_')
+        val baseKey = normalized.ifEmpty { FALLBACK_KEY }
         var key = baseKey
         var i = 2
         while (groupRepository.existsByKey(key)) {
             key = "${baseKey}_${i++}"
         }
+        check(CaseDefinitionGroup.isValidKey(key)) { "Generated invalid group key '$key'" }
         return key
     }
 
@@ -464,5 +516,10 @@ class CaseDefinitionGroupService(
                 Action.deny()
             )
         )
+    }
+
+    companion object {
+        private const val MAX_BASE_KEY_LENGTH = 240
+        private const val FALLBACK_KEY = "group"
     }
 }

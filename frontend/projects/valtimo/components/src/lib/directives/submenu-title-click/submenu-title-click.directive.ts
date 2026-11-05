@@ -30,8 +30,8 @@ const SUBMENU_SELECTOR = '.cds--side-nav__submenu';
 const SUBMENU_CHEVRON_SELECTOR = '.cds--side-nav__submenu-chevron';
 
 /**
- * Splits a click on a `cds-sidenav-menu` header: the chevron keeps toggling the submenu, the rest
- * of the header emits `submenuTitleClickEvent` instead and leaves the submenu as it is.
+ * Adds a title action to a `cds-sidenav-menu` header: a click on the header outside the chevron
+ * emits `submenuTitleClickEvent` and still toggles the submenu. The chevron only toggles.
  * A right-click on the header emits `submenuTitleContextMenuEvent` instead of the browser menu.
  */
 @Directive({
@@ -63,19 +63,15 @@ export class SubmenuTitleClickDirective implements OnInit, AfterViewInit, OnDest
     this.element.nativeElement.removeEventListener('contextmenu', this.onContextMenu);
   }
 
-  // Capture phase: Carbon toggles on the submenu button itself, so the title click has to win first.
   private readonly onCaptureClick = (event: MouseEvent): void => {
     if (!this.valtimoSubmenuTitleClick) return;
 
-    // detail 0 = keyboard activation. Keep toggling, so the submenu stays reachable.
+    // detail 0 = keyboard activation: toggle only, no title action.
     if (event.detail === 0) return;
 
     const target = event.target as HTMLElement;
 
     if (!target.closest(SUBMENU_SELECTOR) || target.closest(SUBMENU_CHEVRON_SELECTOR)) return;
-
-    event.preventDefault();
-    event.stopPropagation();
 
     this.submenuTitleClickEvent.emit(event);
   };

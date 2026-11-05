@@ -29,6 +29,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 
@@ -298,6 +299,50 @@ class CaseDefinitionGroupImporterIntTest @Autowired constructor(
         val members = memberRepository.findByIdGroupKeyOrderByOrderAsc(testGroupKey)
         assertThat(members).hasSize(1)
         assertThat(members[0].id.caseDefinitionKey).isEqualTo(existingCaseDefKey)
+    }
+
+    @Test
+    fun `should reject unsafe group keys and persist nothing`() {
+        val json = """
+            {"key": "../evil\"x", "title": "Evil", "order": 0, "members": [], "listColumns": [], "searchFields": []}
+        """.trimIndent()
+
+        assertThrows<IllegalStateException> {
+            importer.import(
+                ImportRequest(fileName = "/global/case-group/evil/evil.case-group.json", content = json.toByteArray())
+            )
+        }
+
+        assertThat(groupRepository.findById("../evil\"x")).isEmpty
+    }
+
+    @Test
+    fun `should reject a key that does not match the file name`() {
+        val json = """
+            {"key": "other-group", "title": "Other", "order": 0, "members": [], "listColumns": [], "searchFields": []}
+        """.trimIndent()
+
+        assertThrows<IllegalStateException> { importer.import(createImportRequest(json)) }
+
+        assertThat(groupRepository.findById("other-group")).isEmpty
+    }
+
+    @Test
+    fun `should reject duplicate search field keys and persist nothing`() {
+        val json = """
+            {
+                "key": "$testGroupKey", "title": "G", "order": 0, "members": [], "listColumns": [],
+                "searchFields": [
+                    {"key": "f", "title": "F", "dataType": "TEXT", "fieldType": "SINGLE", "order": 0, "pathMappings": []},
+                    {"key": "f", "title": "F2", "dataType": "TEXT", "fieldType": "SINGLE", "order": 1, "pathMappings": []}
+                ]
+            }
+        """.trimIndent()
+
+        assertThrows<IllegalStateException> { importer.import(createImportRequest(json)) }
+
+        assertThat(groupRepository.findById(testGroupKey)).isEmpty
+        assertThat(groupSearchFieldRepository.findByGroupKeyOrderByOrderAsc(testGroupKey)).isEmpty()
     }
 
     @Test

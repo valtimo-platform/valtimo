@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {GroupListColumn, GroupSearchField} from '@valtimo/document';
+
 interface CaseDefinitionGroupCreateRequest {
   title: string;
   description?: string;
@@ -88,6 +90,26 @@ interface GroupPathMapping {
   path: string;
 }
 
+interface GroupMemberListItem {
+  caseDefinitionKey: string;
+  name: string;
+  order: number;
+}
+
+interface GroupListColumnWithMappings extends GroupListColumn {
+  pathMappings?: GroupPathMapping[];
+}
+
+interface GroupSearchFieldWithMappings extends GroupSearchField {
+  pathMappings?: GroupPathMapping[];
+}
+
+interface CaseDefinitionGroupListItem {
+  key: string;
+  title: string;
+  memberCount: number;
+}
+
 interface GroupMemberOrderRequest {
   caseDefinitionKeys: string[];
 }
@@ -100,13 +122,17 @@ export {
   AddGroupMemberRequest,
   CaseDefinitionGroupCreateRequest,
   CaseDefinitionGroupFormValue,
+  CaseDefinitionGroupListItem,
   CaseDefinitionGroupResponse,
   CaseDefinitionGroupUpdateRequest,
   CaseDefinitionGroupWithMembersResponse,
   GroupDisplayType,
   GroupListColumnRequest,
+  GroupListColumnWithMappings,
   GroupMember,
+  GroupMemberListItem,
   GroupMemberOrderRequest,
   GroupPathMapping,
   GroupSearchFieldRequest,
+  GroupSearchFieldWithMappings,
 };

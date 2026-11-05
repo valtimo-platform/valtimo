@@ -431,6 +431,63 @@ class JsonSchemaDocumentSearchServiceMultiDefinitionIntTest : BaseIntegrationTes
         assertThat(noPrefixResults.content).isEmpty()
     }
 
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should apply global search across definitions with different path mappings`() {
+        val houseDoc = createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        val personDoc = createDocumentInDefinition("person", """{"firstName": "Amsterdam"}""")
+        createDocumentInDefinition("house", """{"street": "Rotterdam"}""")
+        createDocumentInDefinition("person", """{"firstName": "Utrecht"}""")
+
+        val matching = globalSearch("amster")
+        val nonsense = globalSearch("zzzznonsense")
+
+        assertThat(matching.content.map { it.id() }).containsExactlyInAnyOrder(houseDoc.id(), personDoc.id())
+        assertThat(nonsense.totalElements).isEqualTo(0)
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should exclude definitions without a mapping for the global search field`() {
+        val houseDoc = createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        createDocumentInDefinition("person", """{"firstName": "Amsterdam"}""")
+
+        val results = globalSearch("amster", mapOf("name" to mapOf("house" to "doc:street")))
+
+        assertThat(results.content.map { it.id() }).containsExactly(houseDoc.id())
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
+    fun `should apply qualified global search terms per definition`() {
+        val houseDoc = createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        createDocumentInDefinition("person", """{"firstName": "Amsterdam"}""")
+
+        val results = globalSearch("street:amster")
+
+        assertThat(results.content.map { it.id() }).containsExactly(houseDoc.id())
+    }
+
+    private fun globalSearch(
+        term: String,
+        mappings: Map<String, Map<String, String>> = mapOf(
+            "name" to mapOf("house" to "doc:street", "person" to "doc:firstName")
+        )
+    ) = documentSearchService.search(
+        listOf("house", "person"),
+        BlueprintType.CASE,
+        SearchWithConfigRequest().apply { globalSearchFilter = term },
+        mappings,
+        mapOf(
+            "name" to GlobalSearchFieldMeta(
+                SearchFieldDataType.TEXT,
+                SearchFieldFieldType.SINGLE,
+                SearchFieldMatchType.LIKE
+            )
+        ),
+        PageRequest.of(0, 10)
+    )
+
     private fun searchCreatedOn(from: String, to: String) = documentSearchService.search(
         listOf("house", "person"),
         BlueprintType.CASE,

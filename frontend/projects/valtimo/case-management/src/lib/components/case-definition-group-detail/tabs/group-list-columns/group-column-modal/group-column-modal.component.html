@@ -23,7 +23,12 @@
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
-      {{ (column ? 'caseManagement.groups.listColumns.editColumn' : 'caseManagement.groups.listColumns.addColumn') | translate }}
+      {{
+        (column
+          ? 'caseManagement.groups.listColumns.editColumn'
+          : 'caseManagement.groups.listColumns.addColumn'
+        ) | translate
+      }}
     </h3>
   </cds-modal-header>
 
@@ -56,7 +61,9 @@
     <div class="valtimo-group-column-modal__path-section" *ngIf="members.length > 0">
       <p class="valtimo-group-column-modal__path-title">
         {{ 'caseManagement.groups.listColumns.pathPerCase' | translate }}
-        <v-tooltip-icon [tooltip]="'caseManagement.groups.listColumns.pathPerCaseTooltip' | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="'caseManagement.groups.listColumns.pathPerCaseTooltip' | translate"
+        ></v-tooltip-icon>
       </p>
 
       <cds-tile class="valtimo-group-column-modal__path-tile" [cdsLayer]="1">
@@ -70,8 +77,14 @@
               [attr.data-test-id]="testIds.pathSearch"
             />
 
-            <span class="valtimo-group-column-modal__path-counter" [attr.data-test-id]="testIds.pathCounter">
-              {{ 'caseManagement.groups.pathCounter' | translate: {filled: filledPathCount, total: totalMemberCount} }}
+            <span
+              class="valtimo-group-column-modal__path-counter"
+              [attr.data-test-id]="testIds.pathCounter"
+            >
+              {{
+                'caseManagement.groups.pathCounter'
+                  | translate: {filled: filledPathCount, total: totalMemberCount}
+              }}
             </span>
 
             <div class="valtimo-group-column-modal__show-empty">
@@ -95,8 +108,12 @@
             [attr.data-test-id]="testIds.pathRow"
           >
             <div class="valtimo-group-column-modal__case-label">
-              <span class="valtimo-group-column-modal__case-name">{{ item.member.caseDefinitionName || item.member.caseDefinitionKey }}</span>
-              <span class="valtimo-group-column-modal__case-key">({{ item.member.caseDefinitionKey }})</span>
+              <span class="valtimo-group-column-modal__case-name">{{
+                item.member.caseDefinitionName || item.member.caseDefinitionKey
+              }}</span>
+              <span class="valtimo-group-column-modal__case-key"
+                >({{ item.member.caseDefinitionKey }})</span
+              >
             </div>
             <valtimo-value-path-selector
               [formControl]="pathControls[item.index]"
@@ -135,7 +152,11 @@
         {{ 'listColumn.dateFormat' | translate }}
         <v-tooltip-icon [tooltip]="'listColumn.dateFormatTooltip' | translate"></v-tooltip-icon>
       </span>
-      <input cdsText formControlName="dateFormat" [attr.data-test-id]="columnTestIds.dateFormatInput" />
+      <input
+        cdsText
+        formControlName="dateFormat"
+        [attr.data-test-id]="columnTestIds.dateFormatInput"
+      />
     </cds-label>
 
     <cds-label *ngIf="showTagAmount">
@@ -154,7 +175,11 @@
     <cds-label *ngIf="showEnum">
       <span>
         {{ (isYesNo ? 'listColumn.enumTitleOptional' : 'listColumn.enumTitle') | translate }}
-        <v-tooltip-icon [tooltip]="(isYesNo ? 'listColumn.enumTooltipOptional' : 'listColumn.enumTooltip') | translate"></v-tooltip-icon>
+        <v-tooltip-icon
+          [tooltip]="
+            (isYesNo ? 'listColumn.enumTooltipOptional' : 'listColumn.enumTooltip') | translate
+          "
+        ></v-tooltip-icon>
       </span>
       <valtimo-carbon-multi-input
         type="keyValue"
@@ -197,7 +222,11 @@
   </form>
 
   <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onCloseModal()" [attr.data-test-id]="testIds.cancelButton">
+    <button
+      cdsButton="secondary"
+      (click)="onCloseModal()"
+      [attr.data-test-id]="testIds.cancelButton"
+    >
       {{ 'interface.cancel' | translate }}
     </button>
 

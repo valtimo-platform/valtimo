@@ -2,15 +2,15 @@
 
 ## Summary
 
-| Category                    | Features | Functions | ✅ Covered | ❌ Not Covered |
-|-----------------------------|----------|-----------|------------|----------------|
-| User Features (ROLE_USER)   | 5        | 35        | 29         | 4              |
-| Admin Features (ROLE_ADMIN) | 15       | 383       | 370        | 7              |
-| **Total**                   | **20**   | **418**   | **399**    | **11**         |
+| Category                    | Features | Functions | ✅ Covered | ❌ Not Covered | ⏳ In Progress | `N/A` |
+|-----------------------------|----------|-----------|------------|----------------|----------------|-------|
+| User Features (ROLE_USER)   | 5        | 35        | 29         | 4              | 1              | 1     |
+| Admin Features (ROLE_ADMIN) | 15       | 384       | 371        | 7              | 1              | 5     |
+| **Total**                   | **20**   | **419**   | **400**    | **11**         | **2**          | **6** |
 
-**Coverage:** `399 / 418` — `95.5%`
+**Coverage:** `400 / 419` — `95.5%`
 
-> Counts are one per numbered row. The remainder of each category is `N/A` (6) or `⏳` (2).
+> Counts are one per numbered row (lettered sub-rows such as `4.2a` count as their own row). Functions = ✅ + ❌ + ⏳ + `N/A`.
 
 ---
 
@@ -155,6 +155,7 @@
 | 6.33 | View dependency warnings         | View dependency warnings (push config needed)    |    ✅    | case-details-management-process-links.spec.ts   |
 | 6.34 | Complete building block config   | Complete building block configuration            |    ✅    | case-details-management-process-links.spec.ts   |
 | 6.35 | Save process link                | Save process link configuration                  |    ✅    | case-details-management-process-links.spec.ts   |
+| 6.36 | Configure Documenten API delete informatie object action | Action offered on service task · `documentUrl` defaults to `pv:documentUrl` · Complete saves action key + URL · Saved process persists the link (verified via API) · Reopened link shows stored URL · Empty / whitespace / non-URL / path-less resolver expression keeps Complete disabled |    ✅    | case-details-management-process-links.spec.ts   |
 
 #### 6D · Version Management
 
@@ -807,8 +808,8 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   418   |
-| ✅ Covered by Playwright |   399   |
+| Total Functions          |   419   |
+| ✅ Covered by Playwright |   400   |
 | ❌ Not covered           |   11    |
 | ⏳ In progress           |    2    |
 | `N/A` Not applicable     |    6    |

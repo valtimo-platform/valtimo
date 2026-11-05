@@ -14,13 +14,28 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DialogModule} from 'carbon-components-angular';
 import {Add16} from '@carbon/icons';
-import {CarbonListModule, ColorPickerComponent, ColorPickerConfig, SelectItem, SelectModule} from '@valtimo/components';
+import {
+  CarbonListModule,
+  ColorPickerComponent,
+  ColorPickerConfig,
+  SelectItem,
+  SelectModule,
+} from '@valtimo/components';
 import {DocumentService, DocumentDefinition} from '@valtimo/document';
 import {
   ButtonModule,
@@ -44,30 +59,13 @@ import {
   Subscription,
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
-import {GroupMember} from '../../../../models';
+import {GroupMember, GroupMemberListItem} from '../../../../models';
 import {
   CASE_DEFINITION_GROUP_CONFIG_TEST_IDS,
   CASE_MANAGEMENT_COLOR_TEST_IDS,
+  COLOR_SWATCHES,
 } from '../../../../constants';
 import {CaseDefinitionGroupDetailService} from '../../case-definition-group-detail.service';
-
-interface MemberListItem {
-  caseDefinitionKey: string;
-  name: string;
-  version: string;
-  order: number;
-}
-
-const COLOR_SWATCHES = [
-  '#da1e28', '#ff8389', '#fa4d56', '#ff7eb6', '#ee538b', '#d12771',
-  '#6929c4', '#8a3ffc', '#a56eff', '#d4bbff',
-  '#0043ce', '#1192e8', '#33b1ff', '#82cfff',
-  '#005d5d', '#009d9a', '#3ddbd9',
-  '#0e6027', '#24a148', '#42be65',
-  '#b28600', '#f1c21b',
-  '#570408', '#002d9c',
-  '#525252', '#8d8d8d', '#161616',
-];
 
 @Component({
   standalone: true,
@@ -108,7 +106,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
   private readonly _subscriptions = new Subscription();
   public readonly group$ = this.detailService.group$;
 
-  private readonly _members$ = new BehaviorSubject<MemberListItem[]>([]);
+  private readonly _members$ = new BehaviorSubject<GroupMemberListItem[]>([]);
   public readonly members$ = this._members$.asObservable();
 
   public readonly searchControl = new FormControl('');
@@ -120,9 +118,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
       if (!search) return members;
       const term = search.toLowerCase();
       return members.filter(
-        m =>
-          m.name.toLowerCase().includes(term) ||
-          m.caseDefinitionKey.toLowerCase().includes(term)
+        m => m.name.toLowerCase().includes(term) || m.caseDefinitionKey.toLowerCase().includes(term)
       );
     })
   );
@@ -215,7 +211,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
       });
   }
 
-  public removeMember(member: MemberListItem): void {
+  public removeMember(member: GroupMemberListItem): void {
     const groupKey = this.detailService.currentGroup?.key;
     if (!groupKey) return;
 
@@ -237,7 +233,9 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
         .pipe(
           filter(group => !!group),
           map(group => group.members),
-          distinctUntilChanged((previous, current) => JSON.stringify(previous) === JSON.stringify(current))
+          distinctUntilChanged(
+            (previous, current) => JSON.stringify(previous) === JSON.stringify(current)
+          )
         )
         .subscribe(members => this._loadMemberDetails(members))
     );
@@ -255,7 +253,6 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
           map(def => ({
             caseDefinitionKey: m.caseDefinitionKey,
             name: def.schema?.title ?? m.caseDefinitionKey,
-            version: def.id?.blueprintId?.blueprintVersionTag ?? '-',
             order: m.order,
           }))
         )

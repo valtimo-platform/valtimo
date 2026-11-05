@@ -22,7 +22,11 @@ import {RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CaseDefinition, CaseDefinitionGroup, DocumentService} from '@valtimo/document';
 import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
-import {CASE_OVERVIEW_TEST_IDS} from '../../constants';
+import {
+  CASE_OVERVIEW_PIN_CLICK_GUARD_MS,
+  CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY,
+  CASE_OVERVIEW_TEST_IDS,
+} from '../../constants';
 import {PinnedItemType} from '../../models';
 import {PinnedItemsService} from '../../services';
 import {
@@ -35,8 +39,6 @@ import {
   TilesModule,
 } from 'carbon-components-angular';
 import {catchError, map, Observable, of, shareReplay, switchMap} from 'rxjs';
-
-const PIN_INFO_DISMISSED_KEY = 'caseOverviewPinInfoDismissed';
 
 @Component({
   templateUrl: './case-overview.component.html',
@@ -70,6 +72,7 @@ export class CaseOverviewComponent {
   );
 
   private _pinToast: Notification | null = null;
+  private _lastPinToggleAt = 0;
 
   // Reloaded when the set of pinned items changes; sorting happens in the signals below.
   public readonly caseDefinitionGroups$: Observable<CaseDefinitionGroup[]> =
@@ -177,7 +180,7 @@ export class CaseOverviewComponent {
     this.$pinInfoVisible.set(false);
 
     try {
-      localStorage.setItem(PIN_INFO_DISMISSED_KEY, 'true');
+      localStorage.setItem(CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY, 'true');
     } catch {
       // Storage blocked: tip returns on next load.
     }
@@ -193,6 +196,11 @@ export class CaseOverviewComponent {
     name: string,
     color?: string
   ): void {
+    // Pinning re-sorts the list at once: a fast second click would hit the item moved under the cursor
+    const now = Date.now();
+    if (now - this._lastPinToggleAt < CASE_OVERVIEW_PIN_CLICK_GUARD_MS) return;
+    this._lastPinToggleAt = now;
+
     const pinning = !this.isPinned(itemType, itemKey);
     const section = itemType === PinnedItemType.CASE_DEFINITION_GROUP ? 'groups' : 'types';
 
@@ -247,7 +255,7 @@ export class CaseOverviewComponent {
 
   private isPinInfoDismissed(): boolean {
     try {
-      return localStorage.getItem(PIN_INFO_DISMISSED_KEY) === 'true';
+      return localStorage.getItem(CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY) === 'true';
     } catch {
       return false;
     }

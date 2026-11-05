@@ -29,6 +29,7 @@ import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
+import com.ritense.case.repository.GroupHiddenListColumnRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
@@ -80,6 +81,7 @@ import com.ritense.case.web.rest.CaseTabResource
 import com.ritense.case.web.rest.StartableItemManagementResource
 import com.ritense.case.web.rest.StartableItemResource
 import com.ritense.case.web.rest.TaskListResource
+import com.ritense.case.web.rest.error.InvalidGroupListColumnExceptionMapper
 import com.ritense.case.web.rest.error.InvalidGroupListColumnSortExceptionMapper
 import com.ritense.case.web.rest.error.InvalidGroupSearchFieldExceptionMapper
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
@@ -171,6 +173,7 @@ import org.springframework.transaction.support.TransactionTemplate
         GroupSearchFieldRepository::class,
         GroupSearchFieldPathMappingRepository::class,
         PinnedItemRepository::class,
+        GroupHiddenListColumnRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case.domain", "com.ritense.case.domain.group"])
@@ -623,6 +626,10 @@ class CaseAutoConfiguration {
     fun invalidGroupListColumnSortExceptionMapper() = InvalidGroupListColumnSortExceptionMapper()
 
     @Bean
+    @ConditionalOnMissingBean(InvalidGroupListColumnExceptionMapper::class)
+    fun invalidGroupListColumnExceptionMapper() = InvalidGroupListColumnExceptionMapper()
+
+    @Bean
     @ConditionalOnMissingBean(InvalidGroupSearchFieldExceptionMapper::class)
     fun invalidGroupSearchFieldExceptionMapper() = InvalidGroupSearchFieldExceptionMapper()
 
@@ -637,7 +644,9 @@ class CaseAutoConfiguration {
         searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
         caseDefinitionRepository: CaseDefinitionRepository,
         authorizationService: AuthorizationService,
-        dataProviderService: DataProviderService
+        dataProviderService: DataProviderService,
+        pinnedItemRepository: PinnedItemRepository,
+        quickSearchRepository: GroupQuickSearchRepository
     ): CaseDefinitionGroupService {
         return CaseDefinitionGroupService(
             groupRepository,
@@ -648,7 +657,9 @@ class CaseAutoConfiguration {
             searchFieldPathMappingRepository,
             caseDefinitionRepository,
             authorizationService,
-            dataProviderService
+            dataProviderService,
+            pinnedItemRepository,
+            quickSearchRepository
         )
     }
 
@@ -713,7 +724,8 @@ class CaseAutoConfiguration {
         valueResolverService: ValueResolverService,
         authorizationService: AuthorizationService,
         caseDefinitionService: CaseDefinitionService,
-        internalCaseStatusService: InternalCaseStatusService
+        internalCaseStatusService: InternalCaseStatusService,
+        hiddenListColumnRepository: GroupHiddenListColumnRepository
     ): GroupCaseInstanceService {
         return GroupCaseInstanceService(
             groupRepository,
@@ -727,7 +739,8 @@ class CaseAutoConfiguration {
             valueResolverService,
             authorizationService,
             caseDefinitionService,
-            internalCaseStatusService
+            internalCaseStatusService,
+            hiddenListColumnRepository
         )
     }
 

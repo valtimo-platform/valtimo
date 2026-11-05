@@ -31,6 +31,7 @@ import com.ritense.document.domain.CaseTag;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.AssigneeFilter;
 import com.ritense.document.domain.search.SearchOperator;
@@ -310,6 +311,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 blueprintType,
                 advancedSearchRequest,
                 filterPathMappings,
+                globalSearchFields,
                 cb,
                 query,
                 documentRoot,
@@ -325,6 +327,7 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
         BlueprintType blueprintType,
         AdvancedSearchRequest searchRequest,
         Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields,
         CriteriaBuilder cb,
         CriteriaQuery<?> query,
         Root<JsonSchemaDocument> documentRoot,
@@ -369,7 +372,74 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
             predicates.add(getCaseTagsFilterPredicate(cb, documentRoot, searchRequest.getCaseTagsFilter()));
         }
 
+        if (searchRequest.getGlobalSearchFilter() != null && !searchRequest.getGlobalSearchFilter().isBlank()) {
+            predicates.add(getGlobalSearchPredicateWithMappings(
+                cb,
+                documentRoot,
+                searchRequest.getGlobalSearchFilter(),
+                filterPathMappings,
+                globalSearchFields,
+                documentDefinitionNames
+            ));
+        }
+
         query.where(predicates.toArray(Predicate[]::new));
+    }
+
+    private Predicate getGlobalSearchPredicateWithMappings(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> documentRoot,
+        String globalSearchFilter,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields,
+        Collection<String> documentDefinitionNames
+    ) {
+        List<Predicate> definitionPredicates = new ArrayList<>();
+
+        for (String definitionName : documentDefinitionNames) {
+            List<SearchField> searchFields = globalSearchFields.isEmpty()
+                ? searchFieldService.getSearchFields(definitionName)
+                : toMappedSearchFields(definitionName, filterPathMappings, globalSearchFields);
+
+            if (searchFields.isEmpty()) {
+                continue;
+            }
+
+            definitionPredicates.add(cb.and(
+                cb.equal(documentRoot.get(DOCUMENT_DEFINITION_ID).get(NAME), definitionName),
+                buildGlobalSearchPredicate(cb, documentRoot, globalSearchFilter, searchFields, true)
+            ));
+        }
+
+        if (definitionPredicates.isEmpty()) {
+            return cb.disjunction();
+        }
+        return cb.or(definitionPredicates.toArray(Predicate[]::new));
+    }
+
+    private List<SearchField> toMappedSearchFields(
+        String definitionName,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields
+    ) {
+        List<SearchField> searchFields = new ArrayList<>();
+        globalSearchFields.forEach((fieldKey, meta) -> {
+            var path = filterPathMappings.getOrDefault(fieldKey, Map.of()).get(definitionName);
+            if (path == null || !(path.startsWith(DOC_PREFIX) || path.startsWith(CASE_PREFIX))) {
+                return;
+            }
+            searchFields.add(new SearchField(
+                fieldKey,
+                path,
+                meta.dataType(),
+                SearchFieldFieldType.SINGLE,
+                meta.matchType(),
+                null,
+                0,
+                null
+            ));
+        });
+        return searchFields;
     }
 
     private Predicate getOtherFiltersPredicateWithMappings(
@@ -677,122 +747,138 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 ? searchFieldService.getSearchFields(documentDefinitionName)
                 : List.<SearchField>of();
 
-            if (searchFields.isEmpty()) {
-                predicates.add(cb.disjunction());
-            } else {
-                var fieldMap = searchFields.stream()
-                    .collect(Collectors.toMap(f -> removePrefixes(f.getPath()), f -> f, (a, b) -> a));
-
-                var docFieldsLike = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
-                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var docFieldsExact = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
-                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var caseTextFieldsLike = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
-                    .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
-                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var caseTextFieldsExact = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
-                    .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
-                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var parsedTerms = parseGlobalSearch(searchRequest.getGlobalSearchFilter());
-
-                List<Predicate> qualifiedPredicates = new ArrayList<>();
-                List<Predicate> unqualifiedPredicates = new ArrayList<>();
-
-                for (ParsedTerm term : parsedTerms) {
-                    if (term.field() != null) {
-                        var fieldPath = removePrefixes(term.field());
-                        var field = fieldMap.get(fieldPath);
-                        if (field == null) {
-                            throw new IllegalArgumentException("Unknown search field: " + term.field());
-                        }
-
-                        boolean isDocField = field.getPath().startsWith(DOC_PREFIX);
-
-                        if (isDocField) {
-                            var jsonPath = "$." + fieldPath;
-                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
-                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
-                            );
-                            var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
-                            qualifiedPredicates.add(cb.like(cb.lower(expr), likePattern.toLowerCase()));
-                        } else {
-                            if (field.getDataType() == SearchFieldDataType.DATE ||
-                                field.getDataType() == SearchFieldDataType.DATETIME) {
-                                var date = LocalDate.parse(term.value());
-                                var startOfDay = date.atStartOfDay();
-                                var endOfDay = date.plusDays(1).atStartOfDay();
-                                qualifiedPredicates.add(cb.and(
-                                    cb.greaterThanOrEqualTo(documentRoot.get(fieldPath), startOfDay),
-                                    cb.lessThan(documentRoot.get(fieldPath), endOfDay)
-                                ));
-                            } else {
-                                var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
-                                qualifiedPredicates.add(cb.like(
-                                    cb.lower(documentRoot.get(fieldPath).as(String.class)),
-                                    likePattern.toLowerCase()
-                                ));
-                            }
-                        }
-                    } else {
-                        var likePattern = "%" + queryDialectHelper.escapeLikePattern(term.value()).toLowerCase() + "%";
-                        List<Predicate> termPredicates = new ArrayList<>();
-
-                        for (var f : docFieldsLike) {
-                            var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
-                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
-                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
-                            );
-                            termPredicates.add(cb.like(cb.lower(expr), likePattern));
-                        }
-
-                        for (var f : docFieldsExact) {
-                            var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
-                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
-                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
-                            );
-                            termPredicates.add(cb.equal(cb.lower(expr), term.value().toLowerCase()));
-                        }
-
-                        for (var f : caseTextFieldsLike) {
-                            var columnName = f.getPath().substring(CASE_PREFIX.length());
-                            termPredicates.add(cb.like(
-                                cb.lower(documentRoot.get(columnName).as(String.class)),
-                                likePattern
-                            ));
-                        }
-
-                        for (var f : caseTextFieldsExact) {
-                            var columnName = f.getPath().substring(CASE_PREFIX.length());
-                            termPredicates.add(cb.equal(
-                                cb.lower(documentRoot.get(columnName).as(String.class)),
-                                term.value().toLowerCase()
-                            ));
-                        }
-
-                        if (!termPredicates.isEmpty()) {
-                            unqualifiedPredicates.add(cb.or(termPredicates.toArray(Predicate[]::new)));
-                        }
-                    }
-                }
-
-                qualifiedPredicates.forEach(predicates::add);
-                unqualifiedPredicates.forEach(predicates::add);
-            }
+            predicates.add(buildGlobalSearchPredicate(
+                cb, documentRoot, searchRequest.getGlobalSearchFilter(), searchFields, false
+            ));
         }
 
         query.where(predicates.toArray(Predicate[]::new));
+    }
+
+    private Predicate buildGlobalSearchPredicate(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> documentRoot,
+        String globalSearchFilter,
+        List<SearchField> searchFields,
+        boolean matchNothingOnUnknownField
+    ) {
+        if (searchFields.isEmpty()) {
+            return cb.disjunction();
+        }
+
+        var fieldMap = searchFields.stream()
+            .collect(Collectors.toMap(f -> removePrefixes(f.getPath()), f -> f, (a, b) -> a));
+
+        var docFieldsLike = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+            .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
+            .toList();
+
+        var docFieldsExact = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+            .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
+            .toList();
+
+        var caseTextFieldsLike = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
+            .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+            .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
+            .toList();
+
+        var caseTextFieldsExact = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
+            .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+            .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
+            .toList();
+
+        var parsedTerms = parseGlobalSearch(globalSearchFilter);
+
+        List<Predicate> qualifiedPredicates = new ArrayList<>();
+        List<Predicate> unqualifiedPredicates = new ArrayList<>();
+
+        for (ParsedTerm term : parsedTerms) {
+            if (term.field() != null) {
+                var fieldPath = removePrefixes(term.field());
+                var field = fieldMap.get(fieldPath);
+                if (field == null) {
+                    if (matchNothingOnUnknownField) {
+                        return cb.disjunction();
+                    }
+                    throw new IllegalArgumentException("Unknown search field: " + term.field());
+                }
+
+                boolean isDocField = field.getPath().startsWith(DOC_PREFIX);
+
+                if (isDocField) {
+                    var jsonPath = "$." + fieldPath;
+                    Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                        cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                    );
+                    var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
+                    qualifiedPredicates.add(cb.like(cb.lower(expr), likePattern.toLowerCase()));
+                } else {
+                    if (field.getDataType() == SearchFieldDataType.DATE ||
+                        field.getDataType() == SearchFieldDataType.DATETIME) {
+                        var date = LocalDate.parse(term.value());
+                        var startOfDay = date.atStartOfDay();
+                        var endOfDay = date.plusDays(1).atStartOfDay();
+                        qualifiedPredicates.add(cb.and(
+                            cb.greaterThanOrEqualTo(documentRoot.get(fieldPath), startOfDay),
+                            cb.lessThan(documentRoot.get(fieldPath), endOfDay)
+                        ));
+                    } else {
+                        var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
+                        qualifiedPredicates.add(cb.like(
+                            cb.lower(documentRoot.get(fieldPath).as(String.class)),
+                            likePattern.toLowerCase()
+                        ));
+                    }
+                }
+            } else {
+                var likePattern = "%" + queryDialectHelper.escapeLikePattern(term.value()).toLowerCase() + "%";
+                List<Predicate> termPredicates = new ArrayList<>();
+
+                for (var f : docFieldsLike) {
+                    var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                    Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                        cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                    );
+                    termPredicates.add(cb.like(cb.lower(expr), likePattern));
+                }
+
+                for (var f : docFieldsExact) {
+                    var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                    Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                        cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                    );
+                    termPredicates.add(cb.equal(cb.lower(expr), term.value().toLowerCase()));
+                }
+
+                for (var f : caseTextFieldsLike) {
+                    var columnName = f.getPath().substring(CASE_PREFIX.length());
+                    termPredicates.add(cb.like(
+                        cb.lower(documentRoot.get(columnName).as(String.class)),
+                        likePattern
+                    ));
+                }
+
+                for (var f : caseTextFieldsExact) {
+                    var columnName = f.getPath().substring(CASE_PREFIX.length());
+                    termPredicates.add(cb.equal(
+                        cb.lower(documentRoot.get(columnName).as(String.class)),
+                        term.value().toLowerCase()
+                    ));
+                }
+
+                if (!termPredicates.isEmpty()) {
+                    unqualifiedPredicates.add(cb.or(termPredicates.toArray(Predicate[]::new)));
+                }
+            }
+        }
+
+        List<Predicate> all = new ArrayList<>(qualifiedPredicates);
+        all.addAll(unqualifiedPredicates);
+        return cb.and(all.toArray(Predicate[]::new));
     }
 
     private void addNonJsonFieldPredicates(

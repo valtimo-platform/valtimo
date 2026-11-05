@@ -77,6 +77,9 @@ class CaseDefinitionGroupImporter(
             request.content.toString(Charsets.UTF_8)
         )
 
+        validateKey(dto, request.fileName)
+        validateUniqueKeys(dto)
+
         val existingCaseDefinitionKeys = caseDefinitionRepository.findAll()
             .map { it.id.key }
             .toSet()
@@ -85,6 +88,29 @@ class CaseDefinitionGroupImporter(
         importMembers(dto, group, existingCaseDefinitionKeys)
         importListColumns(dto, group, existingCaseDefinitionKeys)
         importSearchFields(dto, group, existingCaseDefinitionKeys)
+    }
+
+    private fun validateKey(dto: CaseDefinitionGroupExportDto, fileName: String) {
+        check(CaseDefinitionGroup.isValidKey(dto.key)) {
+            "Invalid case group key '${dto.key}'. Keys must match ${CaseDefinitionGroup.KEY_REGEX.pattern} " +
+                "and be at most ${CaseDefinitionGroup.MAX_KEY_LENGTH} characters long"
+        }
+        val fileKeys = FILENAME_REGEX.matchEntire(fileName)?.groupValues?.drop(1)
+        check(fileKeys == null || fileKeys.all { it == dto.key }) {
+            "Case group key '${dto.key}' does not match the file name '$fileName'"
+        }
+    }
+
+    private fun validateUniqueKeys(dto: CaseDefinitionGroupExportDto) {
+        listOf(
+            "list column" to dto.listColumns.map { it.key },
+            "search field" to dto.searchFields.map { it.key }
+        ).forEach { (kind, keys) ->
+            val duplicates = keys.groupingBy { it }.eachCount().filterValues { it > 1 }.keys
+            check(duplicates.isEmpty()) {
+                "Duplicate $kind keys in case group '${dto.key}': ${duplicates.joinToString(", ")}"
+            }
+        }
     }
 
     private fun importGroup(dto: CaseDefinitionGroupExportDto): CaseDefinitionGroup {
@@ -211,6 +237,7 @@ class CaseDefinitionGroupImporter(
         existingCaseDefinitionKeys: Set<String>
     ) {
         searchFieldRepository.deleteByGroupKey(dto.key)
+        searchFieldRepository.flush()
 
         val providerNames = if (dto.searchFields.any { DropdownSearchFieldRule.isDropdown(it.fieldType) }) {
             dataProviderService.getProviderNames(DataProviderConstants.DROPDOWN_CATEGORY)
@@ -279,6 +306,6 @@ class CaseDefinitionGroupImporter(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        private val FILENAME_REGEX = """/global/case-group/[^/]+/[^/]+\.case-group\.json""".toRegex()
+        private val FILENAME_REGEX = """/global/case-group/([^/]+)/([^/]+)\.case-group\.json""".toRegex()
     }
 }

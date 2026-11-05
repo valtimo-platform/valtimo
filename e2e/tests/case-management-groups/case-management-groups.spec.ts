@@ -195,13 +195,13 @@ test.describe('Case groups management', () => {
       group = track(await createGroupViaApi(uniqueGroupTitle(), 'Detail description'));
     });
 
-    test('clicking a row opens the group on the Config tab', async () => {
+    test('clicking a row opens the group on the General tab', async () => {
       await groupsPage.goToGroupsTab();
       await groupsPage.groupsList.row(group.key).click();
 
       await expect(page).toHaveURL(new RegExp(`/case-management/group/${group.key}/config$`));
       await expect(groupsPage.heading).toHaveText(group.title);
-      await expect(groupsPage.detailTab('Config')).toHaveAttribute('aria-selected', 'true');
+      await expect(groupsPage.detailTab('General')).toHaveAttribute('aria-selected', 'true');
     });
 
     test('the group root redirects to the Config tab', async () => {
@@ -218,7 +218,7 @@ test.describe('Case groups management', () => {
       await groupsPage.detailTab('Search fields').click();
       await expect(page).toHaveURL(new RegExp(`/group/${group.key}/search-fields$`));
 
-      await groupsPage.detailTab('Config').click();
+      await groupsPage.detailTab('General').click();
       await expect(page).toHaveURL(new RegExp(`/group/${group.key}/config$`));
     });
 

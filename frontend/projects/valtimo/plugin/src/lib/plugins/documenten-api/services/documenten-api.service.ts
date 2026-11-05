@@ -71,4 +71,8 @@ export class DocumentenApiService {
       map(response => response.versionDetails?.find(v => v.version === versionTag))
     );
   }
+
+  public getValueResolverPrefixes(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.valtimoEndpointUri}management/v1/value-resolver`);
+  }
 }

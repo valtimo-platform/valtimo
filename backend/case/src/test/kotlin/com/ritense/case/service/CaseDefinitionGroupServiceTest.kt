@@ -19,6 +19,7 @@ package com.ritense.case.service
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.ColumnDefaultSort
+import com.ritense.case.domain.PinnedItemType
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
 import com.ritense.case.domain.group.CaseDefinitionGroupMemberId
@@ -27,12 +28,15 @@ import com.ritense.case.domain.group.GroupListColumnId
 import com.ritense.case.domain.group.GroupListColumnPathMapping
 import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupSearchField
+import com.ritense.case.exception.InvalidGroupListColumnException
 import com.ritense.case.exception.InvalidGroupListColumnSortException
 import com.ritense.case.exception.InvalidGroupSearchFieldException
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
+import com.ritense.case.repository.GroupQuickSearchRepository
+import com.ritense.case.repository.PinnedItemRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
 import com.ritense.case.repository.GroupSearchFieldRepository
 import com.ritense.case.web.rest.dto.GroupListColumnDto
@@ -48,6 +52,8 @@ import com.ritense.search.domain.FieldType
 import java.time.ZonedDateTime
 import java.util.Optional
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import com.ritense.case.exception.CaseDefinitionGroupNotFoundException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -69,6 +75,8 @@ class CaseDefinitionGroupServiceTest {
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
     lateinit var authorizationService: AuthorizationService
     lateinit var dataProviderService: DataProviderService
+    lateinit var pinnedItemRepository: PinnedItemRepository
+    lateinit var quickSearchRepository: GroupQuickSearchRepository
     lateinit var service: CaseDefinitionGroupService
 
     @BeforeEach
@@ -82,6 +90,8 @@ class CaseDefinitionGroupServiceTest {
         caseDefinitionRepository = mock()
         authorizationService = mock()
         dataProviderService = mock()
+        pinnedItemRepository = mock()
+        quickSearchRepository = mock()
         whenever(dataProviderService.getProviderNames(DataProviderConstants.DROPDOWN_CATEGORY))
             .thenReturn(listOf("dropdownDatabaseDataProvider"))
 
@@ -94,7 +104,9 @@ class CaseDefinitionGroupServiceTest {
             searchFieldPathMappingRepository,
             caseDefinitionRepository,
             authorizationService,
-            dataProviderService
+            dataProviderService,
+            pinnedItemRepository,
+            quickSearchRepository
         )
     }
 
@@ -200,10 +212,13 @@ class CaseDefinitionGroupServiceTest {
     fun `should delete group`() {
         val groupKey = "test_group"
 
+        whenever(groupRepository.existsByKey(groupKey)).thenReturn(true)
         whenever(groupRepository.findAllByOrderByOrderAsc()).thenReturn(emptyList())
 
         service.deleteGroup(groupKey)
 
+        verify(pinnedItemRepository).deleteByItemTypeAndItemKey(PinnedItemType.CASE_DEFINITION_GROUP, groupKey)
+        verify(quickSearchRepository).deleteByGroupKey(groupKey)
         verify(groupRepository).deleteById(groupKey)
     }
 
@@ -334,6 +349,7 @@ class CaseDefinitionGroupServiceTest {
 
     @Test
     fun `should reject path mapping change that breaks sortable column`() {
+        whenever(groupRepository.existsByKey(GROUP_KEY)).thenReturn(true)
         whenever(listColumnRepository.findById(GroupListColumnId(GROUP_KEY, "a"))).thenReturn(Optional.of(column("a", true)))
 
         assertThrows<InvalidGroupListColumnSortException> {
@@ -344,6 +360,7 @@ class CaseDefinitionGroupServiceTest {
 
     @Test
     fun `should accept any path mapping for non sortable column`() {
+        whenever(groupRepository.existsByKey(GROUP_KEY)).thenReturn(true)
         whenever(listColumnRepository.findById(GroupListColumnId(GROUP_KEY, "a"))).thenReturn(Optional.of(column("a", false)))
         whenever(listColumnPathMappingRepository.save(any<GroupListColumnPathMapping>())).thenAnswer { it.arguments[0] }
 
@@ -352,6 +369,91 @@ class CaseDefinitionGroupServiceTest {
         )
 
         assertEquals(2, result.size)
+    }
+
+    @Test
+    fun `should fall back to default key when title has no letters`() {
+        whenever(groupRepository.findMaxOrder()).thenReturn(0)
+        whenever(groupRepository.save(any<CaseDefinitionGroup>())).thenAnswer { it.arguments[0] }
+
+        val result = service.createGroup("2026", null)
+
+        assertEquals("group", result.key)
+    }
+
+    @Test
+    fun `should truncate long titles to a valid key even when suffixes are needed`() {
+        val title = "a".repeat(255)
+        val base = "a".repeat(240)
+        whenever(groupRepository.findMaxOrder()).thenReturn(0)
+        whenever(groupRepository.existsByKey(base)).thenReturn(true)
+        whenever(groupRepository.save(any<CaseDefinitionGroup>())).thenAnswer { it.arguments[0] }
+
+        val result = service.createGroup(title, null)
+
+        assertEquals("${base}_2", result.key)
+        assertTrue(result.key.length <= 255)
+    }
+
+    @Test
+    fun `should not end generated key with underscore after truncation`() {
+        val title = "a".repeat(239) + " b"
+        whenever(groupRepository.findMaxOrder()).thenReturn(0)
+        whenever(groupRepository.save(any<CaseDefinitionGroup>())).thenAnswer { it.arguments[0] }
+
+        val result = service.createGroup(title, null)
+
+        assertEquals("a".repeat(239), result.key)
+    }
+
+    @Test
+    fun `should reject duplicate list column keys`() {
+        mockGroup()
+
+        assertThrows<InvalidGroupListColumnException> {
+            service.updateListColumns(
+                GROUP_KEY,
+                listOf(
+                    dto("a", false, null, mapping("case:createdOn")),
+                    dto("a", false, null, mapping("case:createdOn"))
+                )
+            )
+        }
+        verify(listColumnRepository, never()).deleteByIdGroupKey(any())
+    }
+
+    @Test
+    fun `should reject duplicate search field keys`() {
+        mockGroup()
+
+        assertThrows<InvalidGroupSearchFieldException> {
+            service.updateSearchFields(
+                GROUP_KEY,
+                listOf(
+                    searchField(DataType.TEXT, FieldType.SINGLE, null),
+                    searchField(DataType.TEXT, FieldType.SINGLE, null)
+                )
+            )
+        }
+        verify(searchFieldRepository, never()).deleteByGroupKey(any())
+    }
+
+    @Test
+    fun `should throw not found when deleting unknown group`() {
+        whenever(groupRepository.existsByKey("unknown")).thenReturn(false)
+
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.deleteGroup("unknown") }
+        verify(groupRepository, never()).deleteById(any())
+    }
+
+    @Test
+    fun `should throw not found for management getters of unknown group`() {
+        whenever(groupRepository.existsByKey("unknown")).thenReturn(false)
+
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.getMembers("unknown") }
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.getListColumns("unknown") }
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.getSearchFields("unknown") }
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.getGroup("unknown") }
     }
 
     private fun mockGroup() {

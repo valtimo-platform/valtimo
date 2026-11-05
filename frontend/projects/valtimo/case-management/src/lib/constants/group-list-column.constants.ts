@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
+export const GROUP_COLUMN_DISPLAY_TYPE_ITEMS = [
+  {content: 'text', value: 'text'},
+  {content: 'date', value: 'date'},
+  {content: 'boolean', value: 'boolean'},
+  {content: 'enum', value: 'enum'},
+  {content: 'tags', value: 'tags'},
+];
+
+export const GROUP_COLUMN_NO_DEFAULT_SORT = 'none';
+
+export const GROUP_COLUMN_DEFAULT_SORT_ITEMS = [
+  {content: 'listColumn.selectDefaultSort', value: GROUP_COLUMN_NO_DEFAULT_SORT},
+  {content: 'listColumn.sortableAsc', value: 'ASC'},
+  {content: 'listColumn.sortableDesc', value: 'DESC'},
+];
+
 export const GROUP_LIST_COLUMN_CASE_PREFIX = 'case:';
 
 export const SORTABLE_CASE_FIELDS: readonly string[] = [

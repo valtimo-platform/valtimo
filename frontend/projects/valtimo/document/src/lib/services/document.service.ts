@@ -375,6 +375,10 @@ export class DocumentService {
   }
 
   // Case definition calls
+  private get groupSkipHeaders(): HttpHeaders {
+    return new HttpHeaders().set(InterceptorSkip, '403,404');
+  }
+
   public getCaseDefinitions(params: any): Observable<CaseDefinition[]> {
     return this.http.get<CaseDefinition[]>(`${this.valtimoEndpointUri}v1/case-definition`, {
       params,
@@ -390,25 +394,29 @@ export class DocumentService {
   /** The case types that make up a group, filtered to what the user may see. */
   public getCaseDefinitionGroupMembers(groupKey: string): Observable<CaseDefinitionGroupMember[]> {
     return this.http.get<CaseDefinitionGroupMember[]>(
-      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/member`
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/member`,
+      {headers: this.groupSkipHeaders}
     );
   }
 
   public getCaseDefinitionGroup(groupKey: string): Observable<CaseDefinitionGroup> {
     return this.http.get<CaseDefinitionGroup>(
-      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}`
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}`,
+      {headers: this.groupSkipHeaders}
     );
   }
 
   public getGroupListColumns(groupKey: string): Observable<GroupListColumn[]> {
     return this.http.get<GroupListColumn[]>(
-      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/list-column`
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/list-column`,
+      {headers: this.groupSkipHeaders}
     );
   }
 
   public getGroupSearchFields(groupKey: string): Observable<GroupSearchField[]> {
     return this.http.get<GroupSearchField[]>(
-      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/search-field`
+      `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/search-field`,
+      {headers: this.groupSkipHeaders}
     );
   }
 
@@ -420,7 +428,7 @@ export class DocumentService {
     return this.http.post<Page<GroupCaseListRow>>(
       `${this.valtimoEndpointUri}v1/case-definition-group/${groupKey}/search`,
       searchRequest,
-      {params, headers: new HttpHeaders().set(InterceptorSkip, '400,500')}
+      {params, headers: new HttpHeaders().set(InterceptorSkip, '400,403,404,500')}
     );
   }
 

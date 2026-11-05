@@ -15,12 +15,13 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, map, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, catchError, map, Observable, of, switchMap, throwError} from 'rxjs';
 import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/shared';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
 import {CaseParameterService} from './case-parameter.service';
 import {CaseListContext} from '../models';
+import {isGroupUnavailable} from '../utils';
 
 @Injectable()
 export class CaseListSearchService {
@@ -39,7 +40,8 @@ export class CaseListSearchService {
                 matchType: f.matchType,
                 dropdownDataProvider: f.dropdownDataProvider,
               }))
-            )
+            ),
+            catchError(error => (isGroupUnavailable(error) ? of([]) : throwError(() => error)))
           );
         }
         return this.documentService.getDocumentSearchFields(context.key);

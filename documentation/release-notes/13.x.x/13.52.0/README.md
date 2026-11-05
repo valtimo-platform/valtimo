@@ -1,6 +1,24 @@
 # 13.52.0
 
-Release date: TBD
+Release date: 28-10-2026
+
+{% hint style="warning" %}
+This release contains security fixes. See [Security](#security) for details.
+{% endhint %}
+
+---
+
+## Enhancements
+
+### More reliable JavaScript results
+
+Values returned by JavaScript in process scripts and decision tables now stay usable after the script has finished. Lists, sets and key-value maps returned by a script keep their contents; previously some of them came back empty.
+
+Lists and maps that a script fills with its own objects now also stay readable after the script has finished. They come back as copies made of plain data. Very large results stop the script with a clear error.
+
+**Hint:** objects a script puts into existing data without returning it are not converted. Return the value or store it as a process variable.
+
+**Behaviour change:** a script must return plain data, such as text, numbers, dates, lists or objects. Scripts that return something else, for example a function or a promise, now stop with a clear error message instead of silently returning an unusable value. Check scripts that return such values and change them to return plain data.
 
 ---
 
@@ -8,21 +26,30 @@ Release date: TBD
 
 | Area | Fix |
 |------|-----|
-| OpenSearch document search | Case documents are now indexed into one OpenSearch index per case definition instead of a single shared `json_schema_document` index. Previously, when two case types put differently-typed values on the same content path (for example `content.locatie` as free text in one case type and as a GeoJSON object in another), the second document was rejected with a `mapper_parsing_exception`, silently dropped, and that case type's list came back empty (gzac-issues #924). Per-definition indices give each case type its own mapping namespace, so these cross-definition type collisions can no longer occur and the case lists populate correctly. A shared read alias (`json_schema_document_all`) serves the cross-definition "All cases" list. |
+| Case details | Opening a case whose case type has no header widget no longer returns a 404 or logs errors in the browser console. |
+| Forms | Clicking the submit button of a form more than once no longer submits the form multiple times; after a failed submit the button can be used again. |
+| Processes | A boundary error event now catches a BPMN error thrown by a plugin, also inside a building block. |
+| Scripts | Running JavaScript in processes and decision tables no longer makes the application use more and more memory over time. Scripts also run faster. |
+| Dashboard | Gauge widgets now show the exact count instead of a decimal number for some value and total combinations (for example 46 instead of 45.99). |
+| Tasks | Saving a task's progress a second time, or after reopening the task, now stores the latest changes instead of the previously saved values. |
+| Case detail | A completed task no longer stays visible in the task list of a case for a few seconds after completing it. |
 
 ---
 
-## Migration
+## Security
 
-* **Existing OpenSearch installations must rebuild their index**
+| Severity | Fix |
+|----------|-----|
+| High | Form submissions no longer accept values for the e-mail preview form component, including when it is placed inside a datagrid, editgrid or container. |
+| High | A JavaScript script task or decision table expression can no longer get around the list of classes it is allowed to use, and so can no longer reach the rest of the application or the server it runs on |
+| High | The process instance search and count endpoints no longer let any logged-in user list the process instances of all cases or search their process variables. They are now only available to administrators. The search endpoints and the count by process definition name will be removed in a future version. |
+| Medium | Intermediate submissions no longer store or return e-mail preview content. As a consequence, the intermediate submission endpoint (`/api/v1/form/intermediate/submission`) now returns 404 for tasks without a form process link. |
+| Medium | Adding a comment to a process instance is now only available to administrators, and will be removed in a future version. |
+| Medium | Deploying a version of a process definition with shortened timers is now only available to administrators, and will be removed in a future version. |
+| Low | A process or decision variable can no longer influence the restrictions that apply to JavaScript, either during its own run or during later ones |
 
-  Installations that already use OpenSearch for document search hold a single legacy `json_schema_document` index.
-  After upgrading, the *Admin > OpenSearch* screen shows a warning banner while the topology is still legacy or stale
-  (the `/actuator/health` endpoint reports the same via a non-fatal `WARN` status). Start a re-index with the new
-  **Rebuild / migrate index** option enabled to create and populate the per-definition indices from the database and
-  drop the legacy index. Until the migration completes, document search keeps serving results from the legacy index —
-  the migration never drops it on startup. Editing search-field configuration no longer triggers an index rebuild.
-
-  The same **Rebuild / migrate index** option, combined with a document-definition filter, rebuilds a single
-  definition's index zero-downtime: the documents are reindexed into a fresh index and the shared read alias is
-  swapped onto it atomically, so case lists never see a gap.
+{% hint style="warning" %}
+Scripts can no longer use the `engine` and `context` objects that the script engine previously
+made available. These were never part of the supported scripting interface. A script that uses
+one of them now fails and must be rewritten using process variables or `execution`.
+{% endhint %}

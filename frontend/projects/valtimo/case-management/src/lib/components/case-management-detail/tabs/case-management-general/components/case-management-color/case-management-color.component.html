@@ -18,14 +18,10 @@
   *ngIf="{
     settings: currentSettings$ | async,
     loading: loading$ | async,
-    selectedColor: selectedColor$ | async
+    selectedColor: selectedColor$ | async,
   } as obs"
 >
-  <div
-    class="case-management-color"
-    [cdsLayer]="0"
-    [attr.data-test-id]="testIds.panel"
-  >
+  <div class="case-management-color" [cdsLayer]="0" [attr.data-test-id]="testIds.panel">
     <h4>{{ 'caseManagement.tabs.generalTab.color.title' | translate }}</h4>
 
     <p class="case-management-color__description">
@@ -54,9 +50,15 @@
         *ngFor="let color of COLOR_SWATCHES"
         type="button"
         class="case-management-color__swatch"
-        [class.case-management-color__swatch--selected]="obs.selectedColor?.toLowerCase() === color.toLowerCase()"
+        [class.case-management-color__swatch--selected]="
+          obs.selectedColor?.toLowerCase() === color.toLowerCase()
+        "
         [style.background-color]="color"
-        [style.box-shadow]="obs.selectedColor?.toLowerCase() === color.toLowerCase() ? '0 0 0 2px white, 0 0 0 4px ' + color : 'none'"
+        [style.box-shadow]="
+          obs.selectedColor?.toLowerCase() === color.toLowerCase()
+            ? '0 0 0 2px white, 0 0 0 4px ' + color
+            : 'none'
+        "
         [disabled]="isReadOnly"
         (click)="onSwatchClick(color)"
         [attr.aria-label]="color | uppercase"

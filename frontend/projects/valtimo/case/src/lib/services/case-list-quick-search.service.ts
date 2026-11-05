@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {IQuickSearchService, QuickSearchItem} from '@valtimo/components';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
-import {BehaviorSubject, Observable, filter, of, switchMap, take, tap} from 'rxjs';
+import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  filter,
+  of,
+  switchMap,
+  take,
+  tap,
+  throwError,
+} from 'rxjs';
 import {CaseListQuickSearchParams} from '../models';
+import {isGroupUnavailable} from '../utils';
 
 @Injectable()
 export class CaseListQuickSearchService
@@ -63,7 +74,17 @@ export class CaseListQuickSearchService
     return this.params$.pipe(
       take(1),
       switchMap((params: CaseListQuickSearchParams | null) =>
-        this.httpClient.get<QuickSearchItem[]>(this.getStoredQuickSearchUrl(params))
+        this.httpClient
+          .get<QuickSearchItem[]>(this.getStoredQuickSearchUrl(params), {
+            headers: params?.groupKey
+              ? new HttpHeaders().set(InterceptorSkip, '403,404')
+              : new HttpHeaders(),
+          })
+          .pipe(
+            catchError(error =>
+              params?.groupKey && isGroupUnavailable(error) ? of([]) : throwError(() => error)
+            )
+          )
       )
     );
   }

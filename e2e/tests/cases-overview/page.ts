@@ -17,8 +17,7 @@
 import {expect, Locator, Page, Response} from '@playwright/test';
 import {CASE_MENU_TEST_IDS, CASE_OVERVIEW_TEST_IDS, LEFT_SIDEBAR_TEST_IDS} from '../../constants';
 import {PINNED_ITEM_ENDPOINT} from '../../utils/case-group.utils';
-
-export const PIN_INFO_DISMISSED_KEY = 'caseOverviewPinInfoDismissed';
+import {CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY} from '../../../frontend/projects/valtimo/case/src/lib/constants/case-overview.constants';
 
 export class CasesOverviewPage {
   constructor(private readonly page: Page) {}
@@ -162,7 +161,7 @@ export class CasesOverviewPage {
     return this.casesMenu.locator('button[aria-haspopup="true"]');
   }
 
-  // Only the chevron expands the menu; it starts collapsed on every load.
+  // Starts collapsed on every load; the chevron toggles without navigating.
   async expandCasesMenu() {
     await expect(this.casesMenuToggle).toBeVisible();
     if ((await this.casesMenuToggle.getAttribute('aria-expanded')) !== 'true') {
@@ -194,6 +193,9 @@ export class CasesOverviewPage {
   }
 
   async clearPinInfoDismissal() {
-    await this.page.evaluate(key => localStorage.removeItem(key), PIN_INFO_DISMISSED_KEY);
+    await this.page.evaluate(
+      key => localStorage.removeItem(key),
+      CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY
+    );
   }
 }

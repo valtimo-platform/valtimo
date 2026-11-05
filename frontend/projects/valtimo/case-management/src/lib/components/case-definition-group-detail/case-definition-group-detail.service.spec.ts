@@ -15,7 +15,8 @@
  */
 
 import {PinnedItemType} from '@valtimo/case';
-import {of} from 'rxjs';
+import {HttpErrorResponse} from '@angular/common/http';
+import {of, throwError} from 'rxjs';
 import {CaseDefinitionGroupResponse, CaseDefinitionGroupWithMembersResponse} from '../../models';
 import {CaseDefinitionGroupDetailService} from './case-definition-group-detail.service';
 
@@ -54,9 +55,11 @@ describe('CaseDefinitionGroupDetailService', () => {
   beforeEach(() => {
     managementService = jasmine.createSpyObj('CaseDefinitionGroupManagementService', [
       'getGroup',
+      'getListColumns',
       'updateGroup',
     ]);
     managementService.getGroup.and.returnValue(of(group));
+    managementService.getListColumns.and.returnValue(of([]));
     managementService.updateGroup.and.callFake((_key: string, request: any) =>
       of(toResponse(request))
     );
@@ -73,11 +76,80 @@ describe('CaseDefinitionGroupDetailService', () => {
     expect(current).toEqual(group);
   });
 
+  it('loads list columns once after the group loaded', () => {
+    service.loadGroup('group-a');
+
+    expect(managementService.getListColumns).toHaveBeenCalledOnceWith('group-a');
+  });
+
+  it('emits not found, skips list columns and refreshes pins on a 404', () => {
+    managementService.getGroup.and.returnValue(
+      throwError(() => new HttpErrorResponse({status: 404}))
+    );
+    const notFound: string[] = [];
+    service.groupNotFound$.subscribe(key => notFound.push(key));
+
+    service.loadGroup('missing');
+
+    expect(notFound).toEqual(['missing']);
+    expect(managementService.getListColumns).not.toHaveBeenCalled();
+    expect(pinnedItemsService.refresh).toHaveBeenCalled();
+    expect(current).toBeNull();
+  });
+
   it('reloads the current group', () => {
     service.loadGroup('group-a');
     service.reloadGroup();
 
     expect(managementService.getGroup).toHaveBeenCalledTimes(2);
+  });
+
+  describe('no list columns warning', () => {
+    let showWarning: boolean | undefined;
+
+    beforeEach(() => {
+      service.showNoListColumnsWarning$.subscribe(value => (showWarning = value));
+    });
+
+    it('shows when the group has members but no list columns', () => {
+      service.loadGroup('group-a');
+
+      expect(managementService.getListColumns).toHaveBeenCalledWith('group-a');
+      expect(showWarning).toBeTrue();
+    });
+
+    it('hides when the group has list columns', () => {
+      managementService.getListColumns.and.returnValue(of([{key: 'name'}]));
+
+      service.loadGroup('group-a');
+
+      expect(showWarning).toBeFalse();
+    });
+
+    it('hides when the group has no members', () => {
+      managementService.getGroup.and.returnValue(of({...group, members: []}));
+
+      service.loadGroup('group-a');
+
+      expect(showWarning).toBeFalse();
+    });
+
+    it('follows list column changes', () => {
+      service.loadGroup('group-a');
+
+      service.setHasListColumns(true);
+      expect(showWarning).toBeFalse();
+
+      service.setHasListColumns(false);
+      expect(showWarning).toBeTrue();
+    });
+
+    it('does not refetch list columns when reloading the same group', () => {
+      service.loadGroup('group-a');
+      service.reloadGroup();
+
+      expect(managementService.getListColumns).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('does not reload when no group is loaded', () => {

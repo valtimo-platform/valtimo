@@ -28,9 +28,12 @@ import com.ritense.case.domain.group.GroupListColumnPathMapping
 import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupQuickSearch
 import com.ritense.case.domain.ColumnDefaultSort
+import com.ritense.case.exception.CaseDefinitionGroupAccessDeniedException
+import com.ritense.case.exception.CaseDefinitionGroupNotFoundException
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
+import com.ritense.case.repository.GroupHiddenListColumnRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupQuickSearchRepository
 import com.ritense.case.repository.GroupSearchFieldPathMappingRepository
@@ -82,6 +85,7 @@ class GroupCaseInstanceServiceTest {
     lateinit var authorizationService: AuthorizationService
     lateinit var caseDefinitionService: CaseDefinitionService
     lateinit var internalCaseStatusService: InternalCaseStatusService
+    lateinit var hiddenListColumnRepository: GroupHiddenListColumnRepository
     lateinit var service: GroupCaseInstanceService
 
     @BeforeEach
@@ -98,6 +102,8 @@ class GroupCaseInstanceServiceTest {
         authorizationService = mock()
         caseDefinitionService = mock()
         internalCaseStatusService = mock()
+        hiddenListColumnRepository = mock()
+        whenever(groupRepository.existsById(any<String>())).thenReturn(true)
 
         service = GroupCaseInstanceService(
             groupRepository,
@@ -111,13 +117,15 @@ class GroupCaseInstanceServiceTest {
             valueResolverService,
             authorizationService,
             caseDefinitionService,
-            internalCaseStatusService
+            internalCaseStatusService,
+            hiddenListColumnRepository
         )
     }
 
     @Test
     fun `should get group by key`() {
         val groupKey = "test_group"
+        mockAccessibleGroup(groupKey)
         val group = createTestGroup(groupKey)
 
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
@@ -140,6 +148,7 @@ class GroupCaseInstanceServiceTest {
     @Test
     fun `should get list columns for group`() {
         val groupKey = "test_group"
+        mockAccessibleGroup(groupKey)
         val group = createTestGroup(groupKey)
         val column = GroupListColumn(
             id = GroupListColumnId(groupKey = groupKey, columnKey = "name"),
@@ -232,28 +241,61 @@ class GroupCaseInstanceServiceTest {
     }
 
     @Test
-    fun `should return empty list when no accessible members for internal statuses`() {
+    fun `should deny internal statuses when no accessible members`() {
         val groupKey = "test_group"
 
         whenever(memberRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)).thenReturn(emptyList())
 
-        val result = service.getInternalCaseStatuses(groupKey)
-
-        assertTrue(result.isEmpty())
-        verify(internalCaseStatusService).getInternalCaseStatusesByKeys(emptyList())
+        assertThrows<CaseDefinitionGroupAccessDeniedException> {
+            service.getInternalCaseStatuses(groupKey)
+        }
     }
 
     @Test
-    fun `should return empty page when no accessible members`() {
+    fun `should throw not found for unknown group`() {
+        whenever(groupRepository.existsById("unknown")).thenReturn(false)
+
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.getGroup("unknown") }
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.getListColumns("unknown") }
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.getSearchFields("unknown") }
+        assertThrows<CaseDefinitionGroupNotFoundException> { service.requireAccessibleMembers("unknown") }
+        assertThrows<CaseDefinitionGroupNotFoundException> {
+            service.search("unknown", SearchWithConfigRequest(), Pageable.ofSize(10))
+        }
+    }
+
+    @Test
+    fun `should deny group details when no accessible members`() {
+        val groupKey = "test_group"
+        whenever(memberRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)).thenReturn(emptyList())
+
+        assertThrows<CaseDefinitionGroupAccessDeniedException> { service.getGroup(groupKey) }
+        assertThrows<CaseDefinitionGroupAccessDeniedException> { service.getListColumns(groupKey) }
+        assertThrows<CaseDefinitionGroupAccessDeniedException> { service.getSearchFields(groupKey) }
+    }
+
+    @Test
+    fun `should return accessible member count with group`() {
+        val groupKey = "test_group"
+        val group = createTestGroup(groupKey)
+        mockAccessibleGroup(groupKey)
+        whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
+
+        val result = service.getAccessibleGroup(groupKey)
+
+        assertEquals(1, result.memberCount)
+        assertEquals(groupKey, result.group.key)
+    }
+
+    @Test
+    fun `should deny search when no accessible members`() {
         val groupKey = "test_group"
 
         whenever(memberRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)).thenReturn(emptyList())
 
-        val searchRequest = SearchWithConfigRequest()
-        val result = service.search(groupKey, searchRequest, Pageable.ofSize(10))
-
-        assertEquals(0, result.totalElements)
-        assertTrue(result.content.isEmpty())
+        assertThrows<CaseDefinitionGroupAccessDeniedException> {
+            service.search(groupKey, SearchWithConfigRequest(), Pageable.ofSize(10))
+        }
     }
 
     @Test
@@ -305,6 +347,7 @@ class GroupCaseInstanceServiceTest {
     @Test
     fun `should throw when storing duplicate quick search`() {
         val groupKey = "test_group"
+        mockAccessibleGroup(groupKey)
         val userId = "user123"
         val request = CaseDefinitionQuickSearchDto("?status=open", "Open Cases")
 
@@ -336,6 +379,7 @@ class GroupCaseInstanceServiceTest {
     @Test
     fun `should throw when deleting non-existing quick search`() {
         val groupKey = "test_group"
+        mockAccessibleGroup(groupKey)
         val userId = "user123"
         val title = "Nonexistent"
 
@@ -394,6 +438,7 @@ class GroupCaseInstanceServiceTest {
     @Test
     fun `getListColumns returns effective sortable and default sort`() {
         val groupKey = "test_group"
+        mockAccessibleGroup(groupKey)
         mockColumns(
             groupKey,
             column(groupKey, "created", true, ColumnDefaultSort.ASC) to listOf("a" to "case:createdOn", "b" to "case:createdOn"),

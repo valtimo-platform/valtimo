@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import {HttpClient, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, InterceptorSkipHeader} from '@valtimo/shared';
+import {
+  BaseApiService,
+  ConfigService,
+  InterceptorSkip,
+  InterceptorSkipHeader,
+} from '@valtimo/shared';
 import {GroupListColumn, GroupSearchField} from '@valtimo/document';
 import {Observable} from 'rxjs';
 import {
@@ -51,7 +56,8 @@ export class CaseDefinitionGroupManagementService extends BaseApiService {
 
   public getGroup(groupKey: string): Observable<CaseDefinitionGroupWithMembersResponse> {
     return this.httpClient.get<CaseDefinitionGroupWithMembersResponse>(
-      this.getApiUrl(`${this._basePath}/${groupKey}`)
+      this.getApiUrl(`${this._basePath}/${groupKey}`),
+      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
     );
   }
 

@@ -27,16 +27,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {combineLatest, Observable, of, Subject, take, takeUntil} from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DocumentService, GroupSearchField} from '@valtimo/document';
@@ -48,7 +39,6 @@ import {
   TooltipIconModule,
   ValtimoCdsModalDirective,
   ValuePathSelectorComponent,
-  ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {ModalMode} from '@valtimo/shared';
 import {
@@ -66,33 +56,16 @@ import {GroupMember, GroupPathMapping} from '../../../../../models';
 import {
   CASE_DEFINITION_GROUP_ITEM_MODAL_TEST_IDS,
   CASE_DEFINITION_GROUP_SEARCH_FIELD_MODAL_TEST_IDS,
+  EDITABLE_DROPDOWN_DATA_PROVIDER,
+  GROUP_SEARCH_FIELD_DATA_TYPE_ITEMS,
+  GROUP_SEARCH_FIELD_DEFAULT_FIELD_TYPES,
+  GROUP_SEARCH_FIELD_DROPDOWN_FIELD_TYPES,
+  GROUP_SEARCH_FIELD_FIELD_TYPES,
+  GROUP_SEARCH_FIELD_MATCH_TYPE_ITEMS,
+  GROUP_SEARCH_FIELD_SEARCHABLE_PATH_PREFIXES,
+  GROUP_SEARCH_FIELD_TYPES_BY_DATA_TYPE,
 } from '../../../../../constants';
-
-const DATA_TYPES = ['text', 'number', 'date', 'datetime', 'boolean'];
-const FIELD_TYPES = ['single', 'range', 'multi-select-dropdown', 'single-select-dropdown'];
-// Same rules as a single case type: dropdowns only for text, booleans only single
-const FIELD_TYPES_BY_DATA_TYPE: Record<string, string[]> = {
-  text: FIELD_TYPES,
-  boolean: ['single'],
-};
-const DEFAULT_FIELD_TYPES = ['single', 'range'];
-const DROPDOWN_FIELD_TYPES = ['single-select-dropdown', 'multi-select-dropdown'];
-// Only this provider stores editable lists
-const EDITABLE_DROPDOWN_DATA_PROVIDER = 'dropdownDatabaseDataProvider';
-const MATCH_TYPES = ['exact', 'like'];
-
-const DATA_TYPE_ITEMS = DATA_TYPES.map(t => ({content: t, value: t}));
-const MATCH_TYPE_ITEMS = MATCH_TYPES.map(t => ({content: t, value: t}));
-
-// Group search only supports document and case properties
-const SEARCHABLE_PATH_PREFIXES = [ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE];
-
-const searchablePathValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
-  const path = (control.value ?? '').trim();
-  const isSearchable =
-    !path || SEARCHABLE_PATH_PREFIXES.some(prefix => path.startsWith(`${prefix}:`));
-  return isSearchable ? null : {unsupportedPathPrefix: true};
-};
+import {searchablePathValidator} from '../../../../../utils';
 
 @Component({
   standalone: true,
@@ -166,10 +139,10 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       });
   }
 
-  public readonly DATA_TYPE_ITEMS = DATA_TYPE_ITEMS;
-  public fieldTypeItems = this.toItems(FIELD_TYPES);
-  public readonly MATCH_TYPE_ITEMS = MATCH_TYPE_ITEMS;
-  public readonly SEARCHABLE_PATH_PREFIXES = SEARCHABLE_PATH_PREFIXES;
+  public readonly DATA_TYPE_ITEMS = GROUP_SEARCH_FIELD_DATA_TYPE_ITEMS;
+  public fieldTypeItems = this.toItems(GROUP_SEARCH_FIELD_FIELD_TYPES);
+  public readonly MATCH_TYPE_ITEMS = GROUP_SEARCH_FIELD_MATCH_TYPE_ITEMS;
+  public readonly SEARCHABLE_PATH_PREFIXES = GROUP_SEARCH_FIELD_SEARCHABLE_PATH_PREFIXES;
 
   public formGroup: FormGroup = this.fb.group({
     key: ['', Validators.required],
@@ -338,9 +311,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       this.groupService.getSearchFields(this.groupKey).subscribe(fields => {
         let updatedFields;
         if (this.field) {
-          updatedFields = fields.map(f =>
-            f.key === this.field!.key ? {...f, ...request} : f
-          );
+          updatedFields = fields.map(f => (f.key === this.field!.key ? {...f, ...request} : f));
         } else {
           updatedFields = [...fields, request];
         }
@@ -383,8 +354,8 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       dataType: dataTypeValue,
       fieldType: fieldTypeValue,
       matchType: matchTypeValue || undefined,
-      dropdownDataProvider: DROPDOWN_FIELD_TYPES.includes(fieldTypeValue)
-        ? value.dropdownDataProvider?.value ?? (value.dropdownDataProvider || undefined)
+      dropdownDataProvider: GROUP_SEARCH_FIELD_DROPDOWN_FIELD_TYPES.includes(fieldTypeValue)
+        ? (value.dropdownDataProvider?.value ?? (value.dropdownDataProvider || undefined))
         : undefined,
       pathMappings: this.members
         .map((member, i) => ({
@@ -414,7 +385,10 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
   }
 
   // Group lists live under `<groupKey>_<fieldKey>`, like `<caseDefinitionKey>_<fieldKey>` for a case type
-  private syncDropdownValues(request: {key: string; dropdownDataProvider?: string}): Observable<unknown> {
+  private syncDropdownValues(request: {
+    key: string;
+    dropdownDataProvider?: string;
+  }): Observable<unknown> {
     const groupKey = this.groupKey!;
     const previousProvider = this.field?.dropdownDataProvider;
 
@@ -459,10 +433,15 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     if (dataType === this._dataTypeForFieldTypes) return;
     this._dataTypeForFieldTypes = dataType;
 
-    const allowed = (dataType && FIELD_TYPES_BY_DATA_TYPE[dataType]) || DEFAULT_FIELD_TYPES;
+    const allowed =
+      (dataType && GROUP_SEARCH_FIELD_TYPES_BY_DATA_TYPE[dataType]) ||
+      GROUP_SEARCH_FIELD_DEFAULT_FIELD_TYPES;
     const isAllowed = !dataType || !fieldType || allowed.includes(fieldType);
     // New items replace the list the dropdown rendered from, so they must carry the current selection
-    this.fieldTypeItems = this.toItems(dataType ? allowed : FIELD_TYPES, isAllowed ? fieldType : null);
+    this.fieldTypeItems = this.toItems(
+      dataType ? allowed : GROUP_SEARCH_FIELD_FIELD_TYPES,
+      isAllowed ? fieldType : null
+    );
     if (!isAllowed) {
       this.formGroup.get('fieldType')?.setValue(null);
     }

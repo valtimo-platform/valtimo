@@ -18,6 +18,7 @@ export * from './tab';
 export * from './case-tab-token';
 export * from './case-list.constants';
 export * from './pinned-item.constants';
+export * from './case-overview.constants';
 export * from './case-status.constants';
 export * from './case-widget.constants';
 export * from './case-detail-layout.constants';

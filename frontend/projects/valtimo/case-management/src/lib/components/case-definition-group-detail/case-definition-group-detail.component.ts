@@ -27,9 +27,19 @@ import {
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
-import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, filter, map, Subscription} from 'rxjs';
-import {CaseDefinitionGroupFormValue, CaseManagementListTab} from '../../models';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  NotificationModule,
+  TabsModule,
+} from 'carbon-components-angular';
+import {BehaviorSubject, filter, map, Subscription, take} from 'rxjs';
+import {
+  CaseDefinitionGroupFormValue,
+  CaseDefinitionGroupTabEnum,
+  CaseManagementListTab,
+} from '../../models';
 import {CaseDefinitionGroupManagementService} from '../../services';
 import {CaseDefinitionGroupCreateModalComponent} from '../case-definition-group-create-modal/case-definition-group-create-modal.component';
 import {CaseDefinitionGroupDetailService} from './case-definition-group-detail.service';
@@ -37,12 +47,6 @@ import {
   CASE_DEFINITION_GROUP_DETAIL_TEST_IDS,
   CASE_MANAGEMENT_LIST_TAB_PARAM,
 } from '../../constants';
-
-enum GroupTabEnum {
-  CONFIG = 'config',
-  LIST_COLUMNS = 'list-columns',
-  SEARCH_FIELDS = 'search-fields',
-}
 
 @Component({
   standalone: true,
@@ -57,13 +61,14 @@ enum GroupTabEnum {
     TranslateModule,
     ButtonModule,
     IconModule,
+    NotificationModule,
     TabsModule,
     CaseDefinitionGroupCreateModalComponent,
     RenderInPageHeaderDirective,
   ],
 })
 export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
-  public readonly GroupTabEnum = GroupTabEnum;
+  public readonly GroupTabEnum = CaseDefinitionGroupTabEnum;
 
   protected readonly testIds = CASE_DEFINITION_GROUP_DETAIL_TEST_IDS;
 
@@ -72,6 +77,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   public readonly showEditModal$ = this._showEditModal$.asObservable();
 
   public readonly group$ = this.detailService.group$;
+  public readonly showNoListColumnsWarning$ = this.detailService.showNoListColumnsWarning$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
   public readonly $exporting = signal(false);
 
@@ -79,7 +85,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
 
   public readonly currentTab$ = this.router.events.pipe(
     filter(() => !!this.route.firstChild),
-    map(() => this.route.firstChild?.snapshot.url[0]?.path ?? GroupTabEnum.CONFIG)
+    map(() => this.route.firstChild?.snapshot.url[0]?.path ?? CaseDefinitionGroupTabEnum.CONFIG)
   );
 
   constructor(
@@ -108,6 +114,10 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
 
     this._subscriptions.add(
       this.groupKey$.pipe(filter(key => !!key)).subscribe(key => this.detailService.loadGroup(key))
+    );
+
+    this._subscriptions.add(
+      this.detailService.groupNotFound$.subscribe(() => this.redirectToGroupList())
     );
 
     this._subscriptions.add(
@@ -162,9 +172,22 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  public navigateToTab(tab: GroupTabEnum): void {
+  public navigateToTab(tab: CaseDefinitionGroupTabEnum): void {
     const groupKey = this.route.snapshot.params['groupKey'];
     this.router.navigateByUrl(`/case-management/group/${groupKey}/${tab}`);
+  }
+
+  private redirectToGroupList(): void {
+    this.router.navigate(['/case-management'], {
+      queryParams: {[CASE_MANAGEMENT_LIST_TAB_PARAM]: CaseManagementListTab.GROUPS},
+      replaceUrl: true,
+    });
+    this.translateService
+      .get('caseManagement.groups.notFound')
+      .pipe(take(1))
+      .subscribe(title =>
+        this.notificationService.showNotification({type: 'info', title, duration: 5000})
+      );
   }
 
   private downloadZip(response: HttpResponse<Blob>, groupKey: string): void {

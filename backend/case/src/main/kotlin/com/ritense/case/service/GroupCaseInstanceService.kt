@@ -21,12 +21,16 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.group.CaseDefinitionGroup
 import com.ritense.case.domain.group.CaseDefinitionGroupMember
+import com.ritense.case.domain.group.GroupHiddenListColumn
 import com.ritense.case.domain.group.GroupListColumn
 import com.ritense.case.domain.group.GroupQuickSearch
 import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.domain.group.SortableCaseField
+import com.ritense.case.exception.CaseDefinitionGroupAccessDeniedException
+import com.ritense.case.exception.CaseDefinitionGroupNotFoundException
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
+import com.ritense.case.repository.GroupHiddenListColumnRepository
 import com.ritense.case.repository.GroupListColumnPathMappingRepository
 import com.ritense.case.repository.GroupListColumnRepository
 import com.ritense.case.repository.GroupQuickSearchRepository
@@ -36,6 +40,7 @@ import com.ritense.case.web.rest.dto.CaseDefinitionQuickSearchDto
 import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case.web.rest.dto.GroupCaseListRowDto
 import com.ritense.case.web.rest.dto.GroupListColumnDto
+import com.ritense.case.web.rest.dto.HiddenGroupListColumnDto
 import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.Document
@@ -53,7 +58,6 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -76,19 +80,34 @@ class GroupCaseInstanceService(
     private val valueResolverService: ValueResolverService,
     private val authorizationService: AuthorizationService,
     private val caseDefinitionService: CaseDefinitionService,
-    private val internalCaseStatusService: InternalCaseStatusService
+    private val internalCaseStatusService: InternalCaseStatusService,
+    private val hiddenListColumnRepository: GroupHiddenListColumnRepository
 ) {
 
     fun getAccessibleGroups(): List<CaseDefinitionGroup> {
-        val groups = groupRepository.findAllByOrderByOrderAsc()
-        return groups.filter { group ->
-            getAccessibleMembers(group.key).isNotEmpty()
+        return getAccessibleGroupsWithMemberCount().map { it.group }
+    }
+
+    fun getAccessibleGroupsWithMemberCount(): List<AccessibleGroup> {
+        return groupRepository.findAllByOrderByOrderAsc().mapNotNull { group ->
+            val accessibleMemberCount = getAccessibleMembers(group.key).size
+            if (accessibleMemberCount > 0) AccessibleGroup(group, accessibleMemberCount) else null
         }
     }
 
+    fun getAccessibleGroup(groupKey: String): AccessibleGroup {
+        val members = requireAccessibleMembers(groupKey)
+        return AccessibleGroup(findGroup(groupKey), members.size)
+    }
+
     fun getGroup(groupKey: String): CaseDefinitionGroup {
+        requireAccessibleMembers(groupKey)
+        return findGroup(groupKey)
+    }
+
+    private fun findGroup(groupKey: String): CaseDefinitionGroup {
         return groupRepository.findById(groupKey)
-            .orElseThrow { IllegalArgumentException("No group found with key '$groupKey'") }
+            .orElseThrow { CaseDefinitionGroupNotFoundException(groupKey) }
     }
 
     fun getAccessibleMembers(groupKey: String): List<CaseDefinitionGroupMember> {
@@ -99,6 +118,7 @@ class GroupCaseInstanceService(
     }
 
     fun getListColumns(groupKey: String): List<GroupListColumnDto> {
+        requireAccessibleMembers(groupKey)
         val columns = listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
         val mappingsByColumn = listColumnPathMappingRepository.findByIdGroupKey(groupKey)
             .groupBy { it.id.columnKey }
@@ -116,11 +136,36 @@ class GroupCaseInstanceService(
     }
 
     fun getSearchFields(groupKey: String): List<GroupSearchField> {
+        requireAccessibleMembers(groupKey)
         return searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)
     }
 
+    fun getHiddenListColumns(groupKey: String, userId: String): List<GroupListColumnDto> {
+        val visibleColumns = getListColumns(groupKey)
+        val hiddenKeys = hiddenListColumnRepository.findAllByUserIdAndGroupKey(userId, groupKey)
+            .map { it.columnKey }
+            .toSet()
+        return visibleColumns.filter { it.key in hiddenKeys }
+    }
+
+    @Transactional
+    fun saveHiddenListColumns(groupKey: String, hiddenColumns: List<HiddenGroupListColumnDto>, userId: String) {
+        requireAccessibleMembers(groupKey)
+        val existingColumnKeys = listColumnRepository.findByIdGroupKeyOrderByOrderAsc(groupKey)
+            .map { it.id.columnKey }
+            .toSet()
+        hiddenListColumnRepository.deleteAllByUserIdAndGroupKey(userId, groupKey)
+        hiddenListColumnRepository.flush()
+        hiddenListColumnRepository.saveAll(
+            hiddenColumns.map { it.columnKey }
+                .distinct()
+                .filter { it in existingColumnKeys }
+                .map { GroupHiddenListColumn(userId = userId, groupKey = groupKey, columnKey = it) }
+        )
+    }
+
     fun getInternalCaseStatuses(groupKey: String): List<InternalCaseStatus> {
-        val accessibleMemberKeys = getAccessibleMembers(groupKey).map { it.id.caseDefinitionKey }
+        val accessibleMemberKeys = requireAccessibleMembers(groupKey).map { it.id.caseDefinitionKey }
         // Filter matches by key across members
         return internalCaseStatusService.getInternalCaseStatusesByKeys(accessibleMemberKeys)
             .distinctBy { it.id.key }
@@ -131,10 +176,7 @@ class GroupCaseInstanceService(
         searchRequest: SearchWithConfigRequest,
         pageable: Pageable
     ): Page<GroupCaseListRowDto> {
-        val accessibleMemberKeys = getAccessibleMembers(groupKey).map { it.id.caseDefinitionKey }
-        if (accessibleMemberKeys.isEmpty()) {
-            return PageImpl(emptyList(), pageable, 0)
-        }
+        val accessibleMemberKeys = requireAccessibleMembers(groupKey).map { it.id.caseDefinitionKey }
 
         val searchFields = searchFieldRepository.findByGroupKeyOrderByOrderAsc(groupKey)
         val searchFieldIds = searchFields.map { it.id }
@@ -258,13 +300,13 @@ class GroupCaseInstanceService(
     }
 
     fun getQuickSearchList(groupKey: String, userId: String): List<GroupQuickSearch> {
-        requireAccessibleGroup(groupKey)
+        requireAccessibleMembers(groupKey)
         return quickSearchRepository.findAllByGroupKeyAndUserId(groupKey, userId)
     }
 
     @Transactional
     fun storeQuickSearch(groupKey: String, request: CaseDefinitionQuickSearchDto, userId: String) {
-        requireAccessibleGroup(groupKey)
+        requireAccessibleMembers(groupKey)
         require(
             !quickSearchRepository.existsByGroupKeyAndUserIdAndTitle(groupKey, userId, request.title)
         ) {
@@ -283,7 +325,7 @@ class GroupCaseInstanceService(
 
     @Transactional
     fun deleteQuickSearch(groupKey: String, userId: String, title: String) {
-        requireAccessibleGroup(groupKey)
+        requireAccessibleMembers(groupKey)
         require(
             quickSearchRepository.existsByGroupKeyAndUserIdAndTitle(groupKey, userId, title)
         ) {
@@ -292,11 +334,16 @@ class GroupCaseInstanceService(
         quickSearchRepository.deleteByGroupKeyAndUserIdAndTitle(groupKey, userId, title)
     }
 
-    private fun requireAccessibleGroup(groupKey: String) {
-        require(getAccessibleMembers(groupKey).isNotEmpty()) {
-            "Access denied to group '$groupKey'"
+    fun requireAccessibleMembers(groupKey: String): List<CaseDefinitionGroupMember> {
+        if (!groupRepository.existsById(groupKey)) {
+            throw CaseDefinitionGroupNotFoundException(groupKey)
+        }
+        return getAccessibleMembers(groupKey).ifEmpty {
+            throw CaseDefinitionGroupAccessDeniedException(groupKey)
         }
     }
+
+    data class AccessibleGroup(val group: CaseDefinitionGroup, val memberCount: Int)
 
     companion object {
         private val logger = KotlinLogging.logger {}
