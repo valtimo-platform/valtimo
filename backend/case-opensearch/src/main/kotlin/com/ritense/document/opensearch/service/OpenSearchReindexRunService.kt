@@ -114,6 +114,9 @@ open class OpenSearchReindexRunService(
     @Transactional(readOnly = true)
     open fun processedOf(runId: UUID): Long = requireRun(runId).processedCount
 
+    @Transactional(readOnly = true)
+    open fun skippedOf(runId: UUID): Long = requireRun(runId).skippedCount
+
     open fun recordProgress(runId: UUID, lastId: UUID?, processed: Long, skipped: Long) {
         val run = requireRun(runId)
         run.recordProgress(lastId, processed, skipped, LocalDateTime.now())

@@ -36,7 +36,10 @@ open class OpenSearchIndexNameResolver {
     private fun sanitize(key: String): String {
         val lowered = key.lowercase()
         val cleaned = lowered.replace(ILLEGAL_CHARS, "_").trimStart('-', '_', '+')
-        val needsHash = cleaned != key || cleaned.isEmpty() || cleaned.length > MAX_KEY_LENGTH
+        // Last clause: a key resolving to READ_ALIAS ("all") would make the per-definition name equal the
+        // shared read alias, so ensureIndex short-circuits and writes hit a multi-index alias. Force a hash.
+        val needsHash = cleaned != key || cleaned.isEmpty() || cleaned.length > MAX_KEY_LENGTH ||
+            INDEX_PREFIX + cleaned == READ_ALIAS
         if (!needsHash) {
             return cleaned
         }

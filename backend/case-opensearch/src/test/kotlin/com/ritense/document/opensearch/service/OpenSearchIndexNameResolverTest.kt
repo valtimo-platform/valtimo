@@ -70,4 +70,12 @@ class OpenSearchIndexNameResolverTest {
     fun `the read alias is the shared all-cases alias`() {
         assertThat(OpenSearchIndexNameResolver.READ_ALIAS).isEqualTo("json_schema_document_all")
     }
+
+    @Test
+    fun `a key that would resolve to the read alias gets a hash so it never collides`() {
+        val name = resolver.indexNameFor("all")
+
+        assertThat(name).isNotEqualTo(OpenSearchIndexNameResolver.READ_ALIAS)
+        assertThat(name).startsWith("json_schema_document_all_")
+    }
 }

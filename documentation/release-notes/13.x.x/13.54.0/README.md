@@ -37,8 +37,11 @@ New enhancement explanation.
   After upgrading, the *Admin > OpenSearch* screen shows a warning banner while the topology is still legacy or stale
   (the `/actuator/health` endpoint reports the same via a non-fatal `WARN` status). Start a re-index with the new
   **Rebuild / migrate index** option enabled to create and populate the per-definition indices from the database and
-  drop the legacy index. Until the migration completes, document search keeps serving results from the legacy index —
-  the migration never drops it on startup. Editing search-field configuration no longer triggers an index rebuild.
+  drop the legacy index. Run this migration promptly after upgrading: until it completes, OpenSearch searches target
+  the new per-definition indices, which do not yet hold pre-existing documents, so case lists can come back incomplete.
+  No indexed data is lost — the legacy index is never dropped on startup and the migration rebuilds from the database
+  (the source of truth), dropping the legacy index only on success. Editing search-field configuration no longer
+  triggers an index rebuild.
 
   The same **Rebuild / migrate index** option, combined with a document-definition filter, rebuilds a single
   definition's index zero-downtime: the documents are reindexed into a fresh index and the shared read alias is

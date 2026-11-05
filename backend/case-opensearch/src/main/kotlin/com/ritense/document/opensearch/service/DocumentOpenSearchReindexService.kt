@@ -116,14 +116,15 @@ open class DocumentOpenSearchReindexService(
         val scope = runService.scopeOf(runId)
         var lastId: UUID? = runService.cursorOf(runId)
         var processed: Long = runService.processedOf(runId)
-        var skipped = 0L
+        var skipped = runService.skippedOf(runId)
         val pageSize = runService.pageSizeOf(runId)
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
 
-        // Resolve the rebuild/migrate topology work this run must do before and after filling the index.
-        val rebuild = prepareRebuild(scope)
-
         try {
+            // Inside the try so a preparation failure (index create, definition query) marks the run FAILED
+            // instead of leaving it stuck RUNNING until stale-run reconciliation.
+            val rebuild = prepareRebuild(scope)
+
             while (!cancelRequested) {
                 val cursor = lastId
                 val batch = txTemplate.execute {

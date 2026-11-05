@@ -242,9 +242,12 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       ? new Date(new Date(run.finishedOn).getTime() + 5000).toISOString()
       : new Date().toISOString();
 
+    // Skipped-document messages are logged at WARN; a FAILED run logs the failure at ERROR.
+    const level = run.status === 'COMPLETED_WITH_ERRORS' ? 'WARN' : 'ERROR';
+
     this._router.navigate(['/logging'], {
       queryParams: {
-        level: 'ERROR',
+        level,
         afterTimestamp,
         beforeTimestamp,
       },
