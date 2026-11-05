@@ -1065,21 +1065,29 @@
       "draft": "Concept",
       "status": "Status"
     },
+    "color": {
+      "saved": "Kleur opgeslagen",
+      "clear": "Kleur verwijderen"
+    },
     "listTabs": {
       "cases": "Dossierdefinities",
       "caseGroups": "Dossiergroepen"
     },
     "groups": {
       "notFound": "Deze dossiergroep bestaat niet",
+      "delete": {
+        "title": "Dossiergroep verwijderen",
+        "content": "Weet je zeker dat je deze dossiergroep wilt verwijderen? Ook de vastgepinde items worden verwijderd.",
+        "success": "Dossiergroep verwijderd"
+      },
       "listColumns": {
         "title": "Lijstkolommen",
-        "key": "Key",
         "memberCount": "Aantal dossierdefinities",
         "noColumns": "Geen kolommen geconfigureerd",
         "addColumn": "Kolom toevoegen",
         "editColumn": "Kolom bewerken",
-        "columnKey": "Key",
-        "columnKeyPlaceholder": "Voer een unieke key in",
+        "columnKey": "Sleutel",
+        "columnKeyPlaceholder": "Voer een unieke sleutel in",
         "columnTitle": "Titel",
         "columnTitlePlaceholder": "Voer een weergavetitel in",
         "displayType": "Weergavetype",
@@ -1096,8 +1104,8 @@
         "noFields": "Geen zoekvelden geconfigureerd",
         "addField": "Zoekveld toevoegen",
         "editField": "Zoekveld bewerken",
-        "fieldKey": "Key",
-        "fieldKeyPlaceholder": "Voer een unieke key in",
+        "fieldKey": "Sleutel",
+        "fieldKeyPlaceholder": "Voer een unieke sleutel in",
         "fieldTitle": "Titel",
         "fieldTitlePlaceholder": "Voer een weergavetitel in",
         "dataType": "Datatype",
@@ -1111,7 +1119,7 @@
         "fieldTitleTooltip": "Optioneel. Weergavenaam voor gebruikers.",
         "dataTypeTooltip": "Verplicht. Het datatype van de veldwaarden.",
         "fieldTypeTooltip": "Verplicht. Hoe de zoekinvoer wordt weergegeven.",
-        "matchTypeTooltip": "Optioneel. Hoe waarden worden gematcht (exact of gedeeltelijk).",
+        "matchTypeTooltip": "Verplicht. Hoe waarden worden gematcht (precies of gedeeltelijk).",
         "dropdownDataProviderTooltip": "Optioneel. Naam van de class die de dropdownopties levert.",
         "pathPerCaseTooltip": "Pad naar de eigenschap om op te zoeken voor elke dossierdefinitie. Gebruik 'doc:eigenschapNaam' voor documentvelden of 'case:eigenschapNaam' voor dossiereigenschappen.",
         "unsupportedPathPrefix": "Alleen document- (doc:) en dossierpaden (case:) kunnen doorzocht worden."
@@ -1139,7 +1147,7 @@
         "noSearchResults": "Geen dossierdefinities gevonden",
         "columns": {
           "name": "Naam",
-          "key": "Key"
+          "key": "Sleutel"
         }
       },
       "pathMappings": {
@@ -1185,12 +1193,12 @@
         "title": "Dossiergroep importeren",
         "submit": "Importeren",
         "upload": {
-          "title": "Upload bestand",
+          "title": "Bestand uploaden",
           "description": "Ondersteund bestandstype is ZIP, zoals geëxporteerd vanuit een dossiergroep.",
           "buttonText": "Selecteer bestand"
         },
-        "overwriteWarning": "Een dossiergroep met dezelfde key wordt overschreven, inclusief de dossierdefinities, lijstkolommen en zoekvelden. Dossierdefinities die niet in deze omgeving bestaan, worden overgeslagen.",
-        "overwriteConfirm": "Ik begrijp dat een bestaande dossiergroep met dezelfde key wordt overschreven",
+        "overwriteWarning": "Een dossiergroep met dezelfde sleutel wordt overschreven, inclusief de dossierdefinities, lijstkolommen en zoekvelden. Dossierdefinities die niet in deze omgeving bestaan, worden overgeslagen.",
+        "overwriteConfirm": "Ik begrijp dat een bestaande dossiergroep met dezelfde sleutel wordt overschreven",
         "overwriteConfirmError": "Bevestig dat de bestaande dossiergroep overschreven mag worden",
         "successTitle": "Dossiergroep geïmporteerd",
         "errorTitle": "Importeren mislukt",

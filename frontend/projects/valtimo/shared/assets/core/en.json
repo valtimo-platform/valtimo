@@ -1065,15 +1065,23 @@
       "draft": "Draft",
       "status": "Status"
     },
+    "color": {
+      "saved": "Color saved",
+      "clear": "Remove color"
+    },
     "listTabs": {
       "cases": "Case definitions",
       "caseGroups": "Case groups"
     },
     "groups": {
       "notFound": "This case group does not exist",
+      "delete": {
+        "title": "Delete case group",
+        "content": "Are you sure you want to delete this case group? Its pinned items will be removed as well.",
+        "success": "Case group deleted"
+      },
       "listColumns": {
         "title": "List columns",
-        "key": "Key",
         "memberCount": "Number of case definitions",
         "noColumns": "No columns configured",
         "addColumn": "Add column",
@@ -1111,7 +1119,7 @@
         "fieldTitleTooltip": "Optional. Display name shown to users.",
         "dataTypeTooltip": "Required. The data type of the field values.",
         "fieldTypeTooltip": "Required. How the search input is displayed.",
-        "matchTypeTooltip": "Optional. How values are matched (exact or partial).",
+        "matchTypeTooltip": "Required. How values are matched (exact or partial).",
         "dropdownDataProviderTooltip": "Optional. Class name providing dropdown options.",
         "pathPerCaseTooltip": "Path to the property to search on for each case definition. Use 'doc:propertyName' for document fields or 'case:propertyName' for case properties.",
         "unsupportedPathPrefix": "Only document (doc:) and case (case:) paths can be searched."
@@ -1189,7 +1197,7 @@
           "description": "Supported file type is ZIP, as exported from a case group.",
           "buttonText": "Select file"
         },
-        "overwriteWarning": "A case group with the same key will be overwritten, including its members, list columns and search fields. Case definitions that do not exist in this environment are skipped.",
+        "overwriteWarning": "A case group with the same key will be overwritten, including its case definitions, list columns and search fields. Case definitions that do not exist in this environment are skipped.",
         "overwriteConfirm": "I understand that an existing case group with the same key will be overwritten",
         "overwriteConfirmError": "Confirm that the existing case group may be overwritten",
         "successTitle": "Case group imported",

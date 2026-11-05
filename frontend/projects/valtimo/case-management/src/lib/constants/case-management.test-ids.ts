@@ -168,6 +168,7 @@ export const CASE_MANAGEMENT_COLOR_TEST_IDS = {
   previewHex: 'caseColorPreviewHex',
   swatch: 'caseColorSwatch',
   customPicker: 'caseColorCustomPicker',
+  clearButton: 'caseColorClearButton',
 } as const;
 
 export const CASE_DEFINITION_GROUP_LIST_TEST_IDS = {
@@ -194,6 +195,7 @@ export const CASE_DEFINITION_GROUP_MODAL_TEST_IDS = {
 } as const;
 
 export const CASE_DEFINITION_GROUP_DETAIL_TEST_IDS = {
+  deleteButton: 'caseDefinitionGroupDeleteButton',
   editButton: 'caseDefinitionGroupEditButton',
   exportButton: 'caseDefinitionGroupExportButton',
   noListColumnsWarning: 'caseDefinitionGroupNoListColumnsWarning',
@@ -206,6 +208,7 @@ export const CASE_DEFINITION_GROUP_CONFIG_TEST_IDS = {
   addPanel: 'caseDefinitionGroupAddPanel',
   caseSelect: 'caseDefinitionGroupCaseSelect',
   addToGroupButton: 'caseDefinitionGroupAddToGroupButton',
+  memberTableHeader: 'caseDefinitionGroupMemberTableHeader',
   memberRow: 'caseDefinitionGroupMemberRow',
   memberOverflowMenu: 'caseDefinitionGroupMemberOverflowMenu',
   removeMemberOption: 'caseDefinitionGroupRemoveMemberOption',

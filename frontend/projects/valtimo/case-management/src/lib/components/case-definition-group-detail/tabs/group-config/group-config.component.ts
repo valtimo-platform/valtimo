@@ -279,7 +279,12 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
     );
   }
 
-  private _saveColor(color: string): void {
+  public onClear(): void {
+    this.selectedColor = '';
+    this._saveColor(null);
+  }
+
+  private _saveColor(color: string | null): void {
     const group = this.detailService.currentGroup;
     if (!group) return;
 
@@ -289,6 +294,12 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
         description: group.description,
         color,
       })
-      .subscribe();
+      .subscribe(() =>
+        this.notificationService.showNotification({
+          type: 'success',
+          title: this.translateService.instant('caseManagement.color.saved'),
+          duration: 5000,
+        })
+      );
   }
 }

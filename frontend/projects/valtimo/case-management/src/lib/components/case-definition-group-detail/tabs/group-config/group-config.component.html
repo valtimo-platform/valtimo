@@ -80,9 +80,22 @@
           labelTranslationKey=""
           [config]="colorPickerConfig"
           [ngModel]="selectedColor"
+          (clearEvent)="onClear()"
           (colorChangeEvent)="onColorChange($event)"
           [attr.data-test-id]="colorTestIds.customPicker"
         ></valtimo-color-picker>
+      </div>
+
+      <div *ngIf="selectedColor" class="valtimo-group-config__clear-row">
+        <button
+          cdsButton="ghost"
+          size="sm"
+          type="button"
+          (click)="onClear()"
+          [attr.data-test-id]="colorTestIds.clearButton"
+        >
+          {{ 'caseManagement.color.clear' | translate }}
+        </button>
       </div>
     </div>
 
@@ -141,7 +154,10 @@
           </div>
         </div>
 
-        <div class="valtimo-group-config__table-header">
+        <div
+          class="valtimo-group-config__table-header"
+          [attr.data-test-id]="testIds.memberTableHeader"
+        >
           <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--name">
             {{ 'caseManagement.groups.config.columns.name' | translate }}
           </div>

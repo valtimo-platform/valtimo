@@ -18,11 +18,16 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
-import {LayerModule} from 'carbon-components-angular';
-import {ColorPickerComponent, ColorPickerConfig} from '@valtimo/components';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {ButtonModule, LayerModule} from 'carbon-components-angular';
+import {PinnedItemsService} from '@valtimo/case';
+import {ColorPickerComponent, ColorPickerConfig, MenuService} from '@valtimo/components';
 import {CaseSettings, DocumentService} from '@valtimo/document';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {
   BehaviorSubject,
   combineLatest,
@@ -42,7 +47,14 @@ import {CASE_MANAGEMENT_COLOR_TEST_IDS, COLOR_SWATCHES} from '../../../../../../
   templateUrl: './case-management-color.component.html',
   styleUrl: './case-management-color.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, TranslateModule, LayerModule, ColorPickerComponent],
+  imports: [
+    ButtonModule,
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    LayerModule,
+    ColorPickerComponent,
+  ],
 })
 export class CaseManagementColorComponent {
   protected readonly testIds = CASE_MANAGEMENT_COLOR_TEST_IDS;
@@ -104,7 +116,11 @@ export class CaseManagementColorComponent {
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly pinnedItemsService: PinnedItemsService,
+    private readonly menuService: MenuService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly translateService: TranslateService
   ) {}
 
   public onColorChange(color: string, currentColor: string): void {
@@ -119,7 +135,12 @@ export class CaseManagementColorComponent {
     this._saveColor(color);
   }
 
-  private _saveColor(color: string): void {
+  public onClear(): void {
+    this._userSelectedColor$.next('');
+    this._saveColor(null);
+  }
+
+  private _saveColor(color: string | null): void {
     if (this.isReadOnly) return;
 
     this.params$
@@ -134,6 +155,14 @@ export class CaseManagementColorComponent {
         ),
         finalize(() => this._refresh$.next(null))
       )
-      .subscribe();
+      .subscribe(() => {
+        this.pinnedItemsService.refresh();
+        this.menuService.reload();
+        this.notificationService.showNotification({
+          type: 'success',
+          title: this.translateService.instant('caseManagement.color.saved'),
+          duration: 5000,
+        });
+      });
   }
 }

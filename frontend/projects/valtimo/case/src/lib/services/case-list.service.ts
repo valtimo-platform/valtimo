@@ -13,10 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {HttpErrorResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {Documents, SpecifiedDocuments} from '@valtimo/document';
-import {BehaviorSubject, filter, map, Observable, take} from 'rxjs';
+import {
+  CaseDefinitionGroup,
+  Documents,
+  DocumentService,
+  SpecifiedDocuments,
+} from '@valtimo/document';
+import {
+  BehaviorSubject,
+  catchError,
+  filter,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  take,
+  throwError,
+} from 'rxjs';
 import {CaseListContext} from '../models';
+import {isGroupUnavailable} from '../utils';
+
+interface CaseListLookup {
+  context: CaseListContext;
+  group: CaseDefinitionGroup | null;
+  notFound: boolean;
+}
 
 @Injectable()
 export class CaseListService {
@@ -25,19 +49,60 @@ export class CaseListService {
   private readonly _checkRefresh$ = new BehaviorSubject<boolean>(false);
   private readonly _forceRefresh$ = new BehaviorSubject<boolean>(false);
 
-  public get context$(): Observable<CaseListContext | null> {
+  private readonly _lookup$: Observable<CaseListLookup> = this._context$.pipe(
+    filter((context): context is CaseListContext => !!context),
+    switchMap(
+      (context: CaseListContext): Observable<CaseListLookup> =>
+        context.type === 'group'
+          ? this.documentService.getCaseDefinitionGroup(context.key).pipe(
+              map(group => ({context, group, notFound: false})),
+              catchError((error: HttpErrorResponse) =>
+                isGroupUnavailable(error)
+                  ? of({context, group: null, notFound: true})
+                  : throwError(() => error)
+              )
+            )
+          : of({context, group: null, notFound: false})
+    ),
+    shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  public get requestedContext$(): Observable<CaseListContext | null> {
     return this._context$.asObservable();
   }
 
+  public get context$(): Observable<CaseListContext> {
+    return this._lookup$.pipe(
+      filter(lookup => !lookup.notFound),
+      map(lookup => lookup.context)
+    );
+  }
+
+  public get group$(): Observable<CaseDefinitionGroup> {
+    return this._lookup$.pipe(
+      filter(
+        (lookup): lookup is CaseListLookup & {group: CaseDefinitionGroup} =>
+          lookup.context.type === 'group' && !!lookup.group
+      ),
+      map(lookup => lookup.group)
+    );
+  }
+
+  public get groupNotFound$(): Observable<boolean> {
+    return this._lookup$.pipe(map(lookup => lookup.notFound));
+  }
+
+  constructor(private readonly documentService: DocumentService) {}
+
   public get caseDefinitionKey$(): Observable<string> {
-    return this._context$.pipe(
+    return this.context$.pipe(
       filter((ctx): ctx is CaseListContext => ctx?.type === 'definition'),
       map(ctx => ctx.key)
     );
   }
 
   public get groupKey$(): Observable<string> {
-    return this._context$.pipe(
+    return this.context$.pipe(
       filter((ctx): ctx is CaseListContext => ctx?.type === 'group'),
       map(ctx => ctx.key)
     );

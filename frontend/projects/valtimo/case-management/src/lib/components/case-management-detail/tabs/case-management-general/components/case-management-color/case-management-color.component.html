@@ -77,9 +77,22 @@
         [config]="colorPickerConfig"
         [ngModel]="obs.selectedColor"
         [disabled]="isReadOnly"
+        (clearEvent)="onClear()"
         (colorChangeEvent)="onColorChange($event, obs.selectedColor)"
         [attr.data-test-id]="testIds.customPicker"
       ></valtimo-color-picker>
+    </div>
+
+    <div *ngIf="obs.selectedColor && !isReadOnly" class="case-management-color__clear-row">
+      <button
+        cdsButton="ghost"
+        size="sm"
+        type="button"
+        (click)="onClear()"
+        [attr.data-test-id]="testIds.clearButton"
+      >
+        {{ 'caseManagement.color.clear' | translate }}
+      </button>
     </div>
   </div>
 </ng-container>
