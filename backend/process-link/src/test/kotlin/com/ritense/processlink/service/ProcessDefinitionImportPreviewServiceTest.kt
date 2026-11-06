@@ -346,6 +346,28 @@ class ProcessDefinitionImportPreviewServiceTest {
         verifyNoInteractions(processLinkService)
     }
 
+    @Test
+    fun `should only pass the global entries of the package to the preview contributors`() {
+        val receivedEntryNames = mutableListOf<String>()
+        service = ProcessDefinitionImportPreviewService(
+            objectMapper,
+            listOf(ImportPreviewContributor { entries -> receivedEntryNames += entries.keys; emptyList() }),
+            processLinkService,
+            repositoryService,
+        )
+
+        service.preview(
+            zipOf(
+                BPMN_PATH to bpmn(),
+                GLOBAL_FORM_PATH to "{}",
+                CASE_PROCESS_LINK_PATH to processLinkJson(),
+                BUILDING_BLOCK_PROCESS_LINK_PATH to processLinkJson(),
+            )
+        )
+
+        assertThat(receivedEntryNames).containsExactlyInAnyOrder(BPMN_PATH, GLOBAL_FORM_PATH)
+    }
+
     private fun mockDeployedSystemProcess() {
         whenever(repositoryService.findLatestProcessDefinition(PROCESS_DEFINITION_KEY))
             .thenReturn(mock<OperatonProcessDefinition>())
@@ -420,5 +442,8 @@ class ProcessDefinitionImportPreviewServiceTest {
         const val PROCESS_LINK_PATH = "config/global/process-link/$PROCESS_DEFINITION_KEY.process-link.json"
         const val CASE_PROCESS_LINK_PATH =
             "config/case/my-case/1.0.0/process-link/$PROCESS_DEFINITION_KEY.process-link.json"
+        const val GLOBAL_FORM_PATH = "config/global/form/my-form.form.json"
+        const val BUILDING_BLOCK_PROCESS_LINK_PATH =
+            "config/building-block/my-block/1-0-0/process-link/$PROCESS_DEFINITION_KEY.process-link.json"
     }
 }
