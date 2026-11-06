@@ -18,10 +18,10 @@ import {ComponentFixture, fakeAsync, TestBed, tick, waitForAsync} from '@angular
 import {By} from '@angular/platform-browser';
 import {ActivatedRoute} from '@angular/router';
 import {FormioComponent as FormIoSourceComponent, FormioModule} from '@formio/angular';
+import {Components} from '@formio/js';
 import {TranslateService} from '@ngx-translate/core';
 import {UserProviderService} from '@valtimo/security';
 import {ConfigService} from '@valtimo/shared';
-import {Components} from 'formiojs';
 import {NGXLogger} from 'ngx-logger';
 import {of} from 'rxjs';
 import {take} from 'rxjs/operators';
