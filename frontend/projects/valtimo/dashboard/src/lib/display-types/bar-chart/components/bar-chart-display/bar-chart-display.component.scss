@@ -49,14 +49,12 @@
 
   &__content {
     display: flex;
-    flex: 1;
-    min-height: 0;
     align-items: flex-end;
     justify-content: center;
     margin-bottom: 12px;
 
     ::ng-deep .cds--cc--legend {
-      max-height: 140px;
+      max-height: 100px;
       overflow-y: auto;
     }
   }

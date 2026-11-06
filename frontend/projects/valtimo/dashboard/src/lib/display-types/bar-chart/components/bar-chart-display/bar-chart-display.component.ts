@@ -54,7 +54,7 @@ export class BarChartDisplayComponent implements DisplayComponent {
         theme: currentTheme,
         resizable: true,
         toolbar: {enabled: false},
-        height: '100%',
+        height: '300px',
         axes: {
           left: {
             mapsTo: 'value',
