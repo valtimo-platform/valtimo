@@ -32,3 +32,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Notificaties API | With more than one server, notifications are no longer handled twice and the cleanup of handled notifications no longer fails |
+| Dashboard | A long dashboard widget subtitle is now cut off with ellipsis instead of running out of the widget, and the full title and subtitle show on hover. |
