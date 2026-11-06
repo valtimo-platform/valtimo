@@ -56,6 +56,26 @@ export class NotificatiesApiConfigurationComponent
         }))
       )
     );
+  public readonly abonnementRegistrationSelectItems$: Observable<
+    Array<{id: string; text: string}>
+  > = this.translateService.stream('key').pipe(
+    map(() => [
+      {
+        id: 'automatic',
+        text: this.pluginTranslationService.instant(
+          'abonnementRegistrationAutomatic',
+          this.pluginId
+        ),
+      },
+      {
+        id: 'manual',
+        text: this.pluginTranslationService.instant('abonnementRegistrationManual', this.pluginId),
+      },
+    ])
+  );
+  public readonly callbackUrlPlaceholder =
+    'https://{gzac-back-end-url}/api/v1/notificatiesapi/callback';
+  public readonly manualRegistration$ = new BehaviorSubject<boolean>(false);
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<NotificatiesApiConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -76,6 +96,7 @@ export class NotificatiesApiConfigurationComponent
 
   public formValueChange(formValue: NotificatiesApiConfig): void {
     this.formValue$.next(formValue);
+    this.manualRegistration$.next(formValue.abonnementRegistration === 'manual');
     this.handleValid(formValue);
   }
 
@@ -83,8 +104,10 @@ export class NotificatiesApiConfigurationComponent
     const valid = !!(
       formValue.configurationTitle &&
       formValue.url &&
-      formValue.callbackUrl &&
-      formValue.authenticationPluginConfiguration
+      formValue.authenticationPluginConfiguration &&
+      (formValue.abonnementRegistration === 'manual'
+        ? formValue.authHeader?.trim()
+        : formValue.callbackUrl)
     );
 
     this.valid$.next(valid);
@@ -96,7 +119,11 @@ export class NotificatiesApiConfigurationComponent
       ?.pipe(switchMap(() => combineLatest([this.formValue$, this.valid$]).pipe(take(1))))
       .subscribe(([formValue, valid]) => {
         if (valid) {
-          this.configuration.emit(formValue);
+          this.configuration.emit(
+            formValue.abonnementRegistration === 'manual'
+              ? {...formValue, callbackUrl: null}
+              : formValue
+          );
         }
       });
   }
