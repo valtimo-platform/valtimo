@@ -17,3 +17,4 @@
 export * from './migration-plan.utils';
 export * from './migration-status.utils';
 export * from './process-variable-form.utils';
+export * from './reference-update-input-source.utils';
