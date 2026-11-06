@@ -21,6 +21,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.domain.OsDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.AfterEach
@@ -58,40 +59,40 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
     @Test
     fun `re-indexing the same version is a benign no-op`() {
         val id = UUID.randomUUID().toString()
-        openSearchRepository.saveAll(listOf(osDoc(id, indexVersion = 5, internalStatus = "first")))
+        indexOsDocument(osDoc(id, indexVersion = 5, internalStatus = "first"))
         refreshIndex()
 
         val skipped = converter.indexChunk(listOf(osDoc(id, indexVersion = 5, internalStatus = "second")))
         refreshIndex()
 
         assertThat(skipped).isZero()
-        assertThat(openSearchRepository.findById(id).get().internalStatus).isEqualTo("first")
+        assertThat(findIndexedById(id)!!.internalStatus).isEqualTo("first")
     }
 
     @Test
     fun `a stale lower-version write does not overwrite a newer document (order independence)`() {
         val id = UUID.randomUUID().toString()
-        openSearchRepository.saveAll(listOf(osDoc(id, indexVersion = 6, internalStatus = "sixth")))
+        indexOsDocument(osDoc(id, indexVersion = 6, internalStatus = "sixth"))
         refreshIndex()
 
         val skipped = converter.indexChunk(listOf(osDoc(id, indexVersion = 5, internalStatus = "fifth")))
         refreshIndex()
 
         assertThat(skipped).isZero()
-        assertThat(openSearchRepository.findById(id).get().internalStatus).isEqualTo("sixth")
+        assertThat(findIndexedById(id)!!.internalStatus).isEqualTo("sixth")
     }
 
     @Test
     fun `a strictly higher version updates the document`() {
         val id = UUID.randomUUID().toString()
-        openSearchRepository.saveAll(listOf(osDoc(id, indexVersion = 5, internalStatus = "old")))
+        indexOsDocument(osDoc(id, indexVersion = 5, internalStatus = "old"))
         refreshIndex()
 
         val skipped = converter.indexChunk(listOf(osDoc(id, indexVersion = 6, internalStatus = "new")))
         refreshIndex()
 
         assertThat(skipped).isZero()
-        assertThat(openSearchRepository.findById(id).get().internalStatus).isEqualTo("new")
+        assertThat(findIndexedById(id)!!.internalStatus).isEqualTo("new")
     }
 
     @Test
@@ -104,12 +105,12 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
         runWithoutAuthorization { documentService.setInternalStatus(document.id(), "started") }
         syncService.upsertById(id)
         refreshIndex()
-        assertThat(openSearchRepository.findById(id.toString()).get().internalStatus).isEqualTo("started")
+        assertThat(findIndexedById(id.toString())!!.internalStatus).isEqualTo("started")
 
         // Re-sending the same (now-current) version is a version conflict — swallowed, no exception.
         assertThatCode { syncService.upsertById(id) }.doesNotThrowAnyException()
         refreshIndex()
-        assertThat(openSearchRepository.findById(id.toString()).get().internalStatus).isEqualTo("started")
+        assertThat(findIndexedById(id.toString())!!.internalStatus).isEqualTo("started")
     }
 
     private fun clearIndex() {
@@ -127,7 +128,7 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
     private fun osDoc(id: String, indexVersion: Long, internalStatus: String) = JsonSchemaDocumentOsDocument(
         id = id,
         content = null,
-        definitionId = null,
+        definitionId = OsDefinitionId(name = "house", version = null, blueprintId = null),
         createdOn = null,
         modifiedOn = null,
         createdBy = null,

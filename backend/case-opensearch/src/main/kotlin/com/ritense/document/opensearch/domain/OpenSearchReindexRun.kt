@@ -45,7 +45,7 @@ class OpenSearchReindexRun(
     val id: UUID = UUID.randomUUID(),
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false, length = 50)
     var status: ReindexRunStatus = ReindexRunStatus.RUNNING,
 
     @Column(name = "scope")
@@ -113,8 +113,8 @@ class OpenSearchReindexRun(
         this.heartbeatOn = heartbeat
     }
 
-    fun complete(now: LocalDateTime) {
-        this.status = ReindexRunStatus.COMPLETED
+    fun complete(now: LocalDateTime, skipped: Long) {
+        this.status = if (skipped == 0L) ReindexRunStatus.COMPLETED else ReindexRunStatus.COMPLETED_WITH_ERRORS
         this.finishedOn = now
         this.heartbeatOn = now
         this.pruningPhase = false

@@ -38,6 +38,8 @@ class DocumentOpenSearchHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/reindex/*"))
                     .hasAuthority(ADMIN)
+                requests.requestMatchers(antMatcher(GET, "/api/management/v1/document-opensearch/topology"))
+                    .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(GET, "/api/management/v1/search-engine"))
                     .hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(PUT, "/api/management/v1/search-engine"))

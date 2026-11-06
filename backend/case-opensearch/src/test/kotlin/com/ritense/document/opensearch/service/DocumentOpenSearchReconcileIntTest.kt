@@ -21,6 +21,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
+import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.domain.OpenSearchReconcileState
 import com.ritense.document.opensearch.domain.PendingIndexDeletion
 import com.ritense.document.opensearch.repository.OpenSearchReconcileStateRepository
@@ -32,6 +33,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Propagation
@@ -56,6 +58,9 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
 
     @Autowired
     lateinit var syncService: DocumentOpenSearchSyncService
+
+    @Autowired
+    lateinit var converter: JsonSchemaDocumentOsConverter
 
     @Autowired
     lateinit var stateRepository: OpenSearchReconcileStateRepository
@@ -89,7 +94,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         reconcileService.reconcile()
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isPresent
+        assertThat(findIndexedOptional(document.id().toString())).isPresent
         val watermark = stateRepository.findById(OpenSearchReconcileState.SINGLETON_ID).get().watermark
         assertThat(watermark).isAfter(LocalDateTime.now().minusMinutes(30))
     }
@@ -104,7 +109,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         reconcileService.reconcile()
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().internalStatus).isEqualTo("started")
     }
@@ -131,7 +136,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         }
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isEmpty
+        assertThat(findIndexedOptional(document.id().toString())).isEmpty
     }
 
     @Test
@@ -140,7 +145,7 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         val id = document.id().id
         syncService.upsertById(id)
         refreshIndex()
-        assertThat(openSearchRepository.findById(id.toString())).isPresent
+        assertThat(findIndexedOptional(id.toString())).isPresent
 
         // Delete from PostgreSQL and record the pending deletion the in-transaction listener would have written.
         runWithoutAuthorization { documentService.deleteDocument(document.id()) }
@@ -150,7 +155,30 @@ class DocumentOpenSearchReconcileIntTest : BaseOpenSearchIntegrationTest() {
         reconcileService.reconcile()
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(id.toString())).isEmpty
+        assertThat(findIndexedOptional(id.toString())).isEmpty
+        assertThat(pendingIndexDeletionRepository.count()).isZero()
+    }
+
+    @Test
+    fun `reconcile drains a pending deletion for a document that is indexed but not yet searchable`() {
+        val document = createDocument("not-yet-searchable")
+        val id = document.id().id
+        val osDocument = converter.toOsDocument(document)
+        clearIndex()
+        // Index into the concrete index WITHOUT refreshing: the document is present (realtime) but not yet
+        // searchable, reproducing the near-real-time window the drain's id-resolution search would otherwise miss.
+        indexOsDocument(osDocument)
+        runWithoutAuthorization { documentService.deleteDocument(document.id()) }
+        pendingIndexDeletionRepository.save(PendingIndexDeletion(documentId = id))
+        seedWatermark(LocalDateTime.now().minusHours(1))
+
+        reconcileService.reconcile()
+
+        // Realtime get: the document was actually removed from its concrete index — not merely its pending row
+        // dropped. Without the pre-drain refresh the search would miss it and leave it orphaned here.
+        val concreteIndex = IndexCoordinates.of(indexNameResolver.indexNameFor("house"))
+        val stillIndexed = elasticsearchOperations.get(id.toString(), JsonSchemaDocumentOsDocument::class.java, concreteIndex)
+        assertThat(stillIndexed).isNull()
         assertThat(pendingIndexDeletionRepository.count()).isZero()
     }
 

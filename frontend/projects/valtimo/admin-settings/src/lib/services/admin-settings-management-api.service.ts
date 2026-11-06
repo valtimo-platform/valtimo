@@ -32,6 +32,7 @@ import {
   SearchEngineDto,
   StartReindexRequestDto,
   StartReindexResponseDto,
+  TopologyStatusDto,
   UpdateFeatureToggleDto,
 } from '../models';
 
@@ -138,5 +139,11 @@ export class AdminSettingsManagementApiService extends BaseApiService {
     return this.httpClient.get<ReindexStatusDto>(
       this.getApiUrl(`/management/v1/document-opensearch/reindex/${runId}`)
     );
+  }
+
+  public getTopologyStatus(): Observable<TopologyStatusDto | null> {
+    return this.httpClient
+      .get<TopologyStatusDto>(this.getApiUrl('/management/v1/document-opensearch/topology'))
+      .pipe(catchError(() => of(null)));
   }
 }

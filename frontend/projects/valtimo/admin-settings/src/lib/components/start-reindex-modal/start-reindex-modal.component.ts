@@ -60,6 +60,7 @@ export class StartReindexModalComponent {
 
   public readonly formGroup: FormGroup = this._fb.group({
     pruneOrphans: [false],
+    recreateIndex: [false],
     documentDefinitionName: [null],
     modifiedAfter: [null],
   });
@@ -88,6 +89,10 @@ export class StartReindexModalComponent {
 
     if (formValue.pruneOrphans) {
       request.pruneOrphans = true;
+    }
+
+    if (formValue.recreateIndex) {
+      request.recreateIndex = true;
     }
 
     if (formValue.documentDefinitionName?.value) {
@@ -119,6 +124,7 @@ export class StartReindexModalComponent {
   private _resetForm(): void {
     this.formGroup.reset({
       pruneOrphans: false,
+      recreateIndex: false,
       documentDefinitionName: null,
       modifiedAfter: null,
     });

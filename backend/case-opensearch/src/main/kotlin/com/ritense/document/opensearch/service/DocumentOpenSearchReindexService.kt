@@ -18,7 +18,6 @@ package com.ritense.document.opensearch.service
 
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.JoinType
@@ -32,6 +31,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
@@ -65,7 +65,8 @@ open class DocumentOpenSearchReindexService(
     private val transactionManager: PlatformTransactionManager,
     private val lockProvider: LockProvider,
     private val runService: OpenSearchReindexRunService,
-    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+    private val resolver: OpenSearchIndexNameResolver,
+    private val indexInitializer: DocumentOpenSearchIndexInitializer,
 ) : DisposableBean {
 
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -81,6 +82,11 @@ open class DocumentOpenSearchReindexService(
      * the cluster.
      */
     fun start(request: ReindexRequest): UUID? {
+        require(!(request.recreateIndex && request.hasSubsetFilters())) {
+            "recreateIndex cannot be combined with modifiedAfter, modifiedBefore or documentIds — " +
+                "a filtered rebuild would replace the index with only the matching subset"
+        }
+
         val lock = lockProvider.lock(
             LockConfiguration(Instant.now(), LOCK_NAME, LOCK_AT_MOST_FOR, Duration.ZERO)
         )
@@ -115,11 +121,19 @@ open class DocumentOpenSearchReindexService(
         val scope = runService.scopeOf(runId)
         var lastId: UUID? = runService.cursorOf(runId)
         var processed: Long = runService.processedOf(runId)
-        var skipped = 0L
+        var skipped = runService.skippedOf(runId)
         val pageSize = runService.pageSizeOf(runId)
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
 
+        // Lower bound for the post-swap catch-up: any document whose changedOn moved at/after this may have
+        // taken a live write into the old index that the swap drops. The overlap absorbs node clock skew.
+        val catchUpFrom = LocalDateTime.now().minus(CATCH_UP_OVERLAP)
+
         try {
+            // Inside the try so a preparation failure (index create, definition query) marks the run FAILED
+            // instead of leaving it stuck RUNNING until stale-run reconciliation.
+            val rebuild = prepareRebuild(scope)
+
             while (!cancelRequested) {
                 val cursor = lastId
                 val batch = txTemplate.execute {
@@ -136,7 +150,8 @@ open class DocumentOpenSearchReindexService(
                         null
                     }
                 }
-                skipped += docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).sumOf { converter.indexChunk(it) }
+                skipped += docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE)
+                    .sumOf { converter.indexChunk(it, rebuild?.targetIndex) }
 
                 processed += docs.size
                 lastId = batch.last().id().id
@@ -147,13 +162,22 @@ open class DocumentOpenSearchReindexService(
                 logger.info { "Re-index run $runId cancelled — marking STOPPED (processed=$processed, skipped=$skipped)" }
                 runService.stop(runId)
             } else {
-                if (scope.pruneOrphans) {
+                // Pruning is meaningless for a rebuild/migrate — the target index is freshly built from the
+                // source of truth and holds no orphans.
+                if (scope.pruneOrphans && rebuild == null) {
                     val pruned = pruneOrphans(runId, scope)
                     logger.info { "Pruned $pruned orphan document(s) from OpenSearch" }
                 }
-                indexOps().refresh()
+                val refreshTarget = rebuild?.targetIndex ?: indexCoordinatesFor(scope)
+                elasticsearchOperations.indexOps(refreshTarget).takeIf { it.exists() }?.refresh()
+                rebuild?.let { publishOrAbandonRebuild(it, skipped) }
+                // A published scoped rebuild (newConcrete != null, nothing skipped) just dropped the old index;
+                // re-index anything changed during the rebuild so a concurrent write to that old index is not lost.
+                if (skipped == 0L && rebuild?.newConcrete != null) {
+                    catchUpConcurrentWrites(rebuild.definitionName!!, catchUpFrom, pageSize)
+                }
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$skipped)" }
-                runService.complete(runId, processed + skipped)
+                runService.complete(runId, processed + skipped, skipped)
             }
         } catch (e: Exception) {
             runService.fail(runId, e.message)
@@ -162,6 +186,146 @@ open class DocumentOpenSearchReindexService(
         }
         return processed
     }
+
+    /**
+     * Topology plan for a `recreateIndex` run, resolved once up front:
+     * - **scoped** (a definition name) — build a fresh concrete index and fill it ([targetIndex]); on success
+     *   atomically swap the per-definition and read aliases onto it and drop the old one.
+     * - **unscoped** (migration off the legacy single index) — provision the per-definition indices now so the
+     *   routed writes land in them, then drop the legacy index on success.
+     *
+     * A non-recreate run returns `null` and behaves exactly as before.
+     */
+    private fun prepareRebuild(scope: ReindexRequest): RebuildPlan? {
+        if (!scope.recreateIndex) return null
+        val definitionName = scope.documentDefinitionName
+        if (definitionName != null) {
+            val newIndex = indexInitializer.prepareRebuildIndex(definitionName)
+            return RebuildPlan(definitionName = definitionName, targetIndex = IndexCoordinates.of(newIndex), newConcrete = newIndex)
+        }
+        indexInitializer.ensureAllIndices()
+        return RebuildPlan(definitionName = null, targetIndex = null, newConcrete = null)
+    }
+
+    /**
+     * Publishes a completed rebuild, or abandons it when documents were skipped. A skipped document is absent
+     * from the freshly built index, so swapping it in (scoped) or dropping the legacy index (migrate) would make
+     * that document unsearchable. On skips the existing index keeps serving every document and the operator can
+     * resolve the skips and re-run; for a scoped rebuild the unpublished partial index is dropped to avoid a leak.
+     */
+    private fun publishOrAbandonRebuild(plan: RebuildPlan, skipped: Long) {
+        if (skipped == 0L) {
+            completeRebuild(plan)
+            return
+        }
+        if (plan.newConcrete != null) {
+            logger.warn {
+                "Rebuild for definition '${plan.definitionName}' skipped $skipped document(s) — keeping the existing " +
+                    "index and dropping the unpublished partial index '${plan.newConcrete}'"
+            }
+            indexInitializer.dropIndex(plan.newConcrete)
+        } else {
+            logger.warn {
+                "Migration skipped $skipped document(s) — keeping the legacy index " +
+                    "'${OpenSearchIndexNameResolver.LEGACY_INDEX}' in place; resolve the skips and re-run to complete it"
+            }
+        }
+    }
+
+    private fun completeRebuild(plan: RebuildPlan) {
+        if (plan.definitionName != null && plan.newConcrete != null) {
+            indexInitializer.swapInRebuiltIndex(plan.definitionName, plan.newConcrete)
+        } else {
+            indexInitializer.dropLegacyIndex()
+        }
+    }
+
+    private data class RebuildPlan(
+        val definitionName: String?,
+        val targetIndex: IndexCoordinates?,
+        val newConcrete: String?,
+    )
+
+    /**
+     * After a scoped rebuild has swapped the alias onto the fresh index and dropped the old one, re-index every
+     * document of [definitionName] whose `changedOn` moved at/after [from] (i.e. during the rebuild) from
+     * PostgreSQL into the now-live index. A live write during the rebuild landed in the dropped old index; this
+     * restores it. Re-reading the latest state and routing by definition (plain [JsonSchemaDocumentOsConverter.indexChunk])
+     * is race-free: external versioning ([JsonSchemaDocumentOsDocument.indexVersion]) means the catch-up write
+     * either wins or is a benign version conflict against a concurrent live write. A failure here is logged, not
+     * fatal — the rebuild already succeeded and the reconciler remains the backstop.
+     */
+    private fun catchUpConcurrentWrites(definitionName: String, from: LocalDateTime, pageSize: Int) {
+        val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
+        var lastChangedOn: LocalDateTime? = null
+        var lastId: UUID? = null
+        var caughtUp = 0L
+        try {
+            while (!cancelRequested) {
+                val cursorChangedOn = lastChangedOn
+                val cursorId = lastId
+                val page = txTemplate.execute {
+                    val batch = fetchChangedSince(definitionName, from, cursorChangedOn, cursorId, pageSize)
+                    if (batch.isEmpty()) {
+                        null
+                    } else {
+                        val osDocuments = batch.mapNotNull { jpaDoc ->
+                            try {
+                                converter.toOsDocument(jpaDoc)
+                            } catch (e: Exception) {
+                                logger.warn(e) { "Failed to convert document ${jpaDoc.id().id} during catch-up — skipping" }
+                                null
+                            }
+                        }
+                        CatchUpPage(osDocuments, batch.last().changedOn(), batch.last().id().id).also { entityManager.clear() }
+                    }
+                } ?: break
+
+                page.osDocuments.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).forEach { converter.indexChunk(it) }
+                caughtUp += page.osDocuments.size
+                lastChangedOn = page.lastChangedOn
+                lastId = page.lastId
+            }
+            if (caughtUp > 0) {
+                logger.info { "Re-indexed $caughtUp concurrently-changed document(s) into the rebuilt '$definitionName' index" }
+            }
+        } catch (e: Exception) {
+            logger.warn(e) { "Catch-up after rebuilding '$definitionName' failed — the reconciler will repair any missed write" }
+        }
+    }
+
+    /** Keyset scan (by `changedOn`, then id) of a single definition's documents changed at/after [from]. */
+    private fun fetchChangedSince(
+        definitionName: String,
+        from: LocalDateTime,
+        lastChangedOn: LocalDateTime?,
+        lastId: UUID?,
+        pageSize: Int,
+    ): List<JsonSchemaDocument> {
+        val hasCursor = lastChangedOn != null && lastId != null
+        val jpql = buildString {
+            append("SELECT d FROM JsonSchemaDocument d LEFT JOIN FETCH d.internalStatus")
+            append(" WHERE d.documentDefinitionId.name = :definitionName AND d.changedOn >= :from")
+            if (hasCursor) {
+                append(" AND (d.changedOn > :lastChangedOn OR (d.changedOn = :lastChangedOn AND d.id.id > :lastId))")
+            }
+            append(" ORDER BY d.changedOn ASC, d.id.id ASC")
+        }
+        val query = entityManager.createQuery(jpql, JsonSchemaDocument::class.java)
+        query.setParameter("definitionName", definitionName)
+        query.setParameter("from", from)
+        if (hasCursor) {
+            query.setParameter("lastChangedOn", lastChangedOn)
+            query.setParameter("lastId", lastId)
+        }
+        return query.setMaxResults(pageSize).resultList
+    }
+
+    private data class CatchUpPage(
+        val osDocuments: List<JsonSchemaDocumentOsDocument>,
+        val lastChangedOn: LocalDateTime,
+        val lastId: UUID,
+    )
 
     /** Status of a specific run (by id) or the most recent run when [runId] is null. */
     fun status(runId: UUID? = null): Map<String, Any?> = runService.toStatusMap(runId)
@@ -211,23 +375,48 @@ open class DocumentOpenSearchReindexService(
         val totalOsCount = countOpenSearchDocs(scope)
         runService.startPruning(runId, totalOsCount)
 
-        scrollOpenSearchIds(scope, PRUNE_BATCH_SIZE) { osIds ->
-            if (cancelRequested) return@scrollOpenSearchIds false
+        scrollOpenSearchDocs(scope, PRUNE_BATCH_SIZE) { osDocs ->
+            if (cancelRequested) return@scrollOpenSearchDocs false
 
             val existingIds = txTemplate.execute {
-                findExistingIds(osIds.map { UUID.fromString(it) })
+                findExistingIds(osDocs.mapNotNull { it.id.toUuidOrNull() })
             }.orEmpty()
 
-            val orphans = osIds.filter { UUID.fromString(it) !in existingIds }
-            orphans.forEach { openSearchRepository.deleteById(it) }
+            val orphans = osDocs.filter { it.id.toUuidOrNull() !in existingIds }
+            orphans.forEach { deleteFromConcreteIndex(it) }
             pruned += orphans.size
-            checked += osIds.size
+            checked += osDocs.size
 
             runService.recordPruneProgress(runId, checked, pruned)
             true
         }
         return pruned
     }
+
+    /** Deletes an orphan from its own per-definition index (resolved from the indexed document). */
+    private fun deleteFromConcreteIndex(osDocument: JsonSchemaDocumentOsDocument) {
+        val definitionName = osDocument.definitionId?.name
+        if (definitionName == null) {
+            logger.warn { "Orphan document ${osDocument.id} has no definition name — cannot resolve index to prune it" }
+            return
+        }
+        elasticsearchOperations.delete(osDocument.id, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
+    }
+
+    private fun String.toUuidOrNull(): UUID? = try {
+        UUID.fromString(this)
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+
+    /**
+     * Resolves the OpenSearch index for a run: a scoped run (single definition) targets that definition's
+     * index; an unscoped run targets the shared read alias spanning every per-definition index.
+     */
+    private fun indexCoordinatesFor(scope: ReindexRequest): IndexCoordinates =
+        scope.documentDefinitionName
+            ?.let { IndexCoordinates.of(resolver.indexNameFor(it)) }
+            ?: IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
 
     private fun countOpenSearchDocs(scope: ReindexRequest): Long {
         val boolQuery = BoolQueryBuilder()
@@ -249,14 +438,19 @@ open class DocumentOpenSearchReindexService(
             .withQuery(boolQuery)
             .build()
 
-        return elasticsearchOperations.count(query, JsonSchemaDocumentOsDocument::class.java)
+        return elasticsearchOperations.count(query, JsonSchemaDocumentOsDocument::class.java, indexCoordinatesFor(scope))
     }
 
     /**
      * Scrolls through all OpenSearch documents matching [scope], invoking [handler] for each batch.
-     * Handler returns `true` to continue, `false` to stop early.
+     * Handler returns `true` to continue, `false` to stop early. The full document (not just its id) is
+     * carried so an orphan delete can route to the document's own per-definition index.
      */
-    private fun scrollOpenSearchIds(scope: ReindexRequest, batchSize: Int, handler: (List<String>) -> Boolean) {
+    private fun scrollOpenSearchDocs(
+        scope: ReindexRequest,
+        batchSize: Int,
+        handler: (List<JsonSchemaDocumentOsDocument>) -> Boolean
+    ) {
         val boolQuery = BoolQueryBuilder()
 
         scope.documentDefinitionName?.let {
@@ -277,13 +471,13 @@ open class DocumentOpenSearchReindexService(
             .withPageable(PageRequest.of(0, batchSize))
             .build()
 
-        elasticsearchOperations.searchForStream(query, JsonSchemaDocumentOsDocument::class.java).use { stream ->
+        elasticsearchOperations.searchForStream(query, JsonSchemaDocumentOsDocument::class.java, indexCoordinatesFor(scope)).use { stream ->
             val iterator = stream.iterator()
-            val batch = mutableListOf<String>()
+            val batch = mutableListOf<JsonSchemaDocumentOsDocument>()
 
             while (iterator.hasNext()) {
-                val id = iterator.next().id ?: continue
-                batch.add(id)
+                val content = iterator.next().content ?: continue
+                batch.add(content)
                 if (batch.size >= batchSize) {
                     if (!handler(batch.toList())) return
                     batch.clear()
@@ -302,8 +496,6 @@ open class DocumentOpenSearchReindexService(
             UUID::class.java
         ).setParameter("ids", ids).resultList.toSet()
     }
-
-    private fun indexOps() = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
 
     /** Signals an in-flight run to stop gracefully and shuts the executor down on context close. */
     override fun destroy() {
@@ -334,5 +526,8 @@ open class DocumentOpenSearchReindexService(
 
         private const val SHUTDOWN_TIMEOUT_SECONDS = 30L
         private const val PRUNE_BATCH_SIZE = 1000
+
+        /** Clock-skew margin on the post-swap catch-up lower bound. Over-inclusion is harmless (idempotent). */
+        private val CATCH_UP_OVERLAP: Duration = Duration.ofSeconds(10)
     }
 }

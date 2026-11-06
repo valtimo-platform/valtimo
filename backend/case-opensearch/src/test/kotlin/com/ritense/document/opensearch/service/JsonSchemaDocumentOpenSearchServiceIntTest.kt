@@ -443,7 +443,7 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
                 NewDocumentRequest("house", "house", "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to street),
@@ -488,7 +488,7 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         jpaDoc.setAssignee("user-${assigneeFullName.hashCode()}", assigneeFullName)
         documentRepository.save(jpaDoc)
 
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to street),
@@ -587,7 +587,7 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
                 NewDocumentRequest("house", "house", "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = contentMap,

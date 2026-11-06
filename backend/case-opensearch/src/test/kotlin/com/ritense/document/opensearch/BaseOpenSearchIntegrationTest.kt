@@ -29,6 +29,8 @@ import com.ritense.document.domain.impl.searchfield.SearchField
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.repository.SearchFieldRepository
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
+import com.ritense.document.opensearch.service.OpenSearchIndexNameResolver
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
@@ -41,7 +43,10 @@ import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
+import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
+import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -107,6 +112,12 @@ abstract class BaseOpenSearchIntegrationTest {
     @Autowired
     lateinit var searchFieldRepository: SearchFieldRepository
 
+    @Autowired
+    lateinit var indexInitializer: DocumentOpenSearchIndexInitializer
+
+    @Autowired
+    lateinit var indexNameResolver: OpenSearchIndexNameResolver
+
     @BeforeEach
     fun setUpBase() {
         setUpPermissions()
@@ -126,13 +137,45 @@ abstract class BaseOpenSearchIntegrationTest {
         searchEngineToggle.set(SearchEngineToggle.Engine.OPENSEARCH)
     }
 
+    /**
+     * Provisions the real per-definition indices (with the production mapping) and the shared read alias for
+     * the test definitions, via the real [DocumentOpenSearchIndexInitializer] — so the whole suite runs on
+     * the production topology rather than a single simplified index.
+     */
     private fun ensureIndexExists() {
-        val indexOps = elasticsearchOperations.indexOps(JsonSchemaDocumentOsDocument::class.java)
-        if (!indexOps.exists()) {
-            indexOps.create()
-            indexOps.putMapping(indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java))
-        }
+        TEST_DEFINITION_KEYS.forEach { indexInitializer.ensureIndex(it) }
     }
+
+    /**
+     * Saves an OpenSearch document into its own per-definition index (resolved from `definitionId.name`),
+     * mirroring how production routes every write. Tests must use this instead of the alias-bound repository,
+     * which cannot index into a multi-index alias.
+     */
+    protected fun indexOsDocument(osDocument: JsonSchemaDocumentOsDocument) {
+        val definitionName = requireNotNull(osDocument.definitionId?.name) {
+            "Cannot index a document without a definition name"
+        }
+        elasticsearchOperations.save(osDocument, IndexCoordinates.of(indexNameResolver.indexNameFor(definitionName)))
+    }
+
+    /**
+     * Reads a single indexed document back by id through the shared read alias. Replaces the alias-bound
+     * repository's `findById`, which cannot GET from a multi-index alias.
+     */
+    protected fun findIndexedById(id: String): JsonSchemaDocumentOsDocument? {
+        val query = NativeSearchQueryBuilder()
+            .withQuery(QueryBuilders.idsQuery().addIds(id))
+            .build()
+        return elasticsearchOperations.search(
+            query,
+            JsonSchemaDocumentOsDocument::class.java,
+            IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
+        ).searchHits.firstOrNull()?.content
+    }
+
+    /** [findIndexedById] wrapped in an [java.util.Optional], for assertions that read `.isPresent`/`.get()`. */
+    protected fun findIndexedOptional(id: String): java.util.Optional<JsonSchemaDocumentOsDocument> =
+        java.util.Optional.ofNullable(findIndexedById(id))
 
     /**
      * Forces an OpenSearch refresh so writes/deletes are immediately visible to subsequent reads.
@@ -188,5 +231,8 @@ abstract class BaseOpenSearchIntegrationTest {
     companion object {
         const val FULL_ACCESS_ROLE: String = "full access role"
         const val USERNAME: String = "test@test.com"
+
+        /** Definition keys with test fixtures under `src/test/resources/config/case`. */
+        val TEST_DEFINITION_KEYS: List<String> = listOf("house", "person")
     }
 }

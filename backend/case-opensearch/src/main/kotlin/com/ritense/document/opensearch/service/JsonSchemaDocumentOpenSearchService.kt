@@ -68,6 +68,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.data.elasticsearch.core.query.StringQuery
 import java.time.Instant
 import java.time.LocalDate
@@ -93,7 +94,17 @@ class JsonSchemaDocumentOpenSearchService(
     private val objectMapper: ObjectMapper,
     private val caseDefinitionService: CaseDefinitionService,
     private val internalCaseStatusRepository: InternalCaseStatusRepository,
+    private val resolver: OpenSearchIndexNameResolver,
 ) : DocumentSearchService {
+
+    // Single definition -> its own index; a set of definitions -> that set's indices; "All cases"
+    // (no definition) -> the shared read alias spanning every per-definition index.
+    private fun indexFor(definitionNames: Collection<String>?): IndexCoordinates =
+        if (definitionNames.isNullOrEmpty()) {
+            IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
+        } else {
+            IndexCoordinates.of(*definitionNames.map { resolver.indexNameFor(it) }.toTypedArray())
+        }
 
     override fun search(
         searchRequest: SearchRequest,
@@ -134,7 +145,7 @@ class JsonSchemaDocumentOpenSearchService(
             parts.add(QueryBuilders.termQuery("content.${sc.path}", sc.value))
         }
 
-        return executeSearch(andAll(parts), pageable)
+        return executeSearch(andAll(parts), pageable, indexFor(listOfNotNull(searchRequest.documentDefinitionName?.takeIf { it.isNotEmpty() })))
     }
 
     override fun search(
@@ -224,7 +235,7 @@ class JsonSchemaDocumentOpenSearchService(
             advancedSearchRequest,
             JsonSchemaDocumentActionProvider.VIEW_LIST
         )
-        return executeSearch(combinedQuery, pageable)
+        return executeSearch(combinedQuery, pageable, indexFor(documentDefinitionNames))
     }
 
     override fun search(
@@ -263,7 +274,7 @@ class JsonSchemaDocumentOpenSearchService(
             globalSearchFields,
             JsonSchemaDocumentActionProvider.VIEW_LIST
         )
-        return executeSearch(combinedQuery, pageable)
+        return executeSearch(combinedQuery, pageable, indexFor(documentDefinitionNames))
     }
 
     private fun buildCombinedQueryMultipleDefinitions(
@@ -420,7 +431,11 @@ class JsonSchemaDocumentOpenSearchService(
             JsonSchemaDocumentActionProvider.VIEW_LIST
         )
         val countQuery = StringQuery(combinedQuery.toString())
-        return elasticsearchOperations.count(countQuery, JsonSchemaDocumentOsDocument::class.java)
+        return elasticsearchOperations.count(
+            countQuery,
+            JsonSchemaDocumentOsDocument::class.java,
+            indexFor(listOfNotNull(documentDefinitionName.takeIf { it.isNotEmpty() }))
+        )
     }
 
     private fun search(
@@ -432,7 +447,7 @@ class JsonSchemaDocumentOpenSearchService(
     ): Page<JsonSchemaDocument> {
         SearchRequestValidator.validate(advancedSearchRequest)
         val combinedQuery = buildCombinedQuery(documentDefinitionName, blueprintType, advancedSearchRequest, action)
-        return executeSearch(combinedQuery, pageable)
+        return executeSearch(combinedQuery, pageable, indexFor(listOfNotNull(documentDefinitionName.takeIf { it.isNotEmpty() })))
     }
 
     private fun buildCombinedQuery(
@@ -651,7 +666,11 @@ class JsonSchemaDocumentOpenSearchService(
         runWithoutAuthorization { internalCaseStatusRepository.findAll() }
             .associate { "${it.id.caseDefinitionKey}|${it.id.key}" to it.order }
 
-    private fun executeSearch(combinedQuery: QueryBuilder, pageable: Pageable): Page<JsonSchemaDocument> {
+    private fun executeSearch(
+        combinedQuery: QueryBuilder,
+        pageable: Pageable,
+        index: IndexCoordinates,
+    ): Page<JsonSchemaDocument> {
         val queryBuilder = NativeSearchQueryBuilder()
             .withQuery(combinedQuery)
             .withTrackTotalHitsUpTo(Int.MAX_VALUE)
@@ -673,7 +692,7 @@ class JsonSchemaDocumentOpenSearchService(
         )
 
         val dataQuery = queryBuilder.build()
-        val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
+        val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java, index)
         val total = hits.totalHits
         val ids: List<String> = hits.searchHits.mapNotNull { it.id }
 

@@ -37,7 +37,10 @@ import java.time.LocalDateTime
  * as both [FieldType.Text] (for analyzed search) and [FieldType.Keyword] (for wildcard search
  * preserving partial-match behaviour for wildcard queries).
  */
-@Document(indexName = "json_schema_document", createIndex = false)
+// indexName is the shared read alias (a mandatory @Document attribute in spring-data-elasticsearch 5.x).
+// Every write and single-definition read passes an explicit per-definition IndexCoordinates; only an
+// un-routed default resolution lands here, which is safe for reads (the alias spans all per-definition indices).
+@Document(indexName = "json_schema_document_all", createIndex = false)
 data class JsonSchemaDocumentOsDocument(
     @Id val id: String,
     @Field(type = FieldType.Object) val content: Map<String, Any?>?,

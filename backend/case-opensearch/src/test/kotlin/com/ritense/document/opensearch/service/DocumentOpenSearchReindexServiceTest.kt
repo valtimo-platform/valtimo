@@ -18,11 +18,11 @@ package com.ritense.document.opensearch.service
 
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
 import com.ritense.document.opensearch.domain.ReindexRunStatus
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import jakarta.persistence.EntityManager
 import net.javacrumbs.shedlock.core.LockProvider
 import net.javacrumbs.shedlock.core.SimpleLock
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -44,7 +44,8 @@ class DocumentOpenSearchReindexServiceTest {
     private val transactionManager: PlatformTransactionManager = mock()
     private val lockProvider: LockProvider = mock()
     private val runService: OpenSearchReindexRunService = mock()
-    private val openSearchRepository: JsonSchemaDocumentOpenSearchRepository = mock()
+    private val resolver = OpenSearchIndexNameResolver()
+    private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
 
     private lateinit var service: DocumentOpenSearchReindexService
 
@@ -57,7 +58,8 @@ class DocumentOpenSearchReindexServiceTest {
             transactionManager,
             lockProvider,
             runService,
-            openSearchRepository,
+            resolver,
+            indexInitializer,
         )
     }
 
@@ -87,6 +89,28 @@ class DocumentOpenSearchReindexServiceTest {
     }
 
     @Test
+    fun `start rejects recreateIndex combined with subset filters before acquiring the lock`() {
+        val request = ReindexRequest(recreateIndex = true, modifiedAfter = java.time.LocalDateTime.now())
+
+        assertThatThrownBy { service.start(request) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+
+        verify(lockProvider, never()).lock(any())
+        verify(runService, never()).startOrResume(any())
+    }
+
+    @Test
+    fun `start allows recreateIndex scoped to a single definition`() {
+        val simpleLock: SimpleLock = mock()
+        whenever(lockProvider.lock(any())).thenReturn(Optional.of(simpleLock))
+        whenever(runService.startOrResume(any())).thenReturn(run(UUID.randomUUID()))
+
+        val runId = service.start(ReindexRequest(documentDefinitionName = "house", recreateIndex = true))
+
+        assertThat(runId).isNotNull()
+    }
+
+    @Test
     fun `reindex marks the run STOPPED when cancellation was requested`() {
         val runId = UUID.randomUUID()
         whenever(runService.scopeOf(runId)).thenReturn(ReindexRequest())
@@ -101,7 +125,7 @@ class DocumentOpenSearchReindexServiceTest {
 
         assertThat(processed).isEqualTo(0L)
         verify(runService).stop(runId)
-        verify(runService, never()).complete(any(), any())
+        verify(runService, never()).complete(any(), any(), any())
     }
 
     private fun run(id: UUID) = OpenSearchReindexRun(
