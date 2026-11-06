@@ -30,3 +30,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Notificaties API | A changed **Authentication header** is now passed on to Open Notificaties on save, so notificaties keep arriving |
+| Dashboard | A long dashboard widget subtitle is now cut off with ellipsis instead of running out of the widget, and the full title and subtitle show on hover. |
