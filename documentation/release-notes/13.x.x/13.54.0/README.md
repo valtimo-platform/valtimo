@@ -25,3 +25,4 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Dashboard | A long dashboard widget subtitle is now cut off with ellipsis instead of running out of the widget, and the full title and subtitle show on hover. |
+| Case management | Importing a case definition lists the plugin configurations used by its processes again, so they can be mapped to plugin configurations in this environment. |
