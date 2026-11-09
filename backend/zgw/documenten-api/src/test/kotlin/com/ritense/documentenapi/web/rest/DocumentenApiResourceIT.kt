@@ -33,6 +33,7 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessRequest
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import okhttp3.mockwebserver.Dispatcher
@@ -40,6 +41,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.hamcrest.Matchers.hasSize
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -50,13 +52,17 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
@@ -91,6 +97,8 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
 
+    lateinit var securedMockMvc: MockMvc
+
     lateinit var server: MockWebServer
 
     lateinit var pluginConfiguration: PluginConfiguration
@@ -101,6 +109,11 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
     fun beforeEach() {
         mockMvc = MockMvcBuilders
             .webAppContextSetup(this.webApplicationContext)
+            .build()
+
+        securedMockMvc = MockMvcBuilders
+            .webAppContextSetup(this.webApplicationContext)
+            .apply<DefaultMockMvcBuilder>(springSecurity())
             .build()
 
         server = MockWebServer()
@@ -229,6 +242,64 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
             .andExpect(jsonPath("$[10].key").value("trefwoorden"))
     }
 
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [USER])
+    fun `should forbid non-admin from downloading document by plugin configuration only`() {
+        securedMockMvc.perform(
+            get(DOCUMENT_URL + "/download", pluginConfiguration.id.id, DOCUMENT_ID)
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [USER])
+    fun `should forbid non-admin from modifying document by plugin configuration only`() {
+        securedMockMvc.perform(
+            put(DOCUMENT_URL, pluginConfiguration.id.id, DOCUMENT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(MODIFY_REQUEST)
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [USER])
+    fun `should forbid non-admin from deleting document by plugin configuration only`() {
+        securedMockMvc.perform(
+            delete(DOCUMENT_URL, pluginConfiguration.id.id, DOCUMENT_ID)
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [ADMIN, USER])
+    fun `should not reject admin downloading document by plugin configuration only`() {
+        securedMockMvc.perform(
+            get(DOCUMENT_URL + "/download", pluginConfiguration.id.id, DOCUMENT_ID)
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string("TEST_DOCUMENT_CONTENT"))
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [ADMIN, USER])
+    fun `should not reject admin modifying document by plugin configuration only`() {
+        securedMockMvc.perform(
+            put(DOCUMENT_URL, pluginConfiguration.id.id, DOCUMENT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(MODIFY_REQUEST)
+        ).andExpect { assertNotRejectedBySecurity(it.response.status) }
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [ADMIN, USER])
+    fun `should not reject admin deleting document by plugin configuration only`() {
+        securedMockMvc.perform(
+            delete(DOCUMENT_URL, pluginConfiguration.id.id, DOCUMENT_ID)
+        ).andExpect { assertNotRejectedBySecurity(it.response.status) }
+    }
+
+    private fun assertNotRejectedBySecurity(status: Int) {
+        assertFalse(status == 401 || status == 403, "Expected request to pass security, was $status")
+    }
+
     private fun setupMockDocumentenApiServer() {
         val dispatcher: Dispatcher = object : Dispatcher() {
             @Throws(InterruptedException::class)
@@ -302,5 +373,8 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
     companion object {
         private const val USER_EMAIL = "user@valtimo.nl"
         private const val DOCUMENT_ID = "3bd88200-11cb-45cf-a742-da01261755b1"
+        private const val DOCUMENT_URL = "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}"
+        private const val MODIFY_REQUEST =
+            """{"creatiedatum":"2024-01-01","titel":"Passport","auteur":"me","taal":"eng"}"""
     }
 }
