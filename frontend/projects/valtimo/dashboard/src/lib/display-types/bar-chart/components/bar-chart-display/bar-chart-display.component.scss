@@ -53,7 +53,8 @@
     justify-content: center;
     margin-bottom: 12px;
 
-    ::ng-deep .cds--cc--legend {
+    // Inner legend only: its -5px margin overflows the outer layout-child, which would scroll 5px
+    ::ng-deep .cds--cc--legend:not(.layout-child) {
       max-height: 100px;
       overflow-y: auto;
     }
