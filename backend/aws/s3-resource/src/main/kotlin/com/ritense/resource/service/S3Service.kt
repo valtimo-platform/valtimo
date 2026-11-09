@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package com.ritense.resource.service
 
 import com.ritense.resource.domain.ResourceId
 import com.ritense.resource.domain.S3Resource
+import com.ritense.resource.domain.S3UploadTicket
 import com.ritense.resource.repository.S3ResourceRepository
+import com.ritense.resource.repository.S3UploadTicketRepository
 import com.ritense.resource.service.request.FileUploadRequest
 import com.ritense.resource.service.request.MultipartFileUploadRequest
 import com.ritense.resource.web.ObjectContentDTO
@@ -26,7 +28,9 @@ import com.ritense.resource.web.ObjectUrlDTO
 import com.ritense.resource.web.ResourceDTO
 import com.ritense.valtimo.contract.resource.FileStatus
 import com.ritense.valtimo.contract.resource.Resource
+import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.apache.commons.io.FilenameUtils
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.ResponseInputStream
@@ -36,6 +40,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectTaggingRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectResponse
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectTaggingRequest
 import software.amazon.awssdk.services.s3.model.Tag
@@ -56,11 +61,16 @@ class S3Service(
     private val bucketName: String,
     private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
-    private val s3ResourceRepository: S3ResourceRepository
+    private val s3ResourceRepository: S3ResourceRepository,
+    private val s3UploadTicketRepository: S3UploadTicketRepository
 ) : ResourceService {
 
     fun generatePreSignedPutObjectUrl(fileName: String): URL {
-        val putObjectRequest = buildPutObjectRequest(bucketName, getUniqueKey(fileName))
+        val key = getUniqueKey(fileName)
+        val currentUser = requireCurrentUser()
+        s3UploadTicketRepository.deleteOlderThan(LocalDateTime.now().minus(TICKET_RETENTION))
+        s3UploadTicketRepository.save(S3UploadTicket.of(key, currentUser))
+        val putObjectRequest = buildPutObjectRequest(bucketName, key)
         return s3Presigner.presignPutObject(putObjectRequest).url()
     }
 
@@ -94,12 +104,25 @@ class S3Service(
     }
 
     override fun registerResource(resourceDTO: ResourceDTO): ResourceDTO {
+        val currentUser = requireCurrentUser()
+        val ticket = s3UploadTicketRepository.findById(S3UploadTicket.hash(resourceDTO.key))
+            .filter { it.key == resourceDTO.key && it.createdBy == currentUser }
+            .orElseThrow { AccessDeniedException("Access denied") }
+        s3UploadTicketRepository.delete(ticket)
+
+        val size = s3Client.headObject(
+            HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(resourceDTO.key)
+                .build()
+        ).contentLength()
+
         var s3Resource = buildS3Resource(
             UUID.randomUUID(),
             resourceDTO.key,
             resourceDTO.name,
             FilenameUtils.getExtension(resourceDTO.key),
-            resourceDTO.sizeInBytes
+            size
         )
         s3Resource = s3ResourceRepository.saveAndFlush(s3Resource)
         return ResourceDTO(
@@ -110,6 +133,20 @@ class S3Service(
             s3Resource.sizeInBytes,
             s3Resource.createdOn
         )
+    }
+
+    override fun claimForDocument(resourceId: UUID, documentId: UUID) {
+        val s3Resource = s3ResourceRepository.findById(ResourceId.existingId(resourceId))
+            .orElseThrow { AccessDeniedException("Access denied") }
+        val linkedDocumentId = s3Resource.documentId
+        if (linkedDocumentId == documentId) {
+            return
+        }
+        if (linkedDocumentId != null) {
+            throw AccessDeniedException("Resource is already linked to another case")
+        }
+        S3ResourceAccessService.requireOwnerOrAdmin(s3Resource)
+        s3ResourceRepository.saveAndFlush(s3Resource.linkTo(documentId))
     }
 
     override fun removeResource(key: String) {
@@ -289,8 +326,13 @@ class S3Service(
             name,
             extension,
             size,
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            SecurityUtils.getCurrentUserLogin()
         )
+    }
+
+    private fun requireCurrentUser(): String {
+        return SecurityUtils.getCurrentUserLogin() ?: throw AccessDeniedException("Access denied")
     }
 
     private fun getFileStatusTag(fileStatus: FileStatus): Tagging {
@@ -333,6 +375,10 @@ class S3Service(
             .signatureDuration(Duration.ofMinutes(60))
             .getObjectRequest(objectRequest)
             .build()
+    }
+
+    companion object {
+        private val TICKET_RETENTION: Duration = Duration.ofHours(24)
     }
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,5 +25,6 @@
 
     <include file="changelog/20201110-s3-resource-changelog.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20221006-update-s3-resource-key-length-to-1024.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20261109-add-s3-resource-ownership.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
