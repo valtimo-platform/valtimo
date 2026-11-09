@@ -142,7 +142,8 @@ class CaseDefinitionBuildingBlockLinkService(
                     buildingBlockDefinitionId = targetId,
                     inputMappings = dto.inputMappings,
                     outputMappings = dto.outputMappings,
-                    pluginConfigurationMappings = dto.pluginConfigurationMappings
+                    pluginConfigurationMappings = dto.pluginConfigurationMappings,
+                    startableByUser = dto.startableByUser ?: link.startableByUser
                 )
             )
         )
