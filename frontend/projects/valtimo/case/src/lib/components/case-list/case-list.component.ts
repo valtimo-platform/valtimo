@@ -96,7 +96,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
   public readonly tableTranslations = CASE_LIST_TABLE_TRANSLATIONS;
 
-  public readonly testIds = CASE_LIST_TEST_IDS;
+  protected readonly testIds = CASE_LIST_TEST_IDS;
 
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);

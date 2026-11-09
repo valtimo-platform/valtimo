@@ -92,8 +92,6 @@ export class CaseListService {
     return this._lookup$.pipe(map(lookup => lookup.notFound));
   }
 
-  constructor(private readonly documentService: DocumentService) {}
-
   public get caseDefinitionKey$(): Observable<string> {
     return this.context$.pipe(
       filter((ctx): ctx is CaseListContext => ctx?.type === 'definition'),
@@ -115,6 +113,8 @@ export class CaseListService {
   get forceRefresh$(): Observable<boolean> {
     return this._forceRefresh$.asObservable();
   }
+
+  constructor(private readonly documentService: DocumentService) {}
 
   public setContext(context: CaseListContext): void {
     this._context$.next(context);

@@ -181,7 +181,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     this.showDeleteModal$.next(true);
   }
 
-  public confirmDeleteGroup(): void {
+  public onConfirmDeleteGroup(): void {
     const groupKey: string = this.route.snapshot.params['groupKey'];
 
     this.groupService.deleteGroup(groupKey).subscribe(() => {

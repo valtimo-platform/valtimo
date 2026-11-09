@@ -119,7 +119,7 @@ describe('CaseDefinitionGroupDetailComponent', () => {
     it('deletes the group, refreshes the pins, redirects and shows a toast on confirm', () => {
       const {component, groupService, router, notificationService, pinnedItemsService} = setup();
 
-      component.confirmDeleteGroup();
+      component.onConfirmDeleteGroup();
 
       expect(groupService.deleteGroup).toHaveBeenCalledWith('my_group');
       expect(pinnedItemsService.refresh).toHaveBeenCalled();

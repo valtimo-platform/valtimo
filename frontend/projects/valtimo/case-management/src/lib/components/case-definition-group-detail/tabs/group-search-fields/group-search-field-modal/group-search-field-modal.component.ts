@@ -203,6 +203,18 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     });
   }
 
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['members']) {
+      this._buildPathControls();
+    }
+
+    if (changes['open'] || changes['field']) {
+      if (this.open) {
+        this._resetForm();
+      }
+    }
+  }
+
   public ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -275,18 +287,6 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       matchTypeControl.removeValidators(Validators.required);
       matchTypeControl.setValue(null, {emitEvent: false});
       matchTypeControl.updateValueAndValidity({emitEvent: false});
-    }
-  }
-
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['members']) {
-      this._buildPathControls();
-    }
-
-    if (changes['open'] || changes['field']) {
-      if (this.open) {
-        this._resetForm();
-      }
     }
   }
 
