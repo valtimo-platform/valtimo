@@ -18,13 +18,6 @@ package com.ritense.externalplugin.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.JsonSchemaDocumentActionProvider
-import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.externalplugin.domain.ExternalPluginContractJob
 import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus
 import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus.ACCEPTED
@@ -76,8 +69,6 @@ class ExternalPluginContractJobService(
     private val encryptionService: EncryptionService,
     private val objectMapper: ObjectMapper,
     private val transactionTemplate: TransactionTemplate,
-    private val documentService: JsonSchemaDocumentService,
-    private val authorizationService: AuthorizationService,
     private val replyHandleSigner: ExternalPluginReplyHandleSigner,
     private val eventPublisher: ApplicationEventPublisher,
     private val defaultTimeout: Duration,
@@ -86,12 +77,9 @@ class ExternalPluginContractJobService(
 ) {
 
     /**
-     * @param requestedBy user login when created with a user token: the job must then name a case
-     *   ([documentId]) the user may view, and cannot ask for a BPMN reply.
-     * @param replyTo a reply handle from an action invocation (service tokens only); the reply then
-     *   goes to that process instance.
+     * @param replyTo a reply handle from an action invocation; the reply then goes to that process instance.
+     * @param documentId the requester's claim of the case the job concerns; not verified beyond matching [replyTo].
      * @throws IllegalArgumentException for a malformed request (400)
-     * @throws org.springframework.security.access.AccessDeniedException when the user may not view the case (403)
      */
     fun create(
         requesterConfigurationId: UUID,
@@ -101,7 +89,6 @@ class ExternalPluginContractJobService(
         replyTo: String?,
         documentId: String?,
         idempotencyKey: String?,
-        requestedBy: String?,
         chainHeader: String?,
         correlationIdHeader: String?,
     ): ContractOutcome {
@@ -109,27 +96,17 @@ class ExternalPluginContractJobService(
         val correlationId = contractService.correlationIdOf(correlationIdHeader)
         val requestedDocumentId = documentId?.takeIf { it.isNotBlank() }
 
-        val handle: ExternalPluginReplyHandleSigner.ReplyHandle?
-        val effectiveDocumentId: String?
-        if (requestedBy != null) {
-            require(replyTo == null) { "replyTo requires a service token" }
-            requireNotNull(requestedDocumentId) { "A user token must name the case it acts on (documentId)" }
-            requireDocumentView(requestedDocumentId)
-            handle = null
-            effectiveDocumentId = requestedDocumentId
-        } else {
-            handle = replyTo?.let {
-                replyHandleSigner.verify(it, requesterConfigurationId)
-                    ?: throw IllegalArgumentException("replyTo is not a valid reply handle for this configuration")
-            }
-            val handleBusinessKey = handle?.businessKey
-            require(requestedDocumentId == null || handleBusinessKey == null || requestedDocumentId == handleBusinessKey) {
-                "documentId does not match the case of the reply handle"
-            }
-            effectiveDocumentId = requestedDocumentId ?: handleBusinessKey
-            require(effectiveDocumentId == null || effectiveDocumentId.length <= MAX_DOCUMENT_ID_LENGTH) {
-                "documentId must be at most $MAX_DOCUMENT_ID_LENGTH characters"
-            }
+        val handle = replyTo?.let {
+            replyHandleSigner.verify(it, requesterConfigurationId)
+                ?: throw IllegalArgumentException("replyTo is not a valid reply handle for this configuration")
+        }
+        val handleBusinessKey = handle?.businessKey
+        require(requestedDocumentId == null || handleBusinessKey == null || requestedDocumentId == handleBusinessKey) {
+            "documentId does not match the case of the reply handle"
+        }
+        val effectiveDocumentId = requestedDocumentId ?: handleBusinessKey
+        require(effectiveDocumentId == null || effectiveDocumentId.length <= MAX_DOCUMENT_ID_LENGTH) {
+            "documentId must be at most $MAX_DOCUMENT_ID_LENGTH characters"
         }
         require(idempotencyKey == null || IDEMPOTENCY_KEY_PATTERN.matches(idempotencyKey)) {
             "idempotencyKey must be 1-255 visible ASCII characters"
@@ -163,7 +140,6 @@ class ExternalPluginContractJobService(
             operation = operation,
             requesterConfigurationId = requesterConfigurationId,
             providerConfigurationId = resolution.target.provider.id,
-            requestedBy = requestedBy,
             documentId = effectiveDocumentId,
             idempotencyKey = idempotencyKey,
             requestPayload = encryptionService.encrypt(objectMapper.writeValueAsString(resolution.payload)),
@@ -286,7 +262,6 @@ class ExternalPluginContractJobService(
             providerPluginId = summary.providerPluginId,
             status = summary.status,
             outcome = job.outcome,
-            requestedBy = summary.requestedBy,
             documentId = job.documentId,
             idempotencyKey = job.idempotencyKey,
             createdAt = summary.createdAt,
@@ -432,19 +407,6 @@ class ExternalPluginContractJobService(
         return detail(jobId)?.let { AdminJobResult.Updated(it) } ?: AdminJobResult.NotFound
     }
 
-    private fun requireDocumentView(documentId: String) {
-        val id = try {
-            UUID.fromString(documentId)
-        } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("documentId '$documentId' is not a valid document id")
-        }
-        val document = runWithoutAuthorization { documentService.findBy(JsonSchemaDocumentId.existingId(id)) }.orElse(null)
-            ?: throw IllegalArgumentException("documentId '$documentId' does not exist")
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(JsonSchemaDocument::class.java, JsonSchemaDocumentActionProvider.VIEW, document)
-        )
-    }
-
     private fun summary(job: ExternalPluginContractJob, parties: Parties) = ContractJobSummaryResponse(
         id = job.id,
         contract = job.contract,
@@ -456,7 +418,6 @@ class ExternalPluginContractJobService(
         providerTitle = parties.title(job.providerConfigurationId),
         providerPluginId = parties.pluginId(job.providerConfigurationId),
         status = job.status,
-        requestedBy = job.requestedBy,
         createdAt = job.createdAt,
         updatedAt = job.updatedAt,
         completedAt = job.completedAt,

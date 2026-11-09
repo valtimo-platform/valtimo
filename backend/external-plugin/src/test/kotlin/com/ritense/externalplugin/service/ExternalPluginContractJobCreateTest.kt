@@ -17,7 +17,6 @@
 package com.ritense.externalplugin.service
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.externalplugin.domain.ExternalPluginContractJob
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -25,88 +24,18 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.security.access.AccessDeniedException
-import java.util.Optional
 import java.util.UUID
 
-/** `POST /jobs` admission: who may ask for what, reply handles, and idempotency keys. */
+/** `POST /jobs` admission: reply handles, documentId and idempotency keys. */
 class ExternalPluginContractJobCreateTest {
 
     private val fixture = ContractJobFixture()
     private val jobService = fixture.jobService
 
-    // ---------------------------------------------------------------- user tokens
-
-    @Test
-    fun `a user token must name the case it acts on`() {
-        assertThatThrownBy { fixture.create("generate", requestedBy = "jdoe") }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("A user token must name the case it acts on (documentId)")
-        assertThat(fixture.jobs).isEmpty()
-    }
-
-    @Test
-    fun `a user token cannot ask for a BPMN reply`() {
-        val handle = fixture.replyHandleSigner.issue(fixture.requester.id, "pi-1", UUID.randomUUID().toString())
-
-        assertThatThrownBy {
-            fixture.create("generate", replyTo = handle, documentId = UUID.randomUUID().toString(), requestedBy = "jdoe")
-        }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("replyTo requires a service token")
-    }
-
-    @Test
-    fun `a user token's documentId must be an existing case`() {
-        assertThatThrownBy { fixture.create("generate", documentId = "not-a-uuid", requestedBy = "jdoe") }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("not a valid document id")
-
-        val missing = UUID.randomUUID()
-        whenever(fixture.documentService.findBy(any())).thenReturn(Optional.empty())
-        assertThatThrownBy { fixture.create("generate", documentId = missing.toString(), requestedBy = "jdoe") }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("documentId '$missing' does not exist")
-    }
-
-    @Test
-    fun `a user token is bounded by the user's PBAC on the case`() {
-        val documentId = UUID.randomUUID()
-        whenever(fixture.documentService.findBy(any())).thenReturn(Optional.of(mock<JsonSchemaDocument>()))
-        doThrow(AccessDeniedException("no")).whenever(fixture.authorizationService).requirePermission<JsonSchemaDocument>(any())
-
-        assertThatThrownBy { fixture.create("generate", documentId = documentId.toString(), requestedBy = "jdoe") }
-            .isInstanceOf(AccessDeniedException::class.java)
-        assertThat(fixture.jobs).isEmpty()
-    }
-
-    @Test
-    fun `a user-token job records the user and the case and forwards both to the provider`() {
-        val documentId = UUID.randomUUID()
-        whenever(fixture.documentService.findBy(any())).thenReturn(Optional.of(mock<JsonSchemaDocument>()))
-
-        val jobId = fixture.createAccepted("generate", documentId = documentId.toString(), requestedBy = "jdoe")
-
-        val job = fixture.job(jobId)
-        assertThat(job.requestedBy).isEqualTo("jdoe")
-        assertThat(job.documentId).isEqualTo(documentId.toString())
-        verify(fixture.authorizationService).requirePermission<JsonSchemaDocument>(any())
-
-        fixture.providerAnswers(200, """{"status":"accepted"}""")
-        fixture.dispatcher.deliverRequests()
-        val body = argumentCaptor<ObjectNode>()
-        verify(fixture.hostClient).invokeContract(any(), any(), any(), any(), any(), body.capture(), any(), anyOrNull())
-        assertThat(body.firstValue.get("documentId").asText()).isEqualTo(documentId.toString())
-        assertThat(body.firstValue.get("requestedBy").asText()).isEqualTo("jdoe")
-    }
-
-    // ---------------------------------------------------------------- service tokens and reply handles
+    // ---------------------------------------------------------------- reply handles and documentId
 
     @Test
     fun `a service token's reply handle names the process instance and case of the reply`() {
@@ -118,7 +47,6 @@ class ExternalPluginContractJobCreateTest {
         assertThat(job.replyToProcessInstanceId).isEqualTo("pi-1")
         assertThat(job.replyToBusinessKey).isEqualTo(businessKey)
         assertThat(job.documentId).isEqualTo(businessKey)
-        assertThat(job.requestedBy).isNull()
     }
 
     @Test
@@ -153,12 +81,17 @@ class ExternalPluginContractJobCreateTest {
     }
 
     @Test
-    fun `a service token may name a case without a reply handle, unchecked by PBAC`() {
+    fun `a requester may name a case without a reply handle, unverified, and the provider receives it`() {
         val job = fixture.job(fixture.createAccepted("generate", documentId = "case-a"))
 
         assertThat(job.documentId).isEqualTo("case-a")
         assertThat(job.replyToProcessInstanceId).isNull()
-        verify(fixture.authorizationService, never()).requirePermission<JsonSchemaDocument>(any())
+
+        fixture.providerAnswers(200, """{"status":"accepted"}""")
+        fixture.dispatcher.deliverRequests()
+        val body = argumentCaptor<ObjectNode>()
+        verify(fixture.hostClient).invokeContract(any(), any(), any(), any(), any(), body.capture(), any(), anyOrNull())
+        assertThat(body.firstValue.get("documentId").asText()).isEqualTo("case-a")
     }
 
     // ---------------------------------------------------------------- idempotency

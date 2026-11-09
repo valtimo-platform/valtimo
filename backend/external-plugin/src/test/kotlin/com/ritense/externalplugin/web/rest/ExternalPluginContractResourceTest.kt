@@ -149,7 +149,7 @@ class ExternalPluginContractResourceTest {
     }
 
     @Test
-    fun `a service token creates a job without a user and gets 202`() {
+    fun `a service token creates a job and gets 202`() {
         authenticateAsService()
         val jobId = UUID.randomUUID()
         stubCreate(ContractOutcome("accepted", jobId = jobId))
@@ -163,36 +163,35 @@ class ExternalPluginContractResourceTest {
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
         assertThat(response.body).isEqualTo(ContractResponse(status = "accepted", jobId = jobId))
         verify(jobService).create(
-            eq(configurationId), eq(contract), eq("generate"), isNull(), eq("handle"), isNull(), eq("order-42"), isNull(),
+            eq(configurationId), eq(contract), eq("generate"), isNull(), eq("handle"), isNull(), eq("order-42"),
             isNull(), eq("trace-1"),
         )
     }
 
     @Test
-    fun `a user token creates a job on behalf of its user`() {
+    fun `job creation is refused for user tokens`() {
         authenticateAsUser()
-        stubCreate(ContractOutcome("accepted", jobId = UUID.randomUUID()))
 
-        resource.createJob(ContractJobCreateRequest(contract, "generate", documentId = "doc-1"), null, null)
+        val response = resource.createJob(ContractJobCreateRequest(contract, "generate", documentId = "doc-1"), null, null)
 
-        verify(jobService).create(
-            eq(configurationId), eq(contract), eq("generate"), isNull(), isNull(), eq("doc-1"), isNull(), eq("jdoe"),
-            isNull(), isNull(),
+        assertThat(response.statusCode).isEqualTo(HttpStatus.FORBIDDEN)
+        verify(jobService, never()).create(
+            any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull()
         )
     }
 
     @Test
     fun `a job request the rules refuse is a bad request with the reason`() {
-        authenticateAsUser()
+        authenticateAsService()
         whenever(
-            jobService.create(any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())
-        ).thenThrow(IllegalArgumentException("A user token must name the case it acts on (documentId)"))
+            jobService.create(any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())
+        ).thenThrow(IllegalArgumentException("documentId does not match the case of the reply handle"))
 
         val response = resource.createJob(ContractJobCreateRequest(contract, "generate"), null, null)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
         assertThat(response.body).isEqualTo(
-            ContractResponse(status = "error", errorMessage = "A user token must name the case it acts on (documentId)")
+            ContractResponse(status = "error", errorMessage = "documentId does not match the case of the reply handle")
         )
     }
 
@@ -263,7 +262,7 @@ class ExternalPluginContractResourceTest {
 
     private fun stubCreate(outcome: ContractOutcome) {
         whenever(
-            jobService.create(any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())
+            jobService.create(any(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())
         ).thenReturn(outcome)
     }
 

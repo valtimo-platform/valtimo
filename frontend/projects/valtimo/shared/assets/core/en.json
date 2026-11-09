@@ -3012,7 +3012,6 @@
         "deadline": "Deadline",
         "attempts": "Attempts",
         "error": "Error",
-        "requestedBy": "Requested by",
         "outcome": "Outcome",
         "documentId": "Case",
         "idempotencyKey": "Idempotency key",

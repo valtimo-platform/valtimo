@@ -61,7 +61,6 @@ data class ContractJobSummaryResponse(
     val providerTitle: String?,
     val providerPluginId: String?,
     val status: ExternalPluginContractJobStatus,
-    val requestedBy: String?,
     val createdAt: Instant,
     val updatedAt: Instant?,
     val completedAt: Instant?,
@@ -87,7 +86,6 @@ data class ContractJobDetailResponse(
     val status: ExternalPluginContractJobStatus,
     /** COMPLETED, FAILED or EXPIRED once the provider side ended; kept through DELIVERED and UNDELIVERABLE. */
     val outcome: ExternalPluginContractJobStatus?,
-    val requestedBy: String?,
     val documentId: String?,
     val idempotencyKey: String?,
     val createdAt: Instant,

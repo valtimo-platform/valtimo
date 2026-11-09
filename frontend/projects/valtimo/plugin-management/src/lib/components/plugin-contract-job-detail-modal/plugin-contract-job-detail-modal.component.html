@@ -137,14 +137,6 @@
           </cds-list-column>
         </cds-list-row>
 
-        <cds-list-row *ngIf="job.requestedBy">
-          <cds-list-column nowrap="true">
-            {{ 'pluginManagement.contractJobs.columns.requestedBy' | translate }}
-          </cds-list-column>
-
-          <cds-list-column>{{ job.requestedBy }}</cds-list-column>
-        </cds-list-row>
-
         <cds-list-row *ngIf="job.documentId">
           <cds-list-column nowrap="true">
             {{ 'pluginManagement.contractJobs.columns.documentId' | translate }}

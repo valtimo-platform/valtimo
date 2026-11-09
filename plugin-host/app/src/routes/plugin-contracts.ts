@@ -141,7 +141,7 @@ export async function pluginContractRoutes(
    * POST /plugins/:pluginId/:version/contracts/:contract/:operation
    *
    * Body: { configurationId, caller: {pluginId, version, configurationId}, payload, chain?: string[],
-   *         timeoutMs? (synchronous call), jobId?, deadline?, documentId?, requestedBy? (job) }
+   *         timeoutMs? (synchronous call), jobId?, deadline?, documentId? (job) }
    *
    * A synchronous call's `timeoutMs` bounds the invocation and becomes the Wasm's `deadline` on this
    * host's clock; a job's `deadline` reaches the Wasm as given.
@@ -156,7 +156,6 @@ export async function pluginContractRoutes(
       deadline?: unknown;
       timeoutMs?: unknown;
       documentId?: unknown;
-      requestedBy?: unknown;
       chain?: unknown;
     };
   }>("/plugins/:pluginId/:version/contracts/:contract/:operation", routeOptions, async (request, reply) => {
@@ -213,7 +212,6 @@ export async function pluginContractRoutes(
         jobId,
         deadline,
         documentId: nonEmptyString(body.documentId),
-        requestedBy: nonEmptyString(body.requestedBy),
         chain,
         contractDeadlineMs,
         correlationId,

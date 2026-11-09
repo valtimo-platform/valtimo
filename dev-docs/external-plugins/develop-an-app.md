@@ -341,14 +341,14 @@ part of the signed path.
 
 ```json
 { "configurationId": "…", "caller": { … }, "payload": { … }, "chain": ["…"],
-  "jobId": "…", "deadline": "2026-10-14T12:00:00Z", "documentId": "…", "requestedBy": "behandelaar" }
+  "jobId": "…", "deadline": "2026-10-14T12:00:00Z", "documentId": "…" }
 ```
 
 - `timeoutMs` (synchronous calls) — the milliseconds the caller still waits. Turn it into a
   deadline on your own clock; it is relative so clock skew cannot distort it.
-- `deadline` (jobs) — when GZAC expires the job. `documentId` and `requestedBy` come with jobs
-  when known; `requestedBy` means a user's token created the job and GZAC verified that user may
-  view `documentId`.
+- `deadline` (jobs) — when GZAC expires the job. `documentId` comes with jobs when the requester
+  named one. It is the requester's claim, not verified by GZAC beyond matching the requester's
+  reply handle; treat it like `payload`.
 - `payload` already satisfies the operation's `input` schema; GZAC checks your answer against
   `outputs`, `output` and the payload cap.
 
@@ -464,9 +464,12 @@ Headers to send:
 `replyTo` is an action's `replyHandle` and only works for the configuration that received it.
 `idempotencyKey` (1-255 visible ASCII characters) makes a repeated request return the existing job.
 A request body larger than the payload cap plus 64 KiB is refused with `413 PAYLOAD_TOO_LARGE`
-before authentication. A *user* token (from `/data`) can only create jobs when the configuration
-declares and was granted `POST /api/v1/plugin-contract/jobs`, and must name a `documentId` the user
-may view.
+before authentication. A *user* token (from `/data`) cannot reach these endpoints, whatever was
+granted: a contract job runs on the provider's authority, so your `/data` handler decides what a
+user may start and creates the job with the service token. Check the request first, for example by
+fetching the case with the user token, and never pass identifiers or an `idempotencyKey` from the
+browser through unchecked. `documentId` is your claim: GZAC does not verify it, except that it must
+match the case of `replyTo` when you send both.
 
 ## Step 7: Consume events (optional)
 

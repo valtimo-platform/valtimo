@@ -3018,7 +3018,6 @@
         "deadline": "Deadline",
         "attempts": "Pogingen",
         "error": "Fout",
-        "requestedBy": "Aangevraagd door",
         "outcome": "Uitkomst",
         "documentId": "Dossier",
         "idempotencyKey": "Idempotentiesleutel",

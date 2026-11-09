@@ -100,6 +100,7 @@ interface PluginContractRequest {
   payload?: unknown;
   replyTo?: string;
   idempotencyKey?: string;
+  documentId?: string;
   jobId?: string;
   status?: "completed" | "failed";
   result?: unknown;
@@ -174,16 +175,19 @@ export function pluginCall<T = unknown>(
  * @param opts.idempotencyKey 1-255 visible ASCII characters. Repeating a request with the same key
  *   returns the existing job instead of starting another; reusing the key for another contract or
  *   operation answers `IDEMPOTENCY_KEY_CONFLICT`.
+ * @param opts.documentId the case the job concerns, passed to the provider as your claim; GZAC does
+ *   not verify it. With `replyTo` it must equal that handle's case, and defaults to it.
  */
 export function pluginRequest(
   contract: string,
   operation: string,
   payload?: unknown,
-  opts: { replyTo?: string; idempotencyKey?: string } = {}
+  opts: { replyTo?: string; idempotencyKey?: string; documentId?: string } = {}
 ): ContractRequestResult {
   const req: PluginContractRequest = { kind: "request", contract, operation, payload: payload ?? {} };
   if (opts.replyTo !== undefined) req.replyTo = opts.replyTo;
   if (opts.idempotencyKey !== undefined) req.idempotencyKey = opts.idempotencyKey;
+  if (opts.documentId !== undefined) req.documentId = opts.documentId;
   return callPluginContract(req) as unknown as ContractRequestResult;
 }
 

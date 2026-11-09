@@ -17,7 +17,6 @@
 package com.ritense.externalplugin.web.rest
 
 import com.ritense.externalplugin.security.ExternalPluginServicePrincipal
-import com.ritense.externalplugin.security.ExternalPluginUserPrincipal
 import com.ritense.externalplugin.service.ContractLimits
 import com.ritense.externalplugin.service.ContractOutcome
 import com.ritense.externalplugin.service.ExternalPluginContractJobService
@@ -50,8 +49,7 @@ import java.util.UUID
  * Plugin → GZAC contract surface. Mounted outside `/api/v1/external-plugin` (denylisted for
  * plugin tokens); the allowlist filter lets service principals through and this controller is the
  * gate: the token names the calling configuration, and only its own bindings and jobs are reachable.
- * Service tokens everywhere; a user token only creates jobs — when the endpoint is granted, and
- * bounded by that user's PBAC on the case it names.
+ * Service tokens only: a user token is denylisted, since the provider acts on its own authority.
  */
 @Controller
 @SkipComponentScan
@@ -92,23 +90,17 @@ class ExternalPluginContractResource(
         @RequestHeader(CHAIN_HEADER, required = false) chain: String?,
         @RequestHeader(CORRELATION_ID_HEADER, required = false) correlationId: String?,
     ): ResponseEntity<ContractResponse> {
-        val principal = SecurityContextHolder.getContext().authentication?.principal
-        val (configurationId, requestedBy) = when (principal) {
-            is ExternalPluginServicePrincipal -> principal.pluginConfigId to null
-            is ExternalPluginUserPrincipal -> principal.pluginConfigId to principal.userLogin
-            else -> return forbidden()
-        }
+        val caller = servicePrincipal() ?: return forbidden()
         val (contract, operation) = target(request.contract, request.operation) ?: return badRequest()
         val outcome = try {
             jobService.create(
-                requesterConfigurationId = configurationId,
+                requesterConfigurationId = caller.pluginConfigId,
                 contract = contract,
                 operation = operation,
                 payload = request.payload,
                 replyTo = request.replyTo,
                 documentId = request.documentId,
                 idempotencyKey = request.idempotencyKey,
-                requestedBy = requestedBy,
                 chainHeader = chain,
                 correlationIdHeader = correlationId,
             )

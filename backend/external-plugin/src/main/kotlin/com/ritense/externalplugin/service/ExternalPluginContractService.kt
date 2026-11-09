@@ -271,7 +271,7 @@ class ExternalPluginContractService(
     fun requestBody(resolution: Resolution.Resolved, timeoutMs: Long): ObjectNode =
         requestBody(resolution.target, resolution.payload, resolution.chain, jobId = null, deadline = null, timeoutMs = timeoutMs)
 
-    /** [deadline], [documentId] and [requestedBy] travel with jobs, [timeoutMs] with synchronous calls. */
+    /** [deadline] and [documentId] travel with jobs, [timeoutMs] with synchronous calls. */
     fun requestBody(
         target: ContractTarget,
         payload: JsonNode,
@@ -279,7 +279,6 @@ class ExternalPluginContractService(
         jobId: UUID?,
         deadline: Instant?,
         documentId: String? = null,
-        requestedBy: String? = null,
         timeoutMs: Long? = null,
     ): ObjectNode = objectMapper.createObjectNode().apply {
         put("configurationId", target.provider.id.toString())
@@ -293,7 +292,6 @@ class ExternalPluginContractService(
         if (deadline != null) put("deadline", deadline.toString())
         if (timeoutMs != null) put("timeoutMs", timeoutMs)
         if (jobId != null && documentId != null) put("documentId", documentId)
-        if (jobId != null && requestedBy != null) put("requestedBy", requestedBy)
         putArray("chain").apply { chain.forEach { add(it.toString()) } }
     }
 

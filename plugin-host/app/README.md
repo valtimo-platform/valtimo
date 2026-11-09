@@ -735,7 +735,7 @@ curl -sS -X POST http://localhost:8090/plugins/case-summary/0.1.0/actions/case-s
 GZAC brokering a contract call (or, with `jobId`, a job) to the provider. The contract segment is
 sent raw (`nl.ritense.openplan@1`) — `@` and `.` are path-safe, and the HMAC signs the bare path.
 Body: `{configurationId, caller: {pluginId, version, configurationId}, payload, chain?: string[],
-timeoutMs?, jobId?, deadline?, documentId?, requestedBy?}`:
+timeoutMs?, jobId?, deadline?, documentId?}`:
 
 - `timeoutMs` — synchronous calls only: the milliseconds the caller still waits. The host turns it
   into a deadline on its own clock, hands that to the plugin as `input.deadline`, and — when it comes
@@ -744,8 +744,8 @@ timeoutMs?, jobId?, deadline?, documentId?, requestedBy?}`:
   positive integer is ignored.
 - `deadline` — jobs only: the ISO-8601 instant GZAC expires the job at, passed to the plugin as
   `input.deadline`. A value that is not an instant with a zone is dropped.
-- `documentId`, `requestedBy` — jobs only: the case the job acts on, and the login of the user whose
-  token requested it.
+- `documentId` — jobs only: the case the requester says the job concerns. Not verified by GZAC
+  beyond matching the requester's reply handle.
 - `chain` — the host appends the provider's own configuration id and hands it to `plugin_contract`
   as `X-Valtimo-Contract-Chain`, so nested calls stay depth- and cycle-checked by GZAC.
 

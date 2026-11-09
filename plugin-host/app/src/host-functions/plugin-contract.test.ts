@@ -130,7 +130,7 @@ describe("plugin_contract host function", () => {
   describe("request", () => {
     const HANDLE = "eyJjZmciOiJjZmctMSJ9.bWFj";
 
-    it("posts to /jobs with the reply handle and idempotency key and passes the accepted envelope through", async () => {
+    it("posts to /jobs with the reply handle, idempotency key and case and passes the accepted envelope through", async () => {
       fetchMock.mockResolvedValueOnce(jsonResponse({ status: "accepted", jobId: "job-1" }, 202));
 
       const reply = await invoke(baseCtx, {
@@ -140,6 +140,7 @@ describe("plugin_contract host function", () => {
         payload: {},
         replyTo: HANDLE,
         idempotencyKey: "report-pi-1",
+        documentId: "6f1c2a3e-0000-4000-8000-000000000001",
       });
 
       expect(reply).toEqual({ status: "accepted", jobId: "job-1" });
@@ -151,12 +152,20 @@ describe("plugin_contract host function", () => {
         payload: {},
         replyTo: HANDLE,
         idempotencyKey: "report-pi-1",
+        documentId: "6f1c2a3e-0000-4000-8000-000000000001",
       });
     });
 
-    it("sends neither field when the plugin gave none (null counts as none)", async () => {
+    it("sends none of the optional fields when the plugin gave none (null counts as none)", async () => {
       await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate" });
-      await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", replyTo: null, idempotencyKey: null });
+      await invoke(baseCtx, {
+        kind: "request",
+        contract: CONTRACT,
+        operation: "generate",
+        replyTo: null,
+        idempotencyKey: null,
+        documentId: null,
+      });
 
       for (const [, init] of fetchMock.mock.calls) {
         expect(JSON.parse(init.body)).toEqual({ contract: CONTRACT, operation: "generate", payload: {} });
@@ -209,6 +218,20 @@ describe("plugin_contract host function", () => {
         status: "error",
         errorCode: "INVALID_REQUEST",
         errorMessage: "'idempotencyKey' must be 1-255 visible ASCII characters",
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["empty", ""],
+      ["longer than 255 characters", "d".repeat(256)],
+      ["a number", 42],
+    ])("refuses a documentId that is %s before the fetch", async (_label, documentId) => {
+      const reply = await invoke(baseCtx, { kind: "request", contract: CONTRACT, operation: "generate", documentId });
+      expect(reply).toEqual({
+        status: "error",
+        errorCode: "INVALID_REQUEST",
+        errorMessage: "'documentId' must be a non-empty string of at most 255 characters",
       });
       expect(fetchMock).not.toHaveBeenCalled();
     });

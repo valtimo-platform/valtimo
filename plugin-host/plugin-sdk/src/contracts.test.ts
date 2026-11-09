@@ -84,7 +84,7 @@ describe("contract host-function wrappers", () => {
     });
   });
 
-  it("pluginRequest sends a request envelope, with replyTo and idempotencyKey only when given", () => {
+  it("pluginRequest sends a request envelope, with replyTo, idempotencyKey and documentId only when given", () => {
     const stub = stubWasmGlobals("plugin_contract");
     stub.replyWith({status: "accepted", jobId: "job-1"});
     stub.replyWith({status: "accepted", jobId: "job-2"});
@@ -95,6 +95,7 @@ describe("contract host-function wrappers", () => {
     pluginRequest("nl.ritense.document.generate@1", "generate", undefined, {
       replyTo: "eyJjZmciOiJjIn0.mac",
       idempotencyKey: "report-pi-1",
+      documentId: "doc-1",
     });
 
     expect(first).toEqual({status: "accepted", jobId: "job-1"});
@@ -118,6 +119,7 @@ describe("contract host-function wrappers", () => {
       payload: {},
       replyTo: "eyJjZmciOiJjIn0.mac",
       idempotencyKey: "report-pi-1",
+      documentId: "doc-1",
     });
   });
 

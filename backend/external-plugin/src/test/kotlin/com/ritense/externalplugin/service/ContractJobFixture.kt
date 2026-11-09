@@ -19,8 +19,6 @@ package com.ritense.externalplugin.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationService
-import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.client.ExternalPluginHostClient.ActionResponse
 import com.ritense.externalplugin.domain.EventQueueMode
@@ -77,8 +75,6 @@ class ContractJobFixture(
 
     val hostClient = mock<ExternalPluginHostClient>()
     val runtimeService = mock<RuntimeService>()
-    val authorizationService = mock<AuthorizationService>()
-    val documentService = mock<JsonSchemaDocumentService>()
     val eventPublisher = mock<ApplicationEventPublisher>()
     val jobRepository = inMemoryJobRepository()
     val replyHandleSigner = ExternalPluginReplyHandleSigner("abcdefghijklmnop", Duration.ofDays(1), clock)
@@ -130,7 +126,7 @@ class ContractJobFixture(
         )
         jobService = ExternalPluginContractJobService(
             jobRepository, configurationRepository, definitionRepository, contractService, encryptionService,
-            objectMapper, transactionTemplate, documentService, authorizationService, replyHandleSigner, eventPublisher,
+            objectMapper, transactionTemplate, replyHandleSigner, eventPublisher,
             defaultTimeout = Duration.ofHours(1), maxDeadline = Duration.ofDays(1), clock = clock,
         )
         dispatcher = ExternalPluginContractJobDispatcher(
@@ -141,13 +137,11 @@ class ContractJobFixture(
         )
     }
 
-    /** A job request with a service token unless [requestedBy] names a user. */
     fun create(
         operation: String,
         replyTo: String? = null,
         documentId: String? = null,
         idempotencyKey: String? = null,
-        requestedBy: String? = null,
         payload: JsonNode = objectMapper.createObjectNode().put("templateKey", "pdca-report"),
     ): ContractOutcome = jobService.create(
         requesterConfigurationId = requester.id,
@@ -157,7 +151,6 @@ class ContractJobFixture(
         replyTo = replyTo,
         documentId = documentId,
         idempotencyKey = idempotencyKey,
-        requestedBy = requestedBy,
         chainHeader = null,
         correlationIdHeader = null,
     )
@@ -167,8 +160,7 @@ class ContractJobFixture(
         replyTo: String? = null,
         documentId: String? = null,
         idempotencyKey: String? = null,
-        requestedBy: String? = null,
-    ): UUID = create(operation, replyTo, documentId, idempotencyKey, requestedBy).let {
+    ): UUID = create(operation, replyTo, documentId, idempotencyKey).let {
         check(it.status == "accepted") { "Expected an accepted job, got ${it.errorCode}: ${it.errorMessage}" }
         it.jobId!!
     }

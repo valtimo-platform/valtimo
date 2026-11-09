@@ -217,10 +217,11 @@ export interface ContractCallInput {
    * on the host's clock; for a job, the instant GZAC expires it.
    */
   deadline?: string;
-  /** The case the job acts on, when known. Jobs only. */
+  /**
+   * The case the job concerns, when the requester named one. Jobs only. The requester's claim, not
+   * verified by GZAC, unless it came from the requester's reply handle.
+   */
   documentId?: string;
-  /** Login of the user whose token requested the job. Jobs only. */
-  requestedBy?: string;
 }
 
 export interface ContractJobInput extends ContractCallInput {

@@ -431,7 +431,6 @@ interface ExternalPluginContractJobSummary {
   providerTitle: string | null;
   providerPluginId: string | null;
   status: ExternalPluginContractJobStatus;
-  requestedBy: string | null;
   createdAt: string;
   updatedAt: string | null;
   completedAt: string | null;

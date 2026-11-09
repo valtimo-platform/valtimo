@@ -69,7 +69,6 @@ class ExternalPluginContractJobLifecycleTest {
         assertThat(delivered.firstValue.get("deadline").asText()).isEqualTo(stored.deadline.toString())
         assertThat(delivered.firstValue.get("payload").get("templateKey").asText()).isEqualTo("pdca-report")
         assertThat(delivered.firstValue.has("documentId")).isFalse()
-        assertThat(delivered.firstValue.has("requestedBy")).isFalse()
         assertThat(fixture.job(jobId).status).isEqualTo(ExternalPluginContractJobStatus.ACCEPTED)
 
         val result = objectMapper.createObjectNode().put("documentRef", "https://docs/1").put("contentHash", "sha256:x")

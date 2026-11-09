@@ -116,7 +116,6 @@ class ExternalPluginContractServiceTest {
         assertThat(body.firstValue.get("chain").map { it.asText() }).containsExactly(caller.id.toString())
         assertThat(body.firstValue.has("jobId")).isFalse()
         assertThat(body.firstValue.has("documentId")).isFalse()
-        assertThat(body.firstValue.has("requestedBy")).isFalse()
     }
 
     @Test

@@ -323,7 +323,6 @@ describe("PluginManager (mocked Extism)", () => {
         jobId: "job-1",
         deadline: new Date(contractDeadlineMs).toISOString(),
         documentId: "doc-1",
-        requestedBy: "behandelaar",
         contractDeadlineMs,
         correlationId: "corr-1",
       });
@@ -344,7 +343,6 @@ describe("PluginManager (mocked Extism)", () => {
         jobId: "job-1",
         deadline: new Date(contractDeadlineMs).toISOString(),
         documentId: "doc-1",
-        requestedBy: "behandelaar",
       });
       expect(hostCtx).toMatchObject({
         serviceToken: "svc",

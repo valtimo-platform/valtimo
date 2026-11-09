@@ -512,8 +512,7 @@ export function finishReport(jobId: string, documentRef: string): void {
 | `payload` | The request, already validated against your `input` schema. |
 | `deadline` | When the answer is due: a synchronous call's remaining budget on the host's clock, or a job's expiry. |
 | `jobId` | Jobs only. Use it as the idempotency key: a delivery can arrive more than once. |
-| `documentId` | Jobs only, when known: the case the job concerns. |
-| `requestedBy` | Jobs only: login of the user whose token requested the job. GZAC verified that user may view `documentId`. |
+| `documentId` | Jobs only, when the requester named one: the case the job concerns. This is the requester's claim; GZAC does not verify it, except that it must match the requester's reply handle. Treat it like `payload`. |
 
 Answer `{ status: "completed", result }`, `{ status: "accepted" }` (jobs only — finish later with
 `completeJob(jobId, { status: "completed" | "failed", result?, errorCode?, errorMessage? })`), or
@@ -614,11 +613,14 @@ onContractReply((reply) => {
   event, and mark the event *asynchronous after* so a failure further along the process does not
   count against the reply. A reply handle only works for the configuration whose action received
   it and expires after a day by default.
-- **Jobs for a user.** A token minted for a user (iframe, or an app's `/data` route) can only create
-  jobs when your manifest declares, and the administrator granted, `POST
-  /api/v1/plugin-contract/jobs` under `permissions.endpoints`. It must name the case it acts on
-  (`documentId`), which the user must be allowed to view; the provider receives `documentId` and
-  `requestedBy`. Synchronous calls, completions and job reads always use the service token.
+- **The case a job concerns.** Pass `documentId` in the options to tell the provider which case
+  the job is about. With `replyTo`, it must equal that handle's case and defaults to it. GZAC does
+  not verify a `documentId` you name yourself.
+- **Jobs started from your screens.** A user token cannot reach the contract API: a contract job
+  runs on the provider's authority, so your own code decides what a user may start. Let the screen
+  call your `request()` handler, check the request there (for example, fetch the case with
+  `gzacApi.asUser` to confirm the user may see it), and call `pluginRequest` from the handler.
+  Never pass identifiers or an `idempotencyKey` from the screen through unchecked.
 - **Titles shown to administrators** are localised from your `translations`:
   `contracts.<contract>.title` and `contracts.<contract>.operations.<key>.title` (and
   `.description`), e.g. `"contracts.nl.ritense.openplan@1.operations.get.title": "Registerobject

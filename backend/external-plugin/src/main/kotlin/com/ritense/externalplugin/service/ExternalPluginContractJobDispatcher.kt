@@ -168,7 +168,7 @@ class ExternalPluginContractJobDispatcher(
         val target = ContractTarget(requester, requesterDefinition, provider.configuration, provider.definition, provider.host)
         val payload = jobService.decryptJson(job.requestPayload) ?: objectMapper.createObjectNode()
         val body = contractService.requestBody(
-            target, payload, job.chainIds, job.id, job.deadline, job.documentId, job.requestedBy,
+            target, payload, job.chainIds, job.id, job.deadline, job.documentId,
         )
 
         val response = contractService.deliver(target, job.contract, job.operation, body, correlationId = job.id.toString())
