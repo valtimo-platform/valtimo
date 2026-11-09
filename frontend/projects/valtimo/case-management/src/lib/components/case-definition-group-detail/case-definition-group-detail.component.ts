@@ -18,12 +18,14 @@ import {ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit, signal} f
 import {CommonModule, DOCUMENT} from '@angular/common';
 import {HttpResponse} from '@angular/common/http';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {Download16, Edit16, TrashCan16} from '@carbon/icons';
+import {Edit16, OverflowMenuVertical16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PinnedItemsService} from '@valtimo/case';
 import {
   BreadcrumbService,
   ConfirmationModalModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
@@ -67,6 +69,8 @@ import {
     TabsModule,
     CaseDefinitionGroupCreateModalComponent,
     ConfirmationModalModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
     RenderInPageHeaderDirective,
   ],
 })
@@ -106,7 +110,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     private readonly pinnedItemsService: PinnedItemsService,
     @Inject(DOCUMENT) private readonly document: Document
   ) {
-    this.iconService.registerAll([Download16, Edit16, TrashCan16]);
+    this.iconService.registerAll([Edit16, OverflowMenuVertical16]);
   }
 
   public ngOnInit(): void {

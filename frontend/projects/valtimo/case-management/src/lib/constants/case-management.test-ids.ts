@@ -198,6 +198,7 @@ export const CASE_DEFINITION_GROUP_DETAIL_TEST_IDS = {
   deleteButton: 'caseDefinitionGroupDeleteButton',
   editButton: 'caseDefinitionGroupEditButton',
   exportButton: 'caseDefinitionGroupExportButton',
+  moreButton: 'caseDefinitionGroupMoreButton',
   noListColumnsWarning: 'caseDefinitionGroupNoListColumnsWarning',
   tabs: 'caseDefinitionGroupTabs',
 } as const;

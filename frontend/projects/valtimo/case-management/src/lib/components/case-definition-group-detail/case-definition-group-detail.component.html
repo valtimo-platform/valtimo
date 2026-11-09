@@ -83,40 +83,46 @@
 <ng-container renderInPageHeader>
   <ng-template>
     <button
-      cdsButton="danger--ghost"
-      [attr.data-test-id]="testIds.deleteButton"
-      [disabled]="(group$ | async) === null"
-      [size]="(compactMode$ | async) ? 'sm' : 'md'"
-      (click)="openDeleteModal()"
-    >
-      {{ 'interface.delete' | translate }}
-
-      <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-    </button>
-
-    <button
-      cdsButton="ghost"
-      [disabled]="$exporting()"
-      [size]="(compactMode$ | async) ? 'sm' : 'md'"
-      (click)="exportGroup()"
-      class="case-definition-group-detail__export-button"
-      [attr.data-test-id]="testIds.exportButton"
-    >
-      {{ 'caseManagement.groups.export.button' | translate }}
-
-      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
-    </button>
-
-    <button
       cdsButton="tertiary"
       [attr.data-test-id]="testIds.editButton"
       [disabled]="(group$ | async) === null"
       [size]="(compactMode$ | async) ? 'sm' : 'md'"
       (click)="openEditModal()"
+      class="case-definition-group-detail__edit-button"
     >
       {{ 'interface.edit' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
     </button>
+
+    <v-overflow-menu [menuWidth]="250" placement="bottom-end">
+      <button
+        overflowTrigger
+        cdsButton="tertiary"
+        [attr.data-test-id]="testIds.moreButton"
+        [size]="(compactMode$ | async) ? 'sm' : 'md'"
+      >
+        {{ 'caseManagement.more' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>
+      </button>
+
+      <v-overflow-menu-option
+        [disabled]="$exporting()"
+        [testId]="testIds.exportButton"
+        (selected)="exportGroup()"
+      >
+        {{ 'caseManagement.groups.export.button' | translate }}
+      </v-overflow-menu-option>
+
+      <v-overflow-menu-option
+        type="danger"
+        [disabled]="(group$ | async) === null"
+        [testId]="testIds.deleteButton"
+        (selected)="openDeleteModal()"
+      >
+        {{ 'interface.delete' | translate }}
+      </v-overflow-menu-option>
+    </v-overflow-menu>
   </ng-template>
 </ng-container>

@@ -46,6 +46,8 @@ describe('GroupConfigComponent', () => {
       description: 'Desc',
       color: null,
     });
-    expect(notificationService.showNotification).toHaveBeenCalled();
+    expect(notificationService.showNotification).toHaveBeenCalledWith(
+      jasmine.objectContaining({type: 'success', title: 'caseManagement.color.removed'})
+    );
   });
 });

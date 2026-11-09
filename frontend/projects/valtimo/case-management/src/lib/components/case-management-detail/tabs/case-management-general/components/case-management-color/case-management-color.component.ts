@@ -19,7 +19,8 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ButtonModule, LayerModule} from 'carbon-components-angular';
+import {TrashCan16} from '@carbon/icons';
+import {ButtonModule, IconModule, IconService, LayerModule} from 'carbon-components-angular';
 import {PinnedItemsService} from '@valtimo/case';
 import {ColorPickerComponent, ColorPickerConfig, MenuService} from '@valtimo/components';
 import {CaseSettings, DocumentService} from '@valtimo/document';
@@ -51,6 +52,7 @@ import {CASE_MANAGEMENT_COLOR_TEST_IDS, COLOR_SWATCHES} from '../../../../../../
     ButtonModule,
     CommonModule,
     FormsModule,
+    IconModule,
     TranslateModule,
     LayerModule,
     ColorPickerComponent,
@@ -120,8 +122,11 @@ export class CaseManagementColorComponent {
     private readonly pinnedItemsService: PinnedItemsService,
     private readonly menuService: MenuService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly translateService: TranslateService
-  ) {}
+    private readonly translateService: TranslateService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([TrashCan16]);
+  }
 
   public onColorChange(color: string, currentColor: string): void {
     if (color && color.toLowerCase() !== currentColor?.toLowerCase()) {
@@ -160,7 +165,9 @@ export class CaseManagementColorComponent {
         this.menuService.reload();
         this.notificationService.showNotification({
           type: 'success',
-          title: this.translateService.instant('caseManagement.color.saved'),
+          title: this.translateService.instant(
+            color ? 'caseManagement.color.saved' : 'caseManagement.color.removed'
+          ),
           duration: 5000,
         });
       });

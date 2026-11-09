@@ -179,6 +179,10 @@ export class CaseManagementGroupsPage {
     return this.page.getByTestId(CASE_DEFINITION_GROUP_DETAIL_TEST_IDS.editButton);
   }
 
+  get moreButton(): Locator {
+    return this.page.getByTestId(CASE_DEFINITION_GROUP_DETAIL_TEST_IDS.moreButton);
+  }
+
   get deleteButton(): Locator {
     return this.page.getByTestId(CASE_DEFINITION_GROUP_DETAIL_TEST_IDS.deleteButton);
   }
@@ -192,6 +196,7 @@ export class CaseManagementGroupsPage {
   }
 
   async openDeleteModal() {
+    await this.moreButton.click();
     await this.deleteButton.click();
     await expect(this.deleteConfirmButton).toBeVisible();
   }
@@ -401,6 +406,7 @@ export class CaseManagementGroupsPage {
   }
 
   async exportGroup(): Promise<Download> {
+    await this.moreButton.click();
     const [download] = await Promise.all([
       this.page.waitForEvent('download'),
       this.exportButton.click(),

@@ -1067,6 +1067,7 @@
     },
     "color": {
       "saved": "Color saved",
+      "removed": "Color removed",
       "clear": "Remove color"
     },
     "listTabs": {

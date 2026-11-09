@@ -47,7 +47,8 @@ describe('CaseManagementColorComponent', () => {
       pinnedItemsService,
       menuService,
       notificationService,
-      {instant: (key: string) => key} as any
+      {instant: (key: string) => key} as any,
+      jasmine.createSpyObj('IconService', ['registerAll'])
     );
     (component as any).params$ = of({caseDefinitionKey: 'house', caseDefinitionVersionTag: '1.0.0'});
   });
@@ -71,6 +72,9 @@ describe('CaseManagementColorComponent', () => {
     expect(documentService.patchCaseSettingsForManagement).toHaveBeenCalledWith('house', '1.0.0', {
       color: null,
     });
+    expect(notificationService.showNotification).toHaveBeenCalledWith(
+      jasmine.objectContaining({type: 'success', title: 'caseManagement.color.removed'})
+    );
   });
 
   it('does not save when read only', () => {
