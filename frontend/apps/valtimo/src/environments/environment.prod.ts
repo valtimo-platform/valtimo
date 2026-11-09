@@ -6,6 +6,7 @@ import {ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, ValtimoConfig, UploadProvider, In
 import {authenticationKeycloak} from './auth/keycloak-config';
 import {defaultDefinitionColumns} from './columns';
 import {DARK_MODE_LOGO_BASE_64, LOGO_BASE_64} from './logo';
+import {CaseListTab, TaskListTab} from '../../../../projects/valtimo/shared/src/lib/models';
 
 export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
@@ -74,6 +75,8 @@ export const environment: ValtimoConfig = {
   },
   uploadProvider: UploadProvider.S3,
   defaultDefinitionTable: defaultDefinitionColumns,
+  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.TEAM, TaskListTab.OPEN, TaskListTab.ALL],
+  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.TEAM, CaseListTab.OPEN],
   caseFileSizeUploadLimitMB: window['env']['caseFileSizeUploadLimitMB'] || 5,
   featureToggles: {
     enableObjectManagement: window['env']['featureToggles']?.['enableObjectManagement'] === 'true',
