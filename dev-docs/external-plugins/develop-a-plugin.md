@@ -563,10 +563,7 @@ action("generate-letter", (input) => {
     "nl.ritense.document.generate@1",
     "generate",
     { templateKey: "letter" },
-    {
-      replyTo: input.replyHandle,
-      idempotencyKey: `${input.processInstanceId}:${input.activityId}`,
-    }
+    { replyTo: input.replyHandle }
   );
   if (job.status === "error") {
     return { status: "error", errorCode: job.errorCode, errorMessage: job.errorMessage };
@@ -597,17 +594,31 @@ onContractReply((reply) => {
   | `CONTRACT_DEADLINE_EXCEEDED` | The call's time budget ran out. |
   | `TOO_MANY_CONCURRENT_CALLS` | Your configuration already has the maximum number of synchronous calls in flight. |
   | `PAYLOAD_TOO_LARGE` | The request exceeds the payload cap (256 KiB by default). |
-  | `IDEMPOTENCY_KEY_CONFLICT` | The `idempotencyKey` was already used for another contract or operation. |
+  | `IDEMPOTENCY_KEY_CONFLICT` | The `idempotencyKey` was already used for another request: another contract or operation, another case, or another reply target. |
   | `CALLER_UNAVAILABLE` | Your own configuration is not active. |
   | `CONTRACT_JOB_EXPIRED`, `CONTRACT_JOB_CANCELLED` | In job replies: the deadline passed, or an administrator cancelled the job. |
 - **Time budgets.** A `pluginCall` blocks your handler like `gzacApi` and must finish within your
   invocation: it hands the time it has left to GZAC (as a relative timeout, so clock skew between
   machines cannot distort it), and the provider's own onward calls stay inside that budget. With
   less than 250 ms left a call is refused with `CONTRACT_DEADLINE_EXCEEDED`.
-- **Idempotency.** `idempotencyKey` (1-255 visible ASCII characters) identifies the logical
-  request: repeating it for the same contract and operation returns the existing job instead of
-  starting another, so a retried service task does not run the provider twice. GZAC remembers a key
-  as long as it keeps the job.
+- **Idempotency.** `idempotencyKey` (1-255 visible ASCII characters, case-sensitive) is optional.
+  Use it when you know a request can be sent twice and the second one must not start a new job.
+  - A key identifies one logical request of your configuration. Repeating it for the same contract,
+    operation, case and reply target returns the existing job as `{ status: "accepted", jobId, job }`.
+    Using it for anything else is refused with `IDEMPOTENCY_KEY_CONFLICT`.
+  - `job` tells you where that job stands: `status` is `pending` while the provider works on it, then
+    `completed`, `failed` or `expired`, with `result`, `errorCode`, `providerErrorCode` and
+    `errorMessage` as in a reply. A first request has no `job`.
+  - With `replyTo`, a repeated key for a finished job also sends its reply to the process again, so a
+    catch event that waits now still receives the outcome.
+  - The outcome is final. A repeated key returns the job even when it already failed, so use a new
+    key to try again.
+  - Build the key from your own domain, such as an order number or the `jobId` of the reply you are
+    acting on. A process instance id and an activity id together do not make a key: an activity can
+    run several times in one process, in a loop or as a multi-instance activity.
+  - A job is not part of the process's transaction. When the process rolls back after your action
+    has requested a job, the job stays and runs, as with any call to an external system.
+  - GZAC remembers a key as long as it keeps the job (30 days by default).
 - **Replies.** `onContractReply` receives every job outcome of your configuration. Returning
   `status: "error"` makes GZAC redeliver it; a reply without a registered handler is logged as a
   warning and acknowledged.

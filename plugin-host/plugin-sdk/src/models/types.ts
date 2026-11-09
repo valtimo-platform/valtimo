@@ -285,9 +285,19 @@ export interface ContractCallResult<T = unknown> {
   errorMessage?: string;
 }
 
-/** Result of `pluginRequest`. */
+/** A job as its requester sees it: `pending` until the provider is done, then the lasting outcome. */
+export interface ContractJobState {
+  status: "pending" | "completed" | "failed" | "expired";
+  result?: unknown;
+  errorCode?: string;
+  /** The provider's own error code, when it reported a failure. */
+  providerErrorCode?: string;
+  errorMessage?: string;
+}
+
+/** Result of `pluginRequest`. `job` is present only when an `idempotencyKey` matched an existing job. */
 export type ContractRequestResult =
-  | { status: "accepted"; jobId: string }
+  | { status: "accepted"; jobId: string; job?: ContractJobState }
   | { status: "error"; errorCode?: string; errorMessage?: string };
 
 /** What a provider reports through `completeJob`. */

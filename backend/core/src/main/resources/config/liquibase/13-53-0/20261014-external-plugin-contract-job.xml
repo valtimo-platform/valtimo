@@ -18,7 +18,7 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
-                   logicalFilePath="config/liquibase/13-38-0/20261014-external-plugin-contract-job.xml">
+                   logicalFilePath="config/liquibase/13-53-0/20261014-external-plugin-contract-job.xml">
 
     <!--
       Ledger for asynchronous contract requests. No FKs to configurations: rows outlive them for the
@@ -26,6 +26,10 @@
       Payload columns are `clob` (text on PostgreSQL, LONGTEXT on MySQL): encrypted payloads exceed
       MySQL TEXT at the default size cap. Mapped as LONGVARCHAR, never @Lob.
     -->
+    <!-- Idempotency keys are case-sensitive; MySQL's default collations are not -->
+    <property name="idempotencyKeyType" value="VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin" dbms="mysql" global="false"/>
+    <property name="idempotencyKeyType" value="VARCHAR(255)" dbms="postgresql" global="false"/>
+
     <changeSet author="Ritense" id="1">
         <createTable tableName="external_plugin_contract_job">
             <column name="id" type="${uuidType}">
@@ -44,7 +48,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="document_id" type="VARCHAR(255)"/>
-            <column name="idempotency_key" type="VARCHAR(255)"/>
+            <column name="idempotency_key" type="${idempotencyKeyType}"/>
             <column name="status" type="VARCHAR(32)">
                 <constraints nullable="false"/>
             </column>

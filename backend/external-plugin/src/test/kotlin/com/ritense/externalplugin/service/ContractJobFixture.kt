@@ -95,6 +95,7 @@ class ContractJobFixture(
     val requester = configuration(requesterDefinition)
     val provider = configuration(providerDefinition)
 
+    val bindingRepository = mock<ExternalPluginContractBindingRepository>()
     val contractService: ExternalPluginContractService
     val jobService: ExternalPluginContractJobService
     val dispatcher: ExternalPluginContractJobDispatcher
@@ -103,7 +104,6 @@ class ContractJobFixture(
         val configurationRepository = mock<ExternalPluginConfigurationRepository>()
         val definitionRepository = mock<ExternalPluginDefinitionRepository>()
         val hostRepository = mock<ExternalPluginHostRepository>()
-        val bindingRepository = mock<ExternalPluginContractBindingRepository>()
         whenever(configurationRepository.findById(any())).thenAnswer { Optional.ofNullable(configurations[it.getArgument(0)]) }
         whenever(configurationRepository.findAllById(any())).thenAnswer { invocation ->
             invocation.getArgument<Iterable<UUID>>(0).mapNotNull { configurations[it] }

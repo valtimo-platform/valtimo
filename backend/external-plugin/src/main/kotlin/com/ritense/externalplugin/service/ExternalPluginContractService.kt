@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.service
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.NullNode
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.client.ExternalPluginHostClient.ActionResponse
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.domain.ExternalPluginContractBinding
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
@@ -150,6 +152,37 @@ class ExternalPluginContractService(
         }
     }
 
+    /** The caller-side guards of [resolve]: caller runnable, operation declared, contract bound. No schema or provider work. */
+    fun admit(callerConfigurationId: UUID, contract: String, operation: String): Admission {
+        val caller = configurationRepository.findById(callerConfigurationId).orElse(null)
+        val callerDefinition = caller?.let { definitionRepository.findById(it.definitionId).orElse(null) }
+        if (caller == null || callerDefinition == null || !isRunnable(callerDefinition)) {
+            return Admission.Rejected(
+                ContractOutcome.error(ContractErrorCodes.CALLER_UNAVAILABLE, "The calling configuration is not active")
+            )
+        }
+
+        val declaredOperations = ExternalPluginManifestContracts.declaredOperations(callerDefinition.manifestJson, contract)
+        if (declaredOperations != null && operation !in declaredOperations) {
+            return Admission.Rejected(
+                ContractOutcome.error(
+                    ContractErrorCodes.OPERATION_NOT_DECLARED,
+                    "'${callerDefinition.pluginId}@${callerDefinition.version}' declares operations $declaredOperations " +
+                        "of '$contract', not '$operation'",
+                )
+            )
+        }
+
+        val binding = contractBindingRepository.findByConfigurationIdAndContract(callerConfigurationId, contract)
+            ?: return Admission.Rejected(
+                ContractOutcome.error(
+                    ContractErrorCodes.NO_PROVIDER_BOUND,
+                    "No provider is bound for contract '$contract' on this configuration",
+                )
+            )
+        return Admission.Admitted(caller, callerDefinition, binding)
+    }
+
     /**
      * Binding resolution plus all guards. [synchronous] rejects `job` operations — they may outlive
      * the caller's host-call timeout. A job request accepts both modes.
@@ -165,10 +198,9 @@ class ExternalPluginContractService(
         synchronous: Boolean,
     ): Resolution {
         val receivedChain = parseChain(chainHeader)
-        val caller = configurationRepository.findById(callerConfigurationId).orElse(null)
-        val callerDefinition = caller?.let { definitionRepository.findById(it.definitionId).orElse(null) }
-        if (caller == null || callerDefinition == null || !isRunnable(callerDefinition)) {
-            return reject(ContractErrorCodes.CALLER_UNAVAILABLE, "The calling configuration is not active")
+        val (caller, callerDefinition, binding) = when (val admission = admit(callerConfigurationId, contract, operation)) {
+            is Admission.Rejected -> return Resolution.Rejected(admission.outcome)
+            is Admission.Admitted -> admission
         }
 
         val payloadNode = payload ?: objectMapper.createObjectNode()
@@ -179,21 +211,6 @@ class ExternalPluginContractService(
                 "Payload is $payloadSize bytes; the maximum is $maxPayloadBytes",
             )
         }
-
-        val declaredOperations = ExternalPluginManifestContracts.declaredOperations(callerDefinition.manifestJson, contract)
-        if (declaredOperations != null && operation !in declaredOperations) {
-            return reject(
-                ContractErrorCodes.OPERATION_NOT_DECLARED,
-                "'${callerDefinition.pluginId}@${callerDefinition.version}' declares operations $declaredOperations " +
-                    "of '$contract', not '$operation'",
-            )
-        }
-
-        val binding = contractBindingRepository.findByConfigurationIdAndContract(callerConfigurationId, contract)
-            ?: return reject(
-                ContractErrorCodes.NO_PROVIDER_BOUND,
-                "No provider is bound for contract '$contract' on this configuration",
-            )
 
         val chain = (if (receivedChain.lastOrNull() == caller.id) receivedChain else receivedChain + caller.id)
         if (binding.targetConfigurationId in chain) {
@@ -534,6 +551,16 @@ class ExternalPluginContractService(
         data class Rejected(val outcome: ContractOutcome, val target: ContractTarget? = null) : Resolution
     }
 
+    sealed interface Admission {
+        data class Admitted(
+            val caller: ExternalPluginConfiguration,
+            val callerDefinition: ExternalPluginDefinition,
+            val binding: ExternalPluginContractBinding,
+        ) : Admission
+
+        data class Rejected(val outcome: ContractOutcome) : Admission
+    }
+
     sealed interface ProviderLookup {
         data class Found(
             val configuration: ExternalPluginConfiguration,
@@ -584,6 +611,8 @@ data class ContractOutcome(
     val errorCode: String? = null,
     val errorMessage: String? = null,
     val providerErrorCode: String? = null,
+    /** Only on an idempotent replay: where the existing job stands. */
+    val job: ContractJobState? = null,
 ) {
     companion object {
         fun completed(result: JsonNode?) = ContractOutcome(ExternalPluginContractService.STATUS_COMPLETED, result = result)
@@ -596,6 +625,16 @@ data class ContractOutcome(
         )
     }
 }
+
+/** A job as its requester sees it: `pending` until the provider is done, then the lasting outcome. */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class ContractJobState(
+    val status: String,
+    val result: JsonNode? = null,
+    val errorCode: String? = null,
+    val providerErrorCode: String? = null,
+    val errorMessage: String? = null,
+)
 
 /** Length caps for every stored or returned error text; the columns and the plugin SDK rely on them. */
 object ContractLimits {

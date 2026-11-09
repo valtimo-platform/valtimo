@@ -172,9 +172,10 @@ export function pluginCall<T = unknown>(
  * `contract-reply:<contract>:<operation>`, with the outcome in the local variable `contractReply`.
  *
  * @param opts.replyTo an action input's `replyHandle`.
- * @param opts.idempotencyKey 1-255 visible ASCII characters. Repeating a request with the same key
- *   returns the existing job instead of starting another; reusing the key for another contract or
- *   operation answers `IDEMPOTENCY_KEY_CONFLICT`.
+ * @param opts.idempotencyKey 1-255 visible ASCII characters, case-sensitive. Repeating a request with
+ *   the same key returns the existing job instead of starting another, with its state in `job`;
+ *   with `replyTo`, a finished job's reply is then sent to the process again. Reusing the key for
+ *   another contract, operation, case or reply target answers `IDEMPOTENCY_KEY_CONFLICT`.
  * @param opts.documentId the case the job concerns, passed to the provider as your claim; GZAC does
  *   not verify it. With `replyTo` it must equal that handle's case, and defaults to it.
  */

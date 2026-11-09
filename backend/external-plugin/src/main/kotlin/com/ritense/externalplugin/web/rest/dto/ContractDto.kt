@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
+import com.ritense.externalplugin.service.ContractJobState
 import java.time.Instant
 import java.util.UUID
 
@@ -141,9 +142,11 @@ data class ContractResponse(
     val errorCode: String? = null,
     val errorMessage: String? = null,
     val providerErrorCode: String? = null,
+    /** Only on an idempotent replay: where the existing job stands. */
+    val job: ContractJobState? = null,
 )
 
-/** Plugin-facing job view; `status` is the lowercase job status. */
+/** Plugin-facing job view; `status` is `pending`, `completed`, `failed` or `expired`. */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ContractJobView(
     val jobId: UUID,

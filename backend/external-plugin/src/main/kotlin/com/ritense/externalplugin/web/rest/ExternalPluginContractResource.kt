@@ -176,5 +176,6 @@ class ExternalPluginContractResource(
         errorCode = errorCode,
         errorMessage = errorMessage,
         providerErrorCode = providerErrorCode,
+        job = job,
     )
 }

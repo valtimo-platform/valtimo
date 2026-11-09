@@ -250,7 +250,7 @@ class ExternalPluginContractJobDispatcher(
             "jobId" to job.id.toString(),
             "contract" to job.contract,
             "operation" to job.operation,
-            "status" to replyStatus(job),
+            "status" to jobService.publicStatus(job),
             "result" to jobService.decryptJson(job.resultPayload)?.let { objectMapper.treeToValue(it, Any::class.java) },
             "errorCode" to job.errorCode,
             "providerErrorCode" to job.providerErrorCode,
@@ -316,7 +316,7 @@ class ExternalPluginContractJobDispatcher(
             put("jobId", job.id.toString())
             put("contract", job.contract)
             put("operation", job.operation)
-            put("status", replyStatus(job))
+            put("status", jobService.publicStatus(job))
             jobService.decryptJson(job.resultPayload)?.let { set<JsonNode>("result", it) }
             job.errorCode?.let { put("errorCode", it) }
             job.providerErrorCode?.let { put("providerErrorCode", it) }
@@ -422,12 +422,6 @@ class ExternalPluginContractJobDispatcher(
         val exponent = (attempts - 1).coerceIn(0, 30)
         val delay = retryBase.multipliedBy(1L shl exponent)
         return if (delay > retryMax || delay.isNegative) retryMax else delay
-    }
-
-    private fun replyStatus(job: ExternalPluginContractJob): String = when (job.outcome ?: job.status) {
-        COMPLETED -> "completed"
-        EXPIRED -> "expired"
-        else -> "failed"
     }
 
     private fun step(name: String, action: () -> Unit) {

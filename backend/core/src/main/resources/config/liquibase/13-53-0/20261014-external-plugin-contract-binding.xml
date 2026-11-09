@@ -18,7 +18,7 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
-                   logicalFilePath="config/liquibase/13-38-0/20261014-external-plugin-contract-binding.xml">
+                   logicalFilePath="config/liquibase/13-53-0/20261014-external-plugin-contract-binding.xml">
 
     <!-- No FK on target_configuration_id: usages guard deleting a bound provider. -->
     <changeSet author="Ritense" id="1">

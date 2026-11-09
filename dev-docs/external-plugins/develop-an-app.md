@@ -449,9 +449,9 @@ endpoint grant: GZAC authorizes them against the configuration's own bindings an
 | Request | Body | Answer |
 |---|---|---|
 | `POST /api/v1/plugin-contract/call` | `{ contract, operation, payload? }` | `200 { status: "completed", result }` or `200 { status: "error", errorCode, providerErrorCode?, errorMessage }` |
-| `POST /api/v1/plugin-contract/jobs` | `{ contract, operation, payload?, replyTo?, documentId?, idempotencyKey? }` | `202 { status: "accepted", jobId }` or `200 { status: "error", … }` |
+| `POST /api/v1/plugin-contract/jobs` | `{ contract, operation, payload?, replyTo?, documentId?, idempotencyKey? }` | `202 { status: "accepted", jobId, job? }` or `200 { status: "error", … }` |
 | `POST /api/v1/plugin-contract/jobs/{jobId}/complete` | `{ status: "completed" \| "failed", result?, errorCode?, errorMessage? }` | `200`; `404` when the job is not yours; `409` when it is no longer open; `400` for an invalid result |
-| `GET /api/v1/plugin-contract/jobs/{jobId}` | – | The job as seen by its requester or provider; `404` for anyone else |
+| `GET /api/v1/plugin-contract/jobs/{jobId}` | – | The job as seen by its requester or provider, with `status` `pending`, `completed`, `failed` or `expired`; `404` for anyone else |
 
 Headers to send:
 
@@ -462,7 +462,10 @@ Headers to send:
 | `X-Valtimo-Correlation-Id` | Optional: ties GZAC's and your log lines together. |
 
 `replyTo` is an action's `replyHandle` and only works for the configuration that received it.
-`idempotencyKey` (1-255 visible ASCII characters) makes a repeated request return the existing job.
+`idempotencyKey` (1-255 visible ASCII characters, case-sensitive) makes a repeated request for the
+same contract, operation, case and reply target return the existing job, with its state in `job`.
+With `replyTo`, the reply of a finished job is then sent to the process again. See
+[Idempotency](./develop-a-plugin.md#requester) for the details and for how to choose a key.
 A request body larger than the payload cap plus 64 KiB is refused with `413 PAYLOAD_TOO_LARGE`
 before authentication. A *user* token (from `/data`) cannot reach these endpoints, whatever was
 granted: a contract job runs on the provider's authority, so your `/data` handler decides what a
