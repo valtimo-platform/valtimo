@@ -17,12 +17,17 @@
 package com.ritense.zakenapi.service
 
 import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.domain.RelatedFile
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.DocumentService
+import com.ritense.document.service.findByOrNull
+import com.ritense.document.service.requireDocumentPermission
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.authorization.ZgwDocument
 import com.ritense.documentenapi.authorization.ZgwDocumentActionProvider
@@ -75,6 +80,7 @@ class ZaakDocumentService(
     private val documentenApiService: DocumentenApiService,
     private val documentenApiVersionService: DocumentenApiVersionService,
     private val authorizationService: AuthorizationService,
+    private val documentService: DocumentService,
 ) {
 
     fun getInformatieObjectenAsRelatedFiles(
@@ -510,6 +516,7 @@ class ZaakDocumentService(
         caseDocumentId: UUID,
         documentId: String,
     ): Pair<DocumentenApiPlugin, URI> {
+        requireCaseViewPermission(caseDocumentId)
         val zaakUrl = zaakUrlProvider.getZaakUrl(caseDocumentId)
         val zakenApiPlugin = getZakenApiPlugin(zaakUrl)
 
@@ -530,6 +537,13 @@ class ZaakDocumentService(
         }
 
         return Pair(documentenApiPlugin, informatieobjectUrl)
+    }
+
+    fun requireCaseViewPermission(caseDocumentId: UUID) {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(caseDocumentId))
+        } as JsonSchemaDocument? ?: throw NoSuchElementException("Document with id '$caseDocumentId' not found.")
+        authorizationService.requireDocumentPermission(document)
     }
 
     fun downloadInformatieObject(pluginConfigurationId: String, caseDocumentId: UUID, documentId: String): InputStream {

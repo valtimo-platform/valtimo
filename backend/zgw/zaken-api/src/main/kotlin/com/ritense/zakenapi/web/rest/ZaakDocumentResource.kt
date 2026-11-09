@@ -16,14 +16,8 @@
 
 package com.ritense.zakenapi.web.rest
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
 import com.ritense.document.domain.RelatedFile
 import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.DocumentService
-import com.ritense.document.service.findByOrNull
-import com.ritense.document.service.requireDocumentPermission
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiDocumentDto
 import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
@@ -58,8 +52,6 @@ import java.util.UUID
 @RequestMapping(value = ["/api"], produces = [APPLICATION_JSON_UTF8_VALUE])
 class ZaakDocumentResource(
     private val zaakDocumentService: ZaakDocumentService,
-    private val documentService: DocumentService,
-    private val authorizationService: AuthorizationService
 ) {
 
     @EndpointDescription(
@@ -70,7 +62,7 @@ class ZaakDocumentResource(
     fun getFiles(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
     ): List<RelatedFile> {
-        requireViewableDocument(documentId)
+        zaakDocumentService.requireCaseViewPermission(documentId)
         return zaakDocumentService.getInformatieObjectenAsRelatedFiles(documentId)
     }
 
@@ -84,7 +76,7 @@ class ZaakDocumentResource(
         documentSearchRequest: DocumentSearchRequest,
         pageable: Pageable,
     ): Page<DocumentenApiDocumentDto> {
-        requireViewableDocument(documentId)
+        zaakDocumentService.requireCaseViewPermission(documentId)
         return zaakDocumentService.getInformatieObjectenAsRelatedFilesPage(documentId, documentSearchRequest, pageable)
     }
 
@@ -96,7 +88,7 @@ class ZaakDocumentResource(
     fun getZaakMetadata(
         @LoggableResource(resourceType = JsonSchemaDocument::class) @PathVariable(name = "documentId") documentId: UUID
     ): ZaakResponse? {
-        requireViewableDocument(documentId)
+        zaakDocumentService.requireCaseViewPermission(documentId)
         return zaakDocumentService.getZaakByCaseDocumentId(documentId)
     }
 
@@ -174,13 +166,6 @@ class ZaakDocumentResource(
             .headers(responseHeaders)
             .contentType(documentMediaType)
             .body(InputStreamResource(documentInputStream))
-    }
-
-    private fun requireViewableDocument(documentId: UUID) {
-        val document = runWithoutAuthorization {
-            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
-        } as JsonSchemaDocument? ?: throw NoSuchElementException("Document with id '$documentId' not found.")
-        authorizationService.requireDocumentPermission(document)
     }
 
     companion object {

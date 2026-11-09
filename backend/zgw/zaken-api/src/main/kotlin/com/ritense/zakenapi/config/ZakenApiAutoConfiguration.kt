@@ -168,26 +168,22 @@ class ZakenApiAutoConfiguration {
         documentenApiService: DocumentenApiService,
         documentenApiVersionService: DocumentenApiVersionService,
         authorizationService: AuthorizationService,
+        documentService: DocumentService,
     ) = ZaakDocumentService(
         zaakUrlProvider,
         pluginService,
         catalogiService,
         documentenApiService,
         documentenApiVersionService,
-        authorizationService
+        authorizationService,
+        documentService
     )
 
     @Bean
     @ConditionalOnMissingBean(ZaakDocumentResource::class)
     fun zaakDocumentResource(
         zaakDocumentService: ZaakDocumentService,
-        documentService: DocumentService,
-        authorizationService: AuthorizationService
-    ) = ZaakDocumentResource(
-        zaakDocumentService,
-        documentService,
-        authorizationService
-    )
+    ) = ZaakDocumentResource(zaakDocumentService)
 
     @Bean
     @ConditionalOnMissingBean(CaseZgwInspectionResource::class)
