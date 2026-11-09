@@ -457,7 +457,7 @@ function validateContractOperation(operation: unknown, at: string, seenKeys: Set
       });
     }
   }
-  // Shape only: GZAC compiles the schema and reports an invalid one.
+  // Shape only: GZAC compiles the schema at upload and acceptance and refuses an invalid one.
   for (const field of ["input", "output"] as const) {
     if (op[field] !== undefined && !isPlainObject(op[field])) {
       errors.push(`${at}.${field} must be a JSON Schema object when present`);

@@ -173,6 +173,12 @@ class ExternalPluginContractJobService(
         if (status != STATUS_COMPLETED && status != STATUS_FAILED) {
             return CompletionResult.Invalid(null, "status must be '$STATUS_COMPLETED' or '$STATUS_FAILED'")
         }
+        val unlocked = jobRepository.findById(jobId).orElse(null)
+        if (unlocked == null || unlocked.providerConfigurationId != callerConfigurationId) return CompletionResult.NotFound
+        if (unlocked.status !in ExternalPluginContractJobStatus.AWAITING_PROVIDER) return CompletionResult.Conflict
+        // Contract, operation and provider are fixed per job: validating without the lock is safe
+        val violation = if (status == STATUS_COMPLETED) contractService.resultViolation(operationOf(unlocked), result) else null
+
         return transactionTemplate.execute {
             val job = jobRepository.findByIdForUpdate(jobId)
             if (job == null || job.providerConfigurationId != callerConfigurationId) {
@@ -182,18 +188,17 @@ class ExternalPluginContractJobService(
                 return@execute CompletionResult.Conflict
             }
             val now = clock.instant()
-            if (status == STATUS_COMPLETED) {
-                val violation = contractService.resultViolation(operationOf(job), result)
-                if (violation != null) {
+            when {
+                status == STATUS_COMPLETED && violation != null -> {
                     finish(job, FAILED, null, ContractErrorCodes.PROVIDER_INVALID_RESULT, violation, now)
                     return@execute CompletionResult.Invalid(
                         ContractErrorCodes.PROVIDER_INVALID_RESULT,
                         ContractLimits.errorMessage(violation),
                     )
                 }
-                finish(job, COMPLETED, result?.let { objectMapper.writeValueAsString(it) }, null, null, now)
-            } else {
-                finish(
+                status == STATUS_COMPLETED ->
+                    finish(job, COMPLETED, result?.let { objectMapper.writeValueAsString(it) }, null, null, now)
+                else -> finish(
                     job,
                     FAILED,
                     null,

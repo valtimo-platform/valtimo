@@ -247,6 +247,13 @@ interface ExternalPluginDefinition {
    * validate a configuration against and the backend refuses one. Cleared by discovery.
    */
   awaitingDiscovery: boolean;
+  /**
+   * Provided operations whose `input`/`output` schema GZAC cannot use, for the accepted and the
+   * pending manifest. Non-empty means calls to those operations are refused and, for the accepted
+   * manifest, that no configuration can be created or saved.
+   */
+  contractSchemaErrors?: string[];
+  pendingContractSchemaErrors?: string[];
 }
 
 /** The subset of compatibility fields needed to render a warning message. */

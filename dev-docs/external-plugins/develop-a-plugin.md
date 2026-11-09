@@ -461,6 +461,14 @@ a payload that does not match `input` never reaches you, and a result that break
 lacks an `outputs` key, or exceeds the payload cap) fails the call with `PROVIDER_INVALID_RESULT`.
 Schemas are self-contained — remote `$ref`s are not resolved.
 
+GZAC checks every `input` and `output` schema when a package is uploaded and when a changed
+package is accepted: a schema that does not compile, or is larger than 64 KiB (by default), is
+refused, and no configuration can be created for a plugin that declares one. A validation that runs
+longer than the time budget (200 ms by default) is stopped and counts as a failed check, so write
+anchored, non-nested `pattern`s such as `^[A-Z]{3}-[0-9]{4}$`, and avoid constructs like `(.*a){8}$`.
+An `output` schema that does not compile fails the call with `PROVIDER_INVALID_RESULT` before it
+reaches you.
+
 ```json
 "provides": [
   {
@@ -580,11 +588,11 @@ onContractReply((reply) => {
   | `CONTRACT_NOT_GRANTED` | Refused by the host before anything leaves it: the contract is not declared and bound for this configuration. |
   | `NO_PROVIDER_BOUND` | The administrator left the contract unbound. |
   | `OPERATION_NOT_DECLARED` | You declared operations for the contract, and this is not one of them. |
-  | `CONTRACT_INPUT_INVALID` | The payload does not match the provider's `input` schema. |
+  | `CONTRACT_INPUT_INVALID` | The payload does not match the provider's `input` schema, or the schema is unusable or took too long to check. |
   | `OPERATION_NOT_PROVIDED`, `OPERATION_REQUIRES_JOB` | The bound provider lacks the operation, or it is a job: use `pluginRequest`. |
   | `PROVIDER_UNAVAILABLE`, `PROVIDER_CONTENT_CHANGED`, `PROVIDER_UNREACHABLE`, `PROVIDER_UNSUPPORTED` | The provider is not served or not loaded, awaits re-acceptance, its host is down, or its host has no contract route. |
   | `PROVIDER_ERROR` | The provider reported a failure; see `providerErrorCode`. |
-  | `PROVIDER_INVALID_RESULT` | The provider's result broke its `outputs`, its `output` schema or the size cap. |
+  | `PROVIDER_INVALID_RESULT` | The provider's result broke its `outputs`, its `output` schema or the size cap, or the `output` schema is unusable or took too long to check (the provider is not called in the unusable case). |
   | `CONTRACT_CYCLE`, `CONTRACT_DEPTH_EXCEEDED` | Nested calls would loop back, or go deeper than the platform allows. |
   | `CONTRACT_DEADLINE_EXCEEDED` | The call's time budget ran out. |
   | `TOO_MANY_CONCURRENT_CALLS` | Your configuration already has the maximum number of synchronous calls in flight. |

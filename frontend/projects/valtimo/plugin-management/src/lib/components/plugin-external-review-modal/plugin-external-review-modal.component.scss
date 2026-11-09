@@ -18,3 +18,9 @@
   display: block;
   margin-block-end: var(--cds-spacing-05);
 }
+
+.plugin-external-review-modal__schema-errors {
+  margin-block-end: var(--cds-spacing-05);
+  padding-inline-start: var(--cds-spacing-05);
+  list-style: disc;
+}

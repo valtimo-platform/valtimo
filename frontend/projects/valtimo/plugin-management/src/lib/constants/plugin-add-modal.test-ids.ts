@@ -21,4 +21,7 @@ export const PLUGIN_ADD_MODAL_TEST_IDS = {
   /** Advances an external plugin from configuration to its permissions step. */
   permissionsButton: 'pluginAddModalPermissionsButton',
   completeButton: 'pluginAddModalCompleteButton',
+  contractSchemaNotice: 'pluginAddModalContractSchemaNotice',
+  contractSchemaErrors: 'pluginAddModalContractSchemaErrors',
+  saveError: 'pluginAddModalSaveError',
 } as const;

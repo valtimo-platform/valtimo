@@ -19,8 +19,6 @@ package com.ritense.externalplugin.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.networknt.schema.JsonSchemaFactory
-import com.networknt.schema.SpecVersion
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginCapability
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
@@ -43,6 +41,8 @@ import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressReposito
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator.Outcome
 import com.ritense.externalplugin.web.rest.dto.ContractBindingEntry
 import com.ritense.externalplugin.web.rest.dto.ContractBindingResponse
 import com.ritense.externalplugin.web.rest.dto.ContractProviderOperationResponse
@@ -93,6 +93,7 @@ class ExternalPluginConfigurationService(
      */
     private val fallbackGzacBaseUrl: String,
     private val contractBindingRepository: ExternalPluginContractBindingRepository,
+    private val schemaValidator: ExternalPluginSchemaValidator = ExternalPluginSchemaValidator(),
 ) {
 
     @Transactional(readOnly = true)
@@ -131,6 +132,8 @@ class ExternalPluginConfigurationService(
                 "its host yet, so its permissions are unknown and a configuration cannot be validated. " +
                 "Wait until the host serves the plugin and it becomes available."
         }
+
+        if (!(allowPlaceholder && definition.isPlaceholder)) requireUsableContractSchemas(definition)
 
         // Rejects unknown capability names before anything is persisted.
         val capabilities = grantedCapabilities.map(ExternalPluginCapability::fromValue)
@@ -346,6 +349,7 @@ class ExternalPluginConfigurationService(
                 validationCopy.put(field, encryptionService.decrypt(storedCiphertext))
             }
         }
+        if (!definition.isPlaceholder) requireUsableContractSchemas(definition)
         validateAgainstSchema(validationCopy, definition.configSchema)
         // Fail closed: a property marked `x-egress-target` whose value isn't a parseable absolute URL
         // would contribute nothing to the allowlist, leaving the admin believing they granted a
@@ -438,6 +442,13 @@ class ExternalPluginConfigurationService(
         require(contentHash == pending) {
             "The accepted content hash does not match the pending one — the plugin package " +
                 "changed again on the host; review the current state before accepting"
+        }
+        definition.pendingManifestJson?.let { pendingManifest ->
+            val errors = schemaValidator.contractSchemaErrors(pendingManifest)
+            require(errors.isEmpty()) {
+                "The changed plugin declares contract schemas GZAC cannot use, so it cannot be accepted: " +
+                    errors.joinToString("; ")
+            }
         }
         definition.contentHash = pending
         definition.pendingContentHash = null
@@ -1134,14 +1145,25 @@ class ExternalPluginConfigurationService(
         }
     }
 
-    private fun validateAgainstSchema(properties: ObjectNode, schemaNode: com.fasterxml.jackson.databind.node.ObjectNode?) {
+    private fun validateAgainstSchema(properties: ObjectNode, schemaNode: ObjectNode?) {
         if (schemaNode == null || schemaNode.isEmpty) return
-        val factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012)
-        val schema = factory.getSchema(schemaNode)
-        val errors = schema.validate(properties)
-        if (errors.isNotEmpty()) {
-            val message = errors.joinToString("; ") { it.message }
-            throw IllegalArgumentException("Configuration does not match schema: $message")
+        when (val outcome = schemaValidator.validate(schemaNode, properties)) {
+            Outcome.Valid -> Unit
+            is Outcome.Violations -> throw IllegalArgumentException(
+                "Configuration does not match schema: ${outcome.messages.joinToString("; ")}"
+            )
+            is Outcome.SchemaInvalid ->
+                throw IllegalArgumentException("The plugin declares an invalid configuration schema: ${outcome.reason}")
+            is Outcome.Unverifiable ->
+                throw IllegalArgumentException("Configuration could not be checked against its schema: ${outcome.reason}")
+        }
+    }
+
+    private fun requireUsableContractSchemas(definition: ExternalPluginDefinition) {
+        val errors = schemaValidator.contractSchemaErrors(definition.manifestJson)
+        require(errors.isEmpty()) {
+            "External plugin '${definition.pluginId}@${definition.version}' declares contract schemas GZAC cannot use: " +
+                errors.joinToString("; ")
         }
     }
 

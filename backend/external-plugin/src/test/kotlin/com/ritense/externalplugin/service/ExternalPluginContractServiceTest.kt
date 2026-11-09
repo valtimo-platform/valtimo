@@ -37,6 +37,7 @@ import com.ritense.externalplugin.service.ExternalPluginContractService.Provider
 import com.ritense.plugin.service.EncryptionService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Assertions.assertTimeoutPreemptively
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -57,6 +58,11 @@ import java.util.Optional
 import java.util.UUID
 
 class ExternalPluginContractServiceTest {
+
+    private companion object {
+        const val REDOS = "(.*a){8}$"
+        val HOSTILE = "a".repeat(60) + "!"
+    }
 
     private val objectMapper = ObjectMapper()
     private val contract = "nl.ritense.openplan@1"
@@ -301,6 +307,55 @@ class ExternalPluginContractServiceTest {
 
         assertError(outcome, "CONTRACT_INPUT_INVALID")
         assertThat(outcome.errorMessage).startsWith("Operation 'search' declares an invalid input schema: ")
+    }
+
+    @Test
+    fun `a catastrophic input pattern is cut off and refused`() {
+        providerDefinition.manifestJson = providerManifest(searchInput = """{"type": "string", "pattern": "$REDOS"}""")
+
+        val outcome = assertTimeoutPreemptively<ContractOutcome>(Duration.ofSeconds(2)) {
+            call("search", payload = objectMapper.valueToTree(HOSTILE))
+        }
+
+        assertError(outcome, "CONTRACT_INPUT_INVALID")
+        assertThat(outcome.errorMessage).contains("could not be checked")
+        verifyNoDelivery()
+    }
+
+    @Test
+    fun `a catastrophic output pattern is cut off and refused`() {
+        providerDefinition.manifestJson = providerManifest(
+            searchOutput = """{"type": "object", "properties": {"x": {"pattern": "$REDOS"}}}"""
+        )
+        answer(200, """{"status":"completed","result":{"x":"${"a".repeat(38)}!"}}""")
+
+        val outcome = assertTimeoutPreemptively<ContractOutcome>(Duration.ofSeconds(2)) {
+            call("search", payload = objectMapper.createObjectNode().put("query", "plan"))
+        }
+
+        assertError(outcome, "PROVIDER_INVALID_RESULT")
+        assertThat(outcome.errorMessage).contains("could not be checked")
+    }
+
+    @Test
+    fun `an uncompilable output schema is refused before delivery`() {
+        providerDefinition.manifestJson = providerManifest(searchOutput = """{"type": "object", "pattern": "["}""")
+
+        val outcome = call("search", payload = objectMapper.createObjectNode().put("query", "plan"))
+
+        assertError(outcome, "PROVIDER_INVALID_RESULT")
+        assertThat(outcome.errorMessage).startsWith("Operation 'search' declares an invalid output schema: ")
+        verifyNoDelivery()
+    }
+
+    @Test
+    fun `a manifest changed in place under the same definition is honoured on the next call`() {
+        answer(200, """{"status":"completed","result":{"hits":[]}}""")
+        assertThat(call("search", payload = objectMapper.createObjectNode().put("query", "plan")).status).isEqualTo("completed")
+
+        providerDefinition.manifestJson = providerManifest(searchOutput = """{"type": "object", "pattern": "["}""")
+
+        assertError(call("search", payload = objectMapper.createObjectNode().put("query", "plan")), "PROVIDER_INVALID_RESULT")
     }
 
     @Test
@@ -595,6 +650,7 @@ class ExternalPluginContractServiceTest {
 
     private fun providerManifest(
         searchInput: String = """{"type": "object", "additionalProperties": false, "properties": {"query": {"type": "string"}}}""",
+        searchOutput: String = """{"type": "object", "properties": {"hits": {"type": "array"}}}""",
     ): ObjectNode = objectMapper.readTree(
         """
         {"provides": [{"contract": "$contract", "operations": [
@@ -603,7 +659,7 @@ class ExternalPluginContractServiceTest {
             {"key": "generate", "title": "Generate", "mode": "job", "timeout": "PT2H"},
             {"key": "search", "title": "Search",
              "input": $searchInput,
-             "output": {"type": "object", "properties": {"hits": {"type": "array"}}}}
+             "output": $searchOutput}
         ]}]}
         """.trimIndent()
     ) as ObjectNode

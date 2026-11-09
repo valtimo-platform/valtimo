@@ -301,6 +301,8 @@ inline default.
 | `valtimo.external-plugin.contract.max-payload-bytes` | `262144` | Size cap for a request payload and any result; request bodies above it plus 64 KiB are refused with `413` before authentication |
 | `valtimo.external-plugin.contract.read-timeout` | `PT40S` | Read timeout for contract deliveries and job replies, and the upper bound of a synchronous call's budget. Keep it above the host's `WASM_TIMEOUT_MS` (30 s by default), or GZAC gives up on answers the host still produces |
 | `valtimo.external-plugin.contract.max-concurrent-calls` | `8` | Synchronous calls one configuration may have in flight per GZAC replica; more are refused with `TOO_MANY_CONCURRENT_CALLS` |
+| `valtimo.external-plugin.schema-validation-budget` | `200ms` | Longest time one JSON Schema validation may run before it is cut off. Applies to contract `input`/`output` schemas and to configuration schemas |
+| `valtimo.external-plugin.max-schema-bytes` | `65536` | Largest contract or configuration schema GZAC accepts, in UTF-8 bytes of its JSON |
 | `valtimo.external-plugin.contract-job.dispatcher-enabled` | `true` | Runs the job dispatcher (one replica at a time, via ShedLock) |
 | `valtimo.external-plugin.contract-job.dispatch-interval` | `PT5S` | How often the dispatcher delivers, expires and replies |
 | `valtimo.external-plugin.contract-job.default-timeout` | `PT1H` | Deadline when the provider's operation declares no `timeout` |

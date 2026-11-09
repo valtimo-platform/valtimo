@@ -2701,6 +2701,7 @@
       "description": "Alleen .zip-bestanden worden geaccepteerd",
       "failedTitle": "Uploaden mislukt",
       "rejected": "De plugin-host heeft de upload geweigerd.",
+      "refused": "GZAC heeft het pakket geweigerd.",
       "tooLargeTitle": "Pakket te groot",
       "tooLarge": "Dit pluginpakket is {{sizeMb}} MB. De maximaal geaccepteerde grootte is {{maxMb}} MB.",
       "identicalTitle": "Al up-to-date",
@@ -2939,6 +2940,13 @@
       "current": "Je gebruikt momenteel {{current}}.",
       "minimum": "Minimaal compatibele versie: {{min}}.",
       "maximum": "Maximaal compatibele versie: {{max}}."
+    },
+    "contractSchemas": {
+      "tag": "Ongeldig contractschema",
+      "title": "Contractschema's niet bruikbaar",
+      "tooltip": "Deze plugin declareert contractschema's die GZAC niet kan gebruiken. Aanroepen van deze bewerkingen worden geweigerd.",
+      "reviewMessage": "Deze versie declareert contractschema's die GZAC niet kan gebruiken. Je kunt haar pas accepteren als de plugin is gecorrigeerd.",
+      "createMessage": "Deze plugin declareert contractschema's die GZAC niet kan gebruiken. Je kunt pas een configuratie aanmaken als de plugin is gecorrigeerd."
     },
     "contracts": {
       "bindingsHeading": "Plugins die deze plugin aanroept",

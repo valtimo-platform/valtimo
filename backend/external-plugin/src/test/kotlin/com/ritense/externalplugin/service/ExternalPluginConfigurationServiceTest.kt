@@ -39,6 +39,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.plugin.service.EncryptionService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Assertions.assertTimeoutPreemptively
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -49,6 +50,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.time.Duration
 import java.util.Optional
 import java.util.UUID
 
@@ -484,6 +486,63 @@ class ExternalPluginConfigurationServiceTest {
         val second = create(grantedCapabilities = emptyList())
 
         assertThat(first.id).isNotEqualTo(second.id)
+    }
+
+    private fun manifestWithBadOutputSchema(): ObjectNode = objectMapper.readTree(
+        """{"provides": [{"contract": "a@1", "operations": [{"key": "op", "output": {"pattern": "["}}]}]}"""
+    ) as ObjectNode
+
+    @Test
+    fun `create is refused for a definition with unusable contract schemas`() {
+        stubDefinition(manifestJson = manifestWithBadOutputSchema())
+
+        assertThatThrownBy { create(grantedCapabilities = emptyList()) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("declares contract schemas GZAC cannot use")
+            .hasMessageContaining("Operation 'op' of contract 'a@1'")
+        verify(configurationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `update is refused for a definition with unusable contract schemas`() {
+        val configId = UUID.randomUUID()
+        val config = ExternalPluginConfiguration(id = configId, definitionId = definitionId, title = "Config")
+        whenever(configurationRepository.findById(configId)).thenReturn(Optional.of(config))
+        stubDefinition(manifestJson = manifestWithBadOutputSchema())
+
+        assertThatThrownBy { service.update(configId, "Config", objectMapper.createObjectNode()) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("declares contract schemas GZAC cannot use")
+        verify(configurationRepository, never()).save(any())
+    }
+
+    @Test
+    fun `a catastrophic configuration schema pattern is cut off and refused`() {
+        stubDefinition(
+            manifestJson = null,
+            configSchema = objectMapper.readTree(
+                """{"type": "object", "properties": {"x": {"type": "string", "pattern": "(.*a){8}$"}}}"""
+            ) as ObjectNode,
+        )
+        val properties = objectMapper.createObjectNode().put("x", "a".repeat(60) + "!")
+
+        assertThatThrownBy {
+            assertTimeoutPreemptively<Unit>(Duration.ofSeconds(2)) { create(emptyList(), properties = properties) }
+        }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("could not be checked")
+    }
+
+    @Test
+    fun `a configuration schema with a remote reference is refused`() {
+        stubDefinition(
+            manifestJson = null,
+            configSchema = objectMapper.readTree("""{"${'$'}ref": "https://schemas.example.com/config.json"}""") as ObjectNode,
+        )
+
+        assertThatThrownBy { create(emptyList()) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("invalid configuration schema")
     }
 
     private fun create(

@@ -20,9 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.networknt.schema.JsonSchemaFactory
-import com.networknt.schema.SpecVersion
-import com.networknt.schema.resource.DisallowSchemaLoader
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.client.ExternalPluginHostClient.ActionResponse
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
@@ -34,6 +31,9 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator.Compiled
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator.Outcome
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -66,6 +66,7 @@ class ExternalPluginContractService(
     private val readTimeout: Duration,
     /** Synchronous calls in flight per calling configuration on this node. */
     private val maxConcurrentCalls: Int,
+    private val schemaValidator: ExternalPluginSchemaValidator = ExternalPluginSchemaValidator(),
     private val clock: Clock = Clock.systemUTC(),
 ) {
 
@@ -231,6 +232,15 @@ class ExternalPluginContractService(
                 ContractOutcome.error(
                     ContractErrorCodes.OPERATION_REQUIRES_JOB,
                     "Operation '$operation' of contract '$contract' is long-running; request it as a job",
+                ),
+                target,
+            )
+        }
+        providedOperation.output?.let { schemaValidator.compile(it) as? Compiled.Invalid }?.let {
+            return Resolution.Rejected(
+                ContractOutcome.error(
+                    ContractErrorCodes.PROVIDER_INVALID_RESULT,
+                    invalidSchemaMessage(providedOperation.key, OUTPUT, it.reason),
                 ),
                 target,
             )
@@ -461,17 +471,19 @@ class ExternalPluginContractService(
         schema: JsonNode,
         value: JsonNode,
     ): String? {
-        val messages = try {
-            require(schema.isObject) { "the schema must be a JSON object" }
-            SCHEMA_FACTORY.getSchema(schema).validate(value).map { it.message }
-        } catch (e: Exception) {
-            return "Operation '${operation.key}' declares an invalid $kind schema: ${e.message ?: e.javaClass.simpleName}"
-        }
-        if (messages.isEmpty()) return null
         val subject = if (kind == INPUT) "Payload" else "Result"
-        return "$subject does not match the $kind schema of operation '${operation.key}': " +
-            messages.take(MAX_SCHEMA_MESSAGES).joinToString("; ")
+        return when (val outcome = schemaValidator.validate(schema, value)) {
+            Outcome.Valid -> null
+            is Outcome.SchemaInvalid -> invalidSchemaMessage(operation.key, kind, outcome.reason)
+            is Outcome.Unverifiable ->
+                "$subject could not be checked against the $kind schema of operation '${operation.key}': ${outcome.reason}"
+            is Outcome.Violations -> "$subject does not match the $kind schema of operation '${operation.key}': " +
+                outcome.messages.take(MAX_SCHEMA_MESSAGES).joinToString("; ")
+        }
     }
+
+    private fun invalidSchemaMessage(operationKey: String, kind: String, reason: String) =
+        "Operation '$operationKey' declares an invalid $kind schema: $reason"
 
     private fun isRunnable(definition: ExternalPluginDefinition): Boolean =
         !definition.isPlaceholder &&
@@ -561,10 +573,6 @@ class ExternalPluginContractService(
         private const val OUTPUT = "output"
         private const val MAX_SCHEMA_MESSAGES = 5
 
-        // Remote `$ref`s are refused: a provider manifest must not make GZAC fetch arbitrary URLs.
-        private val SCHEMA_FACTORY = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012) { builder ->
-            builder.schemaLoaders { it.add(DisallowSchemaLoader.getInstance()) }
-        }
         private val logger = KotlinLogging.logger {}
     }
 }

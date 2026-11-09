@@ -2695,6 +2695,7 @@
       "description": "Only .zip files are accepted",
       "failedTitle": "Upload failed",
       "rejected": "The plugin host rejected the upload.",
+      "refused": "GZAC refused the package.",
       "tooLargeTitle": "Package too large",
       "tooLarge": "This plugin package is {{sizeMb}} MB. The maximum accepted size is {{maxMb}} MB.",
       "identicalTitle": "Already up to date",
@@ -2933,6 +2934,13 @@
       "current": "You're currently running {{current}}.",
       "minimum": "Minimum compatible version: {{min}}.",
       "maximum": "Maximum compatible version: {{max}}."
+    },
+    "contractSchemas": {
+      "tag": "Invalid contract schema",
+      "title": "Contract schemas cannot be used",
+      "tooltip": "This plugin declares contract schemas GZAC cannot use. Calls to these operations are refused.",
+      "reviewMessage": "This version declares contract schemas GZAC cannot use. It can only be accepted once the plugin is corrected.",
+      "createMessage": "This plugin declares contract schemas GZAC cannot use. You can only create a configuration once the plugin is corrected."
     },
     "contracts": {
       "bindingsHeading": "Plugins this plugin calls",

@@ -700,6 +700,12 @@ export class PluginAppsPageComponent implements OnInit, OnDestroy {
         type: 'magenta',
       });
     }
+    if (definition?.contractSchemaErrors?.length) {
+      statusTags.push({
+        content: this._translateService.instant('pluginManagement.contractSchemas.tag'),
+        type: 'red',
+      });
+    }
 
     return {
       ...host,
