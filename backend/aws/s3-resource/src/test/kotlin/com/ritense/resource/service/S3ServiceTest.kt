@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
+import org.springframework.beans.factory.ObjectProvider
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -86,7 +87,8 @@ class S3ServiceTest : BaseTest() {
             s3Client,
             s3Presigner,
             s3ResourceRepository,
-            s3UploadTicketRepository
+            s3UploadTicketRepository,
+            mock(ObjectProvider::class.java) as ObjectProvider<S3ResourceAccessService>
         )
     }
 

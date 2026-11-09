@@ -135,6 +135,48 @@ class S3ResourceAuthorizationIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    fun `get resource url by key follows ownership rules`() {
+        val resource = save(createdBy = "userA")
+        mockPresign()
+
+        withUser("userA") {
+            assertThat(s3Service.getResourceUrl(resource.key)).isNotNull()
+        }
+        withUser("userB") {
+            assertThrows<AccessDeniedException> { s3Service.getResourceUrl(resource.key) }
+        }
+    }
+
+    @Test
+    fun `get resource url by key for legacy resource is accessible to admin only`() {
+        val resource = save(createdBy = null)
+        mockPresign()
+
+        withUser("userA") {
+            assertThrows<AccessDeniedException> { s3Service.getResourceUrl(resource.key) }
+        }
+        withUser("admin", "ROLE_ADMIN") {
+            assertThat(s3Service.getResourceUrl(resource.key)).isNotNull()
+        }
+    }
+
+    @Test
+    @WithMockUser("userA")
+    fun `get resource url by unknown key throws not found`() {
+        assertThrows<NoSuchElementException> { s3Service.getResourceUrl("unknown-key.txt") }
+    }
+
+    @Test
+    fun `remove resource by key of another user is denied and keeps the resource`() {
+        val resource = save(createdBy = "userA")
+
+        withUser("userB") {
+            assertThrows<AccessDeniedException> { s3Service.removeResource(resource.key) }
+        }
+        assertThat(s3ResourceRepository.findById(resource.resourceId)).isPresent
+    }
+
+    @Test
     fun `claim for document follows ownership rules`() {
         val resource = save(createdBy = "userA")
         val documentId = UUID.randomUUID()

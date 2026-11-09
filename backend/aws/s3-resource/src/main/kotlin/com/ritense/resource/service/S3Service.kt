@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.resource.FileStatus
 import com.ritense.valtimo.contract.resource.Resource
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.apache.commons.io.FilenameUtils
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -62,7 +63,8 @@ class S3Service(
     private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
     private val s3ResourceRepository: S3ResourceRepository,
-    private val s3UploadTicketRepository: S3UploadTicketRepository
+    private val s3UploadTicketRepository: S3UploadTicketRepository,
+    private val s3ResourceAccessService: ObjectProvider<S3ResourceAccessService>
 ) : ResourceService {
 
     fun generatePreSignedPutObjectUrl(fileName: String): URL {
@@ -150,7 +152,8 @@ class S3Service(
     }
 
     override fun removeResource(key: String) {
-        val s3Resource = s3ResourceRepository.findByKey(key)
+        val s3Resource = getResourceByKey(key)
+        s3ResourceAccessService.getObject().requireDeleteAccess(s3Resource)
         val deleteObjectRequest = DeleteObjectRequest
             .builder()
             .bucket(s3Resource.bucketName)
@@ -243,6 +246,7 @@ class S3Service(
 
     override fun getResourceUrl(fileName: String): URL {
         val resource = getResourceByKey(fileName)
+        s3ResourceAccessService.getObject().requireReadAccess(resource)
         val presignRequest = buildGetObjectRequest(resource)
         val presignedRequest: PresignedGetObjectRequest = s3Presigner.presignGetObject(presignRequest)
         return presignedRequest.url()
@@ -256,6 +260,7 @@ class S3Service(
 
     override fun getResourceByKey(fileName: String): S3Resource {
         return s3ResourceRepository.findByKey(fileName)
+            ?: throw NoSuchElementException("Unable to find resource with key $fileName")
     }
 
     override fun activate(id: UUID) {

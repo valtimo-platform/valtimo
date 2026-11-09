@@ -27,6 +27,7 @@ import com.ritense.resource.service.ResourceService
 import com.ritense.resource.service.S3Service
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.web.rest.S3Resource
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -101,14 +102,16 @@ class S3ResourceAutoConfiguration {
         s3Client: S3Client,
         s3Presigner: S3Presigner,
         s3ResourceRepository: S3ResourceRepository,
-        s3UploadTicketRepository: S3UploadTicketRepository
+        s3UploadTicketRepository: S3UploadTicketRepository,
+        s3ResourceAccessService: ObjectProvider<S3ResourceAccessService>
     ): S3Service {
         return S3Service(
             bucketName,
             s3Client,
             s3Presigner,
             s3ResourceRepository,
-            s3UploadTicketRepository
+            s3UploadTicketRepository,
+            s3ResourceAccessService
         )
     }
 

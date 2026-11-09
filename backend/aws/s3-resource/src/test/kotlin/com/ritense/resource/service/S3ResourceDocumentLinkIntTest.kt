@@ -124,6 +124,8 @@ class S3ResourceDocumentLinkIntTest : BaseIntegrationTest() {
 
         assertThrows<AccessDeniedException> { controller.get(resource.id().toString()) }
         assertThrows<AccessDeniedException> { controller.delete(resource.id().toString()) }
+        assertThrows<AccessDeniedException> { s3Service.getResourceUrl(resource.key) }
+        assertThrows<AccessDeniedException> { s3Service.removeResource(resource.key) }
     }
 
     @Test
@@ -147,7 +149,9 @@ class S3ResourceDocumentLinkIntTest : BaseIntegrationTest() {
         loginAs("userB", ROLE_KEY)
 
         assertThat(controller.get(resource.id().toString()).statusCode.is2xxSuccessful).isTrue()
+        assertThat(s3Service.getResourceUrl(resource.key)).isNotNull()
         assertThrows<AccessDeniedException> { controller.delete(resource.id().toString()) }
+        assertThrows<AccessDeniedException> { s3Service.removeResource(resource.key) }
     }
 
     private fun loginAs(username: String, vararg roles: String) {
