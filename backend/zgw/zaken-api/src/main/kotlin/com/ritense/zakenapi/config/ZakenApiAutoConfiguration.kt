@@ -71,6 +71,7 @@ import com.ritense.zakenapi.security.ZakenApiHttpSecurityConfigurer
 import com.ritense.zakenapi.service.DefaultZaakTypeLinkService
 import com.ritense.zakenapi.service.UploadProcessDelegate
 import com.ritense.zakenapi.service.ZaakDocumentService
+import com.ritense.zakenapi.service.ZaakInformatieObjectCaseResolver
 import com.ritense.zakenapi.service.ZaakNotitieService
 import com.ritense.zakenapi.service.ZaakService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
@@ -177,6 +178,16 @@ class ZakenApiAutoConfiguration {
         documentenApiVersionService,
         authorizationService,
         documentService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ZaakInformatieObjectCaseResolver::class)
+    fun zaakInformatieObjectCaseResolver(
+        pluginService: PluginService,
+        zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
+    ) = ZaakInformatieObjectCaseResolver(
+        pluginService,
+        zaakInstanceLinkRepository,
     )
 
     @Bean
