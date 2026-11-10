@@ -33,6 +33,7 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessRequest
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import okhttp3.mockwebserver.Dispatcher
@@ -45,13 +46,16 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
@@ -130,6 +134,8 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
     @Test
     @WithMockUser(USER_EMAIL)
     fun `should download document from documeten API`() {
+        linkDocumentToNewCase()
+
         mockMvc.perform(
             get(
                 "/api/v1/documenten-api/{documentenapiConfigurationId}/files/{documentId}/download",
@@ -141,6 +147,54 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
             .andExpect(header().string("Content-Disposition", "attachment; filename=\"passport.jpg\""))
             .andExpect(header().string("Content-Type", "image/jpeg"))
             .andExpect(content().string("TEST_DOCUMENT_CONTENT"))
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [ADMIN, USER])
+    fun `should forbid downloading document that is not linked to a case`() {
+        mockMvc.perform(get(DOCUMENT_URL + "/download", pluginConfiguration.id.id, DOCUMENT_ID))
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [ADMIN, USER])
+    fun `should forbid modifying document that is not linked to a case`() {
+        mockMvc.perform(
+            put(DOCUMENT_URL, pluginConfiguration.id.id, DOCUMENT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(MODIFY_REQUEST)
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = [ADMIN, USER])
+    fun `should forbid deleting document that is not linked to a case`() {
+        mockMvc.perform(delete(DOCUMENT_URL, pluginConfiguration.id.id, DOCUMENT_ID))
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = ["ROLE_TEST"])
+    fun `should forbid downloading document linked to a case the user cannot view`() {
+        linkDocumentToNewCase()
+
+        mockMvc.perform(get(DOCUMENT_URL + "/download", pluginConfiguration.id.id, DOCUMENT_ID))
+            .andExpect(status().isForbidden)
+    }
+
+    private fun linkDocumentToNewCase() {
+        val caseDocumentId = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    "profile",
+                    "profile",
+                    "1.0.0",
+                    JsonDocumentContent("""{"description":"Test description"}""").asJson()
+                )
+            ).resultingDocument().get().id().id
+        }
+        whenever(informatieObjectCaseResolver.getLinkedCaseDocumentIds(any(), eq(DOCUMENT_ID)))
+            .thenReturn(listOf(caseDocumentId))
     }
 
     @Test
@@ -302,5 +356,8 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
     companion object {
         private const val USER_EMAIL = "user@valtimo.nl"
         private const val DOCUMENT_ID = "3bd88200-11cb-45cf-a742-da01261755b1"
+        private const val DOCUMENT_URL = "/api/v1/documenten-api/{pluginConfigurationId}/files/{documentId}"
+        private const val MODIFY_REQUEST =
+            """{"creatiedatum":"2024-01-01","titel":"Passport","auteur":"me","taal":"eng"}"""
     }
 }
