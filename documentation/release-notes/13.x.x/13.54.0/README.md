@@ -35,6 +35,7 @@ show their color too.
 | Case definitions | Saving case settings no longer replaces the external start form description with the start form URL. |
 | Case groups | Opening a case group that doesn't exist no longer loads the list columns, search fields and statuses of that group. |
 | Case management | Actions hidden from the start menu stay hidden after creating a new version of the case type or changing the building block version of the action. |
+| Case management | Importing a case definition lists the plugin configurations used by its processes again, so they can be mapped to plugin configurations in this environment. |
 | Dashboard | A bar chart widget with many categories no longer overflows its widget and overlaps other widgets. The legend now scrolls inside the widget. |
 | Dashboard | A donut or bar chart widget with a long legend no longer shows two vertical scrollbars next to each other. |
 | Dashboard | A long dashboard widget subtitle is now cut off with ellipsis instead of running out of the widget, and the full title and subtitle show on hover. |
