@@ -56,6 +56,7 @@ import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakResponse
+import com.ritense.zakenapi.exception.InformatieObjectNotRelatedToCaseException
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
@@ -533,7 +534,7 @@ class ZaakDocumentService(
         )
 
         if (zaakInformatieObject == null) {
-            throw IllegalArgumentException("InformatieObject is not related to this Zaak")
+            throw InformatieObjectNotRelatedToCaseException("InformatieObject is not related to this Zaak")
         }
 
         return Pair(documentenApiPlugin, informatieobjectUrl)

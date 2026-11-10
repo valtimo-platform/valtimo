@@ -27,6 +27,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.zakenapi.domain.ZaakResponse
+import com.ritense.zakenapi.exception.InformatieObjectNotRelatedToCaseException
 import com.ritense.zakenapi.service.ZaakDocumentService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
@@ -37,6 +38,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -167,6 +169,10 @@ class ZaakDocumentResource(
             .contentType(documentMediaType)
             .body(InputStreamResource(documentInputStream))
     }
+
+    @ExceptionHandler(InformatieObjectNotRelatedToCaseException::class)
+    fun handleInformatieObjectNotRelatedToCase(e: InformatieObjectNotRelatedToCaseException): ResponseEntity<Void> =
+        ResponseEntity.badRequest().build()
 
     companion object {
         private val logger = KotlinLogging.logger { }
