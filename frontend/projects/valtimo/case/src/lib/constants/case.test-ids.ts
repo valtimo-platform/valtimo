@@ -20,6 +20,7 @@ export const CASE_OVERVIEW_TEST_IDS = {
   groupsSection: 'caseOverviewGroupsSection',
   groupsCount: 'caseOverviewGroupsCount',
   groupTile: 'caseOverviewGroupTile',
+  groupColorDot: 'caseOverviewGroupColorDot',
   groupPinButton: 'caseOverviewGroupPinButton',
   groupOpenLink: 'caseOverviewGroupOpenLink',
   groupsNoResults: 'caseOverviewGroupsNoResults',
@@ -34,6 +35,10 @@ export const CASE_OVERVIEW_TEST_IDS = {
 export const CASE_LIST_ACTIONS_TEST_IDS = {
   memberSelectionModal: 'caseListMemberSelectionModal',
   memberTile: 'caseListMemberTile',
+} as const;
+
+export const CASE_LIST_TEST_IDS = {
+  groupNotFound: 'case-list-group-not-found',
 } as const;
 
 export const CASE_LIST_TOOLBAR_TEST_IDS = {
