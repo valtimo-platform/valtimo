@@ -33,10 +33,11 @@ New enhancement explanation.
 | Area | Fix |
 |------|-----|
 | Case management | Actions hidden from the start menu stay hidden after creating a new version of the case type or changing the building block version of the action. |
+| Case management | Importing a case definition lists the plugin configurations used by its processes again, so they can be mapped to plugin configurations in this environment. |
 | Dashboard | A long dashboard widget subtitle is now cut off with ellipsis instead of running out of the widget, and the full title and subtitle show on hover. |
-| Forms | Disabled fields in forms now show their value in readable text, styled as read-only instead of faded grey. |
 | Dashboard | A bar chart widget with many categories no longer overflows its widget and overlaps other widgets. The legend now scrolls inside the widget. |
 | Dashboard | A donut or bar chart widget with a long legend no longer shows two vertical scrollbars next to each other. |
+| Forms | Disabled fields in forms now show their value in readable text, styled as read-only instead of faded grey. |
 | Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
 
 ---
