@@ -6,8 +6,9 @@ Release date: 11-11-2026
 
 ## Migration
 
-* [Back-end migration](back-end-migration.md) — enable ShedLock in your own implementation if it
-  runs on more than one server
+* [Scheduled jobs on more than one server](https://ritense-1.gitbook.io/valtimo-dev-docs/operations/scheduled-jobs)
+  — enable ShedLock in your own implementation if it runs on more than one server. No action is
+  needed when you use the default Docker images.
 
 ---
 
@@ -36,7 +37,7 @@ New enhancement explanation.
 | Forms | Disabled fields in forms now show their value in readable text, styled as read-only instead of faded grey. |
 | Dashboard | A bar chart widget with many categories no longer overflows its widget and overlaps other widgets. The legend now scrolls inside the widget. |
 | Dashboard | A donut or bar chart widget with a long legend no longer shows two vertical scrollbars next to each other. |
-| Notificaties API | With more than one server, notifications are no longer handled twice and the cleanup of handled notifications no longer fails |
+| Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
 
 ---
 

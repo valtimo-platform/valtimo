@@ -67,13 +67,14 @@ class NotificatiesApiInboundEventWorkerIT : BaseIntegrationTest() {
     @Test
     fun `maintenance is skipped while another instance holds the maintenance lock`() {
         assertTrue(AopUtils.isAopProxy(worker), "the @SchedulerLock interceptor is not applied to the worker")
-        val expiredId = saveEvent(
-            NotificatiesApiInboundEventStatus.PROCESSED,
-            LocalDateTime.now().minus(processingProperties.retentionPeriod).minusDays(1)
-        )
-
         val otherInstanceLock = acquireMaintenanceLock()
+        val expiredId: UUID
         try {
+            expiredId = saveEvent(
+                NotificatiesApiInboundEventStatus.PROCESSED,
+                LocalDateTime.now().minus(processingProperties.retentionPeriod).minusDays(1)
+            )
+
             worker.runMaintenance()
             assertTrue(inboundEventRepository.existsById(expiredId))
         } finally {
