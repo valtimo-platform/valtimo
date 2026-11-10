@@ -46,9 +46,11 @@ interface NotificatiesApiInboundEventRepository :
     @Query("select event from NotificatiesApiInboundEvent event where event.id = :id")
     fun findByIdForUpdate(id: UUID): NotificatiesApiInboundEvent?
 
+    // Bulk delete: no row-count check, so rows already removed by another instance are skipped.
     @Modifying
+    @Query("delete from NotificatiesApiInboundEvent event where event.status = :status and event.receivedAt < :receivedAt")
     fun deleteByStatusAndReceivedAtBefore(
         status: NotificatiesApiInboundEventStatus,
         receivedAt: LocalDateTime
-    ): Long
+    ): Int
 }
