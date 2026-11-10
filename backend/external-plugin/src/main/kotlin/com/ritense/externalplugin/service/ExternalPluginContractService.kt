@@ -25,6 +25,7 @@ import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.client.ExternalPluginHostClient.ActionResponse
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
 import com.ritense.externalplugin.domain.ExternalPluginContractBinding
+import com.ritense.externalplugin.domain.ExternalPluginContractJob
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginHost
@@ -156,22 +157,10 @@ class ExternalPluginContractService(
     fun admit(callerConfigurationId: UUID, contract: String, operation: String): Admission {
         val caller = configurationRepository.findById(callerConfigurationId).orElse(null)
         val callerDefinition = caller?.let { definitionRepository.findById(it.definitionId).orElse(null) }
-        if (caller == null || callerDefinition == null || !isRunnable(callerDefinition)) {
-            return Admission.Rejected(
-                ContractOutcome.error(ContractErrorCodes.CALLER_UNAVAILABLE, "The calling configuration is not active")
-            )
+        if (caller == null || callerDefinition == null) {
+            return Admission.Rejected(callerUnavailable())
         }
-
-        val declaredOperations = ExternalPluginManifestContracts.declaredOperations(callerDefinition.manifestJson, contract)
-        if (declaredOperations != null && operation !in declaredOperations) {
-            return Admission.Rejected(
-                ContractOutcome.error(
-                    ContractErrorCodes.OPERATION_NOT_DECLARED,
-                    "'${callerDefinition.pluginId}@${callerDefinition.version}' declares operations $declaredOperations " +
-                        "of '$contract', not '$operation'",
-                )
-            )
-        }
+        callerRejection(callerDefinition, contract, operation)?.let { return Admission.Rejected(it) }
 
         val binding = contractBindingRepository.findByConfigurationIdAndContract(callerConfigurationId, contract)
             ?: return Admission.Rejected(
@@ -234,41 +223,34 @@ class ExternalPluginContractService(
             )
         }
 
-        val providedOperation = ExternalPluginManifestContracts.findOperation(
-            target.providerDefinition.manifestJson, contract, operation
-        ) ?: return Resolution.Rejected(
-            ContractOutcome.error(
-                ContractErrorCodes.OPERATION_NOT_PROVIDED,
-                "'${target.providerDefinition.pluginId}@${target.providerDefinition.version}' does not provide " +
-                    "operation '$operation' of contract '$contract'",
-            ),
-            target,
-        )
-        if (synchronous && providedOperation.isJob) {
-            return Resolution.Rejected(
-                ContractOutcome.error(
-                    ContractErrorCodes.OPERATION_REQUIRES_JOB,
-                    "Operation '$operation' of contract '$contract' is long-running; request it as a job",
-                ),
-                target,
-            )
+        return when (val checked = operationCheck(target, contract, operation, payloadNode, synchronous)) {
+            is OperationCheck.Rejected -> Resolution.Rejected(checked.outcome, target)
+            is OperationCheck.Passed -> Resolution.Resolved(target, contract, checked.operation, payloadNode, chain)
         }
-        providedOperation.output?.let { schemaValidator.compile(it) as? Compiled.Invalid }?.let {
-            return Resolution.Rejected(
-                ContractOutcome.error(
-                    ContractErrorCodes.PROVIDER_INVALID_RESULT,
-                    invalidSchemaMessage(providedOperation.key, OUTPUT, it.reason),
-                ),
-                target,
-            )
-        }
-        providedOperation.input?.let { schema -> schemaViolation(providedOperation, INPUT, schema, payloadNode) }?.let {
-            return Resolution.Rejected(ContractOutcome.error(ContractErrorCodes.CONTRACT_INPUT_INVALID, it), target)
-        }
-        return Resolution.Resolved(target, contract, providedOperation, payloadNode, chain)
     }
 
-    /** Re-checks a provider before a (retried) job delivery; the binding may have changed meanwhile. */
+    /** Target configuration of the requester's binding for [contract]; null when unbound. */
+    fun bindingTargetOf(requesterConfigurationId: UUID, contract: String): UUID? =
+        contractBindingRepository.findByConfigurationIdAndContract(requesterConfigurationId, contract)?.targetConfigurationId
+
+    /**
+     * The guards of [resolve] again, at (re)delivery of a stored job: requester still runnable and
+     * declaring the operation, provider still providing it, payload valid against its current manifest.
+     * Binding and provider availability are the caller's checks.
+     */
+    fun recheckJob(job: ExternalPluginContractJob, target: ContractTarget, payload: JsonNode): JobRecheck {
+        if (!isRunnable(target.callerDefinition)) {
+            // Heals on re-acceptance, like the provider side; expiry ends it otherwise.
+            return JobRecheck.Retry(withCode(ContractErrorCodes.CALLER_UNAVAILABLE, "The requesting configuration is not active"))
+        }
+        callerRejection(target.callerDefinition, job.contract, job.operation)?.let { return JobRecheck.Fail(it) }
+        return when (val checked = operationCheck(target, job.contract, job.operation, payload, synchronous = false)) {
+            is OperationCheck.Rejected -> JobRecheck.Fail(checked.outcome)
+            is OperationCheck.Passed -> JobRecheck.Deliver(checked.operation)
+        }
+    }
+
+    /** Provider availability only; whether it is still the bound one is the caller's check. */
     fun loadProvider(providerConfigurationId: UUID): ProviderLookup {
         val provider = configurationRepository.findById(providerConfigurationId).orElse(null)
         val definition = provider?.let { definitionRepository.findById(it.definitionId).orElse(null) }
@@ -499,6 +481,65 @@ class ExternalPluginContractService(
         }
     }
 
+    private fun callerUnavailable() =
+        ContractOutcome.error(ContractErrorCodes.CALLER_UNAVAILABLE, "The calling configuration is not active")
+
+    private fun callerRejection(callerDefinition: ExternalPluginDefinition, contract: String, operation: String): ContractOutcome? {
+        if (!isRunnable(callerDefinition)) return callerUnavailable()
+        val declaredOperations = ExternalPluginManifestContracts.declaredOperations(callerDefinition.manifestJson, contract)
+        if (declaredOperations != null && operation !in declaredOperations) {
+            return ContractOutcome.error(
+                ContractErrorCodes.OPERATION_NOT_DECLARED,
+                "'${callerDefinition.pluginId}@${callerDefinition.version}' declares operations $declaredOperations " +
+                    "of '$contract', not '$operation'",
+            )
+        }
+        return null
+    }
+
+    private fun operationCheck(
+        target: ContractTarget,
+        contract: String,
+        operation: String,
+        payload: JsonNode,
+        synchronous: Boolean,
+    ): OperationCheck {
+        val providedOperation = ExternalPluginManifestContracts.findOperation(
+            target.providerDefinition.manifestJson, contract, operation
+        ) ?: return OperationCheck.Rejected(
+            ContractOutcome.error(
+                ContractErrorCodes.OPERATION_NOT_PROVIDED,
+                "'${target.providerDefinition.pluginId}@${target.providerDefinition.version}' does not provide " +
+                    "operation '$operation' of contract '$contract'",
+            )
+        )
+        if (synchronous && providedOperation.isJob) {
+            return OperationCheck.Rejected(
+                ContractOutcome.error(
+                    ContractErrorCodes.OPERATION_REQUIRES_JOB,
+                    "Operation '$operation' of contract '$contract' is long-running; request it as a job",
+                )
+            )
+        }
+        providedOperation.output?.let { schemaValidator.compile(it) as? Compiled.Invalid }?.let {
+            return OperationCheck.Rejected(
+                ContractOutcome.error(
+                    ContractErrorCodes.PROVIDER_INVALID_RESULT,
+                    invalidSchemaMessage(providedOperation.key, OUTPUT, it.reason),
+                )
+            )
+        }
+        providedOperation.input?.let { schema -> schemaViolation(providedOperation, INPUT, schema, payload) }?.let {
+            return OperationCheck.Rejected(ContractOutcome.error(ContractErrorCodes.CONTRACT_INPUT_INVALID, it))
+        }
+        return OperationCheck.Passed(providedOperation)
+    }
+
+    private sealed interface OperationCheck {
+        data class Passed(val operation: ExternalPluginManifestContracts.Operation) : OperationCheck
+        data class Rejected(val outcome: ContractOutcome) : OperationCheck
+    }
+
     private fun invalidSchemaMessage(operationKey: String, kind: String, reason: String) =
         "Operation '$operationKey' declares an invalid $kind schema: $reason"
 
@@ -569,6 +610,12 @@ class ExternalPluginContractService(
         ) : ProviderLookup
 
         data class Rejected(val outcome: ContractOutcome) : ProviderLookup
+    }
+
+    sealed interface JobRecheck {
+        data class Deliver(val operation: ExternalPluginManifestContracts.Operation) : JobRecheck
+        data class Retry(val error: String) : JobRecheck
+        data class Fail(val outcome: ContractOutcome) : JobRecheck
     }
 
     sealed interface ProviderReply {
@@ -667,4 +714,5 @@ object ContractErrorCodes {
     const val IDEMPOTENCY_KEY_CONFLICT = "IDEMPOTENCY_KEY_CONFLICT"
     const val CONTRACT_JOB_EXPIRED = "CONTRACT_JOB_EXPIRED"
     const val CONTRACT_JOB_CANCELLED = "CONTRACT_JOB_CANCELLED"
+    const val BINDING_CHANGED = "BINDING_CHANGED"
 }

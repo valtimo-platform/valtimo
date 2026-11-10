@@ -531,6 +531,11 @@ A Wasm plugin has no timer: a job you accept must be completed from a later invo
 event, request or submit handler — for instance by keeping the `jobId` in `kv` until the awaited
 work is done. A job nobody completes expires at its `timeout` (default one hour, at most a day).
 
+A job stays with the provider that was bound when it was requested. If an administrator changes or
+removes that binding, or re-acceptance of the requester drops it, GZAC fails the job with
+`BINDING_CHANGED`: it is not delivered again, and a later `completeJob` for it is refused. A delivery
+that is already in flight at that moment still reaches you.
+
 #### Requester
 
 Declare the contracts you call; the object form also limits which operations you may call:
@@ -597,6 +602,7 @@ onContractReply((reply) => {
   | `IDEMPOTENCY_KEY_CONFLICT` | The `idempotencyKey` was already used for another request: another contract or operation, another case, or another reply target. |
   | `CALLER_UNAVAILABLE` | Your own configuration is not active. |
   | `CONTRACT_JOB_EXPIRED`, `CONTRACT_JOB_CANCELLED` | In job replies: the deadline passed, or an administrator cancelled the job. |
+  | `BINDING_CHANGED` | In job replies: the contract's binding was changed or removed before the provider finished. Request the job again if you still need it. |
 - **Time budgets.** A `pluginCall` blocks your handler like `gzacApi` and must finish within your
   invocation: it hands the time it has left to GZAC (as a relative timeout, so clock skew between
   machines cannot distort it), and the provider's own onward calls stay inside that budget. With

@@ -104,6 +104,7 @@ class ExternalPluginConfigurationServiceTest {
             "gzac.events",
             "http://localhost:8080",
             mock<ExternalPluginContractBindingRepository>(),
+            mock<ExternalPluginContractJobService>(),
         )
     }
 
@@ -411,6 +412,7 @@ class ExternalPluginConfigurationServiceTest {
         "gzac.events",
         "http://localhost:8080",
         mock<ExternalPluginContractBindingRepository>(),
+        mock<ExternalPluginContractJobService>(),
     )
 
     private fun secretSchema(): ObjectNode = objectMapper.readTree(

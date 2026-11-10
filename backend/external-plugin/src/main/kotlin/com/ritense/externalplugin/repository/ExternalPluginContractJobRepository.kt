@@ -60,6 +60,13 @@ interface ExternalPluginContractJobRepository :
         statuses: Collection<ExternalPluginContractJobStatus>,
     ): List<ExternalPluginContractJob>
 
+    fun findAllByRequesterConfigurationIdAndContractAndProviderConfigurationIdAndStatusIn(
+        requesterConfigurationId: UUID,
+        contract: String,
+        providerConfigurationId: UUID,
+        statuses: Collection<ExternalPluginContractJobStatus>,
+    ): List<ExternalPluginContractJob>
+
     fun findAllByProviderConfigurationIdInAndStatusIn(
         configurationIds: Collection<UUID>,
         statuses: Collection<ExternalPluginContractJobStatus>,

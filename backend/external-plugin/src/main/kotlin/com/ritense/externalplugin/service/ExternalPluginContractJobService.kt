@@ -58,7 +58,7 @@ import java.util.UUID
 
 /**
  * The job ledger's request side: creation (`POST /jobs`), the provider's completion (ownership on the
- * row is the whole check), the read views and the administrator's controls. Delivery lives in
+ * row plus the current binding), the read views and the administrator's controls. Delivery lives in
  * [ExternalPluginContractJobDispatcher].
  */
 @SkipComponentScan
@@ -198,6 +198,11 @@ class ExternalPluginContractJobService(
                 return@execute CompletionResult.Conflict
             }
             val now = clock.instant()
+            if (contractService.bindingTargetOf(job.requesterConfigurationId, job.contract) != callerConfigurationId) {
+                finish(job, FAILED, null, ContractErrorCodes.BINDING_CHANGED, BINDING_CHANGED_MESSAGE, now)
+                logger.info { "Contract job ${job.id} ${job.contract}/${job.operation} failed: binding changed before completion" }
+                return@execute CompletionResult.Conflict
+            }
             when {
                 status == STATUS_COMPLETED && violation != null -> {
                     finish(job, FAILED, null, ContractErrorCodes.PROVIDER_INVALID_RESULT, violation, now)
@@ -355,6 +360,29 @@ class ExternalPluginContractJobService(
         }
     }
 
+    /**
+     * Fails the requester's open jobs for [contract] still aimed at [providerConfigurationId], after
+     * their binding was removed or retargeted. Joins the caller's transaction so the job change and
+     * the binding change commit together. Replies go out as usual.
+     */
+    internal fun failForBindingChange(
+        requesterConfigurationId: UUID,
+        contract: String,
+        providerConfigurationId: UUID,
+        reason: String,
+    ): Int = transactionTemplate.execute {
+        val now = clock.instant()
+        jobRepository.findAllByRequesterConfigurationIdAndContractAndProviderConfigurationIdAndStatusIn(
+            requesterConfigurationId, contract, providerConfigurationId, ExternalPluginContractJobStatus.AWAITING_PROVIDER,
+        ).count { candidate ->
+            val job = jobRepository.findByIdForUpdate(candidate.id)
+            if (job == null || job.status !in ExternalPluginContractJobStatus.AWAITING_PROVIDER) return@count false
+            finish(job, FAILED, null, ContractErrorCodes.BINDING_CHANGED, reason, now)
+            logger.info { "Contract job ${job.id} ${job.contract}/${job.operation} failed: $reason" }
+            true
+        }
+    } ?: 0
+
     fun decryptJson(ciphertext: String?): JsonNode? = ciphertext?.let { objectMapper.readTree(encryptionService.decrypt(it)) }
 
     fun operationOf(job: ExternalPluginContractJob): ExternalPluginManifestContracts.Operation? {
@@ -511,6 +539,7 @@ class ExternalPluginContractJobService(
     companion object {
         const val STATUS_COMPLETED = "completed"
         const val STATUS_FAILED = "failed"
+        private const val BINDING_CHANGED_MESSAGE = "The binding of this contract changed before the provider finished"
         private const val MAX_DOCUMENT_ID_LENGTH = 255
         private val IDEMPOTENCY_KEY_PATTERN = Regex("^[\\x21-\\x7E]{1,255}$")
         private val logger = KotlinLogging.logger {}

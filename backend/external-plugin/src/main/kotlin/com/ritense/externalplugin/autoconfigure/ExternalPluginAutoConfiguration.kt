@@ -482,6 +482,7 @@ class ExternalPluginAutoConfiguration {
         serviceTokenService: ExternalPluginServiceTokenService,
         hostUsageResolver: ExternalPluginHostUsageResolver,
         contractBindingRepository: ExternalPluginContractBindingRepository,
+        contractJobService: ExternalPluginContractJobService,
         schemaValidator: ExternalPluginSchemaValidator,
         @Value("\${server.port:8080}") serverPort: Int,
         @Value("\${valtimo.outbox.publisher.rabbitmq.exchange:valtimo-events}") defaultEventBrokerExchange: String,
@@ -502,6 +503,7 @@ class ExternalPluginAutoConfiguration {
         defaultEventBrokerExchange,
         "http://localhost:$serverPort",
         contractBindingRepository,
+        contractJobService,
         schemaValidator,
     )
 

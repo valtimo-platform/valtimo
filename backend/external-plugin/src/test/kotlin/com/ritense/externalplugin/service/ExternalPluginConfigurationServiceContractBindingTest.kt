@@ -48,6 +48,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
@@ -67,6 +68,7 @@ class ExternalPluginConfigurationServiceContractBindingTest {
 
     private lateinit var bindingRepository: ExternalPluginContractBindingRepository
     private lateinit var hostClient: ExternalPluginHostClient
+    private lateinit var contractJobService: ExternalPluginContractJobService
     private lateinit var service: ExternalPluginConfigurationService
 
     private lateinit var consumerDefinition: ExternalPluginDefinition
@@ -80,6 +82,7 @@ class ExternalPluginConfigurationServiceContractBindingTest {
         val definitionRepository = mock<ExternalPluginDefinitionRepository>()
         bindingRepository = mock()
         hostClient = mock()
+        contractJobService = mock()
         val propertyEncryptor = mock<PluginPropertyEncryptor>()
         val encryptionService = mock<EncryptionService>()
         val serviceTokenService = mock<ExternalPluginServiceTokenService>()
@@ -139,6 +142,7 @@ class ExternalPluginConfigurationServiceContractBindingTest {
             "valtimo-events",
             "http://localhost:8080",
             bindingRepository,
+            contractJobService,
         )
 
         consumerDefinition = definition("pdca", manifest(consumes = listOf(openplan)))
@@ -349,6 +353,45 @@ class ExternalPluginConfigurationServiceContractBindingTest {
     }
 
     @Test
+    fun `retargeting a binding fails the open jobs aimed at the old provider`() {
+        val created = create(consumerDefinition, listOf(ContractBindingEntry(openplan, provider.id)))
+        val second = configuration(providerDefinition, "Open Plan (acceptance)")
+
+        service.update(created.id, "PDCA", objectMapper.createObjectNode(), contractBindings = listOf(ContractBindingEntry(openplan, second.id)))
+
+        verify(contractJobService).failForBindingChange(eq(created.id), eq(openplan), eq(provider.id), any())
+        verifyNoMoreInteractions(contractJobService)
+    }
+
+    @Test
+    fun `removing a binding fails the open jobs aimed at its provider`() {
+        val created = create(consumerDefinition, listOf(ContractBindingEntry(openplan, provider.id)))
+
+        service.update(created.id, "PDCA", objectMapper.createObjectNode(), contractBindings = emptyList())
+
+        verify(contractJobService).failForBindingChange(eq(created.id), eq(openplan), eq(provider.id), any())
+    }
+
+    @Test
+    fun `re-saving the same binding leaves open jobs alone`() {
+        val other = "nl.ritense.other@1"
+        val otherProvider = configuration(definition("other", manifest(provides = listOf(other))), "Other")
+        consumerDefinition.manifestJson = manifest(consumes = listOf(openplan, other))
+        val created = create(
+            consumerDefinition,
+            listOf(ContractBindingEntry(openplan, provider.id), ContractBindingEntry(other, otherProvider.id)),
+        )
+
+        service.update(
+            created.id, "PDCA", objectMapper.createObjectNode(),
+            contractBindings = listOf(ContractBindingEntry(openplan, provider.id)),
+        )
+
+        verify(contractJobService).failForBindingChange(eq(created.id), eq(other), eq(otherProvider.id), any())
+        verifyNoMoreInteractions(contractJobService)
+    }
+
+    @Test
     fun `getContractBindings names the target`() {
         val created = create(consumerDefinition, listOf(ContractBindingEntry(openplan, provider.id)))
 
@@ -415,6 +458,8 @@ class ExternalPluginConfigurationServiceContractBindingTest {
 
         assertThat(bindings.filter { it.configurationId == consumer.id }.map { it.contract to it.targetConfigurationId })
             .containsExactlyInAnyOrder(openplan to provider.id, added to addedProvider.id)
+        verify(contractJobService).failForBindingChange(eq(consumer.id), eq(dropped), eq(droppedProvider.id), any())
+        verifyNoMoreInteractions(contractJobService)
     }
 
     @Test

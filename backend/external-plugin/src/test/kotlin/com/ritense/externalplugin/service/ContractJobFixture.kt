@@ -175,6 +175,12 @@ class ContractJobFixture(
             .thenReturn(ActionResponse(status, body?.let(::json)))
     }
 
+    /** Rebinds the requester's contract; null removes the binding. */
+    fun bindRequesterTo(target: UUID?) {
+        val binding = target?.let { ExternalPluginContractBinding(UUID.randomUUID(), requester.id, contract, it) }
+        whenever(bindingRepository.findByConfigurationIdAndContract(requester.id, contract)).thenReturn(binding)
+    }
+
     fun job(id: UUID): ExternalPluginContractJob = jobs.getValue(id)
 
     fun json(body: String): JsonNode = objectMapper.readTree(body)
@@ -222,6 +228,14 @@ class ContractJobFixture(
                 val now = invocation.getArgument<Instant>(1)
                 jobs.values.filter { it.status in statuses && it.nextAttemptAt?.isAfter(now) == false }
                     .sortedBy { it.nextAttemptAt }
+            }
+        whenever(repository.findAllByRequesterConfigurationIdAndContractAndProviderConfigurationIdAndStatusIn(any(), any(), any(), any()))
+            .thenAnswer { invocation ->
+                val statuses = invocation.getArgument<Collection<ExternalPluginContractJobStatus>>(3)
+                jobs.values.filter {
+                    it.requesterConfigurationId == invocation.getArgument(0) && it.contract == invocation.getArgument(1) &&
+                        it.providerConfigurationId == invocation.getArgument(2) && it.status in statuses
+                }
             }
         whenever(repository.deleteAllByStatusInAndUpdatedAtBefore(any(), any())).thenAnswer { invocation ->
             val statuses = invocation.getArgument<Collection<ExternalPluginContractJobStatus>>(0)

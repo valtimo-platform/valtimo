@@ -27,6 +27,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -374,6 +375,116 @@ class ExternalPluginContractJobLifecycleTest {
         assertThat(fixture.job(jobId).deadline).isEqualTo(clock.instant().plus(Duration.ofDays(1)))
         val defaulted = fixture.createAccepted("summarize")
         assertThat(fixture.job(defaulted).deadline).isEqualTo(clock.instant().plus(Duration.ofHours(1)))
+    }
+
+    @Test
+    fun `a job whose binding was removed fails without reaching the provider`() {
+        val jobId = fixture.createAccepted("generate")
+        fixture.bindRequesterTo(null)
+
+        dispatcher.deliverRequests()
+
+        assertThat(fixture.job(jobId).status).isEqualTo(ExternalPluginContractJobStatus.FAILED)
+        assertThat(fixture.job(jobId).errorCode).isEqualTo(ContractErrorCodes.BINDING_CHANGED)
+        verify(hostClient, never()).invokeContract(any(), any(), any(), any(), any(), any(), any(), anyOrNull())
+    }
+
+    @Test
+    fun `a job whose binding moved to another provider fails without reaching either`() {
+        val jobId = fixture.createAccepted("generate")
+        fixture.bindRequesterTo(fixture.configuration(fixture.definition("generator-2", fixture.providerDefinition.manifestJson!!)).id)
+
+        dispatcher.deliverRequests()
+
+        assertThat(fixture.job(jobId).errorCode).isEqualTo(ContractErrorCodes.BINDING_CHANGED)
+        verify(hostClient, never()).invokeContract(any(), any(), any(), any(), any(), any(), any(), anyOrNull())
+    }
+
+    @Test
+    fun `an unbound provider that is also unavailable fails at once instead of retrying`() {
+        val jobId = fixture.createAccepted("generate")
+        fixture.bindRequesterTo(null)
+        fixture.providerDefinition.status = ExternalPluginDefinitionStatus.UNAVAILABLE
+
+        dispatcher.deliverRequests()
+
+        assertThat(fixture.job(jobId).status).isEqualTo(ExternalPluginContractJobStatus.FAILED)
+        assertThat(fixture.job(jobId).errorCode).isEqualTo(ContractErrorCodes.BINDING_CHANGED)
+    }
+
+    @Test
+    fun `a requester awaiting re-acceptance is retried, not delivered`() {
+        val jobId = fixture.createAccepted("generate")
+        fixture.requesterDefinition.pendingContentHash = "sha256:pending"
+
+        dispatcher.deliverRequests()
+
+        assertThat(fixture.job(jobId).status).isEqualTo(ExternalPluginContractJobStatus.PENDING)
+        assertThat(fixture.job(jobId).deliveryAttempts).isEqualTo(1)
+        assertThat(fixture.job(jobId).lastDeliveryError).startsWith(ContractErrorCodes.CALLER_UNAVAILABLE)
+        verify(hostClient, never()).invokeContract(any(), any(), any(), any(), any(), any(), any(), anyOrNull())
+    }
+
+    @Test
+    fun `a requester that no longer declares the operation fails the job`() {
+        val jobId = fixture.createAccepted("generate")
+        fixture.requesterDefinition.manifestJson = fixture.json(
+            """{"permissions": {"contracts": [{"contract": "$contract", "operations": ["archive"]}]}}"""
+        ) as ObjectNode
+
+        dispatcher.deliverRequests()
+
+        assertThat(fixture.job(jobId).errorCode).isEqualTo(ContractErrorCodes.OPERATION_NOT_DECLARED)
+        verify(hostClient, never()).invokeContract(any(), any(), any(), any(), any(), any(), any(), anyOrNull())
+    }
+
+    @Test
+    fun `a provider re-accepted with a stricter input schema fails the stored payload`() {
+        val jobId = fixture.createAccepted("generate")
+        fixture.providerDefinition.manifestJson = fixture.json(
+            """
+            {"provides": [{"contract": "$contract", "operations": [
+                {"key": "generate", "title": "Generate", "mode": "job",
+                 "input": {"type": "object", "required": ["locale"]}}
+            ]}]}
+            """.trimIndent()
+        ) as ObjectNode
+
+        dispatcher.deliverRequests()
+
+        assertThat(fixture.job(jobId).errorCode).isEqualTo(ContractErrorCodes.CONTRACT_INPUT_INVALID)
+        verify(hostClient, never()).invokeContract(any(), any(), any(), any(), any(), any(), any(), anyOrNull())
+    }
+
+    @Test
+    fun `a binding change fails the requester's open jobs for the old provider only`() {
+        val pending = fixture.createAccepted("generate")
+        val accepted = fixture.createAccepted("archive").also { fixture.job(it).status = ExternalPluginContractJobStatus.ACCEPTED }
+        val completed = fixture.createAccepted("summarize").also { fixture.job(it).status = ExternalPluginContractJobStatus.COMPLETED }
+
+        val failed = jobService.failForBindingChange(requester.id, contract, provider.id, "The binding of contract changed")
+        val otherProvider = jobService.failForBindingChange(requester.id, contract, UUID.randomUUID(), "irrelevant")
+
+        assertThat(failed).isEqualTo(2)
+        assertThat(otherProvider).isZero()
+        listOf(pending, accepted).forEach {
+            assertThat(fixture.job(it).status).isEqualTo(ExternalPluginContractJobStatus.FAILED)
+            assertThat(fixture.job(it).errorCode).isEqualTo(ContractErrorCodes.BINDING_CHANGED)
+        }
+        assertThat(fixture.job(completed).status).isEqualTo(ExternalPluginContractJobStatus.COMPLETED)
+        assertThat(jobService.complete(provider.id, accepted, "completed", null, null, null)).isEqualTo(CompletionResult.Conflict)
+    }
+
+    @Test
+    fun `a provider whose binding moved cannot complete an accepted job`() {
+        val jobId = fixture.createAccepted("archive")
+        fixture.job(jobId).status = ExternalPluginContractJobStatus.ACCEPTED
+        fixture.bindRequesterTo(null)
+
+        assertThat(jobService.complete(provider.id, jobId, "completed", null, null, null)).isEqualTo(CompletionResult.Conflict)
+        assertThat(fixture.job(jobId).status).isEqualTo(ExternalPluginContractJobStatus.FAILED)
+        assertThat(fixture.job(jobId).errorCode).isEqualTo(ContractErrorCodes.BINDING_CHANGED)
+        assertThat(fixture.job(jobId).resultPayload).isNull()
     }
 
     @Test

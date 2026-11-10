@@ -52,6 +52,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -93,6 +94,8 @@ class ExternalPluginConfigurationService(
      */
     private val fallbackGzacBaseUrl: String,
     private val contractBindingRepository: ExternalPluginContractBindingRepository,
+    /** Fails open jobs whose binding is removed or retargeted. */
+    private val contractJobService: ExternalPluginContractJobService,
     private val schemaValidator: ExternalPluginSchemaValidator = ExternalPluginSchemaValidator(),
 ) {
 
@@ -368,10 +371,19 @@ class ExternalPluginConfigurationService(
 
         if (contractBindings != null) {
             validateContractBindings(id, definition, contractBindings, fromDescriptor)
+            val previousTargets = contractBindingRepository.findAllByConfigurationId(id)
+                .associate { it.contract to it.targetConfigurationId }
             contractBindingRepository.deleteAllByConfigurationId(id)
             // Same unique-constraint ordering concern as the endpoint grants above.
             contractBindingRepository.flush()
             saveContractBindings(id, contractBindings)
+            val newTargets = contractBindings.associate { it.contract to it.targetConfigurationId }
+            val changedBy = if (fromDescriptor) "descriptor import" else AuditHelper.getActor()
+            previousTargets.filter { (contract, target) -> newTargets[contract] != target }.forEach { (contract, target) ->
+                contractJobService.failForBindingChange(
+                    id, contract, target, "The binding of contract '$contract' was changed by $changedBy",
+                )
+            }
         }
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
@@ -554,6 +566,13 @@ class ExternalPluginConfigurationService(
         if (dropped.isNotEmpty()) {
             contractBindingRepository.deleteAll(dropped)
             contractBindingRepository.flush()
+            dropped.forEach { binding ->
+                contractJobService.failForBindingChange(
+                    configuration.id, binding.contract, binding.targetConfigurationId,
+                    "The binding of contract '${binding.contract}' was removed: " +
+                        "'${definition.pluginId}@${definition.version}' no longer declares it",
+                )
+            }
             logger.info {
                 "Dropped contract binding(s) ${dropped.map { it.contract }} of configuration ${configuration.id}: " +
                     "no longer declared by '${definition.pluginId}@${definition.version}'"
