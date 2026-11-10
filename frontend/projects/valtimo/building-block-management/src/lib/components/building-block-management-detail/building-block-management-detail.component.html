@@ -100,6 +100,18 @@
       </cds-tab>
     }
 
+    @if ({active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.REFERENCES}; as obs) {
+      <cds-tab
+        [active]="obs.active"
+        [heading]="'buildingBlockManagement.tabs.references' | translate"
+        (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.REFERENCES)"
+      >
+        @if (obs.active) {
+          <valtimo-building-block-management-references></valtimo-building-block-management-references>
+        }
+      </cds-tab>
+    }
+
     @for (customTab of customTabs; track customTab.tabRoute) {
       @if ((customTab.enabled$ | async) && {active: activeTabKey === customTab.tabRoute}; as obs) {
         <cds-tab

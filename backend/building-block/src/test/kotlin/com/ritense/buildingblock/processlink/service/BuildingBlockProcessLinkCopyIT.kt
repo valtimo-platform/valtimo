@@ -23,7 +23,6 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
@@ -39,8 +38,7 @@ import java.util.UUID
 @Transactional
 class BuildingBlockProcessLinkCopyIT @Autowired constructor(
     private val processLinkRepository: ProcessLinkRepository,
-    private val repositoryService: RepositoryService,
-    private val operatonProcessService: OperatonProcessService,
+    private val repositoryService: RepositoryService
 ) : BaseIntegrationTest() {
 
     @Test

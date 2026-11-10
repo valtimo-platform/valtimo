@@ -9,6 +9,7 @@ This section covers:
 - **[General](general.md)** — Name, description, and artwork configuration
 - **[Document](document.md)** — JSON schema for building block data
 - **[Migration](migration.md)** — Moving running building block instances onto a newer version
+- **[References](references.md)** — Where a version is used, and moving those references to another version
 - **[Processes](processes.md)** — BPMN process definitions
 - **[Forms](forms.md)** — Form definitions for user tasks
 - **[Form flows](form-flows.md)** — Multi-step form wizards
@@ -45,7 +46,8 @@ version.
 When a building block version is marked as **final**, all tabs become read-only. Configuration (general information,
 document schema, processes, forms, form flows, and decision tables) can no longer be modified.
 
-To make changes, create a new draft version of the building block.
+To make changes, create a new draft version of the building block. To move cases and building blocks onto the new
+version, use [Update references](references.md#updating-references).
 
 ---
 
