@@ -52,7 +52,11 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
         } else if (Collection.class.isAssignableFrom(type)) {
             throw new UnsupportedOperationException("Failed to query '" + jsonPath + "'. Unsupported type '" + type + "'.");
         } else {
-            return cast(jsonValue, type);
+            // A JSON null can't be cast to a number or boolean: treat it as SQL NULL, so it matches nothing
+            return cb.selectCase()
+                .when(cb.equal(cast(jsonValue, String.class), "null"), cb.nullLiteral(type))
+                .otherwise(cast(jsonValue, type))
+                .as(type);
         }
     }
 

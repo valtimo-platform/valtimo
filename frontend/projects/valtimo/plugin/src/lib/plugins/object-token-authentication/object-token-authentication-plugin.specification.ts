@@ -25,15 +25,15 @@ const objectTokenAuthenticationPluginSpecification: PluginSpecification = {
 
   pluginTranslations: {
     nl: {
-      title: 'Object token authenticatie',
+      title: 'Objecttokenauthenticatie',
       description:
-        'Auhenticatie met behulp van tokens voor gebruik door de Objecten API en Objecttypen API.',
+        'Authenticatie met behulp van tokens voor gebruik door de Objecten API en Objecttypen API.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Onder deze naam zal de plug-in te herkennen zijn in de rest van de applicatie',
+        'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       token: 'Token',
       tokenTooltip:
-        'Het token is een sleutel waarmee toestemmingen verleend zijn om specifieke objecttypen en objecten te mogen ophalen',
+        'Het token is een sleutel die toegang geeft tot specifieke objecttypen en objecten',
     },
     en: {
       title: 'Object token authentication',

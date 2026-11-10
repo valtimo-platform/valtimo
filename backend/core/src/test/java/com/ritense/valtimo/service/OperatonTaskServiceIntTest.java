@@ -404,7 +404,7 @@ class OperatonTaskServiceIntTest extends BaseIntegrationTest {
 
         var task = pagedTasks.get().findFirst().orElseThrow().getId();
 
-        outboxRepository.deleteAll();
+        outboxRepository.deleteAllInBatch();
         clearInvocations(outboxService);
         operatonTaskService.assign(task, null);
 

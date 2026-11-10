@@ -221,12 +221,45 @@ class FieldPermissionConditionTest {
     }
 
     @Test
-    fun `should throw NullPointerException when a parent in the path is null`() {
+    fun `should throw NoSuchFieldException when the property field cannot be found and a parent in the path is null`() {
         val entity = TestEntity(null)
-        val condition = conditionTemplate
-        assertThrows<NullPointerException> {
+        val condition = conditionTemplate.copy(field = "child.non-existent")
+        assertThrows<NoSuchFieldException> {
             condition.isValid(entity)
         }
+    }
+
+    @Test
+    fun `should not grant NOT_EQUAL_TO access through a non-existent field when a parent in the path is null`() {
+        val entity = TestEntity(null)
+        val condition = FieldPermissionCondition("child.non-existent", NOT_EQUAL_TO, 100)
+        assertThrows<NoSuchFieldException> {
+            condition.isValid(entity)
+        }
+    }
+
+    @Test
+    fun `should fail validation when a parent in the path is null`() {
+        val entity = TestEntity(null)
+        val condition = conditionTemplate
+        val result = condition.isValid(entity)
+        assertFalse(result)
+    }
+
+    @Test
+    fun `should pass NOT_EQUAL_TO validation when a parent in the path is null`() {
+        val entity = TestEntity(null)
+        val condition = FieldPermissionCondition("child.property", NOT_EQUAL_TO, 100)
+        val result = condition.isValid(entity)
+        assertTrue(result)
+    }
+
+    @Test
+    fun `should pass validation when a parent in the path is null and condition value is null`() {
+        val entity = TestEntity(null)
+        val condition = conditionTemplate.copy(value = null)
+        val result = condition.isValid(entity)
+        assertTrue(result)
     }
 
     @Test

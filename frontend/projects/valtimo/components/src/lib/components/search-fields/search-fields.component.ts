@@ -21,7 +21,17 @@ import {
   SearchFieldValue,
   SearchFieldValues,
 } from '@valtimo/shared';
-import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+  take,
+} from 'rxjs';
 import {SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
@@ -271,6 +281,8 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
                     caseDefinitionKey,
                     searchField.key
                   )
+                  // Unknown provider: render an empty dropdown instead of a bare label
+                  .pipe(catchError(() => of(null)))
                   .subscribe(dropdownData => {
                     if (dropdownData) {
                       this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
