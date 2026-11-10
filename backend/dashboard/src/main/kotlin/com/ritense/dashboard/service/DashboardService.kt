@@ -25,6 +25,7 @@ import com.ritense.dashboard.datasource.WidgetDataSourceResolver
 import com.ritense.dashboard.domain.Dashboard
 import com.ritense.dashboard.domain.WidgetConfiguration
 import com.ritense.dashboard.domain.WidgetLayout
+import com.ritense.dashboard.exception.DashboardAlreadyExistsException
 import com.ritense.dashboard.repository.DashboardRepository
 import com.ritense.dashboard.repository.WidgetConfigurationRepository
 import com.ritense.dashboard.web.rest.dto.DashboardUpdateRequestDto
@@ -77,10 +78,16 @@ class DashboardService(
     fun createDashboard(
         title: String,
         description: String,
-        widgetLayout: WidgetLayout? = null
+        widgetLayout: WidgetLayout? = null,
+        requestedKey: String? = null
     ): Dashboard {
         denyAuthorization()
-        val key = generateDashboardKey(title)
+        val key = if (requestedKey == null) {
+            generateDashboardKey(title)
+        } else {
+            if (dashboardRepository.existsById(requestedKey)) throw DashboardAlreadyExistsException(requestedKey)
+            requestedKey
+        }
         val order = dashboardRepository.count().toInt()
         val createdBy = userManagementService.currentUser.fullName
         return dashboardRepository.save(

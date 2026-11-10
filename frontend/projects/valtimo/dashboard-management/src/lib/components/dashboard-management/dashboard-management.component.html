@@ -64,6 +64,15 @@
         />
       </cds-label>
 
+      <valtimo-auto-key-input
+        formControlName="key"
+        labelTranslationKey="dashboardManagement.key"
+        mode="add"
+        [dataTestId]="testIds.createKeyInput"
+        [sourceText]="form.get('title').value"
+        [usedKeys]="usedKeys$ | async"
+      ></valtimo-auto-key-input>
+
       <cds-label
         [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate"
         [invalid]="getControlInvalid('description')"
