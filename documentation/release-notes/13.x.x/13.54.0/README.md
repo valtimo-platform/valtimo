@@ -29,3 +29,4 @@ New enhancement explanation.
 | Forms | Disabled fields in forms now show their value in readable text, styled as read-only instead of faded grey. |
 | Dashboard | A bar chart widget with many categories no longer overflows its widget and overlaps other widgets. The legend now scrolls inside the widget. |
 | Dashboard | A donut or bar chart widget with a long legend no longer shows two vertical scrollbars next to each other. |
+| Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
