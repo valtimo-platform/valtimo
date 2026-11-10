@@ -197,6 +197,60 @@ class CaseDefinitionBuildingBlockLinkServiceTest {
         verify(linkRepository, never()).delete(any())
     }
 
+    @Test
+    fun `should keep the start menu visibility when the link moves to another version`() {
+        val link = existingLink().apply { startableByUser = false }
+        stubMove(link)
+
+        service.updateLink(
+            caseDefinitionId,
+            oldBuildingBlockDefinitionId,
+            UpdateCaseDefinitionBuildingBlockLinkDto(
+                buildingBlockDefinitionKey = "income-check",
+                buildingBlockDefinitionVersionTag = "2.0.0"
+            )
+        )
+
+        val savedLink = argumentCaptor<CaseDefinitionBuildingBlockLink>()
+        verify(linkRepository).save(savedLink.capture())
+        assertThat(savedLink.firstValue.startableByUser).isFalse()
+    }
+
+    @Test
+    fun `should apply the requested start menu visibility when the link moves to another version`() {
+        stubMove(existingLink())
+
+        service.updateLink(
+            caseDefinitionId,
+            oldBuildingBlockDefinitionId,
+            UpdateCaseDefinitionBuildingBlockLinkDto(
+                buildingBlockDefinitionKey = "income-check",
+                buildingBlockDefinitionVersionTag = "2.0.0",
+                startableByUser = false
+            )
+        )
+
+        val savedLink = argumentCaptor<CaseDefinitionBuildingBlockLink>()
+        verify(linkRepository).save(savedLink.capture())
+        assertThat(savedLink.firstValue.startableByUser).isFalse()
+    }
+
+    private fun stubMove(link: CaseDefinitionBuildingBlockLink) {
+        whenever(
+            linkRepository.findByCaseDefinitionIdAndBuildingBlockDefinitionId(
+                caseDefinitionId,
+                oldBuildingBlockDefinitionId
+            )
+        ).thenReturn(link)
+        whenever(
+            linkRepository.findByCaseDefinitionIdAndBuildingBlockDefinitionId(
+                caseDefinitionId,
+                newBuildingBlockDefinitionId
+            )
+        ).thenReturn(null)
+        whenever(buildingBlockDefinitionRepository.existsById(newBuildingBlockDefinitionId)).thenReturn(true)
+    }
+
     private fun existingLink() = CaseDefinitionBuildingBlockLink(
         caseDefinitionId = caseDefinitionId,
         buildingBlockDefinitionId = oldBuildingBlockDefinitionId
