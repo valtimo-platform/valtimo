@@ -362,6 +362,8 @@ class ProcessDefinitionImportPreviewServiceTest {
                 GLOBAL_FORM_PATH to "{}",
                 CASE_PROCESS_LINK_PATH to processLinkJson(),
                 BUILDING_BLOCK_PROCESS_LINK_PATH to processLinkJson(),
+                "config/case/notglobal/1.0.0/process-link/$PROCESS_DEFINITION_KEY.process-link.json" to processLinkJson(),
+                "config/case/global/1.0.0/process-link/$PROCESS_DEFINITION_KEY.process-link.json" to processLinkJson(),
             )
         )
 

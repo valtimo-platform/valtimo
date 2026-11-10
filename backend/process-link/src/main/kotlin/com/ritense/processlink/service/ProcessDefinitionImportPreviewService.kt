@@ -291,10 +291,11 @@ class ProcessDefinitionImportPreviewService(
         private val logger = KotlinLogging.logger {}
         private const val PROCESS_DEFINITION_ID = "processDefinitionId"
         private const val PROCESS_DEFINITION_ID_PLACEHOLDER = "-"
-        private val GLOBAL_ENTRY_REGEX = """.*/?global/.+""".toRegex()
-        private val BPMN_REGEX = """.*/?global/bpmn/(?:.*/)?(.+)\.bpmn""".toRegex()
-        private val DMN_REGEX = """.*/?global/dmn/(?:.*/)?(.+)\.dmn""".toRegex()
-        private val FORM_REGEX = """.*/?global/form/(?:.*/)?(.+)\.form\.json""".toRegex()
-        private val PROCESS_LINK_REGEX = """.*/?global/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
+        private val GLOBAL_ENTRY_REGEX = """/?config/global/.+""".toRegex()
+        private val BPMN_REGEX = """/?config/global/bpmn/(?:.*/)?(.+)\.bpmn""".toRegex()
+        private val DMN_REGEX = """/?config/global/dmn/(?:.*/)?(.+)\.dmn""".toRegex()
+        private val FORM_REGEX = """/?config/global/form/(?:.*/)?(.+)\.form\.json""".toRegex()
+        private val PROCESS_LINK_REGEX =
+            """/?config/global/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
     }
 }
