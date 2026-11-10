@@ -143,19 +143,22 @@ abstract class BaseOpenSearchIntegrationTest {
      * the production topology rather than a single simplified index.
      */
     private fun ensureIndexExists() {
-        TEST_DEFINITION_KEYS.forEach { indexInitializer.ensureIndex(it) }
+        TEST_DEFINITION_KEYS.forEach { indexInitializer.ensureIndex(it, TEST_VERSION_TAG) }
     }
 
     /**
-     * Saves an OpenSearch document into its own per-definition index (resolved from `definitionId.name`),
-     * mirroring how production routes every write. Tests must use this instead of the alias-bound repository,
-     * which cannot index into a multi-index alias.
+     * Saves an OpenSearch document into its own per-(definition, version) index, mirroring how production routes
+     * every write. The version tag is taken from the document (`definitionId.blueprintId.blueprintVersionTag`),
+     * falling back to [TEST_VERSION_TAG] for fixtures that leave it unset. Tests must use this instead of the
+     * alias-bound repository, which cannot index into a multi-index alias.
      */
     protected fun indexOsDocument(osDocument: JsonSchemaDocumentOsDocument) {
         val definitionName = requireNotNull(osDocument.definitionId?.name) {
             "Cannot index a document without a definition name"
         }
-        elasticsearchOperations.save(osDocument, IndexCoordinates.of(indexNameResolver.indexNameFor(definitionName)))
+        val versionTag = osDocument.definitionId?.blueprintId?.blueprintVersionTag ?: TEST_VERSION_TAG
+        indexInitializer.ensureIndex(definitionName, versionTag)
+        elasticsearchOperations.save(osDocument, IndexCoordinates.of(indexNameResolver.writeAliasFor(definitionName, versionTag)))
     }
 
     /**
@@ -234,5 +237,6 @@ abstract class BaseOpenSearchIntegrationTest {
 
         /** Definition keys with test fixtures under `src/test/resources/config/case`. */
         val TEST_DEFINITION_KEYS: List<String> = listOf("house", "person")
+        const val TEST_VERSION_TAG: String = "1.0.0"
     }
 }

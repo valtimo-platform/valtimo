@@ -21,6 +21,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.domain.OsBlueprintId
 import com.ritense.document.opensearch.domain.OsDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
@@ -128,7 +129,14 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
     private fun osDoc(id: String, indexVersion: Long, internalStatus: String) = JsonSchemaDocumentOsDocument(
         id = id,
         content = null,
-        definitionId = OsDefinitionId(name = "house", version = null, blueprintId = null),
+        definitionId = OsDefinitionId(
+            name = "house",
+            version = null,
+            blueprintId = OsBlueprintId(
+                blueprintType = "CASE", blueprintKey = null, blueprintVersionTag = TEST_VERSION_TAG,
+                isBuildingBlock = null, isCase = null,
+            ),
+        ),
         createdOn = null,
         modifiedOn = null,
         createdBy = null,

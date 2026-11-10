@@ -200,11 +200,15 @@ class OpenSearchPermissionConditionTranslator(
         fun jpaToOsField(jpaField: String): String = fieldMappings[jpaField] ?: jpaField
 
         /**
-         * Content sub-fields use dynamic mapping (text + keyword). String term queries
-         * (EQUAL_TO, NOT_EQUAL_TO, LIST_CONTAINS, IN) need the .keyword sub-field for exact match.
+         * A top-level content field uses dynamic mapping (text + keyword), so string term queries
+         * (EQUAL_TO, NOT_EQUAL_TO, LIST_CONTAINS, IN) need the .keyword sub-field for exact match. A field
+         * nested inside an object is a `flat_object` leaf — already a keyword, with no `.keyword` sub-field —
+         * so the bare path must be used.
          */
         fun isDynamicTextField(field: String, op: PermissionConditionOperator, value: Any?): Boolean {
             if (!field.startsWith("content.")) return false
+            // Nested path (content.<object>.<leaf>...) → flat_object leaf, already a keyword.
+            if (field.removePrefix("content.").contains(".")) return false
             if (value == null) return false
             val isStringValue = value is String || (value is Collection<*> && value.firstOrNull() is String)
             val isTermOp = op in setOf(

@@ -39,11 +39,17 @@ open class DocumentDefinitionDeployedIndexListener(
     @EventListener(DocumentDefinitionDeployedEvent::class)
     open fun createIndex(event: DocumentDefinitionDeployedEvent) {
         if (!toggle.isOpenSearchActive()) return
-        val definitionKey = event.documentDefinition().id().name()
+        val id = event.documentDefinition().id()
+        val definitionKey = id.name()
+        val versionTag = id.caseDefinitionId()?.versionTag?.toString()
+        if (versionTag == null) {
+            logger.debug { "Deployed definition '$definitionKey' has no case-definition version tag — skipping provisioning; writers create the index on demand" }
+            return
+        }
         try {
-            indexInitializer.ensureIndex(definitionKey)
+            indexInitializer.ensureIndex(definitionKey, versionTag)
         } catch (e: Exception) {
-            logger.warn(e) { "Failed to create OpenSearch index for deployed definition '$definitionKey' — every writer provisions on demand, so it is created on the first write" }
+            logger.warn(e) { "Failed to create OpenSearch index for deployed definition '$definitionKey' version '$versionTag' — every writer provisions on demand, so it is created on the first write" }
         }
     }
 

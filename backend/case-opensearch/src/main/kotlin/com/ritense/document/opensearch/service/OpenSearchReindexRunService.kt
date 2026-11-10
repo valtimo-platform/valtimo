@@ -80,7 +80,13 @@ open class OpenSearchReindexRunService(
             val existing = repository.findById(resumeRunId).orElseThrow {
                 IllegalArgumentException("No re-index run found for resumeRunId=$resumeRunId")
             }
-            existing.resume(LocalDateTime.now())
+            // A recreate run builds a fresh empty index each attempt, so resuming from a cursor would lose
+            // every document before it — restart such runs from the beginning instead.
+            if (deserializeScopeToRequest(existing.scope)?.recreateIndex == true) {
+                existing.restart(LocalDateTime.now())
+            } else {
+                existing.resume(LocalDateTime.now())
+            }
             return repository.save(existing)
         }
         return repository.save(
@@ -127,6 +133,15 @@ open class OpenSearchReindexRunService(
         val run = requireRun(runId)
         run.totalCount = totalCount
         run.complete(LocalDateTime.now(), skipped)
+        repository.save(run)
+        totalCountCache.remove(runId)
+    }
+
+    open fun completeWithErrors(runId: UUID, totalCount: Long?, skipped: Long, error: String?) {
+        val run = requireRun(runId)
+        run.totalCount = totalCount
+        run.skippedCount = skipped
+        run.completeWithErrors(LocalDateTime.now(), error)
         repository.save(run)
         totalCountCache.remove(runId)
     }

@@ -78,19 +78,25 @@ open class JsonSchemaDocumentOsConverter(
         if (overrideIndex != null) {
             return saveIsolated(overrideIndex, chunk)
         }
-        return chunk.groupBy { it.definitionId?.name }
+        return chunk.groupBy { it.definitionId?.name to it.definitionId?.blueprintId?.blueprintVersionTag }
             .entries
-            .sumOf { (definitionName, documents) -> indexGroup(definitionName, documents) }
+            .sumOf { (nameAndTag, documents) -> indexGroup(nameAndTag.first, nameAndTag.second, documents) }
     }
 
-    private fun indexGroup(definitionName: String?, documents: List<JsonSchemaDocumentOsDocument>): Long {
-        if (definitionName == null) {
-            documents.forEach { logger.warn { "Document ${it.id} has no definition name — skipping (cannot resolve index)" } }
+    private fun indexGroup(
+        definitionName: String?,
+        versionTag: String?,
+        documents: List<JsonSchemaDocumentOsDocument>,
+    ): Long {
+        if (definitionName == null || versionTag == null) {
+            documents.forEach {
+                logger.warn { "Document ${it.id} has no definition name/version — skipping (cannot resolve index)" }
+            }
             return documents.size.toLong()
         }
         // Provision first: a write to a missing alias auto-creates a bare, unmapped index (auto_create_index).
-        indexInitializer.ensureIndex(definitionName)
-        return saveIsolated(IndexCoordinates.of(resolver.indexNameFor(definitionName)), documents)
+        indexInitializer.ensureIndex(definitionName, versionTag)
+        return saveIsolated(IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)), documents)
     }
 
     private fun saveIsolated(index: IndexCoordinates, documents: List<JsonSchemaDocumentOsDocument>): Long {

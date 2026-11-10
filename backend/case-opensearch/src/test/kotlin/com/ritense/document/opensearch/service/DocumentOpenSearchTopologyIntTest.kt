@@ -51,8 +51,8 @@ class DocumentOpenSearchTopologyIntTest : BaseOpenSearchIntegrationTest() {
     fun `ensureIndex is idempotent`() {
         val indexName = indexNameResolver.indexNameFor("house")
 
-        indexInitializer.ensureIndex("house")
-        indexInitializer.ensureIndex("house")
+        indexInitializer.ensureIndex("house", "1.0.0")
+        indexInitializer.ensureIndex("house", "1.0.0")
 
         assertThat(elasticsearchOperations.indexOps(IndexCoordinates.of(indexName)).exists()).isTrue()
     }
@@ -60,26 +60,27 @@ class DocumentOpenSearchTopologyIntTest : BaseOpenSearchIntegrationTest() {
     @Test
     fun `ensureIndex names the first concrete index deterministically`() {
         val alias = indexNameResolver.indexNameFor(RACE_KEY)
+        val deterministic = "${indexNameResolver.writeAliasFor(RACE_KEY, "1.0.0")}_initial"
         try {
-            indexInitializer.ensureIndex(RACE_KEY)
+            indexInitializer.ensureIndex(RACE_KEY, "1.0.0")
 
             val backing = elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias)
-            assertThat(backing.keys).containsExactly("${alias}_initial")
+            assertThat(backing.keys).containsExactly(deterministic)
         } finally {
-            indexInitializer.dropIndex("${alias}_initial")
+            indexInitializer.dropIndex(deterministic)
         }
     }
 
     @Test
     fun `ensureIndex reuses the index another node already created instead of adding a second`() {
         val alias = indexNameResolver.indexNameFor(RACE_KEY)
-        val deterministic = "${alias}_initial"
+        val deterministic = "${indexNameResolver.writeAliasFor(RACE_KEY, "1.0.0")}_initial"
         try {
             // Simulate the losing node: the first index already exists (another node created it) but the alias
             // is not attached yet, so this call still enters the create path.
             elasticsearchOperations.indexOps(IndexCoordinates.of(deterministic)).create()
 
-            indexInitializer.ensureIndex(RACE_KEY)
+            indexInitializer.ensureIndex(RACE_KEY, "1.0.0")
 
             // Exactly one concrete backs the alias, and it carries both aliases — no second index, no multi-index
             // alias that would break writes.

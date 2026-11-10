@@ -171,7 +171,7 @@ class DocumentOpenSearchMigrationIntTest : BaseOpenSearchIntegrationTest() {
         doAnswer { invocation ->
             runWithoutAuthorization { documentService.setInternalStatus(document.id(), "started") }
             invocation.callRealMethod()
-        }.whenever(spyInitializer).swapInRebuiltIndex(eq("house"), any())
+        }.whenever(spyInitializer).swapInRebuiltIndex(eq("house"), any(), any())
 
         val service = DocumentOpenSearchReindexService(
             entityManager, converter, elasticsearchOperations, transactionManager,

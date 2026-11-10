@@ -27,6 +27,14 @@ data class OpenSearchProperties(
     val healthCheckIntervalMs: Long = 30000,
     val fallbackWarningIntervalMs: Long = 300000,
 
+    /**
+     * `index.mapping.total_fields.limit` for each per-definition index — a moderate safety cap against mapping
+     * explosion (which bloats cluster state / heap), not an unlimited value. Objects under `content` collapse to
+     * a single `flat_object` field, and every scalar string leaf maps to both `text` and a `keyword` sub-field
+     * (two fields). The default gives generous headroom for a wide case type while still guarding a runaway.
+     */
+    val totalFieldsLimit: Long = 5000,
+
     @NestedConfigurationProperty
     val reconcile: Reconcile = Reconcile(),
 
@@ -52,6 +60,12 @@ data class OpenSearchProperties(
         val overlap: Duration = Duration.ofSeconds(10),
         val pageSize: Int = 5000,
         val pendingDeletionBatchSize: Int = 500,
+        // Periodically drop per-(definition, version) indices that hold no documents (a version that is no longer
+        // used), to keep the shard count in check as case-definition versions accumulate. Runs at most once per
+        // [pruneInterval], not every reconcile cycle. Never drops the last index of a definition (so its read
+        // alias survives) nor an in-flight rebuild target; a later write re-creates a pruned version lazily.
+        val pruneEmptyVersionIndices: Boolean = true,
+        val pruneInterval: Duration = Duration.ofHours(1),
     )
 
     /**

@@ -18,6 +18,7 @@ package com.ritense.document.opensearch.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.domain.OsBlueprintId
 import com.ritense.document.opensearch.domain.OsDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -44,7 +45,7 @@ class JsonSchemaDocumentOsConverterTest {
     private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
     private lateinit var converter: JsonSchemaDocumentOsConverter
 
-    private val index = IndexCoordinates.of(resolver.indexNameFor(DEFINITION))
+    private val index = IndexCoordinates.of(resolver.writeAliasFor(DEFINITION, VERSION_TAG))
 
     @BeforeEach
     fun setUp() {
@@ -122,8 +123,8 @@ class JsonSchemaDocumentOsConverterTest {
 
         converter.indexChunk(listOf(house, person))
 
-        verify(operations).save(eq(listOf(house)), eq(IndexCoordinates.of(resolver.indexNameFor("house"))))
-        verify(operations).save(eq(listOf(person)), eq(IndexCoordinates.of(resolver.indexNameFor("person"))))
+        verify(operations).save(eq(listOf(house)), eq(IndexCoordinates.of(resolver.writeAliasFor("house", VERSION_TAG))))
+        verify(operations).save(eq(listOf(person)), eq(IndexCoordinates.of(resolver.writeAliasFor("person", VERSION_TAG))))
     }
 
     @Test
@@ -133,8 +134,8 @@ class JsonSchemaDocumentOsConverterTest {
         converter.indexChunk(listOf(house))
 
         inOrder(indexInitializer, operations) {
-            verify(indexInitializer).ensureIndex("house")
-            verify(operations).save(eq(listOf(house)), eq(IndexCoordinates.of(resolver.indexNameFor("house"))))
+            verify(indexInitializer).ensureIndex("house", VERSION_TAG)
+            verify(operations).save(eq(listOf(house)), eq(IndexCoordinates.of(resolver.writeAliasFor("house", VERSION_TAG))))
         }
     }
 
@@ -151,7 +152,14 @@ class JsonSchemaDocumentOsConverterTest {
     private fun osDocument(id: String, definitionName: String = DEFINITION) = JsonSchemaDocumentOsDocument(
         id = id,
         content = null,
-        definitionId = OsDefinitionId(name = definitionName, version = null, blueprintId = null),
+        definitionId = OsDefinitionId(
+            name = definitionName,
+            version = null,
+            blueprintId = OsBlueprintId(
+                blueprintType = null, blueprintKey = null, blueprintVersionTag = VERSION_TAG,
+                isBuildingBlock = null, isCase = null,
+            ),
+        ),
         createdOn = null,
         modifiedOn = null,
         createdBy = null,
@@ -168,5 +176,6 @@ class JsonSchemaDocumentOsConverterTest {
 
     companion object {
         private const val DEFINITION = "test"
+        private const val VERSION_TAG = "1.0.0"
     }
 }

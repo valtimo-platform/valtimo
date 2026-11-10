@@ -114,9 +114,23 @@ class OpenSearchReindexRun(
     }
 
     fun complete(now: LocalDateTime, skipped: Long) {
+        this.skippedCount = skipped
         this.status = if (skipped == 0L) ReindexRunStatus.COMPLETED else ReindexRunStatus.COMPLETED_WITH_ERRORS
         this.finishedOn = now
         this.heartbeatOn = now
+        this.pruningPhase = false
+    }
+
+    /**
+     * Finishes the run as [ReindexRunStatus.COMPLETED_WITH_ERRORS] regardless of the skip count, for a
+     * post-swap step (e.g. the concurrent-write catch-up) that failed after the rebuild itself succeeded —
+     * the index is published but may be missing writes, so the operator must be signalled.
+     */
+    fun completeWithErrors(now: LocalDateTime, error: String?) {
+        this.status = ReindexRunStatus.COMPLETED_WITH_ERRORS
+        this.finishedOn = now
+        this.heartbeatOn = now
+        this.error = error
         this.pruningPhase = false
     }
 
@@ -141,5 +155,21 @@ class OpenSearchReindexRun(
         this.finishedOn = null
         this.error = null
         this.heartbeatOn = now
+    }
+
+    /**
+     * Re-arms a previously-finished run AND clears all progress so it runs from the start. A `recreateIndex`
+     * run builds a fresh empty index every attempt, so resuming it from a cursor would fill the new index
+     * only from the cursor onward and silently lose every document before it — such runs must restart whole.
+     */
+    fun restart(now: LocalDateTime) {
+        resume(now)
+        this.lastId = null
+        this.processedCount = 0
+        this.skippedCount = 0
+        this.prunedCount = 0
+        this.pruneCheckedCount = 0
+        this.pruneTotalCount = null
+        this.pruningPhase = false
     }
 }

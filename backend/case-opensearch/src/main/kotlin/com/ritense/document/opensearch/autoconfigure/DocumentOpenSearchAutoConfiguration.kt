@@ -47,6 +47,7 @@ import com.ritense.document.opensearch.service.JsonSchemaDocumentOsConverter
 import com.ritense.document.opensearch.service.OpenSearchIndexNameResolver
 import com.ritense.document.opensearch.service.OpenSearchReindexRunService
 import com.ritense.document.opensearch.service.ReindexProgressGate
+import com.ritense.document.opensearch.service.TopologyGate
 import com.ritense.document.opensearch.service.OpenSearchHealthService
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
@@ -256,6 +257,11 @@ class DocumentOpenSearchAutoConfiguration {
     ): ReindexProgressGate =
         ReindexProgressGate(openSearchReindexRunService, openSearchProperties)
 
+    @Bean
+    @ConditionalOnMissingBean
+    fun topologyGate(indexInitializer: DocumentOpenSearchIndexInitializer): TopologyGate =
+        TopologyGate(indexInitializer)
+
     @Bean("openSearchDocumentSearchService")
     fun openSearchDocumentSearchService(
         elasticsearchOperations: ElasticsearchOperations,
@@ -301,9 +307,10 @@ class DocumentOpenSearchAutoConfiguration {
         jpaDocumentSearchService: JsonSchemaDocumentSearchService,
         searchEngineToggle: SearchEngineToggle,
         reindexProgressGate: ReindexProgressGate,
+        topologyGate: TopologyGate,
     ): DelegatingDocumentSearchService =
         DelegatingDocumentSearchService(
-            openSearchDocumentSearchService, jpaDocumentSearchService, searchEngineToggle, reindexProgressGate,
+            openSearchDocumentSearchService, jpaDocumentSearchService, searchEngineToggle, reindexProgressGate, topologyGate,
         )
 
     @Bean
@@ -330,8 +337,11 @@ class DocumentOpenSearchAutoConfiguration {
         elasticsearchOperations: ElasticsearchOperations,
         resolver: OpenSearchIndexNameResolver,
         caseDefinitionService: CaseDefinitionService,
+        openSearchProperties: OpenSearchProperties,
     ): DocumentOpenSearchIndexInitializer =
-        DocumentOpenSearchIndexInitializer(elasticsearchOperations, resolver, caseDefinitionService)
+        DocumentOpenSearchIndexInitializer(
+            elasticsearchOperations, resolver, caseDefinitionService, openSearchProperties,
+        )
 
     @Bean
     @ConditionalOnMissingBean

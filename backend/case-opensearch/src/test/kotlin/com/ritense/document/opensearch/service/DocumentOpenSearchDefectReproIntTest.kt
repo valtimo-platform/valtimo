@@ -133,7 +133,7 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
         rebuildIndices.forEach { indexInitializer.dropIndex(it) }
         rebuildIndices.clear()
         indexInitializer.dropIndex(OpenSearchIndexNameResolver.LEGACY_INDEX)
-        TEST_DEFINITION_KEYS.forEach { indexInitializer.ensureIndex(it) }
+        TEST_DEFINITION_KEYS.forEach { indexInitializer.ensureIndex(it, TEST_VERSION_TAG) }
     }
 
     // ---------------------------------------------------------------- B1
@@ -457,13 +457,12 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
 
     @Test
     fun `M7a a document rejected by the reconciler must stay retryable or be signalled`() {
-        val contentConverter = contentPopulatingConverter()
-        poisonHouseStreetMapping(contentConverter)
-        val rejected = createHouseDocument("plain")
+        val contentConverter = oversizedContentConverter()
+        val rejected = createHouseDocument("rejected")
         val fine = createHouseDocument(null, housenumber = 5)
         clearIndexKeepMapping()
         assertThat(contentConverter.indexChunk(listOf(contentConverter.toOsDocument(rejected))))
-            .`as`("precondition: the poisoned mapping rejects the document").isEqualTo(1L)
+            .`as`("precondition: the oversized document is rejected").isEqualTo(1L)
         val rejectedChangedOn = readChangedOn(rejected.id().id)
         stateRepository.save(OpenSearchReconcileState(watermark = LocalDateTime.now().minusHours(1)))
 
@@ -488,9 +487,8 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
 
     @Test
     fun `M7b a live sync rejection is surfaced and signalled to the operator`() {
-        val contentConverter = contentPopulatingConverter()
-        poisonHouseStreetMapping(contentConverter)
-        val rejected = createHouseDocument("plain")
+        val contentConverter = oversizedContentConverter()
+        val rejected = createHouseDocument("rejected")
         clearIndexKeepMapping()
 
         val liveSync = DocumentOpenSearchSyncService(
@@ -505,24 +503,21 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
     }
 
     // The converter bean in this harness emits content=null (Jackson does not serialize JsonSchemaDocument.content()),
-    // so a mapping conflict can never arise from real PostgreSQL documents. This spy adds the document content the
-    // way the read model is meant to carry it, so the reconciler/live-sync paths can be exercised against conflicts.
-    private fun contentPopulatingConverter(): JsonSchemaDocumentOsConverter {
+    // so a rejection can never arise from real PostgreSQL documents. This spy fills in the read-model content, and
+    // for a document marked street="rejected" injects more distinct content fields than index.mapping.total_fields.limit
+    // allows — a genuine OpenSearch rejection (findings 7/8/9 make type clashes tolerant, so the field-limit is the
+    // realistic rejection the reconciler / live-sync must handle).
+    private fun oversizedContentConverter(): JsonSchemaDocumentOsConverter {
+        val overLimit = (0..openSearchProperties.totalFieldsLimit.toInt() + 100).associate { "field$it" to "v" }
         val spyConverter = spy(converter)
         doAnswer { invocation ->
             val osDocument = invocation.callRealMethod() as JsonSchemaDocumentOsDocument
             val document = invocation.getArgument<JsonSchemaDocument>(0)
             @Suppress("UNCHECKED_CAST")
-            osDocument.copy(content = objectMapper.convertValue(document.content().asJson(), Map::class.java) as Map<String, Any?>)
+            val content = objectMapper.convertValue(document.content().asJson(), Map::class.java) as Map<String, Any?>
+            osDocument.copy(content = if (content["street"] == "rejected") overLimit else content)
         }.whenever(spyConverter).toOsDocument(any())
         return spyConverter
-    }
-
-    private fun poisonHouseStreetMapping(contentConverter: JsonSchemaDocumentOsConverter) {
-        val base = contentConverter.toOsDocument(createHouseDocument("poison-base"))
-        val ghost = base.copy(id = UUID.randomUUID().toString(), content = mapOf("street" to mapOf("a" to 1)))
-        assertThat(contentConverter.indexChunk(listOf(ghost))).`as`("precondition: poison indexed").isZero()
-        refreshIndex()
     }
 
     // ---------------------------------------------------------------- helpers
@@ -544,7 +539,7 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
         val spyInitializer = spy(indexInitializer)
         doAnswer { invocation ->
             (invocation.callRealMethod() as String).also { rebuildIndices += it }
-        }.whenever(spyInitializer).prepareRebuildIndex(any())
+        }.whenever(spyInitializer).prepareRebuildIndex(any(), any())
         return spyInitializer
     }
 

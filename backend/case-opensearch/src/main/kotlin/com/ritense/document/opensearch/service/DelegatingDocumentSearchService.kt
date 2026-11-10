@@ -31,6 +31,7 @@ class DelegatingDocumentSearchService(
     private val jpaService: DocumentSearchService,
     private val toggle: SearchEngineToggle,
     private val reindexProgressGate: ReindexProgressGate,
+    private val topologyGate: TopologyGate,
 ) : DocumentSearchService {
 
     override fun search(
@@ -102,11 +103,16 @@ class DelegatingDocumentSearchService(
         advancedSearchRequest: AdvancedSearchRequest
     ): Long = executeWithFallback { active().count(documentDefinitionName, blueprintType, advancedSearchRequest) }
 
+    // While a reindex is RUNNING or the topology is legacy/stale (per-definition indices not yet filled),
+    // route to PostgreSQL so a partially-filled or not-yet-migrated OpenSearch topology is never queried.
+    private fun shouldUsePostgres(): Boolean =
+        toggle.shouldUsePostgres { reindexProgressGate.isReindexInProgress() || topologyGate.isLegacyOrStale() }
+
     private fun active(): DocumentSearchService =
-        if (toggle.shouldUsePostgres { reindexProgressGate.isReindexInProgress() }) jpaService else openSearchService
+        if (shouldUsePostgres()) jpaService else openSearchService
 
     private fun <T> executeWithFallback(block: () -> T): T {
-        if (toggle.shouldUsePostgres { reindexProgressGate.isReindexInProgress() }) {
+        if (shouldUsePostgres()) {
             return block()
         }
         return try {

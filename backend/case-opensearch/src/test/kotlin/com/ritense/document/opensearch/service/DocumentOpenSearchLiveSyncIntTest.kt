@@ -92,8 +92,9 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
     private fun assertHouseProperlyProvisioned() {
         val alias = indexNameResolver.indexNameFor("house")
         val backing = elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias)
-        // A real alias over the deterministic concrete, joined to the shared read alias — not a bare self-named index.
-        assertThat(backing.keys).containsExactly("${alias}_initial")
+        // A real alias over the deterministic per-version concrete, joined to the shared read alias — not a bare
+        // self-named index.
+        assertThat(backing.keys).containsExactly("${indexNameResolver.writeAliasFor("house", "1.0.0")}_initial")
         assertThat(backing.values.flatten().map { it.alias })
             .contains(alias, OpenSearchIndexNameResolver.READ_ALIAS)
     }

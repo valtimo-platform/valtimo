@@ -50,6 +50,11 @@ class OpenSearchMappingHealthIndicator(
             builder.status(WARN)
                 .withDetail("topology", "LEGACY_OR_STALE")
                 .withDetail("action", "Run the document-search re-index with recreateIndex to migrate to per-definition indices")
+        } else if (indexInitializer.hasRecentWriteFailures()) {
+            builder.status(WARN)
+                .withDetail("topology", "PER_DEFINITION")
+                .withDetail("writeFailures", "RECENT")
+                .withDetail("action", "A document could not be indexed (e.g. a mapping conflict) — check the logs and re-index the affected case type")
         } else {
             builder.up().withDetail("topology", "PER_DEFINITION")
         }

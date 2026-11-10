@@ -65,19 +65,25 @@ open class DocumentOpenSearchSyncService(
             return
         }
         val definitionName = osDocument.definitionId?.name
-        if (definitionName == null) {
-            logger.warn { "Document $documentId has no definition name — skipping upsert (cannot resolve index)" }
+        val versionTag = osDocument.definitionId?.blueprintId?.blueprintVersionTag
+        if (definitionName == null || versionTag == null) {
+            logger.warn { "Document $documentId has no definition name/version — skipping upsert (cannot resolve index)" }
             return
         }
         // Provision first: a write to a missing alias auto-creates a bare, unmapped index (auto_create_index).
         // On failure the upsert is skipped (the listener isolates it) and the reconciler retries.
-        indexInitializer.ensureIndex(definitionName)
+        indexInitializer.ensureIndex(definitionName, versionTag)
         try {
-            operations.save(osDocument, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
+            operations.save(osDocument, IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)))
             logger.debug { "Upserted document $documentId in OpenSearch" }
         } catch (e: VersionConflictException) {
             // A newer/equal version is already indexed (the reconciler or a later event won the race).
             logger.debug { "Document $documentId already at newer version in OpenSearch — skipping live upsert" }
+        } catch (e: Exception) {
+            // Record the rejection so it is operator-visible (health indicator) before propagating — the
+            // listener still isolates it and the reconciler retries, but the signal must not be lost.
+            indexInitializer.recordWriteFailure()
+            throw e
         }
     }
 
@@ -88,16 +94,25 @@ open class DocumentOpenSearchSyncService(
      */
     open fun delete(documentId: UUID) {
         val id = documentId.toString()
-        val definitionName = findIndexedDefinitionName(id)
-        if (definitionName == null) {
+        val indexed = findIndexed(id)?.definitionId
+        val definitionName = indexed?.name
+        val versionTag = indexed?.blueprintId?.blueprintVersionTag
+        if (definitionName == null || versionTag == null) {
             logger.debug { "Document $documentId not found in OpenSearch — nothing to delete" }
             return
         }
-        operations.delete(id, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
+        // Delete from the version write alias (a single concrete); the per-definition read alias spans versions,
+        // so a delete-by-id on it is ambiguous.
+        operations.delete(id, IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)))
+        // If a scoped rebuild is in flight for this (definition, version), the fresh index already holds a copy
+        // written before this delete reached the live alias — delete it there too, or it survives the swap.
+        resolver.rebuildIndexFor(definitionName, versionTag)?.let { rebuildIndex ->
+            operations.delete(id, IndexCoordinates.of(rebuildIndex))
+        }
         logger.debug { "Deleted document $documentId from OpenSearch" }
     }
 
-    private fun findIndexedDefinitionName(id: String): String? {
+    private fun findIndexed(id: String): JsonSchemaDocumentOsDocument? {
         val query = NativeSearchQueryBuilder()
             .withQuery(QueryBuilders.idsQuery().addIds(id))
             .build()
@@ -106,7 +121,7 @@ open class DocumentOpenSearchSyncService(
             JsonSchemaDocumentOsDocument::class.java,
             IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
         )
-        return hits.searchHits.firstOrNull()?.content?.definitionId?.name
+        return hits.searchHits.firstOrNull()?.content
     }
 
     companion object {

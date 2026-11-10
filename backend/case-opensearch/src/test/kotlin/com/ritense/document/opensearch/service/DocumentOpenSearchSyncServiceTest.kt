@@ -19,6 +19,7 @@ package com.ritense.document.opensearch.service
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.opensearch.domain.OsBlueprintId
 import com.ritense.document.opensearch.domain.OsDefinitionId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import org.assertj.core.api.Assertions.assertThatCode
@@ -54,7 +55,8 @@ class DocumentOpenSearchSyncServiceTest {
     private val transactionManager: PlatformTransactionManager = mock()
     private lateinit var service: DocumentOpenSearchSyncService
 
-    private val houseIndex = IndexCoordinates.of(resolver.indexNameFor("house"))
+    private val VERSION_TAG = "1.0.0"
+    private val houseIndex = IndexCoordinates.of(resolver.writeAliasFor("house", VERSION_TAG))
 
     @BeforeEach
     fun setUp() {
@@ -73,7 +75,7 @@ class DocumentOpenSearchSyncServiceTest {
         service.upsertById(id)
 
         inOrder(indexInitializer, operations) {
-            verify(indexInitializer).ensureIndex("house")
+            verify(indexInitializer).ensureIndex("house", VERSION_TAG)
             verify(operations).save(any<JsonSchemaDocumentOsDocument>(), eq(houseIndex))
         }
     }
@@ -84,7 +86,7 @@ class DocumentOpenSearchSyncServiceTest {
         val document: JsonSchemaDocument = mock()
         whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
         whenever(converter.toOsDocument(document)).thenReturn(osDocument(id.toString()))
-        doThrow(RuntimeException("OpenSearch down")).whenever(indexInitializer).ensureIndex("house")
+        doThrow(RuntimeException("OpenSearch down")).whenever(indexInitializer).ensureIndex("house", VERSION_TAG)
 
         assertThatThrownBy { service.upsertById(id) }.isInstanceOf(RuntimeException::class.java)
         verify(operations, never()).save(any<JsonSchemaDocumentOsDocument>(), any<IndexCoordinates>())
@@ -172,7 +174,14 @@ class DocumentOpenSearchSyncServiceTest {
     private fun osDocument(id: String) = JsonSchemaDocumentOsDocument(
         id = id,
         content = null,
-        definitionId = OsDefinitionId(name = "house", version = null, blueprintId = null),
+        definitionId = OsDefinitionId(
+            name = "house",
+            version = null,
+            blueprintId = OsBlueprintId(
+                blueprintType = null, blueprintKey = null, blueprintVersionTag = VERSION_TAG,
+                isBuildingBlock = null, isCase = null,
+            ),
+        ),
         createdOn = null,
         modifiedOn = null,
         createdBy = null,

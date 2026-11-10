@@ -32,6 +32,7 @@ class DelegatingDocumentSearchServiceTest {
     private val openSearchService: DocumentSearchService = mock()
     private val jpaService: DocumentSearchService = mock()
     private val gate: ReindexProgressGate = mock()
+    private val topologyGate: TopologyGate = mock()
     private val request: AdvancedSearchRequest = mock()
 
     @Test
@@ -68,5 +69,5 @@ class DelegatingDocumentSearchServiceTest {
     }
 
     private fun delegating(engine: SearchEngineToggle.Engine) =
-        DelegatingDocumentSearchService(openSearchService, jpaService, SearchEngineToggle(engine), gate)
+        DelegatingDocumentSearchService(openSearchService, jpaService, SearchEngineToggle(engine), gate, topologyGate)
 }

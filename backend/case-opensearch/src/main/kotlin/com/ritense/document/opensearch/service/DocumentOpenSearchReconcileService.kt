@@ -65,6 +65,11 @@ open class DocumentOpenSearchReconcileService(
     private val properties: OpenSearchProperties,
 ) {
 
+    // Best-effort, per-node timestamp of the last empty-version-index prune. The ShedLock serializes reconcile
+    // cycles cluster-wide, so a per-node clock is enough to keep the prune to roughly once per pruneInterval.
+    @Volatile
+    private var lastPruneAtMillis: Long = 0L
+
     open fun reconcile() {
         if (!properties.enabled) return
 
@@ -81,6 +86,7 @@ open class DocumentOpenSearchReconcileService(
             val from = watermark.minus(properties.reconcile.overlap)
             val maxSeen = processUpserts(from)
             drainPendingDeletions()
+            pruneEmptyVersionIndicesIfDue()
             if (maxSeen.isAfter(watermark)) {
                 advanceWatermark(maxSeen)
                 logger.debug { "Reconcile advanced watermark to $maxSeen" }
@@ -97,7 +103,12 @@ open class DocumentOpenSearchReconcileService(
      * each page. Returns the highest `changed_on` seen (or [from] when nothing changed).
      */
     private fun processUpserts(from: LocalDateTime): LocalDateTime {
-        var maxSeen = from
+        // Advance the watermark only across fully-indexed pages. Once a page rejects/skips a document, stop
+        // advancing so that document stays within the next cycle's scan window and is retried, instead of being
+        // dropped silently behind the watermark.
+        var cleanThrough = from
+        var skippedTotal = 0L
+        var sawSkip = false
         var lastChangedOn: LocalDateTime? = null
         var lastId: UUID? = null
         val pageSize = properties.reconcile.pageSize
@@ -120,18 +131,30 @@ open class DocumentOpenSearchReconcileService(
                         }
                     }
                     val last = batch.last()
-                    ReconcilePage(osDocuments, last.changedOn(), last.id().id).also { entityManager.clear() }
+                    ReconcilePage(osDocuments, batch.size - osDocuments.size, last.changedOn(), last.id().id)
+                        .also { entityManager.clear() }
                 }
             } ?: break
 
-            page.osDocuments.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE)
-                .forEach { converter.indexChunk(it) }
+            val pageSkipped = page.convFailed + page.osDocuments.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE)
+                .sumOf { converter.indexChunk(it) }
 
-            if (page.lastChangedOn.isAfter(maxSeen)) maxSeen = page.lastChangedOn
+            if (!sawSkip && pageSkipped == 0L) {
+                if (page.lastChangedOn.isAfter(cleanThrough)) cleanThrough = page.lastChangedOn
+            } else {
+                sawSkip = true
+                skippedTotal += pageSkipped
+            }
             lastChangedOn = page.lastChangedOn
             lastId = page.lastId
         }
-        return maxSeen
+        if (sawSkip) {
+            logger.warn {
+                "Reconcile skipped $skippedTotal document(s) this cycle — holding the watermark at $cleanThrough " +
+                    "so the rejected document(s) are retried next cycle"
+            }
+        }
+        return cleanThrough
     }
 
     /**
@@ -198,8 +221,16 @@ open class DocumentOpenSearchReconcileService(
             JsonSchemaDocumentOsDocument::class.java,
             IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
         )
-        val definitionName = hits.searchHits.firstOrNull()?.content?.definitionId?.name ?: return
-        operations.delete(id, IndexCoordinates.of(resolver.indexNameFor(definitionName)))
+        val definitionId = hits.searchHits.firstOrNull()?.content?.definitionId ?: return
+        val definitionName = definitionId.name ?: return
+        val versionTag = definitionId.blueprintId?.blueprintVersionTag ?: return
+        // Delete from the version write alias (a single concrete); the per-definition read alias spans versions.
+        operations.delete(id, IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)))
+        // A scoped rebuild in flight holds a copy in its fresh (not-yet-published) index — delete it there too,
+        // or draining this pending deletion before the swap leaves the copy to survive it.
+        resolver.rebuildIndexFor(definitionName, versionTag)?.let { rebuildIndex ->
+            operations.delete(id, IndexCoordinates.of(rebuildIndex))
+        }
     }
 
     private fun currentWatermark(): LocalDateTime =
@@ -230,8 +261,60 @@ open class DocumentOpenSearchReconcileService(
         }
     }
 
+    /** Runs the empty-version-index prune at most once per [OpenSearchProperties.Reconcile.pruneInterval]. */
+    private fun pruneEmptyVersionIndicesIfDue() {
+        if (!properties.reconcile.pruneEmptyVersionIndices) return
+        val now = System.currentTimeMillis()
+        if (now - lastPruneAtMillis < properties.reconcile.pruneInterval.toMillis()) return
+        lastPruneAtMillis = now
+        pruneEmptyVersionIndices()
+    }
+
+    /**
+     * Drops per-(definition, version) concrete indices that hold no documents, grouping concretes by their per-key
+     * read alias (read via get-alias, never parsing names). Never drops the last concrete of a key — so its read
+     * alias and the global read alias survive, avoiding legacy/stale flapping — nor an in-flight rebuild target. A
+     * later write of a pruned version re-creates its index lazily.
+     */
+    private fun pruneEmptyVersionIndices() {
+        val readAlias = OpenSearchIndexNameResolver.READ_ALIAS
+        val globalOps = operations.indexOps(IndexCoordinates.of(readAlias))
+        if (!globalOps.exists()) return
+        val concretes = globalOps.getAliasesForIndex(readAlias).keys
+        if (concretes.isEmpty()) return
+
+        // Group concretes by their per-key read alias: of each concrete's aliases, drop the global one and take the
+        // shortest remaining (the version write alias is "<readAlias>_v<tag>", so it is always longer).
+        val byKey = concretes.groupBy { concrete ->
+            operations.indexOps(IndexCoordinates.of(concrete)).getAliasesForIndex(concrete)
+                .values.flatten().map { it.alias }
+                .filter { it != readAlias }
+                .minByOrNull { it.length }
+                ?: concrete
+        }
+
+        byKey.values.forEach { group ->
+            val keep = group.filter { isNonEmptyOrRebuild(it) }
+            val empty = group.filter { it !in keep }
+            // Keep at least one concrete per key so the read aliases never disappear.
+            val toDrop = if (keep.isNotEmpty()) empty else empty.drop(1)
+            toDrop.forEach { concrete ->
+                runCatching { operations.indexOps(IndexCoordinates.of(concrete)).delete() }
+                    .onSuccess { logger.info { "Pruned empty OpenSearch version index '$concrete'" } }
+                    .onFailure { logger.warn(it) { "Failed to prune empty OpenSearch version index '$concrete'" } }
+            }
+        }
+    }
+
+    private fun isNonEmptyOrRebuild(concrete: String): Boolean {
+        if (resolver.isRebuildConcrete(concrete)) return true
+        val query = NativeSearchQueryBuilder().withQuery(QueryBuilders.matchAllQuery()).build()
+        return operations.count(query, JsonSchemaDocumentOsDocument::class.java, IndexCoordinates.of(concrete)) > 0
+    }
+
     private data class ReconcilePage(
         val osDocuments: List<JsonSchemaDocumentOsDocument>,
+        val convFailed: Int,
         val lastChangedOn: LocalDateTime,
         val lastId: UUID,
     )
