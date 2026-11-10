@@ -36,3 +36,4 @@ New enhancement explanation.
 | Severity | Fix |
 |----------|-----|
 | High | The deprecated Documenten API endpoints for downloading, changing and deleting a document now check access more strictly. A document is only available through these endpoints when it is linked to a case the user can view. These endpoints will be removed in Valtimo 14. Use the endpoints that take the case as input instead. |
+| Dashboard | A donut or bar chart widget with a long legend no longer shows two vertical scrollbars next to each other. |
