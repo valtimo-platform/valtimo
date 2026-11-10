@@ -199,4 +199,57 @@ describe('GroupSearchFieldModalComponent', () => {
       expect(component.formGroup.get('fieldType')?.value).toBe('range');
     });
   });
+
+  describe('match type', () => {
+    const textField = {
+      key: 'name',
+      dataType: 'text',
+      fieldType: 'single',
+      matchType: null,
+      order: 0,
+    } as unknown as GroupSearchField;
+
+    const openWith = (field: GroupSearchField | null): void => {
+      component.ngOnInit();
+      setMembers();
+      component.open = true;
+      component.field = field;
+      component.ngOnChanges({field: {} as any});
+    };
+
+    it('defaults to like when a text data type is chosen in add mode', () => {
+      openWith(null);
+
+      component.formGroup.patchValue({dataType: 'text', fieldType: 'single'});
+
+      expect(component.showMatchType).toBeTrue();
+      expect(component.formGroup.get('matchType')?.value).toBe('like');
+    });
+
+    it('is invalid for a text field without a match type', () => {
+      openWith(null);
+      component.formGroup.patchValue({key: 'k', dataType: 'text', fieldType: 'single'});
+
+      component.formGroup.get('matchType')?.setValue(null);
+
+      expect(component.formGroup.invalid).toBeTrue();
+    });
+
+    it('clears the match type and does not send it for a non text data type', () => {
+      openWith(null);
+      component.formGroup.patchValue({key: 'k', dataType: 'text', fieldType: 'single'});
+
+      component.formGroup.patchValue({dataType: 'number'});
+
+      expect(component.showMatchType).toBeFalse();
+      expect(component.formGroup.get('matchType')?.value).toBeNull();
+      expect((component as any)._buildRequest().matchType).toBeUndefined();
+    });
+
+    it('falls back to exact when editing a text field without a match type', () => {
+      openWith(textField);
+
+      expect(component.formGroup.get('matchType')?.value).toBe('exact');
+    });
+  });
 });

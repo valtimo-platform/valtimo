@@ -49,6 +49,17 @@
             >{{ selectedColor | uppercase }}</span
           >
         </div>
+
+        <cds-icon-button
+          align="right"
+          kind="ghost"
+          size="sm"
+          [description]="'caseManagement.color.clear' | translate"
+          (click)="onClear()"
+          [attr.data-test-id]="colorTestIds.clearButton"
+        >
+          <svg cdsIcon="trash-can" size="16"></svg>
+        </cds-icon-button>
       </div>
 
       <div class="valtimo-group-config__swatches">
@@ -80,6 +91,7 @@
           labelTranslationKey=""
           [config]="colorPickerConfig"
           [ngModel]="selectedColor"
+          (clearEvent)="onClear()"
           (colorChangeEvent)="onColorChange($event)"
           [attr.data-test-id]="colorTestIds.customPicker"
         ></valtimo-color-picker>
@@ -141,7 +153,10 @@
           </div>
         </div>
 
-        <div class="valtimo-group-config__table-header">
+        <div
+          class="valtimo-group-config__table-header"
+          [attr.data-test-id]="testIds.memberTableHeader"
+        >
           <div class="valtimo-group-config__table-cell valtimo-group-config__table-cell--name">
             {{ 'caseManagement.groups.config.columns.name' | translate }}
           </div>
