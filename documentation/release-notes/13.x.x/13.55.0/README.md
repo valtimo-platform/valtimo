@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Dashboard | The key can now be edited when creating a dashboard, as elsewhere in the application. A numeric name, no longer results in an empty key. |
