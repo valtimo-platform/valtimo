@@ -70,6 +70,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
@@ -132,6 +133,7 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     private InternalCaseStatus internalStatus;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @BatchSize(size = 100)
     @JoinTable(
         name = "case_tag_link",
         joinColumns = @JoinColumn(name = "json_schema_document_id", referencedColumnName = "json_schema_document_id"),

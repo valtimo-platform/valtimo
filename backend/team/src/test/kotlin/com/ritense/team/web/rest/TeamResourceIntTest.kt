@@ -87,6 +87,36 @@ class TeamResourceIntTest : BaseIntegrationTest() {
 
     @Test
     @WithMockUser(username = "admin", authorities = [ADMIN])
+    fun `should page teams with users via REST`() {
+        teamManagementService.create(Team(key = "paged-rest-a", title = "Paged REST A"))
+        teamManagementService.create(Team(key = "paged-rest-b", title = "Paged REST B"))
+        teamManagementService.create(Team(key = "paged-rest-c", title = "Paged REST C"))
+        teamManagementService.addUserToTeam("user-a1", "paged-rest-a")
+        teamManagementService.addUserToTeam("user-a2", "paged-rest-a")
+        teamManagementService.addUserToTeam("user-c1", "paged-rest-c")
+
+        mockMvc.perform(pagedTeamsRequest(page = 0))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content", hasSize<Any>(1)))
+            .andExpect(jsonPath("$.content[0].key").value("paged-rest-a"))
+            .andExpect(jsonPath("$.content[0].userCount").value(2))
+            .andExpect(jsonPath("$.totalElements").value(3))
+
+        mockMvc.perform(pagedTeamsRequest(page = 2))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content", hasSize<Any>(1)))
+            .andExpect(jsonPath("$.content[0].key").value("paged-rest-c"))
+            .andExpect(jsonPath("$.content[0].userCount").value(1))
+    }
+
+    private fun pagedTeamsRequest(page: Int) = get("/api/v1/team")
+        .param("titleContains", "Paged REST")
+        .param("page", page.toString())
+        .param("size", "1")
+        .param("sort", "title,asc")
+
+    @Test
+    @WithMockUser(username = "admin", authorities = [ADMIN])
     fun `should update and delete team via REST`() {
         AuthorizationContext.runWithoutAuthorization {
             teamManagementService.create(Team(key = "team-to-update", title = "Old Title"))
