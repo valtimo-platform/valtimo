@@ -73,6 +73,10 @@ data class UploadField(
         processResources(document)
     }
 
+    fun resourceIds(): List<UUID> {
+        return value.mapNotNull { getResourceId(it) }
+    }
+
     private fun processResources(document: Document?) {
         if (document != null) {
             value.forEach { resourceNode ->
