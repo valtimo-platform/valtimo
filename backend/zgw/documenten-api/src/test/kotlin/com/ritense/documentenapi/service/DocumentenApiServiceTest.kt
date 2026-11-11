@@ -17,10 +17,15 @@
 package com.ritense.documentenapi.service
 
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.AuthorizationRequest
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
@@ -41,14 +46,17 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.security.access.AccessDeniedException
 import java.net.URI
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.Optional
 import java.util.UUID
 
 class DocumentenApiServiceTest {
@@ -152,6 +160,88 @@ class DocumentenApiServiceTest {
         assertEquals("Trying to delete informatie object by url, but could not find DocumentenApiPlugin instance for informatieobjectUrl http://some.url", ex.message)
     }
 
+    @Test
+    fun `should deny access when no case resolver is available`() {
+        assertThrows<AccessDeniedException> {
+            service.requireViewableLinkedCaseDocumentId(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)
+        }
+    }
+
+    @Test
+    fun `should deny access when document is not linked to a case`() {
+        val resolver = mock<InformatieObjectCaseResolver>()
+        whenever(resolver.getLinkedCaseDocumentIds(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)).thenReturn(emptyList())
+
+        assertThrows<AccessDeniedException> {
+            serviceWith(resolver).requireViewableLinkedCaseDocumentId(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)
+        }
+    }
+
+    @Test
+    fun `should deny access when linked case is not viewable`() {
+        val caseDocumentId = UUID.randomUUID()
+        val resolver = mock<InformatieObjectCaseResolver>()
+        whenever(resolver.getLinkedCaseDocumentIds(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)).thenReturn(listOf(caseDocumentId))
+        mockCase(caseDocumentId, viewable = false)
+
+        assertThrows<AccessDeniedException> {
+            serviceWith(resolver).requireViewableLinkedCaseDocumentId(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)
+        }
+    }
+
+    @Test
+    fun `should deny access when linked case does not exist`() {
+        val resolver = mock<InformatieObjectCaseResolver>()
+        whenever(resolver.getLinkedCaseDocumentIds(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)).thenReturn(listOf(UUID.randomUUID()))
+        whenever(valtimoDocumentService.findBy(any())).thenReturn(Optional.empty())
+
+        assertThrows<AccessDeniedException> {
+            serviceWith(resolver).requireViewableLinkedCaseDocumentId(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)
+        }
+    }
+
+    @Test
+    fun `should return first linked case that is viewable`() {
+        val hiddenCaseDocumentId = UUID.randomUUID()
+        val viewableCaseDocumentId = UUID.randomUUID()
+        val resolver = mock<InformatieObjectCaseResolver>()
+        whenever(resolver.getLinkedCaseDocumentIds(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID))
+            .thenReturn(listOf(hiddenCaseDocumentId, viewableCaseDocumentId))
+        mockCase(hiddenCaseDocumentId, viewable = false)
+        mockCase(viewableCaseDocumentId, viewable = true)
+
+        val result = serviceWith(resolver).requireViewableLinkedCaseDocumentId(PLUGIN_CONFIGURATION_ID, DOCUMENT_ID)
+
+        assertEquals(viewableCaseDocumentId, result)
+    }
+
+    private fun serviceWith(vararg resolvers: InformatieObjectCaseResolver) = DocumentenApiService(
+        pluginService,
+        catalogiService,
+        documentenApiColumnRepository,
+        documentenApiUploadFieldRepository,
+        authorizationService,
+        valtimoDocumentService,
+        documentDefinitionService,
+        documentenApiVersionService,
+        valueResolverService,
+        resolvers.toList(),
+    )
+
+    private fun mockCase(caseDocumentId: UUID, viewable: Boolean) {
+        val document = mock<JsonSchemaDocument>()
+        whenever(valtimoDocumentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId)))
+            .thenReturn(Optional.of(document))
+        whenever(
+            authorizationService.hasPermission(
+                argThat<AuthorizationRequest<JsonSchemaDocument>> {
+                    action == JsonSchemaDocumentActionProvider.VIEW &&
+                        (this as EntityAuthorizationRequest<JsonSchemaDocument>).entities == listOf(document)
+                }
+            )
+        ).thenReturn(viewable)
+    }
+
     private fun createDocumentInformatieObject() = DocumentInformatieObject(
         url = URI("http://localhost/informatieobjecttype/0e757153-fce3-44bc-a47f-494840784a16"),
         bronorganisatie = Rsin("404797441"),
@@ -163,4 +253,9 @@ class DocumentenApiServiceTest {
         versie = 1,
         informatieobjecttype = "http://localhost/informatieobjecttype",
     )
+
+    companion object {
+        private const val PLUGIN_CONFIGURATION_ID = "c850401b-9331-4cb6-8f1c-3e34b12e3d55"
+        private const val DOCUMENT_ID = "3bd88200-11cb-45cf-a742-da01261755b1"
+    }
 }

@@ -19,7 +19,11 @@ import {CASE_MENU_TEST_IDS, CASE_OVERVIEW_TEST_IDS, LEFT_SIDEBAR_TEST_IDS} from 
 import {PINNED_ITEM_ENDPOINT} from '../../utils/case-group.utils';
 import {CASE_OVERVIEW_PIN_INFO_DISMISSED_KEY} from '../../../frontend/projects/valtimo/case/src/lib/constants/case-overview.constants';
 
+const PIN_CLICK_GUARD_MS = 600;
+
 export class CasesOverviewPage {
+  private lastPinClickAt = 0;
+
   constructor(private readonly page: Page) {}
 
   async goTo() {
@@ -99,6 +103,14 @@ export class CasesOverviewPage {
     return this.typeRow(name).getByTestId(CASE_OVERVIEW_TEST_IDS.typePinButton);
   }
 
+  groupColorDot(title: string): Locator {
+    return this.groupTile(title).getByTestId(CASE_OVERVIEW_TEST_IDS.groupColorDot);
+  }
+
+  typeDot(name: string): Locator {
+    return this.typeRow(name).locator('.case-overview__type-dot');
+  }
+
   get typesNoResults(): Locator {
     return this.page.getByTestId(CASE_OVERVIEW_TEST_IDS.typesNoResults);
   }
@@ -121,6 +133,10 @@ export class CasesOverviewPage {
 
   /** Clicks a pin button and waits for the pin or unpin request it sends. */
   async togglePin(button: Locator, method: 'POST' | 'DELETE'): Promise<Response> {
+    // The overview ignores pin clicks that follow within its click guard
+    const wait = PIN_CLICK_GUARD_MS - (Date.now() - this.lastPinClickAt);
+    if (wait > 0) await this.page.waitForTimeout(wait);
+    this.lastPinClickAt = Date.now();
     const [response] = await Promise.all([
       this.page.waitForResponse(
         res =>
@@ -174,6 +190,17 @@ export class CasesOverviewPage {
     return this.casesMenu.getByTestId(CASE_MENU_TEST_IDS.pinnedItem);
   }
 
+  get caseDefinitionMenuItems(): Locator {
+    return this.casesMenu.getByTestId(CASE_MENU_TEST_IDS.caseDefinitionItem);
+  }
+
+  menuItemDot(name: string): Locator {
+    return this.pinnedMenuItems
+      .or(this.caseDefinitionMenuItems)
+      .filter({hasText: name})
+      .locator('.menu-item-dot');
+  }
+
   pinnedMenuItem(name: string): Locator {
     return this.pinnedMenuItems.filter({hasText: name});
   }
@@ -183,13 +210,27 @@ export class CasesOverviewPage {
   }
 
   async pinnedMenuNames(): Promise<string[]> {
-    return (await this.pinnedMenuItems.allInnerTexts()).map(name => name.trim());
+    return (await this.pinnedMenuItems.locator('.menu-item-title').allInnerTexts()).map(name =>
+      name.trim()
+    );
   }
 
   async assertCasesSectionActive(active: boolean) {
     const assertion = expect(this.casesMenu);
     if (active) await assertion.toHaveClass(/menu-item--section-active/);
     else await assertion.not.toHaveClass(/menu-item--section-active/);
+  }
+
+  /** Computed rgb() of the grey the dots fall back to when there is no color. */
+  async fallbackDotColor(): Promise<string> {
+    return this.page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.backgroundColor = 'var(--cds-icon-secondary)';
+      document.body.appendChild(probe);
+      const color = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return color;
+    });
   }
 
   async clearPinInfoDismissal() {

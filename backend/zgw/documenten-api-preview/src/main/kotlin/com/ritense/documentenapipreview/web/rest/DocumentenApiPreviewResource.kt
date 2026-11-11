@@ -22,11 +22,13 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
+import com.ritense.zakenapi.exception.InformatieObjectNotRelatedToCaseException
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -76,4 +78,8 @@ class DocumentenApiPreviewResource(
             documentenApiPreviewService.isPreviewConfigured(documentenApiConfigurationId)
         )
     }
+
+    @ExceptionHandler(InformatieObjectNotRelatedToCaseException::class)
+    fun handleInformatieObjectNotRelatedToCase(e: InformatieObjectNotRelatedToCaseException): ResponseEntity<Void> =
+        ResponseEntity.badRequest().build()
 }

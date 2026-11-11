@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ public class DocumentRelatedFileSubmittedEventListenerImpl implements DocumentRe
     @Override
     public void handle(DocumentRelatedFileSubmittedEvent event) {
         resourceServiceOpt.ifPresent(resourceService -> {
+            resourceService.claimForDocument(event.getResourceId(), event.getDocumentId());
             var resource = resourceService.getResource(event.getResourceId());
             runWithoutAuthorization(() -> {
                 documentService.assignRelatedFile(
