@@ -44,14 +44,17 @@ import com.ritense.form.web.rest.FormResource
 import com.ritense.form.web.rest.IntermediateSubmissionResource
 import com.ritense.form.widget.FormIoWidgetDataProvider
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.resource.service.ResourceService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.interactivetable.InteractiveTableWidgetDataProvider
 import com.ritense.widget.table.TableWidgetDataProvider
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
@@ -117,6 +120,7 @@ class FormAutoConfigurationKotlin {
         authorizationService: AuthorizationService,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
     ) = DefaultFormSubmissionService(
         processLinkService,
         formDefinitionService,
@@ -131,6 +135,7 @@ class FormAutoConfigurationKotlin {
         authorizationService,
         valueResolverService,
         objectMapper,
+        processDocumentAssociationService,
     )
 
     @Bean
@@ -197,14 +202,20 @@ class FormAutoConfigurationKotlin {
         authorizationService: AuthorizationService,
         operatonTaskService: OperatonTaskService,
         processLinkService: ProcessLinkService,
-        formDefinitionService: FormIoFormDefinitionService
+        formDefinitionService: FormIoFormDefinitionService,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
+        applicationEventPublisher: ApplicationEventPublisher,
+        resourceService: ObjectProvider<ResourceService>
     ) = IntermediateSubmissionService(
         intermediateSubmissionRepository = intermediateSubmissionRepository,
         userManagementService = userManagementService,
         authorizationService = authorizationService,
         operatonTaskService = operatonTaskService,
         processLinkService = processLinkService,
-        formDefinitionService = formDefinitionService
+        formDefinitionService = formDefinitionService,
+        processDocumentAssociationService = processDocumentAssociationService,
+        applicationEventPublisher = applicationEventPublisher,
+        resourceService = resourceService
     )
 
     @Bean

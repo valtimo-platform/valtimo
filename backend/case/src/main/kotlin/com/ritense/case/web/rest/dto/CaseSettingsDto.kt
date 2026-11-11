@@ -16,6 +16,8 @@
 
 package com.ritense.case.web.rest.dto
 
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import com.ritense.case_.domain.definition.CaseDefinition
 
 data class CaseSettingsDto(
@@ -24,6 +26,7 @@ data class CaseSettingsDto(
     val hasExternalStartForm: Boolean? = null,
     val externalStartFormUrl: String? = null,
     val externalStartFormDescription: String? = null,
+    @param:JsonSetter(nulls = Nulls.AS_EMPTY)
     val color: String? = null,
 ) {
     fun update(currentCaseDefinition: CaseDefinition): CaseDefinition {
@@ -45,11 +48,15 @@ data class CaseSettingsDto(
             externalStartFormDescription = when (this.hasExternalStartForm) {
                 false -> null
                 else -> getSettingForUpdate(
-                    currentCaseDefinition.externalStartFormUrl,
+                    currentCaseDefinition.externalStartFormDescription,
                     this.externalStartFormDescription
                 )
             },
-            color = getSettingForUpdate(currentCaseDefinition.color, this.color)
+            color = when {
+                this.color == null -> currentCaseDefinition.color
+                this.color.isBlank() -> null
+                else -> this.color
+            }
         )
     }
 

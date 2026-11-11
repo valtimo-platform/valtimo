@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package com.ritense.resource.service
 import com.ritense.resource.BaseIntegrationTest
 import com.ritense.resource.domain.ResourceId
 import com.ritense.resource.domain.S3Resource
+import com.ritense.resource.domain.S3UploadTicket
+import com.ritense.resource.repository.S3UploadTicketRepository
 import com.ritense.resource.web.ResourceDTO
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -26,6 +28,10 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.test.context.support.WithMockUser
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest
@@ -35,6 +41,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class S3ServiceIntTest : BaseIntegrationTest() {
+
+    @Autowired
+    lateinit var s3UploadTicketRepository: S3UploadTicketRepository
 
     @BeforeEach
     fun setup() {
@@ -56,8 +65,12 @@ class S3ServiceIntTest : BaseIntegrationTest() {
     }
 
     @Test
+    @WithMockUser("userA")
     fun `should register resource`() {
         val s3Resource: S3Resource = s3Resource()
+        s3UploadTicketRepository.save(S3UploadTicket.of(s3Resource.key, "userA"))
+        `when`(s3Client.headObject(any(HeadObjectRequest::class.java)))
+            .thenReturn(HeadObjectResponse.builder().contentLength(10L).build())
         val resourceDTO = ResourceDTO(
             null,
             s3Resource.key,
