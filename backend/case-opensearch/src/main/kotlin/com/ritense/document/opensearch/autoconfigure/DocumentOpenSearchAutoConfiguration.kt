@@ -136,8 +136,9 @@ class DocumentOpenSearchAutoConfiguration {
         reconcileStateRepository: OpenSearchReconcileStateRepository,
         entityManager: EntityManager,
         openSearchProperties: OpenSearchProperties,
+        transactionManager: PlatformTransactionManager,
     ): IndexCompletenessService =
-        IndexCompletenessService(rejectionRepository, reconcileStateRepository, entityManager, openSearchProperties)
+        IndexCompletenessService(rejectionRepository, reconcileStateRepository, entityManager, openSearchProperties, transactionManager)
 
     @Bean
     @ConditionalOnMissingBean

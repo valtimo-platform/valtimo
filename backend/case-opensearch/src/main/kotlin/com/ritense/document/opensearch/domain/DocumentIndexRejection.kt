@@ -50,10 +50,9 @@ class DocumentIndexRejection(
     @Column(name = "next_retry_on", nullable = false)
     var nextRetryOn: LocalDateTime,
 ) {
-    fun rejectedAgain(definitionName: String, now: LocalDateTime, nextRetryOn: LocalDateTime) {
+    fun rejectedAgain(definitionName: String, now: LocalDateTime) {
         this.definitionName = definitionName
         this.lastRejectedOn = now
         this.attempts++
-        this.nextRetryOn = nextRetryOn
     }
 }

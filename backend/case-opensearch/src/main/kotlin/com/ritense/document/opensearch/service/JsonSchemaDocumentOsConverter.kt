@@ -19,6 +19,7 @@ package com.ritense.document.opensearch.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.opensearch.domain.DocumentIndexRejection
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
@@ -70,9 +71,9 @@ open class JsonSchemaDocumentOsConverter(
         try {
             toOsDocument(document)
         } catch (e: Exception) {
-            logger.warn(e) { "Failed to convert document ${document.id().id} — skipping" }
             indexInitializer.recordWriteFailure()
             completeness.recordRejected(mapOf(document.id().id to document.definitionId().name()))
+                .forEach { logRejection(it, "convert", e) }
             null
         }
 
@@ -131,7 +132,7 @@ open class JsonSchemaDocumentOsConverter(
                     "skipping ${documents.size} document(s). If the cluster reports 'maximum shards open', raise " +
                     "cluster.max_shards_per_node or remove unused indices"
             }
-            reject(documents)
+            reject(documents.map { Rejected(it, cause = null) })
             return documents.size.toLong()
         }
         return store(IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)), documents, removeOtherCopies = true)
@@ -141,7 +142,9 @@ open class JsonSchemaDocumentOsConverter(
         val result = saveIsolated(index, chunk.map(::indexable))
         // A case whose definition or version changed still has a copy in its previous index.
         if (removeOtherCopies) removeCopiesOutside(index.indexName, result.written)
-        completeness.clearRejected((result.written + result.alreadyCurrent).mapNotNull(::toUuidOrNull))
+        completeness.clearIndexed((result.written + result.alreadyCurrent).mapNotNull(::toUuidOrNull)).forEach {
+            logger.info { "Indexed document ${it.documentId} of case type '${it.definitionName}' after ${it.attempts} failed attempt(s)" }
+        }
         reject(result.rejected)
         return result.rejected.size.toLong()
     }
@@ -155,7 +158,7 @@ open class JsonSchemaDocumentOsConverter(
             val byId = documents.associateBy { it.id }
             val alreadyCurrent = e.failedDocuments.filterValues(::isVersionConflict).keys.toMutableList()
             val written = ids.filter { it !in e.failedDocuments.keys }.toMutableList()
-            val rejected = mutableListOf<JsonSchemaDocumentOsDocument>()
+            val rejected = mutableListOf<Rejected>()
             e.failedDocuments.keys.filter { it !in alreadyCurrent }.forEach { id ->
                 val document = byId[id] ?: return@forEach
                 try {
@@ -165,8 +168,7 @@ open class JsonSchemaDocumentOsConverter(
                     alreadyCurrent += id
                 } catch (ex: Exception) {
                     if (isTransportFailure(ex)) throw ex
-                    rejected += document
-                    logger.warn(ex) { "Failed to index document $id — skipping" }
+                    rejected += Rejected(document, ex)
                 }
             }
             return SaveResult(written, alreadyCurrent, rejected)
@@ -193,16 +195,25 @@ open class JsonSchemaDocumentOsConverter(
             }
     }
 
-    private fun reject(documents: List<JsonSchemaDocumentOsDocument>) {
-        if (documents.isEmpty()) return
+    private fun reject(rejected: List<Rejected>) {
+        if (rejected.isEmpty()) return
         indexInitializer.recordWriteFailure()
+        val causeById = rejected.associate { it.document.id to it.cause }
         completeness.recordRejected(
-            documents.mapNotNull { document ->
+            rejected.mapNotNull { (document) ->
                 val id = toUuidOrNull(document.id) ?: return@mapNotNull null
                 val name = document.definitionId?.name ?: return@mapNotNull null
                 id to name
             }.toMap()
-        )
+        ).forEach { logRejection(it, "index", causeById[it.documentId.toString()]) }
+    }
+
+    // Always WARN: every failed attempt is worth an operator's attention, however often it repeats.
+    private fun logRejection(rejection: DocumentIndexRejection, action: String, cause: Exception?) {
+        logger.warn(cause) {
+            "Failed to $action document ${rejection.documentId} of case type '${rejection.definitionName}' " +
+                "(attempt ${rejection.attempts}, rejected since ${rejection.firstRejectedOn}) — retrying after ${rejection.nextRetryOn}"
+        }
     }
 
     private fun boundLeaves(value: Any?): Any? = when (value) {
@@ -226,8 +237,10 @@ open class JsonSchemaDocumentOsConverter(
     private data class SaveResult(
         val written: List<String>,
         val alreadyCurrent: List<String>,
-        val rejected: List<JsonSchemaDocumentOsDocument>,
+        val rejected: List<Rejected>,
     )
+
+    private data class Rejected(val document: JsonSchemaDocumentOsDocument, val cause: Exception?)
 
     companion object {
         private val logger = KotlinLogging.logger {}

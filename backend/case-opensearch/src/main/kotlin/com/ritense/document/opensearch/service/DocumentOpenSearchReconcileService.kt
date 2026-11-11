@@ -74,9 +74,6 @@ open class DocumentOpenSearchReconcileService(
     @Volatile
     private var lastPruneAtMillis: Long = 0L
 
-    @Volatile
-    private var lastRetryAtMillis: Long = 0L
-
     open fun reconcile() {
         if (!properties.enabled) return
 
@@ -92,7 +89,7 @@ open class DocumentOpenSearchReconcileService(
             val watermark = completeness.initializeWatermarkIfAbsent()
             val from = watermark.minus(properties.reconcile.overlap)
             val maxSeen = processUpserts(from)
-            retryRejectedIfDue()
+            retryDueRejections()
             drainPendingDeletions()
             pruneEmptyVersionIndicesIfDue()
             if (maxSeen.isAfter(watermark)) {
@@ -175,14 +172,11 @@ open class DocumentOpenSearchReconcileService(
     }
 
     /**
-     * Re-sends the oldest rejected cases, so they are indexed once the cause is gone (a raised shard or field
-     * limit); a changed case is already re-sent by the scan. A case that no longer exists is forgotten.
+     * Re-sends the rejected cases whose retry is due, so they are indexed once the cause is gone (a raised shard
+     * or field limit); a changed case is already re-sent by the scan. A case that no longer exists is forgotten.
      */
-    private fun retryRejectedIfDue() {
-        val now = System.currentTimeMillis()
-        if (now - lastRetryAtMillis < REJECTED_RETRY_INTERVAL.toMillis()) return
-        lastRetryAtMillis = now
-        val ids = completeness.oldestRejected(properties.reconcile.pageSize)
+    private fun retryDueRejections() {
+        val ids = completeness.dueForRetry(properties.reconcile.pageSize)
         if (ids.isEmpty()) return
         val osDocuments = TransactionTemplate(transactionManager).apply { isReadOnly = true }.execute {
             val documents = entityManager.createQuery(
@@ -270,7 +264,5 @@ open class DocumentOpenSearchReconcileService(
         val LOCK_AT_MOST_FOR: Duration = Duration.ofMinutes(10)
 
         private val CYCLE_BUDGET: Duration = LOCK_AT_MOST_FOR.dividedBy(2)
-
-        private val REJECTED_RETRY_INTERVAL: Duration = Duration.ofMinutes(10)
     }
 }

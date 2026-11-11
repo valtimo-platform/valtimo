@@ -178,7 +178,7 @@ class JsonSchemaDocumentOsConverterTest {
 
         converter.indexChunk(listOf(osDocument(id.toString())))
 
-        verify(completeness).clearRejected(listOf(id))
+        verify(completeness).clearIndexed(listOf(id))
     }
 
     @Test

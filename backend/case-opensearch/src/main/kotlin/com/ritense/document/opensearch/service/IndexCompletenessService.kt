@@ -23,9 +23,13 @@ import com.ritense.document.opensearch.repository.DocumentIndexRejectionReposito
 import com.ritense.document.opensearch.repository.OpenSearchReconcileStateRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
@@ -40,23 +44,48 @@ open class IndexCompletenessService(
     private val stateRepository: OpenSearchReconcileStateRepository,
     private val entityManager: EntityManager,
     private val properties: OpenSearchProperties,
+    transactionManager: PlatformTransactionManager,
 ) {
 
     // Writers call this from inside read-only page transactions.
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    open fun recordRejected(definitionNameById: Map<UUID, String>) {
-        if (definitionNameById.isEmpty()) return
-        val now = LocalDateTime.now()
-        val nextRetryOn = now.plus(RETRY_DELAY)
-        val existing = rejectionRepository.findAllById(definitionNameById.keys).associateBy { it.documentId }
-        rejectionRepository.saveAll(
-            definitionNameById.map { (id, name) ->
-                existing[id]?.apply { rejectedAgain(name, now, nextRetryOn) }
-                    ?: DocumentIndexRejection(id, name, firstRejectedOn = now, nextRetryOn = nextRetryOn)
-            }
-        )
+    private val newTransaction = TransactionTemplate(transactionManager).apply {
+        propagationBehavior = TransactionDefinition.PROPAGATION_REQUIRES_NEW
     }
 
+    /** Records a failed index attempt per case and schedules its next retry. Returns the updated rows. */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    open fun recordRejected(definitionNameById: Map<UUID, String>): List<DocumentIndexRejection> {
+        if (definitionNameById.isEmpty()) return emptyList()
+        return try {
+            upsertRejections(definitionNameById)
+        } catch (e: DataIntegrityViolationException) {
+            // Another writer inserted the same case's first rejection concurrently; its row now exists.
+            upsertRejections(definitionNameById)
+        }
+    }
+
+    private fun upsertRejections(definitionNameById: Map<UUID, String>): List<DocumentIndexRejection> =
+        newTransaction.execute {
+            val now = LocalDateTime.now()
+            val existing = rejectionRepository.findAllById(definitionNameById.keys).associateBy { it.documentId }
+            val rejections = definitionNameById.map { (id, name) ->
+                val rejection = existing[id]?.apply { rejectedAgain(name, now) }
+                    ?: DocumentIndexRejection(id, name, firstRejectedOn = now, nextRetryOn = now)
+                rejection.apply { nextRetryOn = now.plus(retryDelayAfter(attempts)) }
+            }
+            rejectionRepository.saveAllAndFlush(rejections)
+        }.orEmpty()
+
+    /** Forgets the rejections of cases that were indexed after all. Returns the rows it removed. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    open fun clearIndexed(documentIds: Collection<UUID>): List<DocumentIndexRejection> {
+        if (documentIds.isEmpty()) return emptyList()
+        val cleared = rejectionRepository.findAllById(documentIds)
+        if (cleared.isNotEmpty()) rejectionRepository.deleteAllInBatch(cleared)
+        return cleared
+    }
+
+    /** Forgets the rejections of cases that no longer exist. */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun clearRejected(documentIds: Collection<UUID>) {
         if (documentIds.isEmpty()) return
@@ -70,8 +99,9 @@ open class IndexCompletenessService(
     open fun rejectedCount(): Long = rejectionRepository.count()
 
     @Transactional(readOnly = true)
-    open fun oldestRejected(limit: Int): List<UUID> =
-        rejectionRepository.findByOrderByLastRejectedOnAsc(PageRequest.of(0, limit)).map { it.documentId }
+    open fun dueForRetry(limit: Int): List<UUID> =
+        rejectionRepository.findByNextRetryOnLessThanEqualOrderByNextRetryOnAsc(LocalDateTime.now(), PageRequest.of(0, limit))
+            .map { it.documentId }
 
     /**
      * Whether the newest case change is more than two reconcile intervals ahead of the reconcile watermark, so
@@ -106,6 +136,11 @@ open class IndexCompletenessService(
         private val logger = KotlinLogging.logger {}
         val INITIAL_WATERMARK: LocalDateTime = LocalDateTime.of(1970, 1, 1, 0, 0)
 
-        private val RETRY_DELAY: Duration = Duration.ofMinutes(10)
+        /** Retrying never stops: a rejected case keeps its case type on PostgreSQL, so giving up would hide it. */
+        fun retryDelayAfter(attempts: Int): Duration = when {
+            attempts <= 3 -> Duration.ofMinutes(10)
+            attempts <= 6 -> Duration.ofHours(1)
+            else -> Duration.ofHours(24)
+        }
     }
 }

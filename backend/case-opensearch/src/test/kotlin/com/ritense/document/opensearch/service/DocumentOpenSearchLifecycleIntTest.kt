@@ -21,12 +21,15 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
+import com.ritense.document.opensearch.domain.OpenSearchReconcileState
 import com.ritense.document.opensearch.domain.ReindexRunStatus
 import com.ritense.document.opensearch.handler.PendingIndexDeletionListener
 import com.ritense.document.opensearch.repository.DocumentIndexRejectionRepository
+import com.ritense.document.opensearch.repository.OpenSearchReconcileStateRepository
 import com.ritense.document.opensearch.repository.PendingIndexDeletionRepository
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -40,6 +43,7 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -71,6 +75,15 @@ class DocumentOpenSearchLifecycleIntTest : BaseOpenSearchIntegrationTest() {
     @Autowired
     lateinit var transactionManager: PlatformTransactionManager
 
+    @Autowired
+    lateinit var reconcileService: DocumentOpenSearchReconcileService
+
+    @Autowired
+    lateinit var stateRepository: OpenSearchReconcileStateRepository
+
+    @Autowired
+    lateinit var entityManager: EntityManager
+
     private val createdIndices = mutableListOf<String>()
 
     @AfterEach
@@ -78,6 +91,7 @@ class DocumentOpenSearchLifecycleIntTest : BaseOpenSearchIntegrationTest() {
         runWithoutAuthorization { documentService.removeDocuments("house") }
         rejectionRepository.deleteAll()
         pendingIndexDeletionRepository.deleteAll()
+        stateRepository.deleteAll()
         createdIndices.forEach { indexInitializer.dropIndex(it) }
         TEST_DEFINITION_KEYS.forEach { key ->
             val alias = indexNameResolver.indexNameFor(key)
@@ -160,6 +174,42 @@ class DocumentOpenSearchLifecycleIntTest : BaseOpenSearchIntegrationTest() {
     }
 
     @Test
+    fun `the retry delay grows with the number of failed attempts`() {
+        val id = UUID.randomUUID()
+
+        val delays = (1..7).map {
+            indexCompletenessService.recordRejected(mapOf(id to "house"))
+            rejectionRepository.findById(id).orElseThrow().let { Duration.between(it.lastRejectedOn, it.nextRetryOn) }
+        }
+
+        assertThat(delays.take(3)).containsOnly(Duration.ofMinutes(10))
+        assertThat(delays.subList(3, 6)).containsOnly(Duration.ofHours(1))
+        assertThat(delays.last()).isEqualTo(Duration.ofHours(24))
+    }
+
+    @Test
+    fun `the reconciler only retries rejected cases whose retry is due`() {
+        val due = createHouseDocument("due")
+        val notDue = createHouseDocument("not-due")
+        listOf(due, notDue).forEach { backdate(it, hoursAgo = 1) }
+        openSearchRepository.deleteAll()
+        refreshIndex()
+        stateRepository.save(OpenSearchReconcileState(watermark = LocalDateTime.now()))
+        indexCompletenessService.recordRejected(mapOf(due.id().id to "house", notDue.id().id to "house"))
+        rejectionRepository.findById(due.id().id).orElseThrow()
+            .apply { nextRetryOn = LocalDateTime.now().minusMinutes(1) }
+            .let { rejectionRepository.save(it) }
+
+        reconcileService.reconcile()
+        refreshIndex()
+
+        assertThat(findIndexedById(due.id().id.toString())).`as`("due case indexed").isNotNull()
+        assertThat(rejectionRepository.existsById(due.id().id)).`as`("due case forgotten").isFalse()
+        assertThat(findIndexedById(notDue.id().id.toString())).`as`("case not due yet").isNull()
+        assertThat(rejectionRepository.findById(notDue.id().id).orElseThrow().attempts).`as`("not retried").isEqualTo(1)
+    }
+
+    @Test
     fun `deleting a case forgets its index rejection`() {
         val id = UUID.randomUUID()
         indexCompletenessService.recordRejected(mapOf(id to "house"))
@@ -195,6 +245,15 @@ class DocumentOpenSearchLifecycleIntTest : BaseOpenSearchIntegrationTest() {
         elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias).keys.single()
 
     private fun indexExists(name: String): Boolean = elasticsearchOperations.indexOps(IndexCoordinates.of(name)).exists()
+
+    private fun backdate(document: JsonSchemaDocument, hoursAgo: Long) {
+        TransactionTemplate(transactionManager).executeWithoutResult {
+            entityManager.createNativeQuery("UPDATE json_schema_document SET changed_on = :t WHERE json_schema_document_id = :id")
+                .setParameter("t", LocalDateTime.now().minusHours(hoursAgo))
+                .setParameter("id", document.id().id)
+                .executeUpdate()
+        }
+    }
 
     private fun createHouseDocument(street: String): JsonSchemaDocument =
         runWithoutAuthorization {
