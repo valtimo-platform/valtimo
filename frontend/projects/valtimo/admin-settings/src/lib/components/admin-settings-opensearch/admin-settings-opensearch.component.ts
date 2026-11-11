@@ -112,8 +112,8 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
 
   public readonly fields: ColumnConfig[] = [
     {key: 'statusTag', label: 'adminSettings.opensearch.reindex.columns.status', viewType: ViewType.TAGS},
-    {key: 'startedOn', label: 'adminSettings.opensearch.reindex.columns.startedOn', viewType: ViewType.DATE},
-    {key: 'finishedOn', label: 'adminSettings.opensearch.reindex.columns.finishedOn', viewType: ViewType.DATE},
+    {key: 'startedOn', label: 'adminSettings.opensearch.reindex.columns.startedOn', viewType: ViewType.DATE_TIME},
+    {key: 'finishedOn', label: 'adminSettings.opensearch.reindex.columns.finishedOn', viewType: ViewType.DATE_TIME},
     {key: 'progress', label: 'adminSettings.opensearch.reindex.columns.progress', viewType: ViewType.TEXT},
   ];
 
@@ -266,17 +266,17 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       {
         key: 'firstRejectedOn',
         label: 'adminSettings.opensearch.rejections.columns.firstRejectedOn',
-        viewType: ViewType.DATE,
+        viewType: ViewType.DATE_TIME,
       },
       {
         key: 'lastRejectedOn',
         label: 'adminSettings.opensearch.rejections.columns.lastRejectedOn',
-        viewType: ViewType.DATE,
+        viewType: ViewType.DATE_TIME,
       },
       {
         key: 'nextRetryOn',
         label: 'adminSettings.opensearch.rejections.columns.nextRetryOn',
-        viewType: ViewType.DATE,
+        viewType: ViewType.DATE_TIME,
       },
     ];
 
