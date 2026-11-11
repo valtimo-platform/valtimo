@@ -17,7 +17,7 @@ import {ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation} from '@an
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {BehaviorSubject, finalize, Observable} from 'rxjs';
+import {BehaviorSubject, finalize, map, Observable} from 'rxjs';
 import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants/dashboard-management.test-ids';
 import {DashboardItem} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
@@ -37,6 +37,11 @@ export class DashboardManagementComponent implements OnInit {
 
   public readonly tableData$: Observable<{items: DashboardItem[] | null; loading: boolean}> =
     this.dashboardManagementService.dashboards$;
+  public readonly usedKeys$: Observable<string[]> =
+    this.dashboardManagementService.dashboards$.pipe(
+      // Skip legacy empty keys — AutoKeyInput would dedupe '' to '-1'
+      map(data => (data.items ?? []).map(item => item.key).filter(key => !!key))
+    );
   public fields: ColumnConfig[] = [
     {
       viewType: ViewType.TEXT,
@@ -73,6 +78,7 @@ export class DashboardManagementComponent implements OnInit {
     this.dashboardManagementService.loadData();
     this.form = this.fb.group({
       description: this.fb.control('', [Validators.required]),
+      key: this.fb.control('', [Validators.required]),
       title: this.fb.control('', [Validators.required]),
     });
   }
@@ -83,10 +89,7 @@ export class DashboardManagementComponent implements OnInit {
   }
 
   public createDashboard(): void {
-    const control: AbstractControl | null = this.form.get('title');
-    if (!control || !control.valid) {
-      return;
-    }
+    if (this.form.invalid) return;
 
     const newDashboard: DashboardItem = this.form.getRawValue();
     this.dashboardManagementService.dispatchAction(

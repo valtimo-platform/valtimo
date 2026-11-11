@@ -18,6 +18,7 @@ package com.ritense.dashboard.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.dashboard.datasource.WidgetDataSourceDto
+import com.ritense.dashboard.exception.DashboardAlreadyExistsException
 import com.ritense.dashboard.service.DashboardService
 import com.ritense.dashboard.web.rest.dto.AdminWidgetConfigurationResponseDto
 import com.ritense.dashboard.web.rest.dto.DashboardCreateRequestDto
@@ -30,6 +31,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -81,12 +83,17 @@ class AdminDashboardResource(
     fun createDashboard(
         @Valid @RequestBody dashboardDto: DashboardCreateRequestDto
     ): ResponseEntity<DashboardResponseDto> {
-        val dashboard = dashboardService.createDashboard(
-            dashboardDto.title,
-            dashboardDto.description,
-            dashboardDto.widgetLayout,
-        )
-        return ResponseEntity.ok(DashboardResponseDto.of(dashboard))
+        return try {
+            val dashboard = dashboardService.createDashboard(
+                dashboardDto.title,
+                dashboardDto.description,
+                dashboardDto.widgetLayout,
+                dashboardDto.key,
+            )
+            ResponseEntity.ok(DashboardResponseDto.of(dashboard))
+        } catch (ex: DashboardAlreadyExistsException) {
+            ResponseEntity.status(HttpStatus.CONFLICT).build()
+        }
     }
 
     @RunWithoutAuthorization

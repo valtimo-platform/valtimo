@@ -18,6 +18,7 @@ import {NgModule} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  AutoKeyInputComponent,
   CarbonListModule,
   ConfirmationModalModule,
   JsonEditorComponent,
@@ -73,6 +74,7 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     JsonEditorComponent,
     SelectModule,
     WidgetLayoutInfoComponent,
+    AutoKeyInputComponent,
   ],
   exports: [],
 })

@@ -17,9 +17,15 @@
 package com.ritense.dashboard.web.rest.dto
 
 import com.ritense.dashboard.domain.WidgetLayout
+import com.ritense.valtimo.contract.Constants
+import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
 
 data class DashboardCreateRequestDto(
     val title: String,
     val description: String,
     val widgetLayout: WidgetLayout? = null,
+    @field:Pattern(regexp = Constants.KEY_REGEX)
+    @field:Size(max = 255)
+    val key: String? = null,
 )

@@ -142,6 +142,62 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should create dashboard with the given key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":"dashboard-2026"}""")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard-2026"))
+            .andExpect(jsonPath("$.title").value("2026"))
+    }
+
+    @Test
+    fun `should reject a dashboard key that does not start with a letter`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":"2026"}""")
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should return conflict when the dashboard key already exists`() {
+        val body = """{"title":"Existing","description":"Test description","key":"existing"}"""
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        ).andExpect(status().isOk)
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        )
+            .andDo(print())
+            .andExpect(status().isConflict)
+    }
+
+    @Test
+    fun `should get and delete dashboard created with the given key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":"dashboard-2026"}""")
+        ).andExpect(status().isOk)
+
+        mockMvc.perform(get("/api/management/v1/dashboard/{dashboardKey}", "dashboard-2026"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard-2026"))
+
+        mockMvc.perform(delete("/api/management/v1/dashboard/{dashboardKey}", "dashboard-2026"))
+            .andExpect(status().isNoContent)
+
+        assertThat(dashboardRepository.existsById("dashboard-2026")).isFalse
+    }
+
+    @Test
     fun `should update dashboard`() {
         val dashboard1 = runWithoutAuthorization {
             dashboardService.createDashboard("First dashboard", "Test description")
