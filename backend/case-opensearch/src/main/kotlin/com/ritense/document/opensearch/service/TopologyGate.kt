@@ -17,38 +17,62 @@
 package com.ritense.document.opensearch.service
 
 /**
- * Tells the [DelegatingDocumentSearchService] whether the OpenSearch topology is legacy or stale — the single
- * legacy index still holds the data, or an active definition has no per-definition index yet. In that window
- * (typically right after an upgrade, before the migrate re-index has run) the per-definition indices OpenSearch
- * reads from do not yet hold the documents, so search must fall back to PostgreSQL to stay complete. Search
- * returns to OpenSearch automatically once the topology is healthy.
+ * Tells the [DelegatingDocumentSearchService] when OpenSearch cannot list every case PostgreSQL holds, so search
+ * falls back to PostgreSQL until it can:
+ * - the topology is legacy or stale — the single legacy index still holds the data, or an active definition has
+ *   no per-definition index yet (typically right after an upgrade, before the migrate reindex);
+ * - the reconciler lags behind the newest change — for example while it backfills after OpenSearch is enabled;
+ * - a definition has cases OpenSearch rejected — only that definition (and "All cases") falls back.
  *
- * The result is cached for [CACHE_TTL_MS] to avoid an OpenSearch round-trip on every search; a sub-second delay
- * before switching back is harmless.
+ * The state is derived from OpenSearch and the database, so it is the same on every node and survives restarts.
+ * It is cached for [CACHE_TTL_MS]; a sub-second delay before switching back is harmless.
  */
 open class TopologyGate(
     private val indexInitializer: DocumentOpenSearchIndexInitializer,
+    private val completeness: IndexCompletenessService,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
 
     @Volatile
-    private var cachedResult = false
+    private var cached: Snapshot? = null
 
     @Volatile
     private var cachedAtMillis = 0L
 
-    @Volatile
-    private var initialized = false
+    open fun isLegacyOrStale(): Boolean = snapshot().legacyOrStale
 
-    open fun isLegacyOrStale(): Boolean {
+    open fun snapshot(): Snapshot {
         val now = clock()
-        if (!initialized || now - cachedAtMillis >= CACHE_TTL_MS) {
-            cachedResult = indexInitializer.isLegacyOrStale()
-            cachedAtMillis = now
-            initialized = true
+        val current = cached
+        if (current != null && now - cachedAtMillis < CACHE_TTL_MS) {
+            return current
         }
-        return cachedResult
+        return Snapshot(
+            legacyOrStale = indexInitializer.isLegacyOrStale(),
+            catchingUp = completeness.isReconcileLagging(),
+            rejectedDefinitions = completeness.rejectedDefinitionNames(),
+        ).also {
+            cached = it
+            cachedAtMillis = now
+        }
     }
+
+    /** Whether a search over [definitionNames] (empty means every definition) must be answered by PostgreSQL. */
+    open fun mustUseDatabase(definitionNames: Collection<String>): Boolean {
+        val snapshot = snapshot()
+        if (snapshot.legacyOrStale || snapshot.catchingUp) return true
+        return if (definitionNames.isEmpty()) {
+            snapshot.rejectedDefinitions.isNotEmpty()
+        } else {
+            definitionNames.any { it in snapshot.rejectedDefinitions }
+        }
+    }
+
+    data class Snapshot(
+        val legacyOrStale: Boolean,
+        val catchingUp: Boolean,
+        val rejectedDefinitions: Set<String>,
+    )
 
     companion object {
         const val CACHE_TTL_MS = 1000L

@@ -16,9 +16,9 @@
 
 package com.ritense.document.opensearch.web
 
-import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.ReindexRequest
+import com.ritense.document.opensearch.service.TopologyGate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -32,28 +32,30 @@ import java.util.UUID
 class DocumentOpenSearchReindexResourceTest {
 
     private val reindexService: DocumentOpenSearchReindexService = mock()
-    private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
+    private val topologyGate: TopologyGate = mock()
     private lateinit var resource: DocumentOpenSearchReindexResource
 
     @BeforeEach
     fun setUp() {
-        resource = DocumentOpenSearchReindexResource(reindexService, indexInitializer)
+        resource = DocumentOpenSearchReindexResource(reindexService, topologyGate)
     }
 
     @Test
     fun `topology reports a legacy or stale topology`() {
-        whenever(indexInitializer.isLegacyOrStale()).thenReturn(true)
+        whenever(topologyGate.snapshot()).thenReturn(TopologyGate.Snapshot(true, false, setOf("person", "house")))
 
         val response = resource.topology()
 
         assertThat(response.statusCode.value()).isEqualTo(200)
         assertThat(response.body?.get("legacyOrStale")).isEqualTo(true)
+        assertThat(response.body?.get("catchingUp")).isEqualTo(false)
+        assertThat(response.body?.get("rejectedDefinitions")).isEqualTo(listOf("house", "person"))
         assertThat(response.body?.get("available")).isEqualTo(true)
     }
 
     @Test
     fun `topology reports unavailable when the status cannot be determined`() {
-        whenever(indexInitializer.isLegacyOrStale()).thenThrow(RuntimeException("OpenSearch down"))
+        whenever(topologyGate.snapshot()).thenThrow(RuntimeException("OpenSearch down"))
 
         val response = resource.topology()
 

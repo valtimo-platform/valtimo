@@ -18,6 +18,7 @@ package com.ritense.document.opensearch.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
@@ -292,7 +293,7 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
             soft.assertThat(resentLater)
                 .`as`("F9: cases already indexed in cycle 1 are re-sent in cycle 2 because the watermark is pinned")
                 .isEmpty()
-            soft.assertThat(OpenSearchMappingHealthIndicator(indexInitializer).health().status)
+            soft.assertThat(OpenSearchMappingHealthIndicator(topologyGate, indexInitializer).health().status)
                 .`as`("F9: a reconciler rejection must give an operator signal")
                 .isNotEqualTo(Status.UP)
         }
@@ -362,7 +363,7 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
         // "Node B": its own resolver, so it does not see the rebuild registered on this node ("node A").
         val nodeBResolver = OpenSearchIndexNameResolver()
         val nodeBSync = DocumentOpenSearchSyncService(
-            elasticsearchOperations, documentRepository, converter, nodeBResolver, indexInitializer, transactionManager,
+            elasticsearchOperations, documentRepository, converter, nodeBResolver, transactionManager,
         )
         val nodeBReconciler = freshReconcileService(converter, nodeBResolver)
 
@@ -371,7 +372,7 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
         doAnswer { invocation ->
             val skipped = invocation.callRealMethod()
             if (invocation.getArgument<IndexCoordinates?>(1) != null && fired.compareAndSet(false, true)) {
-                runWithoutAuthorization { documentService.deleteDocument(doomed.id()) }
+                runWithoutAuthorization { documentService.deleteDocument(JsonSchemaDocumentId.existingId(doomedId)) }
                 nodeBSync.delete(doomedId)
                 pendingIndexDeletionRepository.save(PendingIndexDeletion(documentId = doomedId))
                 nodeBReconciler.reconcile()
@@ -405,6 +406,7 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
     ) = DocumentOpenSearchReconcileService(
         entityManager, conv, elasticsearchOperations, resolver, stateRepository,
         pendingIndexDeletionRepository, transactionManager, lockProvider, openSearchProperties,
+        indexInitializer, indexCompletenessService,
     )
 
     private fun newReindexService(

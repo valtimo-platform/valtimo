@@ -17,51 +17,61 @@
 package com.ritense.document.opensearch.health
 
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
+import com.ritense.document.opensearch.service.TopologyGate
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.actuate.health.AbstractHealthIndicator
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.Status
 
 /**
- * Surfaces, via `/actuator/health`, whether the OpenSearch document-search topology is legacy or stale and a
- * rebuild/migration is required (see [DocumentOpenSearchIndexInitializer.isLegacyOrStale]).
+ * Surfaces, via `/actuator/health`, whether OpenSearch can serve document search completely (see [TopologyGate]):
+ * a legacy or stale topology that needs the migrate reindex, a reconciler still catching up, case types with
+ * rejected cases, or a recent rejected write.
  *
- * Reports a non-fatal [WARN] status rather than DOWN so a legacy topology does not take the application out of
- * service — the index still serves results until the operator runs the migrate re-index. An error while
- * probing (e.g. OpenSearch unreachable) is reported UP with an informational detail so this indicator never
+ * Reports a non-fatal [WARN] status rather than DOWN so it never takes the application out of service — search
+ * falls back to PostgreSQL meanwhile. Spring Boot ignores statuses missing from
+ * `management.endpoint.health.status.order`, so the aggregate only reflects WARN when it is listed there. An error
+ * while probing (e.g. OpenSearch unreachable) is reported UP with an informational detail so this indicator never
  * destabilises the overall health on a transient cluster blip.
  *
  * Only active when spring-boot-starter-actuator is on the classpath.
  */
 class OpenSearchMappingHealthIndicator(
+    private val topologyGate: TopologyGate,
     private val indexInitializer: DocumentOpenSearchIndexInitializer,
 ) : AbstractHealthIndicator() {
 
     override fun doHealthCheck(builder: Health.Builder) {
-        val legacyOrStale = try {
-            indexInitializer.isLegacyOrStale()
+        val snapshot = try {
+            topologyGate.snapshot()
         } catch (e: Exception) {
             logger.debug(e) { "Could not determine OpenSearch topology status for health check" }
             builder.up().withDetail("topology", "UNKNOWN")
             return
         }
 
-        if (legacyOrStale) {
-            builder.status(WARN)
+        when {
+            snapshot.legacyOrStale -> builder.status(WARN)
                 .withDetail("topology", "LEGACY_OR_STALE")
                 .withDetail("action", "Run the document-search re-index with recreateIndex to migrate to per-definition indices")
-        } else if (indexInitializer.hasRecentWriteFailures()) {
-            builder.status(WARN)
+            snapshot.catchingUp -> builder.status(WARN)
+                .withDetail("topology", "PER_DEFINITION")
+                .withDetail("indexing", "CATCHING_UP")
+                .withDetail("action", "None — search uses PostgreSQL until the reconciler has indexed every case")
+            snapshot.rejectedDefinitions.isNotEmpty() -> builder.status(WARN)
+                .withDetail("topology", "PER_DEFINITION")
+                .withDetail("rejectedDefinitions", snapshot.rejectedDefinitions.sorted())
+                .withDetail("action", "OpenSearch rejected cases of these case types, which are searched in PostgreSQL meanwhile — check the logs")
+            indexInitializer.hasRecentWriteFailures() -> builder.status(WARN)
                 .withDetail("topology", "PER_DEFINITION")
                 .withDetail("writeFailures", "RECENT")
-                .withDetail("action", "A document could not be indexed (e.g. a mapping conflict) — check the logs and re-index the affected case type")
-        } else {
-            builder.up().withDetail("topology", "PER_DEFINITION")
+                .withDetail("action", "A document could not be indexed — check the logs")
+            else -> builder.up().withDetail("topology", "PER_DEFINITION")
         }
     }
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        private val WARN = Status("WARN", "A document-search index rebuild/migration is required")
+        private val WARN = Status("WARN", "OpenSearch cannot serve document search completely")
     }
 }

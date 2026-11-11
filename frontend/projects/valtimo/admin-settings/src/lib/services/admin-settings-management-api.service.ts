@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {catchError, Observable, of} from 'rxjs';
 import {
   AdminSettingsLogoDto,
@@ -23,6 +23,7 @@ import {
   BaseApiService,
   ConfigService,
   CreateAdminSettingsLogoDto,
+  InterceptorSkip,
   Page,
 } from '@valtimo/shared';
 import {
@@ -117,7 +118,8 @@ export class AdminSettingsManagementApiService extends BaseApiService {
   public startReindex(request: StartReindexRequestDto = {}): Observable<StartReindexResponseDto> {
     return this.httpClient.post<StartReindexResponseDto>(
       this.getApiUrl('/management/v1/document-opensearch/reindex'),
-      request
+      request,
+      {headers: new HttpHeaders().set(InterceptorSkip, '400,409')}
     );
   }
 

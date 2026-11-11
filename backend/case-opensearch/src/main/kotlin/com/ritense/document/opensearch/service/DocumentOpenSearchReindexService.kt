@@ -24,7 +24,6 @@ import jakarta.persistence.criteria.JoinType
 import jakarta.persistence.criteria.Predicate
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.core.LockProvider
-import org.semver4j.Semver
 import org.springframework.beans.factory.DisposableBean
 import org.opensearch.index.query.BoolQueryBuilder
 import org.opensearch.index.query.QueryBuilders
@@ -46,8 +45,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
- * Re-runnable, scoped re-index of [JsonSchemaDocument] rows into the live `json_schema_document`
- * OpenSearch index.
+ * Re-runnable, scoped re-index of [JsonSchemaDocument] rows into the per-definition OpenSearch indices.
  *
  * - **Cluster-safe single runner**: a ShedLock named lock ([LOCK_NAME]) guarantees at most one run
  *   cluster-wide; a concurrent [start] returns `null` (→ HTTP 409).
@@ -56,6 +54,7 @@ import java.util.concurrent.TimeUnit
  *   idempotent upsert.
  * - **Scoped**: only documents matching the [ReindexRequest] filters are (re)indexed; the index stays
  *   complete and queryable throughout.
+ * - **Recreate**: builds fresh indices and swaps them in only when nothing was skipped (see [prepareRebuild]).
  * - **Crash-safe refresh**: no global `refresh_interval` toggle — a single explicit refresh runs at
  *   successful completion.
  */
@@ -144,27 +143,17 @@ open class DocumentOpenSearchReindexService(
                 } ?: break
                 if (batch.isEmpty()) break
 
-                val docs = batch.mapNotNull { jpaDoc ->
-                    try {
-                        converter.toOsDocument(jpaDoc)
-                    } catch (e: Exception) {
-                        skipped++
-                        logger.warn(e) { "Failed to convert document — skipping" }
-                        null
-                    }
-                }
+                val docs = batch.mapNotNull { jpaDoc -> converter.convertOrReject(jpaDoc).also { if (it == null) skipped++ } }
                 val plan = rebuild
-                skipped += if (plan?.definitionName != null) {
-                    // Scoped recreate: route each document to the fresh concrete index of its own version.
-                    docs.groupBy { it.definitionId?.blueprintId?.blueprintVersionTag }
-                        .entries.sumOf { (versionTag, group) ->
-                            val concrete = rebuildConcreteFor(plan, versionTag)
+                skipped += if (plan != null) {
+                    // Recreate: route each document to the fresh concrete index of its own definition and version.
+                    docs.groupBy { it.definitionId?.name to it.definitionId?.blueprintId?.blueprintVersionTag }
+                        .entries.sumOf { (nameAndTag, group) ->
+                            val concrete = rebuildConcreteFor(plan, nameAndTag.first, nameAndTag.second)
                             group.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE)
                                 .sumOf { converter.indexChunk(it, concrete?.let { c -> IndexCoordinates.of(c) }) }
                         }
                 } else {
-                    // Non-recreate or unscoped migrate: the converter routes each document to its
-                    // (definition, version) write alias.
                     docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).sumOf { converter.indexChunk(it) }
                 }
 
@@ -175,45 +164,40 @@ open class DocumentOpenSearchReindexService(
 
             if (cancelRequested) {
                 logger.info { "Re-index run $runId cancelled — marking STOPPED (processed=$processed, skipped=$skipped)" }
-                // A cancelled scoped rebuild never published its fresh indices — drop them so they do not leak.
-                dropAndClearRebuild(rebuild)
+                // A cancelled rebuild never published its fresh indices — drop them so they do not leak.
+                dropUnpublished(rebuild)
                 runService.stop(runId)
             } else {
-                // Pruning is meaningless for a rebuild/migrate — the target index is freshly built from the
-                // source of truth and holds no orphans.
-                if (scope.pruneOrphans && rebuild == null) {
+                refreshRebuildTargets(rebuild, scope)
+                val notPublished = rebuild?.let { publishOrAbandonRebuild(it, skipped) }
+                val published = rebuild != null && notPublished == null
+
+                // The swap dropped the old indices; re-index anything changed during the rebuild so a concurrent
+                // write to a dropped old index is not lost.
+                val catchUp = if (published) {
+                    catchUpConcurrentWrites(scope.documentDefinitionName, catchUpFrom, pageSize)
+                } else {
+                    CatchUpResult(0, null)
+                }
+                // A published rebuild may hold a case deleted while it ran (on any node): its copy was written
+                // to the fresh index after the delete removed the live one.
+                if (scope.pruneOrphans || published) {
                     val pruned = pruneOrphans(runId, scope)
                     logger.info { "Pruned $pruned orphan document(s) from OpenSearch" }
                 }
-                refreshRebuildTargets(rebuild, scope)
-                rebuild?.let { publishOrAbandonRebuild(it, skipped) }
-                // The aliases now point at the fresh indices (or the old ones were kept on skips); live deletes
-                // route to them normally, so stop also deleting from the (now-published) rebuild indices.
-                rebuild?.let { endAllRebuilds(it) }
 
-                var catchUpSkipped = 0L
-                var catchUpError: String? = null
-                // A published scoped rebuild (nothing skipped) just swapped in the fresh indices and dropped the
-                // old ones; re-index anything changed during the rebuild so a concurrent write to a dropped old
-                // index is not lost.
-                if (skipped == 0L) {
-                    rebuild?.definitionName?.let { defName ->
-                        val catchUp = catchUpConcurrentWrites(defName, catchUpFrom, pageSize)
-                        catchUpSkipped = catchUp.skipped
-                        catchUpError = catchUp.error
-                    }
-                }
-                val totalSkipped = skipped + catchUpSkipped
+                val totalSkipped = skipped + catchUp.skipped
                 logger.info { "Re-index run $runId complete (processed=$processed, skipped=$totalSkipped)" }
-                if (catchUpError != null) {
-                    runService.completeWithErrors(runId, processed + totalSkipped, totalSkipped, catchUpError)
+                val error = listOfNotNull(notPublished, catchUp.error).joinToString(" ").ifEmpty { null }
+                if (error != null) {
+                    runService.completeWithErrors(runId, processed + totalSkipped, totalSkipped, error)
                 } else {
                     runService.complete(runId, processed + totalSkipped, totalSkipped)
                 }
             }
         } catch (e: Exception) {
-            // A failed scoped rebuild never published its fresh indices — drop them so they do not leak.
-            dropAndClearRebuild(rebuild)
+            // A failed rebuild never published its fresh indices — drop them so they do not leak.
+            dropUnpublished(rebuild)
             runService.fail(runId, e.message)
             logger.error(e) { "Re-index failed (run $runId)" }
             throw e
@@ -222,131 +206,93 @@ open class DocumentOpenSearchReindexService(
     }
 
     /**
-     * Topology plan for a `recreateIndex` run, resolved once up front:
-     * - **scoped** (a definition name) — build a fresh concrete index and fill it ([targetIndex]); on success
-     *   atomically swap the per-definition and read aliases onto it and drop the old one.
-     * - **unscoped** (migration off the legacy single index) — provision the per-definition indices now so the
-     *   routed writes land in them, then drop the legacy index on success.
-     *
-     * A non-recreate run returns `null` and behaves exactly as before.
+     * Topology plan for a `recreateIndex` run: a fresh concrete index per (definition, version) in scope, filled
+     * by the run and swapped in atomically on success. Unscoped, it covers every definition and also migrates off
+     * the legacy single index. A non-recreate run returns `null` and writes through the live aliases.
      */
     private fun prepareRebuild(scope: ReindexRequest): RebuildPlan? {
         if (!scope.recreateIndex) return null
-        val definitionName = scope.documentDefinitionName
-        if (definitionName != null) {
-            val plan = RebuildPlan(definitionName)
-            // Pre-create a fresh concrete index per version tag present in PostgreSQL for this definition, so each
-            // version is rebuilt in its own index. More versions may appear mid-run; they are created lazily.
-            versionTagsFor(definitionName).forEach { tag -> rebuildConcreteFor(plan, tag) }
-            return plan
-        }
-        indexInitializer.ensureAllIndices()
-        return RebuildPlan(null)
+        indexInitializer.dropOrphanedIndices()
+        val plan = RebuildPlan(scope.documentDefinitionName)
+        // More versions may appear mid-run; they are created lazily.
+        definitionVersionsFor(scope.documentDefinitionName).forEach { (name, tag) -> rebuildConcreteFor(plan, name, tag) }
+        return plan
     }
 
-    /**
-     * Returns (creating + registering on first use) the fresh concrete index for [plan]'s definition and
-     * [versionTag]. Registering it with the resolver makes live deletes / reconcile also remove deleted ids from
-     * this not-yet-published index, so a document deleted during the rebuild does not survive the swap.
-     */
-    private fun rebuildConcreteFor(plan: RebuildPlan, versionTag: String?): String? {
-        val definitionName = plan.definitionName ?: return null
-        if (versionTag == null) return null
-        return plan.versionToConcrete.getOrPut(versionTag) {
-            val concrete = indexInitializer.prepareRebuildIndex(definitionName, versionTag)
-            resolver.beginRebuild(definitionName, versionTag, concrete)
-            concrete
+    private fun rebuildConcreteFor(plan: RebuildPlan, definitionName: String?, versionTag: String?): String? {
+        if (definitionName == null || versionTag == null) return null
+        return plan.concretes.getOrPut(definitionName to versionTag) {
+            indexInitializer.prepareRebuildIndex(definitionName, versionTag)
         }
     }
 
-    /** Distinct case-definition version tags present in PostgreSQL for [definitionName]. */
-    private fun versionTagsFor(definitionName: String): List<String> =
-        TransactionTemplate(transactionManager).apply { isReadOnly = true }.execute {
+    /** Every (definition, version) with documents in PostgreSQL, plus the current version of each active definition. */
+    private fun definitionVersionsFor(definitionName: String?): Set<Pair<String, String>> {
+        val withDocuments = TransactionTemplate(transactionManager).apply { isReadOnly = true }.execute {
             entityManager.createQuery(
-                "SELECT DISTINCT d.documentDefinitionId.blueprintId.blueprintVersionTag " +
-                    "FROM JsonSchemaDocument d WHERE d.documentDefinitionId.name = :name",
-                Semver::class.java,
-            ).setParameter("name", definitionName).resultList.map { it.toString() }
+                "SELECT DISTINCT d.documentDefinitionId.name, d.documentDefinitionId.blueprintId.blueprintVersionTag " +
+                    "FROM JsonSchemaDocument d" + if (definitionName != null) " WHERE d.documentDefinitionId.name = :name" else "",
+                Array<Any>::class.java,
+            ).apply { definitionName?.let { setParameter("name", it) } }
+                .resultList
+                .map { row -> row[0].toString() to row[1].toString() }
         }.orEmpty()
+        val active = indexInitializer.activeDefinitionVersions().filter { definitionName == null || it.first == definitionName }
+        return (withDocuments + active).toSet()
+    }
 
     /**
-     * Publishes a completed rebuild, or abandons it when documents were skipped. A skipped document is absent
-     * from the freshly built index, so swapping it in (scoped) or dropping the legacy index (migrate) would make
-     * that document unsearchable. On skips the existing indices keep serving and the operator can resolve the
-     * skips and re-run; the unpublished partial indices are dropped to avoid a leak.
+     * Publishes a completed rebuild, or abandons it when documents were skipped: a skipped document is absent from
+     * the fresh indices, so publishing them would hide it. Returns why it was not published, or `null`.
      */
-    private fun publishOrAbandonRebuild(plan: RebuildPlan, skipped: Long) {
-        val definitionName = plan.definitionName
-        if (definitionName == null) {
-            // Unscoped migrate: writes already landed in the per-version indices via the converter.
-            if (skipped == 0L) {
-                indexInitializer.dropLegacyIndex()
+    private fun publishOrAbandonRebuild(plan: RebuildPlan, skipped: Long): String? {
+        if (skipped > 0L) {
+            plan.concretes.values.forEach { indexInitializer.dropIndex(it) }
+            val inUse = if (plan.definitionName == null && indexInitializer.isLegacyOrStale()) {
+                "search keeps using PostgreSQL until the migration completes"
             } else {
-                logger.warn {
-                    "Migration skipped $skipped document(s) — keeping the legacy index " +
-                        "'${OpenSearchIndexNameResolver.LEGACY_INDEX}' in place; resolve the skips and re-run to complete it"
-                }
+                "the existing index stays in use"
             }
-            return
+            logger.warn { "Rebuild skipped $skipped document(s) — not publishing the ${plan.concretes.size} rebuilt index(es); $inUse" }
+            return "The rebuilt index was not published because $skipped document(s) could not be indexed; $inUse. " +
+                "Resolve the skipped documents (see the application log) and run the reindex again."
         }
-        if (skipped == 0L) {
-            plan.versionToConcrete.forEach { (versionTag, concrete) ->
-                indexInitializer.swapInRebuiltIndex(definitionName, versionTag, concrete)
-            }
-        } else {
-            logger.warn {
-                "Rebuild for definition '$definitionName' skipped $skipped document(s) — keeping the existing " +
-                    "indices and dropping the ${plan.versionToConcrete.size} unpublished partial index(es)"
-            }
-            plan.versionToConcrete.values.forEach { indexInitializer.dropIndex(it) }
+        plan.concretes.forEach { (nameAndTag, concrete) ->
+            indexInitializer.swapInRebuiltIndex(nameAndTag.first, nameAndTag.second, concrete)
         }
+        if (plan.definitionName == null) {
+            indexInitializer.dropLegacyIndex()
+        }
+        return null
     }
 
-    /** Drops every fresh (unpublished) concrete of [plan] and clears its rebuild registrations. */
-    private fun dropAndClearRebuild(plan: RebuildPlan?) {
-        val definitionName = plan?.definitionName ?: return
-        plan.versionToConcrete.forEach { (versionTag, concrete) ->
-            runCatching { indexInitializer.dropIndex(concrete) }
-            resolver.endRebuild(definitionName, versionTag)
-        }
+    private fun dropUnpublished(plan: RebuildPlan?) {
+        plan?.concretes?.values?.forEach { runCatching { indexInitializer.dropIndex(it) } }
     }
 
-    /** Clears the rebuild registrations for [plan] after a successful publish (indices now live). */
-    private fun endAllRebuilds(plan: RebuildPlan) {
-        val definitionName = plan.definitionName ?: return
-        plan.versionToConcrete.keys.forEach { versionTag -> resolver.endRebuild(definitionName, versionTag) }
-    }
-
-    /** Refreshes the fresh concretes before the swap (scoped) or the read target (migrate). */
+    /** Refreshes the fresh concretes before the swap, or the read target of a non-recreate run. */
     private fun refreshRebuildTargets(plan: RebuildPlan?, scope: ReindexRequest) {
-        val targets = if (plan?.definitionName != null) {
-            plan.versionToConcrete.values.map { IndexCoordinates.of(it) }
-        } else {
-            listOf(indexCoordinatesFor(scope))
-        }
+        val targets = plan?.concretes?.values?.map { IndexCoordinates.of(it) } ?: listOf(indexCoordinatesFor(scope))
         targets.forEach { elasticsearchOperations.indexOps(it).takeIf { io -> io.exists() }?.refresh() }
     }
 
     private class RebuildPlan(
         val definitionName: String?,
-        val versionToConcrete: MutableMap<String, String> = mutableMapOf(),
+        val concretes: MutableMap<Pair<String, String>, String> = mutableMapOf(),
     )
 
     /**
-     * After a scoped rebuild has swapped the alias onto the fresh index and dropped the old one, re-index every
-     * document of [definitionName] whose `changedOn` moved at/after [from] (i.e. during the rebuild) from
-     * PostgreSQL into the now-live index. A live write during the rebuild landed in the dropped old index; this
-     * restores it. Re-reading the latest state and routing by definition (plain [JsonSchemaDocumentOsConverter.indexChunk])
-     * is race-free: external versioning ([JsonSchemaDocumentOsDocument.indexVersion]) means the catch-up write
-     * either wins or is a benign version conflict against a concurrent live write. A failure here is logged, not
-     * fatal — the rebuild already succeeded and the reconciler remains the backstop.
+     * Re-indexes what changed in scope since [from]: a live write during the rebuild went to an old index the swap
+     * dropped. External versioning makes this race-free against concurrent live writes. A failure is reported,
+     * not fatal — the rebuild is already published and the reconciler is the backstop.
      */
-    private fun catchUpConcurrentWrites(definitionName: String, from: LocalDateTime, pageSize: Int): CatchUpResult {
+    private fun catchUpConcurrentWrites(definitionName: String?, from: LocalDateTime, pageSize: Int): CatchUpResult {
         val txTemplate = TransactionTemplate(transactionManager).apply { isReadOnly = true }
         var lastChangedOn: LocalDateTime? = null
         var lastId: UUID? = null
         var caughtUp = 0L
         var skipped = 0L
+        val scopeLabel = definitionName?.let { "'$it'" } ?: "all definitions"
         try {
             while (!cancelRequested) {
                 val cursorChangedOn = lastChangedOn
@@ -356,14 +302,7 @@ open class DocumentOpenSearchReindexService(
                     if (batch.isEmpty()) {
                         null
                     } else {
-                        val osDocuments = batch.mapNotNull { jpaDoc ->
-                            try {
-                                converter.toOsDocument(jpaDoc)
-                            } catch (e: Exception) {
-                                logger.warn(e) { "Failed to convert document ${jpaDoc.id().id} during catch-up — skipping" }
-                                null
-                            }
-                        }
+                        val osDocuments = batch.mapNotNull { converter.convertOrReject(it) }
                         CatchUpPage(osDocuments, batch.size - osDocuments.size, batch.last().changedOn(), batch.last().id().id)
                             .also { entityManager.clear() }
                     }
@@ -377,20 +316,20 @@ open class DocumentOpenSearchReindexService(
                 lastId = page.lastId
             }
             if (caughtUp > 0) {
-                logger.info { "Re-indexed $caughtUp concurrently-changed document(s) into the rebuilt '$definitionName' index" }
+                logger.info { "Re-indexed $caughtUp concurrently-changed document(s) into the rebuilt index of $scopeLabel" }
             }
             return CatchUpResult(skipped, null)
         } catch (e: Exception) {
-            logger.warn(e) { "Catch-up after rebuilding '$definitionName' failed — the reconciler will repair any missed write" }
-            return CatchUpResult(skipped, "Catch-up after rebuilding '$definitionName' failed: ${e.message}")
+            logger.warn(e) { "Catch-up after rebuilding $scopeLabel failed — the reconciler will repair any missed write" }
+            return CatchUpResult(skipped, "Catch-up after rebuilding $scopeLabel failed: ${e.message}")
         }
     }
 
     private data class CatchUpResult(val skipped: Long, val error: String?)
 
-    /** Keyset scan (by `changedOn`, then id) of a single definition's documents changed at/after [from]. */
+    /** Keyset scan (by `changedOn`, then id) of the documents in scope changed at/after [from]. */
     private fun fetchChangedSince(
-        definitionName: String,
+        definitionName: String?,
         from: LocalDateTime,
         lastChangedOn: LocalDateTime?,
         lastId: UUID?,
@@ -398,16 +337,18 @@ open class DocumentOpenSearchReindexService(
     ): List<JsonSchemaDocument> {
         val hasCursor = lastChangedOn != null && lastId != null
         val jpql = buildString {
-            append("SELECT d FROM JsonSchemaDocument d LEFT JOIN FETCH d.internalStatus")
-            append(" WHERE d.documentDefinitionId.name = :definitionName AND d.changedOn >= :from")
+            append("SELECT d FROM JsonSchemaDocument d LEFT JOIN FETCH d.internalStatus WHERE d.changedOn >= :from")
+            if (definitionName != null) {
+                append(" AND d.documentDefinitionId.name = :definitionName")
+            }
             if (hasCursor) {
                 append(" AND (d.changedOn > :lastChangedOn OR (d.changedOn = :lastChangedOn AND d.id.id > :lastId))")
             }
             append(" ORDER BY d.changedOn ASC, d.id.id ASC")
         }
         val query = entityManager.createQuery(jpql, JsonSchemaDocument::class.java)
-        query.setParameter("definitionName", definitionName)
         query.setParameter("from", from)
+        definitionName?.let { query.setParameter("definitionName", it) }
         if (hasCursor) {
             query.setParameter("lastChangedOn", lastChangedOn)
             query.setParameter("lastId", lastId)

@@ -220,7 +220,7 @@ class DocumentOpenSearchBlockerReproIntTest : BaseOpenSearchIntegrationTest() {
     @Test
     fun `F3 control - an unreachable OpenSearch search falls back to PostgreSQL`() {
         val person = seedPerson("Alice", plaats = "Rotterdam")
-        val delegating = delegatingSearchService(TopologyGate(indexInitializer))
+        val delegating = delegatingSearchService(TopologyGate(indexInitializer, indexCompletenessService))
 
         assertThat(searchIds(delegating)).`as`("CONTROL: fallback to PostgreSQL").containsExactly(person.id().toString())
     }
@@ -230,7 +230,7 @@ class DocumentOpenSearchBlockerReproIntTest : BaseOpenSearchIntegrationTest() {
         val person = seedPerson("Alice", plaats = "Rotterdam")
         val unreachableInitializer = spy(indexInitializer)
         doThrow(connectionRefused()).whenever(unreachableInitializer).isLegacyOrStale()
-        val delegating = delegatingSearchService(TopologyGate(unreachableInitializer))
+        val delegating = delegatingSearchService(TopologyGate(unreachableInitializer, indexCompletenessService))
 
         val first = runCatching { searchIds(delegating) }
         val second = runCatching { searchIds(delegating) }
@@ -296,7 +296,7 @@ class DocumentOpenSearchBlockerReproIntTest : BaseOpenSearchIntegrationTest() {
             )
         }.whenever(migratingConverter).toOsDocument(any())
         val sync = DocumentOpenSearchSyncService(
-            elasticsearchOperations, documentRepository, migratingConverter, indexNameResolver, indexInitializer, transactionManager,
+            elasticsearchOperations, documentRepository, migratingConverter, indexNameResolver, transactionManager,
         )
 
         sync.upsertById(UUID.fromString(id))

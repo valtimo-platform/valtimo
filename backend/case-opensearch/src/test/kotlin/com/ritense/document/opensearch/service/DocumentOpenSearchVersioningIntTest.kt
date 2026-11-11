@@ -67,7 +67,7 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
         refreshIndex()
 
         assertThat(skipped).isZero()
-        assertThat(findIndexedById(id)!!.internalStatus).isEqualTo("first")
+        assertThat(findIndexedById(id)?.internalStatus).isEqualTo("first")
     }
 
     @Test
@@ -80,7 +80,7 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
         refreshIndex()
 
         assertThat(skipped).isZero()
-        assertThat(findIndexedById(id)!!.internalStatus).isEqualTo("sixth")
+        assertThat(findIndexedById(id)?.internalStatus).isEqualTo("sixth")
     }
 
     @Test
@@ -93,7 +93,7 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
         refreshIndex()
 
         assertThat(skipped).isZero()
-        assertThat(findIndexedById(id)!!.internalStatus).isEqualTo("new")
+        assertThat(findIndexedById(id)?.internalStatus).isEqualTo("new")
     }
 
     @Test
@@ -106,12 +106,12 @@ class DocumentOpenSearchVersioningIntTest : BaseOpenSearchIntegrationTest() {
         runWithoutAuthorization { documentService.setInternalStatus(document.id(), "started") }
         syncService.upsertById(id)
         refreshIndex()
-        assertThat(findIndexedById(id.toString())!!.internalStatus).isEqualTo("started")
+        assertThat(findIndexedById(id.toString())?.internalStatus).isEqualTo("started")
 
         // Re-sending the same (now-current) version is a version conflict — swallowed, no exception.
         assertThatCode { syncService.upsertById(id) }.doesNotThrowAnyException()
         refreshIndex()
-        assertThat(findIndexedById(id.toString())!!.internalStatus).isEqualTo("started")
+        assertThat(findIndexedById(id.toString())?.internalStatus).isEqualTo("started")
     }
 
     private fun clearIndex() {

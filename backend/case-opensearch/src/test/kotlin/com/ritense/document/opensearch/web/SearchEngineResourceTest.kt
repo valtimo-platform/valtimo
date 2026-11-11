@@ -20,6 +20,7 @@ import com.ritense.adminsettings.service.FeatureToggleOverridesService
 import com.ritense.adminsettings.web.rest.dto.FeatureToggleOverridesDto
 import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
+import com.ritense.document.opensearch.service.IndexCompletenessService
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -38,6 +39,7 @@ class SearchEngineResourceTest {
     private lateinit var properties: OpenSearchProperties
     private lateinit var featureToggleService: FeatureToggleOverridesService
     private lateinit var indexInitializer: DocumentOpenSearchIndexInitializer
+    private lateinit var indexCompletenessService: IndexCompletenessService
     private lateinit var resource: SearchEngineResource
 
     @BeforeEach
@@ -46,7 +48,8 @@ class SearchEngineResourceTest {
         properties = OpenSearchProperties(enabled = true)
         featureToggleService = mock()
         indexInitializer = mock()
-        resource = SearchEngineResource(toggle, properties, featureToggleService, indexInitializer)
+        indexCompletenessService = mock()
+        resource = SearchEngineResource(toggle, properties, featureToggleService, indexInitializer, indexCompletenessService)
     }
 
     @Test
@@ -66,7 +69,8 @@ class SearchEngineResourceTest {
             toggle,
             OpenSearchProperties(enabled = false),
             featureToggleService,
-            indexInitializer
+            indexInitializer,
+            indexCompletenessService,
         )
 
         val response = disabledResource.getActive()
@@ -86,6 +90,7 @@ class SearchEngineResourceTest {
         assertThat(toggle.get()).isEqualTo(SearchEngineToggle.Engine.POSTGRES)
         verify(featureToggleService).updateToggle(eq("useOpenSearchForDocumentSearch"), eq(false))
         verify(indexInitializer, never()).ensureAllIndices()
+        verify(indexCompletenessService, never()).initializeWatermarkIfAbsent()
     }
 
     @Test
@@ -100,6 +105,7 @@ class SearchEngineResourceTest {
         assertThat(toggle.get()).isEqualTo(SearchEngineToggle.Engine.OPENSEARCH)
         verify(featureToggleService).updateToggle(eq("useOpenSearchForDocumentSearch"), eq(true))
         verify(indexInitializer).ensureAllIndices()
+        verify(indexCompletenessService).initializeWatermarkIfAbsent()
     }
 
     @Test
@@ -108,7 +114,8 @@ class SearchEngineResourceTest {
             toggle,
             OpenSearchProperties(enabled = false),
             featureToggleService,
-            indexInitializer
+            indexInitializer,
+            indexCompletenessService,
         )
 
         val response = disabledResource.setActive(SearchEngineResource.UpdateSearchEngineDto("OPENSEARCH"))

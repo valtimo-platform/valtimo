@@ -17,15 +17,21 @@
 package com.ritense.document.opensearch.service
 
 import com.ritense.document.domain.search.AdvancedSearchRequest
+import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.valtimo.contract.blueprint.BlueprintType
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.dao.DataAccessResourceFailureException
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 class DelegatingDocumentSearchServiceTest {
 
@@ -68,6 +74,67 @@ class DelegatingDocumentSearchServiceTest {
         verify(gate, never()).isReindexInProgress()
     }
 
-    private fun delegating(engine: SearchEngineToggle.Engine) =
-        DelegatingDocumentSearchService(openSearchService, jpaService, SearchEngineToggle(engine), gate, topologyGate)
+    @Test
+    fun `uses PostgreSQL when OpenSearch cannot list every case of the requested definition`() {
+        whenever(topologyGate.mustUseDatabase(listOf("house"))).thenReturn(true)
+        val service = delegating(SearchEngineToggle.Engine.OPENSEARCH)
+
+        service.count("house", BlueprintType.CASE, request)
+
+        verify(jpaService).count(eq("house"), any(), any())
+        verify(openSearchService, never()).count(any(), any(), any())
+    }
+
+    @Test
+    fun `asks the gate about every definition of a multi-definition search`() {
+        whenever(openSearchService.search(any<Collection<String>>(), any(), any<SearchWithConfigRequest>(), any<Pageable>()))
+            .thenReturn(Page.empty())
+        val service = delegating(SearchEngineToggle.Engine.OPENSEARCH)
+
+        service.search(listOf("house", "person"), BlueprintType.CASE, SearchWithConfigRequest(), Pageable.unpaged())
+
+        verify(topologyGate).mustUseDatabase(listOf("house", "person"))
+    }
+
+    @Test
+    fun `falls back to PostgreSQL and activates the fallback when the gate cannot reach OpenSearch`() {
+        whenever(topologyGate.mustUseDatabase(any())).thenThrow(DataAccessResourceFailureException("Connection refused"))
+        val toggle = SearchEngineToggle(SearchEngineToggle.Engine.OPENSEARCH)
+        val service = delegating(toggle)
+
+        service.count("house", BlueprintType.CASE, request)
+        service.count("house", BlueprintType.CASE, request)
+
+        assertThat(toggle.isFallbackActive()).isTrue()
+        verify(jpaService, times(2)).count(eq("house"), any(), any())
+        verify(topologyGate, times(1)).mustUseDatabase(any())
+        verify(openSearchService, never()).count(any(), any(), any())
+    }
+
+    @Test
+    fun `uses PostgreSQL without activating the fallback when the gate fails for another reason`() {
+        whenever(topologyGate.mustUseDatabase(any())).thenThrow(IllegalStateException("database unavailable"))
+        val toggle = SearchEngineToggle(SearchEngineToggle.Engine.OPENSEARCH)
+
+        delegating(toggle).count("house", BlueprintType.CASE, request)
+
+        assertThat(toggle.isFallbackActive()).isFalse()
+        verify(jpaService).count(eq("house"), any(), any())
+    }
+
+    @Test
+    fun `retries on PostgreSQL when the OpenSearch search cannot connect`() {
+        whenever(openSearchService.count(any(), any(), any())).thenThrow(DataAccessResourceFailureException("Connection refused"))
+        val toggle = SearchEngineToggle(SearchEngineToggle.Engine.OPENSEARCH)
+
+        delegating(toggle).count("house", BlueprintType.CASE, request)
+
+        assertThat(toggle.isFallbackActive()).isTrue()
+        verify(jpaService).count(eq("house"), any(), any())
+    }
+
+    private fun delegating(engine: SearchEngineToggle.Engine) = delegating(SearchEngineToggle(engine))
+
+    private fun delegating(toggle: SearchEngineToggle) =
+        DelegatingDocumentSearchService(openSearchService, jpaService, toggle, gate, topologyGate)
 }

@@ -59,6 +59,8 @@ interface StartReindexResponseDto {
 interface TopologyStatusDto {
   legacyOrStale: boolean;
   available: boolean;
+  catchingUp?: boolean;
+  rejectedDefinitions?: string[];
 }
 
 export {

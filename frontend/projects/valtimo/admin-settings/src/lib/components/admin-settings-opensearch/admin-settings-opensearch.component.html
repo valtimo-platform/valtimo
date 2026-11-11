@@ -23,7 +23,9 @@
     documentDefinitions: documentDefinitions$ | async,
     showModal: showModal$ | async,
     hasRunning: hasRunningRun$ | async,
-    legacyOrStale: legacyOrStale$ | async
+    legacyOrStale: legacyOrStale$ | async,
+    catchingUp: catchingUp$ | async,
+    rejectedDefinitions: rejectedDefinitions$ | async
   } as obs"
 >
   @if (obs.legacyOrStale) {
@@ -32,6 +34,32 @@
         type: 'warning',
         title: 'adminSettings.opensearch.topology.legacyWarningTitle' | translate,
         message: 'adminSettings.opensearch.topology.legacyWarningMessage' | translate,
+        showClose: false,
+        lowContrast: true
+      }"
+    ></cds-inline-notification>
+  }
+
+  @if (obs.catchingUp) {
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        title: 'adminSettings.opensearch.topology.catchingUpTitle' | translate,
+        message: 'adminSettings.opensearch.topology.catchingUpMessage' | translate,
+        showClose: false,
+        lowContrast: true
+      }"
+    ></cds-inline-notification>
+  }
+
+  @if (obs.rejectedDefinitions) {
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        title: 'adminSettings.opensearch.topology.rejectedDefinitionsTitle' | translate,
+        message:
+          'adminSettings.opensearch.topology.rejectedDefinitionsMessage'
+          | translate: {definitions: obs.rejectedDefinitions},
         showClose: false,
         lowContrast: true
       }"
@@ -142,6 +170,16 @@
           {{ 'adminSettings.opensearch.reindex.viewErrorLogs' | translate }}
           <svg cdsIcon="launch" size="16"></svg>
         </a>
+      }
+
+      @if (data.error) {
+        <div class="opensearch-reindex__error">
+          <span class="opensearch-reindex__error-title">
+            {{ 'adminSettings.opensearch.reindex.errorTitle' | translate }}
+          </span>
+
+          <span class="opensearch-reindex__error-message">{{ data.error }}</span>
+        </div>
       }
 
       @if (data.status === 'FAILED') {

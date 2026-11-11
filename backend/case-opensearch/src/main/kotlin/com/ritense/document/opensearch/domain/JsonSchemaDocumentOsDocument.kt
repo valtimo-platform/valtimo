@@ -59,7 +59,8 @@ data class JsonSchemaDocumentOsDocument(
     @Field(type = FieldType.Date, format = [], pattern = ["uuuu-MM-dd'T'HH:mm:ss.SSS"]) val retentionDate: LocalDateTime?,
     @MultiField(
         mainField = Field(type = FieldType.Text),
-        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)],
+        // Bounded so a case with more than 32 KB of leaf text is not rejected as an immense term.
+        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword, ignoreAbove = 8191)],
     )
     val contentText: String? = null,
     // OpenSearch external version (maps to _version metadata, VersionType.EXTERNAL — not a source field, so

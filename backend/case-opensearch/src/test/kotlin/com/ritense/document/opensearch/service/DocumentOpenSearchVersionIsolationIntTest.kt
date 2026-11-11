@@ -147,6 +147,7 @@ class DocumentOpenSearchVersionIsolationIntTest : BaseOpenSearchIntegrationTest(
     private fun freshReconcileService() = DocumentOpenSearchReconcileService(
         entityManager, converter, osOperations, indexNameResolver, stateRepository,
         pendingIndexDeletionRepository, transactionManager, lockProvider, openSearchProperties,
+        indexInitializer, indexCompletenessService,
     )
 
     private fun searchIds(field: String, value: String): List<String> {

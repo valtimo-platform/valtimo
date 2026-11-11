@@ -23,7 +23,6 @@ import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
 import org.opensearch.index.query.QueryBuilders
-import org.springframework.data.elasticsearch.VersionConflictException
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.transaction.PlatformTransactionManager
@@ -35,15 +34,14 @@ import java.util.UUID
  * OpenSearch. Callers pass only the document id; the document is (re)read here so a coalesced/late write
  * always reflects the latest committed state rather than a stale event payload.
  *
- * This service does not swallow OpenSearch failures — the caller (the best-effort live listener) is
- * responsible for isolating them. Any missed or failed write is repaired by the reconciler.
+ * Transport failures are not swallowed — the caller (the best-effort live listener) is responsible for
+ * isolating them. Any missed or failed write is repaired by the reconciler.
  */
 open class DocumentOpenSearchSyncService(
     private val operations: ElasticsearchOperations,
     private val documentRepository: JsonSchemaDocumentRepository,
     private val converter: JsonSchemaDocumentOsConverter,
     private val resolver: OpenSearchIndexNameResolver,
-    private val indexInitializer: DocumentOpenSearchIndexInitializer,
     transactionManager: PlatformTransactionManager,
 ) {
 
@@ -52,7 +50,8 @@ open class DocumentOpenSearchSyncService(
 
     /**
      * Reloads [documentId] and upserts it into OpenSearch. A document that no longer exists (already
-     * deleted) is skipped — its removal is handled by [delete] / the pending-index-deletion drain.
+     * deleted) is skipped — its removal is handled by [delete] / the pending-index-deletion drain. A document
+     * OpenSearch refuses is recorded as rejected by the converter, which the reconciler retries.
      */
     open fun upsertById(documentId: UUID) {
         val osDocument = readOnlyTransactionTemplate.execute {
@@ -64,64 +63,41 @@ open class DocumentOpenSearchSyncService(
             logger.debug { "Document $documentId not found on reload — skipping upsert (likely deleted)" }
             return
         }
-        val definitionName = osDocument.definitionId?.name
-        val versionTag = osDocument.definitionId?.blueprintId?.blueprintVersionTag
-        if (definitionName == null || versionTag == null) {
-            logger.warn { "Document $documentId has no definition name/version — skipping upsert (cannot resolve index)" }
-            return
+        check(converter.indexChunk(listOf(osDocument)) == 0L) {
+            "OpenSearch rejected document $documentId — recorded for retry by the reconciler"
         }
-        // Provision first: a write to a missing alias auto-creates a bare, unmapped index (auto_create_index).
-        // On failure the upsert is skipped (the listener isolates it) and the reconciler retries.
-        indexInitializer.ensureIndex(definitionName, versionTag)
-        try {
-            operations.save(osDocument, IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)))
-            logger.debug { "Upserted document $documentId in OpenSearch" }
-        } catch (e: VersionConflictException) {
-            // A newer/equal version is already indexed (the reconciler or a later event won the race).
-            logger.debug { "Document $documentId already at newer version in OpenSearch — skipping live upsert" }
-        } catch (e: Exception) {
-            // Record the rejection so it is operator-visible (health indicator) before propagating — the
-            // listener still isolates it and the reconciler retries, but the signal must not be lost.
-            indexInitializer.recordWriteFailure()
-            throw e
-        }
+        logger.debug { "Upserted document $documentId in OpenSearch" }
     }
 
     /**
-     * A delete only carries the document id. The indexed document itself carries its `definitionId.name`, so
-     * we read it by id through the shared read alias, resolve its concrete per-definition index and delete
-     * there — no delete-by-query fan-out. A document that is already gone is a no-op.
+     * A delete only carries the document id. Every indexed copy is found by id through the shared read alias and
+     * deleted from the index of its own definition and version — no delete-by-query fan-out. A document that is
+     * already gone is a no-op.
      */
     open fun delete(documentId: UUID) {
         val id = documentId.toString()
-        val indexed = findIndexed(id)?.definitionId
-        val definitionName = indexed?.name
-        val versionTag = indexed?.blueprintId?.blueprintVersionTag
-        if (definitionName == null || versionTag == null) {
+        val copies = findIndexed(id).mapNotNull { it.definitionId }
+        if (copies.isEmpty()) {
             logger.debug { "Document $documentId not found in OpenSearch — nothing to delete" }
             return
         }
-        // Delete from the version write alias (a single concrete); the per-definition read alias spans versions,
-        // so a delete-by-id on it is ambiguous.
-        operations.delete(id, IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)))
-        // If a scoped rebuild is in flight for this (definition, version), the fresh index already holds a copy
-        // written before this delete reached the live alias — delete it there too, or it survives the swap.
-        resolver.rebuildIndexFor(definitionName, versionTag)?.let { rebuildIndex ->
-            operations.delete(id, IndexCoordinates.of(rebuildIndex))
+        copies.forEach { definitionId ->
+            val definitionName = definitionId.name ?: return@forEach
+            val versionTag = definitionId.blueprintId?.blueprintVersionTag ?: return@forEach
+            operations.delete(id, IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)))
         }
         logger.debug { "Deleted document $documentId from OpenSearch" }
     }
 
-    private fun findIndexed(id: String): JsonSchemaDocumentOsDocument? {
+    private fun findIndexed(id: String): List<JsonSchemaDocumentOsDocument> {
         val query = NativeSearchQueryBuilder()
             .withQuery(QueryBuilders.idsQuery().addIds(id))
             .build()
-        val hits = operations.search(
+        return operations.search(
             query,
             JsonSchemaDocumentOsDocument::class.java,
             IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
-        )
-        return hits.searchHits.firstOrNull()?.content
+        ).searchHits.map { it.content }
     }
 
     companion object {

@@ -27,14 +27,12 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.data.elasticsearch.VersionConflictException
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.SearchHit
 import org.springframework.data.elasticsearch.core.SearchHits
@@ -51,7 +49,6 @@ class DocumentOpenSearchSyncServiceTest {
     private val documentRepository: JsonSchemaDocumentRepository = mock()
     private val converter: JsonSchemaDocumentOsConverter = mock()
     private val resolver = OpenSearchIndexNameResolver()
-    private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
     private val transactionManager: PlatformTransactionManager = mock()
     private lateinit var service: DocumentOpenSearchSyncService
 
@@ -62,71 +59,32 @@ class DocumentOpenSearchSyncServiceTest {
     fun setUp() {
         // Let the read-only TransactionTemplate run its callback inline.
         whenever(transactionManager.getTransaction(any())).thenReturn(SimpleTransactionStatus())
-        service = DocumentOpenSearchSyncService(operations, documentRepository, converter, resolver, indexInitializer, transactionManager)
+        service = DocumentOpenSearchSyncService(operations, documentRepository, converter, resolver, transactionManager)
     }
 
     @Test
-    fun `upsertById ensures the definition's index before saving`() {
-        val id = UUID.randomUUID()
-        val document: JsonSchemaDocument = mock()
-        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
-        whenever(converter.toOsDocument(document)).thenReturn(osDocument(id.toString()))
-
-        service.upsertById(id)
-
-        inOrder(indexInitializer, operations) {
-            verify(indexInitializer).ensureIndex("house", VERSION_TAG)
-            verify(operations).save(any<JsonSchemaDocumentOsDocument>(), eq(houseIndex))
-        }
-    }
-
-    @Test
-    fun `upsertById does not save when provisioning the index fails`() {
-        val id = UUID.randomUUID()
-        val document: JsonSchemaDocument = mock()
-        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
-        whenever(converter.toOsDocument(document)).thenReturn(osDocument(id.toString()))
-        doThrow(RuntimeException("OpenSearch down")).whenever(indexInitializer).ensureIndex("house", VERSION_TAG)
-
-        assertThatThrownBy { service.upsertById(id) }.isInstanceOf(RuntimeException::class.java)
-        verify(operations, never()).save(any<JsonSchemaDocumentOsDocument>(), any<IndexCoordinates>())
-    }
-
-    @Test
-    fun `upsertById reloads the document and saves it to the definition's index`() {
+    fun `upsertById reloads the document and indexes it through the converter`() {
         val id = UUID.randomUUID()
         val document: JsonSchemaDocument = mock()
         val osDocument = osDocument(id.toString())
         whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
         whenever(converter.toOsDocument(document)).thenReturn(osDocument)
-
-        service.upsertById(id)
-
-        verify(operations).save(eq(osDocument), eq(houseIndex))
-    }
-
-    @Test
-    fun `upsertById swallows a version conflict (a newer version is already indexed)`() {
-        val id = UUID.randomUUID()
-        val document: JsonSchemaDocument = mock()
-        val osDocument = osDocument(id.toString())
-        whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
-        whenever(converter.toOsDocument(document)).thenReturn(osDocument)
-        whenever(operations.save(eq(osDocument), eq(houseIndex))).thenThrow(VersionConflictException("conflict"))
+        whenever(converter.indexChunk(listOf(osDocument))).thenReturn(0L)
 
         assertThatCode { service.upsertById(id) }.doesNotThrowAnyException()
+        verify(converter).indexChunk(listOf(osDocument))
     }
 
     @Test
-    fun `upsertById propagates a non-conflict failure`() {
+    fun `upsertById surfaces a document OpenSearch rejected`() {
         val id = UUID.randomUUID()
         val document: JsonSchemaDocument = mock()
         val osDocument = osDocument(id.toString())
         whenever(documentRepository.findById(JsonSchemaDocumentId.existingId(id))).thenReturn(Optional.of(document))
         whenever(converter.toOsDocument(document)).thenReturn(osDocument)
-        whenever(operations.save(eq(osDocument), eq(houseIndex))).thenThrow(RuntimeException("transport error"))
+        whenever(converter.indexChunk(listOf(osDocument))).thenReturn(1L)
 
-        assertThatThrownBy { service.upsertById(id) }.isInstanceOf(RuntimeException::class.java)
+        assertThatThrownBy { service.upsertById(id) }.isInstanceOf(IllegalStateException::class.java)
     }
 
     @Test
@@ -137,7 +95,7 @@ class DocumentOpenSearchSyncServiceTest {
         service.upsertById(id)
 
         verify(converter, never()).toOsDocument(any())
-        verify(operations, never()).save(any<JsonSchemaDocumentOsDocument>(), any<IndexCoordinates>())
+        verify(converter, never()).indexChunk(any(), anyOrNull())
     }
 
     @Test
@@ -158,6 +116,26 @@ class DocumentOpenSearchSyncServiceTest {
     }
 
     @Test
+    fun `delete removes every copy of the document`() {
+        val id = UUID.randomUUID()
+        val current = osDocument(id.toString())
+        val stale = osDocument(id.toString(), versionTag = "0.9.0")
+        val copies = listOf(current, stale).map { copy ->
+            mock<SearchHit<JsonSchemaDocumentOsDocument>>().also { whenever(it.content).thenReturn(copy) }
+        }
+        val hits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(hits.searchHits).thenReturn(copies)
+        whenever(
+            operations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())
+        ).thenReturn(hits)
+
+        service.delete(id)
+
+        verify(operations).delete(eq(id.toString()), eq(houseIndex))
+        verify(operations).delete(eq(id.toString()), eq(IndexCoordinates.of(resolver.writeAliasFor("house", "0.9.0"))))
+    }
+
+    @Test
     fun `delete is a no-op when the document is not indexed`() {
         val id = UUID.randomUUID()
         val hits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
@@ -171,14 +149,14 @@ class DocumentOpenSearchSyncServiceTest {
         verify(operations, never()).delete(any<String>(), any<IndexCoordinates>())
     }
 
-    private fun osDocument(id: String) = JsonSchemaDocumentOsDocument(
+    private fun osDocument(id: String, versionTag: String = VERSION_TAG) = JsonSchemaDocumentOsDocument(
         id = id,
         content = null,
         definitionId = OsDefinitionId(
             name = "house",
             version = null,
             blueprintId = OsBlueprintId(
-                blueprintType = null, blueprintKey = null, blueprintVersionTag = VERSION_TAG,
+                blueprintType = null, blueprintKey = null, blueprintVersionTag = versionTag,
                 isBuildingBlock = null, isCase = null,
             ),
         ),

@@ -265,7 +265,7 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
         doAnswer { invocation ->
             val skipped = invocation.callRealMethod()
             if (invocation.getArgument<IndexCoordinates?>(1) != null && fired.compareAndSet(false, true)) {
-                runWithoutAuthorization { documentService.deleteDocument(doomed.id()) }
+                runWithoutAuthorization { documentService.deleteDocument(JsonSchemaDocumentId.existingId(doomedId)) }
                 syncService.delete(doomedId)
                 pendingIndexDeletionRepository.save(PendingIndexDeletion(documentId = doomedId))
                 if (reconcileInWindow) reconcileService.reconcile()
@@ -469,6 +469,7 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
         DocumentOpenSearchReconcileService(
             entityManager, contentConverter, elasticsearchOperations, indexNameResolver, stateRepository,
             pendingIndexDeletionRepository, transactionManager, lockProvider, openSearchProperties,
+            indexInitializer, indexCompletenessService,
         ).reconcile()
 
         refreshIndex()
@@ -476,7 +477,7 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
         val indexed = findIndexedById(rejected.id().id.toString()) != null
         val watermark = stateRepository.findById(OpenSearchReconcileState.SINGLETON_ID).get().watermark
         val retryable = watermark.isBefore(rejectedChangedOn)
-        val signalled = OpenSearchMappingHealthIndicator(indexInitializer).health().status != Status.UP
+        val signalled = OpenSearchMappingHealthIndicator(topologyGate, indexInitializer).health().status != Status.UP
         assertThat(indexed || retryable || signalled)
             .`as`(
                 "M7a: rejected document is dropped silently (indexed=$indexed, watermark=$watermark vs " +
@@ -492,12 +493,12 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
         clearIndexKeepMapping()
 
         val liveSync = DocumentOpenSearchSyncService(
-            elasticsearchOperations, documentRepository, contentConverter, indexNameResolver, indexInitializer, transactionManager,
+            elasticsearchOperations, documentRepository, contentConverter, indexNameResolver, transactionManager,
         )
         val thrown = runCatching { liveSync.upsertById(rejected.id().id) }.exceptionOrNull()
 
         assertThat(thrown).`as`("M7b: live upsert of a mapping-conflicting document must surface an exception").isNotNull()
-        assertThat(OpenSearchMappingHealthIndicator(indexInitializer).health().status)
+        assertThat(OpenSearchMappingHealthIndicator(topologyGate, indexInitializer).health().status)
             .`as`("M7b: no operator-visible health signal after a rejected live write")
             .isNotEqualTo(Status.UP)
     }

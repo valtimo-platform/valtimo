@@ -30,8 +30,10 @@ import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.repository.SearchFieldRepository
 import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
+import com.ritense.document.opensearch.service.IndexCompletenessService
 import com.ritense.document.opensearch.service.OpenSearchIndexNameResolver
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import com.ritense.document.opensearch.service.TopologyGate
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider
@@ -59,6 +61,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Transactional
+import java.util.Optional
 import java.util.UUID
 
 @SpringBootTest
@@ -117,6 +120,12 @@ abstract class BaseOpenSearchIntegrationTest {
 
     @Autowired
     lateinit var indexNameResolver: OpenSearchIndexNameResolver
+
+    @Autowired
+    lateinit var indexCompletenessService: IndexCompletenessService
+
+    @Autowired
+    lateinit var topologyGate: TopologyGate
 
     @BeforeEach
     fun setUpBase() {
@@ -177,8 +186,8 @@ abstract class BaseOpenSearchIntegrationTest {
     }
 
     /** [findIndexedById] wrapped in an [java.util.Optional], for assertions that read `.isPresent`/`.get()`. */
-    protected fun findIndexedOptional(id: String): java.util.Optional<JsonSchemaDocumentOsDocument> =
-        java.util.Optional.ofNullable(findIndexedById(id))
+    protected fun findIndexedOptional(id: String): Optional<JsonSchemaDocumentOsDocument> =
+        Optional.ofNullable(findIndexedById(id))
 
     /**
      * Forces an OpenSearch refresh so writes/deletes are immediately visible to subsequent reads.

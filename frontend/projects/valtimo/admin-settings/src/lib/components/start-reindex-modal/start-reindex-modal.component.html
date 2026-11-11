@@ -43,10 +43,15 @@
     </cds-dropdown>
 
     <cds-date-picker
-      [label]="'adminSettings.opensearch.reindex.modifiedAfter' | translate"
-      placeholder="DD-MM-YYYY"
       [dateFormat]="'d-m-Y'"
-      (valueChange)="onDateSelected($event)"
+      [helperText]="
+        formGroup.get('recreateIndex')?.value
+          ? ('adminSettings.opensearch.reindex.modifiedAfterUnavailable' | translate)
+          : ''
+      "
+      [label]="'adminSettings.opensearch.reindex.modifiedAfter' | translate"
+      formControlName="modifiedAfter"
+      placeholder="DD-MM-YYYY"
     ></cds-date-picker>
   </section>
 

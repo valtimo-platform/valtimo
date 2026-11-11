@@ -28,7 +28,8 @@ data class OpenSearchProperties(
     val fallbackWarningIntervalMs: Long = 300000,
 
     /**
-     * `index.mapping.total_fields.limit` for each per-definition index — a moderate safety cap against mapping
+     * `index.mapping.total_fields.limit` for each per-definition index, set when the index is created (a rebuild
+     * applies a changed value to existing indices) — a moderate safety cap against mapping
      * explosion (which bloats cluster state / heap), not an unlimited value. Objects under `content` collapse to
      * a single `flat_object` field, and every scalar string leaf maps to both `text` and a `keyword` sub-field
      * (two fields). The default gives generous headroom for a wide case type while still guarding a runaway.

@@ -21,38 +21,30 @@ import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
+import org.opensearch.index.query.QueryBuilders
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.document.Document
 import org.springframework.data.elasticsearch.core.index.AliasAction
 import org.springframework.data.elasticsearch.core.index.AliasActionParameters
 import org.springframework.data.elasticsearch.core.index.AliasActions
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
+import java.time.Duration
 
 /**
  * Owns the per-definition OpenSearch index topology and its lifecycle.
  *
- * Each case definition is fronted by a **per-definition alias** named `json_schema_document_<key>`
- * (the value [OpenSearchIndexNameResolver.indexNameFor] returns) that points at a single concrete,
- * timestamped index `json_schema_document_<key>_<epochMillis>`. Every writer and single-definition reader
- * targets the alias, so the concrete index behind it can be rebuilt and swapped atomically without the
- * stable name ever pointing at a missing index. The concrete index also joins the shared read alias
- * ([OpenSearchIndexNameResolver.READ_ALIAS]) that serves the cross-definition "All cases" list.
+ * Each (case-definition key, version tag) has one concrete index — `<writeAlias>_initial`, or
+ * `<writeAlias>_<epochMillis>` after a rebuild — fronted by three aliases: the version write alias, the
+ * per-definition read alias spanning every version, and the shared read alias
+ * ([OpenSearchIndexNameResolver.READ_ALIAS]) behind "All cases". Writers and readers only use aliases, so a
+ * rebuild (see [prepareRebuildIndex] + [swapInRebuiltIndex]) swaps the concrete without a gap.
  *
- * [ensureIndex]/[ensureAllIndices] are invoked before the engine toggle switches to OpenSearch and when a
- * new definition is deployed; both are idempotent. A rebuild (see [prepareRebuildIndex] + [swapInRebuiltIndex])
- * is the zero-downtime mechanism behind the admin "recreate index" reindex. Startup provisioning never drops
- * the legacy single index — a legacy/stale topology is surfaced via [isLegacyOrStale] and repaired by an
- * operator-initiated migrate reindex.
- *
- * Each concrete index carries the same dynamic `content` mapping: scalar fields are mapped dynamically (so
- * any content path remains searchable, including ad-hoc group-filter paths that are not declared search
- * fields), strings via the `content_fields_as_text` template, while any **object** under `content` is mapped
- * `enabled: false` (the `content_objects_disabled` template). Disabling objects stops unsearchable blobs such
- * as `openzaakgegevens` from exploding the field count, and lets the same path hold an object in one case and
- * a scalar in another without a mapping collision. `index.mapping.total_fields.limit` is raised accordingly.
- * Per-definition isolation — not the templates — removes the cross-definition type collisions, and the
- * mapping is deliberately not derived from search-field config, so editing search fields never triggers a
- * mapping change or reindex.
+ * Objects under `content` map to one `flat_object` field each and strings to `text` with a `keyword` sub-field,
+ * so a blob such as `openzaakgegevens` cannot explode the field count and one path may hold an object in one case
+ * and a scalar in another. The mapping is not derived from search-field configuration, so editing search fields
+ * never needs a mapping change or reindex. Startup never drops the legacy single index — a legacy or stale
+ * topology is reported by [isLegacyOrStale] and repaired by an operator-initiated migrate reindex.
  */
 open class DocumentOpenSearchIndexInitializer(
     private val elasticsearchOperations: ElasticsearchOperations,
@@ -65,7 +57,7 @@ open class DocumentOpenSearchIndexInitializer(
     private var lastWriteFailureAt: Long = 0L
 
     open fun ensureAllIndices() {
-        activeDefinitions().forEach { (key, versionTag) -> ensureIndex(key, versionTag) }
+        activeDefinitionVersions().forEach { (key, versionTag) -> ensureIndex(key, versionTag) }
     }
 
     /**
@@ -153,10 +145,57 @@ open class DocumentOpenSearchIndexInitializer(
      * screen) rather than auto-repaired on startup.
      */
     open fun isLegacyOrStale(): Boolean {
-        if (exists(OpenSearchIndexNameResolver.LEGACY_INDEX)) return true
+        val indicesByName = aliasesByIndex()
+        if (OpenSearchIndexNameResolver.LEGACY_INDEX in indicesByName) return true
         // The pre-migration per-key-only topology has the read alias but no per-version write alias; flag it (and
         // any active definition whose current version has no index yet) so search falls back to the database.
-        return activeDefinitions().any { (key, versionTag) -> !exists(resolver.writeAliasFor(key, versionTag)) }
+        val aliases = indicesByName.values.flatten().toSet()
+        return activeWriteAliases().any { it !in aliases }
+    }
+
+    /** The write aliases of the current version of every active definition. */
+    open fun activeWriteAliases(): Set<String> =
+        activeDefinitionVersions().map { (key, versionTag) -> resolver.writeAliasFor(key, versionTag) }.toSet()
+
+    /**
+     * Drops concrete indices of versions that are no longer active and hold no documents, so shards do not pile up
+     * as definition versions accumulate. Never drops an active version's index, nor the last index of a
+     * definition, so the read aliases survive. A later write to a pruned version re-creates its index.
+     */
+    open fun pruneEmptyVersionIndices() {
+        val active = activeWriteAliases()
+        aliasesByIndex()
+            .filterValues { OpenSearchIndexNameResolver.READ_ALIAS in it }
+            .entries
+            .groupBy { (_, aliases) -> perDefinitionReadAlias(aliases) }
+            .values
+            .forEach { concretes ->
+                val empty = concretes
+                    .filter { (_, aliases) -> aliases.none { it in active } }
+                    .map { it.key }
+                    .filter { isEmpty(it) }
+                val toDrop = if (empty.size < concretes.size) empty else empty.drop(1)
+                toDrop.forEach { concrete ->
+                    runCatching { dropIndex(concrete) }
+                        .onFailure { logger.warn(it) { "Failed to prune empty OpenSearch version index '$concrete'" } }
+                }
+            }
+    }
+
+    /**
+     * Drops per-definition indices that no alias points at: the unpublished target of a rebuild, or the replaced
+     * index of a swap, left behind by a crash. Only safe while no rebuild runs, so the reindex calls it under its
+     * lock; the age check spares an index that [ensureIndex] is attaching aliases to right now.
+     */
+    open fun dropOrphanedIndices(minAge: Duration = ORPHAN_MIN_AGE) {
+        aliasesByIndex()
+            .filter { (index, aliases) -> aliases.isEmpty() && index != OpenSearchIndexNameResolver.LEGACY_INDEX }
+            .keys
+            .filter { isOlderThan(it, minAge) }
+            .forEach { orphan ->
+                logger.warn { "Dropping orphaned OpenSearch index '$orphan' left behind by an interrupted rebuild" }
+                dropIndex(orphan)
+            }
     }
 
     private fun createConcreteIndex(alias: String): String {
@@ -188,8 +227,8 @@ open class DocumentOpenSearchIndexInitializer(
         // Drop a non-conforming scalar for one document instead of rejecting the whole document, covering
         // residual within-definition scalar type-drift. No-op for text/object.
         settings["index.mapping.ignore_malformed"] = true
-        // Raised so a case type with many content fields is never rejected; objects are enabled:false (one
-        // field each), so only scalar leaves count toward this.
+        // Raised so a wide case type is not rejected; each object under content is one flat_object field, so only
+        // top-level leaves count toward this.
         settings["index.mapping.total_fields.limit"] = openSearchProperties.totalFieldsLimit
 
         val mapping = indexOps.createMapping(JsonSchemaDocumentOsDocument::class.java)
@@ -230,6 +269,31 @@ open class DocumentOpenSearchIndexInitializer(
     private fun aliasParams(indexName: String, aliasName: String) =
         AliasActionParameters.builder().withIndices(indexName).withAliases(aliasName).build()
 
+    /** Every index of this module (legacy included) with the names of its aliases, in a single request. */
+    private fun aliasesByIndex(): Map<String, Set<String>> =
+        elasticsearchOperations.indexOps(IndexCoordinates.of(INDEX_PATTERN))
+            .getAliasesForIndex(INDEX_PATTERN)
+            .mapValues { (_, aliases) -> aliases.map { it.alias }.toSet() }
+
+    // The version write alias is "<readAlias>_v<tag>", so the shortest non-global alias is the per-definition one.
+    private fun perDefinitionReadAlias(aliases: Set<String>): String? =
+        aliases.filter { it != OpenSearchIndexNameResolver.READ_ALIAS }.minByOrNull { it.length }
+
+    // Refreshed first, so a write that is not yet searchable does not count as empty.
+    private fun isEmpty(concrete: String): Boolean {
+        val coordinates = IndexCoordinates.of(concrete)
+        elasticsearchOperations.indexOps(coordinates).refresh()
+        val query = NativeSearchQueryBuilder().withQuery(QueryBuilders.matchAllQuery()).build()
+        return elasticsearchOperations.count(query, JsonSchemaDocumentOsDocument::class.java, coordinates) == 0L
+    }
+
+    private fun isOlderThan(index: String, age: Duration): Boolean {
+        val createdAt = elasticsearchOperations.indexOps(IndexCoordinates.of(index)).settings
+            .getString(CREATION_DATE_SETTING)?.toLongOrNull()
+            ?: return false
+        return System.currentTimeMillis() - createdAt >= age.toMillis()
+    }
+
     /** The concrete index names currently backing [alias] (resolved via the get-alias API). */
     private fun concretesBehind(alias: String): List<String> {
         if (!exists(alias)) return emptyList()
@@ -251,7 +315,7 @@ open class DocumentOpenSearchIndexInitializer(
         elasticsearchOperations.indexOps(IndexCoordinates.of(name)).exists()
 
     /** Active case definitions as (key, current version tag) — the versions provisioned/read at startup. */
-    private fun activeDefinitions(): List<Pair<String, String>> =
+    open fun activeDefinitionVersions(): List<Pair<String, String>> =
         runWithoutAuthorization {
             caseDefinitionService.getCaseDefinitions(active = true).map { it.id.key to it.id.versionTag.toString() }
         }
@@ -267,5 +331,9 @@ open class DocumentOpenSearchIndexInitializer(
 
         /** How long a recorded write failure keeps the health indicator in a WARN state. */
         private const val WRITE_FAILURE_TTL_MS = 5 * 60 * 1000L
+
+        private const val INDEX_PATTERN = "json_schema_document*"
+        private const val CREATION_DATE_SETTING = "index.creation_date"
+        private val ORPHAN_MIN_AGE: Duration = Duration.ofHours(1)
     }
 }

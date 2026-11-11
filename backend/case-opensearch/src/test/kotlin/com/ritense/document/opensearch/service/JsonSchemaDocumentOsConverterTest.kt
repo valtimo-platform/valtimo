@@ -21,9 +21,11 @@ import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import com.ritense.document.opensearch.domain.OsBlueprintId
 import com.ritense.document.opensearch.domain.OsDefinitionId
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
@@ -34,8 +36,13 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.elasticsearch.BulkFailureException
 import org.springframework.data.elasticsearch.BulkFailureException.FailureDetails
 import org.springframework.data.elasticsearch.VersionConflictException
+import org.springframework.dao.DataAccessResourceFailureException
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.SearchHit
+import org.springframework.data.elasticsearch.core.SearchHits
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
+import org.springframework.data.elasticsearch.core.query.Query
+import java.util.UUID
 
 class JsonSchemaDocumentOsConverterTest {
 
@@ -43,13 +50,15 @@ class JsonSchemaDocumentOsConverterTest {
     private val operations: ElasticsearchOperations = mock()
     private val resolver = OpenSearchIndexNameResolver()
     private val indexInitializer: DocumentOpenSearchIndexInitializer = mock()
+    private val completeness: IndexCompletenessService = mock()
     private lateinit var converter: JsonSchemaDocumentOsConverter
 
     private val index = IndexCoordinates.of(resolver.writeAliasFor(DEFINITION, VERSION_TAG))
 
     @BeforeEach
     fun setUp() {
-        converter = JsonSchemaDocumentOsConverter(objectMapper, operations, resolver, indexInitializer)
+        converter = JsonSchemaDocumentOsConverter(objectMapper, operations, resolver, indexInitializer, completeness)
+        indexedCopies()
     }
 
     @Test
@@ -149,14 +158,113 @@ class JsonSchemaDocumentOsConverterTest {
         verifyNoInteractions(indexInitializer)
     }
 
-    private fun osDocument(id: String, definitionName: String = DEFINITION) = JsonSchemaDocumentOsDocument(
+    @Test
+    fun `indexChunk records a rejected document so its definition is searched in the database`() {
+        val id = UUID.randomUUID()
+        val poison = osDocument(id.toString())
+        whenever(operations.save(any<List<JsonSchemaDocumentOsDocument>>(), any<IndexCoordinates>()))
+            .thenThrow(BulkFailureException("bulk failed", mapOf(id.toString() to FailureDetails(400, "mapper_parsing_exception"))))
+        whenever(operations.save(eq(poison), any<IndexCoordinates>())).thenThrow(RuntimeException("mapping error"))
+
+        converter.indexChunk(listOf(poison))
+
+        verify(completeness).recordRejected(mapOf(id to DEFINITION))
+        verify(indexInitializer).recordWriteFailure()
+    }
+
+    @Test
+    fun `indexChunk clears the rejection of a document it indexed`() {
+        val id = UUID.randomUUID()
+
+        converter.indexChunk(listOf(osDocument(id.toString())))
+
+        verify(completeness).clearRejected(listOf(id))
+    }
+
+    @Test
+    fun `indexChunk propagates a transport failure instead of rejecting the document`() {
+        val document = osDocument("a")
+        whenever(operations.save(any<List<JsonSchemaDocumentOsDocument>>(), any<IndexCoordinates>()))
+            .thenThrow(BulkFailureException("bulk failed", mapOf("a" to FailureDetails(500, "transient"))))
+        whenever(operations.save(eq(document), any<IndexCoordinates>()))
+            .thenThrow(DataAccessResourceFailureException("Connection refused"))
+
+        assertThatThrownBy { converter.indexChunk(listOf(document)) }
+            .isInstanceOf(DataAccessResourceFailureException::class.java)
+    }
+
+    @Test
+    fun `indexChunk skips only the documents whose index cannot be created`() {
+        val house = osDocument(UUID.randomUUID().toString(), definitionName = "house")
+        val person = osDocument(UUID.randomUUID().toString(), definitionName = "person")
+        doThrow(RuntimeException("maximum shards open")).whenever(indexInitializer).ensureIndex("house", VERSION_TAG)
+
+        val skipped = converter.indexChunk(listOf(house, person))
+
+        assertThat(skipped).isEqualTo(1L)
+        verify(completeness).recordRejected(mapOf(UUID.fromString(house.id) to "house"))
+        verify(operations).save(eq(listOf(person)), eq(IndexCoordinates.of(resolver.writeAliasFor("person", VERSION_TAG))))
+    }
+
+    @Test
+    fun `indexChunk propagates a transport failure while creating an index`() {
+        doThrow(DataAccessResourceFailureException("Connection refused")).whenever(indexInitializer).ensureIndex(DEFINITION, VERSION_TAG)
+
+        assertThatThrownBy { converter.indexChunk(listOf(osDocument("a"))) }
+            .isInstanceOf(DataAccessResourceFailureException::class.java)
+    }
+
+    @Test
+    fun `indexChunk removes the copy a document left in its previous version's index`() {
+        val document = osDocument("a")
+        indexedCopies(document, osDocument("a", versionTag = "0.9.0"))
+
+        converter.indexChunk(listOf(document))
+
+        verify(operations).delete(eq("a"), eq(IndexCoordinates.of(resolver.writeAliasFor(DEFINITION, "0.9.0"))))
+        verify(operations, never()).delete(eq("a"), eq(index))
+    }
+
+    @Test
+    fun `indexable truncates long strings inside objects only`() {
+        val long = "x".repeat(40_000)
+        val document = osDocument("a").copy(content = mapOf("top" to long, "object" to mapOf("leaf" to long), "list" to listOf(mapOf("leaf" to long))))
+
+        val content = requireNotNull(converter.indexable(document).content)
+
+        assertThat(content["top"]).isEqualTo(long)
+        assertThat(((content["object"] as Map<*, *>)["leaf"] as String).toByteArray().size).isLessThanOrEqualTo(16_384)
+        assertThat((((content["list"] as List<*>).single() as Map<*, *>)["leaf"] as String)).hasSizeLessThanOrEqualTo(16_384)
+    }
+
+    @Test
+    fun `indexable does not split a multi-byte character`() {
+        val document = osDocument("a").copy(content = mapOf("object" to mapOf("leaf" to "é".repeat(10_000))))
+
+        val leaf = (requireNotNull(converter.indexable(document).content)["object"] as Map<*, *>)["leaf"] as String
+
+        assertThat(leaf).matches("é+")
+        assertThat(leaf.toByteArray().size).isLessThanOrEqualTo(16_384)
+    }
+
+    private fun indexedCopies(vararg copies: JsonSchemaDocumentOsDocument) {
+        val hits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        val searchHits = copies.map { copy ->
+            mock<SearchHit<JsonSchemaDocumentOsDocument>>().also { whenever(it.content).thenReturn(copy) }
+        }
+        whenever(hits.searchHits).thenReturn(searchHits)
+        whenever(operations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>()))
+            .thenReturn(hits)
+    }
+
+    private fun osDocument(id: String, definitionName: String = DEFINITION, versionTag: String = VERSION_TAG) = JsonSchemaDocumentOsDocument(
         id = id,
         content = null,
         definitionId = OsDefinitionId(
             name = definitionName,
             version = null,
             blueprintId = OsBlueprintId(
-                blueprintType = null, blueprintKey = null, blueprintVersionTag = VERSION_TAG,
+                blueprintType = null, blueprintKey = null, blueprintVersionTag = versionTag,
                 isBuildingBlock = null, isCase = null,
             ),
         ),

@@ -132,6 +132,25 @@
     }
   }
 
+  &__error {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__error-title {
+    font-size: var(--cds-heading-compact-01-font-size);
+    font-weight: var(--cds-heading-compact-01-font-weight);
+    color: var(--cds-text-secondary);
+  }
+
+  &__error-message {
+    font-size: var(--cds-body-compact-01-font-size);
+    color: var(--cds-text-primary);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
   &__error-link {
     display: inline-flex;
     align-items: center;

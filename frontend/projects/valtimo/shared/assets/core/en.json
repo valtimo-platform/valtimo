@@ -4534,6 +4534,8 @@
         "allDocumentDefinitions": "All document definitions",
         "modifiedBefore": "Modified before",
         "modifiedAfter": "Modified after",
+        "modifiedAfterUnavailable": "Not available when rebuilding the index: a rebuild always reindexes every document in scope.",
+        "startFailed": "Reindex could not be started",
         "columns": {
           "status": "Status",
           "startedOn": "Started",
@@ -4563,7 +4565,11 @@
       },
       "topology": {
         "legacyWarningTitle": "Index rebuild required",
-        "legacyWarningMessage": "This installation still uses the legacy document-search index, or one or more case definitions have no index yet. Start a reindex with \"Rebuild / migrate index\" enabled to migrate to the per-definition indices. Search keeps working from the current index until the migration completes."
+        "legacyWarningMessage": "This installation still uses the legacy document-search index, or one or more case definitions have no index yet. Start a reindex with \"Rebuild / migrate index\" enabled to migrate to the per-definition indices. Until the migration completes, search uses the database (PostgreSQL).",
+        "catchingUpTitle": "Indexing existing cases",
+        "catchingUpMessage": "OpenSearch is indexing existing cases in the background. Until this completes, search uses the database (PostgreSQL). No action is needed.",
+        "rejectedDefinitionsTitle": "Some cases are searched in the database",
+        "rejectedDefinitionsMessage": "OpenSearch could not index some cases of these case definitions: {{definitions}}. Their case lists use the database (PostgreSQL) in the meantime."
       }
     }
   },

@@ -20,6 +20,7 @@ import com.ritense.adminsettings.service.FeatureToggleOverridesService
 import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.autoconfigure.DocumentOpenSearchAutoConfiguration.Companion.SEARCH_ENGINE_TOGGLE_KEY
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
+import com.ritense.document.opensearch.service.IndexCompletenessService
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -38,6 +39,7 @@ class SearchEngineResource(
     private val openSearchProperties: OpenSearchProperties,
     private val featureToggleOverridesService: FeatureToggleOverridesService,
     private val indexInitializer: DocumentOpenSearchIndexInitializer,
+    private val indexCompletenessService: IndexCompletenessService,
 ) {
 
     @EndpointDescription(
@@ -68,6 +70,7 @@ class SearchEngineResource(
         if (useOpenSearch) {
             try {
                 indexInitializer.ensureAllIndices()
+                indexCompletenessService.initializeWatermarkIfAbsent()
             } catch (e: Exception) {
                 logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

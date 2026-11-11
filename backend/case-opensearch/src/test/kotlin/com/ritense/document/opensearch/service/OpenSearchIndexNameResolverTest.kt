@@ -87,4 +87,31 @@ class OpenSearchIndexNameResolverTest {
         assertThat(name).isNotEqualTo(OpenSearchIndexNameResolver.READ_ALIAS)
         assertThat(name).startsWith("json_schema_document_all_")
     }
+
+    @Test
+    fun `a key that looks like another key's version write alias gets a hash so they never collide`() {
+        val versionLikeKey = resolver.indexNameFor("foo_v1.0.0")
+
+        assertThat(versionLikeKey).isNotEqualTo(resolver.writeAliasFor("foo", "1.0.0"))
+        assertThat(versionLikeKey).startsWith("json_schema_document_foo_v1.0.0_")
+    }
+
+    @Test
+    fun `a key containing _v without a digit keeps its readable name`() {
+        assertThat(resolver.indexNameFor("aanvraag_vergunning")).isEqualTo("json_schema_document_aanvraag_vergunning")
+    }
+
+    @Test
+    fun `version tags that differ only in case get distinct write aliases`() {
+        assertThat(resolver.writeAliasFor("house", "1.0.0-RC1")).isNotEqualTo(resolver.writeAliasFor("house", "1.0.0-rc1"))
+        assertThat(resolver.writeAliasFor("house", "1.0.0")).isEqualTo("json_schema_document_house_v1.0.0")
+    }
+
+    @Test
+    fun `a long version tag and key still leave room for the concrete index suffix`() {
+        val alias = resolver.writeAliasFor("x".repeat(400), "1.0.0-" + "a".repeat(200))
+
+        val worstCaseConcreteName = alias + "_" + "9".repeat(14) + "_" + "9".repeat(10)
+        assertThat(worstCaseConcreteName.toByteArray(Charsets.UTF_8).size).isLessThanOrEqualTo(255)
+    }
 }

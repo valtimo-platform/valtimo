@@ -16,6 +16,7 @@
 package com.ritense.document.opensearch.health
 
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
+import com.ritense.document.opensearch.service.TopologyGate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doThrow
@@ -25,12 +26,13 @@ import org.springframework.boot.actuate.health.Status
 
 class OpenSearchMappingHealthIndicatorTest {
 
+    private val topologyGate: TopologyGate = mock()
     private val initializer: DocumentOpenSearchIndexInitializer = mock()
-    private val indicator = OpenSearchMappingHealthIndicator(initializer)
+    private val indicator = OpenSearchMappingHealthIndicator(topologyGate, initializer)
 
     @Test
-    fun `reports UP with PER_DEFINITION topology when no rebuild is needed`() {
-        whenever(initializer.isLegacyOrStale()).thenReturn(false)
+    fun `reports UP with PER_DEFINITION topology when OpenSearch is complete`() {
+        whenever(topologyGate.snapshot()).thenReturn(snapshot())
 
         val health = indicator.health()
 
@@ -40,7 +42,7 @@ class OpenSearchMappingHealthIndicatorTest {
 
     @Test
     fun `reports WARN with the required action when the topology is legacy or stale`() {
-        whenever(initializer.isLegacyOrStale()).thenReturn(true)
+        whenever(topologyGate.snapshot()).thenReturn(snapshot(legacyOrStale = true))
 
         val health = indicator.health()
 
@@ -50,12 +52,49 @@ class OpenSearchMappingHealthIndicatorTest {
     }
 
     @Test
+    fun `reports WARN while the reconciler catches up`() {
+        whenever(topologyGate.snapshot()).thenReturn(snapshot(catchingUp = true))
+
+        val health = indicator.health()
+
+        assertThat(health.status.code).isEqualTo("WARN")
+        assertThat(health.details).containsEntry("indexing", "CATCHING_UP")
+    }
+
+    @Test
+    fun `reports WARN with the case types that have rejected cases`() {
+        whenever(topologyGate.snapshot()).thenReturn(snapshot(rejectedDefinitions = setOf("person", "house")))
+
+        val health = indicator.health()
+
+        assertThat(health.status.code).isEqualTo("WARN")
+        assertThat(health.details).containsEntry("rejectedDefinitions", listOf("house", "person"))
+    }
+
+    @Test
+    fun `reports WARN after a recent rejected write`() {
+        whenever(topologyGate.snapshot()).thenReturn(snapshot())
+        whenever(initializer.hasRecentWriteFailures()).thenReturn(true)
+
+        val health = indicator.health()
+
+        assertThat(health.status.code).isEqualTo("WARN")
+        assertThat(health.details).containsEntry("writeFailures", "RECENT")
+    }
+
+    @Test
     fun `reports UP with UNKNOWN topology when probing fails`() {
-        doThrow(RuntimeException("cluster unreachable")).whenever(initializer).isLegacyOrStale()
+        doThrow(RuntimeException("cluster unreachable")).whenever(topologyGate).snapshot()
 
         val health = indicator.health()
 
         assertThat(health.status).isEqualTo(Status.UP)
         assertThat(health.details).containsEntry("topology", "UNKNOWN")
     }
+
+    private fun snapshot(
+        legacyOrStale: Boolean = false,
+        catchingUp: Boolean = false,
+        rejectedDefinitions: Set<String> = emptySet(),
+    ) = TopologyGate.Snapshot(legacyOrStale, catchingUp, rejectedDefinitions)
 }

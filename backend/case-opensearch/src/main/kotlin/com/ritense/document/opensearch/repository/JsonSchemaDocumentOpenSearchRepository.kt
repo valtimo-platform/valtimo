@@ -19,4 +19,8 @@ package com.ritense.document.opensearch.repository
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 
+@Deprecated(
+    "Bound to the shared read alias, which spans one index per case definition and version: it can read across " +
+        "all of them but cannot write. Use ElasticsearchOperations with the per-definition alias instead."
+)
 interface JsonSchemaDocumentOpenSearchRepository : ElasticsearchRepository<JsonSchemaDocumentOsDocument, String>

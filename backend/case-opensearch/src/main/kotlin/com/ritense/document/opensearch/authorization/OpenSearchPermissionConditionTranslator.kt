@@ -29,6 +29,7 @@ import com.ritense.authorization.permission.condition.PermissionConditionOperato
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.role.Role
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.opensearch.service.NestedContentField
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -149,7 +150,8 @@ class OpenSearchPermissionConditionTranslator(
         private val logger = KotlinLogging.logger {}
 
         fun applyOperator(field: String, op: PermissionConditionOperator, value: Any?): QueryBuilder =
-            when (op) {
+            if (NestedContentField.isNested(field)) NestedContentField.applyOperator(field, op, value)
+            else when (op) {
                 PermissionConditionOperator.EQUAL_TO -> {
                     if (value == null) {
                         QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(field))
@@ -207,8 +209,7 @@ class OpenSearchPermissionConditionTranslator(
          */
         fun isDynamicTextField(field: String, op: PermissionConditionOperator, value: Any?): Boolean {
             if (!field.startsWith("content.")) return false
-            // Nested path (content.<object>.<leaf>...) → flat_object leaf, already a keyword.
-            if (field.removePrefix("content.").contains(".")) return false
+            if (NestedContentField.isNested(field)) return false
             if (value == null) return false
             val isStringValue = value is String || (value is Collection<*> && value.firstOrNull() is String)
             val isTermOp = op in setOf(

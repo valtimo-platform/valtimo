@@ -16,10 +16,14 @@
 
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import {Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  EMPTY,
   finalize,
   interval,
   map,
@@ -32,7 +36,6 @@ import {
   switchMap,
   take,
   takeUntil,
-  takeWhile,
 } from 'rxjs';
 import {
   ButtonModule,
@@ -46,9 +49,9 @@ import {
 } from 'carbon-components-angular';
 import {Launch16, WarningAlt16} from '@carbon/icons';
 import {CarbonListModule, ColumnConfig, Pagination, TooltipIconModule, ViewType} from '@valtimo/components';
-import {Page} from '@valtimo/shared';
+import {GlobalNotificationService, Page} from '@valtimo/shared';
 import {AdminSettingsManagementApiService} from '../../services';
-import {ReindexStatusDto, StartReindexRequestDto} from '../../models';
+import {ReindexStatusDto, StartReindexRequestDto, TopologyStatusDto} from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-modal.component';
 
@@ -135,11 +138,23 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     map(page => page.content.some(run => run.status === 'RUNNING'))
   );
 
-  public readonly legacyOrStale$: Observable<boolean> = this._manualRefresh$.pipe(
+  // Chained after runs, not fetched in parallel: the poll that sees a run finish must see its topology.
+  public readonly topology$: Observable<TopologyStatusDto | null> = this.runs$.pipe(
     switchMap(() => this._apiService.getTopologyStatus()),
-    map(status => !!status?.available && !!status?.legacyOrStale),
-    startWith(false),
+    startWith(null),
     shareReplay(1)
+  );
+
+  public readonly legacyOrStale$: Observable<boolean> = this.topology$.pipe(
+    map(status => !!status?.available && !!status?.legacyOrStale)
+  );
+
+  public readonly catchingUp$: Observable<boolean> = this.topology$.pipe(
+    map(status => !!status?.catchingUp)
+  );
+
+  public readonly rejectedDefinitions$: Observable<string> = this.topology$.pipe(
+    map(status => (status?.rejectedDefinitions ?? []).join(', '))
   );
 
   constructor(
@@ -147,7 +162,8 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     private readonly _documentService: DocumentService,
     private readonly _translateService: TranslateService,
     private readonly _router: Router,
-    private readonly _iconService: IconService
+    private readonly _iconService: IconService,
+    private readonly _notificationService: GlobalNotificationService
   ) {
     this._iconService.register(Launch16);
     this._iconService.register(WarningAlt16);
@@ -170,15 +186,11 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       startWith([])
     );
 
-    this.hasRunningRun$
+    combineLatest([this.hasRunningRun$, this.catchingUp$])
       .pipe(
-        switchMap(hasRunning => {
-          if (!hasRunning) return [];
-          return interval(3000).pipe(
-            takeWhile(() => true),
-            takeUntil(this._destroy$)
-          );
-        }),
+        map(([hasRunning, catchingUp]) => hasRunning || catchingUp),
+        distinctUntilChanged(),
+        switchMap(shouldPoll => (shouldPoll ? interval(3000) : EMPTY)),
         takeUntil(this._destroy$)
       )
       .subscribe(() => this._silentRefresh$.next());
@@ -211,12 +223,21 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => this._manualRefresh$.next(),
-        error: err => {
-          if (err.status === 409) {
-            this._manualRefresh$.next();
-          }
-        },
+        error: (error: HttpErrorResponse) => this._onStartReindexError(error),
       });
+  }
+
+  private _onStartReindexError(error: HttpErrorResponse): void {
+    // Other statuses are toasted by HttpErrorInterceptor.
+    if (error.status !== 400 && error.status !== 409) return;
+
+    this._notificationService.showToast({
+      type: 'error',
+      title: this._translateService.instant('adminSettings.opensearch.reindex.startFailed'),
+      caption: error.error?.error ?? '',
+    });
+
+    if (error.status === 409) this._manualRefresh$.next();
   }
 
   private _getStatusTagType(status: string): string {
