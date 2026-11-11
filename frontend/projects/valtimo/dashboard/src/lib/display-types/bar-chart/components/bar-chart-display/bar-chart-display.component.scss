@@ -26,6 +26,10 @@
 }
 
 .valtimo-donut-widget {
+  &__header {
+    margin-bottom: 16px;
+  }
+
   &__title,
   &__subtitle {
     white-space: nowrap;
@@ -35,10 +39,12 @@
 
   &__title {
     font-size: 20px;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
   }
   &__subtitle {
+    display: block;
     font-size: 14px;
+    line-height: 18px;
   }
 
   &__label {
@@ -52,5 +58,11 @@
     align-items: flex-end;
     justify-content: center;
     margin-bottom: 12px;
+
+    // Inner legend only: its -5px margin overflows the outer layout-child, which would scroll 5px
+    ::ng-deep .cds--cc--legend:not(.layout-child) {
+      max-height: 100px;
+      overflow-y: auto;
+    }
   }
 }

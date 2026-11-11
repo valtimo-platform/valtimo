@@ -110,6 +110,7 @@ export class CaseMenuService {
             link: ['/cases/' + caseDefinition.caseDefinitionKey],
             title: caseDefinition.name,
             iconClass: 'icon mdi mdi-dot-circle',
+            color: caseDefinition.color || PINNED_ITEM_FALLBACK_COLOR,
             sequence: index,
             show: true,
             count$: this.getOpenCaseCount(caseDefinition.caseDefinitionKey),
