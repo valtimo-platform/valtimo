@@ -36,8 +36,24 @@ class DocumentIndexRejection(
     val documentId: UUID,
 
     @Column(name = "definition_name", nullable = false)
-    val definitionName: String,
+    var definitionName: String,
 
-    @Column(name = "rejected_on", nullable = false)
-    val rejectedOn: LocalDateTime = LocalDateTime.now(),
-)
+    @Column(name = "first_rejected_on", nullable = false)
+    val firstRejectedOn: LocalDateTime,
+
+    @Column(name = "last_rejected_on", nullable = false)
+    var lastRejectedOn: LocalDateTime = firstRejectedOn,
+
+    @Column(name = "attempts", nullable = false)
+    var attempts: Int = 1,
+
+    @Column(name = "next_retry_on", nullable = false)
+    var nextRetryOn: LocalDateTime,
+) {
+    fun rejectedAgain(definitionName: String, now: LocalDateTime, nextRetryOn: LocalDateTime) {
+        this.definitionName = definitionName
+        this.lastRejectedOn = now
+        this.attempts++
+        this.nextRetryOn = nextRetryOn
+    }
+}

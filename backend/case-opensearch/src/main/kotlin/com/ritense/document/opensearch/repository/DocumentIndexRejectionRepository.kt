@@ -27,5 +27,5 @@ interface DocumentIndexRejectionRepository : JpaRepository<DocumentIndexRejectio
     @Query("SELECT DISTINCT r.definitionName FROM DocumentIndexRejection r")
     fun findDistinctDefinitionNames(): List<String>
 
-    fun findByOrderByRejectedOnAsc(pageable: Pageable): List<DocumentIndexRejection>
+    fun findByOrderByLastRejectedOnAsc(pageable: Pageable): List<DocumentIndexRejection>
 }

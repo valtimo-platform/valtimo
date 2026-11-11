@@ -22,7 +22,11 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
 import com.ritense.document.opensearch.domain.ReindexRunStatus
+import com.ritense.document.opensearch.handler.PendingIndexDeletionListener
+import com.ritense.document.opensearch.repository.DocumentIndexRejectionRepository
+import com.ritense.document.opensearch.repository.PendingIndexDeletionRepository
 import com.ritense.valtimo.contract.blueprint.BlueprintType
+import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -32,7 +36,9 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 import java.util.UUID
 
@@ -53,11 +59,25 @@ class DocumentOpenSearchLifecycleIntTest : BaseOpenSearchIntegrationTest() {
     @Autowired
     lateinit var converter: JsonSchemaDocumentOsConverter
 
+    @Autowired
+    lateinit var rejectionRepository: DocumentIndexRejectionRepository
+
+    @Autowired
+    lateinit var pendingIndexDeletionListener: PendingIndexDeletionListener
+
+    @Autowired
+    lateinit var pendingIndexDeletionRepository: PendingIndexDeletionRepository
+
+    @Autowired
+    lateinit var transactionManager: PlatformTransactionManager
+
     private val createdIndices = mutableListOf<String>()
 
     @AfterEach
     fun cleanUp() {
         runWithoutAuthorization { documentService.removeDocuments("house") }
+        rejectionRepository.deleteAll()
+        pendingIndexDeletionRepository.deleteAll()
         createdIndices.forEach { indexInitializer.dropIndex(it) }
         TEST_DEFINITION_KEYS.forEach { key ->
             val alias = indexNameResolver.indexNameFor(key)
@@ -119,6 +139,50 @@ class DocumentOpenSearchLifecycleIntTest : BaseOpenSearchIntegrationTest() {
         assertThat(indexExists(before)).`as`("replaced index dropped").isFalse()
         assertThat(findIndexedById(kept.id().id.toString())).`as`("existing case").isNotNull()
         assertThat(findIndexedById(orphan.id)).`as`("case missing from the database").isNull()
+    }
+
+    @Test
+    fun `a repeated rejection counts the attempt and keeps the first rejection time`() {
+        val id = UUID.randomUUID()
+
+        indexCompletenessService.recordRejected(mapOf(id to "house"))
+        val first = rejectionRepository.findById(id).orElseThrow()
+        indexCompletenessService.recordRejected(mapOf(id to "house"))
+        val second = rejectionRepository.findById(id).orElseThrow()
+
+        assertThat(first.attempts).isEqualTo(1)
+        assertThat(first.lastRejectedOn).isEqualTo(first.firstRejectedOn)
+        assertThat(first.nextRetryOn).isAfter(first.lastRejectedOn)
+        assertThat(second.attempts).isEqualTo(2)
+        assertThat(second.firstRejectedOn).isEqualTo(first.firstRejectedOn)
+        assertThat(second.lastRejectedOn).isAfterOrEqualTo(first.lastRejectedOn)
+        assertThat(second.nextRetryOn).isAfter(second.lastRejectedOn)
+    }
+
+    @Test
+    fun `deleting a case forgets its index rejection`() {
+        val id = UUID.randomUUID()
+        indexCompletenessService.recordRejected(mapOf(id to "house"))
+
+        TransactionTemplate(transactionManager).executeWithoutResult {
+            pendingIndexDeletionListener.onDocumentDeleted(DocumentDeletedEvent(id))
+        }
+
+        assertThat(rejectionRepository.existsById(id)).isFalse()
+        assertThat(pendingIndexDeletionRepository.existsById(id)).isTrue()
+    }
+
+    @Test
+    fun `a delete that rolls back keeps the index rejection`() {
+        val id = UUID.randomUUID()
+        indexCompletenessService.recordRejected(mapOf(id to "house"))
+
+        TransactionTemplate(transactionManager).executeWithoutResult { status ->
+            pendingIndexDeletionListener.onDocumentDeleted(DocumentDeletedEvent(id))
+            status.setRollbackOnly()
+        }
+
+        assertThat(rejectionRepository.existsById(id)).isTrue()
     }
 
     private fun createIndex(name: String): String {

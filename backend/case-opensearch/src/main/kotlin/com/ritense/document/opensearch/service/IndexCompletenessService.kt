@@ -46,7 +46,15 @@ open class IndexCompletenessService(
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun recordRejected(definitionNameById: Map<UUID, String>) {
         if (definitionNameById.isEmpty()) return
-        rejectionRepository.saveAll(definitionNameById.map { (id, name) -> DocumentIndexRejection(id, name) })
+        val now = LocalDateTime.now()
+        val nextRetryOn = now.plus(RETRY_DELAY)
+        val existing = rejectionRepository.findAllById(definitionNameById.keys).associateBy { it.documentId }
+        rejectionRepository.saveAll(
+            definitionNameById.map { (id, name) ->
+                existing[id]?.apply { rejectedAgain(name, now, nextRetryOn) }
+                    ?: DocumentIndexRejection(id, name, firstRejectedOn = now, nextRetryOn = nextRetryOn)
+            }
+        )
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -63,7 +71,7 @@ open class IndexCompletenessService(
 
     @Transactional(readOnly = true)
     open fun oldestRejected(limit: Int): List<UUID> =
-        rejectionRepository.findByOrderByRejectedOnAsc(PageRequest.of(0, limit)).map { it.documentId }
+        rejectionRepository.findByOrderByLastRejectedOnAsc(PageRequest.of(0, limit)).map { it.documentId }
 
     /**
      * Whether the newest case change is more than two reconcile intervals ahead of the reconcile watermark, so
@@ -97,5 +105,7 @@ open class IndexCompletenessService(
     companion object {
         private val logger = KotlinLogging.logger {}
         val INITIAL_WATERMARK: LocalDateTime = LocalDateTime.of(1970, 1, 1, 0, 0)
+
+        private val RETRY_DELAY: Duration = Duration.ofMinutes(10)
     }
 }

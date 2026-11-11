@@ -247,8 +247,9 @@ class DocumentOpenSearchAutoConfiguration {
     @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
     fun pendingIndexDeletionListener(
         pendingIndexDeletionRepository: PendingIndexDeletionRepository,
+        rejectionRepository: DocumentIndexRejectionRepository,
     ): PendingIndexDeletionListener =
-        PendingIndexDeletionListener(pendingIndexDeletionRepository)
+        PendingIndexDeletionListener(pendingIndexDeletionRepository, rejectionRepository)
 
     @Order(294)
     @Bean

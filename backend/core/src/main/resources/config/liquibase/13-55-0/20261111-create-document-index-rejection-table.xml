@@ -29,12 +29,21 @@
             <column name="definition_name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="rejected_on" type="DATETIME">
+            <column name="first_rejected_on" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_rejected_on" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attempts" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="next_retry_on" type="DATETIME">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <createIndex tableName="document_index_rejection" indexName="idx_document_index_rejection_rejected_on">
-            <column name="rejected_on"/>
+        <createIndex tableName="document_index_rejection" indexName="idx_document_index_rejection_next_retry_on">
+            <column name="next_retry_on"/>
         </createIndex>
     </changeSet>
 
