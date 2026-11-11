@@ -251,9 +251,13 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
     }
 
     // override setValue method to allow for array values
-    public setValue(value): boolean {
+    public setValue(value: any, flags: any = {}): boolean {
+      // Update dataValue first, like base setValue. Else defaults applied via clearOnHide() or
+      // setSubmission() only reach the element, not the form data.
+      const changed = this.updateValue(value, flags, undefined);
+
       if (!this._customAngularElement || !('value' in this._customAngularElement)) {
-        return false;
+        return changed;
       }
 
       // Re-apply customOptions on every setValue. calculateValue expressions can mutate
@@ -264,9 +268,9 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
       // customOptions never reach the Angular element in a single-component form.
       this.bindCustomOptions();
 
-      this._customAngularElement.value = value;
+      this._customAngularElement.value = this.dataValue;
 
-      return true;
+      return changed;
     }
 
     // Push the (possibly calculateValue-mutated) customOptions to the Angular element.
