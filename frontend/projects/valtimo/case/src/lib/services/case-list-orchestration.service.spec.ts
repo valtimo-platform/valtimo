@@ -33,7 +33,6 @@ describe('CaseListOrchestrationService', () => {
   const definitionContext: CaseListContext = {type: 'definition', key: 'house'};
 
   beforeEach(() => {
-    listService = new CaseListService();
     hiddenColumnsService = jasmine.createSpyObj('CaseListHiddenColumnsService', [
       'getHiddenColumns',
       'saveHiddenColumns',
@@ -46,8 +45,12 @@ describe('CaseListOrchestrationService', () => {
       'getActiveCaseDefinition',
       'searchGroupCases',
     ]);
+    documentService.getCaseDefinitionGroup.and.returnValue(
+      of({key: 'my_group', title: 'My group', order: 0})
+    );
     documentService.searchGroupCases.and.returnValue(of({content: []}));
     documentService.invalidSearchFields$ = of([]);
+    listService = new CaseListService(documentService);
     pinnedItemsService = jasmine.createSpyObj('PinnedItemsService', ['refresh']);
     columnService = jasmine.createSpyObj('CaseColumnService', ['getColumnsForContext']);
     columnService.getColumnsForContext.and.returnValue(NEVER);
@@ -80,7 +83,11 @@ describe('CaseListOrchestrationService', () => {
         selectedCaseStatuses$: stream([]),
         showStatusSelector$: stream(false),
       } as any,
-      {stream: () => NEVER, instant: (key: string) => key} as any,
+      {
+        stream: () => NEVER,
+        instant: (key: string) => key,
+        get: () => of('Dossiergroep niet beschikbaar'),
+      } as any,
       {initParams: () => {}} as any
     );
   });
@@ -148,9 +155,37 @@ describe('CaseListOrchestrationService', () => {
     service.schema$.subscribe();
 
     expect(pageTitleService.setCustomPageTitle).toHaveBeenCalledWith(
-      'case.noResults.groupNotFound.title',
+      'Dossiergroep niet beschikbaar',
       true
     );
+  });
+
+  it('does not request columns, statuses, hidden columns or search for an unknown group', () => {
+    documentService.getCaseDefinitionGroup.and.returnValue(
+      throwError(() => new HttpErrorResponse({status: 404}))
+    );
+    listService.setContext(groupContext);
+
+    service.schema$.subscribe();
+    service.fields$.subscribe();
+    service.hiddenColumns$.subscribe();
+    service.groupNotFound$.subscribe();
+
+    expect(columnService.getColumnsForContext).not.toHaveBeenCalled();
+    expect(hiddenColumnsService.getHiddenColumns).not.toHaveBeenCalled();
+    expect(documentService.searchGroupCases).not.toHaveBeenCalled();
+    expect(documentService.getCaseDefinitionGroup).toHaveBeenCalledTimes(1);
+  });
+
+  it('requests the columns and hidden columns once for a known group', () => {
+    listService.setContext(groupContext);
+
+    service.schema$.subscribe();
+    service.fields$.subscribe();
+
+    expect(columnService.getColumnsForContext).toHaveBeenCalledTimes(1);
+    expect(hiddenColumnsService.getHiddenColumns).toHaveBeenCalledTimes(1);
+    expect(documentService.getCaseDefinitionGroup).toHaveBeenCalledTimes(1);
   });
 
   const searchGroup = (sort: any): any => {
@@ -185,7 +220,7 @@ describe('CaseListOrchestrationService', () => {
     listService.setContext(groupContext);
     let notFound = false;
     let failed = false;
-    service.groupNotFound$.subscribe(value => (notFound = value));
+    service.groupNotFound$.subscribe({next: value => (notFound = value), error: () => {}});
 
     service.schema$.subscribe({error: () => (failed = true)});
 

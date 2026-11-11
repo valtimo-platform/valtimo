@@ -43,6 +43,18 @@
           obs.selectedColor | uppercase
         }}</span>
       </div>
+
+      <cds-icon-button
+        *ngIf="!isReadOnly"
+        align="right"
+        kind="ghost"
+        size="sm"
+        [description]="'caseManagement.color.clear' | translate"
+        (click)="onClear()"
+        [attr.data-test-id]="testIds.clearButton"
+      >
+        <svg cdsIcon="trash-can" size="16"></svg>
+      </cds-icon-button>
     </div>
 
     <div class="case-management-color__swatches">
@@ -77,6 +89,7 @@
         [config]="colorPickerConfig"
         [ngModel]="obs.selectedColor"
         [disabled]="isReadOnly"
+        (clearEvent)="onClear()"
         (colorChangeEvent)="onColorChange($event, obs.selectedColor)"
         [attr.data-test-id]="testIds.customPicker"
       ></valtimo-color-picker>

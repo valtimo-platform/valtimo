@@ -23,6 +23,7 @@ import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.client.ObjectenApiClient
 import com.ritense.objectenapi.client.ObjectsList
+import com.ritense.objectenapi.exception.ObjectUrlNotAllowedException
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
@@ -61,7 +62,7 @@ class ObjectenApiPlugin(
     )
     fun deleteObject(@PluginActionProperty objectUrl: URI): HttpStatus {
         withLoggingContext("objectUrl" to objectUrl.toString()) {
-            if (!objectUrl.toASCIIString().startsWith(url.toASCIIString())) {
+            if (!belongsToObjectenApi(objectUrl)) {
                 throw IllegalStateException("Failed to delete object with url '$objectUrl'. Object isn't part of Objecten API with url '$url'.")
             }
 
@@ -72,6 +73,7 @@ class ObjectenApiPlugin(
     }
 
     fun getObject(objectUrl: URI): ObjectWrapper {
+        requireObjectUrlBelongsToObjectenApi(objectUrl)
         withLoggingContext("objectUrl" to objectUrl.toString()) {
             logger.debug { "Getting Objecten API object with url '$objectUrl'" }
             return objectenApiClient.getObject(authenticationPluginConfiguration, objectUrl)
@@ -79,6 +81,7 @@ class ObjectenApiPlugin(
     }
 
     fun getObjectRecord(objectUrl: URI, index: Int): ObjectRecord {
+        requireObjectUrlBelongsToObjectenApi(objectUrl)
         withLoggingContext("objectUrl" to objectUrl.toString()) {
             logger.debug { "Getting Objecten API object with url '$objectUrl' and index '$index'" }
             return objectenApiClient.getObjectRecord(authenticationPluginConfiguration, objectUrl, index)
@@ -123,11 +126,13 @@ class ObjectenApiPlugin(
     }
 
     fun objectUpdate(objectUrl: URI, objectRequest: ObjectRequest): ObjectWrapper {
+        requireObjectUrlBelongsToObjectenApi(objectUrl)
         logger.info { "Updating Objecten API object with url '$objectUrl'" }
         return objectenApiClient.objectUpdate(authenticationPluginConfiguration, objectUrl, objectRequest)
     }
 
     fun objectPatch(objectUrl: URI, objectRequest: ObjectRequest): ObjectWrapper {
+        requireObjectUrlBelongsToObjectenApi(objectUrl)
         logger.info { "Patching Objecten API object with url '$objectUrl'" }
         return objectenApiClient.objectPatch(authenticationPluginConfiguration, objectUrl, objectRequest)
     }
@@ -146,13 +151,47 @@ class ObjectenApiPlugin(
             .toUri()
     }
 
+    fun belongsToObjectenApi(objectUrl: URI): Boolean = isUrlOfObjectenApi(url, objectUrl)
+
+    private fun requireObjectUrlBelongsToObjectenApi(objectUrl: URI) {
+        if (!belongsToObjectenApi(objectUrl)) {
+            throw ObjectUrlNotAllowedException("Object url '$objectUrl' does not belong to Objecten API with url '$url'")
+        }
+    }
+
     companion object {
         private val logger = KotlinLogging.logger {}
 
         const val URL_PROPERTY = "url"
 
         fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
-            url.toString().startsWith(properties[URL_PROPERTY].textValue())
+            val baseUrl = properties[URL_PROPERTY]?.textValue()
+                ?.let { runCatching { URI(it) }.getOrNull() }
+            baseUrl != null && isUrlOfObjectenApi(baseUrl, url)
+        }
+
+        fun isUrlOfObjectenApi(baseUrl: URI, objectUrl: URI): Boolean {
+            if (baseUrl.isOpaque || objectUrl.isOpaque) return false
+            if (baseUrl.scheme == null || baseUrl.host == null || objectUrl.scheme == null || objectUrl.host == null) {
+                return false
+            }
+            if (!baseUrl.scheme.equals(objectUrl.scheme, ignoreCase = true)) return false
+            if (!baseUrl.host.equals(objectUrl.host, ignoreCase = true)) return false
+            if (effectivePort(baseUrl) != effectivePort(objectUrl)) return false
+            if (objectUrl.rawUserInfo != null && objectUrl.rawUserInfo != baseUrl.rawUserInfo) return false
+
+            val objectPath = objectUrl.path.orEmpty()
+            if (objectPath.split('/').any { it == ".." }) return false
+            val normalizedPath = objectUrl.normalize().path.orEmpty()
+            val basePath = baseUrl.normalize().path.orEmpty().trimEnd('/')
+            return normalizedPath == basePath || normalizedPath.startsWith("$basePath/")
+        }
+
+        private fun effectivePort(uri: URI): Int = when {
+            uri.port != -1 -> uri.port
+            uri.scheme.equals("https", ignoreCase = true) -> 443
+            uri.scheme.equals("http", ignoreCase = true) -> 80
+            else -> -1
         }
     }
 }
