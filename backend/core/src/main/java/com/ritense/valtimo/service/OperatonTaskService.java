@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -375,8 +375,9 @@ public class OperatonTaskService {
     @Transactional
     public void completeTaskAndDeleteFiles(String taskId, TaskCompletionDTO taskCompletionDTO) {
         completeTaskWithFormData(taskId, taskCompletionDTO.getVariables());
-        optionalResourceService.ifPresent(
-            amazonS3Service -> taskCompletionDTO.getFilesToDelete().forEach(amazonS3Service::removeResource));
+        if (!taskCompletionDTO.getFilesToDelete().isEmpty()) {
+            logger.warn("Ignoring filesToDelete on completion of task {}: this property is deprecated", taskId);
+        }
     }
 
     @Transactional(readOnly = true)
