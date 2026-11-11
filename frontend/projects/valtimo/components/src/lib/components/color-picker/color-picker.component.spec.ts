@@ -64,6 +64,13 @@ describe('ColorPickerComponent', () => {
     expect(buttonColor()).toBe('rgba(255, 0, 0, 1)');
   });
 
+  it('resets the picker button to the default color when an empty value is written', () => {
+    component.writeValue('#ff0000');
+    component.writeValue('');
+
+    expect(buttonColor()).toBe('rgba(0, 0, 0, 1)');
+  });
+
   it('does not emit a color change for a color written from outside', () => {
     const emitted: string[] = [];
     component.colorChangeEvent.subscribe(color => emitted.push(color));

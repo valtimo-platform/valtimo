@@ -2912,12 +2912,15 @@
     outline-offset: -2px;
     background-color: var(--cds-field);
     border-block-end: 1px solid transparent;
-    color: var(--cds-text-disabled, rgba(22, 22, 22, 0.25));
+    color: var(--cds-text-primary, #161616);
     cursor: not-allowed;
-    -webkit-text-fill-color: var(--cds-text-disabled, rgba(22, 22, 22, 0.25));
+    -webkit-text-fill-color: var(--cds-text-primary, #161616);
   }
+  // Form.io has no read-only state, only disabled: use Carbon's read-only look
   .form-control[disabled],
   fieldset[disabled] .form-control {
+    background-color: transparent !important;
+    border-block-end: 1px solid var(--cds-border-subtle) !important;
     cursor: not-allowed;
   }
   textarea.form-control {
