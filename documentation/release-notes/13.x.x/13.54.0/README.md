@@ -32,7 +32,6 @@ show their color too.
 
 | Area | Fix |
 |------|-----|
-| Access control | Exporting a role now includes the context (resource type and conditions) configured on its permissions. |
 | Case definitions | Saving case settings no longer replaces the external start form description with the start form URL. |
 | Case groups | Opening a case group that doesn't exist no longer loads the list columns, search fields and statuses of that group. |
 | Case management | Actions hidden from the start menu stay hidden after creating a new version of the case type or changing the building block version of the action. |
