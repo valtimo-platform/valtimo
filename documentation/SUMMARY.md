@@ -87,6 +87,7 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
+  * [13.55.0](release-notes/13.x.x/13.55.0/README.md)
   * [13.54.0](release-notes/13.x.x/13.54.0/README.md)
   * [13.53.0](release-notes/13.x.x/13.53.0/README.md)
   * [13.52.0](release-notes/13.x.x/13.52.0/README.md)

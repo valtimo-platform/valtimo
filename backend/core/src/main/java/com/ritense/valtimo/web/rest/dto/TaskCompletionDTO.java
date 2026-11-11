@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.UUID;
 public class TaskCompletionDTO {
 
     private Map<String, Object> variables;
+    @Deprecated
     private List<UUID> filesToDelete = new ArrayList<>();
 
     public TaskCompletionDTO() {
@@ -34,6 +35,10 @@ public class TaskCompletionDTO {
         return variables;
     }
 
+    /**
+     * @deprecated Ignored. Files are removed through the case document resource endpoints.
+     */
+    @Deprecated
     public List<UUID> getFilesToDelete() {
         return filesToDelete;
     }

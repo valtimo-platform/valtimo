@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,18 @@
 
 package com.ritense.resource.autoconfigure
 
+import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.DocumentService
 import com.ritense.resource.domain.listener.ResourceRemovedEventListener
 import com.ritense.resource.domain.listener.TemporaryResourceSubmittedToS3EventListener
 import com.ritense.resource.repository.S3ResourceRepository
+import com.ritense.resource.repository.S3UploadTicketRepository
+import com.ritense.resource.service.S3ResourceAccessService
 import com.ritense.resource.service.ResourceService
 import com.ritense.resource.service.S3Service
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.resource.web.rest.S3Resource
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -97,21 +101,38 @@ class S3ResourceAutoConfiguration {
         @Value("\${aws.s3.bucketName}") bucketName: String,
         s3Client: S3Client,
         s3Presigner: S3Presigner,
-        s3ResourceRepository: S3ResourceRepository
+        s3ResourceRepository: S3ResourceRepository,
+        s3UploadTicketRepository: S3UploadTicketRepository,
+        s3ResourceAccessService: ObjectProvider<S3ResourceAccessService>
     ): S3Service {
         return S3Service(
             bucketName,
             s3Client,
             s3Presigner,
-            s3ResourceRepository
+            s3ResourceRepository,
+            s3UploadTicketRepository,
+            s3ResourceAccessService
         )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(S3ResourceAccessService::class)
+    fun s3ResourceAccessService(
+        s3ResourceRepository: S3ResourceRepository,
+        documentService: DocumentService,
+        authorizationService: AuthorizationService
+    ): S3ResourceAccessService {
+        return S3ResourceAccessService(s3ResourceRepository, documentService, authorizationService)
     }
 
     @Bean
     @ConditionalOnMissingBean(S3Resource::class)
     @ConditionalOnProperty(prefix = "aws.s3", name = ["bucketRegion"])
-    fun resourceResource(s3Service: S3Service): S3Resource {
-        return S3Resource(s3Service)
+    fun resourceResource(
+        s3Service: S3Service,
+        s3ResourceAccessService: S3ResourceAccessService
+    ): S3Resource {
+        return S3Resource(s3Service, s3ResourceAccessService)
     }
 
     @Bean
