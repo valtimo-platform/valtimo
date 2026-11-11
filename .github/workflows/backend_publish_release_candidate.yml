@@ -10,11 +10,21 @@ on:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
         type: string
+      publish_to_maven_central:
+        description: "Publish to Maven Central (S3 is always published)"
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       project_version:
         description: "Base semantic version (e.g. 13.6.0)"
         required: true
+      publish_to_maven_central:
+        description: "Publish to Maven Central (S3 is always published)"
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build_run_tests:
@@ -23,7 +33,7 @@ jobs:
   publish:
     needs: [build_run_tests]
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref_name, 'rc/') }}
+    if: ${{ startsWith(github.ref_name, 'rc/') && inputs.publish_to_maven_central }}
     env:
       PROJECT_VERSION: ${{ inputs.project_version || github.event.inputs.project_version }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
