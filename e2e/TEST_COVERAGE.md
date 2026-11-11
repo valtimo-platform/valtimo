@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered | ⏳ In Progress | `N/A` |
 |-----------------------------|----------|-----------|------------|----------------|----------------|-------|
-| User Features (ROLE_USER)   | 5        | 35        | 29         | 4              | 1              | 1     |
-| Admin Features (ROLE_ADMIN) | 15       | 384       | 371        | 7              | 1              | 5     |
-| **Total**                   | **20**   | **419**   | **400**    | **11**         | **2**          | **6** |
+| User Features (ROLE_USER)   | 5        | 36        | 31         | 4              | 0              | 1     |
+| Admin Features (ROLE_ADMIN) | 15       | 388       | 375        | 7              | 1              | 5     |
+| **Total**                   | **20**   | **424**   | **406**    | **11**         | **1**          | **6** |
 
-**Coverage:** `400 / 419` — `95.5%`
+**Coverage:** `406 / 424` — `95.8%`
 
 > Counts are one per numbered row (lettered sub-rows such as `4.2a` count as their own row). Functions = ✅ + ❌ + ⏳ + `N/A`.
 
@@ -60,8 +60,9 @@
 | 2.12   | Group case list search and quick search  | Field mapped for one member · save/reopen/delete quick search · no matches |    ✅    | group-case-list.spec.ts                          |
 | 2.13   | Group case list navigation and settings  | Row opens case in its own definition · page size remembered per group  |    ✅    | group-case-list.spec.ts |
 | 2.14   | Group status filter across members       | Shared status offered once · deselecting hides cases                   |    ✅    | group-case-list.spec.ts                          |
-| 2.15   | Group case list edge cases               | Group without columns renders · failed search shows error, clears rows, next search still runs · unknown group returns 404 |    ⏳    | group-case-list.spec.ts — 404 fixme: needs BE fix |
+| 2.15   | Group case list edge cases               | Group without columns renders · failed search shows error, clears rows, next search still runs · unknown group shows 'Case group not available' and loads nothing else · not-found title translated in Dutch on a full page load |    ✅    | group-case-list.spec.ts — backend 404 for unknown group is not asserted (the frontend handles it) |
 | 2.16   | In-panel form persistence | Start form and task form in side panel survive tab switches (incl. task-hiding tabs) · closes via header button, confirming unsaved changes |    ✅    | user-cases.spec.ts |
+| 2.17   | Cases overview colors and menu           | Group tile color without pinning, grey fallback · sidebar dot updates without reload (case type, group) · direct load expands Cases · show-all mode shows dots on tiles, rows and menu items |    ✅    | cases-overview.spec.ts                           |
 
 ---
 
@@ -114,7 +115,7 @@
 | 6.3 | Set auto-assign tasks toggle   | Enable/disable auto-assign tasks to case handler |    ✅    | case-details-management.spec.ts                 |
 | 6.4 | Set external start form toggle | Enable/disable external start form               |    ✅    | case-details-management.spec.ts                 |
 | 6.5 | Enter external start form URL  | Configure external start form URL                |    ✅    | case-details-management.spec.ts                 |
-| 6.112 | Set case color                 | Swatch saves color · survives reload · read-only on final version |    ✅    | case-details-management.spec.ts                 |
+| 6.112 | Set case color                 | Swatch saves color · survives reload · read-only on final version · confirmation toast · Remove color clears it (PATCH color null, also after reload) · settings change without color keeps color |    ✅    | case-details-management.spec.ts                 |
 
 #### 6B · Processes
 
@@ -322,9 +323,11 @@
 | 6.114 | Create case group                        | Create from modal · suffixed key on duplicate title · empty / whitespace name · cancel |    ✅    | case-management-groups.spec.ts                   |
 | 6.115 | Group detail and edit                    | Row opens Config · root redirect · tabs · breadcrumb · edit title/description |    ✅    | case-management-groups.spec.ts                   |
 | 6.116 | Manage group members                     | Empty state · add two members · select hides members · search · remove |    ✅    | case-management-groups.spec.ts                   |
-| 6.117 | Set group color                          | Swatch saves color · survives reload · replace                         |    ✅    | case-management-groups.spec.ts                   |
+| 6.117 | Set group color                          | Swatch saves color · survives reload · replace · confirmation toast · Remove color clears it (PUT color null, also after reload) |    ✅    | case-management-groups.spec.ts                   |
 | 6.118 | Import / export case group (API)         | Export zip path · import restores · idempotent · invalid file 400      |    ✅    | case-management-groups.spec.ts (API only, no UI) |
 | 6.129 | Import / export case group (UI)          | Export downloads zip · import restores deleted group · Import disabled without file · overwrite confirm required · invalid file error |    ✅    | case-management-groups.spec.ts                   |
+| 6.130 | Delete case group                        | Cancel keeps group · pinned group removed from list, sidebar and pins + toast · failing delete keeps user on detail page |    ✅    | case-management-groups.spec.ts                   |
+| 6.131 | Group config Dutch labels                | Member table header and import modal use "Sleutel" |    ✅    | case-management-groups.spec.ts                   |
 
 #### 6U · Case Groups — List Columns
 
@@ -336,6 +339,7 @@
 | 6.122 | Per-case path filtering                  | Show only empty · search case types · no matches                       |    ✅    | case-management-group-list-columns.spec.ts       |
 | 6.123 | Inspect and edit list columns            | Expand paths · edit with read-only key · toolbar search                |    ✅    | case-management-group-list-columns.spec.ts       |
 | 6.124 | Reorder and delete list columns          | Drag saves order · delete without confirmation                         |    ✅    | case-management-group-list-columns.spec.ts       |
+| 6.132 | List column modal Dutch labels           | Key label "Sleutel" and placeholder "Voer een unieke sleutel in" |    ✅    | case-management-group-list-columns.spec.ts       |
 
 #### 6V · Case Groups — Search Fields
 
@@ -345,6 +349,7 @@
 | 6.126 | Add search field                         | Text/like + date range · required types · duplicate key · cancel       |    ✅    | case-management-group-search-fields.spec.ts      |
 | 6.127 | Search field conditional inputs          | Type options · match type only for single text · dropdown data provider |    ✅    | case-management-group-search-fields.spec.ts      |
 | 6.128 | Manage search fields                     | Expand paths · edit · search · drag · delete                           |    ✅    | case-management-group-search-fields.spec.ts      |
+| 6.133 | Search field Dutch labels and match type default | Key label "Sleutel" and placeholder · text field saved without a match type shows Exact |    ✅    | case-management-group-search-fields.spec.ts — "save disabled while match type is empty" is not tested: the match type dropdown cannot be cleared in the UI |
 
 ---
 
@@ -808,9 +813,9 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   419   |
-| ✅ Covered by Playwright |   400   |
+| Total Functions          |   424   |
+| ✅ Covered by Playwright |   406   |
 | ❌ Not covered           |   11    |
-| ⏳ In progress           |    2    |
+| ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    6    |
-| **Coverage %**           | **95.5%** |
+| **Coverage %**           | **95.8%** |

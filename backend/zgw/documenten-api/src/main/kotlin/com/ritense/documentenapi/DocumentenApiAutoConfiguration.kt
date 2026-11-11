@@ -42,6 +42,7 @@ import com.ritense.documentenapi.service.DocumentDeleteHandler
 import com.ritense.documentenapi.service.DocumentenApiColumnDeploymentService
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
+import com.ritense.documentenapi.service.InformatieObjectCaseResolver
 import com.ritense.documentenapi.web.rest.DocumentenApiManagementResource
 import com.ritense.documentenapi.web.rest.DocumentenApiResource
 import com.ritense.outbox.OutboxService
@@ -161,6 +162,7 @@ class DocumentenApiAutoConfiguration {
         documentDefinitionService: JsonSchemaDocumentDefinitionService,
         documentenApiVersionService: DocumentenApiVersionService,
         valueResolverService: ValueResolverService,
+        informatieObjectCaseResolvers: List<InformatieObjectCaseResolver>,
     ): DocumentenApiService {
         return DocumentenApiService(
             pluginService,
@@ -171,7 +173,8 @@ class DocumentenApiAutoConfiguration {
             valtimoDocumentService,
             documentDefinitionService,
             documentenApiVersionService,
-            valueResolverService
+            valueResolverService,
+            informatieObjectCaseResolvers,
         )
     }
 
