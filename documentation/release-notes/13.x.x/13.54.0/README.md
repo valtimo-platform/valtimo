@@ -44,6 +44,7 @@ New enhancement explanation.
 | High | Files can no longer be opened through the old form file link without logging in. Logged-in users get the same access rules as for other case files, and files can no longer be deleted through this link. This link is deprecated and will be removed in the next major version. |
 | Medium | Completing a task can no longer delete files. |
 | Low | Details stored with an uploaded file can no longer be read by other users, apart from the link needed to download it. The person who uploads a file is now always recorded correctly. |
+| Low | Submitting a task form for a case that the task does not belong to is now rejected before any uploaded files in it are processed. Before, these files could already be stored before the submission was rejected. |
 
 {% hint style="warning" %}
 After upgrading:

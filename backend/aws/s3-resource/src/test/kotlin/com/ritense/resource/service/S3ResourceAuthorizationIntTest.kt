@@ -192,6 +192,21 @@ class S3ResourceAuthorizationIntTest : BaseIntegrationTest() {
         assertThat(s3ResourceRepository.findById(resource.resourceId).get().documentId).isEqualTo(documentId)
     }
 
+    @Test
+    fun `another user can claim a resource for the document its uploader already claimed it for`() {
+        val resource = save(createdBy = "userA")
+        val documentId = UUID.randomUUID()
+
+        withUser("userA") {
+            s3Service.claimForDocument(resource.id(), documentId)
+        }
+        withUser("userB") {
+            s3Service.claimForDocument(resource.id(), documentId)
+            assertThrows<AccessDeniedException> { s3Service.claimForDocument(resource.id(), UUID.randomUUID()) }
+        }
+        assertThat(s3ResourceRepository.findById(resource.resourceId).get().documentId).isEqualTo(documentId)
+    }
+
     private fun withUser(username: String, vararg roles: String, block: () -> Unit) {
         val context = org.springframework.security.core.context.SecurityContextHolder.createEmptyContext()
         context.authentication = org.springframework.security.authentication.TestingAuthenticationToken(
