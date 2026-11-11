@@ -24,6 +24,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.Table
+import org.hibernate.annotations.BatchSize
 import com.ritense.valtimo.contract.authentication.Team as TeamInterface
 
 @Entity
@@ -37,6 +38,7 @@ data class Team(
     override var title: String,
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @BatchSize(size = 100)
     @CollectionTable(name = "team_user", joinColumns = [JoinColumn(name = "team_key")])
     @Column(name = "username")
     var users: List<String> = emptyList()
