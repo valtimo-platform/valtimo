@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ interface S3ResourceRepository : JpaRepository<S3Resource, ResourceId> {
     @Query(" SELECT  s3Resource " +
         "    FROM    S3Resource s3Resource " +
         "    WHERE   s3Resource.key = :key ")
-    fun findByKey(@Param("key") key: String): S3Resource
+    fun findByKey(@Param("key") key: String): S3Resource?
 
     //TODO omzetten naar Id ipv key
 }

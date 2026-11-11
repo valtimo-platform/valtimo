@@ -187,6 +187,27 @@ export class CaseDetailsManagementPage {
     });
   }
 
+  async clearCaseColorViaApi(version?: {key: string; versionTag: string}): Promise<void> {
+    const {key, versionTag} = version ?? this.caseDefinitionFromUrl();
+    await apiPatch(`/api/management/v1/case-definition/${key}/version/${versionTag}/settings`, {
+      color: null,
+    });
+  }
+
+  /** Clicks "Remove color" and returns the body of the settings PATCH it triggers. */
+  async clearCaseColor(): Promise<Record<string, unknown>> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.request().method() === 'PATCH' &&
+          /\/case-definition\/[^/]+\/version\/[^/]+\/settings$/.test(new URL(res.url()).pathname)
+      ),
+      this.colorPanel.clearButton.click(),
+    ]);
+    expect(response.ok()).toBeTruthy();
+    return response.request().postDataJSON();
+  }
+
   /** Clicks a swatch and returns the body of the settings PATCH it triggers. */
   async pickCaseColor(hex: string): Promise<Record<string, unknown>> {
     const [response] = await Promise.all([

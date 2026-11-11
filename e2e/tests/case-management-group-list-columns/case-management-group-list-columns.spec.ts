@@ -25,6 +25,7 @@ import {
   putListColumnsViaApi,
   uniqueGroupTitle,
 } from '../../utils/case-group.utils';
+import {pinLanguage} from '../../utils/settings';
 import {COLUMN_CELL, GroupListColumnsPage} from './page';
 import {DOC_PATHS, MEMBER_KEYS} from './list-columns-config';
 
@@ -384,6 +385,30 @@ test.describe('Case group — List columns', () => {
       expect((sent as SavedColumn[]).map(column => column.key)).toEqual(['created-on']);
       await expect(columnsPage.list.row('name')).toHaveCount(0);
       expect((await savedColumns()).map(column => column.key)).toEqual(['created-on']);
+    });
+  });
+
+  // ─── 6.132 Dutch labels ─────────────────────────────────────────
+
+  test.describe('6.132 — Dutch "Sleutel" labels', () => {
+    test('the add modal labels the key "Sleutel" with a Dutch placeholder', async () => {
+      await pinLanguage(page, 'nl');
+      try {
+        await columnsPage.goTo();
+        await columnsPage.openAddModal();
+
+        await expect(columnsPage.modal.modal.getByText('Sleutel', {exact: true})).toBeVisible();
+        await columnsPage.modal.keyEditButton.click();
+        await expect(columnsPage.modal.keyInput).toHaveAttribute(
+          'placeholder',
+          'Voer een unieke sleutel in'
+        );
+
+        await columnsPage.modal.cancelButton.click();
+        await expect(columnsPage.modal.modal).toBeHidden();
+      } finally {
+        await pinLanguage(page, 'en');
+      }
     });
   });
 });

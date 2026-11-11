@@ -29,12 +29,14 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.domain.ZaakResponse
+import com.ritense.zakenapi.exception.InformatieObjectNotRelatedToCaseException
 import com.ritense.zgw.Rsin
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -195,6 +197,24 @@ class ZaakDocumentResourceTest : BaseIntegrationTest() {
             ).andExpect(MockMvcResultMatchers.status().isForbidden)
         }
         verify(zaakDocumentService, never()).getZaakByCaseDocumentId(any())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_TEST"])
+    fun `should return 400 when downloading a document not related to the zaak`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID().toString()
+        doThrow(InformatieObjectNotRelatedToCaseException("InformatieObject is not related to this Zaak"))
+            .whenever(zaakDocumentService).getInformatieObject(pluginConfigurationId, caseDocumentId, "document-id")
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get(
+                "/api/v1/zaken-api/{pluginConfigurationId}/case-document/{caseDocumentId}/files/{documentId}/download",
+                pluginConfigurationId,
+                caseDocumentId,
+                "document-id"
+            )
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
     @Test

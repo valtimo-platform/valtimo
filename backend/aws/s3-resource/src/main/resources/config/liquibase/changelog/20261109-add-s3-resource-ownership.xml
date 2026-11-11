@@ -1,0 +1,74 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="Ritense" id="s3-resource-ownership-columns">
+        <addColumn tableName="s3_resource">
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="document_id" type="${uuidType}"/>
+        </addColumn>
+        <createIndex tableName="s3_resource" indexName="s3_resource_document_id_index">
+            <column name="document_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Ritense" id="s3-resource-ownership-backfill-postgresql" dbms="postgresql">
+        <sql>
+            UPDATE s3_resource r
+            SET document_id = d.json_schema_document_id
+            FROM json_schema_document d, json_array_elements(d.related_files) f
+            WHERE (f->>'fileId')::uuid = r.id
+              AND r.document_id IS NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="s3-resource-ownership-backfill-mysql" dbms="mysql">
+        <sql>
+            UPDATE s3_resource r
+            JOIN (
+                SELECT d.json_schema_document_id AS doc_id, jt.file_id AS file_id
+                FROM json_schema_document d,
+                     JSON_TABLE(d.related_files, '$[*]' COLUMNS(file_id VARCHAR(36) PATH '$.fileId')) jt
+            ) x ON UUID_TO_BIN(x.file_id) = r.id
+            SET r.document_id = x.doc_id
+            WHERE r.document_id IS NULL
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="s3-upload-ticket-table">
+        <createTable tableName="s3_upload_ticket">
+            <column name="key_hash" type="VARCHAR(64)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="s3_upload_ticketPK"/>
+            </column>
+            <column name="s3_key" type="VARCHAR(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_on" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="s3_upload_ticket" indexName="s3_upload_ticket_created_on_index">
+            <column name="created_on"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
