@@ -29,7 +29,10 @@ import {
 import {
   AccentColorsDto,
   FeatureToggleOverridesDto,
+  IndexRejectionDto,
   ReindexStatusDto,
+  RetryAllRejectionsResultDto,
+  RetryRejectionsResultDto,
   SearchEngineDto,
   StartReindexRequestDto,
   StartReindexResponseDto,
@@ -147,5 +150,29 @@ export class AdminSettingsManagementApiService extends BaseApiService {
     return this.httpClient
       .get<TopologyStatusDto>(this.getApiUrl('/management/v1/document-opensearch/topology'))
       .pipe(catchError(() => of(null)));
+  }
+
+  public getIndexRejections(page: number, size: number): Observable<Page<IndexRejectionDto>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.httpClient.get<Page<IndexRejectionDto>>(
+      this.getApiUrl('/management/v1/document-opensearch/rejections'),
+      {params}
+    );
+  }
+
+  public retryIndexRejections(documentIds: string[]): Observable<RetryRejectionsResultDto> {
+    return this.httpClient.post<RetryRejectionsResultDto>(
+      this.getApiUrl('/management/v1/document-opensearch/rejections/retry'),
+      {documentIds},
+      {headers: new HttpHeaders().set(InterceptorSkip, '400,409')}
+    );
+  }
+
+  public retryAllIndexRejections(): Observable<RetryAllRejectionsResultDto> {
+    return this.httpClient.post<RetryAllRejectionsResultDto>(
+      this.getApiUrl('/management/v1/document-opensearch/rejections/retry'),
+      {},
+      {headers: new HttpHeaders().set(InterceptorSkip, '400,409')}
+    );
   }
 }

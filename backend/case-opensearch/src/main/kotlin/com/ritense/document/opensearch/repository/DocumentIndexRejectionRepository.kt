@@ -19,6 +19,7 @@ package com.ritense.document.opensearch.repository
 import com.ritense.document.opensearch.domain.DocumentIndexRejection
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 import java.util.UUID
@@ -27,6 +28,10 @@ interface DocumentIndexRejectionRepository : JpaRepository<DocumentIndexRejectio
 
     @Query("SELECT DISTINCT r.definitionName FROM DocumentIndexRejection r")
     fun findDistinctDefinitionNames(): List<String>
+
+    @Modifying
+    @Query("UPDATE DocumentIndexRejection r SET r.nextRetryOn = :now")
+    fun retryAllAt(now: LocalDateTime): Int
 
     fun findByNextRetryOnLessThanEqualOrderByNextRetryOnAsc(now: LocalDateTime, pageable: Pageable): List<DocumentIndexRejection>
 }

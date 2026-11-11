@@ -24,7 +24,10 @@ import com.ritense.document.opensearch.repository.OpenSearchReconcileStateReposi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Propagation
@@ -32,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 /**
@@ -97,6 +101,18 @@ open class IndexCompletenessService(
 
     @Transactional(readOnly = true)
     open fun rejectedCount(): Long = rejectionRepository.count()
+
+    @Transactional(readOnly = true)
+    open fun rejections(pageable: Pageable): Page<DocumentIndexRejection> =
+        rejectionRepository.findAll(PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("firstRejectedOn", "documentId")))
+
+    @Transactional(readOnly = true)
+    open fun stillRejected(documentIds: Collection<UUID>): Set<UUID> =
+        rejectionRepository.findAllById(documentIds).map { it.documentId }.toSet()
+
+    /** Makes every rejected case due, so the next reconcile cycle retries them in batches. */
+    // Whole seconds: MySQL rounds DATETIME fractions up, which would leave the rows just short of due.
+    open fun retryAllNextCycle(): Int = rejectionRepository.retryAllAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
 
     @Transactional(readOnly = true)
     open fun dueForRetry(limit: Int): List<UUID> =

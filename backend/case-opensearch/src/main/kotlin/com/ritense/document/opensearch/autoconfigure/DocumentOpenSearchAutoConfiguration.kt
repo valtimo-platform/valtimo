@@ -52,6 +52,7 @@ import com.ritense.document.opensearch.service.ReindexProgressGate
 import com.ritense.document.opensearch.service.TopologyGate
 import com.ritense.document.opensearch.service.OpenSearchHealthService
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import com.ritense.document.opensearch.web.DocumentOpenSearchRejectionResource
 import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
 import com.ritense.document.opensearch.web.SearchEngineResource
 import com.ritense.document.repository.InternalCaseStatusRepository
@@ -67,6 +68,7 @@ import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import jakarta.persistence.EntityManager
 import net.javacrumbs.shedlock.core.LockProvider
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
@@ -352,6 +354,15 @@ class DocumentOpenSearchAutoConfiguration {
         topologyGate: TopologyGate,
     ): DocumentOpenSearchReindexResource =
         DocumentOpenSearchReindexResource(reindexService, topologyGate)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchRejectionResource(
+        indexCompletenessService: IndexCompletenessService,
+        reconcileService: ObjectProvider<DocumentOpenSearchReconcileService>,
+        searchEngineToggle: SearchEngineToggle,
+    ): DocumentOpenSearchRejectionResource =
+        DocumentOpenSearchRejectionResource(indexCompletenessService, reconcileService, searchEngineToggle)
 
     @Bean
     @ConditionalOnMissingBean

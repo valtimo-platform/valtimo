@@ -4570,6 +4570,34 @@
         "catchingUpMessage": "OpenSearch indexeert bestaande dossiers op de achtergrond. Tot dit is voltooid, gebruikt zoeken de database (PostgreSQL). Je hoeft niets te doen.",
         "rejectedDefinitionsTitle": "Sommige dossiers worden in de database doorzocht",
         "rejectedDefinitionsMessage": "OpenSearch kon een aantal dossiers van deze dossierdefinities niet indexeren: {{definitions}}. De dossierlijsten hiervan gebruiken in de tussentijd de database (PostgreSQL)."
+      },
+      "rejections": {
+        "title": "Geweigerde dossiers",
+        "description": "OpenSearch kon deze dossiers niet indexeren. Tot ze geïndexeerd zijn, gebruiken de dossierlijsten van hun dossierdefinities de database (PostgreSQL). OpenSearch probeert ze automatisch opnieuw met oplopende tussenpozen: na 10 minuten, daarna elk uur, daarna dagelijks. De oorzaak staat in het applicatielog.",
+        "columns": {
+          "definitionName": "Dossierdefinitie",
+          "documentId": "Dossier",
+          "attempts": "Pogingen",
+          "firstRejectedOn": "Geweigerd sinds",
+          "lastRejectedOn": "Laatste poging",
+          "nextRetryOn": "Volgende poging"
+        },
+        "noResults": {
+          "title": "Geen geweigerde dossiers",
+          "description": "OpenSearch heeft alle dossiers geïndexeerd."
+        },
+        "retryNow": "Nu opnieuw proberen",
+        "retryAll": "Alles opnieuw proberen",
+        "retryAllModal": {
+          "title": "Alle geweigerde dossiers opnieuw proberen",
+          "content": "OpenSearch probeert alle geweigerde dossiers binnen enkele minuten op de achtergrond opnieuw. Wil je doorgaan?",
+          "confirm": "Alles opnieuw proberen"
+        },
+        "indexed": "Dossier geïndexeerd",
+        "stillRejected": "Nog steeds geweigerd; zie het applicatielog",
+        "deleted": "Dossier bestaat niet meer",
+        "scheduled": "{{count}} dossier(s) ingepland voor een nieuwe poging",
+        "retryFailed": "Opnieuw proberen mislukt"
       }
     }
   },

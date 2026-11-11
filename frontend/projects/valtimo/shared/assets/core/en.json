@@ -4570,6 +4570,34 @@
         "catchingUpMessage": "OpenSearch is indexing existing cases in the background. Until this completes, search uses the database (PostgreSQL). No action is needed.",
         "rejectedDefinitionsTitle": "Some cases are searched in the database",
         "rejectedDefinitionsMessage": "OpenSearch could not index some cases of these case definitions: {{definitions}}. Their case lists use the database (PostgreSQL) in the meantime."
+      },
+      "rejections": {
+        "title": "Rejected cases",
+        "description": "OpenSearch could not index these cases. Until they are indexed, the case lists of their case types use the database (PostgreSQL). OpenSearch retries them automatically at growing intervals: after 10 minutes, then hourly, then daily. The reason is in the application log.",
+        "columns": {
+          "definitionName": "Case type",
+          "documentId": "Case",
+          "attempts": "Attempts",
+          "firstRejectedOn": "Rejected since",
+          "lastRejectedOn": "Last attempt",
+          "nextRetryOn": "Next retry"
+        },
+        "noResults": {
+          "title": "No rejected cases",
+          "description": "OpenSearch has indexed every case."
+        },
+        "retryNow": "Retry now",
+        "retryAll": "Retry all",
+        "retryAllModal": {
+          "title": "Retry all rejected cases",
+          "content": "OpenSearch will retry every rejected case in the background within a few minutes. Do you want to continue?",
+          "confirm": "Retry all"
+        },
+        "indexed": "Case indexed",
+        "stillRejected": "Still rejected; see the application log",
+        "deleted": "Case no longer exists",
+        "scheduled": "Scheduled {{count}} case(s) for retry",
+        "retryFailed": "Retry failed"
       }
     }
   },

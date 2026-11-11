@@ -29,7 +29,7 @@
   // browser to scale them to fill the row exactly and collapse that phantom
   // column to zero — so the four data columns fill the full width in equal
   // quarters that the expanded grid (repeat(4, 1fr)) mirrors precisely.
-  ::ng-deep .cds--data-table {
+  &__runs ::ng-deep .cds--data-table {
     table-layout: fixed;
 
     th.cds--table-expand {
@@ -43,7 +43,7 @@
 
   // Align the expanded detail cell so its content starts at the status column
   // (3.5rem = expand-column width) and spans the full remaining table width.
-  ::ng-deep tr[data-child-row] > td {
+  &__runs ::ng-deep tr[data-child-row] > td {
     padding-inline: 3.5rem 0;
   }
 
@@ -163,5 +163,24 @@
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+.opensearch-rejections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-03);
+
+  &__title {
+    font-size: var(--cds-heading-03-font-size);
+    font-weight: var(--cds-heading-03-font-weight);
+    line-height: var(--cds-heading-03-line-height);
+    color: var(--cds-text-primary);
+  }
+
+  &__description {
+    font-size: var(--cds-body-01-font-size);
+    line-height: var(--cds-body-01-line-height);
+    color: var(--cds-text-secondary);
   }
 }

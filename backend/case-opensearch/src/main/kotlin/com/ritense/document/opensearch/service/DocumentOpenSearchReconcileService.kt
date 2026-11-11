@@ -178,16 +178,30 @@ open class DocumentOpenSearchReconcileService(
     private fun retryDueRejections() {
         val ids = completeness.dueForRetry(properties.reconcile.pageSize)
         if (ids.isEmpty()) return
+        val result = retry(ids)
+        logger.debug { "Retried ${ids.size} rejected document(s); ${result.stillRejected.size} still rejected" }
+    }
+
+    /** Re-sends rejected cases right away. A case that no longer exists is forgotten. */
+    open fun retry(ids: Collection<UUID>): RetryResult {
+        val documentIds = ids.toSet()
+        var deleted = emptySet<UUID>()
         val osDocuments = TransactionTemplate(transactionManager).apply { isReadOnly = true }.execute {
             val documents = entityManager.createQuery(
                 "SELECT d FROM JsonSchemaDocument d LEFT JOIN FETCH d.internalStatus WHERE d.id.id IN :ids",
                 JsonSchemaDocument::class.java,
-            ).setParameter("ids", ids).resultList
-            completeness.clearRejected(ids - documents.map { it.id().id }.toSet())
+            ).setParameter("ids", documentIds).resultList
+            deleted = documentIds - documents.map { it.id().id }.toSet()
+            completeness.clearRejected(deleted)
             documents.mapNotNull { converter.convertOrReject(it) }.also { entityManager.clear() }
         }.orEmpty()
-        val stillRejected = osDocuments.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).sumOf { converter.indexChunk(it) }
-        logger.debug { "Retried ${ids.size} rejected document(s); $stillRejected still rejected" }
+        osDocuments.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).forEach { converter.indexChunk(it) }
+        val stillRejected = completeness.stillRejected(documentIds - deleted)
+        return RetryResult(
+            indexed = (documentIds - deleted - stillRejected).toList(),
+            stillRejected = stillRejected.toList(),
+            deleted = deleted.toList(),
+        )
     }
 
     /**
@@ -247,6 +261,12 @@ open class DocumentOpenSearchReconcileService(
         lastPruneAtMillis = now
         indexInitializer.pruneEmptyVersionIndices()
     }
+
+    data class RetryResult(
+        val indexed: List<UUID>,
+        val stillRejected: List<UUID>,
+        val deleted: List<UUID>,
+    )
 
     private data class ReconcilePage(
         val osDocuments: List<JsonSchemaDocumentOsDocument>,

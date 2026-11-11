@@ -63,10 +63,32 @@ interface TopologyStatusDto {
   rejectedDefinitions?: string[];
 }
 
+interface IndexRejectionDto {
+  documentId: string;
+  definitionName: string;
+  attempts: number;
+  firstRejectedOn: string;
+  lastRejectedOn: string;
+  nextRetryOn: string;
+}
+
+interface RetryRejectionsResultDto {
+  indexed: string[];
+  stillRejected: string[];
+  deleted: string[];
+}
+
+interface RetryAllRejectionsResultDto {
+  scheduled: number;
+}
+
 export {
+  IndexRejectionDto,
   ReindexStatus,
   ReindexScope,
   ReindexStatusDto,
+  RetryAllRejectionsResultDto,
+  RetryRejectionsResultDto,
   StartReindexRequestDto,
   StartReindexResponseDto,
   TopologyStatusDto,

@@ -21,6 +21,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.search.AdvancedSearchRequest
 import com.ritense.document.opensearch.BaseOpenSearchIntegrationTest
+import com.ritense.document.opensearch.domain.DocumentIndexRejection
 import com.ritense.document.opensearch.domain.OpenSearchReconcileState
 import com.ritense.document.opensearch.domain.ReindexRunStatus
 import com.ritense.document.opensearch.handler.PendingIndexDeletionListener
@@ -207,6 +208,40 @@ class DocumentOpenSearchLifecycleIntTest : BaseOpenSearchIntegrationTest() {
         assertThat(rejectionRepository.existsById(due.id().id)).`as`("due case forgotten").isFalse()
         assertThat(findIndexedById(notDue.id().id.toString())).`as`("case not due yet").isNull()
         assertThat(rejectionRepository.findById(notDue.id().id).orElseThrow().attempts).`as`("not retried").isEqualTo(1)
+    }
+
+    @Test
+    fun `retrying now indexes an existing case and forgets a deleted one`() {
+        val existing = createHouseDocument("retry-now")
+        val deleted = UUID.randomUUID()
+        openSearchRepository.deleteAll()
+        refreshIndex()
+        indexCompletenessService.recordRejected(mapOf(existing.id().id to "house", deleted to "house"))
+
+        val result = reconcileService.retry(listOf(existing.id().id, deleted))
+        refreshIndex()
+
+        assertThat(result.indexed).containsExactly(existing.id().id)
+        assertThat(result.deleted).containsExactly(deleted)
+        assertThat(result.stillRejected).isEmpty()
+        assertThat(findIndexedById(existing.id().id.toString())).isNotNull()
+        assertThat(rejectionRepository.count()).isZero()
+    }
+
+    @Test
+    fun `retry all makes every rejected case due and the list shows the oldest rejection first`() {
+        val older = UUID.randomUUID()
+        val newer = UUID.randomUUID()
+        val anHourAgo = LocalDateTime.now().minusHours(1)
+        rejectionRepository.save(DocumentIndexRejection(older, "house", firstRejectedOn = anHourAgo, nextRetryOn = anHourAgo.plusDays(1)))
+        indexCompletenessService.recordRejected(mapOf(newer to "person"))
+
+        val scheduled = indexCompletenessService.retryAllNextCycle()
+
+        assertThat(scheduled).isEqualTo(2)
+        assertThat(indexCompletenessService.dueForRetry(10)).containsExactlyInAnyOrder(older, newer)
+        assertThat(indexCompletenessService.rejections(PageRequest.of(0, 10)).content.map { it.documentId })
+            .containsExactly(older, newer)
     }
 
     @Test
