@@ -4,20 +4,32 @@ Release date: 18-11-2026
 
 ---
 
+## Enhancements
+
+### Rebuild the search index of one case type without downtime
+
+On *Admin > OpenSearch*, a re-index with **Rebuild / migrate index** now builds a fresh index and switches over in one step, so case lists keep working while it runs. Choose a case type to rebuild only its index, or none to rebuild all of them. A rebuild that could not index every case is not switched over, and the run tells you why.
+
+### See and retry cases that OpenSearch could not index
+
+*Admin > OpenSearch* now lists the cases that OpenSearch refused to index. For each case it shows the case type, how often indexing was tried and when it is tried next. Use **Retry now** after fixing the cause, or **Retry all** to retry every case on the next indexing round.
+
+### Enabling OpenSearch indexes existing cases automatically
+
+When you enable OpenSearch on an installation that already has cases, they are now indexed in the background. Case lists keep using the database until that is done, so you no longer have to start a re-index first.
+
+---
+
 ## Bugfixes
 
 | Area | Fix |
 |------|-----|
-| OpenSearch document search | Case lists that use OpenSearch no longer come back empty when two case types store differently-typed values on the same field; each case type is now indexed separately. |
-| OpenSearch document search | A full re-index no longer fails with `Limit of total fields [1000] has been exceeded` as the number of case types grows; each case type (and each of its schema versions) now has its own index, and the per-index field limit is configurable via `valtimo.opensearch.total-fields-limit` (default 5000). |
-| OpenSearch document search | Large unsearchable blobs (such as `openzaakgegevens`) no longer inflate the index mapping or cause rejections when the same field holds an object in one case and a plain value in another; object content is now indexed as a single `flat_object` field whose nested values stay searchable. Filters, sorting, global search and permissions on a field inside an object give the same results as the database, including number and date comparisons. A very long text value inside an object (such as an attached file) no longer causes the case to be skipped. |
-| OpenSearch document search | A field whose type changes between case-definition versions (e.g. a plain value in one version and an object in the next) no longer collides: each version is indexed separately and both remain searchable. |
-| OpenSearch document search | A case deleted while an index rebuild is running is no longer resurrected when the rebuilt index is swapped in. |
-| OpenSearch document search | While OpenSearch still holds a legacy/not-yet-migrated index, case-list searches fall back to the database so results are never incomplete; they return to OpenSearch automatically once the migrate re-index completes. |
-| OpenSearch document search | A case that OpenSearch refuses to index no longer disappears from its case list: the lists of that case type are served from the database until the case is indexed, the case is retried automatically at growing intervals (every 10 minutes at first, then hourly, then daily), and the health endpoint names the affected case types. The *Admin > OpenSearch* screen lists the refused cases with the number of attempts and when they are retried next, and an admin can retry them straight away. One refused case no longer slows down indexing of all later changes. |
-| OpenSearch document search | Case lists no longer come back empty when OpenSearch is enabled on an installation that already has cases: existing cases are indexed in the background and lists are served from the database until that is done. |
-| OpenSearch document search | Search falls back to the database when OpenSearch cannot be reached, instead of every case list failing with an error. A case type without an index yet (for example a building block) returns an empty list instead of an error. |
-| OpenSearch document search | A case whose case-definition version changes no longer appears twice in its case list. |
+| OpenSearch document search | Case lists no longer come back empty when two case types store differently-typed values in the same field. |
+| OpenSearch document search | A full re-index no longer fails with `Limit of total fields [1000] has been exceeded` as the number of case types grows. The field limit per index is configurable via `valtimo.opensearch.total-fields-limit` (default 5000). |
+| OpenSearch document search | A re-index that skips cases now ends as *Completed with errors* and shows the number of skipped cases, instead of reporting success. |
+| OpenSearch document search | Large values such as `openzaakgegevens`, or a field that holds an object in one case and a plain value in another, no longer cause cases to be skipped. |
+| OpenSearch document search | A field whose type changes between versions of a case type no longer causes cases of the newer version to be skipped. |
+| OpenSearch document search | A case that OpenSearch cannot index no longer disappears from its case list. The case type's lists use the database until the case is indexed, and indexing is retried automatically at growing intervals. |
 
 ---
 
