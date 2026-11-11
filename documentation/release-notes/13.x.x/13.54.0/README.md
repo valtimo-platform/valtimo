@@ -45,7 +45,6 @@ show their color too.
 | Dashboard | A long dashboard widget subtitle is now cut off with ellipsis instead of running out of the widget, and the full title and subtitle show on hover. |
 | Dashboard | A bar chart widget with many categories no longer overflows its widget and overlaps other widgets. The legend now scrolls inside the widget. |
 | Forms | Disabled fields in forms now show their value in readable text, styled as read-only instead of faded grey. |
-| Forms | An IBAN or currency field with a default value now counts as filled in straight away, also when a condition shows the field or it is part of a group of fields. Before, the field showed the value but failed as required and did not submit it until the value was entered again. |
 | Left sidebar | Opening the Cases overview directly expands **Cases** in the left sidebar, so pinned items are visible. |
 
 ---
