@@ -187,10 +187,6 @@ public class JsonSchemaDocumentService implements DocumentService {
                 )
             );
 
-            // Initialize the lazy caseTags collection within the transaction so it is available
-            // when the document is serialized outside of the session (open-in-view is disabled).
-            document.initializeCaseTags();
-
             outboxService.send(() ->
                 new DocumentViewed(
                     document.id().toString(),
@@ -246,10 +242,6 @@ public class JsonSchemaDocumentService implements DocumentService {
         Page<JsonSchemaDocument> documentPage = documentRepository.findAll(
             spec.and(byDocumentDefinitionIdName(definitionName)), pageable);
 
-        // Initialize the lazy caseTags collections within the transaction (batched via @BatchSize)
-        // so they are available when the documents are serialized outside of the session.
-        documentPage.forEach(JsonSchemaDocument::initializeCaseTags);
-
         outboxService.send(() ->
             new DocumentsListed(
                 objectMapper.valueToTree(documentPage.getContent())
@@ -276,10 +268,6 @@ public class JsonSchemaDocumentService implements DocumentService {
             null
         ));
         Page<JsonSchemaDocument> documentPage = documentRepository.findAll(spec, pageable);
-
-        // Initialize the lazy caseTags collections within the transaction (batched via @BatchSize)
-        // so they are available when the documents are serialized outside of the session.
-        documentPage.forEach(JsonSchemaDocument::initializeCaseTags);
 
         outboxService.send(() ->
             new DocumentsListed(

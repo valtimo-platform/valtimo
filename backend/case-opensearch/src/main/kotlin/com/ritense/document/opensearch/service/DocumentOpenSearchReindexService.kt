@@ -122,37 +122,24 @@ open class DocumentOpenSearchReindexService(
         try {
             while (!cancelRequested) {
                 val cursor = lastId
-                // Convert inside the read transaction, while the entities are still attached: toOsDocument
-                // serializes lazy associations (e.g. the caseTags @ManyToMany) that would otherwise throw a
-                // LazyInitializationException once the persistence context is cleared and the transaction closes.
-                // Only the OpenSearch bulk write below happens outside the transaction.
-                val page = txTemplate.execute {
-                    val batch = fetchBatch(scope, cursor, pageSize)
-                    if (batch.isEmpty()) {
-                        null
-                    } else {
-                        val docs = batch.mapNotNull { jpaDoc ->
-                            try {
-                                converter.toOsDocument(jpaDoc)
-                            } catch (e: Exception) {
-                                skipped++
-                                logger.warn(e) { "Failed to convert document — skipping" }
-                                null
-                            }
-                        }
-                        // Advance the cursor past every fetched row (not just the converted ones) so a document
-                        // that fails conversion is skipped for good rather than re-fetched on the next iteration.
-                        val lastInBatch = batch.last().id().id
-                        entityManager.clear()
-                        ConvertedPage(docs, lastInBatch)
-                    }
+                val batch = txTemplate.execute {
+                    fetchBatch(scope, cursor, pageSize).also { entityManager.clear() }
                 } ?: break
+                if (batch.isEmpty()) break
 
-                skipped += page.documents.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE)
-                    .sumOf { converter.indexChunk(it) }
+                val docs = batch.mapNotNull { jpaDoc ->
+                    try {
+                        converter.toOsDocument(jpaDoc)
+                    } catch (e: Exception) {
+                        skipped++
+                        logger.warn(e) { "Failed to convert document — skipping" }
+                        null
+                    }
+                }
+                skipped += docs.chunked(JsonSchemaDocumentOsConverter.BULK_CHUNK_SIZE).sumOf { converter.indexChunk(it) }
 
-                processed += page.documents.size
-                lastId = page.lastId
+                processed += docs.size
+                lastId = batch.last().id().id
                 runService.recordProgress(runId, lastId, processed, skipped)
             }
 
@@ -331,9 +318,6 @@ open class DocumentOpenSearchReindexService(
             Thread.currentThread().interrupt()
         }
     }
-
-    /** A converted page of documents plus the primary key of the last fetched row (the next keyset cursor). */
-    private data class ConvertedPage(val documents: List<JsonSchemaDocumentOsDocument>, val lastId: UUID)
 
     companion object {
         private val logger = KotlinLogging.logger {}

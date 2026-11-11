@@ -29,6 +29,7 @@ import com.ritense.BaseIntegrationTest;
 import com.ritense.document.domain.CaseTagColor;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
+import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.domain.impl.request.NewDocumentRequest;
 import com.ritense.document.service.CaseTagService;
 import com.ritense.document.service.impl.SearchRequest;
@@ -135,10 +136,12 @@ class JsonSchemaDocumentCaseTagsSerializationIntegrationTest extends BaseIntegra
         // Non-transactional test: clean up the committed document and tag so other tests are unaffected.
         runWithoutAuthorization(() -> {
             if (document != null) {
+                // newId() is flagged isNew; Spring Data's delete() silently skips entities it sees as new
+                var documentId = JsonSchemaDocumentId.existingId(document.id().getId());
                 try {
-                    documentService.deleteDocument(document.id());
+                    documentService.deleteDocument(documentId);
                 } catch (RuntimeException e) {
-                    documentRepository.deleteById(document.id());
+                    documentRepository.deleteById(documentId);
                 }
             }
             if (tagKey != null) {
