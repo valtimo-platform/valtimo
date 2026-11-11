@@ -16,6 +16,7 @@
 
 package com.ritense.case.web.rest
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.BaseTest
@@ -34,9 +35,11 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.utils.TestUtil
 import org.hamcrest.Matchers.nullValue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
@@ -197,7 +200,7 @@ class CaseDefinitionResourceTest : BaseTest() {
                     caseDefinition.id.versionTag
                 )
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(TestUtil.convertObjectToJsonBytes(caseSettingsDto))
+                    .content(withoutNulls(caseSettingsDto))
             )
             .andDo(print())
             .andExpect(status().isOk)
@@ -210,6 +213,47 @@ class CaseDefinitionResourceTest : BaseTest() {
         verify(service).updateCaseSettings(caseDefinition.id, caseSettingsDto)
     }
 
+
+    @Test
+    fun `should pass a color clearing dto to the service when color is explicit null`() {
+        val caseDefinition = caseDefinition(color = "#FF5733")
+        whenever(service.updateCaseSettings(eq(caseDefinition.id), any())).thenReturn(caseDefinition)
+
+        patchSettings(caseDefinition.id, """{"color":null}""")
+
+        val captor = argumentCaptor<CaseSettingsDto>()
+        verify(service).updateCaseSettings(eq(caseDefinition.id), captor.capture())
+        assertThat(captor.firstValue.update(caseDefinition).color).isNull()
+    }
+
+    @Test
+    fun `should pass a color keeping dto to the service when color is absent`() {
+        val caseDefinition = caseDefinition(color = "#FF5733")
+        whenever(service.updateCaseSettings(eq(caseDefinition.id), any())).thenReturn(caseDefinition)
+
+        patchSettings(caseDefinition.id, """{"canHaveAssignee":true}""")
+
+        val captor = argumentCaptor<CaseSettingsDto>()
+        verify(service).updateCaseSettings(eq(caseDefinition.id), captor.capture())
+        assertThat(captor.firstValue.update(caseDefinition).color).isEqualTo("#FF5733")
+    }
+
+    private fun withoutNulls(dto: CaseSettingsDto): String =
+        mapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(dto)
+
+    private fun patchSettings(id: CaseDefinitionId, body: String) {
+        mockMvc
+            .perform(
+                patch(
+                    "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings",
+                    id.key,
+                    id.versionTag
+                )
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .content(body)
+            )
+            .andExpect(status().isOk)
+    }
 
     @Test
     fun `should accept null case settings`() {
@@ -227,7 +271,7 @@ class CaseDefinitionResourceTest : BaseTest() {
                     caseDefinitionId.versionTag
                 )
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(MapperSingleton.get().writeValueAsString(caseSettingsDto))
+                    .content(withoutNulls(caseSettingsDto))
             )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$").isNotEmpty)

@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {apiGet, isApiStatus} from '../../utils/api.utils';
+import {apiGet, apiPatch, isApiStatus} from '../../utils/api.utils';
 import {
   CaseGroup,
   clearPinnedItemsViaApi,
@@ -26,10 +26,18 @@ import {
   GROUP_USER_ENDPOINT,
   PinnedItem,
   pinViaApi,
+  getActiveVersionTag,
   restorePinnedItemsViaApi,
+  setGroupColorViaApi,
   uniqueGroupTitle,
   unpinViaApi,
 } from '../../utils/case-group.utils';
+import {
+  getFeatureToggleOverridesViaApi,
+  restoreFeatureToggleViaApi,
+  setFeatureToggleViaApi,
+} from '../../utils/feature-toggle.utils';
+import {ColorPanel} from '../../shared/color-panel/color-panel.utils';
 import {CasesOverviewPage} from './page';
 import {GROUP_MEMBER_KEY, PINNED_CASE_TYPE_KEY} from './cases-overview-config';
 
@@ -112,6 +120,19 @@ test.describe('Cases overview and pinned items', () => {
 
       await expect(page).toHaveURL(/\/cases-overview$/);
       await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    test('the Cases menu re-opens when entering its section after a chevron collapse', async () => {
+      await page.goto('/cases-overview');
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'true');
+
+      await overviewPage.casesMenuChevron.click();
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'false');
+
+      await page.goto('/tasks');
+      await page.goto('/cases/verhuizing');
+
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'true');
     });
 
     test('the Cases menu stays open when navigating to another menu item', async () => {
@@ -346,6 +367,139 @@ test.describe('Cases overview and pinned items', () => {
       await expect(overviewPage.pinnedMenuItem(doomed.title)).toHaveCount(0);
       await expect(overviewPage.groupTile(doomed.title)).toHaveCount(0);
       await unpinViaApi('CASE_DEFINITION_GROUP', doomed.key);
+    });
+  });
+
+  // ─── 2.17 Colors and menu ───────────────────────────────────────
+
+  test.describe('2.17 — Colors and menu', () => {
+    const rgb = (hex: string) => {
+      const value = parseInt(hex.replace('#', ''), 16);
+      return `rgb(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255})`;
+    };
+    const GROUP_COLOR = '#FA4D56';
+    const SHOW_ALL_TOGGLE = 'showAllCaseDefinitionsInMenu';
+
+    let coloredGroup: CaseGroup;
+    let plainGroup: CaseGroup;
+    let settingsUrl: string;
+    let activeVersionTag: string;
+    let originalCaseColor: string | null;
+    let originalToggle: boolean | undefined;
+
+    const caseColor = async () =>
+      (await apiGet<{color?: string | null}>(settingsUrl)).color ?? null;
+
+    const pickSwatch = async (
+      colorPanel: ColorPanel,
+      method: 'PATCH' | 'PUT',
+      current: string | null
+    ) => {
+      const color = await colorPanel.pickDifferentColor(current);
+      await Promise.all([
+        page.waitForResponse(res => res.request().method() === method && res.ok()),
+        colorPanel.swatch(color).click(),
+      ]);
+      return color;
+    };
+
+    test.beforeAll(async () => {
+      coloredGroup = await createGroupWithMembersViaApi(uniqueGroupTitle('E2E colored'), [
+        GROUP_MEMBER_KEY,
+      ]);
+      createdGroupKeys.push(coloredGroup.key);
+      await setGroupColorViaApi(coloredGroup.key, coloredGroup.title, GROUP_COLOR);
+      plainGroup = await createGroupWithMembersViaApi(uniqueGroupTitle('E2E plain'), [
+        GROUP_MEMBER_KEY,
+      ]);
+      createdGroupKeys.push(plainGroup.key);
+
+      activeVersionTag = await getActiveVersionTag(PINNED_CASE_TYPE_KEY);
+      settingsUrl = `/api/management/v1/case-definition/${PINNED_CASE_TYPE_KEY}/version/${activeVersionTag}/settings`;
+      originalCaseColor = await caseColor();
+      originalToggle = (await getFeatureToggleOverridesViaApi())[SHOW_ALL_TOGGLE];
+    });
+
+    test.afterAll(async () => {
+      await apiPatch(settingsUrl, {color: originalCaseColor});
+      await restoreFeatureToggleViaApi(SHOW_ALL_TOGGLE, originalToggle);
+    });
+
+    test('a group tile shows its color without being pinned, and grey without a color', async () => {
+      await clearPinnedItemsViaApi();
+
+      await overviewPage.goTo();
+
+      await expect(overviewPage.groupColorDot(coloredGroup.title)).toHaveCSS(
+        'background-color',
+        rgb(GROUP_COLOR)
+      );
+      await expect(overviewPage.groupColorDot(plainGroup.title)).toHaveCSS(
+        'background-color',
+        await overviewPage.fallbackDotColor()
+      );
+    });
+
+    test('the sidebar dot of a pinned case type updates without a reload', async () => {
+      await pinViaApi('CASE_DEFINITION', PINNED_CASE_TYPE_KEY);
+      await page.goto(
+        `/case-management/case/${PINNED_CASE_TYPE_KEY}/version/${activeVersionTag}/general`
+      );
+      const colorPanel = new ColorPanel(page);
+      await expect(colorPanel.swatches.first()).toBeVisible();
+      await overviewPage.expandCasesMenu();
+
+      const color = await pickSwatch(colorPanel, 'PATCH', await caseColor());
+
+      await expect(overviewPage.menuItemDot(caseTypeName)).toHaveCSS('background-color', rgb(color));
+    });
+
+    test('the sidebar dot of a pinned group updates without a reload', async () => {
+      await pinViaApi('CASE_DEFINITION_GROUP', coloredGroup.key);
+      await page.goto(`/case-management/group/${coloredGroup.key}/config`);
+      const colorPanel = new ColorPanel(page);
+      await expect(colorPanel.swatches.first()).toBeVisible();
+      await overviewPage.expandCasesMenu();
+      await expect(overviewPage.menuItemDot(coloredGroup.title)).toHaveCSS(
+        'background-color',
+        rgb(GROUP_COLOR)
+      );
+
+      const color = await pickSwatch(colorPanel, 'PUT', GROUP_COLOR);
+
+      await expect(overviewPage.menuItemDot(coloredGroup.title)).toHaveCSS(
+        'background-color',
+        rgb(color)
+      );
+    });
+
+    test('a direct load of the overview expands the Cases menu', async () => {
+      await page.goto('/cases-overview');
+
+      await expect(overviewPage.casesMenuToggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(overviewPage.pinnedMenuItem(caseTypeName)).toBeVisible();
+      await expect(overviewPage.pinnedMenuItem(coloredGroup.title)).toBeVisible();
+    });
+
+    test('with all case definitions in the menu, tiles, rows and menu items show dots', async () => {
+      await setFeatureToggleViaApi(SHOW_ALL_TOGGLE, true);
+      try {
+        await page.goto('/cases-overview');
+        await expect(overviewPage.typesSection).toBeVisible();
+        await overviewPage.expandCasesMenu();
+
+        await expect(overviewPage.groupColorDot(coloredGroup.title)).toBeVisible();
+        await expect(overviewPage.typeDot(caseTypeName)).toBeVisible();
+        await expect(overviewPage.caseDefinitionMenuItems.first()).toBeVisible();
+        const menuItems = await overviewPage.caseDefinitionMenuItems.count();
+        await expect(
+          overviewPage.caseDefinitionMenuItems.locator('.menu-item-dot')
+        ).toHaveCount(menuItems);
+        await expect(overviewPage.groupPinButton(coloredGroup.title)).toHaveCount(0);
+      } finally {
+        await restoreFeatureToggleViaApi(SHOW_ALL_TOGGLE, originalToggle);
+        await page.reload();
+      }
     });
   });
 });

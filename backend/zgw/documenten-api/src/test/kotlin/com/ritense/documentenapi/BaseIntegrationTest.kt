@@ -19,6 +19,7 @@ package com.ritense.documentenapi
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.documentenapi.event.DocumentCreated
+import com.ritense.documentenapi.service.InformatieObjectCaseResolver
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
@@ -60,6 +61,9 @@ class BaseIntegrationTest {
 
     @MockitoBean
     lateinit var zaaktypeUrlProvider: ZaaktypeUrlProvider
+
+    @MockitoBean
+    lateinit var informatieObjectCaseResolver: InformatieObjectCaseResolver
 
     @TestComponent
     class Consumer {

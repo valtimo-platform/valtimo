@@ -143,6 +143,19 @@ class CaseDefinitionGroupServiceIntTest @Autowired constructor(
 
     @Test
     @WithMockUser(username = "admin", authorities = [FULL_ACCESS_ROLE])
+    fun `should read back exact for a text search field persisted without match type`() {
+        val group = runWithoutAuthorization { groupService.createGroup("Match type", null) }
+
+        runWithoutAuthorization { groupService.updateSearchFields(group.key, listOf(searchFieldDto("f"))) }
+        entityManager.flush()
+        entityManager.clear()
+
+        val stored = groupSearchFieldRepository.findByGroupKeyOrderByOrderAsc(group.key).single()
+        assertThat(stored.matchType).isEqualTo(com.ritense.search.domain.SearchFieldMatchType.EXACT)
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = [FULL_ACCESS_ROLE])
     fun `should throw not found for unknown groups`() {
         runWithoutAuthorization {
             assertThrows<CaseDefinitionGroupNotFoundException> { groupService.getGroup("unknown") }

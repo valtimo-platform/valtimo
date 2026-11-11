@@ -261,7 +261,7 @@
     "deepmerge-ts": "8.0.2",
     "diagram-js": "15.3.0",
     "dmn-js": "17.2.0",
-    "dompurify": "3.4.14",
+    "dompurify": "3.4.17",
     "dropzone": "6.0.0-beta.2",
     "flatpickr": "4.6.13",
     "formiojs": "4.19.5",
@@ -351,13 +351,14 @@
   "overrides": {
     "swagger-client": "3.37.3",
     "swagger-ui": {
-      "js-yaml": "4.3.2"
+      "js-yaml": "4.3.2",
+      "dompurify": "3.4.17"
     },
     "feelers": {
       "@bpmn-io/cm-theme": "0.1.0-alpha.2"
     },
-    "vite": "6.4.3",
-    "piscina": "4.9.3",
+    "vite": "6.4.5",
+    "piscina": "4.9.4",
     "serialize-javascript": "7.0.7",
     "sigstore": "4.1.1",
     "lodash": "4.18.1",
@@ -370,8 +371,10 @@
       "http-proxy-middleware": "3.0.7"
     },
     "@angular/cli": {
-      "tar": "7.5.19"
-    }
+      "tar": "7.5.22",
+      "pacote": "21.5.3"
+    },
+    "webpack-dev-middleware": "7.4.6"
   },
   "workspaces": [
     "projects/valtimo/*"
