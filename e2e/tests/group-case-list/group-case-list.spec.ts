@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {expect, test} from '@playwright/test';
+import {expect, Request, test} from '@playwright/test';
 import {apiGet} from '../../utils/api.utils';
 import {generateId} from '../../utils/dataGenerator';
 import {
@@ -32,6 +32,8 @@ import {
   putSearchFieldsViaApi,
   uniqueGroupTitle,
 } from '../../utils/case-group.utils';
+import {CASE_LIST_TEST_IDS} from '../../constants';
+import {pinLanguage} from '../../utils/settings';
 import {GroupCaseListPage} from './page';
 import {
   CELL,
@@ -355,10 +357,47 @@ test.describe('Group case list', () => {
       expect(errors).toEqual([]);
     });
 
-    // Needs the backend 404 fix for unknown groups (plan decision 4)
-    test.fixme('an unknown group returns 404 and an empty list', async () => {
-      const response = await page.request.get(`${GROUP_USER_ENDPOINT}/no-such-group-zzz`);
-      expect(response.status()).toBe(404);
+    test("an unknown group shows 'Case group not available' and loads nothing else", async () => {
+      const unknownKey = 'e2e-does-not-exist';
+      const requests: Array<{method: string; path: string}> = [];
+      const onRequest = (request: Request) =>
+        requests.push({method: request.method(), path: new URL(request.url()).pathname});
+      page.on('request', onRequest);
+
+      try {
+        await page.goto(`/groups/${unknownKey}`);
+
+        await expect(page.getByTestId(CASE_LIST_TEST_IDS.groupNotFound)).toContainText(
+          'Case group not available'
+        );
+        await expect(listPage.heading).toHaveText('Case group not available');
+        await page.waitForTimeout(1_500); // let any stray list requests fire
+      } finally {
+        page.off('request', onRequest);
+      }
+
+      const forbidden = /\/(list-column|search-field|internal-status|hidden-list-column|stored-quick-search|search)(\/|$)/;
+      expect(requests.filter(request => forbidden.test(request.path))).toEqual([]);
+      expect(
+        requests.filter(
+          request =>
+            request.method === 'GET' && request.path === `${GROUP_USER_ENDPOINT}/${unknownKey}`
+        )
+      ).toHaveLength(1);
+    });
+
+    test('the not-found title is translated on a full page load in Dutch', async () => {
+      const notFound = page.getByTestId(CASE_LIST_TEST_IDS.groupNotFound);
+      await pinLanguage(page, 'nl');
+      try {
+        await page.goto('/groups/e2e-does-not-exist');
+
+        await expect(notFound).toContainText('Dossiergroep niet beschikbaar');
+        await expect(notFound).not.toContainText('case.noResults.groupNotFound.title');
+        await expect(listPage.heading).toHaveText('Dossiergroep niet beschikbaar');
+      } finally {
+        await pinLanguage(page, 'en');
+      }
     });
   });
 });

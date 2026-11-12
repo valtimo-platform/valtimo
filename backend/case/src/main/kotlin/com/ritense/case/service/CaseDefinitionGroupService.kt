@@ -32,6 +32,7 @@ import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.domain.group.GroupSearchFieldPathMapping
 import com.ritense.case.domain.group.GroupSearchFieldPathMappingId
+import com.ritense.case.domain.group.SearchFieldMatchTypeRule
 import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.exception.CaseDefinitionGroupNotFoundException
 import com.ritense.case.exception.InvalidGroupListColumnSortException
@@ -332,7 +333,7 @@ class CaseDefinitionGroupService(
                     title = dto.title,
                     dataType = dto.dataType,
                     fieldType = dto.fieldType,
-                    matchType = dto.matchType,
+                    matchType = SearchFieldMatchTypeRule.normalize(dto.dataType, dto.fieldType, dto.matchType),
                     dropdownDataProvider = dto.dropdownDataProvider,
                     order = index
                 )

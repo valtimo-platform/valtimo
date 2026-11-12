@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class S3ResourceTest : BaseTest() {
     fun init() {
         s3Service = mock()
         whenever(s3Service.generatePreSignedPutObjectUrl(any())).thenReturn(URL("http://myfile"))
-        s3Resource = S3Resource(s3Service)
+        s3Resource = S3Resource(s3Service, mock())
         mockMvc = MockMvcBuilders
             .standaloneSetup(s3Resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())

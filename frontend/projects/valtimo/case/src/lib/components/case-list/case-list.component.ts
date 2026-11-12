@@ -37,7 +37,11 @@ import {
   Subscription,
   take,
 } from 'rxjs';
-import {CASE_LIST_TABLE_TRANSLATIONS, DEFAULT_CASE_LIST_TABS} from '../../constants';
+import {
+  CASE_LIST_TABLE_TRANSLATIONS,
+  CASE_LIST_TEST_IDS,
+  DEFAULT_CASE_LIST_TABS,
+} from '../../constants';
 import {BulkAssign, CaseListContext, CaseListQuickSearchParams} from '../../models';
 import {
   CaseBulkAssignService,
@@ -91,6 +95,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly orchestration = inject(CaseListOrchestrationService);
 
   public readonly tableTranslations = CASE_LIST_TABLE_TRANSLATIONS;
+
+  protected readonly testIds = CASE_LIST_TEST_IDS;
 
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);

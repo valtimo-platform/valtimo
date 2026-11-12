@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.springframework.context.ApplicationEventPublisher
+import com.ritense.temporaryresource.domain.StorageMetadataKeys
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @SkipComponentScan
@@ -57,7 +60,7 @@ class TemporaryResourceStorageResource(
         val mutableMetaData = metaData.toMutableMap()
         file.originalFilename?.let { mutableMetaData.putIfAbsent(MetadataType.FILE_NAME.key, it) }
         file.contentType?.let { mutableMetaData.putIfAbsent(MetadataType.CONTENT_TYPE.key, it) }
-        SecurityUtils.getCurrentUserLogin()?.let { mutableMetaData.putIfAbsent(MetadataType.USER.key, it) }
+        SecurityUtils.getCurrentUserLogin()?.let { mutableMetaData.put(MetadataType.USER.key, it) }
 
         val resourceId = resourceService.store(file.inputStream, mutableMetaData)
         applicationEventPublisher.publishEvent(TemporaryResourceUploadedEvent(resourceId))
@@ -80,6 +83,9 @@ class TemporaryResourceStorageResource(
         @PathVariable("resourceStorageFieldId") resourceStorageFieldId: String,
         @PathVariable("metadataKey") metadataKey: String,
     ) :ResponseEntity<StorageMetadataValue> {
+        if (metadataKey != StorageMetadataKeys.DOWNLOAD_URL.key) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        }
         val metadataValue = resourceService.getMetadataValue(resourceStorageFieldId, metadataKey)
 
         return ResponseEntity.ok(

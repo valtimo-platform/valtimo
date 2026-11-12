@@ -18,6 +18,7 @@ package com.ritense.form.service
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationService
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.FormSpringContextHelper
@@ -25,8 +26,13 @@ import com.ritense.form.domain.IntermediateSubmission
 import com.ritense.form.exception.TaskFormNotFoundException
 import com.ritense.form.repository.IntermediateSubmissionRepository
 import com.ritense.form.service.impl.FormIoFormDefinitionService
+import com.ritense.processdocument.domain.ProcessDocumentInstance
+import com.ritense.processdocument.domain.ProcessDocumentInstanceId
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.resource.service.ResourceService
 import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -37,7 +43,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.mock.env.MockEnvironment
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -57,6 +67,9 @@ class IntermediateSubmissionServiceTest {
     private val operatonTaskService: OperatonTaskService = mock()
     private val processLinkService: ProcessLinkService = mock()
     private val formDefinitionService: FormIoFormDefinitionService = mock()
+    private val processDocumentAssociationService: ProcessDocumentAssociationService = mock()
+    private val applicationEventPublisher: ApplicationEventPublisher = mock()
+    private val resourceService: ResourceService = mock()
     private val task: OperatonTask = mock()
     private val formDefinitionId = UUID.randomUUID()
     private val objectMapper = MapperSingleton.get()
@@ -74,7 +87,10 @@ class IntermediateSubmissionServiceTest {
             authorizationService,
             operatonTaskService,
             processLinkService,
-            formDefinitionService
+            formDefinitionService,
+            processDocumentAssociationService,
+            applicationEventPublisher,
+            resourceServiceProvider(resourceService)
         )
         val user: ManageableUser = mock()
         whenever(user.username).thenReturn("user")
@@ -82,6 +98,7 @@ class IntermediateSubmissionServiceTest {
         whenever(task.id).thenReturn(TASK_ID)
         whenever(task.taskDefinitionKey).thenReturn("task-key")
         whenever(task.getProcessDefinitionId()).thenReturn("process-def-id")
+        whenever(task.getProcessInstanceId()).thenReturn(PROCESS_INSTANCE_ID)
         whenever(operatonTaskService.findTaskById(TASK_ID)).thenReturn(task)
         whenever(repository.save(any<IntermediateSubmission>())).thenAnswer { it.arguments[0] }
         withFormLink()
@@ -173,6 +190,55 @@ class IntermediateSubmissionServiceTest {
         assertThrows<TaskFormNotFoundException> { service.get(TASK_ID) }
     }
 
+    @Test
+    fun `store claims uploads in the form for the task's document`() {
+        val documentId = withTaskDocument()
+        val resourceId = UUID.randomUUID()
+
+        service.store(submissionWithUpload(resourceId), TASK_ID)
+
+        verify(resourceService).claimForDocument(resourceId, documentId)
+    }
+
+    @Test
+    fun `store fails and saves nothing when an upload in the form cannot be claimed`() {
+        val documentId = withTaskDocument()
+        val resourceId = UUID.randomUUID()
+        whenever(resourceService.claimForDocument(resourceId, documentId)).thenThrow(AccessDeniedException("Access denied"))
+
+        assertThrows<AccessDeniedException> { service.store(submissionWithUpload(resourceId), TASK_ID) }
+        verify(repository, never()).save(any<IntermediateSubmission>())
+    }
+
+    @Test
+    fun `store claims nothing when the form has no uploads`() {
+        service.store(submission(), TASK_ID)
+
+        verify(resourceService, never()).claimForDocument(any(), any())
+    }
+
+    private fun withTaskDocument(): UUID {
+        val documentId = UUID.randomUUID()
+        val processDocumentInstanceId: ProcessDocumentInstanceId = mock()
+        whenever(processDocumentInstanceId.documentId()).thenReturn(JsonSchemaDocumentId.existingId(documentId))
+        val processDocumentInstance: ProcessDocumentInstance = mock()
+        whenever(processDocumentInstance.processDocumentInstanceId()).thenReturn(processDocumentInstanceId)
+        doReturn(Optional.of(processDocumentInstance))
+            .whenever(processDocumentAssociationService)
+            .findProcessDocumentInstance(OperatonProcessInstanceId(PROCESS_INSTANCE_ID))
+        return documentId
+    }
+
+    private fun submissionWithUpload(resourceId: UUID): ObjectNode = objectMapper.readTree(
+        """{"files":[{"name":"a.pdf","data":{"resourceId":"$resourceId"}}]}"""
+    ) as ObjectNode
+
+    private fun resourceServiceProvider(resourceService: ResourceService): ObjectProvider<ResourceService> {
+        val provider: ObjectProvider<ResourceService> = mock()
+        whenever(provider.ifAvailable).thenReturn(resourceService)
+        return provider
+    }
+
     private fun withFormLink() {
         val link: FormProcessLink = mock()
         whenever(link.formDefinitionId).thenReturn(formDefinitionId)
@@ -209,11 +275,13 @@ class IntermediateSubmissionServiceTest {
 
     companion object {
         private const val TASK_ID = "taskInstanceId"
+        private const val PROCESS_INSTANCE_ID = "55555555-5555-5555-5555-555555555555"
         private const val FORM_DEFINITION = """
             {
               "components": [
                 { "key": "top", "type": "valtimo-mail-preview", "input": true },
                 { "key": "keep", "type": "textfield", "input": true },
+                { "key": "files", "type": "valtimo-file", "input": true },
                 { "key": "container", "type": "container", "input": true, "components": [
                   { "key": "a", "type": "textfield", "input": true },
                   { "key": "p", "type": "valtimo-mail-preview", "input": true }

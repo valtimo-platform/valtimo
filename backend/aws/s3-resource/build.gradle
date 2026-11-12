@@ -37,6 +37,7 @@ dependencies {
     implementation project(":backend:aws")
     implementation project(':backend:resource:temporary-resource-storage')
     implementation project(':backend:case')
+    implementation project(':backend:authorization')
     api 'software.amazon.awssdk:s3'
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"

@@ -18,10 +18,14 @@ import {ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit, signal} f
 import {CommonModule, DOCUMENT} from '@angular/common';
 import {HttpResponse} from '@angular/common/http';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {Download16, Edit16} from '@carbon/icons';
+import {Edit16, OverflowMenuVertical16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {PinnedItemsService} from '@valtimo/case';
 import {
   BreadcrumbService,
+  ConfirmationModalModule,
+  OverflowMenuComponent,
+  OverflowMenuOptionComponent,
   PageHeaderService,
   PageTitleService,
   RenderInPageHeaderDirective,
@@ -34,7 +38,7 @@ import {
   NotificationModule,
   TabsModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, filter, map, Subscription, take} from 'rxjs';
+import {BehaviorSubject, filter, map, Subject, Subscription, take} from 'rxjs';
 import {
   CaseDefinitionGroupFormValue,
   CaseDefinitionGroupTabEnum,
@@ -64,6 +68,9 @@ import {
     NotificationModule,
     TabsModule,
     CaseDefinitionGroupCreateModalComponent,
+    ConfirmationModalModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
     RenderInPageHeaderDirective,
   ],
 })
@@ -80,6 +87,7 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
   public readonly showNoListColumnsWarning$ = this.detailService.showNoListColumnsWarning$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
   public readonly $exporting = signal(false);
+  public readonly showDeleteModal$ = new Subject<boolean>();
 
   public readonly groupKey$ = this.route.params.pipe(map(params => params['groupKey'] as string));
 
@@ -99,9 +107,10 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     private readonly groupService: CaseDefinitionGroupManagementService,
     private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService,
+    private readonly pinnedItemsService: PinnedItemsService,
     @Inject(DOCUMENT) private readonly document: Document
   ) {
-    this.iconService.registerAll([Download16, Edit16]);
+    this.iconService.registerAll([Edit16, OverflowMenuVertical16]);
   }
 
   public ngOnInit(): void {
@@ -172,16 +181,38 @@ export class CaseDefinitionGroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  public openDeleteModal(): void {
+    this.showDeleteModal$.next(true);
+  }
+
+  public onConfirmDeleteGroup(): void {
+    const groupKey: string = this.route.snapshot.params['groupKey'];
+
+    this.groupService.deleteGroup(groupKey).subscribe(() => {
+      this.pinnedItemsService.refresh();
+      this.navigateToGroupList();
+      this.notificationService.showNotification({
+        type: 'success',
+        title: this.translateService.instant('caseManagement.groups.delete.success'),
+        duration: 5000,
+      });
+    });
+  }
+
   public navigateToTab(tab: CaseDefinitionGroupTabEnum): void {
     const groupKey = this.route.snapshot.params['groupKey'];
     this.router.navigateByUrl(`/case-management/group/${groupKey}/${tab}`);
   }
 
-  private redirectToGroupList(): void {
+  private navigateToGroupList(): void {
     this.router.navigate(['/case-management'], {
       queryParams: {[CASE_MANAGEMENT_LIST_TAB_PARAM]: CaseManagementListTab.GROUPS},
       replaceUrl: true,
     });
+  }
+
+  private redirectToGroupList(): void {
+    this.navigateToGroupList();
     this.translateService
       .get('caseManagement.groups.notFound')
       .pipe(take(1))
