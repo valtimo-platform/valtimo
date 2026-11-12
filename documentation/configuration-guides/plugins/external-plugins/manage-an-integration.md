@@ -102,8 +102,10 @@ Deletion is strict by design: anything still in use cannot be deleted, and there
 override.
 
 - A **plugin configuration** cannot be deleted while any process link, case tab, case widget,
-  menu page, or building block references it. The dialog lists every usage so it can be unbound
-  first.
+  menu page, or building block references it, while another configuration is bound to it through
+  a contract, or while it has a contract job whose result is not yet delivered. The dialog lists
+  every usage so it can be unbound first. See
+  [Contracts between plugins](contracts.md#deleting-a-configuration-that-uses-contracts).
 
   <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/17-delete-modal.png" alt=""><figcaption>Configuration in use</figcaption></figure>
 

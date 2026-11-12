@@ -18,7 +18,7 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
-                   logicalFilePath="config/liquibase/13-53-0/20261014-external-plugin-contract-job.xml">
+                   logicalFilePath="config/liquibase/13-55-0/20261014-external-plugin-contract-job.xml">
 
     <!--
       Ledger for asynchronous contract requests. No FKs to configurations: rows outlive them for the

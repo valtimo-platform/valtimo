@@ -122,7 +122,7 @@ TLS_KEY_PATH=/tls/tls.key
 ### Docker
 
 The host ships as the `ritense/valtimo-plugin-host` image on Docker Hub (port 8090), released on
-its own cadence with the version as the tag — `ritense/valtimo-plugin-host:1.0.0`. **No `latest`
+its own cadence with the version as the tag — `ritense/valtimo-plugin-host:1.1.0`. **No `latest`
 tag is ever published**: pin the version from the
 [compatibility table](../external-plugins/README.md#version-compatibility). A minimal deployment
 is the image plus its own PostgreSQL:
@@ -130,7 +130,7 @@ is the image plus its own PostgreSQL:
 ```yaml
 services:
   plugin-host:
-    image: ritense/valtimo-plugin-host:1.0.0
+    image: ritense/valtimo-plugin-host:1.1.0
     environment:
       ADMIN_TOKEN: ${ADMIN_TOKEN:?set a strong shared secret}
       DB_HOST: db
@@ -198,7 +198,7 @@ volumes:
 or baked into a derived image:
 
 ```dockerfile
-FROM ritense/valtimo-plugin-host:1.0.0
+FROM ritense/valtimo-plugin-host:1.1.0
 COPY --chown=node:node my-plugin-1.0.0.zip /data/preinstalled/
 ```
 

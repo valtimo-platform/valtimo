@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Download, expect, Locator, Page} from '@playwright/test';
+import {Download, expect, Locator, Page, Response} from '@playwright/test';
 import {
   CASE_DEFINITION_GROUP_CONFIG_TEST_IDS,
   CASE_DEFINITION_GROUP_DETAIL_TEST_IDS,
@@ -22,6 +22,9 @@ import {
   CASE_DEFINITION_GROUP_LIST_TEST_IDS,
   CASE_DEFINITION_GROUP_MODAL_TEST_IDS,
   CASE_MANAGEMENT_LIST_TEST_IDS,
+  CASE_MENU_TEST_IDS,
+  CONFIRMATION_MODAL_TEST_IDS,
+  LEFT_SIDEBAR_TEST_IDS,
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import {ColorPanel} from '../../shared/color-panel/color-panel.utils';
@@ -143,6 +146,25 @@ export class CaseManagementGroupsPage {
     return response.request().postDataJSON();
   }
 
+  // ─── Sidebar ──────────────────────────────────────────────────────
+
+  get casesMenu(): Locator {
+    return this.page.getByTestId(CASE_MENU_TEST_IDS.casesMenu);
+  }
+
+  pinnedMenuItem(title: string): Locator {
+    return this.casesMenu.getByTestId(CASE_MENU_TEST_IDS.pinnedItem).filter({hasText: title});
+  }
+
+  async expandCasesMenu() {
+    const toggle = this.casesMenu.locator('button[aria-haspopup="true"]');
+    await expect(toggle).toBeVisible();
+    if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+      await this.casesMenu.getByTestId(LEFT_SIDEBAR_TEST_IDS.submenuChevron).click();
+    }
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  }
+
   // ─── Detail page ──────────────────────────────────────────────────
 
   get heading(): Locator {
@@ -155,6 +177,46 @@ export class CaseManagementGroupsPage {
 
   get editButton(): Locator {
     return this.page.getByTestId(CASE_DEFINITION_GROUP_DETAIL_TEST_IDS.editButton);
+  }
+
+  get moreButton(): Locator {
+    return this.page.getByTestId(CASE_DEFINITION_GROUP_DETAIL_TEST_IDS.moreButton);
+  }
+
+  get deleteButton(): Locator {
+    return this.page.getByTestId(CASE_DEFINITION_GROUP_DETAIL_TEST_IDS.deleteButton);
+  }
+
+  get deleteConfirmButton(): Locator {
+    return this.page.getByTestId(CONFIRMATION_MODAL_TEST_IDS.confirmButton).filter({visible: true});
+  }
+
+  get deleteCancelButton(): Locator {
+    return this.page.getByTestId(CONFIRMATION_MODAL_TEST_IDS.closeButton).filter({visible: true});
+  }
+
+  async openDeleteModal() {
+    await this.moreButton.click();
+    await this.deleteButton.click();
+    await expect(this.deleteConfirmButton).toBeVisible();
+  }
+
+  /** Confirms the open delete modal and returns the response of the DELETE it sends. */
+  async confirmDelete(groupKey: string): Promise<Response> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.request().method() === 'DELETE' &&
+          new URL(res.url()).pathname === `${GROUP_MANAGEMENT_ENDPOINT}/${groupKey}`
+      ),
+      this.deleteConfirmButton.click(),
+    ]);
+    return response;
+  }
+
+  async cancelDelete() {
+    await this.deleteCancelButton.click();
+    await expect(this.deleteConfirmButton).toBeHidden();
   }
 
   get detailTabs(): Locator {
@@ -199,6 +261,10 @@ export class CaseManagementGroupsPage {
 
   memberRow(caseDefinitionKey: string): Locator {
     return this.memberRows.filter({hasText: caseDefinitionKey});
+  }
+
+  get memberTableHeader(): Locator {
+    return this.page.getByTestId(CASE_DEFINITION_GROUP_CONFIG_TEST_IDS.memberTableHeader);
   }
 
   get memberCount(): Locator {
@@ -282,6 +348,20 @@ export class CaseManagementGroupsPage {
     return response.request().postDataJSON();
   }
 
+  /** Clicks "Remove color" and returns the body of the PUT it sends. */
+  async clearColor(groupKey: string): Promise<Record<string, unknown>> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.request().method() === 'PUT' &&
+          new URL(res.url()).pathname === `${GROUP_MANAGEMENT_ENDPOINT}/${groupKey}`
+      ),
+      this.colorPanel.clearButton.click(),
+    ]);
+    expect(response.ok()).toBeTruthy();
+    return response.request().postDataJSON();
+  }
+
   // ─── Export / import ──────────────────────────────────────────────
 
   get exportButton(): Locator {
@@ -326,6 +406,7 @@ export class CaseManagementGroupsPage {
   }
 
   async exportGroup(): Promise<Download> {
+    await this.moreButton.click();
     const [download] = await Promise.all([
       this.page.waitForEvent('download'),
       this.exportButton.click(),

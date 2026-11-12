@@ -42,8 +42,11 @@ plus the settings as JSON — see [Plugins without a settings form](#plugins-wit
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
 {% endstep %}
 {% step %}
-In **Permissions**, review everything the plugin requests, tick **I trust this plugin and accept
-the requested permissions**, and click **Save configuration**
+In **Permissions & plugins**, bind the contracts the plugin calls, if any, review everything the
+plugin requests, tick **I trust this plugin and accept the requested permissions**, and click
+**Save configuration**
+
+Binding contracts is explained in [Contracts between plugins](contracts.md#binding-a-contract).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/09-configure-plugin-permissions.png" alt=""><figcaption>Permissions</figcaption></figure>
 
@@ -78,7 +81,7 @@ The same applies to an action's inputs in the process modeler — see
 ## Reviewing permissions
 
 The permissions step is the security decision of the whole flow: everything listed becomes
-available to the plugin, and nothing else ever is. It shows up to four sections:
+available to the plugin, and nothing else ever is. It shows up to four permission sections:
 
 | Section | Meaning |
 |---------|---------|
@@ -86,6 +89,9 @@ available to the plugin, and nothing else ever is. It shows up to four sections:
 | **API endpoints** | Exactly which Valtimo API endpoints the plugin may call, with a description of each. This list bounds everything the plugin can read or change in Valtimo. |
 | **Events** | The platform events the plugin will receive. |
 | **External connections** | The outside addresses the plugin can connect to — and nothing else. Addresses come from the plugin package itself ("Required by the plugin") or from a URL entered in this configuration's settings. Check that you recognize each one. |
+
+When the plugin uses or offers contracts, the step also shows **Called contracts** and
+**Provided contracts** — see [Contracts between plugins](contracts.md#binding-a-contract).
 
 {% hint style="warning" %}
 Accepting is all-or-nothing and must match what the plugin declares — the request list cannot be
@@ -108,17 +114,18 @@ reviews and accepts again.
 On the **Plugins** page, open the row menu (⋮) of the configuration and click **Edit**
 {% endstep %}
 {% step %}
-Change the name or the plugin's settings
+Change the name, the plugin's settings, or the contract bindings
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/16-edit-configuration-modal.png" alt=""><figcaption>Edit configuration</figcaption></figure>
 {% endstep %}
 {% step %}
-Review the **Permissions** step (shown read-only) and save
+In **Permissions & plugins**, change the contract bindings if needed, review the permissions
+(shown read-only) and save
 {% endstep %}
 {% endstepper %}
 
-Editing changes the name and settings only — the accepted permissions cannot be widened or
-narrowed through the edit flow. Secret values are never shown when editing; leaving a secret
+Editing changes the name, settings and contract bindings only — the accepted permissions cannot
+be widened or narrowed through the edit flow. Secret values are never shown when editing; leaving a secret
 field untouched keeps the stored value.
 
 Deleting a configuration is covered in
