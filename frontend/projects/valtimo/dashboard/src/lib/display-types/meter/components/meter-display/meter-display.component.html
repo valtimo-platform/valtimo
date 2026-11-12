@@ -15,9 +15,15 @@
   -->
 
 <section class="valtimo-donut-widget__header">
-  <h3 class="valtimo-donut-widget__title">{{ displayTypeProperties.title }}</h3>
+  <h3 class="valtimo-donut-widget__title" [title]="displayTypeProperties.title">
+    {{ displayTypeProperties.title }}
+  </h3>
 
-  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle">
+  <span
+    *ngIf="displayTypeProperties.subtitle"
+    class="valtimo-donut-widget__subtitle"
+    [title]="displayTypeProperties.subtitle"
+  >
     {{ displayTypeProperties.subtitle }}
   </span>
 </section>
