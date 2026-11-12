@@ -57,7 +57,12 @@ open class DocumentOpenSearchIndexInitializer(
     private var lastWriteFailureAt: Long = 0L
 
     open fun ensureAllIndices() {
-        activeDefinitionVersions().forEach { (key, versionTag) -> ensureIndex(key, versionTag) }
+        // Isolate per definition: one definition whose index can't be created (shard limit, read-only block,
+        // mapping error) must not stop the others — otherwise a reconcile cycle aborts before indexing anything.
+        activeDefinitionVersions().forEach { (key, versionTag) ->
+            runCatching { ensureIndex(key, versionTag) }
+                .onFailure { logger.error(it) { "Could not ensure OpenSearch index for '$key' v'$versionTag' — skipping this cycle" } }
+        }
     }
 
     /**

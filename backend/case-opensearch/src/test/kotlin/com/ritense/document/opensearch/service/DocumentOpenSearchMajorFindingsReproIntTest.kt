@@ -328,6 +328,35 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
             .isNotNull()
     }
 
+    @Test
+    fun `F10 an active version whose index cannot be created must not abort the whole reconcile cycle`() {
+        val house = createHouseDocument("fine")
+        backdate(house, hoursAgo = 1)
+        clearIndex()
+        val seededWatermark = LocalDateTime.now().minusHours(3)
+        stateRepository.save(OpenSearchReconcileState(watermark = seededWatermark))
+
+        // 'person' is a second active definition. Drop its index so ensureIndex must re-create it, then cap shards
+        // so that creation is refused — while 'house' keeps its index and short-circuits.
+        dropConcretesBehind(indexNameResolver.writeAliasFor("person", TEST_VERSION_TAG))
+        capShardsAtCurrentCount()
+        assertThat(runCatching { indexInitializer.ensureIndex("person", TEST_VERSION_TAG) }.isFailure)
+            .`as`("precondition: the cluster refuses the active version's new index").isTrue()
+
+        freshReconcileService().reconcile()
+        resetShardLimit()
+        refreshIndex()
+
+        assertSoftly { soft ->
+            soft.assertThat(findIndexedById(house.id().id.toString()))
+                .`as`("one active version's index-creation failure must not stop other cases from being indexed")
+                .isNotNull()
+            soft.assertThat(stateRepository.findAll().single().watermark)
+                .`as`("the reconcile watermark must still advance")
+                .isAfter(seededWatermark)
+        }
+    }
+
     // ---------------------------------------------------------------- F11
 
     @Test
