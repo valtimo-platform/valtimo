@@ -4531,6 +4531,7 @@
         "inProgress": "Herindexering bezig...",
         "errorTitle": "Fout",
         "viewErrorLogs": "Foutlogs bekijken",
+        "viewRejectedCases": "Afgewezen zaken bekijken",
         "pruneOrphans": "Verweesde documenten opschonen",
         "recreateIndex": "Index opnieuw opbouwen / migreren",
         "documentDefinitionName": "Documentdefinitie",

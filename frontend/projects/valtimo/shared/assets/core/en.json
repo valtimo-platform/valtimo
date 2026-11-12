@@ -4531,6 +4531,7 @@
         "inProgress": "Reindexing in progress...",
         "errorTitle": "Error",
         "viewErrorLogs": "View error logs",
+        "viewRejectedCases": "View rejected cases",
         "pruneOrphans": "Prune orphaned documents",
         "recreateIndex": "Rebuild / migrate index",
         "documentDefinitionName": "Document definition",

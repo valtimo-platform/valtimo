@@ -233,10 +233,16 @@
           <svg cdsIcon="warning--alt" size="16"></svg>
           {{ 'adminSettings.opensearch.reindex.completedWithErrors' | translate:{skipped: data.skippedCount || 0} }}
         </span>
-        <a class="opensearch-reindex__error-link" (click)="navigateToLogs(data)">
-          {{ 'adminSettings.opensearch.reindex.viewErrorLogs' | translate }}
-          <svg cdsIcon="launch" size="16"></svg>
-        </a>
+        <div class="opensearch-reindex__error-actions">
+          <a class="opensearch-reindex__error-link" (click)="onTabSelected(OpensearchTab.REJECTED_CASES)">
+            {{ 'adminSettings.opensearch.reindex.viewRejectedCases' | translate }}
+            <svg cdsIcon="arrow--right" size="16"></svg>
+          </a>
+          <a class="opensearch-reindex__error-link" (click)="navigateToLogs(data)">
+            {{ 'adminSettings.opensearch.reindex.viewErrorLogs' | translate }}
+            <svg cdsIcon="launch" size="16"></svg>
+          </a>
+        </div>
       }
 
       @if (data.error) {

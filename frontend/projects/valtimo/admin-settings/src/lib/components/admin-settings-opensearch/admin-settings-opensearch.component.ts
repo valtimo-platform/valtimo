@@ -59,7 +59,7 @@ import {
   TabsModule,
   TagModule,
 } from 'carbon-components-angular';
-import {Launch16, Renew16, WarningAlt16} from '@carbon/icons';
+import {ArrowRight16, Launch16, Renew16, WarningAlt16} from '@carbon/icons';
 import {
   ActionItem,
   CarbonListModule,
@@ -265,7 +265,7 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     private readonly _iconService: IconService,
     private readonly _notificationService: GlobalNotificationService
   ) {
-    this._iconService.registerAll([Launch16, Renew16, WarningAlt16]);
+    this._iconService.registerAll([ArrowRight16, Launch16, Renew16, WarningAlt16]);
   }
 
   public ngOnInit(): void {
