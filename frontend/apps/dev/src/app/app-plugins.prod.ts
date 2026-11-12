@@ -16,7 +16,9 @@
 
 // Used by production/release builds via angular.json fileReplacements (swapped
 // in for app-plugins.ts). CI installs the @valtimo-plugins/* packages from
-// release-plugins.json before building.
+// release-plugins.json before building; @epistola.app/valtimo-plugin is a
+// regular dependency in package.json.
+import {EpistolaPluginModule, epistolaPluginSpecification} from '@epistola.app/valtimo-plugin';
 import {SmtpMailPluginModule, smtpmailPluginSpecification} from '@valtimo-plugins/smtpmail';
 import {
   DocumentGeneratorPluginModule,
@@ -28,6 +30,7 @@ import {
 } from '@valtimo-plugins/freemarker';
 
 export const pluginImports = [
+  EpistolaPluginModule,
   SmtpMailPluginModule,
   DocumentGeneratorPluginModule,
   MailTemplatePluginModule,
@@ -35,6 +38,7 @@ export const pluginImports = [
 ];
 
 export const pluginSpecifications = [
+  epistolaPluginSpecification,
   smtpmailPluginSpecification,
   documentGeneratorPluginSpecification,
   mailTemplatePluginSpecification,

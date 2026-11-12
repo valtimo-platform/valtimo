@@ -200,6 +200,51 @@ services:
         environment:
             API_TIMEOUT: "240s"
 
+    # Epistola Document Suite (document generation, used by the Epistola plugin)
+    # The demo profile seeds tenant "demo" with API key epk_demo_000000000000000000000000000000000000.
+    epistola:
+        image: ghcr.io/epistola-app/epistola-suite:1.5.1-demo
+        container_name: gzac-docker-compose-epistola
+        platform: linux/amd64
+        # A fixed budget for the image's JVM memory calculator, which otherwise sizes from what the
+        # (crowded) Docker VM has left and refuses to start when that is too little.
+        mem_limit: 1200m
+        ports:
+            - "4000:4000"
+        environment:
+            BPL_JVM_THREAD_COUNT: "100"
+            SPRING_PROFILES_ACTIVE: demo,localauth
+            SPRING_DATASOURCE_URL: jdbc:postgresql://epistola-database:5432/epistola
+            SPRING_DATASOURCE_USERNAME: epistola
+            SPRING_DATASOURCE_PASSWORD: password
+        healthcheck:
+            # The image has no curl/wget; probe /readyz with bash's /dev/tcp.
+            test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/4000 && printf 'GET /readyz HTTP/1.0\\r\\n\\r\\n' >&3 && head -1 <&3 | grep -q ' 200'"]
+            interval: 10s
+            timeout: 5s
+            retries: 30
+            start_period: 60s
+        depends_on:
+            epistola-database:
+                condition: service_healthy
+
+    epistola-database:
+        image: postgres:17-alpine
+        container_name: gzac-docker-compose-epistola-database
+        ports:
+            - "54326:5432"
+        environment:
+            POSTGRES_USER: epistola
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: epistola
+        volumes:
+            - epistola-database-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U epistola"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
     # ZGW
 
     openzaak:
@@ -829,3 +874,4 @@ volumes:
     gzac-opensearch-data:
     plugin-host-database-data:
     plugin-host-storage:
+    epistola-database-data:

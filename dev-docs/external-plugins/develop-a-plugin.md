@@ -682,6 +682,9 @@ compiles the matching source file (`x.tsx`, `.ts`, `.jsx`, or `.js`) into that b
 esbuild. Bundles render at an **opaque origin** inside a sandboxed iframe and **never hold a
 token** — all data access goes through the SDK's parent-proxy, and the parent enforces the
 configuration's endpoint allowlist plus the user's own permissions.
+The sandbox is `allow-scripts allow-forms allow-downloads`: a bundle may offer a file it holds
+as a download (start it from a click: browsers do not guarantee to require one, but users expect
+it), but cannot open popups or navigate the page.
 
 ```tsx
 import { ValtimoPluginSDK } from "@valtimo/plugin-sdk/frontend";

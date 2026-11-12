@@ -19,13 +19,16 @@
   or token — see the parent-proxy model). `allow-forms` lets a plugin use an idiomatic <form> to
   submit (e.g. a task-form): without it the browser blocks the submit event before the plugin's
   handler can forward it via postMessage. It grants nothing beyond what allow-scripts already can
-  (a script can already POST via fetch), and does not weaken origin isolation.
+  (a script can already POST via fetch), and does not weaken origin isolation. `allow-downloads`
+  lets a plugin offer a file it already holds (e.g. a generated PDF) as a download. It grants no
+  access to GZAC, but browsers do not guarantee that a download from the frame waits for a click,
+  so an installed plugin can save files without one.
 -->
 <iframe
   *ngIf="$trustedUrl() as url"
   #pluginIframe
   [src]="url"
   (load)="onIframeLoad()"
-  sandbox="allow-scripts allow-forms"
+  sandbox="allow-scripts allow-forms allow-downloads"
   class="external-plugin-iframe"
 ></iframe>

@@ -16,6 +16,21 @@ This starts the supporting services (database, Keycloak, message broker, …) in
 Docker and then launches the application. Once it's up, start one of the
 frontend apps to use it in the browser.
 
+## Epistola (document generation)
+
+The [Epistola](https://epistola.app) plugin (`app.epistola.valtimo:epistola-plugin`, version in the
+root `gradle.properties`) is part of the app. The stack runs the **Epistola Suite** demo image
+(`localhost:4000`, API at `localhost:4000/api`) with its own Postgres. The demo profile seeds tenant
+`demo` with API key `epk_demo_000000000000000000000000000000000000`, and the Suite UI accepts
+`admin@local` / `admin`.
+
+`src/main/resources/config/plugin-configurations/epistola.pluginconfig.json` deploys one
+"Epistola Document Suite" configuration against it at startup. It reads `epistola.base-url`
+(`EPISTOLA_BASE_URL`), `EPISTOLA_API_KEY` and `EPISTOLA_TENANT_ID`, each with the demo values as
+default. Template sync is off: the app ships no templates of its own, so use the Suite's
+demo catalog or import a catalog of your own. The image is `linux/amd64` only and runs emulated
+on Apple silicon; give it a minute on first boot.
+
 ## External plugins
 
 The stack also brings up the **plugin host** (`localhost:8090`) and the **demo app**

@@ -1,0 +1,13 @@
+[
+    {
+        "id": "127835bc-1f75-4868-a676-6a132bbf6915",
+        "title": "Epistola Document Suite",
+        "pluginDefinitionKey": "epistola",
+        "properties": {
+            "baseUrl": "${epistola.base-url}",
+            "apiKey": "${EPISTOLA_API_KEY:epk_demo_000000000000000000000000000000000000}",
+            "tenantId": "${EPISTOLA_TENANT_ID:demo}",
+            "templateSyncEnabled": false
+        }
+    }
+]
