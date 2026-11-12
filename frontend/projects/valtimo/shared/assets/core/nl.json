@@ -4506,6 +4506,10 @@
     },
     "opensearch": {
       "title": "OpenSearch",
+      "tabs": {
+        "reindexRuns": "Herindexeringen",
+        "rejectedCases": "Afgewezen zaken"
+      },
       "reindex": {
         "title": "Herindexeringen",
         "description": "Herindexeer alle documenten van de database naar OpenSearch. Deze bewerking wordt op de achtergrond uitgevoerd.",
@@ -4575,7 +4579,7 @@
         "title": "Geweigerde dossiers",
         "description": "OpenSearch kon deze dossiers niet indexeren. Tot ze geïndexeerd zijn, gebruiken de dossierlijsten van hun dossierdefinities de database (PostgreSQL). OpenSearch probeert ze automatisch opnieuw met oplopende tussenpozen: na 10 minuten, daarna elk uur, daarna dagelijks. De oorzaak staat in het applicatielog.",
         "columns": {
-          "definitionName": "Dossierdefinitie",
+          "definitionName": "Documentdefinitie",
           "documentId": "Dossier",
           "attempts": "Pogingen",
           "firstRejectedOn": "Geweigerd sinds",

@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+// Keep the tab content's top padding (room below the tab bar for the intro text);
+// only drop the side/bottom padding so lists align with the page edges.
+:host ::ng-deep .cds--tab-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+  outline: none !important;
+}
+
 .opensearch-reindex {
   width: 100%;
   display: flex;
@@ -21,14 +30,14 @@
   gap: 24px;
 
   // Fixed table layout so the expanded detail row can align its columns with the
-  // parent table columns: [expand] [status] [started] [finished] [progress].
-  // The expand column is pinned to 3.5rem and each data column is set to 25%.
+  // parent table columns: [expand] [status] [documentDefinition] [started] [finished] [progress].
+  // The expand column is pinned to 3.5rem and each data column is set to 20%.
   // Carbon renders the expanded cell with colspan = dataColumns + 2, which adds a
-  // phantom trailing column; giving the four columns 25% each (100% total, which
+  // phantom trailing column; giving the five columns 20% each (100% total, which
   // together with the fixed expand column over-claims the width) forces the
   // browser to scale them to fill the row exactly and collapse that phantom
-  // column to zero — so the four data columns fill the full width in equal
-  // quarters that the expanded grid (repeat(4, 1fr)) mirrors precisely.
+  // column to zero — so the five data columns fill the full width in equal
+  // fifths that the expanded grid (repeat(5, 1fr)) mirrors precisely.
   &__runs ::ng-deep .cds--data-table {
     table-layout: fixed;
 
@@ -37,7 +46,7 @@
     }
 
     thead th:not(.cds--table-expand) {
-      width: 25%;
+      width: 20%;
     }
   }
 
@@ -50,10 +59,11 @@
   &__expanded {
     padding: 8px 0 16px;
     display: grid;
-    // Four equal columns mirroring the (phantom-collapsed) table columns:
-    // 1 = status, 2 = started, 3 = finished, 4 = progress. Cell content is inset
-    // by 1rem (matching Carbon's cell padding) so it lines up with the headers.
-    grid-template-columns: repeat(4, 1fr);
+    // Five equal columns mirroring the (phantom-collapsed) table columns:
+    // 1 = status, 2 = documentDefinition, 3 = started, 4 = finished, 5 = progress.
+    // Cell content is inset by 1rem (matching Carbon's cell padding) so it lines up
+    // with the headers.
+    grid-template-columns: repeat(5, 1fr);
     column-gap: 0;
     row-gap: 8px;
     align-items: start;
@@ -74,12 +84,13 @@
     color: var(--cds-text-primary);
   }
 
-  // Progress bars align with "finished" and span the finished + progress columns.
+  // Progress bars fill the right-hand columns (after the label/value pair) up to
+  // the table edge: columns 3-5 (documentDefinition's value sits in column 2).
   // grid-row end must match the number of label/value rows (5) so the column
   // spans them exactly — a larger value adds empty rows whose row-gap leaves
   // dead space below the last label.
   &__results-column {
-    grid-column: 3 / span 2;
+    grid-column: 3 / span 3;
     grid-row: 1 / 6;
     padding-inline: 1rem;
     display: flex;
@@ -166,19 +177,14 @@
   }
 }
 
-.opensearch-rejections {
+.opensearch-section {
   display: flex;
   flex-direction: column;
-  gap: var(--cds-spacing-03);
-
-  &__title {
-    font-size: var(--cds-heading-03-font-size);
-    font-weight: var(--cds-heading-03-font-weight);
-    line-height: var(--cds-heading-03-line-height);
-    color: var(--cds-text-primary);
-  }
+  gap: var(--cds-spacing-05);
 
   &__description {
+    margin: 0;
+    max-width: 80ch; // readable measure for the multi-sentence intro; no Carbon token fits
     font-size: var(--cds-body-01-font-size);
     line-height: var(--cds-body-01-line-height);
     color: var(--cds-text-secondary);

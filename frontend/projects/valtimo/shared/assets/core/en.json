@@ -4506,6 +4506,10 @@
     },
     "opensearch": {
       "title": "OpenSearch",
+      "tabs": {
+        "reindexRuns": "Reindex runs",
+        "rejectedCases": "Rejected cases"
+      },
       "reindex": {
         "title": "Reindex Runs",
         "description": "Reindex all documents from the database to OpenSearch. This operation runs in the background.",
@@ -4575,7 +4579,7 @@
         "title": "Rejected cases",
         "description": "OpenSearch could not index these cases. Until they are indexed, the case lists of their case types use the database (PostgreSQL). OpenSearch retries them automatically at growing intervals: after 10 minutes, then hourly, then daily. The reason is in the application log.",
         "columns": {
-          "definitionName": "Case type",
+          "definitionName": "Document definition",
           "documentId": "Case",
           "attempts": "Attempts",
           "firstRejectedOn": "Rejected since",

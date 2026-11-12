@@ -22,9 +22,10 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {CommonModule, DatePipe} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {Router, RouterModule} from '@angular/router';
+import {ActivatedRoute, Params, Router, RouterModule} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BehaviorSubject,
@@ -55,6 +56,7 @@ import {
   LoadingModule,
   NotificationModule,
   ProgressBarModule,
+  TabsModule,
   TagModule,
 } from 'carbon-components-angular';
 import {Launch16, Renew16, WarningAlt16} from '@carbon/icons';
@@ -69,6 +71,7 @@ import {
 } from '@valtimo/components';
 import {GlobalNotificationService, Page} from '@valtimo/shared';
 import {AdminSettingsManagementApiService} from '../../services';
+import {OPENSEARCH_TAB_PARAM, OPENSEARCH_TEST_IDS} from '../../constants';
 import {
   IndexRejectionDto,
   ReindexStatusDto,
@@ -78,6 +81,11 @@ import {
 } from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-modal.component';
+
+enum OpensearchTab {
+  REINDEX_RUNS = 'reindexRuns',
+  REJECTED_CASES = 'rejectedCases',
+}
 
 @Component({
   standalone: true,
@@ -93,6 +101,7 @@ import {StartReindexModalComponent} from '../start-reindex-modal/start-reindex-m
     LoadingModule,
     NotificationModule,
     ProgressBarModule,
+    TabsModule,
     TagModule,
     CarbonListModule,
     ConfirmationModalModule,
@@ -110,8 +119,16 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
   private readonly _manualRefresh$ = new BehaviorSubject<void>(undefined);
   private readonly _silentRefresh$ = new Subject<void>();
 
+  protected readonly testIds = OPENSEARCH_TEST_IDS;
+  protected readonly OpensearchTab = OpensearchTab;
+  protected readonly $activeTab = toSignal(
+    this._route.queryParams.pipe(map(params => this._getTab(params))),
+    {initialValue: this._getTab(this._route.snapshot.queryParams)}
+  );
+
   public readonly fields: ColumnConfig[] = [
     {key: 'statusTag', label: 'adminSettings.opensearch.reindex.columns.status', viewType: ViewType.TAGS},
+    {key: 'documentDefinition', label: 'adminSettings.opensearch.reindex.columns.documentDefinition', viewType: ViewType.TEXT},
     {key: 'startedOn', label: 'adminSettings.opensearch.reindex.columns.startedOn', viewType: ViewType.DATE_TIME},
     {key: 'finishedOn', label: 'adminSettings.opensearch.reindex.columns.finishedOn', viewType: ViewType.DATE_TIME},
     {key: 'progress', label: 'adminSettings.opensearch.reindex.columns.progress', viewType: ViewType.TEXT},
@@ -149,11 +166,13 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       if (page.content.length === 0) {
         return of([]);
       }
+      const allDefinitionsKey = 'adminSettings.opensearch.reindex.allDocumentDefinitions';
       const statusKeys = page.content.map(run => `adminSettings.opensearch.reindex.statuses.${run.status}`);
-      return this._translateService.get(statusKeys).pipe(
+      return this._translateService.get([...statusKeys, allDefinitionsKey]).pipe(
         map(translations => page.content.map(run => ({
           ...run,
           progress: `${run.processedCount} / ${run.totalCount}`,
+          documentDefinition: run.scope?.documentDefinitionName || translations[allDefinitionsKey],
           statusTag: {
             content: translations[`adminSettings.opensearch.reindex.statuses.${run.status}`],
             type: this._getStatusTagType(run.status),
@@ -216,7 +235,10 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     )
   ).pipe(
     switchMap(({topology, showLoading}) => {
-      if (!topology?.rejectedDefinitions?.length) return of(null);
+      if (!topology?.rejectedDefinitions?.length) {
+        this.rejectionsLoading$.next(false);
+        return of(null);
+      }
       if (showLoading) this.rejectionsLoading$.next(true);
 
       return this._apiService
@@ -238,6 +260,7 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     private readonly _apiService: AdminSettingsManagementApiService,
     private readonly _documentService: DocumentService,
     private readonly _translateService: TranslateService,
+    private readonly _route: ActivatedRoute,
     private readonly _router: Router,
     private readonly _iconService: IconService,
     private readonly _notificationService: GlobalNotificationService
@@ -304,6 +327,20 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
         takeUntil(this._destroy$)
       )
       .subscribe(() => this._silentRefresh$.next());
+  }
+
+  // Carbon also emits for the already active tab on load, so only navigate on a real change.
+  public onTabSelected(tab: OpensearchTab): void {
+    if (tab === this.$activeTab()) return;
+
+    this._router.navigate([], {
+      relativeTo: this._route,
+      queryParams: {
+        [OPENSEARCH_TAB_PARAM]: tab === OpensearchTab.REJECTED_CASES ? tab : null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   public onPageChange(page: number): void {
@@ -434,6 +471,12 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     });
 
     if (error.status === 409) this._manualRefresh$.next();
+  }
+
+  private _getTab(params: Params): OpensearchTab {
+    return params[OPENSEARCH_TAB_PARAM] === OpensearchTab.REJECTED_CASES
+      ? OpensearchTab.REJECTED_CASES
+      : OpensearchTab.REINDEX_RUNS;
   }
 
   private _getStatusTagType(status: string): string {
