@@ -181,6 +181,64 @@ describe("origin pinning", () => {
     await expect(promise).resolves.toEqual({ status: 200, body: { id: "123" } });
   });
 
+  it("queues installArtifact until init pins the origin, then posts it to that origin", async () => {
+    sdk = new ValtimoPluginSDK();
+    sdk.installArtifact("pub-1", "art-1");
+
+    expect(postedMessages.filter((m) => m.event === "installArtifact")).toEqual([]);
+
+    await initFromParent();
+    const posted = postedMessages.filter((m) => m.event === "installArtifact");
+    expect(posted).toEqual([
+      {
+        source: "valtimo-plugin",
+        event: "installArtifact",
+        payload: { publicationId: "pub-1", artifactId: "art-1" },
+        targetOrigin: PARENT_ORIGIN,
+      },
+    ]);
+  });
+
+  it("queues locationChanged until init pins the origin, then posts it to that origin", async () => {
+    sdk = new ValtimoPluginSDK();
+    sdk.reportLocation("/catalog/pub-1", "Bezwaar");
+
+    expect(postedMessages.filter((m) => m.event === "locationChanged")).toEqual([]);
+
+    await initFromParent();
+    const posted = postedMessages.filter((m) => m.event === "locationChanged");
+    expect(posted).toEqual([
+      {
+        source: "valtimo-plugin",
+        event: "locationChanged",
+        payload: { path: "/catalog/pub-1", title: "Bezwaar" },
+        targetOrigin: PARENT_ORIGIN,
+      },
+    ]);
+  });
+
+  it("omits the title from locationChanged when none is given", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+
+    sdk.reportLocation("/catalog?q=tax");
+
+    expect(postedMessages.at(-1)!.payload).toEqual({ path: "/catalog?q=tax" });
+  });
+
+  it("passes navigateTo from the pinned parent to the handler, and ignores it from other origins", async () => {
+    sdk = new ValtimoPluginSDK();
+    const handler = vi.fn();
+    sdk.onNavigateTo(handler);
+    await initFromParent();
+
+    sendFromParent("navigateTo", { path: "/catalog?q=tax" });
+    sendFromParent("navigateTo", { path: "/catalog/evil" }, "http://evil.example");
+    sendFromParent("navigateTo", { path: 42 });
+
+    expect(handler.mock.calls).toEqual([["/catalog?q=tax"]]);
+  });
+
   it("still sends the credential-free handshake events to '*' before init (compat)", () => {
     sdk = new ValtimoPluginSDK();
     sdk.emit("ready", {});
@@ -580,11 +638,29 @@ describe("automatic height reporting", () => {
     for (const frame of frames) frame(0);
   }
 
-  function setDocumentHeight(height: number): void {
+  function setLayout({
+    contentHeight,
+    bodyScrollHeight = 0,
+    viewportHeight = 0,
+  }: {
+    contentHeight: number;
+    bodyScrollHeight?: number;
+    viewportHeight?: number;
+  }): void {
+    vi.spyOn(document.documentElement, "getBoundingClientRect").mockReturnValue(
+      DOMRect.fromRect({ x: 0, y: 0, width: 0, height: contentHeight })
+    );
+    vi.spyOn(document.body, "getBoundingClientRect").mockReturnValue(DOMRect.fromRect({ x: 0, y: 0 }));
+    Object.defineProperty(document.body, "scrollHeight", { configurable: true, value: bodyScrollHeight });
+    // The root's scrollHeight never drops below the viewport; the SDK must not rely on it.
     Object.defineProperty(document.documentElement, "scrollHeight", {
       configurable: true,
-      value: height,
+      value: Math.max(contentHeight, viewportHeight),
     });
+  }
+
+  function setDocumentHeight(height: number): void {
+    setLayout({ contentHeight: height });
   }
 
   function heightEmits(): PostedMessage[] {
@@ -663,6 +739,32 @@ describe("automatic height reporting", () => {
     triggerResize();
     flushFrames();
     expect(heightEmits()).toHaveLength(2);
+  });
+
+  it("reports a height below the iframe's own height, so the iframe can shrink", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+
+    setLayout({ contentHeight: 900 });
+    triggerResize();
+    flushFrames();
+
+    setLayout({ contentHeight: 300, viewportHeight: 900 });
+    triggerResize();
+    flushFrames();
+
+    expect(heightEmits().map((m) => m.payload.height)).toEqual([900, 300]);
+  });
+
+  it("includes content that overflows the root box", async () => {
+    sdk = new ValtimoPluginSDK();
+    await initFromParent();
+
+    setLayout({ contentHeight: 200, bodyScrollHeight: 350 });
+    triggerResize();
+    flushFrames();
+
+    expect(heightEmits()[0].payload).toEqual({ height: 350 });
   });
 
   it("clamps a runaway height instead of forwarding it", async () => {

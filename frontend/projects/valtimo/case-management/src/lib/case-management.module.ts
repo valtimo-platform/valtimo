@@ -198,5 +198,6 @@ import {CaseDefinitionGroupListComponent} from './components/case-definition-gro
     CaseDefinitionGroupListComponent,
   ],
   providers: [TabManagementService],
+  exports: [CaseManagementUploadComponent],
 })
 export class CaseManagementModule {}

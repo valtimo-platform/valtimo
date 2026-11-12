@@ -498,6 +498,8 @@ policy.
 | `submitTask(data)` | Task forms (Levels 0/1): hand the form data to GZAC → `Promise<{ok, errors?, fieldErrors?}>`; on `ok: false` render the errors, the form stays up. |
 | `emit("taskCompleted", {})` | Level 2 only: tell the parent *you* completed the task (via `gzacApi.asUser`), so it closes and refreshes. |
 | `offerPanel({bundleKey?, key, title, subtitle?, pinned?, context?})` | Show one of your `side-panel` bundles in GZAC's app-wide side panel (next section). |
+| `installArtifact(publicationId, artifactId)` | **Reserved for the Exchange page.** Asks the embedding Valtimo page to install a GZAC Exchange artifact. Only the Exchange page listens to it; on every other surface it is ignored. Plugin surfaces should not use it. |
+| `reportLocation(path, title?)` / `onNavigateTo(h)` | **Reserved for the Exchange page.** Keep the embedded catalog and the Valtimo page's URL, breadcrumb and title in step. Other surfaces ignore them. |
 | `withdrawPanel(key, bundleKey?)` | Remove the panel content you offered under `key`. |
 | `emit("notification", …)` / `emit("navigate", …)` | **Reserved** — defined in the message schema, but current GZAC frontends do not act on them. |
 | `setConfiguration(valid, title, data)` / `onPrefillConfiguration(h)` | The `config` bundle contract — next section. |

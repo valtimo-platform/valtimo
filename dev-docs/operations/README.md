@@ -10,3 +10,5 @@ Deployment and operational guides for Valtimo components.
 
 - [Plugin Host Deployment](./plugin-host-deployment.md) — Docker, environment reference, TLS,
   scaling, and operational runbook for the external plugin host
+- [Exchange integration](./exchange-integration.md) — configuring `valtimo.exchange.url`, timeouts,
+  maximum artifact size, and network requirements for installing from the GZAC Exchange

@@ -22,6 +22,7 @@ enum IncludeFunction {
   ObjectManagementEnabled,
   OpenSearchEnabled,
   ZgwFeaturesEnabled,
+  ExchangeEnabled,
 }
 
 interface MenuItem {

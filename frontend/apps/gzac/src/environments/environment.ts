@@ -94,6 +94,13 @@ export const environment: ValtimoConfig = {
             title: 'buildingBlockManagement.title',
             sequence: 2,
           },
+          {
+            link: ['/exchange'],
+            title: 'Exchange',
+            iconClass: 'icon mdi mdi-dot-circle',
+            sequence: 2.5,
+            includeFunction: IncludeFunction.ExchangeEnabled,
+          },
           {link: ['/case-management'], title: 'Cases', sequence: 3},
           {link: ['/dashboard-management'], title: 'Dashboard', sequence: 4},
           {link: ['/access-control'], title: 'Access Control', sequence: 5},

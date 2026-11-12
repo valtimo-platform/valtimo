@@ -181,6 +181,15 @@ const MENU_ITEM_CATALOG: MenuItemCatalogEntry[] = [
     category: 'admin',
   },
   {
+    itemId: 'exchange',
+    defaultTitleKey: 'Exchange',
+    link: '/exchange',
+    roles: [ROLE_ADMIN],
+    placement: 'admin',
+    category: 'admin',
+    includeFunction: IncludeFunction.ExchangeEnabled,
+  },
+  {
     itemId: 'dashboardManagement',
     defaultTitleKey: 'Dashboard',
     link: '/dashboard-management',

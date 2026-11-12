@@ -200,6 +200,9 @@ valtimo:
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
 
+    exchange:
+        url: ${VALTIMO_EXCHANGE_URL:http://localhost:5173}
+
     external-plugin:
         service-token:
             ttl: PT12H # 12 hours

@@ -39,7 +39,16 @@ import {
   NotificationModule,
   ProgressBarModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 import {
   BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS,
   STEPS,
@@ -130,6 +139,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
 
   private readonly _importFile$ = new BehaviorSubject<string | FormData>('');
   private readonly _subscriptions = new Subscription();
+  private _appliedPresetFile: File | null = null;
 
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
@@ -160,6 +170,21 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
 
         this.setZipFile(fileItem);
       })
+    );
+
+    this._subscriptions.add(
+      combineLatest([
+        this.buildingBlockManagementService.showUploadModal$,
+        this.buildingBlockManagementService.presetUploadFile$,
+      ])
+        .pipe(
+          filter(
+            ([open, presetFile]) =>
+              open && !!presetFile && presetFile !== this._appliedPresetFile
+          ),
+          map(([, presetFile]) => presetFile as File)
+        )
+        .subscribe(presetFile => this.applyPresetFile(presetFile))
     );
   }
 
@@ -218,6 +243,13 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
     this.showCheckboxError$.next(false);
   }
 
+  private applyPresetFile(presetFile: File): void {
+    this._appliedPresetFile = presetFile;
+    this.form
+      .get('file')
+      .setValue(new Set<FileItem>([{file: presetFile, state: 'edit', uploaded: false}]));
+  }
+
   private setZipFile(fileItem: FileItem): void {
     const file = fileItem?.file;
 
@@ -256,6 +288,10 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
 
   private resetModal(): void {
     setTimeout(() => {
+      if (this._appliedPresetFile) {
+        this._appliedPresetFile = null;
+        this.form.reset({file: new Set<any>()});
+      }
       this.activeStep$.next(UPLOAD_STEP.PLUGINS);
       this.uploadStatus$.next(UPLOAD_STATUS.ACTIVE);
       this.showCheckboxError$.next(false);

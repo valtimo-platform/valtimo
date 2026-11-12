@@ -4288,6 +4288,34 @@
   "externalPluginPage": {
     "loadError": "This plugin page could not be loaded."
   },
+  "exchange": {
+    "notConfigured": "The Exchange is not configured.",
+    "notConfiguredDescription": "Ask your administrator to configure the Exchange URL.",
+    "loadError": "The Exchange could not be loaded. Check that it is reachable and that it allows Valtimo to embed it.",
+    "confirm": {
+      "title": "Install from the Exchange?",
+      "name": "Name",
+      "type": "Type",
+      "version": "Version",
+      "typeCaseDefinition": "Case definition",
+      "typeBuildingBlock": "Building block",
+      "compatibilityWarning": "Built for Valtimo {{valtimoVersion}}; this installation runs {{runningValtimoVersion}}.",
+      "dependencies": "Dependencies",
+      "noDependencies": "No dependencies.",
+      "installed": "Installed",
+      "notInstalled": "Not installed",
+      "plugin": "Plugin",
+      "missingBuildingBlocksWarning": "Install the missing building blocks first, or the case definition may not work.",
+      "install": "Install"
+    },
+    "install": {
+      "success": "Installed from the Exchange",
+      "successCaseDefinition": "The case definition was imported. You can find it under Cases.",
+      "successBuildingBlock": "The building block was imported. You can find it under Building blocks.",
+      "viewInstalled": "View",
+      "error": "The Exchange artifact could not be installed"
+    }
+  },
   "sidePanel": {
     "close": "Close panel",
     "loadError": "This panel could not be loaded.",

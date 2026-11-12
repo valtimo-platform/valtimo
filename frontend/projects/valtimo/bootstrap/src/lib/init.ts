@@ -18,8 +18,8 @@ import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {ConfigService, InterceptorSkip} from '@valtimo/shared';
 import {
   AdminSettingsService,
   hasSavedMenuConfiguration,
@@ -100,6 +100,26 @@ export function initializerFactory(
     }
   };
 
+  // One shared request: the CSP needs the Exchange origin and the menu needs the enabled flag.
+  // Lazy — must run after auth, like the other initializers.
+  let exchangeConfiguration: Promise<{enabled: boolean; url: string | null} | null> | null = null;
+  const getExchangeConfiguration = (): Promise<{enabled: boolean; url: string | null} | null> => {
+    if (!exchangeConfiguration) {
+      const apiBase = configService.config?.valtimoApi?.endpointUri;
+      exchangeConfiguration = apiBase
+        ? firstValueFrom(
+            injector
+              .get(HttpClient)
+              .get<{enabled: boolean; url: string | null}>(
+                `${apiBase}v1/exchange/configuration`,
+                {headers: new HttpHeaders().set(InterceptorSkip, '403,404')}
+              )
+          ).catch(() => null)
+        : Promise.resolve(null);
+    }
+    return exchangeConfiguration;
+  };
+
   // Initialize CSP after auth so we can fetch external plugin host origins and add them to
   // frame-src before the meta tag is inserted (CSP meta is immutable once parsed).
   const cspInitializer = async (): Promise<void> => {
@@ -125,6 +145,9 @@ export function initializerFactory(
           logger.debug('No external plugin host origins found for CSP augmentation:', error)
         );
     }
+
+    const exchange = await getExchangeConfiguration();
+    if (exchange?.enabled) collectOrigin(exchange.url);
 
     await initializeCsp(logger, configService, document, domSanitizer, [...pluginHostOrigins])();
   };
@@ -164,9 +187,16 @@ export function initializerFactory(
     }
   };
 
-  // These four initializers are order-independent (accent colors touch CSS custom properties, CSP
+  const exchangeInitializer = async (): Promise<void> => {
+    const exchange = await getExchangeConfiguration();
+    if (exchange?.enabled) {
+      configService.patchFeatureToggles({enableExchange: true});
+    }
+  };
+
+  // These five initializers are order-independent (accent colors touch CSS custom properties, CSP
   // inserts the meta tag, the menu patch only reads the DTO, and the OpenSearch check only patches
-  // its own toggle), so run them in parallel instead of serially blocking bootstrap on each round
+  // its own toggle, the Exchange check patches its own), so run them in parallel instead of serially blocking bootstrap on each round
   // trip. Each one handles its own failures, so this combined initializer cannot reject for
   // recoverable reasons.
   initializersArray.push(() =>
@@ -175,6 +205,7 @@ export function initializerFactory(
       cspInitializer(),
       menuConfigurationInitializer(),
       openSearchInitializer(),
+      exchangeInitializer(),
     ])
   );
 

@@ -166,6 +166,8 @@ mailing:
 valtimo:
     opensearch:
         enabled: ${VALTIMO_OPENSEARCH_ENABLED:false}
+    exchange:
+        url: ${VALTIMO_EXCHANGE_URL:}
     app:
         scheme: http
         hostname: ${VALTIMO_APP_HOSTNAME}

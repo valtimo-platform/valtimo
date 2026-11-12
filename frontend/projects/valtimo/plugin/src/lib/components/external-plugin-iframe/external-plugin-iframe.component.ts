@@ -62,6 +62,10 @@ const MAX_IFRAME_HEIGHT = 20000;
 
 const MAX_PANEL_TEXT_LENGTH = 200;
 
+const MAX_ID_LENGTH = 64;
+
+const MAX_PATH_LENGTH = 2000;
+
 /** Context keys that name the case; only GZAC's surface context may set them. */
 const CASE_CONTEXT_KEYS = ['documentId', 'caseDefinitionKey'];
 
@@ -108,6 +112,13 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     data: Record<string, unknown>;
   }>();
   @Output() public readyEvent = new EventEmitter<void>();
+  /** Exchange page only: no other host binds this output. */
+  @Output() public installArtifactEvent = new EventEmitter<{
+    publicationId: string;
+    artifactId: string;
+  }>();
+  /** Exchange page only: where the embedded app is, as a path plus optional query. */
+  @Output() public locationChangedEvent = new EventEmitter<{path: string; title?: string}>();
   /**
    * Emitted when a task-form bundle reports it has itself completed the user task (Level 2 — through
    * the plugin, under the downscoped user token). The host reacts by closing the task and refreshing
@@ -196,6 +207,11 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Exchange page only: ask the embedded app to show `path`. */
+  public navigateTo(path: string): void {
+    this._postToIframe('navigateTo', {path});
+  }
+
   public onIframeLoad(): void {
     this._postToIframe('init', {
       context: this.context,
@@ -250,6 +266,12 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
         break;
       case 'withdrawPanel':
         this._withdrawPanel(data.payload);
+        break;
+      case 'installArtifact':
+        this._handleInstallArtifact(data.payload);
+        break;
+      case 'locationChanged':
+        this._handleLocationChanged(data.payload);
         break;
     }
   }
@@ -366,6 +388,34 @@ export class ExternalPluginIframeComponent implements OnInit, OnDestroy {
   private _contextString(name: string): string | null {
     const value = this.context?.[name];
     return typeof value === 'string' && value ? value : null;
+  }
+
+  private _handleInstallArtifact(payload: unknown): void {
+    if (!payload || typeof payload !== 'object') return;
+    const {publicationId, artifactId} = payload as Record<string, unknown>;
+
+    if (!this._isId(publicationId) || !this._isId(artifactId)) return;
+
+    this.installArtifactEvent.emit({publicationId, artifactId});
+  }
+
+  private _handleLocationChanged(payload: unknown): void {
+    if (!payload || typeof payload !== 'object') return;
+    const {path, title} = payload as Record<string, unknown>;
+
+    const isPath =
+      typeof path === 'string' &&
+      path.startsWith('/') &&
+      !path.startsWith('//') &&
+      path.length <= MAX_PATH_LENGTH;
+    if (!isPath) return;
+
+    if (title === undefined) this.locationChangedEvent.emit({path});
+    else if (this._isPanelText(title)) this.locationChangedEvent.emit({path, title});
+  }
+
+  private _isId(value: unknown): value is string {
+    return typeof value === 'string' && value.length > 0 && value.length <= MAX_ID_LENGTH;
   }
 
   private _isPanelText(value: unknown): value is string {

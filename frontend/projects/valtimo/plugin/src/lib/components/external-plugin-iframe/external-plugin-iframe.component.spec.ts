@@ -250,6 +250,118 @@ describe('ExternalPluginIframeComponent', () => {
     });
   });
 
+  describe('install artifact', () => {
+    let iframe: HTMLIFrameElement;
+
+    beforeEach(() => {
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    const send = (payload: unknown, source: MessageEventSource | null): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event: 'installArtifact', payload},
+        source,
+      } as MessageEvent);
+
+    it('emits for a valid message from the iframe window', () => {
+      const spy = spyOn(component.installArtifactEvent, 'emit');
+
+      send({publicationId: 'pub-1', artifactId: 'art-1'}, iframe.contentWindow);
+
+      expect(spy).toHaveBeenCalledWith({publicationId: 'pub-1', artifactId: 'art-1'});
+    });
+
+    it('drops invalid payloads', () => {
+      const spy = spyOn(component.installArtifactEvent, 'emit');
+
+      send(null, iframe.contentWindow);
+      send({publicationId: 'pub-1'}, iframe.contentWindow);
+      send({publicationId: '', artifactId: 'art-1'}, iframe.contentWindow);
+      send({publicationId: 'pub-1', artifactId: 42}, iframe.contentWindow);
+      send({publicationId: 'p'.repeat(65), artifactId: 'art-1'}, iframe.contentWindow);
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('ignores a message from another window', () => {
+      const spy = spyOn(component.installArtifactEvent, 'emit');
+
+      send({publicationId: 'pub-1', artifactId: 'art-1'}, window);
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('location', () => {
+    let iframe: HTMLIFrameElement;
+
+    beforeEach(() => {
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    const send = (payload: unknown, source: MessageEventSource | null): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event: 'locationChanged', payload},
+        source,
+      } as MessageEvent);
+
+    it('emits a reported location from the iframe window', () => {
+      const spy = spyOn(component.locationChangedEvent, 'emit');
+
+      send({path: '/catalog?q=tax'}, iframe.contentWindow);
+      send({path: '/catalog/pub-1', title: 'Bezwaar'}, iframe.contentWindow);
+
+      expect(spy.calls.allArgs()).toEqual([
+        [{path: '/catalog?q=tax'}],
+        [{path: '/catalog/pub-1', title: 'Bezwaar'}],
+      ]);
+    });
+
+    it('drops invalid locations', () => {
+      const spy = spyOn(component.locationChangedEvent, 'emit');
+
+      send(null, iframe.contentWindow);
+      send({path: 'catalog'}, iframe.contentWindow);
+      send({path: '//evil.example/catalog'}, iframe.contentWindow);
+      send({path: `/${'a'.repeat(2000)}`}, iframe.contentWindow);
+      send({path: '/catalog/pub-1', title: ''}, iframe.contentWindow);
+      send({path: '/catalog/pub-1', title: 't'.repeat(201)}, iframe.contentWindow);
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('ignores a location from another window', () => {
+      const spy = spyOn(component.locationChangedEvent, 'emit');
+
+      send({path: '/catalog'}, window);
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('posts navigateTo to the iframe', () => {
+      const postMessageSpy = spyOn(iframe.contentWindow as Window, 'postMessage');
+
+      component.navigateTo('/catalog?q=tax');
+
+      expect(postMessageSpy.calls.mostRecent().args as unknown[]).toEqual([
+        {source: 'valtimo-host', event: 'navigateTo', payload: {path: '/catalog?q=tax'}},
+        '*',
+      ]);
+    });
+  });
+
   /**
    * The iframe is at an opaque origin, so a reported height is the only way the parent can size it —
    * and it is untrusted input from plugin-authored code. These cover both halves: that an opted-in

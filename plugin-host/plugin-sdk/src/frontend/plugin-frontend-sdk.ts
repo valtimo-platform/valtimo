@@ -52,6 +52,12 @@ interface ParentToIframeEvents {
     errors?: string[];
     fieldErrors?: Record<string, string>;
   };
+  /**
+   * Ask the embedded app to show `path` (path plus optional query, e.g. `/catalog?q=tax`). Sent only
+   * by the Exchange page, when the user navigates with its breadcrumb or the browser history.
+   * Register with {@link ValtimoPluginSDK.onNavigateTo}.
+   */
+  navigateTo: { path: string };
 }
 
 /** Events sent from the plugin iframe to the Angular parent. */
@@ -102,6 +108,17 @@ interface IframeToParentEvents {
   offerPanel: PanelOffer;
   /** Remove this configuration's panel content offered under `key`. Prefer {@link ValtimoPluginSDK.withdrawPanel}. */
   withdrawPanel: { bundleKey?: string; key: string };
+  /**
+   * Ask the embedding Valtimo page to install an Exchange artifact. Honoured only on the Exchange
+   * page; plugin surfaces should not use it. Prefer {@link ValtimoPluginSDK.installArtifact}.
+   */
+  installArtifact: { publicationId: string; artifactId: string };
+  /**
+   * Tell the embedding Valtimo page where the embedded app is (path plus optional query) and,
+   * optionally, the title of what it shows. Honoured only on the Exchange page, which mirrors it in
+   * its own URL and breadcrumb. Prefer {@link ValtimoPluginSDK.reportLocation}.
+   */
+  locationChanged: { path: string; title?: string };
 }
 
 /** Content offered to GZAC's side panel; see {@link IframeToParentEvents.offerPanel}. */
@@ -288,6 +305,13 @@ class ValtimoPluginSDK {
     });
   }
 
+  /** Register handler for the parent asking the app to show a path. Sent only by the Exchange page. */
+  public onNavigateTo(handler: EventHandler<string>): void {
+    this._on("navigateTo", (payload: ParentToIframeEvents["navigateTo"]) => {
+      if (typeof payload?.path === "string") handler(payload.path);
+    });
+  }
+
   // ---- Outgoing events ----
 
   /**
@@ -384,6 +408,16 @@ class ValtimoPluginSDK {
   /** Offer side-panel content to GZAC; see {@link IframeToParentEvents.offerPanel}. */
   public offerPanel(offer: PanelOffer): void {
     this.emit("offerPanel", offer);
+  }
+
+  /** Ask the embedding Valtimo page to install an Exchange artifact. Honoured only on the Exchange page. */
+  public installArtifact(publicationId: string, artifactId: string): void {
+    this.emit("installArtifact", { publicationId, artifactId });
+  }
+
+  /** Tell the embedding page where the app is; see {@link IframeToParentEvents.locationChanged}. Honoured only on the Exchange page. */
+  public reportLocation(path: string, title?: string): void {
+    this.emit("locationChanged", title === undefined ? { path } : { path, title });
   }
 
   /** Withdraw side-panel content this configuration offered under `key`. */
@@ -681,13 +715,24 @@ class ValtimoPluginSDK {
   }
 
   private _emitHeight(): void {
-    // scrollHeight rather than the observer's contentRect: the latter reports the element's own box,
-    // which for a `height: auto` <html> excludes margin-collapsed and overflowing children — the
-    // exact content a too-short iframe would clip.
-    const height = Math.min(Math.ceil(document.documentElement.scrollHeight), MAX_REPORTED_HEIGHT);
+    const height = Math.min(Math.ceil(this._contentHeight()), MAX_REPORTED_HEIGHT);
     if (height <= 0 || height === this._lastReportedHeight) return;
     this._lastReportedHeight = height;
     this.emit("resize", { height });
+  }
+
+  /**
+   * Height of the content, which may be less than the iframe. Not the root's scrollHeight: that never
+   * drops below the viewport — the iframe's own height — so an auto-sized iframe could only grow.
+   * The body's scroll area adds what overflows the root box, e.g. an open dropdown near the bottom.
+   */
+  private _contentHeight(): number {
+    const rootRect = document.documentElement.getBoundingClientRect();
+    const body = document.body;
+    if (!body) return rootRect.height;
+
+    const bodyBottom = body.getBoundingClientRect().top - rootRect.top + body.scrollHeight;
+    return Math.max(rootRect.height, bodyBottom);
   }
 
   /** Clean up event listener. Call this if you need to destroy the SDK instance. */

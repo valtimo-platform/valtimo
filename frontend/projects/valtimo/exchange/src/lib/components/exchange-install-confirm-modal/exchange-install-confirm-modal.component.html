@@ -1,0 +1,100 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal valtimoCdsModal size="sm" showFooter="true" [open]="open()" (close)="cancelEvent.emit()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="cancelEvent.emit()">
+    <h3 cdsModalHeaderHeading>{{ 'exchange.confirm.title' | translate }}</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent class="exchange-install-confirm-modal__content">
+    @if (artifact(); as artifact) {
+      <dl class="exchange-install-confirm-modal__details">
+        <dt>{{ 'exchange.confirm.name' | translate }}</dt>
+        <dd [attr.data-test-id]="testIds.name">{{ artifact.publicationName }}</dd>
+
+        <dt>{{ 'exchange.confirm.type' | translate }}</dt>
+        <dd [attr.data-test-id]="testIds.type">
+          {{
+            (artifact.type === 'CASE_DEFINITION'
+              ? 'exchange.confirm.typeCaseDefinition'
+              : 'exchange.confirm.typeBuildingBlock'
+            ) | translate
+          }}
+        </dd>
+
+        @if (artifact.versionTag) {
+          <dt>{{ 'exchange.confirm.version' | translate }}</dt>
+          <dd [attr.data-test-id]="testIds.version">{{ artifact.versionTag }}</dd>
+        }
+      </dl>
+
+      @if ($compatibilityNotification(); as notification) {
+        <cds-inline-notification
+          [attr.data-test-id]="testIds.compatibilityWarning"
+          [notificationObj]="notification"
+        ></cds-inline-notification>
+      }
+
+      <h5 class="exchange-install-confirm-modal__heading">
+        {{ 'exchange.confirm.dependencies' | translate }}
+      </h5>
+
+      @if (dependencies().length > 0) {
+        <ul class="exchange-install-confirm-modal__dependencies">
+          @for (status of dependencies(); track status.dependency.type + status.dependency.key) {
+            <li [attr.data-test-id]="testIds.dependency">
+              <span>
+                {{ status.dependency.title || status.dependency.key }}
+                @if (status.dependency.versionTag) {
+                  ({{ status.dependency.versionTag }})
+                }
+              </span>
+
+              @if (status.dependency.type === 'PLUGIN') {
+                <cds-tag type="gray">{{ 'exchange.confirm.plugin' | translate }}</cds-tag>
+              } @else if (status.installed) {
+                <cds-tag type="green">{{ 'exchange.confirm.installed' | translate }}</cds-tag>
+              } @else {
+                <cds-tag type="red" [attr.data-test-id]="testIds.dependencyMissing">
+                  {{ 'exchange.confirm.notInstalled' | translate }}
+                </cds-tag>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p>{{ 'exchange.confirm.noDependencies' | translate }}</p>
+      }
+
+      @if ($missingNotification(); as notification) {
+        <cds-inline-notification
+          [attr.data-test-id]="testIds.missingWarning"
+          [notificationObj]="notification"
+        ></cds-inline-notification>
+      }
+    }
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" [attr.data-test-id]="testIds.cancel" (click)="cancelEvent.emit()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [attr.data-test-id]="testIds.install" (click)="confirmEvent.emit()">
+      {{ 'exchange.confirm.install' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

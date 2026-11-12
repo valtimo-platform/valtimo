@@ -46,6 +46,8 @@ export class MenuIncludeService {
         return this.configService.getFeatureToggleObservable('enableOpenSearch', false);
       case IncludeFunction.ZgwFeaturesEnabled:
         return this.configService.getFeatureToggleObservable('enableZgwFeatures', false);
+      case IncludeFunction.ExchangeEnabled:
+        return this.configService.getFeatureToggleObservable('enableExchange', false);
       default:
         return of(true);
     }

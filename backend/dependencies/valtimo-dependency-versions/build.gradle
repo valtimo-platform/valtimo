@@ -44,6 +44,7 @@ dependencies {
         api(project(":backend:document-generation:local-document-generation"))
         api(project(":backend:document-generation:smartdocuments"))
         api(project(":backend:exact-plugin"))
+        api(project(":backend:exchange"))
         api(project(":backend:exporter"))
         api(project(":backend:form"))
         api(project(":backend:form-flow"))

@@ -4288,6 +4288,34 @@
   "externalPluginPage": {
     "loadError": "Deze pluginpagina kon niet worden geladen."
   },
+  "exchange": {
+    "notConfigured": "De Exchange is niet geconfigureerd.",
+    "notConfiguredDescription": "Vraag je beheerder om de Exchange-URL te configureren.",
+    "loadError": "De Exchange kon niet worden geladen. Controleer of deze bereikbaar is en of Valtimo de pagina mag insluiten.",
+    "confirm": {
+      "title": "Installeren vanuit de Exchange?",
+      "name": "Naam",
+      "type": "Type",
+      "version": "Versie",
+      "typeCaseDefinition": "Dossierdefinitie",
+      "typeBuildingBlock": "Bouwblok",
+      "compatibilityWarning": "Gemaakt voor Valtimo {{valtimoVersion}}; deze installatie draait op {{runningValtimoVersion}}.",
+      "dependencies": "Afhankelijkheden",
+      "noDependencies": "Geen afhankelijkheden.",
+      "installed": "Geïnstalleerd",
+      "notInstalled": "Niet geïnstalleerd",
+      "plugin": "Plugin",
+      "missingBuildingBlocksWarning": "Installeer eerst de ontbrekende bouwblokken, anders werkt de dossierdefinitie mogelijk niet.",
+      "install": "Installeren"
+    },
+    "install": {
+      "success": "Geïnstalleerd vanuit de Exchange",
+      "successCaseDefinition": "De dossierdefinitie is geïmporteerd. Je vindt deze onder Dossiers.",
+      "successBuildingBlock": "Het bouwblok is geïmporteerd. Je vindt het onder Bouwblokken.",
+      "viewInstalled": "Bekijken",
+      "error": "Het Exchange-artefact kon niet worden geïnstalleerd"
+    }
+  },
   "sidePanel": {
     "close": "Paneel sluiten",
     "loadError": "Dit paneel kon niet worden geladen.",
