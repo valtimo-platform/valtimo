@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {catchError, Observable, of} from 'rxjs';
 import {
   AdminSettingsLogoDto,
@@ -23,15 +23,20 @@ import {
   BaseApiService,
   ConfigService,
   CreateAdminSettingsLogoDto,
+  InterceptorSkip,
   Page,
 } from '@valtimo/shared';
 import {
   AccentColorsDto,
   FeatureToggleOverridesDto,
+  IndexRejectionDto,
   ReindexStatusDto,
+  RetryAllRejectionsResultDto,
+  RetryRejectionsResultDto,
   SearchEngineDto,
   StartReindexRequestDto,
   StartReindexResponseDto,
+  TopologyStatusDto,
   UpdateFeatureToggleDto,
 } from '../models';
 
@@ -116,7 +121,8 @@ export class AdminSettingsManagementApiService extends BaseApiService {
   public startReindex(request: StartReindexRequestDto = {}): Observable<StartReindexResponseDto> {
     return this.httpClient.post<StartReindexResponseDto>(
       this.getApiUrl('/management/v1/document-opensearch/reindex'),
-      request
+      request,
+      {headers: new HttpHeaders().set(InterceptorSkip, '400,409')}
     );
   }
 
@@ -137,6 +143,36 @@ export class AdminSettingsManagementApiService extends BaseApiService {
   public getReindexRun(runId: string): Observable<ReindexStatusDto> {
     return this.httpClient.get<ReindexStatusDto>(
       this.getApiUrl(`/management/v1/document-opensearch/reindex/${runId}`)
+    );
+  }
+
+  public getTopologyStatus(): Observable<TopologyStatusDto | null> {
+    return this.httpClient
+      .get<TopologyStatusDto>(this.getApiUrl('/management/v1/document-opensearch/topology'))
+      .pipe(catchError(() => of(null)));
+  }
+
+  public getIndexRejections(page: number, size: number): Observable<Page<IndexRejectionDto>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    return this.httpClient.get<Page<IndexRejectionDto>>(
+      this.getApiUrl('/management/v1/document-opensearch/rejections'),
+      {params}
+    );
+  }
+
+  public retryIndexRejections(documentIds: string[]): Observable<RetryRejectionsResultDto> {
+    return this.httpClient.post<RetryRejectionsResultDto>(
+      this.getApiUrl('/management/v1/document-opensearch/rejections/retry'),
+      {documentIds},
+      {headers: new HttpHeaders().set(InterceptorSkip, '400,409')}
+    );
+  }
+
+  public retryAllIndexRejections(): Observable<RetryAllRejectionsResultDto> {
+    return this.httpClient.post<RetryAllRejectionsResultDto>(
+      this.getApiUrl('/management/v1/document-opensearch/rejections/retry'),
+      {},
+      {headers: new HttpHeaders().set(InterceptorSkip, '400,409')}
     );
   }
 }

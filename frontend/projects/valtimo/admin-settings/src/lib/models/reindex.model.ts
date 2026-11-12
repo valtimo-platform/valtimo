@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-type ReindexStatus = 'RUNNING' | 'COMPLETED' | 'FAILED' | 'STOPPED';
+type ReindexStatus = 'RUNNING' | 'COMPLETED' | 'COMPLETED_WITH_ERRORS' | 'FAILED' | 'STOPPED';
 
 interface ReindexScope {
   pruneOrphans?: boolean;
@@ -48,6 +48,7 @@ interface StartReindexRequestDto {
   pruneOrphans?: boolean;
   documentDefinitionName?: string;
   modifiedAfter?: string;
+  recreateIndex?: boolean;
 }
 
 interface StartReindexResponseDto {
@@ -55,10 +56,40 @@ interface StartReindexResponseDto {
   runId: string;
 }
 
+interface TopologyStatusDto {
+  legacyOrStale: boolean;
+  available: boolean;
+  catchingUp?: boolean;
+  rejectedDefinitions?: string[];
+}
+
+interface IndexRejectionDto {
+  documentId: string;
+  definitionName: string;
+  attempts: number;
+  firstRejectedOn: string;
+  lastRejectedOn: string;
+  nextRetryOn: string;
+}
+
+interface RetryRejectionsResultDto {
+  indexed: string[];
+  stillRejected: string[];
+  deleted: string[];
+}
+
+interface RetryAllRejectionsResultDto {
+  scheduled: number;
+}
+
 export {
+  IndexRejectionDto,
   ReindexStatus,
   ReindexScope,
   ReindexStatusDto,
+  RetryAllRejectionsResultDto,
+  RetryRejectionsResultDto,
   StartReindexRequestDto,
   StartReindexResponseDto,
+  TopologyStatusDto,
 };

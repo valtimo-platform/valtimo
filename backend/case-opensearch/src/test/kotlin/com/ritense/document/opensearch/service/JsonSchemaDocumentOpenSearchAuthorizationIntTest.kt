@@ -221,7 +221,7 @@ class JsonSchemaDocumentOpenSearchAuthorizationIntTest : BaseOpenSearchIntegrati
                 NewDocumentRequest("house", "house", "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to "Test Street"),
@@ -262,7 +262,7 @@ class JsonSchemaDocumentOpenSearchAuthorizationIntTest : BaseOpenSearchIntegrati
                 NewDocumentRequest("house", "house", "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to "Test Street"),
@@ -303,7 +303,7 @@ class JsonSchemaDocumentOpenSearchAuthorizationIntTest : BaseOpenSearchIntegrati
                 NewDocumentRequest("house", "house", "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to "Test Street"),

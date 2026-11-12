@@ -25,6 +25,7 @@ import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -43,10 +44,59 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
     @Autowired
     lateinit var syncService: DocumentOpenSearchSyncService
 
+    @Autowired
+    lateinit var converter: JsonSchemaDocumentOsConverter
+
     @AfterEach
     fun cleanUp() {
         runWithoutAuthorization { documentService.removeDocuments("house") }
         clearIndex()
+    }
+
+    @Test
+    fun `upsertById provisions a missing index instead of auto-creating a rogue one`() {
+        val document = createDocument("needs-provisioning")
+        clearIndex()
+        unprovisionHouse()
+
+        syncService.upsertById(document.id().id)
+
+        refreshIndex()
+        assertHouseProperlyProvisioned()
+        assertThat(findIndexedOptional(document.id().toString())).isPresent
+    }
+
+    @Test
+    fun `indexChunk provisions a missing index instead of auto-creating a rogue one`() {
+        val document = createDocument("needs-provisioning")
+        clearIndex()
+        unprovisionHouse()
+
+        converter.indexChunk(listOf(converter.toOsDocument(document)))
+
+        refreshIndex()
+        assertHouseProperlyProvisioned()
+        assertThat(findIndexedOptional(document.id().toString())).isPresent
+    }
+
+    // Simulate a definition whose index was never (or failed to be) provisioned: drop its backing index so a
+    // write would otherwise hit a non-existent alias and auto-create a bare, unmapped rogue index under it.
+    private fun unprovisionHouse() {
+        val alias = indexNameResolver.indexNameFor("house")
+        elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias).keys
+            .forEach { indexInitializer.dropIndex(it) }
+        refreshIndex()
+        assertThat(elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).exists()).isFalse()
+    }
+
+    private fun assertHouseProperlyProvisioned() {
+        val alias = indexNameResolver.indexNameFor("house")
+        val backing = elasticsearchOperations.indexOps(IndexCoordinates.of(alias)).getAliasesForIndex(alias)
+        // A real alias over the deterministic per-version concrete, joined to the shared read alias — not a bare
+        // self-named index.
+        assertThat(backing.keys).containsExactly("${indexNameResolver.writeAliasFor("house", "1.0.0")}_initial")
+        assertThat(backing.values.flatten().map { it.alias })
+            .contains(alias, OpenSearchIndexNameResolver.READ_ALIAS)
     }
 
     @Test
@@ -57,7 +107,7 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         syncService.upsertById(document.id().id)
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().contentText).contains("live-street")
     }
@@ -71,7 +121,7 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         syncService.upsertById(document.id().id)
 
         refreshIndex()
-        val indexed = openSearchRepository.findById(document.id().toString())
+        val indexed = findIndexedOptional(document.id().toString())
         assertThat(indexed).isPresent
         assertThat(indexed.get().internalStatus).isEqualTo("started")
     }
@@ -83,7 +133,7 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         assertThatCode { syncService.upsertById(danglingId) }.doesNotThrowAnyException()
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(danglingId.toString())).isEmpty
+        assertThat(findIndexedOptional(danglingId.toString())).isEmpty
     }
 
     @Test
@@ -91,12 +141,12 @@ class DocumentOpenSearchLiveSyncIntTest : BaseOpenSearchIntegrationTest() {
         val document = createDocument("to-be-deleted")
         syncService.upsertById(document.id().id)
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isPresent
+        assertThat(findIndexedOptional(document.id().toString())).isPresent
 
         syncService.delete(document.id().id)
 
         refreshIndex()
-        assertThat(openSearchRepository.findById(document.id().toString())).isEmpty
+        assertThat(findIndexedOptional(document.id().toString())).isEmpty
     }
 
     private fun clearIndex() {

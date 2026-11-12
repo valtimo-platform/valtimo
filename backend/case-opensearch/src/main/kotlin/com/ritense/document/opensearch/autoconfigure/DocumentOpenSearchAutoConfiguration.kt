@@ -27,9 +27,11 @@ import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditi
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentCaseDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.authorization.mapper.JsonSchemaDocumentDefinitionOpenSearchMapper
 import com.ritense.document.opensearch.domain.OpenSearchReindexRun
+import com.ritense.document.opensearch.health.OpenSearchMappingHealthIndicator
+import com.ritense.document.opensearch.handler.DocumentDefinitionDeployedIndexListener
 import com.ritense.document.opensearch.handler.DocumentOpenSearchEventListener
 import com.ritense.document.opensearch.handler.PendingIndexDeletionListener
-import com.ritense.document.opensearch.repository.JsonSchemaDocumentOpenSearchRepository
+import com.ritense.document.opensearch.repository.DocumentIndexRejectionRepository
 import com.ritense.document.opensearch.repository.OpenSearchReconcileStateRepository
 import com.ritense.document.opensearch.repository.OpenSearchReindexRunRepository
 import com.ritense.document.opensearch.repository.PendingIndexDeletionRepository
@@ -41,12 +43,16 @@ import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitialize
 import com.ritense.document.opensearch.service.DocumentOpenSearchReconcileService
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.DocumentOpenSearchSyncService
+import com.ritense.document.opensearch.service.IndexCompletenessService
 import com.ritense.document.opensearch.service.JsonSchemaDocumentOpenSearchService
 import com.ritense.document.opensearch.service.JsonSchemaDocumentOsConverter
+import com.ritense.document.opensearch.service.OpenSearchIndexNameResolver
 import com.ritense.document.opensearch.service.OpenSearchReindexRunService
 import com.ritense.document.opensearch.service.ReindexProgressGate
+import com.ritense.document.opensearch.service.TopologyGate
 import com.ritense.document.opensearch.service.OpenSearchHealthService
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import com.ritense.document.opensearch.web.DocumentOpenSearchRejectionResource
 import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
 import com.ritense.document.opensearch.web.SearchEngineResource
 import com.ritense.document.repository.InternalCaseStatusRepository
@@ -62,6 +68,7 @@ import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import jakarta.persistence.EntityManager
 import net.javacrumbs.shedlock.core.LockProvider
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
@@ -111,30 +118,51 @@ class DocumentOpenSearchAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    fun openSearchIndexNameResolver(): OpenSearchIndexNameResolver =
+        OpenSearchIndexNameResolver()
+
+    @Bean
+    @ConditionalOnMissingBean
     fun documentOpenSearchQueryService(
         elasticsearchOperations: ElasticsearchOperations,
         authorizationService: AuthorizationService,
         translator: OpenSearchPermissionConditionTranslator,
+        resolver: OpenSearchIndexNameResolver,
     ): DocumentOpenSearchQueryService =
-        DocumentOpenSearchQueryService(elasticsearchOperations, authorizationService, translator)
+        DocumentOpenSearchQueryService(elasticsearchOperations, authorizationService, translator, resolver)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun indexCompletenessService(
+        rejectionRepository: DocumentIndexRejectionRepository,
+        reconcileStateRepository: OpenSearchReconcileStateRepository,
+        entityManager: EntityManager,
+        openSearchProperties: OpenSearchProperties,
+        transactionManager: PlatformTransactionManager,
+    ): IndexCompletenessService =
+        IndexCompletenessService(rejectionRepository, reconcileStateRepository, entityManager, openSearchProperties, transactionManager)
 
     @Bean
     @ConditionalOnMissingBean
     fun jsonSchemaDocumentOsConverter(
         objectMapper: ObjectMapper,
-        openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+        elasticsearchOperations: ElasticsearchOperations,
+        resolver: OpenSearchIndexNameResolver,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
+        indexCompletenessService: IndexCompletenessService,
     ): JsonSchemaDocumentOsConverter =
-        JsonSchemaDocumentOsConverter(objectMapper, openSearchRepository)
+        JsonSchemaDocumentOsConverter(objectMapper, elasticsearchOperations, resolver, indexInitializer, indexCompletenessService)
 
     @Bean
     @ConditionalOnMissingBean
     fun documentOpenSearchSyncService(
-        repository: JsonSchemaDocumentOpenSearchRepository,
+        elasticsearchOperations: ElasticsearchOperations,
         documentRepository: JsonSchemaDocumentRepository,
         converter: JsonSchemaDocumentOsConverter,
+        resolver: OpenSearchIndexNameResolver,
         transactionManager: PlatformTransactionManager,
     ): DocumentOpenSearchSyncService =
-        DocumentOpenSearchSyncService(repository, documentRepository, converter, transactionManager)
+        DocumentOpenSearchSyncService(elasticsearchOperations, documentRepository, converter, resolver, transactionManager)
 
     @Bean
     @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
@@ -163,7 +191,9 @@ class DocumentOpenSearchAutoConfiguration {
         transactionManager: PlatformTransactionManager,
         lockProvider: LockProvider,
         openSearchReindexRunService: OpenSearchReindexRunService,
-        openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+        resolver: OpenSearchIndexNameResolver,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
+        indexCompletenessService: IndexCompletenessService,
     ): DocumentOpenSearchReindexService =
         DocumentOpenSearchReindexService(
             entityManager,
@@ -172,7 +202,9 @@ class DocumentOpenSearchAutoConfiguration {
             transactionManager,
             lockProvider,
             openSearchReindexRunService,
-            openSearchRepository,
+            resolver,
+            indexInitializer,
+            indexCompletenessService,
         )
 
     @Bean
@@ -181,22 +213,28 @@ class DocumentOpenSearchAutoConfiguration {
     fun documentOpenSearchReconcileService(
         entityManager: EntityManager,
         converter: JsonSchemaDocumentOsConverter,
-        openSearchRepository: JsonSchemaDocumentOpenSearchRepository,
+        elasticsearchOperations: ElasticsearchOperations,
+        resolver: OpenSearchIndexNameResolver,
         reconcileStateRepository: OpenSearchReconcileStateRepository,
         pendingIndexDeletionRepository: PendingIndexDeletionRepository,
         transactionManager: PlatformTransactionManager,
         lockProvider: LockProvider,
         openSearchProperties: OpenSearchProperties,
+        indexInitializer: DocumentOpenSearchIndexInitializer,
+        indexCompletenessService: IndexCompletenessService,
     ): DocumentOpenSearchReconcileService =
         DocumentOpenSearchReconcileService(
             entityManager,
             converter,
-            openSearchRepository,
+            elasticsearchOperations,
+            resolver,
             reconcileStateRepository,
             pendingIndexDeletionRepository,
             transactionManager,
             lockProvider,
             openSearchProperties,
+            indexInitializer,
+            indexCompletenessService,
         )
 
     @Bean
@@ -214,8 +252,9 @@ class DocumentOpenSearchAutoConfiguration {
     @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
     fun pendingIndexDeletionListener(
         pendingIndexDeletionRepository: PendingIndexDeletionRepository,
+        rejectionRepository: DocumentIndexRejectionRepository,
     ): PendingIndexDeletionListener =
-        PendingIndexDeletionListener(pendingIndexDeletionRepository)
+        PendingIndexDeletionListener(pendingIndexDeletionRepository, rejectionRepository)
 
     @Order(294)
     @Bean
@@ -240,6 +279,14 @@ class DocumentOpenSearchAutoConfiguration {
     ): ReindexProgressGate =
         ReindexProgressGate(openSearchReindexRunService, openSearchProperties)
 
+    @Bean
+    @ConditionalOnMissingBean
+    fun topologyGate(
+        indexInitializer: DocumentOpenSearchIndexInitializer,
+        indexCompletenessService: IndexCompletenessService,
+    ): TopologyGate =
+        TopologyGate(indexInitializer, indexCompletenessService)
+
     @Bean("openSearchDocumentSearchService")
     fun openSearchDocumentSearchService(
         elasticsearchOperations: ElasticsearchOperations,
@@ -252,11 +299,12 @@ class DocumentOpenSearchAutoConfiguration {
         objectMapper: ObjectMapper,
         caseDefinitionService: CaseDefinitionService,
         internalCaseStatusRepository: InternalCaseStatusRepository,
+        resolver: OpenSearchIndexNameResolver,
     ): JsonSchemaDocumentOpenSearchService =
         JsonSchemaDocumentOpenSearchService(
             elasticsearchOperations, translator, authorizationService,
             jpaRepository, userManagementService, searchFieldService, outboxService, objectMapper,
-            caseDefinitionService, internalCaseStatusRepository,
+            caseDefinitionService, internalCaseStatusRepository, resolver,
         )
 
     @Bean("jpaDocumentSearchService")
@@ -284,9 +332,10 @@ class DocumentOpenSearchAutoConfiguration {
         jpaDocumentSearchService: JsonSchemaDocumentSearchService,
         searchEngineToggle: SearchEngineToggle,
         reindexProgressGate: ReindexProgressGate,
+        topologyGate: TopologyGate,
     ): DelegatingDocumentSearchService =
         DelegatingDocumentSearchService(
-            openSearchDocumentSearchService, jpaDocumentSearchService, searchEngineToggle, reindexProgressGate,
+            openSearchDocumentSearchService, jpaDocumentSearchService, searchEngineToggle, reindexProgressGate, topologyGate,
         )
 
     @Bean
@@ -296,22 +345,47 @@ class DocumentOpenSearchAutoConfiguration {
         openSearchProperties: OpenSearchProperties,
         featureToggleOverridesService: FeatureToggleOverridesService,
         indexInitializer: DocumentOpenSearchIndexInitializer,
+        indexCompletenessService: IndexCompletenessService,
     ): SearchEngineResource =
-        SearchEngineResource(toggle, openSearchProperties, featureToggleOverridesService, indexInitializer)
+        SearchEngineResource(toggle, openSearchProperties, featureToggleOverridesService, indexInitializer, indexCompletenessService)
 
     @Bean
     @ConditionalOnMissingBean
     fun documentOpenSearchReindexResource(
         reindexService: DocumentOpenSearchReindexService,
+        topologyGate: TopologyGate,
     ): DocumentOpenSearchReindexResource =
-        DocumentOpenSearchReindexResource(reindexService)
+        DocumentOpenSearchReindexResource(reindexService, topologyGate)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun documentOpenSearchRejectionResource(
+        indexCompletenessService: IndexCompletenessService,
+        reconcileService: ObjectProvider<DocumentOpenSearchReconcileService>,
+        searchEngineToggle: SearchEngineToggle,
+    ): DocumentOpenSearchRejectionResource =
+        DocumentOpenSearchRejectionResource(indexCompletenessService, reconcileService, searchEngineToggle)
 
     @Bean
     @ConditionalOnMissingBean
     fun documentOpenSearchIndexInitializer(
         elasticsearchOperations: ElasticsearchOperations,
+        resolver: OpenSearchIndexNameResolver,
+        caseDefinitionService: CaseDefinitionService,
+        openSearchProperties: OpenSearchProperties,
     ): DocumentOpenSearchIndexInitializer =
-        DocumentOpenSearchIndexInitializer(elasticsearchOperations)
+        DocumentOpenSearchIndexInitializer(
+            elasticsearchOperations, resolver, caseDefinitionService, openSearchProperties,
+        )
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
+    fun documentDefinitionDeployedIndexListener(
+        indexInitializer: DocumentOpenSearchIndexInitializer,
+        searchEngineToggle: SearchEngineToggle,
+    ): DocumentDefinitionDeployedIndexListener =
+        DocumentDefinitionDeployedIndexListener(indexInitializer, searchEngineToggle)
 
     /**
      * Resolves the active search engine on startup from configuration and the persisted feature-toggle
@@ -325,6 +399,7 @@ class DocumentOpenSearchAutoConfiguration {
         featureToggleOverridesService: FeatureToggleOverridesService,
         openSearchProperties: OpenSearchProperties,
         indexInitializer: DocumentOpenSearchIndexInitializer,
+        indexCompletenessService: IndexCompletenessService,
     ): ApplicationRunner = ApplicationRunner {
         if (!openSearchProperties.enabled) {
             toggle.set(SearchEngineToggle.Engine.POSTGRES)
@@ -340,9 +415,10 @@ class DocumentOpenSearchAutoConfiguration {
 
         if (toggle.isOpenSearchActive()) {
             try {
-                indexInitializer.ensureIndex()
+                indexInitializer.ensureAllIndices()
+                indexCompletenessService.initializeWatermarkIfAbsent()
             } catch (e: Exception) {
-                logger.warn(e) { "Failed to initialize OpenSearch index at startup — is OpenSearch running?" }
+                logger.warn(e) { "Failed to initialize OpenSearch indices at startup — is OpenSearch running?" }
             }
         }
     }
@@ -365,6 +441,19 @@ class DocumentOpenSearchAutoConfiguration {
         openSearchProperties: OpenSearchProperties,
     ): OpenSearchHealthScheduler =
         OpenSearchHealthScheduler(healthService, openSearchProperties)
+
+    @org.springframework.context.annotation.Configuration
+    @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.AbstractHealthIndicator"])
+    @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
+    class OpenSearchHealthIndicatorConfiguration {
+        @Bean
+        @ConditionalOnMissingBean(name = ["openSearchMappingHealthIndicator"])
+        fun openSearchMappingHealthIndicator(
+            topologyGate: TopologyGate,
+            indexInitializer: DocumentOpenSearchIndexInitializer,
+        ): OpenSearchMappingHealthIndicator =
+            OpenSearchMappingHealthIndicator(topologyGate, indexInitializer)
+    }
 
     companion object {
         private val logger = KotlinLogging.logger {}

@@ -30,12 +30,14 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.data.elasticsearch.core.query.StringQuery
 
 class DocumentOpenSearchQueryService(
     private val elasticsearchOperations: ElasticsearchOperations,
     private val authorizationService: AuthorizationService,
     private val translator: OpenSearchPermissionConditionTranslator,
+    private val resolver: OpenSearchIndexNameResolver,
 ) {
 
     /**
@@ -49,7 +51,11 @@ class DocumentOpenSearchQueryService(
 
         val dataQuery = StringQuery(combined.toString(), pageable)
 
-        val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
+        val hits = elasticsearchOperations.search(
+            dataQuery,
+            JsonSchemaDocumentOsDocument::class.java,
+            IndexCoordinates.of(resolver.indexNameFor(definitionName))
+        )
         val total = hits.totalHits
         val content = hits.searchHits.mapNotNull { hit -> hit.content }
         return PageImpl(content, pageable, total)
@@ -65,7 +71,11 @@ class DocumentOpenSearchQueryService(
         val combined = andAll(listOf(authQuery, idFilter))
 
         val query = StringQuery(combined.toString())
-        val hits = elasticsearchOperations.search(query, JsonSchemaDocumentOsDocument::class.java)
+        val hits = elasticsearchOperations.search(
+            query,
+            JsonSchemaDocumentOsDocument::class.java,
+            IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
+        )
         return hits.searchHits.firstOrNull()?.content
     }
 

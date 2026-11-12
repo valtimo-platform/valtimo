@@ -18,7 +18,9 @@ package com.ritense.document.opensearch.web
 
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.ReindexRequest
+import com.ritense.document.opensearch.service.TopologyGate
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
@@ -35,6 +37,7 @@ import java.util.UUID
 @RequestMapping("/api/management/v1/document-opensearch")
 class DocumentOpenSearchReindexResource(
     private val reindexService: DocumentOpenSearchReindexService,
+    private val topologyGate: TopologyGate,
 ) {
 
     @EndpointDescription(
@@ -43,8 +46,11 @@ class DocumentOpenSearchReindexResource(
     )
     @PostMapping("/reindex")
     fun reindex(@RequestBody(required = false) request: ReindexRequest?): ResponseEntity<Map<String, Any?>> {
-        val runId = reindexService.start(request ?: ReindexRequest())
-            ?: return ResponseEntity.status(409).body(mapOf("error" to "Re-index already in progress"))
+        val runId = try {
+            reindexService.start(request ?: ReindexRequest())
+        } catch (e: IllegalArgumentException) {
+            return ResponseEntity.badRequest().body(mapOf("error" to e.message))
+        } ?: return ResponseEntity.status(409).body(mapOf("error" to "Re-index already in progress"))
         return ResponseEntity.accepted().body(mapOf("status" to "started", "runId" to runId))
     }
 
@@ -73,4 +79,30 @@ class DocumentOpenSearchReindexResource(
     @GetMapping("/reindex/{runId}")
     fun statusById(@PathVariable runId: UUID): ResponseEntity<Map<String, Any?>> =
         ResponseEntity.ok(reindexService.status(runId))
+
+    @EndpointDescription(
+        en = "Get document-search index topology status",
+        nl = "Topologiestatus van de documentzoekindex ophalen",
+    )
+    @GetMapping("/topology")
+    fun topology(): ResponseEntity<Map<String, Any?>> {
+        val snapshot = try {
+            topologyGate.snapshot()
+        } catch (e: Exception) {
+            logger.debug(e) { "Could not determine OpenSearch topology status" }
+            return ResponseEntity.ok(mapOf("legacyOrStale" to false, "available" to false))
+        }
+        return ResponseEntity.ok(
+            mapOf(
+                "legacyOrStale" to snapshot.legacyOrStale,
+                "catchingUp" to snapshot.catchingUp,
+                "rejectedDefinitions" to snapshot.rejectedDefinitions.sorted(),
+                "available" to true,
+            )
+        )
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }

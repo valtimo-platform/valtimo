@@ -29,6 +29,7 @@ import com.ritense.authorization.permission.condition.PermissionConditionOperato
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.role.Role
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.opensearch.service.NestedContentField
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -149,7 +150,8 @@ class OpenSearchPermissionConditionTranslator(
         private val logger = KotlinLogging.logger {}
 
         fun applyOperator(field: String, op: PermissionConditionOperator, value: Any?): QueryBuilder =
-            when (op) {
+            if (NestedContentField.isNested(field)) NestedContentField.applyOperator(field, op, value)
+            else when (op) {
                 PermissionConditionOperator.EQUAL_TO -> {
                     if (value == null) {
                         QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(field))
@@ -200,11 +202,14 @@ class OpenSearchPermissionConditionTranslator(
         fun jpaToOsField(jpaField: String): String = fieldMappings[jpaField] ?: jpaField
 
         /**
-         * Content sub-fields use dynamic mapping (text + keyword). String term queries
-         * (EQUAL_TO, NOT_EQUAL_TO, LIST_CONTAINS, IN) need the .keyword sub-field for exact match.
+         * A top-level content field uses dynamic mapping (text + keyword), so string term queries
+         * (EQUAL_TO, NOT_EQUAL_TO, LIST_CONTAINS, IN) need the .keyword sub-field for exact match. A field
+         * nested inside an object is a `flat_object` leaf — already a keyword, with no `.keyword` sub-field —
+         * so the bare path must be used.
          */
         fun isDynamicTextField(field: String, op: PermissionConditionOperator, value: Any?): Boolean {
             if (!field.startsWith("content.")) return false
+            if (NestedContentField.isNested(field)) return false
             if (value == null) return false
             val isStringValue = value is String || (value is Collection<*> && value.firstOrNull() is String)
             val isTermOp = op in setOf(

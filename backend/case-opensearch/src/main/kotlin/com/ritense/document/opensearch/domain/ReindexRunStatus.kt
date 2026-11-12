@@ -23,6 +23,9 @@ enum class ReindexRunStatus {
     /** The run finished and indexed all documents in scope. */
     COMPLETED,
 
+    /** The run finished, but one or more documents could not be indexed and were skipped ([OpenSearchReindexRun.skippedCount]). */
+    COMPLETED_WITH_ERRORS,
+
     /** The run aborted with an error; resumable from [OpenSearchReindexRun.lastId]. */
     FAILED,
 
