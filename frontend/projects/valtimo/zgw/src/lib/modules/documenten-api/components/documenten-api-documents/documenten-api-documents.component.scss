@@ -33,7 +33,7 @@
   text-align: right;
 }
 
-::ng-deep .cds--overflow-menu-options.cds--overflow-menu-options--open {
+::ng-deep .cds--overflow-menu-options--open:has(valtimo-dossier-detail-tab-documenten-api-filter) {
   max-width: max-content !important;
   width: max-content !important;
 }
