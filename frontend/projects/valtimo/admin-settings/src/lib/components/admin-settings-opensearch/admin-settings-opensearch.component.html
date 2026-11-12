@@ -70,9 +70,23 @@
   }
 
   <cds-tabs [cacheActive]="true" type="contained" [attr.data-test-id]="testIds.tabs">
+    <ng-template #reindexRunsHeading>
+      <span class="opensearch-tab-heading">
+        {{ 'adminSettings.opensearch.tabs.reindexRuns' | translate }}
+        <svg
+          class="opensearch-tab-heading__info"
+          cdsIcon="information"
+          size="16"
+          [onBottom]="true"
+          [vTooltip]="'adminSettings.opensearch.reindex.description' | translate"
+        ></svg>
+      </span>
+    </ng-template>
+
     <cds-tab
       [active]="$activeTab() === OpensearchTab.REINDEX_RUNS"
-      [heading]="'adminSettings.opensearch.tabs.reindexRuns' | translate"
+      [heading]="reindexRunsHeading"
+      [title]="'adminSettings.opensearch.tabs.reindexRuns' | translate"
       (selected)="onTabSelected(OpensearchTab.REINDEX_RUNS)"
       [attr.data-test-id]="testIds.reindexRunsTabPanel"
     >
@@ -88,11 +102,7 @@
         (paginationClicked)="onPageChange($event)"
         (paginationSet)="onPageSizeChange($event)"
       >
-        <div carbonToolbarContent class="opensearch-toolbar">
-          <p class="opensearch-toolbar__text">
-            {{ 'adminSettings.opensearch.reindex.description' | translate }}
-          </p>
-
+        <div carbonToolbarContent>
           <button cdsButton="primary" [disabled]="obs.hasRunning || obs.starting" (click)="openModal()">
             @if (obs.starting) {
               <cds-loading size="sm"></cds-loading>
@@ -110,9 +120,23 @@
       </valtimo-carbon-list>
     </cds-tab>
 
+    <ng-template #rejectedCasesHeading>
+      <span class="opensearch-tab-heading">
+        {{ 'adminSettings.opensearch.tabs.rejectedCases' | translate }}
+        <svg
+          class="opensearch-tab-heading__info"
+          cdsIcon="information"
+          size="16"
+          [onBottom]="true"
+          [vTooltip]="'adminSettings.opensearch.rejections.description' | translate"
+        ></svg>
+      </span>
+    </ng-template>
+
     <cds-tab
       [active]="$activeTab() === OpensearchTab.REJECTED_CASES"
-      [heading]="'adminSettings.opensearch.tabs.rejectedCases' | translate"
+      [heading]="rejectedCasesHeading"
+      [title]="'adminSettings.opensearch.tabs.rejectedCases' | translate"
       (selected)="onTabSelected(OpensearchTab.REJECTED_CASES)"
       [attr.data-test-id]="testIds.rejectedCasesTabPanel"
     >
@@ -126,11 +150,7 @@
         (paginationClicked)="onRejectionsPageChange($event)"
         (paginationSet)="onRejectionsPageSizeChange($event)"
       >
-        <div carbonToolbarContent class="opensearch-toolbar">
-          <p class="opensearch-toolbar__text">
-            {{ 'adminSettings.opensearch.rejections.description' | translate }}
-          </p>
-
+        <div carbonToolbarContent>
           <button cdsButton="primary" [disabled]="obs.retrying" (click)="openRetryAllModal()">
             {{ 'adminSettings.opensearch.rejections.retryAll' | translate }}
 

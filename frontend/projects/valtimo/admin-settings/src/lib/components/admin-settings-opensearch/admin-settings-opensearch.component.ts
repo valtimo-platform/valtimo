@@ -59,7 +59,7 @@ import {
   TabsModule,
   TagModule,
 } from 'carbon-components-angular';
-import {ArrowRight16, Launch16, Renew16, WarningAlt16} from '@carbon/icons';
+import {ArrowRight16, Information16, Launch16, Renew16, WarningAlt16} from '@carbon/icons';
 import {
   ActionItem,
   CarbonListModule,
@@ -67,6 +67,7 @@ import {
   ConfirmationModalModule,
   Pagination,
   TooltipIconModule,
+  TooltipModule,
   ViewType,
 } from '@valtimo/components';
 import {GlobalNotificationService, Page} from '@valtimo/shared';
@@ -108,6 +109,7 @@ enum OpensearchTab {
     RouterModule,
     StartReindexModalComponent,
     TooltipIconModule,
+    TooltipModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -265,7 +267,7 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
     private readonly _iconService: IconService,
     private readonly _notificationService: GlobalNotificationService
   ) {
-    this._iconService.registerAll([ArrowRight16, Launch16, Renew16, WarningAlt16]);
+    this._iconService.registerAll([ArrowRight16, Information16, Launch16, Renew16, WarningAlt16]);
   }
 
   public ngOnInit(): void {
