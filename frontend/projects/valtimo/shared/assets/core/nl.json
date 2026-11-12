@@ -4517,7 +4517,7 @@
       "title": "OpenSearch",
       "tabs": {
         "reindexRuns": "Herindexeringen",
-        "rejectedCases": "Afgewezen zaken"
+        "rejectedCases": "Geweigerde dossiers"
       },
       "reindex": {
         "title": "Herindexeringen",
@@ -4540,12 +4540,12 @@
         "inProgress": "Herindexering bezig...",
         "errorTitle": "Fout",
         "viewErrorLogs": "Foutlogs bekijken",
-        "viewRejectedCases": "Afgewezen zaken bekijken",
+        "viewRejectedCases": "Geweigerde dossiers bekijken",
         "pruneOrphans": "Verweesde documenten opschonen",
         "recreateIndex": "Index opnieuw opbouwen / migreren",
-        "documentDefinitionName": "Documentdefinitie",
-        "documentDefinitionPlaceholder": "Alle documentdefinities",
-        "allDocumentDefinitions": "Alle documentdefinities",
+        "documentDefinitionName": "Dossierdefinitie",
+        "documentDefinitionPlaceholder": "Alle dossierdefinities",
+        "allDocumentDefinitions": "Alle dossierdefinities",
         "modifiedBefore": "Gewijzigd vóór",
         "modifiedAfter": "Gewijzigd na",
         "modifiedAfterUnavailable": "Niet beschikbaar bij het opnieuw opbouwen van de index: een herbouw herindexeert altijd alle documenten binnen het bereik.",
@@ -4555,7 +4555,7 @@
           "startedOn": "Gestart",
           "finishedOn": "Voltooid",
           "progress": "Voortgang",
-          "documentDefinition": "Documentdefinitie"
+          "documentDefinition": "Dossierdefinitie"
         },
         "noResults": {
           "title": "Geen herindexeringen",
@@ -4574,7 +4574,7 @@
         "tooltips": {
           "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",
           "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd",
-          "recreateIndex": "Bouw de index opnieuw op en wissel deze zonder downtime om. Een run zonder documentdefinitie migreert van de oude gedeelde index naar één index per dossierdefinitie."
+          "recreateIndex": "Bouw de index opnieuw op en wissel deze zonder downtime om. Een run zonder dossierdefinitie migreert van de oude gedeelde index naar één index per dossierdefinitie."
         }
       },
       "topology": {
@@ -4586,10 +4586,9 @@
         "rejectedDefinitionsMessage": "OpenSearch kon een aantal dossiers van deze dossierdefinities niet indexeren: {{definitions}}. De dossierlijsten hiervan gebruiken in de tussentijd de database (PostgreSQL)."
       },
       "rejections": {
-        "title": "Geweigerde dossiers",
         "description": "OpenSearch kon deze dossiers niet indexeren. Tot ze geïndexeerd zijn, gebruiken de dossierlijsten van hun dossierdefinities de database (PostgreSQL). OpenSearch probeert ze automatisch opnieuw met oplopende tussenpozen: na 10 minuten, daarna elk uur, daarna dagelijks. De oorzaak staat in het applicatielog.",
         "columns": {
-          "definitionName": "Documentdefinitie",
+          "definitionName": "Dossierdefinitie",
           "documentId": "Dossier",
           "attempts": "Pogingen",
           "firstRejectedOn": "Geweigerd sinds",

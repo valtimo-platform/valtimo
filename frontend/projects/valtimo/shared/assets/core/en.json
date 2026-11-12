@@ -4543,9 +4543,9 @@
         "viewRejectedCases": "View rejected cases",
         "pruneOrphans": "Prune orphaned documents",
         "recreateIndex": "Rebuild / migrate index",
-        "documentDefinitionName": "Document definition",
-        "documentDefinitionPlaceholder": "All document definitions",
-        "allDocumentDefinitions": "All document definitions",
+        "documentDefinitionName": "Case definition",
+        "documentDefinitionPlaceholder": "All case definitions",
+        "allDocumentDefinitions": "All case definitions",
         "modifiedBefore": "Modified before",
         "modifiedAfter": "Modified after",
         "modifiedAfterUnavailable": "Not available when rebuilding the index: a rebuild always reindexes every document in scope.",
@@ -4555,7 +4555,7 @@
           "startedOn": "Started",
           "finishedOn": "Finished",
           "progress": "Progress",
-          "documentDefinition": "Document definition"
+          "documentDefinition": "Case definition"
         },
         "noResults": {
           "title": "No reindex runs",
@@ -4586,10 +4586,9 @@
         "rejectedDefinitionsMessage": "OpenSearch could not index some cases of these case definitions: {{definitions}}. Their case lists use the database (PostgreSQL) in the meantime."
       },
       "rejections": {
-        "title": "Rejected cases",
-        "description": "OpenSearch could not index these cases. Until they are indexed, the case lists of their case types use the database (PostgreSQL). OpenSearch retries them automatically at growing intervals: after 10 minutes, then hourly, then daily. The reason is in the application log.",
+        "description": "OpenSearch could not index these cases. Until they are indexed, the case lists of their case definitions use the database (PostgreSQL). OpenSearch retries them automatically at growing intervals: after 10 minutes, then hourly, then daily. The reason is in the application log.",
         "columns": {
-          "definitionName": "Document definition",
+          "definitionName": "Case definition",
           "documentId": "Case",
           "attempts": "Attempts",
           "firstRejectedOn": "Rejected since",

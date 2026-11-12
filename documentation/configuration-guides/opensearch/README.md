@@ -16,7 +16,7 @@ appears only when OpenSearch is enabled for the installation.
 The screen is split into two tabs — **Reindex runs** and **Rejected cases**. The information icon in
 each tab header explains what that tab is for.
 
-<figure><img src="../../assets/configuration-guides/opensearch/01-opensearch-menu.png" alt=""><figcaption>The OpenSearch admin screen, with the Reindex runs and Rejected cases tabs</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/opensearch/01-opensearch-menu.png" alt=""><figcaption>The OpenSearch admin screen</figcaption></figure>
 
 ---
 
@@ -24,7 +24,7 @@ each tab header explains what that tab is for.
 
 A reindex copies cases from the database into OpenSearch. It runs in the background, so you can
 leave the screen while it works. The **Reindex runs** tab lists each run with its status, the
-document definition it covered, its start and finish time, and progress.
+case definition it covered, its start and finish time, and progress.
 
 <figure><img src="../../assets/configuration-guides/opensearch/02-reindex-runs-overview.png" alt=""><figcaption>The Reindex runs tab</figcaption></figure>
 
@@ -45,7 +45,7 @@ Choose the reindex options
 {% step %}
 Click **Start Reindex** to begin. The new run appears at the top of the list.
 
-<figure><img src="../../assets/configuration-guides/opensearch/04-start-reindex-modal-filled.png" alt=""><figcaption>An example reindex scoped to one case type with a full rebuild</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/opensearch/04-start-reindex-modal-filled.png" alt=""><figcaption>A reindex scoped to one case definition</figcaption></figure>
 {% endstep %}
 {% endstepper %}
 
@@ -56,8 +56,8 @@ The **Start Reindex** button is disabled while a run is already in progress.
 | Option | Description |
 |--------|-------------|
 | Prune orphaned documents | Remove entries from OpenSearch that no longer exist in the database. |
-| Rebuild / migrate index | Rebuild the index into a fresh one and swap it in without downtime. For a run over all case types this also migrates off the legacy shared index to one index per case definition. |
-| Document definition | Limit the reindex to a single case type. Leave on **All document definitions** to reindex every case type. |
+| Rebuild / migrate index | Rebuild the index into a fresh one and swap it in without downtime. For a run over all case definitions this also migrates off the legacy shared index to one index per case definition. |
+| Case definition | Limit the reindex to a single case definition. Leave on **All case definitions** to reindex every case definition. |
 | Modified after | Only reindex cases changed after the chosen date. Not available when **Rebuild / migrate index** is enabled — a rebuild always reindexes every case in scope. |
 
 ### Run status
@@ -65,6 +65,7 @@ The **Start Reindex** button is disabled while a run is already in progress.
 | Status | Meaning |
 |--------|---------|
 | Running | The run is in progress. |
+| Pruning orphaned documents | The run is removing search entries that no longer exist in the database. |
 | Completed | Every case in scope was indexed. |
 | Completed with errors | The run finished, but one or more cases could not be indexed and were skipped. |
 | Failed | The run could not finish. |
@@ -73,17 +74,17 @@ The **Start Reindex** button is disabled while a run is already in progress.
 ### Run details
 
 Expand a run with the chevron on the left of its row to see its parameters (start and finish time,
-document definition, prune and modified-after settings) and progress. Progress bars show the
+case definition, prune and modified-after settings) and progress. Progress bars show the
 reindexing — and, when enabled, the pruning — phase.
 
-<figure><img src="../../assets/configuration-guides/opensearch/05b-reindex-run-completed.png" alt=""><figcaption>An expanded run that indexed every case</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/opensearch/05b-reindex-run-completed.png" alt=""><figcaption>An expanded completed run</figcaption></figure>
 
 When a run ends as **Completed with errors**, it offers two links: **View rejected cases** opens the
 **Rejected cases** tab, and **View error logs** jumps to the application log filtered to that run,
 where the reason for each skipped case is recorded. A **Failed** run offers the **View error logs**
 link.
 
-<figure><img src="../../assets/configuration-guides/opensearch/05-reindex-run-expanded.png" alt=""><figcaption>An expanded run that completed with skipped cases</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/opensearch/05-reindex-run-expanded.png" alt=""><figcaption>An expanded run with skipped cases</figcaption></figure>
 
 ---
 
@@ -94,18 +95,18 @@ using the database instead of OpenSearch. No action is required unless a notific
 
 | Notification | Meaning |
 |--------------|---------|
-| **Index rebuild required** | The installation still uses the legacy document-search index, or one or more case types have no index yet. Start a reindex with **Rebuild / migrate index** enabled to migrate to the per-case-type indices. Search uses the database until the migration completes. |
+| **Index rebuild required** | The installation still uses the legacy document-search index, or one or more case definitions have no index yet. Start a reindex with **Rebuild / migrate index** enabled to migrate to the per-case-definition indices. Search uses the database until the migration completes. |
 | **Indexing existing cases** | OpenSearch is indexing existing cases in the background. Search uses the database until this finishes. No action is needed. |
-| **Some cases are searched in the database** | OpenSearch could not index some cases of the listed case types. Their case lists use the database in the meantime. These cases are listed on the **Rejected cases** tab. |
+| **Some cases are searched in the database** | OpenSearch could not index some cases of the listed case definitions. Their case lists use the database in the meantime. These cases are listed on the **Rejected cases** tab. |
 
-<figure><img src="../../assets/configuration-guides/opensearch/06-topology-notification.png" alt=""><figcaption>A notification shown when some cases fall back to the database</figcaption></figure>
+<figure><img src="../../assets/configuration-guides/opensearch/06-topology-notification.png" alt=""><figcaption>A database-fallback notification</figcaption></figure>
 
 ---
 
 ## Rejected cases
 
 When OpenSearch cannot index a case, it is listed on the **Rejected cases** tab. Until a rejected
-case is indexed, the case lists of its case type use the database. OpenSearch retries rejected cases
+case is indexed, the case lists of its case definition use the database. OpenSearch retries rejected cases
 automatically at growing intervals: after 10 minutes, then hourly, then daily. The reason for each
 rejection is recorded in the application log.
 
@@ -117,7 +118,7 @@ The **Rejected cases** tab is always available; when every case is indexed it sh
 
 | Column | Description |
 |--------|-------------|
-| Document definition | The document definition (case type) the rejected case belongs to. |
+| Case definition | The case definition the rejected case belongs to. |
 | Case | A link to the rejected case. |
 | Attempts | How many times indexing has been tried. |
 | Rejected since | When the case was first rejected. |
