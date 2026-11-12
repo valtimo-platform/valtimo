@@ -175,7 +175,7 @@ class DocumentOpenSearchMigrationIntTest : BaseOpenSearchIntegrationTest() {
 
         val service = DocumentOpenSearchReindexService(
             entityManager, converter, elasticsearchOperations, transactionManager,
-            lockProvider, reindexRunService, indexNameResolver, spyInitializer,
+            lockProvider, reindexRunService, indexNameResolver, spyInitializer, indexCompletenessService,
         )
         val run = reindexRunService.startOrResume(ReindexRequest(documentDefinitionName = "house", recreateIndex = true))
         service.reindex(run.id)
@@ -191,7 +191,7 @@ class DocumentOpenSearchMigrationIntTest : BaseOpenSearchIntegrationTest() {
     private fun reindexWith(converter: JsonSchemaDocumentOsConverter, request: ReindexRequest): java.util.UUID {
         val service = DocumentOpenSearchReindexService(
             entityManager, converter, elasticsearchOperations, transactionManager,
-            lockProvider, reindexRunService, indexNameResolver, indexInitializer,
+            lockProvider, reindexRunService, indexNameResolver, indexInitializer, indexCompletenessService,
         )
         val run = reindexRunService.startOrResume(request)
         service.reindex(run.id)

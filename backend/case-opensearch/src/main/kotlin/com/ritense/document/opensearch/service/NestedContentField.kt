@@ -114,7 +114,7 @@ object NestedContentField {
         }
         val missingLast = if (ascending) "\uFFFF" else ""
         return SortBuilders.scriptSort(
-            Script(ScriptType.INLINE, PAINLESS, SORT_SCRIPT, mapOf("path" to field, "missing" to missingLast)),
+            Script(ScriptType.INLINE, PAINLESS, SORT_SCRIPT, mapOf("path" to field, "marker" to markerFor(field), "missing" to missingLast)),
             ScriptSortType.STRING,
         ).order(order)
     }
@@ -135,10 +135,13 @@ object NestedContentField {
     private fun scriptFilter(field: String, params: Map<String, Any?>): QueryBuilder =
         QueryBuilders.boolQuery()
             .filter(QueryBuilders.existsQuery(rootOf(field)))
-            .filter(QueryBuilders.scriptQuery(Script(ScriptType.INLINE, PAINLESS, FILTER_SCRIPT, DEFAULT_PARAMS + params + ("path" to field))))
+            .filter(QueryBuilders.scriptQuery(Script(ScriptType.INLINE, PAINLESS, FILTER_SCRIPT, DEFAULT_PARAMS + params + ("path" to field) + ("marker" to markerFor(field)))))
 
     private fun rootOf(field: String): String =
         CONTENT_PREFIX + field.removePrefix(CONTENT_PREFIX).substringBefore('.')
+
+    // A flat_object leaf's doc value is "<objectRoot>.<fullPath>=<value>"; the exact leaf key is that whole prefix.
+    private fun markerFor(field: String): String = rootOf(field) + "." + field + "="
 
     private fun isTemporal(value: Any): Boolean = value is TemporalAccessor || value is Date
 
@@ -159,7 +162,8 @@ object NestedContentField {
     private val DEFAULT_PARAMS: Map<String, Any?> =
         mapOf("present" to false, "date" to false, "in" to null, "from" to null, "includeFrom" to true, "to" to null, "includeTo" to true)
 
-    // A flat_object's doc values hold every leaf of the object as "<...>content.a.b=value"; match the exact path.
+    // A flat_object's doc values hold every leaf of the object as "<root>.<path>=value"; the entry must start with
+    // the exact leaf key, so a sibling text leaf whose value merely contains "<path>=..." cannot spoof a match.
     private const val FILTER_SCRIPT = """
 double parse(String raw, boolean date) {
   try {
@@ -180,13 +184,12 @@ boolean matches(double x, def p) {
   if (p.to != null && (p.includeTo ? x > p.to : x >= p.to)) { return false; }
   return true;
 }
-String marker = params.path + '=';
+String marker = params.marker;
 if (!doc.containsKey(params.path)) { return false; }
 for (def entry : doc[params.path]) {
-  int at = entry.lastIndexOf(marker);
-  if (at >= 0 && (at == 0 || entry.charAt(at - 1) == (char) '.')) {
+  if (entry.startsWith(marker)) {
     if (params.present) { return true; }
-    double x = parse(entry.substring(at + marker.length()), params.date);
+    double x = parse(entry.substring(marker.length()), params.date);
     if (!Double.isNaN(x) && matches(x, params)) { return true; }
   }
 }
@@ -194,11 +197,10 @@ return false;
 """
 
     private const val SORT_SCRIPT = """
-String marker = params.path + '=';
+String marker = params.marker;
 if (doc.containsKey(params.path)) {
   for (def entry : doc[params.path]) {
-    int at = entry.lastIndexOf(marker);
-    if (at >= 0 && (at == 0 || entry.charAt(at - 1) == (char) '.')) { return entry.substring(at + marker.length()); }
+    if (entry.startsWith(marker)) { return entry.substring(marker.length()); }
   }
 }
 return params.missing;

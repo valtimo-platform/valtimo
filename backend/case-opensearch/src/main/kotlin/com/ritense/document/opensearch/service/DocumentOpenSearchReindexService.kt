@@ -67,6 +67,7 @@ open class DocumentOpenSearchReindexService(
     private val runService: OpenSearchReindexRunService,
     private val resolver: OpenSearchIndexNameResolver,
     private val indexInitializer: DocumentOpenSearchIndexInitializer,
+    private val completeness: IndexCompletenessService,
 ) : DisposableBean {
 
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -260,8 +261,13 @@ open class DocumentOpenSearchReindexService(
         plan.concretes.forEach { (nameAndTag, concrete) ->
             indexInitializer.swapInRebuiltIndex(nameAndTag.first, nameAndTag.second, concrete)
         }
+        // The published indices now hold every document of the rebuilt scope (0 skips), so any rejection row within
+        // that scope is stale. Rebuild writes leave rejections untouched (see converter), so clear them here.
         if (plan.definitionName == null) {
             indexInitializer.dropLegacyIndex()
+            completeness.clearAllRejected()
+        } else {
+            completeness.clearRejectedByDefinition(plan.definitionName)
         }
         return null
     }

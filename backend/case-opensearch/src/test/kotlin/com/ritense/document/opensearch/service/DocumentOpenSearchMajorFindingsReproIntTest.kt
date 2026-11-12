@@ -394,6 +394,66 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
             .isNull()
     }
 
+    // ---------------------------------------------------------------- N1
+
+    @Test
+    fun `N1 an abandoned recreate must not clear the rejection row of a case missing from the live index`() {
+        val previouslyRejected = createHouseDocument("a")
+        createHouseDocument("rejected") // oversized under the spy converter -> the recreate skips it and is abandoned
+        indexCompletenessService.recordRejected(mapOf(previouslyRejected.id().id to "house"))
+        clearIndex()
+
+        val run = reindexRunService.startOrResume(ReindexRequest(recreateIndex = true))
+        newReindexService(oversizedContentConverter(), indexInitializer).reindex(run.id)
+
+        assertSoftly { soft ->
+            soft.assertThat(reindexRunService.toStatusMap(run.id)["status"])
+                .`as`("precondition: the recreate was abandoned").isEqualTo(ReindexRunStatus.COMPLETED_WITH_ERRORS)
+            soft.assertThat(indexCompletenessService.stillRejected(setOf(previouslyRejected.id().id)))
+                .`as`("N1: an abandoned recreate cleared the rejection row of a case not in the live index")
+                .containsExactly(previouslyRejected.id().id)
+        }
+    }
+
+    @Test
+    fun `N1 a clean full recreate clears every stale rejection row`() {
+        val previouslyRejected = createHouseDocument("a")
+        indexCompletenessService.recordRejected(mapOf(previouslyRejected.id().id to "house"))
+        clearIndex()
+
+        val run = reindexRunService.startOrResume(ReindexRequest(recreateIndex = true))
+        newReindexService(converter, indexInitializer).reindex(run.id)
+
+        assertSoftly { soft ->
+            soft.assertThat(reindexRunService.toStatusMap(run.id)["status"])
+                .`as`("precondition: the recreate completed").isEqualTo(ReindexRunStatus.COMPLETED)
+            soft.assertThat(indexCompletenessService.stillRejected(setOf(previouslyRejected.id().id)))
+                .`as`("N1: a clean full recreate must clear stale rejection rows").isEmpty()
+        }
+    }
+
+    // ---------------------------------------------------------------- N3
+
+    @Test
+    fun `N3 reconcile recreates a missing active-version index so search leaves the PostgreSQL fallback`() {
+        // No documents for this version — an empty version whose index was pruned and then activated. The reconcile
+        // upsert scan therefore writes nothing for it, so only ensureAllIndices() can re-create its index.
+        val (key, tag) = indexInitializer.activeDefinitionVersions().first { it.first == "house" }
+        val writeAlias = indexNameResolver.writeAliasFor(key, tag)
+        clearIndex()
+        dropConcretesBehind(writeAlias)
+
+        assertThat(indexExists(writeAlias)).`as`("precondition: the active version has no index").isFalse()
+        assertThat(indexInitializer.isLegacyOrStale()).`as`("precondition: topology flags legacy or stale").isTrue()
+
+        reconcileService.reconcile()
+
+        assertSoftly { soft ->
+            soft.assertThat(indexExists(writeAlias)).`as`("N3: reconcile re-created the missing active-version index").isTrue()
+            soft.assertThat(indexInitializer.isLegacyOrStale()).`as`("N3: topology no longer advises a migration").isFalse()
+        }
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private fun searchHouseIds() =
@@ -414,7 +474,7 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
         initializer: DocumentOpenSearchIndexInitializer,
     ) = DocumentOpenSearchReindexService(
         entityManager, conv, elasticsearchOperations, transactionManager,
-        lockProvider, reindexRunService, indexNameResolver, initializer,
+        lockProvider, reindexRunService, indexNameResolver, initializer, indexCompletenessService,
     )
 
     private fun capturingInitializer(): DocumentOpenSearchIndexInitializer {

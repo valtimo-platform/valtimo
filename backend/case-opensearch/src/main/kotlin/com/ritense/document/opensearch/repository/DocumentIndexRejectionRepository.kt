@@ -33,5 +33,9 @@ interface DocumentIndexRejectionRepository : JpaRepository<DocumentIndexRejectio
     @Query("UPDATE DocumentIndexRejection r SET r.nextRetryOn = :now")
     fun retryAllAt(now: LocalDateTime): Int
 
+    @Modifying
+    @Query("DELETE FROM DocumentIndexRejection r WHERE r.definitionName = :definitionName")
+    fun deleteAllByDefinitionName(definitionName: String): Int
+
     fun findByNextRetryOnLessThanEqualOrderByNextRetryOnAsc(now: LocalDateTime, pageable: Pageable): List<DocumentIndexRejection>
 }

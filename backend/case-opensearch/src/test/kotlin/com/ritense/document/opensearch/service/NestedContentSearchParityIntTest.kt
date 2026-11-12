@@ -112,6 +112,28 @@ class NestedContentSearchParityIntTest : BaseOpenSearchIntegrationTest() {
     }
 
     @Test
+    @WithMockUser(username = BaseOpenSearchIntegrationTest.USERNAME, authorities = [CONDITION_ROLE])
+    fun `a numeric range on a nested leaf cannot be spoofed by free text in a sibling leaf`() {
+        seedPerson("Spoof", plaats = "Utrecht", bedrag = 200, omschrijving = "x.content.lening.bedrag=99999")
+        val real = seedPerson("Real", plaats = "Utrecht", bedrag = 2000)
+        setUpPermission("$.lening.bedrag", PermissionConditionOperator.GREATER_THAN, 1000, Int::class.java)
+
+        assertThat(searchIds(jpaSearchService)).`as`("JPA").containsExactly(real)
+        assertThat(searchIds(openSearchSearchService)).`as`("OpenSearch").containsExactly(real)
+    }
+
+    @Test
+    @WithMockUser(username = BaseOpenSearchIntegrationTest.USERNAME, authorities = [CONDITION_ROLE])
+    fun `a presence condition on a nested leaf cannot be spoofed by free text in a sibling leaf`() {
+        seedPerson("Spoof", plaats = "Utrecht", omschrijving = "x.content.lening.bedrag=1")
+        val has = seedPerson("Has", plaats = "Utrecht", bedrag = 500)
+        setUpPermission("$.lening.bedrag", PermissionConditionOperator.NOT_EQUAL_TO, null, Int::class.java)
+
+        assertThat(searchIds(jpaSearchService)).`as`("JPA").containsExactly(has)
+        assertThat(searchIds(openSearchSearchService)).`as`("OpenSearch").containsExactly(has)
+    }
+
+    @Test
     fun `sorting on a leaf two levels inside an object orders like PostgreSQL`() {
         val expected = listOf(seedPerson("Carol", "Utrecht"), seedPerson("Alice", "Rotterdam"), seedPerson("Bob", "Amsterdam"))
             .let { listOf(it[2], it[1], it[0]) }
@@ -161,14 +183,25 @@ class NestedContentSearchParityIntTest : BaseOpenSearchIntegrationTest() {
         )
     }
 
-    private fun seedPerson(firstName: String, plaats: String?, bedrag: Int? = null, aangevraagd: String? = null): String {
+    private fun seedPerson(
+        firstName: String,
+        plaats: String?,
+        bedrag: Int? = null,
+        aangevraagd: String? = null,
+        omschrijving: String? = null,
+    ): String {
         val content = objectMapper.createObjectNode().apply {
             put("firstName", firstName)
             plaats?.let {
                 set<ObjectNode>("adres", objectMapper.createObjectNode().put("plaats", it))
                 set<ObjectNode>("contact", objectMapper.createObjectNode().set("adres", objectMapper.createObjectNode().put("plaats", it)))
             }
-            bedrag?.let { set<ObjectNode>("lening", objectMapper.createObjectNode().put("bedrag", it)) }
+            if (bedrag != null || omschrijving != null) {
+                val lening = objectMapper.createObjectNode()
+                bedrag?.let { lening.put("bedrag", it) }
+                omschrijving?.let { lening.put("omschrijving", it) }
+                set<ObjectNode>("lening", lening)
+            }
             aangevraagd?.let { set<ObjectNode>("aanvraag", objectMapper.createObjectNode().put("datum", it)) }
         }
         val document = runWithoutAuthorization {

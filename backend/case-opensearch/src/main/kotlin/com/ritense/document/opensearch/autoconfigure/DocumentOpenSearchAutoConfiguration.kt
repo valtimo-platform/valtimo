@@ -193,6 +193,7 @@ class DocumentOpenSearchAutoConfiguration {
         openSearchReindexRunService: OpenSearchReindexRunService,
         resolver: OpenSearchIndexNameResolver,
         indexInitializer: DocumentOpenSearchIndexInitializer,
+        indexCompletenessService: IndexCompletenessService,
     ): DocumentOpenSearchReindexService =
         DocumentOpenSearchReindexService(
             entityManager,
@@ -203,6 +204,7 @@ class DocumentOpenSearchAutoConfiguration {
             openSearchReindexRunService,
             resolver,
             indexInitializer,
+            indexCompletenessService,
         )
 
     @Bean

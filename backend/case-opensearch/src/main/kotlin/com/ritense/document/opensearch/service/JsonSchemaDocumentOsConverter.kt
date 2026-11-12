@@ -94,7 +94,7 @@ open class JsonSchemaDocumentOsConverter(
      */
     open fun indexChunk(chunk: List<JsonSchemaDocumentOsDocument>, overrideIndex: IndexCoordinates? = null): Long {
         if (overrideIndex != null) {
-            return store(overrideIndex, chunk, removeOtherCopies = false)
+            return store(overrideIndex, chunk, liveWrite = false)
         }
         return chunk.groupBy { it.definitionId?.name to it.definitionId?.blueprintId?.blueprintVersionTag }
             .entries
@@ -135,15 +135,19 @@ open class JsonSchemaDocumentOsConverter(
             reject(documents.map { Rejected(it, cause = null) })
             return documents.size.toLong()
         }
-        return store(IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)), documents, removeOtherCopies = true)
+        return store(IndexCoordinates.of(resolver.writeAliasFor(definitionName, versionTag)), documents, liveWrite = true)
     }
 
-    private fun store(index: IndexCoordinates, chunk: List<JsonSchemaDocumentOsDocument>, removeOtherCopies: Boolean): Long {
+    // A rebuild write (liveWrite = false) targets an unpublished concrete that may be abandoned, so it must not
+    // remove live copies nor clear rejection rows; the swap clears them once the rebuild is published.
+    private fun store(index: IndexCoordinates, chunk: List<JsonSchemaDocumentOsDocument>, liveWrite: Boolean): Long {
         val result = saveIsolated(index, chunk.map(::indexable))
-        // A case whose definition or version changed still has a copy in its previous index.
-        if (removeOtherCopies) removeCopiesOutside(index.indexName, result.written)
-        completeness.clearIndexed((result.written + result.alreadyCurrent).mapNotNull(::toUuidOrNull)).forEach {
-            logger.info { "Indexed document ${it.documentId} of case type '${it.definitionName}' after ${it.attempts} failed attempt(s)" }
+        if (liveWrite) {
+            // A case whose definition or version changed still has a copy in its previous index.
+            removeCopiesOutside(index.indexName, result.written)
+            completeness.clearIndexed((result.written + result.alreadyCurrent).mapNotNull(::toUuidOrNull)).forEach {
+                logger.info { "Indexed document ${it.documentId} of case type '${it.definitionName}' after ${it.attempts} failed attempt(s)" }
+            }
         }
         reject(result.rejected)
         return result.rejected.size.toLong()

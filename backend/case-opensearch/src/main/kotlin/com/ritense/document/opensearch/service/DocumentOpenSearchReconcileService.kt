@@ -86,6 +86,10 @@ open class DocumentOpenSearchReconcileService(
         }
 
         try {
+            // Repairs a missing active-version index (e.g. a pruned empty version that was just activated, which
+            // publishes no deploy event) so search leaves the PostgreSQL fallback; ensureIndex short-circuits when
+            // the write alias exists, so this is cheap each cycle.
+            indexInitializer.ensureAllIndices()
             val watermark = completeness.initializeWatermarkIfAbsent()
             val from = watermark.minus(properties.reconcile.overlap)
             val maxSeen = processUpserts(from)

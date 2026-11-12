@@ -96,6 +96,16 @@ open class IndexCompletenessService(
         rejectionRepository.deleteAllByIdInBatch(documentIds)
     }
 
+    /** Forgets every rejection — a full recreate with no skips has re-indexed every case. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    open fun clearAllRejected() = rejectionRepository.deleteAllInBatch()
+
+    /** Forgets the rejections of one case type — a scoped recreate with no skips has re-indexed each of its cases. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    open fun clearRejectedByDefinition(definitionName: String) {
+        rejectionRepository.deleteAllByDefinitionName(definitionName)
+    }
+
     @Transactional(readOnly = true)
     open fun rejectedDefinitionNames(): Set<String> = rejectionRepository.findDistinctDefinitionNames().toSet()
 
@@ -120,19 +130,23 @@ open class IndexCompletenessService(
             .map { it.documentId }
 
     /**
-     * Whether the newest case change is more than two reconcile intervals ahead of the reconcile watermark, so
-     * OpenSearch may miss cases. Without a reconciler only the live sync keeps the index current, so never lagging.
+     * Whether the oldest case change the reconciler has not yet processed is more than [maxLag] old, so OpenSearch
+     * may be missing cases. Measuring the oldest *unprocessed* change — not the newest change against the watermark —
+     * keeps a quiet install from flapping: a fresh change after a long pause is near-zero old, so not lagging, while
+     * a genuinely stalled reconciler ages its backlog past the threshold. Without a reconciler only the live sync
+     * keeps the index current, so never lagging.
      */
     @Transactional(readOnly = true)
     open fun isReconcileLagging(): Boolean {
         if (!properties.reconcile.enabled) return false
         val watermark = stateRepository.findById(OpenSearchReconcileState.SINGLETON_ID).map { it.watermark }.orElse(null)
             ?: return false
-        val latestChange = entityManager
-            .createQuery("SELECT MAX(d.changedOn) FROM JsonSchemaDocument d", LocalDateTime::class.java)
+        val oldestUnprocessed = entityManager
+            .createQuery("SELECT MIN(d.changedOn) FROM JsonSchemaDocument d WHERE d.changedOn > :watermark", LocalDateTime::class.java)
+            .setParameter("watermark", watermark)
             .singleResult
             ?: return false
-        return Duration.between(watermark, latestChange) > maxLag()
+        return Duration.between(oldestUnprocessed, LocalDateTime.now()) > maxLag()
     }
 
     /**

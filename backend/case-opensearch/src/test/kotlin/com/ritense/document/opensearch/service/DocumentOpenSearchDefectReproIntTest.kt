@@ -533,7 +533,7 @@ class DocumentOpenSearchDefectReproIntTest : BaseOpenSearchIntegrationTest() {
         initializer: DocumentOpenSearchIndexInitializer,
     ) = DocumentOpenSearchReindexService(
         entityManager, conv, elasticsearchOperations, transactionManager,
-        lockProvider, reindexRunService, indexNameResolver, initializer,
+        lockProvider, reindexRunService, indexNameResolver, initializer, indexCompletenessService,
     )
 
     private fun capturingInitializer(): DocumentOpenSearchIndexInitializer {
