@@ -83,6 +83,7 @@
     * [Conditions](configuration-guides/access-control/conditions.md)
     * [Context conditions](configuration-guides/access-control/context-conditions.md)
 * [🌐 Translations](configuration-guides/translations/README.md)
+* [🔍 OpenSearch](configuration-guides/opensearch/README.md)
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
