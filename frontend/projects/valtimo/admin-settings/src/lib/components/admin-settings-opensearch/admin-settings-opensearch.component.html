@@ -88,7 +88,11 @@
         (paginationClicked)="onPageChange($event)"
         (paginationSet)="onPageSizeChange($event)"
       >
-        <div carbonToolbarContent>
+        <div carbonToolbarContent class="opensearch-toolbar">
+          <p class="opensearch-toolbar__text">
+            {{ 'adminSettings.opensearch.reindex.description' | translate }}
+          </p>
+
           <button cdsButton="primary" [disabled]="obs.hasRunning || obs.starting" (click)="openModal()">
             @if (obs.starting) {
               <cds-loading size="sm"></cds-loading>
@@ -122,7 +126,11 @@
         (paginationClicked)="onRejectionsPageChange($event)"
         (paginationSet)="onRejectionsPageSizeChange($event)"
       >
-        <div carbonToolbarContent>
+        <div carbonToolbarContent class="opensearch-toolbar">
+          <p class="opensearch-toolbar__text">
+            {{ 'adminSettings.opensearch.rejections.description' | translate }}
+          </p>
+
           <button cdsButton="primary" [disabled]="obs.retrying" (click)="openRetryAllModal()">
             {{ 'adminSettings.opensearch.rejections.retryAll' | translate }}
 
