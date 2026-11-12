@@ -18,6 +18,9 @@ package com.ritense.assistant.service
 
 import com.ritense.assistant.domain.PendingAssistantAction
 import com.ritense.assistant.repository.PendingAssistantActionRepository
+import dev.langchain4j.data.message.UserMessage
+import dev.langchain4j.memory.chat.ChatMemoryProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.Instant
@@ -25,8 +28,15 @@ import java.util.UUID
 
 open class PendingActionService(
     private val repository: PendingAssistantActionRepository,
-    private val actionExecutors: Map<String, ActionExecutor>
+    private val actionExecutors: Map<String, ActionExecutor>,
+    private val chatMemoryProvider: ChatMemoryProvider
 ) {
+    private val logger = KotlinLogging.logger {}
+
+    init {
+        logger.info { "Registered assistant action executors: ${actionExecutors.keys}" }
+    }
+
     companion object {
         val DEFAULT_TTL: Duration = Duration.ofMinutes(5)
     }
@@ -76,7 +86,8 @@ open class PendingActionService(
         return repository.findByIdAndUserId(actionId, userId)
     }
 
-    @Transactional
+    // Not transactional: executors run their own transactions, and a failing one would otherwise mark this
+    // transaction rollback-only, turning the caught error into an UnexpectedRollbackException on commit.
     open fun confirmAction(actionId: UUID, userId: String): ActionResult {
         val action = repository.findByIdAndUserId(actionId, userId)
             ?: return ActionResult.NotFound
@@ -87,22 +98,43 @@ open class PendingActionService(
         }
 
         val executor = actionExecutors[action.tool]
-            ?: return ActionResult.Error("Unknown action type: ${action.tool}")
+            ?: run {
+                logger.error { "No executor registered for assistant action '${action.tool}' (${action.id})" }
+                return ActionResult.Error("Unknown action type: ${action.tool}")
+            }
 
         return try {
             val result = executor.execute(action.params, userId)
             repository.delete(action)
+            recordInMemory(
+                action,
+                "[Note: the user confirmed \"${describe(action)}\" and it has been applied. " +
+                    "Anything you read before this about the affected item is outdated; fetch it again before changing it.]"
+            )
             ActionResult.Success(result)
         } catch (e: Exception) {
-            ActionResult.Error(e.message ?: "Unknown error executing action")
+            logger.error(e) { "Error executing assistant action '${action.tool}' (${action.id})" }
+            val message = e.message ?: "Unknown error executing action"
+            recordInMemory(action, "[Note: applying \"${describe(action)}\" failed: $message. Nothing was changed.]")
+            ActionResult.Error(message)
         }
     }
 
-    @Transactional
     open fun cancelAction(actionId: UUID, userId: String): Boolean {
         val action = repository.findByIdAndUserId(actionId, userId) ?: return false
         repository.delete(action)
+        recordInMemory(action, "[Note: the user cancelled \"${describe(action)}\". Nothing was changed.]")
         return true
+    }
+
+    private fun describe(action: PendingAssistantAction): String = action.previewDescription ?: action.tool
+
+    private fun recordInMemory(action: PendingAssistantAction, note: String) {
+        try {
+            chatMemoryProvider.get(action.sessionId).add(UserMessage.from(note))
+        } catch (e: Exception) {
+            logger.warn(e) { "Could not record the outcome of assistant action ${action.id} in chat memory" }
+        }
     }
 
     @Transactional

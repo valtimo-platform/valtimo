@@ -28,6 +28,7 @@ import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.context.SecurityContextHolder
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 open class ProcessDefinitionTools(
@@ -37,23 +38,16 @@ open class ProcessDefinitionTools(
     private val objectMapper: ObjectMapper
 ) {
 
-    @Tool("Get process definition BPMN XML. Returns the full BPMN 2.0 XML content of a process definition.")
+    @Tool("Get process definition BPMN XML. Returns the full BPMN 2.0 XML content of the latest version of a process definition.")
     fun getProcessDefinition(
-        @P("The process definition key (e.g., 'loan-process')") processDefinitionKey: String,
-        @P("Optional: specific process definition ID. If not provided, returns the latest version.") processDefinitionId: String?
+        @P("The process definition key (e.g., 'loan-process')") processDefinitionKey: String
     ): String {
         requireAdminRole()
 
         return runWithoutAuthorization {
-            val procDef = if (processDefinitionId != null) {
-                operatonRepositoryService.findProcessDefinitionById(processDefinitionId)
-            } else {
-                operatonRepositoryService.findProcessDefinition(byKey(processDefinitionKey).and(byLatestVersion()))
-            }
-
-            if (procDef == null) {
-                return@runWithoutAuthorization "Process definition '$processDefinitionKey' not found."
-            }
+            val procDef = operatonRepositoryService.findProcessDefinition(
+                byKey(processDefinitionKey).and(byLatestVersion())
+            ) ?: return@runWithoutAuthorization "Process definition '$processDefinitionKey' not found."
 
             val bpmnModel = repositoryService.getBpmnModelInstance(procDef.id)
             val outputStream = ByteArrayOutputStream()
@@ -63,8 +57,7 @@ open class ProcessDefinitionTools(
             buildString {
                 appendLine("Process Definition: ${procDef.name ?: procDef.key}")
                 appendLine("Key: ${procDef.key}")
-                appendLine("Version: ${procDef.version}")
-                appendLine("ID: ${procDef.id}")
+                appendLine("Version: ${procDef.version} (latest)")
                 appendLine()
                 appendLine("BPMN XML:")
                 appendLine(bpmnXml)
@@ -94,7 +87,7 @@ open class ProcessDefinitionTools(
             buildString {
                 appendLine("Process Definitions:")
                 processDefinitions.forEach { pd ->
-                    appendLine("- ${pd.name ?: pd.key} (${pd.key} v${pd.version}) - ID: ${pd.id}")
+                    appendLine("- ${pd.name ?: pd.key} (${pd.key} v${pd.version})")
                 }
             }
         }
@@ -103,7 +96,7 @@ open class ProcessDefinitionTools(
     @Tool("""Explain what a specific BPMN element does in a process definition.
         Useful for understanding process flow and element configuration.""")
     fun explainBpmnElement(
-        @P("The process definition key or ID") processDefinitionKey: String,
+        @P("The process definition key") processDefinitionKey: String,
         @P("The BPMN element ID to explain (e.g., 'Task_Review', 'Gateway_Decision')") elementId: String
     ): String {
         requireAdminRole()
@@ -111,8 +104,7 @@ open class ProcessDefinitionTools(
         return runWithoutAuthorization {
             val procDef = operatonRepositoryService.findProcessDefinition(
                 byKey(processDefinitionKey).and(byLatestVersion())
-            ) ?: operatonRepositoryService.findProcessDefinitionById(processDefinitionKey)
-            ?: return@runWithoutAuthorization "Process definition '$processDefinitionKey' not found."
+            ) ?: return@runWithoutAuthorization "Process definition '$processDefinitionKey' not found."
 
             val bpmnModel = repositoryService.getBpmnModelInstance(procDef.id)
             val element = bpmnModel.getModelElementById<org.operaton.bpm.model.bpmn.instance.FlowElement>(elementId)
@@ -152,25 +144,6 @@ open class ProcessDefinitionTools(
         }
     }
 
-    @Tool("""Suggest BPMN patterns or improvements based on a requirement description.
-        This is a pure analysis tool - it provides recommendations but makes no changes.""")
-    fun suggestBpmnPattern(
-        @P("Description of what you want to achieve in the process") requirement: String
-    ): String {
-        requireAdminRole()
-
-        return buildString {
-            appendLine("BPMN Pattern Suggestions for: $requirement")
-            appendLine()
-            appendLine("Based on your requirement, here are relevant BPMN patterns to consider:")
-            appendLine()
-            appendLine("Note: This tool provides conceptual guidance. The actual pattern recommendation ")
-            appendLine("should be based on the LLM's understanding of BPMN best practices and the ")
-            appendLine("specific process context. Review the process definition and suggest appropriate ")
-            appendLine("elements like User Tasks, Service Tasks, Gateways, Events, etc.")
-        }
-    }
-
     @Tool("""Preview changes to a process definition. Returns a summary of what would change.
         This does NOT deploy the changes - the user must confirm the preview first.""")
     fun previewProcessDefinitionChange(
@@ -181,6 +154,13 @@ open class ProcessDefinitionTools(
         requireAdminRole()
 
         val context = ToolContextHolder.get()
+
+        try {
+            Bpmn.readModelFromStream(ByteArrayInputStream(newBpmnXml.toByteArray(Charsets.UTF_8)))
+        } catch (e: Exception) {
+            return "The provided BPMN XML is invalid and cannot be previewed: ${e.message}. " +
+                "Fix the XML and call this tool again."
+        }
 
         return runWithoutAuthorization {
             val currentProcDef = operatonRepositoryService.findProcessDefinition(
@@ -202,6 +182,7 @@ open class ProcessDefinitionTools(
                 if (caseDefinitionKey != null) {
                     appendLine("Linked Case Definition: $caseDefinitionKey")
                 }
+                appendLine("Existing process links and case settings are kept.")
                 appendLine()
                 appendLine("BPMN Preview (first 500 chars):")
                 appendLine(newBpmnXml.take(500))
@@ -213,9 +194,7 @@ open class ProcessDefinitionTools(
             val currentBpmn = if (currentProcDef != null) {
                 try {
                     val bpmnModel = repositoryService.getBpmnModelInstance(currentProcDef.id)
-                    val outputStream = ByteArrayOutputStream()
-                    Bpmn.writeModelToStream(outputStream, bpmnModel)
-                    outputStream.toString(Charsets.UTF_8).take(1000) + if (outputStream.size() > 1000) "\n... (truncated)" else ""
+                    Bpmn.convertToString(bpmnModel)
                 } catch (e: Exception) {
                     "(current version exists but content unavailable)"
                 }
@@ -236,7 +215,7 @@ open class ProcessDefinitionTools(
                 resourceId = processDefinitionKey,
                 previewDescription = "Deploy process definition '$processDefinitionKey' (v${currentVersion + 1})",
                 diffBefore = currentBpmn,
-                diffAfter = newBpmnXml.take(1000) + if (newBpmnXml.length > 1000) "\n... (truncated)" else "",
+                diffAfter = newBpmnXml,
                 affectedResources = listOfNotNull(processDefinitionKey, caseDefinitionKey?.let { "case:$it" })
             )
 

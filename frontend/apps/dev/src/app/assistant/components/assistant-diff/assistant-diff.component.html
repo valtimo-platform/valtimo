@@ -18,18 +18,29 @@
   <section class="assistant-diff__side">
     <h4 class="assistant-diff__label">{{ 'assistant.confirmation.before' | translate }}</h4>
 
-    <div [attr.data-test-id]="testIds.confirmationBefore" class="assistant-diff__panel">
+    <div
+      [attr.data-test-id]="testIds.confirmationBefore"
+      class="assistant-diff__panel"
+      [class.assistant-diff__panel--bpmn]="showBpmn"
+    >
       <p *ngIf="beforeAbsent" class="assistant-diff__empty">
         {{ 'assistant.confirmation.doesNotExistYet' | translate }}
       </p>
 
+      <valtimo-assistant-bpmn-viewer
+        *ngIf="!beforeAbsent && showBpmn"
+        [xml]="beforeText"
+      ></valtimo-assistant-bpmn-viewer>
+
       <valtimo-form-io
-        *ngIf="!beforeAbsent && showForms && beforeForm"
+        *ngIf="!beforeAbsent && !showBpmn && showForms && beforeForm"
         [form]="beforeForm"
         [readOnly]="true"
       ></valtimo-form-io>
 
-      <pre *ngIf="!beforeAbsent && !showForms" class="assistant-diff__text">{{ beforeText }}</pre>
+      <pre *ngIf="!beforeAbsent && !showBpmn && !showForms" class="assistant-diff__text">{{
+        beforeText
+      }}</pre>
     </div>
   </section>
 
@@ -39,18 +50,26 @@
     <div
       [attr.data-test-id]="testIds.confirmationAfter"
       class="assistant-diff__panel assistant-diff__panel--after"
+      [class.assistant-diff__panel--bpmn]="showBpmn"
     >
       <p *ngIf="afterAbsent" class="assistant-diff__empty">
         {{ 'assistant.confirmation.willBeDeleted' | translate }}
       </p>
 
+      <valtimo-assistant-bpmn-viewer
+        *ngIf="!afterAbsent && showBpmn"
+        [xml]="afterText"
+      ></valtimo-assistant-bpmn-viewer>
+
       <valtimo-form-io
-        *ngIf="!afterAbsent && showForms && afterForm"
+        *ngIf="!afterAbsent && !showBpmn && showForms && afterForm"
         [form]="afterForm"
         [readOnly]="true"
       ></valtimo-form-io>
 
-      <pre *ngIf="!afterAbsent && !showForms" class="assistant-diff__text">{{ afterText }}</pre>
+      <pre *ngIf="!afterAbsent && !showBpmn && !showForms" class="assistant-diff__text">{{
+        afterText
+      }}</pre>
     </div>
   </section>
 </div>

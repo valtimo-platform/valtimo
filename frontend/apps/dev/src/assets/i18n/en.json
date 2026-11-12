@@ -10,6 +10,7 @@
       "cancel": "Cancel",
       "cancelled": "Cancelled. Nothing was changed.",
       "confirm": "Confirm",
+      "diagramError": "Could not display the diagram.",
       "doesNotExistYet": "Does not exist yet",
       "failed": "That did not work. The action may have expired — ask me again.",
       "hint": "Nothing changes until you confirm.",

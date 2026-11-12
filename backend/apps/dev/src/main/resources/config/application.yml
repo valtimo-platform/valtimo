@@ -274,7 +274,8 @@ valtimo:
     assistant:
         enabled: true
         session-ttl: P7D
-        max-messages-per-session: 50
+        max-messages-per-session: 100
+        max-tool-iterations: 20
 
 
     virusscan:
@@ -328,4 +329,5 @@ langchain4j:
         chat-model:
             api-key: ${ANTHROPIC_API_KEY:}
             model-name: claude-sonnet-5
-            max-tokens: 4096
+            max-tokens: 16000
+            timeout: PT5M

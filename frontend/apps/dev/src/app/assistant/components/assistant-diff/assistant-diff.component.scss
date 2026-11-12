@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -49,6 +49,13 @@
     &--after {
       border-left-color: var(--cds-support-success);
     }
+  }
+
+  // The diagram canvas needs an explicit size and handles pan and zoom itself.
+  &__panel--bpmn {
+    height: 24rem;
+    overflow: hidden;
+    padding: 0;
   }
 
   &__empty {

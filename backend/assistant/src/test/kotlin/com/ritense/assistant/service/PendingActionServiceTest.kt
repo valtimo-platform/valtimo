@@ -18,6 +18,9 @@ package com.ritense.assistant.service
 
 import com.ritense.assistant.domain.PendingAssistantAction
 import com.ritense.assistant.repository.PendingAssistantActionRepository
+import dev.langchain4j.data.message.UserMessage
+import dev.langchain4j.memory.ChatMemory
+import dev.langchain4j.memory.chat.ChatMemoryProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -40,6 +43,8 @@ class PendingActionServiceTest {
     private lateinit var repository: PendingAssistantActionRepository
     private lateinit var executor: ActionExecutor
     private lateinit var service: PendingActionService
+    private lateinit var chatMemoryProvider: ChatMemoryProvider
+    private lateinit var chatMemory: ChatMemory
 
     private val sessionId = UUID.randomUUID()
     private val userId = "user123"
@@ -50,9 +55,13 @@ class PendingActionServiceTest {
     fun setUp() {
         repository = mock()
         executor = mock()
+        chatMemory = mock()
+        chatMemoryProvider = mock()
+        whenever(chatMemoryProvider.get(sessionId)).thenReturn(chatMemory)
         service = PendingActionService(
             repository,
-            mapOf(tool to executor)
+            mapOf(tool to executor),
+            chatMemoryProvider
         )
     }
 
@@ -248,10 +257,71 @@ class PendingActionServiceTest {
         verify(repository).deleteExpiredBefore(any())
     }
 
+    @Test
+    fun `should add confirmed note to session memory`() {
+        val actionId = UUID.randomUUID()
+        val action = createAction(actionId, expiresAt = Instant.now().plusSeconds(300), previewDescription = "Deploy X")
+        whenever(repository.findByIdAndUserId(actionId, userId)).thenReturn(action)
+
+        service.confirmAction(actionId, userId)
+
+        val captor = argumentCaptor<UserMessage>()
+        verify(chatMemory).add(captor.capture())
+        val text = captor.firstValue.singleText()
+        assertTrue(text.contains("the user confirmed \"Deploy X\" and it has been applied"))
+        assertTrue(text.contains("fetch it again"))
+    }
+
+    @Test
+    fun `should add cancelled note to session memory`() {
+        val actionId = UUID.randomUUID()
+        val action = createAction(actionId, expiresAt = Instant.now().plusSeconds(300), previewDescription = "Deploy X")
+        whenever(repository.findByIdAndUserId(actionId, userId)).thenReturn(action)
+
+        service.cancelAction(actionId, userId)
+
+        val captor = argumentCaptor<UserMessage>()
+        verify(chatMemory).add(captor.capture())
+        assertEquals("[Note: the user cancelled \"Deploy X\". Nothing was changed.]", captor.firstValue.singleText())
+    }
+
+    @Test
+    fun `should add failure note to session memory and fall back to tool name`() {
+        val actionId = UUID.randomUUID()
+        val action = createAction(actionId, expiresAt = Instant.now().plusSeconds(300))
+        whenever(repository.findByIdAndUserId(actionId, userId)).thenReturn(action)
+        whenever(executor.execute(params, userId)).thenThrow(RuntimeException("boom"))
+
+        service.confirmAction(actionId, userId)
+
+        val captor = argumentCaptor<UserMessage>()
+        verify(chatMemory).add(captor.capture())
+        assertEquals(
+            "[Note: applying \"$tool\" failed: boom. Nothing was changed.]",
+            captor.firstValue.singleText()
+        )
+    }
+
+    @Test
+    fun `should not change result when memory write fails`() {
+        val actionId = UUID.randomUUID()
+        val action = createAction(actionId, expiresAt = Instant.now().plusSeconds(300))
+        whenever(repository.findByIdAndUserId(actionId, userId)).thenReturn(action)
+        whenever(executor.execute(params, userId)).thenReturn("ok")
+        whenever(chatMemory.add(any<UserMessage>())).thenThrow(RuntimeException("memory down"))
+
+        val confirmed = service.confirmAction(actionId, userId)
+        val cancelled = service.cancelAction(actionId, userId)
+
+        assertIs<ActionResult.Success>(confirmed)
+        assertTrue(cancelled)
+    }
+
     private fun createAction(
         id: UUID,
         tool: String = this.tool,
-        expiresAt: Instant
+        expiresAt: Instant,
+        previewDescription: String? = null
     ) = PendingAssistantAction(
         id = id,
         sessionId = sessionId,
@@ -260,6 +330,7 @@ class PendingActionServiceTest {
         params = params,
         resourceType = null,
         resourceId = null,
+        previewDescription = previewDescription,
         createdAt = Instant.now().minusSeconds(60),
         expiresAt = expiresAt
     )

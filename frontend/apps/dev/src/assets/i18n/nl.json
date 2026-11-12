@@ -10,6 +10,7 @@
       "cancel": "Annuleren",
       "cancelled": "Geannuleerd. Er is niets gewijzigd.",
       "confirm": "Bevestigen",
+      "diagramError": "Het diagram kan niet worden weergegeven.",
       "doesNotExistYet": "Bestaat nog niet",
       "failed": "Dat is niet gelukt. De actie is misschien verlopen — vraag het opnieuw.",
       "hint": "Er wijzigt niets totdat je bevestigt.",
@@ -36,9 +37,9 @@
       "add": "Toevoegen",
       "edit": "Bewerken",
       "explainProcess": "Proces uitleggen",
-      "findCase": "Zaak zoeken",
+      "findCase": "Dossier zoeken",
       "remove": "Verwijderen",
-      "viewCaseDefinition": "Zaakdefinitie bekijken"
+      "viewCaseDefinition": "Dossierdefinitie bekijken"
     },
     "teaser": {
       "accessControl": "Je kunt nu PBAC regels toevoegen met behulp van onze AI Chat",

@@ -221,4 +221,48 @@ class AssistantContextBuilderTest {
         assertContains(prompt, "confirm")
     }
 
+    @Test
+    fun `should include process change guidance when process preview tool is available`() {
+        val toolSpec = ToolSpecification.builder()
+            .name("previewProcessDefinitionChange")
+            .description("Preview a process change")
+            .build()
+
+        val prompt = builder.buildSystemPrompt(
+            userEmail = "user@test.com",
+            userRoles = setOf("ROLE_ADMIN"),
+            pageContext = null,
+            toolSpecifications = listOf(toolSpec)
+        )
+
+        assertContains(prompt, "## Changing processes")
+        assertContains(prompt, "Never use operaton:formKey")
+        assertContains(prompt, "Process links page")
+        assertContains(prompt, "Always fetch the process again right before preparing a change")
+    }
+
+    @Test
+    fun `should not include process change guidance when process preview tool is not available`() {
+        val toolSpec = ToolSpecification.builder()
+            .name("testTool")
+            .description("A test tool")
+            .build()
+
+        val withOtherTool = builder.buildSystemPrompt(
+            userEmail = "user@test.com",
+            userRoles = setOf("ROLE_ADMIN"),
+            pageContext = null,
+            toolSpecifications = listOf(toolSpec)
+        )
+        val withoutTools = builder.buildSystemPrompt(
+            userEmail = "user@test.com",
+            userRoles = setOf("ROLE_ADMIN"),
+            pageContext = null,
+            toolSpecifications = emptyList()
+        )
+
+        assertFalse(withOtherTool.contains("## Changing processes"))
+        assertFalse(withoutTools.contains("## Changing processes"))
+    }
+
 }

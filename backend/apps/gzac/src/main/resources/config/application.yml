@@ -202,7 +202,8 @@ valtimo:
     assistant:
         enabled: ${VALTIMO_ASSISTANT_ENABLED:false}
         session-ttl: P7D
-        max-messages-per-session: 50
+        max-messages-per-session: 100
+        max-tool-iterations: 20
 
 spring-actuator:
     username: admin

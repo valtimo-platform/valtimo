@@ -22,6 +22,8 @@ import dev.langchain4j.agent.tool.ToolSpecification
 open class AssistantContextBuilder {
 
     companion object {
+        private const val PREVIEW_PROCESS_CHANGE_TOOL = "previewProcessDefinitionChange"
+
         private val pageDescriptions = mapOf(
             // User-facing pages
             "dashboard" to "User is viewing their dashboard.",
@@ -133,11 +135,32 @@ open class AssistantContextBuilder {
               it is shown for review. Nothing else.
         """.trimIndent()
 
+        val processChangeSection = if (toolSpecifications.any { it.name() == PREVIEW_PROCESS_CHANGE_TOOL }) {
+            """
+
+            ## Changing processes
+
+            - Forms and plugin actions are attached to tasks with process links, not in the
+              process diagram XML. Never use operaton:formKey.
+            - Always fetch the process again right before preparing a change; content you
+              fetched earlier in the conversation may be outdated.
+            - To add a user task: fetch the target process once, edit the XML (the task, its
+              sequence flows, and the BPMNDI shape and edges), set candidate groups with
+              operaton:candidateGroups, then prepare the process preview.
+            - You cannot link forms to tasks yet. After preparing the change, tell the user in
+              one sentence to link the form to the task on the Process links page.
+            - Do not fetch other processes to look for examples. Act as soon as you have the
+              target process.
+            """.trimIndent()
+        } else {
+            ""
+        }
+
         val contextSection = pageContext?.let { ctx ->
             buildContextSection(ctx)
         } ?: ""
 
-        return base + toolsSection + contextSection
+        return base + toolsSection + processChangeSection + contextSection
     }
 
     private fun buildContextSection(ctx: PageContext): String {

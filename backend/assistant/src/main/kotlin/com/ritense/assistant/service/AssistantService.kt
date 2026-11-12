@@ -26,11 +26,13 @@ import com.ritense.assistant.web.rest.dto.AssistantResponse
 import com.ritense.assistant.web.rest.dto.ChangePreview
 import com.ritense.assistant.web.rest.dto.ChatRequest
 import com.ritense.assistant.web.rest.dto.DiffContent
+import com.ritense.assistant.web.rest.dto.DiffFormat
 import com.ritense.assistant.web.rest.dto.PageContext
 import dev.langchain4j.agent.tool.ToolExecutionRequest
 import dev.langchain4j.agent.tool.ToolSpecification
 import dev.langchain4j.agent.tool.ToolSpecifications
 import dev.langchain4j.data.message.AiMessage
+import dev.langchain4j.data.message.ChatMessage
 import dev.langchain4j.data.message.SystemMessage
 import dev.langchain4j.data.message.ToolExecutionResultMessage
 import dev.langchain4j.data.message.UserMessage
@@ -38,6 +40,7 @@ import dev.langchain4j.memory.chat.ChatMemoryProvider
 import dev.langchain4j.model.chat.ChatModel
 import dev.langchain4j.model.chat.request.ChatRequest as LangChainChatRequest
 import dev.langchain4j.model.chat.request.ChatRequestParameters
+import dev.langchain4j.model.chat.request.ToolChoice
 import dev.langchain4j.service.tool.DefaultToolExecutor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
@@ -49,7 +52,8 @@ open class AssistantService(
     private val sessionService: AssistantSessionService,
     private val pendingActionService: PendingActionService,
     private val objectMapper: ObjectMapper,
-    private val toolProviders: List<Any>
+    private val toolProviders: List<Any>,
+    private val maxToolIterations: Int = DEFAULT_MAX_TOOL_ITERATIONS
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -85,7 +89,8 @@ open class AssistantService(
         userRoles: Set<String>,
         authToken: String
     ): AssistantResponse {
-        if (chatModel == null) {
+        val model = chatModel
+        if (model == null) {
             logger.warn { "Assistant chat requested but no ChatLanguageModel is configured" }
             return AssistantResponse(
                 message = "The assistant is not configured. Please contact your administrator.",
@@ -133,36 +138,23 @@ open class AssistantService(
         )
 
         return ToolContextHolder.withContext(toolContext) {
-            executeWithToolLoop(memory, sessionId, userId)
+            executeWithToolLoop(model, memory, sessionId, userId)
         }
     }
 
     private fun executeWithToolLoop(
+        model: ChatModel,
         memory: dev.langchain4j.memory.ChatMemory,
         sessionId: UUID,
         userId: String
     ): AssistantResponse {
-        val maxIterations = 10
         var iteration = 0
 
-        while (iteration < maxIterations) {
+        while (iteration < maxToolIterations) {
             iteration++
 
-            val chatRequestParams = if (toolSpecifications.isNotEmpty()) {
-                ChatRequestParameters.builder()
-                    .toolSpecifications(toolSpecifications)
-                    .build()
-            } else {
-                ChatRequestParameters.builder().build()
-            }
-
-            val chatRequest = LangChainChatRequest.builder()
-                .messages(memory.messages())
-                .parameters(chatRequestParams)
-                .build()
-
             val response = try {
-                chatModel!!.chat(chatRequest)
+                model.chat(chatRequest(memory.messages()))
             } catch (e: Exception) {
                 logger.error(e) { "Error generating response from chat model" }
                 return AssistantResponse(
@@ -175,14 +167,7 @@ open class AssistantService(
             memory.add(aiMessage)
 
             if (!aiMessage.hasToolExecutionRequests()) {
-                val pendingAction = pendingActionService.findLatestBySessionIdAndUserId(sessionId, userId)
-                val action = pendingAction?.let { buildConfirmationAction(it) }
-
-                return AssistantResponse(
-                    message = aiMessage.text() ?: "",
-                    sessionId = sessionId.toString(),
-                    action = action
-                )
+                return buildFinalResponse(aiMessage, sessionId, userId)
             }
 
             val toolRequests = aiMessage.toolExecutionRequests()
@@ -193,9 +178,44 @@ open class AssistantService(
         }
 
         logger.warn { "Max tool execution iterations reached for session $sessionId" }
+        return try {
+            val messages = memory.messages() + SystemMessage.from(TOOL_BUDGET_EXHAUSTED_MESSAGE)
+            val aiMessage = model.chat(chatRequest(messages, ToolChoice.NONE)).aiMessage()
+            memory.add(aiMessage)
+            buildFinalResponse(aiMessage, sessionId, userId)
+        } catch (e: Exception) {
+            logger.error(e) { "Error generating final response after tool budget was exhausted" }
+            AssistantResponse(
+                message = "I'm having trouble completing your request. Please try simplifying your question.",
+                sessionId = sessionId.toString()
+            )
+        }
+    }
+
+    private fun chatRequest(
+        messages: List<ChatMessage>,
+        toolChoice: ToolChoice? = null
+    ): LangChainChatRequest {
+        val paramsBuilder = ChatRequestParameters.builder()
+        if (toolSpecifications.isNotEmpty()) {
+            paramsBuilder.toolSpecifications(toolSpecifications)
+            toolChoice?.let { paramsBuilder.toolChoice(it) }
+        }
+
+        return LangChainChatRequest.builder()
+            .messages(messages)
+            .parameters(paramsBuilder.build())
+            .build()
+    }
+
+    private fun buildFinalResponse(aiMessage: AiMessage, sessionId: UUID, userId: String): AssistantResponse {
+        val pendingAction = pendingActionService.findLatestBySessionIdAndUserId(sessionId, userId)
+        val action = pendingAction?.let { buildConfirmationAction(it) }
+
         return AssistantResponse(
-            message = "I'm having trouble completing your request. Please try simplifying your question.",
-            sessionId = sessionId.toString()
+            message = aiMessage.text() ?: "",
+            sessionId = sessionId.toString(),
+            action = action
         )
     }
 
@@ -206,7 +226,15 @@ open class AssistantService(
             preview = ChangePreview(
                 description = pending.previewDescription,
                 diff = if (pending.diffBefore != null && pending.diffAfter != null) {
-                    DiffContent(pending.diffBefore, pending.diffAfter)
+                    DiffContent(
+                        pending.diffBefore,
+                        pending.diffAfter,
+                        when (pending.resourceType) {
+                            "ProcessDefinition" -> DiffFormat.BPMN
+                            "FormDefinition" -> DiffFormat.FORMIO
+                            else -> DiffFormat.TEXT
+                        }
+                    )
                 } else null,
                 affectedResources = pending.affectedResources?.let {
                     objectMapper.readValue(it, object : TypeReference<List<String>>() {})
@@ -295,4 +323,11 @@ Previous context is now irrelevant. The user is now editing a case definition co
     }
 
     open fun isConfigured(): Boolean = chatModel != null
+
+    companion object {
+        const val DEFAULT_MAX_TOOL_ITERATIONS = 20
+        private const val TOOL_BUDGET_EXHAUSTED_MESSAGE =
+            "Tool budget for this request is used up. Do not call tools. " +
+                "In one or two sentences, tell the user what you found and what is still missing."
+    }
 }

@@ -50,9 +50,12 @@ interface ChatRequestDto {
   context?: PageContextDto;
 }
 
+type AssistantDiffFormat = 'bpmn' | 'formio' | 'text';
+
 interface DiffContentDto {
   before: string;
   after: string;
+  format: AssistantDiffFormat;
 }
 
 interface ChangePreviewDto {
@@ -103,7 +106,7 @@ interface AssistantMessage {
 interface AssistantPendingAction {
   id: string;
   description: string;
-  diff?: {before: string; after: string};
+  diff?: {before: string; after: string; format?: AssistantDiffFormat};
   affectedResources?: string[];
 }
 
@@ -128,6 +131,7 @@ export {
   AssistantAppliedChange,
   AssistantConfigResponseDto,
   AssistantDegradedReason,
+  AssistantDiffFormat,
   AssistantMessage,
   AssistantMessageAuthor,
   AssistantPendingAction,

@@ -51,7 +51,9 @@ import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.form.service.FormDefinitionService
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.service.ProcessDeploymentService
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import dev.langchain4j.memory.chat.ChatMemoryProvider
@@ -79,7 +81,8 @@ import org.springframework.scheduling.annotation.EnableScheduling
     "com.ritense.document.autoconfigure.DocumentAutoConfiguration",
     "com.ritense.form.autoconfigure.FormAutoConfiguration",
     "com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration",
-    "com.ritense.processlink.autoconfigure.ProcessLinkAutoConfiguration",
+    "com.ritense.processlink.configuration.ProcessLinkAutoConfiguration",
+    "com.ritense.processdocument.autoconfigure.ProcessDocumentsAutoConfiguration",
     "com.ritense.zakenapi.config.ZakenApiAutoConfiguration",
     "com.ritense.resource.autoconfigure.ResourceAutoConfiguration"
 ])
@@ -102,7 +105,7 @@ class AssistantAutoConfiguration {
     @ConditionalOnMissingBean(ChatMemoryProvider::class)
     fun chatMemoryProvider(
         chatMemoryStore: ChatMemoryStore,
-        @Value("\${valtimo.assistant.max-messages-per-session:50}") maxMessages: Int
+        @Value("\${valtimo.assistant.max-messages-per-session:100}") maxMessages: Int
     ): ChatMemoryProvider {
         return ChatMemoryProvider { memoryId ->
             MessageWindowChatMemory.builder()
@@ -258,7 +261,8 @@ class AssistantAutoConfiguration {
         caseInformationTools: ObjectProvider<CaseInformationTools>,
         caseAttachmentTools: ObjectProvider<CaseAttachmentTools>,
         processDefinitionTools: ObjectProvider<ProcessDefinitionTools>,
-        formDefinitionTools: ObjectProvider<FormDefinitionTools>
+        formDefinitionTools: ObjectProvider<FormDefinitionTools>,
+        @Value("\${valtimo.assistant.max-tool-iterations:20}") maxToolIterations: Int
     ): AssistantService {
         val assistantTools = listOfNotNull(
             caseDefinitionTools.ifAvailable,
@@ -274,7 +278,8 @@ class AssistantAutoConfiguration {
             sessionService,
             pendingActionService,
             objectMapper,
-            assistantTools
+            assistantTools,
+            maxToolIterations
         )
     }
 
@@ -310,12 +315,26 @@ class AssistantAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ProcessDefinitionActionExecutor::class)
-    @ConditionalOnBean(ProcessDeploymentService::class)
+    @ConditionalOnBean(
+        ProcessDeploymentService::class,
+        OperatonRepositoryService::class,
+        ProcessLinkService::class,
+        ProcessDefinitionCaseDefinitionService::class
+    )
     fun processDefinitionActionExecutor(
         processDeploymentService: ProcessDeploymentService,
+        operatonRepositoryService: OperatonRepositoryService,
+        processLinkService: ProcessLinkService,
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         objectMapper: ObjectMapper
     ): ProcessDefinitionActionExecutor {
-        return ProcessDefinitionActionExecutor(processDeploymentService, objectMapper)
+        return ProcessDefinitionActionExecutor(
+            processDeploymentService,
+            operatonRepositoryService,
+            processLinkService,
+            processDefinitionCaseDefinitionService,
+            objectMapper
+        )
     }
 
     @Bean
@@ -332,9 +351,10 @@ class AssistantAutoConfiguration {
     @ConditionalOnMissingBean(PendingActionService::class)
     fun pendingActionService(
         pendingActionRepository: PendingAssistantActionRepository,
-        assistantActionExecutors: Map<String, ActionExecutor>
+        assistantActionExecutors: Map<String, ActionExecutor>,
+        chatMemoryProvider: ChatMemoryProvider
     ): PendingActionService {
-        return PendingActionService(pendingActionRepository, assistantActionExecutors)
+        return PendingActionService(pendingActionRepository, assistantActionExecutors, chatMemoryProvider)
     }
 
     @Bean

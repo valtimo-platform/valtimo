@@ -15,6 +15,7 @@
  */
 
 export const ASSISTANT_TEST_IDS = {
+  bpmnViewer: 'assistantBpmnViewer',
   confirmationAfter: 'assistantConfirmationAfter',
   confirmationBefore: 'assistantConfirmationBefore',
   confirmationCancel: 'assistantConfirmationCancel',

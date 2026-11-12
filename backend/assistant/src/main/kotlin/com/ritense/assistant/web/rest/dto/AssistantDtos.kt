@@ -18,6 +18,7 @@ package com.ritense.assistant.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonValue
 import com.ritense.assistant.domain.AssistantSessionEntity
 import java.time.Instant
 import java.util.UUID
@@ -76,8 +77,18 @@ data class ChangePreview(
 
 data class DiffContent(
     val before: String,
-    val after: String
+    val after: String,
+    val format: DiffFormat = DiffFormat.TEXT
 )
+
+enum class DiffFormat {
+    BPMN,
+    FORMIO,
+    TEXT;
+
+    @JsonValue
+    fun toJson(): String = name.lowercase()
+}
 
 data class SessionResponse(
     val id: UUID,

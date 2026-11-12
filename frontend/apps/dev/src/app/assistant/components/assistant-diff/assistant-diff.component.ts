@@ -20,7 +20,9 @@ import {FormioForm} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {FormIoModule} from '@valtimo/components';
 import {ASSISTANT_TEST_IDS} from '../../constants';
+import {AssistantDiffFormat} from '../../models';
 import {isAbsent, toFormioForm} from '../../utils';
+import {AssistantBpmnViewerComponent} from '../assistant-bpmn-viewer/assistant-bpmn-viewer.component';
 
 /*
  * Shows the two sides of a change next to each other. A form definition is rendered as the
@@ -33,7 +35,7 @@ import {isAbsent, toFormioForm} from '../../utils';
   templateUrl: './assistant-diff.component.html',
   styleUrls: ['./assistant-diff.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormIoModule, TranslateModule],
+  imports: [AssistantBpmnViewerComponent, CommonModule, FormIoModule, TranslateModule],
 })
 export class AssistantDiffComponent {
   @Input() public set before(value: string | undefined) {
@@ -47,6 +49,8 @@ export class AssistantDiffComponent {
     this.afterForm = toFormioForm(value);
     this.afterAbsent = isAbsent(value);
   }
+
+  @Input() public format?: AssistantDiffFormat;
 
   public beforeForm: FormioForm | null = null;
   public afterForm: FormioForm | null = null;
@@ -66,9 +70,15 @@ export class AssistantDiffComponent {
     return this._after ?? '';
   }
 
+  public get showBpmn(): boolean {
+    return this.format === 'bpmn';
+  }
+
   // Only render forms side by side when both sides agree on being a form (or absent), so a
   // form is never compared against a block of text.
   public get showForms(): boolean {
+    if (this.format === 'bpmn' || this.format === 'text') return false;
+
     return (
       (!!this.beforeForm || this.beforeAbsent) &&
       (!!this.afterForm || this.afterAbsent) &&

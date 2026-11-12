@@ -26,7 +26,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import org.operaton.bpm.engine.RepositoryService
@@ -34,10 +36,14 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import org.operaton.bpm.model.bpmn.Bpmn
+import java.io.ByteArrayInputStream
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ProcessDefinitionToolsTest {
 
@@ -93,6 +99,22 @@ class ProcessDefinitionToolsTest {
         assertContains(result, "loan-process")
         assertContains(result, "support-process")
         assertContains(result, "Loan Process")
+        assertFalse(result.contains("ID:"))
+        assertFalse(result.contains("loan-process:1:123"))
+    }
+
+    @Test
+    fun `should report latest version when getting process definition`() {
+        setAdminAuthentication()
+        val procDef = createMockProcessDefinition("loan-process", 3, "Loan Process")
+        val model = Bpmn.readModelFromStream(ByteArrayInputStream(VALID_BPMN.toByteArray()))
+        whenever(operatonRepositoryService.findProcessDefinition(any())).thenReturn(procDef)
+        whenever(repositoryService.getBpmnModelInstance(procDef.id)).thenReturn(model)
+
+        val result = tools.getProcessDefinition("loan-process")
+
+        assertContains(result, "Version: 3 (latest)")
+        assertFalse(result.contains("ID:"))
     }
 
     @Test
@@ -110,7 +132,7 @@ class ProcessDefinitionToolsTest {
         setAdminAuthentication()
         whenever(operatonRepositoryService.findProcessDefinition(any())).thenReturn(null)
 
-        val result = tools.getProcessDefinition("nonexistent", null)
+        val result = tools.getProcessDefinition("nonexistent")
 
         assertContains(result, "not found")
     }
@@ -146,12 +168,13 @@ class ProcessDefinitionToolsTest {
             ttl = any()
         )).thenReturn(pendingAction)
 
-        val bpmnXml = """<?xml version="1.0" encoding="UTF-8"?><bpmn:definitions></bpmn:definitions>"""
+        val bpmnXml = VALID_BPMN
         val result = tools.previewProcessDefinitionChange("loan-process", bpmnXml, null)
 
         assertContains(result, "Preview")
         assertContains(result, "loan-process")
         assertContains(result, "confirmation dialog")
+        assertContains(result, "Existing process links and case settings are kept")
     }
 
     @Test
@@ -185,20 +208,62 @@ class ProcessDefinitionToolsTest {
             ttl = any()
         )).thenReturn(pendingAction)
 
-        val bpmnXml = """<?xml version="1.0" encoding="UTF-8"?><bpmn:definitions></bpmn:definitions>"""
+        val bpmnXml = VALID_BPMN
         val result = tools.previewProcessDefinitionChange("loan-process", bpmnXml, "loan-case")
 
         assertContains(result, "loan-case")
     }
 
     @Test
-    fun `should suggest BPMN patterns`() {
+    fun `should pass full xml untruncated as diffBefore and diffAfter`() {
+        setAdminAuthentication()
+        val procDef = createMockProcessDefinition("loan-process", 1, "Loan Process")
+        val currentModel = Bpmn.readModelFromStream(ByteArrayInputStream(VALID_BPMN.toByteArray()))
+        val padding = (1..100).joinToString("") { "<bpmn:documentation>doc $it padding padding</bpmn:documentation>" }
+        val largeXml = VALID_BPMN.replace("<bpmn:process id=\"p\" isExecutable=\"true\"/>",
+            "<bpmn:process id=\"p\" isExecutable=\"true\">$padding</bpmn:process>")
+        assertTrue(largeXml.length > 1000)
+
+        whenever(operatonRepositoryService.findProcessDefinition(any())).thenReturn(procDef)
+        whenever(repositoryService.getBpmnModelInstance(procDef.id)).thenReturn(currentModel)
+        val before = argumentCaptor<String>()
+        val after = argumentCaptor<String>()
+        whenever(pendingActionService.createPendingAction(
+            sessionId = any(), userId = any(), tool = any(), params = any(), resourceType = any(),
+            resourceId = any(), previewDescription = any(), diffBefore = before.capture(),
+            diffAfter = after.capture(), affectedResources = any(), ttl = any()
+        )).thenReturn(mock())
+
+        tools.previewProcessDefinitionChange("loan-process", largeXml, null)
+
+        assertEquals(largeXml, after.firstValue)
+        assertEquals(Bpmn.convertToString(currentModel), before.firstValue)
+    }
+
+    @Test
+    fun `should mark before as new process on first deployment`() {
+        setAdminAuthentication()
+        whenever(operatonRepositoryService.findProcessDefinition(any())).thenReturn(null)
+        val before = argumentCaptor<String>()
+        whenever(pendingActionService.createPendingAction(
+            sessionId = any(), userId = any(), tool = any(), params = any(), resourceType = any(),
+            resourceId = any(), previewDescription = any(), diffBefore = before.capture(),
+            diffAfter = any(), affectedResources = any(), ttl = any()
+        )).thenReturn(mock())
+
+        tools.previewProcessDefinitionChange("new-process", VALID_BPMN, null)
+
+        assertEquals("(new process)", before.firstValue)
+    }
+
+    @Test
+    fun `should return error and not create pending action for invalid xml`() {
         setAdminAuthentication()
 
-        val result = tools.suggestBpmnPattern("I need to add approval workflow")
+        val result = tools.previewProcessDefinitionChange("loan-process", "<not valid xml", null)
 
-        assertContains(result, "BPMN Pattern Suggestions")
-        assertContains(result, "approval workflow")
+        assertContains(result, "invalid")
+        verifyNoInteractions(pendingActionService)
     }
 
     @Test
@@ -215,7 +280,7 @@ class ProcessDefinitionToolsTest {
         setUserAuthentication()
 
         assertThrows<AccessDeniedException> {
-            tools.getProcessDefinition("loan-process", null)
+            tools.getProcessDefinition("loan-process")
         }
     }
 
@@ -233,6 +298,13 @@ class ProcessDefinitionToolsTest {
         assertThrows<AccessDeniedException> {
             tools.listProcessDefinitions(latestOnly = true)
         }
+    }
+
+    companion object {
+        private const val VALID_BPMN = """<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="http://bpmn.io/schema/bpmn">
+<bpmn:process id="p" isExecutable="true"/>
+</bpmn:definitions>"""
     }
 
     private fun setAdminAuthentication() {

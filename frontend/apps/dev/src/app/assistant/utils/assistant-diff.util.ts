@@ -20,12 +20,12 @@ import {FormioForm} from '@formio/angular';
  * ChangePreview.diff carries plain strings and says nothing about what is inside them: a
  * form definition, BPMN xml or a couple of lines of text. So the side is inspected here.
  *
- * Replace this sniffing with a real discriminator as soon as the backend labels the payload
- * (for example ChangePreview.format = 'formio' | 'bpmn' | 'text').
+ * The backend labels the payload with DiffContent.format; this sniffing is only the fallback
+ * for when that label is absent.
  */
 
 // The backend writes these when one side of the change does not exist yet.
-const ABSENT_MARKERS = ['(new form)', '(deleted)', '(empty)', '(none)'];
+const ABSENT_MARKERS = ['(new form)', '(new process)', '(deleted)', '(empty)', '(none)'];
 
 function isAbsent(side: string | undefined): boolean {
   return !side?.trim() || ABSENT_MARKERS.includes(side.trim().toLowerCase());

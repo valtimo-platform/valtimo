@@ -22,14 +22,17 @@ import com.ritense.assistant.web.rest.dto.ChatRequest
 import dev.langchain4j.agent.tool.Tool
 import dev.langchain4j.agent.tool.ToolExecutionRequest
 import dev.langchain4j.data.message.AiMessage
+import dev.langchain4j.data.message.SystemMessage
 import dev.langchain4j.memory.chat.ChatMemoryProvider
 import dev.langchain4j.memory.chat.MessageWindowChatMemory
 import dev.langchain4j.model.chat.ChatModel
 import dev.langchain4j.model.chat.request.ChatRequest as LangChainChatRequest
+import dev.langchain4j.model.chat.request.ToolChoice
 import dev.langchain4j.model.chat.response.ChatResponse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -291,40 +294,21 @@ class AssistantServiceTest {
     }
 
     @Test
-    fun `should stop at max iterations`() {
+    fun `should stop at max iterations and return final answer without tools`() {
         val sessionId = UUID.randomUUID()
-        val session = AssistantSessionEntity(
-            id = sessionId,
-            userId = "user123",
-            title = null,
-            createdAt = Instant.now(),
-            lastActivityAt = Instant.now()
-        )
         val memory = MessageWindowChatMemory.withMaxMessages(50)
-        val toolProvider = TestToolProvider()
+        val serviceWithTools = serviceWithMaxToolIterations(3)
 
-        val serviceWithTools = AssistantService(
-            chatModel,
-            chatMemoryProvider,
-            contextBuilder,
-            sessionService,
-            pendingActionService,
-            objectMapper,
-            listOf(toolProvider)
-        )
-
-        whenever(sessionService.createSession("user123")).thenReturn(session)
+        whenever(sessionService.createSession("user123")).thenReturn(sessionEntity(sessionId))
         whenever(chatMemoryProvider.get(sessionId)).thenReturn(memory)
 
-        val toolRequest = ToolExecutionRequest.builder()
-            .name("getCurrentTime")
-            .arguments("{}")
-            .id("call-1")
-            .build()
-        val aiMessageWithTool = AiMessage.from(listOf(toolRequest))
-        val toolResponse = ChatResponse.builder().aiMessage(aiMessageWithTool).build()
-
-        whenever(chatModel.chat(any<LangChainChatRequest>())).thenReturn(toolResponse)
+        whenever(chatModel.chat(any<LangChainChatRequest>())).thenAnswer {
+            if (it.getArgument<LangChainChatRequest>(0).parameters().toolChoice() == ToolChoice.NONE) {
+                ChatResponse.builder().aiMessage(AiMessage.from("I found the time but not the date.")).build()
+            } else {
+                toolCallResponse()
+            }
+        }
 
         val result = serviceWithTools.chat(
             request = ChatRequest(message = "Loop forever"),
@@ -334,8 +318,73 @@ class AssistantServiceTest {
             authToken = "token"
         )
 
-        assertTrue(result.message.contains("trouble completing your request"))
-        verify(chatModel, times(10)).chat(any<LangChainChatRequest>())
+        assertEquals("I found the time but not the date.", result.message)
+        verify(chatModel, times(3)).chat(argThat<LangChainChatRequest> { parameters().toolChoice() != ToolChoice.NONE })
+        verify(chatModel, times(1)).chat(argThat<LangChainChatRequest> {
+            parameters().toolChoice() == ToolChoice.NONE &&
+                parameters().toolSpecifications().isNotEmpty() &&
+                (messages().last() as? SystemMessage)?.text()?.contains("Tool budget") == true
+        })
+        assertTrue(memory.messages().none { it is SystemMessage && it.text().contains("Tool budget") })
+        assertTrue(memory.messages().first() is SystemMessage)
+        assertEquals("I found the time but not the date.", (memory.messages().last() as AiMessage).text())
+    }
+
+    @Test
+    fun `should return fallback when final call after max iterations fails`() {
+        val sessionId = UUID.randomUUID()
+        val memory = MessageWindowChatMemory.withMaxMessages(50)
+        val serviceWithTools = serviceWithMaxToolIterations(2)
+
+        whenever(sessionService.createSession("user123")).thenReturn(sessionEntity(sessionId))
+        whenever(chatMemoryProvider.get(sessionId)).thenReturn(memory)
+
+        whenever(chatModel.chat(any<LangChainChatRequest>())).thenAnswer {
+            if (it.getArgument<LangChainChatRequest>(0).parameters().toolChoice() == ToolChoice.NONE) {
+                throw RuntimeException("API error")
+            }
+            toolCallResponse()
+        }
+
+        val result = serviceWithTools.chat(
+            request = ChatRequest(message = "Loop forever"),
+            userId = "user123",
+            userEmail = "user@test.com",
+            userRoles = setOf("ROLE_USER"),
+            authToken = "token"
+        )
+
+        assertEquals("I'm having trouble completing your request. Please try simplifying your question.", result.message)
+        verify(chatModel, times(2)).chat(argThat<LangChainChatRequest> { parameters().toolChoice() != ToolChoice.NONE })
+        verify(chatModel, times(1)).chat(argThat<LangChainChatRequest> { parameters().toolChoice() == ToolChoice.NONE })
+    }
+
+    private fun serviceWithMaxToolIterations(maxToolIterations: Int) = AssistantService(
+        chatModel,
+        chatMemoryProvider,
+        contextBuilder,
+        sessionService,
+        pendingActionService,
+        objectMapper,
+        listOf(TestToolProvider()),
+        maxToolIterations
+    )
+
+    private fun sessionEntity(sessionId: UUID) = AssistantSessionEntity(
+        id = sessionId,
+        userId = "user123",
+        title = null,
+        createdAt = Instant.now(),
+        lastActivityAt = Instant.now()
+    )
+
+    private fun toolCallResponse(): ChatResponse {
+        val toolRequest = ToolExecutionRequest.builder()
+            .name("getCurrentTime")
+            .arguments("{}")
+            .id("call-1")
+            .build()
+        return ChatResponse.builder().aiMessage(AiMessage.from(listOf(toolRequest))).build()
     }
 
     @Test
@@ -393,6 +442,49 @@ class AssistantServiceTest {
         )
 
         verify(sessionService, never()).updatePageContext(any(), any())
+    }
+
+    @Test
+    fun `should set diff format based on pending action resource type`() {
+        val expected = mapOf(
+            "ProcessDefinition" to com.ritense.assistant.web.rest.dto.DiffFormat.BPMN,
+            "FormDefinition" to com.ritense.assistant.web.rest.dto.DiffFormat.FORMIO,
+            "CaseDefinition" to com.ritense.assistant.web.rest.dto.DiffFormat.TEXT
+        )
+        expected.forEach { (resourceType, format) ->
+            val sessionId = UUID.randomUUID()
+            val memory = MessageWindowChatMemory.withMaxMessages(10)
+            whenever(chatMemoryProvider.get(sessionId)).thenReturn(memory)
+            whenever(chatModel.chat(any<LangChainChatRequest>()))
+                .thenReturn(ChatResponse.builder().aiMessage(AiMessage.from("Done")).build())
+            whenever(pendingActionService.findLatestBySessionIdAndUserId(sessionId, "user123")).thenReturn(
+                com.ritense.assistant.domain.PendingAssistantAction(
+                    id = UUID.randomUUID(),
+                    sessionId = sessionId,
+                    userId = "user123",
+                    tool = "some_tool",
+                    params = "{}",
+                    resourceType = resourceType,
+                    resourceId = "res",
+                    previewDescription = "Preview",
+                    diffBefore = "before",
+                    diffAfter = "after",
+                    createdAt = Instant.now(),
+                    expiresAt = Instant.now().plusSeconds(300)
+                )
+            )
+
+            val result = assistantService.chat(
+                request = ChatRequest(message = "Hello", sessionId = sessionId),
+                userId = "user123",
+                userEmail = "user@test.com",
+                userRoles = setOf("ROLE_USER"),
+                authToken = "token"
+            )
+
+            val action = result.action as com.ritense.assistant.web.rest.dto.AssistantAction.ConfirmationRequired
+            assertEquals(format, action.preview.diff?.format)
+        }
     }
 
     class TestToolProvider {

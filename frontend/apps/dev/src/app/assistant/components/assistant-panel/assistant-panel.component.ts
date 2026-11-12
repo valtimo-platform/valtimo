@@ -26,6 +26,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  viewChild,
 } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {AiLabel20, SendAlt16, Subtract16} from '@carbon/icons';
@@ -54,7 +55,7 @@ import {AssistantSuggestionsComponent} from '../assistant-suggestions/assistant-
 })
 export class AssistantPanelComponent implements OnInit, AfterViewInit {
   @ViewChild('messageInput') private readonly _messageInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('messageList') private readonly _messageList!: ElementRef<HTMLElement>;
+  private readonly _$messageList = viewChild<ElementRef<HTMLElement>>('messageList');
 
   @Output() public minimizeEvent = new EventEmitter<void>();
 
@@ -108,7 +109,7 @@ export class AssistantPanelComponent implements OnInit, AfterViewInit {
       this.chatService.$messages();
       this.chatService.$awaitingReply();
 
-      const list = this._messageList?.nativeElement;
+      const list = this._$messageList()?.nativeElement;
 
       if (list) requestAnimationFrame(() => (list.scrollTop = list.scrollHeight));
     });
