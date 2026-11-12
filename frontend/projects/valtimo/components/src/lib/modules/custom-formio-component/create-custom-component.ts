@@ -254,12 +254,18 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
     public setValue(value: any, flags: any = {}): boolean {
       // Update dataValue first, like base setValue. Else defaults applied via clearOnHide() or
       // setSubmission() only reach the element, not the form data.
-      // resetValue on null: else updateValue reads the old value back from the element.
+      // On null, resetValue stops updateValue reading the old value back from the element.
+      // noUpdateEvent keeps resetValue out of the change event; calculated fields reset on it.
+      const isReset = isNil(value);
       const changed = this.updateValue(
         value,
-        isNil(value) ? {...flags, resetValue: true} : flags,
+        isReset ? {...flags, resetValue: true, noUpdateEvent: true} : flags,
         undefined
       );
+
+      if (isReset) {
+        this.updateOnChange(flags, changed);
+      }
 
       if (!this._customAngularElement || !('value' in this._customAngularElement)) {
         return changed;

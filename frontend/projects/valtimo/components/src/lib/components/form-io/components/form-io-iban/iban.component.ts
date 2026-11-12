@@ -32,11 +32,14 @@ import {FormioCustomComponent} from '../../../../modules';
 export class FormIoIbanComponent
   implements FormioCustomComponent<string>, AfterViewInit, OnDestroy
 {
+  @Input() public disabled = false;
+  @Input() public required = false;
+  @Output() public valueChange = new EventEmitter<string>();
   public ibanForm = new FormGroup({
     iban: new FormControl(''),
   });
-
   private _value: string;
+  private readonly _subscriptions = new Subscription();
 
   public get value(): string {
     return this._value;
@@ -50,11 +53,6 @@ export class FormIoIbanComponent
       this.ibanForm.controls.iban.setValue(value, {emitEvent: false});
     }
   }
-
-  @Input() public disabled = false;
-  @Input() public required = false;
-  @Output() public valueChange = new EventEmitter<string>();
-  private readonly _subscriptions = new Subscription();
 
   public ngAfterViewInit(): void {
     setTimeout(() => {
