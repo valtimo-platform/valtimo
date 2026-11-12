@@ -32,13 +32,28 @@ import {FormioCustomComponent} from '../../../../modules';
 export class FormIoIbanComponent
   implements FormioCustomComponent<string>, AfterViewInit, OnDestroy
 {
-  @Input() public value: string;
-  @Input() public disabled = false;
-  @Input() public required = false;
-  @Output() public valueChange = new EventEmitter<string>();
   public ibanForm = new FormGroup({
     iban: new FormControl(''),
   });
+
+  private _value: string;
+
+  public get value(): string {
+    return this._value;
+  }
+
+  // Form.io sets value again after init, e.g. on setSubmission or calculateValue.
+  @Input() public set value(value: string) {
+    this._value = value;
+
+    if (this.ibanForm.controls.iban.value !== value) {
+      this.ibanForm.controls.iban.setValue(value, {emitEvent: false});
+    }
+  }
+
+  @Input() public disabled = false;
+  @Input() public required = false;
+  @Output() public valueChange = new EventEmitter<string>();
   private readonly _subscriptions = new Subscription();
 
   public ngAfterViewInit(): void {
@@ -76,7 +91,7 @@ export class FormIoIbanComponent
   private onValueChange(): void {
     // Always emit the string, also when invalid: form.io stores this as the submission value, and
     // anything else renders as [object Object] on redraw. Rejecting is done by the customValidator.
-    this.value = this.ibanForm.controls.iban.value ?? '';
-    this.valueChange.emit(this.value);
+    this._value = this.ibanForm.controls.iban.value ?? '';
+    this.valueChange.emit(this._value);
   }
 }
