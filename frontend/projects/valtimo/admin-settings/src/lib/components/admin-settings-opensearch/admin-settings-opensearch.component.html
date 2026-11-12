@@ -69,49 +69,41 @@
     ></cds-inline-notification>
   }
 
-  <cds-tabs type="line" [attr.data-test-id]="testIds.tabs">
+  <cds-tabs [cacheActive]="true" type="contained" [attr.data-test-id]="testIds.tabs">
     <cds-tab
       [active]="$activeTab() === OpensearchTab.REINDEX_RUNS"
       [heading]="'adminSettings.opensearch.tabs.reindexRuns' | translate"
       (selected)="onTabSelected(OpensearchTab.REINDEX_RUNS)"
       [attr.data-test-id]="testIds.reindexRunsTabPanel"
     >
-      @if ($activeTab() === OpensearchTab.REINDEX_RUNS) {
-        <section class="opensearch-section">
-          <p class="opensearch-section__description">
-            {{ 'adminSettings.opensearch.reindex.description' | translate }}
-          </p>
+      <valtimo-carbon-list
+        class="opensearch-reindex__runs"
+        [header]="false"
+        [items]="obs.items || []"
+        [fields]="fields"
+        [loading]="obs.loading"
+        [pagination]="pagination"
+        [expandedRowTemplate]="expandedRowTemplate"
+        [expandedRowKey]="'runId'"
+        (paginationClicked)="onPageChange($event)"
+        (paginationSet)="onPageSizeChange($event)"
+      >
+        <div carbonToolbarContent>
+          <button cdsButton="primary" [disabled]="obs.hasRunning || obs.starting" (click)="openModal()">
+            @if (obs.starting) {
+              <cds-loading size="sm"></cds-loading>
+            }
+            {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
 
-          <valtimo-carbon-list
-            class="opensearch-reindex__runs"
-            [header]="false"
-            [items]="obs.items || []"
-            [fields]="fields"
-            [loading]="obs.loading"
-            [pagination]="pagination"
-            [expandedRowTemplate]="expandedRowTemplate"
-            [expandedRowKey]="'runId'"
-            (paginationClicked)="onPageChange($event)"
-            (paginationSet)="onPageSizeChange($event)"
-          >
-            <div carbonToolbarContent>
-              <button cdsButton="primary" [disabled]="obs.hasRunning || obs.starting" (click)="openModal()">
-                @if (obs.starting) {
-                  <cds-loading size="sm"></cds-loading>
-                }
-                {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
+            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+          </button>
+        </div>
 
-                <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-              </button>
-            </div>
-
-            <valtimo-no-results
-              title="{{ 'adminSettings.opensearch.reindex.noResults.title' | translate }}"
-              description="{{ 'adminSettings.opensearch.reindex.noResults.description' | translate }}"
-            ></valtimo-no-results>
-          </valtimo-carbon-list>
-        </section>
-      }
+        <valtimo-no-results
+          title="{{ 'adminSettings.opensearch.reindex.noResults.title' | translate }}"
+          description="{{ 'adminSettings.opensearch.reindex.noResults.description' | translate }}"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
     </cds-tab>
 
     <cds-tab
@@ -120,39 +112,31 @@
       (selected)="onTabSelected(OpensearchTab.REJECTED_CASES)"
       [attr.data-test-id]="testIds.rejectedCasesTabPanel"
     >
-      @if ($activeTab() === OpensearchTab.REJECTED_CASES) {
-        <section class="opensearch-section">
-          <p class="opensearch-section__description">
-            {{ 'adminSettings.opensearch.rejections.description' | translate }}
-          </p>
+      <valtimo-carbon-list
+        [actionItems]="rejectionActionItems"
+        [fields]="rejectionFields"
+        [header]="false"
+        [items]="obs.rejections?.content || []"
+        [loading]="obs.rejectionsLoading"
+        [pagination]="rejectionsPagination"
+        (paginationClicked)="onRejectionsPageChange($event)"
+        (paginationSet)="onRejectionsPageSizeChange($event)"
+      >
+        <div carbonToolbarContent>
+          <button cdsButton="primary" [disabled]="obs.retrying" (click)="openRetryAllModal()">
+            {{ 'adminSettings.opensearch.rejections.retryAll' | translate }}
 
-          <valtimo-carbon-list
-            [actionItems]="rejectionActionItems"
-            [fields]="rejectionFields"
-            [header]="false"
-            [items]="obs.rejections?.content || []"
-            [loading]="obs.rejectionsLoading"
-            [pagination]="rejectionsPagination"
-            (paginationClicked)="onRejectionsPageChange($event)"
-            (paginationSet)="onRejectionsPageSizeChange($event)"
-          >
-            <div carbonToolbarContent>
-              <button cdsButton="primary" [disabled]="obs.retrying" (click)="openRetryAllModal()">
-                {{ 'adminSettings.opensearch.rejections.retryAll' | translate }}
+            <svg class="cds--btn__icon" cdsIcon="renew" size="16"></svg>
+          </button>
+        </div>
 
-                <svg class="cds--btn__icon" cdsIcon="renew" size="16"></svg>
-              </button>
-            </div>
-
-            <valtimo-no-results
-              title="{{ 'adminSettings.opensearch.rejections.noResults.title' | translate }}"
-              description="{{
-                'adminSettings.opensearch.rejections.noResults.description' | translate
-              }}"
-            ></valtimo-no-results>
-          </valtimo-carbon-list>
-        </section>
-      }
+        <valtimo-no-results
+          title="{{ 'adminSettings.opensearch.rejections.noResults.title' | translate }}"
+          description="{{
+            'adminSettings.opensearch.rejections.noResults.description' | translate
+          }}"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
     </cds-tab>
   </cds-tabs>
 
