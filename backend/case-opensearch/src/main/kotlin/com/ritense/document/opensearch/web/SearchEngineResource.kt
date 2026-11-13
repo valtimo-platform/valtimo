@@ -22,6 +22,7 @@ import com.ritense.document.opensearch.autoconfigure.DocumentOpenSearchAutoConfi
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.IndexCompletenessService
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import com.ritense.document.opensearch.service.isTransportFailure
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
@@ -69,7 +70,19 @@ class SearchEngineResource(
 
         if (useOpenSearch) {
             try {
-                indexInitializer.ensureAllIndices()
+                val failures = indexInitializer.ensureAllIndices()
+                if (failures.any { isTransportFailure(it.cause) }) {
+                    logger.warn { "Failed to initialize OpenSearch indices — is OpenSearch running?" }
+                    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                        .body(SearchEngineDto(available = true, active = toggle.get().name))
+                }
+                if (failures.isNotEmpty()) {
+                    logger.warn {
+                        "Enabling OpenSearch although indices could not be created for: " +
+                            failures.joinToString { "${it.definitionKey} version '${it.versionTag}'" } +
+                            " — these read from the database until the reconciler repairs them"
+                    }
+                }
                 indexCompletenessService.initializeWatermarkIfAbsent()
             } catch (e: Exception) {
                 logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }

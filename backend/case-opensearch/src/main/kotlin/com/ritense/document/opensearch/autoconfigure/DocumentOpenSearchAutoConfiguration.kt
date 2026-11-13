@@ -52,6 +52,7 @@ import com.ritense.document.opensearch.service.ReindexProgressGate
 import com.ritense.document.opensearch.service.TopologyGate
 import com.ritense.document.opensearch.service.OpenSearchHealthService
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import com.ritense.document.opensearch.service.isTransportFailure
 import com.ritense.document.opensearch.web.DocumentOpenSearchRejectionResource
 import com.ritense.document.opensearch.web.DocumentOpenSearchReindexResource
 import com.ritense.document.opensearch.web.SearchEngineResource
@@ -415,7 +416,10 @@ class DocumentOpenSearchAutoConfiguration {
 
         if (toggle.isOpenSearchActive()) {
             try {
-                indexInitializer.ensureAllIndices()
+                val failures = indexInitializer.ensureAllIndices()
+                if (failures.any { isTransportFailure(it.cause) }) {
+                    logger.warn { "Failed to initialize OpenSearch indices at startup — is OpenSearch running?" }
+                }
                 indexCompletenessService.initializeWatermarkIfAbsent()
             } catch (e: Exception) {
                 logger.warn(e) { "Failed to initialize OpenSearch indices at startup — is OpenSearch running?" }

@@ -132,11 +132,16 @@ export class AdminSettingsManagementApiService extends BaseApiService {
       .pipe(catchError(() => of(null)));
   }
 
-  public getReindexRuns(page: number, size: number): Observable<Page<ReindexStatusDto>> {
+  public getReindexRuns(
+    page: number,
+    size: number,
+    silent = false
+  ): Observable<Page<ReindexStatusDto>> {
     const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    const headers = silent ? new HttpHeaders().set(InterceptorSkip, 'all') : undefined;
     return this.httpClient.get<Page<ReindexStatusDto>>(
       this.getApiUrl('/management/v1/document-opensearch/reindex/runs'),
-      {params}
+      {params, headers}
     );
   }
 

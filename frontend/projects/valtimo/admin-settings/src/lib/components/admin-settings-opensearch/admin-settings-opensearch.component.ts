@@ -153,12 +153,17 @@ export class AdminSettingsOpensearchComponent implements OnInit, OnDestroy {
       switchMap(() => {
         this.loading$.next(true);
         return this._apiService.getReindexRuns(this.pagination.page - 1, this.pagination.size).pipe(
+          catchError(() => EMPTY),
           finalize(() => this.loading$.next(false))
         );
       })
     ),
     this._silentRefresh$.pipe(
-      switchMap(() => this._apiService.getReindexRuns(this.pagination.page - 1, this.pagination.size))
+      switchMap(() =>
+        this._apiService
+          .getReindexRuns(this.pagination.page - 1, this.pagination.size, true)
+          .pipe(catchError(() => EMPTY))
+      )
     )
   ).pipe(shareReplay(1));
 

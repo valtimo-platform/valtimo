@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.ritense.adminsettings.web.rest.dto.FeatureToggleOverridesDto
 import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.IndexCompletenessService
+import com.ritense.document.opensearch.service.IndexProvisioningFailure
 import com.ritense.document.opensearch.service.SearchEngineToggle
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -31,7 +32,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.dao.DataAccessResourceFailureException
 import org.springframework.http.HttpStatus
+import java.net.ConnectException
 
 class SearchEngineResourceTest {
 
@@ -121,5 +124,39 @@ class SearchEngineResourceTest {
         val response = disabledResource.setActive(SearchEngineResource.UpdateSearchEngineDto("OPENSEARCH"))
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+    }
+
+    @Test
+    fun `setActive to OPENSEARCH returns 503 and changes nothing when OpenSearch is unreachable`() {
+        toggle.set(SearchEngineToggle.Engine.POSTGRES)
+        whenever(indexInitializer.ensureAllIndices()).thenReturn(
+            listOf(
+                IndexProvisioningFailure(
+                    "house", "1.0.0",
+                    DataAccessResourceFailureException("Connection refused", ConnectException())
+                )
+            )
+        )
+
+        val response = resource.setActive(SearchEngineResource.UpdateSearchEngineDto("OPENSEARCH"))
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
+        assertThat(toggle.get()).isEqualTo(SearchEngineToggle.Engine.POSTGRES)
+        verify(featureToggleService, never()).updateToggle(any(), any())
+        verify(indexCompletenessService, never()).initializeWatermarkIfAbsent()
+    }
+
+    @Test
+    fun `setActive to OPENSEARCH still enables when only one definition's index fails`() {
+        toggle.set(SearchEngineToggle.Engine.POSTGRES)
+        whenever(indexInitializer.ensureAllIndices()).thenReturn(
+            listOf(IndexProvisioningFailure("house", "1.0.0", IllegalStateException("shard limit")))
+        )
+
+        val response = resource.setActive(SearchEngineResource.UpdateSearchEngineDto("OPENSEARCH"))
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.body?.active).isEqualTo("OPENSEARCH")
+        assertThat(toggle.get()).isEqualTo(SearchEngineToggle.Engine.OPENSEARCH)
     }
 }

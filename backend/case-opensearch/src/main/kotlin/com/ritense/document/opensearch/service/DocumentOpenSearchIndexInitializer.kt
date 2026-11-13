@@ -31,6 +31,8 @@ import org.springframework.data.elasticsearch.core.index.AliasActions
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import java.time.Duration
 
+data class IndexProvisioningFailure(val definitionKey: String, val versionTag: String, val cause: Throwable)
+
 /**
  * Owns the per-definition OpenSearch index topology and its lifecycle.
  *
@@ -56,12 +58,14 @@ open class DocumentOpenSearchIndexInitializer(
     @Volatile
     private var lastWriteFailureAt: Long = 0L
 
-    open fun ensureAllIndices() {
+    open fun ensureAllIndices(): List<IndexProvisioningFailure> {
         // Isolate per definition: one definition whose index can't be created (shard limit, read-only block,
         // mapping error) must not stop the others — otherwise a reconcile cycle aborts before indexing anything.
-        activeDefinitionVersions().forEach { (key, versionTag) ->
+        return activeDefinitionVersions().mapNotNull { (key, versionTag) ->
             runCatching { ensureIndex(key, versionTag) }
-                .onFailure { logger.error(it) { "Could not ensure OpenSearch index for '$key' v'$versionTag' — skipping this cycle" } }
+                .onFailure { logger.error(it) { "Could not ensure OpenSearch index for '$key' version '$versionTag' — skipping this cycle" } }
+                .exceptionOrNull()
+                ?.let { IndexProvisioningFailure(key, versionTag, it) }
         }
     }
 

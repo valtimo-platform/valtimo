@@ -343,11 +343,15 @@ class DocumentOpenSearchMajorFindingsReproIntTest : BaseOpenSearchIntegrationTes
         assertThat(runCatching { indexInitializer.ensureIndex("person", TEST_VERSION_TAG) }.isFailure)
             .`as`("precondition: the cluster refuses the active version's new index").isTrue()
 
+        val failures = indexInitializer.ensureAllIndices()
         freshReconcileService().reconcile()
         resetShardLimit()
         refreshIndex()
 
         assertSoftly { soft ->
+            soft.assertThat(failures.map { it.definitionKey to it.versionTag })
+                .`as`("ensureAllIndices reports exactly the definition whose index cannot be created")
+                .containsExactly("person" to TEST_VERSION_TAG)
             soft.assertThat(findIndexedById(house.id().id.toString()))
                 .`as`("one active version's index-creation failure must not stop other cases from being indexed")
                 .isNotNull()
