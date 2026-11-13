@@ -43,6 +43,8 @@ import java.util.concurrent.ConcurrentHashMap
 class ExternalPluginHostClient(
     private val restTemplate: RestTemplate,
     private val objectMapper: ObjectMapper,
+    /** Contract deliveries and replies only: their read timeout must outlast the host's Wasm timeout. */
+    private val contractRestTemplate: RestTemplate = restTemplate,
 ) {
 
     fun health(baseUrl: String): Boolean = try {
@@ -157,6 +159,8 @@ class ExternalPluginHostClient(
          * empty list means the configuration makes no outbound HTTP calls at all.
          */
         allowedEgress: List<String> = emptyList(),
+        /** Contracts bound for this configuration. The host refuses `plugin_contract` calls for any other. */
+        grantedContracts: List<String> = emptyList(),
         eventBrokerUrl: String?,
         eventBrokerExchange: String,
         eventBrokerExchangeType: String,
@@ -190,6 +194,9 @@ class ExternalPluginHostClient(
             })
             set<ObjectNode>("allowedEgress", objectMapper.createArrayNode().apply {
                 allowedEgress.forEach { add(it) }
+            })
+            set<ObjectNode>("grantedContracts", objectMapper.createArrayNode().apply {
+                grantedContracts.forEach { add(it) }
             })
             // The host learns this GZAC instance's broker from the push (it never configures one
             // itself). Omitted when no broker is configured — events are then disabled for the config.
@@ -332,13 +339,60 @@ class ExternalPluginHostClient(
     }
 
     /**
+     * Delivers a contract call or job to the provider's `handle_contract_call`. [body] is the full
+     * request (`configurationId`, `caller`, `payload`, `chain`, `deadline`, plus `jobId` for jobs). The
+     * contract segment goes raw: `@` and `.` are path-safe and the host signs the same string.
+     */
+    fun invokeContract(
+        baseUrl: String,
+        pluginId: String,
+        version: String,
+        contract: String,
+        operation: String,
+        body: ObjectNode,
+        hostSecret: String,
+        correlationId: String? = null,
+    ): ActionResponse = postSigned(
+        baseUrl, "/plugins/$pluginId/$version/contracts/$contract/$operation", body, hostSecret, correlationId,
+    )
+
+    /** Delivers a job's outcome to the requester's `handle_contract_reply`. */
+    fun invokeContractReply(
+        baseUrl: String,
+        pluginId: String,
+        version: String,
+        body: ObjectNode,
+        hostSecret: String,
+        correlationId: String? = null,
+    ): ActionResponse = postSigned(baseUrl, "/plugins/$pluginId/$version/contract-replies", body, hostSecret, correlationId)
+
+    private fun postSigned(
+        baseUrl: String,
+        path: String,
+        payload: ObjectNode,
+        hostSecret: String,
+        correlationId: String?,
+    ): ActionResponse {
+        val uri = buildUri(baseUrl, path)
+        val body = objectMapper.writeValueAsBytes(payload)
+        val headers = hmacHeaders(hostSecret, HttpMethod.POST.name(), path, body).apply {
+            contentType = MediaType.APPLICATION_JSON
+            if (correlationId != null) set(CORRELATION_ID_HEADER, correlationId)
+        }
+        return exchangeForActionResponse(RequestEntity(body, headers, HttpMethod.POST, uri), contractRestTemplate)
+    }
+
+    /**
      * Executes a plugin invocation and maps every failure mode onto an [ActionResponse] so the
      * callers' error paths (`actionFailed`, hook rejection) always engage:
      * - 4xx/5xx from the host → the host's status plus its parsed error body;
      * - connection failure / timeout → a synthetic 503 with a clear "host unreachable" error body.
      */
-    private fun exchangeForActionResponse(request: RequestEntity<*>): ActionResponse = try {
-        val response = restTemplate.exchange(request, JsonNode::class.java)
+    private fun exchangeForActionResponse(
+        request: RequestEntity<*>,
+        template: RestTemplate = restTemplate,
+    ): ActionResponse = try {
+        val response = template.exchange(request, JsonNode::class.java)
         ActionResponse(status = response.statusCode.value(), body = response.body)
     } catch (e: HttpClientErrorException) {
         ActionResponse(status = e.statusCode.value(), body = parseBody(e.responseBodyAsByteArray))
@@ -455,6 +509,9 @@ class ExternalPluginHostClient(
     companion object {
         /** Error code surfaced when the plugin host cannot be reached at all (no HTTP response). */
         const val HOST_UNREACHABLE_ERROR_CODE = "EXTERNAL_PLUGIN_HOST_UNREACHABLE"
+
+        /** Ties a contract delivery or reply to the log lines of every hop it passes. */
+        const val CORRELATION_ID_HEADER = "X-Valtimo-Correlation-Id"
 
         private val EMPTY_BODY = ByteArray(0)
         private val logger = KotlinLogging.logger {}

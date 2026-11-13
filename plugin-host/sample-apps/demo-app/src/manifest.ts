@@ -29,7 +29,26 @@ export interface PluginManifest {
   provider?: string;
   compatibility?: { minGzacVersion?: string; maxGzacVersion?: string };
   configurationSchema?: Record<string, unknown>;
-  permissions?: { endpoints?: Array<{ method: string; pattern: string }> };
+  permissions?: {
+    endpoints?: Array<{ method: string; pattern: string }>;
+    contracts?: Array<string | { contract: string; operations: string[] }>;
+  };
+  provides?: Array<{
+    contract: string;
+    title?: string;
+    operations: Array<{
+      key: string;
+      title: string;
+      description?: string;
+      mode?: "sync" | "job";
+      timeout?: string;
+      outputs?: string[];
+      /** JSON Schema (2020-12) GZAC checks the request payload against. */
+      input?: Record<string, unknown>;
+      /** JSON Schema (2020-12) GZAC checks a completed result against. */
+      output?: Record<string, unknown>;
+    }>;
+  }>;
   frontendBundles?: Array<{
     type: "config" | "process-link-action" | "case-tab" | "case-widget" | "page" | "task-form" | "side-panel";
     key?: string;
@@ -50,7 +69,9 @@ export interface PluginManifest {
 }
 
 export const PLUGIN_ID = "demo-app";
-export const PLUGIN_VERSION = "1.0.0";
+// An app's content pin is derived from its manifest: change the manifest under a new version, or the
+// app deactivates until an admin re-accepts it.
+export const PLUGIN_VERSION = "1.1.0";
 
 export const manifest: PluginManifest = {
   pluginId: PLUGIN_ID,
@@ -169,4 +190,50 @@ export const manifest: PluginManifest = {
     },
   ],
   eventSubscriptions: ["com.ritense.valtimo.document.created"],
+  provides: [
+    {
+      contract: "nl.ritense.demo.echo@1",
+      title: "Demo echo",
+      operations: [
+        {
+          key: "echo",
+          title: "Echo the payload",
+          description: "Answers at once with the payload and the caller GZAC stamped.",
+          outputs: ["echo", "caller"],
+          input: {
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            type: "object",
+            properties: {
+              message: { type: "string", maxLength: 1000 },
+            },
+          },
+          output: {
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            type: "object",
+            required: ["echo", "caller"],
+            properties: {
+              echo: { description: "The payload, as received." },
+              caller: {
+                type: "object",
+                required: ["pluginId", "version", "configurationId"],
+                properties: {
+                  pluginId: { type: "string" },
+                  version: { type: "string" },
+                  configurationId: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        {
+          key: "slow-echo",
+          title: "Echo the payload, later",
+          description: "Accepts the job and completes it a few seconds later through GZAC.",
+          mode: "job",
+          timeout: "PT10M",
+          outputs: ["echo", "completedAt"],
+        },
+      ],
+    },
+  ],
 };

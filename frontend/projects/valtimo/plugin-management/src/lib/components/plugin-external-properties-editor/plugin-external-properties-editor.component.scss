@@ -1,0 +1,93 @@
+/*!
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Typography comes from `cds--type-*` classes in the template. Border and outline widths have no
+// Carbon token; 1px and 2px match Carbon's own field borders and focus/invalid outlines.
+
+:host {
+  display: block;
+}
+
+.plugin-external-properties-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cds-spacing-04);
+
+  &__header .cds--label {
+    margin-block-end: var(--cds-spacing-02);
+  }
+
+  &__helper {
+    margin: 0;
+    color: var(--cds-text-helper);
+  }
+
+  &__editor {
+    border: 1px solid var(--cds-border-subtle);
+
+    &--invalid {
+      outline: 2px solid var(--cds-support-error);
+      outline-offset: -2px;
+    }
+  }
+
+  &__error {
+    display: block;
+    margin-block-start: calc(-1 * var(--cds-spacing-02));
+    color: var(--cds-text-error);
+  }
+
+  &__fields {
+    padding: var(--cds-spacing-05);
+    background: var(--cds-layer-01);
+  }
+
+  &__fields-title {
+    margin: 0 0 var(--cds-spacing-04);
+  }
+
+  &__field-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-04);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-02);
+
+    & + & {
+      padding-block-start: var(--cds-spacing-04);
+      border-block-start: 1px solid var(--cds-border-subtle);
+    }
+  }
+
+  &__field-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__field-type {
+    margin-inline-start: auto;
+    color: var(--cds-text-secondary);
+  }
+}

@@ -39,6 +39,7 @@ function noopLogger(): HostLogger {
  * baseline in `migrations/` is equivalent to the eight incremental migrations it replaced.
  */
 const BASELINE = "20260820000000000_initial-schema";
+const MIGRATIONS = [BASELINE, "20261014123533000_granted-contracts"];
 
 describe("runMigrations against real Postgres", () => {
   let container: StartedPostgreSqlContainer;
@@ -80,7 +81,7 @@ describe("runMigrations against real Postgres", () => {
 
   it("records every applied migration exactly once", async () => {
     const {rows} = await pool.query("SELECT name FROM pgmigrations ORDER BY id");
-    expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
+    expect(rows.map((r: {name: string}) => r.name)).toEqual(MIGRATIONS);
   });
 
   it("is idempotent — a second run on the same database changes nothing", async () => {
@@ -88,7 +89,7 @@ describe("runMigrations against real Postgres", () => {
     await runMigrations(pool, noopLogger());
 
     const {rows} = await pool.query("SELECT name FROM pgmigrations ORDER BY id");
-    expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
+    expect(rows.map((r: {name: string}) => r.name)).toEqual(MIGRATIONS);
   });
 
   it("creates plugin_configurations with the capability and endpoint columns", async () => {
@@ -104,6 +105,10 @@ describe("runMigrations against real Postgres", () => {
 
     // Nullable on purpose — NULL means "no allowlist pushed", [] means "deny all".
     expect(cols.granted_endpoints).toMatchObject({type: "jsonb", nullable: "YES", default: null});
+
+    // No implicit contract grant — deny-by-default like egress.
+    expect(cols.granted_contracts).toMatchObject({type: "jsonb", nullable: "NO"});
+    expect(cols.granted_contracts.default).toContain("'[]'");
 
     // Nullable on purpose — NULL means "unowned" (pushed by a pre-ownership GZAC); such rows are
     // excluded from every GZAC's reconciliation pass.
@@ -167,7 +172,7 @@ describe("runMigrations against real Postgres", () => {
     try {
       await runMigrations(freshPool, noopLogger());
       const {rows} = await freshPool.query("SELECT name FROM pgmigrations ORDER BY id");
-      expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
+      expect(rows.map((r: {name: string}) => r.name)).toEqual(MIGRATIONS);
 
       const {rows: tables} = await freshPool.query(
         `SELECT table_name FROM information_schema.tables
@@ -212,7 +217,7 @@ describe("runMigrations against real Postgres", () => {
       ]);
 
       const {rows} = await first.query("SELECT name FROM pgmigrations ORDER BY id");
-      expect(rows.map((r: {name: string}) => r.name)).toEqual([BASELINE]);
+      expect(rows.map((r: {name: string}) => r.name)).toEqual(MIGRATIONS);
     } finally {
       await closeDbPool(first);
       await closeDbPool(second);

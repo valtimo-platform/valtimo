@@ -138,6 +138,24 @@ either direction, because narrowing would discard a permission you wrote down an
 grant one nobody accepted. Fix the descriptor, delete the affected configuration in the admin UI, and
 restart.
 
+### Contract bindings
+
+A configuration whose plugin declares contracts under `permissions.contracts` can bind them in the
+descriptor:
+
+```json
+"contractBindings": [
+  {"contract": "nl.ritense.openplan@1", "targetConfigurationId": "0f3c9a52-9b0c-4a53-9f2a-5f7b1c2d1002"}
+]
+```
+
+Every binding must name a declared contract; a declared contract you leave out stays unbound, and
+calls to it fail with `NO_PROVIDER_BOUND` until it is bound. The target is usually another
+configuration in the same descriptor. A target that does not exist yet only logs a warning, and
+while either plugin is still a placeholder Valtimo cannot check that the target provides the
+contract and every operation the consumer declares for it — a binding that turns out wrong fails at
+call time with `OPERATION_NOT_PROVIDED`. Bindings may not form a cycle.
+
 ## When you are asked to approve
 
 Approval is only ever about the **plugin's** declared permissions, because the plugin author is the
@@ -171,7 +189,9 @@ accepted is altered. In detail:
   **Edit connection** on the integration's row in the admin UI, which validates the change and
   re-pushes every configuration.
 * An active configuration is never re-granted — that set is what an administrator accepted. Its
-  `title` and `properties` are brought in line with the descriptor on every start.
+  `title` and `properties` are brought in line with the descriptor on every start, and so are its
+  `contractBindings` when the descriptor declares them: a binding is a deployment choice, not a
+  permission. Leave the field out to keep bindings an administrator chose in the admin UI.
 * An integration whose `baseUrl` is already registered under a *different* id is skipped rather than
   registered twice. To adopt descriptors in an environment where the host was added by hand, use
   that host's existing id in the descriptor (or delete it first).

@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, Output, signal, ViewChild} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
 import {PluginManagementStateService} from '../../services';
 import {map, take} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {
+  ExternalPluginContractBindingEntry,
+  ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
   ExternalPluginEndpoint,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
   extractExternalDefinitionId,
   isExternalPluginDefinitionIncompatible,
@@ -34,7 +38,7 @@ import {PluginExternalConfigureComponent} from '../plugin-external-configure/plu
 import {NGXLogger} from 'ngx-logger';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {buildExternalPluginCompatibilityMessage} from '../../utils';
+import {buildExternalPluginCompatibilityMessage, externalPluginErrorDetail} from '../../utils';
 import {PLUGIN_ADD_MODAL_TEST_IDS} from '../../constants';
 
 @Component({
@@ -100,6 +104,20 @@ export class PluginAddModalComponent implements OnDestroy {
     })
   );
 
+  /** Schema errors of the selected external plugin; GZAC refuses a configuration while any exist. */
+  public readonly contractSchemaErrors$: Observable<Array<string>> = combineLatest([
+    this.selectedPluginDefinition$,
+    this._externalDefinitions$,
+  ]).pipe(
+    map(([selected, definitions]) => {
+      if (!selected || !isExternalPluginKey(selected.key)) return [];
+      const definition = definitions.find(d => d.id === extractExternalDefinitionId(selected.key));
+      return definition?.contractSchemaErrors ?? [];
+    })
+  );
+
+  public readonly $saveError = signal<string | null>(null);
+
   public readonly endpoints$ = new BehaviorSubject<
     Array<ExternalPluginEndpoint>
   >([]);
@@ -108,6 +126,13 @@ export class PluginAddModalComponent implements OnDestroy {
   public readonly egress$ = new BehaviorSubject<Array<string>>([]);
   public readonly derivedEgress$ = new BehaviorSubject<Array<string>>([]);
   public readonly permissionsValid$ = new BehaviorSubject<boolean>(false);
+  public readonly declaredContracts$ = new BehaviorSubject<Array<ExternalPluginDeclaredContract>>(
+    []
+  );
+  public readonly providedContracts$ = new BehaviorSubject<Array<ExternalPluginProvidedContract>>(
+    []
+  );
+  public readonly contractBindingsValid$ = new BehaviorSubject<boolean>(true);
 
   public currentStepIndex = 0;
   public isExternal = false;
@@ -177,6 +202,10 @@ export class PluginAddModalComponent implements OnDestroy {
       this.eventSubscriptions$.next([]);
       this.capabilities$.next([]);
       this.permissionsValid$.next(false);
+      this.declaredContracts$.next([]);
+      this.providedContracts$.next([]);
+      this.contractBindingsValid$.next(true);
+      this.$saveError.set(null);
       this._buildProgressSteps();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
@@ -263,6 +292,23 @@ export class PluginAddModalComponent implements OnDestroy {
     this._externalConfigureComponent?.setGrantedEgress(targets);
   }
 
+  public onDeclaredContractsResolved(contracts: Array<ExternalPluginDeclaredContract>): void {
+    this.contractBindingsValid$.next(contracts.length === 0);
+    this.declaredContracts$.next(contracts);
+  }
+
+  public onProvidedContractsResolved(contracts: Array<ExternalPluginProvidedContract>): void {
+    this.providedContracts$.next(contracts);
+  }
+
+  public onContractBindingsChange(bindings: Array<ExternalPluginContractBindingEntry>): void {
+    this._externalConfigureComponent?.setContractBindings(bindings);
+  }
+
+  public onContractBindingsValid(valid: boolean): void {
+    this.contractBindingsValid$.next(valid);
+  }
+
   public onExternalSave(event: {
     definitionId: string;
     title: string;
@@ -271,8 +317,10 @@ export class PluginAddModalComponent implements OnDestroy {
     grantedEvents: Array<ExternalPluginGrantedEventEntry>;
     grantedCapabilities: Array<string>;
     grantedEgress: Array<string>;
+    contractBindings: Array<ExternalPluginContractBindingEntry>;
   }): void {
     this._stateService.disableInput();
+    this.$saveError.set(null);
 
     this._externalPluginService
       .createConfiguration({
@@ -283,17 +331,25 @@ export class PluginAddModalComponent implements OnDestroy {
         grantedEvents: event.grantedEvents,
         grantedCapabilities: event.grantedCapabilities,
         grantedEgress: event.grantedEgress,
+        contractBindings: event.contractBindings,
       })
       .subscribe({
         next: () => {
           this._stateService.refresh();
           this.hide();
         },
-        error: () => {
+        error: (response: HttpErrorResponse) => {
           this._logger.error(
             'Something went wrong with saving the external plugin configuration.'
           );
           this._stateService.enableInput();
+          // Other statuses reach the admin through the global error toast
+          if (response?.status === 400) {
+            this.$saveError.set(
+              externalPluginErrorDetail(response) ??
+                this._translateService.instant('pluginManagement.saveRejected')
+            );
+          }
         },
       });
   }

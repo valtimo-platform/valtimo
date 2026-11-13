@@ -154,6 +154,7 @@ class ExternalPluginImporterTest {
             eq(listOf("jsonplaceholder.typicode.com")),
             eq(configurationId),
             eq(true),
+            eq(emptyList()),
         )
         assertThat(endpoints.firstValue).containsExactly(GrantedEndpointEntry("GET", "/api/v1/document/*"))
         assertThat(events.firstValue).containsExactly(GrantedEventEntry("com.ritense.valtimo.document.created"))
@@ -181,7 +182,7 @@ class ExternalPluginImporterTest {
         assertThat(saved.firstValue.isPlaceholder).isTrue()
 
         verify(configurationService).create(
-            eq(saved.firstValue.id), any(), any(), any(), any(), any(), any(), eq(configurationId), any(),
+            eq(saved.firstValue.id), any(), any(), any(), any(), any(), any(), eq(configurationId), any(), any(),
         )
     }
 
@@ -201,7 +202,7 @@ class ExternalPluginImporterTest {
         verify(hostService, never()).updateEventQueue(any(), any(), anyOrNull())
         verify(definitionRepository, never()).save(any<ExternalPluginDefinition>())
         verify(configurationService, never()).create(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(),
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
     }
 
@@ -220,6 +221,8 @@ class ExternalPluginImporterTest {
             eq("Case summary"),
             properties.capture(),
             anyOrNull(),
+            isNull(),
+            eq(true),
         )
         assertThat(properties.firstValue.get("currency").asText()).isEqualTo("EUR")
     }
@@ -234,9 +237,9 @@ class ExternalPluginImporterTest {
         importer.import(request(descriptorJson()))
 
         // Null grantedEndpoints is what tells `update` to leave the granted sets alone.
-        verify(configurationService).update(any(), any(), any(), isNull())
+        verify(configurationService).update(any(), any(), any(), isNull(), isNull(), any())
         verify(configurationService, never()).create(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(),
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
     }
 
@@ -270,7 +273,7 @@ class ExternalPluginImporterTest {
         )
         verify(packageDeployer, never()).register(any(), any())
         verify(configurationService, never()).create(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(),
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
     }
 
@@ -292,7 +295,7 @@ class ExternalPluginImporterTest {
 
         verify(definitionRepository, never()).save(any<ExternalPluginDefinition>())
         verify(configurationService, never()).create(
-            any(), any(), any(), any(), any(), any(), any(), any(), any(),
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
         )
     }
 

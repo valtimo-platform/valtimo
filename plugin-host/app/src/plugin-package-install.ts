@@ -16,7 +16,7 @@
 
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
 import AdmZip from "adm-zip";
 import { validatePluginManifest } from "@valtimo/plugin-sdk/manifest-validation";
 import { InvalidPluginPackageError } from "./errors.js";
@@ -102,9 +102,12 @@ export type PluginZipInstallResult =
     }
   | { outcome: "invalid-manifest"; details: string[] };
 
-/** Base directory for temporary extraction directories: `<app>/.tmp`. */
+/**
+ * Base directory for temporary extraction directories. The OS temp dir, not the app dir: the
+ * image runs as an unprivileged user and keeps `/app` read-only.
+ */
 export function pluginInstallTmpBase(): string {
-  return join(dirname(fileURLToPath(import.meta.url)), "..", ".tmp");
+  return join(tmpdir(), "valtimo-plugin-host");
 }
 
 /**

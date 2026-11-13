@@ -130,6 +130,7 @@ export const environment: ValtimoConfig = {
           {link: ['/plugins'], title: 'Plugins'},
           {link: ['/plugin-hosts'], title: 'Plugin hosts'},
           {link: ['/plugin-apps'], title: 'Apps'},
+          {link: ['/plugin-contract-jobs'], title: 'pluginManagement.contractJobs.title'},
           {title: 'Object management', textClass: 'text-dark font-weight-bold c-default', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {link: ['/object-management'], title: 'Objects', includeFunction: IncludeFunction.ZgwFeaturesEnabled},
           {link: ['/form-management'], title: 'Forms'},

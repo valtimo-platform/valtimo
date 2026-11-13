@@ -28,6 +28,12 @@ enum class PluginUsageParentType {
     CASE,
     BUILDING_BLOCK,
     GLOBAL,
+
+    /** External plugins only: another configuration binds a contract to this one. */
+    CONTRACT_BINDING,
+
+    /** External plugins only: an open contract job has this configuration as requester or provider. */
+    CONTRACT_JOB,
 }
 
 /**
@@ -53,6 +59,12 @@ enum class PluginUsageParentType {
  * - **Definition-reference usage** (host deletion only): a `BUILDING_BLOCK`-reference process link
  *   pins a plugin *definition* rather than a configuration — [configurationId] then carries the
  *   definition id and [configurationTitle] the pinned `pluginId@version` pair.
+ * - **Contract-binding usage** (external plugins): [parentType] `CONTRACT_BINDING`, [contract] and
+ *   [parentKey] name the contract, [relatedConfigurationId]/[relatedConfigurationTitle] the
+ *   configuration that binds it to this one.
+ * - **Contract-job usage** (external plugins): [parentType] `CONTRACT_JOB`, [contractJobId] the open
+ *   job, [contract]/[parentKey] its contract and [relatedConfigurationId]/[relatedConfigurationTitle]
+ *   the other party (provider when this configuration requested it, requester otherwise).
  */
 data class PluginUsageDto(
     val configurationId: UUID,
@@ -71,4 +83,8 @@ data class PluginUsageDto(
     val buildingBlockKey: String? = null,
     val widgetKey: String? = null,
     val menuItemTitle: String? = null,
+    val contract: String? = null,
+    val contractJobId: UUID? = null,
+    val relatedConfigurationId: UUID? = null,
+    val relatedConfigurationTitle: String? = null,
 )

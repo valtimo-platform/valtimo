@@ -31,13 +31,20 @@
         <label class="cds--label">{{
           'pluginManagement.labels.configurationName' | translate
         }}</label>
-        <input class="cds--text-input" formControlName="title" />
+        <input
+          class="cds--text-input"
+          formControlName="title"
+          [placeholder]="'pluginManagement.propertiesEditor.titlePlaceholder' | translate"
+        />
       </div>
 
-      <div class="cds--form-item">
-        <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
-        <textarea class="cds--text-area" formControlName="properties" rows="10"></textarea>
-      </div>
+      <valtimo-plugin-external-properties-editor
+        [invalid]="$propertiesInvalid()"
+        [schema]="$configurationSchema()"
+        [value]="_form.controls.properties.value ?? '{}'"
+        (valueChange)="_form.controls.properties.setValue($event)"
+        class="plugin-external-configure__properties"
+      ></valtimo-plugin-external-properties-editor>
     </form>
   </ng-template>
 </ng-container>

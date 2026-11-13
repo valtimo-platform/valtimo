@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.domain.ExternalPluginHostKind
+import com.ritense.externalplugin.web.rest.dto.ContractBindingEntry
 import com.ritense.externalplugin.web.rest.dto.GrantedEndpointEntry
 import java.util.UUID
 
@@ -58,4 +59,6 @@ data class ConfigurationDeploymentDto(
     val grantedEndpoints: List<GrantedEndpointEntry> = emptyList(),
     val grantedEvents: List<String> = emptyList(),
     val grantedEgress: List<String> = emptyList(),
+    /** Verbatim like the grants. Null on an existing configuration leaves its bindings alone. */
+    val contractBindings: List<ContractBindingEntry>? = null,
 )

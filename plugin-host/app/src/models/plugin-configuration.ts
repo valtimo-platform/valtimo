@@ -90,6 +90,12 @@ export interface PluginConfiguration {
    */
   allowedEgress?: string[];
   /**
+   * Contracts (`name@major`) the admin bound for this configuration. `plugin_contract` refuses
+   * `call`/`request` for any other contract before anything leaves the host. Absent or empty means
+   * the configuration calls no contracts.
+   */
+  grantedContracts?: string[];
+  /**
    * Package content hash the owning GZAC accepted, sent with its push. Every route that executes
    * Wasm refuses while the loaded package's hash differs. Absent (a GZAC that predates the field)
    * skips the check.

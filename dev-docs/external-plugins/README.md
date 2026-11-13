@@ -40,7 +40,8 @@ Ritense builds, tests, and supports together — pick a row and keep all three c
 
 | Valtimo (GZAC) | Plugin host | Plugin SDK | Status |
 |---|---|---|---|
-| 13.47.0 and up | 1.0.0 | 1.0.0 | Current |
+| 13.55.0 and up | 1.1.0 | 1.1.0 | Current |
+| 13.47.0 – 13.54.0 | 1.0.0 | 1.0.0 | Previous |
 
 Where each comes from: the host is the Docker Hub image `ritense/valtimo-plugin-host:<version>`
 (version-tagged only — no `latest`), and the SDK is the npm package

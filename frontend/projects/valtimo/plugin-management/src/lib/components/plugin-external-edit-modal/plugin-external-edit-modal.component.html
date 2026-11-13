@@ -20,15 +20,28 @@
 
     <cds-progress-indicator
       *ngIf="progressSteps.length > 1"
-      [steps]="progressSteps"
       [current]="currentStepIndex"
-      spacing="equal"
+      [steps]="progressSteps"
       class="plugin-external-edit-modal__progress"
+      spacing="equal"
     ></cds-progress-indicator>
   </cds-modal-header>
 
   <section cdsModalContent>
     <cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
+
+    <cds-inline-notification
+      *ngIf="$saveError() as saveError"
+      [attr.data-test-id]="testIds.saveError"
+      [notificationObj]="{
+        type: 'error',
+        title: ('pluginManagement.saveFailed' | translate),
+        message: saveError,
+        showClose: false,
+        lowContrast: true,
+      }"
+      class="plugin-external-edit-modal__notification"
+    ></cds-inline-notification>
 
     <div [hidden]="currentStepIndex !== 0 || $loading()">
       <ng-container *ngIf="!$loading()">
@@ -41,13 +54,14 @@
             showClose: false,
             lowContrast: true,
           }"
-          class="plugin-external-edit-modal__awaiting-host"
+          class="plugin-external-edit-modal__notification"
         ></cds-inline-notification>
 
         <ng-template #editableConfiguration>
           <ng-container *ngIf="$configBundleUrl() as bundleUrl; else jsonForm">
             <valtimo-external-plugin-iframe
               [bundleUrl]="bundleUrl"
+              [autoHeight]="true"
               [prefillConfiguration]="$prefillConfiguration()"
               (configurationChangedEvent)="onIframeConfigurationChanged($event)"
             ></valtimo-external-plugin-iframe>
@@ -59,37 +73,46 @@
                 <label class="cds--label">{{
                   'pluginManagement.labels.configurationName' | translate
                 }}</label>
+
                 <input class="cds--text-input" formControlName="title" />
               </div>
 
-              <div class="cds--form-item">
-                <label class="cds--label">{{
-                  'pluginManagement.labels.properties' | translate
-                }}</label>
-
-                <textarea
-                  class="cds--text-area plugin-external-edit-modal__properties-textarea"
-                  formControlName="properties"
-                  rows="12"
-                ></textarea>
-
-                <div *ngIf="$propertiesInvalid()" class="cds--form-requirement">
-                  {{ 'pluginManagement.invalidJson' | translate }}
-                </div>
-              </div>
+              <valtimo-plugin-external-properties-editor
+                [invalid]="$propertiesInvalid()"
+                [schema]="$configurationSchema()"
+                [secretsKeptWhenEmpty]="true"
+                [value]="_form.controls.properties.value ?? '{}'"
+                (valueChange)="_form.controls.properties.setValue($event)"
+                class="plugin-external-edit-modal__section"
+              ></valtimo-plugin-external-properties-editor>
             </form>
           </ng-template>
         </ng-template>
+
+        <valtimo-plugin-external-provided-contracts
+          *ngIf="!$hasPermissionsStep() && $providedContracts().length > 0"
+          [providedContracts]="$providedContracts()"
+          class="plugin-external-edit-modal__section"
+        ></valtimo-plugin-external-provided-contracts>
       </ng-container>
     </div>
 
     <div *ngIf="$hasPermissionsStep()" [hidden]="currentStepIndex !== 1">
+      <valtimo-plugin-external-contract-bindings
+        [contracts]="$declaredContracts()"
+        [currentBindings]="$currentBindings()"
+        [selfConfigurationId]="configuration?.id ?? null"
+        (bindingsChangeEvent)="onContractBindingsChange($event)"
+        (validEvent)="onContractBindingsValid($event)"
+      ></valtimo-plugin-external-contract-bindings>
+
       <valtimo-plugin-external-permissions
+        [capabilities]="$capabilities()"
+        [derivedEgress]="$derivedEgress()"
+        [egress]="$egress()"
         [endpoints]="$endpoints()"
         [eventSubscriptions]="$eventSubscriptions()"
-        [capabilities]="$capabilities()"
-        [egress]="$egress()"
-        [derivedEgress]="$derivedEgress()"
+        [providedContracts]="$providedContracts()"
         [readonlyMode]="true"
         (validEvent)="onPermissionsValid($event)"
       ></valtimo-plugin-external-permissions>
@@ -97,32 +120,33 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="danger" [disabled]="$loading()" (click)="onDelete()">
+    <button
+      cdsButton="danger"
+      [attr.data-test-id]="testIds.deleteButton"
+      [disabled]="$loading()"
+      (click)="onDelete()"
+    >
       {{ 'pluginManagement.remove' | translate }}
     </button>
 
     <button
       *ngIf="currentStepIndex === 0 && $hasPermissionsStep() && !$awaitingHost()"
       cdsButton="primary"
-      [disabled]="$loading()"
+      [attr.data-test-id]="testIds.nextButton"
+      [disabled]="!configValid || $loading()"
       (click)="goToNextStep()"
     >
       {{ 'pluginManagement.editSteps.step1' | translate }}
     </button>
 
     <button
-      *ngIf="currentStepIndex === 0 && !$hasPermissionsStep() && !$awaitingHost()"
+      *ngIf="
+        (currentStepIndex === 0 && !$hasPermissionsStep() && !$awaitingHost()) ||
+        (currentStepIndex === 1 && $hasPermissionsStep())
+      "
       cdsButton="primary"
-      [disabled]="!configValid || $loading()"
-      (click)="onSave()"
-    >
-      {{ 'pluginManagement.editSteps.save' | translate }}
-    </button>
-
-    <button
-      *ngIf="currentStepIndex === 1 && $hasPermissionsStep()"
-      cdsButton="primary"
-      [disabled]="!$permissionsValid() || $loading()"
+      [attr.data-test-id]="testIds.saveButton"
+      [disabled]="!canSave"
       (click)="onSave()"
     >
       {{ 'pluginManagement.editSteps.save' | translate }}

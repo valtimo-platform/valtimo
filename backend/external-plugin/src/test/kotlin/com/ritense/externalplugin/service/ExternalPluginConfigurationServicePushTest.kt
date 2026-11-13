@@ -27,6 +27,7 @@ import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.exception.ExternalPluginNotFoundException
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedCapabilityRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressRepository
@@ -132,6 +133,8 @@ class ExternalPluginConfigurationServicePushTest {
             mock<ExternalPluginHostUsageResolver>(),
             "gzac.events",
             "http://localhost:8080",
+            mock<ExternalPluginContractBindingRepository>(),
+            mock<ExternalPluginContractJobService>(),
         )
     }
 
@@ -157,6 +160,7 @@ class ExternalPluginConfigurationServicePushTest {
             grantedCapabilities = any(),
             grantedEndpoints = any(),
             allowedEgress = any(),
+            grantedContracts = any(),
             eventBrokerUrl = anyOrNull(),
             eventBrokerExchange = any(),
             eventBrokerExchangeType = any(),
@@ -211,6 +215,7 @@ class ExternalPluginConfigurationServicePushTest {
             grantedCapabilities = any(),
             grantedEndpoints = any(),
             allowedEgress = captor.capture(),
+            grantedContracts = any(),
             eventBrokerUrl = anyOrNull(),
             eventBrokerExchange = any(),
             eventBrokerExchangeType = any(),
@@ -242,6 +247,7 @@ class ExternalPluginConfigurationServicePushTest {
             grantedCapabilities = any(),
             grantedEndpoints = any(),
             allowedEgress = captor.capture(),
+            grantedContracts = any(),
             eventBrokerUrl = anyOrNull(),
             eventBrokerExchange = any(),
             eventBrokerExchangeType = any(),
@@ -302,6 +308,7 @@ class ExternalPluginConfigurationServicePushTest {
             grantedCapabilities = any(),
             grantedEndpoints = any(),
             allowedEgress = any(),
+            grantedContracts = any(),
             eventBrokerUrl = anyOrNull(),
             eventBrokerExchange = any(),
             eventBrokerExchangeType = any(),

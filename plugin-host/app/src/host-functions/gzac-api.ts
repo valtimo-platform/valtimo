@@ -55,6 +55,26 @@ export interface GzacApiCallContext {
    * calls at all.
    */
   allowedEgress?: string[];
+  /**
+   * Contracts the admin bound for this configuration. `plugin_contract` refuses `call`/`request`
+   * for any contract outside it. Deny-by-default.
+   */
+  grantedContracts?: string[];
+  /**
+   * Configuration ids of the contract chain this invocation runs in, ending with this
+   * configuration. Set only for contract deliveries; `plugin_contract` forwards it to GZAC as
+   * `X-Valtimo-Contract-Chain` so nested calls are depth- and cycle-checked.
+   */
+  contractChain?: string[];
+  /** Epoch ms on this host's clock by which a synchronous contract delivery must answer. */
+  contractDeadlineMs?: number;
+  /**
+   * Epoch ms deadline of the running invocation: the Wasm timeout, or {@link contractDeadlineMs}
+   * when earlier. Set by `PluginManager` for every export; bounds `plugin_contract`.
+   */
+  deadlineMs?: number;
+  /** Correlation id of the contract delivery being served; `plugin_contract` passes it on. */
+  correlationId?: string;
 }
 
 interface GzacApiRequest {

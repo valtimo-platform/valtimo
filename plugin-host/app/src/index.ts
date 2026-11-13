@@ -26,6 +26,7 @@ import {hostManagementRoutes} from "./routes/host-management.js";
 import {hostConfigurationRoutes} from "./routes/host-configurations.js";
 import {pluginActionRoutes} from "./routes/plugin-actions.js";
 import {pluginSubmitRoutes} from "./routes/plugin-submit.js";
+import {pluginContractRoutes} from "./routes/plugin-contracts.js";
 import {pluginBundleRoutes} from "./routes/plugin-bundles.js";
 import {pluginDataRoutes} from "./routes/plugin-data.js";
 import {EventConsumerManager} from "./rabbitmq/event-consumer.js";
@@ -201,6 +202,11 @@ async function main(): Promise<void> {
     config,
   });
   await fastify.register(pluginSubmitRoutes, {
+    pluginManager,
+    configRegistry,
+    config,
+  });
+  await fastify.register(pluginContractRoutes, {
     pluginManager,
     configRegistry,
     config,

@@ -23,7 +23,8 @@
  * bundled automatically by the build tooling.
  *
  * TEST COVERAGE: this module reads low in `npm run test:cov` by design. Its dispatch paths
- * (`handle_action` / `handle_event` / `handle_request` / `handle_submit`, the config injection and
+ * (`handle_action` / `handle_event` / `handle_request` / `handle_submit` / `handle_contract_call` /
+ * `handle_contract_reply`, the config injection and
  * the QuickJS `settleSync` semantics) are covered end-to-end by the L3 suite —
  * `plugin-host/app/test/wasm/sdk-runtime.wasm.test.ts` — which runs this file *compiled to Wasm*
  * with the real extism-js toolchain. Asserting it here with mocked globals instead would test a
@@ -37,9 +38,20 @@ import {getRequestHandler} from "./requests.js";
 import {getSubmitHandler} from "./submit.js";
 import {setCurrentConfig} from "./config.js";
 import {log} from "./host-functions.js";
+import {
+  getContractCallHandler,
+  getContractJobHandler,
+  getContractReplyHandler,
+  normalizeResult,
+} from "./contracts.js";
 import type {
   ActionInput,
   ActionOutput,
+  ContractCallInput,
+  ContractCallOutput,
+  ContractJobInput,
+  ContractReplyInput,
+  ContractReplyOutput,
   EventInput,
   EventOutput,
   PluginManifest,
@@ -110,10 +122,10 @@ export function handleAction(inputJson: string): string {
       if (rejected) {
         throw rejection instanceof Error ? rejection : new Error(String(rejection));
       }
-      return serializeActionOutput(resolved as ActionOutput);
+      return serializeWithResult(resolved as ActionOutput);
     }
 
-    return serializeActionOutput(result as ActionOutput);
+    return serializeWithResult(result as ActionOutput);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     log.error(`Action execution failed: ${message}`);
@@ -132,14 +144,9 @@ export function handleAction(inputJson: string): string {
  * be present, though null is allowed. Normalise the top-level `result` channel so a key the author
  * put on the object survives serialization as an explicit null.
  */
-function serializeActionOutput(output: ActionOutput): string {
-  const result = output?.result;
-  if (result && typeof result === "object" && !Array.isArray(result)) {
-    const normalized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(result as Record<string, unknown>)) {
-      normalized[key] = value === undefined ? null : value;
-    }
-    return JSON.stringify({ ...output, result: normalized });
+function serializeWithResult<T extends { result?: unknown }>(output: T): string {
+  if (output && output.result !== undefined) {
+    return JSON.stringify({ ...output, result: normalizeResult(output.result) });
   }
   return JSON.stringify(output);
 }
@@ -249,6 +256,92 @@ export function handleSubmit(inputJson: string): string {
       errorCode: "EXECUTION_ERROR",
       errorMessage: message,
     } satisfies SubmitOutput);
+  }
+}
+
+/**
+ * Called by the Plugin Host when GZAC delivers a contract call or job to this provider.
+ * Input: JSON string with ContractCallInput shape.
+ * Output: JSON string with ContractCallOutput shape.
+ *
+ * A delivery carrying a `jobId` goes to the `onContractJob` handler, falling back to an
+ * `onContractCall` handler for the same pair. Without a `jobId` only `onContractCall` applies.
+ */
+export function handleContractCall(inputJson: string): string {
+  try {
+    const input: ContractCallInput = JSON.parse(inputJson);
+
+    setCurrentConfig(input.configuration || {});
+
+    const isJob = typeof input.jobId === "string" && input.jobId.length > 0;
+    const jobHandler = getContractJobHandler(input.contract, input.operation);
+    const callHandler = getContractCallHandler(input.contract, input.operation);
+
+    if (isJob && jobHandler) {
+      return serializeWithResult(settleSync(jobHandler(input as ContractJobInput)));
+    }
+    if (callHandler) {
+      return serializeWithResult(settleSync(callHandler(input)));
+    }
+    if (jobHandler) {
+      return JSON.stringify({
+        status: "error",
+        errorCode: "OPERATION_REQUIRES_JOB",
+        errorMessage: `Operation '${input.operation}' of '${input.contract}' only runs as a job`,
+      } satisfies ContractCallOutput);
+    }
+    return JSON.stringify({
+      status: "error",
+      errorCode: "UNKNOWN_CONTRACT_OPERATION",
+      errorMessage: `No handler registered for '${input.contract}' operation '${input.operation}'`,
+    } satisfies ContractCallOutput);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error(`Contract call failed: ${message}`);
+    return JSON.stringify({
+      status: "error",
+      errorCode: "EXECUTION_ERROR",
+      errorMessage: message,
+    } satisfies ContractCallOutput);
+  }
+}
+
+/**
+ * Called by the Plugin Host when GZAC delivers the outcome of a job this configuration requested.
+ * Input: JSON string with ContractReplyInput shape.
+ * Output: JSON string with ContractReplyOutput shape. Without a reply handler: a warning, then
+ * `ignored`.
+ */
+export function handleContractReply(inputJson: string): string {
+  try {
+    const reply: ContractReplyInput = JSON.parse(inputJson);
+
+    setCurrentConfig(reply.configuration || {});
+
+    const handler = getContractReplyHandler();
+    if (!handler) {
+      log.warn(`No onContractReply handler registered; ignoring the reply for job ${reply.jobId}`, {
+        jobId: reply.jobId,
+        contract: reply.contract,
+        operation: reply.operation,
+        status: reply.status,
+      });
+      return JSON.stringify({ status: "ignored" } satisfies ContractReplyOutput);
+    }
+
+    const result = settleSync(handler(reply));
+    if (result && typeof result === "object" && "status" in result) {
+      return JSON.stringify(result);
+    }
+    return JSON.stringify({ status: "completed" } satisfies ContractReplyOutput);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.error(`Contract reply handling failed: ${message}`);
+    return JSON.stringify({
+      status: "error",
+      errorCode: "EXECUTION_ERROR",
+      errorMessage: message,
+    } satisfies ContractReplyOutput);
   }
 }
 
@@ -400,6 +493,45 @@ export function handle_submit(): number {
     const inputJson = Host.inputString();
     const outputJson = handleSubmit(inputJson);
     Host.outputString(outputJson);
+    return 0;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    Host.outputString(
+      JSON.stringify({
+        status: "error",
+        errorCode: "EXECUTION_ERROR",
+        errorMessage: message,
+      })
+    );
+    return 1;
+  }
+}
+
+/**
+ * Extism-exported function for contract calls and job deliveries to this provider.
+ *
+ * Plugin usage — register handlers at module load; the build wires up the export:
+ *   import { onContractCall } from "@valtimo/plugin-sdk";
+ *   onContractCall("nl.example.lookup@1", "get", (input) => ({ status: "completed", result: {} }));
+ */
+export function handle_contract_call(): number {
+  return runExport(handleContractCall);
+}
+
+/**
+ * Extism-exported function for job replies to this requester.
+ *
+ * Plugin usage — register the handler at module load; the build wires up the export:
+ *   import { onContractReply } from "@valtimo/plugin-sdk";
+ *   onContractReply((reply) => ({ status: "completed" }));
+ */
+export function handle_contract_reply(): number {
+  return runExport(handleContractReply);
+}
+
+function runExport(dispatch: (inputJson: string) => string): number {
+  try {
+    Host.outputString(dispatch(Host.inputString()));
     return 0;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);

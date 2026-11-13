@@ -22,6 +22,7 @@ import {ROLE_ADMIN} from '@valtimo/shared';
 import {PluginManagementComponent} from './components/plugin-management/plugin-management.component';
 import {PluginHostsPageComponent} from './components/plugin-hosts-page/plugin-hosts-page.component';
 import {PluginAppsPageComponent} from './components/plugin-apps-page/plugin-apps-page.component';
+import {PluginContractJobsPageComponent} from './components/plugin-contract-jobs-page/plugin-contract-jobs-page.component';
 
 const routes: Routes = [
   {
@@ -41,6 +42,12 @@ const routes: Routes = [
     component: PluginAppsPageComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Apps', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'plugin-contract-jobs',
+    component: PluginContractJobsPageComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'pluginManagement.contractJobs.title', roles: [ROLE_ADMIN]},
   },
 ];
 

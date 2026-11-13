@@ -41,3 +41,9 @@
   width: 100%;
   max-inline-size: unset;
 }
+
+.plugin-add-modal__schema-errors {
+  margin-block-end: var(--cds-spacing-05);
+  padding-inline-start: var(--cds-spacing-05);
+  list-style: disc;
+}

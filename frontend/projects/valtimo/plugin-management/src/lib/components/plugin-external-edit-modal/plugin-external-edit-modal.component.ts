@@ -26,6 +26,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {
@@ -37,15 +38,27 @@ import {
 } from 'carbon-components-angular';
 import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
+  ExternalPluginConfigurationUpdateRequest,
+  ExternalPluginContractBindingEntry,
+  ExternalPluginContractBindingResponse,
+  ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
   ExternalPluginIframeComponent,
   ExternalPluginEndpoint,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
+  getExternalPluginDeclaredContracts,
   getExternalPluginDisplayName,
+  getExternalPluginProvidedContracts,
 } from '@valtimo/plugin';
+import {PluginExternalPropertiesEditorComponent} from '../plugin-external-properties-editor/plugin-external-properties-editor.component';
 import {UnifiedPluginConfigurationRow} from '../../models';
 import {forkJoin, Subscription} from 'rxjs';
 import {PluginExternalPermissionsComponent} from '../plugin-external-permissions/plugin-external-permissions.component';
+import {PluginExternalContractBindingsComponent} from '../plugin-external-contract-bindings/plugin-external-contract-bindings.component';
+import {PluginExternalProvidedContractsComponent} from '../plugin-external-provided-contracts/plugin-external-provided-contracts.component';
+import {PLUGIN_EXTERNAL_EDIT_MODAL_TEST_IDS} from '../../constants';
+import {externalPluginErrorDetail} from '../../utils';
 
 @Component({
   standalone: true,
@@ -65,6 +78,9 @@ import {PluginExternalPermissionsComponent} from '../plugin-external-permissions
     ValtimoCdsModalDirective,
     ExternalPluginIframeComponent,
     PluginExternalPermissionsComponent,
+    PluginExternalContractBindingsComponent,
+    PluginExternalPropertiesEditorComponent,
+    PluginExternalProvidedContractsComponent,
   ],
 })
 export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
@@ -74,6 +90,9 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   @Output() public closeEvent = new EventEmitter<void>();
   @Output() public savedEvent = new EventEmitter<void>();
   @Output() public deleteEvent = new EventEmitter<string>();
+
+  public currentStepIndex = 0;
+  public progressSteps: Array<{label: string; complete: boolean}> = [];
 
   public readonly _form = new FormGroup({
     title: new FormControl('', Validators.required),
@@ -97,22 +116,44 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
    * configuration rather than recomputed locally, so the list matches what GZAC pushed to the host.
    */
   public readonly $derivedEgress = signal<Array<string>>([]);
+  public readonly $declaredContracts = signal<Array<ExternalPluginDeclaredContract>>([]);
+  public readonly $providedContracts = signal<Array<ExternalPluginProvidedContract>>([]);
+  public readonly $currentBindings = signal<Array<ExternalPluginContractBindingResponse>>([]);
+  public readonly $contractBindingsValid = signal(true);
   public readonly $permissionsValid = signal(false);
+  /** Only for permission content or declared contracts; provided contracts alone add no step. */
   public readonly $hasPermissionsStep = signal(false);
   public readonly $definitionName = signal<string>('');
   public readonly $awaitingHost = signal(false);
+  /** Why GZAC refused the last save, e.g. contract bindings that would form a cycle. */
+  public readonly $saveError = signal<string | null>(null);
 
-  public currentStepIndex = 0;
-  public progressSteps: Array<{label: string; complete: boolean}> = [];
+  protected readonly testIds = PLUGIN_EXTERNAL_EDIT_MODAL_TEST_IDS;
 
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
+  private _contractBindings: Array<ExternalPluginContractBindingEntry> = [];
+  private _propertiesValueSubscription: Subscription | null = null;
+
   private readonly _$configurationSchema = signal<unknown | null>(null);
+  public readonly $configurationSchema = this._$configurationSchema.asReadonly();
   private readonly _$iframeValid = signal(false);
   private readonly _$definition = signal<ExternalPluginDefinition | null>(null);
-
   private readonly _subscriptions = new Subscription();
-  private _propertiesValueSubscription: Subscription | null = null;
+
+  public get configValid(): boolean {
+    if (this.$awaitingHost()) return false;
+    if (this.$configBundleUrl()) {
+      return this._$iframeValid();
+    }
+    return this._form.valid && !this.$propertiesInvalid();
+  }
+
+  public get canSave(): boolean {
+    if (this.$loading() || !this.configValid) return false;
+    if (!this.$hasPermissionsStep()) return true;
+    return this.$permissionsValid() && this.$contractBindingsValid();
+  }
 
   constructor(
     private readonly _externalPluginService: ExternalPluginService,
@@ -123,13 +164,9 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       this._translateService.onLangChange.subscribe(() => {
         this._buildProgressSteps();
         this._updateDefinitionName();
+        this._updateProvidedContracts();
       })
     );
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-    this._propertiesValueSubscription?.unsubscribe();
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -138,21 +175,25 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     }
   }
 
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+    this._propertiesValueSubscription?.unsubscribe();
+  }
+
   public goToNextStep(): void {
+    if (!this.configValid) return;
     if (this.currentStepIndex < this.progressSteps.length - 1) {
       this.currentStepIndex++;
     }
   }
 
   public onSave(): void {
-    if (!this.configuration?.id) return;
+    if (!this.configuration?.id || !this.canSave) return;
 
     if (this.$configBundleUrl()) {
       this._saveFromIframe();
       return;
     }
-
-    if (this._form.invalid || this.$propertiesInvalid()) return;
 
     let properties: Record<string, unknown>;
     try {
@@ -162,24 +203,13 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    this.$loading.set(true);
-
     // Permissions are accepted at activation and are immutable afterwards, so they are not sent
     // on update — the backend leaves the granted endpoints unchanged when they are omitted.
-    this._externalPluginService
-      .updateConfiguration(this.configuration.id, {
-        title: this._form.value.title ?? '',
-        properties,
-      })
-      .subscribe({
-        next: () => {
-          this.$loading.set(false);
-          this.savedEvent.emit();
-        },
-        error: () => {
-          this.$loading.set(false);
-        },
-      });
+    this._update({
+      title: this._form.value.title ?? '',
+      properties,
+      ...this._changedContractBindings(),
+    });
   }
 
   public onDelete(): void {
@@ -208,37 +238,79 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$permissionsValid.set(valid);
   }
 
-  public get configValid(): boolean {
-    if (this.$awaitingHost()) return false;
-    if (this.$configBundleUrl()) {
-      return this._$iframeValid();
-    }
-    return this._form.valid && !this.$propertiesInvalid();
+  public onContractBindingsChange(bindings: Array<ExternalPluginContractBindingEntry>): void {
+    this._contractBindings = bindings;
+  }
+
+  public onContractBindingsValid(valid: boolean): void {
+    this.$contractBindingsValid.set(valid);
   }
 
   private _saveFromIframe(): void {
-    if (!this.configuration?.id) return;
+    if (!this.configuration?.id || !this._$iframeValid()) return;
 
     const prefill = this.$prefillConfiguration();
-    const title = this._iframeConfigTitle || prefill?.title || this.configuration.title;
-    const properties = this._iframeConfigData ?? prefill?.configuration ?? {};
+    this._update({
+      title: this._iframeConfigTitle || prefill?.title || this.configuration.title,
+      properties: this._iframeConfigData ?? prefill?.configuration ?? {},
+      ...this._changedContractBindings(),
+    });
+  }
+
+  private _update(request: ExternalPluginConfigurationUpdateRequest): void {
+    if (!this.configuration?.id) return;
 
     this.$loading.set(true);
+    this.$saveError.set(null);
 
-    this._externalPluginService
-      .updateConfiguration(this.configuration.id, {
-        title,
-        properties,
-      })
-      .subscribe({
-        next: () => {
-          this.$loading.set(false);
-          this.savedEvent.emit();
-        },
-        error: () => {
-          this.$loading.set(false);
-        },
-      });
+    this._externalPluginService.updateConfiguration(this.configuration.id, request).subscribe({
+      next: () => {
+        this.$loading.set(false);
+        this.savedEvent.emit();
+      },
+      error: (response: HttpErrorResponse) => {
+        this.$loading.set(false);
+        // Other statuses reach the admin through the global error toast
+        if (response?.status === 400 || response?.status === 409) {
+          this.$saveError.set(
+            externalPluginErrorDetail(response) ??
+              this._translateService.instant('pluginManagement.saveRejected')
+          );
+        }
+      },
+    });
+  }
+
+  /** Rebinding is the only grant-adjacent change the edit flow sends; absent means unchanged. */
+  private _changedContractBindings(): {
+    contractBindings?: Array<ExternalPluginContractBindingEntry>;
+  } {
+    const current = new Map(
+      this.$currentBindings().map(binding => [binding.contract, binding.targetConfigurationId])
+    );
+    const changed =
+      this._contractBindings.length !== current.size ||
+      this._contractBindings.some(
+        binding => current.get(binding.contract) !== binding.targetConfigurationId
+      );
+    return changed && this.$declaredContracts().length > 0
+      ? {contractBindings: this._contractBindings}
+      : {};
+  }
+
+  private _applyContracts(
+    definition: ExternalPluginDefinition,
+    currentBindings: Array<ExternalPluginContractBindingResponse>
+  ): void {
+    const declaredContracts = getExternalPluginDeclaredContracts(definition.manifest);
+    this.$currentBindings.set(currentBindings);
+    this._contractBindings = currentBindings.map(({contract, targetConfigurationId}) => ({
+      contract,
+      targetConfigurationId,
+    }));
+    this.$contractBindingsValid.set(declaredContracts.length === 0);
+    this.$declaredContracts.set(declaredContracts);
+    this._updateProvidedContracts();
   }
 
   private _initForm(): void {
@@ -247,23 +319,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       title: this.configuration?.title ?? '',
       properties: '{}',
     });
-    this.$propertiesInvalid.set(false);
-    this._$configurationSchema.set(null);
-    this.$configBundleUrl.set(null);
-    this.$prefillConfiguration.set(null);
-    this._$iframeValid.set(false);
-    this._iframeConfigTitle = '';
-    this._iframeConfigData = null;
-    this.$endpoints.set([]);
-    this.$eventSubscriptions.set([]);
-    this.$capabilities.set([]);
-    this.$egress.set([]);
-    this.$derivedEgress.set([]);
-    this.$permissionsValid.set(false);
-    this.$hasPermissionsStep.set(false);
-    this._$definition.set(null);
-    this.$definitionName.set('');
-    this.$awaitingHost.set(false);
+    this._resetState();
 
     const configId = this.configuration?.id;
     const definitionId = this.configuration?.externalDefinitionId;
@@ -291,29 +347,15 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
             });
           }
 
-          const endpoints = definition.manifest?.permissions?.endpoints ?? [];
-          const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
-          const capabilities = definition.manifest?.permissions?.capabilities ?? [];
           // Egress comes off the configuration, not the manifest: the manifest-declared grants are
           // what was accepted at activation, and the derived ones follow the values actually stored.
-          const egress = configDetail.grantedEgress?.map(entry => entry.target) ?? [];
-          const derivedEgress = configDetail.derivedEgress ?? [];
-          this.$endpoints.set(endpoints);
-          this.$eventSubscriptions.set(eventSubscriptions);
-          this.$capabilities.set(capabilities);
-          this.$egress.set(egress);
-          this.$derivedEgress.set(derivedEgress);
-          this.$hasPermissionsStep.set(
-            endpoints.length > 0 ||
-              eventSubscriptions.length > 0 ||
-              capabilities.length > 0 ||
-              egress.length > 0 ||
-              derivedEgress.length > 0
+          this._applyPermissions(
+            definition,
+            configDetail.grantedEgress?.map(entry => entry.target) ?? [],
+            configDetail.derivedEgress ?? []
           );
-          this.$permissionsValid.set(true);
-
-          this._buildProgressSteps();
-          this.$loading.set(false);
+          this._applyContracts(definition, configDetail.contractBindings ?? []);
+          this._finishLoading();
         },
         error: () => {
           this.$loading.set(false);
@@ -326,25 +368,9 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this._setDefinition(definition);
           this._$configurationSchema.set(definition.configurationSchema);
           this._resolveConfigBundleUrl(definition);
-
-          const endpoints = definition.manifest?.permissions?.endpoints ?? [];
-          const eventSubscriptions = definition.manifest?.eventSubscriptions ?? [];
-          const capabilities = definition.manifest?.permissions?.capabilities ?? [];
-          const egress = definition.manifest?.permissions?.egress ?? [];
-          this.$endpoints.set(endpoints);
-          this.$eventSubscriptions.set(eventSubscriptions);
-          this.$capabilities.set(capabilities);
-          this.$egress.set(egress);
-          this.$hasPermissionsStep.set(
-            endpoints.length > 0 ||
-              eventSubscriptions.length > 0 ||
-              capabilities.length > 0 ||
-              egress.length > 0
-          );
-          this.$permissionsValid.set(true);
-
-          this._buildProgressSteps();
-          this.$loading.set(false);
+          this._applyPermissions(definition, definition.manifest?.permissions?.egress ?? [], []);
+          this._applyContracts(definition, []);
+          this._finishLoading();
         },
         error: () => {
           this.$loading.set(false);
@@ -366,6 +392,41 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this.$propertiesInvalid.set(true);
         }
       }) ?? null;
+  }
+
+  private _applyPermissions(
+    definition: ExternalPluginDefinition,
+    egress: Array<string>,
+    derivedEgress: Array<string>
+  ): void {
+    this.$endpoints.set(definition.manifest?.permissions?.endpoints ?? []);
+    this.$eventSubscriptions.set(definition.manifest?.eventSubscriptions ?? []);
+    this.$capabilities.set(definition.manifest?.permissions?.capabilities ?? []);
+    this.$egress.set(egress);
+    this.$derivedEgress.set(derivedEgress);
+  }
+
+  private _finishLoading(): void {
+    this.$hasPermissionsStep.set(
+      this.$endpoints().length > 0 ||
+        this.$eventSubscriptions().length > 0 ||
+        this.$capabilities().length > 0 ||
+        this.$egress().length > 0 ||
+        this.$derivedEgress().length > 0 ||
+        this.$declaredContracts().length > 0
+    );
+    this.$permissionsValid.set(true);
+    this._buildProgressSteps();
+    this.$loading.set(false);
+  }
+
+  private _updateProvidedContracts(): void {
+    this.$providedContracts.set(
+      getExternalPluginProvidedContracts(
+        this._$definition()?.manifest,
+        this._translateService.currentLang
+      )
+    );
   }
 
   private _setDefinition(definition: ExternalPluginDefinition): void {
@@ -409,6 +470,11 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   private _resetForm(): void {
     this.currentStepIndex = 0;
     this._form.reset({title: '', properties: '{}'});
+    this._resetState();
+    this._buildProgressSteps();
+  }
+
+  private _resetState(): void {
     this.$propertiesInvalid.set(false);
     this._$configurationSchema.set(null);
     this.$configBundleUrl.set(null);
@@ -419,11 +485,18 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$endpoints.set([]);
     this.$eventSubscriptions.set([]);
     this.$capabilities.set([]);
+    this.$egress.set([]);
+    this.$derivedEgress.set([]);
+    this.$declaredContracts.set([]);
+    this.$providedContracts.set([]);
+    this.$currentBindings.set([]);
+    this.$contractBindingsValid.set(true);
+    this._contractBindings = [];
     this.$permissionsValid.set(false);
     this.$hasPermissionsStep.set(false);
     this._$definition.set(null);
     this.$definitionName.set('');
     this.$awaitingHost.set(false);
-    this._buildProgressSteps();
+    this.$saveError.set(null);
   }
 }

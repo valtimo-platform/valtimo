@@ -54,6 +54,12 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/external-plugin/configuration/*")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/configuration/*/revoke-tokens")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/endpoint-descriptions")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract/*/providers")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract-job")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract-job/*")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/external-plugin/contract-job/*/payload")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/contract-job/*/cancel")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/external-plugin/contract-job/*/redeliver")).hasAuthority(ADMIN)
                     // Non-management: any authenticated user may mint a downscoped user token for a
                     // plugin tab — the result is always bounded by PBAC ∩ the plugin's allowlist.
                     .requestMatchers(antMatcher(POST, "/api/v1/external-plugin/configuration/*/user-token")).authenticated()
@@ -75,6 +81,12 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(
                         antMatcher(POST, "/api/v1/process-link/*/external-plugin-task-form/submission")
                     ).authenticated()
+                    // Plugin → GZAC contract calls and jobs. Service tokens only: the resource rejects
+                    // every other principal, and the allowlist filter denylists user tokens.
+                    .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/call")).authenticated()
+                    .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/jobs")).authenticated()
+                    .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/jobs/*/complete")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/plugin-contract/jobs/*")).authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

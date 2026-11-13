@@ -47,7 +47,8 @@ export async function pluginActionRoutes(
    *   processInstanceId: string,
    *   documentId: string,
    *   activityId: string,
-   *   properties: Record<string, unknown>
+   *   properties: Record<string, unknown>,
+   *   replyHandle?: string
    * }
    *
    * GZAC pushes configurations to the host on activation/startup via the
@@ -68,6 +69,7 @@ export async function pluginActionRoutes(
       documentId: string;
       activityId: string;
       properties: Record<string, unknown>;
+      replyHandle?: unknown;
     };
   }>(
     "/plugins/:pluginId/:version/actions/:actionKey",
@@ -86,6 +88,7 @@ export async function pluginActionRoutes(
         documentId,
         activityId,
         properties,
+        replyHandle,
       } = request.body;
 
       // Verify the plugin is loaded
@@ -161,6 +164,7 @@ export async function pluginActionRoutes(
             documentId: documentId || "",
             activityId: activityId || "",
             properties: properties || {},
+            ...(typeof replyHandle === "string" && replyHandle ? { replyHandle } : {}),
             serviceToken: pluginConfig.serviceToken,
             gzacBaseUrl: pluginConfig.gzacBaseUrl,
           }

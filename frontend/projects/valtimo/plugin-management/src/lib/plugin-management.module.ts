@@ -30,6 +30,7 @@ import {PluginEditComponent} from './components/plugin-edit/plugin-edit.componen
 import {PluginExternalEditModalComponent} from './components/plugin-external-edit-modal/plugin-external-edit-modal.component';
 import {PluginExternalConfigureComponent} from './components/plugin-external-configure/plugin-external-configure.component';
 import {PluginExternalPermissionsComponent} from './components/plugin-external-permissions/plugin-external-permissions.component';
+import {PluginExternalContractBindingsComponent} from './components/plugin-external-contract-bindings/plugin-external-contract-bindings.component';
 import {PluginUploadModalComponent} from './components/plugin-upload-modal/plugin-upload-modal.component';
 import {PluginUsageModalComponent} from './components/plugin-usage-modal/plugin-usage-modal.component';
 import {PluginLogModalComponent} from './components/plugin-log-modal/plugin-log-modal.component';
@@ -88,6 +89,7 @@ import {
     PluginExternalEditModalComponent,
     PluginExternalConfigureComponent,
     PluginExternalPermissionsComponent,
+    PluginExternalContractBindingsComponent,
     PluginUploadModalComponent,
     PluginUsageModalComponent,
     PluginLogModalComponent,

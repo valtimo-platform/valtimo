@@ -64,7 +64,8 @@ export const envSchema = z.object({
   // memory (64 KiB per page — the default 4096 pages = 256 MiB). The cap is applied by rewriting
   // the module's own memory declaration at instantiation, which is the only bound the engine
   // enforces on guest memory growth. Set WASM_MAX_MEMORY_PAGES=0 to remove the cap (not
-  // recommended outside local development).
+  // recommended outside local development). WASM_TIMEOUT_MS is also every invocation's deadline for
+  // plugin_contract hops; keep it below GZAC's valtimo.external-plugin.contract.read-timeout (40 s).
   WASM_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   WASM_MAX_MEMORY_PAGES: z.coerce.number().int().min(0).default(4096),
   // Idle Extism instances are closed after this long without a call (a periodic sweep frees the

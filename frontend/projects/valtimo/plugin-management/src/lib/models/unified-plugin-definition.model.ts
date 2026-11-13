@@ -53,6 +53,12 @@ interface UnifiedPluginConfigurationRow {
    */
   reviewRequired?: boolean;
   reviewMessage?: string;
+  /**
+   * Drives the "Invalid contract schema" tag: the plugin declares contract schemas GZAC cannot use,
+   * so calls to those operations are refused. [contractSchemaMessage] lists the errors.
+   */
+  invalidContractSchemas?: boolean;
+  contractSchemaMessage?: string;
   hostName?: string;
 }
 

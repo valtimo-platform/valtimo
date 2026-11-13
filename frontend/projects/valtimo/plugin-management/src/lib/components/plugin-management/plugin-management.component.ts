@@ -177,6 +177,13 @@ export class PluginManagementComponent implements AfterViewInit, OnDestroy {
                     incompatible && definition
                       ? buildExternalPluginCompatibilityMessage(definition, this._translateService)
                       : undefined,
+                  invalidContractSchemas: !!definition?.contractSchemaErrors?.length,
+                  contractSchemaMessage: definition?.contractSchemaErrors?.length
+                    ? [
+                        this._translateService.instant('pluginManagement.contractSchemas.tooltip'),
+                        ...definition.contractSchemaErrors,
+                      ].join('\n')
+                    : undefined,
                   hostName: host?.name,
                 };
               });

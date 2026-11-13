@@ -26,6 +26,7 @@ import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.exception.ExternalPluginActionFailedException
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
+import com.ritense.externalplugin.security.ExternalPluginReplyHandleSigner
 import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginHostService
@@ -53,6 +54,7 @@ class ExternalPluginServiceTaskStartListener(
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
     private val pluginActionResultHandler: PluginActionResultHandler,
+    private val replyHandleSigner: ExternalPluginReplyHandleSigner,
     private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver? = null,
 ) {
 
@@ -278,6 +280,7 @@ class ExternalPluginServiceTaskStartListener(
         return output
     }
 
+    /** `replyHandle` lets the action request a contract job whose reply returns to this process instance. */
     private fun buildPayload(
         execution: DelegateExecution,
         processLink: ExternalPluginProcessLink,
@@ -289,6 +292,10 @@ class ExternalPluginServiceTaskStartListener(
         payload.put("processInstanceId", execution.processInstanceId)
         payload.put("activityId", execution.currentActivityId)
         execution.processBusinessKey?.let { payload.put("documentId", it) }
+        payload.put(
+            "replyHandle",
+            replyHandleSigner.issue(configuration.id, execution.processInstanceId, execution.processBusinessKey),
+        )
         payload.set<JsonNode>("properties", properties)
         return payload
     }
