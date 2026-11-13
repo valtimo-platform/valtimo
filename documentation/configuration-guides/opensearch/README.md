@@ -1,7 +1,7 @@
 # OpenSearch
 
 {% hint style="success" %}
-Available since Valtimo `13.44.0`. The rebuild/migrate index, the rejected-cases list and the
+Available since Valtimo `13.38.0`. The rebuild/migrate index, the rejected-cases list and the
 automatic background indexing of existing cases were added in `13.55.0`.
 {% endhint %}
 
@@ -10,13 +10,24 @@ admin screen lets you reindex cases into OpenSearch, watch those reindex runs, a
 OpenSearch could not index. Whenever OpenSearch is unavailable, still catching up, or has rejected
 a case, the affected case lists fall back to the database (PostgreSQL) so they keep working.
 
-The screen is reached via **Admin → OpenSearch** (under the *Other* section of the admin menu). It
-appears only when OpenSearch is enabled for the installation.
+---
 
-The screen is split into two tabs — **Reindex runs** and **Rejected cases**. The information icon in
-each tab header explains what that tab is for.
+## Opening the OpenSearch screen
+
+{% stepper %}
+{% step %}
+Expand **Admin** in the left sidebar
+{% endstep %}
+{% step %}
+Click **OpenSearch** under the *Other* section
 
 <figure><img src="../../assets/configuration-guides/opensearch/01-opensearch-menu.png" alt=""><figcaption>The OpenSearch admin screen</figcaption></figure>
+{% endstep %}
+{% endstepper %}
+
+The menu item appears only when OpenSearch is enabled for the installation. The screen is split into
+two tabs, **Reindex runs** and **Rejected cases**. The information icon in each tab header explains
+what that tab is for.
 
 ---
 
@@ -32,9 +43,6 @@ case definition it covered, its start and finish time, and progress.
 
 {% stepper %}
 {% step %}
-Expand **Admin** in the left sidebar and click **OpenSearch** under the *Other* section
-{% endstep %}
-{% step %}
 On the **Reindex runs** tab (open by default), click **Start Reindex**
 {% endstep %}
 {% step %}
@@ -43,9 +51,12 @@ Choose the reindex options
 <figure><img src="../../assets/configuration-guides/opensearch/03-start-reindex-modal.png" alt=""><figcaption>The Start Reindex options</figcaption></figure>
 {% endstep %}
 {% step %}
-Click **Start Reindex** to begin. The new run appears at the top of the list.
+Optionally, select a case definition to limit the reindex to
 
 <figure><img src="../../assets/configuration-guides/opensearch/04-start-reindex-modal-filled.png" alt=""><figcaption>A reindex scoped to one case definition</figcaption></figure>
+{% endstep %}
+{% step %}
+Click **Start Reindex** to begin. The new run appears at the top of the list.
 {% endstep %}
 {% endstepper %}
 
@@ -60,7 +71,28 @@ The **Start Reindex** button is disabled while a run is already in progress.
 | Case definition | Limit the reindex to a single case definition. Leave on **All case definitions** to reindex every case definition. |
 | Modified after | Only reindex cases changed after the chosen date. Not available when **Rebuild / migrate index** is enabled — a rebuild always reindexes every case in scope. |
 
-### Run status
+### Viewing run details
+
+{% stepper %}
+{% step %}
+Click the chevron on the left of a run's row to expand it
+
+<figure><img src="../../assets/configuration-guides/opensearch/05b-reindex-run-completed.png" alt=""><figcaption>An expanded completed run</figcaption></figure>
+{% endstep %}
+{% step %}
+Review the parameters (start and finish time, case definition, prune and modified-after settings)
+and the progress bars for the reindexing and, when enabled, the pruning phase
+{% endstep %}
+{% endstepper %}
+
+When a run ends as **Completed with errors**, it offers two links: **View rejected cases** opens the
+**Rejected cases** tab, and **View error logs** jumps to the application log filtered to that run,
+where the reason for each skipped case is recorded. A **Failed** run offers the **View error logs**
+link.
+
+<figure><img src="../../assets/configuration-guides/opensearch/05-reindex-run-expanded.png" alt=""><figcaption>An expanded run with skipped cases</figcaption></figure>
+
+#### Run status
 
 | Status | Meaning |
 |--------|---------|
@@ -70,21 +102,6 @@ The **Start Reindex** button is disabled while a run is already in progress.
 | Completed with errors | The run finished, but one or more cases could not be indexed and were skipped. |
 | Failed | The run could not finish. |
 | Stopped | The run was stopped before it finished. |
-
-### Run details
-
-Expand a run with the chevron on the left of its row to see its parameters (start and finish time,
-case definition, prune and modified-after settings) and progress. Progress bars show the
-reindexing — and, when enabled, the pruning — phase.
-
-<figure><img src="../../assets/configuration-guides/opensearch/05b-reindex-run-completed.png" alt=""><figcaption>An expanded completed run</figcaption></figure>
-
-When a run ends as **Completed with errors**, it offers two links: **View rejected cases** opens the
-**Rejected cases** tab, and **View error logs** jumps to the application log filtered to that run,
-where the reason for each skipped case is recorded. A **Failed** run offers the **View error logs**
-link.
-
-<figure><img src="../../assets/configuration-guides/opensearch/05-reindex-run-expanded.png" alt=""><figcaption>An expanded run with skipped cases</figcaption></figure>
 
 ---
 
@@ -125,12 +142,37 @@ The **Rejected cases** tab is always available; when every case is indexed it sh
 | Last attempt | When indexing was last tried. |
 | Next retry | When the next automatic retry is scheduled. |
 
-### Retrying rejected cases
+After fixing the cause of a rejection, you can retry without waiting for the next automatic round.
 
-After fixing the cause of a rejection, you can retry without waiting for the next automatic round:
+### Retrying a single case
 
-- **Retry now** — on the overflow menu (three dots) at the end of a case's row, retries that single
-  case. If the case is indexed it leaves the list; if it no longer exists it is removed; if it is
-  still rejected, the reason remains in the application log.
-- **Retry all** — in the toolbar, schedules every rejected case to be retried on the next indexing
-  round within a few minutes. You are asked to confirm first.
+{% stepper %}
+{% step %}
+Open the **Rejected cases** tab
+{% endstep %}
+{% step %}
+Click the overflow menu (three dots) at the end of the case's row
+{% endstep %}
+{% step %}
+Click **Retry now**
+{% endstep %}
+{% endstepper %}
+
+If the case is indexed it leaves the list; if it no longer exists it is removed; if it is still
+rejected, the reason remains in the application log.
+
+### Retrying all rejected cases
+
+{% stepper %}
+{% step %}
+Open the **Rejected cases** tab
+{% endstep %}
+{% step %}
+Click **Retry all** in the toolbar
+{% endstep %}
+{% step %}
+Click **Retry all** in the confirmation dialog
+{% endstep %}
+{% endstepper %}
+
+Every rejected case is scheduled to be retried on the next indexing round, within a few minutes.
