@@ -93,6 +93,19 @@ export async function createGroupViaApi(
   return apiPost<CaseGroup>(GROUP_MANAGEMENT_ENDPOINT, {title, description, color});
 }
 
+export async function setGroupColorViaApi(
+  groupKey: string,
+  title: string,
+  color: string | null,
+  description?: string | null
+): Promise<CaseGroup> {
+  return apiPut<CaseGroup>(`${GROUP_MANAGEMENT_ENDPOINT}/${groupKey}`, {
+    title,
+    description,
+    color,
+  });
+}
+
 export async function getGroupsViaApi(): Promise<CaseGroup[]> {
   return apiGet<CaseGroup[]>(GROUP_MANAGEMENT_ENDPOINT);
 }

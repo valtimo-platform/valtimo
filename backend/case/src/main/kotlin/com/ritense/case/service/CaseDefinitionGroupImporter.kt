@@ -32,6 +32,7 @@ import com.ritense.case.domain.group.GroupListColumnPathMappingId
 import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.domain.group.GroupSearchFieldPathMapping
 import com.ritense.case.domain.group.GroupSearchFieldPathMappingId
+import com.ritense.case.domain.group.SearchFieldMatchTypeRule
 import com.ritense.case.domain.group.SortableCaseField
 import com.ritense.case.repository.CaseDefinitionGroupMemberRepository
 import com.ritense.case.repository.CaseDefinitionGroupRepository
@@ -267,7 +268,11 @@ class CaseDefinitionGroupImporter(
                     title = fieldDto.title,
                     dataType = fieldDto.dataType,
                     fieldType = fieldDto.fieldType,
-                    matchType = fieldDto.matchType,
+                    matchType = SearchFieldMatchTypeRule.normalize(
+                        fieldDto.dataType,
+                        fieldDto.fieldType,
+                        fieldDto.matchType
+                    ),
                     dropdownDataProvider = fieldDto.dropdownDataProvider,
                     order = fieldDto.order
                 )

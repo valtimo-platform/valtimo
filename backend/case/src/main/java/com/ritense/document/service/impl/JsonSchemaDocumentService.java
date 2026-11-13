@@ -542,6 +542,7 @@ public class JsonSchemaDocumentService implements DocumentService {
                 "No ResourceService implementation was provided. Resource assignment is unavailable.");
         }
 
+        resourceService.claimForDocument(resourceId, documentId.getId());
         final Resource resource = resourceService.getResource(resourceId);
         document.addRelatedFile(
             JsonSchemaRelatedFile.from(resource).withCreatedBy(SecurityUtils.getCurrentUserLogin()), metadata);
