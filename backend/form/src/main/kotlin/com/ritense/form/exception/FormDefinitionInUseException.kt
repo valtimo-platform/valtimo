@@ -15,7 +15,6 @@
  */
 package com.ritense.form.exception
 
-import com.ritense.form.domain.FormProcessLink
 import org.zalando.problem.AbstractThrowableProblem
 import org.zalando.problem.Exceptional
 import org.zalando.problem.Status
@@ -23,21 +22,34 @@ import java.util.UUID
 
 class FormDefinitionInUseException(
     formDefinitionId: UUID,
-    processLinks: Collection<FormProcessLink>,
+    usages: List<FormDefinitionUsage>,
 ) : AbstractThrowableProblem(
     null,
     "Form definition is in use",
     Status.CONFLICT,
-    "One or more process links reference this form definition. " +
-        "Remove the references before deleting the form definition.",
+    "This form definition is used by process links: " +
+        usages.joinToString("; ") { it.describe() } +
+        ". Remove the references before deleting the form definition.",
     null,
     null,
     mapOf(
         "formDefinitionId" to formDefinitionId.toString(),
-        "usages" to processLinks.map {
-            mapOf("processDefinitionId" to it.processDefinitionId, "activityId" to it.activityId)
+        "usages" to usages.map {
+            mapOf(
+                "processDefinitionKey" to it.processDefinitionKey,
+                "processDefinitionName" to it.processDefinitionName,
+                "activityId" to it.activityId,
+            )
         },
     ),
 ) {
     override fun getCause(): Exceptional? = null
+}
+
+data class FormDefinitionUsage(
+    val processDefinitionKey: String,
+    val processDefinitionName: String?,
+    val activityId: String,
+) {
+    fun describe() = "'${processDefinitionName ?: processDefinitionKey}' (activity '$activityId')"
 }

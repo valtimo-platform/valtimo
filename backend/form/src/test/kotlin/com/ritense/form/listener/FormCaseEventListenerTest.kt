@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.form.domain.FormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.request.CreateFormDefinitionRequest
+import com.ritense.form.exception.FormDefinitionMissingForProcessLinkException
+import com.ritense.form.exception.FormDefinitionUsage
+import com.ritense.form.service.FormProcessLinkUsageResolver
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -28,12 +31,14 @@ import com.ritense.processlink.domain.ProcessLinksCopiedEvent
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -45,13 +50,18 @@ class FormCaseEventListenerTest {
 
     private lateinit var formDefinitionService: FormDefinitionService
     private lateinit var processLinkService: ProcessLinkService
+    private lateinit var formProcessLinkUsageResolver: FormProcessLinkUsageResolver
     private lateinit var listener: FormCaseEventListener
 
     @BeforeEach
     fun setUp() {
         formDefinitionService = mock()
         processLinkService = mock()
-        listener = FormCaseEventListener(formDefinitionService, processLinkService)
+        formProcessLinkUsageResolver = mock()
+        whenever(formProcessLinkUsageResolver.resolve(any<FormProcessLink>())).thenAnswer {
+            FormDefinitionUsage("my-process", "My process", it.getArgument<FormProcessLink>(0).activityId)
+        }
+        listener = FormCaseEventListener(formDefinitionService, processLinkService, formProcessLinkUsageResolver)
     }
 
     @Test
@@ -69,6 +79,8 @@ class FormCaseEventListenerTest {
             .thenReturn(listOf(targetDefinition))
         whenever(formDefinitionService.getFormDefinitions(sourceCaseDefinitionId))
             .thenReturn(listOf(sourceDefinition))
+
+        whenever(formDefinitionService.formDefinitionExistsById(unmappedFormId)).thenReturn(true)
 
         val nonFormProcessLink = DummyProcessLink()
         val mappedFormProcessLink = formProcessLink(formDefinitionId = sourceFormId)
@@ -90,6 +102,52 @@ class FormCaseEventListenerTest {
         val requestsByProcessLinkId = requestCaptor.allValues.associateBy { it.id }
         assertThat(requestsByProcessLinkId[mappedFormProcessLink.id]?.formDefinitionId).isEqualTo(targetFormId)
         assertThat(requestsByProcessLinkId[secondFormProcessLink.id]?.formDefinitionId).isEqualTo(unmappedFormId)
+    }
+
+    @Test
+    fun `should fail with a clear error when a copied process link points to a missing form`() {
+        val targetCaseDefinitionId = CaseDefinitionId.of("target", "1.0.0")
+        val sourceCaseDefinitionId = CaseDefinitionId.of("source", "1.0.0")
+        val missingFormId = UUID.randomUUID()
+
+        val targetDefinition = formDefinition(UUID.randomUUID(), "shared-form")
+        val sourceDefinition = formDefinition(UUID.randomUUID(), "shared-form")
+        whenever(formDefinitionService.getFormDefinitions(targetCaseDefinitionId))
+            .thenReturn(listOf(targetDefinition))
+        whenever(formDefinitionService.getFormDefinitions(sourceCaseDefinitionId))
+            .thenReturn(listOf(sourceDefinition))
+        whenever(formDefinitionService.formDefinitionExistsById(missingFormId)).thenReturn(false)
+
+        val event = ProcessLinksCopiedEvent(
+            copiedProcessLinks = listOf(formProcessLink(activityId = "userTask1", formDefinitionId = missingFormId)),
+            processDefinitionId = "process-definition",
+            caseDefinitionId = targetCaseDefinitionId,
+            basedOnProcessDefinitionId = "source-process-definition",
+            basedOnCaseDefinitionId = sourceCaseDefinitionId
+        )
+
+        assertThatThrownBy { listener.handleProcessLinksCopiedEvent(event) }
+            .isInstanceOf(FormDefinitionMissingForProcessLinkException::class.java)
+            .hasMessageContaining("userTask1")
+            .hasMessageContaining("My process")
+            .hasMessageContaining(missingFormId.toString())
+        verify(processLinkService, never()).updateProcessLink(any(), any())
+    }
+
+    @Test
+    fun `should lock referenced form definitions of copied process links`() {
+        val formId = UUID.randomUUID()
+        val event = ProcessLinksCopiedEvent(
+            copiedProcessLinks = listOf(formProcessLink(formDefinitionId = formId), formProcessLink(formDefinitionId = formId)),
+            processDefinitionId = "process-definition",
+            caseDefinitionId = null,
+            basedOnProcessDefinitionId = "source-process-definition",
+            basedOnCaseDefinitionId = null
+        )
+
+        listener.handleProcessLinksCopiedEvent(event)
+
+        verify(formDefinitionService, times(1)).formDefinitionExistsByIdWithLock(formId)
     }
 
     @Test

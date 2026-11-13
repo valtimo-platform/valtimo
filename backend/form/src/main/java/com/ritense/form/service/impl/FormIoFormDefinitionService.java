@@ -23,10 +23,9 @@ import com.ritense.form.domain.FormDefinitionBlueprintId;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
-import com.ritense.form.exception.FormDefinitionInUseException;
 import com.ritense.form.repository.FormDefinitionRepository;
-import com.ritense.form.repository.FormProcessLinkRepository;
 import com.ritense.form.service.FormDefinitionService;
+import com.ritense.form.service.FormDefinitionUsageGuard;
 import com.ritense.form.web.rest.dto.FormOption;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.BlueprintId;
@@ -46,16 +45,16 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
 
     private final FormDefinitionRepository formDefinitionRepository;
     private final CaseDefinitionChecker caseDefinitionChecker;
-    private final FormProcessLinkRepository formProcessLinkRepository;
+    private final FormDefinitionUsageGuard formDefinitionUsageGuard;
 
     public FormIoFormDefinitionService(
         final FormDefinitionRepository formDefinitionRepository,
         final CaseDefinitionChecker caseDefinitionChecker,
-        final FormProcessLinkRepository formProcessLinkRepository
+        final FormDefinitionUsageGuard formDefinitionUsageGuard
     ) {
         this.formDefinitionRepository = formDefinitionRepository;
         this.caseDefinitionChecker = caseDefinitionChecker;
-        this.formProcessLinkRepository = formProcessLinkRepository;
+        this.formDefinitionUsageGuard = formDefinitionUsageGuard;
     }
 
     @Override
@@ -267,31 +266,28 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
         @LoggableResource(resourceType = FormIoFormDefinition.class) UUID formDefinitionId
     ) {
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
-        formDefinitionRepository.findByIdForUpdate(formDefinitionId);
-        assertNotInUse(formDefinitionId);
+        formDefinitionUsageGuard.lockAndAssertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
     }
 
     @Override
     @Transactional
     public void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID formDefinitionId) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
         formDefinitionRepository.findByIdForUpdate(formDefinitionId);
-        assertNotInUse(formDefinitionId);
+        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
+        formDefinitionUsageGuard.lockAndAssertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
-    }
-
-    private void assertNotInUse(UUID formDefinitionId) {
-        var processLinks = formProcessLinkRepository.findByFormDefinitionId(formDefinitionId);
-        if (!processLinks.isEmpty()) {
-            throw new FormDefinitionInUseException(formDefinitionId, processLinks);
-        }
     }
 
     @Override
     @Transactional
     public void deleteAllFormDefinitions(CaseDefinitionId caseDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
+        var formDefinitionIds = formDefinitionRepository.findAllByCaseDefinitionId(caseDefinitionId)
+            .stream()
+            .map(FormIoFormDefinition::getId)
+            .toList();
+        formDefinitionUsageGuard.lockAndAssertNotInUseOutside(caseDefinitionId, formDefinitionIds);
         formDefinitionRepository.deleteAllByCaseDefinitionId(caseDefinitionId);
     }
 

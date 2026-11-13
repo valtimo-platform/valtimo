@@ -17,8 +17,24 @@ package com.ritense.form.repository
 
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.processlink.repository.BaseProcessLinkRepository
+import jakarta.persistence.LockModeType
+import org.springframework.data.jpa.repository.Lock
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface FormProcessLinkRepository : BaseProcessLinkRepository<FormProcessLink> {
+    @Lock(LockModeType.PESSIMISTIC_READ)
     fun findByFormDefinitionId(formDefinitionId: UUID): List<FormProcessLink>
+
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    fun findByFormDefinitionIdIn(formDefinitionIds: Collection<UUID>): List<FormProcessLink>
+
+    @Query(
+        "SELECT COUNT(l) > 0 FROM FormProcessLink l WHERE l.processDefinitionId IN :processDefinitionIds " +
+            "AND NOT EXISTS (SELECT f.id FROM FormIoFormDefinition f WHERE f.id = l.formDefinitionId)"
+    )
+    fun existsDanglingByProcessDefinitionIdIn(
+        @Param("processDefinitionIds") processDefinitionIds: Collection<String>
+    ): Boolean
 }

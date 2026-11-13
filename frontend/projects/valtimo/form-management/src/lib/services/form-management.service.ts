@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {
   CreateFormDefinitionRequest,
   FormDefinition,
@@ -23,7 +23,7 @@ import {
   QueryFormsResponse,
 } from '../models';
 import {Observable, of} from 'rxjs';
-import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
+import {BaseApiService, ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -132,7 +132,9 @@ export class FormManagementService extends BaseApiService {
   }
 
   public deleteFormDefinition(formDefinitionId: string): Observable<void> {
-    return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/form/${formDefinitionId}`));
+    return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/form/${formDefinitionId}`), {
+      headers: new HttpHeaders().set(InterceptorSkip, '409'),
+    });
   }
 
   public deleteFormDefinitionCase(
@@ -143,7 +145,8 @@ export class FormManagementService extends BaseApiService {
     return this.httpClient.delete<void>(
       this.getApiUrl(
         `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionId}`
-      )
+      ),
+      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
     );
   }
 
@@ -225,7 +228,8 @@ export class FormManagementService extends BaseApiService {
     return this.httpClient.delete<void>(
       this.getApiUrl(
         `/management/v1/building-block/${buildingBlockDefinitionKey}/version/${buildingBlockDefinitionVersionTag}/form/${formDefinitionId}`
-      )
+      ),
+      {headers: new HttpHeaders().set(InterceptorSkip, '409')}
     );
   }
 }

@@ -23,6 +23,9 @@ import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.FormSizes
+import com.ritense.form.exception.FormDefinitionMissingForProcessLinkException
+import com.ritense.form.exception.FormDefinitionUsage
+import com.ritense.form.service.FormProcessLinkUsageResolver
 import com.ritense.form.processlink.dto.FormProcessLinkDeployDto
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
@@ -43,6 +46,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import java.util.Optional
 import java.util.UUID
@@ -53,6 +57,9 @@ internal class FormProcessLinkMapperTest {
 
     @Mock
     lateinit var formDefinitionService: FormDefinitionService
+
+    @Mock
+    lateinit var formProcessLinkUsageResolver: FormProcessLinkUsageResolver
 
     private lateinit var formProcessLinkMapper: FormProcessLinkMapper
 
@@ -65,7 +72,12 @@ internal class FormProcessLinkMapperTest {
         formProcessLinkMapper = FormProcessLinkMapper(
             MapperSingleton.get(),
             formDefinitionService,
+            formProcessLinkUsageResolver,
         )
+        whenever(formProcessLinkUsageResolver.resolve(any<FormProcessLink>())).thenAnswer {
+            val link = it.getArgument<FormProcessLink>(0)
+            FormDefinitionUsage("my-process", "My process", link.activityId)
+        }
     }
 
     @Test
@@ -250,6 +262,28 @@ internal class FormProcessLinkMapperTest {
     }
 
     @Test
+    fun `should fail with a clear error when exporting a process link whose form is gone`() {
+        val formProcessLink = FormProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "my-process:1:abc",
+            activityId = "userTask1",
+            activityType = USER_TASK_CREATE,
+            formDefinitionId = UUID.randomUUID(),
+            viewModelEnabled = false
+        )
+        whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
+            .thenReturn(Optional.empty())
+
+        assertThatThrownBy { formProcessLinkMapper.toProcessLinkExportResponseDto(formProcessLink) }
+            .isInstanceOf(FormDefinitionMissingForProcessLinkException::class.java)
+            .hasMessageContaining("userTask1")
+            .hasMessageContaining("'My process'")
+            .hasMessageContaining(formProcessLink.formDefinitionId.toString())
+        assertThatThrownBy { formProcessLinkMapper.createRelatedExportRequests(formProcessLink, caseDefinitionId) }
+            .isInstanceOf(FormDefinitionMissingForProcessLinkException::class.java)
+    }
+
+    @Test
     fun `should fail with the activity and process when the form of a global process link is gone`() {
         val formProcessLink = FormProcessLink(
             id = UUID.randomUUID(),
@@ -263,9 +297,9 @@ internal class FormProcessLinkMapperTest {
             .thenReturn(Optional.empty())
 
         assertThatThrownBy { formProcessLinkMapper.createGlobalRelatedExportRequests(formProcessLink) }
-            .isInstanceOf(IllegalStateException::class.java)
+            .isInstanceOf(FormDefinitionMissingForProcessLinkException::class.java)
             .hasMessageContaining("userTask1")
-            .hasMessageContaining("my-process:1:abc")
+            .hasMessageContaining("My process")
             .hasMessageContaining(formProcessLink.formDefinitionId.toString())
     }
 

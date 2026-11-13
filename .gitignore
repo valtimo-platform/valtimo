@@ -26,3 +26,6 @@
 
 /test-results/
 /frontend/test-results/.last-run.json
+
+# Local Spring config overrides
+application-local.yml

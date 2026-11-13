@@ -909,6 +909,7 @@
       "created": "Nieuw formulier aangemaakt",
       "deleted": "Formulier verwijderd",
       "deletionError": "Fout bij het verwijderen van het formulier",
+      "deletionInUse": "Dit formulier kan niet worden verwijderd omdat het wordt gebruikt door proceskoppelingen: {{usages}}. Verwijder eerst deze verwijzingen.",
       "deployed": "Formulier gepubliceerd",
       "deploymentError": "Fout bij het publiceren van het formulier",
       "duplicated": "Formulier gedupliceerd"
@@ -1044,6 +1045,7 @@
     "export": "{{value}} exporteren",
     "exportErrorTitle": "Fout",
     "exportErrorMessage": "Er is iets misgegaan",
+    "exportErrorFormMissing": "De proceskoppeling op activiteit '{{activity}}' van proces '{{process}}' verwijst naar een formulier dat niet meer bestaat. Kies een bestaand formulier voor deze proceskoppeling en exporteer opnieuw.",
     "exportSuccessTitle": "Download start binnenkort",
     "readonly": "Alleen-lezen",
     "connectedProcesses": "Gekoppelde processen",
@@ -1303,7 +1305,8 @@
         "title": "Deze dossierdefinitie kan niet definitief worden gemaakt.",
         "BUILDING_BLOCK_NOT_FINAL": "De dossierdefinitie maakt gebruik van conceptbouwblokken. Om deze dossierdefinitie definitief te kunnen maken, moeten alle bouwblokken die ze gebruikt definitief zijn.",
         "CONFIGURATION_ISSUES": "De dossierdefinitie bevat onopgeloste configuratieproblemen. Controleer en los alle configuratiewaarschuwingen op voordat je deze definitief maakt.",
-        "PROCESS_DEFINITION_IN_DRAFT": "De dossierdefinitie bevat procesdefinities die nog in concept zijn. Maak alle procesdefinities definitief voordat je de dossierdefinitie definitief maakt."
+        "PROCESS_DEFINITION_IN_DRAFT": "De dossierdefinitie bevat procesdefinities die nog in concept zijn. Maak alle procesdefinities definitief voordat je de dossierdefinitie definitief maakt.",
+        "PROCESS_LINK_FORM_MISSING": "De dossierdefinitie bevat een proceskoppeling naar een formulier dat niet meer bestaat. Selecteer een bestaand formulier voor deze proceskoppeling voordat je de dossierdefinitie definitief maakt."
       }
     },
     "environmentConfig": {

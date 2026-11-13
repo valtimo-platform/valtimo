@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import {
 import {FORM_MANAGEMENT_LIST_TEST_IDS} from '../../constants';
 import {FormDefinition} from '../../models';
 import {FormManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
+import {getContextObservable, getFormDefinitionUsagesText} from '../../utils';
 
 @Component({
   selector: 'valtimo-form-management-list',
@@ -240,10 +240,16 @@ export class FormManagementListComponent {
           });
           this._partialPagination$.next({...this._partialPagination});
         },
-        error: () => {
+        error: error => {
+          const usages = getFormDefinitionUsagesText(error);
+
           this.notificationService.showToast({
             type: 'error',
-            title: this.translateService.instant('formManagement.notifications.deletionError'),
+            title: usages
+              ? this.translateService.instant('formManagement.notifications.deletionInUse', {
+                  usages,
+                })
+              : this.translateService.instant('formManagement.notifications.deletionError'),
           });
         },
       });

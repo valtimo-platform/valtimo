@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package com.ritense.form.listener
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.request.CreateFormDefinitionRequest
+import com.ritense.form.exception.FormDefinitionMissingForProcessLinkException
+import com.ritense.form.service.FormProcessLinkUsageResolver
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
 import com.ritense.processlink.domain.ProcessLinksCopiedEvent
@@ -27,6 +29,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.event.CaseDefinitionCreatedEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -38,6 +41,7 @@ import java.util.UUID
 class FormCaseEventListener(
     private val formDefinitionService: FormDefinitionService,
     private val processLinkService: ProcessLinkService,
+    private val formProcessLinkUsageResolver: FormProcessLinkUsageResolver,
 ) {
 
     @EventListener(CaseDefinitionCreatedEvent::class)
@@ -60,6 +64,8 @@ class FormCaseEventListener(
     @RunWithoutAuthorization
     @EventListener(ProcessLinksCopiedEvent::class)
     fun handleProcessLinksCopiedEvent(event: ProcessLinksCopiedEvent) {
+        lockReferencedFormDefinitions(event)
+
         if (event.caseDefinitionId == null || event.basedOnCaseDefinitionId == null) return;
 
         val deployedFormDefinitions = formDefinitionService.getFormDefinitions(event.caseDefinitionId)
@@ -77,9 +83,19 @@ class FormCaseEventListener(
         event.copiedProcessLinks.forEach { processLink ->
             if (processLink !is FormProcessLink) return@forEach
 
+            val formDefinitionId = formDefinitionIdMapping[processLink.formDefinitionId]
+                ?: processLink.formDefinitionId.also {
+                    if (!formDefinitionService.formDefinitionExistsById(it)) {
+                        throw FormDefinitionMissingForProcessLinkException(
+                            it,
+                            formProcessLinkUsageResolver.resolve(processLink)
+                        )
+                    }
+                }
+
             val formProcessLinkUpdateRequest = FormProcessLinkUpdateRequestDto(
                 processLink.id,
-                formDefinitionIdMapping[processLink.formDefinitionId] ?: processLink.formDefinitionId,
+                formDefinitionId,
                 processLink.viewModelEnabled,
                 processLink.formDisplayType,
                 processLink.formSize,
@@ -91,6 +107,15 @@ class FormCaseEventListener(
                 event.caseDefinitionId
             )
         }
+    }
+
+    private fun lockReferencedFormDefinitions(event: ProcessLinksCopiedEvent) {
+        event.copiedProcessLinks
+            .filterIsInstance<FormProcessLink>()
+            .map { it.formDefinitionId }
+            .distinct()
+            .filterNot { formDefinitionService.formDefinitionExistsByIdWithLock(it) }
+            .forEach { logger.warn { "Copied process link references form definition '$it' which does not exist" } }
     }
 
     private fun copyFormDefinitions(
@@ -112,5 +137,9 @@ class FormCaseEventListener(
         }
 
         return formDefinitionIdMapping
+    }
+
+    private companion object {
+        val logger = KotlinLogging.logger {}
     }
 }
