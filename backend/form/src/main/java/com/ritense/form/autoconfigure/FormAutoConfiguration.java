@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import com.ritense.form.mapper.FormProcessLinkMapper;
 import com.ritense.form.processlink.FormProcessLinkActivityHandler;
 import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormDefinitionService;
+import com.ritense.form.service.FormDefinitionUsageGuard;
+import com.ritense.form.service.FormProcessLinkUsageResolver;
 import com.ritense.form.service.FormLoaderService;
 import com.ritense.form.service.PrefillFormService;
 import com.ritense.form.service.impl.FormIoFormDefinitionService;
@@ -78,8 +80,10 @@ public class FormAutoConfiguration {
     @ConditionalOnMissingBean(FormDefinitionService.class)
     public FormIoFormDefinitionService formDefinitionService(
         final FormDefinitionRepository formDefinitionRepository,
-        final CaseDefinitionChecker caseDefinitionChecker) {
-        return new FormIoFormDefinitionService(formDefinitionRepository, caseDefinitionChecker);
+        final CaseDefinitionChecker caseDefinitionChecker,
+        final FormDefinitionUsageGuard formDefinitionUsageGuard) {
+        return new FormIoFormDefinitionService(
+            formDefinitionRepository, caseDefinitionChecker, formDefinitionUsageGuard);
     }
 
     @Bean
@@ -123,9 +127,10 @@ public class FormAutoConfiguration {
     @ConditionalOnMissingBean(FormProcessLinkMapper.class)
     public FormProcessLinkMapper formProcessLinkMapper(
         final ObjectMapper objectMapper,
-        final FormDefinitionService formDefinitionService
+        final FormDefinitionService formDefinitionService,
+        final FormProcessLinkUsageResolver formProcessLinkUsageResolver
     ) {
-        return new FormProcessLinkMapper(objectMapper, formDefinitionService);
+        return new FormProcessLinkMapper(objectMapper, formDefinitionService, formProcessLinkUsageResolver);
     }
 
     @Bean

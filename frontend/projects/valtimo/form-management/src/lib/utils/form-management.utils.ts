@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute} from '@angular/router';
 import {
   getBuildingBlockManagementRouteParams,
@@ -21,7 +22,7 @@ import {
 } from '@valtimo/shared';
 import {combineLatest, Observable, of} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
-import {FormManagementParams} from '../models';
+import {FormDefinitionUsage, FormManagementParams} from '../models';
 
 function getContextObservable(route: ActivatedRoute): Observable<ManagementContext | '' | null> {
   return route.data.pipe(
@@ -73,4 +74,16 @@ function getFormManagementRouteParamsAndContext(
   );
 }
 
-export {getContextObservable, getFormManagementRouteParamsAndContext};
+function getFormDefinitionUsagesText(error: unknown): string | null {
+  if (!(error instanceof HttpErrorResponse) || error.status !== 409) return null;
+
+  const usages: FormDefinitionUsage[] | undefined = error.error?.usages;
+
+  if (!Array.isArray(usages) || usages.length === 0) return null;
+
+  return usages
+    .map(usage => `${usage.processDefinitionName || usage.processDefinitionKey} (${usage.activityId})`)
+    .join(', ');
+}
+
+export {getContextObservable, getFormDefinitionUsagesText, getFormManagementRouteParamsAndContext};

@@ -909,6 +909,7 @@
       "created": "Created new Form",
       "deleted": "Deleted form",
       "deletionError": "Error deleting form",
+      "deletionInUse": "This form cannot be deleted because it is used by process links: {{usages}}. Remove these references first.",
       "deployed": "Form deployed",
       "deploymentError": "Error deploying form",
       "duplicated": "Form duplicated"
@@ -1044,6 +1045,7 @@
     "export": "Export {{value}}",
     "exportErrorTitle": "Error",
     "exportErrorMessage": "Something went wrong",
+    "exportErrorFormMissing": "The process link on activity '{{activity}}' of process '{{process}}' points to a form that no longer exists. Select an existing form for this process link and export again.",
     "exportSuccessTitle": "Download will start shortly",
     "readonly": "Read-only",
     "connectedProcesses": "Connected processes",
@@ -1303,7 +1305,8 @@
         "title": "This case definition cannot be finalized.",
         "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
         "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing.",
-        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition."
+        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition.",
+        "PROCESS_LINK_FORM_MISSING": "The case definition contains a process link that points to a form that no longer exists. Select an existing form for this process link before finalizing the case definition."
       }
     },
     "environmentConfig": {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import com.ritense.form.BaseIntegrationTest;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
-import java.util.Optional;
+import com.ritense.form.service.FormDefinitionUsageGuard;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +37,13 @@ class FormIoFormDefinitionServiceIntTest extends BaseIntegrationTest {
     private FormIoFormDefinitionService formIoFormDefinitionService;
     @Autowired
     private CaseDefinitionChecker caseDefinitionChecker;
+    @Autowired
+    private FormDefinitionUsageGuard formDefinitionUsageGuard;
 
     @BeforeEach
     void setUp() {
-        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository, caseDefinitionChecker);
+        formIoFormDefinitionService = new FormIoFormDefinitionService(
+            formDefinitionRepository, caseDefinitionChecker, formDefinitionUsageGuard);
     }
 
     @Test

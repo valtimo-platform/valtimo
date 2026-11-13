@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {DOCUMENT} from '@angular/common';
-import {HttpResponse} from '@angular/common/http';
+import {HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -49,6 +49,7 @@ import {take} from 'rxjs/operators';
 import {lt, valid} from 'semver';
 import {CaseDetailService, CaseManagementService} from '../../services';
 import {CASE_MANAGEMENT_DETAIL_ACTIONS_TEST_IDS} from '../../constants';
+import {readProblemFromBlobError} from '../../utils';
 
 @Component({
   standalone: false,
@@ -261,15 +262,25 @@ export class CaseManagementDetailActionsComponent {
           this.downloadZip(response, selectedVersionNumber);
           this.stopExporting();
         },
-        error: () => {
-          this.closeCurrentNotification();
-          this._currentNotification = this.notificationService.showNotification({
-            type: 'error',
-            title: this.translateService.instant('caseManagement.exportErrorTitle'),
-            message: this.translateService.instant('caseManagement.exportErrorMessage'),
-            duration: 5000,
-          });
-          this.stopExporting();
+        error: (error: HttpErrorResponse) => {
+          readProblemFromBlobError(error)
+            .pipe(take(1))
+            .subscribe(problem => {
+              const formMissing = !!problem?.activityId && !!problem?.formDefinitionId;
+              this.closeCurrentNotification();
+              this._currentNotification = this.notificationService.showNotification({
+                type: 'error',
+                title: this.translateService.instant('caseManagement.exportErrorTitle'),
+                message: formMissing
+                  ? this.translateService.instant('caseManagement.exportErrorFormMissing', {
+                      process: problem?.processDefinitionName || problem?.processDefinitionKey,
+                      activity: problem?.activityId,
+                    })
+                  : this.translateService.instant('caseManagement.exportErrorMessage'),
+                duration: formMissing ? 10000 : 5000,
+              });
+              this.stopExporting();
+            });
         },
       });
   }

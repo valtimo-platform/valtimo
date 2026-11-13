@@ -19,6 +19,7 @@ package com.ritense.buildingblock.service
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.form.service.FormDefinitionUsageGuard
 import com.ritense.form.web.rest.dto.FormOption
 import com.ritense.logging.withLoggingContext
 import com.ritense.valtimo.contract.blueprint.BlueprintType
@@ -36,6 +37,7 @@ import java.util.UUID
 class BuildingBlockFormDefinitionService(
     private val formDefinitionRepository: FormDefinitionRepository,
     private val definitionChecker: BuildingBlockDefinitionChecker,
+    private val formDefinitionUsageGuard: FormDefinitionUsageGuard,
 ) {
 
     fun getFormOptions(
@@ -188,6 +190,8 @@ class BuildingBlockFormDefinitionService(
 
             val form = getFormDefinitionById(buildingBlockDefinitionId, formDefinitionId)
                 .orElseThrow { IllegalArgumentException("Form definition not found: $formDefinitionId") }
+
+            formDefinitionUsageGuard.lockAndAssertNotInUse(form.id)
 
             logger.info { "Deleting form definition '${form.name}' for building block $buildingBlockDefinitionId" }
             formDefinitionRepository.delete(form)
