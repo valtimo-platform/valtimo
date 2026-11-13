@@ -91,11 +91,10 @@ export class CarbonListDragAndDropService {
       );
       this._lastMouseY = e.y;
 
-      const elementsUnderMouse = document.querySelectorAll(':hover');
-      const arrayElementsUnderMouse = elementsUnderMouse && Array.from(elementsUnderMouse);
-      const tableRowUnderMouse = arrayElementsUnderMouse?.find(
-        element => element.localName === 'tr'
-      );
+      const tableRowUnderMouse = document
+        .elementsFromPoint(e.clientX, e.clientY)
+        .map(element => element.closest('tr'))
+        .find(row => !!row);
       if (tableRowUnderMouse) this.setTableRowUnderMouse(tableRowUnderMouse as HTMLTableRowElement);
     });
   }

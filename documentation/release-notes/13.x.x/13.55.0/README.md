@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Area name | New bugfix. |
+| Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
