@@ -46,7 +46,7 @@ show their color too.
 | Dashboard | A bar chart widget with many categories no longer overflows its widget and overlaps other widgets. The legend now scrolls inside the widget. |
 | Forms | Disabled fields in forms now show their value in readable text, styled as read-only instead of faded grey. |
 | Left sidebar | Opening the Cases overview directly expands **Cases** in the left sidebar, so pinned items are visible. |
-| Process links | The application no longer fails to start after upgrading from 12.x when a case type had an upload process linked. The link from 12.x now moves to the migrated version of the case type, or is removed when that version no longer exists. |
+| Process links | The application starts again after upgrading from 12.x when a case type had an upload process linked. |
 
 ---
 
