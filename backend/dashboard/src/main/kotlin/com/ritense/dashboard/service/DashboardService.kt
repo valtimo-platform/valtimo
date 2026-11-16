@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.ritense.dashboard.datasource.WidgetDataSourceResolver
 import com.ritense.dashboard.domain.Dashboard
 import com.ritense.dashboard.domain.WidgetConfiguration
 import com.ritense.dashboard.domain.WidgetLayout
+import com.ritense.dashboard.exception.DashboardAlreadyExistsException
 import com.ritense.dashboard.repository.DashboardRepository
 import com.ritense.dashboard.repository.WidgetConfigurationRepository
 import com.ritense.dashboard.web.rest.dto.DashboardUpdateRequestDto
@@ -77,10 +78,16 @@ class DashboardService(
     fun createDashboard(
         title: String,
         description: String,
-        widgetLayout: WidgetLayout? = null
+        widgetLayout: WidgetLayout? = null,
+        requestedKey: String? = null
     ): Dashboard {
         denyAuthorization()
-        val key = generateDashboardKey(title)
+        val key = if (requestedKey == null) {
+            DashboardKeys.generate(title) { dashboardRepository.existsById(it) }
+        } else {
+            if (dashboardRepository.existsById(requestedKey)) throw DashboardAlreadyExistsException(requestedKey)
+            requestedKey
+        }
         val order = dashboardRepository.count().toInt()
         val createdBy = userManagementService.currentUser.fullName
         return dashboardRepository.save(
@@ -274,31 +281,8 @@ class DashboardService(
         widgetConfigurationRepository.saveAll(widgetConfigurations)
     }
 
-    private fun generateDashboardKey(title: String): String {
-        val baseKey = generateKey(title)
-        var key = baseKey
-        var i = 2
-        while (dashboardRepository.existsById(key)) {
-            key = "${baseKey}_${i++}"
-        }
-        return key
-    }
-
     private fun generateWidgetKey(title: String): String {
-        val baseKey = generateKey(title)
-        var key = baseKey
-        var i = 2
-        while (widgetConfigurationRepository.existsById(key)) {
-            key = "${baseKey}_${i++}"
-        }
-        return key
-    }
-
-    private fun generateKey(title: String): String {
-        return title
-            .lowercase()
-            .replace("(^[^a-z]+)|([^0-9a-z]+\$)".toRegex(), "") // trim start and end
-            .replace("[^0-9a-z]+".toRegex(), "_") // replace all non-alphanumeric characters with '_'
+        return DashboardKeys.generate(title, DashboardKeys.WIDGET_PREFIX) { widgetConfigurationRepository.existsById(it) }
     }
 
     private fun denyAuthorization() {

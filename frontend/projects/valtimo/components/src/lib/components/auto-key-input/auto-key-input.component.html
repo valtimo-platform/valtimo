@@ -20,6 +20,7 @@
     idError: idError$ | async,
     editingKey: editingKey$ | async,
   } as obs"
+  [helperText]="helperTextTranslationKey | translate"
   [invalid]="!!obs.idError"
   [invalidText]="obs.idError | translate"
 >
