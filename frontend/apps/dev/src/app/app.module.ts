@@ -117,6 +117,7 @@ import {
   zakenApiPluginSpecification,
 } from '@valtimo/plugin';
 import {PluginManagementModule} from '@valtimo/plugin-management';
+import {ExchangeModule} from '@valtimo/exchange';
 import {ProcessModule} from '@valtimo/process';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {ProcessManagementModule} from '@valtimo/process-management';
@@ -200,6 +201,7 @@ export function tabsFactory() {
     MigrationModule,
     // management
     PluginManagementModule,
+    ExchangeModule,
     ExternalPluginPageRoutingModule,
     ObjectManagementModule,
     ObjectModule,

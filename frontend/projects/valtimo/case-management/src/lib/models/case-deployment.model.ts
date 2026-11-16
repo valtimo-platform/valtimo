@@ -79,6 +79,11 @@ export interface PluginConfigurationPreview {
   pluginDefinitionVersion?: string | null;
 }
 
+export interface ImportedCaseDefinition {
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+}
+
 export interface CaseDefinitionImportPreview {
   key: string;
   name: string;

@@ -16,6 +16,7 @@
 
 import {ComponentFactoryResolver, Inject, Injectable, ViewContainerRef} from '@angular/core';
 import {
+  ExchangeConfiguration,
   Extension,
   ExtensionLoader,
   ExtensionPoint,
@@ -40,6 +41,13 @@ export class ConfigService {
 
   public readonly featureToggles$: Observable<ValtimoConfigFeatureToggles> =
     this._featureToggles$.asObservable();
+
+  private readonly _exchangeConfiguration$ = new BehaviorSubject<ExchangeConfiguration | null>(
+    null
+  );
+
+  public readonly exchangeConfiguration$: Observable<ExchangeConfiguration | null> =
+    this._exchangeConfiguration$.asObservable();
 
   constructor(
     @Inject(VALTIMO_CONFIG) private valtimoConfig: ValtimoConfig,
@@ -84,9 +92,7 @@ export class ConfigService {
   }
 
   public get config$(): Observable<ValtimoConfig> {
-    return this._featureToggles$.pipe(
-      map(featureToggles => ({...this.config, featureToggles}))
-    );
+    return this._featureToggles$.pipe(map(featureToggles => ({...this.config, featureToggles})));
   }
 
   public get initializers() {
@@ -136,6 +142,10 @@ export class ConfigService {
 
   public getFeatureToggle(featureToggle: keyof ValtimoConfigFeatureToggles): boolean {
     return !!(this.featureToggles && this.featureToggles[featureToggle]);
+  }
+
+  public setExchangeConfiguration(configuration: ExchangeConfiguration | null): void {
+    this._exchangeConfiguration$.next(configuration);
   }
 
   public patchFeatureToggles(overrides: Partial<ValtimoConfigFeatureToggles>): void {

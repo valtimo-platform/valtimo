@@ -19,7 +19,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, ExchangeConfiguration, InterceptorSkipHeader} from '@valtimo/shared';
 import {
   AdminSettingsService,
   hasSavedMenuConfiguration,
@@ -100,14 +100,47 @@ export function initializerFactory(
     }
   };
 
+  // One shared request: the CSP needs the Exchange origins and the menu needs the enabled flag.
+  // Lazy, so it runs after auth like the other initializers. Failure reads as not configured.
+  let exchangeConfiguration: Promise<ExchangeConfiguration | null> | null = null;
+  const getExchangeConfiguration = (): Promise<ExchangeConfiguration | null> => {
+    if (!exchangeConfiguration) {
+      const apiBase = configService.config?.valtimoApi?.endpointUri;
+      exchangeConfiguration = apiBase
+        ? firstValueFrom(
+            injector
+              .get(HttpClient)
+              .get<ExchangeConfiguration>(`${apiBase}v1/exchange/configuration`, {
+                headers: InterceptorSkipHeader,
+              })
+          ).catch(() => null)
+        : Promise.resolve(null);
+    }
+    return exchangeConfiguration;
+  };
+
   // Initialize CSP after auth so we can fetch external plugin host origins and add them to
   // frame-src before the meta tag is inserted (CSP meta is immutable once parsed).
   const cspInitializer = async (): Promise<void> => {
     const pluginHostOrigins = new Set<string>();
-    const collectOrigin = (value: string | null | undefined): void => {
+    const exchangeConnectOrigins = new Set<string>();
+    const exchangeImageOrigins = new Set<string>();
+    const collectOrigin = (target: Set<string>, value: string | null | undefined): void => {
       if (!value) return;
       try {
-        pluginHostOrigins.add(new URL(value).origin);
+        target.add(new URL(value).origin);
+      } catch {
+        // ignore unparseable URLs
+      }
+    };
+
+    // Keeps the path: CSP then allows only that prefix; trailing slash makes it a prefix
+    const collectAssetSource = (target: Set<string>, value: string | null | undefined): void => {
+      if (!value) return;
+      try {
+        const url = new URL(value);
+        if (!['http:', 'https:'].includes(url.protocol) || /[;,]/.test(url.pathname)) return;
+        target.add(`${url.origin}${url.pathname.replace(/\/*$/, '/')}`);
       } catch {
         // ignore unparseable URLs
       }
@@ -120,13 +153,27 @@ export function initializerFactory(
       // host-origins is authenticated (not ADMIN-only) so every user who renders a plugin surface
       // gets the host origins into frame-src/connect-src; it exposes derived origins only.
       await firstValueFrom(http.get<string[]>(`${apiBase}v1/external-plugin/host-origins`))
-        .then(origins => origins.forEach(origin => collectOrigin(origin)))
+        .then(origins => origins.forEach(origin => collectOrigin(pluginHostOrigins, origin)))
         .catch(error =>
           logger.debug('No external plugin host origins found for CSP augmentation:', error)
         );
     }
 
-    await initializeCsp(logger, configService, document, domSanitizer, [...pluginHostOrigins])();
+    // The browser reads the Exchange catalog and its images directly. Never frame-src.
+    const exchange = await getExchangeConfiguration();
+    if (exchange?.enabled) {
+      collectOrigin(exchangeConnectOrigins, exchange.url);
+      collectOrigin(exchangeImageOrigins, exchange.url);
+      exchange.assetOrigins?.forEach(source => collectAssetSource(exchangeImageOrigins, source));
+    }
+
+    const pluginOrigins = [...pluginHostOrigins];
+    // Plugin hosts serve frames, images and the cross-origin data route from their own origin.
+    await initializeCsp(logger, configService, document, domSanitizer, {
+      frameSrc: pluginOrigins,
+      imgSrc: [...pluginOrigins, ...exchangeImageOrigins],
+      connectSrc: [...pluginOrigins, ...exchangeConnectOrigins],
+    })();
   };
 
   // Fetch the persisted menu configuration and, when one exists, resolve it into MenuItem[] and
@@ -164,10 +211,18 @@ export function initializerFactory(
     }
   };
 
-  // These four initializers are order-independent (accent colors touch CSS custom properties, CSP
+  const exchangeInitializer = async (): Promise<void> => {
+    const exchange = await getExchangeConfiguration();
+    if (exchange?.enabled && exchange.url) {
+      configService.setExchangeConfiguration(exchange);
+      configService.patchFeatureToggles({enableExchange: true});
+    }
+  };
+
+  // These five initializers are order-independent (accent colors touch CSS custom properties, CSP
   // inserts the meta tag, the menu patch only reads the DTO, and the OpenSearch check only patches
-  // its own toggle), so run them in parallel instead of serially blocking bootstrap on each round
-  // trip. Each one handles its own failures, so this combined initializer cannot reject for
+  // its own toggle, the Exchange check patches its own), so run them in parallel instead of
+  // serially blocking bootstrap on each round trip. Each one handles its own failures, so this combined initializer cannot reject for
   // recoverable reasons.
   initializersArray.push(() =>
     Promise.all([
@@ -175,6 +230,7 @@ export function initializerFactory(
       cspInitializer(),
       menuConfigurationInitializer(),
       openSearchInitializer(),
+      exchangeInitializer(),
     ])
   );
 

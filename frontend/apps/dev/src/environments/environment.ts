@@ -121,6 +121,7 @@ export const environment: ValtimoConfig = {
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default'},
           {link: ['/admin-settings'], title: 'adminSettings.title'},
           {link: ['/building-block-management'], title: 'buildingBlockManagement.title'},
+          {link: ['/exchange'], title: 'Exchange', iconClass: 'icon mdi mdi-dot-circle', includeFunction: IncludeFunction.ExchangeEnabled},
           {link: ['/case-management'], title: 'Cases'},
           {link: ['/dashboard-management'], title: 'Dashboard'},
           {link: ['/access-control'], title: 'Access Control'},

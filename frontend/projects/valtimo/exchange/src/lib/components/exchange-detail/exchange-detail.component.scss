@@ -1,0 +1,150 @@
+/*
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '@carbon/styles/scss/type' as type;
+@use '@carbon/styles/scss/utilities/focus-outline' as *;
+@use '../../styles/facts' as *;
+
+.exchange-detail-panel {
+  padding: var(--cds-spacing-06);
+  background-color: var(--cds-layer-01);
+  @include type.type-style('body-01');
+
+  // Global p styles override inherited size
+  p:not(.exchange-detail__lead) {
+    @include type.type-style('body-01');
+  }
+
+  h4 {
+    margin-block-end: var(--cds-spacing-03);
+    @include type.type-style('heading-compact-02');
+  }
+}
+
+.exchange-detail {
+  display: grid;
+  grid-template-columns: 1fr minmax(16rem, 22rem);
+  gap: var(--cds-spacing-07);
+  align-items: start;
+
+  &__main,
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-06);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-05);
+  }
+
+  &__lead {
+    @include type.type-style('body-02');
+  }
+
+  &__text,
+  &__release-notes {
+    white-space: pre-wrap;
+  }
+
+  &__screenshots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--cds-spacing-05);
+
+    img {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--cds-border-subtle);
+    }
+  }
+
+  &__screenshot {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+
+    &:hover img {
+      border-color: var(--cds-border-strong);
+    }
+
+    &:focus-visible {
+      @include focus-outline('outline');
+    }
+  }
+
+  &__muted {
+    color: var(--cds-text-secondary);
+  }
+
+  &__dependencies {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: var(--cds-spacing-03);
+    }
+  }
+
+  &__version-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+  }
+
+  &__facts {
+    @include facts;
+  }
+
+  &__stage {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__stage-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-03);
+
+    ul {
+      padding-inline-start: var(--cds-spacing-05);
+      list-style: disc;
+    }
+  }
+
+  &__publisher {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-05);
+    margin-block-end: var(--cds-spacing-03);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--cds-spacing-03);
+  }
+}

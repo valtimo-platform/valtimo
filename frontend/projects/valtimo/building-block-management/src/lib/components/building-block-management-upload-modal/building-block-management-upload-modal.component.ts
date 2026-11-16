@@ -39,13 +39,23 @@ import {
   NotificationModule,
   ProgressBarModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 import {
   BUILDING_BLOCK_MANAGEMENT_UPLOAD_TEST_IDS,
   STEPS,
   UPLOAD_STATUS,
   UPLOAD_STEP,
 } from '../../constants';
+import {ImportedBuildingBlockDefinition} from '../../models';
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
 import {CommonModule} from '@angular/common';
 import {BuildingBlockManagementUploadStepComponent} from './step/building-block-management-upload-step.component';
@@ -78,6 +88,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
   public readonly showUploadModal$ = this.buildingBlockManagementService.showUploadModal$;
 
   private readonly _disabled$ = new BehaviorSubject<boolean>(true);
+  private _imported: Array<ImportedBuildingBlockDefinition> = [];
 
   public readonly UPLOAD_STEP = UPLOAD_STEP;
   public readonly UPLOAD_STATUS = UPLOAD_STATUS;
@@ -130,6 +141,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
 
   private readonly _importFile$ = new BehaviorSubject<string | FormData>('');
   private readonly _subscriptions = new Subscription();
+  private _appliedPresetFile: File | null = null;
 
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
@@ -161,6 +173,20 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
         this.setZipFile(fileItem);
       })
     );
+
+    this._subscriptions.add(
+      combineLatest([
+        this.buildingBlockManagementService.showUploadModal$,
+        this.buildingBlockManagementService.presetUploadFile$,
+      ])
+        .pipe(
+          filter(
+            ([open, presetFile]) => open && !!presetFile && presetFile !== this._appliedPresetFile
+          ),
+          map(([, presetFile]) => presetFile as File)
+        )
+        .subscribe(presetFile => this.applyPresetFile(presetFile))
+    );
   }
 
   public ngOnDestroy(): void {
@@ -171,6 +197,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
   public onCloseModal(definitionUploaded?: boolean): void {
     if (definitionUploaded) {
       this.buildingBlockManagementService.reload();
+      this.buildingBlockManagementService.finishImport(this._imported);
     }
 
     this.buildingBlockManagementService.hideUploadModal();
@@ -218,6 +245,13 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
     this.showCheckboxError$.next(false);
   }
 
+  private applyPresetFile(presetFile: File): void {
+    this._appliedPresetFile = presetFile;
+    this.form
+      .get('file')
+      .setValue(new Set<FileItem>([{file: presetFile, state: 'edit', uploaded: false}]));
+  }
+
   private setZipFile(fileItem: FileItem): void {
     const file = fileItem?.file;
 
@@ -243,7 +277,8 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
         take(1)
       )
       .subscribe({
-        next: () => {
+        next: imported => {
+          this._imported = imported ?? [];
           this._disabled$.next(false);
           this.uploadStatus$.next(UPLOAD_STATUS.FINISHED);
         },
@@ -255,7 +290,12 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
   }
 
   private resetModal(): void {
+    this._imported = [];
     setTimeout(() => {
+      if (this._appliedPresetFile) {
+        this._appliedPresetFile = null;
+        this.form.reset({file: new Set<any>()});
+      }
       this.activeStep$.next(UPLOAD_STEP.PLUGINS);
       this.uploadStatus$.next(UPLOAD_STATUS.ACTIVE);
       this.showCheckboxError$.next(false);

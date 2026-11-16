@@ -49,6 +49,7 @@
       "@valtimo/object-management": ["./projects/valtimo/object-management/src/public-api.ts"],
       "@valtimo/plugin": ["./projects/valtimo/plugin/src/public-api.ts"],
       "@valtimo/plugin-management": ["./projects/valtimo/plugin-management/src/public-api.ts"],
+      "@valtimo/exchange": ["./projects/valtimo/exchange/src/public-api.ts"],
       "@valtimo/process": ["./projects/valtimo/process/src/public_api.ts"],
       "@valtimo/process-link": ["./projects/valtimo/process-link/src/public-api.ts"],
       "@valtimo/process-management": ["./projects/valtimo/process-management/src/public-api.ts"],
@@ -284,6 +285,12 @@
     },
     {
       "path": "./projects/valtimo/plugin-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/exchange/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/exchange/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/plugin/tsconfig.lib.json"

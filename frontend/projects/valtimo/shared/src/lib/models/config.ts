@@ -96,6 +96,7 @@ interface ValtimoConfigFeatureToggles {
   enableManualTaskListRefresh?: boolean;
   menuCollapsedByDefault?: boolean;
   enableOpenSearch?: boolean;
+  enableExchange?: boolean;
   /**
    * @deprecated DMN decision table editing is always enabled and is no longer gated by a
    * feature toggle. This option is ignored and will be removed in a future major release.
@@ -180,6 +181,12 @@ enum TaskListTab {
   TEAM = 'team',
 }
 
+interface ExchangeConfiguration {
+  enabled: boolean;
+  url: string | null;
+  assetOrigins: string[];
+}
+
 enum CaseListTab {
   MINE = 'MINE',
   OPEN = 'OPEN',
@@ -209,4 +216,5 @@ export {
   TaskListTab,
   CaseListTab,
   Language,
+  ExchangeConfiguration,
 };

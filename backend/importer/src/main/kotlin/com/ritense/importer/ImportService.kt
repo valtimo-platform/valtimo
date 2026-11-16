@@ -44,9 +44,9 @@ interface ImportService {
     fun importBuildingBlockDefinitions(
         inputStream: InputStream,
         buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
-    )
+    ): List<BuildingBlockDefinitionId>
     fun importBuildingBlockDefinition(
         entries: List<ZipFileEntry>,
         buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
-    )
+    ): BuildingBlockDefinitionId?
 }

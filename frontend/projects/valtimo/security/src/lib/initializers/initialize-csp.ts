@@ -55,29 +55,43 @@ const isElementLoaded = async (elementId: string, document: Document): Promise<b
   return !!document.getElementById(elementId);
 };
 
+interface AdditionalCspOrigins {
+  frameSrc?: string[];
+  imgSrc?: string[];
+  connectSrc?: string[];
+}
+
+const DIRECTIVE_BY_KEY: Record<
+  keyof AdditionalCspOrigins,
+  'frame-src' | 'img-src' | 'connect-src'
+> = {
+  frameSrc: 'frame-src',
+  imgSrc: 'img-src',
+  connectSrc: 'connect-src',
+};
+
 export const initializeCsp =
   (
     logger: NGXLogger,
     configService: ConfigService,
     document: Document,
     domSanitizer: DomSanitizer,
-    additionalPluginHostOrigins?: string[]
+    additionalOrigins?: AdditionalCspOrigins
   ): (() => Promise<boolean>) =>
   async (): Promise<boolean> => {
     const cspHeaderParams = configService?.config?.csp;
 
     if (cspHeaderParams) {
-      if (additionalPluginHostOrigins?.length > 0) {
-        // Each external plugin host serves iframes (frame-src), assets like the plugin logo
-        // (img-src), and the parent-proxy data route the case-tab fetches cross-origin
-        // (connect-src), all from its own origin — so every one of those directives needs augmenting.
-        for (const directive of ['frame-src', 'img-src', 'connect-src'] as const) {
-          const values = cspHeaderParams.directives?.[directive];
-          if (Array.isArray(values)) {
-            const unique = additionalPluginHostOrigins.filter(o => !values.includes(o));
-            values.push(...unique);
-            logger.log(`CSP ${directive} augmented with:`, unique);
-          }
+      for (const key of Object.keys(DIRECTIVE_BY_KEY) as Array<keyof AdditionalCspOrigins>) {
+        const origins = additionalOrigins?.[key];
+        if (!origins?.length) continue;
+
+        const directive = DIRECTIVE_BY_KEY[key];
+        const values = cspHeaderParams.directives?.[directive];
+        if (Array.isArray(values)) {
+          const unique = [...new Set(origins)].filter(o => !values.includes(o));
+          values.push(...unique);
+          logger.log(`CSP ${directive} augmented with:`, unique);
         }
       }
 
@@ -94,3 +108,5 @@ export const initializeCsp =
 
     return true;
   };
+
+export {AdditionalCspOrigins};

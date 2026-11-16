@@ -1,4 +1,159 @@
 {
+  "exchange": {
+    "title": "Exchange",
+    "notConfigured": "De Exchange is niet geconfigureerd.",
+    "notConfiguredDescription": "Vraag je beheerder om de Exchange-URL te configureren.",
+    "catalog": {
+      "search": {
+        "label": "Publicaties zoeken",
+        "placeholder": "Zoek op naam"
+      },
+      "resultCount": "{{count}} resultaten",
+      "sort": {
+        "label": "Sorteren op",
+        "nameAsc": "Naam A-Z",
+        "recent": "Meest recent"
+      },
+      "filters": {
+        "type": "Type",
+        "tags": "Tags",
+        "clear": "Filters wissen"
+      },
+      "type": {
+        "CaseDefinition": "Dossierdefinitie",
+        "BuildingBlock": "Bouwblok",
+        "Plugin": "Plugin"
+      },
+      "by": "Door {{publisher}}",
+      "valtimoVersion": "Valtimo {{version}}",
+      "valtimoVersionNewer": "Valtimo {{version}} - nieuwer",
+      "empty": "Geen publicaties gevonden voor je zoekopdracht.",
+      "error": {
+        "title": "De Exchange kon niet worden bereikt",
+        "retry": "Opnieuw proberen"
+      }
+    },
+    "detail": {
+      "install": "{{version}} installeren",
+      "installAction": "Installeren",
+      "notInstallable": "Deze publicatie kan niet vanuit Valtimo worden geïnstalleerd.",
+      "viewRepository": "Repository bekijken",
+      "notAvailable": "Deze publicatie is niet beschikbaar.",
+      "backToCatalog": "Terug naar de Exchange",
+      "description": "Beschrijving",
+      "implementationInstructions": "Implementatie-instructies",
+      "screenshots": "Schermafbeeldingen",
+      "screenshotAlt": "Schermafbeelding {{index}}",
+      "detailsHeading": "Details",
+      "publisher": "Uitgever",
+      "visitWebsite": "Website bezoeken",
+      "fields": {
+        "releaseDate": "Releasedatum",
+        "platform": "Platform",
+        "version": "Versie",
+        "license": "Licentie",
+        "repository": "Repository",
+        "type": "Type"
+      },
+      "dependencies": {
+        "title": "Afhankelijkheden",
+        "empty": "Geen afhankelijkheden.",
+        "plugin": "Plugin",
+        "buildingBlock": "Bouwblok",
+        "type": "Type",
+        "name": "Naam",
+        "status": "Status"
+      },
+      "versions": {
+        "title": "Versies",
+        "version": "Versie",
+        "date": "Datum",
+        "default": "Standaard",
+        "noReleaseNotes": "Geen release notes bij deze versie."
+      }
+    },
+    "estafette": {
+      "heading": "Fase in het estafettemodel",
+      "info": "Over deze fase",
+      "label": {
+        "HELP_WANTED": "Hulp gezocht",
+        "COMMUNITY": "Community",
+        "CANDIDATE": "Kandidaat",
+        "HALL_OF_FAME": "Hall of Fame"
+      },
+      "description": {
+        "HELP_WANTED": "Er is vraag naar dit artefact, maar het is nog niet af. Bijdragen zijn welkom.",
+        "COMMUNITY": "Gebouwd door de community en in gebruik bij minimaal één organisatie. Bruikbaar, maar kan nog veranderen.",
+        "CANDIDATE": "Kandidaat voor de Hall of Fame. Werkt breed, maar mist nog bewijs of documentatie.",
+        "HALL_OF_FAME": "Stabiel en bewezen in productie bij minimaal twee organisaties. Aanbevolen voor gebruik."
+      },
+      "neededPrefix": "Nodig voor",
+      "needed": {
+        "HELP_WANTED": [
+          "Gebouwd volgens de GZAC-richtlijnen",
+          "In gebruik bij minimaal één organisatie",
+          "Documentatie en release notes aanwezig"
+        ],
+        "COMMUNITY": [
+          "Naamgeving consistent met bestaande artefacten",
+          "Robuust getest in meerdere omgevingen",
+          "Gedeeld eigenaarschap: minimaal twee organisaties betrokken",
+          "Documentatie is compleet"
+        ],
+        "CANDIDATE": [
+          "Aantoonbaar in productie bij minimaal twee organisaties",
+          "Semantische versionering met een changelog",
+          "Geautomatiseerde tests aanwezig"
+        ]
+      }
+    },
+    "license": {
+      "EUPL_1_2": "EUPL 1.2",
+      "MIT": "MIT",
+      "Apache_2_0": "Apache License 2.0",
+      "BSD_3_Clause": "BSD 3-Clause",
+      "GPL_3_0": "GNU GPL v3",
+      "LGPL_3_0": "GNU LGPL v3",
+      "AGPL_3_0": "GNU AGPL v3",
+      "MPL_2_0": "Mozilla Public License 2.0",
+      "CC0_1_0": "CC0 1.0 (publiek domein)",
+      "CC_BY_4_0": "CC BY 4.0",
+      "Other": "Anders"
+    },
+    "confirm": {
+      "title": "Installeren vanuit de Exchange?",
+      "name": "Naam",
+      "type": "Type",
+      "version": "Versie",
+      "releaseNotes": "Release notes",
+      "typeCaseDefinition": "Dossierdefinitie",
+      "typeBuildingBlock": "Bouwblok",
+      "compatibilityWarning": "Gemaakt voor Valtimo {{valtimoVersion}}; deze installatie draait op {{runningValtimoVersion}}.",
+      "dependencies": "Afhankelijkheden",
+      "noDependencies": "Geen afhankelijkheden.",
+      "state": {
+        "INSTALLED": "Geïnstalleerd",
+        "NOT_INSTALLED": "Niet geïnstalleerd",
+        "CONFIGURED": "Geconfigureerd",
+        "NOT_CONFIGURED": "Niet geconfigureerd",
+        "UNKNOWN": "Kon niet controleren"
+      },
+      "missingBuildingBlocksWarning": "Installeer eerst de ontbrekende bouwblokken, anders werkt de dossierdefinitie mogelijk niet.",
+      "install": "Installeren"
+    },
+    "install": {
+      "success": "Geïnstalleerd vanuit de Exchange",
+      "successCaseDefinition": "De dossierdefinitie is geïmporteerd.",
+      "successBuildingBlock": "Het bouwblok is geïmporteerd.",
+      "viewInstalled": "Bekijken",
+      "error": "Het Exchange-artefact kon niet worden geïnstalleerd"
+    },
+    "gallery": {
+      "previous": "Vorige schermafbeelding",
+      "next": "Volgende schermafbeelding",
+      "counter": "{{current}} van {{total}}"
+    }
+  },
   "events": {
     "TaskCompletedEvent": "Taak voltooid > {{taskName}}",
     "TaskAssignedEvent": "Taak toegewezen > {{taskName}}",

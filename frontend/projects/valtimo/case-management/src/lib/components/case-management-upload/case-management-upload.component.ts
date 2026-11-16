@@ -18,9 +18,11 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
@@ -59,6 +61,7 @@ import {CaseManagementService} from '../../services';
 import {CASE_MANAGEMENT_UPLOAD_TEST_IDS} from '../../constants';
 import {
   CaseDefinitionImportPreview,
+  ImportedCaseDefinition,
   PluginConfigurationPreview,
   PluginConfigurationPreviewSource,
 } from '../../models/case-deployment.model';
@@ -89,9 +92,12 @@ interface PluginMappingRow {
   styleUrls: ['./case-management-upload.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseManagementUploadComponent implements OnInit, OnDestroy {
+export class CaseManagementUploadComponent implements OnChanges, OnInit, OnDestroy {
   @Input() open = false;
+  /** A file supplied by code; skips the file select step. */
+  @Input() presetFile: File | null = null;
   @Output() closeModal = new EventEmitter<boolean>();
+  @Output() definitionImported = new EventEmitter<ImportedCaseDefinition>();
 
   protected readonly testIds = CASE_MANAGEMENT_UPLOAD_TEST_IDS;
 
@@ -111,14 +117,20 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
   public readonly pluginMappingRows$ = new BehaviorSubject<PluginMappingRow[]>([]);
   public readonly hasUnidentifiablePlugins$ = new BehaviorSubject<boolean>(false);
 
-  public readonly backButtonEnabled$: Observable<boolean> = this.activeStep$.pipe(
-    map((activeStep: UPLOAD_STEP) =>
-      [
-        UPLOAD_STEP.CONFIGURE,
-        UPLOAD_STEP.PLUGINS,
-        UPLOAD_STEP.ACCESS_CONTROL,
-        UPLOAD_STEP.DASHBOARD,
-      ].includes(activeStep)
+  private readonly _presetActive$ = new BehaviorSubject<boolean>(false);
+
+  public readonly backButtonEnabled$: Observable<boolean> = combineLatest([
+    this.activeStep$,
+    this._presetActive$,
+  ]).pipe(
+    map(
+      ([activeStep, presetActive]: [UPLOAD_STEP, boolean]) =>
+        [
+          UPLOAD_STEP.CONFIGURE,
+          UPLOAD_STEP.PLUGINS,
+          UPLOAD_STEP.ACCESS_CONTROL,
+          UPLOAD_STEP.DASHBOARD,
+        ].includes(activeStep) && !(presetActive && activeStep === UPLOAD_STEP.CONFIGURE)
     )
   );
 
@@ -174,6 +186,8 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
 
   private readonly _importFile$ = new BehaviorSubject<FormData | null>(null);
   private readonly _subscriptions = new Subscription();
+  private _initialized = false;
+  private _appliedPresetFile: File | null = null;
 
   constructor(
     private readonly caseManagementService: CaseManagementService,
@@ -183,6 +197,12 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
     private readonly pluginTranslationService: PluginTranslationService,
     private readonly externalPluginService: ExternalPluginService
   ) {}
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open'] || changes['presetFile']) {
+      this.applyPresetFile();
+    }
+  }
 
   public ngOnInit(): void {
     const control: AbstractControl | null = this.form.get('file');
@@ -213,6 +233,9 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
           this.checkExistingVersions(key);
         })
     );
+
+    this._initialized = true;
+    this.applyPresetFile();
   }
 
   public ngOnDestroy(): void {
@@ -278,6 +301,19 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
     this.pluginMappingForm.get(sourceId)?.setValue(null);
   }
 
+  private applyPresetFile(): void {
+    const presetFile = this.presetFile;
+    if (!this._initialized || !this.open || !presetFile || this._appliedPresetFile === presetFile) {
+      return;
+    }
+
+    this._appliedPresetFile = presetFile;
+    this._presetActive$.next(true);
+    this.form
+      .get('file')
+      .setValue(new Set<FileItem>([{file: presetFile, state: 'edit', uploaded: false}]));
+  }
+
   private setZipFile(fileItem: FileItem): void {
     const file = fileItem?.file;
 
@@ -305,6 +341,9 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
           this._disabled$.next(false);
           this.checkExistingVersions(preview.key);
           this.loadPluginMappingRows(preview.pluginConfigurations || []);
+          if (this._presetActive$.value && this.activeStep$.value === UPLOAD_STEP.FILE_SELECT) {
+            this.activeStep$.next(UPLOAD_STEP.CONFIGURE);
+          }
         },
         error: () => {
           this._disabled$.next(true);
@@ -326,7 +365,10 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
       // plugin case tab) shadow a mappable one (a process link) for the same configuration —
       // key-less rows are filtered out below, which would hide the mapping choice entirely.
       const existing = uniqueById.get(config.pluginConfigurationId);
-      if (!existing || (existing.pluginDefinitionKey === null && config.pluginDefinitionKey !== null)) {
+      if (
+        !existing ||
+        (existing.pluginDefinitionKey === null && config.pluginDefinitionKey !== null)
+      ) {
         uniqueById.set(config.pluginConfigurationId, config);
       }
     }
@@ -477,10 +519,11 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
 
           let status: PluginMappingStatus;
           if (matchingConfigurations.length === 0) {
-            status = definitionById.size > 0 &&
+            status =
+              definitionById.size > 0 &&
               [...definitionById.values()].some(d => d.pluginId === config.pluginDefinitionKey)
-              ? 'no-configurations'
-              : 'not-installed';
+                ? 'no-configurations'
+                : 'not-installed';
           } else {
             status = 'available';
           }
@@ -620,6 +663,12 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
         next: () => {
           this._disabled$.next(false);
           this.uploadStatus$.next(UPLOAD_STATUS.FINISHED);
+          if (preview) {
+            this.definitionImported.emit({
+              caseDefinitionKey,
+              caseDefinitionVersionTag: preview.versionTag,
+            });
+          }
         },
         error: () => {
           this.uploadStatus$.next(UPLOAD_STATUS.ERROR);
@@ -646,6 +695,8 @@ export class CaseManagementUploadComponent implements OnInit, OnDestroy {
 
   private resetModal(): void {
     setTimeout(() => {
+      this._appliedPresetFile = null;
+      this._presetActive$.next(false);
       this.activeStep$.next(UPLOAD_STEP.FILE_SELECT);
       this.uploadStatus$.next(UPLOAD_STATUS.ACTIVE);
       this.form.reset({file: new Set<any>()});

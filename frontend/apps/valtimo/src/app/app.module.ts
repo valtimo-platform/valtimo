@@ -73,6 +73,7 @@ import {
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {PluginManagementModule} from '@valtimo/plugin-management';
+import {ExchangeModule} from '@valtimo/exchange';
 import {
   ExternalPluginPageRoutingModule,
   ObjectenApiPluginModule,
@@ -147,6 +148,7 @@ export function tabsFactory() {
     ObjectenApiPluginModule,
     ObjecttypenApiPluginModule,
     PluginManagementModule,
+    ExchangeModule,
     ProcessLinkModule,
     ProcessManagementModule,
     ProcessModule,

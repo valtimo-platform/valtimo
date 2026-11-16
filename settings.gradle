@@ -52,6 +52,7 @@ include(
     ":backend:document-generation:local-document-generation",
     ":backend:document-generation:smartdocuments",
     ":backend:exact-plugin",
+    ":backend:exchange",
     ":backend:exporter",
     ":backend:external-plugin",
     ":backend:form",

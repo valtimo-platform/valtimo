@@ -1,0 +1,69 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal valtimoCdsModal size="lg" [open]="open()" (close)="closeEvent.emit()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="closeEvent.emit()">
+    <p cdsModalHeaderLabel>{{ 'exchange.detail.screenshots' | translate }}</p>
+    <h3 cdsModalHeaderHeading>{{ title() }}</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent class="exchange-screenshot-gallery">
+    @if ($current(); as src) {
+      <div class="exchange-screenshot-gallery__stage">
+        @if ($hasMultiple()) {
+          <button
+            cdsButton="ghost"
+            type="button"
+            [attr.aria-label]="'exchange.gallery.previous' | translate"
+            [attr.data-test-id]="testIds.previous"
+            [iconOnly]="true"
+            (click)="previous()"
+          >
+            <svg cdsIcon="chevron--left" size="16"></svg>
+          </button>
+        }
+
+        <img
+          class="exchange-screenshot-gallery__image"
+          [alt]="'exchange.detail.screenshotAlt' | translate: {index: index() + 1}"
+          [attr.data-test-id]="testIds.image"
+          [src]="src"
+        />
+
+        @if ($hasMultiple()) {
+          <button
+            cdsButton="ghost"
+            type="button"
+            [attr.aria-label]="'exchange.gallery.next' | translate"
+            [attr.data-test-id]="testIds.next"
+            [iconOnly]="true"
+            (click)="next()"
+          >
+            <svg cdsIcon="chevron--right" size="16"></svg>
+          </button>
+        }
+      </div>
+
+      <div class="exchange-screenshot-gallery__footer">
+        <span [attr.data-test-id]="testIds.counter">
+          {{
+            'exchange.gallery.counter' | translate: {current: index() + 1, total: images().length}
+          }}
+        </span>
+      </div>
+    }
+  </section>
+</cds-modal>

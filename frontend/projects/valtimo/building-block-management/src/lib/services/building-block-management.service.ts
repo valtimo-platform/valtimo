@@ -15,7 +15,8 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Subject} from 'rxjs';
+import {ImportedBuildingBlockDefinition} from '../models';
 
 @Injectable()
 export class BuildingBlockManagementService {
@@ -23,10 +24,15 @@ export class BuildingBlockManagementService {
   public readonly showCreateModal$ = this._showCreateModal$.asObservable();
   private readonly _showUploadModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = this._showUploadModal$.asObservable();
+  private readonly _presetUploadFile$ = new BehaviorSubject<File | null>(null);
+  public readonly presetUploadFile$ = this._presetUploadFile$.asObservable();
   private readonly _usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly usedKeys$ = this._usedKeys$.asObservable();
   private readonly _reload$ = new BehaviorSubject<null>(null);
   public readonly reload$ = this._reload$.asObservable();
+  private readonly _importFinished$ = new Subject<Array<ImportedBuildingBlockDefinition>>();
+  /** Emits the imported definitions when the upload modal closes after a successful import. */
+  public readonly importFinished$ = this._importFinished$.asObservable();
 
   public showCreateModal(): void {
     this._showCreateModal$.next(true);
@@ -35,11 +41,13 @@ export class BuildingBlockManagementService {
     this._showCreateModal$.next(false);
   }
 
-  public showUploadModal(): void {
+  public showUploadModal(presetFile?: File): void {
+    this._presetUploadFile$.next(presetFile ?? null);
     this._showUploadModal$.next(true);
   }
   public hideUploadModal(): void {
     this._showUploadModal$.next(false);
+    this._presetUploadFile$.next(null);
   }
 
   public setUsedKeys(keys: string[]): void {
@@ -48,5 +56,9 @@ export class BuildingBlockManagementService {
 
   public reload(): void {
     this._reload$.next(null);
+  }
+
+  public finishImport(imported: Array<ImportedBuildingBlockDefinition>): void {
+    this._importFinished$.next(imported);
   }
 }

@@ -200,6 +200,10 @@ valtimo:
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
 
+    exchange:
+        url: ${VALTIMO_EXCHANGE_URL:https://exchange.gzac.nl}
+        asset-origins: ${VALTIMO_EXCHANGE_ASSET_ORIGINS:https://s3.de.io.cloud.ovh.net/ritense-external-extra-prod-exchange}
+
     external-plugin:
         service-token:
             ttl: PT12H # 12 hours

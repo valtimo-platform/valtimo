@@ -31,6 +31,7 @@ import {
   UpdateBuildingBlockDefinitionDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
+import {ImportedBuildingBlockDefinition} from '../models';
 import {Decision} from '@valtimo/decision';
 import {PluginsWithDependencies} from '@valtimo/process-link';
 import {FormFlowDefinition, ListFormFlowDefinition} from '@valtimo/form-flow-management';
@@ -128,8 +129,10 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     );
   }
 
-  public importBuildingBlockDefinition(file: FormData): Observable<HttpResponse<Blob>> {
-    return this.httpClient.post<HttpResponse<Blob>>(
+  public importBuildingBlockDefinition(
+    file: FormData
+  ): Observable<Array<ImportedBuildingBlockDefinition>> {
+    return this.httpClient.post<Array<ImportedBuildingBlockDefinition>>(
       this.getApiUrl(`management/v1/building-block/import`),
       file
     );
@@ -271,7 +274,9 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     formDefinitionId: string
   ): Observable<void> {
     return this.httpClient.delete<void>(
-      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/form/${formDefinitionId}`)
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/form/${formDefinitionId}`
+      )
     );
   }
 

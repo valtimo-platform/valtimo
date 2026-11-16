@@ -19,3 +19,4 @@
 
 * [Overview](operations/README.md)
 * [Plugin Host Deployment](operations/plugin-host-deployment.md)
+* [Exchange integration](operations/exchange-integration.md)

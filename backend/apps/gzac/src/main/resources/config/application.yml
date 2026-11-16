@@ -166,6 +166,9 @@ mailing:
 valtimo:
     opensearch:
         enabled: ${VALTIMO_OPENSEARCH_ENABLED:false}
+    exchange:
+        url: ${VALTIMO_EXCHANGE_URL:https://exchange.gzac.nl}
+        asset-origins: ${VALTIMO_EXCHANGE_ASSET_ORIGINS:https://s3.de.io.cloud.ovh.net/ritense-external-extra-prod-exchange}
     app:
         scheme: http
         hostname: ${VALTIMO_APP_HOSTNAME}

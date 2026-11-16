@@ -1,0 +1,445 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="exchange-detail-panel" [cdsLayer]="1">
+  @switch (detailService.$state()) {
+    @case ('loading') {
+      <div class="exchange-detail__skeleton" [attr.data-test-id]="testIds.skeleton">
+        <cds-skeleton-text [lines]="6"></cds-skeleton-text>
+      </div>
+    }
+
+    @case ('notConfigured') {
+      <valtimo-no-results
+        [description]="'exchange.notConfiguredDescription' | translate"
+        [title]="'exchange.notConfigured' | translate"
+      ></valtimo-no-results>
+    }
+
+    @case ('notAvailable') {
+      <valtimo-no-results
+        [action]="backAction"
+        [attr.data-test-id]="testIds.notAvailable"
+        [title]="'exchange.detail.notAvailable' | translate"
+      ></valtimo-no-results>
+
+      <ng-template #backAction>
+        <button
+          cdsButton="tertiary"
+          size="sm"
+          type="button"
+          [attr.data-test-id]="testIds.backToCatalog"
+          (click)="onBackToCatalog()"
+        >
+          {{ 'exchange.detail.backToCatalog' | translate }}
+        </button>
+      </ng-template>
+    }
+
+    @case ('error') {
+      <valtimo-no-results
+        illustration="valtimo-layout/img/emptystate-error.svg"
+        [action]="retryAction"
+        [attr.data-test-id]="testIds.error"
+        [title]="'exchange.catalog.error.title' | translate"
+      ></valtimo-no-results>
+
+      <ng-template #retryAction>
+        <button
+          cdsButton="tertiary"
+          size="sm"
+          type="button"
+          [attr.data-test-id]="testIds.retry"
+          (click)="detailService.retry()"
+        >
+          {{ 'exchange.catalog.error.retry' | translate }}
+        </button>
+      </ng-template>
+    }
+
+    @case ('ready') {
+      @if (detailService.$detail(); as detail) {
+        <ng-container renderInPageHeader>
+          <ng-template>
+            <div class="exchange-detail__actions">
+              @if ($canInstall()) {
+                <button
+                  cdsButton="primary"
+                  type="button"
+                  [attr.data-test-id]="testIds.installDefault"
+                  (click)="onInstall(detail.defaultVersion)"
+                >
+                  {{
+                    'exchange.detail.install'
+                      | translate: {version: detail.defaultVersion?.versionTag}
+                  }}
+                </button>
+              } @else {
+                @if ($safeRepositoryUrl(); as repositoryUrl) {
+                  <a
+                    cdsButton="tertiary"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    [attr.data-test-id]="testIds.viewRepositoryButton"
+                    [href]="repositoryUrl"
+                  >
+                    {{ 'exchange.detail.viewRepository' | translate }}
+                  </a>
+                }
+              }
+            </div>
+          </ng-template>
+        </ng-container>
+
+        <div class="exchange-detail">
+          <div class="exchange-detail__main">
+            <header class="exchange-detail__header">
+              <valtimo-exchange-artifact-visual
+                [logo]="detail.logo"
+                [title]="detail.name"
+              ></valtimo-exchange-artifact-visual>
+
+              @if (detail.shortDescription) {
+                <p class="exchange-detail__lead" [attr.data-test-id]="testIds.shortDescription">
+                  {{ detail.shortDescription }}
+                </p>
+              }
+            </header>
+
+            @if (!$canInstall()) {
+              <cds-inline-notification
+                [attr.data-test-id]="testIds.notInstallable"
+                [notificationObj]="{
+                  type: 'info',
+                  title: ('exchange.detail.notInstallable' | translate),
+                  showClose: false,
+                  lowContrast: true,
+                }"
+              ></cds-inline-notification>
+            }
+
+            @if (installService.$errorMessage(); as installError) {
+              <cds-inline-notification
+                [attr.data-test-id]="testIds.installError"
+                [notificationObj]="{
+                  type: 'error',
+                  title: ('exchange.install.error' | translate),
+                  message: installError,
+                  showClose: false,
+                  lowContrast: true,
+                }"
+              ></cds-inline-notification>
+            }
+
+            @if (detail.description) {
+              <section>
+                <h4>{{ 'exchange.detail.description' | translate }}</h4>
+                <p
+                  class="exchange-detail__text"
+                  [attr.data-test-id]="testIds.description"
+                  [textContent]="detail.description"
+                ></p>
+              </section>
+            }
+
+            @if (detail.implementationInstructions) {
+              <section>
+                <h4>{{ 'exchange.detail.implementationInstructions' | translate }}</h4>
+                <p
+                  class="exchange-detail__text"
+                  [attr.data-test-id]="testIds.implementationInstructions"
+                  [textContent]="detail.implementationInstructions"
+                ></p>
+              </section>
+            }
+
+            @if ($screenshots().length > 0) {
+              <section>
+                <h4>{{ 'exchange.detail.screenshots' | translate }}</h4>
+
+                <div class="exchange-detail__screenshots">
+                  @for (
+                    screenshot of $visibleScreenshots();
+                    track screenshot.url;
+                    let index = $index
+                  ) {
+                    <button
+                      class="exchange-detail__screenshot"
+                      type="button"
+                      [attr.data-test-id]="testIds.screenshot"
+                      (click)="openGallery(index)"
+                    >
+                      <img
+                        [alt]="'exchange.detail.screenshotAlt' | translate: {index: index + 1}"
+                        [src]="screenshot.safe"
+                        (error)="onScreenshotError(screenshot.url)"
+                      />
+                    </button>
+                  }
+                </div>
+              </section>
+            }
+
+            <section [attr.data-test-id]="testIds.dependencies">
+              <h4>{{ 'exchange.detail.dependencies.title' | translate }}</h4>
+
+              @if ($dependencyGroups().length > 0) {
+                <ul class="exchange-detail__dependencies">
+                  @for (dependency of $dependencyGroups(); track dependency.type + dependency.key) {
+                    <li [attr.data-test-id]="testIds.dependency">
+                      <cds-tag [type]="dependency.type === 'PLUGIN' ? 'blue' : 'teal'">
+                        {{
+                          (dependency.type === 'PLUGIN'
+                            ? 'exchange.detail.dependencies.plugin'
+                            : 'exchange.detail.dependencies.buildingBlock'
+                          ) | translate
+                        }}
+                      </cds-tag>
+
+                      <span>{{ dependency.title || dependency.key }}</span>
+
+                      @if (dependency.versionTag) {
+                        <span class="exchange-detail__muted">{{ dependency.versionTag }}</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p [attr.data-test-id]="testIds.noDependencies">
+                  {{ 'exchange.detail.dependencies.empty' | translate }}
+                </p>
+              }
+            </section>
+
+            @if (!detail.isEmbedded && detail.versions.length > 0) {
+              <section [attr.data-test-id]="testIds.versions">
+                <h4>{{ 'exchange.detail.versions.title' | translate }}</h4>
+
+                <valtimo-carbon-list
+                  expandedRowKey="artifactId"
+                  [expandedRowTemplate]="releaseNotesTemplate"
+                  [fields]="$versionFields()"
+                  [header]="false"
+                  [hideToolbar]="true"
+                  [items]="$versionItems()"
+                ></valtimo-carbon-list>
+              </section>
+            }
+          </div>
+
+          <aside class="exchange-detail__side">
+            <cds-tile [attr.data-test-id]="testIds.sidebar">
+              <h4>{{ 'exchange.detail.detailsHeading' | translate }}</h4>
+
+              <dl class="exchange-detail__facts">
+                @if (detail.defaultVersion; as version) {
+                  @if (version.uploadedAt) {
+                    <dt>{{ 'exchange.detail.fields.releaseDate' | translate }}</dt>
+                    <dd>{{ version.uploadedAt | date: 'mediumDate' }}</dd>
+                  }
+
+                  @if (version.valtimoVersion) {
+                    <dt>{{ 'exchange.detail.fields.platform' | translate }}</dt>
+                    <dd>{{ version.valtimoVersion }}</dd>
+                  }
+
+                  @if (version.versionTag) {
+                    <dt>{{ 'exchange.detail.fields.version' | translate }}</dt>
+                    <dd>{{ version.versionTag }}</dd>
+                  }
+                }
+
+                @if ($licenseLabel(); as licenseLabel) {
+                  <dt>{{ 'exchange.detail.fields.license' | translate }}</dt>
+                  <dd>{{ licenseLabel | translate }}</dd>
+                }
+
+                @if ($safeRepositoryUrl(); as repositoryUrl) {
+                  <dt>{{ 'exchange.detail.fields.repository' | translate }}</dt>
+                  <dd>
+                    <a
+                      cdsLink
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      [attr.data-test-id]="testIds.repositoryLink"
+                      [href]="repositoryUrl"
+                    >
+                      {{ 'exchange.detail.viewRepository' | translate }}
+                      <svg cdsIcon="launch" cdsLinkIcon size="16"></svg>
+                    </a>
+                  </dd>
+                }
+
+                <dt>{{ 'exchange.detail.fields.type' | translate }}</dt>
+                <dd>
+                  <cds-tag type="purple">{{
+                    'exchange.catalog.type.' + detail.publicationType | translate
+                  }}</cds-tag>
+                </dd>
+
+                <dt>{{ 'exchange.estafette.heading' | translate }}</dt>
+                <dd class="exchange-detail__stage">
+                  <cds-tag
+                    [attr.data-test-id]="testIds.stageTag"
+                    [type]="stageTagTypes[detail.estafetteStage]"
+                  >
+                    {{ 'exchange.estafette.label.' + detail.estafetteStage | translate }}
+                  </cds-tag>
+
+                  <cds-toggletip
+                    align="bottom"
+                    [attr.data-test-id]="testIds.stageInfo"
+                    [autoAlign]="true"
+                  >
+                    <button
+                      cdsToggletipButton
+                      type="button"
+                      [ariaLabel]="'exchange.estafette.info' | translate"
+                    >
+                      <svg cdsIcon="information" size="16"></svg>
+                    </button>
+
+                    <div cdsToggletipContent class="exchange-detail__stage-info">
+                      <p>
+                        {{ 'exchange.estafette.description.' + detail.estafetteStage | translate }}
+                      </p>
+
+                      @if (nextStage(detail.estafetteStage); as next) {
+                        <p>
+                          {{ 'exchange.estafette.neededPrefix' | translate }}
+                          <strong>{{ 'exchange.estafette.label.' + next | translate }}</strong>
+                        </p>
+
+                        <ul>
+                          @for (
+                            criterion of stageCriteria(detail.estafetteStage);
+                            track criterion
+                          ) {
+                            <li>{{ criterion }}</li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  </cds-toggletip>
+                </dd>
+              </dl>
+            </cds-tile>
+
+            @if (detail.publisherOrganization) {
+              <cds-tile [attr.data-test-id]="testIds.publisher">
+                <h4>{{ 'exchange.detail.publisher' | translate }}</h4>
+
+                <div class="exchange-detail__publisher">
+                  <valtimo-exchange-artifact-visual
+                    [logo]="detail.publisherOrganizationLogoUrl"
+                    [title]="detail.publisherOrganization"
+                  ></valtimo-exchange-artifact-visual>
+
+                  <span>{{ detail.publisherOrganization }}</span>
+                </div>
+
+                @if ($safePublisherWebsite(); as website) {
+                  <a
+                    cdsLink
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    [attr.data-test-id]="testIds.publisherWebsite"
+                    [href]="website"
+                  >
+                    {{ 'exchange.detail.visitWebsite' | translate }}
+                    <svg cdsIcon="launch" cdsLinkIcon size="16"></svg>
+                  </a>
+                }
+              </cds-tile>
+            }
+          </aside>
+        </div>
+      }
+    }
+  }
+
+  <valtimo-case-management-upload
+    [open]="installService.$caseUploadOpen()"
+    [presetFile]="installService.$presetFile()"
+    (closeModal)="installService.onCaseUploadClosed($event)"
+    (definitionImported)="installService.onCaseDefinitionImported($event)"
+  ></valtimo-case-management-upload>
+
+  <valtimo-building-block-management-upload-modal></valtimo-building-block-management-upload-modal>
+</div>
+
+<ng-template #versionColumn let-data="data">
+  <div class="exchange-detail__version-cell" [attr.data-test-id]="testIds.version">
+    <span>{{ data.item.versionTag }}</span>
+
+    @if (data.item.isDefault) {
+      <cds-tag type="green">{{ 'exchange.detail.versions.default' | translate }}</cds-tag>
+    }
+
+    @if (data.item.valtimoVersion) {
+      @if (compatibility(data.item) === 'NEWER') {
+        <cds-tag type="warm-gray" [attr.data-test-id]="testIds.versionNewerTag">
+          {{
+            'exchange.catalog.valtimoVersionNewer' | translate: {version: data.item.valtimoVersion}
+          }}
+        </cds-tag>
+      } @else {
+        <cds-tag type="blue">
+          {{ 'exchange.catalog.valtimoVersion' | translate: {version: data.item.valtimoVersion} }}
+        </cds-tag>
+      }
+    }
+  </div>
+</ng-template>
+
+<ng-template #installColumn let-data="data">
+  @if (data.item.installable && $canInstall()) {
+    <button
+      cdsButton="ghost"
+      size="sm"
+      type="button"
+      [attr.data-test-id]="testIds.installVersion"
+      (click)="$event.stopPropagation(); onInstall(data.item)"
+    >
+      {{ 'exchange.detail.installAction' | translate }}
+    </button>
+  }
+</ng-template>
+
+<ng-template #releaseNotesTemplate let-version="data">
+  <p
+    class="exchange-detail__release-notes"
+    [attr.data-test-id]="testIds.releaseNotes"
+    [textContent]="version.releaseNotes || ('exchange.detail.versions.noReleaseNotes' | translate)"
+  ></p>
+</ng-template>
+
+<valtimo-exchange-screenshot-gallery
+  [images]="$galleryImages()"
+  [index]="$galleryIndex()"
+  [open]="$galleryOpen()"
+  [title]="detailService.$detail()?.name ?? ''"
+  (closeEvent)="$galleryOpen.set(false)"
+  (indexChange)="$galleryIndex.set($event)"
+></valtimo-exchange-screenshot-gallery>
+
+<valtimo-exchange-install-confirm-modal
+  [artifact]="installService.$summary()"
+  [dependencies]="installService.$dependencies()"
+  [open]="installService.$confirmOpen()"
+  (cancelEvent)="installService.cancel()"
+  (confirmEvent)="installService.confirm()"
+></valtimo-exchange-install-confirm-modal>

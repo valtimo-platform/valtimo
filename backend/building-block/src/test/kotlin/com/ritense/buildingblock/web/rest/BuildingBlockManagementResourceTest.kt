@@ -19,6 +19,7 @@ package com.ritense.buildingblock.web.rest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockManagementService
+import com.ritense.buildingblock.web.rest.dto.ImportedBuildingBlockDefinitionDto
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -39,7 +40,7 @@ import java.time.LocalDateTime
 class BuildingBlockManagementResourceTest {
 
     @Test
-    fun `import should only pass final building block ids`() {
+    fun `import should only pass final building block ids and return the imported ids`() {
         val repository = mock<BuildingBlockDefinitionRepository>()
         val managementService = mock<BuildingBlockManagementService>()
         val importService = mock<ImportService>()
@@ -78,8 +79,11 @@ class BuildingBlockManagementResourceTest {
             "test".toByteArray(Charsets.UTF_8)
         )
 
-        resource.import(file)
+        whenever(importService.importBuildingBlockDefinitions(any(), any())).thenReturn(listOf(draftDefinition.id))
 
+        val response = resource.import(file)
+
+        assertThat(response.body).containsExactly(ImportedBuildingBlockDefinitionDto("my-bb", "2.1.0"))
         val idCaptor = argumentCaptor<List<BuildingBlockDefinitionId>>()
         verify(importService).importBuildingBlockDefinitions(any(), idCaptor.capture())
         assertThat(idCaptor.firstValue).containsExactly(finalDefinition.id)
