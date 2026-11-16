@@ -69,6 +69,7 @@
         labelTranslationKey="dashboardManagement.key"
         mode="add"
         [dataTestId]="testIds.createKeyInput"
+        [helperTextTranslationKey]="keyHelperTextTranslationKey"
         [sourceText]="form.get('title').value"
         [usedKeys]="usedKeys$ | async"
       ></valtimo-auto-key-input>

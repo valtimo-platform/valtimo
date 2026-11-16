@@ -60,6 +60,26 @@ describe('DashboardManagementComponent', () => {
     expect(component.form.valid).toBeTrue();
   });
 
+  it('should explain how to enter a key when the name has no letters', () => {
+    component.form.patchValue({title: '2026', key: ''});
+
+    expect(component.keyHelperTextTranslationKey).toBe(
+      'dashboardManagement.addModal.keyNoLettersHelperText'
+    );
+  });
+
+  it('should not show the key help text once a key is entered', () => {
+    component.form.patchValue({title: '2026', key: 'dashboard-2026'});
+
+    expect(component.keyHelperTextTranslationKey).toBe('');
+  });
+
+  it('should not show the key help text when a key can be generated from the name', () => {
+    component.form.patchValue({title: '3aad', key: ''});
+
+    expect(component.keyHelperTextTranslationKey).toBe('');
+  });
+
   it('should provide the keys of existing dashboards as used keys', done => {
     component.usedKeys$.subscribe(keys => {
       expect(keys).toEqual(['existing']);

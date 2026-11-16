@@ -17,6 +17,7 @@ import {ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation} from '@an
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
+import {toKebabCase} from '@valtimo/shared';
 import {BehaviorSubject, finalize, map, Observable} from 'rxjs';
 import {DASHBOARD_MANAGEMENT_TEST_IDS} from '../../constants/dashboard-management.test-ids';
 import {DashboardItem} from '../../models';
@@ -67,6 +68,15 @@ export class DashboardManagementComponent implements OnInit {
     },
   ];
   public form: FormGroup;
+
+  // A name without letters yields no auto key; tell the user to enter one
+  public get keyHelperTextTranslationKey(): string {
+    const {key, title} = this.form.getRawValue();
+
+    return title && !key && !toKebabCase(title)
+      ? 'dashboardManagement.addModal.keyNoLettersHelperText'
+      : '';
+  }
 
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,

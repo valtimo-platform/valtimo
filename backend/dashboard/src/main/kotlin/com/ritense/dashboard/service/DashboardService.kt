@@ -83,7 +83,7 @@ class DashboardService(
     ): Dashboard {
         denyAuthorization()
         val key = if (requestedKey == null) {
-            generateDashboardKey(title)
+            DashboardKeys.generate(title) { dashboardRepository.existsById(it) }
         } else {
             if (dashboardRepository.existsById(requestedKey)) throw DashboardAlreadyExistsException(requestedKey)
             requestedKey
@@ -281,31 +281,14 @@ class DashboardService(
         widgetConfigurationRepository.saveAll(widgetConfigurations)
     }
 
-    private fun generateDashboardKey(title: String): String {
-        val baseKey = generateKey(title)
-        var key = baseKey
-        var i = 2
-        while (dashboardRepository.existsById(key)) {
-            key = "${baseKey}_${i++}"
-        }
-        return key
-    }
-
     private fun generateWidgetKey(title: String): String {
-        val baseKey = generateKey(title)
+        val baseKey = DashboardKeys.slugify(title)
         var key = baseKey
         var i = 2
         while (widgetConfigurationRepository.existsById(key)) {
             key = "${baseKey}_${i++}"
         }
         return key
-    }
-
-    private fun generateKey(title: String): String {
-        return title
-            .lowercase()
-            .replace("(^[^a-z]+)|([^0-9a-z]+\$)".toRegex(), "") // trim start and end
-            .replace("[^0-9a-z]+".toRegex(), "_") // replace all non-alphanumeric characters with '_'
     }
 
     private fun denyAuthorization() {

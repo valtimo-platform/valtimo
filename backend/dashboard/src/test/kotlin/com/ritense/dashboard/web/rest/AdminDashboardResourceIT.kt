@@ -166,6 +166,48 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should accept a single letter dashboard key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"A","description":"Test description","key":"a"}""")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("a"))
+    }
+
+    @Test
+    fun `should reject an empty dashboard key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":""}""")
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should generate a prefixed key when the dashboard name has no letters`() {
+        val body = """{"title":"2026","description":"Test description"}"""
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard_2026"))
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard_2026_2"))
+    }
+
+    @Test
     fun `should return conflict when the dashboard key already exists`() {
         val body = """{"title":"Existing","description":"Test description","key":"existing"}"""
         mockMvc.perform(

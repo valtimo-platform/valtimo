@@ -24,4 +24,4 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
-| Dashboard | The key can now be edited when creating a dashboard, as elsewhere in the application. A numeric name, no longer results in an empty key. |
+| Dashboard | A dashboard name without letters, such as `2026`, no longer results in an empty key. You can now edit the key when you create a dashboard, as elsewhere in the application. Dashboards that already have an empty key get a valid key on upgrade, such as `dashboard_2026`, so they can be opened and deleted again. |
