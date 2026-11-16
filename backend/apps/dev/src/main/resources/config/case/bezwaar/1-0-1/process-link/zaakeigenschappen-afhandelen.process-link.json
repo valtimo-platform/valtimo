@@ -1,0 +1,33 @@
+[
+    {
+        "activityId": "st-create-zaakeigenschap",
+        "activityType": "bpmn:ServiceTask:start",
+        "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
+        "pluginActionDefinitionKey": "create-zaakeigenschap",
+        "actionProperties": {
+            "eigenschapUrl": "pv:eigenschapUrl",
+            "eigenschapValue": "pv:eigenschapValue"
+        },
+        "processLinkType": "plugin"
+    },
+    {
+        "activityId": "vul-nieuwe-eigenschap",
+        "activityType": "bpmn:UserTask:create",
+        "formDefinitionName": "zaak-create-zaakeigenschap",
+        "viewModelEnabled": false,
+        "formDisplayType": "modal",
+        "formSize": "medium",
+        "subtitles": [],
+        "processLinkType": "form"
+    },
+    {
+        "activityId": "StartEvent_1",
+        "activityType": "bpmn:StartEvent:start",
+        "formDefinitionName": "start-form-create-zaakeigenschap",
+        "viewModelEnabled": false,
+        "formDisplayType": "panel",
+        "formSize": "medium",
+        "subtitles": null,
+        "processLinkType": "form"
+    }
+]

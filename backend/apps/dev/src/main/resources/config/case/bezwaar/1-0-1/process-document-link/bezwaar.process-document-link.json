@@ -30,6 +30,11 @@
         "startableByUser": true
     },
     {
+        "processDefinitionKey": "zaakeigenschappen-afhandelen",
+        "canInitializeDocument": false,
+        "startableByUser": true
+    },
+    {
         "processDefinitionKey": "patch-zaak",
         "canInitializeDocument": false,
         "startableByUser": true

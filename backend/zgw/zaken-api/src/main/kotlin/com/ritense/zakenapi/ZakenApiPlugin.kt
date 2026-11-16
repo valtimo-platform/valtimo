@@ -1251,6 +1251,34 @@ class ZakenApiPlugin(
     }
 
     @PluginAction(
+        key = "get-zaakeigenschap",
+        title = "Get zaakeigenschap",
+        description = "Retrieves a specific zaakeigenschap and its value for a zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun getZaakeigenschap(
+        execution: DelegateExecution,
+        @PluginActionProperty eigenschapUrl: URI,
+        @PluginActionProperty resultProcessVariable: String,
+    ): String {
+        withLoggingContext(
+            CATALOGI_API.EIGENSCHAP to eigenschapUrl.toString(),
+        ) {
+            logger.debug { "Getting zaakeigenschap with url '${eigenschapUrl}' for document with id '${execution.businessKey}'" }
+            val documentId = execution.getJsonSchemaDocumentId()
+            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+            val zaakeigenschap = client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
+                .firstOrNull { it.eigenschap == eigenschapUrl }
+                ?: throw IllegalStateException("No zaakeigenschap exists for zaak '$zaakUrl' and eigenschap '$eigenschapUrl'")
+
+            execution.setVariable(resultProcessVariable, zaakeigenschap.waarde)
+            logger.info { "Zaakeigenschap with URL '${eigenschapUrl}' retrieved for zaak with URL '$zaakUrl' and document with id '${documentId}'" }
+
+            return zaakeigenschap.waarde
+        }
+    }
+
+    @PluginAction(
         key = "update-zaakeigenschap",
         title = "Update zaakeigenschap",
         description = "Updates a zaakeigenschap",
