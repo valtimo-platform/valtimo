@@ -112,7 +112,6 @@ class CaseTagServiceIntTest @Autowired constructor(
         )
 
         AuthorizationContext.runWithoutAuthorization {
-            caseTagRepository.deleteAll()
             caseTagService.create(caseDefinitionId, request)
             caseTagService.create(caseDefinitionId2, request2)
             caseTagService.create(caseDefinitionId2, request3)
