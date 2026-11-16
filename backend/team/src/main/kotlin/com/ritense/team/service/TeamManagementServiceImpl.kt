@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.TeamDeletedEvent
 import com.ritense.valtimo.contract.authentication.TeamManagementService
 import com.ritense.valtimo.contract.authentication.TeamUpdatedEvent
+import org.hibernate.Hibernate
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -63,8 +64,8 @@ class TeamManagementServiceImpl(
         if (titleContains != null) {
             specification = specification.and(TeamRepositoryConfigSpecificationHelper.byTitleContains(titleContains))
         }
-        specification = specification.and(TeamRepositoryConfigSpecificationHelper.fetchUsers())
         val teams = teamRepository.findAll(specification, pageable)
+        teams.forEach { Hibernate.initialize(it.users) }
         return teams.map { it as TeamInterface }
     }
 

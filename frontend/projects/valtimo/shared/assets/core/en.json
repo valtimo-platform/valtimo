@@ -707,6 +707,7 @@
     "addModal": {
       "descriptionPlaceholder": "Enter description here",
       "descriptionHelperText": "*Description is only visible in the dashboard configuration page",
+      "keyNoLettersHelperText": "A key can't be generated from a name without letters. Click the edit icon and enter a key that starts with a letter.",
       "name": "Dashboard name",
       "namePlaceholder": "Enter name here"
     },
