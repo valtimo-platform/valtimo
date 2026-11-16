@@ -22,7 +22,6 @@ import static com.ritense.document.service.SearchFieldActionProvider.VIEW_LIST;
 import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
-import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDto;
@@ -138,12 +137,7 @@ public class SearchFieldService {
 
         searchFields.forEach(searchField -> {
             assert searchField.getId() != null;
-            Optional<? extends DocumentDefinition> optionalDocumentDefinition =
-                documentDefinitionService.findByBlueprintId(caseDefinitionId);
-            documentDefinitionService.validateJsonPath(
-                optionalDocumentDefinition.get().id().name(),
-                searchField.getPath()
-            );
+            documentDefinitionService.validateJsonPath(caseDefinitionId, searchField.getPath());
         });
         if (searchFields.stream()
             .filter((searchField ->

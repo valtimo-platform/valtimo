@@ -57,6 +57,17 @@ interface ValueResolverService {
     )
 
     /**
+     * Same as [validateValues], but validates against a specific case definition version.
+     *
+     * @param caseDefinitionId The case definition version these values belong to.
+     * @param requestedValues The requestedValues that should be validated.
+     */
+    fun validateValues(
+        caseDefinitionId: CaseDefinitionId,
+        requestedValues: List<String>
+    ) = validateValues(caseDefinitionId.key, requestedValues)
+
+    /**
      * This method provides a way of resolving requestedValues into values using defined resolvers.
      * requestedValues are typically prefixed, like 'pv:propertyName'.
      * If not, a resolver should be configured to handle 'pv' prefixes.

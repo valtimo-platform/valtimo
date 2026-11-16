@@ -16,10 +16,18 @@
 
 package com.ritense.case.service.validations
 
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+
 interface ListColumnValidator<T> {
 
-    fun validate(caseDefinitionName: String, caseListColumnDto: T)
+    /**
+     * @param caseDefinitionId Validate paths against this case definition version. Defaults to the active version.
+     */
+    fun validate(caseDefinitionName: String, caseListColumnDto: T, caseDefinitionId: CaseDefinitionId? = null)
 
-    fun validate(caseDefinitionName: String, caseListColumnDtoList: List<T>)
+    /**
+     * @param caseDefinitionId Validate paths against this case definition version. Defaults to the active version.
+     */
+    fun validate(caseDefinitionName: String, caseListColumnDtoList: List<T>, caseDefinitionId: CaseDefinitionId? = null)
 
 }
