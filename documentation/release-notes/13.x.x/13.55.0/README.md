@@ -39,14 +39,14 @@ reindex first.
 
 | Area | Fix |
 |------|-----|
+| Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
+| Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
 | Case search | A case that OpenSearch cannot index no longer disappears from its case list. |
 | Case search | A field whose type changes between versions of a case definition no longer causes cases of the newer version to be skipped. |
 | Case search | A full reindex no longer fails with `Limit of total fields [1000] has been exceeded` as the number of case definitions grows. |
 | Case search | A reindex that skips cases now ends as *Completed with errors* and shows the number of skipped cases, instead of reporting success. |
 | Case search | Case lists no longer come back empty when two case definitions store differently-typed values in the same field. |
 | Case search | Large values, or a field that holds an object in one case and a plain value in another, no longer cause cases to be skipped. |
-
-
 
 ## Migration
 
