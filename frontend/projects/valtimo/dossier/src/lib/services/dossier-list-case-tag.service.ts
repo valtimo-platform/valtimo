@@ -35,11 +35,9 @@ export class DossierListCaseTagService {
         ]).pipe(take(1))
       ),
       tap(([caseTags, queryCaseTags]) => {
-        let selectedCaseTags;
-        if (queryCaseTags) {
-          selectedCaseTags = caseTags.filter(caseTag => queryCaseTags.includes(caseTag.key));
-          this.setSelectedCaseTags(selectedCaseTags);
-        }
+        this.setSelectedCaseTags(
+          queryCaseTags ? caseTags.filter(caseTag => queryCaseTags.includes(caseTag.key)) : []
+        );
       }),
       map(([caseTags]) => caseTags),
       tap(caseTags => this._showCaseTagsSelector$.next((caseTags || []).length > 0))

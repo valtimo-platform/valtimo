@@ -16,3 +16,4 @@
 
 * The Start menu of a case now has the same width on the Documents tab as on the other tabs, so process names are no
   longer cut off.
+* Fixed the case tag filter staying applied in the case list after switching to another case type, which resulted in an empty list.
