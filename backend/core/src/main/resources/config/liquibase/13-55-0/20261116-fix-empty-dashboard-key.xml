@@ -20,14 +20,6 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
     <changeSet author="Ritense" id="1">
-        <preConditions onFail="MARK_RAN">
-            <customPrecondition className="com.ritense.valtimo.contract.liquibase.precondition.ClassExistsCondition">
-                <param name="className"
-                       value="com.ritense.dashboard.liquibase.changelog.ChangeLog20261116FixEmptyDashboardKey"/>
-            </customPrecondition>
-            <tableExists tableName="dashboard"/>
-            <tableExists tableName="dashboard_widget_configuration"/>
-        </preConditions>
         <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
             <param name="delegateClass"
                    value="com.ritense.dashboard.liquibase.changelog.ChangeLog20261116FixEmptyDashboardKey"/>
