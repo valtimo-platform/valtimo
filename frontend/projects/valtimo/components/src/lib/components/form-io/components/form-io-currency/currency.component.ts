@@ -31,8 +31,8 @@ import AutoNumeric from 'autonumeric';
 
 const DEFAULT_LOCALE = 'nl-NL';
 const DEFAULT_CURRENCY = 'EUR';
-const RAW_VALUE_MODIFIED_EVENT = 'autoNumeric:rawValueModified';
-const EXTERNAL_VALUE_EVENTS = ['input', 'change'];
+const CHANGE_EVENT = 'change';
+const INPUT_EVENT = 'input';
 
 let instanceCounter = 0;
 
@@ -89,20 +89,16 @@ export class FormIoCurrencyComponent
 
   private _autoNumeric: AutoNumeric | null = null;
 
-  private _rendering = false;
+  private readonly _changeListener = (): void => this.onChange();
 
-  private readonly _rawValueModifiedListener = (): void => this.onRawValueModified();
-
-  private readonly _externalValueListener = (): void => this.onExternalValue();
+  private readonly _inputListener = (): void => this.onInput();
 
   public ngAfterViewInit(): void {
     const element = this.currencyElement.nativeElement;
 
     this._autoNumeric = new AutoNumeric(element, this.autoNumericOptions);
-    element.addEventListener(RAW_VALUE_MODIFIED_EVENT, this._rawValueModifiedListener);
-    EXTERNAL_VALUE_EVENTS.forEach(event =>
-      element.addEventListener(event, this._externalValueListener)
-    );
+    element.addEventListener(CHANGE_EVENT, this._changeListener);
+    element.addEventListener(INPUT_EVENT, this._inputListener);
 
     this.renderValue();
   }
@@ -112,7 +108,7 @@ export class FormIoCurrencyComponent
       this._autoNumeric &&
       (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue)
     ) {
-      this.withoutEmitting(() => this._autoNumeric.update(this.autoNumericOptions));
+      this._autoNumeric.update(this.autoNumericOptions);
       this.renderValue();
     }
   }
@@ -123,10 +119,8 @@ export class FormIoCurrencyComponent
     }
 
     const element = this.currencyElement.nativeElement;
-    element.removeEventListener(RAW_VALUE_MODIFIED_EVENT, this._rawValueModifiedListener);
-    EXTERNAL_VALUE_EVENTS.forEach(event =>
-      element.removeEventListener(event, this._externalValueListener)
-    );
+    element.removeEventListener(CHANGE_EVENT, this._changeListener);
+    element.removeEventListener(INPUT_EVENT, this._inputListener);
     this._autoNumeric.remove();
     this._autoNumeric = null;
   }
@@ -176,35 +170,48 @@ export class FormIoCurrencyComponent
     };
   }
 
-  private onRawValueModified(): void {
-    if (this._rendering || !this._autoNumeric) {
+  private onChange(): void {
+    if (!this._autoNumeric) {
       return;
     }
+
+    this.parseAutofilledValue();
 
     const numericString = this._autoNumeric.getNumericString();
     const isEmpty = numericString === null || numericString === '';
     const value = isEmpty ? (this.allowEmptyValue ? null : 0) : Number(numericString);
 
-    this._value = value;
-    this.valueChange.emit(value);
-  }
-  
-  private onExternalValue(): void {
-    if (this._rendering || !this._autoNumeric) {
+    if (value === this._value) {
       return;
     }
 
-    const domValue = this.currencyElement.nativeElement.value;
-    const domNumber = this.parseFormatted(domValue);
+    this._value = value;
+    this.valueChange.emit(value);
+  }
+
+  private onInput(): void {
+    if (this._autoNumeric && this.parseAutofilledValue()) {
+      this.onChange();
+    }
+  }
+
+  /**
+   * Browser autofill writes to the input directly, bypassing AutoNumeric. Feed such a value
+   * back into AutoNumeric so its raw value and formatting match what is displayed.
+   *
+   * @returns whether the displayed value differed and was synced into AutoNumeric.
+   */
+  private parseAutofilledValue(): boolean {
+    const domNumber = this.parseFormatted(this.currencyElement.nativeElement.value);
     const rawValue = this._autoNumeric.getNumericString();
     const rawNumber = rawValue === null || rawValue === '' ? null : Number(rawValue);
 
     if (domNumber === rawNumber || (domNumber !== null && Number.isNaN(domNumber))) {
-      return;
+      return false;
     }
 
-    // Setting the value fires rawValueModified, which emits it through onRawValueModified.
     this._autoNumeric.set(domNumber ?? '');
+    return true;
   }
 
   /**
@@ -236,21 +243,10 @@ export class FormIoCurrencyComponent
       return;
     }
 
-    this.withoutEmitting(() => {
-      if (typeof this._value === 'number') {
-        this._autoNumeric.set(this._value);
-      } else {
-        this._autoNumeric.clear();
-      }
-    });
-  }
-
-  private withoutEmitting(action: () => void): void {
-    this._rendering = true;
-    try {
-      action();
-    } finally {
-      this._rendering = false;
+    if (typeof this._value === 'number') {
+      this._autoNumeric.set(this._value);
+    } else {
+      this._autoNumeric.clear();
     }
   }
 }
