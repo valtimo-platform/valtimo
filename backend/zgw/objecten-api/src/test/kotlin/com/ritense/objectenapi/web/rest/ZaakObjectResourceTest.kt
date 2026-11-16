@@ -26,6 +26,7 @@ import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectWrapper
+import com.ritense.objectenapi.exception.ObjectUrlNotAllowedException
 import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objecttypenapi.client.Objecttype
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -375,6 +376,35 @@ internal class ZaakObjectResourceTest {
         )
             .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `should return 400 when object url does not belong to objecten api on update`() {
+        val objectManagementId = UUID.randomUUID()
+        val objectUrl = URI("http://attacker.tld/object/123")
+        whenever(zaakObjectService.updateObject(any(), any(), any()))
+            .thenThrow(ObjectUrlNotAllowedException("Object url does not belong to Objecten API"))
+
+        mockMvc.perform(
+            put("/api/v1/object?objectManagementId=$objectManagementId&objectUrl=$objectUrl")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content("""{"key": 1}""")
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should return 400 when object url does not belong to objecten api on delete`() {
+        val objectManagementId = UUID.randomUUID()
+        val objectUrl = URI("http://attacker.tld/object/123")
+        whenever(zaakObjectService.deleteObject(objectManagementId, null, objectUrl))
+            .thenThrow(ObjectUrlNotAllowedException("Object url does not belong to Objecten API"))
+
+        mockMvc.perform(
+            delete("/api/v1/object?objectManagementId=$objectManagementId&objectUrl=$objectUrl")
+        )
+            .andExpect(status().isBadRequest)
     }
 
     private fun jacksonMessageConverter(): MappingJackson2HttpMessageConverter {

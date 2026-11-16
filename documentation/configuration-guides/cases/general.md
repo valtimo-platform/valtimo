@@ -37,7 +37,8 @@ Available since Valtimo `13.53.0`
 
 Choose the color that represents this case type for end users, for example as the dot in front of
 a pinned case type in the left sidebar. Click one of the predefined colors, or click the square
-next to **Choose your own color** to pick any color. Case groups have their own
+next to **Choose your own color** to pick any color. Click **Remove color** to clear the color. A confirmation appears after each
+change, and the dot in the left sidebar updates right away. Case groups have their own
 [group color](case-groups/configuration.md#choosing-a-group-color).
 
 <figure><img src="../../assets/configuration-guides/cases/general/07-case-color.png" alt=""><figcaption>Case color</figcaption></figure>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,11 +62,21 @@ data class S3Resource(
     val sizeInBytes: Long,
 
     @Column(name = "created_on", nullable = false, columnDefinition = "DATETIME")
-    val createdOn: LocalDateTime
+    val createdOn: LocalDateTime,
+
+    @Column(name = "created_by", columnDefinition = "VARCHAR(255)")
+    val createdBy: String? = null,
+
+    @Column(name = "document_id")
+    val documentId: UUID? = null
 ) : Resource, Serializable, Persistable<ResourceId>, Validatable {
 
     init {
         validate()
+    }
+
+    fun linkTo(documentId: UUID): S3Resource {
+        return copy(documentId = documentId)
     }
 
     override fun id(): UUID {

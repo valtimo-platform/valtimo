@@ -154,6 +154,23 @@ class CaseDefinitionGroupManagementResourceTest {
     }
 
     @Test
+    fun `should update group with a null color`() {
+        val updatedGroup = createGroup("my-group", "Updated Title", "Updated description", null)
+        whenever(groupService.updateGroup("my-group", "Updated Title", "Updated description", null))
+            .thenReturn(updatedGroup)
+
+        mockMvc.perform(
+            put("/api/management/v1/case-definition-group/{groupKey}", "my-group")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("""{"title":"Updated Title","description":"Updated description","color":null}""")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.color").doesNotExist())
+
+        verify(groupService).updateGroup("my-group", "Updated Title", "Updated description", null)
+    }
+
+    @Test
     fun `should update group`() {
         val request = CaseDefinitionGroupUpdateRequestDto(
             title = "Updated Title",

@@ -24,6 +24,7 @@ import com.ritense.documentenapipreview.BaseIntegrationTest
 import com.ritense.documentenapipreview.DocumentenApiPreviewPlugin
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.zakenapi.exception.InformatieObjectNotRelatedToCaseException
 import com.ritense.zgw.Rsin
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,6 +46,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
@@ -125,6 +128,22 @@ internal class DocumentenApiPreviewResourceIT : BaseIntegrationTest() {
             .andExpect(header().string("Content-Disposition", contentDispositionHeader))
             .andExpect(header().string("Content-Type", "application/pdf"))
             .andExpect(content().string("TEST_DOCUMENT_CONTENT"))
+    }
+
+    @Test
+    fun `should return 400 when previewing a document not related to the zaak`() {
+        doThrow(InformatieObjectNotRelatedToCaseException("InformatieObject is not related to this Zaak"))
+            .whenever(zaakDocumentService)
+            .verifyInformatieObjectRelatedToCase(DOCUMENTEN_API_PLUGIN_CONFIGURATION_ID, CASE_DOCUMENT_ID, DOCUMENT_ID)
+
+        mockMvc.perform(
+            get(
+                "/api/v1/documenten-api-preview/{pluginConfigurationId}/preview/{caseDocumentId}/{documentId}",
+                DOCUMENTEN_API_PLUGIN_CONFIGURATION_ID,
+                CASE_DOCUMENT_ID,
+                DOCUMENT_ID
+            )
+        ).andExpect(status().isBadRequest)
     }
 
     private fun setupMockPdfConversionServer() {

@@ -60,7 +60,15 @@
               [attr.data-test-id]="testIds.groupTile"
             >
               <div class="case-overview__group-header">
-                <h4 class="case-overview__group-title">{{ group.title }}</h4>
+                <div class="case-overview__group-heading">
+                  <span
+                    class="case-overview__type-dot"
+                    [style.background-color]="group.color"
+                    [attr.data-test-id]="testIds.groupColorDot"
+                  ></span>
+
+                  <h4 class="case-overview__group-title">{{ group.title }}</h4>
+                </div>
 
                 @if ($pinningEnabled()) {
                   <div class="case-overview__group-meta">

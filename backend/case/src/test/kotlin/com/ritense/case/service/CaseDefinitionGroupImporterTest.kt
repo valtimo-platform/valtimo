@@ -273,6 +273,42 @@ class CaseDefinitionGroupImporterTest {
     }
 
     @Test
+    fun `should normalize a missing match type of a text search field to exact`() {
+        val json = """
+            {
+                "key": "my-group",
+                "title": "My Group",
+                "description": null,
+                "order": 0,
+                "color": null,
+                "members": [],
+                "listColumns": [],
+                "searchFields": [{
+                    "key": "name",
+                    "title": "Name",
+                    "dataType": "TEXT",
+                    "fieldType": "SINGLE",
+                    "matchType": null,
+                    "dropdownDataProvider": null,
+                    "order": 0,
+                    "pathMappings": []
+                }]
+            }
+        """.trimIndent()
+
+        whenever(caseDefinitionRepository.findAll()).thenReturn(emptyList())
+        whenever(groupRepository.findById("my-group")).thenReturn(Optional.empty())
+        whenever(groupRepository.save(any<CaseDefinitionGroup>())).thenAnswer { it.arguments[0] }
+        whenever(searchFieldRepository.save(any<GroupSearchField>())).thenAnswer { it.arguments[0] }
+
+        importer.import(createImportRequest(json))
+
+        verify(searchFieldRepository).save(argThat<GroupSearchField> { field ->
+            field.matchType == com.ritense.search.domain.SearchFieldMatchType.EXACT
+        })
+    }
+
+    @Test
     fun `should import search field path mappings only for existing case definitions`() {
         val json = """
             {

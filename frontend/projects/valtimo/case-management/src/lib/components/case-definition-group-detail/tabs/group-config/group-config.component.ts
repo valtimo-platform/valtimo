@@ -28,7 +28,7 @@ import {CommonModule} from '@angular/common';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {DialogModule} from 'carbon-components-angular';
-import {Add16} from '@carbon/icons';
+import {Add16, TrashCan16} from '@carbon/icons';
 import {
   CarbonListModule,
   ColorPickerComponent,
@@ -139,7 +139,7 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
     private readonly iconService: IconService,
     private readonly cdr: ChangeDetectorRef
   ) {
-    this.iconService.registerAll([Add16]);
+    this.iconService.registerAll([Add16, TrashCan16]);
   }
 
   public ngOnInit(): void {
@@ -279,7 +279,12 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
     );
   }
 
-  private _saveColor(color: string): void {
+  public onClear(): void {
+    this.selectedColor = '';
+    this._saveColor(null);
+  }
+
+  private _saveColor(color: string | null): void {
     const group = this.detailService.currentGroup;
     if (!group) return;
 
@@ -289,6 +294,14 @@ export class GroupConfigComponent implements OnInit, OnDestroy {
         description: group.description,
         color,
       })
-      .subscribe();
+      .subscribe(() =>
+        this.notificationService.showNotification({
+          type: 'success',
+          title: this.translateService.instant(
+            color ? 'caseManagement.color.saved' : 'caseManagement.color.removed'
+          ),
+          duration: 5000,
+        })
+      );
   }
 }

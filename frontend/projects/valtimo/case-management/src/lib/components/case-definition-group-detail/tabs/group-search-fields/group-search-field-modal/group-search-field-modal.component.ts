@@ -61,6 +61,8 @@ import {
   GROUP_SEARCH_FIELD_DEFAULT_FIELD_TYPES,
   GROUP_SEARCH_FIELD_DROPDOWN_FIELD_TYPES,
   GROUP_SEARCH_FIELD_FIELD_TYPES,
+  GROUP_SEARCH_FIELD_DEFAULT_MATCH_TYPE,
+  GROUP_SEARCH_FIELD_FALLBACK_MATCH_TYPE,
   GROUP_SEARCH_FIELD_MATCH_TYPE_ITEMS,
   GROUP_SEARCH_FIELD_SEARCHABLE_PATH_PREFIXES,
   GROUP_SEARCH_FIELD_TYPES_BY_DATA_TYPE,
@@ -141,7 +143,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
 
   public readonly DATA_TYPE_ITEMS = GROUP_SEARCH_FIELD_DATA_TYPE_ITEMS;
   public fieldTypeItems = this.toItems(GROUP_SEARCH_FIELD_FIELD_TYPES);
-  public readonly MATCH_TYPE_ITEMS = GROUP_SEARCH_FIELD_MATCH_TYPE_ITEMS;
+  public matchTypeItems: {content: string; value: string}[] = GROUP_SEARCH_FIELD_MATCH_TYPE_ITEMS;
   public readonly SEARCHABLE_PATH_PREFIXES = GROUP_SEARCH_FIELD_SEARCHABLE_PATH_PREFIXES;
 
   public formGroup: FormGroup = this.fb.group({
@@ -165,6 +167,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
 
   private _dropdownValues: MultiInputValues = [];
   private _dataTypeForFieldTypes: string | null = null;
+  private _matchTypeWasShown = false;
 
   private _emptyMemberKeys = new Set<string>();
 
@@ -188,12 +191,28 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
           content: this.translateService.instant(`searchFieldsOverview.${provider}`),
           value: provider,
         }));
+        this.matchTypeItems = GROUP_SEARCH_FIELD_MATCH_TYPE_ITEMS.map(item => ({
+          content: this.translateService.instant(item.content),
+          value: item.value,
+        }));
         this.cdr.markForCheck();
       });
 
     this.formGroup.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this._updateVisibility();
     });
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['members']) {
+      this._buildPathControls();
+    }
+
+    if (changes['open'] || changes['field']) {
+      if (this.open) {
+        this._resetForm();
+      }
+    }
   }
 
   public ngOnDestroy(): void {
@@ -243,20 +262,31 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
     }
 
     this.showMatchType = dataTypeValue === 'text' && !isDropdown;
+    this._updateMatchTypeRequirement();
     this.showDropdownDataProvider = isDropdown;
     this.showDropdownValues = isDropdown && providerValue === EDITABLE_DROPDOWN_DATA_PROVIDER;
     this.cdr.markForCheck();
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (changes['members']) {
-      this._buildPathControls();
-    }
+  private _updateMatchTypeRequirement(): void {
+    const matchTypeControl = this.formGroup.get('matchType');
+    if (!matchTypeControl) return;
 
-    if (changes['open'] || changes['field']) {
-      if (this.open) {
-        this._resetForm();
+    const wasShown = this._matchTypeWasShown;
+    this._matchTypeWasShown = this.showMatchType;
+
+    if (this.showMatchType) {
+      if (!matchTypeControl.hasValidator(Validators.required)) {
+        matchTypeControl.addValidators(Validators.required);
       }
+      if (!wasShown && !matchTypeControl.value) {
+        matchTypeControl.setValue(GROUP_SEARCH_FIELD_DEFAULT_MATCH_TYPE, {emitEvent: false});
+      }
+      matchTypeControl.updateValueAndValidity({emitEvent: false});
+    } else if (matchTypeControl.hasValidator(Validators.required) || matchTypeControl.value) {
+      matchTypeControl.removeValidators(Validators.required);
+      matchTypeControl.setValue(null, {emitEvent: false});
+      matchTypeControl.updateValueAndValidity({emitEvent: false});
     }
   }
 
@@ -271,7 +301,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
         title: this.field.title ?? '',
         dataType: this.field.dataType,
         fieldType: this.field.fieldType,
-        matchType: this.field.matchType ?? 'exact',
+        matchType: this.field.matchType ?? GROUP_SEARCH_FIELD_FALLBACK_MATCH_TYPE,
         dropdownDataProvider: this.field.dropdownDataProvider ?? '',
       });
       this.formGroup.get('key')?.disable();
@@ -283,7 +313,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
         title: '',
         dataType: null,
         fieldType: null,
-        matchType: null,
+        matchType: GROUP_SEARCH_FIELD_DEFAULT_MATCH_TYPE,
         dropdownDataProvider: '',
       });
       this.formGroup.get('key')?.enable();
@@ -353,7 +383,7 @@ export class GroupSearchFieldModalComponent implements OnChanges, OnInit, OnDest
       title: value.title || undefined,
       dataType: dataTypeValue,
       fieldType: fieldTypeValue,
-      matchType: matchTypeValue || undefined,
+      matchType: this.showMatchType ? matchTypeValue || undefined : undefined,
       dropdownDataProvider: GROUP_SEARCH_FIELD_DROPDOWN_FIELD_TYPES.includes(fieldTypeValue)
         ? (value.dropdownDataProvider?.value ?? (value.dropdownDataProvider || undefined))
         : undefined,

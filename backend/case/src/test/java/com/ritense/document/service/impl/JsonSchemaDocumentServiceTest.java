@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.U
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,6 +65,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -240,6 +243,50 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         verify(documentRepository, times(0)).saveAll(eq(jsonSchemaDocuments.toList()));
         verify(documentRepository, times(0)).deleteAll(eq(jsonSchemaDocuments.toList()));
         verify(documentSequenceGeneratorService, times(0)).deleteSequenceRecordBy(eq(documentDefinitionName));
+    }
+
+    private Resource mockResource(UUID resourceId) {
+        Resource resource = mock(Resource.class);
+        when(resource.id()).thenReturn(resourceId);
+        when(resource.name()).thenReturn("name.txt");
+        when(resource.extension()).thenReturn("txt");
+        when(resource.sizeInBytes()).thenReturn(1L);
+        when(resource.createdOn()).thenReturn(LocalDateTime.now());
+        return resource;
+    }
+
+    @Test
+    void assignResourceClaimsResourceBeforeLinking() {
+        UUID resourceId = UUID.randomUUID();
+        when(documentRepository.findById(jsonSchemaDocument.id())).thenReturn(Optional.of(jsonSchemaDocument));
+        Resource resource = mockResource(resourceId);
+        when(resourceService.getResource(resourceId)).thenReturn(resource);
+
+        jsonSchemaDocumentService.assignResource(jsonSchemaDocument.id(), resourceId, null);
+        jsonSchemaDocumentService.assignResource(jsonSchemaDocument.id(), resourceId, null);
+
+        var inOrder = org.mockito.Mockito.inOrder(resourceService);
+        inOrder.verify(resourceService).claimForDocument(resourceId, jsonSchemaDocument.id().getId());
+        inOrder.verify(resourceService).getResource(resourceId);
+        verify(resourceService, times(2)).claimForDocument(resourceId, jsonSchemaDocument.id().getId());
+        assertEquals(1, jsonSchemaDocument.relatedFiles().size());
+    }
+
+    @Test
+    void assignResourceDoesNotLinkWhenClaimIsDenied() {
+        UUID resourceId = UUID.randomUUID();
+        when(documentRepository.findById(jsonSchemaDocument.id())).thenReturn(Optional.of(jsonSchemaDocument));
+        org.mockito.Mockito.doThrow(new AccessDeniedException("Access denied"))
+            .when(resourceService).claimForDocument(resourceId, jsonSchemaDocument.id().getId());
+
+        assertThrows(
+            AccessDeniedException.class,
+            () -> jsonSchemaDocumentService.assignResource(jsonSchemaDocument.id(), resourceId, null)
+        );
+
+        verify(resourceService, never()).getResource(resourceId);
+        verify(documentRepository, never()).save(jsonSchemaDocument);
+        assertEquals(0, jsonSchemaDocument.relatedFiles().size());
     }
 
     @Test

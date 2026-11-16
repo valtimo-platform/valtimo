@@ -41,8 +41,10 @@ export const GROUP_SEARCH_FIELD_DATA_TYPE_ITEMS = GROUP_SEARCH_FIELD_DATA_TYPES.
   content: t,
   value: t,
 }));
+export const GROUP_SEARCH_FIELD_DEFAULT_MATCH_TYPE = 'like';
+export const GROUP_SEARCH_FIELD_FALLBACK_MATCH_TYPE = 'exact';
 export const GROUP_SEARCH_FIELD_MATCH_TYPE_ITEMS = GROUP_SEARCH_FIELD_MATCH_TYPES.map(t => ({
-  content: t,
+  content: `searchFieldsOverview.${t}`,
   value: t,
 }));
 

@@ -16,15 +16,20 @@
 
 package com.ritense.objectenapi.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectWrapper
+import com.ritense.objectenapi.client.ObjectenApiClient
+import com.ritense.objectenapi.exception.ObjectUrlNotAllowedException
+import com.ritense.objectenapi.management.ObjectManagementInfo
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.objecttypenapi.client.Objecttype
+import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -37,8 +42,11 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.http.HttpStatus
 import java.net.URI
 import java.util.Optional
 import java.util.UUID
@@ -63,6 +71,9 @@ internal class ZaakObjectServiceTest {
     lateinit var zaakObjecten: MutableList<ZaakObject>
 
     val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
+
+    private val objectManagementId = UUID.randomUUID()
+    private var objectenApiConfigurationId: UUID = UUID.randomUUID()
 
     @BeforeEach
     fun init() {
@@ -433,6 +444,101 @@ internal class ZaakObjectServiceTest {
         assertNull(resultingForm)
     }
 
+    @Test
+    fun `should not call objecten api on update when object url is foreign`() {
+        val client = setupRealObjectenApiPlugin()
+        setupObjectManagement()
+
+        assertThrows(ObjectUrlNotAllowedException::class.java) {
+            zaakObjectService.updateObject(
+                objectManagementId,
+                URI("http://objecten.attacker.tld/api/v2/objects/1"),
+                MapperSingleton.get().createObjectNode()
+            )
+        }
+
+        verifyNoInteractions(client)
+    }
+
+    @Test
+    fun `should not call objecten api on delete when object url is foreign`() {
+        val client = setupRealObjectenApiPlugin()
+        setupObjectManagement()
+
+        assertThrows(ObjectUrlNotAllowedException::class.java) {
+            zaakObjectService.deleteObject(objectManagementId, objectUrl = URI("http://attacker.tld/api/v2/objects/1"))
+        }
+
+        verifyNoInteractions(client)
+    }
+
+    @Test
+    fun `should delete object when object url belongs to objecten api`() {
+        val client = setupRealObjectenApiPlugin()
+        setupObjectManagement()
+        val objectUrl = URI("$OBJECTEN_URL/objects/${UUID.randomUUID()}")
+        whenever(client.deleteObject(any(), eq(objectUrl))).thenReturn(HttpStatus.NO_CONTENT)
+
+        val status = zaakObjectService.deleteObject(objectManagementId, objectUrl = objectUrl)
+
+        assertEquals(HttpStatus.NO_CONTENT, status)
+        verify(client).deleteObject(any(), eq(objectUrl))
+    }
+
+    @Test
+    fun `should resolve object url from object id on delete`() {
+        val client = setupRealObjectenApiPlugin()
+        setupObjectManagement()
+        val objectId = UUID.randomUUID()
+        val objectUrl = URI("$OBJECTEN_URL/objects/$objectId")
+        whenever(client.deleteObject(any(), eq(objectUrl))).thenReturn(HttpStatus.NO_CONTENT)
+
+        zaakObjectService.deleteObject(objectManagementId, objectId = objectId)
+
+        verify(client).deleteObject(any(), eq(objectUrl))
+    }
+
+    @Test
+    fun `should return null when getting object by foreign url`() {
+        val foreignUrl = URI("http://objecten.attacker.tld/api/v2/objects/1")
+        val plugin = mock<ObjectenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ObjectenApiPlugin::class.java), any())).thenAnswer { invocation ->
+            @Suppress("UNCHECKED_CAST")
+            val matcher = invocation.getArgument<(JsonNode) -> Boolean>(1)
+            val properties = MapperSingleton.get().createObjectNode().put(ObjectenApiPlugin.URL_PROPERTY, OBJECTEN_URL)
+            if (matcher(properties)) plugin else null
+        }
+
+        assertNull(zaakObjectService.getObjectByObjectUrl(foreignUrl))
+        verify(plugin, never()).getObject(any())
+    }
+
+    private fun setupRealObjectenApiPlugin(): ObjectenApiClient {
+        val client = mock<ObjectenApiClient>()
+        val plugin = ObjectenApiPlugin(client)
+        plugin.authenticationPluginConfiguration = mock()
+        plugin.url = URI(OBJECTEN_URL)
+        val configurationId = UUID.randomUUID()
+        whenever(pluginService.createInstance(PluginConfigurationId(configurationId))).thenReturn(plugin)
+        objectenApiConfigurationId = configurationId
+        return client
+    }
+
+    private fun setupObjectManagement() {
+        val objecttypenPlugin = mock<ObjecttypenApiPlugin>()
+        val objecttypenConfigurationId = UUID.randomUUID()
+        whenever(pluginService.createInstance(PluginConfigurationId(objecttypenConfigurationId)))
+            .thenReturn(objecttypenPlugin)
+        whenever(objecttypenPlugin.getObjectTypeUrlById(any())).thenReturn(URI("http://example.com/objecttype"))
+
+        val info = mock<ObjectManagementInfo>()
+        whenever(info.objectenApiPluginConfigurationId).thenReturn(objectenApiConfigurationId)
+        whenever(info.objecttypenApiPluginConfigurationId).thenReturn(objecttypenConfigurationId)
+        whenever(info.objecttypeId).thenReturn("type-id")
+        whenever(info.objecttypeVersion).thenReturn(1)
+        whenever(objectManagementInfoProvider.getObjectManagementInfo(objectManagementId)).thenReturn(info)
+    }
+
     private fun setupZaakInstanceLink(documentId: UUID): URI {
         val zaakInstanceUrl = URI("http://example.com/zaak/${UUID.randomUUID()}")
         whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakInstanceUrl)
@@ -498,5 +604,9 @@ internal class ZaakObjectServiceTest {
     private fun mockObjecttypeRetrieval(referringObject: ObjectWrapper, objecttype: Objecttype): Objecttype {
         whenever(objecttypenApiPlugin?.getObjecttype(referringObject.type)).thenReturn(objecttype)
         return objecttype
+    }
+
+    companion object {
+        private const val OBJECTEN_URL = "http://objecten.example.com/api/v2"
     }
 }

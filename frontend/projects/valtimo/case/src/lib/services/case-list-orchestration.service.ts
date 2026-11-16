@@ -118,7 +118,6 @@ export class CaseListOrchestrationService {
   ]);
   private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
   private readonly _refreshHiddenColumns$ = new BehaviorSubject<null>(null);
-  private readonly _groupNotFound$ = new BehaviorSubject<boolean>(false);
   private _groupTitle: string | null = null;
 
   public readonly noResultsMessage$ = new BehaviorSubject<CarbonListNoResultsMessage>(
@@ -127,7 +126,7 @@ export class CaseListOrchestrationService {
   public readonly hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
   public readonly disableExportButton$ = new BehaviorSubject<boolean>(false);
 
-  public readonly context$: Observable<CaseListContext | null> = this.listService.context$;
+  public readonly context$: Observable<CaseListContext> = this.listService.context$;
 
   public readonly caseDefinitionKey$: Observable<string> = this.listService.caseDefinitionKey$.pipe(
     tap((caseDefinitionKey: string) =>
@@ -160,7 +159,7 @@ export class CaseListOrchestrationService {
   public readonly showStatusSelector$ = this.statusService.showStatusSelector$;
   public readonly showCaseTagsSelector$ = this.caseListCaseTagService.showCaseTagsSelector$;
 
-  public readonly groupNotFound$: Observable<boolean> = this._groupNotFound$.asObservable();
+  public readonly groupNotFound$: Observable<boolean> = this.listService.groupNotFound$;
 
   public readonly hiddenColumns$: Observable<ListField[]> = this._refreshHiddenColumns$.pipe(
     switchMap(() => this.listService.context$),
@@ -177,29 +176,31 @@ export class CaseListOrchestrationService {
     )
   );
 
-  public readonly schema$ = this.listService.context$.pipe(
+  public readonly schema$ = this.listService.requestedContext$.pipe(
     filter((context): context is CaseListContext => !!context),
     switchMap((context: CaseListContext) => {
-      this._groupNotFound$.next(false);
       if (context.type === 'group') {
-        return this.documentService.getCaseDefinitionGroup(context.key).pipe(
-          tap(group => {
-            this._groupTitle = group.title;
-            if (group.title) {
-              this.pageTitleService.setCustomPageTitle(group.title, true);
-            }
-          }),
-          map(() => null),
-          catchError((error: HttpErrorResponse) => {
-            if (!isGroupUnavailable(error)) return throwError(() => error);
-            this._groupNotFound$.next(true);
-            this.pageTitleService.setCustomPageTitle(
-              this.translateService.instant('case.noResults.groupNotFound.title'),
-              true
-            );
-            this.pinnedItemsService.refresh();
-            return of(null);
-          })
+        return merge(
+          this.listService.group$.pipe(
+            tap(group => {
+              this._groupTitle = group.title;
+              if (group.title) {
+                this.pageTitleService.setCustomPageTitle(group.title, true);
+              }
+            }),
+            map(() => null)
+          ),
+          this.listService.groupNotFound$.pipe(
+            filter(notFound => notFound),
+            switchMap(() =>
+              this.translateService.get('case.noResults.groupNotFound.title').pipe(take(1))
+            ),
+            tap((title: string) => {
+              this.pageTitleService.setCustomPageTitle(title, true);
+              this.pinnedItemsService.refresh();
+            }),
+            map(() => null)
+          )
         );
       }
       return forkJoin({
@@ -443,7 +444,6 @@ export class CaseListOrchestrationService {
       ]).pipe(debounceTime(50))
     ),
     distinctUntilChanged(this.areDocumentRequestsEqual),
-    filter(() => !this._groupNotFound$.value),
     switchMap(
       ([
         searchRequestWithContext,
@@ -503,8 +503,11 @@ export class CaseListOrchestrationService {
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
   ) {
-    this._documentItemsPipeline$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
-    this.groupKey$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    // A failed group lookup is reported through schema$, so these background pipelines stay quiet.
+    this._documentItemsPipeline$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({error: () => {}});
+    this.groupKey$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({error: () => {}});
   }
 
   public setLoading(): void {

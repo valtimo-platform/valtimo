@@ -156,6 +156,13 @@
     margin-bottom: 1rem;
   }
 
+  &__group-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-03);
+    min-width: 0;
+  }
+
   &__group-meta {
     display: flex;
     align-items: center;
@@ -238,7 +245,7 @@
   &__type-link {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: var(--cds-spacing-03);
     flex: 1;
     min-width: 0;
     padding: 0.625rem 1rem;

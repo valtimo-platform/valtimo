@@ -15,7 +15,11 @@
  */
 
 import {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
-import {GROUP_SEARCH_FIELD_SEARCHABLE_PATH_PREFIXES} from '../constants';
+import {
+  GROUP_SEARCH_FIELD_DROPDOWN_FIELD_TYPES,
+  GROUP_SEARCH_FIELD_FALLBACK_MATCH_TYPE,
+  GROUP_SEARCH_FIELD_SEARCHABLE_PATH_PREFIXES,
+} from '../constants';
 
 export const searchablePathValidator: ValidatorFn = (
   control: AbstractControl
@@ -26,3 +30,12 @@ export const searchablePathValidator: ValidatorFn = (
     GROUP_SEARCH_FIELD_SEARCHABLE_PATH_PREFIXES.some(prefix => path.startsWith(`${prefix}:`));
   return isSearchable ? null : {unsupportedPathPrefix: true};
 };
+
+export const getEffectiveMatchType = (field: {
+  dataType: string;
+  fieldType: string;
+  matchType?: string | null;
+}): string | null =>
+  field.dataType === 'text' && !GROUP_SEARCH_FIELD_DROPDOWN_FIELD_TYPES.includes(field.fieldType)
+    ? (field.matchType ?? GROUP_SEARCH_FIELD_FALLBACK_MATCH_TYPE)
+    : null;

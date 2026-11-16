@@ -21,8 +21,10 @@ import {
   createGroupWithMembersViaApi,
   deleteGroupViaApi,
   GROUP_MANAGEMENT_ENDPOINT,
+  putSearchFieldsViaApi,
   uniqueGroupTitle,
 } from '../../utils/case-group.utils';
+import {pinLanguage} from '../../utils/settings';
 import {GroupSearchFieldsPage, SEARCH_FIELD_CELL} from './page';
 import {DOC_PATHS, MEMBER_KEYS} from './search-fields-config';
 
@@ -88,7 +90,7 @@ test.describe('Case group — Search fields', () => {
 
         await fieldsPage.selectDataType('text');
         await fieldsPage.selectFieldType('single');
-        await fieldsPage.selectMatchType('like');
+        await fieldsPage.selectMatchType('Contains');
         const sent = await fieldsPage.save();
 
         expect(sent).toEqual([
@@ -107,7 +109,7 @@ test.describe('Case group — Search fields', () => {
         await expect(fieldsPage.list.cell('name', SEARCH_FIELD_CELL.fieldType)).toHaveText(
           'single'
         );
-        await expect(fieldsPage.list.cell('name', SEARCH_FIELD_CELL.matchType)).toHaveText('like');
+        await expect(fieldsPage.list.cell('name', SEARCH_FIELD_CELL.matchType)).toHaveText('Contains');
       });
 
       test('adds a date range field on a shared case field', async () => {
@@ -207,12 +209,19 @@ test.describe('Case group — Search fields', () => {
       await fieldsPage.selectFieldType('single');
       await expect(fieldsPage.matchTypeDropdown).toBeVisible();
       expect(await fieldsPage.modal.dropdownOptions(fieldsPage.matchTypeDropdown)).toEqual([
-        'exact',
-        'like',
+        'Exact',
+        'Contains',
       ]);
 
       await fieldsPage.selectDataType('number');
       await expect(fieldsPage.matchTypeDropdown).toBeHidden();
+    });
+
+    test('match type is preselected as Contains for a new text field', async () => {
+      await fieldsPage.selectDataType('text');
+      await fieldsPage.selectFieldType('single');
+
+      await expect(fieldsPage.matchTypeDropdown).toContainText('Contains');
     });
 
     test('dropdown field types replace match type with a data provider', async () => {
@@ -296,6 +305,47 @@ test.describe('Case group — Search fields', () => {
       expect((sent as SavedSearchField[]).map(field => field.key)).toEqual(['created']);
       await expect(fieldsPage.list.row('name')).toHaveCount(0);
       expect((await savedFields()).map(field => field.key)).toEqual(['created']);
+    });
+  });
+
+  // ─── 6.133 Dutch labels ─────────────────────────────────────────
+
+  test.describe('6.133 — Dutch "Sleutel" labels', () => {
+    test('the add modal labels the key "Sleutel" with a Dutch placeholder', async () => {
+      await pinLanguage(page, 'nl');
+      try {
+        await fieldsPage.goTo();
+        await fieldsPage.openAddModal();
+
+        await expect(fieldsPage.modal.modal.getByText('Sleutel', {exact: true})).toBeVisible();
+        await fieldsPage.modal.keyEditButton.click();
+        await expect(fieldsPage.modal.keyInput).toHaveAttribute(
+          'placeholder',
+          'Voer een unieke sleutel in'
+        );
+
+        await fieldsPage.modal.cancelButton.click();
+        await expect(fieldsPage.modal.modal).toBeHidden();
+      } finally {
+        await pinLanguage(page, 'en');
+      }
+    });
+
+    test('a text field saved without a match type shows Exact', async () => {
+      await putSearchFieldsViaApi(group.key, [
+        {
+          key: 'legacy',
+          title: 'Legacy',
+          dataType: 'text',
+          fieldType: 'single',
+          pathMappings: [{caseDefinitionKey: bezwaar, path: DOC_PATHS[bezwaar]}],
+        },
+      ]);
+
+      await fieldsPage.goTo();
+      await page.reload();
+
+      await expect(fieldsPage.list.cell('legacy', SEARCH_FIELD_CELL.matchType)).toHaveText('Exact');
     });
   });
 });

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {expect, test} from '@playwright/test';
+import {expect, Request, Route, test} from '@playwright/test';
 import {readFile} from 'fs/promises';
 import {apiGet, isApiStatus} from '../../utils/api.utils';
+import {expectNotificationMessage} from '../../utils/ui.utils';
 import {
   CaseGroup,
   createGroupViaApi,
@@ -28,10 +29,15 @@ import {
   putListColumnsViaApi,
   putSearchFieldsViaApi,
   addMemberViaApi,
+  createGroupWithMembersViaApi,
   uniqueGroupTitle,
   caseFieldColumn,
   getCaseDefinitionName,
+  getPinnedItemsViaApi,
+  pinViaApi,
+  unpinViaApi,
 } from '../../utils/case-group.utils';
+import {pinLanguage} from '../../utils/settings';
 import {CaseManagementGroupsPage} from './page';
 import {MEMBER_KEYS} from './case-management-groups-config';
 
@@ -366,6 +372,33 @@ test.describe('Case groups management', () => {
 
       await groupsPage.colorPanel.assertSelected(next);
     });
+
+    test('saving a color shows a confirmation toast', async () => {
+      const toastGroup = track(await createGroupViaApi(uniqueGroupTitle()));
+      await groupsPage.goToGroup(toastGroup.key);
+      const color = await groupsPage.colorPanel.pickDifferentColor(null);
+
+      await groupsPage.pickSwatch(color, toastGroup.key);
+
+      await expectNotificationMessage(page, 'Color saved');
+    });
+
+    test('Remove color clears the group color', async () => {
+      const colored = track(await createGroupViaApi(uniqueGroupTitle(), undefined, '#FA4D56'));
+      await groupsPage.goToGroup(colored.key);
+      await groupsPage.colorPanel.assertSelected('#FA4D56');
+
+      const body = await groupsPage.clearColor(colored.key);
+
+      expect(body).toMatchObject({title: colored.title, color: null});
+      await groupsPage.colorPanel.assertNoneSelected();
+      await expect(groupsPage.colorPanel.clearButton).toBeHidden();
+      expect((await getGroup(colored.key)).color).toBeNull();
+
+      await page.reload();
+      await groupsPage.colorPanel.assertNoneSelected();
+      await expect(groupsPage.colorPanel.clearButton).toBeHidden();
+    });
   });
 
   // ─── 6.118 Import / export (API only, no UI) ─────────────────────
@@ -551,6 +584,110 @@ test.describe('Case groups management', () => {
         await groupsPage.importCancelButton.click();
         await expect(groupsPage.importSubmitButton).toBeHidden();
       });
+    });
+  });
+
+  // ─── 6.130 Delete case group ─────────────────────────────────────
+
+  test.describe('6.130 — Delete case group', () => {
+    let group: CaseGroup;
+
+    test.beforeAll(async () => {
+      group = track(await createGroupViaApi(uniqueGroupTitle('E2E delete')));
+    });
+
+    test('cancelling the confirmation keeps the group', async () => {
+      const deleteRequests: string[] = [];
+      const onRequest = (request: Request) => {
+        if (request.method() === 'DELETE') deleteRequests.push(request.url());
+      };
+      page.on('request', onRequest);
+      await groupsPage.goToGroup(group.key);
+
+      await groupsPage.openDeleteModal();
+      await groupsPage.cancelDelete();
+
+      page.off('request', onRequest);
+      expect(deleteRequests).toEqual([]);
+      await expect(page).toHaveURL(new RegExp(`/case-management/group/${group.key}/config$`));
+      expect((await getGroup(group.key)).key).toBe(group.key);
+    });
+
+    test('deleting a pinned group removes it from the list and the sidebar', async () => {
+      const doomed = track(
+        await createGroupWithMembersViaApi(uniqueGroupTitle('E2E doomed'), [MEMBER_KEYS[0]])
+      );
+      await pinViaApi('CASE_DEFINITION_GROUP', doomed.key);
+      try {
+        await groupsPage.goToGroup(doomed.key);
+        await groupsPage.expandCasesMenu();
+        await expect(groupsPage.pinnedMenuItem(doomed.title)).toBeVisible();
+
+        await groupsPage.openDeleteModal();
+        const response = await groupsPage.confirmDelete(doomed.key);
+
+        expect(response.ok()).toBeTruthy();
+        await expectNotificationMessage(page, 'Case group deleted');
+        await expect(page).toHaveURL(/\/case-management\?tab=groups$/);
+        await expect(groupsPage.groupRow(doomed.title)).toHaveCount(0);
+        await expect(groupsPage.pinnedMenuItem(doomed.title)).toHaveCount(0);
+        const pinned = await getPinnedItemsViaApi();
+        expect(pinned.map(item => item.itemKey)).not.toContain(doomed.key);
+      } finally {
+        await unpinViaApi('CASE_DEFINITION_GROUP', doomed.key);
+      }
+    });
+
+    test.describe('Failure scenarios', () => {
+      test('a failing delete keeps the user on the detail page', async () => {
+        const deletePath = `${GROUP_MANAGEMENT_ENDPOINT}/${group.key}`;
+        const failDelete = (route: Route) =>
+          route.request().method() === 'DELETE'
+            ? route.fulfill({status: 500, contentType: 'application/json', body: '{}'})
+            : route.fallback();
+        await groupsPage.goToGroup(group.key);
+        await page.route(`**${deletePath}`, failDelete);
+
+        try {
+          await groupsPage.openDeleteModal();
+          const response = await groupsPage.confirmDelete(group.key);
+
+          expect(response.status()).toBe(500);
+          await expect(page).toHaveURL(new RegExp(`/case-management/group/${group.key}/config$`));
+          await expect(page.getByText('Case group deleted')).toHaveCount(0);
+        } finally {
+          await page.unroute(`**${deletePath}`, failDelete);
+        }
+        expect((await getGroup(group.key)).key).toBe(group.key);
+      });
+    });
+  });
+
+  // ─── 6.131 Dutch labels ──────────────────────────────────────────
+
+  test.describe('6.131 — Dutch "Sleutel" labels', () => {
+    let group: CaseGroup;
+
+    test.beforeAll(async () => {
+      group = track(await createGroupWithMembersViaApi(uniqueGroupTitle('E2E nl'), [MEMBER_KEYS[0]]));
+    });
+
+    test('group config and import use "Sleutel"', async () => {
+      await pinLanguage(page, 'nl');
+      try {
+        await groupsPage.goToGroup(group.key);
+        await expect(groupsPage.memberRows.first()).toBeVisible();
+        await expect(groupsPage.memberTableHeader).toContainText('Sleutel');
+
+        await groupsPage.goToGroupsTab();
+        await groupsPage.openImportModal();
+        await groupsPage.selectImportFile('nl.zip', Buffer.from('not a zip'));
+        await expect(groupsPage.importOverwriteWarning).toContainText(/sleutel/i);
+        await expect(groupsPage.importOverwriteCheckbox).toContainText(/sleutel/i);
+        await groupsPage.importCancelButton.click();
+      } finally {
+        await pinLanguage(page, 'en');
+      }
     });
   });
 });

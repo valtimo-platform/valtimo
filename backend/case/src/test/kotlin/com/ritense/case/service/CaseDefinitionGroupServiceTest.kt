@@ -49,6 +49,7 @@ import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.search.domain.FieldType
+import com.ritense.search.domain.SearchFieldMatchType
 import java.time.ZonedDateTime
 import java.util.Optional
 import kotlin.test.assertEquals
@@ -505,6 +506,55 @@ class CaseDefinitionGroupServiceTest {
         assertEquals("dropdownDatabaseDataProvider", result.single().dropdownDataProvider)
     }
 
+    @Test
+    fun `should store EXACT for a text field without match type`() {
+        givenGroup("test_group")
+        whenever(searchFieldRepository.save(any<GroupSearchField>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateSearchFields(
+            "test_group",
+            listOf(searchField(DataType.TEXT, FieldType.SINGLE, null))
+        )
+
+        assertEquals(SearchFieldMatchType.EXACT, result.single().matchType)
+    }
+
+    @Test
+    fun `should keep LIKE for a text field with match type like`() {
+        givenGroup("test_group")
+        whenever(searchFieldRepository.save(any<GroupSearchField>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateSearchFields(
+            "test_group",
+            listOf(searchField(DataType.TEXT, FieldType.SINGLE, null, SearchFieldMatchType.LIKE))
+        )
+
+        assertEquals(SearchFieldMatchType.LIKE, result.single().matchType)
+    }
+
+    @Test
+    fun `should store no match type for a non text field`() {
+        givenGroup("test_group")
+        whenever(searchFieldRepository.save(any<GroupSearchField>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateSearchFields(
+            "test_group",
+            listOf(searchField(DataType.NUMBER, FieldType.SINGLE, null, SearchFieldMatchType.LIKE))
+        )
+
+        assertEquals(null, result.single().matchType)
+    }
+
+    @Test
+    fun `should clear the color when updating a group with a null color`() {
+        givenGroup("test_group")
+        whenever(groupRepository.save(any<CaseDefinitionGroup>())).thenAnswer { it.arguments[0] }
+
+        val result = service.updateGroup("test_group", "Title", null, null)
+
+        assertEquals(null, result.color)
+    }
+
     private fun givenGroup(groupKey: String) {
         val group = CaseDefinitionGroup(
             key = groupKey,
@@ -517,12 +567,17 @@ class CaseDefinitionGroupServiceTest {
         whenever(groupRepository.findById(groupKey)).thenReturn(Optional.of(group))
     }
 
-    private fun searchField(dataType: DataType, fieldType: FieldType, provider: String?) = GroupSearchFieldDto(
+    private fun searchField(
+        dataType: DataType,
+        fieldType: FieldType,
+        provider: String?,
+        matchType: SearchFieldMatchType? = null
+    ) = GroupSearchFieldDto(
         key = "status",
         title = "Status",
         dataType = dataType,
         fieldType = fieldType,
-        matchType = null,
+        matchType = matchType,
         dropdownDataProvider = provider,
         order = null
     )

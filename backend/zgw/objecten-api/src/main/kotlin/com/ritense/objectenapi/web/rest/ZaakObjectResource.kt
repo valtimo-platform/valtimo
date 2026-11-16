@@ -25,6 +25,7 @@ import com.ritense.document.service.DocumentService
 import com.ritense.document.service.findByOrNull
 import com.ritense.document.service.requireDocumentPermission
 import com.ritense.form.domain.FormDefinition
+import com.ritense.objectenapi.exception.ObjectUrlNotAllowedException
 import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objectenapi.web.rest.result.ObjectDto
 import com.ritense.objectenapi.web.rest.result.ObjecttypeDto
@@ -35,6 +36,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -156,6 +158,10 @@ class ZaakObjectResource(
         val status = zaakObjectService.deleteObject(objectManagementId, objectId, objectUrl)
         return ResponseEntity.status(status).build()
     }
+
+    @ExceptionHandler(ObjectUrlNotAllowedException::class)
+    fun handleObjectUrlNotAllowed(e: ObjectUrlNotAllowedException): ResponseEntity<Void> =
+        ResponseEntity.badRequest().build()
 
     private fun requireViewableDocument(documentId: UUID) {
         val document = runWithoutAuthorization {

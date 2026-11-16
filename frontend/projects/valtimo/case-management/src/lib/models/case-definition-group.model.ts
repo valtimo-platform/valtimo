@@ -25,7 +25,7 @@ interface CaseDefinitionGroupCreateRequest {
 interface CaseDefinitionGroupUpdateRequest {
   title: string;
   description?: string;
-  color?: string;
+  color?: string | null;
 }
 
 interface CaseDefinitionGroupFormValue {

@@ -36,6 +36,7 @@ import {
   take,
 } from 'rxjs';
 import {CaseDefinitionGroupManagementService} from '../../../../services';
+import {getEffectiveMatchType} from '../../../../utils';
 import {GroupPathMapping, GroupSearchFieldWithMappings} from '../../../../models';
 import {
   CASE_DEFINITION_GROUP_ITEM_LIST_TEST_IDS,
@@ -116,7 +117,11 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
   // Reordering a filtered subset would drop the hidden rows on save.
   public readonly filtering$ = this._searchTerm$.pipe(map(term => !!term));
 
-  public readonly filteredFields$ = combineLatest([this._fields$, this._searchTerm$]).pipe(
+  public readonly filteredFields$ = combineLatest([
+    this._fields$,
+    this._searchTerm$,
+    this.translateService.stream('key'),
+  ]).pipe(
     map(([fields, term]) =>
       fields
         .filter(
@@ -125,7 +130,14 @@ export class GroupSearchFieldsComponent implements OnInit, OnDestroy {
             f.key.toLowerCase().includes(term) ||
             (f.title && f.title.toLowerCase().includes(term))
         )
-        .map(f => ({...f, name: f.title || f.key}))
+        .map(f => {
+          const matchType = getEffectiveMatchType(f);
+          return {
+            ...f,
+            name: f.title || f.key,
+            matchType: matchType ? this.translateService.instant(`searchFieldsOverview.${matchType}`) : '',
+          };
+        })
     )
   );
 

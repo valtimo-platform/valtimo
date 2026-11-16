@@ -93,7 +93,9 @@ for the dot in front of the pinned case group in the left sidebar.
 <figure><img src="../../../assets/configuration-guides/cases/case-groups/03-group-color.png" alt=""><figcaption>Group color</figcaption></figure>
 
 Click one of the predefined colors, or click the square next to **Choose your own color** to pick
-any color. The color is saved immediately.
+any color. The color is saved immediately and a confirmation appears.
+
+Click **Remove color** to clear the color. The case group then shows the neutral gray dot again.
 
 {% hint style="info" %}
 Case definitions have a color of their own. It is set in the **Case color** panel on the
@@ -142,3 +144,28 @@ Select **Delete**
 
 The case definition is removed from the group immediately, without a confirmation. The case definition itself and its
 cases are not affected.
+
+---
+
+## Deleting a case group
+
+{% stepper %}
+{% step %}
+Open the case group
+{% endstep %}
+{% step %}
+Click **Delete** in the page header
+{% endstep %}
+{% step %}
+Click **Delete** in the **Delete case group** dialog to confirm
+{% endstep %}
+{% endstepper %}
+
+{% hint style="warning" %}
+Deleting a case group cannot be undone. Its list columns, search fields and saved searches are
+removed, and it disappears from every user's pinned items. The case definitions in the group and
+their cases are not affected.
+
+To keep a copy of the configuration, [export the case group](README.md#exporting-a-case-group)
+first.
+{% endhint %}

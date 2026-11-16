@@ -59,7 +59,7 @@ Select the data type
 Select the field type
 {% endstep %}
 {% step %}
-Optionally, select the match type
+Select the match type (new text fields start with **Contains**)
 {% endstep %}
 {% step %}
 Click **Save**
@@ -75,7 +75,7 @@ Click **Save**
 | Path (per case definition) | Path to the value to search on for each case definition. Only `doc:` and `case:` paths can be searched. |
 | Data type | Type of the value: text, number, date, datetime, or boolean |
 | Field type | How the user enters the search value: single, range, single-select-dropdown, or multi-select-dropdown |
-| Match type | Optional. **exact** finds only identical values; **like** also finds partial matches. |
+| Match type | Required for the text data type with the single or range field type, and not shown otherwise. **Exact** finds only identical values; **Contains** also finds partial matches. Text fields saved earlier without a match type use **Exact**. |
 | Dropdown data provider | Optional. Source of the options for a dropdown field type. |
 
 {% hint style="info" %}

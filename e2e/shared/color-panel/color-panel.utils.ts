@@ -44,6 +44,10 @@ export class ColorPanel {
     return this.panel.getByTestId(CASE_MANAGEMENT_COLOR_TEST_IDS.customPicker);
   }
 
+  get clearButton(): Locator {
+    return this.panel.getByTestId(CASE_MANAGEMENT_COLOR_TEST_IDS.clearButton);
+  }
+
   swatch(hex: string): Locator {
     return this.swatches.and(this.page.getByRole('button', {name: hex.toUpperCase(), exact: true}));
   }
@@ -69,5 +73,10 @@ export class ColorPanel {
     await expect(this.previewHex).toHaveText(upper);
     await expect(this.swatch(upper)).toHaveAttribute('aria-pressed', 'true');
     await expect(this.swatches.and(this.page.locator('[aria-pressed="true"]'))).toHaveCount(1);
+  }
+
+  async assertNoneSelected(): Promise<void> {
+    await expect(this.swatches.first()).toBeVisible();
+    await expect(this.swatches.and(this.page.locator('[aria-pressed="true"]'))).toHaveCount(0);
   }
 }
