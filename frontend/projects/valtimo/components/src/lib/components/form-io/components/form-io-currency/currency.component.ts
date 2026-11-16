@@ -32,6 +32,9 @@ import AutoNumeric from 'autonumeric';
 const DEFAULT_LOCALE = 'nl-NL';
 const DEFAULT_CURRENCY = 'EUR';
 const RAW_VALUE_MODIFIED_EVENT = 'autoNumeric:rawValueModified';
+const EXTERNAL_VALUE_EVENTS = ['input', 'change'];
+
+let instanceCounter = 0;
 
 /**
  * Custom formio component for currency number.
@@ -72,6 +75,17 @@ export class FormIoCurrencyComponent
   @Input() public readonly currencyLocale: string;
   @Input() public readonly currencyCurrency: string;
   @Input() public readonly allowEmptyValue: boolean;
+  @Input() public readonly key: string;
+
+  public get inputName(): string | null {
+    return this.key ? `data[${this.key}]` : null;
+  }
+
+  public get inputId(): string {
+    return `${this.key || 'currency'}-${this._instanceId}`;
+  }
+
+  private readonly _instanceId = ++instanceCounter;
 
   private _autoNumeric: AutoNumeric | null = null;
 
@@ -79,11 +93,16 @@ export class FormIoCurrencyComponent
 
   private readonly _rawValueModifiedListener = (): void => this.onRawValueModified();
 
+  private readonly _externalValueListener = (): void => this.onExternalValue();
+
   public ngAfterViewInit(): void {
     const element = this.currencyElement.nativeElement;
 
     this._autoNumeric = new AutoNumeric(element, this.autoNumericOptions);
     element.addEventListener(RAW_VALUE_MODIFIED_EVENT, this._rawValueModifiedListener);
+    EXTERNAL_VALUE_EVENTS.forEach(event =>
+      element.addEventListener(event, this._externalValueListener)
+    );
 
     this.renderValue();
   }
@@ -103,18 +122,15 @@ export class FormIoCurrencyComponent
       return;
     }
 
-    this.currencyElement.nativeElement.removeEventListener(
-      RAW_VALUE_MODIFIED_EVENT,
-      this._rawValueModifiedListener
+    const element = this.currencyElement.nativeElement;
+    element.removeEventListener(RAW_VALUE_MODIFIED_EVENT, this._rawValueModifiedListener);
+    EXTERNAL_VALUE_EVENTS.forEach(event =>
+      element.removeEventListener(event, this._externalValueListener)
     );
     this._autoNumeric.remove();
     this._autoNumeric = null;
   }
 
-  /**
-   * Derives the AutoNumeric formatting from the Intl formatting of the configured locale and
-   * currency, so the input renders amounts exactly as that locale writes them.
-   */
   private get autoNumericOptions(): AutoNumeric.Options {
     const formatter = new Intl.NumberFormat(this.currencyLocale || DEFAULT_LOCALE, {
       style: 'currency',
@@ -171,6 +187,48 @@ export class FormIoCurrencyComponent
 
     this._value = value;
     this.valueChange.emit(value);
+  }
+  
+  private onExternalValue(): void {
+    if (this._rendering || !this._autoNumeric) {
+      return;
+    }
+
+    const domValue = this.currencyElement.nativeElement.value;
+    const domNumber = this.parseFormatted(domValue);
+    const rawValue = this._autoNumeric.getNumericString();
+    const rawNumber = rawValue === null || rawValue === '' ? null : Number(rawValue);
+
+    if (domNumber === rawNumber || (domNumber !== null && Number.isNaN(domNumber))) {
+      return;
+    }
+
+    // Setting the value fires rawValueModified, which emits it through onRawValueModified.
+    this._autoNumeric.set(domNumber ?? '');
+  }
+
+  /**
+   * Leniently parses an amount as the configured locale writes it, with or without currency
+   * symbol and with any kind of whitespace. Returns null for an empty input and NaN when the
+   * text is not an amount.
+   */
+  private parseFormatted(formatted: string): number | null {
+    const {currencySymbol, digitGroupSeparator, decimalCharacter} = this.autoNumericOptions;
+    const stripWhitespace = (text: string): string => (text ?? '').replace(/\s/g, '');
+
+    let normalized = stripWhitespace(formatted).replace(/−/g, '-');
+    const symbol = stripWhitespace(currencySymbol);
+    const group = stripWhitespace(digitGroupSeparator);
+
+    if (symbol) {
+      normalized = normalized.split(symbol).join('');
+    }
+    if (group) {
+      normalized = normalized.split(group).join('');
+    }
+    normalized = normalized.split(decimalCharacter as string).join('.');
+
+    return normalized === '' ? null : Number(normalized);
   }
 
   private renderValue(): void {

@@ -199,4 +199,78 @@ describe('FormIoCurrencyComponent', () => {
       expect(renderedValue()).toBe('€ ');
     });
   });
+
+  describe('the input attributes the browser uses to offer previous values', () => {
+    const input = (): HTMLInputElement => component.currencyElement.nativeElement;
+
+    it('should name the input after the Formio key', () => {
+      fixture.componentRef.setInput('key', 'amount');
+      fixture.detectChanges();
+
+      expect(input().getAttribute('name')).toBe('data[amount]');
+      expect(input().getAttribute('autocomplete')).toBe('on');
+    });
+
+    it('should give every instance a unique id, even with the same key', () => {
+      const other = TestBed.createComponent(FormIoCurrencyComponent);
+      fixture.componentRef.setInput('key', 'amount');
+      other.componentRef.setInput('key', 'amount');
+      fixture.detectChanges();
+      other.detectChanges();
+
+      expect(input().id).toContain('amount');
+      expect(input().id).not.toBe(other.componentInstance.currencyElement.nativeElement.id);
+
+      other.componentInstance.ngOnDestroy();
+    });
+  });
+
+  // Browser autofill writes the value straight to the DOM and only fires native input/change
+  // events, without any of the keyboard events AutoNumeric listens to.
+  describe('a value filled in by the browser', () => {
+    const autofill = (value: string, eventType = 'input'): void => {
+      const element = component.currencyElement.nativeElement;
+      element.value = value;
+      element.dispatchEvent(new Event(eventType, {bubbles: true}));
+    };
+
+    it('should write a formatted autofilled amount to the model', () => {
+      applyInputs();
+      const values = emittedValues();
+
+      autofill('€ 1.234,56');
+
+      expect(values).toEqual([1234.56]);
+      expect(component.value).toBe(1234.56);
+      expect(renderedValue()).toBe('€ 1.234,56');
+    });
+
+    it('should write an unformatted autofilled amount to the model and format it', () => {
+      applyInputs(100);
+      const values = emittedValues();
+
+      autofill('250');
+
+      expect(values).toEqual([250]);
+      expect(renderedValue()).toBe('€ 250,00');
+    });
+
+    it('should pick up an amount filled in with only a change event', () => {
+      applyInputs();
+      const values = emittedValues();
+
+      autofill('€ 42,00', 'change');
+
+      expect(values).toEqual([42]);
+    });
+
+    it('should not emit when the input event carries the value AutoNumeric already holds', () => {
+      applyInputs(100);
+      const values = emittedValues();
+
+      autofill(component.currencyElement.nativeElement.value);
+
+      expect(values).toEqual([]);
+    });
+  });
 });
