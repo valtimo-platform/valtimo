@@ -26,4 +26,11 @@
         </customChange>
     </changeSet>
 
+    <changeSet author="Ritense" id="2">
+        <customChange class="com.ritense.valtimo.contract.liquibase.change.OptionalCustomChange">
+            <param name="delegateClass"
+                   value="com.ritense.dashboard.liquibase.changelog.ChangeLog20261116FixEmptyWidgetKey"/>
+        </customChange>
+    </changeSet>
+
 </databaseChangeLog>

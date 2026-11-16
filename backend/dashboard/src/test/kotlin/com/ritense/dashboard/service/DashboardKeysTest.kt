@@ -50,4 +50,24 @@ class DashboardKeysTest {
 
         assertThat(key).isEqualTo("dashboard_2026_3")
     }
+
+    @ParameterizedTest
+    @CsvSource(
+        "2026, widget_2026",
+        "'!!!', widget",
+        "Doorlooptijd, doorlooptijd",
+    )
+    fun `should generate a valid widget key from the title`(title: String, expectedKey: String) {
+        val key = DashboardKeys.generate(title, DashboardKeys.WIDGET_PREFIX) { false }
+
+        assertThat(key).isEqualTo(expectedKey)
+        assertThat(key).matches(DashboardKeys.PATTERN)
+    }
+
+    @Test
+    fun `should add a number when the widget key is taken`() {
+        val key = DashboardKeys.generate("2026", DashboardKeys.WIDGET_PREFIX) { it == "widget_2026" }
+
+        assertThat(key).isEqualTo("widget_2026_2")
+    }
 }

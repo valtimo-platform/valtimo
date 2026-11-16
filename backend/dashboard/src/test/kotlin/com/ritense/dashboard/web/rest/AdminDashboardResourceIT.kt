@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -352,6 +352,29 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
             .andExpect(jsonPath("$.dataSourceProperties.threshold").value(50))
             .andExpect(jsonPath("$.displayType").value("gauge"))
             .andExpect(jsonPath("$.displayTypeProperties.useKpi").value(true))
+    }
+
+    @Test
+    fun `should create widget configuration with a valid key for a title without letters`() {
+        runWithoutAuthorization {
+            dashboardService.createDashboard("Test dashboard", "Test description")
+        }
+
+        val widgetConfiguration = WidgetConfigurationCreateRequestDto(
+            title = "2026",
+            dataSourceKey = "doorlooptijd",
+            dataSourceProperties = objectMapper.readTree("""{ "threshold": 50 }""") as ObjectNode,
+            displayType = "gauge",
+            displayTypeProperties = objectMapper.readTree("""{ "useKpi": true }""") as ObjectNode,
+        )
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard/{dashboardKey}/widget-configuration", "test_dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(widgetConfiguration))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("widget_2026"))
     }
 
     @Test

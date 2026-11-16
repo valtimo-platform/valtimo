@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -282,13 +282,7 @@ class DashboardService(
     }
 
     private fun generateWidgetKey(title: String): String {
-        val baseKey = DashboardKeys.slugify(title)
-        var key = baseKey
-        var i = 2
-        while (widgetConfigurationRepository.existsById(key)) {
-            key = "${baseKey}_${i++}"
-        }
-        return key
+        return DashboardKeys.generate(title, DashboardKeys.WIDGET_PREFIX) { widgetConfigurationRepository.existsById(it) }
     }
 
     private fun denyAuthorization() {

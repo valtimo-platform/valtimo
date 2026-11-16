@@ -21,10 +21,11 @@ object DashboardKeys {
     // Unlike Constants.KEY_REGEX, allows a single letter — older dashboards have such keys
     const val PATTERN = "[a-z][a-z0-9_-]*"
 
-    private const val FALLBACK_PREFIX = "dashboard"
+    const val DASHBOARD_PREFIX = "dashboard"
+    const val WIDGET_PREFIX = "widget"
 
-    fun generate(title: String, isTaken: (String) -> Boolean): String {
-        val baseKey = slugify(title).ifEmpty { slugify("$FALLBACK_PREFIX $title") }
+    fun generate(title: String, fallbackPrefix: String = DASHBOARD_PREFIX, isTaken: (String) -> Boolean): String {
+        val baseKey = slugify(title).ifEmpty { slugify("$fallbackPrefix $title") }
         var key = baseKey
         var i = 2
         while (isTaken(key)) {
