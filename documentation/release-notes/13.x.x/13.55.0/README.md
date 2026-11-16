@@ -32,4 +32,6 @@ New enhancement explanation.
 
 | Area | Fix |
 |------|-----|
+| Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
+| Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
 | Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
