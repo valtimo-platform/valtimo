@@ -70,6 +70,7 @@ import {AUTO_KEY_INPUT_TEST_IDS} from '../../constants';
 export class AutoKeyInputComponent
   implements ControlValueAccessor, Validators, OnChanges, OnDestroy
 {
+  @Input() public helperTextTranslationKey: string = '';
   @Input() public labelTranslationKey: string = 'Key';
   @Input() public placeholderTranslationKey: string = '';
   @Input() public dataTestId: string = AUTO_KEY_INPUT_TEST_IDS.input;

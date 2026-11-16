@@ -707,6 +707,7 @@
     "addModal": {
       "descriptionPlaceholder": "Voer hier een beschrijving in",
       "descriptionHelperText": "*Beschrijving is alleen zichtbaar op de configuratiepagina van het dashboard",
+      "keyNoLettersHelperText": "Uit een naam zonder letters kan geen sleutel worden gegenereerd. Klik op het bewerkicoon en voer een sleutel in die met een letter begint.",
       "name": "Dashboardnaam",
       "namePlaceholder": "Voer hier een naam in"
     },
