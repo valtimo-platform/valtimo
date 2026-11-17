@@ -43,10 +43,11 @@ describe('FormIoCurrencyComponent', () => {
 
   const renderedValue = (): string => renderedValueOf(fixture);
 
-  // Stands in for a user edit: a raw value change that does not come from rendering an input.
-  // An empty string stands in for the user clearing the input.
+  // Stands in for a user edit: AutoNumeric updates its raw value while typing and fires a native
+  // change event on blur or enter. An empty string stands in for the user clearing the input.
   const enterValue = (value: number | ''): void => {
     (component as any)._autoNumeric.set(value);
+    component.currencyElement.nativeElement.dispatchEvent(new Event('change', {bubbles: true}));
   };
 
   const emittedValues = (): Array<number> => {
