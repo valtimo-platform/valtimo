@@ -26,6 +26,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -65,8 +66,10 @@ class ProcessDocumentLinkEventListener(
     }
 
     // The earliest point at which both the case definitions and the global processes are deployed
+    // No shared transaction: rollback-only would fail its commit despite the catch below
     @RunWithoutAuthorization
     @EventListener(ApplicationReadyEvent::class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     fun handleApplicationReadyEvent() {
         // Backfills links that could not be pinned at deployment. Swallowed because an ApplicationReadyEvent
         // exception stops the application, and an unpinned link still resolves - it just follows the latest.
