@@ -12,6 +12,25 @@ Specify the code branch location:
 **Relevant comments:**
 > 
 
+### Bug fix
+Root cause: 
+
+Cause (select one):
+- [ ] Missing error handling or validation
+- [ ] Incomplete implementation
+- [ ] Wrong logic or condition
+- [ ] Wrong assumption about data
+- [ ] Contract mismatch
+- [ ] Unclear or missing requirement
+- [ ] Configuration or environment
+- [ ] Other: 
+
+Why not caught (select one):
+- [ ] No test existed for this area
+- [ ] A test existed but did not cover this case
+- [ ] Only reproducible with real data, load or a specific environment
+- [ ] Not testable automatically
+
 ### Breaking changes
 <!-- Valtimo aims to comply with the SemVer specification.  -->
 <!-- Breaking changes are only allowed in the `next-major` branch.  -->
