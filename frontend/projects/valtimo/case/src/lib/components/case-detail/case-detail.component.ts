@@ -472,7 +472,8 @@ export class CaseDetailComponent implements AfterViewInit, OnDestroy {
     this._subscriptions.add(
       merge(
         this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-        this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
+        this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED'),
+        this.sseService.getSseEventObservable<CaseStatusUpdatedSseEvent>('CASE_STATUS_UPDATED')
       )
         .pipe(
           filter(event => event?.documentId === this.documentId),
