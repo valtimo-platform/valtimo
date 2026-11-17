@@ -12,6 +12,32 @@ Specify the code branch location:
 **Relevant comments:**
 > 
 
+### Bug fix
+<!-- Only for bug fixes; remove this section otherwise. The /analyse-bug skill fills it in. -->
+<!-- Tick exactly one box per list and keep the unticked options in place. -->
+Issue: https://github.com/generiekzaakafhandelcomponent/gzac-issues/issues/
+Root cause: 
+
+Cause (select one):
+- [ ] Missing error handling or validation
+- [ ] Incomplete implementation
+- [ ] Wrong logic or condition
+- [ ] Wrong assumption about data
+- [ ] Contract mismatch
+- [ ] Unclear or missing requirement
+- [ ] Configuration or environment
+- [ ] Other: 
+
+Why not caught (select one):
+- [ ] No test existed for this area
+- [ ] A test existed but did not cover this case
+- [ ] Only reproducible with real data, load or a specific environment
+- [ ] Not testable automatically
+
+| Issue reproduction step | Covered in test by |
+|---|---|
+|  |  |
+
 ### Breaking changes
 <!-- Valtimo aims to comply with the SemVer specification.  -->
 <!-- Breaking changes are only allowed in the `next-major` branch.  -->
