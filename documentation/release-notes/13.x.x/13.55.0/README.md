@@ -40,6 +40,7 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 |------|-----|
 | Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
 | Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
+| Currency component | The currency component now accepts values filled in automatically by the browser. |
 | Dashboard | Dashboards and widgets with a name without letters, such as `2026`, now get a valid key. |
 | Dashboard | Dashboards and widgets that were saved with an empty key can be opened, edited and deleted again. |
 | Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
