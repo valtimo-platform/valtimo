@@ -26,3 +26,4 @@ New enhancement explanation.
 |------|-----|
 | Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
 | Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
+| Currency component | The currency component now accepts values filled in automatically by the browser. |
