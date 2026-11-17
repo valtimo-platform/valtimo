@@ -1,0 +1,44 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "pv:zaakeigenschap-actie",
+            "type": "select",
+            "input": true,
+            "label": "Zaak eigenschap actie",
+            "data": {
+                "values": [
+                    {
+                        "label": "Haal eigenschap op",
+                        "value": "HAAL_EIGENSCHAP_OP"
+                    },
+                    {
+                        "label": "Maak nieuwe eigenschap aan",
+                        "value": "MAAK_NIEUWE_EIGENSCHAP_AAN"
+                    },
+                    {
+                        "label": "Zoek zaakeigenschappen",
+                        "value": "ZOEK_ZAAKEIGENSCHAPPEN"
+                    }
+
+                ]
+            },
+            "tableView": true,
+            "defaultValue": "ZOEK_ZAAKEIGENSCHAPPEN",
+            "validate": {
+                "required": true
+            },
+            "attributes": {
+                "data-testid": "zaakeigenschappen-kies-actie-test"
+            }
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

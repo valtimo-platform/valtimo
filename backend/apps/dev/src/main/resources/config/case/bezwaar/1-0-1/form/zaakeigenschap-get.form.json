@@ -1,0 +1,44 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "pv:eigenschapUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Onderwerp",
+            "validate": {
+                "required": true
+            },
+            "tableView": true,
+            "attributes": {
+                "data-testid": "zaakeigenschap-get-pv-eigenschapUrl"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "http://localhost:8001/catalogi/api/v1/eigenschappen/4e83bcf2-1bcb-4992-9a78-e8f72eac99a4"
+        },
+        {
+            "key": "pv:resultProcessVariable",
+            "type": "textfield",
+            "input": true,
+            "label": "result processvariable",
+            "validate": {
+                "required": true
+            },
+            "tableView": true,
+            "attributes": {
+                "data-testid": "zaakeigenschap-get-pv-resultProcessVariable"
+            },
+            "autoExpand": false,
+            "applyMaskOn": "change",
+            "defaultValue": "zaakeigenschap"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

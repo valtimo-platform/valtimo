@@ -172,6 +172,13 @@ interface DeleteZaakeigenschapConfig {
   inputTypeEigenschapToggle?: InputOption;
 }
 
+interface SearchZaakeigenschappenConfig {
+  eigenschapUrl?: string;
+  eigenschapNaam?: string;
+  resultProcessVariable: string;
+  inputTypeEigenschapToggle?: InputOption;
+}
+
 interface PatchZaakConfig {
   archiveActionDate?: string;
   archiveNomination?: string;
@@ -263,6 +270,7 @@ export {
   CreateZaakeigenschapConfig,
   UpdateZaakeigenschapConfig,
   DeleteZaakeigenschapConfig,
+  SearchZaakeigenschappenConfig,
   PatchZaakConfig,
   RelateerZakenConfig,
   GetZaakbesluitenConfig,

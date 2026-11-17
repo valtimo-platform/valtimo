@@ -1,0 +1,27 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "pv.eigenschappenResultJson",
+            "type": "textarea",
+            "input": true,
+            "tableView": false,
+            "label": "Haal zaakeigenschap op",
+            "disabled": true,
+            "rows": 20,
+            "autoExpand": false,
+            "attributes": {
+                "data-testid": "zaakeigenschap-toon-resultaat-pv-eigenschappenResultJson"
+            },
+            "persistent": false
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}

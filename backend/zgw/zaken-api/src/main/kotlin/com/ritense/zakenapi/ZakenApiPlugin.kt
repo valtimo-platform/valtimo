@@ -1279,6 +1279,31 @@ class ZakenApiPlugin(
     }
 
     @PluginAction(
+        key = "search-zaakeigenschappen",
+        title = "Search zaakeigenschappen",
+        description = "Search zaakeigenschappen by eigenschapURL or eigenschapName for a zaak",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun searchZaakeigenschappen(
+        execution: DelegateExecution,
+        @PluginActionProperty eigenschapUrl: URI?,
+        @PluginActionProperty eigenschapNaam: String?,
+        @PluginActionProperty resultProcessVariable: String,
+    ) {
+        withLoggingContext(
+            CATALOGI_API.EIGENSCHAP to eigenschapUrl.toString(),
+        ) {
+            logger.debug { "Getting zaakeigenschap with url '${eigenschapUrl}' and or name '${eigenschapNaam}' for document with id '${execution.businessKey}'" }
+            val documentId = execution.getJsonSchemaDocumentId()
+            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+            val zaakeigenschappen = client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
+                .filter { eigenschapUrl == null || eigenschapUrl.toString().isEmpty() || it.eigenschap == eigenschapUrl }
+                .filter { eigenschapNaam.isNullOrEmpty() || it.naam == eigenschapNaam }
+            execution.setVariable(resultProcessVariable, objectMapper.convertValue(zaakeigenschappen))
+        }
+    }
+
+    @PluginAction(
         key = "update-zaakeigenschap",
         title = "Update zaakeigenschap",
         description = "Updates a zaakeigenschap",

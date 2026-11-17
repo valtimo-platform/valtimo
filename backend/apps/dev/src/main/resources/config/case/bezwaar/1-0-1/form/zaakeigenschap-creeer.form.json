@@ -1,0 +1,44 @@
+{
+    "display": "form",
+    "components": [
+        {
+            "key": "pv:eigenschapUrl",
+            "type": "textfield",
+            "input": true,
+            "label": "Onderwerp",
+            "validate": {
+                "required": true
+            },
+            "tableView": true,
+            "attributes": {
+                "data-testid": "zaakeigenschap-creeer-pv-eigenschapUrl"
+            },
+            "applyMaskOn": "change",
+            "defaultValue": "http://localhost:8001/catalogi/api/v1/eigenschappen/4e83bcf2-1bcb-4992-9a78-e8f72eac99a4"
+        },
+        {
+            "key": "pv:eigenschapValue",
+            "type": "textarea",
+            "input": true,
+            "label": "Tekst",
+            "validate": {
+                "required": true
+            },
+            "tableView": true,
+            "attributes": {
+                "data-testid": "start-form-create-zaakeigenschap-pv-eigenschapValue"
+            },
+            "autoExpand": false,
+            "applyMaskOn": "change",
+            "defaultValue": "De bom"
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
+}
