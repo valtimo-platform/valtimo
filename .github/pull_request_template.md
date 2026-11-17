@@ -13,9 +13,6 @@ Specify the code branch location:
 > 
 
 ### Bug fix
-<!-- Only for bug fixes; remove this section otherwise. The /analyse-bug skill fills it in. -->
-<!-- Tick exactly one box per list and keep the unticked options in place. -->
-Issue: https://github.com/generiekzaakafhandelcomponent/gzac-issues/issues/
 Root cause: 
 
 Cause (select one):
