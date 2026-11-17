@@ -34,10 +34,6 @@ Why not caught (select one):
 - [ ] Only reproducible with real data, load or a specific environment
 - [ ] Not testable automatically
 
-| Issue reproduction step | Covered in test by |
-|---|---|
-|  |  |
-
 ### Breaking changes
 <!-- Valtimo aims to comply with the SemVer specification.  -->
 <!-- Breaking changes are only allowed in the `next-major` branch.  -->
