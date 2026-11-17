@@ -147,4 +147,21 @@ describe('createCustomFormioComponent', () => {
     expect(triggerChange).toHaveBeenCalledTimes(1);
     expect((triggerChange.calls.mostRecent().args[0] as any)?.resetValue).toBeUndefined();
   });
+
+  it('should keep a value the element filled in itself when a submission resets it', async () => {
+    const profile = {username: 'admin', email: 'admin@example.com'};
+    form = await Formio.createForm(
+      container,
+      {components: [{type: TYPE, key: 'currentUser', label: 'currentUser', input: true}]},
+      FORM_OPTIONS
+    );
+    const currentUser = form.getComponent('currentUser');
+    currentUser._customAngularElement.value = profile;
+    currentUser.updateValue(null, {modified: true});
+
+    await form.setSubmission({});
+
+    expect(form.data.currentUser).toEqual(profile);
+    expect(currentUser._customAngularElement.value).toEqual(profile);
+  });
 });

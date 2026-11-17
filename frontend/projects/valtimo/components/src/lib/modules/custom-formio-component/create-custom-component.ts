@@ -256,6 +256,13 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
       // Null: resetValue stops updateValue reading the element back; event fired without it,
       // since resetValue in a change event resets calculated fields.
       const isReset = isNil(value);
+
+      // Form.io resets fields missing from a submission this way. Keep a value the element
+      // filled in itself, like the current user.
+      if (isReset && flags.resetValue && !this.isEmpty(this.dataValue)) {
+        return false;
+      }
+
       const changed = this.updateValue(
         value,
         isReset ? {...flags, resetValue: true, noUpdateEvent: true} : flags,
