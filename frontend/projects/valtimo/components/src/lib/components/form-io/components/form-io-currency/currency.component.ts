@@ -175,11 +175,18 @@ export class FormIoCurrencyComponent
       return;
     }
 
-    this.parseAutofilledValue();
+    this.syncDisplayedValue();
+    this.emitIfChanged();
+  }
 
-    const numericString = this._autoNumeric.getNumericString();
-    const isEmpty = numericString === null || numericString === '';
-    const value = isEmpty ? (this.allowEmptyValue ? null : 0) : Number(numericString);
+  private onInput(): void {
+    if (this._autoNumeric && this.syncDisplayedValue()) {
+      this.emitIfChanged();
+    }
+  }
+
+  private emitIfChanged(): void {
+    const value = this.getRawNumber() ?? (this.allowEmptyValue ? null : 0);
 
     if (value === this._value) {
       return;
@@ -189,24 +196,10 @@ export class FormIoCurrencyComponent
     this.valueChange.emit(value);
   }
 
-  private onInput(): void {
-    if (this._autoNumeric && this.parseAutofilledValue()) {
-      this.onChange();
-    }
-  }
-
-  /**
-   * Browser autofill writes to the input directly, bypassing AutoNumeric. Feed such a value
-   * back into AutoNumeric so its raw value and formatting match what is displayed.
-   *
-   * @returns whether the displayed value differed and was synced into AutoNumeric.
-   */
-  private parseAutofilledValue(): boolean {
+  private syncDisplayedValue(): boolean {
     const domNumber = this.parseFormatted(this.currencyElement.nativeElement.value);
-    const rawValue = this._autoNumeric.getNumericString();
-    const rawNumber = rawValue === null || rawValue === '' ? null : Number(rawValue);
 
-    if (domNumber === rawNumber || (domNumber !== null && Number.isNaN(domNumber))) {
+    if (domNumber === this.getRawNumber() || (domNumber !== null && Number.isNaN(domNumber))) {
       return false;
     }
 
@@ -214,11 +207,11 @@ export class FormIoCurrencyComponent
     return true;
   }
 
-  /**
-   * Leniently parses an amount as the configured locale writes it, with or without currency
-   * symbol and with any kind of whitespace. Returns null for an empty input and NaN when the
-   * text is not an amount.
-   */
+  private getRawNumber(): number | null {
+    const numericString = this._autoNumeric.getNumericString();
+    return numericString === null || numericString === '' ? null : Number(numericString);
+  }
+
   private parseFormatted(formatted: string): number | null {
     const {currencySymbol, digitGroupSeparator, decimalCharacter} = this.autoNumericOptions;
     const stripWhitespace = (text: string): string => (text ?? '').replace(/\s/g, '');
