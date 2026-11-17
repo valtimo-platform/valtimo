@@ -282,6 +282,6 @@ async function parseBody<T>(res: APIResponse): Promise<T> {
 
 async function assertOk(method: string, url: string, res: APIResponse) {
   if (res.ok()) return;
-  const snippet = (await res.text()).slice(0, 120);
+  const snippet = (await res.text()).slice(0, 600);
   throw new ApiError(res.status(), `[api] ${method} ${url} → ${res.status()} | ${snippet}`);
 }
