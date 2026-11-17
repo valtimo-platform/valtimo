@@ -252,10 +252,9 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
 
     // override setValue method to allow for array values
     public setValue(value: any, flags: any = {}): boolean {
-      // Update dataValue first, like base setValue. Else defaults applied via clearOnHide() or
-      // setSubmission() only reach the element, not the form data.
-      // On null, resetValue stops updateValue reading the old value back from the element.
-      // noUpdateEvent keeps resetValue out of the change event; calculated fields reset on it.
+      // dataValue first, like base setValue — else defaults never reach the form data.
+      // Null: resetValue stops updateValue reading the element back; event fired without it,
+      // since resetValue in a change event resets calculated fields.
       const isReset = isNil(value);
       const changed = this.updateValue(
         value,

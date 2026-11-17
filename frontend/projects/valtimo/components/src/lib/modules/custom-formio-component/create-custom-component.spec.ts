@@ -122,4 +122,29 @@ describe('createCustomFormioComponent', () => {
     expect(form.data.iban).toBe('NL20INGB0001234567');
     expect(iban._customAngularElement.value).toBe('NL20INGB0001234567');
   });
+
+  it('should clear the form data and the custom element on a null value', async () => {
+    form = await Formio.createForm(container, {components: [customField('iban')]}, FORM_OPTIONS);
+    const iban = form.getComponent('iban');
+    expect(form.data.iban).toBe(DEFAULT_VALUE);
+
+    const changed = iban.setValue(null);
+
+    // Form.io unsets the key on null
+    expect(changed).toBeTrue();
+    expect(form.data.iban).toBeUndefined();
+    expect(iban.dataValue).toBeNull();
+    expect(iban._customAngularElement.value).toBeNull();
+  });
+
+  it('should not pass resetValue on to the change event on a null value', async () => {
+    form = await Formio.createForm(container, {components: [customField('iban')]}, FORM_OPTIONS);
+    const iban = form.getComponent('iban');
+    const triggerChange = spyOn(iban, 'triggerChange').and.callThrough();
+
+    iban.setValue(null);
+
+    expect(triggerChange).toHaveBeenCalledTimes(1);
+    expect((triggerChange.calls.mostRecent().args[0] as any)?.resetValue).toBeUndefined();
+  });
 });
