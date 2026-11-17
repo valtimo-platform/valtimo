@@ -16,6 +16,7 @@
 
 package com.ritense.valueresolver
 
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -62,6 +63,73 @@ internal class ValueResolverServiceImplTest {
         assertThrows<IllegalStateException> {
             resolverService.resolveValues("doc-id", listOf("ok:a", "bad:b"))
         }
+    }
+
+    @Test
+    fun `validateValues with caseDefinitionId uses the versioned validator`() {
+        val received = mutableListOf<CaseDefinitionId>()
+        val service = ValueResolverServiceImpl(listOf(VersionedValidatorFactory(received)))
+        val caseDefinitionId = CaseDefinitionId("some-case", "1.1.0")
+
+        service.validateValues(caseDefinitionId, listOf("ver:a"))
+
+        assertThat(received).containsExactly(caseDefinitionId)
+    }
+
+    @Test
+    fun `validateValues with caseDefinitionId falls back to the key validator`() {
+        val received = mutableListOf<String>()
+        val service = ValueResolverServiceImpl(listOf(KeyValidatorFactory(received)))
+
+        service.validateValues(CaseDefinitionId("some-case", "1.1.0"), listOf("key:a"))
+
+        assertThat(received).containsExactly("some-case")
+    }
+
+    @Test
+    fun `validateValues with caseDefinitionId propagates validation failure`() {
+        val service = ValueResolverServiceImpl(listOf(FailingValidatorFactory()))
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.validateValues(CaseDefinitionId("some-case", "1.1.0"), listOf("fail:a"))
+        }
+
+        assertThat(exception).hasMessage("invalid a")
+    }
+
+    private class VersionedValidatorFactory(
+        private val received: MutableList<CaseDefinitionId>
+    ) : ValueResolverFactory {
+        override fun supportedPrefix() = "ver"
+
+        override fun createResolver(properties: Map<String, Any>): Function<String, Any?> = Function { it }
+
+        override fun createValidator(caseDefinitionId: CaseDefinitionId): Function<String, Unit> {
+            received.add(caseDefinitionId)
+            return Function { }
+        }
+    }
+
+    private class KeyValidatorFactory(
+        private val received: MutableList<String>
+    ) : ValueResolverFactory {
+        override fun supportedPrefix() = "key"
+
+        override fun createResolver(properties: Map<String, Any>): Function<String, Any?> = Function { it }
+
+        override fun createValidator(documentDefinitionName: String): Function<String, Unit> {
+            received.add(documentDefinitionName)
+            return Function { }
+        }
+    }
+
+    private class FailingValidatorFactory : ValueResolverFactory {
+        override fun supportedPrefix() = "fail"
+
+        override fun createResolver(properties: Map<String, Any>): Function<String, Any?> = Function { it }
+
+        override fun createValidator(caseDefinitionId: CaseDefinitionId): Function<String, Unit> =
+            Function { throw IllegalArgumentException("invalid $it") }
     }
 
     private class StaticValueResolverFactory(

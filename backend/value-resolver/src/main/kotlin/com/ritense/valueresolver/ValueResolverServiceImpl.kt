@@ -144,6 +144,19 @@ class ValueResolverServiceImpl(
         }
     }
 
+    override fun validateValues(
+        caseDefinitionId: CaseDefinitionId,
+        requestedValues: List<String>
+    ) {
+        toResolverFactoryMap(requestedValues).forEach { (resolverFactory, requestedValues) ->
+            val validator = resolverFactory.createValidator(caseDefinitionId)
+
+            requestedValues.forEach { requestedValue ->
+                validator.apply(trimPrefix(requestedValue))
+            }
+        }
+    }
+
     /**
      * This method provides a way of resolving requestedValues into values using defined resolvers.
      * requestedValues are typically prefixed, like 'pv:propertyName'.
