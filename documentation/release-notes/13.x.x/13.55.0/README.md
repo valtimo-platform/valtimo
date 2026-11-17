@@ -47,3 +47,11 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 {% hint style="warning" %}
 Dashboards and widgets with an empty key get a new key when you upgrade, such as `dashboard_2026` or `widget_2026`. Update any access control conditions or autodeploy files that refer to the empty key.
 {% endhint %}
+
+---
+
+## Security
+
+| Severity | Fix |
+|----------|-----|
+| Medium | Upgraded `swagger-ui` in `@valtimo/swagger` to 5.34.1, so projects that install it no longer get the vulnerable DOMPurify 3.2.4 ([GHSA-g32m-chc6-3wqf](https://github.com/advisories/GHSA-g32m-chc6-3wqf)). |
