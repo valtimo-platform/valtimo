@@ -18,6 +18,7 @@ export const DASHBOARD_MANAGEMENT_TEST_IDS = {
   // Dashboard list page
   addButton: 'dashboardManagementAddButton',
   createTitleInput: 'dashboardManagementCreateTitleInput',
+  createKeyInput: 'dashboardManagementCreateKeyInput',
   createDescriptionInput: 'dashboardManagementCreateDescriptionInput',
   createButton: 'dashboardManagementCreateButton',
   cancelDashboardButton: 'dashboardManagementCancelDashboardButton',

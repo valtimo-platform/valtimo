@@ -14,6 +14,30 @@
  * limitations under the License.
  */
 
+:host ::ng-deep {
+  cds-tabs {
+    .cds--tab-content {
+      padding: 0;
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+}
+
+// Tab label with an info icon whose tooltip carries the explanation text.
+.opensearch-tab-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cds-spacing-03);
+
+  &__info {
+    fill: var(--cds-icon-secondary);
+    cursor: help;
+  }
+}
+
 .opensearch-reindex {
   width: 100%;
   display: flex;
@@ -21,15 +45,15 @@
   gap: 24px;
 
   // Fixed table layout so the expanded detail row can align its columns with the
-  // parent table columns: [expand] [status] [started] [finished] [progress].
-  // The expand column is pinned to 3.5rem and each data column is set to 25%.
+  // parent table columns: [expand] [status] [documentDefinition] [started] [finished] [progress].
+  // The expand column is pinned to 3.5rem and each data column is set to 20%.
   // Carbon renders the expanded cell with colspan = dataColumns + 2, which adds a
-  // phantom trailing column; giving the four columns 25% each (100% total, which
+  // phantom trailing column; giving the five columns 20% each (100% total, which
   // together with the fixed expand column over-claims the width) forces the
   // browser to scale them to fill the row exactly and collapse that phantom
-  // column to zero — so the four data columns fill the full width in equal
-  // quarters that the expanded grid (repeat(4, 1fr)) mirrors precisely.
-  ::ng-deep .cds--data-table {
+  // column to zero — so the five data columns fill the full width in equal
+  // fifths that the expanded grid (repeat(5, 1fr)) mirrors precisely.
+  &__runs ::ng-deep .cds--data-table {
     table-layout: fixed;
 
     th.cds--table-expand {
@@ -37,23 +61,24 @@
     }
 
     thead th:not(.cds--table-expand) {
-      width: 25%;
+      width: 20%;
     }
   }
 
   // Align the expanded detail cell so its content starts at the status column
   // (3.5rem = expand-column width) and spans the full remaining table width.
-  ::ng-deep tr[data-child-row] > td {
+  &__runs ::ng-deep tr[data-child-row] > td {
     padding-inline: 3.5rem 0;
   }
 
   &__expanded {
     padding: 8px 0 16px;
     display: grid;
-    // Four equal columns mirroring the (phantom-collapsed) table columns:
-    // 1 = status, 2 = started, 3 = finished, 4 = progress. Cell content is inset
-    // by 1rem (matching Carbon's cell padding) so it lines up with the headers.
-    grid-template-columns: repeat(4, 1fr);
+    // Five equal columns mirroring the (phantom-collapsed) table columns:
+    // 1 = status, 2 = documentDefinition, 3 = started, 4 = finished, 5 = progress.
+    // Cell content is inset by 1rem (matching Carbon's cell padding) so it lines up
+    // with the headers.
+    grid-template-columns: repeat(5, 1fr);
     column-gap: 0;
     row-gap: 8px;
     align-items: start;
@@ -74,12 +99,13 @@
     color: var(--cds-text-primary);
   }
 
-  // Progress bars align with "finished" and span the finished + progress columns.
+  // Progress bars fill the right-hand columns (after the label/value pair) up to
+  // the table edge: columns 3-5 (documentDefinition's value sits in column 2).
   // grid-row end must match the number of label/value rows (5) so the column
   // spans them exactly — a larger value adds empty rows whose row-gap leaves
   // dead space below the last label.
   &__results-column {
-    grid-column: 3 / span 2;
+    grid-column: 3 / span 3;
     grid-row: 1 / 6;
     padding-inline: 1rem;
     display: flex;
@@ -120,6 +146,43 @@
     }
   }
 
+  &__skipped-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--cds-text-error);
+    font-size: 14px;
+
+    svg {
+      fill: var(--cds-support-warning);
+    }
+  }
+
+  &__error {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-spacing-02);
+  }
+
+  &__error-title {
+    font-size: var(--cds-heading-compact-01-font-size);
+    font-weight: var(--cds-heading-compact-01-font-weight);
+    color: var(--cds-text-secondary);
+  }
+
+  &__error-message {
+    font-size: var(--cds-body-compact-01-font-size);
+    color: var(--cds-text-primary);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  &__error-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-spacing-05);
+  }
+
   &__error-link {
     display: inline-flex;
     align-items: center;
@@ -134,3 +197,4 @@
     }
   }
 }
+
