@@ -75,6 +75,15 @@ interface ValueResolverFactory {
         : Function<String, Unit> = Function { }
 
     /**
+     * Same as [createValidator], but validates against a specific case definition version.
+     *
+     * @param caseDefinitionId The case definition version that these properties belong to
+     */
+    @Throws(ValueResolverValidationException::class)
+    fun createValidator(caseDefinitionId: CaseDefinitionId)
+        : Function<String, Unit> = createValidator(caseDefinitionId.key)
+
+    /**
      * This creates a requestedValue resolver within a certain context.
      * The returned resolver can be called multiple times within the same context for different requestedValues.
      *

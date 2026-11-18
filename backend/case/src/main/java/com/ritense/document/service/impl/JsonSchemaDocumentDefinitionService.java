@@ -404,6 +404,18 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     ) {
         var definition = findActiveByName(documentDefinitionName)
             .orElseThrow(() -> new UnknownDocumentDefinitionException(documentDefinitionName));
+        validateJsonPath(definition, jsonPathExpression);
+    }
+
+    @Override
+    public void validateJsonPath(CaseDefinitionId caseDefinitionId, String jsonPathExpression) {
+        var definition = findByBlueprintId(caseDefinitionId)
+            .orElseThrow(() -> new UnknownDocumentDefinitionException(caseDefinitionId.getKey()));
+        validateJsonPath(definition, jsonPathExpression);
+    }
+
+    private void validateJsonPath(JsonSchemaDocumentDefinition definition, String jsonPathExpression) {
+        var documentDefinitionName = definition.id().name();
         if (jsonPathExpression.startsWith("doc:")) {
             jsonPathExpression = "$." + jsonPathExpression.substring("doc:".length());
         } else if (jsonPathExpression.startsWith("case:")) {
@@ -448,9 +460,20 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     ) {
         var definition = findActiveByName(documentDefinitionName)
             .orElseThrow(() -> new UnknownDocumentDefinitionException(documentDefinitionName));
+        validateJsonPointer(definition, jsonPointer);
+    }
+
+    @Override
+    public void validateJsonPointer(CaseDefinitionId caseDefinitionId, String jsonPointer) {
+        var definition = findByBlueprintId(caseDefinitionId)
+            .orElseThrow(() -> new UnknownDocumentDefinitionException(caseDefinitionId.getKey()));
+        validateJsonPointer(definition, jsonPointer);
+    }
+
+    private void validateJsonPointer(JsonSchemaDocumentDefinition definition, String jsonPointer) {
         if (!isValidJsonPointer(definition, jsonPointer)) {
             throw new ValidationException(
-                "JsonPointer '" + jsonPointer + "' doesn't point to any property inside document definition '" + documentDefinitionName + "'");
+                "JsonPointer '" + jsonPointer + "' doesn't point to any property inside document definition '" + definition.id().name() + "'");
         }
     }
 

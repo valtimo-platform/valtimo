@@ -24,6 +24,7 @@ import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_LIST
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import com.ritense.logging.withLoggingContext
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONArray
 import org.json.JSONObject
@@ -45,13 +46,14 @@ class CaseListImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        val caseDefinitionName = request.caseDefinitionId!!.key
-        withLoggingContext("jsonSchemaDocumentName" to caseDefinitionName) {
-            deployColumns(caseDefinitionName, request.content.toString(Charsets.UTF_8))
+        val caseDefinitionId = request.caseDefinitionId!!
+        withLoggingContext("jsonSchemaDocumentName" to caseDefinitionId.key) {
+            deployColumns(caseDefinitionId, request.content.toString(Charsets.UTF_8))
         }
     }
 
-    fun deployColumns(caseDefinitionName: String, jsonContent: String) {
+    fun deployColumns(caseDefinitionId: CaseDefinitionId, jsonContent: String) {
+        val caseDefinitionName = caseDefinitionId.key
         validate(jsonContent)
 
         val existingColumns = caseDefinitionService.getListColumns(caseDefinitionName)
@@ -59,7 +61,7 @@ class CaseListImporter(
         val formFlowDefinitionConfig = objectMapper.readValue(jsonContent,
             object : TypeReference<List<CaseListColumnDto>>() {})
 
-        caseDefinitionService.updateListColumns(caseDefinitionName, formFlowDefinitionConfig)
+        caseDefinitionService.updateListColumns(caseDefinitionName, formFlowDefinitionConfig, caseDefinitionId)
 
         val keysToLoad = formFlowDefinitionConfig.map { it.key }
         val columnsToDelete = existingColumns.filterNot { keysToLoad.contains(it.key) }
