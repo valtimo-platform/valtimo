@@ -97,19 +97,18 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 | Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
 | Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
 | Case management | Importing a new version of a case definition no longer fails when its search fields, case list columns or task list columns use a property that only exists in that version's document definition. |
-| Currency component | The currency component now accepts values filled in automatically by the browser. |
-| Dashboard | Dashboards and widgets with a name without letters, such as `2026`, now get a valid key. |
-| Dashboard | Dashboards and widgets that were saved with an empty key can be opened, edited and deleted again. |
-| Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
-| Plugins | The Verzoek plugin now validates its document mappings against the selected case definition version instead of the active version. |
 | Case search | A case that OpenSearch cannot index no longer disappears from its case list. |
 | Case search | A field whose type changes between versions of a case definition no longer causes cases of the newer version to be skipped. |
 | Case search | A full reindex no longer fails with `Limit of total fields [1000] has been exceeded` as the number of case definitions grows. |
 | Case search | A reindex that skips cases now ends as *Completed with errors* and shows the number of skipped cases, instead of reporting success. |
 | Case search | Case lists no longer come back empty when two case definitions store differently-typed values in the same field. |
 | Case search | Large values, or a field that holds an object in one case and a plain value in another, no longer cause cases to be skipped. |
+| Currency component | The currency component now accepts values filled in automatically by the browser. |
+| Dashboard | Dashboards and widgets with a name without letters, such as `2026`, now get a valid key. |
+| Dashboard | Dashboards and widgets that were saved with an empty key can be opened, edited and deleted again. |
+| Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
+| Plugins | The Verzoek plugin now validates its document mappings against the selected case definition version instead of the active version. |
 | Process links | The application starts again after upgrading from 12.x when a case type had an upload process linked. |
-
 
 {% hint style="warning" %}
 Dashboards and widgets with an empty key get a new key when you upgrade, such as `dashboard_2026` or `widget_2026`. Update any access control conditions or autodeploy files that refer to the empty key.
