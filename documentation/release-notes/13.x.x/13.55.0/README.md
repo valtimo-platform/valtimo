@@ -99,7 +99,6 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 | Case management | Importing a new version of a case definition no longer fails when its search fields, case list columns or task list columns use a property that only exists in that version's document definition. |
 | Dashboard | Dashboards and widgets with a name without letters, such as `2026`, now get a valid key. |
 | Dashboard | Dashboards and widgets that were saved with an empty key can be opened, edited and deleted again. |
-| Forms | An IBAN or currency field with a default value now counts as filled in straight away, also when a condition shows the field or it is part of a group of fields. |
 | Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
 | Plugins | The Verzoek plugin now validates its document mappings against the selected case definition version instead of the active version. |
 | Case search | A case that OpenSearch cannot index no longer disappears from its case list. |
