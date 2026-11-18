@@ -70,7 +70,11 @@ public interface DocumentDefinitionService {
 
     void validateJsonPath(String documentDefinitionName, String jsonPathExpression) throws ValidationException;
 
+    void validateJsonPath(CaseDefinitionId caseDefinitionId, String jsonPathExpression) throws ValidationException;
+
     boolean isValidJsonPath(JsonSchemaDocumentDefinition definition, String jsonPathExpression);
 
     void validateJsonPointer(String documentDefinitionName, String jsonPointer) throws ValidationException;
+
+    void validateJsonPointer(CaseDefinitionId caseDefinitionId, String jsonPointer) throws ValidationException;
 }

@@ -27,6 +27,13 @@
       </span>
     </cds-checkbox>
 
+    <cds-checkbox formControlName="recreateIndex">
+      <span class="label-with-tooltip">
+        {{ 'adminSettings.opensearch.reindex.recreateIndex' | translate }}
+        <v-tooltip-icon [tooltip]="'adminSettings.opensearch.reindex.tooltips.recreateIndex' | translate"></v-tooltip-icon>
+      </span>
+    </cds-checkbox>
+
     <cds-dropdown
       [label]="'adminSettings.opensearch.reindex.documentDefinitionName' | translate"
       [placeholder]="'adminSettings.opensearch.reindex.documentDefinitionPlaceholder' | translate"
@@ -36,10 +43,15 @@
     </cds-dropdown>
 
     <cds-date-picker
-      [label]="'adminSettings.opensearch.reindex.modifiedAfter' | translate"
-      placeholder="DD-MM-YYYY"
       [dateFormat]="'d-m-Y'"
-      (valueChange)="onDateSelected($event)"
+      [helperText]="
+        formGroup.get('recreateIndex')?.value
+          ? ('adminSettings.opensearch.reindex.modifiedAfterUnavailable' | translate)
+          : ''
+      "
+      [label]="'adminSettings.opensearch.reindex.modifiedAfter' | translate"
+      formControlName="modifiedAfter"
+      placeholder="DD-MM-YYYY"
     ></cds-date-picker>
   </section>
 

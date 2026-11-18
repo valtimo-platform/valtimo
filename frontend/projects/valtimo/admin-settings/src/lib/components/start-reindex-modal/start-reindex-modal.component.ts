@@ -15,6 +15,7 @@
  */
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
@@ -60,15 +61,16 @@ export class StartReindexModalComponent {
 
   public readonly formGroup: FormGroup = this._fb.group({
     pruneOrphans: [false],
+    recreateIndex: [false],
     documentDefinitionName: [null],
     modifiedAfter: [null],
   });
 
-  constructor(private readonly _fb: FormBuilder) {}
-
-  public onDateSelected(event: string[]): void {
-    const dateValue = event?.[0] || null;
-    this.formGroup.patchValue({modifiedAfter: dateValue});
+  constructor(private readonly _fb: FormBuilder) {
+    this.formGroup
+      .get('recreateIndex')
+      ?.valueChanges.pipe(takeUntilDestroyed())
+      .subscribe(recreateIndex => this._toggleModifiedAfter(!!recreateIndex));
   }
 
   public onCancel(): void {
@@ -90,12 +92,17 @@ export class StartReindexModalComponent {
       request.pruneOrphans = true;
     }
 
+    if (formValue.recreateIndex) {
+      request.recreateIndex = true;
+    }
+
     if (formValue.documentDefinitionName?.value) {
       request.documentDefinitionName = formValue.documentDefinitionName.value;
     }
 
-    if (formValue.modifiedAfter) {
-      request.modifiedAfter = this._formatDateToIso(formValue.modifiedAfter);
+    const modifiedAfter = formValue.modifiedAfter?.[0];
+    if (modifiedAfter) {
+      request.modifiedAfter = this._formatDateToIso(modifiedAfter);
     }
 
     return request;
@@ -116,9 +123,22 @@ export class StartReindexModalComponent {
     return date;
   }
 
+  private _toggleModifiedAfter(recreateIndex: boolean): void {
+    const modifiedAfterControl = this.formGroup.get('modifiedAfter');
+    if (!modifiedAfterControl) return;
+
+    if (recreateIndex) {
+      modifiedAfterControl.reset(null);
+      modifiedAfterControl.disable();
+    } else {
+      modifiedAfterControl.enable();
+    }
+  }
+
   private _resetForm(): void {
     this.formGroup.reset({
       pruneOrphans: false,
+      recreateIndex: false,
       documentDefinitionName: null,
       modifiedAfter: null,
     });
