@@ -109,10 +109,28 @@ test.describe('Group case list', () => {
   });
 
   test.afterAll(async () => {
-    await deleteQuickSearchViaApi(group.key, quickSearchTitle);
-    for (const id of Object.values(documentIds)) await deleteDocumentViaApi(id);
-    for (const key of createdGroupKeys) await deleteGroupViaApi(key);
-    await context.close();
+    if (group?.key) {
+      try {
+        await deleteQuickSearchViaApi(group.key, quickSearchTitle);
+      } catch {
+        /* best-effort */
+      }
+    }
+    for (const id of Object.values(documentIds)) {
+      try {
+        await deleteDocumentViaApi(id);
+      } catch {
+        /* best-effort */
+      }
+    }
+    for (const key of createdGroupKeys) {
+      try {
+        await deleteGroupViaApi(key);
+      } catch {
+        /* best-effort */
+      }
+    }
+    await context?.close();
   });
 
   // ─── 2.10 Columns and rows ──────────────────────────────────────
@@ -388,9 +406,10 @@ test.describe('Group case list', () => {
 
     test('the not-found title is translated on a full page load in Dutch', async () => {
       const notFound = page.getByTestId(CASE_LIST_TEST_IDS.groupNotFound);
-      await pinLanguage(page, 'nl');
+      await page.goto('/groups/e2e-does-not-exist');
       try {
-        await page.goto('/groups/e2e-does-not-exist');
+        // Reload inside pinLanguage is the Dutch full page load; a goto right after it races app boot (ERR_ABORTED)
+        await pinLanguage(page, 'nl');
 
         await expect(notFound).toContainText('Dossiergroep niet beschikbaar');
         await expect(notFound).not.toContainText('case.noResults.groupNotFound.title');

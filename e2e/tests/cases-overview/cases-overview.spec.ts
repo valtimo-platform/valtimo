@@ -47,15 +47,20 @@ test.use({storageState: undefined});
 test.describe.configure({mode: 'serial'});
 
 test.describe('Cases overview and pinned items', () => {
+  const SHOW_ALL_TOGGLE = 'showAllCaseDefinitionsInMenu';
   let context;
   let page;
   let overviewPage: CasesOverviewPage;
   let group: CaseGroup;
   let caseTypeName: string;
   let originalPins: PinnedItem[] = [];
+  let originalShowAllToggle: boolean | undefined;
   const createdGroupKeys: string[] = [];
 
   test.beforeAll(async ({browser, baseURL}) => {
+    // Upgraded installs get this toggle on, which replaces pins with all case types in the sidebar
+    originalShowAllToggle = (await getFeatureToggleOverridesViaApi())[SHOW_ALL_TOGGLE];
+    await setFeatureToggleViaApi(SHOW_ALL_TOGGLE, false);
     originalPins = await clearPinnedItemsViaApi();
     // "E2E" sorts before the case type name, so alphabetical and pin order differ
     group = await createGroupWithMembersViaApi(
@@ -81,6 +86,11 @@ test.describe('Cases overview and pinned items', () => {
       // Best effort
     }
     for (const key of createdGroupKeys) await deleteGroupViaApi(key);
+    try {
+      await restoreFeatureToggleViaApi(SHOW_ALL_TOGGLE, originalShowAllToggle);
+    } catch {
+      // Best effort
+    }
     try {
       await overviewPage.clearPinInfoDismissal();
     } catch {
@@ -378,7 +388,6 @@ test.describe('Cases overview and pinned items', () => {
       return `rgb(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255})`;
     };
     const GROUP_COLOR = '#FA4D56';
-    const SHOW_ALL_TOGGLE = 'showAllCaseDefinitionsInMenu';
 
     let coloredGroup: CaseGroup;
     let plainGroup: CaseGroup;
