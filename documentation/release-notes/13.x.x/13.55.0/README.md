@@ -106,7 +106,6 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 | Currency component | The currency component now accepts values filled in automatically by the browser. |
 | Dashboard | Dashboards and widgets with a name without letters, such as `2026`, now get a valid key. |
 | Dashboard | Dashboards and widgets that were saved with an empty key can be opened, edited and deleted again. |
-| Forms | A form that a process link uses can no longer be deleted. Making a case definition final, exporting it and creating a draft now give a clear error when a process link points to a missing form. Case definitions that are already final and contain such a link are not repaired by this change. |
 | Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
 | Plugins | The Verzoek plugin now validates its document mappings against the selected case definition version instead of the active version. |
 | Process links | The application starts again after upgrading from 12.x when a case type had an upload process linked. |
