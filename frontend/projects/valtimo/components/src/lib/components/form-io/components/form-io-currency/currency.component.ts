@@ -176,13 +176,17 @@ export class FormIoCurrencyComponent
     }
 
     this.syncDisplayedValue();
+    this._autoNumeric.reformat();
     this.emitIfChanged();
   }
 
   private onInput(): void {
-    if (this._autoNumeric && this.syncDisplayedValue()) {
-      this.emitIfChanged();
+    if (!this._autoNumeric) {
+      return;
     }
+
+    this.syncDisplayedValue();
+    this.emitIfChanged();
   }
 
   private emitIfChanged(): void {
@@ -196,15 +200,14 @@ export class FormIoCurrencyComponent
     this.valueChange.emit(value);
   }
 
-  private syncDisplayedValue(): boolean {
+  private syncDisplayedValue(): void {
     const domNumber = this.parseFormatted(this.currencyElement.nativeElement.value);
 
     if (domNumber === this.getRawNumber() || (domNumber !== null && Number.isNaN(domNumber))) {
-      return false;
+      return;
     }
 
     this._autoNumeric.set(domNumber ?? '');
-    return true;
   }
 
   private getRawNumber(): number | null {
@@ -223,16 +226,32 @@ export class FormIoCurrencyComponent
     if (symbol) {
       normalized = normalized.split(symbol).join('');
     }
+    const decimal = decimalCharacter as string;
+    const lastGroupIndex = group ? normalized.lastIndexOf(group) : -1;
+
+    // Group separator not followed by 3 digits is a decimal written the other locale's way, e.g. "250.5" in nl-NL
+    if (
+      lastGroupIndex !== -1 &&
+      !normalized.includes(decimal) &&
+      normalized.length - lastGroupIndex - group.length !== 3
+    ) {
+      normalized = `${normalized.slice(0, lastGroupIndex)}${decimal}${normalized.slice(lastGroupIndex + group.length)}`;
+    }
     if (group) {
       normalized = normalized.split(group).join('');
     }
-    normalized = normalized.split(decimalCharacter as string).join('.');
+    normalized = normalized.split(decimal).join('.');
 
     return normalized === '' ? null : Number(normalized);
   }
 
   private renderValue(): void {
     if (!this._autoNumeric) {
+      return;
+    }
+
+    // Skip when unchanged — reformatting mid-typing moves the caret
+    if (this._value === this.getRawNumber()) {
       return;
     }
 

@@ -201,6 +201,37 @@ describe('FormIoCurrencyComponent', () => {
     });
   });
 
+  // AutoNumeric fires a native input event on every keystroke, before any blur or change.
+  describe('a value being typed', () => {
+    const typeKeystroke = (rawValue: number, displayed?: string): void => {
+      const element = component.currencyElement.nativeElement;
+      (component as any)._autoNumeric.set(rawValue);
+      if (displayed !== undefined) element.value = displayed;
+      element.dispatchEvent(new Event('input', {bubbles: true}));
+    };
+
+    it('should write every keystroke to the model before the input loses focus', () => {
+      applyInputs();
+      const values = emittedValues();
+
+      typeKeystroke(1);
+      typeKeystroke(12);
+      typeKeystroke(123);
+
+      expect(values).toEqual([1, 12, 123]);
+    });
+
+    it('should not reformat the input when the model echoes the typed value back', () => {
+      applyInputs();
+      typeKeystroke(1234.5, '€ 1.234,5');
+
+      fixture.componentRef.setInput('value', 1234.5);
+      fixture.detectChanges();
+
+      expect(renderedValue()).toBe('€ 1.234,5');
+    });
+  });
+
   describe('the input attributes the browser uses to offer previous values', () => {
     const input = (): HTMLInputElement => component.currencyElement.nativeElement;
 
@@ -272,6 +303,54 @@ describe('FormIoCurrencyComponent', () => {
       autofill(component.currencyElement.nativeElement.value);
 
       expect(values).toEqual([]);
+    });
+
+    it('should read a dot as the decimal character in a locale that groups with dots', () => {
+      applyInputs();
+      const values = emittedValues();
+
+      autofill('250.5');
+
+      expect(values).toEqual([250.5]);
+      expect(renderedValue()).toBe('€ 250,50');
+    });
+
+    it('should still read a dot followed by three digits as a thousands separator', () => {
+      applyInputs();
+      const values = emittedValues();
+
+      autofill('1.234');
+
+      expect(values).toEqual([1234]);
+    });
+
+    it('should read a comma as the decimal character in a locale that groups with commas', () => {
+      applyInputs(undefined, 'en-US', 'USD');
+      const values = emittedValues();
+
+      autofill('250,5');
+
+      expect(values).toEqual([250.5]);
+    });
+
+    it('should restore the current amount when the autofilled text is not a number', () => {
+      applyInputs(100);
+      const values = emittedValues();
+
+      autofill('abc', 'input');
+      autofill('abc', 'change');
+
+      expect(values).toEqual([]);
+      expect(renderedValue()).toBe('€ 100,00');
+    });
+
+    it('should format an unformatted autofilled amount equal to the current one', () => {
+      applyInputs(999.5, 'en-US', 'USD');
+
+      autofill('999.50', 'input');
+      autofill('999.50', 'change');
+
+      expect(renderedValue()).toBe('$999.50');
     });
   });
 });
