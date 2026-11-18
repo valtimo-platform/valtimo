@@ -6,104 +6,14 @@ Release date: 18-11-2026
 
 ## Migration
 
+{% hint style="warning" %}
+The changes in this section are technical in nature and are intended for developers and operators
+who deploy and maintain Valtimo.
+{% endhint %}
+
 * [Scheduled jobs on more than one server](https://ritense-1.gitbook.io/valtimo-dev-docs/operations/scheduled-jobs)
   — enable ShedLock in your own implementation if it runs on more than one server. No action is
   needed when you use the default Docker images.
-
----
-
-## New Features
-
-### Contracts between external plugins
-
-External plugins can now work together. One plugin can offer a service, such as generating a letter or looking up a registration, and another plugin can use it. Plugins never talk to each other directly: every request goes through Valtimo, and you decide which plugin configuration answers it.
-
-- When you configure or edit a plugin that uses other plugins, the **Permissions & plugins** step lists the contracts it calls. Choose the plugin configuration that answers each contract, or leave it unbound. A request to an unbound contract fails.
-- The same step shows which contracts a plugin offers to other plugins.
-- When a new plugin version calls a new contract, accepting it binds that contract automatically only where exactly one configuration provides it. Everywhere else, bind it yourself.
-- Requests that take longer are tracked as contract jobs. The new **Contract jobs** page under **Admin > Integrations** shows their status. From there you can cancel a job that is still running, stop delivering a reply, or deliver a reply again.
-- Opening the request and result of a job is recorded in the audit log, because they can contain personal data.
-- A plugin configuration cannot be deleted while another configuration is bound to it, or while it has an open contract job.
-- Contracts need plugin host 1.1.0. Plugins that use contracts are built with plugin SDK 1.1.0.
-
-More information: [Contracts between plugins](../../../configuration-guides/plugins/external-plugins/contracts.md).
-
-### See and retry cases that OpenSearch could not index
-
-The new **Rejected cases** tab on *Admin > OpenSearch* lists every case that OpenSearch could not
-index, with its case definition, the number of attempts and the next automatic retry. After fixing
-the cause, retry a single case with **Retry now** or every case with **Retry all**, instead of
-waiting for the next automatic retry.
-
-**[Try it out →](../../../configuration-guides/opensearch/README.md#rejected-cases)**
-
----
-
-## Enhancements
-
-### External plugin screens can open a case page
-
-A screen of an external plugin can now open a case page, for example through a **Dossier** button in a side panel. The page only opens after the user clicks in the plugin screen, and the usual permissions of the case page apply.
-
-### Plugin settings screens fit their content
-
-The settings screen of an external plugin now grows with its content when you edit a plugin configuration or configure a plugin action in a process, just like it already did when you configure a new plugin.
-
-### Rebuild the search index of one case definition without downtime
-
-On *Admin > OpenSearch*, a reindex with **Rebuild / migrate index** now builds a fresh index and
-switches over in one step, so case lists keep working while it runs. Choose a case definition to
-rebuild only its index, or keep **All case definitions** to rebuild every index.
-
-**[Try it out →](../../../configuration-guides/opensearch/README.md#starting-a-reindex)**
-
-### Enabling OpenSearch indexes existing cases automatically
-
-When you enable OpenSearch on an installation that already has cases, they are now indexed in the
-background. Case lists keep using the database until that is done, so you no longer have to start a
-reindex first.
-
-### Faster team lists and case lists
-
-The team list, the case list and assigning a case to a team no longer load every team and all
-its members at once. These pages respond faster and use less memory in environments with many
-teams or large teams. Case lists also load case tags in fewer database queries.
-
-### Editable dashboard key
-
-When you create a dashboard, you can now edit its key, as elsewhere in the application.
-
----
-
-## Bugfixes
-
-| Area | Fix |
-|------|-----|
-| Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
-| Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
-| Case search | A case that OpenSearch cannot index no longer disappears from its case list. |
-| Case search | A field whose type changes between versions of a case definition no longer causes cases of the newer version to be skipped. |
-| Case search | A full reindex no longer fails with `Limit of total fields [1000] has been exceeded` as the number of case definitions grows. |
-| Case search | A reindex that skips cases now ends as *Completed with errors* and shows the number of skipped cases, instead of reporting success. |
-| Case search | Case lists no longer come back empty when two case definitions store differently-typed values in the same field. |
-| Case search | Large values, or a field that holds an object in one case and a plain value in another, no longer cause cases to be skipped. |
-| Dashboard | Dashboards and widgets with a name without letters, such as `2026`, now get a valid key. |
-| Dashboard | Dashboards and widgets that were saved with an empty key can be opened, edited and deleted again. |
-| Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
-| Process links | The application starts again after upgrading from 12.x when a case type had an upload process linked. |
-
-
-{% hint style="warning" %}
-Dashboards and widgets with an empty key get a new key when you upgrade, such as `dashboard_2026` or `widget_2026`. Update any access control conditions or autodeploy files that refer to the empty key.
-{% endhint %}
-
-## Migration
-
-{% hint style="warning" %}
-The changes in this section are technical in nature and are intended for developers and operators
-who deploy and maintain Valtimo and its OpenSearch cluster.
-{% endhint %}
-
 * **OpenSearch 2.7 or later is required.** Object content is indexed with the `flat_object` field
   type, which OpenSearch introduced in 2.7. Elasticsearch is not supported.
 * **Migrate to the new index topology.** There is now one index per case definition version, so
@@ -135,3 +45,79 @@ who deploy and maintain Valtimo and its OpenSearch cluster.
   rebuild, existing cases are still being indexed, or cases were rejected or failed to index.
   Spring Boot leaves custom statuses out of the overall health unless they are listed in
   `management.endpoint.health.status.order`, for example `DOWN,OUT_OF_SERVICE,WARN,UP,UNKNOWN`.
+
+---
+
+## New Features
+
+### See and retry cases that OpenSearch could not index
+
+The new **Rejected cases** tab on *Admin > OpenSearch* lists every case that OpenSearch could not
+index, with its case definition, the number of attempts and the next automatic retry. After fixing
+the cause, retry a single case with **Retry now** or every case with **Retry all**, instead of
+waiting for the next automatic retry.
+
+**[Try it out →](../../../configuration-guides/opensearch/README.md#rejected-cases)**
+
+---
+
+## Enhancements
+
+### Rebuild the search index of one case definition without downtime
+
+On *Admin > OpenSearch*, a reindex with **Rebuild / migrate index** now builds a fresh index and
+switches over in one step, so case lists keep working while it runs. Choose a case definition to
+rebuild only its index, or keep **All case definitions** to rebuild every index.
+
+**[Try it out →](../../../configuration-guides/opensearch/README.md#starting-a-reindex)**
+
+### Enabling OpenSearch indexes existing cases automatically
+
+When you enable OpenSearch on an installation that already has cases, they are now indexed in the
+background. Case lists keep using the database until that is done, so you no longer have to start a
+reindex first.
+
+### Faster team lists and case lists
+
+The team list, the case list and assigning a case to a team no longer load every team and all
+its members at once. These pages respond faster and use less memory in environments with many
+teams or large teams. Case lists also load case tags in fewer database queries.
+
+### Editable dashboard key
+
+When you create a dashboard, you can now edit its key, as elsewhere in the application.
+
+---
+
+## Bugfixes
+
+| Area | Fix |
+|------|-----|
+| Access control | Exporting a role now includes the context (resource type and conditions) configured on its permissions. |
+| Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
+| Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
+| Case management | Importing a new version of a case definition no longer fails when its search fields, case list columns or task list columns use a property that only exists in that version's document definition. |
+| Case search | A case that OpenSearch cannot index no longer disappears from its case list. |
+| Case search | A field whose type changes between versions of a case definition no longer causes cases of the newer version to be skipped. |
+| Case search | A full reindex no longer fails with `Limit of total fields [1000] has been exceeded` as the number of case definitions grows. |
+| Case search | A reindex that skips cases now ends as *Completed with errors* and shows the number of skipped cases, instead of reporting success. |
+| Case search | Case lists no longer come back empty when two case definitions store differently-typed values in the same field. |
+| Case search | Large values, or a field that holds an object in one case and a plain value in another, no longer cause cases to be skipped. |
+| Currency component | The currency component now accepts values filled in automatically by the browser. |
+| Dashboard | Dashboards and widgets with a name without letters, such as `2026`, now get a valid key. |
+| Dashboard | Dashboards and widgets that were saved with an empty key can be opened, edited and deleted again. |
+| Notificaties API | With more than one server, the cleanup of handled notifications no longer fails, and a failed cleanup no longer causes notifications to be handled twice. |
+| Plugins | The Verzoek plugin now validates its document mappings against the selected case definition version instead of the active version. |
+| Process links | The application starts again after upgrading from 12.x when a case type had an upload process linked. |
+
+{% hint style="warning" %}
+Dashboards and widgets with an empty key get a new key when you upgrade, such as `dashboard_2026` or `widget_2026`. Update any access control conditions or autodeploy files that refer to the empty key.
+{% endhint %}
+
+---
+
+## Security
+
+| Severity | Fix |
+|----------|-----|
+| Medium | Upgraded `swagger-ui` in `@valtimo/swagger` to 5.34.1, so projects that install it no longer get the vulnerable DOMPurify 3.2.4 |
