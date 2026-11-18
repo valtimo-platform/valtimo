@@ -1,4 +1,159 @@
 {
+  "exchange": {
+    "title": "Exchange",
+    "notConfigured": "The Exchange is not configured.",
+    "notConfiguredDescription": "Ask your administrator to configure the Exchange URL.",
+    "catalog": {
+      "search": {
+        "label": "Search publications",
+        "placeholder": "Search by name"
+      },
+      "resultCount": "{{count}} results",
+      "sort": {
+        "label": "Sort by",
+        "nameAsc": "Name A-Z",
+        "recent": "Most recent"
+      },
+      "filters": {
+        "type": "Type",
+        "tags": "Tags",
+        "clear": "Clear filters"
+      },
+      "type": {
+        "CaseDefinition": "Case definition",
+        "BuildingBlock": "Building block",
+        "Plugin": "Plugin"
+      },
+      "by": "By {{publisher}}",
+      "valtimoVersion": "Valtimo {{version}}",
+      "valtimoVersionNewer": "Valtimo {{version}} - newer",
+      "empty": "No publications match your search.",
+      "error": {
+        "title": "The Exchange could not be reached",
+        "retry": "Try again"
+      }
+    },
+    "detail": {
+      "install": "Install {{version}}",
+      "installAction": "Install",
+      "notInstallable": "This publication can't be installed from Valtimo.",
+      "viewRepository": "View repository",
+      "notAvailable": "This publication is not available.",
+      "backToCatalog": "Back to the Exchange",
+      "description": "Description",
+      "implementationInstructions": "Implementation instructions",
+      "screenshots": "Screenshots",
+      "screenshotAlt": "Screenshot {{index}}",
+      "detailsHeading": "Details",
+      "publisher": "Publisher",
+      "visitWebsite": "Visit website",
+      "fields": {
+        "releaseDate": "Release date",
+        "platform": "Platform",
+        "version": "Version",
+        "license": "License",
+        "repository": "Repository",
+        "type": "Type"
+      },
+      "dependencies": {
+        "title": "Dependencies",
+        "empty": "No dependencies.",
+        "plugin": "Plugin",
+        "buildingBlock": "Building block",
+        "type": "Type",
+        "name": "Name",
+        "status": "Status"
+      },
+      "versions": {
+        "title": "Versions",
+        "version": "Version",
+        "date": "Date",
+        "default": "Default",
+        "noReleaseNotes": "No release notes for this version."
+      }
+    },
+    "estafette": {
+      "heading": "Phase in the relay model",
+      "info": "About this phase",
+      "label": {
+        "HELP_WANTED": "Help Wanted",
+        "COMMUNITY": "Community",
+        "CANDIDATE": "Candidate",
+        "HALL_OF_FAME": "Hall of Fame"
+      },
+      "description": {
+        "HELP_WANTED": "There's demand for this artifact, but it isn't finished. Contributions are welcome.",
+        "COMMUNITY": "Built by the community and in use at one or more organisations. Usable, but may still change.",
+        "CANDIDATE": "Candidate for the Hall of Fame. Works broadly, but still lacks evidence or documentation.",
+        "HALL_OF_FAME": "Stable and proven in production at two or more organisations. Recommended for use."
+      },
+      "neededPrefix": "Needed for",
+      "needed": {
+        "HELP_WANTED": [
+          "Built according to the GZAC guidelines",
+          "In use at one or more organisations",
+          "Documentation and release notes present"
+        ],
+        "COMMUNITY": [
+          "Naming consistent with existing artifacts",
+          "Tested robustly across multiple environments",
+          "Shared ownership: at least two organisations involved",
+          "Documentation is complete"
+        ],
+        "CANDIDATE": [
+          "Demonstrably in production at two or more organisations",
+          "Semantic versioning with a changelog",
+          "Automated tests present"
+        ]
+      }
+    },
+    "license": {
+      "EUPL_1_2": "EUPL 1.2",
+      "MIT": "MIT",
+      "Apache_2_0": "Apache License 2.0",
+      "BSD_3_Clause": "BSD 3-Clause",
+      "GPL_3_0": "GNU GPL v3",
+      "LGPL_3_0": "GNU LGPL v3",
+      "AGPL_3_0": "GNU AGPL v3",
+      "MPL_2_0": "Mozilla Public License 2.0",
+      "CC0_1_0": "CC0 1.0 (public domain)",
+      "CC_BY_4_0": "CC BY 4.0",
+      "Other": "Other"
+    },
+    "confirm": {
+      "title": "Install from the Exchange?",
+      "name": "Name",
+      "type": "Type",
+      "version": "Version",
+      "releaseNotes": "Release notes",
+      "typeCaseDefinition": "Case definition",
+      "typeBuildingBlock": "Building block",
+      "compatibilityWarning": "Built for Valtimo {{valtimoVersion}}; this installation runs {{runningValtimoVersion}}.",
+      "dependencies": "Dependencies",
+      "noDependencies": "No dependencies.",
+      "state": {
+        "INSTALLED": "Installed",
+        "NOT_INSTALLED": "Not installed",
+        "CONFIGURED": "Configured",
+        "NOT_CONFIGURED": "Not configured",
+        "UNKNOWN": "Couldn't check"
+      },
+      "missingBuildingBlocksWarning": "Install the missing building blocks first, or the case definition may not work.",
+      "install": "Install"
+    },
+    "install": {
+      "success": "Installed from the Exchange",
+      "successCaseDefinition": "The case definition was imported.",
+      "successBuildingBlock": "The building block was imported.",
+      "viewInstalled": "View",
+      "error": "The Exchange artifact could not be installed"
+    },
+    "gallery": {
+      "previous": "Previous screenshot",
+      "next": "Next screenshot",
+      "counter": "{{current}} of {{total}}"
+    }
+  },
   "events": {
     "TaskCompletedEvent": "Task completed > {{taskName}}",
     "TaskAssignedEvent": "Task assigned > {{taskName}}",

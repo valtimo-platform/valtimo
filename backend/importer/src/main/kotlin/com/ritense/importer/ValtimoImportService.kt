@@ -342,7 +342,7 @@ class ValtimoImportService(
     override fun importBuildingBlockDefinitions(
         inputStream: InputStream,
         buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
-    ) {
+    ): List<BuildingBlockDefinitionId> {
         val entriesWithRawPath = readZipEntriesWithRawPath(inputStream)
         val buildingBlockEntries = groupBuildingBlockEntries(entriesWithRawPath)
 
@@ -350,7 +350,7 @@ class ValtimoImportService(
             throw IllegalStateException("No building block definition file found in the provided archive")
         }
 
-        buildingBlockEntries.values.forEach { entries ->
+        return buildingBlockEntries.values.mapNotNull { entries ->
             importBuildingBlockDefinition(entries, buildingBlockDefinitionIdList)
         }
     }
@@ -359,12 +359,12 @@ class ValtimoImportService(
     override fun importBuildingBlockDefinition(
         entries: List<ZipFileEntry>,
         buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
-    ) {
-        runImporter {
+    ): BuildingBlockDefinitionId? {
+        return runImporter {
             val importerEntriesList = getEntriesByImporter(
                 entries
             ) { importer -> importer.partOfBuildingBlockDefinition() }
-                .ifEmpty { return@runImporter }
+                .ifEmpty { return@runImporter null }
 
             val filteredImporterEntriesList = importerEntriesList
                 .filter { it.key.type() == BUILDING_BLOCK_DEFINITION }
@@ -382,7 +382,7 @@ class ValtimoImportService(
             )
 
             if (buildingBlockDefinitionIdList.contains(buildingBlockDefinitionId)) {
-                return@runImporter
+                return@runImporter buildingBlockDefinitionId
             }
 
             importerEntriesList
@@ -415,6 +415,8 @@ class ValtimoImportService(
                         )
                     }
                 }
+
+            buildingBlockDefinitionId
         }
     }
 

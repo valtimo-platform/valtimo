@@ -49,6 +49,7 @@ export * from './lib/components/drag-drop-list/drag-drop-list.component';
 
 export * from './lib/components/right-sidebar/right-sidebar.component';
 export * from './lib/components/right-sidebar/right-sidebar.module';
+export * from './lib/components/version/version.service';
 
 export * from './lib/components/side-panel/side-panel.component';
 

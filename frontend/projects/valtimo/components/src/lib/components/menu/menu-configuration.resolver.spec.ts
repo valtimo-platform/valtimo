@@ -21,6 +21,16 @@ import {buildMenuConfigurationFromRuntimeMenu} from './menu-configuration.seed';
 import {menuLinkToString} from './menu-item-catalog';
 
 describe('menu configuration resolver', () => {
+  it('resolves the exchange catalog entry as an admin item gated on ExchangeEnabled', () => {
+    const config: MenuConfiguration = {version: 1, items: [{kind: 'catalog', itemId: 'exchange'}]};
+
+    const [exchange] = resolveMenuConfiguration(config);
+
+    expect(exchange.link).toEqual(['/exchange']);
+    expect(exchange.roles).toEqual([ROLE_ADMIN]);
+    expect(exchange.includeFunction).toEqual(IncludeFunction.ExchangeEnabled);
+  });
+
   it('fills catalog defaults for a bare catalog node', () => {
     const config: MenuConfiguration = {version: 1, items: [{kind: 'catalog', itemId: 'dashboard'}]};
 

@@ -24,6 +24,7 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockVersionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDraftDto
+import com.ritense.buildingblock.web.rest.dto.ImportedBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
 import com.ritense.exporter.ExportService
@@ -178,13 +179,13 @@ class BuildingBlockManagementResource(
     @RunWithoutAuthorization
     fun import(
         @RequestParam("file") file: MultipartFile
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<List<ImportedBuildingBlockDefinitionDto>> {
         return try {
             val existingFinalIds = buildingBlockDefinitionRepository.findAll()
                 .filter { it.final }
                 .map { it.id }
-            importService.importBuildingBlockDefinitions(file.inputStream, existingFinalIds)
-            ResponseEntity.ok().build()
+            val importedIds = importService.importBuildingBlockDefinitions(file.inputStream, existingFinalIds)
+            ResponseEntity.ok(importedIds.map { ImportedBuildingBlockDefinitionDto.of(it) })
         } catch (exception: ImportServiceException) {
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()

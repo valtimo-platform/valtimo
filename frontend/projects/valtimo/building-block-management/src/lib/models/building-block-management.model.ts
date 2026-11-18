@@ -40,10 +40,16 @@ interface BuildingBlockDefinitionQuery {
   size: number;
 }
 
+interface ImportedBuildingBlockDefinition {
+  key: string;
+  versionTag: string;
+}
+
 export {
   BuildingBlockManagementTabKey,
   BuildingBlockProcessDefinitionItem,
   BuildingBlockFormDefinitionItem,
   BuildingBlockDefinitionQuery,
   FormFlowDefinitionItem,
+  ImportedBuildingBlockDefinition,
 };

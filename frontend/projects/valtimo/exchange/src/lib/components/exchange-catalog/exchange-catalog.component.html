@@ -1,0 +1,220 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if (service.$state() === 'notConfigured') {
+  <valtimo-no-results
+    [attr.data-test-id]="testIds.notConfigured"
+    [description]="'exchange.notConfiguredDescription' | translate"
+    [title]="'exchange.notConfigured' | translate"
+  ></valtimo-no-results>
+} @else {
+  <div class="exchange-catalog">
+    <div class="exchange-catalog__toolbar">
+      <cds-search
+        class="exchange-catalog__search"
+        size="lg"
+        [attr.data-test-id]="testIds.search"
+        [label]="'exchange.catalog.search.label' | translate"
+        [placeholder]="'exchange.catalog.search.placeholder' | translate"
+        [value]="service.$params().q"
+        (clear)="onSearch('')"
+        (valueChange)="onSearch($event)"
+      ></cds-search>
+
+      <cds-dropdown
+        class="exchange-catalog__sort"
+        size="lg"
+        [attr.data-test-id]="testIds.sort"
+        [hideLabel]="true"
+        [label]="'exchange.catalog.sort.label' | translate"
+        (selected)="onSort($event)"
+      >
+        <cds-dropdown-list [items]="$sortItems()"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <div class="exchange-catalog__body">
+      <aside class="exchange-catalog__filters">
+        <fieldset class="cds--checkbox-group" [attr.data-test-id]="testIds.typeFilter">
+          <legend class="cds--label">
+            {{ 'exchange.catalog.filters.type' | translate }}
+          </legend>
+
+          @for (type of types; track type) {
+            <cds-checkbox
+              [checked]="service.$params().types.includes(type)"
+              (checkedChange)="onTypeChange(type, $event)"
+            >
+              {{ 'exchange.catalog.type.' + type | translate }}
+            </cds-checkbox>
+          }
+        </fieldset>
+
+        @if (service.$tags().length > 0) {
+          <fieldset class="cds--checkbox-group" [attr.data-test-id]="testIds.tagFilter">
+            <legend class="cds--label">
+              {{ 'exchange.catalog.filters.tags' | translate }}
+            </legend>
+
+            @for (tag of service.$tags(); track tag) {
+              <cds-checkbox
+                [checked]="service.$params().tags.includes(tag)"
+                (checkedChange)="onTagChange(tag, $event)"
+              >
+                {{ tag }}
+              </cds-checkbox>
+            }
+          </fieldset>
+        }
+
+        @if ($filtersActive()) {
+          <button
+            cdsButton="ghost"
+            size="sm"
+            type="button"
+            [attr.data-test-id]="testIds.clearFilters"
+            (click)="service.clearFilters()"
+          >
+            {{ 'exchange.catalog.filters.clear' | translate }}
+          </button>
+        }
+      </aside>
+
+      <section class="exchange-catalog__results">
+        @switch (service.$state()) {
+          @case ('loading') {
+            <div class="exchange-catalog__grid">
+              @for (placeholder of skeletonTiles; track placeholder) {
+                <cds-tile class="exchange-catalog__tile" [attr.data-test-id]="testIds.skeleton">
+                  <cds-skeleton-text [lines]="4"></cds-skeleton-text>
+                </cds-tile>
+              }
+            </div>
+          }
+
+          @case ('error') {
+            <valtimo-no-results
+              illustration="valtimo-layout/img/emptystate-error.svg"
+              [action]="retryAction"
+              [attr.data-test-id]="testIds.error"
+              [title]="'exchange.catalog.error.title' | translate"
+            ></valtimo-no-results>
+
+            <ng-template #retryAction>
+              <button
+                cdsButton="tertiary"
+                size="sm"
+                type="button"
+                [attr.data-test-id]="testIds.retry"
+                (click)="service.retry()"
+              >
+                {{ 'exchange.catalog.error.retry' | translate }}
+              </button>
+            </ng-template>
+          }
+
+          @default {
+            @if (service.$items().length === 0) {
+              <valtimo-no-results
+                [attr.data-test-id]="testIds.empty"
+                [title]="'exchange.catalog.empty' | translate"
+              ></valtimo-no-results>
+            } @else {
+              <div class="exchange-catalog__grid">
+                @for (item of service.$items(); track item.id) {
+                  <a
+                    class="cds--tile cds--tile--clickable exchange-catalog__tile"
+                    [attr.data-test-id]="testIds.tile"
+                    [routerLink]="['/exchange', item.id]"
+                    [state]="$tileState()"
+                  >
+                    <div class="exchange-catalog__tile-header">
+                      <valtimo-exchange-artifact-visual
+                        [logo]="item.logo"
+                        [title]="item.name"
+                      ></valtimo-exchange-artifact-visual>
+
+                      <h4 class="exchange-catalog__tile-title">{{ item.name }}</h4>
+                    </div>
+
+                    @if (item.shortDescription) {
+                      <p class="exchange-catalog__tile-description">{{ item.shortDescription }}</p>
+                    }
+
+                    <div class="exchange-catalog__tags">
+                      <cds-tag type="purple">
+                        {{ 'exchange.catalog.type.' + item.publicationType | translate }}
+                      </cds-tag>
+
+                      @for (tag of item.tags; track tag) {
+                        <cds-tag type="cool-gray">{{ tag }}</cds-tag>
+                      }
+                    </div>
+
+                    <div class="exchange-catalog__tile-meta">
+                      @if (item.publisherOrganization) {
+                        <span class="exchange-catalog__publisher">
+                          {{
+                            'exchange.catalog.by'
+                              | translate: {publisher: item.publisherOrganization}
+                          }}
+                        </span>
+                      }
+
+                      @if (item.valtimoVersion) {
+                        @if ($newerIds().has(item.id)) {
+                          <cds-tag type="warm-gray" [attr.data-test-id]="testIds.tileNewerTag">
+                            {{
+                              'exchange.catalog.valtimoVersionNewer'
+                                | translate: {version: item.valtimoVersion}
+                            }}
+                          </cds-tag>
+                        } @else {
+                          <cds-tag type="blue">
+                            {{
+                              'exchange.catalog.valtimoVersion'
+                                | translate: {version: item.valtimoVersion}
+                            }}
+                          </cds-tag>
+                        }
+                      }
+                    </div>
+
+                    <svg
+                      cdsClickableTileIcon
+                      cdsIcon="arrow--right"
+                      size="16"
+                      [attr.data-test-id]="testIds.tileLaunchIcon"
+                    ></svg>
+                  </a>
+                }
+              </div>
+
+              @if ($pageCount() > 1) {
+                <cds-pagination-nav
+                  class="exchange-catalog__pagination"
+                  [attr.data-test-id]="testIds.pagination"
+                  [model]="$paginationModel()"
+                  (selectPage)="onPage($event)"
+                ></cds-pagination-nav>
+              }
+            }
+          }
+        }
+      </section>
+    </div>
+  </div>
+}
