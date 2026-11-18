@@ -40,9 +40,21 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'De naam van de huidige pluginconfiguratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       authenticationPluginConfiguration: 'Configuratie authenticatieplugin',
-      authHeader: 'Authenticatieheader (herstart server vereist)',
+      authHeader: 'Authenticatieheader',
       authHeaderTooltip:
-        'Secret in de authenticatieheader voor de callback-URL. Als dit veld leeg blijft, wordt een willekeurige secret gegenereerd. Het abonnement moet opnieuw worden aangemaakt (na een herstart van de applicatie).',
+        'Secret in de authenticatieheader voor de callback-URL. Als dit veld leeg blijft, blijft de sleutel van het bestaande abonnement in gebruik, of wordt een willekeurige secret gegenereerd. Een wijziging wordt bij het opslaan naar het abonnement gestuurd.',
+      abonnementRegistration: 'Registratie abonnement',
+      abonnementRegistrationTooltip:
+        'Automatisch: GZAC registreert het abonnement in Open Notificaties. Handmatig: een beheerder maakt het abonnement aan in Open Notificaties, bijvoorbeeld omdat het verkeer via een gateway met certificaten loopt.',
+      abonnementRegistrationAutomatic: 'Automatisch',
+      abonnementRegistrationManual: 'Handmatig',
+      sharedSecret: 'Gedeeld geheim',
+      sharedSecretTooltip:
+        'Vul hetzelfde geheim in bij het veld Auth van het abonnement in Open Notificaties. GZAC accepteert alleen notificaties met dit geheim. Gebruik een gewone waarde, zonder "Bearer ".',
+      manualAbonnementDescription:
+        'Maak het abonnement zelf aan in Open Notificaties voor het kanaal "objecten". Gebruik als callback-URL het adres waarop Open Notificaties GZAC bereikt, en vul het gedeelde geheim in bij het veld Auth:',
+      manualAbonnementFilters:
+        'Optioneel: voeg filters toe voor alle objecttypes waar deze GZAC-instantie gebruik van maakt.',
       'publish-notificatie': 'Notificatie publiceren',
       kanaal: 'Kanaal',
       kanaalTooltip: 'Het kanaal waarop de notificatie gepubliceerd wordt (max 50 tekens).',
@@ -82,9 +94,21 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
-      authHeader: 'Authentication header (restart server required)',
+      authHeader: 'Authentication header',
       authHeaderTooltip:
-        'Secret value in Authentication header for the callback URL. When omitting this field, a random secret is generated. The abonnement needs to be recreated (after a restart of the application).',
+        'Secret value in Authentication header for the callback URL. When omitting this field, the key of the existing abonnement stays in use, or a random secret is generated. A change is sent to the abonnement when saving.',
+      abonnementRegistration: 'Abonnement registration',
+      abonnementRegistrationTooltip:
+        'Automatic: GZAC registers the abonnement in Open Notificaties. Manual: an administrator creates the abonnement in Open Notificaties, for example because traffic goes through a gateway that checks certificates.',
+      abonnementRegistrationAutomatic: 'Automatic',
+      abonnementRegistrationManual: 'Manual',
+      sharedSecret: 'Shared secret',
+      sharedSecretTooltip:
+        'Enter the same secret in the Auth field of the abonnement in Open Notificaties. GZAC only accepts notifications that carry this secret. Use a plain value, without "Bearer ".',
+      manualAbonnementDescription:
+        'Create the abonnement in Open Notificaties yourself for the channel "objecten". Use the address at which Open Notificaties reaches GZAC as callback URL, and enter the shared secret in the Auth field:',
+      manualAbonnementFilters:
+        'Optional: add filters for all object types this GZAC instance uses.',
       'publish-notificatie': 'Publish a notification',
       kanaal: 'Channel',
       kanaalTooltip: 'The channel on which the notification is published (max 50 characters).',

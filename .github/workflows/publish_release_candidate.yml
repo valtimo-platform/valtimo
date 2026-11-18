@@ -6,6 +6,12 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_to_maven_central:
+        description: "Publish backend artifacts to Maven Central (S3 is always published)"
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   prepare:
@@ -41,6 +47,7 @@ jobs:
     uses: ./.github/workflows/backend_publish_release_candidate.yml
     with:
       project_version: ${{ needs.prepare.outputs.version }}
+      publish_to_maven_central: ${{ inputs.publish_to_maven_central }}
     secrets: inherit
 
   frontend_release:

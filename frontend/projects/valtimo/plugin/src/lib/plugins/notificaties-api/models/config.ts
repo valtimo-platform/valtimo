@@ -16,10 +16,13 @@
 
 import {PluginConfigurationData} from '../../../models';
 
+type NotificatiesApiAbonnementRegistration = 'automatic' | 'manual';
+
 interface NotificatiesApiConfig extends PluginConfigurationData {
   url: string;
-  callbackUrl: string;
+  callbackUrl: string | null;
   authHeader: string;
+  abonnementRegistration?: NotificatiesApiAbonnementRegistration;
 }
 
 interface PublishNotificatieConfig {
@@ -38,4 +41,9 @@ interface ReceiveNotificatieConfig {
   kenmerken?: {[key: string]: string};
 }
 
-export {NotificatiesApiConfig, PublishNotificatieConfig, ReceiveNotificatieConfig};
+export {
+  NotificatiesApiAbonnementRegistration,
+  NotificatiesApiConfig,
+  PublishNotificatieConfig,
+  ReceiveNotificatieConfig,
+};

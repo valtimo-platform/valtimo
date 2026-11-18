@@ -148,13 +148,15 @@ class NotificatiesApiAutoConfiguration {
         notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
         inboundEventIntakeService: NotificatiesApiInboundEventIntakeService,
         inboundEventProcessingService: NotificatiesApiInboundEventProcessingService,
-        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor
+        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor,
+        pluginService: PluginService
     ): NotificatiesApiService {
         return NotificatiesApiService(
             notificatiesApiAbonnementLinkRepository,
             inboundEventIntakeService,
             inboundEventProcessingService,
-            taskExecutor
+            taskExecutor,
+            pluginService
         )
     }
 
