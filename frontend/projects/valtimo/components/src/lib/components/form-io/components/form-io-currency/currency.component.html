@@ -18,9 +18,11 @@
   <div class="input-group">
     <input
       #currencyElement
-      id="currency"
       class="form-control"
       inputmode="decimal"
+      autocomplete="on"
+      [attr.id]="inputId"
+      [attr.name]="inputName"
       [disabled]="disabled"
     />
   </div>
