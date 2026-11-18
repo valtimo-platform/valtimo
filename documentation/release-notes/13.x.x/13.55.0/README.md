@@ -39,8 +39,8 @@ who deploy and maintain Valtimo.
     *Admin > OpenSearch* screen shows *Index rebuild required*. A rebuild does not help here; the
     index is created automatically on the next reconciliation cycle once the limit allows it.
 
-    After resolving the limit, use **Retry all** on the **Rejected cases** tab to index the affected
-    cases right away instead of waiting for the next automatic retry.
+  After resolving the limit, use **Retry all** on the **Rejected cases** tab to index the affected
+  cases right away instead of waiting for the next automatic retry.
 * **Health status `WARN`.** The OpenSearch health indicator reports `WARN` when indices need a
   rebuild, existing cases are still being indexed, or cases were rejected or failed to index.
   Spring Boot leaves custom statuses out of the overall health unless they are listed in
