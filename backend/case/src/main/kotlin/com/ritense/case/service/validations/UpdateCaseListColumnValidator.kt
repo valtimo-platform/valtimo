@@ -20,6 +20,7 @@ import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
 import org.zalando.problem.Status
 
@@ -32,12 +33,20 @@ class UpdateCaseListColumnValidator(
     documentDefinitionService,
     valueResolverService
 ), ListColumnValidator<CaseListColumnDto> {
-    override fun validate(caseDefinitionName: String, caseListColumnDto: CaseListColumnDto) {
+    override fun validate(
+        caseDefinitionName: String,
+        caseListColumnDto: CaseListColumnDto,
+        caseDefinitionId: CaseDefinitionId?
+    ) {
         TODO("Not yet implemented")
     }
 
 
-    override fun validate(caseDefinitionName: String, caseListColumnDtoList: List<CaseListColumnDto>) {
+    override fun validate(
+        caseDefinitionName: String,
+        caseListColumnDtoList: List<CaseListColumnDto>,
+        caseDefinitionId: CaseDefinitionId?
+    ) {
         assertDocumentDefinitionExists(caseDefinitionName)
         val columns =
             caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(caseDefinitionName)
@@ -51,7 +60,7 @@ class UpdateCaseListColumnValidator(
         }
         overrideListColumnDtoWithDefaultSort(caseDefinitionName, caseListColumnDtoList, columns)
         caseListColumnDtoList.forEach { caseListColumnDto ->
-            isPropertyPathValid(caseDefinitionName, caseListColumnDto)
+            isPropertyPathValid(caseDefinitionName, caseListColumnDto, caseDefinitionId)
             caseListColumnDto.validate()
         }
     }

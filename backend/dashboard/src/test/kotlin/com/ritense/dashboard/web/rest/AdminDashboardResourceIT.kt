@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,6 +142,104 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should create dashboard with the given key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":"dashboard-2026"}""")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard-2026"))
+            .andExpect(jsonPath("$.title").value("2026"))
+    }
+
+    @Test
+    fun `should reject a dashboard key that does not start with a letter`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":"2026"}""")
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should accept a single letter dashboard key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"A","description":"Test description","key":"a"}""")
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("a"))
+    }
+
+    @Test
+    fun `should reject an empty dashboard key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":""}""")
+        )
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `should generate a prefixed key when the dashboard name has no letters`() {
+        val body = """{"title":"2026","description":"Test description"}"""
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard_2026"))
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard_2026_2"))
+    }
+
+    @Test
+    fun `should return conflict when the dashboard key already exists`() {
+        val body = """{"title":"Existing","description":"Test description","key":"existing"}"""
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        ).andExpect(status().isOk)
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard").contentType(APPLICATION_JSON_VALUE).content(body)
+        )
+            .andDo(print())
+            .andExpect(status().isConflict)
+    }
+
+    @Test
+    fun `should get and delete dashboard created with the given key`() {
+        mockMvc.perform(
+            post("/api/management/v1/dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content("""{"title":"2026","description":"Test description","key":"dashboard-2026"}""")
+        ).andExpect(status().isOk)
+
+        mockMvc.perform(get("/api/management/v1/dashboard/{dashboardKey}", "dashboard-2026"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("dashboard-2026"))
+
+        mockMvc.perform(delete("/api/management/v1/dashboard/{dashboardKey}", "dashboard-2026"))
+            .andExpect(status().isNoContent)
+
+        assertThat(dashboardRepository.existsById("dashboard-2026")).isFalse
+    }
+
+    @Test
     fun `should update dashboard`() {
         val dashboard1 = runWithoutAuthorization {
             dashboardService.createDashboard("First dashboard", "Test description")
@@ -254,6 +352,29 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
             .andExpect(jsonPath("$.dataSourceProperties.threshold").value(50))
             .andExpect(jsonPath("$.displayType").value("gauge"))
             .andExpect(jsonPath("$.displayTypeProperties.useKpi").value(true))
+    }
+
+    @Test
+    fun `should create widget configuration with a valid key for a title without letters`() {
+        runWithoutAuthorization {
+            dashboardService.createDashboard("Test dashboard", "Test description")
+        }
+
+        val widgetConfiguration = WidgetConfigurationCreateRequestDto(
+            title = "2026",
+            dataSourceKey = "doorlooptijd",
+            dataSourceProperties = objectMapper.readTree("""{ "threshold": 50 }""") as ObjectNode,
+            displayType = "gauge",
+            displayTypeProperties = objectMapper.readTree("""{ "useKpi": true }""") as ObjectNode,
+        )
+
+        mockMvc.perform(
+            post("/api/management/v1/dashboard/{dashboardKey}/widget-configuration", "test_dashboard")
+                .contentType(APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(widgetConfiguration))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.key").value("widget_2026"))
     }
 
     @Test

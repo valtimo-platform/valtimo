@@ -31,7 +31,10 @@ import AutoNumeric from 'autonumeric';
 
 const DEFAULT_LOCALE = 'nl-NL';
 const DEFAULT_CURRENCY = 'EUR';
-const RAW_VALUE_MODIFIED_EVENT = 'autoNumeric:rawValueModified';
+const CHANGE_EVENT = 'change';
+const INPUT_EVENT = 'input';
+
+let instanceCounter = 0;
 
 /**
  * Custom formio component for currency number.
@@ -72,18 +75,30 @@ export class FormIoCurrencyComponent
   @Input() public readonly currencyLocale: string;
   @Input() public readonly currencyCurrency: string;
   @Input() public readonly allowEmptyValue: boolean;
+  @Input() public readonly key: string;
+
+  public get inputName(): string | null {
+    return this.key ? `data[${this.key}]` : null;
+  }
+
+  public get inputId(): string {
+    return `${this.key || 'currency'}-${this._instanceId}`;
+  }
+
+  private readonly _instanceId = ++instanceCounter;
 
   private _autoNumeric: AutoNumeric | null = null;
 
-  private _rendering = false;
+  private readonly _changeListener = (): void => this.onChange();
 
-  private readonly _rawValueModifiedListener = (): void => this.onRawValueModified();
+  private readonly _inputListener = (): void => this.onInput();
 
   public ngAfterViewInit(): void {
     const element = this.currencyElement.nativeElement;
 
     this._autoNumeric = new AutoNumeric(element, this.autoNumericOptions);
-    element.addEventListener(RAW_VALUE_MODIFIED_EVENT, this._rawValueModifiedListener);
+    element.addEventListener(CHANGE_EVENT, this._changeListener);
+    element.addEventListener(INPUT_EVENT, this._inputListener);
 
     this.renderValue();
   }
@@ -93,7 +108,7 @@ export class FormIoCurrencyComponent
       this._autoNumeric &&
       (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue)
     ) {
-      this.withoutEmitting(() => this._autoNumeric.update(this.autoNumericOptions));
+      this._autoNumeric.update(this.autoNumericOptions);
       this.renderValue();
     }
   }
@@ -103,18 +118,13 @@ export class FormIoCurrencyComponent
       return;
     }
 
-    this.currencyElement.nativeElement.removeEventListener(
-      RAW_VALUE_MODIFIED_EVENT,
-      this._rawValueModifiedListener
-    );
+    const element = this.currencyElement.nativeElement;
+    element.removeEventListener(CHANGE_EVENT, this._changeListener);
+    element.removeEventListener(INPUT_EVENT, this._inputListener);
     this._autoNumeric.remove();
     this._autoNumeric = null;
   }
 
-  /**
-   * Derives the AutoNumeric formatting from the Intl formatting of the configured locale and
-   * currency, so the input renders amounts exactly as that locale writes them.
-   */
   private get autoNumericOptions(): AutoNumeric.Options {
     const formatter = new Intl.NumberFormat(this.currencyLocale || DEFAULT_LOCALE, {
       style: 'currency',
@@ -160,17 +170,79 @@ export class FormIoCurrencyComponent
     };
   }
 
-  private onRawValueModified(): void {
-    if (this._rendering || !this._autoNumeric) {
+  private onChange(): void {
+    if (!this._autoNumeric) {
       return;
     }
 
-    const numericString = this._autoNumeric.getNumericString();
-    const isEmpty = numericString === null || numericString === '';
-    const value = isEmpty ? (this.allowEmptyValue ? null : 0) : Number(numericString);
+    this.syncDisplayedValue();
+    this._autoNumeric.reformat();
+    this.emitIfChanged();
+  }
+
+  private onInput(): void {
+    if (!this._autoNumeric) {
+      return;
+    }
+
+    this.syncDisplayedValue();
+    this.emitIfChanged();
+  }
+
+  private emitIfChanged(): void {
+    const value = this.getRawNumber() ?? (this.allowEmptyValue ? null : 0);
+
+    if (value === this._value) {
+      return;
+    }
 
     this._value = value;
     this.valueChange.emit(value);
+  }
+
+  private syncDisplayedValue(): void {
+    const domNumber = this.parseFormatted(this.currencyElement.nativeElement.value);
+
+    if (domNumber === this.getRawNumber() || (domNumber !== null && Number.isNaN(domNumber))) {
+      return;
+    }
+
+    this._autoNumeric.set(domNumber ?? '');
+  }
+
+  private getRawNumber(): number | null {
+    const numericString = this._autoNumeric.getNumericString();
+    return numericString === null || numericString === '' ? null : Number(numericString);
+  }
+
+  private parseFormatted(formatted: string): number | null {
+    const {currencySymbol, digitGroupSeparator, decimalCharacter} = this.autoNumericOptions;
+    const stripWhitespace = (text: string): string => (text ?? '').replace(/\s/g, '');
+
+    let normalized = stripWhitespace(formatted).replace(/−/g, '-');
+    const symbol = stripWhitespace(currencySymbol);
+    const group = stripWhitespace(digitGroupSeparator);
+
+    if (symbol) {
+      normalized = normalized.split(symbol).join('');
+    }
+    const decimal = decimalCharacter as string;
+    const lastGroupIndex = group ? normalized.lastIndexOf(group) : -1;
+
+    // Group separator not followed by 3 digits is a decimal written the other locale's way, e.g. "250.5" in nl-NL
+    if (
+      lastGroupIndex !== -1 &&
+      !normalized.includes(decimal) &&
+      normalized.length - lastGroupIndex - group.length !== 3
+    ) {
+      normalized = `${normalized.slice(0, lastGroupIndex)}${decimal}${normalized.slice(lastGroupIndex + group.length)}`;
+    }
+    if (group) {
+      normalized = normalized.split(group).join('');
+    }
+    normalized = normalized.split(decimal).join('.');
+
+    return normalized === '' ? null : Number(normalized);
   }
 
   private renderValue(): void {
@@ -178,21 +250,15 @@ export class FormIoCurrencyComponent
       return;
     }
 
-    this.withoutEmitting(() => {
-      if (typeof this._value === 'number') {
-        this._autoNumeric.set(this._value);
-      } else {
-        this._autoNumeric.clear();
-      }
-    });
-  }
+    // Skip when unchanged — reformatting mid-typing moves the caret
+    if (this._value === this.getRawNumber()) {
+      return;
+    }
 
-  private withoutEmitting(action: () => void): void {
-    this._rendering = true;
-    try {
-      action();
-    } finally {
-      this._rendering = false;
+    if (typeof this._value === 'number') {
+      this._autoNumeric.set(this._value);
+    } else {
+      this._autoNumeric.clear();
     }
   }
 }
