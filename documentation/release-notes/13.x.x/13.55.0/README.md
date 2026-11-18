@@ -93,6 +93,7 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 
 | Area | Fix |
 |------|-----|
+| Access control | Exporting a role now includes the context (resource type and conditions) configured on its permissions. |
 | Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
 | Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
 | Case management | Importing a new version of a case definition no longer fails when its search fields, case list columns or task list columns use a property that only exists in that version's document definition. |
