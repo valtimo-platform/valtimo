@@ -33,11 +33,11 @@ who deploy and maintain Valtimo.
 * **Shard limit reached.** If OpenSearch reports `maximum shards open`, raise
   `cluster.max_shards_per_node` or remove unused indices. What happens until then depends on which
   index could not be created:
-    * For an older version of a case definition, only the case lists of that case definition use the
+  * For an older version of a case definition, only the case lists of that case definition use the
       database. Its cases are listed as rejected and retried at growing intervals.
-    * For the current version of a case definition, **all** case lists use the database and the
-      *Admin > OpenSearch* screen shows *Index rebuild required*. A rebuild does not help here; the
-      index is created automatically on the next reconciliation cycle once the limit allows it.
+  * For the current version of a case definition, **all** case lists use the database and the
+    *Admin > OpenSearch* screen shows *Index rebuild required*. A rebuild does not help here; the
+    index is created automatically on the next reconciliation cycle once the limit allows it.
 
   After resolving the limit, use **Retry all** on the **Rejected cases** tab to index the affected
   cases right away instead of waiting for the next automatic retry.
