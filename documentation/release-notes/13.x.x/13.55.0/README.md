@@ -4,6 +4,50 @@ Release date: 18-11-2026
 
 ---
 
+## Migration
+
+{% hint style="warning" %}
+The changes in this section are technical in nature and are intended for developers and operators
+who deploy and maintain Valtimo.
+{% endhint %}
+
+* [Scheduled jobs on more than one server](https://ritense-1.gitbook.io/valtimo-dev-docs/operations/scheduled-jobs)
+  — enable ShedLock in your own implementation if it runs on more than one server. No action is
+  needed when you use the default Docker images.
+* **OpenSearch 2.7 or later is required.** Object content is indexed with the `flat_object` field
+  type, which OpenSearch introduced in 2.7. Elasticsearch is not supported.
+* **Migrate to the new index topology.** There is now one index per case definition version, so
+  existing OpenSearch installations must rebuild their index once:
+  1. Upgrade **all** application nodes first. A node still on the previous version keeps writing to
+     the old shared index, so migrating before every node is upgraded leaves cases behind.
+  2. On the *Admin > OpenSearch* screen, run a reindex with **Rebuild / migrate index** enabled. The
+     screen shows a banner until you do. While the migration has not completed, case lists are
+     served from the database, so results stay complete.
+  3. If cases are skipped, the rebuilt indices are not published and the run explains why. Resolve
+     the skipped cases and run the migration again.
+
+  No data is lost, and changing search-field configuration does not trigger a rebuild.
+* **Field limit per index.** `valtimo.opensearch.total-fields-limit` sets the maximum number of
+  fields per index (default `5000`). It only applies to indices created after the change; run a
+  reindex with **Rebuild / migrate index** to apply a new limit to existing indices.
+* **Shard limit reached.** If OpenSearch reports `maximum shards open`, raise
+  `cluster.max_shards_per_node` or remove unused indices. What happens until then depends on which
+  index could not be created:
+  * For an older version of a case definition, only the case lists of that case definition use the
+    database. Its cases are listed as rejected and retried at growing intervals.
+  * For the current version of a case definition, **all** case lists use the database and the
+    *Admin > OpenSearch* screen shows *Index rebuild required*. A rebuild does not help here; the
+    index is created automatically on the next reconciliation cycle once the limit allows it.
+
+  After resolving the limit, use **Retry all** on the **Rejected cases** tab to index the affected
+  cases right away instead of waiting for the next automatic retry.
+* **Health status `WARN`.** The OpenSearch health indicator reports `WARN` when indices need a
+  rebuild, existing cases are still being indexed, or cases were rejected or failed to index.
+  Spring Boot leaves custom statuses out of the overall health unless they are listed in
+  `management.endpoint.health.status.order`, for example `DOWN,OUT_OF_SERVICE,WARN,UP,UNKNOWN`.
+
+---
+
 ## New Features
 
 ### See and retry cases that OpenSearch could not index
@@ -49,6 +93,7 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 
 | Area | Fix |
 |------|-----|
+| Access control | Exporting a role now includes the context (resource type and conditions) configured on its permissions. |
 | Case management | The start menu for supporting processes on a case now updates when the internal status of the case changes. |
 | Case management | Drag-and-drop reordering of case tabs, widgets and other lists now works in Safari. |
 | Case management | Importing a new version of a case definition no longer fails when its search fields, case list columns or task list columns use a property that only exists in that version's document definition. |
@@ -67,47 +112,10 @@ When you create a dashboard, you can now edit its key, as elsewhere in the appli
 
 ---
 
-## Migration
+---
 
-{% hint style="warning" %}
-The changes in this section are technical in nature and are intended for developers and operators
-who deploy and maintain Valtimo and its OpenSearch cluster.
-{% endhint %}
+## Security
 
-* [Scheduled jobs on more than one server](https://ritense-1.gitbook.io/valtimo-dev-docs/operations/scheduled-jobs)
-  — enable ShedLock in your own implementation if it runs on more than one server. No action is
-  needed when you use the default Docker images.
-* **Dashboards and widgets with an empty key** get a new key when you upgrade, such as
-  `dashboard_2026` or `widget_2026`. Update any access control conditions or autodeploy files that
-  refer to the empty key.
-* **OpenSearch 2.7 or later is required.** Object content is indexed with the `flat_object` field
-  type, which OpenSearch introduced in 2.7. Elasticsearch is not supported.
-* **Migrate to the new index topology.** There is now one index per case definition version, so
-  existing OpenSearch installations must rebuild their index once:
-  1. Upgrade **all** application nodes first. A node still on the previous version keeps writing to
-     the old shared index, so migrating before every node is upgraded leaves cases behind.
-  2. On the *Admin > OpenSearch* screen, run a reindex with **Rebuild / migrate index** enabled. The
-     screen shows a banner until you do. While the migration has not completed, case lists are
-     served from the database, so results stay complete.
-  3. If cases are skipped, the rebuilt indices are not published and the run explains why. Resolve
-     the skipped cases and run the migration again.
-
-  No data is lost, and changing search-field configuration does not trigger a rebuild.
-* **Field limit per index.** `valtimo.opensearch.total-fields-limit` sets the maximum number of
-  fields per index (default `5000`). It only applies to indices created after the change; run a
-  reindex with **Rebuild / migrate index** to apply a new limit to existing indices.
-* **Shard limit reached.** If OpenSearch reports `maximum shards open`, raise
-  `cluster.max_shards_per_node` or remove unused indices. What happens until then depends on which
-  index could not be created:
-  * For an older version of a case definition, only the case lists of that case definition use the
-    database. Its cases are listed as rejected and retried at growing intervals.
-  * For the current version of a case definition, **all** case lists use the database and the
-    *Admin > OpenSearch* screen shows *Index rebuild required*. A rebuild does not help here; the
-    index is created automatically on the next reconciliation cycle once the limit allows it.
-
-  After resolving the limit, use **Retry all** on the **Rejected cases** tab to index the affected
-  cases right away instead of waiting for the next automatic retry.
-* **Health status `WARN`.** The OpenSearch health indicator reports `WARN` when indices need a
-  rebuild, existing cases are still being indexed, or cases were rejected or failed to index.
-  Spring Boot leaves custom statuses out of the overall health unless they are listed in
-  `management.endpoint.health.status.order`, for example `DOWN,OUT_OF_SERVICE,WARN,UP,UNKNOWN`.
+| Severity | Fix |
+|----------|-----|
+| Medium | Upgraded `swagger-ui` in `@valtimo/swagger` to 5.34.1, so projects that install it no longer get the vulnerable DOMPurify 3.2.4 |
