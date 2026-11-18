@@ -93,6 +93,17 @@ class CaseDocumentJsonValueResolverFactory(
         val documentDefinition = documentDefinitionService.findActiveByName(documentDefinitionName)
             .orElseThrow { UnknownDocumentDefinitionException(documentDefinitionName) }
 
+        return createValidator(documentDefinition)
+    }
+
+    override fun createValidator(caseDefinitionId: CaseDefinitionId): Function<String, Unit> {
+        val documentDefinition = documentDefinitionService.findByBlueprintId(caseDefinitionId)
+            .orElseThrow { UnknownDocumentDefinitionException(caseDefinitionId.key) }
+
+        return createValidator(documentDefinition)
+    }
+
+    private fun createValidator(documentDefinition: JsonSchemaDocumentDefinition): Function<String, Unit> {
         return Function { requestedValue ->
             if (isJsonPointer(requestedValue)) {
                 validateJsonPointer(documentDefinition, requestedValue)

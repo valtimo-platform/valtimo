@@ -47,7 +47,7 @@ class CaseTaskListImporter(
         runWithoutAuthorization {
             withLoggingContext("jsonSchemaDocumentName" to caseDefinitionId.key) {
                 columns.map { taskListColumnDto ->
-                    taskColumnService.saveListColumn(caseDefinitionId.key, taskListColumnDto)
+                    taskColumnService.saveListColumn(caseDefinitionId.key, taskListColumnDto, caseDefinitionId)
                 }
             }
         }

@@ -20,7 +20,9 @@ import com.ritense.adminsettings.service.FeatureToggleOverridesService
 import com.ritense.document.opensearch.OpenSearchProperties
 import com.ritense.document.opensearch.autoconfigure.DocumentOpenSearchAutoConfiguration.Companion.SEARCH_ENGINE_TOGGLE_KEY
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
+import com.ritense.document.opensearch.service.IndexCompletenessService
 import com.ritense.document.opensearch.service.SearchEngineToggle
+import com.ritense.document.opensearch.service.isTransportFailure
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
@@ -38,6 +40,7 @@ class SearchEngineResource(
     private val openSearchProperties: OpenSearchProperties,
     private val featureToggleOverridesService: FeatureToggleOverridesService,
     private val indexInitializer: DocumentOpenSearchIndexInitializer,
+    private val indexCompletenessService: IndexCompletenessService,
 ) {
 
     @EndpointDescription(
@@ -67,7 +70,20 @@ class SearchEngineResource(
 
         if (useOpenSearch) {
             try {
-                indexInitializer.ensureIndex()
+                val failures = indexInitializer.ensureAllIndices()
+                if (failures.any { isTransportFailure(it.cause) }) {
+                    logger.warn { "Failed to initialize OpenSearch indices — is OpenSearch running?" }
+                    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                        .body(SearchEngineDto(available = true, active = toggle.get().name))
+                }
+                if (failures.isNotEmpty()) {
+                    logger.warn {
+                        "Enabling OpenSearch although indices could not be created for: " +
+                            failures.joinToString { "${it.definitionKey} version '${it.versionTag}'" } +
+                            " — these read from the database until the reconciler repairs them"
+                    }
+                }
+                indexCompletenessService.initializeWatermarkIfAbsent()
             } catch (e: Exception) {
                 logger.warn(e) { "Failed to initialize OpenSearch index — is OpenSearch running?" }
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

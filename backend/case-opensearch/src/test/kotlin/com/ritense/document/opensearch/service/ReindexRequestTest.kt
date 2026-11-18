@@ -18,6 +18,8 @@ package com.ritense.document.opensearch.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
+import java.util.UUID
 
 class ReindexRequestTest {
 
@@ -42,5 +44,19 @@ class ReindexRequestTest {
     @Test
     fun `default page size is used when not specified`() {
         assertThat(ReindexRequest().effectivePageSize()).isEqualTo(ReindexRequest.DEFAULT_PAGE_SIZE)
+    }
+
+    @Test
+    fun `hasSubsetFilters is true for the row-narrowing filters`() {
+        assertThat(ReindexRequest(modifiedAfter = LocalDateTime.now()).hasSubsetFilters()).isTrue()
+        assertThat(ReindexRequest(modifiedBefore = LocalDateTime.now()).hasSubsetFilters()).isTrue()
+        assertThat(ReindexRequest(documentIds = listOf(UUID.randomUUID())).hasSubsetFilters()).isTrue()
+    }
+
+    @Test
+    fun `hasSubsetFilters is false for an unfiltered or definition-scoped request`() {
+        assertThat(ReindexRequest().hasSubsetFilters()).isFalse()
+        assertThat(ReindexRequest(documentDefinitionName = "house").hasSubsetFilters()).isFalse()
+        assertThat(ReindexRequest(documentIds = emptyList()).hasSubsetFilters()).isFalse()
     }
 }
