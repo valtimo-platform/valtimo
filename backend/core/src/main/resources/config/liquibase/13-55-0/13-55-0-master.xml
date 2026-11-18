@@ -20,6 +20,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
+    <include file="20261115-version-legacy-case-definition-process-links.xml" relativeToChangelogFile="true"/>
+    <include file="20261019-widen-reindex-run-status.xml" relativeToChangelogFile="true"/>
+    <include file="20261111-create-document-index-rejection-table.xml" relativeToChangelogFile="true"/>
     <include file="20261116-fix-empty-dashboard-key.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
