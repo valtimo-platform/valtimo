@@ -18,6 +18,7 @@ package com.ritense.document.opensearch.web
 
 import com.ritense.document.opensearch.service.DocumentOpenSearchReindexService
 import com.ritense.document.opensearch.service.ReindexRequest
+import com.ritense.document.opensearch.service.TopologyGate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,11 +32,36 @@ import java.util.UUID
 class DocumentOpenSearchReindexResourceTest {
 
     private val reindexService: DocumentOpenSearchReindexService = mock()
+    private val topologyGate: TopologyGate = mock()
     private lateinit var resource: DocumentOpenSearchReindexResource
 
     @BeforeEach
     fun setUp() {
-        resource = DocumentOpenSearchReindexResource(reindexService)
+        resource = DocumentOpenSearchReindexResource(reindexService, topologyGate)
+    }
+
+    @Test
+    fun `topology reports a legacy or stale topology`() {
+        whenever(topologyGate.snapshot()).thenReturn(TopologyGate.Snapshot(true, false, setOf("person", "house")))
+
+        val response = resource.topology()
+
+        assertThat(response.statusCode.value()).isEqualTo(200)
+        assertThat(response.body?.get("legacyOrStale")).isEqualTo(true)
+        assertThat(response.body?.get("catchingUp")).isEqualTo(false)
+        assertThat(response.body?.get("rejectedDefinitions")).isEqualTo(listOf("house", "person"))
+        assertThat(response.body?.get("available")).isEqualTo(true)
+    }
+
+    @Test
+    fun `topology reports unavailable when the status cannot be determined`() {
+        whenever(topologyGate.snapshot()).thenThrow(RuntimeException("OpenSearch down"))
+
+        val response = resource.topology()
+
+        assertThat(response.statusCode.value()).isEqualTo(200)
+        assertThat(response.body?.get("legacyOrStale")).isEqualTo(false)
+        assertThat(response.body?.get("available")).isEqualTo(false)
     }
 
     @Test
@@ -59,6 +85,17 @@ class DocumentOpenSearchReindexResourceTest {
 
         assertThat(response.statusCode.value()).isEqualTo(202)
         assertThat(response.body?.get("runId")).isEqualTo(runId)
+    }
+
+    @Test
+    fun `reindex returns 400 when the request is rejected as invalid`() {
+        whenever(reindexService.start(any()))
+            .thenThrow(IllegalArgumentException("recreateIndex cannot be combined with subset filters"))
+
+        val response = resource.reindex(ReindexRequest(recreateIndex = true))
+
+        assertThat(response.statusCode.value()).isEqualTo(400)
+        assertThat(response.body?.get("error")).isEqualTo("recreateIndex cannot be combined with subset filters")
     }
 
     @Test
