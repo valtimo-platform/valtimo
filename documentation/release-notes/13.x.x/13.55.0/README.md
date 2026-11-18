@@ -18,13 +18,13 @@ who deploy and maintain Valtimo.
   type, which OpenSearch introduced in 2.7. Elasticsearch is not supported.
 * **Migrate to the new index topology.** There is now one index per case definition version, so
   existing OpenSearch installations must rebuild their index once:
-    1. Upgrade **all** application nodes first. A node still on the previous version keeps writing to
-       the old shared index, so migrating before every node is upgraded leaves cases behind.
-    2. On the *Admin > OpenSearch* screen, run a reindex with **Rebuild / migrate index** enabled. The
-       screen shows a banner until you do. While the migration has not completed, case lists are
-       served from the database, so results stay complete.
-    3. If cases are skipped, the rebuilt indices are not published and the run explains why. Resolve
-       the skipped cases and run the migration again.
+  1. Upgrade **all** application nodes first. A node still on the previous version keeps writing to
+     the old shared index, so migrating before every node is upgraded leaves cases behind.
+  2. On the *Admin > OpenSearch* screen, run a reindex with **Rebuild / migrate index** enabled. The
+     screen shows a banner until you do. While the migration has not completed, case lists are
+     served from the database, so results stay complete.
+  3. If cases are skipped, the rebuilt indices are not published and the run explains why. Resolve
+     the skipped cases and run the migration again.
 
   No data is lost, and changing search-field configuration does not trigger a rebuild.
 * **Field limit per index.** `valtimo.opensearch.total-fields-limit` sets the maximum number of
@@ -33,14 +33,14 @@ who deploy and maintain Valtimo.
 * **Shard limit reached.** If OpenSearch reports `maximum shards open`, raise
   `cluster.max_shards_per_node` or remove unused indices. What happens until then depends on which
   index could not be created:
-    * For an older version of a case definition, only the case lists of that case definition use the
-      database. Its cases are listed as rejected and retried at growing intervals.
-    * For the current version of a case definition, **all** case lists use the database and the
-      *Admin > OpenSearch* screen shows *Index rebuild required*. A rebuild does not help here; the
-      index is created automatically on the next reconciliation cycle once the limit allows it.
+  * For an older version of a case definition, only the case lists of that case definition use the
+    database. Its cases are listed as rejected and retried at growing intervals.
+  * For the current version of a case definition, **all** case lists use the database and the
+    *Admin > OpenSearch* screen shows *Index rebuild required*. A rebuild does not help here; the
+    index is created automatically on the next reconciliation cycle once the limit allows it.
 
-  After resolving the limit, use **Retry all** on the **Rejected cases** tab to index the affected
-  cases right away instead of waiting for the next automatic retry.
+    After resolving the limit, use **Retry all** on the **Rejected cases** tab to index the affected
+    cases right away instead of waiting for the next automatic retry.
 * **Health status `WARN`.** The OpenSearch health indicator reports `WARN` when indices need a
   rebuild, existing cases are still being indexed, or cases were rejected or failed to index.
   Spring Boot leaves custom statuses out of the overall health unless they are listed in
