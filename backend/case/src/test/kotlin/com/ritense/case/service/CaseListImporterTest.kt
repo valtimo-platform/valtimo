@@ -127,7 +127,7 @@ class CaseListImporterTest(
         val nameCaptor = argumentCaptor<String>()
         val columnsCaptor = argumentCaptor<List<CaseListColumnDto>>()
 
-        verify(caseDefinitionService).updateListColumns(nameCaptor.capture(), columnsCaptor.capture())
+        verify(caseDefinitionService).updateListColumns(nameCaptor.capture(), columnsCaptor.capture(), eq(caseDefinitionId))
 
         assertThat(nameCaptor.firstValue).isEqualTo("overridden-key")
         assertThat(columnsCaptor.firstValue).hasSize(1)
@@ -205,6 +205,6 @@ class CaseListImporterTest(
             )
         )
 
-        verify(caseDefinitionService).updateListColumns(eq("my-case"), any())
+        verify(caseDefinitionService).updateListColumns(eq("my-case"), any(), eq(caseDefinitionId))
     }
 }
