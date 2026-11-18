@@ -22,51 +22,171 @@
     starting: startingReindex$ | async,
     documentDefinitions: documentDefinitions$ | async,
     showModal: showModal$ | async,
-    hasRunning: hasRunningRun$ | async
+    hasRunning: hasRunningRun$ | async,
+    legacyOrStale: legacyOrStale$ | async,
+    catchingUp: catchingUp$ | async,
+    rejectedDefinitions: rejectedDefinitions$ | async,
+    rejections: rejections$ | async,
+    rejectionsLoading: rejectionsLoading$ | async,
+    retrying: retryingRejections$ | async
   } as obs"
 >
-  <valtimo-carbon-list
-    [header]="false"
-    [items]="obs.items || []"
-    [fields]="fields"
-    [loading]="obs.loading"
-    [pagination]="pagination"
-    [expandedRowTemplate]="expandedRowTemplate"
-    [expandedRowKey]="'runId'"
-    (paginationClicked)="onPageChange($event)"
-    (paginationSet)="onPageSizeChange($event)"
-  >
-    <ng-container header>
-      {{ 'adminSettings.opensearch.reindex.title' | translate }}
-    </ng-container>
+  @if (obs.legacyOrStale) {
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'warning',
+        title: 'adminSettings.opensearch.topology.legacyWarningTitle' | translate,
+        message: 'adminSettings.opensearch.topology.legacyWarningMessage' | translate,
+        showClose: false,
+        lowContrast: true
+      }"
+    ></cds-inline-notification>
+  }
 
-    <div carbonToolbarContent>
-      <button
-        cdsButton="primary"
-        [disabled]="obs.hasRunning || obs.starting"
-        (click)="openModal()"
+  @if (obs.catchingUp) {
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        title: 'adminSettings.opensearch.topology.catchingUpTitle' | translate,
+        message: 'adminSettings.opensearch.topology.catchingUpMessage' | translate,
+        showClose: false,
+        lowContrast: true
+      }"
+    ></cds-inline-notification>
+  }
+
+  @if (obs.rejectedDefinitions) {
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        title: 'adminSettings.opensearch.topology.rejectedDefinitionsTitle' | translate,
+        message:
+          'adminSettings.opensearch.topology.rejectedDefinitionsMessage'
+          | translate: {definitions: obs.rejectedDefinitions},
+        showClose: false,
+        lowContrast: true
+      }"
+    ></cds-inline-notification>
+  }
+
+  <cds-tabs [cacheActive]="true" type="contained" [attr.data-test-id]="testIds.tabs">
+    <ng-template #reindexRunsHeading>
+      <span class="opensearch-tab-heading">
+        {{ 'adminSettings.opensearch.tabs.reindexRuns' | translate }}
+        <svg
+          class="opensearch-tab-heading__info"
+          cdsIcon="information"
+          size="16"
+          [onBottom]="true"
+          [vTooltip]="'adminSettings.opensearch.reindex.description' | translate"
+        ></svg>
+      </span>
+    </ng-template>
+
+    <cds-tab
+      [active]="$activeTab() === OpensearchTab.REINDEX_RUNS"
+      [heading]="reindexRunsHeading"
+      [title]="'adminSettings.opensearch.tabs.reindexRuns' | translate"
+      (selected)="onTabSelected(OpensearchTab.REINDEX_RUNS)"
+      [attr.data-test-id]="testIds.reindexRunsTabPanel"
+    >
+      <valtimo-carbon-list
+        class="opensearch-reindex__runs"
+        [header]="false"
+        [items]="obs.items || []"
+        [fields]="fields"
+        [loading]="obs.loading"
+        [pagination]="pagination"
+        [expandedRowTemplate]="expandedRowTemplate"
+        [expandedRowKey]="'runId'"
+        (paginationClicked)="onPageChange($event)"
+        (paginationSet)="onPageSizeChange($event)"
       >
-        @if (obs.starting) {
-          <cds-loading size="sm"></cds-loading>
-        }
-        {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
+        <div carbonToolbarContent>
+          <button cdsButton="primary" [disabled]="obs.hasRunning || obs.starting" (click)="openModal()">
+            @if (obs.starting) {
+              <cds-loading size="sm"></cds-loading>
+            }
+            {{ 'adminSettings.opensearch.reindex.startButton' | translate }}
 
-        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-      </button>
-    </div>
+            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+          </button>
+        </div>
 
-    <valtimo-no-results
-      title="{{ 'adminSettings.opensearch.reindex.noResults.title' | translate }}"
-      description="{{ 'adminSettings.opensearch.reindex.noResults.description' | translate }}"
-    ></valtimo-no-results>
-  </valtimo-carbon-list>
+        <valtimo-no-results
+          title="{{ 'adminSettings.opensearch.reindex.noResults.title' | translate }}"
+          description="{{ 'adminSettings.opensearch.reindex.noResults.description' | translate }}"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
+    </cds-tab>
+
+    <ng-template #rejectedCasesHeading>
+      <span class="opensearch-tab-heading">
+        {{ 'adminSettings.opensearch.tabs.rejectedCases' | translate }}
+        <svg
+          class="opensearch-tab-heading__info"
+          cdsIcon="information"
+          size="16"
+          [onBottom]="true"
+          [vTooltip]="'adminSettings.opensearch.rejections.description' | translate"
+        ></svg>
+      </span>
+    </ng-template>
+
+    <cds-tab
+      [active]="$activeTab() === OpensearchTab.REJECTED_CASES"
+      [heading]="rejectedCasesHeading"
+      [title]="'adminSettings.opensearch.tabs.rejectedCases' | translate"
+      (selected)="onTabSelected(OpensearchTab.REJECTED_CASES)"
+      [attr.data-test-id]="testIds.rejectedCasesTabPanel"
+    >
+      <valtimo-carbon-list
+        [actionItems]="rejectionActionItems"
+        [fields]="rejectionFields"
+        [header]="false"
+        [items]="obs.rejections?.content || []"
+        [loading]="obs.rejectionsLoading"
+        [pagination]="rejectionsPagination"
+        (paginationClicked)="onRejectionsPageChange($event)"
+        (paginationSet)="onRejectionsPageSizeChange($event)"
+      >
+        <div carbonToolbarContent>
+          <button cdsButton="primary" [disabled]="obs.retrying" (click)="openRetryAllModal()">
+            {{ 'adminSettings.opensearch.rejections.retryAll' | translate }}
+
+            <svg class="cds--btn__icon" cdsIcon="renew" size="16"></svg>
+          </button>
+        </div>
+
+        <valtimo-no-results
+          title="{{ 'adminSettings.opensearch.rejections.noResults.title' | translate }}"
+          description="{{
+            'adminSettings.opensearch.rejections.noResults.description' | translate
+          }}"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
+    </cds-tab>
+  </cds-tabs>
 
   <valtimo-start-reindex-modal
     [open]="obs.showModal"
     [documentDefinitions]="obs.documentDefinitions"
     (closeEvent)="onModalClose($event)"
   ></valtimo-start-reindex-modal>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="adminSettings.opensearch.rejections.retryAllModal.confirm"
+    contentTranslationKey="adminSettings.opensearch.rejections.retryAllModal.content"
+    titleTranslationKey="adminSettings.opensearch.rejections.retryAllModal.title"
+    [showModalSubject$]="showRetryAllModal$"
+    (cancelEvent)="onRetryAllCancel()"
+    (confirmEvent)="onRetryAllConfirm()"
+  ></valtimo-confirmation-modal>
 </div>
+
+<ng-template #rejectionCaseColumn let-data="data">
+  <a [routerLink]="caseDetailLink(data.item)" target="_blank">{{ data.item.documentId }}</a>
+</ng-template>
 
 <ng-template #expandedRowTemplate let-data="data">
   <div class="opensearch-reindex__expanded">
@@ -95,7 +215,7 @@
         </span>
         <cds-progress-bar
           [value]="data.totalCount > 0 ? (data.processedCount / data.totalCount) * 100 : 0"
-          [status]="data.status === 'RUNNING' && !data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : (data.status === 'RUNNING' ? 'finished' : 'error'))"
+          [status]="data.status === 'RUNNING' && !data.pruningPhase ? 'active' : ((data.status === 'COMPLETED' || data.status === 'COMPLETED_WITH_ERRORS') ? 'finished' : (data.status === 'RUNNING' ? 'finished' : 'error'))"
         ></cds-progress-bar>
         <div class="opensearch-reindex__progress-footer">
           <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.processedCount, total: data.totalCount} }}</span>
@@ -111,12 +231,39 @@
           </span>
           <cds-progress-bar
             [value]="data.pruneTotalCount > 0 ? (data.pruneCheckedCount / data.pruneTotalCount) * 100 : 0"
-            [status]="data.pruningPhase ? 'active' : (data.status === 'COMPLETED' ? 'finished' : 'error')"
+            [status]="data.pruningPhase ? 'active' : ((data.status === 'COMPLETED' || data.status === 'COMPLETED_WITH_ERRORS') ? 'finished' : 'error')"
           ></cds-progress-bar>
           <div class="opensearch-reindex__progress-footer">
             <span>{{ 'adminSettings.opensearch.reindex.processed' | translate:{current: data.pruneCheckedCount, total: data.pruneTotalCount || 0} }}</span>
             <span>{{ 'adminSettings.opensearch.reindex.pruningProgress' | translate:{removed: data.prunedCount || 0} }}</span>
           </div>
+        </div>
+      }
+
+      @if (data.status === 'COMPLETED_WITH_ERRORS') {
+        <span class="opensearch-reindex__skipped-notice">
+          <svg cdsIcon="warning--alt" size="16"></svg>
+          {{ 'adminSettings.opensearch.reindex.completedWithErrors' | translate:{skipped: data.skippedCount || 0} }}
+        </span>
+        <div class="opensearch-reindex__error-actions">
+          <a class="opensearch-reindex__error-link" (click)="onTabSelected(OpensearchTab.REJECTED_CASES)">
+            {{ 'adminSettings.opensearch.reindex.viewRejectedCases' | translate }}
+            <svg cdsIcon="arrow--right" size="16"></svg>
+          </a>
+          <a class="opensearch-reindex__error-link" (click)="navigateToLogs(data)">
+            {{ 'adminSettings.opensearch.reindex.viewErrorLogs' | translate }}
+            <svg cdsIcon="launch" size="16"></svg>
+          </a>
+        </div>
+      }
+
+      @if (data.error) {
+        <div class="opensearch-reindex__error">
+          <span class="opensearch-reindex__error-title">
+            {{ 'adminSettings.opensearch.reindex.errorTitle' | translate }}
+          </span>
+
+          <span class="opensearch-reindex__error-message">{{ data.error }}</span>
         </div>
       }
 

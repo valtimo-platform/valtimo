@@ -323,12 +323,13 @@ class CaseDefinitionService(
     @Transactional
     fun updateListColumns(
         caseDefinitionName: String,
-        caseListColumnDtoList: List<CaseListColumnDto>
+        caseListColumnDtoList: List<CaseListColumnDto>,
+        caseDefinitionId: CaseDefinitionId? = null
     ) {
         denyManagementOperation()
 
         runWithoutAuthorization {
-            validators[Operation.UPDATE]!!.validate(caseDefinitionName, caseListColumnDtoList)
+            validators[Operation.UPDATE]!!.validate(caseDefinitionName, caseListColumnDtoList, caseDefinitionId)
         }
 
         caseListColumnDtoList.forEachIndexed { index, dto ->

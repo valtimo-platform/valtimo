@@ -39,7 +39,6 @@ import com.ritense.zgw.Rsin
 import jakarta.validation.Valid
 import jakarta.validation.ValidationException
 import org.semver4j.Semver
-import kotlin.jvm.optionals.getOrNull
 import com.ritense.processdocument.resolver.CaseDocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
 
@@ -85,21 +84,14 @@ class VerzoekPlugin(
                     }
 
                     if (it.target.startsWith(DOC_PREFIX)) {
-                        val documentDefinition = runWithoutAuthorization {
+                        val documentPath = it.target.substringAfter(delimiter = ":")
+                        runWithoutAuthorization {
                             val caseDefinition = getCaseDefinition(
                                 caseDefinitionKey = property.caseDefinitionKey,
                                 caseDefinitionVersionTag = property.caseDefinitionVersionTag,
                             )
                                 ?: error("No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'.")
-                            documentDefinitionService.findByBlueprintId(caseDefinition.id).getOrNull()
-                                ?: error("No Document Definition found for Case Definition: ${caseDefinition.id}")
-                        }
-                        val documentPath = it.target.substringAfter(delimiter = ":")
-                        runWithoutAuthorization {
-                            documentDefinitionService.validateJsonPointer(
-                                documentDefinition.id.name(),
-                                documentPath
-                            )
+                            documentDefinitionService.validateJsonPointer(caseDefinition.id, documentPath)
                         }
                     }
                 }

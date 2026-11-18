@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.resource.web.rest
+const OPENSEARCH_TEST_IDS = {
+  tabs: 'opensearchTabs',
+  reindexRunsTabPanel: 'opensearchReindexRunsTabPanel',
+  rejectedCasesTabPanel: 'opensearchRejectedCasesTabPanel',
+} as const;
 
-class S3ResourceSecuritySmokeIntegrationTest/* : CoreSecuritySmokeIntegrationTest() {
-}*/
+export {OPENSEARCH_TEST_IDS};

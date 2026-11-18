@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -53,6 +54,8 @@ import com.ritense.valtimo.task.repository.TaskTeamRepository;
 import com.ritense.valtimo.task.service.UserTaskOpenedStatusService;
 import com.ritense.valtimo.security.exceptions.TaskNotFoundException;
 import jakarta.persistence.EntityManager;
+import com.ritense.resource.service.ResourceService;
+import com.ritense.valtimo.web.rest.dto.TaskCompletionDTO;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -320,6 +323,26 @@ class OperatonTaskServiceTest {
         assertThat(event.getResultType()).isEqualTo("com.ritense.valtimo.operaton.domain.OperatonTask");
         assertThat(event.getResultId()).isEqualTo(task.getId());
         assertThat(event.getResult()).isNotNull();
+    }
+
+    @Test
+    void completeTaskAndDeleteFiles_ignoresFilesToDelete() {
+        ResourceService resourceService = mock(ResourceService.class);
+        OperatonTaskService service = spy(new OperatonTaskService(
+            taskService, formService, delegateTaskHelper, operatonTaskRepository, null,
+            Optional.of(resourceService), applicationEventPublisher, runtimeService, userManagementService,
+            entityManager, authorizationService, outboxService, objectMapper, List.of(),
+            userTaskOpenedStatusService, taskTeamRepository, null
+        ));
+        doNothing().when(service).completeTaskWithFormData(anyString(), any());
+        TaskCompletionDTO dto = mock(TaskCompletionDTO.class);
+        when(dto.getFilesToDelete()).thenReturn(List.of(java.util.UUID.randomUUID()));
+
+        service.completeTaskAndDeleteFiles(TASK_ID, dto);
+
+        verify(service, times(1)).completeTaskWithFormData(anyString(), any());
+        verify(resourceService, never()).removeResource(any(java.util.UUID.class));
+        verify(resourceService, never()).removeResource(anyString());
     }
 
     @Test
