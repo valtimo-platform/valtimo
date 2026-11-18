@@ -20,3 +20,15 @@
     background-color: inherit;
   }
 }
+
+// Bootstrap's .col-12 is position: relative, which zeroes the offsetTop swagger-ui uses as the
+// operations virtualizer scrollMargin — rows render at the wrong scroll offset
+.swagger-ui .block.col-12 {
+  position: static;
+}
+
+// Server select has margin-top: -20px; give the title its own line to clear it
+.swagger-ui .servers-title {
+  display: block;
+  margin-bottom: var(--cds-spacing-06);
+}
