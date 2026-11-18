@@ -121,6 +121,16 @@ export class IkoListColumnPage {
     return this.page.getByTestId(IKO_COLUMN_MODAL_TEST_IDS.cancelButton);
   }
 
+  // Re-click while open — on a loaded CI agent a single click can land before the handler runs
+  async cancelAddModal(): Promise<void> {
+    await expect(async () => {
+      if (await this.addModalHeading.isVisible()) {
+        await this.cancelButton.click({timeout: 5_000});
+      }
+      await expect(this.addModalHeading).toBeHidden({timeout: 5_000});
+    }).toPass({timeout: 20_000});
+  }
+
   /**
    * Best-effort dismissal of any open column modal. Safe to call in
    * `afterEach`: if no modal is open, this is a no-op.

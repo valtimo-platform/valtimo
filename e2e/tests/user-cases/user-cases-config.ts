@@ -30,6 +30,7 @@ export const USER_CASES_CONFIG = {
   createZaaknotitieProcess: 'Create Zaaknotitie',
   /** Start-menu item whose start form opens in the side panel with read-only fields. */
   catalogiGetTypenProcess: 'Catalogi - Get typen',
+  catalogiGetTypenProcessKey: 'catalogi-get-typen',
   /** First user task of a freshly created bezwaar case; its form opens in the side panel. */
   validateRequestTask: 'Valideer gegevens aanvrager',
   /** Expected tab headings on the user case detail page. */
