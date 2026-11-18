@@ -37,6 +37,11 @@ import {
   pinViaApi,
   unpinViaApi,
 } from '../../utils/case-group.utils';
+import {
+  getFeatureToggleOverridesViaApi,
+  restoreFeatureToggleViaApi,
+  setFeatureToggleViaApi,
+} from '../../utils/feature-toggle.utils';
 import {pinLanguage} from '../../utils/settings';
 import {CaseManagementGroupsPage} from './page';
 import {MEMBER_KEYS} from './case-management-groups-config';
@@ -52,6 +57,8 @@ interface GroupWithMembers extends CaseGroup {
 }
 
 test.describe('Case groups management', () => {
+  const SHOW_ALL_TOGGLE = 'showAllCaseDefinitionsInMenu';
+  let originalShowAllToggle: boolean | undefined;
   let context;
   let page;
   let groupsPage: CaseManagementGroupsPage;
@@ -65,6 +72,9 @@ test.describe('Case groups management', () => {
   const getGroup = (key: string) => apiGet<GroupWithMembers>(`${GROUP_MANAGEMENT_ENDPOINT}/${key}`);
 
   test.beforeAll(async ({browser, baseURL}) => {
+    // Upgraded installs get this toggle on, which hides pinned items from the sidebar
+    originalShowAllToggle = (await getFeatureToggleOverridesViaApi())[SHOW_ALL_TOGGLE];
+    await setFeatureToggleViaApi(SHOW_ALL_TOGGLE, false);
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     groupsPage = new CaseManagementGroupsPage(page);
@@ -74,6 +84,11 @@ test.describe('Case groups management', () => {
   test.afterAll(async () => {
     for (const key of createdGroupKeys) {
       await deleteGroupViaApi(key);
+    }
+    try {
+      await restoreFeatureToggleViaApi(SHOW_ALL_TOGGLE, originalShowAllToggle);
+    } catch {
+      // Best effort
     }
     await context.close();
   });
