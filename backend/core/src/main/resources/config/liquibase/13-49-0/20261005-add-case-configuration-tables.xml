@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<databaseChangeLog
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+    logicalFilePath="config/liquibase/changelog/20261005-add-case-configuration-tables.xml">
+
+    <!-- Configuration keys and default values declared by a case definition version -->
+    <changeSet id="1" author="Ritense">
+        <createTable tableName="case_configuration_declaration">
+            <column name="case_definition_key" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_definition_version_tag" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="configuration_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="default_value" type="VARCHAR(4000)"/>
+        </createTable>
+        <addPrimaryKey tableName="case_configuration_declaration"
+                       columnNames="case_definition_key, case_definition_version_tag, configuration_key"
+                       constraintName="pk_case_configuration_declaration"/>
+    </changeSet>
+
+    <!-- Environment values per case definition key, so they survive new versions -->
+    <changeSet id="2" author="Ritense">
+        <createTable tableName="case_configuration_environment_value">
+            <column name="case_definition_key" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="configuration_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="environment_value" type="VARCHAR(4000)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="case_configuration_environment_value"
+                       columnNames="case_definition_key, configuration_key"
+                       constraintName="pk_case_configuration_environment_value"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal valtimoCdsModal size="sm" [open]="open" (close)="close()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="close()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'caseManagement.configuration.setEnvironmentValue' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent [cdsLayer]="1">
+    <form class="case-configuration-form" [formGroup]="formGroup">
+      <p class="cds--type-body-compact-01">
+        {{ 'caseManagement.configuration.environmentValueDescription' | translate }}
+      </p>
+
+      <cds-label [disabled]="true">
+        {{ 'caseManagement.configuration.columns.key' | translate }}
+
+        <input cdsText readonly [disabled]="true" [value]="item?.key ?? ''" />
+      </cds-label>
+
+      <cds-label [disabled]="true">
+        {{ 'caseManagement.configuration.columns.defaultValue' | translate }}
+
+        <input cdsText readonly [disabled]="true" [value]="item?.defaultValue ?? ''" />
+      </cds-label>
+
+      <cds-label>
+        {{ 'caseManagement.configuration.columns.environmentValue' | translate }}
+
+        <input
+          cdsText
+          formControlName="value"
+          [attr.data-test-id]="testIds.valueInput"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
+    </form>
+  </section>
+
+  <cds-modal-footer>
+    <button
+      cdsButton="ghost"
+      [attr.data-test-id]="testIds.cancelButton"
+      [disabled]="$disabled()"
+      (click)="close()"
+    >
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [attr.data-test-id]="testIds.saveButton"
+      [disabled]="$disabled()"
+      (click)="save()"
+    >
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

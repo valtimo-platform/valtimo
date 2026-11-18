@@ -144,6 +144,16 @@
     >
     </cds-tab>
 
+    <cds-tab
+      class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.CONFIGURATION"
+      [active]="obs.currentTab === TabEnum.CONFIGURATION"
+      [heading]="'caseManagement.tabs.configuration' | translate"
+      [attr.data-test-id]="testIds.configurationTab"
+      (selected)="navigateToTab(TabEnum.CONFIGURATION)"
+    >
+    </cds-tab>
+
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
       @if (injectedTab.enabled$ | async) {
         <ng-template #injectedTabHeading>
