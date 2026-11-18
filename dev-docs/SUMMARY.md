@@ -20,3 +20,4 @@
 * [Overview](operations/README.md)
 * [Plugin Host Deployment](operations/plugin-host-deployment.md)
 * [Exchange integration](operations/exchange-integration.md)
+* [Scheduled Jobs on More Than One Server](operations/scheduled-jobs.md)

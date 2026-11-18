@@ -17,6 +17,7 @@
 package com.ritense.document.opensearch.handler
 
 import com.ritense.document.opensearch.domain.PendingIndexDeletion
+import com.ritense.document.opensearch.repository.DocumentIndexRejectionRepository
 import com.ritense.document.opensearch.repository.PendingIndexDeletionRepository
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -30,15 +31,18 @@ import org.springframework.context.event.EventListener
  * atomically with the delete. This is what guarantees deletes survive an OpenSearch outage — the
  * reconciler drains the pending deletion once OpenSearch is reachable again. The best-effort AFTER_COMMIT
  * delete in [DocumentOpenSearchEventListener] still runs for freshness; this listener is the durability
- * backstop.
+ * backstop. It also forgets the case's index rejection in the same transaction, so its case type stops being
+ * searched in the database as soon as the delete commits.
  */
 open class PendingIndexDeletionListener(
     private val pendingIndexDeletionRepository: PendingIndexDeletionRepository,
+    private val rejectionRepository: DocumentIndexRejectionRepository,
 ) {
 
     @EventListener
     open fun onDocumentDeleted(event: DocumentDeletedEvent) {
         pendingIndexDeletionRepository.save(PendingIndexDeletion(documentId = event.caseDocumentId))
+        rejectionRepository.deleteAllByIdInBatch(listOf(event.caseDocumentId))
         logger.debug { "Recorded pending index deletion for document ${event.caseDocumentId}" }
     }
 

@@ -37,7 +37,10 @@ import java.time.LocalDateTime
  * as both [FieldType.Text] (for analyzed search) and [FieldType.Keyword] (for wildcard search
  * preserving partial-match behaviour for wildcard queries).
  */
-@Document(indexName = "json_schema_document", createIndex = false)
+// indexName is the shared read alias (a mandatory @Document attribute in spring-data-elasticsearch 5.x).
+// Every write and single-definition read passes an explicit per-definition IndexCoordinates; only an
+// un-routed default resolution lands here, which is safe for reads (the alias spans all per-definition indices).
+@Document(indexName = "json_schema_document_all", createIndex = false)
 data class JsonSchemaDocumentOsDocument(
     @Id val id: String,
     @Field(type = FieldType.Object) val content: Map<String, Any?>?,
@@ -56,7 +59,8 @@ data class JsonSchemaDocumentOsDocument(
     @Field(type = FieldType.Date, format = [], pattern = ["uuuu-MM-dd'T'HH:mm:ss.SSS"]) val retentionDate: LocalDateTime?,
     @MultiField(
         mainField = Field(type = FieldType.Text),
-        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)],
+        // Bounded so a case with more than 32 KB of leaf text is not rejected as an immense term.
+        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword, ignoreAbove = 8191)],
     )
     val contentText: String? = null,
     // OpenSearch external version (maps to _version metadata, VersionType.EXTERNAL — not a source field, so

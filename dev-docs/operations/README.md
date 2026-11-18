@@ -12,3 +12,5 @@ Deployment and operational guides for Valtimo components.
   scaling, and operational runbook for the external plugin host
 - [Exchange integration](./exchange-integration.md) — configuring `valtimo.exchange.url`, image
   origins, maximum artifact size, and network requirements for installing from the GZAC Exchange
+- [Scheduled Jobs on More Than One Server](./scheduled-jobs.md) — enable ShedLock so scheduled
+  jobs run on one server at a time
