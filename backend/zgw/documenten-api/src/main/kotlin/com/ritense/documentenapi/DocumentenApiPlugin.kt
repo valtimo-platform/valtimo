@@ -714,6 +714,12 @@ class DocumentenApiPlugin(
         documentUrlProcessVariable: String?,
     ) {
         if (processInstanceId.isNullOrBlank()) return
+        if (runWithoutAuthorization { runtimeService.findProcessInstanceById(processInstanceId) } == null) {
+            logger.warn {
+                "Skipping setting document url on process instance '$processInstanceId'. Process instance not found."
+            }
+            return
+        }
         val variableName = documentUrlProcessVariable?.takeIf { it.isNotBlank() } ?: DOCUMENT_URL_PROCESS_VAR
         runtimeService.setVariable(processInstanceId, variableName, documentUrl)
     }

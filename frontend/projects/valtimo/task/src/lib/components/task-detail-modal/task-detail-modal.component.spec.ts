@@ -18,7 +18,7 @@ import {ComponentFixture, fakeAsync, flush, TestBed, tick} from '@angular/core/t
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionRequest, PermissionService} from '@valtimo/access-control';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {CARBON_CONSTANTS, FormIoStateService} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {GlobalNotificationService} from '@valtimo/shared';
@@ -295,6 +295,15 @@ describe('TaskDetailModalComponent', () => {
     expect(intermediateSaveService.setSubmission).toHaveBeenCalledWith({});
     flush();
   }));
+
+  it('clears the process instance id of the closed task', () => {
+    const formIoStateService = TestBed.inject(FormIoStateService);
+    formIoStateService.setProcessInstanceId('process-instance-1');
+
+    component.closeModal();
+
+    expect(formIoStateService.processInstanceId).toBe('');
+  });
 
   it('keeps the next task when it is opened within the close animation of the previous task', fakeAsync(() => {
     const intermediateSaveService = TestBed.inject(
