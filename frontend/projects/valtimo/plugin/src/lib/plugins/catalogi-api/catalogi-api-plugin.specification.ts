@@ -19,6 +19,7 @@ import {CatalogiApiConfigurationComponent} from './components/catalogi-api-confi
 import {GetStatustypenConfigurationComponent} from './components/get-statustypen/get-statustypen-configuration.component';
 import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
 import {GetBesluittypeConfigurationComponent} from './components/get-besluittype/get-besluittype-configuration.component';
+import {GetBesluittypenConfigurationComponent} from './components/get-besluittypen/get-besluittypen-configuration.component';
 import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
@@ -34,6 +35,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
   pluginLogoBase64: CATALOGI_API_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'get-besluittype': GetBesluittypeConfigurationComponent,
+    'get-besluittypen': GetBesluittypenConfigurationComponent,
     'get-resultaattypen': GetResultaattypenConfigurationComponent,
     'get-resultaattype': GetResultaattypeConfigurationComponent,
     'get-statustypen': GetStatustypenConfigurationComponent,
@@ -73,6 +75,12 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       besluittypeTooltip: 'Omschrijving van de aard van het besluit.',
       besluitProcessVariableTooltip:
         'Nadat het besluittype is opgehaald, wordt het opgeslagen in een procesvariabele met deze naam.',
+      'get-besluittypen': 'Besluittypen opvragen',
+      getBesluittypenInformation:
+        'De besluittypen die bij het zaaktype van de zaak horen, worden opgehaald en daarna opgeslagen in een procesvariabele.',
+      resultProcessVariable: 'Procesvariabele voor resultaat',
+      resultProcessVariableTooltip:
+        'De naam van de procesvariabele waarin het resultaat moet worden opgeslagen.',
       'get-resultaattypen': 'Resultaattypen opvragen',
       getResultaattypenInformation:
         'De resultaattypen die bij het zaaktype horen, worden opgehaald en daarna opgeslagen in een procesvariabele.',
@@ -139,6 +147,12 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       besluittypeTooltip: 'Description of the nature of the decision.',
       besluitProcessVariableTooltip:
         'After the besluittype is retrieved, it is stored in a process variable with this name.',
+      'get-besluittypen': 'Retrieve besluittypen',
+      getBesluittypenInformation:
+        'The besluittypen belonging to the zaaktype of the zaak are retrieved and then stored in a process variable.',
+      resultProcessVariable: 'Result process variable',
+      resultProcessVariableTooltip:
+        'The name of the process variable in which the result must be stored.',
       'get-resultaattypen': 'Retrieve resultaattypen',
       getResultaattypenInformation:
         'The Resultaattypen belonging to the Zaak type are retrieved and then stored in a process variable.',

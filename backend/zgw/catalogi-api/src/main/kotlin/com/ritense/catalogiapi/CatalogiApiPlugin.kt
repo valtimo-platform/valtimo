@@ -199,9 +199,9 @@ class CatalogiApiPlugin(
     )
     fun getBesluittypen(
         execution: DelegateExecution,
-        @PluginActionProperty processVariable: String
+        @PluginActionProperty resultProcessVariable: String
     ) {
-        logger.debug { "Retrieving besluittypen and storing these in process variable: $processVariable" }
+        logger.debug { "Retrieving besluittypen and storing these in process variable: $resultProcessVariable" }
         getZaaktypeUrl(execution).let { zaaktypeUri ->
             withLoggingContext(
                 CATALOGI_API.ZAAKTYPE to zaaktypeUri.toString()
@@ -212,9 +212,9 @@ class CatalogiApiPlugin(
                         NAME_KEY to besluittype.omschrijving
                     )
                 }.let { besluittypen ->
-                    execution.setVariable(processVariable, besluittypen)
+                    execution.setVariable(resultProcessVariable, besluittypen)
                 }
-                logger.info { "Setting process variable $processVariable with (retrieved) besluittypen" }
+                logger.info { "Setting process variable $resultProcessVariable with (retrieved) besluittypen" }
             }
         }
     }

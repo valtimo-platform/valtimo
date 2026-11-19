@@ -80,7 +80,10 @@ SELECT setval(pg_get_serial_sequence('catalogi_besluittype_informatieobjecttypen
 INSERT INTO catalogi_besluittype_zaaktypen
 (id, besluittype_id, zaaktype_id)
 VALUES(1, 1, 1);
-SELECT setval(pg_get_serial_sequence('catalogi_besluittype_zaaktypen', 'id'), 1, true);
+INSERT INTO catalogi_besluittype_zaaktypen
+(id, besluittype_id, zaaktype_id)
+VALUES(2, 2, 1);
+SELECT setval(pg_get_serial_sequence('catalogi_besluittype_zaaktypen', 'id'), 2, true);
 
 INSERT INTO catalogi_zaaktypeinformatieobjecttype(id, uuid, volgnummer, richting, informatieobjecttype_id, statustype_id, zaaktype_id, _etag) VALUES (1, '405da8a9-7296-439c-a2eb-a470b84f17ee', 1, 'inkomend', 1, NULL, 1, '_etag');
 SELECT setval(pg_get_serial_sequence('catalogi_zaaktypeinformatieobjecttype', 'id'), 1, true);
