@@ -707,6 +707,7 @@
     "addModal": {
       "descriptionPlaceholder": "Enter description here",
       "descriptionHelperText": "*Description is only visible in the dashboard configuration page",
+      "keyNoLettersHelperText": "A key can't be generated from a name without letters. Click the edit icon and enter a key that starts with a letter.",
       "name": "Dashboard name",
       "namePlaceholder": "Enter name here"
     },
@@ -909,6 +910,7 @@
       "created": "Created new Form",
       "deleted": "Deleted form",
       "deletionError": "Error deleting form",
+      "deletionInUse": "This form cannot be deleted because it is used by process links: {{usages}}. Remove these references first.",
       "deployed": "Form deployed",
       "deploymentError": "Error deploying form",
       "duplicated": "Form duplicated"
@@ -1044,6 +1046,7 @@
     "export": "Export {{value}}",
     "exportErrorTitle": "Error",
     "exportErrorMessage": "Something went wrong",
+    "exportErrorFormMissing": "The process link on activity '{{activity}}' of process '{{process}}' points to a form that no longer exists. Select an existing form for this process link and export again.",
     "exportSuccessTitle": "Download will start shortly",
     "readonly": "Read-only",
     "connectedProcesses": "Connected processes",
@@ -1303,7 +1306,8 @@
         "title": "This case definition cannot be finalized.",
         "BUILDING_BLOCK_NOT_FINAL": "The case definition makes use of draft building blocks. In order to finalize this case definition, make sure all the building blocks it uses are final.",
         "CONFIGURATION_ISSUES": "The case definition contains unresolved configuration issues. Please review and fix all configuration warnings before finalizing.",
-        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition."
+        "PROCESS_DEFINITION_IN_DRAFT": "The case definition contains process definitions that are still in draft. Finalize all process definitions before finalizing the case definition.",
+        "PROCESS_LINK_FORM_MISSING": "The case definition contains a process link that points to a form that no longer exists. Select an existing form for this process link before finalizing the case definition."
       }
     },
     "environmentConfig": {
@@ -4643,6 +4647,10 @@
     },
     "opensearch": {
       "title": "OpenSearch",
+      "tabs": {
+        "reindexRuns": "Reindex runs",
+        "rejectedCases": "Rejected cases"
+      },
       "reindex": {
         "title": "Reindex Runs",
         "description": "Reindex all documents from the database to OpenSearch. This operation runs in the background.",
@@ -4664,18 +4672,22 @@
         "inProgress": "Reindexing in progress...",
         "errorTitle": "Error",
         "viewErrorLogs": "View error logs",
+        "viewRejectedCases": "View rejected cases",
         "pruneOrphans": "Prune orphaned documents",
-        "documentDefinitionName": "Document definition",
-        "documentDefinitionPlaceholder": "All document definitions",
-        "allDocumentDefinitions": "All document definitions",
+        "recreateIndex": "Rebuild / migrate index",
+        "documentDefinitionName": "Case definition",
+        "documentDefinitionPlaceholder": "All case definitions",
+        "allDocumentDefinitions": "All case definitions",
         "modifiedBefore": "Modified before",
         "modifiedAfter": "Modified after",
+        "modifiedAfterUnavailable": "Not available when rebuilding the index: a rebuild always reindexes every document in scope.",
+        "startFailed": "Reindex could not be started",
         "columns": {
           "status": "Status",
           "startedOn": "Started",
           "finishedOn": "Finished",
           "progress": "Progress",
-          "documentDefinition": "Document definition"
+          "documentDefinition": "Case definition"
         },
         "noResults": {
           "title": "No reindex runs",
@@ -4684,15 +4696,53 @@
         "statuses": {
           "RUNNING": "Running",
           "COMPLETED": "Completed",
+          "COMPLETED_WITH_ERRORS": "Completed with errors",
           "FAILED": "Failed",
           "STOPPED": "Stopped",
           "PRUNING": "Pruning orphaned documents"
         },
+        "completedWithErrors": "Finished, but {{skipped}} document(s) could not be indexed and were skipped.",
         "pruningProgress": "Removed: {{removed}}",
         "tooltips": {
           "pruneOrphans": "Remove entries from OpenSearch that no longer exist in the database",
-          "pruned": "Search entries removed because the original document was deleted"
+          "pruned": "Search entries removed because the original document was deleted",
+          "recreateIndex": "Rebuild the index into a fresh one and swap it in without downtime. For an unscoped run this migrates off the legacy shared index to one index per case definition."
         }
+      },
+      "topology": {
+        "legacyWarningTitle": "Index rebuild required",
+        "legacyWarningMessage": "This installation still uses the legacy document-search index, or one or more case definitions have no index yet. Start a reindex with \"Rebuild / migrate index\" enabled to migrate to the per-definition indices. Until the migration completes, search uses the database (PostgreSQL).",
+        "catchingUpTitle": "Indexing existing cases",
+        "catchingUpMessage": "OpenSearch is indexing existing cases in the background. Until this completes, search uses the database (PostgreSQL). No action is needed.",
+        "rejectedDefinitionsTitle": "Some cases are searched in the database",
+        "rejectedDefinitionsMessage": "OpenSearch could not index some cases of these case definitions: {{definitions}}. Their case lists use the database (PostgreSQL) in the meantime."
+      },
+      "rejections": {
+        "description": "OpenSearch could not index these cases. Until they are indexed, the case lists of their case definitions use the database (PostgreSQL). OpenSearch retries them automatically at growing intervals: after 10 minutes, then hourly, then daily. The reason is in the application log.",
+        "columns": {
+          "definitionName": "Case definition",
+          "documentId": "Case",
+          "attempts": "Attempts",
+          "firstRejectedOn": "Rejected since",
+          "lastRejectedOn": "Last attempt",
+          "nextRetryOn": "Next retry"
+        },
+        "noResults": {
+          "title": "No rejected cases",
+          "description": "OpenSearch has indexed every case."
+        },
+        "retryNow": "Retry now",
+        "retryAll": "Retry all",
+        "retryAllModal": {
+          "title": "Retry all rejected cases",
+          "content": "OpenSearch will retry every rejected case in the background within a few minutes. Do you want to continue?",
+          "confirm": "Retry all"
+        },
+        "indexed": "Case indexed",
+        "stillRejected": "Still rejected; see the application log",
+        "deleted": "Case no longer exists",
+        "scheduled": "Scheduled {{count}} case(s) for retry",
+        "retryFailed": "Retry failed"
       }
     }
   },
