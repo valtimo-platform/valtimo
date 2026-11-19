@@ -1,0 +1,95 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="plugin-external-properties-editor">
+  <div class="plugin-external-properties-editor__header">
+    <label class="cds--label">{{ 'pluginManagement.labels.properties' | translate }}</label>
+
+    <p class="cds--type-helper-text-01 plugin-external-properties-editor__helper">
+      {{ 'pluginManagement.propertiesEditor.helper' | translate }}
+    </p>
+  </div>
+
+  <div
+    [attr.data-test-id]="testIds.editor"
+    [class.plugin-external-properties-editor__editor--invalid]="invalid"
+    class="plugin-external-properties-editor__editor"
+  >
+    <valtimo-editor
+      [model]="$model()"
+      [jsonSchema]="$jsonSchema()"
+      [heightPx]="240"
+      (valueChangeEvent)="onValueChange($event)"
+    ></valtimo-editor>
+  </div>
+
+  <div *ngIf="invalid" class="cds--form-requirement plugin-external-properties-editor__error">
+    {{ 'pluginManagement.invalidJson' | translate }}
+  </div>
+
+  <section *ngIf="$fields().length > 0" class="plugin-external-properties-editor__fields">
+    <h5 class="cds--type-heading-compact-01 plugin-external-properties-editor__fields-title">
+      {{ 'pluginManagement.propertiesEditor.fieldsTitle' | translate }}
+    </h5>
+
+    <ul class="plugin-external-properties-editor__field-list">
+      <li
+        *ngFor="let field of $fields(); trackBy: trackByKey"
+        class="plugin-external-properties-editor__field"
+      >
+        <div class="plugin-external-properties-editor__field-head">
+          <span class="cds--type-heading-compact-01">{{ field.title || field.key }}</span>
+
+          <code class="cds--snippet--inline">{{ field.key }}</code>
+
+          <cds-tag
+            *ngIf="field.required && !(field.secret && secretsKeptWhenEmpty)"
+            type="red"
+            size="sm"
+          >
+            {{ 'pluginManagement.propertiesEditor.required' | translate }}
+          </cds-tag>
+
+          <cds-tag *ngIf="field.secret" type="purple" size="sm">
+            {{ 'pluginManagement.propertiesEditor.secret' | translate }}
+          </cds-tag>
+
+          <cds-tag *ngIf="field.egressTarget" type="teal" size="sm">
+            {{ 'pluginManagement.propertiesEditor.egressTarget' | translate }}
+          </cds-tag>
+
+          <span class="cds--type-helper-text-01 plugin-external-properties-editor__field-type">{{
+            field.type
+          }}</span>
+        </div>
+
+        <p
+          *ngIf="field.description"
+          class="cds--type-helper-text-01 plugin-external-properties-editor__helper"
+        >
+          {{ field.description }}
+        </p>
+
+        <p
+          *ngIf="field.secret && secretsKeptWhenEmpty"
+          class="cds--type-helper-text-01 plugin-external-properties-editor__helper"
+        >
+          {{ 'pluginManagement.propertiesEditor.secretKept' | translate }}
+        </p>
+      </li>
+    </ul>
+  </section>
+</div>

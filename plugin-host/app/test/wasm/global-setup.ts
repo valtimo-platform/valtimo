@@ -15,9 +15,16 @@
  */
 
 import {execFileSync} from "node:child_process";
-import {chmodSync, existsSync} from "node:fs";
+import {chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {dirname, join} from "node:path";
-import {EXTISM_JS_BIN, FIXTURE_DIR, FIXTURE_WASM} from "./fixture.js";
+import {
+  CONTRACT_FREE_FIXTURE_DIR,
+  CONTRACT_FREE_FIXTURE_WASM,
+  EXTISM_JS_BIN,
+  FIXTURE_DIR,
+  FIXTURE_MANIFEST,
+  FIXTURE_WASM,
+} from "./fixture.js";
 
 /**
  * Compiles the fixture plugin to Wasm before the L3 suite runs, using the real SDK toolchain
@@ -55,5 +62,34 @@ export default async function setup(): Promise<void> {
 
   if (!existsSync(FIXTURE_WASM)) {
     throw new Error(`Fixture build reported success but produced no Wasm at ${FIXTURE_WASM}`);
+  }
+
+  buildContractFreeFixture(env);
+}
+
+/**
+ * Builds the fixture once more from a scratch directory whose manifest declares no contracts, so
+ * the L3 suite can check which host imports the build tool emits for a contract-free plugin.
+ */
+function buildContractFreeFixture(env: NodeJS.ProcessEnv): void {
+  rmSync(CONTRACT_FREE_FIXTURE_DIR, { recursive: true, force: true });
+  mkdirSync(CONTRACT_FREE_FIXTURE_DIR, { recursive: true });
+  const manifest = JSON.parse(readFileSync(FIXTURE_MANIFEST, "utf-8"));
+  delete manifest.provides;
+  delete manifest.permissions;
+  writeFileSync(join(CONTRACT_FREE_FIXTURE_DIR, "manifest.json"), JSON.stringify(manifest, null, 2));
+
+  const buildTool = join(FIXTURE_DIR, "node_modules", "@valtimo", "plugin-sdk", "bin", "valtimo-plugin-build.mjs");
+  try {
+    execFileSync(
+      process.execPath,
+      [buildTool, "--input", join(FIXTURE_DIR, "src", "plugin.ts"), "--output", "plugin.wasm"],
+      { cwd: CONTRACT_FREE_FIXTURE_DIR, env, stdio: "pipe" }
+    );
+  } catch (err) {
+    throw new Error(`Failed to build the contract-free fixture: ${err instanceof Error ? err.message : String(err)}`);
+  }
+  if (!existsSync(CONTRACT_FREE_FIXTURE_WASM)) {
+    throw new Error(`Contract-free fixture build produced no Wasm at ${CONTRACT_FREE_FIXTURE_WASM}`);
   }
 }
