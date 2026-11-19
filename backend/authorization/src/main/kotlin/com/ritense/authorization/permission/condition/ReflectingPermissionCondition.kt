@@ -21,26 +21,22 @@ import java.lang.reflect.Field
 abstract class ReflectingPermissionCondition(type: PermissionConditionType) : PermissionCondition(type) {
     protected fun findEntityFieldValue(entity: Any, field: String): Any? {
         var currentEntity: Any? = entity
+        var currentClass: Class<*> = entity.javaClass
         val fields = field.split('.')
-        fields.forEachIndexed { index, value ->
-            if (currentEntity == null) {
-                throw NullPointerException("Field $fields not found in class ${entity.javaClass}")
-            }
-            val declaredField = findDeclaredField(currentEntity.javaClass, value)
+        for (value in fields) {
+            // Null in path resolves to null, but remaining segments are still validated against declared types
+            val classToSearch = currentEntity?.javaClass ?: currentClass
+            val declaredField = findDeclaredField(classToSearch, value)
+                ?: throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
+            currentClass = declaredField.type
 
-            if (declaredField == null) {
-                throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
-            }
-            declaredField.trySetAccessible()
-
-            // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
-            currentEntity = try {
-                declaredField.get(currentEntity)
-            } catch (npe: NullPointerException) {
-                if (index == fields.size - 1) {
+            if (currentEntity != null) {
+                declaredField.trySetAccessible()
+                // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
+                currentEntity = try {
+                    declaredField.get(currentEntity)
+                } catch (_: NullPointerException) {
                     null
-                } else {
-                    throw npe
                 }
             }
         }

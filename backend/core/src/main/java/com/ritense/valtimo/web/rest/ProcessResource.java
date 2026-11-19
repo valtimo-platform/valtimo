@@ -608,7 +608,8 @@ public class ProcessResource extends AbstractProcessResource {
     /**
      * Endpoint to search for process instances.
      *
-     * @deprecated since 12.0.0, use v2 instead
+     * @deprecated since 12.0.0. Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
      */
     @EndpointDescription(
         en = "Search process instances",
@@ -631,6 +632,11 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators. Use the document-scoped
+     *     process-document endpoints for case-related process data.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Search process instances paged",
         nl = "Procesinstanties gepagineerd zoeken"
@@ -649,6 +655,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok(page);
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Count process instances by definition name",
         nl = "Procesinstanties op definitienaam tellen"
@@ -744,6 +754,10 @@ public class ProcessResource extends AbstractProcessResource {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * @deprecated Will be removed; now restricted to administrators.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     @EndpointDescription(
         en = "Deploy short timer version of process definition",
         nl = "Versie met korte timer van procesdefinitie uitrollen"

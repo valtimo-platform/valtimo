@@ -25,6 +25,7 @@ import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectenapi.client.ObjectWrapper
+import com.ritense.objectenapi.exception.ObjectUrlNotAllowedException
 import com.ritense.objectenapi.management.ObjectManagementInfo
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
 import com.ritense.objectenapi.web.rest.result.FormType
@@ -277,6 +278,12 @@ class ZaakObjectService(
         }
 
         val objectUri = objectUrl ?: objectenApiPlugin.getObjectUrl(objectId!!)
+
+        if (!objectenApiPlugin.belongsToObjectenApi(objectUri)) {
+            throw ObjectUrlNotAllowedException(
+                "Object url '$objectUri' does not belong to the Objecten API of objectManagementId $objectManagementId"
+            )
+        }
 
         return objectenApiPlugin.deleteObject(objectUri)
     }

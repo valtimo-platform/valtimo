@@ -151,7 +151,7 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     this.openConfigurationIssueSubscription();
     this.pageTitleService.disableReset();
     this.openParamsSubscription();
-    this.openBreadcrumbSubscription();
+    this.breadcrumbService.clearThirdBreadcrumb();
   }
 
   public ngOnDestroy(): void {
@@ -160,22 +160,6 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     this.pageTitleService.enableReset();
     this.configurationIssueService.setUnresolvedIssueTypes([]);
     this.breadcrumbService.clearThirdBreadcrumb();
-  }
-
-  private openBreadcrumbSubscription(): void {
-    this._subscriptions.add(
-      this.caseDetailService.caseDefinition$.subscribe(caseDefinition => {
-        if (!caseDefinition) return;
-
-        const route = `/case-management/case/${caseDefinition.caseDefinitionKey}/version/${caseDefinition.caseDefinitionVersionTag}`;
-
-        this.breadcrumbService.setThirdBreadcrumb({
-          route: [route],
-          content: caseDefinition.name,
-          href: route,
-        });
-      })
-    );
   }
 
   public hasTabIssues$(issueTypes: string[]): Observable<boolean> {

@@ -134,6 +134,7 @@ class ExternalPluginConfigurationServicePushTest {
             "gzac.events",
             "http://localhost:8080",
             mock<ExternalPluginContractBindingRepository>(),
+            mock<ExternalPluginContractJobService>(),
         )
     }
 

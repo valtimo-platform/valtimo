@@ -68,14 +68,16 @@ class PluginConfigurationImportPreviewContributorTest {
     }
 
     @Test
-    fun `should ignore a case scoped process link`() {
-        // A case export bundles its process links under config/case/.../process-link; only the global
-        // process links belong to the process being imported, so a case process link must be ignored.
+    fun `should contribute a fixed plugin process link of a case`() {
+        val pluginConfigurationId = UUID.randomUUID()
+
         val contributions = contributor().contributePreview(
-            zipOf(CASE_PROCESS_LINK_PATH to pluginProcessLinkJson())
+            zipOf(CASE_PROCESS_LINK_PATH to pluginProcessLinkJson(pluginConfigurationId))
         )
 
-        assertThat(contributions).isEmpty()
+        val contribution = contributions.single()
+        assertThat(contribution.pluginConfigurationId).isEqualTo(pluginConfigurationId)
+        assertThat(contribution.processDefinitionKey).isEqualTo(PROCESS_DEFINITION_KEY)
     }
 
     @Test

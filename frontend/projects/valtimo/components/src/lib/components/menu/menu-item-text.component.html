@@ -25,12 +25,22 @@
   (openChange)="onOpenChange($event)"
 >
   <div overflowTrigger class="menu-item-text-container" id="{{ menuItem?.id }}">
-    <span *ngIf="obs.titleTranslation" [ngClass]="{'cds--link empty-menu-icon-text': accent}">
+    <span
+      *ngIf="obs.titleTranslation"
+      [ngClass]="{'cds--link empty-menu-icon-text': accent}"
+      class="menu-item-label"
+    >
       <div class="menu-item-icon-container">
         <i class="{{ menuItem.iconClass }}"></i>
       </div>
 
-      {{ obs.titleTranslation + (accent ? ' >' : '') }}
+      <span
+        *ngIf="menuItem?.color"
+        class="menu-item-dot"
+        [style.background-color]="menuItem.color"
+      ></span>
+
+      <span class="menu-item-title">{{ obs.titleTranslation + (accent ? ' >' : '') }}</span>
     </span>
   </div>
 

@@ -4,6 +4,11 @@ The Case list tab configures how cases appear in the end-user case list view for
 type. This includes the columns displayed in the list and the search fields available for
 filtering.
 
+{% hint style="info" %}
+This configuration applies to the case list of a single case definition. The case list of a
+[case group](../case-groups/README.md) has its own list columns and search fields.
+{% endhint %}
+
 This includes:
 
 - **[List columns](list-columns.md)** — Columns displayed in the case list

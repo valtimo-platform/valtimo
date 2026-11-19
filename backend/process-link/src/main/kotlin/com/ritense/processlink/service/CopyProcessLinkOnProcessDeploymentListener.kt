@@ -22,6 +22,8 @@ import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byDeploymentId
+import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonProcessService.DETACHED_PROCESS_DEFINITION_PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -43,7 +45,8 @@ class CopyProcessLinkOnProcessDeploymentListener(
             return
         }
 
-        val originalProcessDefinitionId = event.source.originalProcessDefinitionId
+        val sourceProcessDefinitionId = event.source.originalProcessDefinitionId?.let { originalWithSameKey(it, event) }
+        val originalProcessDefinitionId = sourceProcessDefinitionId
             ?: event.previousProcessDefinitionId?.takeIf { mayCopyLinksFrom(it, event) }
 
         if (originalProcessDefinitionId != null) {
@@ -71,12 +74,31 @@ class CopyProcessLinkOnProcessDeploymentListener(
                     newLinks,
                     event.processDefinitionId,
                     event.caseDefinitionId,
-                    event.source.originalProcessDefinitionId,
+                    sourceProcessDefinitionId,
                     CaseDefinitionId.fromProcessVersionTag(event.source.originalVersionTag),
                     modelInstance,
                 )
             )
         }
+    }
+
+    private fun originalWithSameKey(
+        originalProcessDefinitionId: String,
+        event: ProcessDefinitionDeployedEvent
+    ): String? {
+        val original = runWithoutAuthorization {
+            operatonRepositoryService.findProcessDefinitionById(originalProcessDefinitionId)
+        } ?: return originalProcessDefinitionId
+        if (original.key == event.processDefinitionKey) {
+            return originalProcessDefinitionId
+        }
+        val deploymentId = original.deploymentId ?: return null
+
+        return runWithoutAuthorization {
+            operatonRepositoryService.findProcessDefinition(
+                byDeploymentId(deploymentId).and(byKey(event.processDefinitionKey))
+            )
+        }?.id
     }
 
     private fun mayCopyLinksFrom(

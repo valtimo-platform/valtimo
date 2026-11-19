@@ -153,4 +153,29 @@ describe('PluginExternalReviewModalComponent', () => {
 
     expect(component.$errorMessage()).toBe('');
   });
+
+  it('lists the pending contract schema errors and blocks acceptance', () => {
+    component.definition = {
+      ...definition,
+      pendingContractSchemaErrors: [
+        "Operation 'op' of contract 'a@1' declares an invalid input schema",
+      ],
+    } as ExternalPluginDefinition;
+    component.open = true;
+    component.ngOnChanges({definition: new SimpleChange(null, component.definition, true)});
+    component.onPermissionsValid(true);
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(component.$pendingContractSchemaErrors().length).toBe(1);
+    expect(
+      element.querySelector('[data-test-id="pluginExternalReviewModalContractSchemaErrors"]')
+        ?.textContent
+    ).toContain("Operation 'op' of contract 'a@1'");
+    expect(
+      element.querySelector<HTMLButtonElement>(
+        '[data-test-id="pluginExternalReviewModalAcceptButton"]'
+      )?.disabled
+    ).toBeTrue();
+  });
 });

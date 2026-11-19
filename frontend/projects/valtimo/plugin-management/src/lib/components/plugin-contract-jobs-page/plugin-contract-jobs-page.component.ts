@@ -33,7 +33,6 @@ import {
   IconModule,
   IconService,
   LayerModule,
-  ListItem,
   TagModule,
 } from 'carbon-components-angular';
 import {Renew16} from '@carbon/icons';
@@ -54,22 +53,9 @@ import {
 import {Subscription} from 'rxjs';
 import {PluginContractJobDetailModalComponent} from '../plugin-contract-job-detail-modal/plugin-contract-job-detail-modal.component';
 import {PLUGIN_CONTRACT_JOBS_PAGE_TEST_IDS} from '../../constants';
+import {JOB_ID_QUERY_PARAM, DEFAULT_PAGE_SIZE} from '../../constants/plugin-contract-job.constants';
+import {FilterListItem, ContractJobRow} from '../../models/plugin-contract-job.model';
 import {contractJobStatusTagType} from '../../utils';
-
-interface ContractJobRow extends ExternalPluginContractJobSummary {
-  statusTagType: string;
-  /** `errorCode`, followed by the provider's own code when it reported one. */
-  errorLabel: string;
-}
-
-interface FilterListItem extends ListItem {
-  value: string;
-}
-
-const DEFAULT_PAGE_SIZE = 10;
-
-/** Opens the detail modal of this job; set while the modal is open, so the URL can be shared. */
-const JOB_ID_QUERY_PARAM = 'jobId';
 
 /**
  * The contract job ledger: every asynchronous request one plugin configuration made of another,

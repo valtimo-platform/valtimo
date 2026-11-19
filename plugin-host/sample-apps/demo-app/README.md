@@ -104,9 +104,9 @@ headers `X-Valtimo-Signature` / `X-Valtimo-Timestamp`, ±5-min replay window —
   `POST /api/v1/plugin-contract/jobs` to get the job's outcome back as a BPMN message
 - `POST /plugins/:pluginId/:version/contracts/:contract/:operation` — a contract call or job
   delivery for an operation the manifest `provides`. Body: `{configurationId, caller, payload,
-  chain?, timeoutMs?, jobId?, deadline?, documentId?, requestedBy?}` — a synchronous call carries
+  chain?, timeoutMs?, jobId?, deadline?, documentId?}` — a synchronous call carries
   `timeoutMs` (milliseconds the caller still waits; the app turns it into a deadline on its own
-  clock), a job carries `jobId`, its `deadline` instant, and `documentId`/`requestedBy` when known.
+  clock), a job carries `jobId`, its `deadline` instant, and `documentId` when the requester named one.
   Answers `200 {status:"completed"|"accepted"|"error", …}`; refuses with
   `404 {status:"error", errorCode, errorMessage}` — `PLUGIN_NOT_LOADED` or
   `CONFIGURATION_NOT_FOUND` (GZAC treats the provider as temporarily unavailable) and

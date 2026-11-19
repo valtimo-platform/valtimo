@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,12 +45,15 @@ import com.ritense.form.web.rest.dto.FormSubmissionResultSucceeded
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstanceId
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.domain.request.Request
 import com.ritense.processdocument.exception.ProcessDocumentDefinitionNotFoundException
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.MESSAGE_START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_START
@@ -99,6 +102,7 @@ class DefaultFormSubmissionService(
     private val authorizationService: AuthorizationService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
+    private val processDocumentAssociationService: ProcessDocumentAssociationService,
 ) : FormSubmissionService {
 
     @Transactional
@@ -115,6 +119,10 @@ class DefaultFormSubmissionService(
                 ?.let { runWithoutAuthorization { documentService.get(documentId) } }
             val processLink = processLinkService.getProcessLink(processLinkId, FormProcessLink::class.java)
             requirePermission(taskInstanceId, document, processLink.processDefinitionId)
+            val associationErrors = taskDocumentAssociationErrors(taskInstanceId, document)
+            if (associationErrors.isNotEmpty()) {
+                return FormSubmissionResultFailed(associationErrors)
+            }
 
             val processDefinition = getProcessDefinition(processLink)
             val documentDefinitionNameToUse = document?.definitionId()?.name()
@@ -122,6 +130,7 @@ class DefaultFormSubmissionService(
                 ?: resolveDocumentDefinitionName(processDefinition)
             val processVariables = getProcessVariables(taskInstanceId)
             val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
+            val formData = formDefinition.removeNonSubmittableData(formData)
 
             val formFields = getFormFields(formDefinition, formData)
             preProcessFormFields(formFields, document)
@@ -164,6 +173,25 @@ class DefaultFormSubmissionService(
                 OperationError.FromString("Unexpected error occurred, please contact support - referenceId: $referenceId")
             )
         }
+    }
+
+    private fun taskDocumentAssociationErrors(
+        taskInstanceId: String?,
+        document: JsonSchemaDocument?
+    ): List<OperationError> {
+        if (taskInstanceId == null || document == null) {
+            return emptyList()
+        }
+        val processInstanceId = operatonTaskService.findTaskById(taskInstanceId).getProcessInstanceId()
+        val result = runWithoutAuthorization {
+            processDocumentAssociationService.getProcessDocumentInstanceResult(
+                OperatonProcessJsonSchemaDocumentInstanceId.existingId(
+                    OperatonProcessInstanceId(processInstanceId),
+                    document.id()
+                )
+            )
+        }
+        return if (result.hasResult()) emptyList() else result.errors()
     }
 
     private fun requirePermission(taskInstanceId: String?, document: JsonSchemaDocument?, processDefinitionId: String) {
@@ -212,6 +240,7 @@ class DefaultFormSubmissionService(
     ): CategorizedSubmitValues {
         val categorizedMap = formDefinition.inputFields
             .filter { FormIoFormDefinition.NOT_IGNORED.test(it) }
+            .filter { FormIoFormDefinition.SUBMITTABLE.test(it) }
             .filter { FormIoFormDefinition.isInputComponent(it) }
             .mapNotNull { field ->
                 getTargetKeyValuePair(field, formData)
@@ -382,7 +411,7 @@ class DefaultFormSubmissionService(
         formData: JsonNode
     ): Map<String, Map<String, JsonNode>> {
         return formDefinition.buildExternalFormFieldsMapFiltered(
-            FormIoFormDefinition.NOT_IGNORED.and { t ->
+            FormIoFormDefinition.NOT_IGNORED.and(FormIoFormDefinition.SUBMITTABLE).and { t ->
                 FormIoFormDefinition.getTargetKey(t).isEmpty && FormIoFormDefinition.getSourceKey(t).isEmpty
             }
         ).map { entry ->

@@ -35,8 +35,10 @@ import com.ritense.document.event.DocumentsListed
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator.Companion.andAll
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.repository.InternalCaseStatusRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.GlobalSearchFieldMeta
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.SearchFieldService
 import com.ritense.document.service.impl.SearchRequest
@@ -46,12 +48,17 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.document.domain.impl.searchfield.SearchField
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import org.apache.commons.lang3.NotImplementedException
 import org.opensearch.index.query.Operator
 import org.opensearch.index.query.QueryBuilder
 import org.opensearch.index.query.QueryBuilders
+import org.opensearch.script.Script
+import org.opensearch.script.ScriptType
+import org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType
+import org.opensearch.search.sort.SortBuilder
 import org.opensearch.search.sort.SortBuilders
 import org.opensearch.search.sort.SortOrder
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
@@ -61,11 +68,16 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
+import org.springframework.data.elasticsearch.core.query.IndicesOptions
 import org.springframework.data.elasticsearch.core.query.StringQuery
 import java.time.Instant
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAccessor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
 
@@ -82,7 +94,18 @@ class JsonSchemaDocumentOpenSearchService(
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
     private val caseDefinitionService: CaseDefinitionService,
+    private val internalCaseStatusRepository: InternalCaseStatusRepository,
+    private val resolver: OpenSearchIndexNameResolver,
 ) : DocumentSearchService {
+
+    // Single definition -> its own index; a set of definitions -> that set's indices; "All cases"
+    // (no definition) -> the shared read alias spanning every per-definition index.
+    private fun indexFor(definitionNames: Collection<String>?): IndexCoordinates =
+        if (definitionNames.isNullOrEmpty()) {
+            IndexCoordinates.of(OpenSearchIndexNameResolver.READ_ALIAS)
+        } else {
+            IndexCoordinates.of(*definitionNames.map { resolver.indexNameFor(it) }.toTypedArray())
+        }
 
     override fun search(
         searchRequest: SearchRequest,
@@ -123,7 +146,7 @@ class JsonSchemaDocumentOpenSearchService(
             parts.add(QueryBuilders.termQuery("content.${sc.path}", sc.value))
         }
 
-        return executeSearch(andAll(parts), pageable)
+        return executeSearch(andAll(parts), pageable, indexFor(listOfNotNull(searchRequest.documentDefinitionName?.takeIf { it.isNotEmpty() })))
     }
 
     override fun search(
@@ -189,6 +212,213 @@ class JsonSchemaDocumentOpenSearchService(
         )
     }
 
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        pageable: Pageable
+    ): Page<JsonSchemaDocument> {
+        if (documentDefinitionNames.isEmpty()) {
+            return PageImpl(emptyList(), pageable, 0)
+        }
+
+        val zoneOffset = RequestHelper.getZoneOffset()
+
+        val otherFilters = searchWithConfigRequest.otherFilters
+            .map { filter -> SearchRequestMapper.toOtherFilter(filter, null, zoneOffset) }
+
+        val advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, otherFilters)
+
+        SearchRequestValidator.validate(advancedSearchRequest)
+        val combinedQuery = buildCombinedQueryMultipleDefinitions(
+            documentDefinitionNames,
+            blueprintType,
+            advancedSearchRequest,
+            JsonSchemaDocumentActionProvider.VIEW_LIST
+        )
+        return executeSearch(combinedQuery, pageable, indexFor(documentDefinitionNames))
+    }
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        pageable: Pageable
+    ): Page<JsonSchemaDocument> =
+        search(documentDefinitionNames, blueprintType, searchWithConfigRequest, filterPathMappings, emptyMap(), pageable)
+
+    override fun search(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchWithConfigRequest: SearchWithConfigRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        globalSearchFields: Map<String, GlobalSearchFieldMeta>,
+        pageable: Pageable
+    ): Page<JsonSchemaDocument> {
+        if (documentDefinitionNames.isEmpty()) {
+            return PageImpl(emptyList(), pageable, 0)
+        }
+
+        val zoneOffset = RequestHelper.getZoneOffset()
+        val otherFilters = searchWithConfigRequest.otherFilters.map { filter ->
+            SearchRequestMapper.toGroupOtherFilter(filter, globalSearchFields[filter.key], zoneOffset)
+        }
+
+        val advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(searchWithConfigRequest, otherFilters)
+
+        val combinedQuery = buildCombinedQueryMultipleDefinitionsWithMappings(
+            documentDefinitionNames,
+            blueprintType,
+            advancedSearchRequest,
+            filterPathMappings,
+            globalSearchFields,
+            JsonSchemaDocumentActionProvider.VIEW_LIST
+        )
+        return executeSearch(combinedQuery, pageable, indexFor(documentDefinitionNames))
+    }
+
+    private fun buildCombinedQueryMultipleDefinitions(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchRequest: AdvancedSearchRequest,
+        action: Action<JsonSchemaDocument>
+    ): QueryBuilder {
+        val parts = mutableListOf<QueryBuilder>()
+
+        parts.add(buildAuthQuery(action))
+        parts.add(QueryBuilders.termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
+        parts.add(QueryBuilders.termsQuery(DEFINITION_NAME_FIELD, documentDefinitionNames.toList()))
+
+        if (searchRequest.assigneeFilter != null && searchRequest.assigneeFilter != AssigneeFilter.ALL) {
+            parts.add(buildAssigneeFilterQuery(searchRequest.assigneeFilter))
+        }
+
+        if (!searchRequest.statusFilter.isNullOrEmpty()) {
+            parts.add(buildStatusFilterQuery(searchRequest.statusFilter))
+        }
+
+        if (!searchRequest.caseTagsFilter.isNullOrEmpty()) {
+            parts.add(QueryBuilders.termsQuery("caseTags.key", searchRequest.caseTagsFilter.toList()))
+        }
+
+        if (!searchRequest.otherFilters.isNullOrEmpty()) {
+            parts.add(buildOtherFiltersQuery(searchRequest.otherFilters, searchRequest.searchOperator))
+        }
+
+        return andAll(parts)
+    }
+
+    private fun buildCombinedQueryMultipleDefinitionsWithMappings(
+        documentDefinitionNames: Collection<String>,
+        blueprintType: BlueprintType,
+        searchRequest: AdvancedSearchRequest,
+        filterPathMappings: Map<String, Map<String, String>>,
+        globalSearchFields: Map<String, GlobalSearchFieldMeta>,
+        action: Action<JsonSchemaDocument>
+    ): QueryBuilder {
+        val parts = mutableListOf<QueryBuilder>()
+
+        parts.add(buildAuthQuery(action))
+        parts.add(QueryBuilders.termQuery(BLUEPRINT_TYPE_FIELD, blueprintType.name))
+        parts.add(QueryBuilders.termsQuery(DEFINITION_NAME_FIELD, documentDefinitionNames.toList()))
+
+        if (searchRequest.assigneeFilter != null && searchRequest.assigneeFilter != AssigneeFilter.ALL) {
+            parts.add(buildAssigneeFilterQuery(searchRequest.assigneeFilter))
+        }
+
+        if (!searchRequest.statusFilter.isNullOrEmpty()) {
+            parts.add(buildStatusFilterQuery(searchRequest.statusFilter))
+        }
+
+        if (!searchRequest.caseTagsFilter.isNullOrEmpty()) {
+            parts.add(QueryBuilders.termsQuery("caseTags.key", searchRequest.caseTagsFilter.toList()))
+        }
+
+        if (!searchRequest.otherFilters.isNullOrEmpty()) {
+            parts.add(buildOtherFiltersQueryWithMappings(
+                searchRequest.otherFilters,
+                searchRequest.searchOperator,
+                filterPathMappings,
+                documentDefinitionNames
+            ))
+        }
+
+        val globalFilter = searchRequest.globalSearchFilter?.takeIf { it.isNotEmpty() }
+        if (globalFilter != null) {
+            if (globalSearchFields.isNotEmpty()) {
+                parts.add(buildGlobalSearchQueryWithMappings(
+                    globalFilter.trim(),
+                    documentDefinitionNames,
+                    filterPathMappings,
+                    globalSearchFields
+                ))
+            } else {
+                parts.add(buildGlobalSearchQueryForDefinitions(globalFilter.trim(), documentDefinitionNames))
+            }
+        }
+
+        return andAll(parts)
+    }
+
+    private fun buildOtherFiltersQueryWithMappings(
+        filters: List<AdvancedSearchRequest.OtherFilter>,
+        operator: SearchOperator?,
+        filterPathMappings: Map<String, Map<String, String>>,
+        documentDefinitionNames: Collection<String>
+    ): QueryBuilder {
+        val filterQueries = filters.map { filter ->
+            buildSingleFilterQueryWithMappings(filter, filterPathMappings, documentDefinitionNames)
+        }
+
+        return if (operator == SearchOperator.OR) {
+            QueryBuilders.boolQuery().apply {
+                filterQueries.forEach { should(it) }
+                minimumShouldMatch(1)
+            }
+        } else {
+            andAll(filterQueries)
+        }
+    }
+
+    private fun buildSingleFilterQueryWithMappings(
+        filter: AdvancedSearchRequest.OtherFilter,
+        filterPathMappings: Map<String, Map<String, String>>,
+        documentDefinitionNames: Collection<String>
+    ): QueryBuilder {
+        val filterKey = extractFilterKey(filter.path)
+        val pathsPerDefinition = filterPathMappings[filterKey]
+
+        if (pathsPerDefinition.isNullOrEmpty()) {
+            return MATCH_NONE
+        }
+
+        val orConditions = documentDefinitionNames.mapNotNull { definitionName ->
+            val path = pathsPerDefinition[definitionName]
+            // Unsupported prefix (e.g. zaak:) or none: treat as unmapped, so no match instead of an error
+            if (path == null || !(path.startsWith(DOC_PREFIX) || path.startsWith(CASE_PREFIX))) {
+                return@mapNotNull null
+            }
+
+            QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definitionName))
+                .must(buildSingleFilterQuery(filter.withPath(path)))
+        }
+
+        if (orConditions.isEmpty()) {
+            return MATCH_NONE
+        }
+
+        return QueryBuilders.boolQuery().apply {
+            orConditions.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
+    }
+
+    private fun extractFilterKey(path: String?): String? {
+        return path?.removePrefix(DOC_PREFIX)?.removePrefix(CASE_PREFIX)
+    }
+
     override fun count(
         documentDefinitionName: String,
         blueprintType: BlueprintType,
@@ -201,8 +431,12 @@ class JsonSchemaDocumentOpenSearchService(
             advancedSearchRequest,
             JsonSchemaDocumentActionProvider.VIEW_LIST
         )
-        val countQuery = StringQuery(combinedQuery.toString())
-        return elasticsearchOperations.count(countQuery, JsonSchemaDocumentOsDocument::class.java)
+        val countQuery = StringQuery(combinedQuery.toString()).apply { setIndicesOptions(MISSING_INDEX_IS_EMPTY) }
+        return elasticsearchOperations.count(
+            countQuery,
+            JsonSchemaDocumentOsDocument::class.java,
+            indexFor(listOfNotNull(documentDefinitionName.takeIf { it.isNotEmpty() }))
+        )
     }
 
     private fun search(
@@ -214,7 +448,7 @@ class JsonSchemaDocumentOpenSearchService(
     ): Page<JsonSchemaDocument> {
         SearchRequestValidator.validate(advancedSearchRequest)
         val combinedQuery = buildCombinedQuery(documentDefinitionName, blueprintType, advancedSearchRequest, action)
-        return executeSearch(combinedQuery, pageable)
+        return executeSearch(combinedQuery, pageable, indexFor(listOfNotNull(documentDefinitionName.takeIf { it.isNotEmpty() })))
     }
 
     private fun buildCombinedQuery(
@@ -321,8 +555,13 @@ class JsonSchemaDocumentOpenSearchService(
             filter.path.startsWith(CASE_PREFIX) -> filter.path.removePrefix(CASE_PREFIX)
             else -> throw IllegalArgumentException("Search path doesn't start with known prefix: '${filter.path}'")
         }
+        val nested = NestedContentField.isNested(baseField)
         // For doc: fields, string equality/like/in queries should target the .keyword sub-field
-        val keywordField = if (isDocField) "$baseField.keyword" else baseField
+        val keywordField = if (isDocField && !nested) "$baseField.keyword" else baseField
+
+        if (nested) {
+            nestedTypedFilterQuery(filter, baseField)?.let { return it }
+        }
 
         return when (filter.searchType) {
             DatabaseSearchType.EQUAL -> {
@@ -349,19 +588,35 @@ class JsonSchemaDocumentOpenSearchService(
             }
             DatabaseSearchType.IN -> QueryBuilders.termsQuery(keywordField, filter.getValues<Any>())
             DatabaseSearchType.GREATER_THAN_OR_EQUAL_TO ->
-                QueryBuilders.rangeQuery(baseField).gte(formatInstantForOpenSearch(filter.rangeFromValue()!! as Instant))
+                QueryBuilders.rangeQuery(baseField).gte(toRangeBound(filter.rangeFromValue()))
             DatabaseSearchType.LESS_THAN_OR_EQUAL_TO ->
-                QueryBuilders.rangeQuery(baseField).lte(formatInstantForOpenSearch(filter.rangeToValue()!! as Instant))
+                QueryBuilders.rangeQuery(baseField).lte(toRangeBound(filter.rangeToValue()))
             DatabaseSearchType.BETWEEN ->
-                QueryBuilders.rangeQuery(baseField).gte(formatInstantForOpenSearch(filter.rangeFromValue()!! as Instant)).lte(formatInstantForOpenSearch(filter.rangeToValue()!! as Instant))
+                QueryBuilders.rangeQuery(baseField)
+                    .gte(toRangeBound(filter.rangeFromValue()))
+                    .lte(toRangeBound(filter.rangeToValue()))
             else -> throw NotImplementedException("Search type '${filter.searchType}' is not supported in the OpenSearch search service")
         }
     }
+
+    private fun nestedTypedFilterQuery(filter: AdvancedSearchRequest.OtherFilter, field: String): QueryBuilder? =
+        when (filter.searchType) {
+            DatabaseSearchType.GREATER_THAN_OR_EQUAL_TO -> NestedContentField.range(field, from = filter.rangeFromValue())
+            DatabaseSearchType.LESS_THAN_OR_EQUAL_TO -> NestedContentField.range(field, to = filter.rangeToValue())
+            DatabaseSearchType.BETWEEN ->
+                NestedContentField.range(field, from = filter.rangeFromValue(), to = filter.rangeToValue())
+            DatabaseSearchType.IN -> filter.getValues<Any>()
+                .takeIf { values -> values.isNotEmpty() && values.all { it is Number } }
+                ?.let { NestedContentField.numberIn(field, it.filterIsInstance<Number>()) }
+            else -> null
+        }
 
     private fun applyEqualQuery(keywordField: String, baseField: String, value: Any?): QueryBuilder {
         return if (value is String) {
             // Case-insensitive exact match using term query with caseInsensitive flag
             QueryBuilders.termQuery(keywordField, value.trim()).caseInsensitive(true)
+        } else if (value is Number && NestedContentField.isNested(baseField)) {
+            NestedContentField.numberIn(baseField, listOf(value))
         } else {
             QueryBuilders.termQuery(baseField, value)
         }
@@ -372,6 +627,15 @@ class JsonSchemaDocumentOpenSearchService(
             throw IllegalArgumentException("LIKE search requires String values, got: ${value?.javaClass?.simpleName}")
         }
         return QueryBuilders.wildcardQuery(keywordField, "*${value.trim()}*").caseInsensitive(true)
+    }
+
+    // Dates go in the index format; numbers and strings are passed as-is, so numeric fields compare as numbers
+    private fun toRangeBound(value: Any?): Any? = when (value) {
+        is Instant -> formatInstantForOpenSearch(value)
+        is OffsetDateTime -> formatInstantForOpenSearch(value.toInstant())
+        is ZonedDateTime -> formatInstantForOpenSearch(value.toInstant())
+        is TemporalAccessor -> value.toString()
+        else -> value
     }
 
     private fun formatInstantForOpenSearch(instant: Instant): String {
@@ -390,28 +654,59 @@ class JsonSchemaDocumentOpenSearchService(
         )
     }
 
-    private fun executeSearch(combinedQuery: QueryBuilder, pageable: Pageable): Page<JsonSchemaDocument> {
+    internal fun buildSorts(sort: Sort): List<SortBuilder<*>> {
+        val statusOrders: Map<String, Int> by lazy { loadInternalStatusOrders() }
+        return sort.toList().map { order ->
+            val sortOrder = if (order.isAscending) SortOrder.ASC else SortOrder.DESC
+            val property = order.property
+            if (property.startsWith(DOC_PREFIX)) {
+                val field = "content.${property.removePrefix(DOC_PREFIX)}"
+                if (NestedContentField.isNested(field)) {
+                    NestedContentField.sort(field, order.isAscending)
+                } else {
+                    fieldSort("$field.keyword", order.isAscending)
+                }
+            } else {
+                when (val caseField = property.removePrefix(CASE_PREFIX)) {
+                    INTERNAL_STATUS_FIELD -> SortBuilders
+                        .scriptSort(
+                            Script(ScriptType.INLINE, "painless", INTERNAL_STATUS_SCRIPT, mapOf("orders" to statusOrders)),
+                            ScriptSortType.NUMBER
+                        )
+                        .order(sortOrder)
+                    "documentDefinitionId.name", DEFINITION_NAME_FIELD -> fieldSort(DEFINITION_NAME_FIELD, order.isAscending)
+                    else -> fieldSort(caseField, order.isAscending)
+                }
+            }
+        }
+    }
+
+    private fun fieldSort(field: String, ascending: Boolean): SortBuilder<*> =
+        SortBuilders.fieldSort(field)
+            .order(if (ascending) SortOrder.ASC else SortOrder.DESC)
+            .missing(if (ascending) "_last" else "_first")
+            .unmappedType("keyword")
+
+    private fun loadInternalStatusOrders(): Map<String, Int> =
+        runWithoutAuthorization { internalCaseStatusRepository.findAll() }
+            .associate { "${it.id.caseDefinitionKey}|${it.id.key}" to it.order }
+
+    private fun executeSearch(
+        combinedQuery: QueryBuilder,
+        pageable: Pageable,
+        index: IndexCoordinates,
+    ): Page<JsonSchemaDocument> {
         val queryBuilder = NativeSearchQueryBuilder()
             .withQuery(combinedQuery)
             .withTrackTotalHitsUpTo(Int.MAX_VALUE)
+            .withIndicesOptions(MISSING_INDEX_IS_EMPTY)
 
         if (pageable.isPaged) {
             queryBuilder.withPageable(PageRequest.of(pageable.pageNumber, pageable.pageSize))
         }
 
         if (pageable.sort.isSorted) {
-            pageable.sort.forEach { order ->
-                val osField = when {
-                    order.property.startsWith(DOC_PREFIX) -> "content.${order.property.removePrefix(DOC_PREFIX)}.keyword"
-                    order.property.startsWith(CASE_PREFIX) -> order.property.removePrefix(CASE_PREFIX)
-                    else -> order.property
-                }
-                val sortOrder = if (order.isAscending) SortOrder.ASC else SortOrder.DESC
-                val sortBuilder = SortBuilders.fieldSort(osField)
-                    .order(sortOrder)
-                    .unmappedType("keyword")
-                queryBuilder.withSorts(sortBuilder)
-            }
+            buildSorts(pageable.sort).forEach { queryBuilder.withSorts(it) }
         }
 
         // Paging is only reproducible when the sort ends on a unique field, so ties never reshuffle.
@@ -423,7 +718,7 @@ class JsonSchemaDocumentOpenSearchService(
         )
 
         val dataQuery = queryBuilder.build()
-        val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java)
+        val hits = elasticsearchOperations.search(dataQuery, JsonSchemaDocumentOsDocument::class.java, index)
         val total = hits.totalHits
         val ids: List<String> = hits.searchHits.mapNotNull { it.id }
 
@@ -440,14 +735,17 @@ class JsonSchemaDocumentOpenSearchService(
 
     private fun buildGlobalSearchQuery(query: String, searchFields: List<SearchField>): QueryBuilder {
         val fieldMap = searchFields.associateBy { removePrefixes(it.path) }
-        val docFieldsLike = searchFields
+        // query_string never matches a flat_object leaf, so leaves inside an object get keyword queries instead.
+        val (nestedDocFieldsLike, docFieldsLike) = searchFields
             .filter { it.path?.startsWith(DOC_PREFIX) == true }
             .filter { it.matchType == SearchFieldMatchType.LIKE }
             .map { "content.${it.path?.removePrefix(DOC_PREFIX)}" }
-        val docFieldsExact = searchFields
+            .partition { NestedContentField.isNested(it) }
+        val (nestedDocFieldsExact, docFieldsExact) = searchFields
             .filter { it.path?.startsWith(DOC_PREFIX) == true }
             .filter { it.matchType != SearchFieldMatchType.LIKE }
             .map { "content.${it.path?.removePrefix(DOC_PREFIX)}" }
+            .partition { NestedContentField.isNested(it) }
         val caseFieldsLike = searchFields
             .filter { it.path?.startsWith(CASE_PREFIX) == true }
             .filter { it.dataType == SearchFieldDataType.TEXT }
@@ -482,8 +780,12 @@ class JsonSchemaDocumentOpenSearchService(
                 val field = fieldMap[fieldPath]!!
                 val isDocField = field.path?.startsWith(DOC_PREFIX) == true
                 val osPath = if (isDocField) "content.$fieldPath" else fieldPath
+                val nestedPath = "content.$fieldPath".takeIf { isDocField && NestedContentField.isNested(it) }
 
-                if (!isDocField) {
+                if (nestedPath != null) {
+                    val like = !term.quoted && field.matchType == SearchFieldMatchType.LIKE
+                    qualifiedQueries.add(nestedKeywordQuery(nestedPath, term.value, like))
+                } else if (!isDocField) {
                     if (field.dataType == SearchFieldDataType.DATE || field.dataType == SearchFieldDataType.DATETIME) {
                         val dateRange = parseDateRange(term.value)
                         qualifiedQueries.add(
@@ -544,6 +846,9 @@ class JsonSchemaDocumentOpenSearchService(
                     )
                 }
 
+                nestedDocFieldsLike.forEach { termShouldQueries.add(nestedKeywordQuery(it, term.value, like = !term.quoted)) }
+                nestedDocFieldsExact.forEach { termShouldQueries.add(nestedKeywordQuery(it, term.value, like = false)) }
+
                 caseFieldsLike.forEach { caseField ->
                     val pattern = "*${term.value}*"
                     termShouldQueries.add(
@@ -581,6 +886,13 @@ class JsonSchemaDocumentOpenSearchService(
         return boolQuery
     }
 
+    private fun nestedKeywordQuery(field: String, value: String, like: Boolean): QueryBuilder =
+        if (like) {
+            QueryBuilders.wildcardQuery(field, "*$value*").caseInsensitive(true)
+        } else {
+            QueryBuilders.termQuery(field, value).caseInsensitive(true)
+        }
+
     private fun buildGlobalSearchQueryForAllDefinitions(query: String): QueryBuilder {
         val accessibleDefinitions = caseDefinitionService.getCaseDefinitions(active = true)
         if (accessibleDefinitions.isEmpty()) {
@@ -596,6 +908,72 @@ class JsonSchemaDocumentOpenSearchService(
             } else {
                 QueryBuilders.boolQuery()
                     .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definition.id.key))
+                    .must(buildGlobalSearchQuery(query, searchFields))
+            }
+        }
+
+        if (definitionQueries.isEmpty()) {
+            return MATCH_NONE
+        }
+
+        return QueryBuilders.boolQuery().apply {
+            definitionQueries.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
+    }
+
+    private fun buildGlobalSearchQueryForDefinitions(
+        query: String,
+        documentDefinitionNames: Collection<String>
+    ): QueryBuilder {
+        val definitionQueries = documentDefinitionNames.mapNotNull { definitionName ->
+            val searchFields = runWithoutAuthorization {
+                searchFieldService.getSearchFields(definitionName)
+            }
+            if (searchFields.isEmpty()) {
+                null
+            } else {
+                QueryBuilders.boolQuery()
+                    .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definitionName))
+                    .must(buildGlobalSearchQuery(query, searchFields))
+            }
+        }
+
+        if (definitionQueries.isEmpty()) {
+            return MATCH_NONE
+        }
+
+        return QueryBuilders.boolQuery().apply {
+            definitionQueries.forEach { should(it) }
+            minimumShouldMatch(1)
+        }
+    }
+
+    private fun buildGlobalSearchQueryWithMappings(
+        query: String,
+        documentDefinitionNames: Collection<String>,
+        filterPathMappings: Map<String, Map<String, String>>,
+        globalSearchFields: Map<String, GlobalSearchFieldMeta>
+    ): QueryBuilder {
+        val definitionQueries = documentDefinitionNames.mapNotNull { definitionName ->
+            val searchFields = globalSearchFields.mapNotNull { (fieldKey, meta) ->
+                val path = filterPathMappings[fieldKey]?.get(definitionName) ?: return@mapNotNull null
+                SearchField(
+                    fieldKey,
+                    path,
+                    meta.dataType,
+                    SearchFieldFieldType.SINGLE,
+                    meta.matchType,
+                    null,
+                    0,
+                    null
+                )
+            }
+            if (searchFields.isEmpty()) {
+                null
+            } else {
+                QueryBuilders.boolQuery()
+                    .must(QueryBuilders.termQuery(DEFINITION_NAME_FIELD, definitionName))
                     .must(buildGlobalSearchQuery(query, searchFields))
             }
         }
@@ -684,6 +1062,12 @@ class JsonSchemaDocumentOpenSearchService(
 
     companion object {
         private const val DOC_PREFIX = "doc:"
+        private const val INTERNAL_STATUS_FIELD = "internalStatus"
+        private const val INTERNAL_STATUS_SCRIPT =
+            "def d = doc['definitionId.name']; def s = doc['internalStatus']; " +
+                "if (d.size() == 0 || s.size() == 0) { return Integer.MAX_VALUE; } " +
+                "def v = params.orders.get(d.value + '|' + s.value); " +
+                "return v == null ? Integer.MAX_VALUE : v;"
         private const val CASE_PREFIX = "case:"
         private const val DEFINITION_NAME_FIELD = "definitionId.name"
         private const val BLUEPRINT_TYPE_FIELD = "definitionId.blueprintId.blueprintType"
@@ -692,6 +1076,9 @@ class JsonSchemaDocumentOpenSearchService(
         // every existing index — no mapping change or reindex needed.
         private const val ID_SORT_FIELD = "id.keyword"
         private val MATCH_NONE: QueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.matchAllQuery())
+
+        // A definition without documents may have no index yet (a building block, "All cases" on an empty install).
+        private val MISSING_INDEX_IS_EMPTY = IndicesOptions.LENIENT_EXPAND_OPEN
 
         private fun AdvancedSearchRequest.OtherFilter.rangeFromValue(): Any? =
             AdvancedSearchRequest.OtherFilter::class.java.getMethod("getRangeFrom").invoke(this)

@@ -15,9 +15,15 @@
   -->
 
 <section class="valtimo-big-number-widget__header">
-  <h3 class="valtimo-big-number-widget__title">{{ displayTypeProperties.title }}</h3>
+  <h3 class="valtimo-big-number-widget__title" [title]="displayTypeProperties.title">
+    {{ displayTypeProperties.title }}
+  </h3>
 
-  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-big-number-widget__subtitle">
+  <span
+    *ngIf="displayTypeProperties.subtitle"
+    class="valtimo-big-number-widget__subtitle"
+    [title]="displayTypeProperties.subtitle"
+  >
     {{ displayTypeProperties.subtitle }}
   </span>
 </section>

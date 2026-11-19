@@ -33,7 +33,7 @@ const objecttypenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
-      authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+      authenticationPluginConfiguration: 'Configuratie authenticatieplugin',
     },
     en: {
       title: 'Objecttypen API',

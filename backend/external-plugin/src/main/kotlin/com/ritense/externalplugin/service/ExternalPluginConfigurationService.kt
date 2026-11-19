@@ -19,8 +19,6 @@ package com.ritense.externalplugin.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.networknt.schema.JsonSchemaFactory
-import com.networknt.schema.SpecVersion
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.domain.ExternalPluginCapability
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
@@ -43,6 +41,8 @@ import com.ritense.externalplugin.repository.ExternalPluginGrantedEgressReposito
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEndpointRepository
 import com.ritense.externalplugin.repository.ExternalPluginGrantedEventRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator.Outcome
 import com.ritense.externalplugin.web.rest.dto.ContractBindingEntry
 import com.ritense.externalplugin.web.rest.dto.ContractBindingResponse
 import com.ritense.externalplugin.web.rest.dto.ContractProviderOperationResponse
@@ -52,6 +52,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -93,6 +94,9 @@ class ExternalPluginConfigurationService(
      */
     private val fallbackGzacBaseUrl: String,
     private val contractBindingRepository: ExternalPluginContractBindingRepository,
+    /** Fails open jobs whose binding is removed or retargeted. */
+    private val contractJobService: ExternalPluginContractJobService,
+    private val schemaValidator: ExternalPluginSchemaValidator = ExternalPluginSchemaValidator(),
 ) {
 
     @Transactional(readOnly = true)
@@ -131,6 +135,8 @@ class ExternalPluginConfigurationService(
                 "its host yet, so its permissions are unknown and a configuration cannot be validated. " +
                 "Wait until the host serves the plugin and it becomes available."
         }
+
+        if (!(allowPlaceholder && definition.isPlaceholder)) requireUsableContractSchemas(definition)
 
         // Rejects unknown capability names before anything is persisted.
         val capabilities = grantedCapabilities.map(ExternalPluginCapability::fromValue)
@@ -346,6 +352,7 @@ class ExternalPluginConfigurationService(
                 validationCopy.put(field, encryptionService.decrypt(storedCiphertext))
             }
         }
+        if (!definition.isPlaceholder) requireUsableContractSchemas(definition)
         validateAgainstSchema(validationCopy, definition.configSchema)
         // Fail closed: a property marked `x-egress-target` whose value isn't a parseable absolute URL
         // would contribute nothing to the allowlist, leaving the admin believing they granted a
@@ -364,10 +371,19 @@ class ExternalPluginConfigurationService(
 
         if (contractBindings != null) {
             validateContractBindings(id, definition, contractBindings, fromDescriptor)
+            val previousTargets = contractBindingRepository.findAllByConfigurationId(id)
+                .associate { it.contract to it.targetConfigurationId }
             contractBindingRepository.deleteAllByConfigurationId(id)
             // Same unique-constraint ordering concern as the endpoint grants above.
             contractBindingRepository.flush()
             saveContractBindings(id, contractBindings)
+            val newTargets = contractBindings.associate { it.contract to it.targetConfigurationId }
+            val changedBy = if (fromDescriptor) "descriptor import" else AuditHelper.getActor()
+            previousTargets.filter { (contract, target) -> newTargets[contract] != target }.forEach { (contract, target) ->
+                contractJobService.failForBindingChange(
+                    id, contract, target, "The binding of contract '$contract' was changed by $changedBy",
+                )
+            }
         }
 
         val encrypted = propertyEncryptor.encryptSecretFields(properties.deepCopy(), definition.configSchema)
@@ -438,6 +454,13 @@ class ExternalPluginConfigurationService(
         require(contentHash == pending) {
             "The accepted content hash does not match the pending one — the plugin package " +
                 "changed again on the host; review the current state before accepting"
+        }
+        definition.pendingManifestJson?.let { pendingManifest ->
+            val errors = schemaValidator.contractSchemaErrors(pendingManifest)
+            require(errors.isEmpty()) {
+                "The changed plugin declares contract schemas GZAC cannot use, so it cannot be accepted: " +
+                    errors.joinToString("; ")
+            }
         }
         definition.contentHash = pending
         definition.pendingContentHash = null
@@ -543,6 +566,13 @@ class ExternalPluginConfigurationService(
         if (dropped.isNotEmpty()) {
             contractBindingRepository.deleteAll(dropped)
             contractBindingRepository.flush()
+            dropped.forEach { binding ->
+                contractJobService.failForBindingChange(
+                    configuration.id, binding.contract, binding.targetConfigurationId,
+                    "The binding of contract '${binding.contract}' was removed: " +
+                        "'${definition.pluginId}@${definition.version}' no longer declares it",
+                )
+            }
             logger.info {
                 "Dropped contract binding(s) ${dropped.map { it.contract }} of configuration ${configuration.id}: " +
                     "no longer declared by '${definition.pluginId}@${definition.version}'"
@@ -1134,14 +1164,25 @@ class ExternalPluginConfigurationService(
         }
     }
 
-    private fun validateAgainstSchema(properties: ObjectNode, schemaNode: com.fasterxml.jackson.databind.node.ObjectNode?) {
+    private fun validateAgainstSchema(properties: ObjectNode, schemaNode: ObjectNode?) {
         if (schemaNode == null || schemaNode.isEmpty) return
-        val factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012)
-        val schema = factory.getSchema(schemaNode)
-        val errors = schema.validate(properties)
-        if (errors.isNotEmpty()) {
-            val message = errors.joinToString("; ") { it.message }
-            throw IllegalArgumentException("Configuration does not match schema: $message")
+        when (val outcome = schemaValidator.validate(schemaNode, properties)) {
+            Outcome.Valid -> Unit
+            is Outcome.Violations -> throw IllegalArgumentException(
+                "Configuration does not match schema: ${outcome.messages.joinToString("; ")}"
+            )
+            is Outcome.SchemaInvalid ->
+                throw IllegalArgumentException("The plugin declares an invalid configuration schema: ${outcome.reason}")
+            is Outcome.Unverifiable ->
+                throw IllegalArgumentException("Configuration could not be checked against its schema: ${outcome.reason}")
+        }
+    }
+
+    private fun requireUsableContractSchemas(definition: ExternalPluginDefinition) {
+        val errors = schemaValidator.contractSchemaErrors(definition.manifestJson)
+        require(errors.isEmpty()) {
+            "External plugin '${definition.pluginId}@${definition.version}' declares contract schemas GZAC cannot use: " +
+                errors.joinToString("; ")
         }
     }
 

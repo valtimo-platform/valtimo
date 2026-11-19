@@ -161,7 +161,6 @@ describe("plugin-contracts routes", () => {
           jobId: "job-1",
           deadline: "2026-10-14T12:00:00Z",
           documentId: "6f1c2a3e-0000-4000-8000-000000000001",
-          requestedBy: "behandelaar",
         })
       );
 
@@ -172,7 +171,6 @@ describe("plugin-contracts routes", () => {
         jobId: "job-1",
         deadline: "2026-10-14T12:00:00Z",
         documentId: "6f1c2a3e-0000-4000-8000-000000000001",
-        requestedBy: "behandelaar",
       });
       // A job's deadline is hours away on GZAC's clock; only a call's timeout bounds the invocation.
       expect(input.contractDeadlineMs).toBeUndefined();

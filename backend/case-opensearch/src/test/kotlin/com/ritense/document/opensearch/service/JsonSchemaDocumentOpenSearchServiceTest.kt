@@ -31,9 +31,14 @@ import com.ritense.document.domain.impl.searchfield.SearchFieldDataType
 import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType
 import com.ritense.document.domain.impl.searchfield.SearchFieldMatchType
 import com.ritense.document.domain.search.AdvancedSearchRequest
+import com.ritense.document.domain.search.DatabaseSearchType
 import com.ritense.document.opensearch.authorization.OpenSearchAuthorizationEntityMapper
 import com.ritense.document.opensearch.authorization.OpenSearchPermissionConditionTranslator
 import com.ritense.document.opensearch.domain.JsonSchemaDocumentOsDocument
+import com.ritense.document.domain.InternalCaseStatus
+import com.ritense.document.domain.InternalCaseStatusColor
+import com.ritense.document.domain.InternalCaseStatusId
+import com.ritense.document.repository.InternalCaseStatusRepository
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.SearchFieldService
@@ -50,14 +55,23 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.opensearch.search.sort.FieldSortBuilder
+import org.opensearch.search.sort.ScriptSortBuilder
+import org.opensearch.search.sort.ScriptSortBuilder.ScriptSortType
+import org.opensearch.search.sort.SortOrder
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.SearchHits
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.opensearch.data.client.orhlc.NativeSearchQuery
 import org.springframework.data.elasticsearch.core.query.Query
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import java.time.Instant
 
 class JsonSchemaDocumentOpenSearchServiceTest {
 
@@ -69,6 +83,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
     private val outboxService: OutboxService = mock()
     private val objectMapper: ObjectMapper = ObjectMapper()
     private val caseDefinitionService: CaseDefinitionService = mock()
+    private val internalCaseStatusRepository: InternalCaseStatusRepository = mock()
 
     private lateinit var service: JsonSchemaDocumentOpenSearchService
 
@@ -89,6 +104,8 @@ class JsonSchemaDocumentOpenSearchServiceTest {
             outboxService = outboxService,
             objectMapper = objectMapper,
             caseDefinitionService = caseDefinitionService,
+            internalCaseStatusRepository = internalCaseStatusRepository,
+            resolver = OpenSearchIndexNameResolver(),
         )
 
         val auth = UsernamePasswordAuthenticationToken(
@@ -115,7 +132,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(jpaRepository.findAllById(any())).thenReturn(emptyList())
     }
 
@@ -130,7 +147,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
 
         val request = AdvancedSearchRequest().globalSearchFilter("Amsterdam")
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
@@ -146,7 +163,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
 
         val request = AdvancedSearchRequest()
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
@@ -161,7 +178,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
 
         val request = AdvancedSearchRequest().globalSearchFilter("")
         service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
@@ -175,7 +192,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val searchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(searchHits.searchHits).thenReturn(emptyList())
         whenever(searchHits.totalHits).thenReturn(5L)
-        whenever(elasticsearchOperations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(searchHits)
+        whenever(elasticsearchOperations.search(any<Query>(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(searchHits)
 
         val request = AdvancedSearchRequest().globalSearchFilter("test")
         val page = service.search("house", BlueprintType.CASE, request, PageRequest.of(0, 10))
@@ -189,7 +206,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "City")
         ))
@@ -208,7 +225,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Status")
         ))
@@ -227,7 +244,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name")
         ))
@@ -245,7 +262,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("address", "doc:address", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Address")
         ))
@@ -280,7 +297,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("city", "doc:city", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "City")
         ))
@@ -299,7 +316,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("assignee", "case:assigneeFullName", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Assignee")
         ))
@@ -319,7 +336,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("status", "case:internalStatus", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Status")
         ))
@@ -339,7 +356,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("assignee", "case:assigneeFullName", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Assignee"),
             SearchField("status", "case:internalStatus", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Status")
@@ -362,7 +379,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name")
         ))
@@ -381,7 +398,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 0, "Status")
         ))
@@ -400,7 +417,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name"),
             SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Status")
@@ -421,7 +438,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
         whenever(searchFieldService.getSearchFields("house")).thenReturn(listOf(
             SearchField("name", "doc:name", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.LIKE, null, 0, "Name"),
             SearchField("status", "doc:status", SearchFieldDataType.TEXT, SearchFieldFieldType.SINGLE, SearchFieldMatchType.EXACT, null, 1, "Status"),
@@ -445,7 +462,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
 
         val houseDef = mock<CaseDefinition>()
         val houseDefId = mock<CaseDefinitionId>()
@@ -483,7 +500,7 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
         whenever(emptySearchHits.searchHits).thenReturn(emptyList())
         whenever(emptySearchHits.totalHits).thenReturn(0L)
-        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java))).thenReturn(emptySearchHits)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
 
         whenever(caseDefinitionService.getCaseDefinitions(active = true)).thenReturn(emptyList())
 
@@ -495,6 +512,116 @@ class JsonSchemaDocumentOpenSearchServiceTest {
         assertThat(capturedQuery.query.toString()).contains("must_not")
         assertThat(capturedQuery.query.toString()).contains("match_all")
     }
+
+    @Test
+    fun `buildSorts maps doc property to content keyword field with missing placement`() {
+        val sorts = service.buildSorts(Sort.by(Sort.Order.asc("doc:street"), Sort.Order.desc("doc:city")))
+
+        val asc = sorts[0] as FieldSortBuilder
+        assertThat(asc.fieldName).isEqualTo("content.street.keyword")
+        assertThat(asc.order()).isEqualTo(SortOrder.ASC)
+        assertThat(asc.missing()).isEqualTo("_last")
+        val desc = sorts[1] as FieldSortBuilder
+        assertThat(desc.fieldName).isEqualTo("content.city.keyword")
+        assertThat(desc.missing()).isEqualTo("_first")
+        verify(internalCaseStatusRepository, never()).findAll()
+    }
+
+    @Test
+    fun `buildSorts strips case prefix and keeps prefixless whitelisted fields`() {
+        val sorts = service.buildSorts(Sort.by(Sort.Order.asc("case:createdOn"), Sort.Order.desc("sequence")))
+
+        assertThat((sorts[0] as FieldSortBuilder).fieldName).isEqualTo("createdOn")
+        assertThat((sorts[1] as FieldSortBuilder).fieldName).isEqualTo("sequence")
+        assertThat((sorts[1] as FieldSortBuilder).missing()).isEqualTo("_first")
+        verify(internalCaseStatusRepository, never()).findAll()
+    }
+
+    @Test
+    fun `buildSorts maps document definition name to definitionId name`() {
+        val sorts = service.buildSorts(
+            Sort.by(Sort.Order.asc("case:documentDefinitionId.name"), Sort.Order.asc("definitionId.name"))
+        )
+
+        assertThat((sorts[0] as FieldSortBuilder).fieldName).isEqualTo("definitionId.name")
+        assertThat((sorts[1] as FieldSortBuilder).fieldName).isEqualTo("definitionId.name")
+    }
+
+    @Test
+    fun `buildSorts uses script sort for internal status with and without case prefix`() {
+        whenever(internalCaseStatusRepository.findAll()).thenReturn(
+            listOf(
+                status("house", "open", 0),
+                status("house", "closed", 1),
+                status("person", "closed", 0),
+            )
+        )
+
+        val sorts = service.buildSorts(Sort.by(Sort.Order.asc("case:internalStatus"), Sort.Order.desc("internalStatus")))
+
+        sorts.forEachIndexed { index, sort ->
+            val script = sort as ScriptSortBuilder
+            assertThat(script.type()).isEqualTo(ScriptSortType.NUMBER)
+            assertThat(script.script().params["orders"])
+                .isEqualTo(mapOf("house|open" to 0, "house|closed" to 1, "person|closed" to 0))
+            assertThat(script.order()).isEqualTo(if (index == 0) SortOrder.ASC else SortOrder.DESC)
+        }
+    }
+
+    @Test
+    fun `buildSorts passes unknown properties through as field sorts`() {
+        val sorts = service.buildSorts(Sort.by("foo"))
+
+        assertThat((sorts[0] as FieldSortBuilder).fieldName).isEqualTo("foo")
+    }
+
+    @Test
+    fun `number range filter compares numbers`() {
+        val query = captureQueryFor(
+            AdvancedSearchRequest.OtherFilter()
+                .path("doc:size")
+                .searchType(DatabaseSearchType.BETWEEN)
+                .rangeFrom(85)
+                .rangeTo(100)
+        )
+
+        assertThat(query).contains("\"content.size\"")
+        assertThat(query).contains("\"from\" : 85")
+        assertThat(query).contains("\"to\" : 100")
+    }
+
+    @Test
+    fun `date range filter formats bounds for the index`() {
+        val query = captureQueryFor(
+            AdvancedSearchRequest.OtherFilter()
+                .path("case:createdOn")
+                .searchType(DatabaseSearchType.GREATER_THAN_OR_EQUAL_TO)
+                .rangeFrom(Instant.parse("2020-01-01T00:00:00Z"))
+        )
+
+        assertThat(query).contains("\"from\" : \"2020-01-01T00:00:00.000\"")
+    }
+
+    private fun captureQueryFor(filter: AdvancedSearchRequest.OtherFilter): String {
+        val queryCaptor = argumentCaptor<NativeSearchQuery>()
+        val emptySearchHits: SearchHits<JsonSchemaDocumentOsDocument> = mock()
+        whenever(emptySearchHits.searchHits).thenReturn(emptyList())
+        whenever(emptySearchHits.totalHits).thenReturn(0L)
+        whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(JsonSchemaDocumentOsDocument::class.java), any<IndexCoordinates>())).thenReturn(emptySearchHits)
+
+        service.search("house", BlueprintType.CASE, AdvancedSearchRequest().addOtherFilters(filter), PageRequest.of(0, 10))
+
+        return queryCaptor.firstValue.query.toString()
+    }
+
+    private fun status(definitionKey: String, key: String, order: Int) = InternalCaseStatus(
+        id = InternalCaseStatusId(definitionKey, key),
+        title = key,
+        visibleInCaseListByDefault = true,
+        order = order,
+        retentionPeriodInDays = 0,
+        color = InternalCaseStatusColor.values().first(),
+    )
 
     companion object {
         private const val FULL_ACCESS_ROLE = "full access role"

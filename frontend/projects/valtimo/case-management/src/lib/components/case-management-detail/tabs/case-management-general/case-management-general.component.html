@@ -36,7 +36,12 @@
   <valtimo-case-management-missing-plugin-configurations></valtimo-case-management-missing-plugin-configurations>
 
   <div class="case-management-general-tab" muuri [columnMinWidth]="350">
-    <ng-template #extensions></ng-template>
+    <valtimo-muuri-item>
+      <valtimo-case-management-color
+        muuriItem
+        [isReadOnly]="obs.isReadOnly"
+      ></valtimo-case-management-color>
+    </valtimo-muuri-item>
 
     <valtimo-muuri-item>
       <valtimo-case-management-case-handler
@@ -50,5 +55,7 @@
       <valtimo-case-management-external-start-form [isReadOnly]="obs.isReadOnly">
       </valtimo-case-management-external-start-form>
     </valtimo-muuri-item>
+
+    <ng-template #extensions></ng-template>
   </div>
 </ng-container>

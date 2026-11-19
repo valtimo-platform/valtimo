@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+/**
+ * @deprecated Will be removed. Only used by the deprecated admin-only short timer endpoint.
+ */
+@Deprecated(since = "13.x", forRemoval = true)
 public class ProcessShortTimerService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessShortTimerService.class);

@@ -210,6 +210,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
             emptyList()
         }
         val replacementHasMain = linksToReplace.any { it.main }
+        val existingLink = findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
 
         val deployedProcessDefinitionId = processDeploymentService.deployProcessDefinitionAndProcessLinks(
             buildingBlockDefinitionId,
@@ -218,7 +219,6 @@ class BuildingBlockDefinitionProcessDefinitionService(
             currentProcessDefinitionId
         ) ?: return null
 
-        val existingLink = findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
         val mainFlag = existingLink?.main ?: (main || replacementHasMain)
 
         val newLink = createOrReplaceLink(
@@ -248,11 +248,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         main: Boolean
     ) {
         buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
-        val existingLink = if (currentProcessDefinitionId != null) {
-            findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
-        } else {
-            null
-        }
+        val existingLink = findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
         val mainFlag = existingLink?.main ?: main
 
         val newLink = createOrReplaceLink(

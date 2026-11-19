@@ -45,6 +45,7 @@ export type {
   ContractReplyOutput,
   ContractReplyHandler,
   ContractCallResult,
+  ContractJobState,
   ContractRequestResult,
   ContractJobOutcome,
   ContractCompleteResult,

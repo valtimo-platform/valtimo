@@ -42,7 +42,8 @@ class CaseDefinitionBuildingBlockLinkCaseEventListener(
                         buildingBlockDefinitionId = link.buildingBlockDefinitionId,
                         inputMappings = link.inputMappings,
                         outputMappings = link.outputMappings,
-                        pluginConfigurationMappings = link.pluginConfigurationMappings
+                        pluginConfigurationMappings = link.pluginConfigurationMappings,
+                        startableByUser = link.startableByUser
                     )
                 )
             }

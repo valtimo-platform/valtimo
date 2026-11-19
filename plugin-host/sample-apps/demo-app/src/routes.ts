@@ -408,7 +408,6 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
           jobId: optional(body.jobId),
           deadline: optional(body.deadline) ?? deadlineFromTimeout(body.timeoutMs),
           documentId: optional(body.documentId),
-          requestedBy: optional(body.requestedBy),
         },
         withCorrelationId(request),
       );

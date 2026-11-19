@@ -404,19 +404,31 @@ class ExternalPluginEndpointAllowlistFilterTest {
     }
 
     @Test
-    fun `a user principal reaches job creation when the configuration was granted it`() {
+    fun `user principals cannot reach the contract surface even when it was granted`() {
         val configId = UUID.randomUUID()
         authenticateAsUser(configId)
-        whenever(grantedEndpointRepository.findAllByConfigurationId(configId))
-            .thenReturn(listOf(grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/jobs")))
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId)).thenReturn(
+            listOf(
+                grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/jobs"),
+                grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/call"),
+                grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/jobs/*/complete"),
+                grantedEndpoint(configId, "GET", "/api/v1/plugin-contract/**"),
+            )
+        )
+        listOf(
+            "POST" to "/api/v1/plugin-contract/jobs",
+            "POST" to "/api/v1/plugin-contract/call",
+            "POST" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}/complete",
+            "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
+        ).forEach { (method, path) ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
 
-        val granted = MockFilterChain()
-        filter.doFilter(request("POST", "/api/v1/plugin-contract/jobs"), MockHttpServletResponse(), granted)
-        val ungranted = MockHttpServletResponse()
-        filter.doFilter(request("POST", "/api/v1/plugin-contract/call"), ungranted, MockFilterChain())
+            filter.doFilter(request(method, path), response, chain)
 
-        assertThat(granted.request).isNotNull()
-        assertThat(ungranted.status).isEqualTo(403)
+            assertThat(response.status).describedAs("$method $path").isEqualTo(403)
+            assertThat(chain.request).isNull()
+        }
     }
 
     @Test

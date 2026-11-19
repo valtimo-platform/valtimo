@@ -18,13 +18,6 @@ package com.ritense.externalplugin.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.JsonSchemaDocumentActionProvider
-import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.externalplugin.domain.ExternalPluginContractJob
 import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus
 import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus.ACCEPTED
@@ -40,6 +33,7 @@ import com.ritense.externalplugin.repository.ExternalPluginConfigurationReposito
 import com.ritense.externalplugin.repository.ExternalPluginContractJobRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.security.ExternalPluginReplyHandleSigner
+import com.ritense.externalplugin.service.ExternalPluginContractService.Admission
 import com.ritense.externalplugin.service.ExternalPluginContractService.Resolution
 import com.ritense.externalplugin.web.rest.dto.ContractJobDetailResponse
 import com.ritense.externalplugin.web.rest.dto.ContractJobPayloadResponse
@@ -64,7 +58,7 @@ import java.util.UUID
 
 /**
  * The job ledger's request side: creation (`POST /jobs`), the provider's completion (ownership on the
- * row is the whole check), the read views and the administrator's controls. Delivery lives in
+ * row plus the current binding), the read views and the administrator's controls. Delivery lives in
  * [ExternalPluginContractJobDispatcher].
  */
 @SkipComponentScan
@@ -76,8 +70,6 @@ class ExternalPluginContractJobService(
     private val encryptionService: EncryptionService,
     private val objectMapper: ObjectMapper,
     private val transactionTemplate: TransactionTemplate,
-    private val documentService: JsonSchemaDocumentService,
-    private val authorizationService: AuthorizationService,
     private val replyHandleSigner: ExternalPluginReplyHandleSigner,
     private val eventPublisher: ApplicationEventPublisher,
     private val defaultTimeout: Duration,
@@ -86,12 +78,9 @@ class ExternalPluginContractJobService(
 ) {
 
     /**
-     * @param requestedBy user login when created with a user token: the job must then name a case
-     *   ([documentId]) the user may view, and cannot ask for a BPMN reply.
-     * @param replyTo a reply handle from an action invocation (service tokens only); the reply then
-     *   goes to that process instance.
+     * @param replyTo a reply handle from an action invocation; the reply then goes to that process instance.
+     * @param documentId the requester's claim of the case the job concerns; not verified beyond matching [replyTo].
      * @throws IllegalArgumentException for a malformed request (400)
-     * @throws org.springframework.security.access.AccessDeniedException when the user may not view the case (403)
      */
     fun create(
         requesterConfigurationId: UUID,
@@ -101,7 +90,6 @@ class ExternalPluginContractJobService(
         replyTo: String?,
         documentId: String?,
         idempotencyKey: String?,
-        requestedBy: String?,
         chainHeader: String?,
         correlationIdHeader: String?,
     ): ContractOutcome {
@@ -109,34 +97,33 @@ class ExternalPluginContractJobService(
         val correlationId = contractService.correlationIdOf(correlationIdHeader)
         val requestedDocumentId = documentId?.takeIf { it.isNotBlank() }
 
-        val handle: ExternalPluginReplyHandleSigner.ReplyHandle?
-        val effectiveDocumentId: String?
-        if (requestedBy != null) {
-            require(replyTo == null) { "replyTo requires a service token" }
-            requireNotNull(requestedDocumentId) { "A user token must name the case it acts on (documentId)" }
-            requireDocumentView(requestedDocumentId)
-            handle = null
-            effectiveDocumentId = requestedDocumentId
-        } else {
-            handle = replyTo?.let {
-                replyHandleSigner.verify(it, requesterConfigurationId)
-                    ?: throw IllegalArgumentException("replyTo is not a valid reply handle for this configuration")
-            }
-            val handleBusinessKey = handle?.businessKey
-            require(requestedDocumentId == null || handleBusinessKey == null || requestedDocumentId == handleBusinessKey) {
-                "documentId does not match the case of the reply handle"
-            }
-            effectiveDocumentId = requestedDocumentId ?: handleBusinessKey
-            require(effectiveDocumentId == null || effectiveDocumentId.length <= MAX_DOCUMENT_ID_LENGTH) {
-                "documentId must be at most $MAX_DOCUMENT_ID_LENGTH characters"
-            }
+        val handle = replyTo?.let {
+            replyHandleSigner.verify(it, requesterConfigurationId)
+                ?: throw IllegalArgumentException("replyTo is not a valid reply handle for this configuration")
+        }
+        val handleBusinessKey = handle?.businessKey
+        require(requestedDocumentId == null || handleBusinessKey == null || requestedDocumentId == handleBusinessKey) {
+            "documentId does not match the case of the reply handle"
+        }
+        val effectiveDocumentId = requestedDocumentId ?: handleBusinessKey
+        require(effectiveDocumentId == null || effectiveDocumentId.length <= MAX_DOCUMENT_ID_LENGTH) {
+            "documentId must be at most $MAX_DOCUMENT_ID_LENGTH characters"
         }
         require(idempotencyKey == null || IDEMPOTENCY_KEY_PATTERN.matches(idempotencyKey)) {
             "idempotencyKey must be 1-255 visible ASCII characters"
         }
 
+        val request = ReplayedRequest(contract, operation, effectiveDocumentId, handle?.processInstanceId)
         if (idempotencyKey != null) {
-            replay(requesterConfigurationId, idempotencyKey, contract, operation)?.let { outcome ->
+            val admission = contractService.admit(requesterConfigurationId, contract, operation)
+            if (admission is Admission.Rejected) {
+                contractService.audit(
+                    correlationId, "job", requesterConfigurationId, Resolution.Rejected(admission.outcome),
+                    contract, operation, admission.outcome, startedAt,
+                )
+                return admission.outcome
+            }
+            replay(requesterConfigurationId, idempotencyKey, request)?.let { outcome ->
                 logger.info {
                     "Contract job $correlationId: ($requesterConfigurationId) $contract/$operation answered from its " +
                         "idempotencyKey: ${outcome.jobId?.let { "job $it" } ?: outcome.errorCode}"
@@ -163,7 +150,6 @@ class ExternalPluginContractJobService(
             operation = operation,
             requesterConfigurationId = requesterConfigurationId,
             providerConfigurationId = resolution.target.provider.id,
-            requestedBy = requestedBy,
             documentId = effectiveDocumentId,
             idempotencyKey = idempotencyKey,
             requestPayload = encryptionService.encrypt(objectMapper.writeValueAsString(resolution.payload)),
@@ -178,7 +164,7 @@ class ExternalPluginContractJobService(
             transactionTemplate.executeWithoutResult { jobRepository.saveAndFlush(job) }
         } catch (e: DataIntegrityViolationException) {
             // A concurrent create with the same idempotency key won the insert.
-            return idempotencyKey?.let { replay(requesterConfigurationId, it, contract, operation) } ?: throw e
+            return idempotencyKey?.let { replay(requesterConfigurationId, it, request) } ?: throw e
         }
         val outcome = ContractOutcome.accepted(job.id)
         contractService.audit(correlationId, "job", requesterConfigurationId, resolution, contract, operation, outcome, startedAt)
@@ -197,6 +183,12 @@ class ExternalPluginContractJobService(
         if (status != STATUS_COMPLETED && status != STATUS_FAILED) {
             return CompletionResult.Invalid(null, "status must be '$STATUS_COMPLETED' or '$STATUS_FAILED'")
         }
+        val unlocked = jobRepository.findById(jobId).orElse(null)
+        if (unlocked == null || unlocked.providerConfigurationId != callerConfigurationId) return CompletionResult.NotFound
+        if (unlocked.status !in ExternalPluginContractJobStatus.AWAITING_PROVIDER) return CompletionResult.Conflict
+        // Contract, operation and provider are fixed per job: validating without the lock is safe
+        val violation = if (status == STATUS_COMPLETED) contractService.resultViolation(operationOf(unlocked), result) else null
+
         return transactionTemplate.execute {
             val job = jobRepository.findByIdForUpdate(jobId)
             if (job == null || job.providerConfigurationId != callerConfigurationId) {
@@ -206,18 +198,22 @@ class ExternalPluginContractJobService(
                 return@execute CompletionResult.Conflict
             }
             val now = clock.instant()
-            if (status == STATUS_COMPLETED) {
-                val violation = contractService.resultViolation(operationOf(job), result)
-                if (violation != null) {
+            if (contractService.bindingTargetOf(job.requesterConfigurationId, job.contract) != callerConfigurationId) {
+                finish(job, FAILED, null, ContractErrorCodes.BINDING_CHANGED, BINDING_CHANGED_MESSAGE, now)
+                logger.info { "Contract job ${job.id} ${job.contract}/${job.operation} failed: binding changed before completion" }
+                return@execute CompletionResult.Conflict
+            }
+            when {
+                status == STATUS_COMPLETED && violation != null -> {
                     finish(job, FAILED, null, ContractErrorCodes.PROVIDER_INVALID_RESULT, violation, now)
                     return@execute CompletionResult.Invalid(
                         ContractErrorCodes.PROVIDER_INVALID_RESULT,
                         ContractLimits.errorMessage(violation),
                     )
                 }
-                finish(job, COMPLETED, result?.let { objectMapper.writeValueAsString(it) }, null, null, now)
-            } else {
-                finish(
+                status == STATUS_COMPLETED ->
+                    finish(job, COMPLETED, result?.let { objectMapper.writeValueAsString(it) }, null, null, now)
+                else -> finish(
                     job,
                     FAILED,
                     null,
@@ -242,7 +238,7 @@ class ExternalPluginContractJobService(
             jobId = job.id,
             contract = job.contract,
             operation = job.operation,
-            status = job.status.name.lowercase(),
+            status = publicStatus(job),
             result = decryptJson(job.resultPayload),
             errorCode = job.errorCode,
             providerErrorCode = job.providerErrorCode,
@@ -286,7 +282,6 @@ class ExternalPluginContractJobService(
             providerPluginId = summary.providerPluginId,
             status = summary.status,
             outcome = job.outcome,
-            requestedBy = summary.requestedBy,
             documentId = job.documentId,
             idempotencyKey = job.idempotencyKey,
             createdAt = summary.createdAt,
@@ -350,17 +345,43 @@ class ExternalPluginContractJobService(
 
     /** Puts an undeliverable reply back in the queue with a fresh attempt budget. */
     fun redeliver(jobId: UUID, requestedBy: String): AdminJobResult = adminTransition(jobId) { job, now ->
-        val outcome = job.outcome
-        if (job.status != UNDELIVERABLE || outcome == null) return@adminTransition false
-        job.status = outcome
-        job.deliveryAttempts = 0
-        job.nextAttemptAt = now
-        job.lastDeliveryError = null
-        job.updatedAt = now
-        jobRepository.save(job)
+        if (job.status != UNDELIVERABLE || !requeueReply(job, now)) return@adminTransition false
         logger.info { "Contract job ${job.id} ${job.contract}/${job.operation} reply redelivery requested by $requestedBy" }
         true
     }
+
+    /** Requester-facing status: `pending` while the provider works, then the lasting outcome. */
+    fun publicStatus(job: ExternalPluginContractJob): String = when (job.status) {
+        PENDING, ACCEPTED -> "pending"
+        else -> when (job.outcome ?: job.status) {
+            COMPLETED -> "completed"
+            EXPIRED -> "expired"
+            else -> "failed"
+        }
+    }
+
+    /**
+     * Fails the requester's open jobs for [contract] still aimed at [providerConfigurationId], after
+     * their binding was removed or retargeted. Joins the caller's transaction so the job change and
+     * the binding change commit together. Replies go out as usual.
+     */
+    internal fun failForBindingChange(
+        requesterConfigurationId: UUID,
+        contract: String,
+        providerConfigurationId: UUID,
+        reason: String,
+    ): Int = transactionTemplate.execute {
+        val now = clock.instant()
+        jobRepository.findAllByRequesterConfigurationIdAndContractAndProviderConfigurationIdAndStatusIn(
+            requesterConfigurationId, contract, providerConfigurationId, ExternalPluginContractJobStatus.AWAITING_PROVIDER,
+        ).count { candidate ->
+            val job = jobRepository.findByIdForUpdate(candidate.id)
+            if (job == null || job.status !in ExternalPluginContractJobStatus.AWAITING_PROVIDER) return@count false
+            finish(job, FAILED, null, ContractErrorCodes.BINDING_CHANGED, reason, now)
+            logger.info { "Contract job ${job.id} ${job.contract}/${job.operation} failed: $reason" }
+            true
+        }
+    } ?: 0
 
     fun decryptJson(ciphertext: String?): JsonNode? = ciphertext?.let { objectMapper.readTree(encryptionService.decrypt(it)) }
 
@@ -404,24 +425,62 @@ class ExternalPluginContractJobService(
     }
 
     /** Same idempotency key, same contract and operation: the existing job. Otherwise a conflict. */
-    private fun replay(
-        requesterConfigurationId: UUID,
-        idempotencyKey: String,
-        contract: String,
-        operation: String,
-    ): ContractOutcome? {
+    /** A key replays only the very same request: same target, same case, same reply process. */
+    private fun replay(requesterConfigurationId: UUID, idempotencyKey: String, request: ReplayedRequest): ContractOutcome? {
         val existing = transactionTemplate.execute {
             jobRepository.findByRequesterConfigurationIdAndIdempotencyKey(requesterConfigurationId, idempotencyKey)
         } ?: return null
-        return if (existing.contract == contract && existing.operation == operation) {
-            ContractOutcome.accepted(existing.id)
-        } else {
-            ContractOutcome.error(
+        return when {
+            existing.contract != request.contract || existing.operation != request.operation -> ContractOutcome.error(
                 ContractErrorCodes.IDEMPOTENCY_KEY_CONFLICT,
                 "idempotencyKey '$idempotencyKey' was already used for ${existing.contract}/${existing.operation}",
             )
+            existing.documentId != request.documentId ||
+                existing.replyToProcessInstanceId != request.replyToProcessInstanceId -> ContractOutcome.error(
+                ContractErrorCodes.IDEMPOTENCY_KEY_CONFLICT,
+                "idempotencyKey '$idempotencyKey' was already used for another case or reply target",
+            )
+            else -> {
+                if (existing.replyToProcessInstanceId != null) requeueFinishedReply(existing.id)
+                ContractOutcome.accepted(existing.id).copy(job = stateOf(existing))
+            }
         }
     }
+
+    /** A process that asks again for a finished job hears the outcome again. */
+    private fun requeueFinishedReply(jobId: UUID) {
+        val requeued = transactionTemplate.execute {
+            val job = jobRepository.findByIdForUpdate(jobId)
+            job != null && job.status in ExternalPluginContractJobStatus.TERMINAL && requeueReply(job, clock.instant())
+        } == true
+        if (requeued) logger.info { "Contract job $jobId reply requeued for a replayed request" }
+    }
+
+    private fun requeueReply(job: ExternalPluginContractJob, now: Instant): Boolean {
+        val outcome = job.outcome ?: return false
+        job.status = outcome
+        job.deliveryAttempts = 0
+        job.nextAttemptAt = now
+        job.lastDeliveryError = null
+        job.updatedAt = now
+        jobRepository.save(job)
+        return true
+    }
+
+    private fun stateOf(job: ExternalPluginContractJob) = ContractJobState(
+        status = publicStatus(job),
+        result = decryptJson(job.resultPayload),
+        errorCode = job.errorCode,
+        providerErrorCode = job.providerErrorCode,
+        errorMessage = job.errorMessage,
+    )
+
+    private data class ReplayedRequest(
+        val contract: String,
+        val operation: String,
+        val documentId: String?,
+        val replyToProcessInstanceId: String?,
+    )
 
     private fun adminTransition(jobId: UUID, change: (ExternalPluginContractJob, Instant) -> Boolean): AdminJobResult {
         val changed = transactionTemplate.execute {
@@ -430,19 +489,6 @@ class ExternalPluginContractJobService(
         } ?: return AdminJobResult.NotFound
         if (!changed) return AdminJobResult.Conflict
         return detail(jobId)?.let { AdminJobResult.Updated(it) } ?: AdminJobResult.NotFound
-    }
-
-    private fun requireDocumentView(documentId: String) {
-        val id = try {
-            UUID.fromString(documentId)
-        } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("documentId '$documentId' is not a valid document id")
-        }
-        val document = runWithoutAuthorization { documentService.findBy(JsonSchemaDocumentId.existingId(id)) }.orElse(null)
-            ?: throw IllegalArgumentException("documentId '$documentId' does not exist")
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(JsonSchemaDocument::class.java, JsonSchemaDocumentActionProvider.VIEW, document)
-        )
     }
 
     private fun summary(job: ExternalPluginContractJob, parties: Parties) = ContractJobSummaryResponse(
@@ -456,7 +502,6 @@ class ExternalPluginContractJobService(
         providerTitle = parties.title(job.providerConfigurationId),
         providerPluginId = parties.pluginId(job.providerConfigurationId),
         status = job.status,
-        requestedBy = job.requestedBy,
         createdAt = job.createdAt,
         updatedAt = job.updatedAt,
         completedAt = job.completedAt,
@@ -494,6 +539,7 @@ class ExternalPluginContractJobService(
     companion object {
         const val STATUS_COMPLETED = "completed"
         const val STATUS_FAILED = "failed"
+        private const val BINDING_CHANGED_MESSAGE = "The binding of this contract changed before the provider finished"
         private const val MAX_DOCUMENT_ID_LENGTH = 255
         private val IDEMPOTENCY_KEY_PATTERN = Regex("^[\\x21-\\x7E]{1,255}$")
         private val logger = KotlinLogging.logger {}

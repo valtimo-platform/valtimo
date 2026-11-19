@@ -42,7 +42,6 @@ describe('PluginContractJobDetailModalComponent', () => {
     providerTitle: 'Open Plan',
     providerPluginId: 'openplan',
     status: 'PENDING',
-    requestedBy: 'admin',
     createdAt: '2026-10-01T00:00:00Z',
     updatedAt: null,
     completedAt: null,

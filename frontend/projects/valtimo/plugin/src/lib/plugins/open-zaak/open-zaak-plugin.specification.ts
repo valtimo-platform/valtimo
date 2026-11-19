@@ -26,15 +26,15 @@ const openZaakPluginSpecification: PluginSpecification = {
     nl: {
       title: 'OpenZaak',
       description:
-        'OpenZaak is een productiewaardig API platform die de API-standaard voor zaakgericht werken implementeert (de ZGW-API’s).',
+        'OpenZaak is een productiewaardig API-platform dat de API-standaard voor zaakgericht werken implementeert (de ZGW-API’s).',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       clientId: 'Client ID',
       clientIdTooltip:
-        'Vul hier het clientId in dat geconfigureerd staat onder OpenZaak-beheer (zie API authorisaties > Applicaties). Dit clientId moet de juiste authorisaties hebben voor de benodigde functionaliteit',
+        'Voer hier het clientId in dat geconfigureerd staat onder OpenZaak-beheer (zie API-autorisaties > Applicaties). Dit clientId moet de juiste autorisaties hebben voor de benodigde functionaliteit',
       clientSecret: 'Secret',
-      clientSecretTooltip: 'Vul de secret in die hoort bij de clientId hierboven',
+      clientSecretTooltip: 'Voer de secret in die hoort bij het clientId hierboven',
     },
     en: {
       title: 'OpenZaak',

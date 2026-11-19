@@ -65,7 +65,9 @@ class ProcessDefinitionImportPreviewService(
             BPMN_REGEX.matchEntire(fileName)!!.groupValues[1]
         }
 
-        val pluginConfigurations = importPreviewContributors.flatMap { it.contributePreview(zipEntries) }
+        // Contributors are shared with the case import; only global entries belong to this process
+        val globalEntries = zipEntries.filterKeys { it.matches(GLOBAL_ENTRY_REGEX) }
+        val pluginConfigurations = importPreviewContributors.flatMap { it.contributePreview(globalEntries) }
             .map {
                 ProcessLinkPluginConfigurationPreviewDto(
                     pluginConfigurationId = it.pluginConfigurationId,
@@ -289,9 +291,11 @@ class ProcessDefinitionImportPreviewService(
         private val logger = KotlinLogging.logger {}
         private const val PROCESS_DEFINITION_ID = "processDefinitionId"
         private const val PROCESS_DEFINITION_ID_PLACEHOLDER = "-"
-        private val BPMN_REGEX = """.*/?global/bpmn/(?:.*/)?(.+)\.bpmn""".toRegex()
-        private val DMN_REGEX = """.*/?global/dmn/(?:.*/)?(.+)\.dmn""".toRegex()
-        private val FORM_REGEX = """.*/?global/form/(?:.*/)?(.+)\.form\.json""".toRegex()
-        private val PROCESS_LINK_REGEX = """.*/?global/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
+        private val GLOBAL_ENTRY_REGEX = """/?config/global/.+""".toRegex()
+        private val BPMN_REGEX = """/?config/global/bpmn/(?:.*/)?(.+)\.bpmn""".toRegex()
+        private val DMN_REGEX = """/?config/global/dmn/(?:.*/)?(.+)\.dmn""".toRegex()
+        private val FORM_REGEX = """/?config/global/form/(?:.*/)?(.+)\.form\.json""".toRegex()
+        private val PROCESS_LINK_REGEX =
+            """/?config/global/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
     }
 }

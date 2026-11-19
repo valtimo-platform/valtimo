@@ -62,7 +62,7 @@ class CaseHeaderWidgetResource(
         return if (widget != null) {
             ResponseEntity.ok(widget)
         } else {
-            ResponseEntity.notFound().build()
+            ResponseEntity.noContent().build()
         }
     }
 

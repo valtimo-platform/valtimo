@@ -1,18 +1,17 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
- *  Licensed under EUPL, Version 1.2 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" basis,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.ritense.form.autoconfigure
@@ -26,11 +25,16 @@ import com.ritense.form.autodeployment.FormDefinitionDeploymentService
 import com.ritense.form.casewidget.FormIoCaseWidgetDataProvider
 import com.ritense.form.casewidget.FormIoCaseWidgetMapper
 import com.ritense.form.listener.FormCaseEventListener
+import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.form.repository.FormProcessLinkRepository
 import com.ritense.form.repository.IntermediateSubmissionRepository
 import com.ritense.form.security.config.FormHttpSecurityConfigurerKotlin
 import com.ritense.form.service.FormDefinitionExporter
 import com.ritense.form.service.FormDefinitionImporter
 import com.ritense.form.service.FormDefinitionService
+import com.ritense.form.service.FormDefinitionUsageGuard
+import com.ritense.form.service.FormProcessLinkUsageResolver
+import com.ritense.form.service.FormProcessLinkCaseDefinitionFinalizationChecker
 import com.ritense.form.service.FormSubmissionService
 import com.ritense.form.service.FormSupportedProcessLinksHandler
 import com.ritense.form.service.GlobalFormDefinitionExporter
@@ -45,14 +49,18 @@ import com.ritense.form.web.rest.FormResource
 import com.ritense.form.web.rest.IntermediateSubmissionResource
 import com.ritense.form.widget.FormIoWidgetDataProvider
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.resource.service.ResourceService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.interactivetable.InteractiveTableWidgetDataProvider
 import com.ritense.widget.table.TableWidgetDataProvider
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
@@ -118,6 +126,7 @@ class FormAutoConfigurationKotlin {
         authorizationService: AuthorizationService,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
     ) = DefaultFormSubmissionService(
         processLinkService,
         formDefinitionService,
@@ -132,6 +141,7 @@ class FormAutoConfigurationKotlin {
         authorizationService,
         valueResolverService,
         objectMapper,
+        processDocumentAssociationService,
     )
 
     @Bean
@@ -196,12 +206,22 @@ class FormAutoConfigurationKotlin {
         intermediateSubmissionRepository: IntermediateSubmissionRepository,
         userManagementService: UserManagementService,
         authorizationService: AuthorizationService,
-        operatonTaskService: OperatonTaskService
+        operatonTaskService: OperatonTaskService,
+        processLinkService: ProcessLinkService,
+        formDefinitionService: FormIoFormDefinitionService,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
+        applicationEventPublisher: ApplicationEventPublisher,
+        resourceService: ObjectProvider<ResourceService>
     ) = IntermediateSubmissionService(
         intermediateSubmissionRepository = intermediateSubmissionRepository,
         userManagementService = userManagementService,
         authorizationService = authorizationService,
-        operatonTaskService = operatonTaskService
+        operatonTaskService = operatonTaskService,
+        processLinkService = processLinkService,
+        formDefinitionService = formDefinitionService,
+        processDocumentAssociationService = processDocumentAssociationService,
+        applicationEventPublisher = applicationEventPublisher,
+        resourceService = resourceService
     )
 
     @Bean
@@ -221,12 +241,40 @@ class FormAutoConfigurationKotlin {
     )
 
     @Bean
+    @ConditionalOnMissingBean(FormProcessLinkUsageResolver::class)
+    fun formProcessLinkUsageResolver(
+        operatonProcessService: OperatonProcessService,
+    ) = FormProcessLinkUsageResolver(operatonProcessService)
+
+    @Bean
+    @ConditionalOnMissingBean(FormDefinitionUsageGuard::class)
+    fun formDefinitionUsageGuard(
+        formDefinitionRepository: FormDefinitionRepository,
+        formProcessLinkRepository: FormProcessLinkRepository,
+        operatonProcessService: OperatonProcessService,
+        formProcessLinkUsageResolver: FormProcessLinkUsageResolver,
+    ) = FormDefinitionUsageGuard(
+        formDefinitionRepository,
+        formProcessLinkRepository,
+        operatonProcessService,
+        formProcessLinkUsageResolver,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(FormProcessLinkCaseDefinitionFinalizationChecker::class)
+    fun formProcessLinkCaseDefinitionFinalizationChecker(
+        operatonProcessService: OperatonProcessService,
+        formProcessLinkRepository: FormProcessLinkRepository,
+    ) = FormProcessLinkCaseDefinitionFinalizationChecker(operatonProcessService, formProcessLinkRepository)
+
+    @Bean
     @ConditionalOnMissingBean(FormCaseEventListener::class)
     fun formCaseEventListener(
         formDefinitionService: FormDefinitionService,
-        processLinkService: ProcessLinkService
+        processLinkService: ProcessLinkService,
+        formProcessLinkUsageResolver: FormProcessLinkUsageResolver,
     ) =
-        FormCaseEventListener(formDefinitionService, processLinkService)
+        FormCaseEventListener(formDefinitionService, processLinkService, formProcessLinkUsageResolver)
 
     @Bean
     @ConditionalOnMissingBean(FormIoWidgetDataProvider::class)

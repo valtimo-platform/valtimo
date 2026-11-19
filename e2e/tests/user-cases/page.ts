@@ -17,9 +17,22 @@
 import {expect, Locator, Page} from '@playwright/test';
 import {CASE_DETAIL_PANEL_TEST_IDS, CONFIRMATION_MODAL_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete, apiPost} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/api.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
 import {openAndSelectOption} from '../../utils/ui.utils';
+
+export type FormDisplayType = 'modal' | 'panel';
+
+export interface FormProcessLink {
+  id: string;
+  activityType: string;
+  processLinkType: string;
+  formDefinitionId: string;
+  viewModelEnabled: boolean;
+  formDisplayType: FormDisplayType;
+  formSize: string;
+  subtitles?: string[] | null;
+}
 
 export interface CreatedCase {
   documentId: string;
@@ -302,6 +315,42 @@ export class UserCasesPage {
   async openStartFormInPanel(displayName: string) {
     await this.startSubProcess(displayName);
     await expect(this.startFormPanel).toBeVisible({timeout: 15_000});
+  }
+
+  /** Sets the display type of a process's start-form link on every deployed version; returns the originals for restoring. */
+  async setStartFormDisplayTypeViaApi(
+    processKey: string,
+    formDisplayType: FormDisplayType
+  ): Promise<FormProcessLink[]> {
+    const versions = await apiGet<Array<{id: string}>>(
+      `/api/v1/process/definition/${processKey}/versions`
+    );
+    const originals: FormProcessLink[] = [];
+    for (const {id} of versions) {
+      const links = await apiGet<FormProcessLink[]>(
+        `/api/v1/process-link?processDefinitionId=${encodeURIComponent(id)}`
+      );
+      for (const link of links) {
+        if (link.processLinkType !== 'form' || !link.activityType.startsWith('bpmn:StartEvent')) {
+          continue;
+        }
+        originals.push(link);
+        await this.updateFormProcessLinkViaApi({...link, formDisplayType});
+      }
+    }
+    return originals;
+  }
+
+  async updateFormProcessLinkViaApi(link: FormProcessLink): Promise<void> {
+    await apiPut('/api/v1/process-link', {
+      id: link.id,
+      processLinkType: 'form',
+      formDefinitionId: link.formDefinitionId,
+      viewModelEnabled: link.viewModelEnabled,
+      formDisplayType: link.formDisplayType,
+      formSize: link.formSize,
+      subtitles: link.subtitles,
+    });
   }
 
   get pendingChangesConfirmButton(): Locator {

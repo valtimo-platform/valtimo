@@ -56,6 +56,7 @@ import reactor.core.publisher.Mono
 import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -406,6 +407,37 @@ internal class DocumentenApiPluginIT @Autowired constructor(
         assertTrue(value.startsWith(server.url("/").toString()))
     }
 
+    @Test
+    fun `should delete informatie object via plugin action`() {
+        saveProcessLink("delete-informatie-object", """{ "documentUrl": "pv:documentUrl" }""")
+        val documentUrl = "${server.url("/")}enkelvoudiginformatieobjecten/$DOCUMENT_ID"
+
+        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest())
+            .withProcessVars(mapOf("documentUrl" to documentUrl))
+
+        runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
+
+        val deleteRequest = recordedRequests().single { it.method == "DELETE" }
+        assertEquals("/enkelvoudiginformatieobjecten/$DOCUMENT_ID", deleteRequest.path)
+    }
+
+    @Test
+    fun `should not call Documenten API when document url belongs to another host`() {
+        saveProcessLink("delete-informatie-object", """{ "documentUrl": "pv:documentUrl" }""")
+        val documentUrl = "http://other-host/enkelvoudiginformatieobjecten/$DOCUMENT_ID"
+
+        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest())
+            .withProcessVars(mapOf("documentUrl" to documentUrl))
+
+        val result = runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
+
+        assertTrue(result.errors().isNotEmpty())
+        assertEquals(0, server.requestCount)
+    }
+
+    private fun recordedRequests(): List<RecordedRequest> =
+        generateSequence { server.takeRequest(100, TimeUnit.MILLISECONDS) }.toList()
+
     private fun saveProcessLink(pluginActionDefinitionKey: String, generateDocumentActionProperties: String) {
         pluginProcessLinkRepository.save(
             PluginProcessLink(
@@ -431,7 +463,7 @@ internal class DocumentenApiPluginIT @Autowired constructor(
                         -> handleDocumentRequest()
 
                     "/enkelvoudiginformatieobjecten/$DOCUMENT_ID"
-                        -> handleDocumentRequest()
+                        -> if (request.method == "DELETE") MockResponse().setResponseCode(204) else handleDocumentRequest()
 
                     "/enkelvoudiginformatieobjecten/$DOCUMENT_ID/download"
                         -> handleDocumentDownloadRequest()

@@ -28,6 +28,42 @@
     ></cds-progress-indicator>
   </cds-modal-header>
   <section cdsModalContent [cdsLayer]="1">
+    <ng-container *ngIf="contractSchemaErrors$ | async as schemaErrors">
+      <div *ngIf="schemaErrors.length > 0" [hidden]="currentStepIndex !== 1">
+        <cds-inline-notification
+          [attr.data-test-id]="testIds.contractSchemaNotice"
+          [notificationObj]="{
+            type: 'error',
+            title: ('pluginManagement.contractSchemas.title' | translate),
+            message: ('pluginManagement.contractSchemas.createMessage' | translate),
+            showClose: false,
+            lowContrast: true,
+          }"
+          class="plugin-add-modal__compatibility-warning"
+        ></cds-inline-notification>
+
+        <ul
+          class="plugin-add-modal__schema-errors"
+          [attr.data-test-id]="testIds.contractSchemaErrors"
+        >
+          <li *ngFor="let error of schemaErrors">{{ error }}</li>
+        </ul>
+      </div>
+    </ng-container>
+
+    <cds-inline-notification
+      *ngIf="$saveError() as saveError"
+      [attr.data-test-id]="testIds.saveError"
+      [notificationObj]="{
+        type: 'error',
+        title: ('pluginManagement.saveFailed' | translate),
+        message: saveError,
+        showClose: false,
+        lowContrast: true,
+      }"
+      class="plugin-add-modal__compatibility-warning"
+    ></cds-inline-notification>
+
     <div [hidden]="currentStepIndex !== 0">
       <valtimo-plugin-add-select [externalDefinitions]="externalDefinitions"></valtimo-plugin-add-select>
     </div>
@@ -112,7 +148,11 @@
     <button
       *ngIf="currentStepIndex === 1 && isExternal"
       cdsButton="primary"
-      [disabled]="!(configurationValid$ | async) || (inputDisabled$ | async)"
+      [disabled]="
+        !(configurationValid$ | async) ||
+        (inputDisabled$ | async) ||
+        (contractSchemaErrors$ | async)?.length
+      "
       (click)="goToNextStep()"
       [attr.data-test-id]="testIds.permissionsButton"
     >
@@ -135,7 +175,8 @@
       [disabled]="
         !(permissionsValid$ | async) ||
         !(contractBindingsValid$ | async) ||
-        (inputDisabled$ | async)
+        (inputDisabled$ | async) ||
+        (contractSchemaErrors$ | async)?.length
       "
       (click)="complete()"
       [attr.data-test-id]="testIds.completeButton"

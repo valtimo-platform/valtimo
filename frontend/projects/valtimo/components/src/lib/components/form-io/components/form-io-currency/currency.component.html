@@ -14,8 +14,16 @@
   ~ limitations under the License.
   -->
 
-<div class="currencyForm-container" [formGroup]="currencyForm">
+<div class="currencyForm-container">
   <div class="input-group">
-    <input #currencyElement id="currency" formControlName="currencyValue" class="form-control" />
+    <input
+      #currencyElement
+      class="form-control"
+      inputmode="decimal"
+      autocomplete="on"
+      [attr.id]="inputId"
+      [attr.name]="inputName"
+      [disabled]="disabled"
+    />
   </div>
 </div>

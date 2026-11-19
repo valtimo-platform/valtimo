@@ -1,0 +1,48 @@
+name: "Apps (BE+FE) - Build and push Docker image"
+
+permissions:
+  contents: read
+  packages: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: "App variant to build"
+        required: true
+        type: choice
+        options:
+          - dev
+          - gzac
+          - valtimo
+          - evenementenvergunning
+        default: dev
+
+jobs:
+  # Backend jobs
+  build_backend_libraries:
+    uses: ./.github/workflows/backend_build_test_libraries.yml
+    secrets: inherit
+
+  build_backend_image:
+    needs:
+      - build_backend_libraries
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+    with:
+      backend_libraries_build_artifact_name: ${{ needs.build_backend_libraries.outputs.build_artifact_name }}
+      variant: ${{ inputs.variant }}
+    secrets: inherit
+
+  # Frontend jobs
+  build_frontend_libraries:
+    uses: ./.github/workflows/frontend_build_test_libraries.yml
+    secrets: inherit
+
+  build_frontend_image:
+    needs:
+      - build_frontend_libraries
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_frontend_libraries.outputs.build_artifact_name }}
+      variant: ${{ inputs.variant }}
+    secrets: inherit

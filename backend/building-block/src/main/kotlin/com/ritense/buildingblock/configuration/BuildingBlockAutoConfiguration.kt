@@ -23,6 +23,7 @@ import com.ritense.buildingblock.listener.BuildingBlockContinuousSyncListener
 import com.ritense.buildingblock.listener.BuildingBlockDefinitionEventListener
 import com.ritense.buildingblock.listener.BuildingBlockDocumentPreDeleteListener
 import com.ritense.buildingblock.listener.BuildingBlockEndEventListener
+import com.ritense.buildingblock.listener.BuildingBlockProcessDefinitionDetachedListener
 import com.ritense.buildingblock.listener.BuildingBlockStartEventListener
 import com.ritense.buildingblock.listener.BuildingBlockTaskTeamAutoAssignListener
 import com.ritense.buildingblock.listener.CaseDefinitionBuildingBlockLinkCaseEventListener
@@ -97,6 +98,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
 import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionExporter
+import com.ritense.buildingblock.service.BuildingBlockDefinitionIdSupplierImpl
 import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
@@ -145,7 +147,9 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.exporter.ExportService
 import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.form.service.FormDefinitionUsageGuard
 import com.ritense.formflow.service.FormFlowService
+import com.ritense.importer.BuildingBlockDefinitionIdSupplier
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
@@ -280,6 +284,12 @@ class BuildingBlockAutoConfiguration {
             buildingBlockDecisionService,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessDefinitionDetachedListener::class)
+    fun buildingBlockProcessDefinitionDetachedListener(
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+    ) = BuildingBlockProcessDefinitionDetachedListener(processDefinitionBuildingBlockDefinitionRepository)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkService::class)
@@ -843,6 +853,14 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionIdSupplier::class)
+    fun buildingBlockDefinitionIdSupplier(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
+    ): BuildingBlockDefinitionIdSupplier {
+        return BuildingBlockDefinitionIdSupplierImpl(buildingBlockDefinitionRepository)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(CaseDefinitionBuildingBlockLinkExporter::class)
     fun caseDefinitionBuildingBlockLinkExporter(
         objectMapper: ObjectMapper,
@@ -881,9 +899,10 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockFormDefinitionService::class)
     fun buildingBlockFormDefinitionService(
         formDefinitionRepository: FormDefinitionRepository,
-        definitionChecker: BuildingBlockDefinitionChecker
+        definitionChecker: BuildingBlockDefinitionChecker,
+        formDefinitionUsageGuard: FormDefinitionUsageGuard
     ): BuildingBlockFormDefinitionService {
-        return BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker)
+        return BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker, formDefinitionUsageGuard)
     }
 
     @Bean

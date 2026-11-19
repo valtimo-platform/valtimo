@@ -35,8 +35,8 @@ const klantinteractiesApiPluginSpecification: PluginSpecification = {
         'Met de specificaties van de Klantinteracties API kunnen gemeenten klantinteracties eenduidig registreren, opslaan en ontsluiten.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Onder deze naam is de plug-in herkenbaar in de rest van de applicatie.',
-      authenticationPluginConfiguration: 'Configuratie van authenticatie-plug-in',
+        'Onder deze naam is de plugin herkenbaar in de rest van de applicatie.',
+      authenticationPluginConfiguration: 'Configuratie authenticatieplugin',
       'create-persoon': 'Persoon aanmaken',
       bsn: 'BSN',
       bsnTooltip: 'Burgerservicenummer.',

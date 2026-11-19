@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_e2eSandbox" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="e2e-script-sandbox" name="E2E script sandbox" isExecutable="true" camunda:historyTimeToLive="1">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Script_1" />
+    <bpmn:scriptTask id="Script_1" name="Probe sandbox" scriptFormat="javascript">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+      <bpmn:script>function probe(name, fn) {
+  var value;
+  try { value = String(fn()); } catch (e) { value = 'denied'; }
+  execution.setVariable(name, value);
+}
+var HashMap = Java.type('java.util.HashMap');
+var LinkedHashMap = Java.type('java.util.LinkedHashMap');
+var TreeMap = Java.type('java.util.TreeMap');
+var ArrayList = Java.type('java.util.ArrayList');
+probe('hashMap', function () { var m = new HashMap(); m.put('a', '1'); return m.get('a'); });
+probe('linkedHashMap', function () { var m = new LinkedHashMap(); m.put('b', '1'); m.put('a', '2'); var out = []; for (var k of m.keySet()) { out.push(k); } return out.join(','); });
+probe('treeMap', function () { var m = new TreeMap(); m.put('b', '1'); m.put('a', '2'); var out = []; for (var k of m.keySet()) { out.push(k); } return out.join(','); });
+probe('entryIteration', function () { var m = new HashMap(); m.put('a', '1'); var out = []; for (var e of m.entrySet()) { out.push(e.getKey() + '=' + e.getValue()); } return out.join(','); });
+probe('variableEntries', function () { var out = []; for (var e of execution.getVariables().entrySet()) { if (e.getKey() === 'startVar') { out.push(e.getKey() + '=' + e.getValue()); } } return out.join(','); });
+probe('listStream', function () { var l = new ArrayList(); l.add(1); l.add(2); l.add(3); l.add(4); return l.stream().filter(function (x) { return x % 2 == 0; }).map(function (x) { return x * 10; }).toList(); });
+probe('engineGlobals', function () { return typeof engine + ',' + typeof context + ',' + typeof globalThis['polyglot.context']; });
+probe('runtime', function () { return Java.type('java.lang.Runtime'); });
+probe('system', function () { return Java.type('java.lang.System'); });
+probe('bindingsClass', function () { return Java.type('com.oracle.truffle.js.scriptengine.GraalJSBindings'); });
+probe('concurrentHashMap', function () { return Java.type('java.util.concurrent.ConcurrentHashMap'); });
+probe('mapReflection', function () { return typeof new HashMap().getClass().getClassLoader; });
+probe('entryReflection', function () { var m = new HashMap(); m.put('a', '1'); var entry = m.entrySet().iterator().next(); return typeof entry.getClass().forName; });
+probe('executionReflection', function () { return typeof execution.getClass().getClassLoader; });
+probe('streamReflection', function () { return typeof new ArrayList().stream().getClass().forName; });
+probe('processEngine', function () { return typeof execution.getProcessEngineServices().getRuntimeService; });</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Script_1" targetRef="wait" />
+    <bpmn:userTask id="wait" name="Wait">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="wait" targetRef="End_1" />
+    <bpmn:endEvent id="End_1">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="e2e-script-sandbox">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1"><dc:Bounds x="179" y="99" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Script_1_di" bpmnElement="Script_1"><dc:Bounds x="270" y="77" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="wait_di" bpmnElement="wait"><dc:Bounds x="430" y="77" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1"><dc:Bounds x="590" y="99" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1"><di:waypoint x="215" y="117" /><di:waypoint x="270" y="117" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2"><di:waypoint x="370" y="117" /><di:waypoint x="430" y="117" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3"><di:waypoint x="530" y="117" /><di:waypoint x="590" y="117" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

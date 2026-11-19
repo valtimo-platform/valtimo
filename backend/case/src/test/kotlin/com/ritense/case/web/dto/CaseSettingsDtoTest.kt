@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.case.web.dto
 
 import com.ritense.BaseTest
+import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -149,5 +150,50 @@ class CaseSettingsDtoTest: BaseTest() {
         val updatedCaseSettings = caseSettingsDto.update(currentCaseWithSettings)
         assertThat(updatedCaseSettings.canHaveAssignee).isFalse()
         assertThat(updatedCaseSettings.autoAssignTasks).isFalse()
+    }
+
+    @Test
+    fun `should keep color when color is absent`() {
+        val current = caseDefinition(color = "#FF5733")
+        val dto = MapperSingleton.get().readValue("""{"canHaveAssignee":true}""", CaseSettingsDto::class.java)
+
+        assertThat(dto.update(current).color).isEqualTo("#FF5733")
+    }
+
+    @Test
+    fun `should clear color when color is explicit null`() {
+        val current = caseDefinition(color = "#FF5733")
+        val dto = MapperSingleton.get().readValue("""{"color":null}""", CaseSettingsDto::class.java)
+
+        assertThat(dto.update(current).color).isNull()
+    }
+
+    @Test
+    fun `should clear color when color is blank`() {
+        val current = caseDefinition(color = "#FF5733")
+        val dto = MapperSingleton.get().readValue("""{"color":""}""", CaseSettingsDto::class.java)
+
+        assertThat(dto.update(current).color).isNull()
+    }
+
+    @Test
+    fun `should update color when value given`() {
+        val current = caseDefinition(color = "#FF5733")
+        val dto = MapperSingleton.get().readValue("""{"color":"#00FF00"}""", CaseSettingsDto::class.java)
+
+        assertThat(dto.update(current).color).isEqualTo("#00FF00")
+    }
+
+    @Test
+    fun `should keep externalStartFormDescription when absent`() {
+        val current = caseDefinition(
+            hasExternalStartForm = true,
+            externalStartFormUrl = "https://example.com/form"
+        ).copy(externalStartFormDescription = "Start the case")
+
+        val updated = CaseSettingsDto(hasExternalStartForm = true).update(current)
+
+        assertThat(updated.externalStartFormDescription).isEqualTo("Start the case")
+        assertThat(updated.externalStartFormUrl).isEqualTo("https://example.com/form")
     }
 }

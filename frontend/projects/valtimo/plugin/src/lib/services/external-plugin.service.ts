@@ -193,7 +193,10 @@ export class ExternalPluginService {
   public createConfiguration(
     request: ExternalPluginConfigurationCreateRequest
   ): Observable<ExternalPluginConfiguration> {
-    return this._http.post<ExternalPluginConfiguration>(`${this._baseUrl}/configuration`, request);
+    const headers = new HttpHeaders().set(InterceptorSkip, '400,409');
+    return this._http.post<ExternalPluginConfiguration>(`${this._baseUrl}/configuration`, request, {
+      headers,
+    });
   }
 
   /**
@@ -330,7 +333,7 @@ export class ExternalPluginService {
     const formData = new FormData();
     formData.append('file', file, file.name);
     const params = new HttpParams().set('force', force).set('overwrite', overwrite);
-    const headers = new HttpHeaders().set(InterceptorSkip, '409,413');
+    const headers = new HttpHeaders().set(InterceptorSkip, '400,409,413');
     return this._http.post<ExternalPluginUploadResult>(
       `${this._baseUrl}/host/${hostId}/upload`,
       formData,

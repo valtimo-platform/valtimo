@@ -27,10 +27,10 @@ export const gaugeSpecification: DisplayTypeSpecification = {
   translations: {
     nl: {
       title: 'Graadmeter',
-      formTitle: 'Titel (vereist)',
+      formTitle: 'Titel (verplicht)',
       formTitleHelperText: 'De titel die wordt weergegeven in de widget',
       subtitle: 'Ondertitel',
-      subtitleHelperText: 'De ondertitel weergegeven in de widget',
+      subtitleHelperText: 'De ondertitel die wordt weergegeven in de widget',
       label: 'Label',
       labelHelperText: 'Het label dat wordt weergegeven in de widget',
     },

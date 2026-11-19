@@ -191,6 +191,30 @@ export async function apiDelete(url: string): Promise<void> {
   await assertOk('DELETE', url, res);
 }
 
+export async function apiGetBuffer(url: string): Promise<Buffer> {
+  let ctx = await getContext();
+  let res = await send('GET', () => ctx.get(url));
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await send('GET', () => ctx.get(url));
+  }
+  await assertOk('GET', url, res);
+  return res.body();
+}
+
+export async function apiPostMultipart(
+  url: string,
+  multipart: Record<string, string | {name: string; mimeType: string; buffer: Buffer}>
+): Promise<void> {
+  let ctx = await getContext();
+  let res = await send('POST', () => ctx.post(url, {multipart}));
+  if (res.status() === 401) {
+    ctx = await refreshContext();
+    res = await send('POST', () => ctx.post(url, {multipart}));
+  }
+  await assertOk('POST', url, res);
+}
+
 /* ------------------------------------------------------------------ */
 /*  Dispose helper ‑ call once in globalTeardown                      */
 /* ------------------------------------------------------------------ */
@@ -258,6 +282,6 @@ async function parseBody<T>(res: APIResponse): Promise<T> {
 
 async function assertOk(method: string, url: string, res: APIResponse) {
   if (res.ok()) return;
-  const snippet = (await res.text()).slice(0, 120);
+  const snippet = (await res.text()).slice(0, 600);
   throw new ApiError(res.status(), `[api] ${method} ${url} → ${res.status()} | ${snippet}`);
 }

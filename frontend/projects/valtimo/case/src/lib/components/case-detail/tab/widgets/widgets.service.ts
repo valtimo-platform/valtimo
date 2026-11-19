@@ -51,7 +51,9 @@ export class WidgetsService {
   public get activeProcess$(): Observable<StartableItem | undefined> {
     return combineLatest([this._activeProcessKey$, this.startableItems$]).pipe(
       map(([activeProcessKey, items]: [string | null, StartableItem[]]) => {
-        return items.find((item: StartableItem) => activeProcessKey === item.key);
+        return items.find(
+          (item: StartableItem) => item.type === 'PROCESS' && activeProcessKey === item.key
+        );
       })
     );
   }

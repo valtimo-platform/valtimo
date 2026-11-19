@@ -152,11 +152,61 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
         assertEquals(1, processLinkService.getProcessLinks(redeployedProcessDefinition.id, SERVICE_TASK_ID).count())
     }
 
-    private fun createProcessLink(processDefinition: OperatonProcessDefinition) {
+    @Test
+    fun `should copy process links from the same key in the original deployment of a multi-process file`() {
+        val firstDeployment = deployTwoProcessFile("First", skipProcessLinksCopy = true)
+        createProcessLink(firstDeployment.getValue(SECOND_PROCESS_KEY), SECOND_SERVICE_TASK_ID)
+        deployTwoProcessFile("First, edited", skipProcessLinksCopy = true)
+
+        val copy = deployTwoProcessFile(
+            "First, copied",
+            originalProcessDefinitionId = firstDeployment.getValue(FIRST_PROCESS_KEY)
+        )
+
+        assertEquals(
+            1,
+            processLinkService.getProcessLinks(copy.getValue(SECOND_PROCESS_KEY), SECOND_SERVICE_TASK_ID).count()
+        )
+    }
+
+    private fun deployTwoProcessFile(
+        firstProcessName: String,
+        skipProcessLinksCopy: Boolean = false,
+        originalProcessDefinitionId: String? = null
+    ): Map<String, String> {
+        val bpmn = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+              <bpmn:process id="$FIRST_PROCESS_KEY" name="$firstProcessName" isExecutable="true">
+                <bpmn:startEvent id="first-start" />
+              </bpmn:process>
+              <bpmn:process id="$SECOND_PROCESS_KEY" isExecutable="true">
+                <bpmn:startEvent id="second-start" />
+                <bpmn:serviceTask id="$SECOND_SERVICE_TASK_ID" camunda:delegateExpression="${'$'}{true}" />
+              </bpmn:process>
+            </bpmn:definitions>
+        """.trimIndent()
+        return runWithoutAuthorization {
+            operatonProcessService.deploy(
+                CaseDefinitionId("autodeploy", "1.0.0"),
+                "two-process.bpmn",
+                bpmn.byteInputStream(),
+                skipProcessLinksCopy,
+                false,
+                null,
+                originalProcessDefinitionId
+            )
+        }!!.deployedProcessDefinitions.associate { it.key to it.id }
+    }
+
+    private fun createProcessLink(processDefinition: OperatonProcessDefinition) =
+        createProcessLink(processDefinition.id, SERVICE_TASK_ID)
+
+    private fun createProcessLink(processDefinitionId: String, activityId: String) {
         processLinkService.createProcessLink(
             TestProcessLinkCreateRequestDto(
-                processDefinition.id,
-                SERVICE_TASK_ID,
+                processDefinitionId,
+                activityId,
                 ActivityTypeWithEventName.SERVICE_TASK_START,
             ),
             CaseDefinitionId.of("autodeploy", "1.0.0")
@@ -174,5 +224,8 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
     companion object {
         private const val PROCESS_DEFINITION_KEY = "service-task-process"
         private const val SERVICE_TASK_ID = "my-service-task"
+        private const val FIRST_PROCESS_KEY = "copy-link-first"
+        private const val SECOND_PROCESS_KEY = "copy-link-second"
+        private const val SECOND_SERVICE_TASK_ID = "copy-link-second-task"
     }
 }

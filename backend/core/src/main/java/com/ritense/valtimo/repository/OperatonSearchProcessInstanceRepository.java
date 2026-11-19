@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,10 @@ public class OperatonSearchProcessInstanceRepository {
         return session.selectOne(SEARCH_INSTANCE_COUNT_STATEMENT, queryParameterObject);
     }
 
+    /**
+     * @deprecated Will be removed. Only used by deprecated admin-only process search endpoints.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     public Long searchInstancesCountByDefinitionName(String processDefinitionName, ProcessInstanceSearchDTO processInstanceSearchDTO) {
         ProcessInstanceQueryParametersV2 processInstanceQueryParametersV2 = new ProcessInstanceQueryParametersV2()
             .processDefinitionName(processDefinitionName)
@@ -59,6 +63,10 @@ public class OperatonSearchProcessInstanceRepository {
         return session.selectOne(SEARCH_INSTANCE_COUNT_STATEMENT, queryParameterObject);
     }
 
+    /**
+     * @deprecated Will be removed. Only used by deprecated admin-only process search endpoints.
+     */
+    @Deprecated(since = "13.x", forRemoval = true)
     public Page<ProcessInstance> searchInstances(String processDefinitionName, ProcessInstanceSearchDTO processInstanceSearchDTO, Pageable pageable) {
         var processInstanceQueryParametersV2 = new ProcessInstanceQueryParametersV2()
             .processDefinitionName(processDefinitionName)

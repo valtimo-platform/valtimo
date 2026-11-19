@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@ import {MenuModule} from '../menu/menu.module';
 import {IconModule, LoadingModule, UIShellModule} from 'carbon-components-angular';
 import {CaseCountPipe, ComponentsPipesModule} from '../../pipes';
 import {CtrlClickDirective} from '../../directives/ctrl-click/ctrl-click.directive';
+import {ExpandOnActiveDirective} from '../../directives/expand-on-active/expand-on-active.directive';
+import {SubmenuTitleClickDirective} from '../../directives/submenu-title-click/submenu-title-click.directive';
+import {OverflowMenuComponent} from '../overflow-menu/overflow-menu.component';
+import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
+import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [LeftSidebarComponent, CaseCountPipe],
@@ -33,7 +38,12 @@ import {CtrlClickDirective} from '../../directives/ctrl-click/ctrl-click.directi
     UIShellModule,
     ComponentsPipesModule,
     CtrlClickDirective,
+    SubmenuTitleClickDirective,
+    ExpandOnActiveDirective,
     LoadingModule,
+    OverflowMenuComponent,
+    OverflowMenuOptionComponent,
+    TranslateModule,
   ],
   exports: [LeftSidebarComponent],
 })

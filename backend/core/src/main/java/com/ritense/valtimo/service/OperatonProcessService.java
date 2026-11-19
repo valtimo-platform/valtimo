@@ -25,6 +25,7 @@ import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionS
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byActive;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byBlueprintId;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKeyIn;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKeyOfUnlinkedProcess;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
@@ -647,13 +648,15 @@ public class OperatonProcessService {
                     latestProcessDefinition.getKey()
                 );
             }
-            if (latestProcessDefinition != null && blueprintId != null) {
+            if (blueprintId != null) {
                 // clean up previous process definition, can only be triggered when we're deploying a draft version
-                applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
-                    latestProcessDefinition.getId(),
-                    blueprintId
-                ));
-                operatonProcessDefinitionRepository.setVersionTag(latestProcessDefinition.getId(), DETACHED_PROCESS_DEFINITION_PREFIX + blueprintId);
+                for (OperatonProcessDefinition superseded : getSupersededProcessesForFile(blueprintId, bpmnModel, latestProcessDefinition)) {
+                    applicationEventPublisher.publishEvent(new ProcessDefinitionDetached(
+                        superseded.getId(),
+                        blueprintId
+                    ));
+                    operatonProcessDefinitionRepository.setVersionTag(superseded.getId(), DETACHED_PROCESS_DEFINITION_PREFIX + blueprintId);
+                }
             }
 
             var deploymentBuilder = repositoryService.createDeployment()
@@ -830,6 +833,23 @@ public class OperatonProcessService {
         List<OperatonProcessDefinition> processDefinitions = getExistingProcessVersionsForFile(blueprintId, bpmnModel);
 
         return processDefinitions.isEmpty() ? null : processDefinitions.getFirst();
+    }
+
+    private List<OperatonProcessDefinition> getSupersededProcessesForFile(
+        BlueprintId blueprintId,
+        BpmnModelInstance bpmnModel,
+        @Nullable OperatonProcessDefinition latestProcessDefinition
+    ) {
+        if (!(blueprintId instanceof BuildingBlockDefinitionId)) {
+            return latestProcessDefinition == null ? List.of() : List.of(latestProcessDefinition);
+        }
+        Set<String> processDefinitionKeys = bpmnModel.getModelElementsByType(Process.class).stream()
+            .map(Process::getId)
+            .collect(Collectors.toSet());
+
+        return operatonRepositoryService.findProcessDefinitions(
+            byKeyIn(processDefinitionKeys).and(byVersionTag(blueprintId.getTagPrefix() + blueprintId))
+        );
     }
 
     /** All deployed versions of the process in this file, latest version first. */

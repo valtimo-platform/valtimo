@@ -24,6 +24,7 @@ import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import java.math.BigDecimal
 import org.springframework.expression.spel.standard.SpelExpressionParser
 import org.springframework.expression.spel.support.DataBindingMethodResolver
 import org.springframework.expression.spel.support.SimpleEvaluationContext
@@ -56,7 +57,8 @@ data class Condition<T : Comparable<T>>(
     ): Boolean {
         val fieldValue = expressionResolver.invoke(path)
         val resolvedValue = resolveValue(value)
-        return operator.evaluate(fieldValue, resolvedValue)
+        val (left, right) = alignNumbers(fieldValue, resolvedValue)
+        return operator.evaluate(left, right)
     }
 
     override fun toPredicate(
@@ -106,6 +108,38 @@ data class Condition<T : Comparable<T>>(
                 value
             }
         } ?: value
+    }
+
+    // Admin-entered values arrive as strings, e.g. "0" vs an Integer field
+    private fun alignNumbers(left: Any?, right: Any?): Pair<Any?, Any?> {
+        if (left is Collection<*> || right is Collection<*>) {
+            return alignNumbersWithList(left, right)
+        }
+        if ((left !is Number && right !is Number) || left?.javaClass == right?.javaClass) {
+            return left to right
+        }
+        val leftNumber = toBigDecimal(left) ?: return left to right
+        val rightNumber = toBigDecimal(right) ?: return left to right
+        return leftNumber to rightNumber
+    }
+
+    // For 'in' and 'list_contains'
+    private fun alignNumbersWithList(left: Any?, right: Any?): Pair<Any?, Any?> {
+        val values = listOf(left, right).flatMap { if (it is Collection<*>) it else listOf(it) }
+        if (values.none { it is Number }) {
+            return left to right
+        }
+        return toBigDecimalWhereNumeric(left) to toBigDecimalWhereNumeric(right)
+    }
+
+    private fun toBigDecimalWhereNumeric(value: Any?): Any? = when (value) {
+        is Collection<*> -> value.map { toBigDecimal(it) ?: it }
+        else -> toBigDecimal(value) ?: value
+    }
+
+    private fun toBigDecimal(value: Any?): BigDecimal? = when (value) {
+        is Number, is String -> value.toString().trim().toBigDecimalOrNull()?.stripTrailingZeros()
+        else -> null
     }
 
     private fun getExpressionContextRoot(): ConditionSpelEvaluationContext {

@@ -45,7 +45,6 @@ describe('PluginContractJobsPageComponent', () => {
     providerTitle: 'Open Plan',
     providerPluginId: 'openplan',
     status: 'FAILED',
-    requestedBy: null,
     createdAt: '2026-10-01T00:00:00Z',
     updatedAt: null,
     completedAt: null,

@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLConnection
-import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -61,8 +60,8 @@ class DocumentenApiResource(
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
-        val caseDocumentId: UUID? = null
-        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId,documentId)
+        val caseDocumentId = documentenApiService.requireViewableLinkedCaseDocumentId(pluginConfigurationId, documentId)
+        val documentMetadata = documentenApiService.getInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
         val documentInputStream = documentenApiService.downloadInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
 
         val responseHeaders = HttpHeaders()
@@ -91,7 +90,7 @@ class DocumentenApiResource(
         @PathVariable(name = "documentId") documentId: String,
         @Valid @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
     ): ResponseEntity<RelatedFile> {
-        val caseDocumentId: UUID? = null
+        val caseDocumentId = documentenApiService.requireViewableLinkedCaseDocumentId(pluginConfigurationId, documentId)
         return ResponseEntity
             .ok()
             .body(
@@ -114,7 +113,7 @@ class DocumentenApiResource(
         @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<Unit> {
-        val caseDocumentId: UUID? = null
+        val caseDocumentId = documentenApiService.requireViewableLinkedCaseDocumentId(pluginConfigurationId, documentId)
         documentenApiService.deleteInformatieObject(pluginConfigurationId, caseDocumentId, documentId)
         return ResponseEntity
             .noContent()

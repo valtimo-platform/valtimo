@@ -25,6 +25,8 @@ export * from './case-sse-event.model';
 export * from './case-list-quick-search.model';
 export * from './case-widget.model';
 export * from './case-inspection.models';
+export * from './case-list-context.model';
+export * from './pinned-item.model';
 export * from './external-plugin-tab.model';
 export * from './external-plugin-widget.model';
 export * from './case-actions-layout.model';

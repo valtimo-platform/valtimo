@@ -113,10 +113,10 @@ describe("handleContractCall result serialization", () => {
     });
   });
 
-  it("hands a job handler the job's case, requester and deadline", () => {
+  it("hands a job handler the job's case and deadline", () => {
     onContractJob("nl.ritense.runtime-test@1", "inspect", (job) => ({
       status: "completed",
-      result: {documentId: job.documentId, requestedBy: job.requestedBy, deadline: job.deadline},
+      result: {documentId: job.documentId, deadline: job.deadline},
     }));
 
     const out = handleContractCall(
@@ -124,7 +124,6 @@ describe("handleContractCall result serialization", () => {
         jobId: "job-2",
         deadline: "2026-10-14T12:00:00Z",
         documentId: "6f1c2a3e-0000-4000-8000-000000000001",
-        requestedBy: "behandelaar",
       })
     );
 
@@ -132,7 +131,6 @@ describe("handleContractCall result serialization", () => {
       status: "completed",
       result: {
         documentId: "6f1c2a3e-0000-4000-8000-000000000001",
-        requestedBy: "behandelaar",
         deadline: "2026-10-14T12:00:00Z",
       },
     });

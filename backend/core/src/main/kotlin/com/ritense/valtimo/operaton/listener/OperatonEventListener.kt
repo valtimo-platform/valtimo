@@ -24,7 +24,6 @@ import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 
 @Component
 @SkipComponentScan
@@ -32,13 +31,11 @@ class OperatonEventListener(
     private val publisher: ApplicationEventPublisher,
 ) {
 
-    @Transactional
     @EventListener(DelegateTask::class)
     fun notifyTaskEvent(delegateTask: DelegateTask) {
         publisher.publishEvent(OperatonTaskEvent(delegateTask))
     }
 
-    @Transactional
     @EventListener(DelegateExecution::class)
     fun notifyExecutionEvent(delegateExecution: DelegateExecution) {
         publisher.publishEvent(OperatonExecutionEvent(delegateExecution))

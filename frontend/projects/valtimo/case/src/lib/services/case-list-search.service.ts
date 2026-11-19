@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,37 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, catchError, map, Observable, of, switchMap, throwError} from 'rxjs';
 import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/shared';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
 import {CaseParameterService} from './case-parameter.service';
+import {CaseListContext} from '../models';
+import {isGroupUnavailable} from '../utils';
 
 @Injectable()
 export class CaseListSearchService {
   private readonly _documentSearchFields$: Observable<Array<SearchField> | null> =
-    this.caseListService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
-        caseDefinitionKey
-          ? this.documentService.getDocumentSearchFields(caseDefinitionKey)
-          : of([])
-      )
+    this.caseListService.context$.pipe(
+      switchMap(context => {
+        if (!context) return of([]);
+        if (context.type === 'group') {
+          return this.documentService.getGroupSearchFields(context.key).pipe(
+            map(fields =>
+              fields.map(f => ({
+                key: f.key,
+                title: f.title,
+                dataType: f.dataType,
+                fieldType: f.fieldType,
+                matchType: f.matchType,
+                dropdownDataProvider: f.dropdownDataProvider,
+              }))
+            ),
+            catchError(error => (isGroupUnavailable(error) ? of([]) : throwError(() => error)))
+          );
+        }
+        return this.documentService.getDocumentSearchFields(context.key);
+      })
     );
 
   private readonly _globalSearchFilter$ = new BehaviorSubject<string>('');

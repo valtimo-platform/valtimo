@@ -78,6 +78,7 @@ import com.ritense.externalplugin.service.ExternalPluginSidePanelService
 import com.ritense.externalplugin.service.ExternalPluginPackageInstaller
 import com.ritense.externalplugin.service.ExternalPluginServiceTokenService
 import com.ritense.externalplugin.service.ExternalPluginUserTokenService
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator
 import com.ritense.externalplugin.service.PluginPropertyEncryptor
 import com.ritense.externalplugin.web.rest.ExternalPluginContractResource
 import com.ritense.externalplugin.web.rest.ExternalPluginHostOriginsResource
@@ -458,6 +459,13 @@ class ExternalPluginAutoConfiguration {
      * time. The add-host form fetches sensible pre-fills from `HostDefaultsResource`.
      */
     @Bean
+    @ConditionalOnMissingBean(ExternalPluginSchemaValidator::class)
+    fun externalPluginSchemaValidator(
+        @Value("\${valtimo.external-plugin.schema-validation-budget:200ms}") budget: String,
+        @Value("\${valtimo.external-plugin.max-schema-bytes:65536}") maxSchemaBytes: Int,
+    ) = ExternalPluginSchemaValidator(DurationStyle.detectAndParse(budget), maxSchemaBytes)
+
+    @Bean
     @ConditionalOnMissingBean(ExternalPluginConfigurationService::class)
     fun externalPluginConfigurationService(
         configurationRepository: ExternalPluginConfigurationRepository,
@@ -474,6 +482,8 @@ class ExternalPluginAutoConfiguration {
         serviceTokenService: ExternalPluginServiceTokenService,
         hostUsageResolver: ExternalPluginHostUsageResolver,
         contractBindingRepository: ExternalPluginContractBindingRepository,
+        contractJobService: ExternalPluginContractJobService,
+        schemaValidator: ExternalPluginSchemaValidator,
         @Value("\${server.port:8080}") serverPort: Int,
         @Value("\${valtimo.outbox.publisher.rabbitmq.exchange:valtimo-events}") defaultEventBrokerExchange: String,
     ) = ExternalPluginConfigurationService(
@@ -493,6 +503,8 @@ class ExternalPluginAutoConfiguration {
         defaultEventBrokerExchange,
         "http://localhost:$serverPort",
         contractBindingRepository,
+        contractJobService,
+        schemaValidator,
     )
 
     @Bean
@@ -505,6 +517,7 @@ class ExternalPluginAutoConfiguration {
         hostClient: ExternalPluginHostClient,
         encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
+        schemaValidator: ExternalPluginSchemaValidator,
         @Value("\${valtimo.external-plugin.contract.max-depth:4}") maxDepth: Int,
         @Value("\${valtimo.external-plugin.contract.max-payload-bytes:262144}") maxPayloadBytes: Int,
         @Value("\${valtimo.external-plugin.contract.read-timeout:PT40S}") readTimeout: String,
@@ -521,6 +534,7 @@ class ExternalPluginAutoConfiguration {
         maxPayloadBytes,
         DurationStyle.detectAndParse(readTimeout),
         maxConcurrentCalls,
+        schemaValidator,
     )
 
     @Bean
@@ -533,8 +547,6 @@ class ExternalPluginAutoConfiguration {
         encryptionService: EncryptionService,
         objectMapper: ObjectMapper,
         transactionManager: PlatformTransactionManager,
-        documentService: com.ritense.document.service.impl.JsonSchemaDocumentService,
-        authorizationService: com.ritense.authorization.AuthorizationService,
         replyHandleSigner: ExternalPluginReplyHandleSigner,
         eventPublisher: ApplicationEventPublisher,
         @Value("\${valtimo.external-plugin.contract-job.default-timeout:PT1H}") defaultTimeout: String,
@@ -547,8 +559,6 @@ class ExternalPluginAutoConfiguration {
         encryptionService,
         objectMapper,
         TransactionTemplate(transactionManager),
-        documentService,
-        authorizationService,
         replyHandleSigner,
         eventPublisher,
         DurationStyle.detectAndParse(defaultTimeout),
@@ -622,6 +632,7 @@ class ExternalPluginAutoConfiguration {
         hostClient: ExternalPluginHostClient,
         transactionManager: PlatformTransactionManager,
         packageInstaller: ExternalPluginPackageInstaller,
+        schemaValidator: ExternalPluginSchemaValidator,
         @Value("\${valtimo.external-plugin.polling.failure-threshold:3}") failureThreshold: Int,
         @Value("\${server.port:8080}") serverPort: Int,
     ) = ExternalPluginDiscoveryService(
@@ -635,6 +646,7 @@ class ExternalPluginAutoConfiguration {
         failureThreshold,
         "http://localhost:$serverPort",
         packageInstaller,
+        schemaValidator = schemaValidator,
     )
 
     @Bean
@@ -712,6 +724,7 @@ class ExternalPluginAutoConfiguration {
         pluginPackageInspector: PluginPackageInspector,
         objectMapper: ObjectMapper,
         contractJobService: ExternalPluginContractJobService,
+        schemaValidator: ExternalPluginSchemaValidator,
     ) = ExternalPluginManagementResource(
         hostService,
         definitionService,
@@ -724,6 +737,7 @@ class ExternalPluginAutoConfiguration {
         pluginPackageInspector,
         objectMapper,
         contractJobService,
+        schemaValidator,
     )
 
     @Bean

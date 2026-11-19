@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ data class CaseDefinitionDraftCreateRequest(
     val name: String? = null,
     val description: String? = null,
     val basedOnCaseDefinitionVersion: String? = null,
+    val color: String? = null,
 ) {
     fun getCaseDefinitionId(): CaseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersion)
 

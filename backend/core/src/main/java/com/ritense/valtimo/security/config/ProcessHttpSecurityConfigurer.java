@@ -33,9 +33,9 @@ public class ProcessHttpSecurityConfigurer implements HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests(requests ->
                 requests.requestMatchers(antMatcher(GET, "/api/v1/process/definition")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/process/definition/{processDefinitionId}/count")).authenticated()
+                .requestMatchers(antMatcher(POST, "/api/v1/process/definition/{processDefinitionId}/count")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/process/definition/{processDefinitionId}/xml")).authenticated()
-                .requestMatchers(antMatcher(PUT, "/api/v1/process/definition/{processDefinitionId}/xml/timer")).authenticated()
+                .requestMatchers(antMatcher(PUT, "/api/v1/process/definition/{processDefinitionId}/xml/timer")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/process/definition/{processDefinitionKey}/search-properties")).authenticated()
                 .requestMatchers(antMatcher(GET, "/api/v1/process/definition/{processDefinitionKey}")).authenticated()
                 .requestMatchers(antMatcher(GET, "/api/v1/process/definition/{processDefinitionKey}/versions")).authenticated()
@@ -56,10 +56,10 @@ public class ProcessHttpSecurityConfigurer implements HttpSecurityConfigurer {
                 .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/xml")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/activities")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/comments")).hasAuthority(ADMIN)
-                .requestMatchers(antMatcher(POST, "/api/v1/process/{processDefinitionName}/search")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v2/process/{processDefinitionName}/search")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/process/{processDefinitionName}/count")).authenticated()
-                .requestMatchers(antMatcher(POST, "/api/v1/process/{processInstanceId}/comment")).authenticated()
+                .requestMatchers(antMatcher(POST, "/api/v1/process/{processDefinitionName}/search")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(POST, "/api/v2/process/{processDefinitionName}/search")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(POST, "/api/v1/process/{processDefinitionName}/count")).hasAuthority(ADMIN)
+                .requestMatchers(antMatcher(POST, "/api/v1/process/{processInstanceId}/comment")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(POST, "/api/v1/process/{processInstanceId}/delete")).hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(POST, "/api/v1/process/definition/deployment")).hasAuthority(ADMIN)
             );

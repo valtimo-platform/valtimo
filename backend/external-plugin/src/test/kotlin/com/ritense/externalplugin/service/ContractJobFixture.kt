@@ -19,8 +19,6 @@ package com.ritense.externalplugin.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationService
-import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.client.ExternalPluginHostClient.ActionResponse
 import com.ritense.externalplugin.domain.EventQueueMode
@@ -77,8 +75,6 @@ class ContractJobFixture(
 
     val hostClient = mock<ExternalPluginHostClient>()
     val runtimeService = mock<RuntimeService>()
-    val authorizationService = mock<AuthorizationService>()
-    val documentService = mock<JsonSchemaDocumentService>()
     val eventPublisher = mock<ApplicationEventPublisher>()
     val jobRepository = inMemoryJobRepository()
     val replyHandleSigner = ExternalPluginReplyHandleSigner("abcdefghijklmnop", Duration.ofDays(1), clock)
@@ -99,6 +95,7 @@ class ContractJobFixture(
     val requester = configuration(requesterDefinition)
     val provider = configuration(providerDefinition)
 
+    val bindingRepository = mock<ExternalPluginContractBindingRepository>()
     val contractService: ExternalPluginContractService
     val jobService: ExternalPluginContractJobService
     val dispatcher: ExternalPluginContractJobDispatcher
@@ -107,7 +104,6 @@ class ContractJobFixture(
         val configurationRepository = mock<ExternalPluginConfigurationRepository>()
         val definitionRepository = mock<ExternalPluginDefinitionRepository>()
         val hostRepository = mock<ExternalPluginHostRepository>()
-        val bindingRepository = mock<ExternalPluginContractBindingRepository>()
         whenever(configurationRepository.findById(any())).thenAnswer { Optional.ofNullable(configurations[it.getArgument(0)]) }
         whenever(configurationRepository.findAllById(any())).thenAnswer { invocation ->
             invocation.getArgument<Iterable<UUID>>(0).mapNotNull { configurations[it] }
@@ -130,7 +126,7 @@ class ContractJobFixture(
         )
         jobService = ExternalPluginContractJobService(
             jobRepository, configurationRepository, definitionRepository, contractService, encryptionService,
-            objectMapper, transactionTemplate, documentService, authorizationService, replyHandleSigner, eventPublisher,
+            objectMapper, transactionTemplate, replyHandleSigner, eventPublisher,
             defaultTimeout = Duration.ofHours(1), maxDeadline = Duration.ofDays(1), clock = clock,
         )
         dispatcher = ExternalPluginContractJobDispatcher(
@@ -141,13 +137,11 @@ class ContractJobFixture(
         )
     }
 
-    /** A job request with a service token unless [requestedBy] names a user. */
     fun create(
         operation: String,
         replyTo: String? = null,
         documentId: String? = null,
         idempotencyKey: String? = null,
-        requestedBy: String? = null,
         payload: JsonNode = objectMapper.createObjectNode().put("templateKey", "pdca-report"),
     ): ContractOutcome = jobService.create(
         requesterConfigurationId = requester.id,
@@ -157,7 +151,6 @@ class ContractJobFixture(
         replyTo = replyTo,
         documentId = documentId,
         idempotencyKey = idempotencyKey,
-        requestedBy = requestedBy,
         chainHeader = null,
         correlationIdHeader = null,
     )
@@ -167,8 +160,7 @@ class ContractJobFixture(
         replyTo: String? = null,
         documentId: String? = null,
         idempotencyKey: String? = null,
-        requestedBy: String? = null,
-    ): UUID = create(operation, replyTo, documentId, idempotencyKey, requestedBy).let {
+    ): UUID = create(operation, replyTo, documentId, idempotencyKey).let {
         check(it.status == "accepted") { "Expected an accepted job, got ${it.errorCode}: ${it.errorMessage}" }
         it.jobId!!
     }
@@ -181,6 +173,12 @@ class ContractJobFixture(
     fun requesterAnswers(status: Int, body: String?) {
         whenever(hostClient.invokeContractReply(any(), any(), any(), any(), any(), anyOrNull()))
             .thenReturn(ActionResponse(status, body?.let(::json)))
+    }
+
+    /** Rebinds the requester's contract; null removes the binding. */
+    fun bindRequesterTo(target: UUID?) {
+        val binding = target?.let { ExternalPluginContractBinding(UUID.randomUUID(), requester.id, contract, it) }
+        whenever(bindingRepository.findByConfigurationIdAndContract(requester.id, contract)).thenReturn(binding)
     }
 
     fun job(id: UUID): ExternalPluginContractJob = jobs.getValue(id)
@@ -230,6 +228,14 @@ class ContractJobFixture(
                 val now = invocation.getArgument<Instant>(1)
                 jobs.values.filter { it.status in statuses && it.nextAttemptAt?.isAfter(now) == false }
                     .sortedBy { it.nextAttemptAt }
+            }
+        whenever(repository.findAllByRequesterConfigurationIdAndContractAndProviderConfigurationIdAndStatusIn(any(), any(), any(), any()))
+            .thenAnswer { invocation ->
+                val statuses = invocation.getArgument<Collection<ExternalPluginContractJobStatus>>(3)
+                jobs.values.filter {
+                    it.requesterConfigurationId == invocation.getArgument(0) && it.contract == invocation.getArgument(1) &&
+                        it.providerConfigurationId == invocation.getArgument(2) && it.status in statuses
+                }
             }
         whenever(repository.deleteAllByStatusInAndUpdatedAtBefore(any(), any())).thenAnswer { invocation ->
             val statuses = invocation.getArgument<Collection<ExternalPluginContractJobStatus>>(0)

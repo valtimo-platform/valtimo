@@ -16,6 +16,7 @@
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {ListField, ListHiddenColumn} from '@valtimo/components';
+import {CASE_LIST_TOOLBAR_TEST_IDS} from '../../constants/case.test-ids';
 
 @Component({
   standalone: false,
@@ -37,4 +38,6 @@ export class CaseListToolbarComponent {
   @Output() public exportEvent = new EventEmitter<void>();
   @Output() public startCaseEvent = new EventEmitter<void>();
   @Output() public viewUpdateEvent = new EventEmitter<ListHiddenColumn[]>();
+
+  protected readonly testIds = CASE_LIST_TOOLBAR_TEST_IDS;
 }

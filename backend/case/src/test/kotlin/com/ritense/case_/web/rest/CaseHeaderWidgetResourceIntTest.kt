@@ -48,14 +48,14 @@ class CaseHeaderWidgetResourceIntTest @Autowired constructor(
 
     @Test
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `should return not found when header widget not found`() {
+    fun `should return no content when no header widget is configured`() {
         val documentId = createDocumentOnly()
 
         mockMvc.perform(
             get("/api/v1/case/{documentId}/header-widget", documentId)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andDo(print())
-            .andExpect(status().isNotFound)
+            .andExpect(status().isNoContent)
     }
 
     @Test

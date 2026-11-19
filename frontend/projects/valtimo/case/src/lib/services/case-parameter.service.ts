@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,10 +165,12 @@ export class CaseParameterService implements OnDestroy {
           collectionSize: `${pagination.collectionSize}`,
           page: `${pagination.page}`,
           isSorting: pagination.sort?.isSorting ? 'true' : 'false',
-          ...(pagination.sort?.state?.name && {sortStateName: `${pagination.sort?.state.name}`}),
-          ...(pagination.sort?.state?.direction && {
-            sortStateDirection: `${pagination.sort?.state.direction}`,
-          }),
+          ...(pagination.sort?.isSorting &&
+            pagination.sort.state?.name && {sortStateName: `${pagination.sort.state.name}`}),
+          ...(pagination.sort?.isSorting &&
+            pagination.sort.state?.direction && {
+              sortStateDirection: `${pagination.sort.state.direction}`,
+            }),
         });
       });
     }

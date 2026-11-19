@@ -18,6 +18,7 @@ package com.ritense.externalplugin.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.externalplugin.client.ExternalPluginHostClient
 import com.ritense.externalplugin.compatibility.CompatibilityResult
@@ -53,6 +54,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEndpointResponse
 import com.ritense.externalplugin.web.rest.dto.GrantedEventResponse
 import com.ritense.externalplugin.web.rest.dto.HostCreateRequest
 import com.ritense.externalplugin.web.rest.dto.HostDefaultsResponse
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator
 import com.ritense.externalplugin.web.rest.dto.HostConnectionUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostEventQueueUpdateRequest
 import com.ritense.externalplugin.web.rest.dto.HostFrontendOriginsUpdateRequest
@@ -101,6 +103,7 @@ class ExternalPluginManagementResource(
     private val pluginPackageInspector: PluginPackageInspector,
     private val objectMapper: ObjectMapper,
     private val contractJobService: ExternalPluginContractJobService,
+    private val schemaValidator: ExternalPluginSchemaValidator = ExternalPluginSchemaValidator(),
 ) {
 
     @RunWithoutAuthorization
@@ -410,6 +413,11 @@ class ExternalPluginManagementResource(
             )
         }
         val fileBytes = file.bytes
+        val schemaErrors = schemaValidator.contractSchemaErrors(pluginPackageInspector.readManifest(fileBytes))
+        if (schemaErrors.isNotEmpty()) {
+            val body = uploadErrorBody("Plugin package declares invalid contract schemas", schemaErrors.joinToString("; "))
+            return ResponseEntity.badRequest().body((body as ObjectNode).put("code", CONTRACT_SCHEMAS_INVALID_CODE))
+        }
         if (!force) {
             val range = pluginPackageInspector.readCompatibilityRange(fileBytes)
             if (range != null) {
@@ -488,7 +496,7 @@ class ExternalPluginManagementResource(
         @PathVariable definitionId: UUID,
         @RequestBody request: AcceptContentRequest,
     ): ResponseEntity<DefinitionResponse> {
-        val definition = configurationService.acceptContent(definitionId, request.contentHash)
+        val definition = validating { configurationService.acceptContent(definitionId, request.contentHash) }
         runCatching { discoveryService.discoverHost(definition.hostId) }
         return ResponseEntity.ok(toDefinitionResponse(definitionService.get(definitionId)))
     }
@@ -757,7 +765,12 @@ class ExternalPluginManagementResource(
 
     private fun toDefinitionResponse(definition: ExternalPluginDefinition): DefinitionResponse {
         val compatibility = compatibilityChecker.check(definition.minGzacVersion, definition.maxGzacVersion)
-        return DefinitionResponse.from(definition, compatibility)
+        return DefinitionResponse.from(
+            definition,
+            compatibility,
+            schemaValidator.contractSchemaErrors(definition.manifestJson),
+            schemaValidator.contractSchemaErrors(definition.pendingManifestJson),
+        )
     }
 
     private fun incompatibilityBody(compatibility: CompatibilityResult): JsonNode =
@@ -867,6 +880,9 @@ class ExternalPluginManagementResource(
 
         /** Host 409 code for an upload naming an already-existing pluginId@version. */
         const val PLUGIN_VERSION_EXISTS_CODE = "PLUGIN_VERSION_EXISTS"
+
+        /** 400 code for a package GZAC refuses itself, before the host sees it. */
+        const val CONTRACT_SCHEMAS_INVALID_CODE = "CONTRACT_SCHEMAS_INVALID"
 
         /** 409 code for connecting an app whose plugin is already registered under another host. */
         const val APP_ALREADY_REGISTERED_CODE = "APP_PLUGIN_ALREADY_REGISTERED"

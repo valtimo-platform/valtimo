@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,27 +33,37 @@ import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
+import com.ritense.form.domain.FormSpringContextHelper
 import com.ritense.form.service.impl.DefaultFormSubmissionService
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.form.web.rest.dto.FormSubmissionResultFailed
 import com.ritense.form.web.rest.dto.FormSubmissionResultSucceeded
+import com.ritense.processdocument.domain.ProcessDocumentInstance
+import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstanceId
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService
+import com.ritense.processdocument.service.impl.result.ModifyDocumentAndCompleteTaskResultFailed
 import com.ritense.processdocument.service.impl.result.ModifyDocumentAndCompleteTaskResultSucceeded
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.document.event.DocumentRelatedFileSubmittedEvent
 import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
+import com.ritense.valtimo.contract.result.FunctionResult
+import com.ritense.valtimo.contract.result.OperationError
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import io.mockk.every
@@ -63,12 +73,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationEventPublisher
 import java.net.URI
 import java.util.Optional
@@ -91,6 +104,7 @@ class DefaultFormSubmissionServiceTest {
     lateinit var documentSequenceGeneratorService: DocumentSequenceGeneratorService
     lateinit var authorizationService: AuthorizationService
     lateinit var valueResolverService: ValueResolverService
+    lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
 
     lateinit var formProcessLink: FormProcessLink
     lateinit var processDefinition: OperatonProcessDefinition
@@ -111,6 +125,7 @@ class DefaultFormSubmissionServiceTest {
         prefillFormService = mock()
         authorizationService = mock()
         valueResolverService = mock()
+        processDocumentAssociationService = mock()
         mockkObject(AuthorizationSupportedHelper)
         defaultFormSubmissionService = DefaultFormSubmissionService(
             processLinkService,
@@ -125,8 +140,15 @@ class DefaultFormSubmissionServiceTest {
             prefillFormService,
             authorizationService,
             valueResolverService,
-            MapperSingleton.get()
+            MapperSingleton.get(),
+            processDocumentAssociationService
         )
+
+        val task = mock<OperatonTask>()
+        whenever(task.getProcessInstanceId()).thenReturn(PROCESS_INSTANCE_ID)
+        whenever(operatonTaskService.findTaskById(TASK_INSTANCE_ID)).thenReturn(task)
+        doReturn(FunctionResult.Successful(mock<ProcessDocumentInstance>()))
+            .whenever(processDocumentAssociationService).getProcessDocumentInstanceResult(any())
 
         documentSequenceGeneratorService = mock()
         whenever(documentSequenceGeneratorService.next(any())).thenReturn(1L)
@@ -251,6 +273,59 @@ class DefaultFormSubmissionServiceTest {
         assertThat(formSubmissionResult.errors()).isEmpty()
         verify(applicationEventPublisher, times(0)).publishEvent(isA<ExternalDataSubmittedEvent>())
         verify(processDocumentService, times(1)).dispatch(isA<ModifyDocumentAndCompleteTaskRequest>())
+    }
+
+    @Test
+    fun `task submission for a document the task does not belong to is rejected before form fields are processed`() {
+        val documentId = UUID.randomUUID().toString()
+        val formData = formData()
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        whenever(documentService.get(documentId)).thenReturn(document)
+        doReturn(FunctionResult.Erroneous<ProcessDocumentInstance>(OperationError.FromString(NOT_ASSOCIATED)))
+            .whenever(processDocumentAssociationService).getProcessDocumentInstanceResult(any())
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultFailed(OperationError.FromString(NOT_ASSOCIATED)))
+
+        val formSubmissionResult = defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink.id,
+            formData = formData,
+            documentId = documentId,
+            taskInstanceId = TASK_INSTANCE_ID,
+            documentDefinitionName = null
+        )
+
+        verify(applicationEventPublisher, never()).publishEvent(isA<DocumentRelatedFileSubmittedEvent>())
+        verify(processDocumentService, never()).dispatch(any())
+        assertThat(formSubmissionResult).isInstanceOf(FormSubmissionResultFailed::class.java)
+        assertThat(formSubmissionResult.errors().map { it.asString() }).containsExactly(NOT_ASSOCIATED)
+        verify(processDocumentAssociationService).getProcessDocumentInstanceResult(
+            OperatonProcessJsonSchemaDocumentInstanceId.existingId(
+                OperatonProcessInstanceId(PROCESS_INSTANCE_ID),
+                document.id()
+            )
+        )
+    }
+
+    @Test
+    fun `task submission for the task's own document processes form fields`() {
+        val documentId = UUID.randomUUID().toString()
+        val formData = formData()
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        whenever(documentService.get(documentId)).thenReturn(document)
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultSucceeded(document))
+
+        val formSubmissionResult = defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink.id,
+            formData = formData,
+            documentId = documentId,
+            taskInstanceId = TASK_INSTANCE_ID,
+            documentDefinitionName = null
+        )
+
+        assertThat(formSubmissionResult).isInstanceOf(FormSubmissionResultSucceeded::class.java)
+        verify(applicationEventPublisher).publishEvent(isA<DocumentRelatedFileSubmittedEvent>())
+        verify(processDocumentService).dispatch(isA<ModifyDocumentAndCompleteTaskRequest>())
     }
 
     @Test
@@ -436,6 +511,71 @@ class DefaultFormSubmissionServiceTest {
         assertThat(captor.firstValue.processDefinitionId()).isEqualTo(PROCESS_DEFINITION_ID)
     }
 
+    @Test
+    fun `should not submit values of display-only components`() {
+        FormSpringContextHelper.setContext(mock<ApplicationContext>())
+        val formDefinition = FormIoFormDefinition(
+            UUID.randomUUID(),
+            "form-example",
+            """
+                {
+                  "display": "form",
+                  "components": [
+                    { "key": "voornaam", "type": "textfield", "input": true },
+                    { "key": "pv.other", "type": "textfield", "input": true },
+                    { "key": "mailPreview.body", "type": "valtimo-mail-preview", "input": true },
+                    { "key": "pv.mailPreview", "type": "valtimo-mail-preview", "input": true },
+                    { "key": "doc.grid", "type": "datagrid", "input": true, "components": [
+                      { "key": "name", "type": "textfield", "input": true },
+                      { "key": "rowPreview", "type": "valtimo-mail-preview", "input": true },
+                      { "key": "mailPreview.ontvangstbevestiging", "type": "valtimo-mail-preview", "input": true }
+                    ]},
+                    { "key": "pv.container", "type": "container", "input": true, "components": [
+                      { "key": "name", "type": "textfield", "input": true },
+                      { "key": "preview", "type": "valtimo-mail-preview", "input": true }
+                    ]}
+                  ]
+                }
+            """,
+            FormDefinitionBlueprintId.forCase(caseDefinitionId),
+            false
+        )
+        whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
+            .thenReturn(Optional.of(formDefinition))
+        val formData = MapperSingleton.get().readTree(
+            """
+                {
+                  "voornaam": "jan",
+                  "mailPreview": { "body": "<img src=x onerror=alert(1)>" },
+                  "pv": { "other": "value", "mailPreview": "<img src=x onerror=alert(1)>",
+                    "container": { "name": "n", "preview": "<img src=x onerror=alert(1)>" } },
+                  "doc": { "grid": [ { "name": "a", "rowPreview": "<img src=x onerror=alert(1)>",
+                    "mailPreview.ontvangstbevestiging": "<img src=x onerror=alert(1)>" } ] }
+                }
+            """
+        ) as ObjectNode
+        val document = createDocument(JsonDocumentContent.build(formData), caseDefinitionId)
+        whenever(processDocumentService.dispatch(any()))
+            .thenReturn(ModifyDocumentAndCompleteTaskResultSucceeded(document))
+
+        val formSubmissionResult = defaultFormSubmissionService.handleSubmission(
+            processLinkId = formProcessLink(START_EVENT_START).id,
+            formData = formData,
+            documentId = null,
+            taskInstanceId = null,
+            documentDefinitionName = "aName"
+        )
+
+        assertThat(formSubmissionResult).isInstanceOf(FormSubmissionResultSucceeded::class.java)
+        val captor = argumentCaptor<Map<String, Any?>>()
+        verify(valueResolverService, times(2)).preProcessValuesForNewDocument(captor.capture(), any())
+        val submittedKeys = captor.allValues.flatMap { it.keys }
+        assertThat(submittedKeys).contains("doc:/voornaam", "pv:other")
+        assertThat(submittedKeys).doesNotContain("doc:/mailPreview/body", "pv:mailPreview")
+        val submitted = captor.allValues.fold(emptyMap<String, Any?>()) { acc, map -> acc + map }
+        assertThat(submitted.toString()).doesNotContain("rowPreview", "onerror", "preview=", "ontvangstbevestiging")
+    }
+
     private fun formProcessLink(activityType: ActivityTypeWithEventName = USER_TASK_CREATE): FormProcessLink {
         val formProcessLink = FormProcessLink(
             id = UUID.randomUUID(),
@@ -546,5 +686,8 @@ class DefaultFormSubmissionServiceTest {
         private const val USERNAME = "test@test.com"
         private const val PROCESS_DEFINITION_KEY = "formlink-one-task-process"
         private const val PROCESS_DEFINITION_ID = "myProcessDefinitionKey:1:33333333-3333-3333-3333-333333333333"
+        private const val TASK_INSTANCE_ID = "myTaskInstanceId"
+        private const val PROCESS_INSTANCE_ID = "44444444-4444-4444-4444-444444444444"
+        private const val NOT_ASSOCIATED = "Corresponding process-document-instance is not associated with process-document-instance-id"
     }
 }

@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+export enum CaseManagementListTab {
+  CASES = 'cases',
+  GROUPS = 'groups',
+}
+
 export class CaseListItem {
   active: boolean;
   autoAssignTasks: boolean;

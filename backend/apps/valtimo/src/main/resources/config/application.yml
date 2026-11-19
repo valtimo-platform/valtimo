@@ -160,9 +160,9 @@ valtimo:
     oauth:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
     hardening:
-        removeStacktracesFromReturnedExceptions: true
         allowStacktraceOnIps:
-            - "*"
+            - 127.0.0.1
+            - 0:0:0:0:0:0:0:1
     openapi:
         enabled: false
         title: Valtimo Implementation API

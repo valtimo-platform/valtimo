@@ -40,12 +40,24 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
         if (CharSequence.class.isAssignableFrom(type) || TemporalAccessor.class.isAssignableFrom(type)) {
             // Strings or timestamps extracted from JSON have additional quotes ("") around them in MySQL 5.7.
             return cb.function("JSON_UNQUOTE", type, jsonValue);
-        } else if (Boolean.class.isAssignableFrom(type)) {
-            // Booleans extracted from JSON can be true/false while MySQL only accepts 1/0.
-            return cb.function("IF", type, jsonValue, cb.literal(1), cb.literal(0));
-        } else {
-            return cast(jsonValue, type);
         }
+
+        // A JSON null or missing property must stay SQL NULL, so it matches nothing (MySQL would make it 0/false)
+        var isJsonNull = cb.or(
+            cb.isNull(jsonValue),
+            cb.equal(cb.function("JSON_TYPE", String.class, jsonValue), "NULL")
+        );
+        Expression<T> value;
+        if (Boolean.class.isAssignableFrom(type)) {
+            // Booleans extracted from JSON can be true/false while MySQL only accepts 1/0.
+            value = cb.function("IF", type, jsonValue, cb.literal(1), cb.literal(0));
+        } else {
+            value = cast(jsonValue, type);
+        }
+        return cb.selectCase()
+            .when(isJsonNull, cb.nullLiteral(type))
+            .otherwise(value)
+            .as(type);
     }
 
     @Override

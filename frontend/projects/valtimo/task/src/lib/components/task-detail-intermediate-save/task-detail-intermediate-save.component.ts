@@ -26,7 +26,11 @@ import {RecentlyViewed16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ConfirmationModalModule, TooltipModule} from '@valtimo/components';
 import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
-import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
+import {
+  TaskProcessLinkResult,
+  TaskProcessLinkType,
+  TaskWithProcessLink,
+} from '@valtimo/process-link';
 import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';
 import {BehaviorSubject, combineLatest, switchMap, take, tap} from 'rxjs';
@@ -87,6 +91,7 @@ export class TaskDetailIntermediateSaveComponent {
   public readonly taskValue = signal<Task | null>(null);
   public readonly page = signal<{title: string; subtitle: string} | null>(null);
   public readonly canAssignUserToTask = signal<boolean>(false);
+  private readonly _processLinkType = signal<TaskProcessLinkType | null>(null);
   public readonly submission$ = this.taskIntermediateSaveService.submission$;
   public readonly formIoFormData$ = this.taskIntermediateSaveService.formIoFormData$;
 
@@ -110,7 +115,11 @@ export class TaskDetailIntermediateSaveComponent {
       .pipe(
         take(1),
         switchMap(([submission, formIoFormData]) => {
-          const dataToSave = submission?.data ? submission.data : formIoFormData;
+          // Form.io data is live; submission only tracks form-view-models
+          const dataToSave =
+            this._processLinkType() === 'form-view-model' && submission?.data
+              ? submission.data
+              : formIoFormData;
           const intermediateSaveRequest: IntermediateSaveRequest = {
             submission: dataToSave,
             taskInstanceId: this.taskValue()?.id ?? '',
@@ -165,6 +174,7 @@ export class TaskDetailIntermediateSaveComponent {
   }
 
   private setFormFlow(processLink: TaskProcessLinkResult): void {
+    this._processLinkType.set(processLink?.type ?? null);
     if (processLink !== null && processLink.type === 'form-flow') {
       this.formFlowInstanceId$.next(processLink.properties.formFlowInstanceId);
     }

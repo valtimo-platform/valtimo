@@ -35,14 +35,14 @@ const objectenApiPluginSpecification: PluginSpecification = {
         'Met de Overige Objecten Registratie API-specificaties (Objecten) kunnen gemeenten eenduidig objecten registreren, opslaan en ontsluiten.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Onder deze naam zal de plug-in te herkennen zijn in de rest van de applicatie',
-      authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+        'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
+      authenticationPluginConfiguration: 'Configuratie authenticatieplugin',
       'delete-object': 'Object verwijderen',
       deleteObjectWarning:
         'Waarschuwing: de objecten die met deze actie verwijderd worden mogen niet gekoppeld zijn aan een Zaak.',
-      objectUrl: 'Object URL',
+      objectUrl: 'Object-URL',
       objectUrlTooltip:
-        "De URL van het object dat verwijderd moet worden uit de Objecten API. De ingevoerde waarde mag een procesvariable zijn, bijvoorbeeld: 'pv:object'.",
+        "De URL van het object dat verwijderd moet worden uit de Objecten API. De ingevoerde waarde mag een procesvariabele zijn, bijvoorbeeld: 'pv:object'.",
     },
     en: {
       title: 'Objecten API',

@@ -32,6 +32,7 @@ import com.ritense.document.opensearch.domain.OsBlueprintId
 import com.ritense.document.opensearch.domain.OsDefinitionId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.DocumentSearchService
+import com.ritense.document.service.GlobalSearchFieldMeta
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -442,7 +443,7 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
                 NewDocumentRequest("house", "house", "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to street),
@@ -487,7 +488,7 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         jpaDoc.setAssignee("user-${assigneeFullName.hashCode()}", assigneeFullName)
         documentRepository.save(jpaDoc)
 
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = mapOf("street" to street),
@@ -586,7 +587,7 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
                 NewDocumentRequest("house", "house", "1.0.0", content)
             ).resultingDocument().get()
         }
-        openSearchRepository.save(
+        indexOsDocument(
             JsonSchemaDocumentOsDocument(
                 id = jpaDoc.id().toString(),
                 content = contentMap,
@@ -618,6 +619,37 @@ class JsonSchemaDocumentOpenSearchServiceIntTest : BaseOpenSearchIntegrationTest
         )
         refreshIndex()
         return jpaDoc
+    }
+
+    @Test
+    fun `should return empty when filter key has no path mappings configured`() {
+        seedDocument("Amsterdam")
+        seedDocument("Rotterdam")
+
+        // No path mappings for "name" key at all
+        val filterPathMappings = emptyMap<String, Map<String, String>>()
+        val globalSearchFields = emptyMap<String, GlobalSearchFieldMeta>()
+
+        val searchFilter = SearchWithConfigRequest.SearchWithConfigFilter().apply {
+            key = "name"
+            setValues(listOf("Amsterdam"))
+        }
+
+        val searchRequest = SearchWithConfigRequest()
+        searchRequest.otherFilters = listOf(searchFilter)
+
+        // Should return empty results, not throw an exception
+        val results = documentSearchService.search(
+            listOf("house"),
+            BlueprintType.CASE,
+            searchRequest,
+            filterPathMappings,
+            globalSearchFields,
+            PageRequest.of(0, 10)
+        )
+
+        assertThat(results.totalElements).isEqualTo(0)
+        assertThat(results.content).isEmpty()
     }
 
     @Test

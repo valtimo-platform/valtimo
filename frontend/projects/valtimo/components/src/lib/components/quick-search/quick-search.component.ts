@@ -27,6 +27,7 @@ import {
 import {OverflowMenuOptionComponent} from '../overflow-menu/overflow-menu-option/overflow-menu-option.component';
 import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
 import {QUICK_SEARCH_SERVICE} from '../../constants/quick-search.constants';
+import {QUICK_SEARCH_TEST_IDS} from '../../constants/components.test-ids';
 import {ContextMenuDirective} from '../../directives/context-menu.directive';
 import {IQuickSearchService} from '../../interfaces';
 import {QuickSearchItem} from '../../models';
@@ -67,6 +68,8 @@ export class QuickSearchComponent {
   @Output() public readonly quickSearchEvent = new EventEmitter<string>();
 
   public readonly TOOLTIP_DELAY = 1500;
+
+  protected readonly testIds = QUICK_SEARCH_TEST_IDS;
 
   constructor(
     private readonly iconService: IconService,

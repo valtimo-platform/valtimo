@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ class InternalCaseStatusService(
         return internalCaseStatusRepository.findByIdCaseDefinitionKeyOrderByOrder(caseDefinitionKey)
     }
 
+    @Deprecated("Only used by the removed generic case list. Will be removed in a future release.")
     fun getAllInternalCaseStatuses(): List<InternalCaseStatus> {
         val authorizedDefinitions = caseDefinitionService.getCaseDefinitions(active = true)
         if (authorizedDefinitions.isEmpty()) {
@@ -72,6 +73,13 @@ class InternalCaseStatusService(
         }
         val authorizedKeys = authorizedDefinitions.map { it.id.key }
         return internalCaseStatusRepository.findByIdCaseDefinitionKeyInOrderByIdCaseDefinitionKeyAscOrderAsc(authorizedKeys)
+    }
+
+    fun getInternalCaseStatusesByKeys(caseDefinitionKeys: Collection<String>): List<InternalCaseStatus> {
+        if (caseDefinitionKeys.isEmpty()) {
+            return emptyList()
+        }
+        return internalCaseStatusRepository.findByIdCaseDefinitionKeyInOrderByIdCaseDefinitionKeyAscOrderAsc(caseDefinitionKeys)
     }
 
     fun get(caseDefinitionName: String, statusKey: String): InternalCaseStatus {

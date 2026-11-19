@@ -518,6 +518,14 @@ a payload that does not match `input` never reaches you, and a result that break
 lacks an `outputs` key, or exceeds the payload cap) fails the call with `PROVIDER_INVALID_RESULT`.
 Schemas are self-contained — remote `$ref`s are not resolved.
 
+GZAC checks every `input` and `output` schema when a package is uploaded and when a changed
+package is accepted: a schema that does not compile, or is larger than 64 KiB (by default), is
+refused, and no configuration can be created for a plugin that declares one. A validation that runs
+longer than the time budget (200 ms by default) is stopped and counts as a failed check, so write
+anchored, non-nested `pattern`s such as `^[A-Z]{3}-[0-9]{4}$`, and avoid constructs like `(.*a){8}$`.
+An `output` schema that does not compile fails the call with `PROVIDER_INVALID_RESULT` before it
+reaches you.
+
 ```json
 "provides": [
   {
@@ -569,8 +577,7 @@ export function finishReport(jobId: string, documentRef: string): void {
 | `payload` | The request, already validated against your `input` schema. |
 | `deadline` | When the answer is due: a synchronous call's remaining budget on the host's clock, or a job's expiry. |
 | `jobId` | Jobs only. Use it as the idempotency key: a delivery can arrive more than once. |
-| `documentId` | Jobs only, when known: the case the job concerns. |
-| `requestedBy` | Jobs only: login of the user whose token requested the job. GZAC verified that user may view `documentId`. |
+| `documentId` | Jobs only, when the requester named one: the case the job concerns. This is the requester's claim; GZAC does not verify it, except that it must match the requester's reply handle. Treat it like `payload`. |
 
 Answer `{ status: "completed", result }`, `{ status: "accepted" }` (jobs only — finish later with
 `completeJob(jobId, { status: "completed" | "failed", result?, errorCode?, errorMessage? })`), or
@@ -580,6 +587,11 @@ Answer `{ status: "completed", result }`, `{ status: "accepted" }` (jobs only �
 A Wasm plugin has no timer: a job you accept must be completed from a later invocation — an action,
 event, request or submit handler — for instance by keeping the `jobId` in `kv` until the awaited
 work is done. A job nobody completes expires at its `timeout` (default one hour, at most a day).
+
+A job stays with the provider that was bound when it was requested. If an administrator changes or
+removes that binding, or re-acceptance of the requester drops it, GZAC fails the job with
+`BINDING_CHANGED`: it is not delivered again, and a later `completeJob` for it is refused. A delivery
+that is already in flight at that moment still reaches you.
 
 #### Requester
 
@@ -613,10 +625,7 @@ action("generate-letter", (input) => {
     "nl.ritense.document.generate@1",
     "generate",
     { templateKey: "letter" },
-    {
-      replyTo: input.replyHandle,
-      idempotencyKey: `${input.processInstanceId}:${input.activityId}`,
-    }
+    { replyTo: input.replyHandle }
   );
   if (job.status === "error") {
     return { status: "error", errorCode: job.errorCode, errorMessage: job.errorMessage };
@@ -638,26 +647,41 @@ onContractReply((reply) => {
   | `CONTRACT_NOT_GRANTED` | Refused by the host before anything leaves it: the contract is not declared and bound for this configuration. |
   | `NO_PROVIDER_BOUND` | The administrator left the contract unbound. |
   | `OPERATION_NOT_DECLARED` | You declared operations for the contract, and this is not one of them. |
-  | `CONTRACT_INPUT_INVALID` | The payload does not match the provider's `input` schema. |
+  | `CONTRACT_INPUT_INVALID` | The payload does not match the provider's `input` schema, or the schema is unusable or took too long to check. |
   | `OPERATION_NOT_PROVIDED`, `OPERATION_REQUIRES_JOB` | The bound provider lacks the operation, or it is a job: use `pluginRequest`. |
   | `PROVIDER_UNAVAILABLE`, `PROVIDER_CONTENT_CHANGED`, `PROVIDER_UNREACHABLE`, `PROVIDER_UNSUPPORTED` | The provider is not served or not loaded, awaits re-acceptance, its host is down, or its host has no contract route. |
   | `PROVIDER_ERROR` | The provider reported a failure; see `providerErrorCode`. |
-  | `PROVIDER_INVALID_RESULT` | The provider's result broke its `outputs`, its `output` schema or the size cap. |
+  | `PROVIDER_INVALID_RESULT` | The provider's result broke its `outputs`, its `output` schema or the size cap, or the `output` schema is unusable or took too long to check (the provider is not called in the unusable case). |
   | `CONTRACT_CYCLE`, `CONTRACT_DEPTH_EXCEEDED` | Nested calls would loop back, or go deeper than the platform allows. |
   | `CONTRACT_DEADLINE_EXCEEDED` | The call's time budget ran out. |
   | `TOO_MANY_CONCURRENT_CALLS` | Your configuration already has the maximum number of synchronous calls in flight. |
   | `PAYLOAD_TOO_LARGE` | The request exceeds the payload cap (256 KiB by default). |
-  | `IDEMPOTENCY_KEY_CONFLICT` | The `idempotencyKey` was already used for another contract or operation. |
+  | `IDEMPOTENCY_KEY_CONFLICT` | The `idempotencyKey` was already used for another request: another contract or operation, another case, or another reply target. |
   | `CALLER_UNAVAILABLE` | Your own configuration is not active. |
   | `CONTRACT_JOB_EXPIRED`, `CONTRACT_JOB_CANCELLED` | In job replies: the deadline passed, or an administrator cancelled the job. |
+  | `BINDING_CHANGED` | In job replies: the contract's binding was changed or removed before the provider finished. Request the job again if you still need it. |
 - **Time budgets.** A `pluginCall` blocks your handler like `gzacApi` and must finish within your
   invocation: it hands the time it has left to GZAC (as a relative timeout, so clock skew between
   machines cannot distort it), and the provider's own onward calls stay inside that budget. With
   less than 250 ms left a call is refused with `CONTRACT_DEADLINE_EXCEEDED`.
-- **Idempotency.** `idempotencyKey` (1-255 visible ASCII characters) identifies the logical
-  request: repeating it for the same contract and operation returns the existing job instead of
-  starting another, so a retried service task does not run the provider twice. GZAC remembers a key
-  as long as it keeps the job.
+- **Idempotency.** `idempotencyKey` (1-255 visible ASCII characters, case-sensitive) is optional.
+  Use it when you know a request can be sent twice and the second one must not start a new job.
+  - A key identifies one logical request of your configuration. Repeating it for the same contract,
+    operation, case and reply target returns the existing job as `{ status: "accepted", jobId, job }`.
+    Using it for anything else is refused with `IDEMPOTENCY_KEY_CONFLICT`.
+  - `job` tells you where that job stands: `status` is `pending` while the provider works on it, then
+    `completed`, `failed` or `expired`, with `result`, `errorCode`, `providerErrorCode` and
+    `errorMessage` as in a reply. A first request has no `job`.
+  - With `replyTo`, a repeated key for a finished job also sends its reply to the process again, so a
+    catch event that waits now still receives the outcome.
+  - The outcome is final. A repeated key returns the job even when it already failed, so use a new
+    key to try again.
+  - Build the key from your own domain, such as an order number or the `jobId` of the reply you are
+    acting on. A process instance id and an activity id together do not make a key: an activity can
+    run several times in one process, in a loop or as a multi-instance activity.
+  - A job is not part of the process's transaction. When the process rolls back after your action
+    has requested a job, the job stays and runs, as with any call to an external system.
+  - GZAC remembers a key as long as it keeps the job (30 days by default).
 - **Replies.** `onContractReply` receives every job outcome of your configuration. Returning
   `status: "error"` makes GZAC redeliver it; a reply without a registered handler is logged as a
   warning and acknowledged.
@@ -671,11 +695,14 @@ onContractReply((reply) => {
   event, and mark the event *asynchronous after* so a failure further along the process does not
   count against the reply. A reply handle only works for the configuration whose action received
   it and expires after a day by default.
-- **Jobs for a user.** A token minted for a user (iframe, or an app's `/data` route) can only create
-  jobs when your manifest declares, and the administrator granted, `POST
-  /api/v1/plugin-contract/jobs` under `permissions.endpoints`. It must name the case it acts on
-  (`documentId`), which the user must be allowed to view; the provider receives `documentId` and
-  `requestedBy`. Synchronous calls, completions and job reads always use the service token.
+- **The case a job concerns.** Pass `documentId` in the options to tell the provider which case
+  the job is about. With `replyTo`, it must equal that handle's case and defaults to it. GZAC does
+  not verify a `documentId` you name yourself.
+- **Jobs started from your screens.** A user token cannot reach the contract API: a contract job
+  runs on the provider's authority, so your own code decides what a user may start. Let the screen
+  call your `request()` handler, check the request there (for example, fetch the case with
+  `gzacApi.asUser` to confirm the user may see it), and call `pluginRequest` from the handler.
+  Never pass identifiers or an `idempotencyKey` from the screen through unchecked.
 - **Titles shown to administrators** are localised from your `translations`:
   `contracts.<contract>.title` and `contracts.<contract>.operations.<key>.title` (and
   `.description`), e.g. `"contracts.nl.ritense.openplan@1.operations.get.title": "Registerobject
@@ -746,7 +773,8 @@ policy.
 | `emit("taskCompleted", {})` | Level 2 only: tell the parent *you* completed the task (via `gzacApi.asUser`), so it closes and refreshes. |
 | `offerPanel({bundleKey?, key, title, subtitle?, pinned?, context?})` | Show one of your `side-panel` bundles in GZAC's app-wide side panel (next section). |
 | `withdrawPanel(key, bundleKey?)` | Remove the panel content you offered under `key`. |
-| `emit("notification", …)` / `emit("navigate", …)` | **Reserved** — defined in the message schema, but current GZAC frontends do not act on them. |
+| `emit("navigate", {route})` | Open a GZAC case page, for example from a "Dossier" button (see [Opening a case page](#opening-a-case-page)). |
+| `emit("notification", …)` | **Reserved** — defined in the message schema, but current GZAC frontends do not act on it. |
 | `setConfiguration(valid, title, data)` / `onPrefillConfiguration(h)` | The `config` bundle contract — next section. |
 | `destroy()` | Detach listeners (hot-reload/dev). |
 
@@ -792,6 +820,28 @@ while looking things up elsewhere. The panel is generic: it does not know what i
   text. When the user is on another page, the case is marked "Not this page", so they do not
   mistake your content for the case they are looking at. GZAC resolves the case name itself, so
   you don't need to put it in your `subtitle`.
+
+### Opening a case page
+
+A bundle cannot navigate the GZAC page itself (the iframe is sandboxed). Instead it asks the
+parent with `sdk.emit("navigate", {route})`, which GZAC follows through its own router:
+
+```ts
+button.addEventListener("click", () =>
+  sdk.emit("navigate", { route: `/cases/${ctx.caseDefinitionKey}/document/${ctx.documentId}` })
+);
+```
+
+- **Case pages only.** `route` must be one of `/cases/<caseDefinitionKey>`,
+  `/cases/<caseDefinitionKey>/document/<documentId>` or
+  `/cases/<caseDefinitionKey>/document/<documentId>/<tab>`. The key and tab are
+  `[A-Za-z0-9][A-Za-z0-9_-]*` (at most 128 characters), the document id is a UUID. Query strings,
+  fragments, encoded characters and anything else are ignored.
+- **Only on a user action.** GZAC navigates only while the page has transient user activation,
+  which a click inside your iframe gives it. Emit from the click handler itself: a request sent
+  without a click, or after a slow async call, is ignored. Browsers without
+  `navigator.userActivation` never navigate.
+- The usual route guards and permissions of the target page apply.
 
 ### The `config` bundle contract
 

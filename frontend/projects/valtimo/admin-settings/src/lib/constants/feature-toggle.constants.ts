@@ -39,7 +39,7 @@ const FEATURE_TOGGLE_DEFINITIONS: FeatureToggleDefinition[] = [
   {key: 'enableSuppressDocumentError'},
   {key: 'enableIkoType'},
   {key: 'menuCollapsedByDefault'},
-  {key: 'enableGenericCaseList'},
+  {key: 'showAllCaseDefinitionsInMenu'},
   {key: 'enableManualTaskListRefresh'},
   {key: 'disableFormioTokenInLocalStorage'},
 ];

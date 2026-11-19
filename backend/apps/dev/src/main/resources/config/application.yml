@@ -186,6 +186,9 @@ opensearch:
     password: 2cr8zkOoEXQJ3xUk!Aa1
 
 valtimo:
+    operaton:
+        scripting:
+            allowedClasses: java.util.HashMap,java.util.LinkedHashMap,java.util.TreeMap
     opensearch:
         enabled: true
     app:

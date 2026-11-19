@@ -92,6 +92,8 @@ export class PluginExternalReviewModalComponent implements OnChanges {
   public readonly $pendingEgress = signal<Array<string>>([]);
   public readonly $pendingDeclaredContracts = signal<Array<ExternalPluginDeclaredContract>>([]);
   public readonly $pendingProvidedContracts = signal<Array<ExternalPluginProvidedContract>>([]);
+  /** Provided operations of the pending manifest whose schema GZAC cannot use; blocks acceptance. */
+  public readonly $pendingContractSchemaErrors = signal<Array<string>>([]);
   /** Contracts the pending manifest declares and the accepted one does not. */
   public readonly $newlyDeclaredContracts = signal<Array<string>>([]);
 
@@ -108,6 +110,7 @@ export class PluginExternalReviewModalComponent implements OnChanges {
     this.$errorMessage.set(null);
     this.$permissionsValid.set(false);
 
+    this.$pendingContractSchemaErrors.set(this.definition?.pendingContractSchemaErrors ?? []);
     const pending = this.definition?.pendingManifest ?? null;
     this.$pendingEndpoints.set(pending?.permissions?.endpoints ?? []);
     this.$pendingCapabilities.set(pending?.permissions?.capabilities ?? []);

@@ -1,0 +1,92 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    columns: filteredColumns$ | async,
+    filtering: filtering$ | async,
+    group: group$ | async,
+    loading: loading$ | async,
+    showModal: showModal$ | async,
+    editing: editingColumn$ | async,
+    usedKeys: usedKeys$ | async,
+  } as obs"
+>
+  <valtimo-carbon-list
+    class="valtimo-group-list-columns"
+    [items]="obs.columns ?? []"
+    [fields]="fields"
+    [actionItems]="actionItems"
+    [loading]="obs.loading"
+    [header]="false"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="obs.filtering"
+    [expandedRowTemplate]="pathMappingsTemplate"
+    expandedRowKey="key"
+    (rowClicked)="showEditModal($event)"
+    (itemsReordered)="onItemsReordered($event)"
+    [attr.data-test-id]="testIds.list"
+  >
+    <ng-container carbonToolbarContent>
+      <cds-table-toolbar-search
+        [expandable]="false"
+        [formControl]="searchControl"
+        [attr.data-test-id]="testIds.search"
+        placeholder="{{ 'caseManagement.groups.listColumns.searchPlaceholder' | translate }}"
+      ></cds-table-toolbar-search>
+
+      <button
+        cdsButton="primary"
+        [disabled]="!obs.group?.members?.length"
+        (click)="showAddModal()"
+        [attr.data-test-id]="testIds.addButton"
+      >
+        {{ 'interface.add' | translate }}
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </ng-container>
+
+    <valtimo-no-results
+      [description]="
+        obs.group && !obs.group.members?.length
+          ? ('caseManagement.groups.noMembersHint' | translate)
+          : ''
+      "
+      [title]="'caseManagement.groups.listColumns.noColumns' | translate"
+      [attr.data-test-id]="testIds.emptyState"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <ng-template #pathMappingsTemplate let-data="data">
+    <valtimo-group-path-mapping-editor
+      [groupKey]="obs.group?.key"
+      [itemKey]="data.key"
+      [members]="obs.group?.members ?? []"
+      [mappings]="(pathMappings$(data.key) | async) ?? []"
+      itemType="list-column"
+      [attr.data-test-id]="testIds.expandedRow"
+    ></valtimo-group-path-mapping-editor>
+  </ng-template>
+
+  <valtimo-group-column-modal
+    [open]="obs.showModal"
+    [groupKey]="obs.group?.key"
+    [members]="obs.group?.members ?? []"
+    [column]="obs.editing"
+    [usedKeys]="obs.usedKeys ?? []"
+    (closeModal)="onCloseModal($event)"
+  ></valtimo-group-column-modal>
+</ng-container>

@@ -50,7 +50,7 @@ import java.util.concurrent.ConcurrentHashMap
  * always `GET` the user-token introspection endpoint, which the plugin host needs to validate the
  * token before executing Wasm (see the carve-out in [doFilterInternal]). Service principals also always
  * reach everything under `/api/v1/plugin-contract`, whose controller is the gate for contract calls and
- * jobs; a user principal reaches it only through its granted endpoints, like any other path.
+ * jobs; a user principal never does, since contract jobs run on the provider's authority, not the user's.
  *
  * Granted endpoints are compiled into request matchers and cached per configuration id for a short
  * TTL so the per-request cost is a map lookup instead of a DB query. An invalid stored pattern is
@@ -162,13 +162,15 @@ class ExternalPluginEndpointAllowlistFilter(
          * Surfaces plugin tokens must never reach, regardless of grants:
          * - external-plugin management (host registration, config/grant administration, uploads);
          * - user-token minting (a plugin must not mint tokens for arbitrary users);
-         * - role and permission management (privilege escalation).
+         * - role and permission management (privilege escalation);
+         * - the contract API for user tokens (service tokens pass the carve-out before this list).
          */
         val DENYLIST_PATTERNS: List<String> = listOf(
             "/api/management/v1/external-plugin/**",
             "/api/v1/external-plugin/**",
             "/api/management/v1/roles/**",
             "/api/management/v1/permissions/**",
+            "/api/v1/plugin-contract/**",
         )
 
         /**

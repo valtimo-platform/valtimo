@@ -890,7 +890,6 @@ export class PluginManager {
       jobId?: string;
       deadline?: string;
       documentId?: string;
-      requestedBy?: string;
       chain: string[];
       contractDeadlineMs?: number;
       correlationId?: string;

@@ -47,6 +47,7 @@ import {
   ZgwCaseInspectionTabComponent,
 } from '../models';
 import {ZGW_CASE_INSPECTION_TAB_TOKEN} from '../constants';
+import {CaseListOriginService} from '../services/case-list-origin.service';
 
 @Component({
   standalone: true,
@@ -92,6 +93,7 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly documentService: DocumentService,
+    private readonly caseListOriginService: CaseListOriginService,
     @Optional()
     @Inject(ZGW_CASE_INSPECTION_TAB_TOKEN)
     public readonly zgwTabComponent: Type<ZgwCaseInspectionTabComponent> | null
@@ -126,7 +128,7 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
               if (!allowed) {
                 this.$accessDenied.set(true);
                 this.$loading.set(false);
-                this.router.navigate(['/cases']);
+                this.router.navigate(['/cases-overview']);
                 return;
               }
               this.$loading.set(false);
@@ -135,7 +137,7 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
             error: () => {
               this.$accessDenied.set(true);
               this.$loading.set(false);
-              this.router.navigate(['/cases']);
+              this.router.navigate(['/cases-overview']);
             },
           });
       })
@@ -186,11 +188,13 @@ export class CaseInspectionComponent implements OnInit, OnDestroy {
     const documentId = this.$documentId();
     const caseDefinitionKey = this.$caseDefinitionKey();
 
-    this.breadcrumbService.setSecondBreadcrumb({
-      route: [`/cases/${caseDefinitionKey}`],
-      content: caseDefinitionTitle,
-      href: `/cases/${caseDefinitionKey}`,
-    });
+    this.breadcrumbService.setSecondBreadcrumb(
+      this.caseListOriginService.getListBreadcrumb(
+        documentId,
+        caseDefinitionKey,
+        caseDefinitionTitle
+      )
+    );
     this.breadcrumbService.setThirdBreadcrumb({
       route: [`/cases/${caseDefinitionKey}/document/${documentId}`],
       content: this.translateService.instant('Case details'),

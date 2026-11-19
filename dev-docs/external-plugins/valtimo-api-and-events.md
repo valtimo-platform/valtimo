@@ -98,6 +98,7 @@ worse way to find out, so do not declare them:
 | `/api/management/v1/external-plugin/**`, `/api/v1/external-plugin/**` | Plugin administration and user-token minting — a plugin must not register hosts, alter its own grants, or mint tokens for arbitrary users |
 | `/api/management/v1/roles/**`, `/api/management/v1/permissions/**` | Role and permission management — privilege escalation |
 | `POST`/`PUT`/`PATCH`/`DELETE` on `/api/v1/users/**` | User-account mutation escalates to a real admin login. Reads stay grantable |
+| `/api/v1/plugin-contract/**` (user tokens only) | A contract job runs on the provider's authority, not the user's. Create jobs from your own backend with the service token |
 
 The single exception is `GET /api/v1/external-plugin/user-token/introspect`, which apps use to
 validate a user token (see
@@ -105,8 +106,7 @@ validate a user token (see
 
 The contract surface, `/api/v1/plugin-contract/**`, works the other way round: the service token
 reaches it without any grant, because GZAC authorizes each call against the configuration's own
-contract bindings and jobs. A user token only reaches `POST /api/v1/plugin-contract/jobs`, and only
-when that endpoint is declared and granted like any other (see
+contract bindings and jobs. A user token never reaches it, whatever was granted (see
 [Contracts](./develop-a-plugin.md#contracts--calling-and-serving-other-plugins)).
 
 A call outside the granted set — or inside the denylist — comes back as a 403-shaped response

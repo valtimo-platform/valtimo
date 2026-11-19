@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,6 +133,15 @@ internal class TemporaryResourceStorageResourceIT @Autowired constructor(
         }
     }
 
+    @Test
+    fun `should return not found for metadata keys other than downloadUrl`() {
+        mockMvc
+            .get("/api/v1/resource-storage/12345/metadata/user") {
+                accept = MediaType.APPLICATION_JSON
+            }.andExpect {
+                status { isNotFound() }
+            }
+    }
 
     class MyEventListener {
         @EventListener(TemporaryResourceUploadedEvent::class)

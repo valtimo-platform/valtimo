@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +106,10 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
         assertThat(json, hasJsonPath("""${'$'}.containerArray[0].container.containerProperty1""", equalTo("containerProperty1")))
         assertThat(json, hasJsonPath("""${'$'}.containerArray[0].container.containerProperty2""", equalTo("containerProperty2")))
         assertThat(json, hasNoJsonPath("""${'$'}.containerArray[0].container.containerProperty3"""))
+        assertThat(json, hasNoJsonPath("""${'$'}.containerArray[0].container.rowPreview"""))
+        assertThat(json, hasJsonPath("""${'$'}.docGrid[0].gridName""", equalTo("row1")))
+        assertThat(json, hasNoJsonPath("""${'$'}.docGrid[0].rowPreview"""))
+        assertThat(json, hasNoJsonPath("""${'$'}.docGrid[0]['mailPreview.ontvangstbevestiging']"""))
         assertThat(json, hasNoJsonPath("""${'$'}.containerProperty1"""))
         assertThat(json, hasNoJsonPath("""${'$'}.containerProperty2"""))
         assertThat(json, hasNoJsonPath("""${'$'}.containerProperty3"""))
@@ -118,6 +122,8 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
         assertThat(pv["userLastName"], equalTo("Doe"))
         assertThat(pv["dateOfBirth"], equalTo("1980-02-03"))
         assertThat(pv["object"], equalTo(mapOf("property2" to "value2")))
+        assertThat(json, hasNoJsonPath("""${'$'}.mailPreview"""))
+        assertThat(pv.containsKey("mailPreview"), equalTo(false))
 
         val argumentCaptor = argumentCaptor<Map<String, Any?>>()
         verify(testValueResolverFactory).handleValues(any<UUID>(), argumentCaptor.capture())
@@ -145,11 +151,18 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
                                 "favorites":[
                                     {"_id":"1","name":"White bread"},
                                     {"_id":"2","name":"Pita bread"}
-                                ]
+                                ],
+                                "mailPreview":{"body":"original"}
                             }"""
                         )
                     )
-                ).withProcessVars(mapOf("breadId" to "2", "object" to mapOf("property1" to "value1")))
+                ).withProcessVars(
+                    mapOf(
+                        "breadId" to "2",
+                        "object" to mapOf("property1" to "value1"),
+                        "mailPreview" to "original"
+                    )
+                )
             )
         }
         val document = result.resultingDocument().get()
@@ -200,6 +213,8 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
         assertThat(json, hasJsonPath("""${'$'}.aanvrager.persoonsgegevens.voornaam""", equalTo("Henk")))
         val pv = runtimeService.getVariables(processInstanceId) as Map<*, *>
         assertThat(pv["object"], equalTo(mapOf("property1" to "value1", "property2" to "value2")))
+        assertThat(json, hasJsonPath("""${'$'}.mailPreview.body""", equalTo("original")))
+        assertThat(pv["mailPreview"], equalTo("original"))
     }
 
     private fun createFormData(): JsonNode {
@@ -218,10 +233,13 @@ class DefaultFormSubmissionServiceIntTest @Autowired constructor(
                 "property1": "property1",
                 "property2": "property2",
                 "verzoek": {"jaartallen":"2010","toelichting":"From 2010"},
-                "container": {"containerProperty1":"containerProperty1","containerProperty2":"containerProperty2"},
+                "container": {"containerProperty1":"containerProperty1","containerProperty2":"containerProperty2","rowPreview":"<img src=x onerror=alert(1)>"},
+                "docGrid": [{"gridName":"row1","rowPreview":"<img src=x onerror=alert(1)>","mailPreview.ontvangstbevestiging":"<img src=x onerror=alert(1)>"}],
                 "aanvrager":{"geslacht":"M","persoonsgegevens":{"voornaam":"Henk"}},
+                "mailPreview": {"body":"<img src=x onerror=alert(1)>"},
                 "pv": {
-                    "object":{"property2":"value2"}
+                    "object":{"property2":"value2"},
+                    "mailPreview":"<img src=x onerror=alert(1)>"
                 }
             }
         """.trimIndent()

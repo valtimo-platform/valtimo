@@ -257,6 +257,8 @@ class ExternalPluginContractIntTest @Autowired constructor(
         dispatcher.dispatch()
         assertThat(job(jobId).status).isEqualTo(ExternalPluginContractJobStatus.DELIVERED)
         assertThat(job(jobId).outcome).isEqualTo(ExternalPluginContractJobStatus.COMPLETED)
+        assertThat(json(get("/api/v1/plugin-contract/jobs/$jobId", requesterToken)).get("status").asText())
+            .isEqualTo("completed")
 
         val listed = admin(MockMvcRequestBuilders.get("/api/management/v1/external-plugin/contract-job")
             .param("configurationId", requester.id.toString()))
@@ -321,6 +323,8 @@ class ExternalPluginContractIntTest @Autowired constructor(
 
         assertThat(second.status).isEqualTo(202)
         assertThat(json(second).get("jobId")).isEqualTo(json(first).get("jobId"))
+        assertThat(json(first).has("job")).isFalse()
+        assertThat(json(second).get("job").get("status").asText()).isEqualTo("pending")
         assertThat(conflict.status).isEqualTo(200)
         assertThat(json(conflict).get("errorCode").asText()).isEqualTo("IDEMPOTENCY_KEY_CONFLICT")
         assertThat(jobRepository.findAll().filter { it.requesterConfigurationId == requester.id }).hasSize(1)
@@ -356,7 +360,7 @@ class ExternalPluginContractIntTest @Autowired constructor(
     }
 
     @Test
-    fun `a granted user token creates jobs only for a case it names`() {
+    fun `a user token gets 403 on jobs, even with the endpoint granted`() {
         val granted = configuration(requesterDefinition)
         bindingRepository.saveAndFlush(ExternalPluginContractBinding(UUID.randomUUID(), granted.id, contract, provider.id))
         grantedEndpointRepository.saveAndFlush(
@@ -368,24 +372,17 @@ class ExternalPluginContractIntTest @Autowired constructor(
             )
         )
         val token = userToken(granted)
-        val missingCase = UUID.randomUUID()
 
         val withoutCase = post("/api/v1/plugin-contract/jobs", token, """{"contract":"$contract","operation":"generate"}""")
-        val unknownCase = post(
+        val withCase = post(
             "/api/v1/plugin-contract/jobs",
             token,
-            """{"contract":"$contract","operation":"generate","documentId":"$missingCase"}""",
-        )
-        val withHandle = post(
-            "/api/v1/plugin-contract/jobs",
-            token,
-            """{"contract":"$contract","operation":"generate","documentId":"$missingCase","replyTo":"x"}""",
+            """{"contract":"$contract","operation":"generate","documentId":"${UUID.randomUUID()}"}""",
         )
 
-        assertThat(withoutCase.status).isEqualTo(400)
-        assertThat(json(withoutCase).get("errorMessage").asText()).isEqualTo("A user token must name the case it acts on (documentId)")
-        assertThat(json(unknownCase).get("errorMessage").asText()).isEqualTo("documentId '$missingCase' does not exist")
-        assertThat(json(withHandle).get("errorMessage").asText()).isEqualTo("replyTo requires a service token")
+        assertThat(withoutCase.status).isEqualTo(403)
+        assertThat(withCase.status).isEqualTo(403)
+        assertThat(jobRepository.findAll().filter { it.requesterConfigurationId == granted.id }).isEmpty()
         assertThat(post("/api/v1/plugin-contract/call", token, """{"contract":"$contract","operation":"preview"}""").status)
             .isEqualTo(403)
     }

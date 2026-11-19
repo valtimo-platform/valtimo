@@ -16,6 +16,7 @@
 
 import {APIRequestContext, expect, Page, Response} from '@playwright/test';
 import {CarbonToggle} from '../../shared/carbon-toggle/carbon-toggle.utils';
+import {ColorPanel} from '../../shared/color-panel/color-panel.utils';
 import {PluginFieldMap, pluginTestConfiguration} from '../plugins/plugin-config';
 import {
   caseConfiguration,
@@ -34,6 +35,8 @@ import {ensureDraftVersionSelected} from '../../utils/version.utils';
 import {openAndSelectOption} from '../../utils/ui.utils';
 
 const DEFAULT_CASE_ARCHIVE = 'test-case-import-success_1.0.0.case.zip';
+const UPLOAD_PROCESS_READY_TIMEOUT = 30_000;
+const UPLOAD_PROCESS_SAVE_TIMEOUT = 15_000;
 
 const CASE_DEFINITION_URL = /\/case-management\/case\/([^/]+)\/version\/([^/]+)\//;
 
@@ -165,6 +168,60 @@ export class CaseDetailsManagementPage {
     return this.page.getByRole('button', {name: 'Set as active version'});
   }
 
+  // Case color
+  get colorPanel(): ColorPanel {
+    return new ColorPanel(this.page);
+  }
+
+  async getCaseColorViaApi(): Promise<string | null> {
+    const {key, versionTag} = this.caseDefinitionFromUrl();
+    const settings = await apiGet<{color?: string | null}>(
+      `/api/management/v1/case-definition/${key}/version/${versionTag}/settings`
+    );
+    return settings.color ?? null;
+  }
+
+  /** Pass the version explicitly when the page may have moved to another (e.g. final) version. */
+  async setCaseColorViaApi(color: string, version?: {key: string; versionTag: string}): Promise<void> {
+    const {key, versionTag} = version ?? this.caseDefinitionFromUrl();
+    await apiPatch(`/api/management/v1/case-definition/${key}/version/${versionTag}/settings`, {
+      color,
+    });
+  }
+
+  async clearCaseColorViaApi(version?: {key: string; versionTag: string}): Promise<void> {
+    const {key, versionTag} = version ?? this.caseDefinitionFromUrl();
+    await apiPatch(`/api/management/v1/case-definition/${key}/version/${versionTag}/settings`, {
+      color: null,
+    });
+  }
+
+  /** Clicks "Remove color" and returns the body of the settings PATCH it triggers. */
+  async clearCaseColor(): Promise<Record<string, unknown>> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res =>
+          res.request().method() === 'PATCH' &&
+          /\/case-definition\/[^/]+\/version\/[^/]+\/settings$/.test(new URL(res.url()).pathname)
+      ),
+      this.colorPanel.clearButton.click(),
+    ]);
+    expect(response.ok()).toBeTruthy();
+    return response.request().postDataJSON();
+  }
+
+  /** Clicks a swatch and returns the body of the settings PATCH it triggers. */
+  async pickCaseColor(hex: string): Promise<Record<string, unknown>> {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        res => res.request().method() === 'PATCH' && /\/case-definition\/[^/]+\/version\/[^/]+\/settings$/.test(new URL(res.url()).pathname)
+      ),
+      this.colorPanel.swatch(hex).click(),
+    ]);
+    expect(response.ok()).toBeTruthy();
+    return response.request().postDataJSON();
+  }
+
   // Navigation
   // Navigate directly to the case-management list, then open the case.
   // Avoids the Admin menu + chart-heavy dashboard load, which can hang the
@@ -232,22 +289,63 @@ export class CaseDetailsManagementPage {
     await this.externalFormSave.click();
   }
 
-  async selectUploadProcess(processName: string) {
-    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
-    // Use exact matching: "Bezwaar" is a prefix of "Bezwaar ad-hoc FVM" etc.,
-    // so a non-exact name match resolves to multiple options.
-    await openAndSelectOption(
-      this.linkUploadProcessMenuButton,
-      this.linkUploadProcessListbox.getByRole('option', {name: processName, exact: true})
+  /**
+   * The combo box stays disabled while the version is final, while the process definitions
+   * load (slow on a well-filled environment) and while a link save is in flight.
+   */
+  async waitForUploadProcessReady(): Promise<void> {
+    const {key, versionTag} = this.caseDefinitionFromUrl();
+    const version = await apiGet<{final: boolean}>(
+      `/api/management/v1/case-definition/${key}/version/${versionTag}`
     );
-    // Selecting triggers a save round-trip that briefly disables the combo box.
-    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
+    expect(version.final, `upload process link needs a draft, ${key} ${versionTag} is final`).toBe(
+      false
+    );
+    await expect(
+      this.linkUploadProcessInput,
+      'upload process combo box should enable once the process definitions have loaded'
+    ).toBeEnabled({timeout: UPLOAD_PROCESS_READY_TIMEOUT});
+  }
+
+  private isUploadProcessLinkSave(response: Response, method: 'PUT' | 'DELETE'): boolean {
+    return (
+      response.request().method() === method &&
+      /\/case-definition\/[^/]+\/version\/[^/]+\/feature-process(\/DOCUMENT_UPLOAD)?$/.test(
+        new URL(response.url()).pathname
+      )
+    );
+  }
+
+  async selectUploadProcess(processName: string) {
+    await this.waitForUploadProcessReady();
+    // Re-picking the linked process saves nothing, so no PUT would follow.
+    if ((await this.linkUploadProcessInput.inputValue()) === processName) return;
+
+    const [response] = await Promise.all([
+      this.page.waitForResponse(response => this.isUploadProcessLinkSave(response, 'PUT'), {
+        timeout: UPLOAD_PROCESS_SAVE_TIMEOUT,
+      }),
+      // Use exact matching: "Bezwaar" is a prefix of "Bezwaar ad-hoc FVM" etc.,
+      // so a non-exact name match resolves to multiple options.
+      openAndSelectOption(
+        this.linkUploadProcessMenuButton,
+        this.linkUploadProcessListbox.getByRole('option', {name: processName, exact: true})
+      ),
+    ]);
+    expect(response.ok(), 'upload process link PUT should succeed').toBeTruthy();
+    await this.waitForUploadProcessReady();
   }
 
   async clearUploadProcess() {
-    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
-    await this.linkUploadProcessClearButton.click();
-    await expect(this.linkUploadProcessInput).toBeEnabled({timeout: 15_000});
+    await this.waitForUploadProcessReady();
+    const [response] = await Promise.all([
+      this.page.waitForResponse(response => this.isUploadProcessLinkSave(response, 'DELETE'), {
+        timeout: UPLOAD_PROCESS_SAVE_TIMEOUT,
+      }),
+      this.linkUploadProcessClearButton.click(),
+    ]);
+    expect(response.ok(), 'upload process link DELETE should succeed').toBeTruthy();
+    await this.waitForUploadProcessReady();
   }
 
   // ─── Case handler settings ───────────────────────────────────────
@@ -292,7 +390,7 @@ export class CaseDetailsManagementPage {
     );
   }
 
-  private caseDefinitionFromUrl(): {key: string; versionTag: string} {
+  caseDefinitionFromUrl(): {key: string; versionTag: string} {
     const match = CASE_DEFINITION_URL.exec(this.page.url());
     if (!match) {
       throw new Error(`[case-details] Not on a case definition page: ${this.page.url()}`);

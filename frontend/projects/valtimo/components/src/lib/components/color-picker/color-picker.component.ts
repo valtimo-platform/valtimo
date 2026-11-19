@@ -74,6 +74,8 @@ export class ColorPickerComponent
 
   protected readonly testIds = COLOR_PICKER_TEST_IDS;
 
+  private readonly DEFAULT_COLOR = '#000000';
+
   private _pickr: Pickr | null = null;
   private _value: string | null = null;
   private _initialized = false;
@@ -108,10 +110,11 @@ export class ColorPickerComponent
   public writeValue(value: string | null): void {
     this._value = value || null;
 
+    // Silent: a non-silent setColor emits 'save', which would re-save the incoming value.
+    // Silent setColor skips applyColor, so repaint the button explicitly.
     if (this._pickr && this._initialized) {
-      if (value) {
-        this._pickr.setColor(value);
-      }
+      this._pickr.setColor(value || this.DEFAULT_COLOR, true);
+      this._pickr.applyColor(true);
     }
   }
 
@@ -160,7 +163,7 @@ export class ColorPickerComponent
     this._pickr = Pickr.create({
       el: this.pickrAnchorRef.nativeElement,
       theme: 'monolith',
-      default: this._value || '#000000',
+      default: this._value || this.DEFAULT_COLOR,
       container: 'body',
       appClass: 'valtimo-pickr',
       position: this.config.position || 'bottom-start',

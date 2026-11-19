@@ -29,6 +29,7 @@
         [valtimoContextMenu]="contextMenuTpl"
         [contextData]="item"
         (click)="onItemClick(item)"
+        [attr.data-test-id]="testIds.item"
       >
         {{ item.title }}
       </cds-tag>
@@ -51,7 +52,10 @@
   ></valtimo-confirmation-modal>
 
   <ng-template #contextMenuTpl let-data="data" let-close="close">
-    <v-overflow-menu-option (selected)="deleteItem(data); close()">
+    <v-overflow-menu-option
+      (selected)="deleteItem(data); close()"
+      [attr.data-test-id]="testIds.deleteOption"
+    >
       {{ 'interface.delete' | translate }}
 
       <svg cdsIcon="trash-can" size="16"></svg>

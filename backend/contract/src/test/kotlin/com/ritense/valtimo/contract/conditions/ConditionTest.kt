@@ -127,6 +127,85 @@ class ConditionTest {
     }
 
     @Test
+    fun `GH-804 numeric string value is compared numerically against a number field`() {
+        val condition = MapperSingleton.get().readValue(
+            """
+            {
+                "path": "doc:amount",
+                "operator": ">",
+                "value": "0"
+            }
+        """.trimIndent(), Condition::class.java
+        )
+
+        assertThat(condition.isValid { 5 }).isTrue()
+        assertThat(condition.isValid { 0 }).isFalse()
+        assertThat(condition.isValid { -1.5 }).isFalse()
+    }
+
+    @Test
+    fun `GH-804 numeric string value equals a number field of the same value`() {
+        val condition = MapperSingleton.get().readValue(
+            """
+            {
+                "path": "doc:amount",
+                "operator": "==",
+                "value": "0"
+            }
+        """.trimIndent(), Condition::class.java
+        )
+
+        assertThat(condition.isValid { 0 }).isTrue()
+        assertThat(condition.isValid { 0L }).isTrue()
+        assertThat(condition.isValid { 1 }).isFalse()
+    }
+
+    @Test
+    fun `GH-804 in operator matches a number field against numeric string list items`() {
+        val condition = MapperSingleton.get().readValue(
+            """
+            {
+                "path": "doc:amount",
+                "operator": "in",
+                "value": ["1", "2"]
+            }
+        """.trimIndent(), Condition::class.java
+        )
+
+        assertThat(condition.isValid { 2 }).isTrue()
+        assertThat(condition.isValid { 2L }).isTrue()
+        assertThat(condition.isValid { 3 }).isFalse()
+    }
+
+    @Test
+    fun `GH-804 list_contains operator matches a number list field against a numeric string value`() {
+        val condition = MapperSingleton.get().readValue(
+            """
+            {
+                "path": "doc:amounts",
+                "operator": "list_contains",
+                "value": "2"
+            }
+        """.trimIndent(), Condition::class.java
+        )
+
+        assertThat(condition.isValid { listOf(1, 2) }).isTrue()
+        assertThat(condition.isValid { listOf(1, 3) }).isFalse()
+    }
+
+    @Test
+    fun `numeric strings on both sides of a list operator stay text`() {
+        val condition = Condition(
+            path = "doc:postalCodes",
+            operator = ExpressionOperator.LIST_CONTAINS,
+            value = "0123" as Comparable<Any>
+        )
+
+        assertThat(condition.isValid { listOf("123") }).isFalse()
+        assertThat(condition.isValid { listOf("0123") }).isTrue()
+    }
+
+    @Test
     fun `should allow instance method calls like plusMinutes on LocalDateTime`() {
         val condition = Condition(
             path = "/xyz",

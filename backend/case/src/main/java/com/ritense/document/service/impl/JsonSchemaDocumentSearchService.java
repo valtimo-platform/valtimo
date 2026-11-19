@@ -31,6 +31,7 @@ import com.ritense.document.domain.CaseTag;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDataType;
+import com.ritense.document.domain.impl.searchfield.SearchFieldFieldType;
 import com.ritense.document.domain.search.AdvancedSearchRequest;
 import com.ritense.document.domain.search.AssigneeFilter;
 import com.ritense.document.domain.search.SearchOperator;
@@ -39,6 +40,7 @@ import com.ritense.document.domain.search.SearchRequestValidator;
 import com.ritense.document.domain.search.SearchWithConfigRequest;
 import com.ritense.document.event.DocumentsListed;
 import com.ritense.document.service.DocumentSearchService;
+import com.ritense.document.service.GlobalSearchFieldMeta;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.logging.LoggableResource;
 import com.ritense.outbox.OutboxService;
@@ -69,6 +71,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -216,6 +219,348 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 VIEW_LIST
             )
         );
+    }
+
+    @Override
+    public Page<JsonSchemaDocument> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Pageable pageable
+    ) {
+        if (documentDefinitionNames == null || documentDefinitionNames.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        ZoneOffset zoneOffset = RequestHelper.getZoneOffset();
+
+        var searchCriteria = searchWithConfigRequest.getOtherFilters().stream()
+            .map(otherFilter -> SearchRequestMapper.toOtherFilter(otherFilter, null, zoneOffset))
+            .toList();
+
+        var advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(
+            searchWithConfigRequest,
+            searchCriteria
+        );
+
+        SearchRequestValidator.validate(advancedSearchRequest);
+        return search(
+            (cb, query, documentRoot) -> buildQueryWhereMultipleDefinitions(
+                documentDefinitionNames,
+                blueprintType,
+                advancedSearchRequest,
+                cb,
+                query,
+                documentRoot,
+                VIEW_LIST
+            ),
+            pageable,
+            Map.of()
+        );
+    }
+
+    @Override
+    public Page<JsonSchemaDocument> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Pageable pageable
+    ) {
+        return search(
+            documentDefinitionNames,
+            blueprintType,
+            searchWithConfigRequest,
+            filterPathMappings,
+            Map.of(),
+            pageable
+        );
+    }
+
+    @Override
+    public Page<JsonSchemaDocument> search(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        SearchWithConfigRequest searchWithConfigRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields,
+        Pageable pageable
+    ) {
+        if (documentDefinitionNames == null || documentDefinitionNames.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        ZoneOffset zoneOffset = RequestHelper.getZoneOffset();
+
+        var otherFilters = searchWithConfigRequest.getOtherFilters().stream()
+            .map(filter -> SearchRequestMapper.toGroupOtherFilter(
+                filter,
+                globalSearchFields.get(filter.getKey()),
+                zoneOffset
+            ))
+            .toList();
+
+        var advancedSearchRequest = SearchRequestMapper.toAdvancedSearchRequest(
+            searchWithConfigRequest,
+            otherFilters
+        );
+
+        return search(
+            (cb, query, documentRoot) -> buildQueryWhereMultipleDefinitionsWithMappings(
+                documentDefinitionNames,
+                blueprintType,
+                advancedSearchRequest,
+                filterPathMappings,
+                globalSearchFields,
+                cb,
+                query,
+                documentRoot,
+                VIEW_LIST
+            ),
+            pageable,
+            Map.of()
+        );
+    }
+
+    private void buildQueryWhereMultipleDefinitionsWithMappings(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        AdvancedSearchRequest searchRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields,
+        CriteriaBuilder cb,
+        CriteriaQuery<?> query,
+        Root<JsonSchemaDocument> documentRoot,
+        Action<JsonSchemaDocument> action
+    ) {
+        final List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(documentRoot.get(DOCUMENT_DEFINITION_ID).get(NAME).in(documentDefinitionNames));
+
+        predicates.add(
+            authorizationService
+                .getAuthorizationSpecification(
+                    new EntityAuthorizationRequest<>(
+                        JsonSchemaDocument.class,
+                        action
+                    ),
+                    null
+                ).toPredicate(documentRoot, query, cb));
+
+        predicates.add(
+            cb.equal(
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(BLUEPRINT_ID).get(BLUEPRINT_TYPE),
+                blueprintType
+            )
+        );
+
+        if (searchRequest.getAssigneeFilter() != null && searchRequest.getAssigneeFilter() != AssigneeFilter.ALL) {
+            predicates.add(getAssigneeFilterPredicate(cb, documentRoot, searchRequest.getAssigneeFilter()));
+        }
+
+        if (searchRequest.getOtherFilters() != null && !searchRequest.getOtherFilters().isEmpty()) {
+            predicates.add(getOtherFiltersPredicateWithMappings(
+                cb, documentRoot, searchRequest, filterPathMappings, documentDefinitionNames
+            ));
+        }
+
+        if (searchRequest.getStatusFilter() != null && !searchRequest.getStatusFilter().isEmpty()) {
+            predicates.add(getStatusFilterPredicate(cb, documentRoot, searchRequest.getStatusFilter()));
+        }
+
+        if (searchRequest.getCaseTagsFilter() != null && !searchRequest.getCaseTagsFilter().isEmpty()) {
+            predicates.add(getCaseTagsFilterPredicate(cb, documentRoot, searchRequest.getCaseTagsFilter()));
+        }
+
+        if (searchRequest.getGlobalSearchFilter() != null && !searchRequest.getGlobalSearchFilter().isBlank()) {
+            predicates.add(getGlobalSearchPredicateWithMappings(
+                cb,
+                documentRoot,
+                searchRequest.getGlobalSearchFilter(),
+                filterPathMappings,
+                globalSearchFields,
+                documentDefinitionNames
+            ));
+        }
+
+        query.where(predicates.toArray(Predicate[]::new));
+    }
+
+    private Predicate getGlobalSearchPredicateWithMappings(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> documentRoot,
+        String globalSearchFilter,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields,
+        Collection<String> documentDefinitionNames
+    ) {
+        List<Predicate> definitionPredicates = new ArrayList<>();
+
+        for (String definitionName : documentDefinitionNames) {
+            List<SearchField> searchFields = globalSearchFields.isEmpty()
+                ? searchFieldService.getSearchFields(definitionName)
+                : toMappedSearchFields(definitionName, filterPathMappings, globalSearchFields);
+
+            if (searchFields.isEmpty()) {
+                continue;
+            }
+
+            definitionPredicates.add(cb.and(
+                cb.equal(documentRoot.get(DOCUMENT_DEFINITION_ID).get(NAME), definitionName),
+                buildGlobalSearchPredicate(cb, documentRoot, globalSearchFilter, searchFields, true)
+            ));
+        }
+
+        if (definitionPredicates.isEmpty()) {
+            return cb.disjunction();
+        }
+        return cb.or(definitionPredicates.toArray(Predicate[]::new));
+    }
+
+    private List<SearchField> toMappedSearchFields(
+        String definitionName,
+        Map<String, Map<String, String>> filterPathMappings,
+        Map<String, GlobalSearchFieldMeta> globalSearchFields
+    ) {
+        List<SearchField> searchFields = new ArrayList<>();
+        globalSearchFields.forEach((fieldKey, meta) -> {
+            var path = filterPathMappings.getOrDefault(fieldKey, Map.of()).get(definitionName);
+            if (path == null || !(path.startsWith(DOC_PREFIX) || path.startsWith(CASE_PREFIX))) {
+                return;
+            }
+            searchFields.add(new SearchField(
+                fieldKey,
+                path,
+                meta.dataType(),
+                SearchFieldFieldType.SINGLE,
+                meta.matchType(),
+                null,
+                0,
+                null
+            ));
+        });
+        return searchFields;
+    }
+
+    private Predicate getOtherFiltersPredicateWithMappings(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> root,
+        AdvancedSearchRequest searchRequest,
+        Map<String, Map<String, String>> filterPathMappings,
+        Collection<String> documentDefinitionNames
+    ) {
+        var filterPredicates = searchRequest.getOtherFilters().stream()
+            .map(filter -> buildFilterPredicateWithMappings(
+                cb, root, filter, filterPathMappings, documentDefinitionNames
+            ))
+            .toList()
+            .toArray(Predicate[]::new);
+
+        if (searchRequest.getSearchOperator() == SearchOperator.AND) {
+            return cb.and(filterPredicates);
+        } else {
+            return cb.or(filterPredicates);
+        }
+    }
+
+    private Predicate buildFilterPredicateWithMappings(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> root,
+        AdvancedSearchRequest.OtherFilter filter,
+        Map<String, Map<String, String>> filterPathMappings,
+        Collection<String> documentDefinitionNames
+    ) {
+        String filterKey = extractFilterKey(filter.getPath());
+        Map<String, String> pathsPerDefinition = filterPathMappings.get(filterKey);
+
+        if (pathsPerDefinition == null || pathsPerDefinition.isEmpty()) {
+            return cb.disjunction();
+        }
+
+        List<Predicate> orConditions = new ArrayList<>();
+        for (String definitionName : documentDefinitionNames) {
+            String path = pathsPerDefinition.get(definitionName);
+            // Unsupported prefix (e.g. zaak:) or none: treat as unmapped, so no match instead of an error
+            if (isSearchablePath(path)) {
+                Predicate defMatch = cb.equal(
+                    root.get(DOCUMENT_DEFINITION_ID).get(NAME), definitionName
+                );
+                var mappedFilter = filter.withPath(path);
+                Predicate valueMatch = buildQueryForSearchCriteria(cb, root, mappedFilter);
+                orConditions.add(cb.and(defMatch, valueMatch));
+            }
+        }
+
+        if (orConditions.isEmpty()) {
+            return cb.disjunction();
+        }
+        return cb.or(orConditions.toArray(Predicate[]::new));
+    }
+
+    private boolean isSearchablePath(String path) {
+        return path != null && (path.startsWith(DOC_PREFIX) || path.startsWith(CASE_PREFIX));
+    }
+
+    private String extractFilterKey(String path) {
+        if (path == null) {
+            return null;
+        }
+        if (path.startsWith(DOC_PREFIX)) {
+            return path.substring(DOC_PREFIX.length());
+        }
+        if (path.startsWith(CASE_PREFIX)) {
+            return path.substring(CASE_PREFIX.length());
+        }
+        return path;
+    }
+
+    private void buildQueryWhereMultipleDefinitions(
+        Collection<String> documentDefinitionNames,
+        BlueprintType blueprintType,
+        AdvancedSearchRequest searchRequest,
+        CriteriaBuilder cb,
+        CriteriaQuery<?> query,
+        Root<JsonSchemaDocument> documentRoot,
+        Action<JsonSchemaDocument> action
+    ) {
+        final List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(documentRoot.get(DOCUMENT_DEFINITION_ID).get(NAME).in(documentDefinitionNames));
+
+        predicates.add(
+            authorizationService
+                .getAuthorizationSpecification(
+                    new EntityAuthorizationRequest<>(
+                        JsonSchemaDocument.class,
+                        action
+                    ),
+                    null
+                ).toPredicate(documentRoot, query, cb));
+
+        predicates.add(
+            cb.equal(
+                documentRoot.get(DOCUMENT_DEFINITION_ID).get(BLUEPRINT_ID).get(BLUEPRINT_TYPE),
+                blueprintType
+            )
+        );
+
+        if (searchRequest.getAssigneeFilter() != null && searchRequest.getAssigneeFilter() != AssigneeFilter.ALL) {
+            predicates.add(getAssigneeFilterPredicate(cb, documentRoot, searchRequest.getAssigneeFilter()));
+        }
+
+        if (searchRequest.getOtherFilters() != null && !searchRequest.getOtherFilters().isEmpty()) {
+            predicates.add(getOtherFilersPredicate(cb, documentRoot, searchRequest));
+        }
+
+        if (searchRequest.getStatusFilter() != null && !searchRequest.getStatusFilter().isEmpty()) {
+            predicates.add(getStatusFilterPredicate(cb, documentRoot, searchRequest.getStatusFilter()));
+        }
+
+        if (searchRequest.getCaseTagsFilter() != null && !searchRequest.getCaseTagsFilter().isEmpty()) {
+            predicates.add(getCaseTagsFilterPredicate(cb, documentRoot, searchRequest.getCaseTagsFilter()));
+        }
+
+        query.where(predicates.toArray(Predicate[]::new));
     }
 
     private Page<JsonSchemaDocument> search(
@@ -402,122 +747,138 @@ public class JsonSchemaDocumentSearchService implements DocumentSearchService {
                 ? searchFieldService.getSearchFields(documentDefinitionName)
                 : List.<SearchField>of();
 
-            if (searchFields.isEmpty()) {
-                predicates.add(cb.disjunction());
-            } else {
-                var fieldMap = searchFields.stream()
-                    .collect(Collectors.toMap(f -> removePrefixes(f.getPath()), f -> f, (a, b) -> a));
-
-                var docFieldsLike = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
-                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var docFieldsExact = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
-                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var caseTextFieldsLike = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
-                    .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
-                    .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var caseTextFieldsExact = searchFields.stream()
-                    .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
-                    .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
-                    .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
-                    .toList();
-
-                var parsedTerms = parseGlobalSearch(searchRequest.getGlobalSearchFilter());
-
-                List<Predicate> qualifiedPredicates = new ArrayList<>();
-                List<Predicate> unqualifiedPredicates = new ArrayList<>();
-
-                for (ParsedTerm term : parsedTerms) {
-                    if (term.field() != null) {
-                        var fieldPath = removePrefixes(term.field());
-                        var field = fieldMap.get(fieldPath);
-                        if (field == null) {
-                            throw new IllegalArgumentException("Unknown search field: " + term.field());
-                        }
-
-                        boolean isDocField = field.getPath().startsWith(DOC_PREFIX);
-
-                        if (isDocField) {
-                            var jsonPath = "$." + fieldPath;
-                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
-                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
-                            );
-                            var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
-                            qualifiedPredicates.add(cb.like(cb.lower(expr), likePattern.toLowerCase()));
-                        } else {
-                            if (field.getDataType() == SearchFieldDataType.DATE ||
-                                field.getDataType() == SearchFieldDataType.DATETIME) {
-                                var date = LocalDate.parse(term.value());
-                                var startOfDay = date.atStartOfDay();
-                                var endOfDay = date.plusDays(1).atStartOfDay();
-                                qualifiedPredicates.add(cb.and(
-                                    cb.greaterThanOrEqualTo(documentRoot.get(fieldPath), startOfDay),
-                                    cb.lessThan(documentRoot.get(fieldPath), endOfDay)
-                                ));
-                            } else {
-                                var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
-                                qualifiedPredicates.add(cb.like(
-                                    cb.lower(documentRoot.get(fieldPath).as(String.class)),
-                                    likePattern.toLowerCase()
-                                ));
-                            }
-                        }
-                    } else {
-                        var likePattern = "%" + queryDialectHelper.escapeLikePattern(term.value()).toLowerCase() + "%";
-                        List<Predicate> termPredicates = new ArrayList<>();
-
-                        for (var f : docFieldsLike) {
-                            var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
-                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
-                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
-                            );
-                            termPredicates.add(cb.like(cb.lower(expr), likePattern));
-                        }
-
-                        for (var f : docFieldsExact) {
-                            var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
-                            Expression<String> expr = queryDialectHelper.getJsonValueExpression(
-                                cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
-                            );
-                            termPredicates.add(cb.equal(cb.lower(expr), term.value().toLowerCase()));
-                        }
-
-                        for (var f : caseTextFieldsLike) {
-                            var columnName = f.getPath().substring(CASE_PREFIX.length());
-                            termPredicates.add(cb.like(
-                                cb.lower(documentRoot.get(columnName).as(String.class)),
-                                likePattern
-                            ));
-                        }
-
-                        for (var f : caseTextFieldsExact) {
-                            var columnName = f.getPath().substring(CASE_PREFIX.length());
-                            termPredicates.add(cb.equal(
-                                cb.lower(documentRoot.get(columnName).as(String.class)),
-                                term.value().toLowerCase()
-                            ));
-                        }
-
-                        if (!termPredicates.isEmpty()) {
-                            unqualifiedPredicates.add(cb.or(termPredicates.toArray(Predicate[]::new)));
-                        }
-                    }
-                }
-
-                qualifiedPredicates.forEach(predicates::add);
-                unqualifiedPredicates.forEach(predicates::add);
-            }
+            predicates.add(buildGlobalSearchPredicate(
+                cb, documentRoot, searchRequest.getGlobalSearchFilter(), searchFields, false
+            ));
         }
 
         query.where(predicates.toArray(Predicate[]::new));
+    }
+
+    private Predicate buildGlobalSearchPredicate(
+        CriteriaBuilder cb,
+        Root<JsonSchemaDocument> documentRoot,
+        String globalSearchFilter,
+        List<SearchField> searchFields,
+        boolean matchNothingOnUnknownField
+    ) {
+        if (searchFields.isEmpty()) {
+            return cb.disjunction();
+        }
+
+        var fieldMap = searchFields.stream()
+            .collect(Collectors.toMap(f -> removePrefixes(f.getPath()), f -> f, (a, b) -> a));
+
+        var docFieldsLike = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+            .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
+            .toList();
+
+        var docFieldsExact = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(DOC_PREFIX))
+            .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
+            .toList();
+
+        var caseTextFieldsLike = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
+            .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+            .filter(f -> f.getMatchType() == SearchFieldMatchType.LIKE)
+            .toList();
+
+        var caseTextFieldsExact = searchFields.stream()
+            .filter(f -> f.getPath() != null && f.getPath().startsWith(CASE_PREFIX))
+            .filter(f -> f.getDataType() == SearchFieldDataType.TEXT)
+            .filter(f -> f.getMatchType() != SearchFieldMatchType.LIKE)
+            .toList();
+
+        var parsedTerms = parseGlobalSearch(globalSearchFilter);
+
+        List<Predicate> qualifiedPredicates = new ArrayList<>();
+        List<Predicate> unqualifiedPredicates = new ArrayList<>();
+
+        for (ParsedTerm term : parsedTerms) {
+            if (term.field() != null) {
+                var fieldPath = removePrefixes(term.field());
+                var field = fieldMap.get(fieldPath);
+                if (field == null) {
+                    if (matchNothingOnUnknownField) {
+                        return cb.disjunction();
+                    }
+                    throw new IllegalArgumentException("Unknown search field: " + term.field());
+                }
+
+                boolean isDocField = field.getPath().startsWith(DOC_PREFIX);
+
+                if (isDocField) {
+                    var jsonPath = "$." + fieldPath;
+                    Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                        cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                    );
+                    var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
+                    qualifiedPredicates.add(cb.like(cb.lower(expr), likePattern.toLowerCase()));
+                } else {
+                    if (field.getDataType() == SearchFieldDataType.DATE ||
+                        field.getDataType() == SearchFieldDataType.DATETIME) {
+                        var date = LocalDate.parse(term.value());
+                        var startOfDay = date.atStartOfDay();
+                        var endOfDay = date.plusDays(1).atStartOfDay();
+                        qualifiedPredicates.add(cb.and(
+                            cb.greaterThanOrEqualTo(documentRoot.get(fieldPath), startOfDay),
+                            cb.lessThan(documentRoot.get(fieldPath), endOfDay)
+                        ));
+                    } else {
+                        var likePattern = buildLikePattern(term.value(), term.quoted(), field.getMatchType());
+                        qualifiedPredicates.add(cb.like(
+                            cb.lower(documentRoot.get(fieldPath).as(String.class)),
+                            likePattern.toLowerCase()
+                        ));
+                    }
+                }
+            } else {
+                var likePattern = "%" + queryDialectHelper.escapeLikePattern(term.value()).toLowerCase() + "%";
+                List<Predicate> termPredicates = new ArrayList<>();
+
+                for (var f : docFieldsLike) {
+                    var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                    Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                        cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                    );
+                    termPredicates.add(cb.like(cb.lower(expr), likePattern));
+                }
+
+                for (var f : docFieldsExact) {
+                    var jsonPath = "$." + f.getPath().substring(DOC_PREFIX.length());
+                    Expression<String> expr = queryDialectHelper.getJsonValueExpression(
+                        cb, documentRoot.get(CONTENT).get(CONTENT), jsonPath, String.class
+                    );
+                    termPredicates.add(cb.equal(cb.lower(expr), term.value().toLowerCase()));
+                }
+
+                for (var f : caseTextFieldsLike) {
+                    var columnName = f.getPath().substring(CASE_PREFIX.length());
+                    termPredicates.add(cb.like(
+                        cb.lower(documentRoot.get(columnName).as(String.class)),
+                        likePattern
+                    ));
+                }
+
+                for (var f : caseTextFieldsExact) {
+                    var columnName = f.getPath().substring(CASE_PREFIX.length());
+                    termPredicates.add(cb.equal(
+                        cb.lower(documentRoot.get(columnName).as(String.class)),
+                        term.value().toLowerCase()
+                    ));
+                }
+
+                if (!termPredicates.isEmpty()) {
+                    unqualifiedPredicates.add(cb.or(termPredicates.toArray(Predicate[]::new)));
+                }
+            }
+        }
+
+        List<Predicate> all = new ArrayList<>(qualifiedPredicates);
+        all.addAll(unqualifiedPredicates);
+        return cb.and(all.toArray(Predicate[]::new));
     }
 
     private void addNonJsonFieldPredicates(

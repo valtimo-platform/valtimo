@@ -32,7 +32,6 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ButtonModule,
   DropdownModule,
-  ListItem,
   LoadingModule,
   NotificationModule,
 } from 'carbon-components-angular';
@@ -47,58 +46,17 @@ import {
   getExternalPluginContractTitle,
 } from '@valtimo/plugin';
 import {PLUGIN_EXTERNAL_CONTRACT_BINDINGS_TEST_IDS} from '../../constants';
-
-type ProviderLookup =
-  | {state: 'loading'}
-  | {state: 'error'}
-  | {state: 'ready'; providers: Array<ExternalPluginContractProvider>};
-
-interface ProviderLookupRequest {
-  generation: number;
-  contract: string;
-}
-
-interface ProviderLookupResult extends ProviderLookupRequest {
-  lookup: ProviderLookup;
-}
-
-/** A null target leaves the contract unbound. */
-interface ContractBindingChoice {
-  targetConfigurationId: string | null;
-}
-
-interface ContractBindingListItem extends ListItem {
-  targetConfigurationId: string | null;
-}
-
-interface ContractProviderOption {
-  provider: ExternalPluginContractProvider;
-  /** Declared operations of the consumer the provider does not offer; non-empty means incompatible. */
-  missingOperations: Array<string>;
-}
-
-/** A saved binding whose target does not provide the contract, or lacks an operation it calls. */
-interface StaleContractBinding {
-  targetTitle: string;
-  missingOperations: Array<string>;
-}
-
-interface ContractBindingRow {
-  contract: string;
-  title: string | null;
-  declaredOperations: Array<string> | null;
-  state: ProviderLookup['state'];
-  items: Array<ContractBindingListItem>;
-  choice: ContractBindingChoice | null;
-  stale: StaleContractBinding | null;
-  /** Shown while the contract is left unbound. */
-  hintKey: string | null;
-  invalidTextKey: string | null;
-  invalidTextParams: Record<string, string>;
-  valid: boolean;
-}
-
-const UNBOUND: ContractBindingChoice = {targetConfigurationId: null};
+import {UNBOUND} from '../../constants/plugin-external-contract-bindings.constants';
+import {
+  ContractBindingChoice,
+  ContractBindingListItem,
+  ContractBindingRow,
+  ContractProviderOption,
+  ProviderLookup,
+  ProviderLookupRequest,
+  ProviderLookupResult,
+  StaleContractBinding,
+} from '../../models/plugin-external-contract-bindings.model';
 
 /**
  * One dropdown per contract the plugin declares in `permissions.contracts`, offering every

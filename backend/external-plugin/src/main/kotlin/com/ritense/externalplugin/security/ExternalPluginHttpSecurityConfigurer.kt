@@ -81,9 +81,8 @@ class ExternalPluginHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(
                         antMatcher(POST, "/api/v1/process-link/*/external-plugin-task-form/submission")
                     ).authenticated()
-                    // Plugin → GZAC contract calls and jobs. The resource rejects every principal that
-                    // is not a plugin token and only reaches the caller's own bindings and jobs; a user
-                    // token additionally needs the endpoint granted (allowlist filter).
+                    // Plugin → GZAC contract calls and jobs. Service tokens only: the resource rejects
+                    // every other principal, and the allowlist filter denylists user tokens.
                     .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/call")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/jobs")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/plugin-contract/jobs/*/complete")).authenticated()

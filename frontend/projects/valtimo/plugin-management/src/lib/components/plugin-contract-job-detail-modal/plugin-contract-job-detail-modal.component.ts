@@ -31,7 +31,6 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule,
   LoadingModule,
-  ModalButtonType,
   ModalModule,
   NotificationModule,
   StructuredListModule,
@@ -45,40 +44,18 @@ import {
 } from '@valtimo/plugin';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {PLUGIN_CONTRACT_JOB_DETAIL_MODAL_TEST_IDS} from '../../constants';
+import {CONFIRMATIONS} from '../../constants/plugin-contract-job.constants';
+import {
+  ContractJobAction,
+  ContractJobActionConfirmation,
+  PayloadState,
+} from '../../models/plugin-contract-job.model';
 import {
   contractJobStatusTagType,
   isContractJobCancellable,
   isContractJobOpen,
   isContractJobRedeliverable,
 } from '../../utils';
-
-type ContractJobAction = 'cancel' | 'redeliver';
-
-type PayloadState = 'hidden' | 'loading' | 'shown' | 'error';
-
-interface ContractJobActionConfirmation {
-  titleKey: string;
-  contentKey: string;
-  confirmKey: string;
-  confirmButtonType: ModalButtonType;
-}
-
-const confirmation = (
-  key: string,
-  actionKey: string,
-  confirmButtonType: ModalButtonType
-): ContractJobActionConfirmation => ({
-  titleKey: `pluginManagement.contractJobs.${key}.title`,
-  contentKey: `pluginManagement.contractJobs.${key}.content`,
-  confirmKey: `pluginManagement.contractJobs.actions.${actionKey}`,
-  confirmButtonType,
-});
-
-const CONFIRMATIONS = {
-  cancelJob: confirmation('confirmCancelJob', 'cancelJob', ModalButtonType.danger),
-  stopDelivery: confirmation('confirmStopDelivery', 'stopDelivery', ModalButtonType.danger),
-  redeliver: confirmation('confirmRedeliver', 'redeliver', ModalButtonType.primary),
-} as const;
 
 /**
  * One contract job ledger row. Payloads stay hidden until the admin asks for them, because GZAC

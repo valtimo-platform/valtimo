@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,9 @@ class PrefillFormServiceIntTest @Autowired constructor(
             {
                 "person": {
                     "firstName": "John"
+                },
+                "mailPreview": {
+                    "body": "<p>Mail body</p>"
                 }
             }
         """.trimIndent())
@@ -60,7 +63,8 @@ class PrefillFormServiceIntTest @Autowired constructor(
                 document.id().toString(),
                 caseDefinitionId,
                 mapOf(
-                    "lastName" to "Doe"
+                    "lastName" to "Doe",
+                    "mailPreview" to "<p>Mail from process</p>"
                 )
             )
         }
@@ -91,6 +95,10 @@ class PrefillFormServiceIntTest @Autowired constructor(
         assertThat(prefilledJson, hasJsonPath("""${'$'}.components[?(@.key == "legacy")].components[?(@.key == "pv.lastName")].defaultValue""", hasItem("Doe")))
         assertThat(prefilledJson, hasJsonPath("""${'$'}.components[?(@.key == "legacy")].components[?(@.key == "test:separatedByColon")].defaultValue""", hasItem("MySeparatedByColonValue")))
         assertThat(prefilledJson, hasJsonPath("""${'$'}.components[?(@.key == "legacy")].components[?(@.key == "test.separatedByDot")].defaultValue""", hasItem("MySeparatedByDotValue")))
+
+        //display-only components are still prefilled
+        assertThat(prefilledJson, hasJsonPath("""${'$'}.components[?(@.key == "mailPreview.body")].defaultValue""", hasItem("<p>Mail body</p>")))
+        assertThat(prefilledJson, hasJsonPath("""${'$'}.components[?(@.key == "pv.mailPreview")].defaultValue""", hasItem("<p>Mail from process</p>")))
     }
 
     @Test

@@ -223,10 +223,11 @@ export interface ContractCallInput {
    * on the host's clock; for a job, the instant GZAC expires it.
    */
   deadline?: string;
-  /** The case the job acts on, when known. Jobs only. */
+  /**
+   * The case the job concerns, when the requester named one. Jobs only. The requester's claim, not
+   * verified by GZAC, unless it came from the requester's reply handle.
+   */
   documentId?: string;
-  /** Login of the user whose token requested the job. Jobs only. */
-  requestedBy?: string;
 }
 
 export interface ContractJobInput extends ContractCallInput {
@@ -290,9 +291,19 @@ export interface ContractCallResult<T = unknown> {
   errorMessage?: string;
 }
 
-/** Result of `pluginRequest`. */
+/** A job as its requester sees it: `pending` until the provider is done, then the lasting outcome. */
+export interface ContractJobState {
+  status: "pending" | "completed" | "failed" | "expired";
+  result?: unknown;
+  errorCode?: string;
+  /** The provider's own error code, when it reported a failure. */
+  providerErrorCode?: string;
+  errorMessage?: string;
+}
+
+/** Result of `pluginRequest`. `job` is present only when an `idempotencyKey` matched an existing job. */
 export type ContractRequestResult =
-  | { status: "accepted"; jobId: string }
+  | { status: "accepted"; jobId: string; job?: ContractJobState }
   | { status: "error"; errorCode?: string; errorMessage?: string };
 
 /** What a provider reports through `completeJob`. */

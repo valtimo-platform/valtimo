@@ -34,10 +34,8 @@ export interface ContractCallInput {
   jobId?: string;
   /** ISO-8601 instant when the answer is due: the call's budget on this app's clock, or the job's deadline. */
   deadline?: string;
-  /** The case a job acts on, when known. Jobs only. */
+  /** The case a job concerns, when the requester named one. Jobs only; the requester's claim, unverified. */
   documentId?: string;
-  /** Login of the user whose token requested the job. Jobs only. */
-  requestedBy?: string;
 }
 
 export type ContractCallOutput =
@@ -91,7 +89,6 @@ export function runContractCall(
           caller: input.caller,
           deadline: input.deadline,
           documentId: input.documentId,
-          requestedBy: input.requestedBy,
         },
         "[demo-app] contract job accepted",
       );

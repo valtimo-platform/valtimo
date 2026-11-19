@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CreatedCase, UserCasesPage} from './page';
+import {CreatedCase, FormProcessLink, UserCasesPage} from './page';
 import {USER_CASES_CONFIG} from './user-cases-config';
 
 test.use({storageState: 'playwright/.auth/uiState.json'});
@@ -210,11 +210,27 @@ test.describe('Feature 2 — Cases (User)', () => {
   // force-closed on each tab switch (and torn down entirely on task-hiding tabs).
   test.describe('2.7 — In-panel start form persists across tab switches', () => {
     const noteSubject = 'Persistent panel note 842';
+    let originalCatalogiLinks: FormProcessLink[] = [];
 
     test.beforeAll(async () => {
+      // Seed opens this read-only start form in a modal; the panel tests need it in the panel
+      originalCatalogiLinks = await userCasesPage.setStartFormDisplayTypeViaApi(
+        USER_CASES_CONFIG.catalogiGetTypenProcessKey,
+        'panel'
+      );
       const created = await userCasesPage.createCaseViaApi();
       createdCases.push(created);
       await userCasesPage.goToCaseDetail(created.documentId);
+    });
+
+    test.afterAll(async () => {
+      for (const link of originalCatalogiLinks) {
+        try {
+          await userCasesPage.updateFormProcessLinkViaApi(link);
+        } catch {
+          // Best-effort restore
+        }
+      }
     });
 
     test('keeps a start form open with entered data across task-hiding tabs and back', async () => {

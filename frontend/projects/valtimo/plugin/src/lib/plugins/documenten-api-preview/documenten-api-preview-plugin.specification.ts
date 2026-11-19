@@ -29,13 +29,13 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Hier kun je een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
-      pdfConversionUrl: 'PDF conversie URL',
+      pdfConversionUrl: 'PDF-conversie-URL',
       pdfConversionUrlTooltip:
-        'In dit veld moet de verwijzing komen naar de locatie van de PDF conversie server (Project Gotenberg).',
-      pdfArchiveMethod: 'PDF archivering methode',
+        'In dit veld moet de verwijzing komen naar de locatie van de PDF-conversieserver (Project Gotenberg).',
+      pdfArchiveMethod: 'PDF-archiveringsmethode',
       pdfArchiveMethodTooltip:
-        'Selecteer de methode die gebruikt wordt om PDF documenten te archiveren. Het archiveren van PDF documenten kan lang duren en extra resources vereisen, selecteer de optie "Geen" voor de meest optimale prestaties.',
-      documentenApiPluginConfiguration: 'Documenten API configuratie',
+        'Selecteer de methode die gebruikt wordt om PDF-documenten te archiveren. Belangrijk: het archiveren van PDF-documenten kan lang duren en extra resources vereisen. Selecteer de optie "Geen" voor optimale prestaties.',
+      documentenApiPluginConfiguration: 'Documenten API-configuratie',
       documentenApiPluginConfigurationTooltip:
         'Selecteer de plugin die gebruikt wordt voor het ontsluiten van documenten. Deze plugin zal worden gebruikt om de originele documenten te ontsluiten zodat deze geconverteerd kunnen worden naar PDF voor weergave in de browser.',
       pdfArchiveMethodNone: 'Geen',
@@ -44,7 +44,7 @@ const documentenApiPreviewPluginSpecification: PluginSpecification = {
       pdfArchiveMethodPdfA3b: 'PDF/A-3b',
       pdfUniversalAccessibility: 'Universele toegankelijkheid',
       pdfUniversalAccessibilityTooltip:
-        'Schakel deze optie aan om het PDF document geschikt te maken voor ondersteunende technologieën zoals screen readers.',
+        'Schakel deze optie in om het PDF-document geschikt te maken voor ondersteunende technologieën zoals schermlezers.',
       'pdfUniversalAccessibility.toggleOn': 'Geactiveerd',
       'pdfUniversalAccessibility.toggleOff': 'Gedeactiveerd',
     },

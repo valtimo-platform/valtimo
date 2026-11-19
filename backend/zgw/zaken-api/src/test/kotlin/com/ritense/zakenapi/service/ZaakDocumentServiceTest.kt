@@ -17,7 +17,11 @@
 package com.ritense.zakenapi.service
 
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.service.DocumentService
+import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.domain.DocumentenApiVersion
@@ -40,6 +44,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.never
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -53,12 +59,14 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.client.HttpClientErrorException
 import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.util.Optional
 import java.util.UUID
 
 class ZaakDocumentServiceTest {
@@ -70,6 +78,7 @@ class ZaakDocumentServiceTest {
     lateinit var documentenApiService: DocumentenApiService
     lateinit var documentenApiVersionService: DocumentenApiVersionService
     lateinit var authorizationService: AuthorizationService
+    lateinit var documentService: DocumentService
     lateinit var modifyDocumentRequest: ModifyDocumentRequest
 
     @BeforeEach
@@ -80,14 +89,17 @@ class ZaakDocumentServiceTest {
         documentenApiService = mock()
         documentenApiVersionService = mock()
         authorizationService = mock()
+        documentService = mock()
         whenever(authorizationService.hasPermission<Any>(any())).thenReturn(true)
+        whenever(documentService.findBy(any())).thenAnswer { Optional.of(mock<JsonSchemaDocument>()) }
         service = ZaakDocumentService(
             zaakUrlProvider,
             pluginService,
             catalogiService,
             documentenApiService,
             documentenApiVersionService,
-            authorizationService
+            authorizationService,
+            documentService
         )
     }
 
@@ -828,6 +840,83 @@ class ZaakDocumentServiceTest {
 
         assertThrows<HttpClientErrorException> {
             service.deleteRelatedInformatieObjecten(caseDocumentId, zaakUrl)
+        }
+    }
+
+    @Test
+    fun `should deny file access when the user cannot view the case`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        whenever(
+            authorizationService.requirePermission(
+                argThat<AuthorizationRequest<JsonSchemaDocument>> {
+                    resourceType == JsonSchemaDocument::class.java &&
+                        action == JsonSchemaDocumentActionProvider.VIEW
+                }
+            )
+        ).doThrow(AccessDeniedException("Unauthorized"))
+        modifyDocumentRequest = mock()
+
+        assertThrows<AccessDeniedException> {
+            service.downloadInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+        }
+        assertThrows<AccessDeniedException> {
+            service.getInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+        }
+        assertThrows<AccessDeniedException> {
+            service.modifyInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId, modifyDocumentRequest)
+        }
+        assertThrows<AccessDeniedException> {
+            service.deleteInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+        }
+        assertThrows<AccessDeniedException> {
+            service.verifyInformatieObjectRelatedToCase(pluginConfigurationId.toString(), caseDocumentId, documentId)
+        }
+
+        verify(zaakUrlProvider, never()).getZaakUrl(any())
+        verify(documentenApiService, never()).downloadInformatieObject(any<String>(), any(), any<String>())
+        verify(documentenApiService, never()).getInformatieObject(any<String>(), any(), any<String>())
+        verify(documentenApiService, never()).modifyInformatieObject(any<String>(), any(), any<String>(), any())
+        verify(documentenApiService, never()).deleteInformatieObject(any<String>(), any<UUID>(), any<String>())
+    }
+
+    @Test
+    fun `should require case view permission when downloading a related informatieObject`() {
+        val caseDocumentId = UUID.randomUUID()
+        val pluginConfigurationId = UUID.randomUUID()
+        val documentId = UUID.randomUUID().toString()
+        val zaakUrl = URI("https://example.com/zaken/$caseDocumentId")
+        val informatieobjectUrl = URI("https://example.com/enkelvoudiginformatieobjecten/$documentId")
+        whenever(zaakUrlProvider.getZaakUrl(caseDocumentId)).thenReturn(zaakUrl)
+        val zakenApiPlugin = mock<ZakenApiPlugin>()
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any())).thenReturn(zakenApiPlugin)
+        val documentenApiPlugin = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance(eq(PluginConfigurationId.existingId(pluginConfigurationId))))
+            .thenReturn(documentenApiPlugin)
+        whenever(documentenApiPlugin.createInformatieObjectUrl(documentId)).thenReturn(informatieobjectUrl)
+        whenever(zakenApiPlugin.getZaakInformatieObject(caseDocumentId, zaakUrl, informatieobjectUrl))
+            .thenReturn(createZaakInformatieObject(zaakUrl, informatieobjectUrl))
+        val inputStream = ByteArrayInputStream(byteArrayOf(1))
+        whenever(documentenApiService.downloadInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId))
+            .thenReturn(inputStream)
+
+        val result = service.downloadInformatieObject(pluginConfigurationId.toString(), caseDocumentId, documentId)
+
+        assertEquals(inputStream, result)
+        verify(authorizationService).requirePermission(
+            argThat<AuthorizationRequest<JsonSchemaDocument>> {
+                resourceType == JsonSchemaDocument::class.java && action == JsonSchemaDocumentActionProvider.VIEW
+            }
+        )
+    }
+
+    @Test
+    fun `should throw when the case document does not exist`() {
+        whenever(documentService.findBy(any())).thenReturn(Optional.empty())
+
+        assertThrows<NoSuchElementException> {
+            service.downloadInformatieObject(UUID.randomUUID().toString(), UUID.randomUUID(), UUID.randomUUID().toString())
         }
     }
 

@@ -223,9 +223,11 @@ test.describe('Case management', () => {
         // `undefined` until the baseline is read: `null` already means "nothing was linked".
         let originalUploadProcessKey: string | null | undefined;
         let featureProcessUrl: string | null = null;
+        let linkVersion: string | undefined;
 
         test.beforeAll(async () => {
-          featureProcessUrl = `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
+          linkVersion = await ensureDraftVersionSelected(page);
+          featureProcessUrl = `/api/management/v1/case-definition/bezwaar/version/${linkVersion}/feature-process`;
           try {
             const linked = await apiGet<{processDefinitionKey: string}>(
               `${featureProcessUrl}/DOCUMENT_UPLOAD`
@@ -259,6 +261,12 @@ test.describe('Case management', () => {
                 `${featureProcessUrl}: ${(error as Error).message}`
             );
           }
+        });
+
+        test.beforeEach(async () => {
+          // Baseline and restore target `linkVersion`; edit nothing else.
+          expect(getVersionFromUrl(page)).toBe(linkVersion);
+          await caseDetailsManagementPage.waitForUploadProcessReady();
         });
 
         test('Upload process combo box is visible', async () => {
@@ -303,6 +311,99 @@ test.describe('Case management', () => {
 
           // Assert
           await expect(caseDetailsManagementPage.linkUploadProcessInput).toHaveValue('');
+        });
+      });
+
+      test.describe('6.112 — Case color', () => {
+        let originalColor: string | null | undefined;
+        let colorVersion: {key: string; versionTag: string} | undefined;
+
+        test.beforeAll(async () => {
+          colorVersion = caseDetailsManagementPage.caseDefinitionFromUrl();
+          originalColor = await caseDetailsManagementPage.getCaseColorViaApi();
+        });
+
+        test.afterAll(async () => {
+          if (!colorVersion) return;
+          if (originalColor) {
+            await caseDetailsManagementPage.setCaseColorViaApi(originalColor, colorVersion);
+          } else {
+            await caseDetailsManagementPage.clearCaseColorViaApi(colorVersion);
+          }
+        });
+
+        test('the color panel is the first tile on the General tab', async () => {
+          const panel = caseDetailsManagementPage.colorPanel;
+          await expect(panel.panel).toBeVisible();
+          await expect(panel.swatches).toHaveCount(27);
+          await expect(panel.swatches.first()).toBeEnabled();
+        });
+
+        test('picking a swatch saves the case color and shows it as selected', async () => {
+          colorVersion ??= caseDetailsManagementPage.caseDefinitionFromUrl();
+          originalColor ??= await caseDetailsManagementPage.getCaseColorViaApi();
+          const panel = caseDetailsManagementPage.colorPanel;
+          const color = await panel.pickDifferentColor(originalColor);
+
+          const body = await caseDetailsManagementPage.pickCaseColor(color);
+
+          expect(String(body.color).toUpperCase()).toBe(color);
+          await panel.assertSelected(color);
+          expect((await caseDetailsManagementPage.getCaseColorViaApi())?.toUpperCase()).toBe(color);
+        });
+
+        test('the case color survives a reload', async () => {
+          const saved = (await caseDetailsManagementPage.getCaseColorViaApi()) as string;
+          await caseDetailsManagementPage.colorPanel.assertSelected(saved);
+        });
+
+        test('picking a color shows a confirmation toast', async () => {
+          const panel = caseDetailsManagementPage.colorPanel;
+          const color = await panel.pickDifferentColor(
+            await caseDetailsManagementPage.getCaseColorViaApi()
+          );
+
+          await caseDetailsManagementPage.pickCaseColor(color);
+
+          await expectNotificationMessage(page, 'Color saved');
+        });
+
+        test('Remove color clears the case-type color', async () => {
+          await caseDetailsManagementPage.setCaseColorViaApi('#FA4D56', colorVersion);
+          await page.reload();
+          const panel = caseDetailsManagementPage.colorPanel;
+          await panel.assertSelected('#FA4D56');
+
+          const body = await caseDetailsManagementPage.clearCaseColor();
+
+          expect(body).toEqual({color: null});
+          expect(await caseDetailsManagementPage.getCaseColorViaApi()).toBeNull();
+          await panel.assertNoneSelected();
+          await expect(panel.clearButton).toBeHidden();
+
+          await page.reload();
+          await panel.assertNoneSelected();
+        });
+
+        test('a settings change without color keeps the color', async () => {
+          await caseDetailsManagementPage.setCaseColorViaApi('#FA4D56', colorVersion);
+          const {key, versionTag} = colorVersion;
+          const settingsUrl = `/api/management/v1/case-definition/${key}/version/${versionTag}/settings`;
+          const settings = await apiGet<{canHaveAssignee: boolean}>(settingsUrl);
+
+          await apiPatch(settingsUrl, {canHaveAssignee: settings.canHaveAssignee});
+
+          expect((await caseDetailsManagementPage.getCaseColorViaApi())?.toUpperCase()).toBe(
+            '#FA4D56'
+          );
+        });
+
+        test('a final version shows the color read-only', async () => {
+          await ensureFinalVersionSelected(page);
+          const panel = caseDetailsManagementPage.colorPanel;
+          await expect(panel.panel).toBeVisible();
+          await expect(panel.swatches.first()).toBeDisabled();
+          await expect(panel.swatches.last()).toBeDisabled();
         });
       });
 

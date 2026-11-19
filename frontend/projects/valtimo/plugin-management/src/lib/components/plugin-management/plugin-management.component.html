@@ -189,5 +189,25 @@
         <svg cdsIcon="information" size="16"></svg>
       </span>
     }
+
+    @if (data?.item?.invalidContractSchemas) {
+      <cds-tag
+        data-test-id="plugin-management-invalid-contract-schemas-tag"
+        type="red"
+        size="sm"
+        (click)="$event.stopPropagation()"
+      >
+        {{ 'pluginManagement.contractSchemas.tag' | translate }}
+      </cds-tag>
+
+      <span
+        class="plugin-management__incompatible-tooltip"
+        [attr.aria-label]="data.item.contractSchemaMessage"
+        [vTooltip]="data.item.contractSchemaMessage"
+        (click)="$event.stopPropagation()"
+      >
+        <svg cdsIcon="information" size="16"></svg>
+      </span>
+    }
   </div>
 </ng-template>

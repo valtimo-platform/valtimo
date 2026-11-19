@@ -124,7 +124,7 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
     @Test
     fun `should update zaakdetails object and link to the zaak when zaak exists`() {
         val objectWrapper = ObjectWrapper(
-            URI.create("http://localhost:56273/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
+            URI.create("https://ritense.com/some-object/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             UUID.randomUUID(),
             URI.create("http://localhost:56273/objecttypen/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             mock()

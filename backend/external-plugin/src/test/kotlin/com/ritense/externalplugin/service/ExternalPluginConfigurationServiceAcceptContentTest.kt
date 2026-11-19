@@ -112,6 +112,7 @@ class ExternalPluginConfigurationServiceAcceptContentTest {
             "gzac.events",
             "http://localhost:8080",
             mock<ExternalPluginContractBindingRepository>(),
+            mock<ExternalPluginContractJobService>(),
         )
     }
 
@@ -182,6 +183,26 @@ class ExternalPluginConfigurationServiceAcceptContentTest {
         assertThat(accepted.pendingContentHash).isNull()
         verify(grantedEndpointRepository, never()).deleteAllByConfigurationId(any())
         verify(grantedEventRepository, never()).deleteAllByConfigurationId(any())
+    }
+
+    @Test
+    fun `a pending manifest with an unusable contract schema cannot be accepted and nothing changes`() {
+        val manifest = objectMapper.readTree(
+            """{"provides": [{"contract": "a@1", "operations": [{"key": "op", "output": {"pattern": "["}}]}]}"""
+        ) as ObjectNode
+        val previousManifest = definition.manifestJson
+        definition.pendingManifestJson = manifest
+
+        assertThatThrownBy { service.acceptContent(definition.id, "manifest-sha256:changed") }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("cannot be accepted")
+
+        assertThat(definition.contentHash).isEqualTo("manifest-sha256:accepted")
+        assertThat(definition.pendingContentHash).isEqualTo("manifest-sha256:changed")
+        assertThat(definition.pendingManifestJson).isEqualTo(manifest)
+        assertThat(definition.manifestJson).isEqualTo(previousManifest)
+        verify(definitionRepository, never()).save(any())
+        verify(grantedEndpointRepository, never()).deleteAllByConfigurationId(any())
     }
 
     @Test

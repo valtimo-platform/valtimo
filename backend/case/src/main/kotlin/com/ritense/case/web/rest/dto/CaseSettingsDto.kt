@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package com.ritense.case.web.rest.dto
 
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import com.ritense.case_.domain.definition.CaseDefinition
 
 data class CaseSettingsDto(
@@ -24,6 +26,8 @@ data class CaseSettingsDto(
     val hasExternalStartForm: Boolean? = null,
     val externalStartFormUrl: String? = null,
     val externalStartFormDescription: String? = null,
+    @param:JsonSetter(nulls = Nulls.AS_EMPTY)
+    val color: String? = null,
 ) {
     fun update(currentCaseDefinition: CaseDefinition): CaseDefinition {
         return currentCaseDefinition.copy(
@@ -44,9 +48,14 @@ data class CaseSettingsDto(
             externalStartFormDescription = when (this.hasExternalStartForm) {
                 false -> null
                 else -> getSettingForUpdate(
-                    currentCaseDefinition.externalStartFormUrl,
+                    currentCaseDefinition.externalStartFormDescription,
                     this.externalStartFormDescription
                 )
+            },
+            color = when {
+                this.color == null -> currentCaseDefinition.color
+                this.color.isBlank() -> null
+                else -> this.color
             }
         )
     }
@@ -63,6 +72,7 @@ data class CaseSettingsDto(
             hasExternalStartForm = caseDefinition.hasExternalStartForm,
             externalStartFormUrl = caseDefinition.externalStartFormUrl,
             externalStartFormDescription = caseDefinition.externalStartFormDescription,
+            color = caseDefinition.color,
         )
     }
 }

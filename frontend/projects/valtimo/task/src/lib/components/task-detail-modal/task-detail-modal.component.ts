@@ -282,7 +282,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   private refreshTask(response: any): void {
     const currentTask = this.task$.getValue();
-    const fetchedTask = response.task as Partial<Task>;
+    const fetchedTask = response?.task as Partial<Task>;
     if (!currentTask || !fetchedTask) return;
 
     const mergedTask: Task = {...currentTask};
@@ -293,6 +293,16 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     }
 
     this.task$.next(mergedTask);
+  }
+
+  private loadFullTask(taskId: string): void {
+    // No error toast on 403/404 — view permission check closes the modal
+    this.taskService
+      .getTask(taskId, ['403', '404'])
+      .pipe(catchError(() => EMPTY))
+      .subscribe(response => {
+        if (this.task$.getValue()?.id === taskId) this.refreshTask(response);
+      });
   }
 
   private showAssigneeNotification(task: Task): void {
@@ -318,6 +328,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.processLinkPreloaded$.next(false);
     if (task) {
       this.task$.next({...task});
+      // Case-specific list rows only hold column values, not the assignment
+      if (!('assignedTeam' in task)) this.loadFullTask(task.id);
     }
     this.setPageFromTask(task);
     this.openModal();

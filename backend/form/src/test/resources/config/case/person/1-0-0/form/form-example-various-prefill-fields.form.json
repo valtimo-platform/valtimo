@@ -79,6 +79,18 @@
             "disabled": true
         },
         {
+            "label": "E-mail preview document",
+            "key": "mailPreview.body",
+            "type": "valtimo-mail-preview",
+            "input": true
+        },
+        {
+            "label": "E-mail preview process variable",
+            "key": "pv.mailPreview",
+            "type": "valtimo-mail-preview",
+            "input": true
+        },
+        {
             "label": "Legacy",
             "key": "legacy",
             "components": [
@@ -224,6 +236,39 @@
                             "label": "Container property 3",
                             "key": "containerProperty3",
                             "type": "textfield",
+                            "input": true
+                        },
+                        {
+                            "label": "Container preview",
+                            "key": "rowPreview",
+                            "type": "valtimo-mail-preview",
+                            "input": true
+                        }
+                    ]
+                },
+                {
+                    "label": "Grid",
+                    "key": "docGrid",
+                    "type": "datagrid",
+                    "input": true,
+                    "tableView": false,
+                    "components": [
+                        {
+                            "label": "Grid name",
+                            "key": "gridName",
+                            "type": "textfield",
+                            "input": true
+                        },
+                        {
+                            "label": "Grid preview",
+                            "key": "rowPreview",
+                            "type": "valtimo-mail-preview",
+                            "input": true
+                        },
+                        {
+                            "label": "Mail preview",
+                            "key": "mailPreview.ontvangstbevestiging",
+                            "type": "valtimo-mail-preview",
                             "input": true
                         }
                     ]

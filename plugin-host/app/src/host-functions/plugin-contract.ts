@@ -28,6 +28,7 @@ const CONTRACT_API_BASE = "/api/v1/plugin-contract";
 const JOB_ID_PATTERN = /^[A-Za-z0-9-]{1,64}$/;
 const IDEMPOTENCY_KEY_PATTERN = /^[\x21-\x7E]{1,255}$/;
 const MAX_REPLY_TO_LENGTH = 4096;
+const MAX_DOCUMENT_ID_LENGTH = 255;
 /** Below this, a GZAC round trip cannot finish before the invocation is cancelled. */
 const MIN_CONTRACT_BUDGET_MS = 250;
 
@@ -38,6 +39,7 @@ interface PluginContractRequest {
   payload?: unknown;
   replyTo?: unknown;
   idempotencyKey?: unknown;
+  documentId?: unknown;
   jobId?: unknown;
   status?: unknown;
   result?: unknown;
@@ -230,6 +232,19 @@ function buildOutboundCall(req: PluginContractRequest): OutboundCall | ContractE
           return errorReply("INVALID_REQUEST", "'idempotencyKey' must be 1-255 visible ASCII characters");
         }
         body.idempotencyKey = req.idempotencyKey;
+      }
+      if (req.documentId !== undefined && req.documentId !== null) {
+        if (
+          typeof req.documentId !== "string" ||
+          req.documentId.length === 0 ||
+          req.documentId.length > MAX_DOCUMENT_ID_LENGTH
+        ) {
+          return errorReply(
+            "INVALID_REQUEST",
+            `'documentId' must be a non-empty string of at most ${MAX_DOCUMENT_ID_LENGTH} characters`
+          );
+        }
+        body.documentId = req.documentId;
       }
     }
     return {

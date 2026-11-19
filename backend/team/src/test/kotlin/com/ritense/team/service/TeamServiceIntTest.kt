@@ -20,9 +20,12 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.team.BaseIntegrationTest
 import com.ritense.team.domain.Team
 import org.assertj.core.api.Assertions.assertThat
+import org.hibernate.Hibernate
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.test.context.support.WithMockUser
 
@@ -102,5 +105,29 @@ class TeamManagementServiceImplIntTest : BaseIntegrationTest() {
         val filteredTeams = teamManagementService.findAll(titleContains = "Alpha")
         assertThat(filteredTeams.content).hasSize(1)
         assertThat(filteredTeams.content[0].key).isEqualTo("alpha")
+    }
+
+    @Test
+    @WithMockUser(username = ADMIN_USER_NAME, authorities = [ADMIN])
+    fun `should page teams in the database and return their users initialized`() {
+        teamManagementService.create(Team(key = "paged-service-a", title = "Paged service A"))
+        teamManagementService.create(Team(key = "paged-service-b", title = "Paged service B"))
+        teamManagementService.create(Team(key = "paged-service-c", title = "Paged service C"))
+        teamManagementService.addUserToTeam("user-a1", "paged-service-a")
+        teamManagementService.addUserToTeam("user-a2", "paged-service-a")
+        teamManagementService.addUserToTeam("user-b1", "paged-service-b")
+
+        val page = teamManagementService.findAll(
+            titleContains = "Paged service",
+            pageable = PageRequest.of(0, 2, Sort.by("title"))
+        )
+
+        assertThat(page.content).hasSize(2)
+        assertThat(page.totalElements).isEqualTo(3)
+        val teams = page.content.map { it as Team }
+        assertThat(teams.map { it.key }).containsExactly("paged-service-a", "paged-service-b")
+        assertThat(teams).allSatisfy { assertThat(Hibernate.isInitialized(it.users)).isTrue() }
+        assertThat(teams[0].users).containsExactlyInAnyOrder("user-a1", "user-a2")
+        assertThat(teams[1].users).containsExactly("user-b1")
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {ListField, ListHiddenColumn} from '@valtimo/components';
+import {CaseListContext} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -31,19 +32,30 @@ export class CaseListHiddenColumnsService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getHiddenColumns(caseDefinitionKey: string): Observable<ListField[]> {
-    return this.httpClient.get<ListField[]>(
-      this.getApiUrl(`v1/case/${caseDefinitionKey}/hidden-list-column`)
-    );
+  public getHiddenColumns(context: CaseListContext): Observable<ListField[]> {
+    return this.httpClient.get<ListField[]>(this.getHiddenColumnsUrl(context), {
+      headers:
+        context.type === 'group'
+          ? new HttpHeaders().set(InterceptorSkip, '403,404')
+          : new HttpHeaders(),
+    });
   }
 
   public saveHiddenColumns(
-    caseDefinitionKey: string,
+    context: CaseListContext,
     hiddenColumns: ListHiddenColumn[]
   ): Observable<ListHiddenColumn[]> {
     return this.httpClient.post<ListHiddenColumn[]>(
-      this.getApiUrl(`v1/case/${caseDefinitionKey}/hidden-list-column`),
+      this.getHiddenColumnsUrl(context),
       hiddenColumns
+    );
+  }
+
+  private getHiddenColumnsUrl(context: CaseListContext): string {
+    return this.getApiUrl(
+      context.type === 'group'
+        ? `v1/case-definition-group/${context.key}/hidden-list-column`
+        : `v1/case/${context.key}/hidden-list-column`
     );
   }
 }

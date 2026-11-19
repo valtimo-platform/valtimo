@@ -1,119 +1,251 @@
 # Widgets
 
-A widget shows one number, or a set of numbers, on a dashboard. Every widget combines a data source, which determines what is counted, with a display type, which determines how the result is shown.
+Widgets are the building blocks of dashboards. Each widget combines a data source (which defines what data to retrieve) with a display type (which defines how to visualize the data).
 
 ---
 
-## Adding a widget
+## Configuring widgets
 
 {% stepper %}
 {% step %}
-Go to **Admin** > **Dashboard** and select a dashboard
+Navigate to **Admin** > **Dashboard**
+{% endstep %}
+{% step %}
+Click on a dashboard to open its detail view
 {% endstep %}
 {% step %}
 Click **Add new widget**
-{% endstep %}
-{% step %}
-Fill in the widget properties, select a data source and a display type, and configure both
-{% endstep %}
-{% step %}
-Click **Save**
+
+<figure><img src="../../assets/configuration-guides/dashboard/05-widget-modal-empty.png" alt="Add new widget modal"><figcaption></figcaption></figure>
 {% endstep %}
 {% endstepper %}
 
 | Property | Description |
 |----------|-------------|
-| Widget title | The title shown above the widget |
-| Widget key | A unique key for the widget |
-| Data source | Determines what the widget counts |
-| Display type | Determines how the result is shown |
-| URL path | The path to navigate to when a user clicks the widget |
-
-Widgets are shown in the order of the list on the dashboard configuration page. Drag a widget to another position to change the order.
+| Widget title | Name of the widget configuration (required) |
+| Data source | The source of data to display (required) |
+| Display type | How the data should be visualized (required) |
+| URL path | Optional path to navigate to when clicking the widget |
 
 ---
 
 ## Data sources
 
-| Data source | What it counts |
-|-------------|----------------|
-| Case count | The number of cases of one case definition |
-| Task count | The number of tasks |
-| Multiple case counts | Several counts of cases of one case definition, each with its own label |
-| Case group by | The number of cases per value of a chosen field |
+Data sources define where widget data comes from. Each data source provides specific data features that determine which display types are compatible.
 
-{% hint style="info" %}
-A widget only counts the cases and tasks that the user viewing the dashboard is allowed to see, so the numbers match what that user finds in the case list and the task list.
-{% endhint %}
+### Case count
+
+Returns a count of cases from a single case definition.
+
+<figure><img src="../../assets/configuration-guides/dashboard/06-case-count-config.png" alt="Case count configuration"><figcaption></figcaption></figure>
+
+| Property | Description |
+|----------|-------------|
+| Case type | The case definition to count (required) |
+| Conditions | Optional filter conditions |
+
+**Compatible display types:** Big number, Gauge
+
+### Multiple case counts
+
+Returns multiple labeled counts from the same case definition, each with its own conditions.
+
+| Property | Description |
+|----------|-------------|
+| Case type | The case definition to count (required) |
+| Count items | List of labeled condition groups (required) |
+
+Each count item has:
+
+| Property | Description |
+|----------|-------------|
+| Label | Display label for this count |
+| Conditions | Filter conditions for this count |
+
+**Compatible display types:** Donut chart, Bar chart, Meter
+
+### Group by
+
+Groups and counts cases by a specific field value.
+
+| Property | Description |
+|----------|-------------|
+| Case type | The case definition to count (required) |
+| Path | Field path to group by (required) |
+| Conditions | Optional filter conditions |
+| Enum | Optional value-to-display-label mapping |
+
+**Compatible display types:** Donut chart, Bar chart, Meter
+
+### Task count
+
+Returns a count of tasks matching specified conditions.
+
+| Property | Description |
+|----------|-------------|
+| Conditions | Optional filter conditions using `task:` prefix |
+
+**Compatible display types:** Big number, Gauge
+
+---
+
+## Conditions
+
+Conditions filter the data returned by data sources. Each condition consists of a path, operator, and value.
+
+### Path prefixes
+
+| Prefix | Description | Example |
+|--------|-------------|---------|
+| `doc:` | JSON document content fields | `doc:requestDetails.amount` |
+| `case:` | Case entity properties | `case:internalStatus.id.key`, `case:assigneeId` |
+| `task:` | Task entity properties | `task:assignee`, `task:name` |
+
+### Operators
+
+| Operator | Description |
+|----------|-------------|
+| `==` | Equals |
+| `!=` | Not equals |
+| `>` | Greater than |
+| `>=` | Greater than or equal |
+| `<` | Less than |
+| `<=` | Less than or equal |
+| `list_contains` | Collection contains value |
+| `in` | Value in collection |
+
+### Placeholders
+
+Use these placeholders for dynamic values:
+
+| Placeholder | Description |
+|-------------|-------------|
+| `${null}` | Compare against empty values |
+| `${localDateTimeNow}` | Current date/time |
+| `${localDateTimeNow.minusWeeks(2)}` | Date arithmetic |
+| `${currentUserId}` | Current user's ID |
+| `${currentUserEmail}` | Current user's email |
+| `${currentUserIdentifier}` | Current user's identifier |
 
 ---
 
 ## Display types
 
-| Display type | Shows |
-|--------------|-------|
-| Number | The count as a single number |
-| Gauge | The count as a part of the total |
-| Meter | The count as a part of the total, on a horizontal bar |
-| Donut | Several counts as parts of a circle |
-| Bar chart | Several counts as bars |
+Display types define how widget data is visualized. The available display types depend on the selected data source.
 
-{% hint style="info" %}
-Not every display type fits every data source: a display type that shows multiple values, such as the donut and the bar chart, needs a data source that returns multiple counts.
-{% endhint %}
+### Big number
+
+Displays a single large numeric value with optional KPI color coding.
+
+<figure><img src="../../assets/configuration-guides/dashboard/07-big-number-config.png" alt="Big number configuration"><figcaption></figcaption></figure>
+
+| Property | Description |
+|----------|-------------|
+| Title | Widget title (required) |
+| Subtitle | Widget subtitle |
+| Label | Label displayed in the widget |
+| Use KPI | Enable severity-based color coding |
+
+When **Use KPI** is enabled:
+
+| Property | Description |
+|----------|-------------|
+| Low severity threshold | Values below this are green |
+| Medium severity threshold | Values below this are yellow |
+| High severity threshold | Values below this are orange; values above are red |
+
+**Required data source features:** `number`
+
+### Gauge
+
+Displays a value as a percentage of a total in a semi-circular gauge.
+
+| Property | Description |
+|----------|-------------|
+| Title | Widget title (required) |
+| Subtitle | Widget subtitle |
+| Label | Label shown alongside the total value |
+
+**Required data source features:** `number`, `total`
+
+### Donut chart
+
+Displays proportional data as a circular donut chart with a center label.
+
+| Property | Description |
+|----------|-------------|
+| Title | Widget title (required) |
+| Subtitle | Widget subtitle |
+| Label | Label displayed in the donut center |
+
+**Required data source features:** `numbers`
+
+### Bar chart
+
+Displays data as a vertical bar chart.
+
+| Property | Description |
+|----------|-------------|
+| Title | Widget title (required) |
+| Subtitle | Widget subtitle |
+
+**Required data source features:** `numbers`
+
+### Meter
+
+Displays data as a horizontal proportional meter bar.
+
+| Property | Description |
+|----------|-------------|
+| Title | Widget title (required) |
+| Subtitle | Widget subtitle |
+
+**Required data source features:** `numbers`
 
 ---
 
-## Configuring a task count widget
+## Data source and display type compatibility
 
-A task count widget counts the tasks that match the criteria that are set in its configuration. The gauge and the meter compare that count to the total number of tasks the user can see.
-
-### Case type
-
-{% hint style="success" %}
-Available since Valtimo `13.43.0`
-{% endhint %}
-
-The **Case type** field limits the widget to the tasks that belong to a case of one case definition. Leave it on **All case types** to count every task the user is allowed to see, including tasks that do not belong to a case.
-
-The case type limits both numbers of the widget. A widget that is limited to one case type therefore shows a part of the tasks of that case type, not a part of all tasks the user can see.
-
-{% hint style="warning" %}
-Limiting a widget to a case type requires an installation that includes the process-document module, because the tasks of a case are resolved through that module. If the widget shows no data after a case type has been selected, ask the administrator of the installation whether the module is included.
-{% endhint %}
-
-### Conditions
-
-Conditions narrow down which tasks are counted. Every condition consists of three fields.
-
-| Field | Description |
-|-------|-------------|
-| Path | The task field the condition applies to, for example `task:assignee` or `task:name` |
-| Operator | The comparison to make: `==`, `!=`, `>`, `>=`, `<` or `<=` |
-| Value | The value the task field is compared to |
-
-Click **Add condition** to add a condition. A widget without conditions counts all tasks that match the selected case type.
-
-### Condition groups
-
-{% hint style="success" %}
-Available since Valtimo `13.43.0`
-{% endhint %}
-
-Conditions are combined in groups. Every group has an **AND**/**OR** selector that determines how the conditions inside it are combined: **AND** counts the tasks that match all conditions of the group, **OR** counts the tasks that match at least one of them.
-
-Click **Add condition group** to add a group inside the current group. Groups can be nested as deeply as needed, which makes combinations possible such as "the task is assigned **and** has one of two names".
-
-A group has one operator, so all sections within it are combined in the same way. The selector on the connector between the first two sections sets the operator for the whole group, and the following connectors repeat it. To combine sections in different ways, put them in a group of their own.
-
-{% hint style="info" %}
-A widget can contain conditions that this screen cannot show, such as a condition that compares a task field to a list of values. Those conditions are kept when the widget is saved and can be changed in the JSON editor of the dashboard. The widget configuration shows a notification when a widget contains such conditions.
-{% endhint %}
+| Data Source | Data Features | Compatible Display Types |
+|-------------|---------------|--------------------------|
+| Case count | `number`, `total` | Big number, Gauge |
+| Multiple case counts | `numbers` | Donut chart, Bar chart, Meter |
+| Group by | `numbers` | Donut chart, Bar chart, Meter |
+| Task count | `number`, `total` | Big number, Gauge |
 
 ---
 
-## Editing widgets as JSON
+## Managing widgets
 
-The dashboard configuration page has a **JSON editor** button in the toolbar above the widget list. It shows all widgets of the dashboard as JSON and makes configuration possible that the widget screens do not offer, such as the `in` operator.
+### Editing a widget
 
-More information about the properties of each data source can be found in [Widget data sources](../../advanced/dashboard-widget-data-sources.md).
+Click on a widget row in the dashboard detail view to open the edit modal.
+
+### Duplicating a widget
+
+{% stepper %}
+{% step %}
+Click the overflow menu (three dots) on a widget row
+{% endstep %}
+{% step %}
+Click **Duplicate**
+{% endstep %}
+{% endstepper %}
+
+### Deleting a widget
+
+{% stepper %}
+{% step %}
+Click the overflow menu (three dots) on a widget row
+{% endstep %}
+{% step %}
+Click **Delete**
+{% endstep %}
+{% step %}
+Confirm the deletion
+{% endstep %}
+{% endstepper %}
+
+### Reordering widgets
+
+Drag and drop widget rows to change their display order on the dashboard.

@@ -61,10 +61,7 @@ class ExternalPluginContractJob(
     @Column(name = "provider_configuration_id", nullable = false)
     val providerConfigurationId: UUID,
 
-    @Column(name = "requested_by")
-    val requestedBy: String? = null,
-
-    /** The case the job acts on. A user token always names one; a service token may. */
+    /** The case the requester says the job concerns; unverified unless it came from a reply handle. */
     @Column(name = "document_id")
     val documentId: String? = null,
 

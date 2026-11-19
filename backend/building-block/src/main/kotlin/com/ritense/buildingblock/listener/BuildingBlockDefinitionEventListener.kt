@@ -35,7 +35,9 @@ import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.event.BuildingBlockDefinitionCreatedEvent
+import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.service.OperatonProcessService
+import org.operaton.bpm.engine.repository.ProcessDefinition
 import org.operaton.bpm.model.bpmn.Bpmn
 import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
@@ -94,41 +96,57 @@ class BuildingBlockDefinitionEventListener(
         basedOnId: BuildingBlockDefinitionId,
         newId: BuildingBlockDefinitionId
     ): List<String> {
-        val newProcessDefinitionIds = mutableListOf<String>()
-        processDefinitionBuildingBlockDefinitionRepository
+        val originals = processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(basedOnId)
-            .forEach { link ->
-                val originalProcessDefinition =
-                    operatonProcessService.getProcessDefinitionById(link.id.processDefinitionId.id)
-                val bpmnModel = operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(originalProcessDefinition.id)
+            .map { link -> link to operatonProcessService.getProcessDefinitionById(link.id.processDefinitionId.id) }
+        val mainProcessDefinitionKeys = originals.filter { (link, _) -> link.main }.map { (_, original) -> original.key }
 
-                operatonProcessService.setBuildingBlockDefinitionProcessesVersionTags(bpmnModel, newId)
-
-                val outputStream = ByteArrayOutputStream()
-                Bpmn.writeModelToStream(outputStream, bpmnModel)
-
-                val deployment = operatonProcessService.deploy(
-                    newId,
-                    originalProcessDefinition.resourceName,
-                    outputStream.toByteArray().inputStream(),
-                    false,
-                    false,
-                    originalProcessDefinition.versionTag,
-                    originalProcessDefinition.id
-                )
-
-                val newProcessDefinitionId = deployment.deployedProcessDefinitions.first().id
-                val newLinkId = ProcessDefinitionBuildingBlockDefinitionId(
-                    ProcessDefinitionId.of(newProcessDefinitionId),
-                    newId
-                )
-
-                processDefinitionBuildingBlockDefinitionRepository.save(
-                    ProcessDefinitionBuildingBlockDefinition(newLinkId, link.main)
-                )
-                newProcessDefinitionIds.add(newProcessDefinitionId)
+        return originals
+            .map { (_, original) -> original }
+            .distinctBy { it.deploymentId to it.resourceName }
+            .flatMap { original ->
+                deployCopy(original, newId)
+                    .onEach { linkProcessDefinition(newId, it.id, it.key in mainProcessDefinitionKeys) }
             }
-        return newProcessDefinitionIds
+            .map { it.id }
+    }
+
+    private fun deployCopy(
+        originalProcessDefinition: OperatonProcessDefinition,
+        newId: BuildingBlockDefinitionId
+    ): List<ProcessDefinition> {
+        val bpmnModel = operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(originalProcessDefinition.id)
+        operatonProcessService.setBuildingBlockDefinitionProcessesVersionTags(bpmnModel, newId)
+
+        val outputStream = ByteArrayOutputStream()
+        Bpmn.writeModelToStream(outputStream, bpmnModel)
+
+        return operatonProcessService.deploy(
+            newId,
+            originalProcessDefinition.resourceName,
+            outputStream.toByteArray().inputStream(),
+            false,
+            false,
+            originalProcessDefinition.versionTag,
+            originalProcessDefinition.id
+        )?.deployedProcessDefinitions
+            ?: error("Failed to duplicate process definition ${originalProcessDefinition.key} for building block $newId")
+    }
+
+    private fun linkProcessDefinition(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        processDefinitionId: String,
+        main: Boolean
+    ) {
+        processDefinitionBuildingBlockDefinitionRepository.save(
+            ProcessDefinitionBuildingBlockDefinition(
+                ProcessDefinitionBuildingBlockDefinitionId(
+                    ProcessDefinitionId.of(processDefinitionId),
+                    buildingBlockDefinitionId
+                ),
+                main
+            )
+        )
     }
 
     private fun rewriteFormProcessLinks(

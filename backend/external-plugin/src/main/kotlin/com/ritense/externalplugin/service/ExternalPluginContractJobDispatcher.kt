@@ -38,6 +38,7 @@ import com.ritense.externalplugin.repository.ExternalPluginContractJobRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.service.ExternalPluginContractService.ContractTarget
+import com.ritense.externalplugin.service.ExternalPluginContractService.JobRecheck
 import com.ritense.externalplugin.service.ExternalPluginContractService.ProviderLookup
 import com.ritense.externalplugin.service.ExternalPluginContractService.ProviderReply
 import com.ritense.plugin.service.EncryptionService
@@ -142,6 +143,12 @@ class ExternalPluginContractJobDispatcher(
     }
 
     private fun deliverRequest(job: ExternalPluginContractJob, run: Run) {
+        // Before the provider lookup: an unbound provider that is also down must not retry until the deadline.
+        if (contractService.bindingTargetOf(job.requesterConfigurationId, job.contract) != job.providerConfigurationId) {
+            fail(job.id, ContractErrorCodes.BINDING_CHANGED,
+                "The binding of contract '${job.contract}' changed since the job was created")
+            return
+        }
         val provider = contractService.loadProvider(job.providerConfigurationId)
         if (provider is ProviderLookup.Rejected) {
             // Unavailable and changed content can heal before the deadline; expiry reports it otherwise.
@@ -159,16 +166,21 @@ class ExternalPluginContractJobDispatcher(
             fail(job.id, ContractErrorCodes.CALLER_UNAVAILABLE, "The requesting configuration no longer exists")
             return
         }
-        val operation = jobService.operationOf(job)
-        if (operation == null) {
-            fail(job.id, ContractErrorCodes.OPERATION_NOT_PROVIDED,
-                "The provider no longer provides operation '${job.operation}' of contract '${job.contract}'")
-            return
-        }
         val target = ContractTarget(requester, requesterDefinition, provider.configuration, provider.definition, provider.host)
         val payload = jobService.decryptJson(job.requestPayload) ?: objectMapper.createObjectNode()
+        val operation = when (val recheck = contractService.recheckJob(job, target, payload)) {
+            is JobRecheck.Retry -> {
+                retryRequest(job.id, recheck.error)
+                return
+            }
+            is JobRecheck.Fail -> {
+                fail(job.id, recheck.outcome.errorCode!!, recheck.outcome.errorMessage.orEmpty())
+                return
+            }
+            is JobRecheck.Deliver -> recheck.operation
+        }
         val body = contractService.requestBody(
-            target, payload, job.chainIds, job.id, job.deadline, job.documentId, job.requestedBy,
+            target, payload, job.chainIds, job.id, job.deadline, job.documentId,
         )
 
         val response = contractService.deliver(target, job.contract, job.operation, body, correlationId = job.id.toString())
@@ -250,7 +262,7 @@ class ExternalPluginContractJobDispatcher(
             "jobId" to job.id.toString(),
             "contract" to job.contract,
             "operation" to job.operation,
-            "status" to replyStatus(job),
+            "status" to jobService.publicStatus(job),
             "result" to jobService.decryptJson(job.resultPayload)?.let { objectMapper.treeToValue(it, Any::class.java) },
             "errorCode" to job.errorCode,
             "providerErrorCode" to job.providerErrorCode,
@@ -316,7 +328,7 @@ class ExternalPluginContractJobDispatcher(
             put("jobId", job.id.toString())
             put("contract", job.contract)
             put("operation", job.operation)
-            put("status", replyStatus(job))
+            put("status", jobService.publicStatus(job))
             jobService.decryptJson(job.resultPayload)?.let { set<JsonNode>("result", it) }
             job.errorCode?.let { put("errorCode", it) }
             job.providerErrorCode?.let { put("providerErrorCode", it) }
@@ -422,12 +434,6 @@ class ExternalPluginContractJobDispatcher(
         val exponent = (attempts - 1).coerceIn(0, 30)
         val delay = retryBase.multipliedBy(1L shl exponent)
         return if (delay > retryMax || delay.isNegative) retryMax else delay
-    }
-
-    private fun replyStatus(job: ExternalPluginContractJob): String = when (job.outcome ?: job.status) {
-        COMPLETED -> "completed"
-        EXPIRED -> "expired"
-        else -> "failed"
     }
 
     private fun step(name: String, action: () -> Unit) {

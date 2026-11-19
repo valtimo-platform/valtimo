@@ -345,6 +345,30 @@ class DocumentenApiPlugin(
         )
     }
 
+    @PluginAction(
+        key = "delete-informatie-object",
+        title = "Delete informatie object",
+        description = "Deletes a document (enkelvoudiginformatieobject) from the Documenten API",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+    )
+    fun deleteInformatieObject(
+        execution: DelegateExecution,
+        @PluginActionProperty documentUrl: URI,
+    ) {
+        check(documentUrl.toASCIIString().startsWith(url.toASCIIString())) {
+            "Failed to delete informatie object with url '$documentUrl'. Document isn't part of Documenten API with url '$url'."
+        }
+
+        val documentId = execution.getJsonSchemaDocumentId()
+        val caseDocumentId = caseDocumentResolver.resolveCaseDocumentId(documentId)
+
+        withLoggingContext(
+            "DOCUMENT_URL" to documentUrl.toString()
+        ) {
+            deleteInformatieObject(caseDocumentId, documentUrl)
+        }
+    }
+
     fun deleteInformatieObject(caseDocumentId: UUID?, objectUrl: URI) {
         logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
         documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl, caseDocumentId) }

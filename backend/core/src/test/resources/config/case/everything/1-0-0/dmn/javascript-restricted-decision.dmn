@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/DMN/20151101/dmn.xsd" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_jsrestricted" name="DRD" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="javascript-restricted-decision" name="Javascript restricted decision" camunda:historyTimeToLive="180">
+    <decisionTable id="decisionTable_1" hitPolicy="FIRST">
+      <input id="input_1" label="size doubled">
+        <inputExpression id="inputExpression_1" typeRef="integer" expressionLanguage="javascript">
+          <text>size * 2</text>
+        </inputExpression>
+      </input>
+      <output id="output_1" label="risk" name="risk" typeRef="string" />
+      <rule id="rule_high">
+        <inputEntry id="in_high" expressionLanguage="javascript">
+          <text>cellInput &gt; 100</text>
+        </inputEntry>
+        <outputEntry id="out_high" expressionLanguage="javascript">
+          <text>Java.type('java.lang.System').lineSeparator()</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_low">
+        <inputEntry id="in_low">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="out_low" expressionLanguage="javascript">
+          <text>'Low-' + size</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

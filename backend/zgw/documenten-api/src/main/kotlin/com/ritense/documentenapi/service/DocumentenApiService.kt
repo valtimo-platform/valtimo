@@ -24,7 +24,9 @@ import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.document.domain.RelatedFile
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider.Companion.VIEW
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.documentenapi.DocumentenApiPlugin
@@ -52,6 +54,7 @@ import com.ritense.zgw.LoggingConstants.ZAKEN_API
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
@@ -70,8 +73,20 @@ class DocumentenApiService(
     private val valtimoDocumentService: DocumentService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
     private val documentenApiVersionService: DocumentenApiVersionService,
-    private val valueResolverService: ValueResolverService
+    private val valueResolverService: ValueResolverService,
+    private val informatieObjectCaseResolvers: List<InformatieObjectCaseResolver> = emptyList(),
 ) {
+
+    fun requireViewableLinkedCaseDocumentId(
+        @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
+        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
+    ): UUID {
+        val linkedCaseDocumentIds = informatieObjectCaseResolvers
+            .flatMap { it.getLinkedCaseDocumentIds(pluginConfigurationId, documentId) }
+            .distinct()
+        return linkedCaseDocumentIds.firstOrNull { canViewCase(it) }
+            ?: throw AccessDeniedException("Document $documentId is not linked to a case the user can view")
+    }
 
     fun downloadInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
@@ -307,6 +322,15 @@ class DocumentenApiService(
 
     private fun getInformatieobjecttypeByUri(uri: String?): String? {
         return uri?.let { catalogiService.getInformatieobjecttype(URI(it))?.omschrijving }
+    }
+
+    private fun canViewCase(caseDocumentId: UUID): Boolean {
+        val document = runWithoutAuthorization {
+            valtimoDocumentService.findBy(JsonSchemaDocumentId.existingId(caseDocumentId)).orElse(null)
+        } as? JsonSchemaDocument ?: return false
+        return authorizationService.hasPermission(
+            EntityAuthorizationRequest(JsonSchemaDocument::class.java, JsonSchemaDocumentActionProvider.VIEW, document)
+        )
     }
 
     private fun denyAuthorization() {
