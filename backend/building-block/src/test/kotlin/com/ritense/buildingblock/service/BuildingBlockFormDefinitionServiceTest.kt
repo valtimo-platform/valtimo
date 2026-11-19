@@ -19,6 +19,7 @@ package com.ritense.buildingblock.service
 import com.ritense.form.domain.FormDefinitionBlueprintId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.form.service.FormDefinitionUsageGuard
 import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
@@ -42,7 +43,8 @@ import java.util.UUID
 @ExtendWith(MockitoExtension::class)
 class BuildingBlockFormDefinitionServiceTest(
     @Mock private val formDefinitionRepository: FormDefinitionRepository,
-    @Mock private val definitionChecker: BuildingBlockDefinitionChecker
+    @Mock private val definitionChecker: BuildingBlockDefinitionChecker,
+    @Mock private val formDefinitionUsageGuard: FormDefinitionUsageGuard
 ) {
     private lateinit var service: BuildingBlockFormDefinitionService
 
@@ -51,7 +53,7 @@ class BuildingBlockFormDefinitionServiceTest(
 
     @BeforeEach
     fun setUp() {
-        service = BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker)
+        service = BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker, formDefinitionUsageGuard)
     }
 
     @Test
@@ -268,6 +270,7 @@ class BuildingBlockFormDefinitionServiceTest(
 
         service.deleteFormDefinition(buildingBlockDefinitionId, formId)
 
+        verify(formDefinitionUsageGuard).lockAndAssertNotInUse(formId)
         verify(formDefinitionRepository).delete(form)
     }
 
