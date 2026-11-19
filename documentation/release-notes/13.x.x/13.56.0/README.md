@@ -39,3 +39,4 @@ The settings screen of an external plugin now grows with its content when you ed
 | Area | Fix |
 |------|-----|
 | Forms | A form that a process link uses can no longer be deleted. Making a case definition final, exporting it and creating a draft now give a clear error when a process link points to a missing form. Case definitions that are already final and contain such a link are not repaired by this change. |
+| Documents | The **Edit** action on Documenten API documents works again. Since 13.23.0 it was disabled for every document with status *definitief*, and for every document when the configured Documenten API version does not support editing definitive documents. Now only definitive documents are blocked, and only when the API version does not support editing them. You still need permission to modify documents. |
