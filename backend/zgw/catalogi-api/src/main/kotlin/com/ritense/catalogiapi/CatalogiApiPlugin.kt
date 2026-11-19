@@ -192,6 +192,34 @@ class CatalogiApiPlugin(
     }
 
     @PluginAction(
+        key = "get-besluittypen",
+        title = "Get Besluittypen",
+        description = "Retrieve the besluittypen and save these in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getBesluittypen(
+        execution: DelegateExecution,
+        @PluginActionProperty processVariable: String
+    ) {
+        logger.debug { "Retrieving besluittypen and storing these in process variable: $processVariable" }
+        getZaaktypeUrl(execution).let { zaaktypeUri ->
+            withLoggingContext(
+                CATALOGI_API.ZAAKTYPE to zaaktypeUri.toString()
+            ) {
+                getBesluittypen(zaaktypeUri).map { besluittype ->
+                    mapOf(
+                        URL_KEY to besluittype.url!!.toASCIIString(),
+                        NAME_KEY to besluittype.omschrijving
+                    )
+                }.let { besluittypen ->
+                    execution.setVariable(processVariable, besluittypen)
+                }
+                logger.info { "Setting process variable $processVariable with (retrieved) besluittypen" }
+            }
+        }
+    }
+
+    @PluginAction(
         key = "get-besluittype",
         title = "Get Besluittype",
         description = "Retrieve the besluittype and save it in a process variable",
