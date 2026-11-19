@@ -131,7 +131,7 @@ const BUNDLE_CSP_DIRECTIVES = [
   "form-action 'self'",
   "base-uri 'none'",
   "object-src 'none'",
-  "sandbox allow-scripts allow-forms",
+  "sandbox allow-scripts allow-forms allow-downloads",
 ];
 
 async function serveFile(reply: FastifyReply, fullPath: string, csp?: string): Promise<void> {
