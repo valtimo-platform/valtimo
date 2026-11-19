@@ -181,6 +181,14 @@ const MENU_ITEM_CATALOG: MenuItemCatalogEntry[] = [
     category: 'admin',
   },
   {
+    itemId: 'pluginContractJobs',
+    defaultTitleKey: 'pluginManagement.contractJobs.title',
+    link: '/plugin-contract-jobs',
+    roles: [ROLE_ADMIN],
+    placement: 'admin',
+    category: 'admin',
+  },
+  {
     itemId: 'dashboardManagement',
     defaultTitleKey: 'Dashboard',
     link: '/dashboard-management',

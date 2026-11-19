@@ -38,7 +38,7 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import {FormManagementCreateComponent} from '@valtimo/form-management';
+import {FormManagementCreateComponent, getFormDefinitionUsagesText} from '@valtimo/form-management';
 import {BuildingBlockFormDefinitionDto, GlobalNotificationService} from '@valtimo/shared';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
@@ -282,10 +282,16 @@ export class BuildingBlockManagementFormsComponent implements OnInit, OnDestroy 
           });
           this.buildingBlockManagementDetailService.reloadFormDefinitions();
         },
-        error: () => {
+        error: error => {
+          const usages = getFormDefinitionUsagesText(error);
+
           this.notificationService.showToast({
             type: 'error',
-            title: this.translateService.instant('formManagement.notifications.deletionError'),
+            title: usages
+              ? this.translateService.instant('formManagement.notifications.deletionInUse', {
+                  usages,
+                })
+              : this.translateService.instant('formManagement.notifications.deletionError'),
           });
           this.$loading.set(false);
         },

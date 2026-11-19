@@ -31,6 +31,7 @@ import com.ritense.externalplugin.domain.ExternalPluginGrantedEndpoint
 import com.ritense.externalplugin.domain.ExternalPluginGrantedEvent
 import com.ritense.externalplugin.domain.ExternalPluginHost
 import com.ritense.externalplugin.domain.ExternalPluginHostStatus
+import com.ritense.externalplugin.exception.ExternalPluginConfigurationValidationException
 import com.ritense.externalplugin.service.EndpointDescriptionService
 import com.ritense.externalplugin.service.EndpointDescription
 import com.ritense.externalplugin.service.EndpointQuery
@@ -45,6 +46,7 @@ import com.ritense.externalplugin.web.rest.dto.GrantedEventEntry
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -96,6 +98,7 @@ class ExternalPluginConfigurationResourceTest {
             compatibilityChecker = GzacCompatibilityChecker { "12.0.0" },
             pluginPackageInspector = PluginPackageInspector(objectMapper),
             objectMapper = objectMapper,
+            contractJobService = mock(),
         )
     }
 
@@ -121,7 +124,7 @@ class ExternalPluginConfigurationResourceTest {
             grantedEgress = listOf("api.kvk.nl"),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         val response = resource.createConfiguration(request)
@@ -137,6 +140,7 @@ class ExternalPluginConfigurationResourceTest {
             eq(listOf("api.kvk.nl")),
             any(),
             any(),
+            eq(emptyList()),
         )
     }
 
@@ -149,20 +153,48 @@ class ExternalPluginConfigurationResourceTest {
             grantedEndpoints = emptyList(),
         )
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration())
 
         resource.createConfiguration(request)
 
         verify(configurationService).create(
-            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList()), any(), any()
+            eq(definitionId), any(), any(), eq(emptyList()), eq(emptyList()), eq(emptyList()), eq(emptyList()), any(), any(), eq(emptyList())
         )
+    }
+
+    @Test
+    fun `a create or update the admin can fix surfaces as a configuration validation failure`() {
+        whenever(
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        ).thenThrow(IllegalArgumentException("These contract bindings would create a cycle"))
+        whenever(configurationService.update(any(), any(), any(), anyOrNull(), anyOrNull(), any()))
+            .thenThrow(IllegalArgumentException("Contract binding(s) for undeclared contract(s): x@1"))
+
+        assertThatThrownBy {
+            resource.createConfiguration(
+                ConfigurationCreateRequest(
+                    definitionId = definitionId,
+                    title = "t",
+                    properties = objectMapper.createObjectNode(),
+                    grantedEndpoints = emptyList(),
+                )
+            )
+        }.isInstanceOf(ExternalPluginConfigurationValidationException::class.java)
+            .hasMessage("These contract bindings would create a cycle")
+        assertThatThrownBy {
+            resource.updateConfiguration(
+                configurationId,
+                ConfigurationUpdateRequest(title = "t", properties = objectMapper.createObjectNode()),
+            )
+        }.isInstanceOf(ExternalPluginConfigurationValidationException::class.java)
+            .hasMessage("Contract binding(s) for undeclared contract(s): x@1")
     }
 
     @Test
     fun `createConfiguration response carries the token generation but no properties`() {
         whenever(
-            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any())
+            configurationService.create(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
         ).thenReturn(configuration(tokenGeneration = 3))
 
         val body = resource.createConfiguration(
@@ -282,7 +314,7 @@ class ExternalPluginConfigurationResourceTest {
     @Test
     fun `updateConfiguration forwards title, properties and endpoint grants only`() {
         val properties = objectMapper.createObjectNode().put("apiUrl", "https://new.example.com")
-        whenever(configurationService.update(any(), any(), any(), anyOrNull()))
+        whenever(configurationService.update(any(), any(), any(), anyOrNull(), anyOrNull(), any()))
             .thenReturn(configuration())
 
         resource.updateConfiguration(
@@ -305,7 +337,7 @@ class ExternalPluginConfigurationResourceTest {
 
     @Test
     fun `updateConfiguration forwards a null endpoint list as leave-unchanged`() {
-        whenever(configurationService.update(any(), any(), any(), anyOrNull()))
+        whenever(configurationService.update(any(), any(), any(), anyOrNull(), anyOrNull(), any()))
             .thenReturn(configuration())
 
         resource.updateConfiguration(
@@ -313,7 +345,7 @@ class ExternalPluginConfigurationResourceTest {
             ConfigurationUpdateRequest(title = "t", properties = objectMapper.createObjectNode()),
         )
 
-        verify(configurationService).update(eq(configurationId), any(), any(), eq(null))
+        verify(configurationService).update(eq(configurationId), any(), any(), eq(null), eq(null), eq(false))
     }
 
     // ---------------------------------------------------------------- revoke / delete / usages

@@ -75,6 +75,7 @@ class ExternalPluginUploadCompatibilityTest {
             GzacCompatibilityChecker(GzacVersionProvider { "13.1.3" }),
             PluginPackageInspector(objectMapper),
             objectMapper,
+            mock(),
         )
     }
 
@@ -133,6 +134,34 @@ class ExternalPluginUploadCompatibilityTest {
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
         verify(hostService).uploadPlugin(any(), any(), any(), any())
+    }
+
+    @Test
+    fun `rejects a package with an unusable contract schema with 400 before the host sees it`() {
+        val file = pluginZip(
+            """{"provides":[{"contract":"a@1","operations":[{"key":"op","input":{"pattern":"["}}]}]}"""
+        )
+
+        val response = resource.uploadPlugin(hostId, file, force = true)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(response.body!!.get("error").asText()).isEqualTo("Plugin package declares invalid contract schemas")
+        assertThat(response.body!!.get("code").asText()).isEqualTo("CONTRACT_SCHEMAS_INVALID")
+        assertThat(response.body!!.get("detail").asText()).contains("Operation 'op' of contract 'a@1'")
+        verify(hostService, never()).uploadPlugin(any(), any(), any(), any())
+    }
+
+    @Test
+    fun `rejects a package whose contract schema is over the size cap`() {
+        val big = "x".repeat(70_000)
+        val file = pluginZip(
+            """{"provides":[{"contract":"a@1","operations":[{"key":"op","output":{"description":"$big"}}]}]}"""
+        )
+
+        val response = resource.uploadPlugin(hostId, file, force = false)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        verify(hostService, never()).uploadPlugin(any(), any(), any(), any())
     }
 
     private fun pluginZip(manifestJson: String): MockMultipartFile {

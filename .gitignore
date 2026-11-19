@@ -27,5 +27,7 @@
 /test-results/
 /frontend/test-results/.last-run.json
 
+# Local Spring config overrides
+application-local.yml
 # Local dev overrides (may contain secrets)
 backend/apps/dev/src/main/resources/config/application-local.yml
