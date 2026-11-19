@@ -35,6 +35,7 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
     },
   },
   editForm: currencyEditForm,
+  fieldOptions: ['key'],
 };
 
 export function registerFormioCurrencyComponent(injector: Injector) {

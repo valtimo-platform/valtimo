@@ -24,6 +24,7 @@ import com.ritense.case.web.rest.dto.TaskListColumnDto
 import com.ritense.case.web.rest.mapper.TaskListColumnMapper
 import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
 import org.zalando.problem.Status
 
@@ -82,11 +83,19 @@ open class TaskListColumnValidationUtils(
     }
 
     @Throws(InvalidListColumnException::class)
-    internal fun isPropertyPathValid(caseDefinitionName: String, taskListColumnDto: TaskListColumnDto) {
+    internal fun isPropertyPathValid(
+        caseDefinitionName: String,
+        taskListColumnDto: TaskListColumnDto,
+        caseDefinitionId: CaseDefinitionId?
+    ) {
         val path = taskListColumnDto.path
 
         try {
-            valueResolverService.validateValues(caseDefinitionName, listOf(path))
+            if (caseDefinitionId == null) {
+                valueResolverService.validateValues(caseDefinitionName, listOf(path))
+            } else {
+                valueResolverService.validateValues(caseDefinitionId, listOf(path))
+            }
         } catch (ex: Exception) {
             throw InvalidListColumnException(ex.message, Status.BAD_REQUEST)
         }

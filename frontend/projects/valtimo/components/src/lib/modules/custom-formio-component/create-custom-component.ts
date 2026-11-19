@@ -251,9 +251,30 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
     }
 
     // override setValue method to allow for array values
-    public setValue(value): boolean {
-      if (!this._customAngularElement || !('value' in this._customAngularElement)) {
+    public setValue(value: any, flags: any = {}): boolean {
+      // dataValue first, like base setValue — else defaults never reach the form data.
+      // Null: resetValue stops updateValue reading the element back; event fired without it,
+      // since resetValue in a change event resets calculated fields.
+      const isReset = isNil(value);
+
+      // Form.io resets fields missing from a submission this way. Keep a value the element
+      // filled in itself, like the current user.
+      if (isReset && flags.resetValue && !this.isEmpty(this.dataValue)) {
         return false;
+      }
+
+      const changed = this.updateValue(
+        value,
+        isReset ? {...flags, resetValue: true, noUpdateEvent: true} : flags,
+        undefined
+      );
+
+      if (isReset) {
+        this.updateOnChange(flags, changed);
+      }
+
+      if (!this._customAngularElement || !('value' in this._customAngularElement)) {
+        return changed;
       }
 
       // Re-apply customOptions on every setValue. calculateValue expressions can mutate
@@ -264,9 +285,9 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
       // customOptions never reach the Angular element in a single-component form.
       this.bindCustomOptions();
 
-      this._customAngularElement.value = value;
+      this._customAngularElement.value = this.dataValue;
 
-      return true;
+      return changed;
     }
 
     // Push the (possibly calculateValue-mutated) customOptions to the Angular element.

@@ -28,8 +28,10 @@ import com.ritense.externalplugin.service.ExternalPluginConfigurationService
 import com.ritense.externalplugin.service.ExternalPluginDefinitionService
 import com.ritense.externalplugin.service.ExternalPluginDiscoveryService
 import com.ritense.externalplugin.service.ExternalPluginHostService
+import com.ritense.externalplugin.exception.ExternalPluginConfigurationValidationException
 import com.ritense.externalplugin.web.rest.dto.AcceptContentRequest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -77,6 +79,7 @@ class ExternalPluginDefinitionResourceTest {
             compatibilityChecker = GzacCompatibilityChecker { currentGzacVersion },
             pluginPackageInspector = PluginPackageInspector(objectMapper),
             objectMapper = objectMapper,
+            contractJobService = mock(),
         )
     }
 
@@ -241,5 +244,41 @@ class ExternalPluginDefinitionResourceTest {
         )
 
         assertThat(response.body!!.contentHash).isEqualTo("sha256:changed")
+    }
+
+    @Test
+    fun `getDefinition lists the unusable contract schemas of the accepted and the pending manifest`() {
+        val bad = objectMapper.readTree(
+            """{"provides": [{"contract": "a@1", "operations": [{"key": "op", "output": {"pattern": "["}}]}]}"""
+        ) as ObjectNode
+        val definition = definition(pendingContentHash = "sha256:changed")
+        definition.manifestJson = bad
+        definition.pendingManifestJson = bad.deepCopy()
+        whenever(definitionService.get(definitionId)).thenReturn(definition)
+
+        val body = resource.getDefinition(definitionId).body!!
+
+        assertThat(body.contractSchemaErrors).hasSize(1)
+        assertThat(body.pendingContractSchemaErrors).hasSize(1)
+    }
+
+    @Test
+    fun `getDefinition lists no schema errors for a usable manifest`() {
+        whenever(definitionService.get(definitionId)).thenReturn(definition())
+
+        val body = resource.getDefinition(definitionId).body!!
+
+        assertThat(body.contractSchemaErrors).isEmpty()
+        assertThat(body.pendingContractSchemaErrors).isEmpty()
+    }
+
+    @Test
+    fun `acceptDefinitionContent turns a refused acceptance into a readable validation error`() {
+        whenever(configurationService.acceptContent(eq(definitionId), any()))
+            .thenThrow(IllegalArgumentException("cannot be accepted: broken schema"))
+
+        assertThatThrownBy { resource.acceptDefinitionContent(definitionId, AcceptContentRequest("sha256:changed")) }
+            .isInstanceOf(ExternalPluginConfigurationValidationException::class.java)
+            .hasMessageContaining("broken schema")
     }
 }

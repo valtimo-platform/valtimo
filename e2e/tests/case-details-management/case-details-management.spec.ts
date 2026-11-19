@@ -223,9 +223,11 @@ test.describe('Case management', () => {
         // `undefined` until the baseline is read: `null` already means "nothing was linked".
         let originalUploadProcessKey: string | null | undefined;
         let featureProcessUrl: string | null = null;
+        let linkVersion: string | undefined;
 
         test.beforeAll(async () => {
-          featureProcessUrl = `/api/management/v1/case-definition/bezwaar/version/${draftVersion}/feature-process`;
+          linkVersion = await ensureDraftVersionSelected(page);
+          featureProcessUrl = `/api/management/v1/case-definition/bezwaar/version/${linkVersion}/feature-process`;
           try {
             const linked = await apiGet<{processDefinitionKey: string}>(
               `${featureProcessUrl}/DOCUMENT_UPLOAD`
@@ -259,6 +261,12 @@ test.describe('Case management', () => {
                 `${featureProcessUrl}: ${(error as Error).message}`
             );
           }
+        });
+
+        test.beforeEach(async () => {
+          // Baseline and restore target `linkVersion`; edit nothing else.
+          expect(getVersionFromUrl(page)).toBe(linkVersion);
+          await caseDetailsManagementPage.waitForUploadProcessReady();
         });
 
         test('Upload process combo box is visible', async () => {

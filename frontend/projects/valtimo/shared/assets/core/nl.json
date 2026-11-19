@@ -707,6 +707,7 @@
     "addModal": {
       "descriptionPlaceholder": "Voer hier een beschrijving in",
       "descriptionHelperText": "*Beschrijving is alleen zichtbaar op de configuratiepagina van het dashboard",
+      "keyNoLettersHelperText": "Uit een naam zonder letters kan geen sleutel worden gegenereerd. Klik op het bewerkicoon en voer een sleutel in die met een letter begint.",
       "name": "Dashboardnaam",
       "namePlaceholder": "Voer hier een naam in"
     },
@@ -2860,7 +2861,7 @@
       "steps": {
         "connection": "Verbinden",
         "configuration": "Gegevens invullen",
-        "permissions": "Rechten"
+        "permissions": "Rechten & plugins"
       },
       "connect": "Verbinden",
       "connecting": "Verbinding maken met de app…",
@@ -2894,6 +2895,7 @@
       "description": "Alleen .zip-bestanden worden geaccepteerd",
       "failedTitle": "Uploaden mislukt",
       "rejected": "De pluginhost heeft de upload geweigerd.",
+      "refused": "GZAC heeft het pakket geweigerd.",
       "tooLargeTitle": "Pakket te groot",
       "tooLarge": "Dit pluginpakket is {{sizeMb}} MB. De maximaal geaccepteerde grootte is {{maxMb}} MB.",
       "identicalTitle": "Al up-to-date",
@@ -2988,15 +2990,17 @@
     },
     "editExternalConfiguration": "Externe pluginconfiguratie bewerken",
     "invalidJson": "Ongeldige JSON",
+    "saveFailed": "Opslaan van de configuratie is mislukt",
+    "saveRejected": "De configuratie is niet geaccepteerd. Controleer de waarden en de contractkoppelingen.",
     "addSteps": {
       "step0": "Plugin selecteren",
       "step1": "Gegevens invullen",
-      "step2": "Rechten",
+      "step2": "Rechten & plugins",
       "complete": "Configuratie opslaan"
     },
     "editSteps": {
       "step0": "Gegevens invullen",
-      "step1": "Rechten",
+      "step1": "Rechten & plugins",
       "save": "Configuratie opslaan"
     },
     "permissions": {
@@ -3024,7 +3028,11 @@
       "egressWildcard": "Elk adres onder dit domein — de plugin bepaalt zelf met welk adres verbinding wordt gemaakt",
       "egressFromManifest": "Vereist door de plugin",
       "egressFromConfiguration": "Uit een URL die je in deze configuratie hebt ingevuld",
-      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten"
+      "accept": "Ik vertrouw deze plugin en accepteer de gevraagde rechten",
+      "declaredContractsHeading": "Aangeroepen contracten",
+      "declaredContractsDescription": "Deze plugin mag de bewerkingen van deze contracten aanroepen op de pluginconfiguratie waaraan het contract is gekoppeld. Een contract zonder koppeling kan niet worden aangeroepen.",
+      "providedContractsHeading": "Aangeboden contracten",
+      "providedContractsDescription": "Andere plugins kunnen voor deze contracten aan deze plugin worden gekoppeld. Dit is geen recht: het laat zien wat deze plugin aanbiedt."
     },
     "logs": {
       "menuItem": "Logs",
@@ -3086,12 +3094,17 @@
       "parentType": {
         "CASE": "Dossier",
         "BUILDING_BLOCK": "Bouwblok",
-        "GLOBAL": "Globaal"
+        "GLOBAL": "Globaal",
+        "CONTRACT_BINDING": "Contractkoppeling",
+        "CONTRACT_JOB": "Contractopdracht"
       },
       "caseTab": "Dossiertabblad",
       "caseWidget": "Dossierwidget",
       "buildingBlockMapping": "Pluginmapping van bouwblok",
-      "menuPage": "Menupagina"
+      "menuPage": "Menupagina",
+      "contractBinding": "Via een contract gekoppeld aan een andere pluginconfiguratie",
+      "contractJob": "Contractopdracht die nog openstaat",
+      "viewContractJob": "Opdracht bekijken"
     },
     "reviewRequired": {
       "tag": "Beoordeling vereist",
@@ -3102,7 +3115,9 @@
       "menuItem": "Wijzigingen beoordelen",
       "modalTitle": "Gewijzigde app beoordelen",
       "accept": "Wijzigingen accepteren",
-      "failed": "Accepteren van de wijzigingen is mislukt"
+      "failed": "Accepteren van de wijzigingen is mislukt",
+      "newContractsTitle": "Nieuwe contracten",
+      "newContractsMessage": "Deze versie roept ook {{contracts}} aan. Bij accepteren wordt een dergelijk contract alleen gekoppeld waar precies één configuratie alle aangeroepen bewerkingen aanbiedt. Overal elders blijft het ongekoppeld, en mislukken aanroepen ervan, totdat een beheerder het in de configuratie koppelt."
     },
     "awaitingHost": {
       "modalTitle": "Pluginhost nog niet beschikbaar",
@@ -3119,6 +3134,120 @@
       "current": "Je gebruikt momenteel {{current}}.",
       "minimum": "Minimaal compatibele versie: {{min}}.",
       "maximum": "Maximaal compatibele versie: {{max}}."
+    },
+    "contractSchemas": {
+      "tag": "Ongeldig contractschema",
+      "title": "Contractschema's niet bruikbaar",
+      "tooltip": "Deze plugin declareert contractschema's die GZAC niet kan gebruiken. Aanroepen van deze bewerkingen worden geweigerd.",
+      "reviewMessage": "Deze versie declareert contractschema's die GZAC niet kan gebruiken. Je kunt haar pas accepteren als de plugin is gecorrigeerd.",
+      "createMessage": "Deze plugin declareert contractschema's die GZAC niet kan gebruiken. Je kunt pas een configuratie aanmaken als de plugin is gecorrigeerd."
+    },
+    "contracts": {
+      "bindingsHeading": "Plugins die deze plugin aanroept",
+      "bindingsDescription": "Deze plugin roept andere plugins aan via de onderstaande contracten. Kies per contract de pluginconfiguratie die het afhandelt, of laat het contract ongekoppeld: aanroepen van een ongekoppeld contract mislukken.",
+      "selectProvider": "Kies een pluginconfiguratie",
+      "choiceRequired": "Kies een pluginconfiguratie, of laat het contract ongekoppeld",
+      "leaveUnbound": "Ongekoppeld laten",
+      "unboundHint": "Aanroepen van dit contract mislukken zolang het ongekoppeld is.",
+      "noProvider": "Nog geen enkele configuratie biedt dit contract aan. Aanroepen ervan mislukken totdat u er een koppelt.",
+      "noCompatibleProvider": "Geen enkele configuratie biedt alle bewerkingen aan die deze plugin aanroept. Aanroepen van het contract mislukken totdat u er een koppelt.",
+      "staleBinding": "Gekoppeld aan {{title}}, dat dit contract niet meer aanbiedt. Kies een andere configuratie of laat het contract ongekoppeld.",
+      "incompatibleBinding": "Gekoppeld aan {{title}}, dat {{operations}} niet aanbiedt. Kies een andere configuratie of laat het contract ongekoppeld.",
+      "missingOperations": "biedt {{operations}} niet aan",
+      "declaredOperations": "Roept {{operations}} aan",
+      "providersLoadFailed": "De configuraties die dit contract aanbieden konden niet worden geladen.",
+      "retry": "Opnieuw proberen",
+      "unavailable": "niet beschikbaar",
+      "contract": "Contract",
+      "operation": "Bewerking",
+      "operations": "Bewerkingen",
+      "anyOperation": "Elke bewerking die de gekoppelde configuratie aanbiedt",
+      "mode": "Modus",
+      "immediate": "Direct",
+      "longRunning": "Langlopend",
+      "longRunningUpTo": "Langlopend, tot {{duration}}",
+      "durationUnits": {
+        "days": "{{value}} d",
+        "hours": "{{value}} u",
+        "minutes": "{{value}} min",
+        "seconds": "{{value}} s"
+      }
+    },
+    "contractJobs": {
+      "title": "Contractopdrachten",
+      "description": "Asynchrone verzoeken tussen pluginconfiguraties. Een openstaande opdracht blokkeert het verwijderen van beide configuraties.",
+      "filterAll": "Alle",
+      "refresh": "Vernieuwen",
+      "configurationFilter": "Configuratie",
+      "filterAllConfigurations": "Alle configuraties",
+      "retry": "Opnieuw proberen",
+      "loadFailed": "De opdracht kon niet worden geladen.",
+      "notFound": "Deze opdracht bestaat niet. Afgeronde opdrachten worden na hun bewaartermijn verwijderd.",
+      "actionRefused": "De opdracht is intussen gewijzigd, waardoor dit niet meer kan. Hieronder staat de huidige stand.",
+      "empty": "Geen contractopdrachten gevonden",
+      "detailTitle": "Contractopdracht",
+      "requestPayload": "Verzoek",
+      "resultPayload": "Resultaat",
+      "payloads": "Verzoek en resultaat",
+      "payloadsAudited": "Het verzoek en het resultaat kunnen persoonsgegevens bevatten. Het tonen ervan wordt vastgelegd in het auditlog.",
+      "showPayloads": "Verzoek en resultaat tonen",
+      "payloadsFailed": "Het verzoek en het resultaat konden niet worden geladen.",
+      "actions": {
+        "cancelJob": "Opdracht annuleren",
+        "stopDelivery": "Aflevering stoppen",
+        "redeliver": "Opnieuw afleveren",
+        "back": "Terug"
+      },
+      "confirmCancelJob": {
+        "title": "Deze opdracht annuleren?",
+        "content": "De opdracht mislukt als geannuleerd en de aanvragende plugin krijgt dat te horen. Dit kan niet ongedaan worden gemaakt."
+      },
+      "confirmStopDelivery": {
+        "title": "Aflevering van het antwoord stoppen?",
+        "content": "De aanvragende plugin krijgt het antwoord niet en de opdracht krijgt de status Niet af te leveren. U kunt het antwoord later opnieuw afleveren."
+      },
+      "confirmRedeliver": {
+        "title": "Antwoord opnieuw afleveren?",
+        "content": "De aflevering aan de aanvragende plugin begint opnieuw bij de eerste poging."
+      },
+      "columns": {
+        "contract": "Contract",
+        "operation": "Bewerking",
+        "requester": "Aanvrager",
+        "provider": "Aanbieder",
+        "status": "Status",
+        "createdAt": "Aangemaakt",
+        "deadline": "Deadline",
+        "attempts": "Pogingen",
+        "error": "Fout",
+        "outcome": "Uitkomst",
+        "documentId": "Dossier",
+        "idempotencyKey": "Idempotentiesleutel",
+        "providerErrorCode": "Foutcode van aanbieder",
+        "updatedAt": "Bijgewerkt",
+        "completedAt": "Afgerond",
+        "deliveredAt": "Afgeleverd",
+        "replyToProcessInstance": "Antwoord naar procesinstantie",
+        "lastDeliveryError": "Laatste afleverfout"
+      },
+      "status": {
+        "PENDING": "In afwachting",
+        "ACCEPTED": "Geaccepteerd",
+        "COMPLETED": "Voltooid",
+        "FAILED": "Mislukt",
+        "EXPIRED": "Verlopen",
+        "DELIVERED": "Afgeleverd",
+        "UNDELIVERABLE": "Niet af te leveren"
+      }
+    },
+    "propertiesEditor": {
+      "helper": "JSON, gecontroleerd tegen het configuratieschema van de plugin. Houd de muis boven een sleutel voor de uitleg; Ctrl+Spatie stelt de velden voor.",
+      "fieldsTitle": "Velden die deze plugin verwacht",
+      "required": "Verplicht",
+      "secret": "Geheim",
+      "egressTarget": "Uitgaande bestemming",
+      "secretKept": "Versleuteld opgeslagen en niet getoond; laat het weg om de huidige waarde te behouden.",
+      "titlePlaceholder": "Geef deze configuratie een naam"
     }
   },
   "customerCases": {
@@ -4515,6 +4644,10 @@
     },
     "opensearch": {
       "title": "OpenSearch",
+      "tabs": {
+        "reindexRuns": "Herindexeringen",
+        "rejectedCases": "Geweigerde dossiers"
+      },
       "reindex": {
         "title": "Herindexeringen",
         "description": "Herindexeer alle documenten van de database naar OpenSearch. Deze bewerking wordt op de achtergrond uitgevoerd.",
@@ -4536,18 +4669,22 @@
         "inProgress": "Herindexering bezig...",
         "errorTitle": "Fout",
         "viewErrorLogs": "Foutlogs bekijken",
+        "viewRejectedCases": "Geweigerde dossiers bekijken",
         "pruneOrphans": "Verweesde documenten opschonen",
-        "documentDefinitionName": "Documentdefinitie",
-        "documentDefinitionPlaceholder": "Alle documentdefinities",
-        "allDocumentDefinitions": "Alle documentdefinities",
+        "recreateIndex": "Index opnieuw opbouwen / migreren",
+        "documentDefinitionName": "Dossierdefinitie",
+        "documentDefinitionPlaceholder": "Alle dossierdefinities",
+        "allDocumentDefinitions": "Alle dossierdefinities",
         "modifiedBefore": "Gewijzigd vóór",
         "modifiedAfter": "Gewijzigd na",
+        "modifiedAfterUnavailable": "Niet beschikbaar bij het opnieuw opbouwen van de index: een herbouw herindexeert altijd alle documenten binnen het bereik.",
+        "startFailed": "Herindexering kon niet worden gestart",
         "columns": {
           "status": "Status",
           "startedOn": "Gestart",
           "finishedOn": "Voltooid",
           "progress": "Voortgang",
-          "documentDefinition": "Documentdefinitie"
+          "documentDefinition": "Dossierdefinitie"
         },
         "noResults": {
           "title": "Geen herindexeringen",
@@ -4556,15 +4693,53 @@
         "statuses": {
           "RUNNING": "Bezig",
           "COMPLETED": "Voltooid",
+          "COMPLETED_WITH_ERRORS": "Voltooid met fouten",
           "FAILED": "Mislukt",
           "STOPPED": "Gestopt",
           "PRUNING": "Verweesde documenten opschonen"
         },
+        "completedWithErrors": "Voltooid, maar {{skipped}} document(en) konden niet worden geïndexeerd en zijn overgeslagen.",
         "pruningProgress": "Verwijderd: {{removed}}",
         "tooltips": {
           "pruneOrphans": "Verwijder documenten uit OpenSearch die niet meer in de database bestaan",
-          "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd"
+          "pruned": "Documenten verwijderd uit OpenSearch omdat het oorspronkelijke document is verwijderd",
+          "recreateIndex": "Bouw de index opnieuw op en wissel deze zonder downtime om. Een run zonder dossierdefinitie migreert van de oude gedeelde index naar één index per dossierdefinitie."
         }
+      },
+      "topology": {
+        "legacyWarningTitle": "Index opnieuw opbouwen vereist",
+        "legacyWarningMessage": "Deze installatie gebruikt nog de oude documentzoekindex, of voor één of meer dossierdefinities ontbreekt een index. Start een herindexering met \"Index opnieuw opbouwen / migreren\" ingeschakeld om te migreren naar de indices per definitie. Tot de migratie is voltooid, gebruikt zoeken de database (PostgreSQL).",
+        "catchingUpTitle": "Bestaande dossiers worden geïndexeerd",
+        "catchingUpMessage": "OpenSearch indexeert bestaande dossiers op de achtergrond. Tot dit is voltooid, gebruikt zoeken de database (PostgreSQL). Je hoeft niets te doen.",
+        "rejectedDefinitionsTitle": "Sommige dossiers worden in de database doorzocht",
+        "rejectedDefinitionsMessage": "OpenSearch kon een aantal dossiers van deze dossierdefinities niet indexeren: {{definitions}}. De dossierlijsten hiervan gebruiken in de tussentijd de database (PostgreSQL)."
+      },
+      "rejections": {
+        "description": "OpenSearch kon deze dossiers niet indexeren. Tot ze geïndexeerd zijn, gebruiken de dossierlijsten van hun dossierdefinities de database (PostgreSQL). OpenSearch probeert ze automatisch opnieuw met oplopende tussenpozen: na 10 minuten, daarna elk uur, daarna dagelijks. De oorzaak staat in het applicatielog.",
+        "columns": {
+          "definitionName": "Dossierdefinitie",
+          "documentId": "Dossier",
+          "attempts": "Pogingen",
+          "firstRejectedOn": "Geweigerd sinds",
+          "lastRejectedOn": "Laatste poging",
+          "nextRetryOn": "Volgende poging"
+        },
+        "noResults": {
+          "title": "Geen geweigerde dossiers",
+          "description": "OpenSearch heeft alle dossiers geïndexeerd."
+        },
+        "retryNow": "Nu opnieuw proberen",
+        "retryAll": "Alles opnieuw proberen",
+        "retryAllModal": {
+          "title": "Alle geweigerde dossiers opnieuw proberen",
+          "content": "OpenSearch probeert alle geweigerde dossiers binnen enkele minuten op de achtergrond opnieuw. Wil je doorgaan?",
+          "confirm": "Alles opnieuw proberen"
+        },
+        "indexed": "Dossier geïndexeerd",
+        "stillRejected": "Nog steeds geweigerd; zie het applicatielog",
+        "deleted": "Dossier bestaat niet meer",
+        "scheduled": "{{count}} dossier(s) ingepland voor een nieuwe poging",
+        "retryFailed": "Opnieuw proberen mislukt"
       }
     }
   },

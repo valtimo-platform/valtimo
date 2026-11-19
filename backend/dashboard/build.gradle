@@ -45,6 +45,7 @@ dependencies {
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "io.github.classgraph:classgraph:${classgraphVersion}"
+    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
 
     testImplementation project(":backend:core")
     testImplementation project(":backend:case")

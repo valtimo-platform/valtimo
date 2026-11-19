@@ -19,11 +19,16 @@ package com.ritense.externalplugin.service
 import com.ritense.case_.service.CaseExternalPluginWidgetService
 import com.ritense.case_.service.CaseExternalPluginWidgetUsage
 import com.ritense.externalplugin.domain.ExternalPluginConfiguration
+import com.ritense.externalplugin.domain.ExternalPluginContractBinding
+import com.ritense.externalplugin.domain.ExternalPluginContractJob
+import com.ritense.externalplugin.domain.ExternalPluginContractJobStatus
 import com.ritense.externalplugin.domain.ExternalPluginDefinition
 import com.ritense.externalplugin.domain.ExternalPluginDefinitionStatus
 import com.ritense.externalplugin.domain.ExternalPluginProcessLink
 import com.ritense.externalplugin.domain.ExternalPluginTaskFormProcessLink
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractBindingRepository
+import com.ritense.externalplugin.repository.ExternalPluginContractJobRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginProcessLinkRepository
 import com.ritense.externalplugin.repository.ExternalPluginTaskFormProcessLinkRepository
@@ -58,6 +63,8 @@ class ExternalPluginHostUsageResolverTest {
     private lateinit var configurationRepository: ExternalPluginConfigurationRepository
     private lateinit var processLinkRepository: ExternalPluginProcessLinkRepository
     private lateinit var taskFormProcessLinkRepository: ExternalPluginTaskFormProcessLinkRepository
+    private lateinit var contractBindingRepository: ExternalPluginContractBindingRepository
+    private lateinit var contractJobRepository: ExternalPluginContractJobRepository
     private lateinit var operatonRepositoryService: OperatonRepositoryService
     private lateinit var bpmnRepositoryService: RepositoryService
     private lateinit var resolver: ExternalPluginHostUsageResolver
@@ -68,6 +75,8 @@ class ExternalPluginHostUsageResolverTest {
         configurationRepository = mock()
         processLinkRepository = mock()
         taskFormProcessLinkRepository = mock()
+        contractBindingRepository = mock()
+        contractJobRepository = mock()
         operatonRepositoryService = mock()
         bpmnRepositoryService = mock()
         whenever(processLinkRepository.findAllByReferenceTypeAndPluginDefinitionKeyIn(any(), any()))
@@ -77,6 +86,8 @@ class ExternalPluginHostUsageResolverTest {
             configurationRepository,
             processLinkRepository,
             taskFormProcessLinkRepository,
+            contractBindingRepository,
+            contractJobRepository,
             // Real shared resolver over the mocked Operaton services — the tests keep asserting
             // the full resolution behaviour through it.
             ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
@@ -783,6 +794,8 @@ class ExternalPluginHostUsageResolverTest {
             configurationRepository,
             processLinkRepository,
             taskFormProcessLinkRepository,
+            contractBindingRepository,
+            contractJobRepository,
             ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
             java.util.Optional.empty(),
             java.util.Optional.empty(),
@@ -796,6 +809,8 @@ class ExternalPluginHostUsageResolverTest {
             configurationRepository,
             processLinkRepository,
             taskFormProcessLinkRepository,
+            contractBindingRepository,
+            contractJobRepository,
             ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
             java.util.Optional.empty(),
             java.util.Optional.empty(),
@@ -810,10 +825,86 @@ class ExternalPluginHostUsageResolverTest {
             configurationRepository,
             processLinkRepository,
             taskFormProcessLinkRepository,
+            contractBindingRepository,
+            contractJobRepository,
             ProcessDefinitionUsageMetaResolver(operatonRepositoryService, bpmnRepositoryService),
             java.util.Optional.empty(),
             java.util.Optional.of(widgetService),
         )
+
+    @Test
+    fun `a contract binding blocks deleting its target, naming the binder and the contract`() {
+        val provider = configuration(definitionId = UUID.randomUUID(), title = "Open Plan")
+        val consumer = configuration(definitionId = UUID.randomUUID(), title = "PDCA")
+        whenever(configurationRepository.findById(provider.id)).thenReturn(java.util.Optional.of(provider))
+        whenever(contractBindingRepository.findAllByTargetConfigurationIdIn(setOf(provider.id))).thenReturn(
+            listOf(ExternalPluginContractBinding(UUID.randomUUID(), consumer.id, "nl.ritense.openplan@1", provider.id))
+        )
+        whenever(configurationRepository.findAllById(setOf(consumer.id))).thenReturn(listOf(consumer))
+
+        val usages = resolver.findUsagesForConfiguration(provider.id)
+
+        assertThat(usages).singleElement().satisfies({
+            assertThat(it.configurationId).isEqualTo(provider.id)
+            assertThat(it.parentType).isEqualTo(PluginUsageParentType.CONTRACT_BINDING)
+            assertThat(it.contract).isEqualTo("nl.ritense.openplan@1")
+            assertThat(it.relatedConfigurationId).isEqualTo(consumer.id)
+            assertThat(it.relatedConfigurationTitle).isEqualTo("PDCA")
+        })
+    }
+
+    @Test
+    fun `an open contract job blocks deleting either party, a delivered one does not`() {
+        val requester = configuration(definitionId = UUID.randomUUID(), title = "PDCA")
+        val provider = configuration(definitionId = UUID.randomUUID(), title = "Generator")
+        val job = ExternalPluginContractJob(
+            id = UUID.randomUUID(),
+            contract = "nl.ritense.document.generate@1",
+            operation = "generate",
+            requesterConfigurationId = requester.id,
+            providerConfigurationId = provider.id,
+            status = ExternalPluginContractJobStatus.ACCEPTED,
+            requestPayload = "cipher",
+            deadline = java.time.Instant.now(),
+        )
+        whenever(configurationRepository.findById(requester.id)).thenReturn(java.util.Optional.of(requester))
+        whenever(configurationRepository.findById(provider.id)).thenReturn(java.util.Optional.of(provider))
+        whenever(contractJobRepository.findAllByRequesterConfigurationIdInAndStatusIn(setOf(requester.id), ExternalPluginContractJobStatus.OPEN))
+            .thenReturn(listOf(job))
+        whenever(contractJobRepository.findAllByProviderConfigurationIdInAndStatusIn(setOf(provider.id), ExternalPluginContractJobStatus.OPEN))
+            .thenReturn(listOf(job))
+        whenever(configurationRepository.findAllById(any<Iterable<UUID>>())).thenReturn(listOf(requester, provider))
+
+        val requesterUsages = resolver.findUsagesForConfiguration(requester.id)
+        val providerUsages = resolver.findUsagesForConfiguration(provider.id)
+
+        assertThat(requesterUsages).singleElement().satisfies({
+            assertThat(it.parentType).isEqualTo(PluginUsageParentType.CONTRACT_JOB)
+            assertThat(it.contractJobId).isEqualTo(job.id)
+            assertThat(it.relatedConfigurationTitle).isEqualTo("Generator")
+        })
+        assertThat(providerUsages).singleElement().satisfies({
+            assertThat(it.configurationId).isEqualTo(provider.id)
+            assertThat(it.relatedConfigurationId).isEqualTo(requester.id)
+        })
+        assertThat(ExternalPluginContractJobStatus.OPEN)
+            .doesNotContain(ExternalPluginContractJobStatus.DELIVERED, ExternalPluginContractJobStatus.UNDELIVERABLE)
+    }
+
+    @Test
+    fun `a binding between two configurations of the same host does not block deleting that host`() {
+        val hostId = UUID.randomUUID()
+        val definition = definition(hostId = hostId)
+        val provider = configuration(definitionId = definition.id, title = "Provider")
+        val consumer = configuration(definitionId = definition.id, title = "Consumer")
+        whenever(definitionRepository.findAllByHostId(hostId)).thenReturn(listOf(definition))
+        whenever(configurationRepository.findAllByDefinitionId(definition.id)).thenReturn(listOf(provider, consumer))
+        whenever(contractBindingRepository.findAllByTargetConfigurationIdIn(setOf(provider.id, consumer.id))).thenReturn(
+            listOf(ExternalPluginContractBinding(UUID.randomUUID(), consumer.id, "nl.ritense.openplan@1", provider.id))
+        )
+
+        assertThat(resolver.findUsagesForHost(hostId)).isEmpty()
+    }
 
     private fun definition(hostId: UUID): ExternalPluginDefinition = ExternalPluginDefinition(
         id = UUID.randomUUID(),

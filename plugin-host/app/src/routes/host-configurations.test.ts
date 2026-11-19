@@ -138,6 +138,14 @@ describe("host-configurations routes", () => {
       expect(configRegistry.set.mock.calls[0][1].allowedEgress).toEqual(["api.kvk.nl"]);
     });
 
+    it("stores the pushed contract grant, and none when the push carries no list", async () => {
+      await postConfig("cfg-1", validBody({grantedContracts: ["nl.ritense.openplan@1", 7, ""]}));
+      expect(configRegistry.set.mock.calls[0][1].grantedContracts).toEqual(["nl.ritense.openplan@1"]);
+
+      await postConfig("cfg-2", validBody());
+      expect(configRegistry.set.mock.calls[1][1].grantedContracts).toEqual([]);
+    });
+
     it("drops non-string entries from eventSubscriptions", async () => {
       await postConfig("cfg-1", validBody({ eventSubscriptions: ["a", 123, "", "b"] }));
       expect(configRegistry.set.mock.calls[0][1].eventSubscriptions).toEqual(["a", "b"]);
@@ -308,6 +316,26 @@ describe("host-configurations routes", () => {
       expect(configRegistry.set.mock.calls[0][1].allowedEgress).toEqual([
         "https://sd.internal:8443",
       ]);
+    });
+
+    it("keeps the contract grant when the update omits it and replaces it when supplied", async () => {
+      const existing = {
+        configurationId: "cfg-1",
+        pluginId: "case-summary",
+        pluginVersion: "0.1.0",
+        properties: {},
+        serviceToken: "old-token",
+        gzacBaseUrl: "http://gzac:8080",
+        eventSubscriptions: [],
+        grantedContracts: ["nl.ritense.openplan@1"],
+      };
+      configRegistry.get.mockResolvedValueOnce(existing);
+      await putConfig("cfg-1", { properties: {} });
+      expect(configRegistry.set.mock.calls[0][1].grantedContracts).toEqual(["nl.ritense.openplan@1"]);
+
+      configRegistry.get.mockResolvedValueOnce(existing);
+      await putConfig("cfg-1", { properties: {}, grantedContracts: [] });
+      expect(configRegistry.set.mock.calls[1][1].grantedContracts).toEqual([]);
     });
 
     it("retains the stored owner when the update omits it", async () => {
