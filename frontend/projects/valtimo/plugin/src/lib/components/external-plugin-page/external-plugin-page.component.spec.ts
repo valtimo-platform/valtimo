@@ -83,6 +83,19 @@ describe('ExternalPluginPageComponent page title', () => {
     expect(setCustomPageTitle.calls.mostRecent().args[0]).toBe('Memory');
   });
 
+  it('follows a language switch, like the menu item does', () => {
+    const translateService = TestBed.inject(TranslateService);
+    menuTitle = 'pages.memory.title';
+    translateService.setTranslation('en', {pages: {memory: {title: 'Memory'}}});
+    translateService.setTranslation('nl', {pages: {memory: {title: 'Geheugen'}}});
+    translateService.use('en');
+    create();
+    expect(setCustomPageTitle.calls.mostRecent().args[0]).toBe('Memory');
+
+    translateService.use('nl');
+    expect(setCustomPageTitle.calls.mostRecent().args[0]).toBe('Geheugen');
+  });
+
   it('falls back to the configuration title without a matching menu item', () => {
     create();
     expect(setCustomPageTitle.calls.mostRecent().args[0]).toBe('Config title');

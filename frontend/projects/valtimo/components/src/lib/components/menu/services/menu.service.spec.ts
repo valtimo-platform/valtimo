@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import {NavigationEnd} from '@angular/router';
 import {MenuItem} from '@valtimo/shared';
-import {BehaviorSubject, EMPTY, firstValueFrom} from 'rxjs';
+import {BehaviorSubject, EMPTY, firstValueFrom, Subject, Subscription} from 'rxjs';
 import {MenuService} from './menu.service';
 
 describe('MenuService', () => {
@@ -74,5 +75,50 @@ describe('MenuService', () => {
     const title = titleFor('/plugin-pages/cfg-1/key');
     menuItems$.next(menuItems);
     expect(await title).toBe('Memory');
+  });
+
+  describe('active parent', () => {
+    const routerEvents$ = new Subject<unknown>();
+    let activeParent: string;
+    let subscription: Subscription;
+
+    const navigate = (url: string): void => routerEvents$.next(new NavigationEnd(1, url, url));
+
+    beforeEach(() => {
+      service = new MenuService(
+        {config: {}} as any,
+        null as any,
+        null as any,
+        null as any,
+        {pendingChanges: false} as any,
+        {events: routerEvents$} as any,
+        null as any,
+        null as any
+      );
+      (service as unknown as {_menuItems$: BehaviorSubject<MenuItem[]>})._menuItems$.next(
+        menuItems
+      );
+      subscription = service.closestSequence$.subscribe();
+      subscription.add(service.activeParentSequenceNumber$.subscribe(seq => (activeParent = seq)));
+    });
+
+    afterEach(() => subscription.unsubscribe());
+
+    it('is the section of a matching child item', () => {
+      navigate('/plugin-pages/cfg-1/key');
+      expect(activeParent).toBe('2');
+    });
+
+    it('is cleared for a top-level item', () => {
+      navigate('/plugin-pages/cfg-1/key');
+      navigate('/cases/bezwaar');
+      expect(activeParent).toBe('');
+    });
+
+    it('is cleared when no item matches, instead of keeping the previous section', () => {
+      navigate('/plugin-pages/cfg-1/key');
+      navigate('/plugin-pages/unknown');
+      expect(activeParent).toBe('');
+    });
   });
 });
