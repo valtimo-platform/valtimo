@@ -32,3 +32,4 @@ export * from './lib/components/plugin-host-modal/plugin-host-modal.component';
 export * from './lib/components/plugin-app-add-modal/plugin-app-add-modal.component';
 export * from './lib/components/plugin-hosts-page/plugin-hosts-page.component';
 export * from './lib/components/plugin-apps-page/plugin-apps-page.component';
+export * from './lib/components/plugin-contract-jobs-page/plugin-contract-jobs-page.component';

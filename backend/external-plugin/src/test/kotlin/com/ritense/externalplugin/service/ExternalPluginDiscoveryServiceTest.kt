@@ -16,6 +16,9 @@
 
 package com.ritense.externalplugin.service
 
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.client.ExternalPluginHostClient
@@ -40,6 +43,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.slf4j.LoggerFactory
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.SimpleTransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
@@ -229,6 +233,44 @@ class ExternalPluginDiscoveryServiceTest {
         assertThat(saved.status).isEqualTo(ExternalPluginDefinitionStatus.AVAILABLE)
         assertThat(saved.configSchema?.path("properties")?.path("apiKey")?.path("x-secret")?.asBoolean()).isTrue()
         assertThat(saved.baseUrl).isEqualTo("${host.baseUrl}/plugins/case-summary")
+    }
+
+    @Test
+    fun `a manifest with an unusable contract schema is stored and warned about once across cycles`() {
+        val host = host(status = ExternalPluginHostStatus.CONNECTED)
+        givenHost(host)
+        whenever(hostClient.health(host.baseUrl)).thenReturn(true)
+        whenever(hostService.decryptedSecret(host)).thenReturn("admin-token")
+        whenever(hostClient.listPlugins(host.baseUrl, "admin-token")).thenReturn(
+            listOf(
+                objectMapper.readTree(
+                    """
+                    {"pluginId": "broken", "version": "1.0.0", "contentHash": "sha256:a",
+                     "manifest": {"pluginId": "broken", "version": "1.0.0",
+                       "provides": [{"contract": "a@1", "operations": [{"key": "op", "output": {"pattern": "["}}]}]}}
+                    """.trimIndent(),
+                ),
+            ),
+        )
+        var stored: ExternalPluginDefinition? = null
+        whenever(definitionRepository.findByPluginIdAndVersion("broken", "1.0.0")).thenAnswer { stored }
+        whenever(definitionRepository.save(any<ExternalPluginDefinition>())).thenAnswer {
+            it.getArgument<ExternalPluginDefinition>(0).also { saved -> stored = saved }
+        }
+        whenever(definitionRepository.findAllByHostId(host.id)).thenAnswer { listOfNotNull(stored) }
+        val logs = ListAppender<ILoggingEvent>().also { it.start() }
+        val logger = LoggerFactory.getLogger(ExternalPluginDiscoveryService::class.java) as Logger
+        logger.addAppender(logs)
+
+        try {
+            service.discoverAll()
+            service.discoverAll()
+        } finally {
+            logger.detachAppender(logs)
+        }
+
+        assertThat(stored?.manifestJson).isNotNull()
+        assertThat(logs.list.filter { it.formattedMessage.contains("declares contract schemas GZAC cannot use") }).hasSize(1)
     }
 
     @Test

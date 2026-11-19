@@ -28,6 +28,7 @@ import com.ritense.externalplugin.domain.ExternalPluginHostStatus
 import com.ritense.externalplugin.repository.ExternalPluginConfigurationRepository
 import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
+import com.ritense.externalplugin.service.schema.ExternalPluginSchemaValidator
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -70,6 +71,7 @@ class ExternalPluginDiscoveryService(
      */
     private val fallbackGzacBaseUrl: String,
     private val packageInstaller: ExternalPluginPackageInstaller = ExternalPluginPackageInstaller.NOOP,
+    private val schemaValidator: ExternalPluginSchemaValidator = ExternalPluginSchemaValidator(),
 ) {
 
     fun discoverAll() {
@@ -375,6 +377,7 @@ class ExternalPluginDiscoveryService(
                         definition.pendingContentHash = discoveredContentHash
                     }
                     definition.pendingManifestJson = manifest as? ObjectNode
+                    warnOnUnusableContractSchemas(definition, discoveredContentHash, manifest)
                     // The plugin is present on the host, just changed — keep it visible.
                     definition.status = ExternalPluginDefinitionStatus.AVAILABLE
                     definition.consecutiveMisses = 0
@@ -413,8 +416,19 @@ class ExternalPluginDiscoveryService(
         definition.status = ExternalPluginDefinitionStatus.AVAILABLE
         definition.consecutiveMisses = 0
 
+        definition.manifestJson?.let { warnOnUnusableContractSchemas(definition, discoveredContentHash, it) }
+
         definitionRepository.save(definition)
         return definition.id
+    }
+
+    private fun warnOnUnusableContractSchemas(definition: ExternalPluginDefinition, contentHash: String, manifest: JsonNode) {
+        val errors = schemaValidator.contractSchemaErrors(manifest)
+        if (errors.isEmpty() || !reportedSchemaErrors.add("${definition.id}:$contentHash")) return
+        logger.warn {
+            "External plugin '${definition.pluginId}@${definition.version}' declares contract schemas GZAC cannot use — " +
+                "${errors.joinToString(" | ")}. Configurations cannot be created or saved, and calls to these operations are refused."
+        }
     }
 
     /**
@@ -504,6 +518,7 @@ class ExternalPluginDiscoveryService(
     }
 
     private val reportedGrantMismatches = ConcurrentHashMap.newKeySet<UUID>()
+    private val reportedSchemaErrors = ConcurrentHashMap.newKeySet<String>()
 
     companion object {
         private val logger = KotlinLogging.logger {}

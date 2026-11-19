@@ -74,9 +74,17 @@ data class DefinitionResponse(
     /** The pending package's declared permissions, for diffing against the accepted ones. */
     val pendingManifest: JsonNode?,
     val awaitingDiscovery: Boolean,
+    /** Provided operations whose `input`/`output` schema GZAC cannot use, for the accepted and the pending manifest. */
+    val contractSchemaErrors: List<String> = emptyList(),
+    val pendingContractSchemaErrors: List<String> = emptyList(),
 ) {
     companion object {
-        fun from(definition: ExternalPluginDefinition, compatibility: CompatibilityResult): DefinitionResponse {
+        fun from(
+            definition: ExternalPluginDefinition,
+            compatibility: CompatibilityResult,
+            contractSchemaErrors: List<String> = emptyList(),
+            pendingContractSchemaErrors: List<String> = emptyList(),
+        ): DefinitionResponse {
             val hasLogo = definition.manifestJson?.get("logo")?.isTextual == true
             return DefinitionResponse(
                 id = definition.id,
@@ -101,6 +109,8 @@ data class DefinitionResponse(
                 pendingPermissionsChanged = definition.pendingPermissionsChanged,
                 pendingManifest = definition.pendingManifestJson,
                 awaitingDiscovery = definition.isPlaceholder,
+                contractSchemaErrors = contractSchemaErrors,
+                pendingContractSchemaErrors = pendingContractSchemaErrors,
             )
         }
     }
