@@ -70,7 +70,11 @@ import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators
 import {FORM_MANAGEMENT_EDIT_TEST_IDS} from '../../constants';
 import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
-import {getContextObservable, getFormManagementRouteParamsAndContext} from '../../utils';
+import {
+  getContextObservable,
+  getFormDefinitionUsagesText,
+  getFormManagementRouteParamsAndContext,
+} from '../../utils';
 import {FormManagementDuplicateComponent} from '../form-management-duplicate';
 import {FormManagementUploadComponent} from '../form-management-upload';
 
@@ -273,10 +277,16 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
           });
           this.navigateBack();
         },
-        error: () => {
+        error: error => {
+          const usages = getFormDefinitionUsagesText(error);
+
           this.notificationService.showToast({
             type: 'error',
-            title: this.translateService.instant('formManagement.notifications.deletionError'),
+            title: usages
+              ? this.translateService.instant('formManagement.notifications.deletionInUse', {
+                  usages,
+                })
+              : this.translateService.instant('formManagement.notifications.deletionError'),
           });
         },
       });
