@@ -135,6 +135,36 @@ export class MenuService implements OnDestroy {
     this.menuConfig = config?.menu;
   }
 
+  public getMenuItemTitleForUrl(url: string): Observable<string | null> {
+    return this.menuItems$.pipe(
+      // Skip the initial empty list — menu not built yet on a direct load
+      filter(menuItems => menuItems.length > 0),
+      map(menuItems => {
+        let title: string | null = null;
+        let highestScore = 0;
+
+        const check = (link: string, itemTitle: string): void => {
+          const score = getMenuLinkMatchScore(url, link);
+          if (score > highestScore) {
+            highestScore = score;
+            title = itemTitle;
+          }
+        };
+
+        menuItems.forEach(item => {
+          if (Array.isArray(item.link)) check(item.link.join('/'), item.title);
+
+          item.children?.forEach(child => {
+            if (Array.isArray(child.link))
+              check([...(item.link || []), ...child.link].join('/'), child.title);
+          });
+        });
+
+        return title;
+      })
+    );
+  }
+
   public init(): void {
     this.initReload();
     this.logger.debug('Menu initialized');

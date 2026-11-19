@@ -113,18 +113,21 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
         const routeTitle =
           this.activatedRoute?.snapshot?.firstChild?.data?.title ||
           this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
-        const routeTitleTranslation = this.translateService.instant(routeTitle);
-        const routeTitlePageTranslationString = `pages.${routeTitle?.toLowerCase()}.title`;
-        const routeTitlePageTranslation = this.translateService.instant(
-          routeTitlePageTranslationString
-        );
-        const translatedRouteTitle =
-          routeTitle &&
-          ((routeTitlePageTranslation !== routeTitlePageTranslationString
-            ? routeTitlePageTranslation
-            : '') ||
+        let translatedRouteTitle = '';
+
+        if (routeTitle) {
+          const routeTitleTranslation = this.translateService.instant(routeTitle);
+          const routeTitlePageTranslationString = `pages.${routeTitle.toLowerCase()}.title`;
+          const routeTitlePageTranslation = this.translateService.instant(
+            routeTitlePageTranslationString
+          );
+          translatedRouteTitle =
+            (routeTitlePageTranslation !== routeTitlePageTranslationString
+              ? routeTitlePageTranslation
+              : '') ||
             (routeTitle !== routeTitleTranslation ? routeTitleTranslation : '') ||
-            routeTitle);
+            routeTitle;
+        }
 
         if (translatedRouteTitle) {
           this.logger.debug('PageTitle: setTitle translated async', translatedRouteTitle);

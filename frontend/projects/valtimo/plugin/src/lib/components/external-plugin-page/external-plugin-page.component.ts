@@ -16,12 +16,12 @@
 
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {LoadingModule} from 'carbon-components-angular';
-import {map, Subscription, switchMap, tap, throwError} from 'rxjs';
+import {map, Subscription, switchMap, take, tap, throwError} from 'rxjs';
 import {ExternalPluginIframeComponent} from '../external-plugin-iframe/external-plugin-iframe.component';
-import {FitPageDirective} from '@valtimo/components';
+import {FitPageDirective, MenuService, PageTitleService} from '@valtimo/components';
 import {ExternalPluginPageService, ExternalPluginSessionService} from '../../services';
 import {ExternalPluginMenuPage} from '../../models';
 import {derivePluginDataUrl} from '../../utils';
@@ -57,9 +57,14 @@ export class ExternalPluginPageComponent implements OnInit, OnDestroy {
   public readonly $iframeReady = signal<boolean>(false);
 
   private readonly _subscriptions = new Subscription();
+  private _titleSubscription?: Subscription;
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly menuService: MenuService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly translateService: TranslateService,
     private readonly pageService: ExternalPluginPageService,
     protected readonly sessionService: ExternalPluginSessionService
   ) {}
@@ -92,13 +97,17 @@ export class ExternalPluginPageComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           next: page => this.onLoaded(page),
-          error: () => this.$state.set('error'),
+          error: () => {
+            this.$state.set('error');
+            this.setPageTitle(null);
+          },
         })
     );
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this._titleSubscription?.unsubscribe();
   }
 
   public onIframeReady(): void {
@@ -117,7 +126,23 @@ export class ExternalPluginPageComponent implements OnInit, OnDestroy {
     return forConfiguration[0] ?? null;
   }
 
+  private setPageTitle(page: ExternalPluginMenuPage | null): void {
+    // Set even when empty — customPageTitle shows a skeleton until set
+    this.pageTitleService.setCustomPageTitle(page?.configurationTitle ?? '');
+
+    this._titleSubscription?.unsubscribe();
+    this._titleSubscription = this.menuService
+      .getMenuItemTitleForUrl(this.router.url)
+      .pipe(take(1))
+      .subscribe(menuTitle => {
+        if (menuTitle) {
+          this.pageTitleService.setCustomPageTitle(this.translateService.instant(menuTitle));
+        }
+      });
+  }
+
   private onLoaded(page: ExternalPluginMenuPage): void {
+    this.setPageTitle(page);
     this.$page.set(page);
     this.$context.set({configurationId: page.configurationId});
     this.$pluginDataUrl.set(derivePluginDataUrl(page.bundleUrl));
