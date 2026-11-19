@@ -1,0 +1,92 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section
+  *ngIf="providedContracts?.length"
+  [attr.data-test-id]="testIds.section"
+  class="plugin-external-provided-contracts"
+>
+  <h6 class="cds--type-heading-compact-02 plugin-external-provided-contracts__heading">
+    {{ 'pluginManagement.permissions.providedContractsHeading' | translate }}
+  </h6>
+
+  <p class="cds--type-body-compact-01 plugin-external-provided-contracts__secondary">
+    {{ 'pluginManagement.permissions.providedContractsDescription' | translate }}
+  </p>
+
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.contracts.contract' | translate }}
+      </cds-list-column>
+
+      <cds-list-column>
+        {{ 'pluginManagement.contracts.operation' | translate }}
+      </cds-list-column>
+
+      <cds-list-column nowrap="true">
+        {{ 'pluginManagement.contracts.mode' | translate }}
+      </cds-list-column>
+    </cds-list-header>
+
+    <ng-container *ngFor="let provided of providedContracts">
+      <cds-list-row
+        *ngFor="let operation of provided.operations; let first = first"
+        [attr.data-test-id]="testIds.operationRow + provided.contract + '-' + operation.key"
+      >
+        <cds-list-column nowrap="true">
+          <ng-container *ngIf="first">
+            <cds-tag size="sm" type="blue">{{ provided.contract }}</cds-tag>
+
+            <div
+              *ngIf="provided.title"
+              class="cds--type-helper-text-01 plugin-external-provided-contracts__secondary"
+            >
+              {{ provided.title }}
+            </div>
+          </ng-container>
+        </cds-list-column>
+
+        <cds-list-column>
+          <div>{{ operation.title || operation.key }}</div>
+
+          <div class="cds--type-helper-text-01 plugin-external-provided-contracts__secondary">
+            <code class="cds--snippet--inline">{{ operation.key }}</code>
+
+            <span *ngIf="operation.description"> — {{ operation.description }}</span>
+          </div>
+        </cds-list-column>
+
+        <cds-list-column nowrap="true">
+          <cds-tag *ngIf="operation.mode === 'job'; else syncOperation" size="sm" type="warm-gray">
+            {{
+              operation.timeout
+                ? ('pluginManagement.contracts.longRunningUpTo'
+                  | translate: {duration: operation.timeout | externalPluginDuration})
+                : ('pluginManagement.contracts.longRunning' | translate)
+            }}
+          </cds-tag>
+
+          <ng-template #syncOperation>
+            <span class="plugin-external-provided-contracts__secondary">
+              {{ 'pluginManagement.contracts.immediate' | translate }}
+            </span>
+          </ng-template>
+        </cds-list-column>
+      </cds-list-row>
+    </ng-container>
+  </cds-structured-list>
+</section>
