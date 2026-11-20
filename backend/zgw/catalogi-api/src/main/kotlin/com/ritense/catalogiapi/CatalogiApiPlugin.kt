@@ -153,7 +153,27 @@ class CatalogiApiPlugin(
                 getResultaattypen(zaaktypeUri).map { resultaattype ->
                     mapOf(
                         URL_KEY to resultaattype.url!!.toASCIIString(),
-                        NAME_KEY to resultaattype.omschrijving
+                        NAME_KEY to resultaattype.omschrijving,
+                        AFLEIDINGWIJZE_KEY to resultaattype.brondatumArchiefprocedure?.afleidingswijze,
+                        DATUMKENMERK_KEY to resultaattype.brondatumArchiefprocedure?.datumkenmerk,
+                        EINDDATUMBEKEND_KEY to resultaattype.brondatumArchiefprocedure?.einddatumBekend,
+                        OBJECTTYPE_KEY to resultaattype.brondatumArchiefprocedure?.objecttype,
+                        REGISTRATIE_KEY to resultaattype.brondatumArchiefprocedure?.registratie,
+                        PROCESTERMIJN_KEY to resultaattype.brondatumArchiefprocedure?.brondatumProcestermijn,
+                        ARCHIEFNOMINATIE_KEY to resultaattype.archiefnominatie,
+                        ARCHIEFACTIETERMIJN_KEY to resultaattype.archiefactietermijn,
+                        PROCESOBJECTAARD_KEY to resultaattype.procesobjectaard,
+                        INDICATIESPECIFIEK_KEY to resultaattype.indicatieSpecifiek,
+                        RESULTAAT_PROCESTERMIJN_KEY to resultaattype.procestermijn,
+                        CATALOGUS_KEY to resultaattype.catalogus?.toASCIIString(),
+                        BESLUITTYPEN_KEY to resultaattype.besluittypen.map { it.toASCIIString() },
+                        BESLUITTYPEOMSCHRIJVING_KEY to resultaattype.besluittypeOmschrijving,
+                        INFORMATIEOBJECTTYPEN_KEY to resultaattype.informatieobjecttypen,
+                        INFORMATIEOBJECTTYPEOMSCHRIJVING_KEY to resultaattype.informatieobjecttypeOmschrijving,
+                        BEGINGELDIGHEID_KEY to resultaattype.beginGeldigheid,
+                        EINDEGELDIGHEID_KEY to resultaattype.eindeGeldigheid,
+                        BEGINOBJECT_KEY to resultaattype.beginObject,
+                        EINDEOBJECT_KEY to resultaattype.eindeObject
                     )
                 }.let { resultaattypen ->
                     execution.setVariable(processVariable, resultaattypen)
@@ -209,7 +229,20 @@ class CatalogiApiPlugin(
                 getBesluittypen(zaaktypeUri).map { besluittype ->
                     mapOf(
                         URL_KEY to besluittype.url!!.toASCIIString(),
-                        NAME_KEY to besluittype.omschrijving
+                        NAME_KEY to besluittype.omschrijving,
+                        OMSCHRIJVINGGENERIEK_KEY to besluittype.omschrijvingGeneriek,
+                        CATALOGUS_KEY to besluittype.catalogus.toASCIIString(),
+                        ZAAKTYPEN_KEY to besluittype.zaaktypen.map { it.toASCIIString() },
+                        BESLUITCATEGORIE_KEY to besluittype.besluitcategorie,
+                        REACTIETERMIJN_KEY to besluittype.reactietermijn,
+                        PUBLICATIEINDICATIE_KEY to besluittype.publicatieIndicatie,
+                        PUBLICATIETEKST_KEY to besluittype.publicatietekst,
+                        PUBLICATIETERMIJN_KEY to besluittype.publicatietermijn,
+                        TOELICHTING_KEY to besluittype.toelichting,
+                        INFORMATIEOBJECTTYPEN_KEY to besluittype.informatieobjecttypen.map { it.toASCIIString() },
+                        BEGINGELDIGHEID_KEY to besluittype.beginGeldigheid,
+                        EINDEGELDIGHEID_KEY to besluittype.eindeGeldigheid,
+                        CONCEPT_KEY to besluittype.concept
                     )
                 }.let { besluittypen ->
                     execution.setVariable(resultProcessVariable, besluittypen)
@@ -690,6 +723,35 @@ class CatalogiApiPlugin(
         private val HTTPS_REGEX = "https?://.+".toRegex()
         private const val NAME_KEY = "name"
         private const val URL_KEY = "url"
+        private const val AFLEIDINGWIJZE_KEY = "afleidingswijze"
+        private const val DATUMKENMERK_KEY = "datumkenmerk"
+        private const val EINDDATUMBEKEND_KEY = "einddatumBekend"
+        private const val OBJECTTYPE_KEY = "objecttype"
+        private const val REGISTRATIE_KEY = "registratie"
+        private const val PROCESTERMIJN_KEY = "procestermijn"
+        private const val ARCHIEFNOMINATIE_KEY = "archiefnominatie"
+        private const val ARCHIEFACTIETERMIJN_KEY = "archiefactietermijn"
+        private const val PROCESOBJECTAARD_KEY = "procesobjectaard"
+        private const val INDICATIESPECIFIEK_KEY = "indicatieSpecifiek"
+        private const val RESULTAAT_PROCESTERMIJN_KEY = "resultaatProcestermijn"
+        private const val CATALOGUS_KEY = "catalogus"
+        private const val BESLUITTYPEN_KEY = "besluittypen"
+        private const val BESLUITTYPEOMSCHRIJVING_KEY = "besluittypeOmschrijving"
+        private const val INFORMATIEOBJECTTYPEN_KEY = "informatieobjecttypen"
+        private const val INFORMATIEOBJECTTYPEOMSCHRIJVING_KEY = "informatieobjecttypeOmschrijving"
+        private const val BEGINGELDIGHEID_KEY = "beginGeldigheid"
+        private const val EINDEGELDIGHEID_KEY = "eindeGeldigheid"
+        private const val BEGINOBJECT_KEY = "beginObject"
+        private const val EINDEOBJECT_KEY = "eindeObject"
+        private const val OMSCHRIJVINGGENERIEK_KEY = "omschrijvingGeneriek"
+        private const val ZAAKTYPEN_KEY = "zaaktypen"
+        private const val BESLUITCATEGORIE_KEY = "besluitcategorie"
+        private const val REACTIETERMIJN_KEY = "reactietermijn"
+        private const val PUBLICATIEINDICATIE_KEY = "publicatieIndicatie"
+        private const val PUBLICATIETEKST_KEY = "publicatietekst"
+        private const val PUBLICATIETERMIJN_KEY = "publicatietermijn"
+        private const val TOELICHTING_KEY = "toelichting"
+        private const val CONCEPT_KEY = "concept"
 
         const val PLUGIN_KEY = "catalogiapi"
 
