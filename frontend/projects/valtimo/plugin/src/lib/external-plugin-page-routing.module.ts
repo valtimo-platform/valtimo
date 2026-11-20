@@ -25,13 +25,13 @@ const routes: Routes = [
     path: 'plugin-pages/:configurationId/:bundleKey',
     component: ExternalPluginPageComponent,
     canActivate: [AuthGuardService],
-    data: {roles: [ROLE_USER]},
+    data: {roles: [ROLE_USER], customPageTitle: true},
   },
   {
     path: 'plugin-pages/:configurationId',
     component: ExternalPluginPageComponent,
     canActivate: [AuthGuardService],
-    data: {roles: [ROLE_USER]},
+    data: {roles: [ROLE_USER], customPageTitle: true},
   },
 ];
 

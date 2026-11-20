@@ -78,6 +78,7 @@ export class MenuService implements OnDestroy {
         // No match means no highlight. Defaulting to '0' marked the first item -- the dashboard --
         // as active on every route no item owns.
         let closestSequence = '';
+        let activeParentSequence = '';
         let highestDiff = 0;
 
         const checkItemMatch = (rawUrl: string, seq: string, parentSeq?: string): void => {
@@ -86,7 +87,7 @@ export class MenuService implements OnDestroy {
           if (diff > highestDiff) {
             highestDiff = diff;
             closestSequence = seq;
-            this._activeParentSequenceNumber$.next(parentSeq || '');
+            activeParentSequence = parentSeq || '';
           }
         };
 
@@ -111,6 +112,11 @@ export class MenuService implements OnDestroy {
           });
         });
 
+        // Also when nothing matches, or the previous page's section stays in the breadcrumb
+        if (this._activeParentSequenceNumber$.getValue() !== activeParentSequence) {
+          this._activeParentSequenceNumber$.next(activeParentSequence);
+        }
+
         return closestSequence;
       }),
       distinctUntilChanged()
@@ -133,6 +139,36 @@ export class MenuService implements OnDestroy {
   ) {
     const config = configService.config;
     this.menuConfig = config?.menu;
+  }
+
+  public getMenuItemTitleForUrl(url: string): Observable<string | null> {
+    return this.menuItems$.pipe(
+      // Skip the initial empty list — menu not built yet on a direct load
+      filter(menuItems => menuItems.length > 0),
+      map(menuItems => {
+        let title: string | null = null;
+        let highestScore = 0;
+
+        const check = (link: string, itemTitle: string): void => {
+          const score = getMenuLinkMatchScore(url, link);
+          if (score > highestScore) {
+            highestScore = score;
+            title = itemTitle;
+          }
+        };
+
+        menuItems.forEach(item => {
+          if (Array.isArray(item.link)) check(item.link.join('/'), item.title);
+
+          item.children?.forEach(child => {
+            if (Array.isArray(child.link))
+              check([...(item.link || []), ...child.link].join('/'), child.title);
+          });
+        });
+
+        return title;
+      })
+    );
   }
 
   public init(): void {

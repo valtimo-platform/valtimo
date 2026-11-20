@@ -36,7 +36,7 @@ export class CaseDetailsManagementFormFlowsPage {
   }
 
   async switchToFormFlowsTab() {
-    await this.page.getByRole('tab', {name: 'Form Flows'}).click();
+    await this.page.getByRole('tab', {name: 'Form flows'}).click();
     await expect(this.formFlowsList).toBeVisible();
   }
 

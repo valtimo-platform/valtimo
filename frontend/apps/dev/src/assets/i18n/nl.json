@@ -7,5 +7,7 @@
     "start": "Start",
     "firstNameDefault": "Jan",
     "lastNameDefault": "Doo"
-  }
+  },
+  "Notification test": "Notificatietest",
+  "Custom tab": "Aangepast tabblad"
 }

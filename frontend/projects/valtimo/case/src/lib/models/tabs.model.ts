@@ -101,6 +101,11 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
       .subscribe(([params, queryParams]) => {
         const currentUrl = this._router.url;
         const currentDocumentId = params?.documentId;
+
+        // Tabs can finish loading after the user left the case, e.g. via the breadcrumb. Building on
+        // that url yields an unroutable one, and a navigation error reloads the whole app.
+        if (!currentDocumentId || !currentUrl.includes(`/${currentDocumentId}`)) return;
+
         const urlBeforeDocumentId = currentUrl.split(currentDocumentId)[0];
 
         this._router.navigate([`${urlBeforeDocumentId}${currentDocumentId}/${nextTab.name}`], {

@@ -32,6 +32,9 @@ import {
 /** Route prefix a `plugin-page` node resolves to (handled by the plugin-page route in @valtimo/plugin). */
 const PLUGIN_PAGE_ROUTE = '/plugin-pages';
 
+/** Catalog ids of removed pages. Menus saved earlier still contain them; skipped without a warning. */
+const RETIRED_MENU_CATALOG_ITEM_IDS: ReadonlyArray<string> = ['taskManagement'];
+
 /** A resolved top-level item paired with the persisted node it came from, so required-item checks can match on stable ids. */
 interface ResolvedMenuItemPair {
   source: MenuConfigurationItem;
@@ -122,7 +125,9 @@ function resolveCatalogItem(
 ): MenuItem | null {
   const entry = getMenuCatalogEntry(item.itemId);
   if (!entry) {
-    warn(logger, `Unknown menu catalog itemId "${item.itemId}" — skipping`);
+    if (!RETIRED_MENU_CATALOG_ITEM_IDS.includes(item.itemId)) {
+      warn(logger, `Unknown menu catalog itemId "${item.itemId}" — skipping`);
+    }
     return null;
   }
 
