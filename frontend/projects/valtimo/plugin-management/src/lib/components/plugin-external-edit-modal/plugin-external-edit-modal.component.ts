@@ -28,16 +28,19 @@ import {
 import {CommonModule} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {
   ButtonModule,
+  LayerModule,
   LoadingModule,
   ModalModule,
   NotificationModule,
   ProgressIndicatorModule,
 } from 'carbon-components-angular';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
+import {CARBON_CONSTANTS, InputLabelModule, ValtimoCdsModalDirective} from '@valtimo/components';
 import {
+  ExternalPluginConfigFormComponent,
+  ExternalPluginConfigStructure,
   ExternalPluginConfigurationUpdateRequest,
   ExternalPluginContractBindingEntry,
   ExternalPluginContractBindingResponse,
@@ -47,9 +50,11 @@ import {
   ExternalPluginEndpoint,
   ExternalPluginProvidedContract,
   ExternalPluginService,
+  externalPluginRequiredTextValidator,
   getExternalPluginDeclaredContracts,
   getExternalPluginDisplayName,
   getExternalPluginProvidedContracts,
+  resolveExternalPluginFormMode,
 } from '@valtimo/plugin';
 import {PluginExternalPropertiesEditorComponent} from '../plugin-external-properties-editor/plugin-external-properties-editor.component';
 import {UnifiedPluginConfigurationRow} from '../../models';
@@ -72,10 +77,13 @@ import {externalPluginErrorDetail} from '../../utils';
     ReactiveFormsModule,
     ModalModule,
     ButtonModule,
+    InputLabelModule,
+    LayerModule,
     LoadingModule,
     NotificationModule,
     ProgressIndicatorModule,
     ValtimoCdsModalDirective,
+    ExternalPluginConfigFormComponent,
     ExternalPluginIframeComponent,
     PluginExternalPermissionsComponent,
     PluginExternalContractBindingsComponent,
@@ -94,13 +102,16 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   public currentStepIndex = 0;
   public progressSteps: Array<{label: string; complete: boolean}> = [];
 
-  public readonly _form = new FormGroup({
-    title: new FormControl('', Validators.required),
+  public readonly form = new FormGroup({
+    title: new FormControl('', externalPluginRequiredTextValidator),
     properties: new FormControl('{}'),
   });
 
   public readonly $loading = signal(false);
   public readonly $propertiesInvalid = signal(false);
+  /** Set when the stored properties fit a generated form; null keeps the JSON editor. */
+  public readonly $configStructure = signal<ExternalPluginConfigStructure | null>(null);
+  public readonly $initialProperties = signal<Record<string, unknown>>({});
   public readonly $configBundleUrl = signal<string | null>(null);
   public readonly $prefillConfiguration = signal<{
     title: string;
@@ -132,12 +143,14 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   private _iframeConfigTitle: string = '';
   private _iframeConfigData: Record<string, unknown> | null = null;
+  private _generatedProperties: Record<string, unknown> = {};
   private _contractBindings: Array<ExternalPluginContractBindingEntry> = [];
   private _propertiesValueSubscription: Subscription | null = null;
 
   private readonly _$configurationSchema = signal<unknown | null>(null);
   public readonly $configurationSchema = this._$configurationSchema.asReadonly();
   private readonly _$iframeValid = signal(false);
+  private readonly _$generatedPropertiesValid = signal(false);
   private readonly _$definition = signal<ExternalPluginDefinition | null>(null);
   private readonly _subscriptions = new Subscription();
 
@@ -146,7 +159,10 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     if (this.$configBundleUrl()) {
       return this._$iframeValid();
     }
-    return this._form.valid && !this.$propertiesInvalid();
+    if (this.$configStructure()) {
+      return this.form.valid && this._$generatedPropertiesValid();
+    }
+    return this.form.valid && !this.$propertiesInvalid();
   }
 
   public get canSave(): boolean {
@@ -195,18 +211,20 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    let properties: Record<string, unknown>;
-    try {
-      properties = JSON.parse(this._form.value.properties ?? '{}');
-    } catch {
-      this.$propertiesInvalid.set(true);
-      return;
+    let properties: Record<string, unknown> = this._generatedProperties;
+    if (!this.$configStructure()) {
+      try {
+        properties = JSON.parse(this.form.value.properties ?? '{}');
+      } catch {
+        this.$propertiesInvalid.set(true);
+        return;
+      }
     }
 
     // Permissions are accepted at activation and are immutable afterwards, so they are not sent
     // on update — the backend leaves the granted endpoints unchanged when they are omitted.
     this._update({
-      title: this._form.value.title ?? '',
+      title: this.form.value.title?.trim() ?? '',
       properties,
       ...this._changedContractBindings(),
     });
@@ -232,6 +250,14 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this._iframeConfigTitle = event.title;
     this._iframeConfigData = event.data;
     this._$iframeValid.set(event.valid);
+  }
+
+  public onGeneratedPropertiesChange(properties: Record<string, unknown>): void {
+    this._generatedProperties = properties;
+  }
+
+  public onGeneratedPropertiesValid(valid: boolean): void {
+    this._$generatedPropertiesValid.set(valid);
   }
 
   public onPermissionsValid(valid: boolean): void {
@@ -315,7 +341,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   private _initForm(): void {
     this.currentStepIndex = 0;
-    this._form.reset({
+    this.form.reset({
       title: this.configuration?.title ?? '',
       properties: '{}',
     });
@@ -333,19 +359,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
         next: ([configDetail, definition]) => {
           this._setDefinition(definition);
           this._$configurationSchema.set(definition.configurationSchema);
-          this._resolveConfigBundleUrl(definition);
-
-          if (this.$configBundleUrl()) {
-            this.$prefillConfiguration.set({
-              title: configDetail.title,
-              configuration: configDetail.properties ?? {},
-            });
-          } else {
-            this._form.patchValue({
-              title: configDetail.title,
-              properties: JSON.stringify(configDetail.properties ?? {}, null, 2),
-            });
-          }
+          this._applyFormMode(definition, configDetail.title, configDetail.properties ?? {});
 
           // Egress comes off the configuration, not the manifest: the manifest-declared grants are
           // what was accepted at activation, and the derived ones follow the values actually stored.
@@ -367,7 +381,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
         next: definition => {
           this._setDefinition(definition);
           this._$configurationSchema.set(definition.configurationSchema);
-          this._resolveConfigBundleUrl(definition);
+          this._applyFormMode(definition, this.configuration?.title ?? '', {});
           this._applyPermissions(definition, definition.manifest?.permissions?.egress ?? [], []);
           this._applyContracts(definition, []);
           this._finishLoading();
@@ -384,7 +398,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     // not accumulate over repeated opens.
     this._propertiesValueSubscription?.unsubscribe();
     this._propertiesValueSubscription =
-      this._form.get('properties')?.valueChanges.subscribe(value => {
+      this.form.get('properties')?.valueChanges.subscribe(value => {
         try {
           JSON.parse(value ?? '{}');
           this.$propertiesInvalid.set(false);
@@ -392,6 +406,30 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
           this.$propertiesInvalid.set(true);
         }
       }) ?? null;
+  }
+
+  private _applyFormMode(
+    definition: ExternalPluginDefinition,
+    title: string,
+    properties: Record<string, unknown>
+  ): void {
+    const mode = resolveExternalPluginFormMode(definition, {type: 'config'}, properties);
+
+    switch (mode.kind) {
+      case 'bundle':
+        this.$configBundleUrl.set(mode.url);
+        this.$prefillConfiguration.set({title, configuration: properties});
+        break;
+      case 'form':
+        this._generatedProperties = properties;
+        this._$generatedPropertiesValid.set(false);
+        this.$initialProperties.set(properties);
+        this.$configStructure.set(mode.structure);
+        this.form.patchValue({title});
+        break;
+      case 'json':
+        this.form.patchValue({title, properties: JSON.stringify(properties, null, 2)});
+    }
   }
 
   private _applyPermissions(
@@ -442,13 +480,6 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     );
   }
 
-  private _resolveConfigBundleUrl(definition: ExternalPluginDefinition): void {
-    const configBundle = definition.manifest?.frontendBundles?.find(b => b.type === 'config');
-    if (configBundle) {
-      this.$configBundleUrl.set(`${definition.baseUrl}/${definition.version}${configBundle.path}`);
-    }
-  }
-
   /**
    * Carbon's progress indicator recomputes step completion only inside its `current` setter, so a
    * rebuilt steps array (language change, permissions step appearing) must carry the `complete`
@@ -469,13 +500,17 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
 
   private _resetForm(): void {
     this.currentStepIndex = 0;
-    this._form.reset({title: '', properties: '{}'});
+    this.form.reset({title: '', properties: '{}'});
     this._resetState();
     this._buildProgressSteps();
   }
 
   private _resetState(): void {
     this.$propertiesInvalid.set(false);
+    this.$configStructure.set(null);
+    this.$initialProperties.set({});
+    this._generatedProperties = {};
+    this._$generatedPropertiesValid.set(false);
     this._$configurationSchema.set(null);
     this.$configBundleUrl.set(null);
     this.$prefillConfiguration.set(null);

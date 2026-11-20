@@ -22,7 +22,7 @@ was briefly unavailable recovers on its own, without any manual step.
 | A plugin shows **Incompatible** | The plugin declares a Valtimo version range this environment falls outside | [Plugin status and reviews](plugin-status-and-reviews.md#incompatible) |
 | A case tab, widget or page is blank or shows unavailable | The frontend origin is not allowed, or the plugin is suspended | [A plugin screen does not load](#a-plugin-screen-does-not-load) |
 | A process stops on a service task with a plugin error | The action failed, or the integration is unreachable | [An action fails in a process](#an-action-fails-in-a-process) |
-| The plugin's settings step shows a JSON text area | The plugin ships no configuration form | [The settings step asks for JSON](#the-settings-step-asks-for-json) |
+| The plugin's settings step shows a JSON text area | The plugin's settings are too complex for the generated form and it ships none of its own | [The settings step asks for JSON](#the-settings-step-asks-for-json) |
 | A configuration cannot be deleted | Something still references it | [Manage an integration](manage-an-integration.md#deleting-configurations-and-integrations) |
 | An upload is refused | Invalid package, too large, or the version exists with different contents | [An upload is refused](#an-upload-is-refused) |
 | An app cannot be connected | Wrong details, the app is not ready, or its plugin is already registered | [An app cannot be connected](#an-app-cannot-be-connected) |
@@ -103,12 +103,16 @@ Retry the activity once the cause is resolved; nothing about the process link ne
 ## The settings step asks for JSON
 
 When a plugin ships its own configuration form, the **Enter data** step is that form. When it does
-not, Valtimo cannot invent one, so the step shows a **Properties (JSON)** text area instead and the
-settings have to be entered as JSON.
+not, Valtimo generates one from the settings the plugin declares. Only when those settings are too
+complex for a generated form — nested structures or lists — does the step show a
+**Properties (JSON)** text area instead and the settings have to be entered as JSON. The same text
+area also appears when you edit a configuration whose stored settings no longer fit the form, so
+that nothing is lost.
 
 Ask the plugin's supplier for the property names, types and an example — or, preferably, for a
-version that ships a configuration form. The same applies to an action's inputs in the process-link
-modeler. See [Configure a plugin](configure-a-plugin.md#plugins-without-a-settings-form).
+version that keeps its settings simple or ships a configuration form. The same applies to an
+action's inputs in the process-link modeler. See
+[Configure a plugin](configure-a-plugin.md#plugins-without-a-settings-form).
 
 ---
 

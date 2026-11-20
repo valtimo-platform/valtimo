@@ -31,10 +31,12 @@ the action runs. The optional **output mapping** writes parts of the action's re
 case document or to process variables — no plugin-specific glue code needed.
 
 {% hint style="info" %}
-Whether the action's input is a form depends on the plugin. A plugin that provides one shows its
-own fields here; a plugin that does not shows a single JSON text area, and the inputs must be
-entered as a JSON object. Ask the plugin's supplier for the property names and an example — the
-same situation as [a plugin without a settings form](configure-a-plugin.md#plugins-without-a-settings-form).
+A plugin that provides its own input form shows it here. Otherwise Valtimo generates the form from
+the inputs the action declares, with the plugin's labels, tooltips and placeholders; a number input
+also accepts a `doc:` or `pv:` expression. Only an action with inputs too complex for such a form
+shows a single JSON text area, and the inputs must then be entered as a JSON object. Ask the
+plugin's supplier for the property names and an example — the same situation as
+[a plugin without a settings form](configure-a-plugin.md#plugins-without-a-settings-form).
 {% endhint %}
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/23-process-link-action-properties-json.png" alt=""><figcaption>Action properties as JSON</figcaption></figure>
