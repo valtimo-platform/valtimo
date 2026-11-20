@@ -73,6 +73,7 @@ function getExternalPluginConfigurationStructure(
     translations: manifest?.translations ?? null,
     translationKeyPrefixes: ['config'],
     allowValueExpressions: false,
+    valueResolverPrefixes: null,
   };
 }
 
@@ -93,6 +94,7 @@ function getExternalPluginActionStructure(
     translations: manifest?.translations ?? null,
     translationKeyPrefixes: [`action.${action.key}`, 'action'],
     allowValueExpressions: true,
+    valueResolverPrefixes: null,
   };
 }
 
@@ -130,8 +132,14 @@ function getExternalPluginConfigFieldTexts(
   };
 }
 
-function isExternalPluginValueExpression(value: unknown): value is string {
-  return typeof value === 'string' && EXTERNAL_PLUGIN_VALUE_EXPRESSION_PATTERN.test(value);
+function isExternalPluginValueExpression(
+  value: unknown,
+  prefixes: ReadonlyArray<string> | null = null
+): value is string {
+  if (typeof value !== 'string' || !EXTERNAL_PLUGIN_VALUE_EXPRESSION_PATTERN.test(value)) {
+    return false;
+  }
+  return !prefixes || prefixes.includes(value.substring(0, value.indexOf(':')));
 }
 
 function schemaFields(schema: unknown): Array<ExternalPluginConfigField> | null {
@@ -180,12 +188,12 @@ function schemaField(
     description: stringOrNull(property['description']),
     options,
     secret: property['x-secret'] === true,
-    url: property['format'] === 'uri' || property['x-egress-target'] === true,
+    url: property['format'] === 'uri',
+    egressTarget: property['x-egress-target'] === true,
     minLength: numberOrNull(property['minLength']),
     maxLength: numberOrNull(property['maxLength']),
     minimum: numberOrNull(property['minimum']),
     maximum: numberOrNull(property['maximum']),
-    pattern: stringOrNull(property['pattern']),
   };
 }
 
@@ -222,11 +230,11 @@ function plainField(
     options: null,
     secret: false,
     url: false,
+    egressTarget: false,
     minLength: null,
     maxLength: null,
     minimum: null,
     maximum: null,
-    pattern: null,
   };
 }
 

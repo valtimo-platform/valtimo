@@ -3,7 +3,8 @@
 
 When an administrator wires this plugin's action onto a BPMN task, the process-link stepper shows
 this React bundle instead of the form it would otherwise generate from `actions[].properties`. It
-configures **one use** of the action; `frontend/config.tsx` configures the plugin as a whole.
+configures **one use** of the action; the plugin as a whole is configured in the `config` bundle
+when you ship one, otherwise in the form Valtimo generates from `configurationSchema`.
 
 The values it reports through `sdk.setConfiguration(valid, "", data)` arrive as
 `input.properties` in the `action("__PLUGIN_ID__", …)` handler in `src/plugin.ts`. The title

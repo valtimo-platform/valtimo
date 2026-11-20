@@ -22,11 +22,11 @@ export const EXTERNAL_PLUGIN_CONFIG_FORM_ERROR_TRANSLATION_KEYS: Record<string, 
   numberOrExpression: 'externalPlugin.configForm.errors.numberOrExpression',
   integerOrExpression: 'externalPlugin.configForm.errors.integerOrExpression',
   url: 'externalPlugin.configForm.errors.url',
+  egressUrl: 'externalPlugin.configForm.errors.egressUrl',
   minlength: 'externalPlugin.configForm.errors.minLength',
   maxlength: 'externalPlugin.configForm.errors.maxLength',
   min: 'externalPlugin.configForm.errors.minimum',
   max: 'externalPlugin.configForm.errors.maximum',
-  pattern: 'externalPlugin.configForm.errors.pattern',
 };
 
 export const EXTERNAL_PLUGIN_CONFIG_FORM_UNKNOWN_ERROR_TRANSLATION_KEY =

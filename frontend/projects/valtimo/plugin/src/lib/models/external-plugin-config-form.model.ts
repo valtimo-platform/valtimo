@@ -32,13 +32,14 @@ interface ExternalPluginConfigField {
   /** `enum`: rendered as a dropdown of these values. */
   options: Array<string | number> | null;
   secret: boolean;
-  /** Must hold an absolute URL: `format: "uri"` or `x-egress-target`. */
+  /** `format: "uri"`: must hold an absolute URL. */
   url: boolean;
+  /** `x-egress-target`: must hold an http(s) URL GZAC can turn into an egress origin. */
+  egressTarget: boolean;
   minLength: number | null;
   maxLength: number | null;
   minimum: number | null;
   maximum: number | null;
-  pattern: string | null;
 }
 
 /**
@@ -52,6 +53,8 @@ interface ExternalPluginConfigStructure {
   translationKeyPrefixes: Array<string>;
   /** Action properties: numeric fields also take a value-resolver expression such as `pv:amount`. */
   allowValueExpressions: boolean;
+  /** Prefixes GZAC resolves, e.g. `pv`; null accepts any `prefix:value`. */
+  valueResolverPrefixes: ReadonlyArray<string> | null;
 }
 
 interface ExternalPluginConfigFieldOption {

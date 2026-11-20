@@ -23,7 +23,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
-import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, forkJoin, Observable, of, Subscription} from 'rxjs';
 import {
   catchError,
   filter,
@@ -419,8 +419,19 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             const savedActionKey = selectedProcessLink?.actionKey ?? null;
 
             const definitionId = extractExternalDefinitionId(definition.key);
-            return this._externalPluginService.getDefinition(definitionId).pipe(
-              map((extDef: ExternalPluginDefinition) => ({extDef, actionKey, savedActionKey})),
+            return forkJoin([
+              this._externalPluginService.getDefinition(definitionId),
+              // Unknown prefixes only loosen the generated form's expression check.
+              this._externalPluginService
+                .getValueResolverPrefixes()
+                .pipe(catchError(() => of(null))),
+            ]).pipe(
+              map(([extDef, valueResolverPrefixes]) => ({
+                extDef,
+                actionKey,
+                savedActionKey,
+                valueResolverPrefixes,
+              })),
               // A failed bundle resolve must not break the flow: emit null so the subscriber
               // marks the lookup as resolved without a bundle URL, which makes the template fall
               // back to the raw-JSON textarea configuration mode.
@@ -435,7 +446,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
             return;
           }
 
-          const {extDef, actionKey, savedActionKey} = result;
+          const {extDef, actionKey, savedActionKey, valueResolverPrefixes} = result;
           // Saved properties belong to the saved action; another action starts empty.
           const properties = actionKey === savedActionKey ? this.externalActionProperties : {};
           const mode = resolveExternalPluginFormMode(
@@ -461,7 +472,9 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           } else {
             // Before the URL: resolving the bundle reveals the configuration step.
             if (mode.kind === 'form') this.$externalActionFormValue.set(properties);
-            this.$externalActionStructure.set(mode.kind === 'form' ? mode.structure : null);
+            this.$externalActionStructure.set(
+              mode.kind === 'form' ? {...mode.structure, valueResolverPrefixes} : null
+            );
             this.externalActionBundleUrl$.next(null);
           }
         })

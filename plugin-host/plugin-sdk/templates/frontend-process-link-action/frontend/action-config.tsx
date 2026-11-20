@@ -6,9 +6,8 @@ const sdk = new ValtimoPluginSDK();
 
 /**
  * The form an administrator fills in when wiring this plugin's action onto a BPMN task through a
- * process link. It configures **one use** of the action, where `config.tsx` configures the plugin
- * as a whole; what it collects lands in `input.properties` of the `action("__PLUGIN_ID__", …)`
- * handler.
+ * process link. It configures **one use** of the action, not the plugin as a whole; what it
+ * collects lands in `input.properties` of the `action("__PLUGIN_ID__", …)` handler.
  *
  * `setConfiguration` takes an empty title: a process link has no name of its own, so only the
  * validity flag and the data matter here.

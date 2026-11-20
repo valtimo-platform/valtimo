@@ -89,7 +89,9 @@ describe('external plugin config form utils', () => {
         ['ratio', 'number', false],
         ['enabled', 'boolean', false],
       ]);
-      expect(structure?.fields[1]).toEqual(jasmine.objectContaining({url: true, secret: false}));
+      expect(structure?.fields[1]).toEqual(
+        jasmine.objectContaining({url: true, egressTarget: true, secret: false})
+      );
       expect(structure?.fields[2].secret).toBeTrue();
       expect(structure?.fields[3].options).toEqual(['fast', 'safe']);
       expect(structure?.fields[4]).toEqual(jasmine.objectContaining({minimum: 0, maximum: 5}));
@@ -284,5 +286,11 @@ describe('external plugin config form utils', () => {
     expect(isExternalPluginValueExpression('42')).toBeFalse();
     expect(isExternalPluginValueExpression('pv:')).toBeFalse();
     expect(isExternalPluginValueExpression(42)).toBeFalse();
+  });
+
+  it('accepts only the given value-resolver prefixes when they are known', () => {
+    expect(isExternalPluginValueExpression('pv:amount', ['pv', 'doc'])).toBeTrue();
+    expect(isExternalPluginValueExpression('pvv:amount', ['pv', 'doc'])).toBeFalse();
+    expect(isExternalPluginValueExpression('PV:amount', ['pv', 'doc'])).toBeFalse();
   });
 });

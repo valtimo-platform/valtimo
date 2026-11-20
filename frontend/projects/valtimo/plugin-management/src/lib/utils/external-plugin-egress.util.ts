@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const DEFAULT_PORTS: Record<string, string> = {'http:': '80', 'https:': '443'};
+import {normalizeExternalPluginEgressOrigin} from '@valtimo/plugin';
 
 /**
  * Preview of the `http_request` destinations GZAC will derive from a configuration's own values —
@@ -38,7 +38,7 @@ export function deriveExternalPluginEgressOrigins(
   for (const field of egressTargetFieldNames(configurationSchema)) {
     const value = properties?.[field];
     if (typeof value !== 'string') continue;
-    const origin = normalizeEgressOrigin(value);
+    const origin = normalizeExternalPluginEgressOrigin(value);
     if (origin !== null) origins.add(origin);
   }
   return [...origins];
@@ -56,19 +56,4 @@ function egressTargetFieldNames(configurationSchema: unknown): Array<string> {
         (fieldSchema as Record<string, unknown>)['x-egress-target'] === true
     )
     .map(([field]) => field);
-}
-
-/** Canonical `scheme://host:port`, or null when the value is not an absolute http(s) URL. */
-function normalizeEgressOrigin(value: string): string | null {
-  const trimmed = value.trim();
-  if (trimmed === '') return null;
-  let url: URL;
-  try {
-    url = new URL(trimmed);
-  } catch {
-    return null;
-  }
-  const port = url.port || DEFAULT_PORTS[url.protocol];
-  if (port === undefined || url.hostname === '') return null;
-  return `${url.protocol}//${url.hostname}:${port}`;
 }

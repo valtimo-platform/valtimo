@@ -17,14 +17,16 @@
 import {ValidationErrors, ValidatorFn} from '@angular/forms';
 import {ExternalPluginConfigField} from '../models/external-plugin-config-form.model';
 import {isExternalPluginValueExpression} from './external-plugin-config-form.utils';
+import {normalizeExternalPluginEgressOrigin} from './external-plugin-egress-origin.utils';
 
 const externalPluginRequiredTextValidator: ValidatorFn = control =>
   typeof control.value === 'string' && control.value.trim() !== '' ? null : {required: true};
 
-/** Checks the value as it will be sent: trimmed, except for secrets. */
+/**
+ * Checks the value as it will be sent: trimmed, except for secrets. `pattern` is left to GZAC, which
+ * runs it under a time budget; a manifest regex run here per keystroke could hang the admin's tab.
+ */
 function externalPluginTextValidator(field: ExternalPluginConfigField, trim: boolean): ValidatorFn {
-  const pattern = compilePattern(field.pattern);
-
   return control => {
     const raw = typeof control.value === 'string' ? control.value : '';
     const value = trim ? raw.trim() : raw;
@@ -36,7 +38,9 @@ function externalPluginTextValidator(field: ExternalPluginConfigField, trim: boo
     if (field.maxLength !== null && value.length > field.maxLength) {
       return {maxlength: {requiredLength: field.maxLength, actualLength: value.length}};
     }
-    if (pattern && !pattern.test(value)) return {pattern: true};
+    if (field.egressTarget && normalizeExternalPluginEgressOrigin(value) === null) {
+      return {egressUrl: true};
+    }
     if (field.url && !isAbsoluteUrl(value)) return {url: true};
     return null;
   };
@@ -53,13 +57,16 @@ function externalPluginNumberValidator(field: ExternalPluginConfigField): Valida
 }
 
 /** Action properties: a literal number, or an expression resolved when the action runs. */
-function externalPluginNumberTextValidator(field: ExternalPluginConfigField): ValidatorFn {
+function externalPluginNumberTextValidator(
+  field: ExternalPluginConfigField,
+  valueResolverPrefixes: ReadonlyArray<string> | null
+): ValidatorFn {
   const typeError =
     field.type === 'integer' ? {integerOrExpression: true} : {numberOrExpression: true};
 
   return control => {
     const value = typeof control.value === 'string' ? control.value.trim() : '';
-    if (!value || isExternalPluginValueExpression(value)) return null;
+    if (!value || isExternalPluginValueExpression(value, valueResolverPrefixes)) return null;
 
     const number = Number(value);
     if (!Number.isFinite(number)) return typeError;
@@ -76,16 +83,6 @@ function rangeErrors(field: ExternalPluginConfigField, value: number): Validatio
     return {max: {max: field.maximum, actual: value}};
   }
   return null;
-}
-
-// JSON Schema patterns are unanchored ECMA-262 regular expressions; an invalid one is left to GZAC.
-function compilePattern(pattern: string | null): RegExp | null {
-  if (!pattern) return null;
-  try {
-    return new RegExp(pattern, 'u');
-  } catch {
-    return null;
-  }
 }
 
 function isAbsoluteUrl(value: string): boolean {

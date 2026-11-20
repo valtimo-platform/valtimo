@@ -112,7 +112,7 @@
       "config.currency.tooltip": "Valutacode gebruikt bij het opmaken van bedragen (bv. EUR, USD, GBP)",
       "config.externalApiUrl.label": "URL externe API",
       "config.externalApiUrl.placeholder": "https://dummyjson.com/todos/1",
-      "config.externalApiUrl.tooltip": "De plugin haalt aanvullende zaakgegevens op via deze URL. Wat u hier invult, wordt een uitgaande bestemming die de plugin mag bereiken.",
+      "config.externalApiUrl.tooltip": "De plugin haalt aanvullende dossiergegevens op via deze URL. Wat je hier invult, wordt een uitgaande bestemming die de plugin mag bereiken.",
       "action.titleField.label": "Titelveld (JSON Pointer)",
       "action.titleField.placeholder": "/applicantName",
       "action.titleField.tooltip": "JSON Pointer-pad naar het titelveld in het dossierdocument (bv. /applicantName)",

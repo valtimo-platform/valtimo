@@ -89,6 +89,7 @@ export class ExternalPluginConfigFormComponent implements OnChanges, OnDestroy {
 
   protected readonly testIds = EXTERNAL_PLUGIN_CONFIG_FORM_TEST_IDS;
 
+  private _destroyed = false;
   private _formSubscription: Subscription | null = null;
   private _lastEmitted: Record<string, unknown> | null = null;
   private _structureSignature: string | null = null;
@@ -116,6 +117,7 @@ export class ExternalPluginConfigFormComponent implements OnChanges, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this._destroyed = true;
     this._formSubscription?.unsubscribe();
     this._subscriptions.unsubscribe();
   }
@@ -172,7 +174,9 @@ export class ExternalPluginConfigFormComponent implements OnChanges, OnDestroy {
 
   // Emitting while the host is being checked would change bindings it already rendered.
   private emitAfterChangeDetection(): void {
-    Promise.resolve().then(() => this.emit());
+    Promise.resolve().then(() => {
+      if (!this._destroyed) this.emit();
+    });
   }
 
   private emit(): void {
@@ -232,7 +236,12 @@ export class ExternalPluginConfigFormComponent implements OnChanges, OnDestroy {
       default: {
         const text = typeof raw === 'string' ? raw.trim() : '';
         if (!text) return undefined;
-        if (field.type === 'string' || isExternalPluginValueExpression(text)) return text;
+        if (
+          field.type === 'string' ||
+          isExternalPluginValueExpression(text, this.structure?.valueResolverPrefixes)
+        ) {
+          return text;
+        }
         const number = Number(text);
         return Number.isFinite(number) ? number : text;
       }
@@ -252,7 +261,9 @@ export class ExternalPluginConfigFormComponent implements OnChanges, OnDestroy {
     if (widget === 'number') {
       validators.push(externalPluginNumberValidator(field));
     } else if (widget === 'text' && field.type !== 'string') {
-      validators.push(externalPluginNumberTextValidator(field));
+      validators.push(
+        externalPluginNumberTextValidator(field, this.structure?.valueResolverPrefixes ?? null)
+      );
     } else if (widget === 'text' || widget === 'password') {
       validators.push(externalPluginTextValidator(field, widget === 'text'));
     }

@@ -342,8 +342,10 @@ What a property turns into:
 | `"type": "boolean"` | Checkbox; `required` is ignored, unchecked saves `false` |
 | `"enum": [...]` on a string or number | Dropdown; can be left empty unless `required` |
 | `"x-secret": true` | Password input; on edit, leaving it empty keeps the stored value |
-| `"format": "uri"` or `"x-egress-target": true` | Text input that must hold an absolute URL |
-| `required`, `minLength`, `maxLength`, `minimum`, `maximum`, `pattern` | Checked as the administrator types, with messages in their language |
+| `"format": "uri"` | Text input that must hold an absolute URL |
+| `"x-egress-target": true` | Text input that must hold an `http://` or `https://` URL without credentials |
+| `required`, `minLength`, `maxLength`, `minimum`, `maximum` | Checked as the administrator types, with messages in their language |
+| `pattern` | Checked by GZAC on save, not while typing: a regex from the manifest could hang the browser |
 | `default` | Prefilled when the configuration is created |
 
 An empty optional field is left out of the saved object rather than sent as `""` or `null`, so the

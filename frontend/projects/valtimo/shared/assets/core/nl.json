@@ -3551,8 +3551,6 @@
     "externalPluginActionProperties": "Configureer de actie-eigenschappen voor deze externe-pluginactie als JSON. Klik op Opslaan als je klaar bent.",
     "externalPluginActionForm": "Configureer de eigenschappen van deze actie.",
     "externalPluginActionFormHint": "Een eigenschap kan haar waarde ook uit het dossier of het proces halen wanneer de actie draait, bijvoorbeeld:",
-    "externalPluginActionFormDocumentExample": "doc:/pad",
-    "externalPluginActionFormProcessVariableExample": "pv:naam",
     "actionPropertiesJson": "Actie-eigenschappen (JSON)",
     "invalidJson": "Ongeldige JSON",
     "resultMappings": {
@@ -3662,11 +3660,11 @@
         "numberOrExpression": "Voer een getal in, of een waarde zoals pv:bedrag.",
         "integerOrExpression": "Voer een geheel getal in, of een waarde zoals pv:aantal.",
         "url": "Voer een volledige URL in, zoals https://voorbeeld.nl.",
+        "egressUrl": "Voer een URL in die begint met http:// of https://, zonder gebruikersnaam of wachtwoord.",
         "minLength": "Voer minstens {{value}} tekens in.",
         "maxLength": "Voer hoogstens {{value}} tekens in.",
         "minimum": "Voer {{value}} of meer in.",
         "maximum": "Voer {{value}} of minder in.",
-        "pattern": "Deze waarde heeft niet het verwachte formaat.",
         "invalid": "Deze waarde is niet geldig."
       }
     }

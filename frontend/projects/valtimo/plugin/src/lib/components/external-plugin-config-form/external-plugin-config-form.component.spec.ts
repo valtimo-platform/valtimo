@@ -122,7 +122,7 @@ describe('ExternalPluginConfigFormComponent', () => {
     expect(component.$errors()['apiUrl']).toBeNull();
 
     component.onFieldValueChange('apiUrl', 'openplan.example.com');
-    expect(component.$errors()['apiUrl']).toBe('externalPlugin.configForm.errors.url');
+    expect(component.$errors()['apiUrl']).toBe('externalPlugin.configForm.errors.egressUrl');
     expect(emittedValue).toEqual(jasmine.objectContaining({apiUrl: 'openplan.example.com'}));
   }));
 
@@ -150,10 +150,51 @@ describe('ExternalPluginConfigFormComponent', () => {
     expect(emittedValid).toBeTrue();
   }));
 
-  it('refuses a destination that is not an absolute URL', fakeAsync(() => {
-    render(configuration, {apiUrl: 'openplan.example.com'});
+  it('refuses a destination GZAC cannot turn into an egress origin', fakeAsync(() => {
+    render(configuration);
+    const apiUrl = component.form.controls['apiUrl'];
 
-    expect(component.form.controls['apiUrl'].errors).toEqual({url: true});
+    for (const value of [
+      'openplan.example.com',
+      'ftp://openplan.example.com',
+      'javascript:alert(1)',
+      'https://user:pass@openplan.example.com',
+    ]) {
+      apiUrl.setValue(value);
+      expect(apiUrl.errors).withContext(value).toEqual({egressUrl: true});
+    }
+
+    apiUrl.setValue('http://openplan.example.com:8080/api');
+    expect(apiUrl.errors).toBeNull();
+  }));
+
+  it('takes any absolute URL for a uri field that is not an egress target', fakeAsync(() => {
+    render(
+      getExternalPluginConfigurationStructure(
+        {type: 'object', properties: {callback: {type: 'string', format: 'uri'}}},
+        manifest
+      )!
+    );
+    const callback = component.form.controls['callback'];
+
+    callback.setValue('urn:isbn:0451450523');
+    expect(callback.errors).toBeNull();
+
+    callback.setValue('not a url');
+    expect(callback.errors).toEqual({url: true});
+  }));
+
+  it('does not check a schema pattern itself, leaving it to GZAC', fakeAsync(() => {
+    render(
+      getExternalPluginConfigurationStructure(
+        {type: 'object', properties: {code: {type: 'string', pattern: '^[A-Z]{3}$'}}},
+        manifest
+      )!
+    );
+    const code = component.form.controls['code'];
+
+    code.setValue('eur');
+    expect(code.errors).toBeNull();
   }));
 
   it('keeps a stored secret when the secret is left empty while editing', fakeAsync(() => {
@@ -178,6 +219,33 @@ describe('ExternalPluginConfigFormComponent', () => {
     expect(times.errors).toEqual({integerOrExpression: true});
     expect(emittedValid).toBeFalse();
     expect(fixture.nativeElement.textContent).toContain('Times');
+  }));
+
+  it('refuses an expression whose prefix GZAC does not resolve', fakeAsync(() => {
+    render({
+      ...getExternalPluginActionStructure(manifest, 'greet')!,
+      valueResolverPrefixes: ['pv', 'doc'],
+    });
+    const times = component.form.controls['times'];
+
+    times.setValue('pv:times');
+    expect(times.errors).toBeNull();
+
+    times.setValue('pvv:times');
+    expect(times.errors).toEqual({integerOrExpression: true});
+    expect(emittedValid).toBeFalse();
+  }));
+
+  it('emits nothing once destroyed', fakeAsync(() => {
+    fixture.componentRef.setInput('structure', configuration);
+    fixture.detectChanges();
+    emittedValue = null;
+    emittedValid = null;
+    fixture.destroy();
+    tick();
+
+    expect(emittedValue).toBeNull();
+    expect(emittedValid).toBeNull();
   }));
 
   it('does not reset what was typed when the host re-sends an equal structure', fakeAsync(() => {
