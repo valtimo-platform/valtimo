@@ -270,6 +270,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this._subscriptions.unsubscribe();
     this.submission$.next(null);
     this._viewInitialized$.next(false);
+    this.stateService.setProcessInstanceId('');
   }
 
   public ngAfterViewInit(): void {
