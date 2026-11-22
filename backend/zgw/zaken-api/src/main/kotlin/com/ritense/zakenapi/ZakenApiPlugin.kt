@@ -1267,8 +1267,7 @@ class ZakenApiPlugin(
             logger.debug { "Getting zaakeigenschap with url '${eigenschapUrl}' for document with id '${execution.businessKey}'" }
             val documentId = execution.getJsonSchemaDocumentId()
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-            val zaakeigenschap = client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
-                .firstOrNull { it.eigenschap == eigenschapUrl }
+            val zaakeigenschap = findZaakeigenschappen(zaakUrl, eigenschapUrl, null).firstOrNull()
                 ?: throw IllegalStateException("No zaakeigenschap exists for zaak '$zaakUrl' and eigenschap '$eigenschapUrl'")
 
             execution.setVariable(resultProcessVariable, zaakeigenschap.waarde)
@@ -1296,11 +1295,19 @@ class ZakenApiPlugin(
             logger.debug { "Getting zaakeigenschap with url '${eigenschapUrl}' and or name '${eigenschapNaam}' for document with id '${execution.businessKey}'" }
             val documentId = execution.getJsonSchemaDocumentId()
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-            val zaakeigenschappen = client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
-                .filter { eigenschapUrl == null || eigenschapUrl.toString().isEmpty() || it.eigenschap == eigenschapUrl }
-                .filter { eigenschapNaam.isNullOrEmpty() || it.naam == eigenschapNaam }
+            val zaakeigenschappen = findZaakeigenschappen(zaakUrl, eigenschapUrl, eigenschapNaam)
             execution.setVariable(resultProcessVariable, objectMapper.convertValue(zaakeigenschappen))
         }
+    }
+
+    private fun findZaakeigenschappen(
+        zaakUrl: URI,
+        eigenschapUrl: URI?,
+        eigenschapNaam: String?,
+    ): List<ZaakeigenschapResponse> {
+        return client.getZaakeigenschappen(authenticationPluginConfiguration, url, zaakUrl)
+            .filter { eigenschapUrl == null || eigenschapUrl.toString().isEmpty() || it.eigenschap == eigenschapUrl }
+            .filter { eigenschapNaam.isNullOrEmpty() || it.naam == eigenschapNaam }
     }
 
     @PluginAction(
