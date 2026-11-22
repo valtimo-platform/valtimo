@@ -31,7 +31,6 @@ import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
 import com.ritense.processdocument.helper.GetJsonSchemaDocumentHelper.getJsonSchemaDocumentId
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.resource.service.TemporaryResourceStorageService
