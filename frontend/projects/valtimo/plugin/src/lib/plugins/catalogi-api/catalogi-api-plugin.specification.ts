@@ -91,6 +91,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       resultaattypeTooltip: 'Omschrijving van de aard van het resultaat.',
       reslutaatProcessVariableTooltip:
         'Nadat het resultaattype is opgehaald, wordt het opgeslagen in een procesvariabele met deze naam.',
+      detailProcessVariable: 'Procesvariabele voor details',
+      detailProcessVariableTooltip:
+        'Optioneel: de naam van de procesvariabele waarin de details van het resultaattype moeten worden opgeslagen.',
       'get-eigenschap': 'Eigenschap opvragen',
       getEigenschapInformation:
         'De eigenschap wordt opgehaald en daarna opgeslagen in een procesvariabele',
@@ -163,6 +166,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       resultaattypeTooltip: 'Description of the nature of the result.',
       reslutaatProcessVariableTooltip:
         'After the resultaattype is retrieved, it is stored in a process variable with this name.',
+      detailProcessVariable: 'Detail process variable',
+      detailProcessVariableTooltip:
+        'Optional: the name of the process variable in which the details of the resultaattype should be stored.',
       'get-eigenschap': 'Retrieve eigenschap',
       getEigenschapInformation: 'The eigenschap is retrieved and then stored in a process variable',
       eigenschap: 'Eigenschap',
