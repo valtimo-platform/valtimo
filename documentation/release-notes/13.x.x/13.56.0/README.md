@@ -20,6 +20,14 @@ External plugins can now work together. One plugin can offer a service, such as 
 
 More information: [Contracts between plugins](../../../configuration-guides/plugins/external-plugins/contracts.md).
 
+### Besluittypen from the Catalogi API
+
+A new Catalogi API plugin action, **Retrieve besluittypen**, stores every besluittype of the zaaktype linked to a zaak in a process variable. Each besluittype carries its full set of fields: description, generic description, catalogue, decision category, response term, publication indication, publication text and term, explanation, informatieobjecttypen, validity dates, and concept status.
+
+{% hint style="success" %}
+The Catalogi API plugin is a ZGW plugin and can only be used in the GZAC edition.
+{% endhint %}
+
 ---
 
 ## Enhancements
@@ -31,6 +39,12 @@ A screen of an external plugin can now open a case page, for example through a *
 ### Plugin settings screens fit their content
 
 The settings screen of an external plugin now grows with its content when you edit a plugin configuration or configure a plugin action in a process, just like it already did when you configure a new plugin.
+
+### More resultaattype fields in process variables
+
+The **Retrieve resultaattypen** action now stores the full set of resultaattype fields for every entry — including the archiving fields, linked besluittypen and informatieobjecttypen, and validity dates — instead of only the URL and description as before.
+
+The **Retrieve resultaattype** action can now also store the full details of the resolved resultaattype in a second, optional process variable, so a process no longer needs a separate lookup to get its fields after resolving the URL.
 
 ---
 
