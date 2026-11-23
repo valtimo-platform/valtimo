@@ -1,4 +1,4 @@
-FROM nginxinc/nginx-unprivileged:1.28-alpine
+FROM nginxinc/nginx-unprivileged:1.31.9-alpine
 
 # Which Angular app variant to package. Match the `ng build <variant>` name:
 # `dev` (default for local-dev images), `gzac`, etc.
