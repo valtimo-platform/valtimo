@@ -689,9 +689,9 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     return combineLatest([this.filePermissions$, this.supportedDocumentenApiFeatures$]).pipe(
       map(
         ([permissions, supportedFeatures]) =>
-          file.status === 'definitief' ||
-          !permissions[file.fileId]?.canModify ||
-          !supportedFeatures.supportsUpdatingDefinitiveDocument
+          (file.status === 'definitief' &&
+            !supportedFeatures.supportsUpdatingDefinitiveDocument) ||
+          !permissions[file.fileId]?.canModify
       )
     );
   }
