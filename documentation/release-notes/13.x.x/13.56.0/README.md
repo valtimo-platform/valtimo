@@ -20,6 +20,13 @@ External plugins can now work together. One plugin can offer a service, such as 
 
 More information: [Contracts between plugins](../../../configuration-guides/plugins/external-plugins/contracts.md).
 
+### Zaakeigenschappen from the Zaken API
+
+Two new Zaken API plugin actions make the zaakeigenschappen of a zaak available to a process:
+
+- **Search zaakeigenschappen** stores every zaakeigenschap of the zaak that matches a given property URL and/or name in a process variable. Leaving both empty returns every zaakeigenschap of the zaak.
+- **Get zaakeigenschap** stores the value of a single zaakeigenschap, identified by its property URL, in a process variable.
+
 ---
 
 ## Enhancements
