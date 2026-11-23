@@ -18,10 +18,10 @@ package com.ritense.resource.security.config
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import com.ritense.valtimo.contract.security.matcher.SecurityRequestMatchers.antMatcher
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class TemporaryResourceStorageHttpSecurityConfigurer : HttpSecurityConfigurer {
 

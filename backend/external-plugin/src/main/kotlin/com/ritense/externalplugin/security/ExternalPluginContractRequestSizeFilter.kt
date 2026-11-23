@@ -16,6 +16,7 @@
 
 package com.ritense.externalplugin.security
 
+import com.ritense.valtimo.contract.security.matcher.SecurityRequestMatchers.antMatcher
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ReadListener
 import jakarta.servlet.ServletInputStream
@@ -23,7 +24,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
@@ -100,6 +100,6 @@ class ExternalPluginContractRequestSizeFilter(maxPayloadBytes: Int) : OncePerReq
         /** Room for `contract`, `operation`, `replyTo` and the other envelope fields around the payload. */
         const val ENVELOPE_BYTES = 65_536
 
-        private val CONTRACT_MATCHER = AntPathRequestMatcher("/api/v1/plugin-contract/**")
+        private val CONTRACT_MATCHER = antMatcher("/api/v1/plugin-contract/**")
     }
 }

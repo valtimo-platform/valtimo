@@ -18,7 +18,7 @@ package com.ritense.valtimo.contract.security.config
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import com.ritense.valtimo.contract.security.matcher.SecurityRequestMatchers
 
 abstract class AuthorizeRequestsHttpSecurityConfigurer : HttpSecurityConfigurer {
     final override fun configure(http: HttpSecurity) {
@@ -34,5 +34,5 @@ abstract class AuthorizeRequestsHttpSecurityConfigurer : HttpSecurityConfigurer 
     fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry.antMatcher(
         method: HttpMethod,
         pattern: String
-    ): AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl = this.requestMatchers(AntPathRequestMatcher.antMatcher(method, pattern))
+    ): AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl = this.requestMatchers(SecurityRequestMatchers.antMatcher(method, pattern))
 }

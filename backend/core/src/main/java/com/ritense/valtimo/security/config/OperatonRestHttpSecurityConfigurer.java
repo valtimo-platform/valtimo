@@ -17,7 +17,7 @@
 package com.ritense.valtimo.security.config;
 
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static com.ritense.valtimo.contract.security.matcher.SecurityRequestMatchers.antMatcher;
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;

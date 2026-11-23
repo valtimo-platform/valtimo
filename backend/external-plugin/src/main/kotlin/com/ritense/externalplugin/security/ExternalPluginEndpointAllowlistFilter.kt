@@ -22,7 +22,6 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 import java.time.Duration
 import java.util.UUID
@@ -128,7 +127,7 @@ class ExternalPluginEndpointAllowlistFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun grantedMatchers(configurationId: UUID): List<AntPathRequestMatcher> {
+    private fun grantedMatchers(configurationId: UUID): List<ExternalPluginAntPathRequestMatcher> {
         val cached = matcherCache[configurationId]
         val now = System.currentTimeMillis()
         if (cached != null && cached.expiresAtMillis > now) {
@@ -137,7 +136,7 @@ class ExternalPluginEndpointAllowlistFilter(
         val matchers = grantedEndpointRepository.findAllByConfigurationId(configurationId)
             .mapNotNull { granted ->
                 try {
-                    AntPathRequestMatcher(granted.endpointPattern, granted.httpMethod)
+                    ExternalPluginAntPathRequestMatcher(granted.endpointPattern, granted.httpMethod)
                 } catch (e: Exception) {
                     // Patterns are validated at grant time, so this only fires for legacy/corrupt
                     // rows. Deny (skip) instead of failing the whole request with a 500.
@@ -154,7 +153,7 @@ class ExternalPluginEndpointAllowlistFilter(
 
     private class CachedMatchers(
         val expiresAtMillis: Long,
-        val matchers: List<AntPathRequestMatcher>,
+        val matchers: List<ExternalPluginAntPathRequestMatcher>,
     )
 
     companion object {
@@ -182,15 +181,15 @@ class ExternalPluginEndpointAllowlistFilter(
             listOf("POST", "PUT", "PATCH", "DELETE").map { it to "/api/v1/users/**" }
 
         private val DENYLIST_MATCHERS =
-            DENYLIST_PATTERNS.map { AntPathRequestMatcher(it) } +
-                DENYLIST_METHOD_PATTERNS.map { (method, pattern) -> AntPathRequestMatcher(pattern, method) }
+            DENYLIST_PATTERNS.map { ExternalPluginAntPathRequestMatcher(it) } +
+                DENYLIST_METHOD_PATTERNS.map { (method, pattern) -> ExternalPluginAntPathRequestMatcher(pattern, method) }
 
         /** Exact-path, GET-only carve-out for user-token introspection (see [doFilterInternal]). */
         private val USER_TOKEN_INTROSPECT_MATCHER =
-            AntPathRequestMatcher("/api/v1/external-plugin/user-token/introspect", "GET")
+            ExternalPluginAntPathRequestMatcher("/api/v1/external-plugin/user-token/introspect", "GET")
 
         /** Service-token contract calls and jobs (see the carve-out in [doFilterInternal]). */
-        private val PLUGIN_CONTRACT_MATCHER = AntPathRequestMatcher("/api/v1/plugin-contract/**")
+        private val PLUGIN_CONTRACT_MATCHER = ExternalPluginAntPathRequestMatcher("/api/v1/plugin-contract/**")
 
         private val kLogger = KotlinLogging.logger {}
     }

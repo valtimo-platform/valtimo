@@ -19,12 +19,12 @@ package com.ritense.iko.security.config
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import com.ritense.valtimo.contract.security.matcher.SecurityRequestMatchers.antMatcher
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class IkoHttpSecurityConfigurer : HttpSecurityConfigurer {
 
@@ -51,47 +51,47 @@ class IkoHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "/api/management/v1/iko-view/import")).hasAuthority(ADMIN)
 
                     .requestMatchers(antMatcher(GET, "/api/v1/iko-view/{key}/search-action")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/iko-view/{key}/search-action/{key}/search")).authenticated()
+                    .requestMatchers(antMatcher(POST, "/api/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/iko-property-fields/{type}/search-action")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/iko-view/{key}/search-action")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/iko-view/{key}/search-action/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/iko-view/{key}/search-action/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/iko-view/{key}/search-action/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/iko-view/{ikoViewKey}/search-action/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/iko-view/{ikoViewKey}/search-action/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "/api/management/v1/iko-view/{ikoViewKey}/search-action/{key}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "/api/management/v1/iko-view/{key}/search-action")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/iko-view/{key}/search-action/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/iko-view/{ikoViewKey}/search-action/{key}")).hasAuthority(ADMIN)
 
                     .requestMatchers(antMatcher(GET, "/api/v1/iko-view/{key}/tab")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/iko-property-fields/{type}/tab")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/iko-view/{key}/tab")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/iko-view/{key}/tab/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/iko-view/{key}/tab/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "/api/management/v1/iko-view/{key}/tab/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/iko-view/{ikoViewKey}/tab/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/iko-view/{ikoViewKey}/tab/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "/api/management/v1/iko-view/{ikoViewKey}/tab/{key}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "/api/management/v1/iko-view/{key}/tab")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/iko-view/{key}/tab/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, "/api/management/v1/iko-view/{ikoViewKey}/tab/{key}")).hasAuthority(ADMIN)
 
-                    .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{key}/tab/{key}/widget")).authenticated()
-                    .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{key}/tab/{key}/widget/data")).authenticated()
-                    .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{key}/tab/{key}/widget/{key}/data")).authenticated()
-                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/tab/{key}/widget")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/tab/{key}/widget/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST,"/api/management/v1/iko-view/{key}/tab/{key}/widget/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{key}/tab/{key}/widget/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{key}/tab/{key}/widget")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE,"/api/management/v1/iko-view/{key}/tab/{key}/widget/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget")).authenticated()
+                    .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/data")).authenticated()
+                    .requestMatchers(antMatcher(GET,"/api/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{widgetKey}/data")).authenticated()
+                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST,"/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE,"/api/management/v1/iko-view/{ikoViewKey}/tab/{tabKey}/widget/{key}")).hasAuthority(ADMIN)
 
                     .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/column")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/column/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST,"/api/management/v1/iko-view/{key}/column/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{key}/column/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{ikoViewKey}/column/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST,"/api/management/v1/iko-view/{ikoViewKey}/column/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{ikoViewKey}/column/{key}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{key}/column")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE,"/api/management/v1/iko-view/{key}/column/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE,"/api/management/v1/iko-view/{ikoViewKey}/column/{key}")).hasAuthority(ADMIN)
 
-                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/search-action/{key}/search-field")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{key}/search-action/{key}/search-field/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST,"/api/management/v1/iko-view/{key}/search-action/{key}/search-field/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{key}/search-action/{key}/search-field/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{key}/search-action/{key}/search-field")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE,"/api/management/v1/iko-view/{key}/search-action/{key}/search-field/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET,"/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST,"/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT,"/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE,"/api/management/v1/iko-view/{ikoViewKey}/search-action/{ikoSearchActionKey}/search-field/{key}")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

@@ -19,9 +19,9 @@ package com.ritense.search.security.config
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import com.ritense.valtimo.contract.security.matcher.SecurityRequestMatchers.antMatcher
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class SearchHttpSecurityConfigurer : HttpSecurityConfigurer {
 

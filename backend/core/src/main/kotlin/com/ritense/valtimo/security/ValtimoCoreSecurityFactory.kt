@@ -17,12 +17,12 @@
 package com.ritense.valtimo.security
 
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
+import com.ritense.valtimo.contract.security.matcher.SecurityRequestMatchers.antMatcher
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class ValtimoCoreSecurityFactory(
     private val httpSecurityConfigurers: List<HttpSecurityConfigurer>
