@@ -94,6 +94,14 @@ class ZgwUrlValidatorTest {
     }
 
     @Test
+    fun `should reject percent encoded dot dot traversal`() {
+        assertFalse(under(base, "https://oz.example.com/besluiten/api/v1/%2e%2e/%2e%2e/admin"))
+        assertFalse(under(base, "https://oz.example.com/besluiten/api/v1/%2E%2e/admin"))
+        assertFalse(under(base, "https://oz.example.com/besluiten/api/v1/..%2f..%2fadmin"))
+        assertFalse(under(base, "https://oz.example.com/besluiten/api/v1/besluiten%2f..%2f..%2fadmin"))
+    }
+
+    @Test
     fun `should reject path outside base`() {
         assertFalse(under(base, "https://oz.example.com/other/api/v1/besluiten/123"))
         assertFalse(under(base, "https://oz.example.com/besluiten/api/v10/besluiten/123"))
