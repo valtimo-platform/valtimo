@@ -889,11 +889,118 @@ internal class CatalogiApiPluginTest : BaseTest() {
         plugin.getResultaattype(
             execution = execution,
             resultaattype = resultaattype,
-            processVariable = processVariable
+            processVariable = processVariable,
+            detailProcessVariable = null
         )
 
         verify(execution, times(1))
             .setVariable(eq(processVariable), eq(resultaattypeUrl))
+    }
+
+    @Test
+    fun `should get resultaat type by url`() {
+        val resultaattypeUrl = resultaatTypeUrl("4")
+        val processVariable = "resultaatTypeProcessVar"
+        val execution = mockExecution()
+
+        plugin.getResultaattype(
+            execution = execution,
+            resultaattype = resultaattypeUrl,
+            processVariable = processVariable,
+            detailProcessVariable = null
+        )
+
+        verify(execution, times(1)).setVariable(eq(processVariable), eq(resultaattypeUrl))
+        verify(client, never()).getResultaattype(any(), any(), any())
+    }
+
+    @Test
+    fun `should not set detail process variable when detailProcessVariable is null`() {
+        val resultaattypeUrl = resultaatTypeUrl("4")
+        val processVariable = "resultaatTypeProcessVar"
+        val execution = mockExecution()
+
+        plugin.getResultaattype(
+            execution = execution,
+            resultaattype = resultaattypeUrl,
+            processVariable = processVariable,
+            detailProcessVariable = null
+        )
+
+        verify(execution, never()).setVariable(eq("resultaatTypeDetailProcessVar"), any())
+    }
+
+    @Test
+    fun `should get resultaat type detail when resultaattype is a url and detailProcessVariable is set`() {
+        val resultaattypeUrl = resultaatTypeUrl("4")
+        val processVariable = "resultaatTypeProcessVar"
+        val detailProcessVariable = "resultaatTypeDetailProcessVar"
+        val zaaktypeUrl = zaaktypeUrl().toURI()
+        val execution = mockExecution()
+
+        val resultaattypeObject = resultaatType(
+            url = resultaattypeUrl.toURI(),
+            zaaktypeUrl = zaaktypeUrl,
+            omschrijving = "fourth resultaat",
+            resultaatTypeOmschrijving = resultaatTypeOmschrijvingUrl("4").toURI(),
+            selectielijstKlasse = selectielijstKlasseUrl("4").toURI()
+        )
+
+        whenever(client.getResultaattype(any(), any(), eq(resultaattypeUrl.toURI())))
+            .thenReturn(resultaattypeObject)
+
+        plugin.getResultaattype(
+            execution = execution,
+            resultaattype = resultaattypeUrl,
+            processVariable = processVariable,
+            detailProcessVariable = detailProcessVariable
+        )
+
+        verify(execution, times(1)).setVariable(
+            eq(detailProcessVariable),
+            eq(expectedResultaattypeOutput(url = resultaattypeUrl, name = "fourth resultaat"))
+        )
+        verify(execution, times(1)).setVariable(eq(processVariable), eq(resultaattypeUrl))
+    }
+
+    @Test
+    fun `should get resultaat type detail when resultaattype is resolved by omschrijving`() {
+        val resultaattype = "Registered"
+        val processVariable = "resultaatTypeProcessVar"
+        val detailProcessVariable = "resultaatTypeDetailProcessVar"
+        val resultaattypeUrl = resultaatTypeUrl("4")
+        val zaaktypeUrl = zaaktypeUrl().toURI()
+        val documentId = documentId()
+        val document = mockDocument(documentId.toUUID())
+        val execution = mockExecution(documentId)
+
+        mockDocumentService(documentId, document)
+        mockZaakTypeUrlProvider(zaaktypeUrl)
+        mockResultaattypen(
+            zaaktypeUrl = zaaktypeUrl,
+            additionalResultaatTypen = listOf(
+                resultaatType(
+                    url = resultaattypeUrl.toURI(),
+                    zaaktypeUrl = zaaktypeUrl,
+                    omschrijving = resultaattype,
+                    resultaatTypeOmschrijving = resultaatTypeOmschrijvingUrl().toURI(),
+                    selectielijstKlasse = selectielijstKlasseUrl().toURI()
+                )
+            )
+        )
+
+        plugin.getResultaattype(
+            execution = execution,
+            resultaattype = resultaattype,
+            processVariable = processVariable,
+            detailProcessVariable = detailProcessVariable
+        )
+
+        verify(execution, times(1)).setVariable(
+            eq(detailProcessVariable),
+            eq(expectedResultaattypeOutput(url = resultaattypeUrl, name = resultaattype))
+        )
+        verify(client, never()).getResultaattype(any(), any(), any())
     }
 
     @Test
