@@ -39,3 +39,5 @@ The settings screen of an external plugin now grows with its content when you ed
 | Area | Fix |
 |------|-----|
 | Forms | A form that a process link uses can no longer be deleted. Making a case definition final, exporting it and creating a draft now give a clear error when a process link points to a missing form. Case definitions that are already final and contain such a link are not repaired by this change. |
+| Documents | Editing Documenten API documents with status *definitief* is now allowed when the Documenten API supports it, for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw). |
+| Documents | Editing Documenten API documents with any other status is now allowed for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw).  |
