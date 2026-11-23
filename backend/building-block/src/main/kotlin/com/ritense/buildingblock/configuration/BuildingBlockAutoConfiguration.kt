@@ -147,6 +147,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.exporter.ExportService
 import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.form.service.FormDefinitionUsageGuard
 import com.ritense.formflow.service.FormFlowService
 import com.ritense.importer.BuildingBlockDefinitionIdSupplier
 import com.ritense.importer.ImportService
@@ -898,9 +899,10 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockFormDefinitionService::class)
     fun buildingBlockFormDefinitionService(
         formDefinitionRepository: FormDefinitionRepository,
-        definitionChecker: BuildingBlockDefinitionChecker
+        definitionChecker: BuildingBlockDefinitionChecker,
+        formDefinitionUsageGuard: FormDefinitionUsageGuard
     ): BuildingBlockFormDefinitionService {
-        return BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker)
+        return BuildingBlockFormDefinitionService(formDefinitionRepository, definitionChecker, formDefinitionUsageGuard)
     }
 
     @Bean
