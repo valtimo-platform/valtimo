@@ -41,8 +41,7 @@
                 "data-testid": "start-form-create-zaakeigenschap-pv-eigenschapValue"
             },
             "autoExpand": false,
-            "applyMaskOn": "change",
-            "defaultValue": "De bom"
+            "applyMaskOn": "change"
         },
         {
             "key": "submit",

@@ -27,7 +27,7 @@ import {
   tap,
 } from 'rxjs';
 import {map} from 'rxjs/operators';
-import {InputOption, SearchZaakeigenschappenConfig} from '../../models';
+import {InputOption, GetZaakeigenschappenConfig} from '../../models';
 import {RadioValue, SelectItem} from '@valtimo/components';
 import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
@@ -35,11 +35,11 @@ import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-search-zaakeigenschappen',
-  templateUrl: './search-zaakeigenschappen.component.html',
+  selector: 'valtimo-get-zaakeigenschappen',
+  templateUrl: './get-zaakeigenschappen.component.html',
   providers: [PluginTranslatePipe],
 })
-export class SearchZaakeigenschappenComponent
+export class GetZaakeigenschappenComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() public save$: Observable<void>;
@@ -47,16 +47,16 @@ export class SearchZaakeigenschappenComponent
   @Input() public set pluginId(value: string) {
     this.pluginId$.next(value);
   }
-  @Input() public prefillConfiguration$: Observable<SearchZaakeigenschappenConfig>;
+  @Input() public prefillConfiguration$: Observable<GetZaakeigenschappenConfig>;
   @Input() public context$: Observable<[ManagementContext, CaseManagementParams]>;
 
   @Output() public valid = new EventEmitter<boolean>();
-  @Output() public configuration = new EventEmitter<SearchZaakeigenschappenConfig>();
+  @Output() public configuration = new EventEmitter<GetZaakeigenschappenConfig>();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
   public readonly pluginId$ = new BehaviorSubject<string>('');
-  public readonly formValue$ = new BehaviorSubject<SearchZaakeigenschappenConfig | null>(null);
+  public readonly formValue$ = new BehaviorSubject<GetZaakeigenschappenConfig | null>(null);
   public readonly valid$ = new BehaviorSubject<boolean>(false);
   public readonly eigenschapSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
 
@@ -90,7 +90,7 @@ export class SearchZaakeigenschappenComponent
     this._subscriptions.unsubscribe();
   }
 
-  public formValueChange(formValue: SearchZaakeigenschappenConfig): void {
+  public formValueChange(formValue: GetZaakeigenschappenConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
 
@@ -155,7 +155,7 @@ export class SearchZaakeigenschappenComponent
     this._subscriptions.add(sub);
   }
 
-  private handleValid(formValue: SearchZaakeigenschappenConfig): void {
+  private handleValid(formValue: GetZaakeigenschappenConfig): void {
     const valid = !!formValue.resultProcessVariable;
     this.valid$.next(valid);
     this.valid.emit(valid);

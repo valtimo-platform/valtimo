@@ -66,7 +66,7 @@ import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbeslu
 import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
 import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 import {DeleteZaakResultatenConfigurationComponent} from './components/delete-zaak-resultaten/delete-zaak-resultaten-configuration.component';
-import {SearchZaakeigenschappenComponent} from './components/search-zaakeigenschappen/search-zaakeigenschappen.component';
+import {GetZaakeigenschappenComponent} from './components/get-zaakeigenschappen/get-zaakeigenschappen.component';
 
 @NgModule({
   declarations: [
@@ -89,7 +89,7 @@ import {SearchZaakeigenschappenComponent} from './components/search-zaakeigensch
     CreateZaakeigenschapComponent,
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
-    SearchZaakeigenschappenComponent,
+    GetZaakeigenschappenComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     PatchZaakConfigurationComponent,
@@ -144,7 +144,7 @@ import {SearchZaakeigenschappenComponent} from './components/search-zaakeigensch
     CreateZaakeigenschapComponent,
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
-    SearchZaakeigenschappenComponent,
+    GetZaakeigenschappenComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     GetZaakbesluitenConfigurationComponent,

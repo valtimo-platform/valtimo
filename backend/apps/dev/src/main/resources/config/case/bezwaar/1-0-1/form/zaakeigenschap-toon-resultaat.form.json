@@ -6,7 +6,7 @@
             "type": "textarea",
             "input": true,
             "tableView": false,
-            "label": "Haal zaakeigenschap op",
+            "label": "zaakeigenschappen van deze zaak",
             "disabled": true,
             "rows": 20,
             "autoExpand": false,

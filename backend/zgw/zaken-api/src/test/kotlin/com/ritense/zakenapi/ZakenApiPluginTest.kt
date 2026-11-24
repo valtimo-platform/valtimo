@@ -18,7 +18,6 @@ package com.ritense.zakenapi
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
@@ -1509,88 +1508,6 @@ internal class ZakenApiPluginTest {
     }
 
     @Test
-    fun `should get zaakeigenschap`() {
-        // given
-        val zakenApiClient: ZakenApiClient = mock()
-        val zaakUrlProvider: ZaakUrlProvider = mock()
-        val executionMock = mock<DelegateExecution>()
-        val authenticationMock = mock<ZakenApiAuthentication>()
-
-        val documentId = UUID.randomUUID()
-        val zaakUrl = zaakUri()
-        val eigenschapUrl = eigenschapUri()
-        val resultProcessVariable = "eigenschapWaarde"
-
-        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
-        whenever(executionMock.businessKey).thenReturn(documentId.toString())
-        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
-        whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
-            .thenReturn(
-                listOf(
-                    ZaakeigenschapResponse(
-                        url = URI("${zaakUrl()}/zaakeigenschappen/5678"),
-                        zaak = zaakUrl,
-                        eigenschap = eigenschapUrl,
-                        waarde = "test-value"
-                    )
-                )
-            )
-
-        val plugin = zakenApiPlugin(
-            zaakUrlProvider = zaakUrlProvider,
-            zakenApiClient = zakenApiClient,
-            authenticationMock = authenticationMock
-        )
-
-        // when
-        val result = plugin.getZaakeigenschap(
-            execution = executionMock,
-            eigenschapUrl = eigenschapUrl,
-            resultProcessVariable = resultProcessVariable
-        )
-
-        // then
-        assertEquals("test-value", result)
-        verify(executionMock).setVariable(resultProcessVariable, "test-value")
-        verify(zakenApiClient).getZaakeigenschappen(authenticationMock, zakenApiUri(), zaakUrl)
-    }
-
-    @Test
-    fun `should throw exception when getting a zaakeigenschap that does not exist`() {
-        // given
-        val zakenApiClient: ZakenApiClient = mock()
-        val zaakUrlProvider: ZaakUrlProvider = mock()
-        val executionMock = mock<DelegateExecution>()
-        val authenticationMock = mock<ZakenApiAuthentication>()
-
-        val documentId = UUID.randomUUID()
-        val zaakUrl = zaakUri()
-        val eigenschapUrl = eigenschapUri()
-
-        whenever(executionMock.processInstanceId).thenReturn(UUID.randomUUID().toString())
-        whenever(executionMock.businessKey).thenReturn(documentId.toString())
-        whenever(zaakUrlProvider.getZaakUrl(documentId)).thenReturn(zaakUrl)
-        whenever(zakenApiClient.getZaakeigenschappen(any(), any(), any()))
-            .thenReturn(emptyList())
-
-        val plugin = zakenApiPlugin(
-            zaakUrlProvider = zaakUrlProvider,
-            zakenApiClient = zakenApiClient,
-            authenticationMock = authenticationMock
-        )
-
-        // when / then
-        assertThrows<IllegalStateException> {
-            plugin.getZaakeigenschap(
-                execution = executionMock,
-                eigenschapUrl = eigenschapUrl,
-                resultProcessVariable = "eigenschapWaarde"
-            )
-        }
-        verify(executionMock, never()).setVariable(any(), any())
-    }
-
-    @Test
     fun `should search zaakeigenschappen by eigenschapUrl`() {
         // given
         val zakenApiClient: ZakenApiClient = mock()
@@ -1631,7 +1548,7 @@ internal class ZakenApiPluginTest {
         )
 
         // when
-        plugin.searchZaakeigenschappen(
+        plugin.getZaakeigenschappen(
             execution = executionMock,
             eigenschapUrl = eigenschapUrl,
             eigenschapNaam = null,
@@ -1685,7 +1602,7 @@ internal class ZakenApiPluginTest {
         )
 
         // when
-        plugin.searchZaakeigenschappen(
+        plugin.getZaakeigenschappen(
             execution = executionMock,
             eigenschapUrl = null,
             eigenschapNaam = "Status",
@@ -1749,7 +1666,7 @@ internal class ZakenApiPluginTest {
         )
 
         // when
-        plugin.searchZaakeigenschappen(
+        plugin.getZaakeigenschappen(
             execution = executionMock,
             eigenschapUrl = eigenschapUrl,
             eigenschapNaam = "Status",
@@ -1803,7 +1720,7 @@ internal class ZakenApiPluginTest {
         )
 
         // when
-        plugin.searchZaakeigenschappen(
+        plugin.getZaakeigenschappen(
             execution = executionMock,
             eigenschapUrl = null,
             eigenschapNaam = null,
@@ -1850,7 +1767,7 @@ internal class ZakenApiPluginTest {
         )
 
         // when
-        plugin.searchZaakeigenschappen(
+        plugin.getZaakeigenschappen(
             execution = executionMock,
             eigenschapUrl = eigenschapUri(),
             eigenschapNaam = "Status",

@@ -3,7 +3,7 @@
         "activityId": "zaakeigenschap-zoeken-st",
         "activityType": "bpmn:ServiceTask:start",
         "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
-        "pluginActionDefinitionKey": "search-zaakeigenschappen",
+        "pluginActionDefinitionKey": "get-zaakeigenschappen",
         "actionProperties": {
             "eigenschapUrl": "pv:eigenschapUrl",
             "eigenschapNaam": "pv:eigenschapNaam",
@@ -25,7 +25,7 @@
         "activityId": "zaakeigenschap-get-st",
         "activityType": "bpmn:ServiceTask:start",
         "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
-        "pluginActionDefinitionKey": "get-zaakeigenschap",
+        "pluginActionDefinitionKey": "get-zaakeigenschappen",
         "actionProperties": {
             "eigenschapUrl": "pv:eigenschapUrl",
             "resultProcessVariable": "pv:resultProcessVariable"
@@ -48,16 +48,6 @@
         "activityId": "zaakeigenschap-creeer",
         "activityType": "bpmn:UserTask:create",
         "formDefinitionName": "zaakeigenschap-creeer",
-        "viewModelEnabled": false,
-        "formSize": "medium",
-        "subtitles": [],
-        "processLinkType": "form"
-    },
-    {
-        "formDisplayType": "panel",
-        "activityId": "zaakeigenschap-get",
-        "activityType": "bpmn:UserTask:create",
-        "formDefinitionName": "zaakeigenschap-get",
         "viewModelEnabled": false,
         "formSize": "medium",
         "subtitles": [],

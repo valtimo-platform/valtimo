@@ -9,10 +9,6 @@
             "data": {
                 "values": [
                     {
-                        "label": "Haal eigenschap op",
-                        "value": "HAAL_EIGENSCHAP_OP"
-                    },
-                    {
                         "label": "Maak nieuwe eigenschap aan",
                         "value": "MAAK_NIEUWE_EIGENSCHAP_AAN"
                     },

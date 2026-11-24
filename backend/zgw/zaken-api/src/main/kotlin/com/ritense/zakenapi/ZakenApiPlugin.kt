@@ -1250,39 +1250,12 @@ class ZakenApiPlugin(
     }
 
     @PluginAction(
-        key = "get-zaakeigenschap",
-        title = "Get zaakeigenschap",
-        description = "Retrieves a specific zaakeigenschap and its value for a zaak",
+        key = "get-zaakeigenschappen",
+        title = "get zaakeigenschappen",
+        description = "get zaakeigenschappen by eigenschapURL or eigenschapName for a zaak",
         activityTypes = [SERVICE_TASK_START]
     )
-    fun getZaakeigenschap(
-        execution: DelegateExecution,
-        @PluginActionProperty eigenschapUrl: URI,
-        @PluginActionProperty resultProcessVariable: String,
-    ): String {
-        withLoggingContext(
-            CATALOGI_API.EIGENSCHAP to eigenschapUrl.toString(),
-        ) {
-            logger.debug { "Getting zaakeigenschap with url '${eigenschapUrl}' for document with id '${execution.businessKey}'" }
-            val documentId = execution.getJsonSchemaDocumentId()
-            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-            val zaakeigenschap = findZaakeigenschappen(zaakUrl, eigenschapUrl, null).firstOrNull()
-                ?: throw IllegalStateException("No zaakeigenschap exists for zaak '$zaakUrl' and eigenschap '$eigenschapUrl'")
-
-            execution.setVariable(resultProcessVariable, zaakeigenschap.waarde)
-            logger.info { "Zaakeigenschap with URL '${eigenschapUrl}' retrieved for zaak with URL '$zaakUrl' and document with id '${documentId}'" }
-
-            return zaakeigenschap.waarde
-        }
-    }
-
-    @PluginAction(
-        key = "search-zaakeigenschappen",
-        title = "Search zaakeigenschappen",
-        description = "Search zaakeigenschappen by eigenschapURL or eigenschapName for a zaak",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun searchZaakeigenschappen(
+    fun getZaakeigenschappen(
         execution: DelegateExecution,
         @PluginActionProperty eigenschapUrl: URI?,
         @PluginActionProperty eigenschapNaam: String?,
