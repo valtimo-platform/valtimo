@@ -21,6 +21,7 @@ import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Engine
 import org.graalvm.polyglot.HostAccess
 import org.graalvm.polyglot.Value
+import org.operaton.bpm.engine.impl.context.Context as OperatonContext
 import org.operaton.bpm.engine.impl.scripting.engine.DefaultScriptEngineResolver
 import javax.script.Bindings
 import javax.script.ScriptContext
@@ -34,6 +35,12 @@ class AllowedClassesScriptEngineResolver(
 ) : DefaultScriptEngineResolver(scriptEngineManager) {
     private val sharedEngine: Engine by lazy { polyglotEngine ?: newPolyglotEngine() }
     private val effectiveAllowed = (ALLOWED + otherAllowedClasses) - BLOCKED
+
+    override fun configureGraalJsScriptEngine(scriptEngine: ScriptEngine) {
+        if (OperatonContext.findProcessEngineConfiguration().isPresent) {
+            super.configureGraalJsScriptEngine(scriptEngine)
+        }
+    }
 
     override fun getJavaScriptScriptEngine(language: String?): ScriptEngine {
         val hostAccess = HostAccess.newBuilder()

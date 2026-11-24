@@ -72,7 +72,7 @@ object GraalJsContextCleanup {
             registerWithSpring(Tracked(bindings, ownContextOnly))
             return true
         }
-        val commandContext = OperatonContext.getCommandContext() ?: return false
+        val commandContext = OperatonContext.findCommandContext().orElse(null) ?: return false
         val listener = TransactionListener { close(bindings, ownContextOnly) }
         val transactionContext = commandContext.transactionContext
         transactionContext.addTransactionListener(TransactionState.COMMITTED, listener)

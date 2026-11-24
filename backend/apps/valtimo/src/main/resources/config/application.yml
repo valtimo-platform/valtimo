@@ -103,7 +103,6 @@ spring:
     autoconfigure:
         exclude:
             - org.springframework.boot.tomcat.autoconfigure.metrics.TomcatMetricsAutoConfiguration
-            - org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration
     rabbitmq:
         ssl.enabled: true
         host: ${SPRING_RABBITMQ_HOST}

@@ -26,9 +26,11 @@ class ConditionalOnClassNamesTest {
 
     @Test
     fun `class names in ConditionalOnClass resolve on the classpath`() {
-        val names = DocumentOpenSearchAutoConfiguration::class.java.declaredMethods
-            .mapNotNull { it.getAnnotation(ConditionalOnClass::class.java) }
-            .flatMap { it.name.toList() }
+        val declaringClasses = listOf(DocumentOpenSearchAutoConfiguration::class.java) + DocumentOpenSearchAutoConfiguration::class.java.declaredClasses
+        val names = declaringClasses.flatMap { declaring ->
+            listOfNotNull(declaring.getAnnotation(ConditionalOnClass::class.java)) +
+                declaring.declaredMethods.mapNotNull { it.getAnnotation(ConditionalOnClass::class.java) }
+        }.flatMap { it.name.toList() }
 
         assertThat(names).isNotEmpty()
         val missing = names.filterNot { ClassUtils.isPresent(it, javaClass.classLoader) }
