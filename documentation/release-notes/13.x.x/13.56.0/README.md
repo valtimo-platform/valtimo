@@ -2,6 +2,10 @@
 
 Release date: 25-11-2026
 
+{% hint style="warning" %}
+This release contains security fixes. See [Security](#security) for details.
+{% endhint %}
+
 ---
 
 ## New Features
@@ -41,3 +45,11 @@ The settings screen of an external plugin now grows with its content when you ed
 | Forms | A form that a process link uses can no longer be deleted. Making a case definition final, exporting it and creating a draft now give a clear error when a process link points to a missing form. Case definitions that are already final and contain such a link are not repaired by this change. |
 | Documents | Editing Documenten API documents with status *definitief* is now allowed when the Documenten API supports it, for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw). |
 | Documents | Editing Documenten API documents with any other status is now allowed for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw).  |
+
+---
+
+## Security
+
+| Severity | Fix |
+|----------|-----|
+| High | The **Patch Zaakbesluit** action of the Besluiten API plugin now only accepts besluit URLs that belong to the Besluiten API it is configured with. If your Besluiten API returns besluit URLs with a different host, port or path than the URL in the plugin configuration, update the plugin configuration to match, otherwise the action fails for those besluiten. |
