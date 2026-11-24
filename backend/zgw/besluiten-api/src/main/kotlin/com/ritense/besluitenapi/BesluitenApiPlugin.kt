@@ -19,6 +19,7 @@ package com.ritense.besluitenapi
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.besluitenapi.client.Besluit
 import com.ritense.besluitenapi.client.BesluitNotFoundException
+import com.ritense.besluitenapi.client.BesluitUrlNotAllowedException
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.besluitenapi.client.CreateBesluitInformatieObject
 import com.ritense.besluitenapi.client.CreateBesluitRequest
@@ -35,6 +36,7 @@ import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zgw.LoggingConstants.BESLUITEN_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
 import com.ritense.zgw.Rsin
+import com.ritense.zgw.ZgwUrlValidator
 import mu.KLogger
 import mu.KotlinLogging
 import org.camunda.bpm.engine.delegate.DelegateExecution
@@ -215,6 +217,7 @@ class BesluitenApiPlugin(
         verzenddatum: LocalDate? = null,
         uiterlijkeReactieDatum: LocalDate? = null,
     ): Besluit {
+        requireBesluitUrlBelongsToBesluitenApi(besluitUrl)
         val request = PatchBesluitRequest(
             datum = beslisdatum,
             toelichting = toelichting,
@@ -266,6 +269,12 @@ class BesluitenApiPlugin(
                     uiterlijkeReactiedatum = uiterlijkeReactieDatum
                 )
             )
+        }
+    }
+
+    private fun requireBesluitUrlBelongsToBesluitenApi(besluitUrl: URI) {
+        if (!ZgwUrlValidator.isUrlUnderBaseUrl(url, besluitUrl)) {
+            throw BesluitUrlNotAllowedException("Besluit url '$besluitUrl' does not belong to Besluiten API with url '$url'")
         }
     }
 
