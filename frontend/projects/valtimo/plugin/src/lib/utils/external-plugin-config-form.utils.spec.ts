@@ -158,7 +158,6 @@ describe('external plugin config form utils', () => {
           currency: 'USD',
           mode: 'safe',
           retries: 3,
-          ratio: null,
           enabled: false,
         })
       ).toBeTrue();
@@ -174,6 +173,11 @@ describe('external plugin config form utils', () => {
       ).toBeFalse();
       expect(canRenderExternalPluginConfigValue(configuration, {enabled: 'yes'})).toBeFalse();
       expect(canRenderExternalPluginConfigValue(configuration, ['currency'])).toBeFalse();
+    });
+
+    it('leaves an explicit null to the JSON editor, which keeps it', () => {
+      expect(canRenderExternalPluginConfigValue(configuration, {ratio: null})).toBeFalse();
+      expect(canRenderExternalPluginConfigValue(configuration, {currency: null})).toBeFalse();
     });
 
     it('accepts value expressions in numeric action properties, not in booleans', () => {

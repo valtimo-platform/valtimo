@@ -28,7 +28,7 @@
   </cds-modal-header>
 
   <section cdsModalContent [cdsLayer]="1">
-    <cds-loading *ngIf="$loading()" [isActive]="true" size="sm"></cds-loading>
+    <cds-loading *ngIf="$loading() || $saving()" [isActive]="true" size="sm"></cds-loading>
 
     <cds-inline-notification
       *ngIf="$saveError() as saveError"
@@ -140,7 +140,7 @@
     <button
       cdsButton="danger"
       [attr.data-test-id]="testIds.deleteButton"
-      [disabled]="$loading()"
+      [disabled]="$loading() || $saving()"
       (click)="onDelete()"
     >
       {{ 'pluginManagement.remove' | translate }}

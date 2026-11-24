@@ -108,6 +108,8 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   });
 
   public readonly $loading = signal(false);
+  /** Separate from $loading: keeps the form mounted, so a failed save keeps the edits. */
+  public readonly $saving = signal(false);
   public readonly $propertiesInvalid = signal(false);
   /** Set when the stored properties fit a generated form; null keeps the JSON editor. */
   public readonly $configStructure = signal<ExternalPluginConfigStructure | null>(null);
@@ -166,7 +168,7 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   }
 
   public get canSave(): boolean {
-    if (this.$loading() || !this.configValid) return false;
+    if (this.$loading() || this.$saving() || !this.configValid) return false;
     if (!this.$hasPermissionsStep()) return true;
     return this.$permissionsValid() && this.$contractBindingsValid();
   }
@@ -286,16 +288,16 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
   private _update(request: ExternalPluginConfigurationUpdateRequest): void {
     if (!this.configuration?.id) return;
 
-    this.$loading.set(true);
+    this.$saving.set(true);
     this.$saveError.set(null);
 
     this._externalPluginService.updateConfiguration(this.configuration.id, request).subscribe({
       next: () => {
-        this.$loading.set(false);
+        this.$saving.set(false);
         this.savedEvent.emit();
       },
       error: (response: HttpErrorResponse) => {
-        this.$loading.set(false);
+        this.$saving.set(false);
         // Other statuses reach the admin through the global error toast
         if (response?.status === 400 || response?.status === 409) {
           this.$saveError.set(
@@ -533,5 +535,6 @@ export class PluginExternalEditModalComponent implements OnChanges, OnDestroy {
     this.$definitionName.set('');
     this.$awaitingHost.set(false);
     this.$saveError.set(null);
+    this.$saving.set(false);
   }
 }

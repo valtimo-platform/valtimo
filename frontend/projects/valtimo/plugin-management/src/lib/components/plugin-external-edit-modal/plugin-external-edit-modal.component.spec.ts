@@ -18,7 +18,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {SimpleChange} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {TranslateModule} from '@ngx-translate/core';
-import {of, throwError} from 'rxjs';
+import {of, Subject, throwError} from 'rxjs';
 import {
   ExternalPluginConfiguration,
   ExternalPluginConfigurationDetail,
@@ -186,6 +186,29 @@ describe('PluginExternalEditModalComponent', () => {
       component.onGeneratedPropertiesValid(true);
       component.onSave();
       expect(externalPluginService.updateConfiguration).toHaveBeenCalledWith('configuration-id', {
+        title: 'PDCA',
+        properties: {url: 'https://other.example.com'},
+      });
+    });
+
+    it('keeps the edits when a save fails', () => {
+      open({}, {properties: {url: 'https://openplan.example.com'}}, schema);
+      const response = new Subject<ExternalPluginConfiguration>();
+      externalPluginService.updateConfiguration.and.returnValue(response);
+      component.onGeneratedPropertiesChange({url: 'https://other.example.com'});
+      component.onGeneratedPropertiesValid(true);
+
+      component.onSave();
+      expect(component.$loading()).toBeFalse();
+      expect(component.canSave).toBeFalse();
+
+      response.error(new HttpErrorResponse({status: 400}));
+      externalPluginService.updateConfiguration.and.returnValue(
+        of({} as ExternalPluginConfiguration)
+      );
+      component.onSave();
+
+      expect(externalPluginService.updateConfiguration.calls.mostRecent().args[1]).toEqual({
         title: 'PDCA',
         properties: {url: 'https://other.example.com'},
       });
