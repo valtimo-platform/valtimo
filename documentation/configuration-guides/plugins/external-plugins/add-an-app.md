@@ -31,10 +31,9 @@ Valtimo connects to the app and retrieves its plugin immediately. The fields are
 {% step %}
 In the **Enter data** step, name the configuration and fill in the plugin's settings
 
-When the app ships its own settings screen, this step shows it, so the app can explain and
-validate its own fields. Otherwise Valtimo builds the form from the settings the app declares, with
-the app's own labels and tooltips; only settings too complex for such a form are entered as JSON —
-see [Plugins without a settings form](configure-a-plugin.md#plugins-without-a-settings-form).
+If the app has its own settings screen, it appears here. Otherwise Valtimo shows a standard form
+with the plugin's settings. For some plugins you enter the settings as JSON instead — see
+[Plugins without a settings form](configure-a-plugin.md#plugins-without-a-settings-form).
 {% endstep %}
 {% step %}
 In the **Permissions** step, review what the plugin requests, tick **I trust this plugin and

@@ -35,11 +35,8 @@ External plugins appear alongside embedded ones, with their logo, version, and d
 {% step %}
 In **Enter data**, name the configuration and fill in the plugin's settings
 
-When the plugin ships its own settings screen, this step shows it, so the plugin can explain and
-validate its own fields. Otherwise Valtimo builds the form from the plugin's declared settings: a
-configuration name plus one field per setting, with the plugin's own labels, tooltips and
-placeholders in your language. Required fields and limits are checked as you type. Only when the
-settings are too complex for such a form does the step ask for JSON instead — see
+If the plugin has its own settings screen, it appears here. Otherwise Valtimo shows a standard
+form with the plugin's settings. For some plugins you enter the settings as JSON instead — see
 [Plugins without a settings form](#plugins-without-a-settings-form).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
@@ -61,26 +58,17 @@ Binding contracts is explained in [Contracts between plugins](contracts.md#bindi
 
 ## Plugins without a settings form
 
-When a plugin provides no settings screen of its own, Valtimo generates one from the settings the
-plugin declares: text, number, checkbox and dropdown fields, with the plugin's labels, tooltips and
-placeholders. A secret setting is shown as a password field and, when editing, can be left empty to
-keep the stored value.
-
-Only when a plugin declares settings too complex for that form — nested structures or lists, for
-example — does the **Enter data** step show a **Properties (JSON)** text area instead, and the
-settings must be entered as a JSON object.
+A plugin without a settings screen of its own gets a standard form from Valtimo. If the plugin has
+settings that this form cannot show, the **Enter data** step shows a **Properties (JSON)** text area
+instead, and you enter the settings as JSON.
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/22-configure-plugin-properties-json.png" alt=""><figcaption>Properties as JSON</figcaption></figure>
 
-Valtimo validates what you type against the plugin's own schema when you save, so an incorrect
-property name or type is reported rather than silently accepted. It cannot tell you what the
-properties *are*, however — that comes from the plugin's supplier.
+Valtimo checks what you enter when you save and reports a wrong property name or value. It cannot
+tell you which properties the plugin expects.
 
 {% hint style="info" %}
-Ask the supplier for the property names, their types, and an example. A plugin intended for
-functional administrators should keep its settings simple enough for the generated form, or ship a
-settings form of its own; if it does neither, that is worth raising with the supplier rather than
-working around permanently.
+Ask the plugin's supplier for the property names and an example.
 {% endhint %}
 
 The same applies to an action's inputs in the process modeler — see
