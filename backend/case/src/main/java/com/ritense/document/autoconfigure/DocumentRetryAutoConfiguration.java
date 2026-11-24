@@ -17,9 +17,9 @@
 package com.ritense.document.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.resilience.annotation.EnableResilientMethods;
 
 @AutoConfiguration
-@EnableRetry
+@EnableResilientMethods
 public class DocumentRetryAutoConfiguration {
 }

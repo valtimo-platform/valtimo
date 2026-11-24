@@ -44,14 +44,14 @@ interface ZaakTypeLinkResource {
     fun get(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable(name = "versionTag") versionTag: String
-    ): ResponseEntity<ZaakTypeLink?>
+    ): ResponseEntity<ZaakTypeLink>
 
     @EndpointDescription(
         en = "Get zaaktype link by process",
         nl = "Zaaktypekoppeling op proces ophalen",
     )
     @GetMapping("/v1/zaak-type-link/process/{processDefinitionId}")
-    fun getByProcess(@PathVariable(name = "processDefinitionId") processDefinitionId: String): ResponseEntity<ZaakTypeLink?>
+    fun getByProcess(@PathVariable(name = "processDefinitionId") processDefinitionId: String): ResponseEntity<ZaakTypeLink>
 
     @EndpointDescription(
         en = "Create zaaktype link",

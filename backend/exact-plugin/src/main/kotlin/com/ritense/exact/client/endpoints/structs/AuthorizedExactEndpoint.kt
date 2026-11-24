@@ -4,7 +4,7 @@ import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 
-abstract class AuthorizedExactEndpoint<Response>(
+abstract class AuthorizedExactEndpoint<Response : Any>(
     type: Class<Response>,
     private val accessToken: String
 ) : ExactEndpoint<Response>(type) {

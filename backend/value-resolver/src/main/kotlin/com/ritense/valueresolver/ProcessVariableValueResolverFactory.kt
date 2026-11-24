@@ -124,7 +124,8 @@ class ProcessVariableValueResolverFactory(
         buildJsonPatch(root, values)
         val newValues = objectMapper.treeToValue<Map<String, Any?>>(root)
 
-        runtimeService.setVariables(processInstanceId, newValues)
+        @Suppress("UNCHECKED_CAST")
+        runtimeService.setVariables(processInstanceId, newValues as Map<String, Any>)
     }
 
     @Deprecated("Replaced by preProcessValuesForNewDocument", level = DeprecationLevel.WARNING)

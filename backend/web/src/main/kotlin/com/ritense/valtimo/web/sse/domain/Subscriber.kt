@@ -18,7 +18,7 @@ package com.ritense.valtimo.web.sse.domain
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
-class Subscriber(timeout: Long? = null) : SseEmitter(timeout) {
+class Subscriber(timeout: Long) : SseEmitter(timeout) {
 
     // SseEmitter.send throws IllegalStateException once completed; track it to tell "gone" from "unsendable"
     @Volatile

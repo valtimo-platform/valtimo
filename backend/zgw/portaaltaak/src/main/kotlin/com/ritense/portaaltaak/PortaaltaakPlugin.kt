@@ -278,7 +278,7 @@ class PortaaltaakPlugin(
         documentId: String
     ): Map<String, Any> {
         val sendDataValuesResolvedMap = valueResolverService.resolveValues(
-            delegateTask.processInstanceId,
+            requireNotNull(delegateTask.processInstanceId) { "Task ${delegateTask.id} has no process instance id" },
             delegateTask,
             sendData.map { it.value }
         )

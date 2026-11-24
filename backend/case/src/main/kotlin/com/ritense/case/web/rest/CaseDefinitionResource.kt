@@ -101,8 +101,8 @@ class CaseDefinitionResource(
         @LoggableResource("versionTag") @PathVariable versionTag: String,
     ): ResponseEntity<CaseDefinitionResponseDto> {
         val caseDefinition = service.getCaseDefinition(CaseDefinitionId.of(caseDefinitionKey, versionTag))
-        val similarCaseDefinitions = caseDefinition.basedOnVersionTag?.let {
-            service.getCaseDefinitionsBasedOnVersion(caseDefinitionKey, caseDefinition.basedOnVersionTag)
+        val similarCaseDefinitions = caseDefinition.basedOnVersionTag?.let { basedOnVersionTag ->
+            service.getCaseDefinitionsBasedOnVersion(caseDefinitionKey, basedOnVersionTag)
                 .filter { it.id != caseDefinition.id }
         } ?: emptyList()
         val conflictingVersions = if (similarCaseDefinitions.isNotEmpty()) {

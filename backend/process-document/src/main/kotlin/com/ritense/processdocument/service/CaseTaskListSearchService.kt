@@ -301,7 +301,9 @@ class CaseTaskListSearchService(
                     )
                 val username = userManagementService.currentUser.username
                 val teamKeys = teamManagement.findTeamKeysByUsername(username)
-                byTeamKeys(teamKeys).toPredicate(taskRoot, query, cb)
+                requireNotNull(byTeamKeys(teamKeys).toPredicate(taskRoot, query, cb)) {
+                    "Team key specification did not produce a predicate"
+                }
             }
         }
         return assignmentFilterPredicate
@@ -668,7 +670,7 @@ class CaseTaskListSearchService(
                                 CASE_PREFIX.length
                             ) else property
                         if (DOCUMENT_FIELD_MAP.containsKey(docProperty)) {
-                            docProperty = DOCUMENT_FIELD_MAP[docProperty]
+                            docProperty = DOCUMENT_FIELD_MAP.getValue(docProperty)
                         }
 
                         val parent: Path<*>

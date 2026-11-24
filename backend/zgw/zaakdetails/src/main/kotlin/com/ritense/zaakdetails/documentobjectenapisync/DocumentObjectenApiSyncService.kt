@@ -78,10 +78,11 @@ class DocumentObjectenApiSyncService(
         }
 
         val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
-        if (syncConfiguration?.enabled == true && syncConfiguration.objectManagementConfigurationId != null) {
+        val objectManagementConfigurationId = syncConfiguration?.objectManagementConfigurationId
+        if (syncConfiguration?.enabled == true && objectManagementConfigurationId != null) {
             logger.debug { "Sync configuration found for document ${document.id()}" }
             val objectManagementConfiguration =
-                objectObjectManagementInfoProvider.getObjectManagementInfo(syncConfiguration.objectManagementConfigurationId)
+                objectObjectManagementInfoProvider.getObjectManagementInfo(objectManagementConfigurationId)
             val objectenApiPlugin =
                 pluginService.createInstance<ObjectenApiPlugin>(objectManagementConfiguration.objectenApiPluginConfigurationId)
             val objecttypenApiPlugin =

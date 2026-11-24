@@ -29,11 +29,11 @@ data class DefinitionDeploymentResponseDto(
             deployment.getDeployedArtifacts().forEach { (key, value) ->
                 if (key == DecisionDefinitionEntity::class.java && !value.isNullOrEmpty()) {
 
-                    return DefinitionDeploymentResponseDto((value[0] as DecisionDefinitionEntity).id)
+                    return DefinitionDeploymentResponseDto(requireNotNull((value[0] as DecisionDefinitionEntity).id) { "Deployed decision definition has no id" })
                 }
 
                 if (key == ProcessDefinitionEntity::class.java && !value.isNullOrEmpty()) {
-                    return DefinitionDeploymentResponseDto((value[0] as ProcessDefinitionEntity).id)
+                    return DefinitionDeploymentResponseDto(requireNotNull((value[0] as ProcessDefinitionEntity).id) { "Deployed process definition has no id" })
                 }
             }
 

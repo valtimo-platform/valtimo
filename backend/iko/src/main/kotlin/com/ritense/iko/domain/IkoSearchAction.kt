@@ -16,12 +16,12 @@
 
 package com.ritense.iko.domain
 
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "iko_search_action")
@@ -36,7 +36,7 @@ data class IkoSearchAction(
     @Column(name = "iko_search_action_order", nullable = false)
     val order: Int,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", nullable = false)
     val properties: Map<String, Any?> = emptyMap(),
 )

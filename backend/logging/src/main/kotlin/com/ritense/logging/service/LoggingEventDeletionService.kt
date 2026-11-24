@@ -46,6 +46,6 @@ class LoggingEventDeletionService(
         val retentionDateTime = LocalDateTime.now() - Duration.ofMinutes(retentionInMinutes)
         loggingEventPropertyRepository.delete(LoggingEventPropertySpecificationHelper.byOlderThan(retentionDateTime))
         loggingEventExceptionRepository.delete(LoggingEventExceptionSpecificationHelper.byOlderThan(retentionDateTime))
-        loggingEventRepository.delete(LoggingEventSpecificationHelper.byOlderThan(retentionDateTime))
+        loggingEventRepository.delete(LoggingEventSpecificationHelper.deleteOlderThan(retentionDateTime))
     }
 }

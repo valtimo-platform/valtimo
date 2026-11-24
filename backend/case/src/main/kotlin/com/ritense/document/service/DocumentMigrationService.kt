@@ -224,7 +224,7 @@ class DocumentMigrationService(
         patch: DocumentMigrationPatch,
         sourceValue: SourceValue? = null
     ): MutableMap<String, Any?> {
-        val contextMap: MutableMap<String, Any?> = applicationContext.getBeansWithAnnotation(PublicBean::class.java)
+        val contextMap: MutableMap<String, Any?> = HashMap(applicationContext.getBeansWithAnnotation(PublicBean::class.java))
         contextMap["source"] = source
         contextMap["target"] = target
         contextMap["builder"] = builder

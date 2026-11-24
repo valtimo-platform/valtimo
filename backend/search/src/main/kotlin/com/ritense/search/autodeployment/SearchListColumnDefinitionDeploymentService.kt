@@ -48,7 +48,6 @@ class SearchListColumnDefinitionDeploymentService(
         val resources = loadResources()
 
         val searchListColumnList = resources.map { resource ->
-            require(resource != null)
             try {
                 val searchListColumn = objectMapper.readValue<SearchListColumn>(resource.inputStream)
 
@@ -73,7 +72,7 @@ class SearchListColumnDefinitionDeploymentService(
         )
     }
 
-    private fun loadResources(): Array<Resource?> {
+    private fun loadResources(): Array<out Resource> {
         return try {
             ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH)
         } catch (ioe: IOException) {

@@ -47,10 +47,10 @@ class CaseZakenApiSyncManagementResource(
     fun getSyncConfiguration(
         @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable("caseDefinitionVersionTag") caseDefinitionVersionTag: String,
-    ): ResponseEntity<CaseZakenApiSyncResponse?> {
+    ): ResponseEntity<CaseZakenApiSyncResponse> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val sync = caseZakenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)
-            ?: return ResponseEntity.ok(null)
+            ?: return ResponseEntity.ok().build()
         return ResponseEntity.ok(CaseZakenApiSyncResponse.of(sync))
     }
 

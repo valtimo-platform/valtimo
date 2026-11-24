@@ -21,7 +21,6 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink.Com
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.Column
@@ -30,9 +29,10 @@ import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.SecondaryTable
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.SecondaryRow
-import org.hibernate.annotations.Type
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @SecondaryTable(
@@ -65,7 +65,7 @@ class BuildingBlockProcessLink(
     )
     val buildingBlockDefinitionId: BuildingBlockDefinitionId,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(
         name = "plugin_configuration_mappings",
         columnDefinition = "json",
@@ -73,7 +73,7 @@ class BuildingBlockProcessLink(
     )
     val pluginConfigurationMappings: Map<String, UUID>,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(
         name = "input_mappings",
         columnDefinition = "json",
@@ -81,7 +81,7 @@ class BuildingBlockProcessLink(
     )
     val inputMappings: List<BuildingBlockInputMapping> = emptyList(),
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(
         name = "output_mappings",
         columnDefinition = "json",

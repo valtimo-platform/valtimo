@@ -20,14 +20,14 @@ import com.ritense.buildingblock.processlink.domain.BuildingBlockInputMapping
 import com.ritense.buildingblock.processlink.domain.BuildingBlockOutputMapping
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "case_definition_building_block_link")
@@ -42,15 +42,15 @@ class CaseDefinitionBuildingBlockLink(
     @Embedded
     val buildingBlockDefinitionId: BuildingBlockDefinitionId,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "input_mappings", columnDefinition = "json")
     var inputMappings: List<BuildingBlockInputMapping> = emptyList(),
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "output_mappings", columnDefinition = "json")
     var outputMappings: List<BuildingBlockOutputMapping> = emptyList(),
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "plugin_configuration_mappings", columnDefinition = "json")
     var pluginConfigurationMappings: Map<String, UUID> = emptyMap(),
 

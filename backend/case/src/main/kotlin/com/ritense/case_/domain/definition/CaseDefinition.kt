@@ -102,17 +102,19 @@ data class CaseDefinition(
         ) {
             "Case property [externalStartFormUrl] is not a valid URL."
         }
+        val startFormUrl = externalStartFormUrl
+        val startFormDescription = externalStartFormDescription
         require(
-            when (hasExternalStartForm && !externalStartFormUrl.isNullOrBlank()) {
-                true -> externalStartFormUrl.length <= 512
+            when (hasExternalStartForm && !startFormUrl.isNullOrBlank()) {
+                true -> startFormUrl.length <= 512
                 else -> true
             }
         ) {
             "Case property [externalStartFormUrl] exceeds the maximum length of 512 characters."
         }
         require(
-            when (hasExternalStartForm && !externalStartFormDescription.isNullOrBlank()) {
-                true -> externalStartFormDescription.length <= 512
+            when (hasExternalStartForm && !startFormDescription.isNullOrBlank()) {
+                true -> startFormDescription.length <= 512
                 else -> true
             }
         ) {

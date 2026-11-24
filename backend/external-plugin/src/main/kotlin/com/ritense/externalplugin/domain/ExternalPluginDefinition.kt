@@ -17,7 +17,6 @@
 package com.ritense.externalplugin.domain
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -25,8 +24,9 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(
@@ -65,11 +65,11 @@ class ExternalPluginDefinition(
     @Column(name = "max_gzac_version")
     var maxGzacVersion: String? = null,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "config_schema", columnDefinition = "JSON")
     var configSchema: ObjectNode? = null,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "manifest_json", columnDefinition = "JSON")
     var manifestJson: ObjectNode? = null,
 
@@ -102,7 +102,7 @@ class ExternalPluginDefinition(
     var pendingContentHash: String? = null,
 
     /** The manifest served alongside [pendingContentHash], kept so the two can be compared. */
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "pending_manifest_json", columnDefinition = "JSON")
     var pendingManifestJson: ObjectNode? = null,
 ) {

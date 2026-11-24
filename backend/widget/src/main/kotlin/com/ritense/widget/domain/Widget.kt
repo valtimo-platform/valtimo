@@ -21,7 +21,6 @@ import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.divider.DividerWidget
 import com.ritense.widget.web.rest.dto.WidgetDto
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
@@ -32,9 +31,10 @@ import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.Table
 import jakarta.persistence.Enumerated
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.Objects
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @AllOpen
 @Entity
@@ -74,11 +74,11 @@ abstract class Widget(
     @Column(name = "is_compact", nullable = true)
     val isCompact: Boolean?,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "actions", nullable = false)
     val actions: List<WidgetAction> = emptyList(),
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "display_conditions", nullable = false)
     val displayConditions: List<Condition<*>> = listOf(),
 ) {

@@ -60,9 +60,12 @@ class MailService(
             .singleResult()
             .operatonProperties
             .filter { it.operatonName != null && it.operatonValue != null }
-            .associateTo(operatonPropertiesMap) {
-                it.getAttributeValue("name") to parseValue(it.operatonValue, delegateExecution)
+            .mapNotNull { property ->
+                property.getAttributeValue("name")?.let { name ->
+                    name to parseValue(property.operatonValue, delegateExecution)
+                }
             }
+            .toMap(operatonPropertiesMap)
         return MailSettings(operatonPropertiesMap, delegateExecution)
     }
 

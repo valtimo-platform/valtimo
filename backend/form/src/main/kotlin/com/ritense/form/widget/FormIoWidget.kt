@@ -21,12 +21,12 @@ import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.WidgetColor
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @AllOpen
 @Entity
@@ -44,7 +44,7 @@ class FormIoWidget(
     actions: List<WidgetAction> = emptyList(),
     displayConditions: List<Condition<*>> = emptyList(),
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", nullable = false)
     val properties: FormIoWidgetProperties
 ) : Widget(

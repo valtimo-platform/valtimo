@@ -90,7 +90,7 @@ class FormProcessLinkMapper(
             processDefinitionId = deployDto.processDefinitionId,
             activityId = deployDto.activityId,
             activityType = deployDto.activityType,
-            formDefinitionId = formDefinition.id,
+            formDefinitionId = requireNotNull(formDefinition.id) { "Form definition ${deployDto.formDefinitionName} has no id" },
             viewModelEnabled = deployDto.viewModelEnabled,
             formDisplayType = deployDto.formDisplayType,
             formSize = deployDto.formSize,
@@ -109,7 +109,7 @@ class FormProcessLinkMapper(
 
         return FormProcessLinkUpdateRequestDto(
             id = existingProcessLinkId,
-            formDefinitionId = formDefinition.id,
+            formDefinitionId = requireNotNull(formDefinition.id) { "Form definition ${deployDto.formDefinitionName} has no id" },
             viewModelEnabled = deployDto.viewModelEnabled,
             formDisplayType = deployDto.formDisplayType,
             formSize = deployDto.formSize,

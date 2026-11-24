@@ -51,7 +51,7 @@ class FormViewModelResource(
     fun getStartFormViewModel(
         @RequestParam processDefinitionKey: String,
         @RequestParam(required = false) documentId: UUID?
-    ): ResponseEntity<ViewModel?> {
+    ): ResponseEntity<ViewModel> {
         val viewModel = formViewModelService.getStartFormViewModel(
             processDefinitionKey = processDefinitionKey,
             documentId = documentId
@@ -70,7 +70,7 @@ class FormViewModelResource(
     @GetMapping("/user-task")
     fun getUserTaskFormViewModel(
         @RequestParam taskInstanceId: String
-    ): ResponseEntity<ViewModel?> {
+    ): ResponseEntity<ViewModel> {
         return formViewModelService.getUserTaskFormViewModel(
             taskInstanceId = taskInstanceId,
         )?.let {

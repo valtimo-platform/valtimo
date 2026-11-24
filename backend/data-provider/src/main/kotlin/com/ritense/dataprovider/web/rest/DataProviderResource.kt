@@ -70,8 +70,9 @@ class DataProviderResource(
         @PathVariable category: String,
         @RequestParam provider: String?,
         @RequestParam query: Map<String, Any> = emptyMap()
-    ): ResponseEntity<Any?> {
-        return ResponseEntity.ok(dataProviderService.getData(category, provider, query))
+    ): ResponseEntity<Any> {
+        val data = dataProviderService.getData<Any>(category, provider, query)
+        return if (data != null) ResponseEntity.ok(data) else ResponseEntity.ok().build()
     }
 
     @EndpointDescription(

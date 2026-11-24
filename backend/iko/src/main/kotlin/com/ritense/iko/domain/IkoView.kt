@@ -16,7 +16,6 @@
 
 package com.ritense.iko.domain
 
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType.EAGER
@@ -24,7 +23,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "iko_view")
@@ -37,7 +37,7 @@ class IkoView(
     @Column(name = "title", nullable = false)
     val title: String,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", nullable = false)
     val properties: Map<String, Any?> = emptyMap(),
 

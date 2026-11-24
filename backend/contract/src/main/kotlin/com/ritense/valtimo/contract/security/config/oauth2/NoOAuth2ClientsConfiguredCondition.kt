@@ -42,9 +42,9 @@ class NoOAuth2ClientsConfiguredCondition : SpringBootCondition() {
     }
 
     private fun getRegistrations(environment: Environment): Map<String, OAuth2ClientProperties.Registration> {
-        return Binder.get(environment)
+        val result = Binder.get(environment)
             .bind("spring.security.oauth2.client.registration", STRING_REGISTRATION_MAP)
-            .orElse(emptyMap())
+        return if (result.isBound) result.get() else emptyMap()
     }
 
     companion object {

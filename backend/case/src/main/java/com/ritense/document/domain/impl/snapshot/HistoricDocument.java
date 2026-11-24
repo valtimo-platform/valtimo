@@ -28,7 +28,6 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.domain.relation.DocumentRelation;
 import com.ritense.document.web.rest.dto.CaseTagResponseDto;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -41,7 +40,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Embeddable
 public class HistoricDocument implements Document {
@@ -97,11 +97,11 @@ public class HistoricDocument implements Document {
     @Column(name = "document_team_title", columnDefinition = "VARCHAR(255)")
     private String assignedTeamTitle;
 
-    @Type(value = JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "document_relations", columnDefinition = "json")
     private Set<? extends DocumentRelation> documentRelations = new HashSet<>();
 
-    @Type(value = JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "document_related_files", columnDefinition = "json")
     private Set<? extends RelatedFile> relatedFiles = new HashSet<>();
 

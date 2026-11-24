@@ -17,14 +17,14 @@
 package com.ritense.case.domain
 
 import com.ritense.search.domain.DisplayType
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "case_list_column")
@@ -35,7 +35,7 @@ data class CaseListColumn(
     val title: String?,
     @Column(name = "path")
     val path: String,
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "display_type", columnDefinition = "JSON")
     val displayType: DisplayType,
     @Column(name = "sortable")

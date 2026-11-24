@@ -51,7 +51,9 @@ class ProcessDefinitionResponseAssembler(
     fun bpmnXml(definition: OperatonProcessDefinition): String {
         val xml = String(
             IoUtil.readInputStream(
-                repositoryService.getProcessModel(definition.id),
+                requireNotNull(repositoryService.getProcessModel(definition.id)) {
+                    "No process model found for process definition ${definition.id}"
+                },
                 "processModelBpmn20Xml"
             ), StandardCharsets.UTF_8
         )

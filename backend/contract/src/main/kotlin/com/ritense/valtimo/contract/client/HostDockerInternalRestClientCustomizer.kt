@@ -115,7 +115,7 @@ class HostDockerInternalRestClientCustomizer(
             override fun getHeaders(): HttpHeaders {
                 val headers = HttpHeaders()
                 headers.addAll(super.getHeaders())
-                if (headers.contains("Content-Length")) {
+                if (headers.containsHeader("Content-Length")) {
                     headers["Content-Length"] = newBody.size.toString()
                 }
                 return headers

@@ -175,7 +175,8 @@ class BuildingBlockFormDefinitionService(
                     "$sourceBuildingBlockDefinitionId to $targetBuildingBlockDefinitionId"
             }
             formDefinitionRepository.save(newForm)
-            mapping[oldForm.id] = newForm.id
+            mapping[requireNotNull(oldForm.id) { "Form definition ${oldForm.name} has no id" }] =
+                requireNotNull(newForm.id) { "Copied form definition ${newForm.name} has no id" }
         }
         return mapping
     }
@@ -191,7 +192,7 @@ class BuildingBlockFormDefinitionService(
             val form = getFormDefinitionById(buildingBlockDefinitionId, formDefinitionId)
                 .orElseThrow { IllegalArgumentException("Form definition not found: $formDefinitionId") }
 
-            formDefinitionUsageGuard.lockAndAssertNotInUse(form.id)
+            formDefinitionUsageGuard.lockAndAssertNotInUse(requireNotNull(form.id) { "Form definition ${form.name} has no id" })
 
             logger.info { "Deleting form definition '${form.name}' for building block $buildingBlockDefinitionId" }
             formDefinitionRepository.delete(form)

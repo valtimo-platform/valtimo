@@ -119,7 +119,7 @@ class ObjectManagementConsumerResource(
      * empty page (silent denial), so these user-facing reads never surface a 403. The deprecated
      * [ObjectManagementResource] object endpoints deliberately keep propagating the 403 (non-breaking).
      */
-    private fun <T> emptyPageOnAccessDenied(
+    private fun <T : Any> emptyPageOnAccessDenied(
         pageable: Pageable,
         block: () -> PageImpl<T>
     ): PageImpl<T> =

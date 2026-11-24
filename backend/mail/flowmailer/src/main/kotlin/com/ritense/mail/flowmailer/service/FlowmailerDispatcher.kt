@@ -63,10 +63,11 @@ class FlowmailerMailDispatcher(
     private fun submitMessage(url: String, submitMessage: SubmitMessage): MailMessageStatus {
         try {
             val token = flowmailerTokenService.getToken()
-            val httpEntity = HttpEntity(objectMapper.writeValueAsString(submitMessage), getHttpHeaders(token))
+            val body = objectMapper.writeValueAsString(submitMessage)
+            val httpEntity = HttpEntity(body, getHttpHeaders(token))
             val response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String::class.java)
 
-            if (httpEntity.body.encodeToByteArray().size > MAX_SIZE_EMAIL_BODY_IN_BYTES) {
+            if (body.encodeToByteArray().size > MAX_SIZE_EMAIL_BODY_IN_BYTES) {
                 throw IllegalStateException("Email exceeds max size of 25 mb")
             }
             return MailMessageStatus.with(
@@ -74,7 +75,8 @@ class FlowmailerMailDispatcher(
                 "SENT",
                 // Get id from header "location":
                 // "https://api.flowmailer.net/520/messages/202106110944460bfd0ca81fd281ef9e"
-                response.headers.location.path.split("/").last()
+                checkNotNull(response.headers.location) { "Flowmailer response has no location header" }
+                    .path.split("/").last()
             ).build()
         } catch (e: HttpStatusCodeException) {
             if (e.statusCode.is4xxClientError) {

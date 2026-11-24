@@ -203,7 +203,9 @@ open class NotificatiesApiNotificationProcessLinkListener(
 
     private fun getMessageName(processLink: PluginProcessLink): String {
         val model = repositoryService.getBpmnModelInstance(processLink.processDefinitionId)
-        val element = model.getModelElementById<CatchEvent>(processLink.activityId)
+        val element = requireNotNull(model.getModelElementById<CatchEvent>(processLink.activityId)) {
+            "No catch event found with id ${processLink.activityId}"
+        }
         val messageEventDefinition = element.eventDefinitions
             .filterIsInstance<MessageEventDefinition>()
             .firstOrNull()

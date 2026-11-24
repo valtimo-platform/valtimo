@@ -17,12 +17,12 @@
 package com.ritense.localization.domain
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "localization")
@@ -32,7 +32,7 @@ data class Localization(
     @Column(name = "`language_key`", updatable = false, nullable = false, unique = true)
     val languageKey: String,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "content", columnDefinition = "JSON")
     val content: ObjectNode
 )

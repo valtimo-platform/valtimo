@@ -20,12 +20,12 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.base.Objects
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @AllOpen
 @Entity
@@ -42,7 +42,7 @@ class CaseHeaderWidget(
     @Column(name = "high_contrast", nullable = false)
     val highContrast: Boolean = false,
 
-    @Type(JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", nullable = false)
     val properties: Map<String, Any?> = emptyMap()
 ) {

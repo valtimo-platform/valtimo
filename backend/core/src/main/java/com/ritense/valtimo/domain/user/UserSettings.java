@@ -16,13 +16,13 @@
 
 package com.ritense.valtimo.domain.user;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.Map;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "user_settings")
@@ -32,7 +32,7 @@ public class UserSettings {
     @Column(name = "user_id", nullable = false)
     private String username;
 
-    @Type(value = JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "settings", columnDefinition = "JSON")
     private Map<String, Object> settings;
 

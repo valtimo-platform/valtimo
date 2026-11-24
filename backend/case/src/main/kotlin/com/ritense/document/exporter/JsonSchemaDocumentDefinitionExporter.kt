@@ -45,6 +45,10 @@ class JsonSchemaDocumentDefinitionExporter(
             documentDefinitionService.findByBlueprintId(request.caseDefinitionId).orElseThrow()
         }
 
+        val documentDefinitionName = requireNotNull(documentDefinition.id) {
+            "Document definition has no id"
+        }.name()
+
         val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
             "${it.major}-${it.minor}-${it.patch}"
         }
@@ -56,7 +60,7 @@ class JsonSchemaDocumentDefinitionExporter(
                 PATH.format(
                     request.caseDefinitionId.key,
                     formattedCaseDefinitionVersion,
-                    documentDefinition.id!!.name()
+                    documentDefinitionName
                 ),
                 it.toByteArray()
             )
@@ -66,7 +70,7 @@ class JsonSchemaDocumentDefinitionExporter(
             exportFile,
             setOf(
                 FormDefinitionExportRequest(
-                    documentDefinition.id.name() + ".summary",
+                    documentDefinitionName + ".summary",
                     request.caseDefinitionId,
                     false
                 )

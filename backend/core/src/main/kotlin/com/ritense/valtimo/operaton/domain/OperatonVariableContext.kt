@@ -24,10 +24,10 @@ class OperatonVariableContext(
     private val typedMap: Map<String, TypedValue?>
 ): VariableContext {
 
-    override fun resolve(variableName: String): TypedValue? =
-        typedMap[variableName] ?: Variables.untypedNullValue()
+    override fun resolve(variableName: String?): TypedValue? =
+        variableName?.let { typedMap[it] } ?: Variables.untypedNullValue()
 
-    override fun containsVariable(variableName: String) =
+    override fun containsVariable(variableName: String?) =
         typedMap.containsKey(variableName)
 
     override fun keySet(): Set<String> = typedMap.keys

@@ -17,12 +17,12 @@
 package com.ritense.valtimo.migration.domain
 
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 /** The `processMigration` component of a plan, owned by the `core` module and stored independently of the plan skeleton. */
 @Entity
@@ -32,7 +32,7 @@ data class ProcessMigrationConfiguration(
     @EmbeddedId
     val id: BlueprintMigrationId,
 
-    @Type(JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "instructions", nullable = false)
     val instructions: List<ProcessMigrationInstruction> = emptyList(),
 )

@@ -123,7 +123,7 @@ public class LiquibaseRunner {
     }
 
     /** Recovers from a stale lock left by a previous JVM that died (SIGKILL/OOM) without releasing it. */
-    void forceReleaseStaleLock(LockService lockService) throws LockException, DatabaseException {
+    void forceReleaseStaleLock(LockService lockService) throws LiquibaseException {
         DatabaseChangeLogLock[] locks = lockService.listLocks();
         for (DatabaseChangeLogLock lock : locks) {
             long heldForMinutes = Duration.between(lock.getLockGranted().toInstant(), Instant.now()).toMinutes();

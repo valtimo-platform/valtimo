@@ -159,7 +159,7 @@ class ExternalPluginContractResource(
         return c to o
     }
 
-    private fun <T> forbidden(): ResponseEntity<T> = ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+    private fun <T : Any> forbidden(): ResponseEntity<T> = ResponseEntity.status(HttpStatus.FORBIDDEN).build()
 
     private fun badRequest(message: String? = null): ResponseEntity<ContractResponse> =
         ResponseEntity.badRequest().body(

@@ -28,17 +28,17 @@ import com.ritense.document.domain.diff.JsonDifferenceService;
 import com.ritense.document.domain.patch.JsonPatchService;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.json.patch.JsonPatch;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.Objects;
 import java.util.Optional;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Embeddable
 public class JsonDocumentContent implements DocumentContent {
 
-    @Type(value = JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "json_document_content", columnDefinition = "json")
     private String content;
 

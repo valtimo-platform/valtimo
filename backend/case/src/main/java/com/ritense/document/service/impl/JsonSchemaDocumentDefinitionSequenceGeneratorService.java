@@ -26,8 +26,7 @@ import org.hibernate.exception.LockAcquisitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.CannotAcquireLockException;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,9 +45,11 @@ public class JsonSchemaDocumentDefinitionSequenceGeneratorService implements Doc
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
     @Retryable(
-        value = {LockAcquisitionException.class, CannotAcquireLockException.class},
-        maxAttempts = 5,
-        backoff = @Backoff(delay = 500, maxDelay = 5000)
+        includes = {LockAcquisitionException.class, CannotAcquireLockException.class},
+        maxRetries = 4,
+        delay = 500,
+        multiplier = 2.0,
+        maxDelay = 5000
     )
     public long next(
         @LoggableResource(resourceType = JsonSchemaDocumentDefinition.class) DocumentDefinition.Id documentDefinitionId

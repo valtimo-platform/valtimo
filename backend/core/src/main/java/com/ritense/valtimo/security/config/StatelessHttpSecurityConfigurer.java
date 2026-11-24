@@ -27,7 +27,8 @@ public class StatelessHttpSecurityConfigurer implements HttpSecurityConfigurer {
     @Override
     public void configure(HttpSecurity http) {
         try {
-            http.sessionManagement().sessionCreationPolicy(STATELESS);
+            http.sessionManagement(sessionManagement ->
+                sessionManagement.sessionCreationPolicy(STATELESS));
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

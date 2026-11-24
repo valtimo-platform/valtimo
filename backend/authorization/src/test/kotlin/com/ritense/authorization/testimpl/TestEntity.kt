@@ -17,7 +17,6 @@
 package com.ritense.authorization.testimpl
 
 import com.ritense.authorization.permission.condition.AuthorizationFieldAlias
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.CollectionTable
 import jakarta.persistence.Column
 import jakarta.persistence.ElementCollection
@@ -25,14 +24,15 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "test_entity")
 data class TestEntity(
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "child", columnDefinition = "json")
     val child: TestChildEntity? = null,
 

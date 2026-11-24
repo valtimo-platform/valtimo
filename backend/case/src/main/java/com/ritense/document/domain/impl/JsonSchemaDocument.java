@@ -41,7 +41,6 @@ import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileAddedEvent;
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileRemovedEvent;
 import com.ritense.valtimo.contract.utils.RequestHelper;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -72,7 +71,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.AbstractAggregateRoot;
@@ -157,11 +157,11 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     @Column(name = "assigned_team_title", columnDefinition = "varchar(255)")
     private String assignedTeamTitle;
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "document_relations", columnDefinition = "json")
     private Set<JsonSchemaDocumentRelation> documentRelations = new HashSet<>();
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "related_files", columnDefinition = "json")
     private Set<JsonSchemaRelatedFile> relatedFiles = new HashSet<>();
 

@@ -21,13 +21,13 @@ import com.ritense.plugin.domain.PluginConfigurationReferenceType.BUILDING_BLOCK
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @DiscriminatorValue(PROCESS_LINK_TYPE_PLUGIN)
@@ -37,7 +37,7 @@ class PluginProcessLink(
     activityId: String,
     activityType: ActivityTypeWithEventName,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "action_properties", columnDefinition = "JSON")
     val actionProperties: ObjectNode? = null,
 
@@ -61,7 +61,7 @@ class PluginProcessLink(
 ) {
 
     // Nullable: legacy rows hold NULL
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "action_result_mappings", columnDefinition = "JSON")
     private val _actionResultMappings: List<PluginActionResultMapping>? = actionResultMappings
 

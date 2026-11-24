@@ -43,7 +43,7 @@ class LargeStringValueSerializer : PrimitiveValueSerializer<StringValue>(ValueTy
     }
 
     override fun writeValue(value: StringValue, valueFields: ValueFields) {
-        valueFields.byteArrayValue = value.value.toByteArray(Charsets.UTF_8)
+        valueFields.byteArrayValue = value.value?.toByteArray(Charsets.UTF_8)
     }
 
     companion object {

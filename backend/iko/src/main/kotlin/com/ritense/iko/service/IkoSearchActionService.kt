@@ -118,10 +118,12 @@ class IkoSearchActionService(
         applicationEventPublisher.publishEvent(
             IkoSearchActionPreDeleteEvent(ikoViewKey, key)
         )
-        ikoSearchActionRepository.delete(
-            getSpecification(
-                key = key,
-                ikoViewKey = ikoViewKey,
+        ikoSearchActionRepository.deleteAll(
+            ikoSearchActionRepository.findAll(
+                getSpecification(
+                    key = key,
+                    ikoViewKey = ikoViewKey,
+                )
             )
         )
     }

@@ -226,7 +226,7 @@ class ZaakDocumentService(
         }
     }
 
-    private fun <T> toPage(list: List<T>, pageable: Pageable): Page<T> {
+    private fun <T : Any> toPage(list: List<T>, pageable: Pageable): Page<T> {
         // The offset can point past the end of the list, e.g. when documents that are missing
         // in the Documenten API were filtered out. Clamp to avoid an out-of-bounds subList.
         val startIndex = min(pageable.offset.toInt(), list.size)

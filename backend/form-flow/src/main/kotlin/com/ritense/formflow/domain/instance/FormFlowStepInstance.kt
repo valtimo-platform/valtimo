@@ -26,7 +26,6 @@ import com.ritense.formflow.event.ApplicationEventPublisherHolder
 import com.ritense.formflow.event.FormFlowStepCompletedEvent
 import com.ritense.formflow.expression.ExpressionProcessorFactoryHolder
 import com.ritense.formflow.json.MapperSingleton
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
@@ -34,8 +33,9 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.Objects
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "form_flow_step_instance")
@@ -51,10 +51,10 @@ data class FormFlowStepInstance(
     val order: Int,
     @Column(name = "form_flow_step_instance_submission_order", nullable = false)
     var submissionOrder: Int,
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "submission_data")
     var submissionData: String? = null,
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "temporary_submission_data")
     var temporarySubmissionData: String? = null
     // On complete, clear temporary submission from the current step

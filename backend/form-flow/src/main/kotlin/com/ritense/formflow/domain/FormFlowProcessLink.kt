@@ -21,14 +21,14 @@ import com.ritense.form.domain.FormSizes
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.formflow.mapper.FormFlowProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM_FLOW
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @DiscriminatorValue(PROCESS_LINK_TYPE_FORM_FLOW)
@@ -38,7 +38,7 @@ class FormFlowProcessLink(
     activityId: String,
     activityType: ActivityTypeWithEventName,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "subtitles", columnDefinition = "JSON", nullable = true)
     val subtitles: List<String>? = null,
 

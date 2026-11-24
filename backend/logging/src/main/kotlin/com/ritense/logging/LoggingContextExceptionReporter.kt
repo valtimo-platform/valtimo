@@ -20,7 +20,7 @@ import org.springframework.boot.SpringBootExceptionReporter
 
 class LoggingContextExceptionReporter : SpringBootExceptionReporter {
 
-    override fun reportException(failure: Throwable?): Boolean {
+    override fun reportException(failure: Throwable): Boolean {
         setErrorLoggingContext()
         return false
     }

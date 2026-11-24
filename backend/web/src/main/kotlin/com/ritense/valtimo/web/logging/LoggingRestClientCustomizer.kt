@@ -64,7 +64,7 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
             |Request:
             |HTTP Method = ${request.method}
             |Request URI = ${request.uri}
-            |Header names = ${request.headers.keys}
+            |Header names = ${request.headers.headerNames()}
             |Body = ${getFormattedBody(requestBody, request.headers.contentType)}
             |---------------------------------------
             |Response:

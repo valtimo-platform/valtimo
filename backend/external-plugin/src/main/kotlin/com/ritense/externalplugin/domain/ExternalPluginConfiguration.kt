@@ -17,14 +17,14 @@
 package com.ritense.externalplugin.domain
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.time.Instant
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "external_plugin_configuration")
@@ -40,7 +40,7 @@ class ExternalPluginConfiguration(
     @Column(name = "title", nullable = false)
     var title: String,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", columnDefinition = "JSON")
     var properties: ObjectNode? = null,
 

@@ -372,7 +372,7 @@ class CaseDocumentJsonValueResolverFactory(
     private fun validateJsonPointer(documentDefinition: JsonSchemaDocumentDefinition, jsonPointer: String) {
         if (!documentDefinition.schema.schema.definesProperty(jsonPointer)) {
             throw ValueResolverValidationException(
-                "JsonPointer '$jsonPointer' doesn't point to any property inside document definition '${documentDefinition.id.name()}'"
+                "JsonPointer '$jsonPointer' doesn't point to any property inside document definition '${documentDefinition.id?.name()}'"
             )
         }
     }
@@ -383,13 +383,13 @@ class CaseDocumentJsonValueResolverFactory(
             PathCompiler.compile(jsonPath)
         } catch (e: InvalidPathException) {
             throw ValueResolverValidationException(
-                "Failed to compile JsonPath '$jsonPath' for document definition '${documentDefinition.id.name()}'",
+                "Failed to compile JsonPath '$jsonPath' for document definition '${documentDefinition.id?.name()}'",
                 e
             )
         }
         if (!documentDefinitionService.isValidJsonPath(documentDefinition, jsonPath)) {
             throw ValueResolverValidationException(
-                "JsonPath '$jsonPath' doesn't point to any property inside document definition '${documentDefinition.id.name()}'"
+                "JsonPath '$jsonPath' doesn't point to any property inside document definition '${documentDefinition.id?.name()}'"
             )
         }
     }

@@ -16,7 +16,6 @@
 
 package com.ritense.valtimo.operaton.domain
 
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -30,7 +29,8 @@ import jakarta.persistence.Table
 import jakarta.persistence.Transient
 import org.hibernate.annotations.Formula
 import org.hibernate.annotations.Immutable
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import org.operaton.bpm.engine.impl.persistence.entity.SuspensionState
 import org.operaton.bpm.engine.task.DelegationState
 import java.time.LocalDateTime
@@ -128,7 +128,7 @@ class OperatonTask(
         WHERE    process_link.process_definition_id = proc_def_id_
         AND      process_link.activity_id = task_def_key_
     )""")
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     val subtitles: List<String>? = null
 
     @Transient

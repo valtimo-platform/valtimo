@@ -51,7 +51,10 @@ class ValtimoKeycloakPropertyResolver(
                 return properties!!
             }
 
-            val parts = clientRegistration.providerDetails.issuerUri.split("realms/".toRegex())
+            val issuerUri = requireNotNull(clientRegistration.providerDetails.issuerUri) {
+                "Issuer URI of client registration $KEYCLOAK_API_CLIENT_REGISTRATION is not configured"
+            }
+            val parts = issuerUri.split("realms/".toRegex())
                 .dropLastWhile { it.isEmpty() }
                 .toTypedArray()
             val authServerUrl = parts[0]

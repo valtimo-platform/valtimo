@@ -24,8 +24,8 @@ import reactor.netty.http.client.HttpClient
 import reactor.netty.transport.logging.AdvancedByteBufFormat
 
 class LoggingWebClientCustomizer: WebClientCustomizer {
-    override fun customize(webClientBuilder: WebClient.Builder?) {
-        webClientBuilder?.clientConnector(
+    override fun customize(webClientBuilder: WebClient.Builder) {
+        webClientBuilder.clientConnector(
             ReactorClientHttpConnector(
                 HttpClient.create().wiretap(
                     "reactor.netty.http.client.HttpClient",

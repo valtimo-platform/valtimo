@@ -16,12 +16,12 @@
 
 package com.ritense.iko.domain
 
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "iko_repository_config")
@@ -37,7 +37,7 @@ class IkoRepositoryConfig(
     @Column(name = "type", nullable = false)
     val type: String,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", nullable = false)
     val properties: Map<String, Any?> = emptyMap(),
 )

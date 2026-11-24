@@ -25,7 +25,7 @@ public class CsrfHttpSecurityConfigurer implements HttpSecurityConfigurer {
     @Override
     public void configure(HttpSecurity http) {
         try {
-            http.csrf().disable();
+            http.csrf(csrf -> csrf.disable());
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

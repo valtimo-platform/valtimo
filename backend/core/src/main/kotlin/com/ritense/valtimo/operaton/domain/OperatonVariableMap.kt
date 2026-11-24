@@ -47,7 +47,7 @@ class OperatonVariableMap(
         }
     }
 
-    override fun <T : TypedValue> getValueTyped(name: String): T? =
+    override fun <T : TypedValue> getValueTyped(name: String?): T? =
         (typedMap[name] ?: Variables.untypedNullValue()) as T?
 
     override fun asVariableContext(): VariableContext = OperatonVariableContext(typedMap)

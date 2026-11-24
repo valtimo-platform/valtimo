@@ -54,7 +54,6 @@ class ObjectManagementDefinitionDeploymentService(
         val resources = loadResources()
 
         val objectManagementList = resources.map { resource ->
-            require(resource != null)
             val objectManagementNode = objectMapper.readValue<ObjectNode>(resource.inputStream)
             try {
                 val propertyValues = objectManagementNode.properties().map { it.key }.associateWith { key ->
@@ -93,7 +92,7 @@ class ObjectManagementDefinitionDeploymentService(
         )
     }
 
-    private fun loadResources(): Array<Resource?> {
+    private fun loadResources(): Array<out Resource> {
         return try {
             ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH)
         } catch (ioe: IOException) {

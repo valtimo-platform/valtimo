@@ -52,7 +52,7 @@ data class MultipartFileUploadRequest(
 
         fun from(multipartFile: MultipartFile): MultipartFileUploadRequest {
             return MultipartFileUploadRequest(
-                multipartFile.originalFilename,
+                requireNotNull(multipartFile.originalFilename) { "Uploaded file has no original filename" },
                 FilenameUtils.getExtension(multipartFile.originalFilename),
                 multipartFile.size,
                 multipartFile.contentType,

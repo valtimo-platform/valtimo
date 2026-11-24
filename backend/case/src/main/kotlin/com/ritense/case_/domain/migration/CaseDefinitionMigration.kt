@@ -19,13 +19,13 @@ package com.ritense.case_.domain.migration
 import com.ritense.valtimo.contract.BlueprintId
 import com.ritense.valtimo.contract.blueprint.migration.BlueprintMigrationId
 import com.ritense.valtimo.contract.repository.SemverConverter
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import org.semver4j.Semver
 
 /** The plan-level skeleton: the version it migrates FROM, its title, triggers and conditions. The actions live in components owned by other modules. Triggers and conditions are case-only. */
@@ -48,11 +48,11 @@ data class CaseDefinitionMigration(
     @Column(name = "title")
     val title: String? = null,
 
-    @Type(JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "migration_triggers", nullable = false)
     val migrationTriggers: MigrationTriggers = MigrationTriggers(),
 
-    @Type(JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "conditions", nullable = false)
     val conditions: List<MigrationConditionNode> = emptyList(),
 

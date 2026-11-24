@@ -48,9 +48,5 @@ class PluginProperty(
     val fieldType: String
 ){
     @EmbeddedId
-    val id: PluginPropertyId
-
-    init {
-        id = PluginPropertyId(key, pluginDefinition.key)
-    }
+    val id: PluginPropertyId = PluginPropertyId(key, pluginDefinition.key)
 }

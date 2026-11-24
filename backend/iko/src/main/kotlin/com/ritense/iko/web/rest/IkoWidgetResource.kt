@@ -102,7 +102,7 @@ class IkoWidgetResource(
         @RequestParam properties: LinkedMultiValueMap<String, List<Any>>,
         @PageableDefault pageable: Pageable,
         request: HttpServletRequest,
-    ): ResponseEntity<Any?> {
+    ): ResponseEntity<Any> {
         val pageSize = request.parameterMap["size"]?.firstOrNull()?.toIntOrNull()
         val allProperties = collapseSingleValues(properties) + mapOf(
             IKO_VIEW_KEY to ikoViewKey,
@@ -112,9 +112,8 @@ class IkoWidgetResource(
             NO_PAGE_SIZE to (pageSize == null || pageSize <= 0)
         )
 
-        return ResponseEntity.ok(
-            ikoWidgetService.getWidgetData(ikoViewKey, tabKey, widgetKey, allProperties)
-        )
+        val data = ikoWidgetService.getWidgetData(ikoViewKey, tabKey, widgetKey, allProperties)
+        return if (data != null) ResponseEntity.ok(data) else ResponseEntity.ok().build()
     }
 
     private fun collapseSingleValues(properties: LinkedMultiValueMap<String, List<Any>>): Map<String, Any> =

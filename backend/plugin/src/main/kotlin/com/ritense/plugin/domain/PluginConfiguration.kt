@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginConfigurationEntityListener
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
@@ -32,7 +31,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @EntityListeners(PluginConfigurationEntityListener::class)
@@ -53,7 +53,7 @@ class PluginConfiguration(
     var objectMapper: ObjectMapper? = null,
 ) {
     // used to store unencrypted properties without dirtying the managed entity
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", columnDefinition = "JSON")
     internal var rawProperties: ObjectNode? = null
 
@@ -66,7 +66,7 @@ class PluginConfiguration(
             }
             return field
         }
-        private set(value) {
+        protected set(value) {
             field = value
         }
 

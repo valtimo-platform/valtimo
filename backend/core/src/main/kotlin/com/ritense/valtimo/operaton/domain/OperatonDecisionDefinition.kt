@@ -90,6 +90,7 @@ class OperatonDecisionDefinition(
     }
 
     fun getCaseDefinitionId(): CaseDefinitionId? {
+        val versionTag = versionTag
         return if (versionTag != null && versionTag.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX)) {
             val caseDefinitionIdAsArray = versionTag.substringAfter(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX).split(":")
             CaseDefinitionId.of(caseDefinitionIdAsArray[0], caseDefinitionIdAsArray[1])

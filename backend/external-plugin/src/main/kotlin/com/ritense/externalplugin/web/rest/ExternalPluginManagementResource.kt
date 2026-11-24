@@ -322,9 +322,9 @@ class ExternalPluginManagementResource(
      * admin has to clear before saving.
      */
     private fun configuredFrontendOrigins(): List<String> {
-        val bound = Binder.get(environment)
+        val result = Binder.get(environment)
             .bind("valtimo.web.cors.cors-configuration.allowed-origins", Bindable.listOf(String::class.java))
-            .orElse(emptyList())
+        val bound = if (result.isBound) result.get() else emptyList()
         return bound
             .mapNotNull { runCatching { ExternalPluginHostService.normalizeFrontendOrigin(it) }.getOrNull() }
             .distinct()

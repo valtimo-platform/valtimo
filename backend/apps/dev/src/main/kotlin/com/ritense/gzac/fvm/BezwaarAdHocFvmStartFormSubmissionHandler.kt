@@ -67,7 +67,7 @@ class BezwaarAdHocFvmStartFormSubmissionHandler(
             )
         }
 
-        return StartFormSubmissionResult(document.id.id)
+        return StartFormSubmissionResult(document.id().id)
     }
 
     companion object {

@@ -155,7 +155,9 @@ class BuildingBlockDefinitionProcessDefinitionService(
 
         val bpmnXml = String(
             IoUtil.readInputStream(
-                repositoryService.getProcessModel(processDefinitionId),
+                requireNotNull(repositoryService.getProcessModel(processDefinitionId)) {
+                    "No process model found for process definition $processDefinitionId"
+                },
                 "processModelBpmn20Xml"
             ),
             StandardCharsets.UTF_8

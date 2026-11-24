@@ -16,9 +16,11 @@
 
 package com.ritense.valtimo.contract.client
 
+import org.apache.hc.core5.util.Timeout
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder
+import org.springframework.boot.http.client.HttpClientSettings
 import org.springframework.boot.restclient.RestClientCustomizer
 import org.springframework.http.client.BufferingClientHttpRequestFactory
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestClient
 import java.time.Duration
 
@@ -27,16 +29,17 @@ class ApacheRequestFactoryCustomizer(
 ) : RestClientCustomizer {
 
     override fun customize(restClientBuilder: RestClient.Builder) {
-        val apacheRequestFactory = HttpComponentsClientHttpRequestFactory()
-        valtimoHttpRestClientConfigurationProperties.connectTimeout.let {
-            apacheRequestFactory.setConnectTimeout(Duration.ofSeconds(it))
-        }
-        valtimoHttpRestClientConfigurationProperties.connectionRequestTimeout.let {
-            apacheRequestFactory.setConnectionRequestTimeout(Duration.ofSeconds(it))
-        }
-        valtimoHttpRestClientConfigurationProperties.readTimeout.let {
-            apacheRequestFactory.setReadTimeout(Duration.ofSeconds(it))
-        }
+        val settings = HttpClientSettings.defaults().withTimeouts(
+            Duration.ofSeconds(valtimoHttpRestClientConfigurationProperties.connectTimeout),
+            Duration.ofSeconds(valtimoHttpRestClientConfigurationProperties.readTimeout)
+        )
+        val apacheRequestFactory = ClientHttpRequestFactoryBuilder.httpComponents()
+            .withDefaultRequestConfigCustomizer {
+                it.setConnectionRequestTimeout(
+                    Timeout.ofSeconds(valtimoHttpRestClientConfigurationProperties.connectionRequestTimeout)
+                )
+            }
+            .build(settings)
         restClientBuilder.requestFactory(BufferingClientHttpRequestFactory(apacheRequestFactory))
     }
 

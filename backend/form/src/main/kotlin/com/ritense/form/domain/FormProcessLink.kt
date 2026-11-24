@@ -19,14 +19,14 @@ package com.ritense.form.domain
 import com.ritense.form.mapper.FormProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @DiscriminatorValue(PROCESS_LINK_TYPE_FORM)
@@ -36,7 +36,7 @@ class FormProcessLink(
     activityId: String,
     activityType: ActivityTypeWithEventName,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "subtitles", columnDefinition = "JSON", nullable = true)
     val subtitles: List<String>? = null,
 

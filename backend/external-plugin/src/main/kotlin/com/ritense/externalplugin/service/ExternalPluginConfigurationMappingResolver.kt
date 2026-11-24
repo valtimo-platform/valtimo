@@ -237,7 +237,7 @@ open class ExternalPluginConfigurationMappingResolver(
      */
     private fun danglingWidgetsFor(caseDefinitionId: CaseDefinitionId): List<DanglingPluginConfigurationDto> {
         val danglingWidgets = caseExternalPluginWidgetService.findExternalPluginWidgets(caseDefinitionId)
-            .filter { it.configurationId != null && !configurationRepository.existsById(it.configurationId) }
+            .filter { widget -> widget.configurationId?.let { !configurationRepository.existsById(it) } ?: false }
 
         if (danglingWidgets.isEmpty()) return emptyList()
 
@@ -269,7 +269,7 @@ open class ExternalPluginConfigurationMappingResolver(
     private fun hasProcessLinkIssue(processDefinitionIds: List<String>) =
         allLinks(processDefinitionIds).any { link ->
             link.pluginConfigurationReference.type == FIXED &&
-                (link.externalPluginConfigurationId == null || !configurationRepository.existsById(link.externalPluginConfigurationId))
+                (link.externalPluginConfigurationId?.let { !configurationRepository.existsById(it) } ?: true)
         }
 
     private fun hasTaskFormIssue(processDefinitionIds: List<String>) =

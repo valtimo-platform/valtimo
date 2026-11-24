@@ -16,12 +16,14 @@
 
 package com.ritense.gzac.opensearch
 
-import org.apache.http.auth.AuthScope
-import org.apache.http.auth.UsernamePasswordCredentials
-import org.apache.http.conn.ssl.NoopHostnameVerifier
-import org.apache.http.conn.ssl.TrustAllStrategy
-import org.apache.http.impl.client.BasicCredentialsProvider
-import org.apache.http.ssl.SSLContextBuilder
+import org.apache.hc.client5.http.auth.AuthScope
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier
+import org.apache.hc.client5.http.ssl.TrustAllStrategy
+import org.apache.hc.core5.ssl.SSLContextBuilder
 import org.opensearch.client.RestClientBuilder
 import org.opensearch.spring.boot.autoconfigure.RestClientBuilderCustomizer
 import org.springframework.beans.factory.annotation.Value
@@ -50,18 +52,24 @@ class InsecureSslOpenSearchClientConfig {
             override fun customize(builder: RestClientBuilder) {
                 builder.setHttpClientConfigCallback { httpClientBuilder ->
                     val sslContext = SSLContextBuilder.create()
-                        .loadTrustMaterial(TrustAllStrategy.INSTANCE)
+                        .loadTrustMaterial(null, TrustAllStrategy.INSTANCE)
+                        .build()
+                    val tlsStrategy = ClientTlsStrategyBuilder.create()
+                        .setSslContext(sslContext)
+                        .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                         .build()
 
-                    httpClientBuilder
-                        .setSSLContext(sslContext)
-                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                    httpClientBuilder.setConnectionManager(
+                        PoolingAsyncClientConnectionManagerBuilder.create()
+                            .setTlsStrategy(tlsStrategy)
+                            .build()
+                    )
 
                     if (username.isNotBlank() && password.isNotBlank()) {
                         val credentialsProvider = BasicCredentialsProvider()
                         credentialsProvider.setCredentials(
-                            AuthScope.ANY,
-                            UsernamePasswordCredentials(username, password)
+                            AuthScope(null, -1),
+                            UsernamePasswordCredentials(username, password.toCharArray())
                         )
                         httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
                     }

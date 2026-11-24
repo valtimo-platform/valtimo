@@ -46,8 +46,8 @@ open class ProcessLinkUserTaskCreateListener(
             delegateTask.execution.processBusinessKey
         ) {
             val pluginProcessLinks = pluginProcessLinkRepository.findByProcessDefinitionIdAndActivityIdAndActivityType(
-                delegateTask.processDefinitionId,
-                delegateTask.execution.currentActivityId,
+                requireNotNull(delegateTask.processDefinitionId) { "Task ${delegateTask.id} has no process definition id" },
+                requireNotNull(delegateTask.execution.currentActivityId) { "Task ${delegateTask.id} has no current activity id" },
                 ActivityTypeWithEventName.USER_TASK_CREATE
             )
             pluginProcessLinks.forEach { pluginProcessLink ->

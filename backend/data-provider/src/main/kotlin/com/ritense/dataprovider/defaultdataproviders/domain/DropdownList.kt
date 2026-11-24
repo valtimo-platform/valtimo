@@ -16,12 +16,12 @@
 
 package com.ritense.dataprovider.defaultdataproviders.domain
 
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "dropdown_list")
@@ -31,7 +31,7 @@ data class DropdownList(
     @Column(name = "dropdown_key", nullable = false, length = 64, updatable = false)
     val key: String,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "dropdown_values")
     val values: MutableMap<String, String>,
 )

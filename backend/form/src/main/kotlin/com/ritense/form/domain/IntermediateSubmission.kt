@@ -23,15 +23,15 @@ import com.ritense.outbox.domain.BaseEvent
 import com.ritense.valtimo.contract.domain.AggregateRoot
 import com.ritense.valtimo.contract.utils.SecurityUtils
 import com.ritense.valtimo.contract.validation.Validatable
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.io.Serializable
 import java.time.LocalDateTime
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "intermediate_submission")
@@ -42,7 +42,7 @@ class IntermediateSubmission(
     @Column(name = "task_instance_id", updatable = false, unique = true)
     val taskInstanceId: String,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "content")
     val content: ObjectNode,
 

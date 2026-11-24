@@ -31,7 +31,8 @@ public class ErrorHttpSecurityConfigurer implements HttpSecurityConfigurer {
     @Override
     public void configure(HttpSecurity http) {
         try {
-            http.exceptionHandling().authenticationEntryPoint(http403ForbiddenEntryPoint);
+            http.exceptionHandling(exceptionHandling ->
+                exceptionHandling.authenticationEntryPoint(http403ForbiddenEntryPoint));
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

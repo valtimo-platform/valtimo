@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.ritense.valtimo.contract.audit.AuditEvent;
 import com.ritense.valtimo.contract.audit.view.AuditView;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
@@ -31,7 +30,8 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.domain.Persistable;
 
 @Entity
@@ -55,7 +55,7 @@ public class AuditRecord implements Persistable<AuditRecordId> {
     @Column(name = "created_on", updatable = false)
     private LocalDateTime createdOn = LocalDateTime.now();
 
-    @Type(value = JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "audit_event", columnDefinition = "json", updatable = false)
     @JsonView(AuditView.Public.class)
     private AuditEvent auditEvent;

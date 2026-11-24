@@ -23,7 +23,6 @@ import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.role.Role
 import com.ritense.valtimo.contract.database.QueryDialectHelper
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.CollectionTable
 import jakarta.persistence.Column
 import jakarta.persistence.ElementCollection
@@ -37,8 +36,9 @@ import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
 import java.util.UUID
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "permission")
@@ -58,7 +58,7 @@ data class Permission(
     @field:jakarta.validation.constraints.Size(min = 1)
     val actions: MutableList<Action<*>> = mutableListOf(),
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "conditions", columnDefinition = "json")
     val conditionContainer: ConditionContainer,
 
@@ -69,7 +69,7 @@ data class Permission(
     @Column(name = "context_resource_type")
     val contextResourceType: Class<*>? = null,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "context_conditions", columnDefinition = "json")
     val contextConditionContainer: ConditionContainer? = null,
 ) {
@@ -89,7 +89,7 @@ data class Permission(
             (
                 (contextResourceType != null && contextConditionContainer != null)
                     || (contextResourceType == null
-                    && (contextConditionContainer == null || contextConditionContainer.conditions.isEmpty())
+                    && contextConditionContainer?.conditions.isNullOrEmpty()
                     )
                 )
         )

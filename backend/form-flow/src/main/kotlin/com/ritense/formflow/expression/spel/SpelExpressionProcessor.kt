@@ -38,7 +38,8 @@ class SpelExpressionProcessor(
 
         return if (spelExpression != null) {
             try {
-                spelExpression.getValue(evaluationContext, contextMap, resultType)
+                @Suppress("UNCHECKED_CAST")
+                spelExpression.getValue(evaluationContext, contextMap, resultType as Class<Any>?) as T?
             } catch (e: RuntimeException) {
                 throw ExpressionExecutionException(expression, e)
             }

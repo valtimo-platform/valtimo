@@ -24,11 +24,11 @@ import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.WidgetColor
 import com.ritense.widget.map.MapWidgetProperties
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @AllOpen
 @Entity
@@ -45,7 +45,7 @@ class MapCaseWidget(
     actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "properties", nullable = false)
     val properties: MapWidgetProperties
 ) : CaseWidgetTabWidget(

@@ -120,7 +120,7 @@ class NotificatiesApiAutoConfiguration {
     @Bean("notificatiesApiAbonnementRegistrationExecutor")
     fun notificatiesApiAbonnementRegistrationExecutor(): TaskExecutor {
         return ThreadPoolTaskExecutor().apply {
-            threadNamePrefix = "notificaties-api-abonnement-registration-"
+            setThreadNamePrefix("notificaties-api-abonnement-registration-")
             corePoolSize = 1
             maxPoolSize = 1
             queueCapacity = 10
@@ -189,7 +189,7 @@ class NotificatiesApiAutoConfiguration {
     @Bean("notificatiesApiTaskExecutor")
     fun notificatiesApiTaskExecutor(processingProperties: NotificatiesApiProcessingProperties): TaskExecutor {
         return ThreadPoolTaskExecutor().apply {
-            threadNamePrefix = "notificaties-api-task-"
+            setThreadNamePrefix("notificaties-api-task-")
             corePoolSize = processingProperties.executorCorePoolSize
             maxPoolSize = processingProperties.executorMaxPoolSize
             setQueueCapacity(processingProperties.executorQueueCapacity)

@@ -18,7 +18,6 @@ package com.ritense.formflow.domain.instance
 
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.logging.withLoggingContext
-import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -32,7 +31,8 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import org.json.JSONObject
 import java.util.Objects
 
@@ -56,7 +56,7 @@ class FormFlowInstance(
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, mappedBy = "instance")
     @OrderBy("order ASC")
     private val history: MutableList<FormFlowStepInstance> = mutableListOf(),
-    @Type(value = JsonType::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "additional_properties", columnDefinition = "json", nullable = false)
     private val additionalProperties: MutableMap<String, Any> = mutableMapOf()
 ) {

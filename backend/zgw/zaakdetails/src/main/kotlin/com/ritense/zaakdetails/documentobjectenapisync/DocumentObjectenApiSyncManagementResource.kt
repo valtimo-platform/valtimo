@@ -47,7 +47,7 @@ class DocumentObjectenApiSyncManagementResource(
     fun getSyncConfiguration(
         @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
         @PathVariable(name = "caseDefinitionVersionTag") caseDefinitionVersionTag: String,
-    ): ResponseEntity<DocumentObjectenApiSyncResponse?> {
+    ): ResponseEntity<DocumentObjectenApiSyncResponse> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val syncConfiguration =
             documentObjectenApiSyncManagementService.getSyncConfiguration(caseDefinitionId)

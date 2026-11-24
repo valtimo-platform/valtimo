@@ -36,7 +36,6 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -55,7 +54,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +115,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     private String name;
 
     @Column(name = "form_definition", columnDefinition = "json", nullable = false)
-    @Type(value = JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     private String formDefinition;
 
     @Embedded

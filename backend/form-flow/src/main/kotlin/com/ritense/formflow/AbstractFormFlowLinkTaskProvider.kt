@@ -31,9 +31,11 @@ abstract class AbstractFormFlowLinkTaskProvider(
 
     protected fun getAdditionalProperties(task: OperatonTask): Map<String, Any> {
         return withLoggingContext(OperatonTask::class, task.id) {
-            val processInstance = runtimeService.createProcessInstanceQuery()
-                .processInstanceId(task.getProcessInstanceId())
-                .singleResult()
+            val processInstance = requireNotNull(
+                runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(task.getProcessInstanceId())
+                    .singleResult()
+            ) { "No process instance found with id ${task.getProcessInstanceId()}" }
 
             val additionalProperties = mutableMapOf(
                 PROCESS_INSTANCE_ID to task.getProcessInstanceId(),

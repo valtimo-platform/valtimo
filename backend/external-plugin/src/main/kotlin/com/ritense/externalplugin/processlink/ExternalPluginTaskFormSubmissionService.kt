@@ -188,7 +188,7 @@ class ExternalPluginTaskFormSubmissionService(
         val result = processDocumentService.dispatch(
             request.withAdditionalModifications { modified: JsonSchemaDocument ->
                 if (categorized.valueResolverValues.isNotEmpty()) {
-                    valueResolverService.handleValues(modified.id.id, categorized.valueResolverValues)
+                    valueResolverService.handleValues(modified.id().id, categorized.valueResolverValues)
                 }
             }
         )

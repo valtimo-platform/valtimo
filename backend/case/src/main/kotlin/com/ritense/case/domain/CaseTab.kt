@@ -53,7 +53,7 @@ data class CaseTab(
     ) : this(id, name, tabOrder, type, contentKey, LocalDateTime.now(), null, false)
 
     init {
-        require(name == null || name.isNotBlank()) { "name was blank!" }
+        require(name?.isNotBlank() ?: true) { "name was blank!" }
         require(tabOrder >= 0) { "tabOrder was < 0" }
         require(contentKey.isNotBlank()) { "contentKey was blank!" }
     }

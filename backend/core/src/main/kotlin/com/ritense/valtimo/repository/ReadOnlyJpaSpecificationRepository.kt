@@ -29,7 +29,7 @@ import java.util.Optional
 import java.util.function.Function
 
 @NoRepositoryBean
-interface ReadOnlyJpaSpecificationRepository<T, ID> : Repository<T, ID>, JpaSpecificationExecutor<T> {
+interface ReadOnlyJpaSpecificationRepository<T : Any, ID : Any> : Repository<T, ID>, JpaSpecificationExecutor<T> {
 
     fun findAll(): List<T>
 

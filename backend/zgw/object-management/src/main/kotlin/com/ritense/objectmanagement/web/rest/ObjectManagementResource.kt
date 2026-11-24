@@ -66,7 +66,7 @@ class ObjectManagementResource(
         nl = "Objectbeheerconfiguratie op id ophalen",
     )
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: UUID): ResponseEntity<ObjectManagement?> =
+    fun getById(@PathVariable id: UUID): ResponseEntity<ObjectManagement> =
         ResponseEntity.ok(objectManagementService.getById(id))
 
     @EndpointDescription(

@@ -152,7 +152,7 @@ class ProcessDocumentsService(
                 .createProcessDefinitionQuery()
                 .processDefinitionId(processInstance.processDefinitionId)
                 .singleResult()
-                .key
+                ?.key
         }.distinct()
     }
 

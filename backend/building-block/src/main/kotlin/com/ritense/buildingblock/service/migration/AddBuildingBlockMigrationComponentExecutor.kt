@@ -737,9 +737,11 @@ class AddBuildingBlockMigrationComponentExecutor(
             ?.let { repositoryService.findProcessDefinitionOrNull(it)?.name }
 
     private fun processDefinitionIdOf(processInstanceId: String): String =
-        runtimeService.createProcessInstanceQuery()
-            .processInstanceId(processInstanceId)
-            .singleResult()
+        requireNotNull(
+            runtimeService.createProcessInstanceQuery()
+                .processInstanceId(processInstanceId)
+                .singleResult()
+        ) { "No process instance found with id $processInstanceId" }
             .processDefinitionId
 
     private fun processDefinitionKeyOf(processInstanceId: String): String =

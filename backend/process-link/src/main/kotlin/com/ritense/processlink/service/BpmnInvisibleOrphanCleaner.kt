@@ -46,12 +46,12 @@ class BpmnInvisibleOrphanCleaner {
 
             for (flow in incomingFlows + outgoingFlows) {
                 if (removedFlowIds.add(flow.id)) {
-                    flow.parentElement.removeChildElement(flow)
+                    flow.parentElement?.removeChildElement(flow)
                 }
             }
 
             removedElements.add(RemovedElement(flowNode.id, flowNode.elementType.typeName, flowNode.name))
-            flowNode.parentElement.removeChildElement(flowNode)
+            flowNode.parentElement?.removeChildElement(flowNode)
         }
 
         return CleanupResult(removedElements)

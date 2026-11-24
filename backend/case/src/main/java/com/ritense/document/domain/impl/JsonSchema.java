@@ -25,7 +25,6 @@ import com.ritense.document.config.validator.UuidValidator;
 import com.ritense.document.domain.DocumentContent;
 import com.ritense.document.domain.impl.meta.MetaJsonSchemaV7Draft;
 import com.ritense.valtimo.contract.json.MapperSingleton;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.io.IOException;
@@ -39,7 +38,8 @@ import org.everit.json.schema.Schema;
 import org.everit.json.schema.Validator;
 import org.everit.json.schema.loader.SchemaClient;
 import org.everit.json.schema.loader.SchemaLoader;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.core.io.ClassPathResource;
@@ -63,7 +63,7 @@ public final class JsonSchema {
     @Transient
     private static final int MAX_BUILT_SCHEMAS = 100;
 
-    @Type(value = JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "json_schema", columnDefinition = "json")
     private String schema;
 

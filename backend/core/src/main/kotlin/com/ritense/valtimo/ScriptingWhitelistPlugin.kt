@@ -39,7 +39,9 @@ class ScriptingWhitelistPlugin(
         val resolver = AllowedClassesScriptEngineResolver(ScriptEngineManager(), allowedScriptingClasses, polyglotEngine)
         processEngineConfiguration.setScriptEngineResolver(resolver)
         SandboxedScriptingEngines.installBeforeInit(processEngineConfiguration)
-        ScriptSandboxSelfCheck.run(resolver.getScriptEngine("javascript", true))
+        ScriptSandboxSelfCheck.run(
+            requireNotNull(resolver.getScriptEngine("javascript", true)) { "No javascript script engine available" }
+        )
     }
 
     override fun postInit(processEngineConfiguration: ProcessEngineConfigurationImpl?) {

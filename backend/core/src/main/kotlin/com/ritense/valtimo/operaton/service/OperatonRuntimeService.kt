@@ -34,6 +34,7 @@ import com.ritense.valtimo.operaton.repository.OperatonVariableInstanceSpecifica
 import com.ritense.valtimo.operaton.repository.OperatonVariableInstanceSpecificationHelper.Companion.byProcessInstanceId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.variable.Variables
 import org.operaton.bpm.engine.runtime.ProcessInstance
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
@@ -110,7 +111,7 @@ class OperatonRuntimeService(
     fun setVariable(processInstanceId: String, variableName: String, value: Any?) {
         denyAuthorization()
         runWithoutAuthorization {
-            runtimeService.setVariable(processInstanceId, variableName, value)
+            runtimeService.setVariable(processInstanceId, variableName, value ?: Variables.untypedNullValue())
         }
     }
 
