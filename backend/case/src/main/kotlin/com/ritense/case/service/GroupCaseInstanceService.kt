@@ -55,7 +55,8 @@ import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.search.domain.FieldType
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.blueprint.BlueprintType
-import com.ritense.valueresolver.ValueResolverService
+import com.ritense.valueresolver.IsolatedValueResolverService
+import com.ritense.valueresolver.ValueResolverResult
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -77,7 +78,7 @@ class GroupCaseInstanceService(
     private val searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
     private val quickSearchRepository: GroupQuickSearchRepository,
     private val documentSearchService: DocumentSearchService,
-    private val valueResolverService: ValueResolverService,
+    private val isolatedValueResolver: IsolatedValueResolverService,
     private val authorizationService: AuthorizationService,
     private val caseDefinitionService: CaseDefinitionService,
     private val internalCaseStatusService: InternalCaseStatusService,
@@ -223,9 +224,25 @@ class GroupCaseInstanceService(
             translateSort(pageable, sortPathByColumnKey)
         )
 
+        val documentPaths = searchResults.associate { document ->
+            val caseDefinitionKey = document.definitionId().name()
+            document.id().id.toString() to columns.mapNotNull { column ->
+                columnPathMappings[column.id.columnKey]?.get(caseDefinitionKey)
+            }
+        }
+        val resolvedByDocument = runWithoutAuthorization {
+            isolatedValueResolver.resolveValuesOrNullIsolated(documentPaths)
+        }
+
         return searchResults.map { document ->
             val caseDefinitionKey = document.definitionId().name()
-            toGroupCaseListRowDto(document, caseDefinitionKey, columns, columnPathMappings)
+            toGroupCaseListRowDto(
+                document,
+                caseDefinitionKey,
+                columns,
+                columnPathMappings,
+                resolvedByDocument.getValue(document.id().id.toString())
+            )
         }
     }
 
@@ -259,20 +276,14 @@ class GroupCaseInstanceService(
         document: Document,
         caseDefinitionKey: String,
         columns: List<GroupListColumn>,
-        pathMappings: Map<String, Map<String, String>>
+        pathMappings: Map<String, Map<String, String>>,
+        resolvedValues: ValueResolverResult
     ): GroupCaseListRowDto {
-        val paths = columns.mapNotNull { column ->
-            pathMappings[column.id.columnKey]?.get(caseDefinitionKey)
-        }
-
-        val resolvedValuesMap = runWithoutAuthorization {
-            valueResolverService.resolveValues(document.id().id.toString(), paths)
-        }
-
         val items = columns.map { column ->
             val path = pathMappings[column.id.columnKey]?.get(caseDefinitionKey)
-            val value = if (path != null) resolvedValuesMap[path] else null
-            CaseListRowDto.CaseListItemDto(column.id.columnKey, value)
+            val value = if (path != null) resolvedValues.values[path] else null
+            val failed = path != null && path in resolvedValues.failedKeys
+            CaseListRowDto.CaseListItemDto(column.id.columnKey, value, failed)
         }.toMutableList()
 
         return GroupCaseListRowDto(

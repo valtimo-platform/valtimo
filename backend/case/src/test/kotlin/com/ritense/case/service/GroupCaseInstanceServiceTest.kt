@@ -47,7 +47,7 @@ import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
-import com.ritense.valueresolver.ValueResolverService
+import com.ritense.valueresolver.IsolatedValueResolverService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -81,7 +81,7 @@ class GroupCaseInstanceServiceTest {
     lateinit var searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository
     lateinit var quickSearchRepository: GroupQuickSearchRepository
     lateinit var documentSearchService: DocumentSearchService
-    lateinit var valueResolverService: ValueResolverService
+    lateinit var isolatedValueResolver: IsolatedValueResolverService
     lateinit var authorizationService: AuthorizationService
     lateinit var caseDefinitionService: CaseDefinitionService
     lateinit var internalCaseStatusService: InternalCaseStatusService
@@ -98,7 +98,7 @@ class GroupCaseInstanceServiceTest {
         searchFieldPathMappingRepository = mock()
         quickSearchRepository = mock()
         documentSearchService = mock()
-        valueResolverService = mock()
+        isolatedValueResolver = mock()
         authorizationService = mock()
         caseDefinitionService = mock()
         internalCaseStatusService = mock()
@@ -114,7 +114,7 @@ class GroupCaseInstanceServiceTest {
             searchFieldPathMappingRepository,
             quickSearchRepository,
             documentSearchService,
-            valueResolverService,
+            isolatedValueResolver,
             authorizationService,
             caseDefinitionService,
             internalCaseStatusService,
