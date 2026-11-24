@@ -58,10 +58,10 @@ dependencies {
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
-    testImplementation "org.skyscreamer:jsonassert:${jsonassertVersion}"
+    testImplementation "org.skyscreamer:jsonassert"
 
-    testImplementation "com.jayway.jsonpath:json-path:${jaywayJsonpathVersion}"
-    testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
+    testImplementation "com.jayway.jsonpath:json-path"
+    testImplementation "com.jayway.jsonpath:json-path-assert"
 
     jar {
         enabled = true

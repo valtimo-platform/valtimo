@@ -23,9 +23,10 @@ dependencies {
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
+    api "org.springframework.boot:spring-boot-webmvc-test"
 
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
@@ -46,10 +47,10 @@ dependencies {
     implementation "org.junit.jupiter:junit-jupiter"
     implementation "org.springframework.boot:spring-boot-starter-test"
 
-    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "org.liquibase:liquibase-core"
 
-    implementation "org.postgresql:postgresql:${postgresqlDriverVersion}"
-    implementation "com.mysql:mysql-connector-j:${mysqlDriverVersion}"
+    implementation "org.postgresql:postgresql"
+    implementation "com.mysql:mysql-connector-j"
 
     implementation "org.springframework:spring-test"
     implementation "org.junit.jupiter:junit-jupiter-engine"

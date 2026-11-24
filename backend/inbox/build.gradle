@@ -40,7 +40,7 @@ dependencies {
     testImplementation "org.springframework.security:spring-security-test"
     // Spring cloud stream RabbitMQ
     testImplementation "org.springframework.cloud:spring-cloud-starter-stream-rabbit:${springCloudStreamVersion}"
-    testImplementation "com.rabbitmq:amqp-client:$amqpCLientVersion"
+    testImplementation "com.rabbitmq:amqp-client"
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
     jar {

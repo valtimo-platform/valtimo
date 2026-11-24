@@ -34,28 +34,31 @@ dockerCompose {
 }
 
 dependencies {
-    api "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    api "org.apache.commons:commons-lang3"
     api "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     api "org.zalando:problem-spring-web:${problemSpringWebVersion}"
     api "commons-io:commons-io:${commonsIoVersion}"
-    api "commons-codec:commons-codec:${commonsCodecVersion}"
+    api "commons-codec:commons-codec"
     api "commons-validator:commons-validator:${commonsValidatorVersion}"
     api "com.fasterxml.jackson.module:jackson-module-kotlin"
-    api "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
+    api "org.springframework.boot:spring-boot-jackson2"
     api "org.springframework.data:spring-data-commons"
     api "org.semver4j:semver4j:${semver4jVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-validation"
-    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+    implementation "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server"
+    implementation "org.springframework.boot:spring-boot-liquibase"
+    implementation "org.springframework.boot:spring-boot-restclient"
+    implementation "org.springframework.boot:spring-boot-webclient"
 
     implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
@@ -74,11 +77,11 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
+    testImplementation "com.jayway.jsonpath:json-path-assert"
 
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
-    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "org.liquibase:liquibase-core"
 }
 
 apply from: "gradle/publishing.gradle"

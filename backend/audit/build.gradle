@@ -45,7 +45,7 @@ dependencies {
     api "org.springframework.data:spring-data-commons"
 
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
@@ -63,12 +63,11 @@ dependencies {
 
     implementation "org.springframework.boot:spring-boot-autoconfigure"
 
-    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
-    implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
+    implementation "org.liquibase:liquibase-core"
+    implementation "org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernate7Version}"
 
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
 
-    implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
+    implementation "org.hibernate.orm:hibernate-core"
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 

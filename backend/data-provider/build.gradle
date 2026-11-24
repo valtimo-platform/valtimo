@@ -38,12 +38,12 @@ dependencies {
     implementation project(":backend:contract")
     implementation project(":backend:web")
 
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
-    implementation "com.jayway.jsonpath:json-path:${jaywayJsonpathVersion}"
+    implementation "com.jayway.jsonpath:json-path"
 
     testImplementation project(":backend:core")
     testImplementation project(":backend:resource:local-resource")

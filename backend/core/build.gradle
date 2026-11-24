@@ -51,7 +51,7 @@ dependencies {
     api "org.springframework.data:spring-data-commons"
 
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
@@ -100,7 +100,7 @@ dependencies {
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-json-org"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate7"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
     implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
@@ -108,14 +108,14 @@ dependencies {
     // MyBatis (for operaton and our custom queries)
     implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisSpringBootStarterVersion}"
 
-    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    implementation "org.apache.commons:commons-lang3"
 
     // Removed since JDK 9, explicitly need it to go through XML
-    implementation "jakarta.xml.bind:jakarta.xml.bind-api:${jaxbApiVersion}"
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api"
 
     // Hibernate
-    implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
-    implementation "org.hibernate.orm:hibernate-envers:${hibernateCoreVersion}"
+    implementation "org.hibernate.orm:hibernate-core"
+    implementation "org.hibernate.orm:hibernate-envers"
 
     // Shedlock
     api "net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}"
@@ -125,7 +125,7 @@ dependencies {
         exclude(module: 'tools')
     }
 
-    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "org.liquibase:liquibase-core"
 
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
     implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
@@ -139,7 +139,7 @@ dependencies {
     testImplementation project(":backend:test-utils-common")
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
-    testImplementation "org.apache.groovy:groovy-all:${groovyVersion}"
+    testImplementation "org.apache.groovy:groovy-all"
 
     // BouncyCastle for X.509 certificate generation in vulnerability tests
     testImplementation "org.bouncycastle:bcprov-jdk18on:1.84"

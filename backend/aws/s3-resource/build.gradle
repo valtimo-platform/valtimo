@@ -44,8 +44,8 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-validation"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
-    implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
-    implementation "org.hibernate.orm:hibernate-envers:${hibernateCoreVersion}"
+    implementation "org.hibernate.orm:hibernate-core"
+    implementation "org.hibernate.orm:hibernate-envers"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 
@@ -53,8 +53,8 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "org.liquibase:liquibase-core:${liquibaseVersion}"
-    testImplementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
+    testImplementation "org.liquibase:liquibase-core"
+    testImplementation "org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernate7Version}"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation project(':backend:test-utils-common')

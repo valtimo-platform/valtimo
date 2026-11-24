@@ -41,7 +41,7 @@ dependencies {
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
 
-    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "org.liquibase:liquibase-core"
 
     testImplementation (project(":backend:core")) {
         exclude(group: "com.ritense.valtimo", module: "changelog")

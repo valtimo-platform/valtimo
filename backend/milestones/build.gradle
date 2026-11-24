@@ -43,7 +43,7 @@ dependencies {
     api "org.springframework.data:spring-data-commons"
 
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
@@ -63,7 +63,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation group: 'org.postgresql', name: 'postgresql', version: postgresqlDriverVersion
+    testImplementation group: 'org.postgresql', name: 'postgresql'
 
     // Spring
     implementation("org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter-rest:${operatonVersion}") {
@@ -76,8 +76,8 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
     // Hibernate
-    implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
-    implementation "org.hibernate.orm:hibernate-envers:${hibernateCoreVersion}"
+    implementation "org.hibernate.orm:hibernate-core"
+    implementation "org.hibernate.orm:hibernate-envers"
 
     testImplementation "org.springframework.security:spring-security-test"
 

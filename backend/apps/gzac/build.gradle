@@ -46,11 +46,11 @@ dependencies {
 
     // Spring cloud stream RabbitMQ
     implementation "org.springframework.cloud:spring-cloud-starter-stream-rabbit:${springCloudStreamVersion}"
-    implementation "com.rabbitmq:amqp-client:$amqpCLientVersion"
+    implementation "com.rabbitmq:amqp-client"
 
     // Database
-    implementation "org.postgresql:postgresql:$postgresqlDriverVersion"
-    implementation "com.mysql:mysql-connector-j:$mysqlDriverVersion"
+    implementation "org.postgresql:postgresql"
+    implementation "com.mysql:mysql-connector-j"
 
     if (System.getProperty("os.arch") == "aarch64") {
         runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")

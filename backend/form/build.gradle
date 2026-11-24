@@ -53,7 +53,7 @@ dependencies {
     api "org.springframework.data:spring-data-commons"
 
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
@@ -72,6 +72,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-webmvc-test"
     testImplementation "io.mockk:mockk:1.14.9"
 
     implementation "org.springframework.boot:spring-boot-autoconfigure"
@@ -84,7 +85,7 @@ dependencies {
         exclude group: 'com.ritense.valtimo', module: 'form'
     }
     testImplementation "org.springframework.security:spring-security-test"
-    testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
+    testImplementation "com.jayway.jsonpath:json-path-assert"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
     jar {

@@ -20,8 +20,6 @@ javaPlatform {
 
 dependencies {
     api(platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
-    api(platform("com.fasterxml.jackson:jackson-bom:${jacksonVersion}"))
-    api(platform("org.junit:junit-bom:${junitVersion}"))
     api(platform("software.amazon.awssdk:bom:${awssdkVersion}"))
     constraints {
         api(project(":backend:admin-settings"))
@@ -103,25 +101,16 @@ dependencies {
 
         //!GZAC
 
-        api("org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}")
-        api("org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}")
-        api("org.apache.tomcat.embed:tomcat-embed-websocket:${tomcatVersion}")
 
-        api("org.liquibase:liquibase-core:${liquibaseVersion}")
-
-        api("org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}")
-        api("org.hibernate.orm:hibernate-core:${hibernateCoreVersion}")
+        api("org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernate7Version}")
 
         //ShedLock
         api("net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}")
         api("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:${shedlockVersion}")
 
-        api("org.apache.commons:commons-lang3:${commonsLangVersion}")
-
         api("de.codecentric:spring-boot-admin-starter-client:${springBootAdminStarterClientVersion}")
         api "org.json:json:${orgJsonJsonVersion}"
 
-        api("com.rabbitmq:amqp-client:${amqpCLientVersion}")
         api("io.github.oshai:kotlin-logging:${kotlinLoggingVersion}")
     }
 }

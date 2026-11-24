@@ -39,7 +39,7 @@ dependencies {
 
     implementation("io.github.oshai:kotlin-logging")
 
-    implementation "org.postgresql:postgresql:$postgresqlDriverVersion"
+    implementation "org.postgresql:postgresql"
 
     if (System.getProperty("os.arch") == "aarch64") {
         runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-aarch_64")

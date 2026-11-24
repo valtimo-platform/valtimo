@@ -33,7 +33,7 @@ dependencies {
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-amqp"
-    implementation "com.rabbitmq:amqp-client:$amqpCLientVersion"
+    implementation "com.rabbitmq:amqp-client"
 
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
@@ -43,7 +43,7 @@ dependencies {
     testImplementation project(':backend:test-utils-common')
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test"
     testImplementation "org.springframework.cloud:spring-cloud-stream-test-support:${springCloudStreamVersion}"
 
     jar {

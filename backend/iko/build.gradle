@@ -49,7 +49,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-validation"
     implementation "org.springframework.boot:spring-boot-starter-security"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.integration:spring-integration-core"
 
     implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
@@ -58,8 +58,7 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "org.liquibase.ext:liquibase-hibernate7:${liquibaseHibernate7Version}"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.github.erosb:everit-json-schema:${everitJsonSchemaVersion}"
@@ -75,8 +74,8 @@ dependencies {
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
-    testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
-    testImplementation group: 'org.postgresql', name: 'postgresql', version: postgresqlDriverVersion
+    testImplementation "com.jayway.jsonpath:json-path-assert"
+    testImplementation group: 'org.postgresql', name: 'postgresql'
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 
     jar {

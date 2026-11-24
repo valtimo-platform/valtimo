@@ -35,7 +35,7 @@ dockerCompose {
 
 dependencies {
     implementation "org.springframework.boot:spring-boot"
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
     implementation "org.springframework.data:spring-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
@@ -45,7 +45,7 @@ dependencies {
     api "software.amazon.awssdk:ssm"
 
     implementation "commons-io:commons-io:${commonsIoVersion}"
-    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    implementation "org.apache.commons:commons-lang3"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
