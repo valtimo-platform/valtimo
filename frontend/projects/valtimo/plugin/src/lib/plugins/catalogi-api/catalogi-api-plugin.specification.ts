@@ -22,6 +22,7 @@ import {GetBesluittypeConfigurationComponent} from './components/get-besluittype
 import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
+import {GetEigenschappenFromZaaktypeConfigurationComponent} from './components/get-eigenschappen-from-zaaktype/get-eigenschappen-from-zaaktype-configuration.component';
 import {GetInformatieobjecttypeConfigurationComponent} from './components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 import {GetInformatieobjecttypenConfigurationComponent} from './components/get-informatieobjecttypen/get-informatieobjecttypen-configuration.component';
 import {GetRoltypenConfigurationComponent} from './components/get-roltypen/get-roltypen-configuration.component';
@@ -39,6 +40,8 @@ const catalogiApiPluginSpecification: PluginSpecification = {
     'get-statustypen': GetStatustypenConfigurationComponent,
     'get-statustype': GetStatustypeConfigurationComponent,
     'get-eigenschap': GetEigenschapConfigurationComponent,
+    'get-all-zaaktype-eigenschappen-from-zaaktype':
+      GetEigenschappenFromZaaktypeConfigurationComponent,
     'get-informatieobjecttype': GetInformatieobjecttypeConfigurationComponent,
     'get-informatieobjecttypen': GetInformatieobjecttypenConfigurationComponent,
     'get-roltypen': GetRoltypenConfigurationComponent,
@@ -90,6 +93,19 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapTooltip: 'Naam van de aard van de eigenschap.',
       eigenschapProcessVariableTooltip:
         'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+      'get-all-zaaktype-eigenschappen-from-zaaktype': 'Eigenschappen van zaaktype opvragen',
+      getEigenschappenFromZaaktypeInformation:
+        'De eigenschappen van het zaaktype van de zaak worden opgehaald en daarna opgeslagen in een procesvariabele.',
+      zaaktypeIdentificatie: 'Zaaktype identificatie',
+      zaaktypeIdentificatieTooltip:
+        'Optioneel: filter op de unieke identificatie van het zaaktype binnen de catalogus.',
+      datumGeldigheid: 'Datum geldigheid',
+      datumGeldigheidTooltip: 'Optioneel: filter eigenschappen op hun geldigheidsdatum.',
+      status: 'Publicatiestatus',
+      statusTooltip:
+        'Optioneel: filter op publicatiestatus. Standaard worden alleen definitieve eigenschappen opgehaald.',
+      pageSize: 'Paginagrootte',
+      pageSizeTooltip: 'Optioneel: het aantal resultaten per pagina (standaard: 100).',
       zaaktypeUrl: 'Zaaktype URL',
       zaaktypeUrlTooltip:
         'Voer hier de URL van het betreffende zaaktype in als dit afwijkt van het zaaktype van de zaak die aan het dossier is gekoppeld',
@@ -155,6 +171,19 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapTooltip: 'Name of the nature of the eigenschap.',
       eigenschapProcessVariableTooltip:
         'After the eigenschap is retrieved, it is stored in a process variable with this name.',
+      'get-all-zaaktype-eigenschappen-from-zaaktype': 'Retrieve eigenschappen from zaaktype',
+      getEigenschappenFromZaaktypeInformation:
+        'The eigenschappen of the zaaktype of the zaak are retrieved and then stored in a process variable.',
+      zaaktypeIdentificatie: 'Zaaktype identification',
+      zaaktypeIdentificatieTooltip:
+        'Optional: filter on the unique identification of the zaaktype within the catalogue.',
+      datumGeldigheid: 'Validity date',
+      datumGeldigheidTooltip: 'Optional: filter eigenschappen on their validity date.',
+      status: 'Publication status',
+      statusTooltip:
+        'Optional: filter on publication status. By default, only definitive eigenschappen are retrieved.',
+      pageSize: 'Page size',
+      pageSizeTooltip: 'Optional: the number of results per page (default: 100).',
       zaaktypeUrl: 'Zaaktype URL',
       zaaktypeUrlTooltip:
         'Specify the URL of the relevant Zaaktype here if it differs from the Zaak linked to the Case',

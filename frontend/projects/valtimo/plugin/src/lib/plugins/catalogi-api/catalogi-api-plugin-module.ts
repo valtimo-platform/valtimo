@@ -25,6 +25,7 @@ import {GetBesluittypeConfigurationComponent} from './components/get-besluittype
 import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
+import {GetEigenschappenFromZaaktypeConfigurationComponent} from './components/get-eigenschappen-from-zaaktype/get-eigenschappen-from-zaaktype-configuration.component';
 import {GetInformatieobjecttypeConfigurationComponent} from './components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 import {GetInformatieobjecttypenConfigurationComponent} from './components/get-informatieobjecttypen/get-informatieobjecttypen-configuration.component';
 import {GetRoltypenConfigurationComponent} from './components/get-roltypen/get-roltypen-configuration.component';
@@ -39,6 +40,7 @@ import {GetRoltypeConfigurationComponent} from './components/get-roltype/get-rol
     GetStatustypenConfigurationComponent,
     GetStatustypeConfigurationComponent,
     GetEigenschapConfigurationComponent,
+    GetEigenschappenFromZaaktypeConfigurationComponent,
     GetInformatieobjecttypeConfigurationComponent,
     GetInformatieobjecttypenConfigurationComponent,
     GetRoltypenConfigurationComponent,
@@ -60,6 +62,7 @@ import {GetRoltypeConfigurationComponent} from './components/get-roltype/get-rol
     GetStatustypeConfigurationComponent,
     GetStatustypenConfigurationComponent,
     GetEigenschapConfigurationComponent,
+    GetEigenschappenFromZaaktypeConfigurationComponent,
     GetInformatieobjecttypeConfigurationComponent,
     GetInformatieobjecttypenConfigurationComponent,
     GetRoltypenConfigurationComponent,

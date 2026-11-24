@@ -223,7 +223,10 @@ open class CatalogiApiClient(
                 ClientTools.baseUrlToBuilder(it, baseUrl)
                     .pathSegment("eigenschappen")
                     .addOptionalQueryParamFromRequest("zaaktype", request.zaaktype)
+                    .addOptionalQueryParamFromRequest("zaaktypeIdentificatie", request.zaaktypeIdentificatie)
+                    .addOptionalQueryParamFromRequest("datumGeldigheid", request.datumGeldigheid)
                     .addOptionalQueryParamFromRequest("status", request.status?.getSearchValue())
+                    .addOptionalQueryParamFromRequest("pageSize", request.pageSize)
                     .addOptionalQueryParamFromRequest("page", request.page)
                     .build()
             }

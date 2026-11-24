@@ -12,6 +12,16 @@
         "processLinkType": "plugin"
     },
     {
+        "activityId": "haal-eigenschappen-van-zaaktype-op-st",
+        "activityType": "bpmn:ServiceTask:start",
+        "pluginConfigurationId": "22c78b91-0b0f-4008-8d8f-c4a84b8e71ec",
+        "pluginActionDefinitionKey": "get-all-zaaktype-eigenschappen-from-zaaktype",
+        "actionProperties": {
+            "processVariable": "zaaktypeEigenschappen"
+        },
+        "processLinkType": "plugin"
+    },
+    {
         "activityId": "zaakeigenschap-get-st",
         "activityType": "bpmn:ServiceTask:start",
         "pluginConfigurationId": "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee",
@@ -34,21 +44,21 @@
         "processLinkType": "plugin"
     },
     {
+        "formDisplayType": "panel",
         "activityId": "zaakeigenschap-creeer",
         "activityType": "bpmn:UserTask:create",
         "formDefinitionName": "zaakeigenschap-creeer",
         "viewModelEnabled": false,
-        "formDisplayType": "modal",
         "formSize": "medium",
         "subtitles": [],
         "processLinkType": "form"
     },
     {
+        "formDisplayType": "panel",
         "activityId": "zaakeigenschap-get",
         "activityType": "bpmn:UserTask:create",
         "formDefinitionName": "zaakeigenschap-get",
         "viewModelEnabled": false,
-        "formDisplayType": "modal",
         "formSize": "medium",
         "subtitles": [],
         "processLinkType": "form"
@@ -58,7 +68,7 @@
         "activityType": "bpmn:UserTask:create",
         "formDefinitionName": "zaakeigenschap-zoek",
         "viewModelEnabled": false,
-        "formDisplayType": "modal",
+        "formDisplayType": "panel",
         "formSize": "medium",
         "subtitles": [],
         "processLinkType": "form"
@@ -68,10 +78,10 @@
         "activityType": "bpmn:UserTask:create",
         "formDefinitionName": "zaakeigenschap-toon-resultaat",
         "viewModelEnabled": false,
-        "formDisplayType": "modal",
         "formSize": "medium",
         "subtitles": [],
-        "processLinkType": "form"
+        "processLinkType": "form",
+        "formDisplayType": "panel"
     },
     {
         "activityId": "zaakeigenschap-actie",

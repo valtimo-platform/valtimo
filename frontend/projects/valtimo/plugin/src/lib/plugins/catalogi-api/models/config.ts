@@ -61,6 +61,14 @@ interface GetEigenschapConfig {
   processVariable: string;
 }
 
+interface GetEigenschappenFromZaaktypeConfig {
+  processVariable: string;
+  zaaktypeIdentificatie?: string;
+  datumGeldigheid?: string;
+  status?: string;
+  pageSize?: number;
+}
+
 interface GetInformatieobjecttypeConfig {
   informatieobjecttype: string;
   processVariable: string;
@@ -81,6 +89,7 @@ export {
   GetStatustypenConfig,
   GetStatustypeConfig,
   GetEigenschapConfig,
+  GetEigenschappenFromZaaktypeConfig,
   GetInformatieobjecttypeConfig,
   GetInformatieobjecttypenConfig,
 };
