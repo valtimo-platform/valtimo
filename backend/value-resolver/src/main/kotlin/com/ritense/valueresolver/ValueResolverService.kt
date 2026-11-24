@@ -90,6 +90,19 @@ interface ValueResolverService {
     ): Map<String, Any?> = resolveValues(documentInstanceId, requestedValues)
 
     /**
+     * Same as [resolveValuesOrNull], but also reports which requestedValues failed to resolve, so a cell
+     * that failed to render can be distinguished from one that is legitimately empty.
+     *
+     * @param documentInstanceId The documentInstanceId these values belong to
+     * @param requestedValues The requestedValues that should be resolved into values.
+     * @return The resolved values plus the requestedValues whose resolution threw.
+     */
+    fun resolveValuesOrNullWithFailures(
+        documentInstanceId: String,
+        requestedValues: Collection<String>
+    ): ValueResolverResult = ValueResolverResult(resolveValuesOrNull(documentInstanceId, requestedValues), emptySet())
+
+    /**
      * This method provides a way of resolving requestedValues into values using defined resolvers.
      * requestedValues are typically prefixed, like 'pv:propertyName'.
      * If not, a resolver should be configured to handle 'pv' prefixes.

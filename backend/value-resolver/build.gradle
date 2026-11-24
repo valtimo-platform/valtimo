@@ -62,6 +62,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.springframework:spring-tx"
 
     api "org.operaton.bpm:operaton-engine:${operatonVersion}"
     api "org.zalando:problem-spring-web:${problemSpringWebVersion}"

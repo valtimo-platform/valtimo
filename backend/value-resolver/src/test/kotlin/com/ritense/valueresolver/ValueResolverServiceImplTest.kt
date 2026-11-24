@@ -28,6 +28,7 @@ internal class ValueResolverServiceImplTest {
         listOf(
             StaticValueResolverFactory("ok") { "value-of-$it" },
             StaticValueResolverFactory("bad") { throw IllegalStateException("boom") },
+            StaticValueResolverFactory("nil") { null },
             DependentValueResolverFactory(),
         )
     )
@@ -63,6 +64,24 @@ internal class ValueResolverServiceImplTest {
         assertThrows<IllegalStateException> {
             resolverService.resolveValues("doc-id", listOf("ok:a", "bad:b"))
         }
+    }
+
+    @Test
+    fun `resolveValuesOrNullWithFailures puts a failing resolver in failedKeys and its value null`() {
+        val result = resolverService.resolveValuesOrNullWithFailures("doc-id", listOf("ok:a", "bad:b", "nil:c"))
+
+        assertThat(result.values).containsEntry("bad:b", null)
+        assertThat(result.values).containsEntry("ok:a", "value-of-a")
+        assertThat(result.failedKeys).contains("bad:b")
+    }
+
+    @Test
+    fun `resolveValuesOrNullWithFailures keeps a legitimately null value out of failedKeys`() {
+        val result = resolverService.resolveValuesOrNullWithFailures("doc-id", listOf("nil:c", "bad:b"))
+
+        assertThat(result.values).containsEntry("nil:c", null)
+        assertThat(result.failedKeys).doesNotContain("nil:c")
+        assertThat(result.failedKeys).contains("bad:b")
     }
 
     @Test
