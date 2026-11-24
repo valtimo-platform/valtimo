@@ -6,7 +6,6 @@ com.ritense.valtimo.autoconfigure.OperatonAutoConfiguration
 com.ritense.valtimo.autoconfigure.EmailNotificationSettingsAutoConfiguration
 com.ritense.valtimo.autoconfigure.ChoiceFieldAutoConfiguration
 com.ritense.valtimo.autoconfigure.AuthenticationAutoConfiguration
-com.ritense.valtimo.autoconfigure.HibernateJsonMapperConfiguration
 com.ritense.valtimo.autoconfigure.SchedulerAutoConfiguration
 com.ritense.valtimo.contract.config.LiquibaseRunnerAutoConfiguration
 com.ritense.valtimo.autoconfigure.OperatonContextConfiguration

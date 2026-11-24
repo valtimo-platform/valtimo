@@ -17,28 +17,47 @@
 package com.ritense.case_.domain.migration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
+import org.hibernate.type.descriptor.WrapperOptions
+import org.hibernate.type.descriptor.java.spi.UnknownBasicJavaType
+import org.hibernate.type.format.jackson.JacksonJsonFormatMapper
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-/** `scheduledAtDate` on the wire, on two mappers: the JSON column uses hypersistence's, not Spring's. */
+/** `scheduledAtDate` on the wire, through Spring's mapper and through Hibernate's JSON format mapper wrapping it. */
 class MigrationTriggersJsonTest {
 
     private val springMapper: ObjectMapper = MapperSingleton.get()
-    private val bareMapper: ObjectMapper = ObjectMapper().registerKotlinModule()
+    private val formatMapper = JacksonJsonFormatMapper(springMapper)
+    private val javaType = UnknownBasicJavaType(MigrationTriggers::class.java)
+    private val wrapperOptions = mock(WrapperOptions::class.java)
 
-    private fun mappers() = listOf("spring" to springMapper, "bare" to bareMapper)
+    private class Codec(
+        val write: (MigrationTriggers) -> String,
+        val read: (String) -> MigrationTriggers,
+    )
+
+    private fun mappers() = listOf(
+        "spring" to Codec(
+            write = { springMapper.writeValueAsString(it) },
+            read = { springMapper.readValue(it, MigrationTriggers::class.java) },
+        ),
+        "hibernate" to Codec(
+            write = { formatMapper.toString(it, javaType, wrapperOptions) },
+            read = { formatMapper.fromString(it, javaType, wrapperOptions) },
+        ),
+    )
 
     @Test
     fun `an instant is written as a true instant, not as a local time wearing a Z`() {
         val triggers = MigrationTriggers(scheduledAtDate = Instant.parse("2026-01-01T02:00:00Z"))
 
-        mappers().forEach { (name, mapper) ->
-            assertThat(mapper.writeValueAsString(triggers))
+        mappers().forEach { (name, codec) ->
+            assertThat(codec.write(triggers))
                 .`as`("written by the $name mapper")
                 .contains("\"scheduledAtDate\":\"2026-01-01T02:00:00Z\"")
         }
@@ -48,8 +67,8 @@ class MigrationTriggersJsonTest {
     fun `an offset-bearing value is read as the instant it names`() {
         // The same moment written two ways; both must survive the trip unchanged.
         listOf("2026-01-01T03:00:00+02:00", "2026-01-01T01:00:00Z").forEach { value ->
-            mappers().forEach { (name, mapper) ->
-                val triggers = mapper.readValue(json(value), MigrationTriggers::class.java)
+            mappers().forEach { (name, codec) ->
+                val triggers = codec.read(json(value))
                 assertThat(triggers.scheduledAtDate)
                     .`as`("$value read by the $name mapper")
                     .isEqualTo(Instant.parse("2026-01-01T01:00:00Z"))
@@ -63,8 +82,8 @@ class MigrationTriggersJsonTest {
         val expected = LocalDateTime.parse("2026-01-01T03:00:00").toInstant(ZoneOffset.UTC)
 
         listOf("2026-01-01T03:00:00", "2026-01-01T03:00").forEach { value ->
-            mappers().forEach { (name, mapper) ->
-                assertThat(mapper.readValue(json(value), MigrationTriggers::class.java).scheduledAtDate)
+            mappers().forEach { (name, codec) ->
+                assertThat(codec.read(json(value)).scheduledAtDate)
                     .`as`("$value read by the $name mapper")
                     .isEqualTo(expected)
             }
@@ -79,8 +98,8 @@ class MigrationTriggersJsonTest {
             runAfter = "predecessor",
         )
 
-        mappers().forEach { (name, mapper) ->
-            val back = mapper.readValue(mapper.writeValueAsString(triggers), MigrationTriggers::class.java)
+        mappers().forEach { (name, codec) ->
+            val back = codec.read(codec.write(triggers))
             assertThat(back).`as`("round-tripped by the $name mapper").isEqualTo(triggers)
         }
     }
@@ -94,8 +113,8 @@ class MigrationTriggersJsonTest {
 
     @Test
     fun `no scheduled date is omitted rather than written as null`() {
-        mappers().forEach { (name, mapper) ->
-            assertThat(mapper.writeValueAsString(MigrationTriggers(triggeredByButton = true)))
+        mappers().forEach { (name, codec) ->
+            assertThat(codec.write(MigrationTriggers(triggeredByButton = true)))
                 .`as`("written by the $name mapper")
                 .doesNotContain("scheduledAtDate")
         }

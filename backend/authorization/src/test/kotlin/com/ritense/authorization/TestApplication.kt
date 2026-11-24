@@ -19,6 +19,7 @@ package com.ritense.authorization
 import com.ritense.authorization.testimpl.TestAuthorizationAutoConfiguration
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.config.LiquibaseRunnerAutoConfiguration
+import com.ritense.valtimo.contract.hibernate.HibernateJsonFormatMapperAutoConfiguration
 import javax.sql.DataSource
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -31,7 +32,7 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 
 @SpringBootApplication
-@Import(LiquibaseRunnerAutoConfiguration::class, TestAuthorizationAutoConfiguration::class, HibernateJsonMapperConfiguration::class)
+@Import(LiquibaseRunnerAutoConfiguration::class, TestAuthorizationAutoConfiguration::class, HibernateJsonFormatMapperAutoConfiguration::class)
 @EntityScan("com.ritense.authorization.testimpl")
 class TestApplication {
 

@@ -44,7 +44,7 @@ import com.ritense.valtimo.web.rest.util.PaginationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.task.Comment;
 import org.springframework.data.domain.Page;

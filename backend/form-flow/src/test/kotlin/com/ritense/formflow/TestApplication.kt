@@ -44,14 +44,5 @@ class TestApplication {
         fun objectMapper(): ObjectMapper {
             return MapperSingleton.get()
         }
-
-        companion object {
-            init {
-                System.setProperty(
-                    "hypersistence.utils.jackson.object.mapper",
-                    HibernateObjectMapperSupplier::class.java.name
-                )
-            }
-        }
     }
 }

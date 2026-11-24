@@ -67,7 +67,7 @@ import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
