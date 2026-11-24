@@ -42,10 +42,8 @@ dependencies {
     implementation(project(":backend:outbox:outbox-rabbitmq"))
     implementation(project(":backend:process-link-url"))
 
-    // Plugins
+    // Plugins (freemarker and smtpmail have no Spring Boot 4 release yet)
     implementation("com.ritense.valtimo:smartdocuments")
-    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
-    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
 
     implementation("io.github.oshai:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"

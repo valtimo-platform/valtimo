@@ -37,8 +37,8 @@ dependencies {
 
     // Plugins
     implementation("com.ritense.valtimo:smartdocuments")
-    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
-    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
+    // The freemarker and smtpmail plugins (freemarkerPluginVersion, smtpmailPluginVersion) have no Spring Boot 4
+    // release yet: freemarker still uses the Boot 3 @EntityScan and hypersistence JsonType.
 
     implementation("io.github.oshai:kotlin-logging")
     implementation "org.springframework.boot:spring-boot-starter-webflux"

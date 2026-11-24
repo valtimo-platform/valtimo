@@ -29,9 +29,7 @@ dependencies {
     implementation(project(":backend:mail:local-mail"))
     implementation(project(":backend:document-generation:smartdocuments"))
 
-    // Plugins
-    implementation("com.ritense.valtimoplugins:freemarker:$freemarkerPluginVersion")
-    implementation("com.ritense.valtimoplugins:smtpmail:$smtpmailPluginVersion")
+    // Plugins (freemarker and smtpmail have no Spring Boot 4 release yet)
 
     implementation("io.github.oshai:kotlin-logging")
 
