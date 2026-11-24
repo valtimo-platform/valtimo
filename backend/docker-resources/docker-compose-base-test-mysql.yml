@@ -7,7 +7,6 @@ services:
             --information-schema-stats-expiry=0
             --innodb-flush-method=O_DIRECT
             --lower-case-table-names=1
-            --restrict-fk-on-non-standard-key=OFF
             --sql-mode=NO_ENGINE_SUBSTITUTION
             --transaction-isolation=READ-COMMITTED
         #ports:

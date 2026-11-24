@@ -71,7 +71,6 @@ services:
             MYSQL_ROOT_HOST: "%"
         command:
             --lower_case_table_names=1
-            --restrict_fk_on_non_standard_key=OFF
             --collation-server=utf8mb4_unicode_ci
             --character-set-server=utf8mb4
             --explicit_defaults_for_timestamp
