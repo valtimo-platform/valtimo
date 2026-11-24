@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<section *ngIf="$rows().length > 0" class="plugin-external-contract-bindings">
+  <h6 class="cds--type-heading-compact-02 plugin-external-contract-bindings__heading">
+    {{ 'pluginManagement.contracts.bindingsHeading' | translate }}
+  </h6>
+
+  <p class="cds--type-body-compact-01 plugin-external-contract-bindings__helper">
+    {{ 'pluginManagement.contracts.bindingsDescription' | translate }}
+  </p>
+
+  <div class="plugin-external-contract-bindings__table">
+    <div
+      *ngFor="let row of $rows(); trackBy: trackByContract"
+      [attr.data-test-id]="testIds.row + row.contract"
+      class="plugin-external-contract-bindings__row"
+    >
+      <div class="plugin-external-contract-bindings__contract">
+        <span class="cds--type-heading-compact-01">{{ row.title || row.contract }}</span>
+
+        <code *ngIf="row.title" class="cds--snippet--inline">{{ row.contract }}</code>
+
+        <span
+          *ngIf="row.declaredOperations"
+          class="cds--type-helper-text-01 plugin-external-contract-bindings__secondary"
+        >
+          {{
+            'pluginManagement.contracts.declaredOperations'
+              | translate: {operations: row.declaredOperations.join(', ')}
+          }}
+        </span>
+      </div>
+
+      <div [ngSwitch]="row.state" class="plugin-external-contract-bindings__provider">
+        <cds-loading *ngSwitchCase="'loading'" [isActive]="true" size="sm"></cds-loading>
+
+        <div
+          *ngSwitchCase="'error'"
+          [attr.data-test-id]="testIds.lookupError + row.contract"
+          class="plugin-external-contract-bindings__error"
+        >
+          <cds-inline-notification
+            [notificationObj]="{
+              type: 'error',
+              title: '',
+              message: 'pluginManagement.contracts.providersLoadFailed' | translate,
+              showClose: false,
+              lowContrast: true,
+            }"
+          ></cds-inline-notification>
+
+          <button
+            cdsButton="ghost"
+            [attr.data-test-id]="testIds.retryButton + row.contract"
+            size="sm"
+            (click)="onRetry(row.contract)"
+          >
+            {{ 'pluginManagement.contracts.retry' | translate }}
+          </button>
+        </div>
+
+        <cds-dropdown
+          *ngSwitchDefault
+          [appendInline]="false"
+          [attr.aria-label]="row.title || row.contract"
+          [attr.data-test-id]="testIds.providerDropdown + row.contract"
+          [helperText]="row.hintKey ? (row.hintKey | translate) : ''"
+          [invalid]="!!row.invalidTextKey"
+          [invalidText]="
+            row.invalidTextKey ? (row.invalidTextKey | translate: row.invalidTextParams) : ''
+          "
+          [placeholder]="'pluginManagement.contracts.selectProvider' | translate"
+          (selected)="onChoiceSelected(row.contract, $event)"
+        >
+          <cds-dropdown-list [items]="row.items"></cds-dropdown-list>
+        </cds-dropdown>
+      </div>
+    </div>
+  </div>
+</section>

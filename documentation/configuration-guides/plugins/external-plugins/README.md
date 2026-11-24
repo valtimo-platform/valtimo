@@ -16,6 +16,8 @@ This includes:
   delivery, manage frontend origins, and delete safely
 - **[Plugin status and reviews](plugin-status-and-reviews.md)** — what each status tag means, and
   how to resolve a plugin that changed after it was accepted
+- **[Contracts between plugins](contracts.md)** — let plugins use each other, and follow
+  long-running requests on the **Contract jobs** page
 - **[Plugin logs](plugin-logs.md)** — inspect a configuration's log entries and outbound calls
 - **[External plugins in cases and processes](external-plugins-in-cases-and-processes.md)** —
   bind configured plugins to processes, tasks, tabs, widgets, and menus
@@ -33,6 +35,9 @@ Expand **Admin** in the left sidebar
 Under **Integrations**, choose a page: **Plugins**, **Plugin hosts**, or **Apps**
 {% endstep %}
 {% endstepper %}
+
+**Integrations** also holds **Contract jobs**, which follows long-running requests between plugins.
+See [Contracts between plugins](contracts.md#contract-jobs).
 
 **Plugins** lists the plugin configurations of embedded plugins and of plugins served by plugin
 hosts. The **Source** column distinguishes **Embedded** (runs inside Valtimo) from **External**

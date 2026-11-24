@@ -15,6 +15,7 @@
  */
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {Router} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {SidePanelService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/shared';
@@ -316,6 +317,132 @@ describe('ExternalPluginIframeComponent', () => {
       sendResizeFrom({height: 900}, window);
 
       expect(iframe.style.height).toBe('');
+    });
+  });
+
+  /**
+   * A plugin may open a case page, but only one of an allowlisted set of in-app routes and only
+   * while the user has just interacted — a hostile bundle must not be able to send the user
+   * anywhere else, or anywhere at all without a click.
+   */
+  describe('navigate', () => {
+    const documentId = '3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b';
+    let iframe: HTMLIFrameElement;
+    let navigateSpy: jasmine.Spy;
+    let userActivation: {isActive: boolean} | undefined;
+
+    const sendNavigateFrom = (payload: unknown, source: MessageEventSource | null): void =>
+      (component as any)._onMessage({
+        data: {source: 'valtimo-plugin', event: 'navigate', payload},
+        source,
+      } as MessageEvent);
+
+    const sendNavigate = (payload: unknown): void =>
+      sendNavigateFrom(payload, iframe.contentWindow);
+
+    beforeEach(() => {
+      iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      (component as any).iframeRef = {nativeElement: iframe};
+      navigateSpy = spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
+      userActivation = {isActive: true};
+      spyOnProperty(navigator, 'userActivation', 'get').and.callFake(
+        () => userActivation as UserActivation
+      );
+      spyOn(console, 'warn');
+    });
+
+    afterEach(() => {
+      iframe.remove();
+    });
+
+    it('opens a case', () => {
+      sendNavigate({route: `/cases/inwonerplan/document/${documentId}`});
+
+      expect(navigateSpy).toHaveBeenCalledOnceWith(`/cases/inwonerplan/document/${documentId}`);
+    });
+
+    it('opens a tab of a case', () => {
+      sendNavigate({route: `/cases/inwonerplan/document/${documentId}/pdca-plan-overview`});
+
+      expect(navigateSpy).toHaveBeenCalledOnceWith(
+        `/cases/inwonerplan/document/${documentId}/pdca-plan-overview`
+      );
+    });
+
+    it('opens a case list', () => {
+      sendNavigate({route: '/cases/inwonerplan'});
+
+      expect(navigateSpy).toHaveBeenCalledOnceWith('/cases/inwonerplan');
+    });
+
+    it('ignores a payload without a string route', () => {
+      for (const payload of [null, undefined, 'x', {}, {route: 42}, {route: ['/cases/a']}]) {
+        sendNavigate(payload);
+      }
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+    });
+
+    it('ignores a route outside the allowlist', () => {
+      const routes = [
+        'https://evil.example/x',
+        '//evil.example',
+        '//evil.example/cases/inwonerplan',
+        'javascript:alert(1)',
+        '/cases/inwonerplan?x=1',
+        `/cases/inwonerplan/document/${documentId}?tab=a`,
+        '/cases/inwonerplan#x',
+        `/cases/inwonerplan/document/${documentId}#x`,
+        '/cases/../admin',
+        `/cases/inwonerplan/document/${documentId}/..`,
+        '/cases/%2e%2e/admin',
+        `/cases/inwonerplan/document/${documentId}/%2Fadmin`,
+        '/cases\\inwonerplan',
+        '/cases//inwonerplan',
+        '/cases/inwonerplan/',
+        '/cases/',
+        '/cases',
+        'cases/inwonerplan',
+        '/admin',
+        `/cases/inwonerplan/document/${documentId}/tab/tasks/1`,
+        '/cases/inwonerplan/document/not-a-uuid',
+        `/cases/inwonerplan/document/${documentId.replace(/-/g, '')}`,
+        `/cases/inwonerplan\n`,
+        `/cases/${'a'.repeat(600)}`,
+      ];
+
+      for (const route of routes) sendNavigate({route});
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+    });
+
+    it('ignores a route segment longer than allowed', () => {
+      sendNavigate({route: `/cases/${'a'.repeat(129)}`});
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not navigate without transient user activation', () => {
+      userActivation = {isActive: false};
+
+      sendNavigate({route: `/cases/inwonerplan/document/${documentId}`});
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not navigate when the browser does not expose user activation', () => {
+      userActivation = undefined;
+
+      sendNavigate({route: `/cases/inwonerplan/document/${documentId}`});
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+    });
+
+    it('ignores a navigate posted by a window that is not the iframe', () => {
+      sendNavigateFrom({route: `/cases/inwonerplan/document/${documentId}`}, window);
+
+      expect(navigateSpy).not.toHaveBeenCalled();
     });
   });
 

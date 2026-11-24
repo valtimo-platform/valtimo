@@ -203,6 +203,7 @@ class ExternalPluginImporter(
             grantedEgress = configuration.grantedEgress,
             id = configuration.id,
             allowPlaceholder = true,
+            contractBindings = configuration.contractBindings.orEmpty(),
         )
         logger.info {
             "Activated external plugin configuration '${configuration.title}' (${configuration.id}) " +
@@ -212,8 +213,9 @@ class ExternalPluginImporter(
     }
 
     /**
-     * Title and properties only. Grants are left alone: the exact-match rule leaves exactly one
-     * valid set per manifest, so re-granting could only rewrite them to what is already stored.
+     * Title, properties and (when declared) contract bindings. Grants are left alone: the exact-match
+     * rule leaves exactly one valid set per manifest, so re-granting could only rewrite them to what
+     * is already stored. Bindings are an admin choice with several valid values, so the descriptor's wins.
      */
     private fun updateConfiguration(
         existing: ExternalPluginConfiguration,
@@ -222,11 +224,24 @@ class ExternalPluginImporter(
     ) {
         val egressBefore = configurationService.getDerivedEgress(existing)
 
+        val declaredBindings = declared.contractBindings?.takeIf { bindings ->
+            val stored = configurationService.getContractBindings(declared.id)
+                .map { it.contract to it.targetConfigurationId }.toSet()
+            bindings.map { it.contract to it.targetConfigurationId }.toSet() != stored
+        }
         configurationService.update(
             id = declared.id,
             title = declared.title,
             properties = declared.properties,
+            contractBindings = declaredBindings,
+            fromDescriptor = true,
         )
+        if (declaredBindings != null) {
+            logger.info {
+                "Configuration ${declared.id} ('${declared.title}') contract bindings set from the descriptor: " +
+                    declaredBindings.joinToString { "${it.contract} -> ${it.targetConfigurationId}" }
+            }
+        }
         summary.configurationsUpdated++
 
         // The one configuration change with a security dimension: an `x-egress-target` property

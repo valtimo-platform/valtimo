@@ -25,3 +25,4 @@ export * from './lib/form-management.module';
 export * from './lib/components/form-management-edit/form-management-edit.component';
 export * from './lib/components/form-management-create/form-management-create.component';
 export * from './lib/constants';
+export {getFormDefinitionUsagesText} from './lib/utils/form-management.utils';
