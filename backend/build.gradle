@@ -165,11 +165,6 @@ allprojects {
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
                 dependency "org.apache.commons:commons-lang3:${commonsLangVersion}"
 
-                // TODO: Remove this later. This is a temporary override because the current 3.27.6 version
-                //  pulled in through operaton has vulnerabilities and no operaton fix is available as
-                //  of 03-02-2026
-                dependency "org.assertj:assertj-core:3.27.7"
-
                 // CVE override: Spring Boot 3.5.16 ships Tomcat 10.1.55, affected by 11 CVEs
                 // including CVE-2026-65637 and CVE-2026-65905 (both 9.8). Fixed in 10.1.58;
                 // 10.1.58 was never published to Maven Central, so take the latest 10.1.x.

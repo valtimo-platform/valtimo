@@ -38,7 +38,13 @@ class ScriptingWhitelistPlugin(
         processEngineConfiguration.setEnableScriptEngineLoadExternalResources(false)
         val resolver = AllowedClassesScriptEngineResolver(ScriptEngineManager(), allowedScriptingClasses, polyglotEngine)
         processEngineConfiguration.setScriptEngineResolver(resolver)
+        SandboxedScriptingEngines.installBeforeInit(processEngineConfiguration)
         ScriptSandboxSelfCheck.run(resolver.getScriptEngine("javascript", true))
+    }
+
+    override fun postInit(processEngineConfiguration: ProcessEngineConfigurationImpl?) {
+        requireNotNull(processEngineConfiguration) { "No process engine configuration found. Failed to complete sandboxed script bindings." }
+        SandboxedScriptingEngines.completeAfterInit(processEngineConfiguration)
     }
 
     companion object {
