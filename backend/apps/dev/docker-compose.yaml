@@ -58,7 +58,7 @@ services:
 
     gzac-database-mysql:
         container_name: gzac-docker-compose-gzac-database-mysql
-        image: mysql/mysql-server:8.0.28-1.2.7-server
+        image: mysql:8.4.13
         profiles:
             - mysql
         ports:
@@ -70,12 +70,11 @@ services:
             MYSQL_PASSWORD: password
             MYSQL_ROOT_HOST: "%"
         command:
-            --default-authentication-plugin=mysql_native_password
             --lower_case_table_names=1
+            --restrict_fk_on_non_standard_key=OFF
             --collation-server=utf8mb4_unicode_ci
             --character-set-server=utf8mb4
             --explicit_defaults_for_timestamp
-            --ssl=false
             --innodb_flush_method=O_DIRECT
             --sql_mode=NO_ENGINE_SUBSTITUTION
             --transaction-isolation=READ-COMMITTED
