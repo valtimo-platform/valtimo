@@ -31,7 +31,7 @@ import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.AbstractUserRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.springframework.boot.SpringApplication
-import org.springframework.boot.env.EnvironmentPostProcessor
+import org.springframework.boot.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.Environment
 import org.springframework.util.ConcurrentLruCache

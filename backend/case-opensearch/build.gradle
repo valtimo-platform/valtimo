@@ -67,6 +67,8 @@ dependencies {
     }
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-starter-actuator"
+    testImplementation "org.springframework.boot:spring-boot-elasticsearch"
+    testImplementation "org.springframework.boot:spring-boot-data-elasticsearch"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.postgresql:postgresql"
     testImplementation "com.mysql:mysql-connector-j"

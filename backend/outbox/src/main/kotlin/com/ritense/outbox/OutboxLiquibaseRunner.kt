@@ -29,7 +29,7 @@ import liquibase.lockservice.LockService
 import liquibase.lockservice.LockServiceFactory
 import liquibase.resource.ClassLoaderResourceAccessor
 import org.springframework.beans.factory.InitializingBean
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties
+import org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties
 import java.sql.SQLException
 import java.time.Duration
 import java.time.Instant

@@ -20,8 +20,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.Status
 import java.time.Duration
 
 class OutboxPublisherHealthIndicatorTest {

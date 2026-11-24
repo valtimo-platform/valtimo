@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.Status
 
 class OpenSearchMappingHealthIndicatorTest {
 

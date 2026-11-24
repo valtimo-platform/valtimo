@@ -16,7 +16,7 @@
 
 package com.ritense.valtimo.contract.client
 
-import org.springframework.boot.web.client.RestClientCustomizer
+import org.springframework.boot.restclient.RestClientCustomizer
 import org.springframework.http.client.BufferingClientHttpRequestFactory
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestClient

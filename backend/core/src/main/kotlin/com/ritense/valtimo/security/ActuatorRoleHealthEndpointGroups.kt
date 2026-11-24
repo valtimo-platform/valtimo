@@ -18,8 +18,8 @@ package com.ritense.valtimo.security
 
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ACTUATOR
 import org.springframework.boot.actuate.endpoint.SecurityContext
-import org.springframework.boot.actuate.health.HealthEndpointGroup
-import org.springframework.boot.actuate.health.HealthEndpointGroups
+import org.springframework.boot.health.actuate.endpoint.HealthEndpointGroup
+import org.springframework.boot.health.actuate.endpoint.HealthEndpointGroups
 
 // Code-override of management.endpoint.health.{show-details,roles} and per-group equivalents:
 // regardless of what application.yml configures, /actuator/health responses only include

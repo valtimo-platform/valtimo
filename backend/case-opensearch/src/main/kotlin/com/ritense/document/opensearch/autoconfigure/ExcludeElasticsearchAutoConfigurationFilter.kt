@@ -24,8 +24,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurationMetadata
  *
  * The `spring-data-opensearch-starter` transitively puts `spring-data-elasticsearch` (and its
  * Elasticsearch client classes) on the classpath. Spring Boot detects those classes and activates
- * its own Elasticsearch auto-configuration — including a reactive REST client configuration that
- * fails to construct against OpenSearch and aborts application startup with
+ * its own Elasticsearch auto-configuration, including client configurations that
+ * fail to construct against OpenSearch and aborts application startup with
  * "Lookup method resolution failed".
  *
  * OpenSearch connectivity is provided instead by spring-data-opensearch's own auto-configuration
@@ -44,13 +44,12 @@ class ExcludeElasticsearchAutoConfigurationFilter : AutoConfigurationImportFilte
     }
 
     companion object {
-        private val EXCLUDED_AUTO_CONFIGURATIONS = setOf(
-            "org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration",
-            "org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration",
-            "org.springframework.boot.autoconfigure.elasticsearch.ReactiveElasticsearchClientAutoConfiguration",
-            "org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration",
-            "org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration",
-            "org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration",
+        internal val EXCLUDED_AUTO_CONFIGURATIONS = setOf(
+            "org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchClientAutoConfiguration",
+            "org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchRestClientAutoConfiguration",
+            "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchAutoConfiguration",
+            "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchRepositoriesAutoConfiguration",
+            "org.springframework.boot.data.elasticsearch.autoconfigure.DataElasticsearchReactiveRepositoriesAutoConfiguration",
         )
     }
 }

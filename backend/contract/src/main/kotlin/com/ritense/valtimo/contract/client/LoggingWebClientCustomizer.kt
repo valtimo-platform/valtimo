@@ -17,7 +17,7 @@
 package com.ritense.valtimo.contract.client
 
 import io.netty.handler.logging.LogLevel
-import org.springframework.boot.web.reactive.function.client.WebClientCustomizer
+import org.springframework.boot.webclient.WebClientCustomizer
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.netty.http.client.HttpClient

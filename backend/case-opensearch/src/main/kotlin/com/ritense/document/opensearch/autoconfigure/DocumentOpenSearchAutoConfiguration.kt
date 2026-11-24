@@ -78,7 +78,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
@@ -447,7 +447,7 @@ class DocumentOpenSearchAutoConfiguration {
         OpenSearchHealthScheduler(healthService, openSearchProperties)
 
     @org.springframework.context.annotation.Configuration
-    @ConditionalOnClass(name = ["org.springframework.boot.actuate.health.AbstractHealthIndicator"])
+    @ConditionalOnClass(name = ["org.springframework.boot.health.contributor.AbstractHealthIndicator"])
     @ConditionalOnProperty(prefix = "valtimo.opensearch", name = ["enabled"], havingValue = "true", matchIfMissing = false)
     class OpenSearchHealthIndicatorConfiguration {
         @Bean

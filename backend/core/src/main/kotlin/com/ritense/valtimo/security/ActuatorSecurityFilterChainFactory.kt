@@ -18,8 +18,8 @@ package com.ritense.valtimo.security
 
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ACTUATOR
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointProperties
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.ProviderManager

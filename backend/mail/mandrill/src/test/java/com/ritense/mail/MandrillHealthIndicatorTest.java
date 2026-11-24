@@ -29,7 +29,7 @@ import com.ritense.mail.config.MandrillProperties;
 import com.ritense.mail.service.MandrillHealthIndicator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 
 public class MandrillHealthIndicatorTest {
 

@@ -18,7 +18,7 @@ package com.ritense.valtimo.web.logging
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.boot.web.client.RestClientCustomizer
+import org.springframework.boot.restclient.RestClientCustomizer
 import org.springframework.http.HttpRequest
 import org.springframework.http.MediaType
 import org.springframework.http.client.ClientHttpRequestExecution

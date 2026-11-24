@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.boot.actuate.endpoint.SecurityContext
-import org.springframework.boot.actuate.health.HealthEndpointGroup
+import org.springframework.boot.health.actuate.endpoint.HealthEndpointGroup
 import java.security.Principal
 
 class ActuatorRoleHealthEndpointGroupTest {

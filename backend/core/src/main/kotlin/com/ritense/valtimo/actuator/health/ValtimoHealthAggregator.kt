@@ -1,7 +1,7 @@
 package com.ritense.valtimo.actuator.health
 
-import org.springframework.boot.actuate.health.Status
-import org.springframework.boot.actuate.health.StatusAggregator
+import org.springframework.boot.health.contributor.Status
+import org.springframework.boot.health.actuate.endpoint.StatusAggregator
 
 class ValtimoHealthAggregator : StatusAggregator {
     override fun getAggregateStatus(statuses: MutableSet<Status>): Status {

@@ -128,7 +128,7 @@ spring:
         application-path: /api/operaton-rest
     autoconfigure:
         exclude:
-            - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
+            - org.springframework.boot.tomcat.autoconfigure.metrics.TomcatMetricsAutoConfiguration
     cloud:
         function:
             definition: kotlinInboxCloudEventConsumer

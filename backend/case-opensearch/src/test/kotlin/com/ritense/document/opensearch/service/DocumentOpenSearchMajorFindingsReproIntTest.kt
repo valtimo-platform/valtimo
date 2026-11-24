@@ -53,7 +53,7 @@ import org.opensearch.common.settings.Settings
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder
 import org.opensearch.index.query.QueryBuilders
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.Status
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
 import org.springframework.security.test.context.support.WithMockUser

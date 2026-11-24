@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.Status
 import kotlin.test.assertEquals
 
 class NotificatiesApiInboundEventHealthIndicatorTest {

@@ -18,7 +18,7 @@
 package com.ritense.valtimo.operaton.health
 
 import org.operaton.bpm.engine.RuntimeService
-import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator
+import org.springframework.boot.health.autoconfigure.contributor.ConditionalOnEnabledHealthIndicator
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean

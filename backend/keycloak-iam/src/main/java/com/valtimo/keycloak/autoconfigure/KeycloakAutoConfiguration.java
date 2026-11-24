@@ -36,7 +36,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
+import org.springframework.boot.security.oauth2.client.autoconfigure.ConditionalOnOAuth2ClientRegistrationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -111,7 +111,7 @@ public class KeycloakAutoConfiguration {
     @Bean
     @Order(465)
     @ConditionalOnMissingBean(KeycloakOAuth2HttpSecurityConfigurer.class)
-    @Conditional(ClientsConfiguredCondition.class)
+    @ConditionalOnOAuth2ClientRegistrationProperties
     public KeycloakOAuth2HttpSecurityConfigurer keycloakOAuth2HttpSecurityConfigurer(
         KeycloakService keycloakService
     ) {

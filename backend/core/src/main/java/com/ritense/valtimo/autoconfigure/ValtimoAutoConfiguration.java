@@ -96,7 +96,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -424,7 +424,7 @@ public class ValtimoAutoConfiguration {
 
     @Order(HIGHEST_PRECEDENCE)
     @Bean("bootstrap")
-    @ConditionalOnClass(name = "org.springframework.boot.actuate.health.AbstractHealthIndicator")
+    @ConditionalOnClass(name = "org.springframework.boot.health.contributor.AbstractHealthIndicator")
     @ConditionalOnMissingBean(name = "bootstrap")
     public BootstrapHealthIndicator bootstrapHealthIndicator(final BootstrapState bootstrapState) {
         return new BootstrapHealthIndicator(bootstrapState);

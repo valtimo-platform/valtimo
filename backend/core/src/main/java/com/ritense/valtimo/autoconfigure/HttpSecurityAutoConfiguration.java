@@ -58,8 +58,9 @@ import org.operaton.bpm.engine.IdentityService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties;
-import org.springframework.boot.actuate.health.HealthEndpointGroups;
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointProperties;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpointGroups;
+import org.springframework.boot.security.oauth2.client.autoconfigure.ConditionalOnOAuth2ClientRegistrationProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -282,7 +283,7 @@ public class HttpSecurityAutoConfiguration {
 
     @Order(441)
     @Bean
-    @Conditional(org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition.class)
+    @ConditionalOnOAuth2ClientRegistrationProperties
     @ConditionalOnMissingBean(OperatonIdentityBridgeHttpSecurityConfigurer.class)
     public OperatonIdentityBridgeHttpSecurityConfigurer operatonIdentityBridgeHttpSecurityConfigurer(
         IdentityService identityService

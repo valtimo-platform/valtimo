@@ -23,7 +23,7 @@ import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration

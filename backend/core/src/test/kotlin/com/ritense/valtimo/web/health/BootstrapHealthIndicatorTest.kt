@@ -19,7 +19,7 @@ package com.ritense.valtimo.web.health
 import com.ritense.valtimo.contract.bootstrap.BootstrapState
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.Status
 
 class BootstrapHealthIndicatorTest {
 

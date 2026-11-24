@@ -1,4 +1,4 @@
-org.springframework.boot.env.EnvironmentPostProcessor=\
+org.springframework.boot.EnvironmentPostProcessor=\
   com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActHiTaskAssigneeToUsername,\
   com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateActRuTaskAssigneeToUsername,\
   com.valtimo.keycloak.liquibase.changelog.ChangeLog20251113MigrateIntermediateSubmissionCreatedByEditedByToUsername,\

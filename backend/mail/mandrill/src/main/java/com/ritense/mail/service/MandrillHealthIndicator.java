@@ -21,8 +21,8 @@ import com.microtripit.mandrillapp.lutung.model.MandrillApiError;
 import com.ritense.mail.config.MandrillProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.actuate.health.AbstractHealthIndicator;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.AbstractHealthIndicator;
+import org.springframework.boot.health.contributor.Health;
 
 public class MandrillHealthIndicator extends AbstractHealthIndicator {
 

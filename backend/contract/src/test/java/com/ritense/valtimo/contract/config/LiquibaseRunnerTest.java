@@ -30,7 +30,7 @@ import javax.sql.DataSource;
 import liquibase.lockservice.DatabaseChangeLogLock;
 import liquibase.lockservice.LockService;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
+import org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties;
 
 class LiquibaseRunnerTest {
 

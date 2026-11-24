@@ -24,7 +24,7 @@ import com.ritense.documentenapi.service.ZgwDocumentTrefwoordService
 import com.ritense.documentenapi.web.rest.ZgwDocumentTrefwoordResource
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.context.annotation.Bean
 
 @AutoConfiguration

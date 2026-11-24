@@ -19,9 +19,9 @@ package com.ritense.document.opensearch.health
 import com.ritense.document.opensearch.service.DocumentOpenSearchIndexInitializer
 import com.ritense.document.opensearch.service.TopologyGate
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.boot.actuate.health.AbstractHealthIndicator
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.Status
+import org.springframework.boot.health.contributor.AbstractHealthIndicator
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.Status
 
 /**
  * Surfaces, via `/actuator/health`, whether OpenSearch can serve document search completely (see [TopologyGate]):

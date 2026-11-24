@@ -19,8 +19,8 @@ package com.ritense.valtimo.web.health
 import com.ritense.valtimo.contract.bootstrap.BootstrapState
 import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.HealthIndicator
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.context.event.EventListener
 
 /**

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.ritense.valtimo.contract.json.serializer.PageSerializer
 import com.ritense.valtimo.contract.json.serializer.SortOrderSerializer
 import com.ritense.valtimo.contract.json.serializer.SortSerializer
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
+import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Sort
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
