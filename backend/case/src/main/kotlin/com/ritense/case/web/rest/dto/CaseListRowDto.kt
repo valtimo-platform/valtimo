@@ -24,5 +24,6 @@ data class CaseListRowDto(
     data class CaseListItemDto(
         val key: String,
         val value: Any?,
+        val failed: Boolean = false,
     )
 }

@@ -33,7 +33,8 @@ import com.ritense.document.service.DocumentSearchService
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valueresolver.ValueResolverService
+import com.ritense.valueresolver.IsolatedValueResolverService
+import com.ritense.valueresolver.ValueResolverResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -58,7 +59,7 @@ class CaseInstanceServiceTest : BaseTest() {
 
     private lateinit var documentSearchService: DocumentSearchService
 
-    private lateinit var valueResolverService: ValueResolverService
+    private lateinit var isolatedValueResolver: IsolatedValueResolverService
 
     private lateinit var quickSearchRepository: QuickSearchRepository
 
@@ -69,7 +70,7 @@ class CaseInstanceServiceTest : BaseTest() {
         caseDefinitionService = mock()
         caseDefinitionListColumnRepository = mock()
         documentSearchService = mock()
-        valueResolverService = mock()
+        isolatedValueResolver = mock()
         quickSearchRepository = mock()
         authorizationService = mock()
         service = CaseInstanceService(
@@ -77,15 +78,18 @@ class CaseInstanceServiceTest : BaseTest() {
             caseDefinitionListColumnRepository,
             quickSearchRepository,
             documentSearchService,
-            valueResolverService,
+            isolatedValueResolver,
             authorizationService,
         )
 
         whenever(DOCUMENT.id()).thenReturn(JsonSchemaDocumentId.newId(UUID.randomUUID()))
         whenever(caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(CASE_DEFINITION_NAME))
             .thenReturn(listOf(FIRST_NAME_CASE_LIST_COLUMN))
-        whenever(valueResolverService.resolveValuesOrNull(DOCUMENT.id().id.toString(), listOf("doc:firstName")))
-            .thenReturn(mapOf("doc:firstName" to "John"))
+        val documentId = DOCUMENT.id().id.toString()
+        whenever(isolatedValueResolver.resolveValuesOrNullIsolated(any()))
+            .thenReturn(
+                mapOf(documentId to ValueResolverResult(mapOf("doc:firstName" to "John"), emptySet()))
+            )
         whenever(DOCUMENT.definitionId()).thenReturn(
             JsonSchemaDocumentDefinitionId.existingId(
                 CASE_DEFINITION_NAME,
