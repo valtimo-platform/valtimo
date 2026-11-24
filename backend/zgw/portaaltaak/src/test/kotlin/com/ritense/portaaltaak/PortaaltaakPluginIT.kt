@@ -550,10 +550,10 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
     }
 
     private fun createProcessLink(propertiesConfig: String, processDefinitionKey: String = PROCESS_DEFINITION_KEY) {
-        processDefinitionId = repositoryService.createProcessDefinitionQuery()
+        processDefinitionId = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(processDefinitionKey)
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
 
         pluginProcessLinkRepository.save(

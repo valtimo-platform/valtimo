@@ -146,7 +146,7 @@ class BuildingBlockCallActivityBusinessKeyValidatorTest {
   </bpmn:process>
 </bpmn:definitions>"""
         val model = Bpmn.readModelFromStream(xml.byteInputStream())
-        return model.getModelElementById("callActivity")
+        return requireNotNull(model.getModelElementById<CallActivity>("callActivity")) { "callActivity not found" }
     }
 
     companion object {

@@ -104,7 +104,7 @@ class JsonSchemaDocumentOsConverterTest {
     fun `indexChunk classifies a version conflict by message when status is absent`() {
         val document = osDocument("a")
         whenever(operations.save(any<List<JsonSchemaDocumentOsDocument>>(), any<IndexCoordinates>()))
-            .thenThrow(BulkFailureException("bulk failed", mapOf("a" to FailureDetails(null, "... version_conflict_engine_exception ..."))))
+            .thenThrow(BulkFailureException("bulk failed", mapOf("a" to failureDetails(null, "... version_conflict_engine_exception ..."))))
 
         val skipped = converter.indexChunk(listOf(document))
 
@@ -286,4 +286,7 @@ class JsonSchemaDocumentOsConverterTest {
         private const val DEFINITION = "test"
         private const val VERSION_TAG = "1.0.0"
     }
+
+    private fun failureDetails(status: Int?, message: String): FailureDetails =
+        FailureDetails::class.java.declaredConstructors.single().newInstance(status, message) as FailureDetails
 }

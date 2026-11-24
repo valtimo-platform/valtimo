@@ -77,7 +77,7 @@ class ScriptEngineCleanupTest {
     @Test
     fun `operaton command context closes contexts on commit`() {
         val listeners = mockCommandContext()
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = bindingsFor(engine)
         engine.eval(SCRIPT, bindings)
         val context = polyglotContext(bindings)
@@ -94,7 +94,7 @@ class ScriptEngineCleanupTest {
     @Test
     fun `operaton command context closes contexts on rollback`() {
         val listeners = mockCommandContext()
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = bindingsFor(engine)
         engine.eval(SCRIPT, bindings)
         val context = polyglotContext(bindings)
@@ -107,7 +107,7 @@ class ScriptEngineCleanupTest {
     @Test
     fun `spring rollback closes contexts`() {
         TransactionSynchronizationManager.initSynchronization()
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = bindingsFor(engine)
         engine.eval(SCRIPT, bindings)
         val context = polyglotContext(bindings)
@@ -121,7 +121,7 @@ class ScriptEngineCleanupTest {
     @Test
     fun `two bindings in one transaction are both closed and resource is unbound`() {
         TransactionSynchronizationManager.initSynchronization()
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val firstBindings = bindingsFor(engine)
         val secondBindings = bindingsFor(engine)
         engine.eval(SCRIPT, firstBindings)
@@ -140,7 +140,7 @@ class ScriptEngineCleanupTest {
 
     @Test
     fun `close does not throw when already closed`() {
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = bindingsFor(engine)
         engine.eval(SCRIPT, bindings)
 
@@ -150,7 +150,7 @@ class ScriptEngineCleanupTest {
 
     @Test
     fun `close does not throw for bindings without context`() {
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
 
         GraalJsContextCleanup.close(bindingsFor(engine))
     }
@@ -200,7 +200,7 @@ class ScriptEngineCleanupTest {
 
     @Test
     fun `eval with reader closes after eval without transaction`() {
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = bindingsFor(engine)
 
         val result = engine.eval(StringReader("1 + 1"), bindings)
@@ -228,7 +228,7 @@ class ScriptEngineCleanupTest {
     fun `injected polyglot engine is used`() {
         Engine.newBuilder("js").option("engine.WarnInterpreterOnly", "false").build().use { injected ->
             val injectedResolver = AllowedClassesScriptEngineResolver(ScriptEngineManager(), emptySet(), injected)
-            val engine = injectedResolver.getScriptEngine(LANGUAGE, true)
+            val engine = requireNotNull(injectedResolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
             val bindings = bindingsFor(engine)
             engine.eval(SCRIPT, bindings)
 
@@ -238,8 +238,8 @@ class ScriptEngineCleanupTest {
 
     @Test
     fun `fallback engine is created once per resolver`() {
-        val first = resolver.getScriptEngine(LANGUAGE, true)
-        val second = resolver.getScriptEngine(LANGUAGE, true)
+        val first = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "first returned null" }
+        val second = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "second returned null" }
         val firstBindings = bindingsFor(first)
         first.eval(SCRIPT, firstBindings)
         val secondBindings = bindingsFor(second)
@@ -271,7 +271,7 @@ class ScriptEngineCleanupTest {
 
     @Test
     fun `bindings of another thread are not closed by an evaluation`() {
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val created = CountDownLatch(1)
         val otherDone = CountDownLatch(1)
         val failure = AtomicReference<Throwable>()
@@ -303,7 +303,7 @@ class ScriptEngineCleanupTest {
 
     @Test
     fun `nested evaluation does not close outer bindings`() {
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         var outer: Bindings? = null
         var inner: Bindings? = null
 
@@ -324,7 +324,7 @@ class ScriptEngineCleanupTest {
 
     @Test
     fun `no pending bindings remain after outermost evaluation`() {
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = bindingsFor(engine)
         engine.eval(SCRIPT, bindings)
 

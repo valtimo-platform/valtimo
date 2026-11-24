@@ -34,8 +34,9 @@ import kotlin.test.assertTrue
 
 class GraalJsValueConverterTest {
 
-    private val engine: ScriptEngine =
+    private val engine: ScriptEngine = requireNotNull(
         AllowedClassesScriptEngineResolver(ScriptEngineManager()).getScriptEngine("javascript", true)
+    ) { "No javascript script engine available" }
 
     private fun eval(script: String): Any? = engine.eval(script, engine.createBindings())
 

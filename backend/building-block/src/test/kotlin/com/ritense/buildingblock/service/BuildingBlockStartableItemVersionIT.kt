@@ -77,9 +77,9 @@ class BuildingBlockStartableItemVersionIT @Autowired constructor(
 
         assertThat(result.errors()).isEmpty()
         val processInstanceId = result.resultingProcessInstanceId().orElseThrow().toString()
-        val startedDefinitionId = runtimeService.createProcessInstanceQuery()
+        val startedDefinitionId = requireNotNull(runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstanceId)
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .processDefinitionId
         assertThat(startedDefinitionId).isEqualTo(linkedVersionProcessDefinitionId)
 
@@ -132,9 +132,9 @@ class BuildingBlockStartableItemVersionIT @Autowired constructor(
         }
 
         assertThat(result.errors()).isEmpty()
-        val startedDefinitionId = runtimeService.createProcessInstanceQuery()
+        val startedDefinitionId = requireNotNull(runtimeService.createProcessInstanceQuery()
             .processInstanceId(result.resultingProcessInstanceId().orElseThrow().toString())
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .processDefinitionId
         assertThat(startedDefinitionId).isEqualTo(linkedVersionProcessDefinitionId)
     }

@@ -43,8 +43,8 @@ class ScriptEngineLifecycleTest {
     @Test
     fun `resolved engines share one polyglot engine`() {
         TransactionSynchronizationManager.initSynchronization()
-        val first = resolver.getScriptEngine(LANGUAGE, true)
-        val second = resolver.getScriptEngine(LANGUAGE, true)
+        val first = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "first returned null" }
+        val second = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "second returned null" }
 
         val firstContext = contextAfterEval(RecordingBindings(first.createBindings()), first)
         val secondContext = contextAfterEval(RecordingBindings(second.createBindings()), second)
@@ -55,7 +55,7 @@ class ScriptEngineLifecycleTest {
 
     @Test
     fun `without transaction contexts are closed after eval`() {
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = RecordingBindings(engine.createBindings())
         engine.eval("var o = {a: 1}", bindings)
 
@@ -67,7 +67,7 @@ class ScriptEngineLifecycleTest {
     @Test
     fun `with transaction contexts stay usable until completion and are then closed`() {
         TransactionSynchronizationManager.initSynchronization()
-        val engine = resolver.getScriptEngine(LANGUAGE, true)
+        val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
         val bindings = RecordingBindings(engine.createBindings())
         val result = engine.eval("({a: 1})", bindings)
         val context = requireNotNull(bindings.polyglotContext)
@@ -86,7 +86,7 @@ class ScriptEngineLifecycleTest {
         val contextRefs = mutableListOf<WeakReference<Any>>()
         repeat(RUNS) {
             TransactionSynchronizationManager.initSynchronization()
-            val engine = resolver.getScriptEngine(LANGUAGE, true)
+            val engine = requireNotNull(resolver.getScriptEngine(LANGUAGE, true)) { "engine returned null" }
             val bindings = RecordingBindings(engine.createBindings())
             engine.eval(SCRIPT, bindings)
             refs += WeakReference<Any>(bindings)

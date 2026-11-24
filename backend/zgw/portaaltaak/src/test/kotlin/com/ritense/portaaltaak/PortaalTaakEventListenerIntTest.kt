@@ -436,10 +436,10 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
     }
 
     private fun createProcessLink(propertiesConfig: String) {
-        processDefinitionId = repositoryService.createProcessDefinitionQuery()
+        processDefinitionId = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(PROCESS_DEFINITION_KEY)
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
 
         pluginProcessLinkRepository.save(

@@ -114,16 +114,16 @@ class BuildingBlockFormPrefillIT @Autowired constructor(
             )
         }
 
-        val task = taskService.createTaskQuery()
+        val task = requireNotNull(taskService.createTaskQuery()
             .taskDefinitionKey(USER_TASK_ID)
-            .singleResult()
+            .singleResult()) { "task returned null" }
         assertThat(task).isNotNull
 
         // Prefill the form the same way FormProcessLinkActivityHandler.openTask does
         val prefilledForm = runWithoutAuthorization {
             prefillFormService.getPrefilledFormDefinition(
-                formDefinition.id,
-                task.processInstanceId,
+                requireNotNull(formDefinition.id) { "id returned null" },
+                requireNotNull(task.processInstanceId) { "processInstanceId returned null" },
                 task.id
             )
         }

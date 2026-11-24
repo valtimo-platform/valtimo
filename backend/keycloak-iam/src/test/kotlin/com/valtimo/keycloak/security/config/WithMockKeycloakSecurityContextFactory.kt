@@ -42,10 +42,10 @@ internal class WithMockKeycloakUserSecurityContextFactory(
             "$withUser cannot have null email on both username and value properties"
         }
 
-        val clientRegistration = clientRegistrationRepository.findByRegistrationId(KEYCLOAK_JWT_CLIENT_REGISTRATION)
+        val clientRegistration = requireNotNull(clientRegistrationRepository.findByRegistrationId(KEYCLOAK_JWT_CLIENT_REGISTRATION)) { "clientRegistration returned null" }
         val jwtBuilder = Jwt.withTokenValue("test-token")
             .header("typ", "JWT")
-            .issuer(clientRegistration.providerDetails.issuerUri)
+            .issuer(requireNotNull(clientRegistration.providerDetails.issuerUri) { "issuerUri returned null" })
             .claim(EMAIL_KEY, email)
             .claim(REALM_ACCESS, mapOf(ROLES_SCOPE to withUser.roles.toList()))
         if (withUser.clientId.isNotEmpty()) {

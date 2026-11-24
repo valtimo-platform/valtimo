@@ -45,7 +45,7 @@ class LargeStringValueSerializerIntTest @Autowired constructor(
         val instance = startProcess(mapOf("text" to LARGE_STRING))
 
         assertThat(runtimeService.getVariable(instance.id, "text")).isEqualTo(LARGE_STRING)
-        assertThat(runtimeService.getVariableTyped<TypedValue>(instance.id, "text").type).isEqualTo(ValueType.STRING)
+        assertThat(requireNotNull(runtimeService.getVariableTyped<TypedValue>(instance.id, "text")) { "id returned null" }.type).isEqualTo(ValueType.STRING)
         assertThat(findVariableInstance(instance.id, "text").serializerName).isEqualTo(LargeStringValueSerializer.NAME)
     }
 
@@ -101,24 +101,24 @@ class LargeStringValueSerializerIntTest @Autowired constructor(
     fun `should store large string in history`() {
         val instance = startProcess(mapOf("text" to LARGE_STRING))
 
-        val historicVariable = historyService.createHistoricVariableInstanceQuery()
+        val historicVariable = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(instance.id)
             .variableName("text")
-            .singleResult()
+            .singleResult()) { "historicVariable returned null" }
         assertThat(historicVariable.value).isEqualTo(LARGE_STRING)
     }
 
     @Test
     fun `should store string longer than 4000 characters when completing task with form data`() {
         val instance = startProcess(mapOf())
-        val task = taskService.createTaskQuery().processInstanceId(instance.id).singleResult()
+        val task = requireNotNull(taskService.createTaskQuery().processInstanceId(instance.id).singleResult()) { "task returned null" }
 
         runWithoutAuthorization { operatonTaskService.completeTaskWithFormData(task.id, mapOf("text" to LARGE_STRING)) }
 
-        val historicVariable = historyService.createHistoricVariableInstanceQuery()
+        val historicVariable = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(instance.id)
             .variableName("text")
-            .singleResult()
+            .singleResult()) { "historicVariable returned null" }
         assertThat(historicVariable.value).isEqualTo(LARGE_STRING)
     }
 

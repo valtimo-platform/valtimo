@@ -123,10 +123,10 @@ class CatalogiApiPluginIT : BaseIntegrationTest() {
         )
         pluginConfigurationId = configuration.id
 
-        processDefinitionId = repositoryService.createProcessDefinitionQuery()
+        processDefinitionId = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(PROCESS_DEFINITION_KEY)
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
     }
 

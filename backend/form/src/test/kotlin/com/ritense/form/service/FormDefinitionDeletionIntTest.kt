@@ -144,7 +144,7 @@ internal class FormDefinitionDeletionIntTest : BaseIntegrationTest() {
     @Test
     fun `should delete the forms of a case when only the processes of the case itself link to them`() {
         val caseDefinitionId = CaseDefinitionId.of("person", "1.0.0")
-        val personFormIds = formDefinitionRepository.findAllByCaseDefinitionId(caseDefinitionId).map { it.id }
+        val personFormIds = formDefinitionRepository.findAllByCaseDefinitionId(caseDefinitionId).mapNotNull { it.id }
         val ownProcessDefinitionIds = AuthorizationContext.runWithoutAuthorization {
             operatonProcessService.getAllDefinitions(caseDefinitionId).map { it.id }.toSet()
         }

@@ -28,20 +28,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.json.Jackson2Tester;
 import org.springframework.boot.test.json.JsonContent;
 import org.springframework.boot.test.json.ObjectContent;
 
 public class DocumentRelationJsonSerializingTest {
 
     private static final String UUID_STRING = "91e750e1-53ab-4922-9979-6a2dacd009cf";
-    private JacksonTester<JsonSchemaDocumentRelation> jacksonTester;
+    private Jackson2Tester<JsonSchemaDocumentRelation> jacksonTester;
     private String jsonString;
 
     @BeforeEach
     public void setUp() {
         ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
-        JacksonTester.initFields(this, objectMapper);
+        Jackson2Tester.initFields(this, objectMapper);
         jsonString = """
             {
             \t"id": "91e750e1-53ab-4922-9979-6a2dacd009cf",

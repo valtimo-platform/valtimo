@@ -84,9 +84,9 @@ class ZaakValueResolverFailureIT @Autowired constructor(
     @Test
     fun `should resolve zaak field to null without poisoning the read-only transaction when Zaken API returns 403`() {
         val id = runWithoutAuthorization {
-            documentService.createDocument(
+            requireNotNull(documentService.createDocument(
                 NewDocumentRequest("profile", "profile", "1.0.0", objectMapper.createObjectNode())
-            ).resultingDocument().get().id.id
+            ).resultingDocument().get().id) { "id returned null" }.id
         }
         documentId = id
         zaakInstanceLinkService.createZaakInstanceLink(

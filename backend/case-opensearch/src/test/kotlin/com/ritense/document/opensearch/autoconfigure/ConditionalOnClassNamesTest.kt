@@ -17,10 +17,10 @@
 
 package com.ritense.document.opensearch.autoconfigure
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.util.ClassUtils
-import kotlin.test.assertTrue
 
 class ConditionalOnClassNamesTest {
 
@@ -30,8 +30,8 @@ class ConditionalOnClassNamesTest {
             .mapNotNull { it.getAnnotation(ConditionalOnClass::class.java) }
             .flatMap { it.name.toList() }
 
-        assertTrue(names.isNotEmpty())
+        assertThat(names).isNotEmpty()
         val missing = names.filterNot { ClassUtils.isPresent(it, javaClass.classLoader) }
-        assertTrue(missing.isEmpty(), "ConditionalOnClass names not on the classpath: $missing")
+        assertThat(missing).`as`("ConditionalOnClass names not on the classpath").isEmpty()
     }
 }

@@ -59,10 +59,10 @@ class DecisionDefinitionExporterIntTest @Autowired constructor(
     }
 
     fun getDecisionDefinitionId(decisionDefinitionKey: String): String {
-        return repositoryService.createDecisionDefinitionQuery()
+        return requireNotNull(repositoryService.createDecisionDefinitionQuery()
             .decisionDefinitionKey(decisionDefinitionKey)
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
     }
 }

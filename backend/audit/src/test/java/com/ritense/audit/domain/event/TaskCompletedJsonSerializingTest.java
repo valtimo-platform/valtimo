@@ -29,14 +29,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.json.Jackson2Tester;
 import org.springframework.boot.test.json.JsonContent;
 import org.springframework.boot.test.json.ObjectContent;
 
 public class TaskCompletedJsonSerializingTest extends AbstractTestHelper {
 
     private static final String dateString = "2019-03-18T14:17:11.639";
-    private JacksonTester<TaskCompletedEvent> jacksonTester;
+    private Jackson2Tester<TaskCompletedEvent> jacksonTester;
     private final String id = "edb1a672-4ba1-4e79-a5ee-b9658c55fe52";
     private String jsonString;
 
@@ -44,7 +44,7 @@ public class TaskCompletedJsonSerializingTest extends AbstractTestHelper {
 
     @BeforeEach
     public void setUp() throws IOException {
-        JacksonTester.initFields(this, objectMapper);
+        Jackson2Tester.initFields(this, objectMapper);
         jsonString = TestHelper.getResourceAsString("json/event/TaskCompletedEvent.json");
     }
 

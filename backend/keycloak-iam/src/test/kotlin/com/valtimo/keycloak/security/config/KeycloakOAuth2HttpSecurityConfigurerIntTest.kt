@@ -47,11 +47,11 @@ internal class KeycloakOAuth2HttpSecurityConfigurerIntTest : BaseIntegrationTest
         assertEquals("user@ritense.com", authentication.token.getClaimAsString(EMAIL_KEY))
         assertEquals("user@ritense.com", SecurityUtils.getCurrentUserLogin())
         assertContains(authentication.authorities.map { it.authority }, USER)
-        assertContains(authentication.token.getClaimAsMap(REALM_ACCESS)[ROLES_SCOPE] as List<String>, USER)
+        assertContains(requireNotNull(authentication.token.getClaimAsMap(REALM_ACCESS)) { "realm_access claim missing" }[ROLES_SCOPE] as List<String>, USER)
         assertContains(SecurityUtils.getCurrentUserRoles(), USER)
         assertContains(authentication.authorities.map { it.authority }, ADMIN)
         assertContains(
-            (authentication.token.getClaimAsMap(RESOURCE_ACCESS)["valtimo-console"] as Map<String, Any>)[ROLES_SCOPE] as List<String>,
+            (requireNotNull(authentication.token.getClaimAsMap(RESOURCE_ACCESS)) { "resource_access claim missing" }["valtimo-console"] as Map<String, Any>)[ROLES_SCOPE] as List<String>,
             ADMIN
         )
         assertContains(SecurityUtils.getCurrentUserRoles(), ADMIN)

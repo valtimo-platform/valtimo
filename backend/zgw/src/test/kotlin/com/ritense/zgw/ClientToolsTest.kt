@@ -35,6 +35,7 @@ import org.springframework.web.reactive.function.client.ExchangeFunction
 import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Mono
 import kotlin.test.assertEquals
+import org.mockito.Mockito.verifyNoInteractions
 
 class ClientToolsTest {
 
@@ -123,7 +124,7 @@ class ClientToolsTest {
     fun `optionalQueryParam should not add param when null`() {
         val builder = mock<UriBuilder>()
         val result = builder.optionalQueryParam("test", null)
-        verify(builder, never()).queryParam(any(), any())
+        verifyNoInteractions(builder)
         assertEquals(result, builder)
     }
 }

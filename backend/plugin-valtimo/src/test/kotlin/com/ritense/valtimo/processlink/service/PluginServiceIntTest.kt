@@ -25,6 +25,7 @@ import org.operaton.bpm.engine.RuntimeService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
+import org.operaton.bpm.engine.variable.Variables
 
 @Transactional
 class PluginServiceIntTest : BaseIntegrationTest() {
@@ -48,7 +49,7 @@ class PluginServiceIntTest : BaseIntegrationTest() {
         runtimeService.startProcessInstanceByKey(
             "simple-process",
             "myBusinessKey",
-            mapOf("attachmentIds" to null)
+            Variables.createVariables().putValue("attachmentIds", null)
         )
 
         assertNull(TestPlugin.attachmentIds)

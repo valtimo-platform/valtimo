@@ -156,10 +156,10 @@ class IndependentProcessBuildingBlockIT @Autowired constructor(
         runtimeService.correlateMessage("test-ready", instance.documentId.toString())
 
         // Use history since process completed
-        val result = historyService.createHistoricVariableInstanceQuery()
+        val result = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("result")
-            .singleResult()
+            .singleResult()) { "result returned null" }
         assertThat(result.value).isEqualTo("approved")
     }
 
@@ -269,10 +269,10 @@ class IndependentProcessBuildingBlockIT @Autowired constructor(
         runtimeService.correlateMessage("test-ready", instance.documentId.toString())
 
         // Use history since process completed
-        val outputResult = historyService.createHistoricVariableInstanceQuery()
+        val outputResult = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("outputResult")
-            .singleResult()
+            .singleResult()) { "outputResult returned null" }
         assertThat(outputResult.value).isEqualTo("processed")
     }
 

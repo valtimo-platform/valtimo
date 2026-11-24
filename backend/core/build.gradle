@@ -140,7 +140,7 @@ dependencies {
     testImplementation project(":backend:test-utils-common")
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
-    testImplementation "org.apache.groovy:groovy-all"
+    testImplementation "org.apache.groovy:groovy-all:${groovyVersion}"
 
     // BouncyCastle for X.509 certificate generation in vulnerability tests
     testImplementation "org.bouncycastle:bcprov-jdk18on:1.84"

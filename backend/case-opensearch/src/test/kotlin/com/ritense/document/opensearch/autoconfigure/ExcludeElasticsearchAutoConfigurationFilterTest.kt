@@ -17,10 +17,9 @@
 
 package com.ritense.document.opensearch.autoconfigure
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.AutoConfigurationMetadata
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ExcludeElasticsearchAutoConfigurationFilterTest {
 
@@ -30,7 +29,7 @@ class ExcludeElasticsearchAutoConfigurationFilterTest {
 
         val unknown = ExcludeElasticsearchAutoConfigurationFilter.EXCLUDED_AUTO_CONFIGURATIONS - registered
 
-        assertTrue(unknown.isEmpty(), "Names not found in any AutoConfiguration.imports: $unknown")
+        assertThat(unknown).`as`("Names not found in any AutoConfiguration.imports").isEmpty()
     }
 
     @Test
@@ -41,7 +40,7 @@ class ExcludeElasticsearchAutoConfigurationFilterTest {
 
         val result = ExcludeElasticsearchAutoConfigurationFilter().match(arrayOf(excluded, other), metadata)
 
-        assertEquals(listOf(false, true), result.toList())
+        assertThat(result.toList()).containsExactly(false, true)
     }
 
     private fun registeredAutoConfigurations(): Set<String> =

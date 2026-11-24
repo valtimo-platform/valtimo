@@ -48,6 +48,8 @@ dependencies {
     implementation "org.apache.commons:commons-lang3"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-jdbc"
+    testImplementation "org.springframework.boot:spring-boot-hibernate"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "jakarta.validation:jakarta.validation-api"
 

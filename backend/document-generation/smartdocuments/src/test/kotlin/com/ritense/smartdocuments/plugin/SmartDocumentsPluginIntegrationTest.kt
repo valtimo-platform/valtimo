@@ -160,9 +160,9 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
         }
 
         // then
-        val resourceId = runtimeService.createVariableInstanceQuery()
+        val resourceId = requireNotNull(runtimeService.createVariableInstanceQuery()
             .variableName("my-generated-document")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value as String
         val metadata = temporaryResourceStorageService.getResourceMetadata(resourceId)
         val content = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId).reader().readText()

@@ -73,18 +73,18 @@ class AllActivityTypesMigrationEngineIntTest : BaseIntegrationTest() {
         val instance = runtimeService.startProcessInstanceById(source.id, createDocumentId())
         assertEquals(
             "beoordelen_verhuizing",
-            taskService.createTaskQuery().processInstanceId(instance.id).singleResult().taskDefinitionKey,
+            requireNotNull(taskService.createTaskQuery().processInstanceId(instance.id).singleResult()) { "singleResult returned null" }.taskDefinitionKey,
         )
 
         runtimeService.newMigration(plan).processInstanceIds(listOf(instance.id)).execute()
 
         assertEquals(
             "beoordelen_verhuizing_v3",
-            taskService.createTaskQuery().processInstanceId(instance.id).singleResult().taskDefinitionKey,
+            requireNotNull(taskService.createTaskQuery().processInstanceId(instance.id).singleResult()) { "singleResult returned null" }.taskDefinitionKey,
         )
         assertEquals(
             target.id,
-            runtimeService.createProcessInstanceQuery().processInstanceId(instance.id).singleResult().processDefinitionId,
+            requireNotNull(runtimeService.createProcessInstanceQuery().processInstanceId(instance.id).singleResult()) { "singleResult returned null" }.processDefinitionId,
         )
     }
 
@@ -122,8 +122,8 @@ class AllActivityTypesMigrationEngineIntTest : BaseIntegrationTest() {
         val deployment = repositoryService.createDeployment()
             .addClasspathResource(resource)
             .deploy()
-        return repositoryService.createProcessDefinitionQuery()
+        return requireNotNull(repositoryService.createProcessDefinitionQuery()
             .deploymentId(deployment.id)
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
     }
 }

@@ -101,9 +101,9 @@ class UnlinkedProcessStartIntTest : BaseIntegrationTest() {
         ).resultingDocument().orElseThrow()
     }.id()
 
-    private fun startedDefinitionIdOf(processInstanceId: String) = runtimeService.createProcessInstanceQuery()
+    private fun startedDefinitionIdOf(processInstanceId: String) = requireNotNull(runtimeService.createProcessInstanceQuery()
         .processInstanceId(processInstanceId)
-        .singleResult()
+        .singleResult()) { "singleResult returned null" }
         .processDefinitionId
 
     private companion object {

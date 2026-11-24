@@ -40,14 +40,14 @@ class ScriptSandboxTest {
 
     private val resolver = AllowedClassesScriptEngineResolver(ScriptEngineManager())
 
-    private fun engine(): ScriptEngine = resolver.getScriptEngine("javascript", true)
+    private fun engine(): ScriptEngine = requireNotNull(resolver.getScriptEngine("javascript", true)) { "getScriptEngine returned null" }
 
     private val mapResolver = AllowedClassesScriptEngineResolver(
         ScriptEngineManager(),
         setOf("java.util.HashMap", "java.util.LinkedHashMap", "java.util.TreeMap")
     )
 
-    private fun mapEngine(): ScriptEngine = mapResolver.getScriptEngine("javascript", true)
+    private fun mapEngine(): ScriptEngine = requireNotNull(mapResolver.getScriptEngine("javascript", true)) { "getScriptEngine returned null" }
 
     @Test
     fun `polyglot context is not a script global and injected objects expose nothing callable`() {

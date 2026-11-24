@@ -89,8 +89,8 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
             val result: CreateDocumentResult = documentService.createDocument(
                 NewDocumentRequest(
                     definition!!.id().name(),
-                    definition!!.id.caseDefinitionId().key,
-                    definition!!.id.caseDefinitionId().versionTag.version,
+                    requireNotNull(definition!!.id) { "id returned null" }.caseDefinitionId().key,
+                    requireNotNull(definition!!.id) { "id returned null" }.caseDefinitionId().versionTag.version,
                     content.asJson()
                 )
             )
@@ -103,8 +103,8 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
             val result: CreateDocumentResult = documentService.createDocument(
                 NewDocumentRequest(
                     definition!!.id().name(),
-                    definition!!.id.caseDefinitionId().key,
-                    definition!!.id.caseDefinitionId().versionTag.version,
+                    requireNotNull(definition!!.id) { "id returned null" }.caseDefinitionId().key,
+                    requireNotNull(definition!!.id) { "id returned null" }.caseDefinitionId().versionTag.version,
                     content2.asJson()
                 )
             )
@@ -299,8 +299,8 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
             val result: CreateDocumentResult = documentService.createDocument(
                 NewDocumentRequest(
                     museumDefinition!!.id().name(),
-                    museumDefinition!!.id.caseDefinitionId().key,
-                    museumDefinition!!.id.caseDefinitionId().versionTag.version,
+                    requireNotNull(museumDefinition!!.id) { "id returned null" }.caseDefinitionId().key,
+                    requireNotNull(museumDefinition!!.id) { "id returned null" }.caseDefinitionId().versionTag.version,
                     content.asJson()
                 )
             )
@@ -667,8 +667,8 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     definition!!.id().name(),
-                    definition!!.id.caseDefinitionId().key,
-                    definition!!.id.caseDefinitionId().versionTag.version,
+                    requireNotNull(definition!!.id) { "id returned null" }.caseDefinitionId().key,
+                    requireNotNull(definition!!.id) { "id returned null" }.caseDefinitionId().versionTag.version,
                     content.asJson()
                 )
             )

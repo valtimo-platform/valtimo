@@ -137,10 +137,10 @@ internal class FormFlowUploadFieldIntTest : BaseIntegrationTest() {
     }
 
     private fun getProcessDefinitionId(): String {
-        return repositoryService.createProcessDefinitionQuery()
+        return requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey("formflow-one-task-process")
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
     }
 

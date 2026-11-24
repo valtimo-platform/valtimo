@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
@@ -31,10 +31,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @Tag("integration")
 abstract class BaseIntegrationTest {
 
-    @MockBean
+    @MockitoBean
     lateinit var mailSender: MailSender
 
-    @MockBean
+    @MockitoBean
     lateinit var userManagementService: UserManagementService
 
     @Autowired

@@ -129,11 +129,11 @@ class BuildingBlockTaskFormSubmissionIT @Autowired constructor(
             )
         }.resultingDocument().orElseThrow()
 
-        val task = taskService.createTaskQuery().taskDefinitionKey(USER_TASK_ID).singleResult()
+        val task = requireNotNull(taskService.createTaskQuery().taskDefinitionKey(USER_TASK_ID).singleResult()) { "task returned null" }
         val formProcessLink = processLinkRepository.save(
             FormProcessLink(
                 id = UUID.randomUUID(),
-                processDefinitionId = task.processDefinitionId,
+                processDefinitionId = requireNotNull(task.processDefinitionId) { "processDefinitionId returned null" },
                 activityId = USER_TASK_ID,
                 activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
                 formDefinitionId = requireNotNull(formDefinition.id)
@@ -143,9 +143,9 @@ class BuildingBlockTaskFormSubmissionIT @Autowired constructor(
     }
 
     private fun businessKeyOf(task: Task): String {
-        return runtimeService.createProcessInstanceQuery()
+        return requireNotNull(runtimeService.createProcessInstanceQuery()
             .processInstanceId(task.processInstanceId)
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .businessKey
     }
 

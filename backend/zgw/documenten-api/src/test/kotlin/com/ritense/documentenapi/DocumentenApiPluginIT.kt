@@ -107,10 +107,10 @@ internal class DocumentenApiPluginIT @Autowired constructor(
             "documentenapi"
         )
 
-        processDefinitionId = repositoryService.createProcessDefinitionQuery()
+        processDefinitionId = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey("documenten-api-plugin")
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
     }
 
@@ -141,9 +141,9 @@ internal class DocumentenApiPluginIT @Autowired constructor(
         val newDocumentAndStartProcessResult =
             runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
 
-        val resourceId = runtimeService.createVariableInstanceQuery()
+        val resourceId = requireNotNull(runtimeService.createVariableInstanceQuery()
             .variableName("storedDocumentVariableName")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value as String
 
         val recordedRequest = server.takeRequest()
@@ -218,9 +218,9 @@ internal class DocumentenApiPluginIT @Autowired constructor(
 
         runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
 
-        val resourceId = runtimeService.createVariableInstanceQuery()
+        val resourceId = requireNotNull(runtimeService.createVariableInstanceQuery()
             .variableName("resourceId")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value as String
         val documentInputStream = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId)
         val documentMetadata = temporaryResourceStorageService.getResourceMetadata(resourceId)
@@ -247,9 +247,9 @@ internal class DocumentenApiPluginIT @Autowired constructor(
 
         runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
 
-        val resourceId = runtimeService.createVariableInstanceQuery()
+        val resourceId = requireNotNull(runtimeService.createVariableInstanceQuery()
             .variableName("processVariableName")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value as String
         val documentInputStream = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId)
         val documentMetadata = temporaryResourceStorageService.getResourceMetadata(resourceId)
@@ -269,9 +269,9 @@ internal class DocumentenApiPluginIT @Autowired constructor(
 
         runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
 
-        val resourceId = runtimeService.createVariableInstanceQuery()
+        val resourceId = requireNotNull(runtimeService.createVariableInstanceQuery()
             .variableName("resourceId")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value as String
         val documentInputStream = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId)
         val documentMetadata = temporaryResourceStorageService.getResourceMetadata(resourceId)
@@ -293,9 +293,9 @@ internal class DocumentenApiPluginIT @Autowired constructor(
 
         runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
 
-        val resourceId = runtimeService.createVariableInstanceQuery()
+        val resourceId = requireNotNull(runtimeService.createVariableInstanceQuery()
             .variableName("resourceId")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value as String
         val documentInputStream = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId)
         assertEquals("TEST_DOCUMENT_CONTENT", documentInputStream.bufferedReader().use { it.readText() })

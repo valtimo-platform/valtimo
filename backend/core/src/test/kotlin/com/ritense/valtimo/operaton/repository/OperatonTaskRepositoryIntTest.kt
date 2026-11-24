@@ -66,10 +66,10 @@ class OperatonTaskRepositoryIntTest @Autowired constructor(
             processInstanceVariableMap
         )
 
-        val nativeTask = taskService.createTaskQuery()
+        val nativeTask = requireNotNull(taskService.createTaskQuery()
             .processInstanceIdIn(instance.id)
             .taskDefinitionKey("do-something")
-            .singleResult()
+            .singleResult()) { "nativeTask returned null" }
 
         val localVarMap = mapOf(
             "taskBoolean" to true,

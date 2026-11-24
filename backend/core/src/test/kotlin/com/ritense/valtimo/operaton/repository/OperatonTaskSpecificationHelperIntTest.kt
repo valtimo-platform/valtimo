@@ -63,7 +63,7 @@ class OperatonTaskSpecificationHelperIntTest @Autowired constructor(
     @Test
     @Transactional
     fun byId() {
-        val taskId = getRandomOneTaskProcessTask().id
+        val taskId = requireNotNull(getRandomOneTaskProcessTask()) { "getRandomOneTaskProcessTask returned null" }.id
 
         val operatonTask = operatonTaskRepository.findOne(OperatonTaskSpecificationHelper.byId(taskId)).get()
 
@@ -186,7 +186,7 @@ class OperatonTaskSpecificationHelperIntTest @Autowired constructor(
     @Transactional
     fun byAssignee() {
         val randomUserId = UUID.randomUUID().toString()
-        val randomTask = getRandomOneTaskProcessTask()
+        val randomTask = requireNotNull(getRandomOneTaskProcessTask()) { "randomTask returned null" }
 
         taskService.setAssignee(randomTask.id, randomUserId)
 
@@ -198,7 +198,7 @@ class OperatonTaskSpecificationHelperIntTest @Autowired constructor(
     @Test
     @Transactional
     fun byUnassigned() {
-        val randomTask = getRandomOneTaskProcessTask()
+        val randomTask = requireNotNull(getRandomOneTaskProcessTask()) { "randomTask returned null" }
 
         taskService.setAssignee(randomTask.id, UUID.randomUUID().toString())
 
@@ -214,7 +214,7 @@ class OperatonTaskSpecificationHelperIntTest @Autowired constructor(
     @Test
     @Transactional
     fun byAssigned() {
-        val randomTask = getRandomOneTaskProcessTask()
+        val randomTask = requireNotNull(getRandomOneTaskProcessTask()) { "randomTask returned null" }
 
         taskService.setAssignee(randomTask.id, UUID.randomUUID().toString())
 
@@ -249,7 +249,7 @@ class OperatonTaskSpecificationHelperIntTest @Autowired constructor(
     @Test
     @Transactional
     fun bySuspensionState() {
-        val task = getRandomOneTaskProcessTask()
+        val task = requireNotNull(getRandomOneTaskProcessTask()) { "task returned null" }
         taskService.complete(task.id)
 
         val operatonTaskIds = operatonTaskRepository.findAll(
@@ -266,7 +266,7 @@ class OperatonTaskSpecificationHelperIntTest @Autowired constructor(
     @Disabled
     @Transactional
     fun byActive() {
-        val task = getRandomOneTaskProcessTask()
+        val task = requireNotNull(getRandomOneTaskProcessTask()) { "task returned null" }
         taskService.complete(task.id)
 
         val operatonTaskIds = operatonTaskRepository.findAll(

@@ -166,7 +166,7 @@ class BuildingBlockCaseCorrelationStartTargetProviderTest {
             .endEvent()
             .done()
         if (messageStartEventName != null) {
-            val startEvent = model.getModelElementById<StartEvent>("start")
+            val startEvent = requireNotNull(model.getModelElementById<StartEvent>("start")) { "startEvent returned null" }
             val message = model.newInstance(Message::class.java)
             message.name = messageStartEventName
             model.definitions.addChildElement(message)

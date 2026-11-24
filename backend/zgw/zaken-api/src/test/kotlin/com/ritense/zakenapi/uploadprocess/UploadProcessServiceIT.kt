@@ -85,7 +85,7 @@ class UploadProcessServiceIT @Autowired constructor(
         val documentUploadProcess =
             getHistoricProcessInstance(UPLOAD_DOCUMENT_PROCESS_DEFINITION_KEY, documentId.toString())
         val retrievedResourceId =
-            getHistoricVariable(documentUploadProcess.rootProcessInstanceId, RESOURCE_ID_PROCESS_VAR) as String
+            getHistoricVariable(requireNotNull(documentUploadProcess.rootProcessInstanceId) { "rootProcessInstanceId returned null" }, RESOURCE_ID_PROCESS_VAR) as String
         assertThat(documentUploadProcess.startTime).isNotNull
         assertThat(retrievedResourceId).isEqualTo(resourceId)
     }
@@ -125,17 +125,17 @@ class UploadProcessServiceIT @Autowired constructor(
     }
 
     private fun getHistoricProcessInstance(processDefinitionKey: String, documentId: String): HistoricProcessInstance {
-        return historyService.createHistoricProcessInstanceQuery()
+        return requireNotNull(historyService.createHistoricProcessInstanceQuery()
             .processDefinitionKey(processDefinitionKey)
             .processInstanceBusinessKey(documentId)
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
     }
 
     private fun <T> getHistoricVariable(processInstanceId: String, variableKey: String): T {
-        return historyService.createHistoricVariableInstanceQuery()
+        return requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstanceId)
             .variableName(variableKey)
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value as T
     }
 

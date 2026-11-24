@@ -32,9 +32,9 @@ class OperatonVariableInstanceSpecificationHelperIntTest @Autowired constructor(
     @Transactional
     fun byName() {
         val name = "someRandomVariable-2"
-        val variableInstance = runtimeService.createVariableInstanceQuery()
+        val variableInstance = requireNotNull(runtimeService.createVariableInstanceQuery()
             .variableName(name)
-            .singleResult()
+            .singleResult()) { "variableInstance returned null" }
 
         val result = operatonVariableInstanceRepository.findOne(
             OperatonVariableInstanceSpecificationHelper.byName(name)

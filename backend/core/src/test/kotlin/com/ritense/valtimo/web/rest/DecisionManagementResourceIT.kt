@@ -124,8 +124,8 @@ class DecisionManagementResourceIT(
             .decisionDefinitionKey("test-2")
             .singleResult()
             .let {
-                assertEquals("test-2", it.key)
-                assertEquals("CD:everything:1.0.0", it.versionTag)
+                assertEquals("test-2", requireNotNull(it) { "it returned null" }.key)
+                assertEquals("CD:everything:1.0.0", requireNotNull(it) { "it returned null" }.versionTag)
             }
     }
 

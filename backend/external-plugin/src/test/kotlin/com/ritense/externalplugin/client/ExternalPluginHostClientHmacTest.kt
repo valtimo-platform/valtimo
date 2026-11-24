@@ -377,7 +377,7 @@ class ExternalPluginHostClientHmacTest {
         val path = "/plugins/openplan/1.0.0/contracts/nl.ritense.openplan@1/list"
         server.expect(requestTo("$baseUrl$path"))
             .andExpect { request ->
-                assertThat(request.headers.containsKey("X-Valtimo-Correlation-Id")).isFalse()
+                assertThat(request.headers.containsHeader("X-Valtimo-Correlation-Id")).isFalse()
             }
             .andRespond(withStatus(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body("""{"status":"completed"}"""))
 

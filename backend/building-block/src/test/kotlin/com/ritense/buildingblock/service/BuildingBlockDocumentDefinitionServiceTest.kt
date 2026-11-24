@@ -75,7 +75,7 @@ class BuildingBlockDocumentDefinitionServiceTest {
         verify(repository).saveAndFlush(captor.capture())
 
         val deployed = captor.firstValue
-        assertThat(deployed.id.name()).isEqualTo("my-block")
+        assertThat(requireNotNull(deployed.id) { "id returned null" }.name()).isEqualTo("my-block")
         assertThat(deployed.getSchema().asJson().get("\$id").asText()).isEqualTo("my-block.schema")
     }
 
@@ -102,7 +102,7 @@ class BuildingBlockDocumentDefinitionServiceTest {
         verify(repository).saveAndFlush(captor.capture())
 
         val deployed = captor.firstValue
-        assertThat(deployed.id.name()).isEqualTo("my-block")
+        assertThat(requireNotNull(deployed.id) { "id returned null" }.name()).isEqualTo("my-block")
         assertThat(deployed.getSchema().asJson().get("\$id").asText()).isEqualTo("my-block.schema")
     }
 }

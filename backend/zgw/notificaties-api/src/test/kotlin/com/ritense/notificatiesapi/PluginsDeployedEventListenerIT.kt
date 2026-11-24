@@ -37,7 +37,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.support.TransactionTemplate
 import java.net.URI
@@ -54,14 +54,14 @@ import kotlin.test.assertNull
  */
 class PluginsDeployedEventListenerIT : BaseIntegrationTest() {
 
-    @MockBean
+    @MockitoBean
     lateinit var client: NotificatiesApiClient
 
-    @MockBean
+    @MockitoBean
     lateinit var pluginService: PluginService
 
     // Swallows the startup registration task, so only the events published by a test trigger a run.
-    @MockBean(name = "notificatiesApiAbonnementRegistrationExecutor")
+    @MockitoBean(name = "notificatiesApiAbonnementRegistrationExecutor")
     lateinit var registrationExecutor: TaskExecutor
 
     @Autowired

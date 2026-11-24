@@ -16,10 +16,10 @@ class OperatonProcessDefinitionSpecificationHelperIntTest @Autowired constructor
     @Test
     @Transactional
     fun byId() {
-        val processDefinition = repositoryService.createProcessDefinitionQuery()
+        val processDefinition = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(USER_TASK_PROCESS)
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "processDefinition returned null" }
 
         val result = definitionRepository.findOne(
                 OperatonProcessDefinitionSpecificationHelper.byId(processDefinition.id)
@@ -50,10 +50,10 @@ class OperatonProcessDefinitionSpecificationHelperIntTest @Autowired constructor
             .deployWithResult()
             .deployedProcessDefinitions.first()
 
-        val version1Id = repositoryService.createProcessDefinitionQuery()
+        val version1Id = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(USER_TASK_PROCESS)
             .processDefinitionVersion(1)
-            .singleResult().id
+            .singleResult()) { "singleResult returned null" }.id
 
         val resultIds = definitionRepository.findAll(
             OperatonProcessDefinitionSpecificationHelper.byKey(USER_TASK_PROCESS)
@@ -72,10 +72,10 @@ class OperatonProcessDefinitionSpecificationHelperIntTest @Autowired constructor
             .deployWithResult()
             .deployedProcessDefinitions.first()
 
-        val version1Id = repositoryService.createProcessDefinitionQuery()
+        val version1Id = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(USER_TASK_PROCESS)
             .processDefinitionVersion(1)
-            .singleResult().id
+            .singleResult()) { "singleResult returned null" }.id
 
         val resultIds = definitionRepository.findAll(
             OperatonProcessDefinitionSpecificationHelper.byKey(USER_TASK_PROCESS)
@@ -94,10 +94,10 @@ class OperatonProcessDefinitionSpecificationHelperIntTest @Autowired constructor
             .deployWithResult()
             .deployedProcessDefinitions.first()
 
-        val version1Id = repositoryService.createProcessDefinitionQuery()
+        val version1Id = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(USER_TASK_PROCESS)
             .processDefinitionVersion(1)
-            .singleResult().id
+            .singleResult()) { "singleResult returned null" }.id
 
         repositoryService.suspendProcessDefinitionById(version1Id)
 

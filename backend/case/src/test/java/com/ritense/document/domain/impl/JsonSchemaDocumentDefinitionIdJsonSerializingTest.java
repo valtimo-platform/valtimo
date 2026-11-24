@@ -27,20 +27,20 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.json.Jackson2Tester;
 import org.springframework.boot.test.json.JsonContent;
 import org.springframework.boot.test.json.ObjectContent;
 
 class JsonSchemaDocumentDefinitionIdJsonSerializingTest {
 
     private static final String DEFINITION_STRING = "aDefinition";
-    private JacksonTester<JsonSchemaDocumentDefinitionId> jacksonTester;
+    private Jackson2Tester<JsonSchemaDocumentDefinitionId> jacksonTester;
     private static final String JSON_STRING_VALUE = "{\"name\":\"aDefinition\",\"blueprintId\":{\"blueprintType\":\"CASE\",\"blueprintKey\":\"key\",\"blueprintVersionTag\":\"1.0.0\"}}";
 
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
-        JacksonTester.initFields(this, objectMapper);
+        Jackson2Tester.initFields(this, objectMapper);
     }
 
     @Test

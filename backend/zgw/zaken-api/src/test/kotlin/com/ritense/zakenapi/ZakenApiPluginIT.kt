@@ -152,10 +152,10 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             }
         """.trimIndent()
 
-        processDefinitionId = repositoryService.createProcessDefinitionQuery()
+        processDefinitionId = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey("zaken-api-plugin")
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
 
         pluginProcessLinkRepository.save(

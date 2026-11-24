@@ -79,9 +79,9 @@ class BuildingBlockMessageStartIT @Autowired constructor(
         assertThat(instance.definition.id).isEqualTo(notifyDefinitionId(NOTIFY_VERSION))
 
         // The building-block bootstrap rewrote the business key from the case to the BB document.
-        val runningInstance = runtimeService.createProcessInstanceQuery()
+        val runningInstance = requireNotNull(runtimeService.createProcessInstanceQuery()
             .processInstanceId(instance.processInstanceId!!)
-            .singleResult()
+            .singleResult()) { "runningInstance returned null" }
         assertThat(runningInstance.businessKey).isEqualTo(instance.documentId.toString())
         assertThat(runtimeService.getVariable(instance.processInstanceId!!, "messagePayload"))
             .isEqualTo("from-case")

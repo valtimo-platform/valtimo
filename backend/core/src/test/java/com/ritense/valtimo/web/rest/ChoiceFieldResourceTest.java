@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import com.ritense.valtimo.contract.domain.ValtimoMediaType;
 import com.ritense.valtimo.domain.choicefield.ChoiceField;
 import com.ritense.valtimo.service.ChoiceFieldService;
 import java.time.ZoneId;
@@ -30,7 +31,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -72,7 +72,7 @@ class ChoiceFieldResourceTest {
 
         mvc.perform(get("/api/v2/choice-fields"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].id").value(choiceField.getId().intValue()))
             .andExpect(jsonPath("$.content[0].title").value(choiceField.getTitle()))

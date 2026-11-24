@@ -213,10 +213,10 @@ class BuildingBlockBpmnErrorIT @Autowired constructor(
     }
 
     private fun processDefinitionId(processKey: String): String =
-        repositoryService.createProcessDefinitionQuery()
+        requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(processKey)
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
 
     private fun serviceTaskProcess(

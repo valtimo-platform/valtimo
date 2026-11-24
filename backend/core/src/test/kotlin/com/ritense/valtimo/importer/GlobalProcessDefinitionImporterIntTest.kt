@@ -157,7 +157,7 @@ class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
         deployedVersionsOf(key).filter { it.versionTag == null }
 
     private fun latestVersionOf(key: String): ProcessDefinition =
-        repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult()
+        requireNotNull(repositoryService.createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult()) { "singleResult returned null" }
 
     private fun bpmn(key: String, name: String): ByteArray =
         processDefinition.inputStream.use { String(it.readAllBytes()) }

@@ -53,7 +53,7 @@ class FlowmailerTokenService(
                 TOKEN_URL,
                 HttpMethod.POST,
                 httpEntity,
-                OauthTokenResponse::class.java
+                getType(OauthTokenResponse::class.java)
             )
             return checkNotNull(response.body) { "No token received" }.accessToken
         } catch (e: HttpStatusCodeException) {

@@ -163,7 +163,7 @@ class ProcessDefinitionValidatorTest {
     fun `should pass service task with execution listener`() {
         val model = createModelWithServiceTask(id = "my-service-task")
 
-        val serviceTask = model.getModelElementById<ServiceTask>("my-service-task")
+        val serviceTask = requireNotNull(model.getModelElementById<ServiceTask>("my-service-task")) { "serviceTask returned null" }
         val extensionElements = model.newInstance(ExtensionElements::class.java)
         serviceTask.addChildElement(extensionElements)
         val listener = model.newInstance(OperatonExecutionListener::class.java)
@@ -428,7 +428,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent("end-b")
             .done()
 
-        val gateway = model.getModelElementById<ExclusiveGateway>("my-gateway")
+        val gateway = requireNotNull(model.getModelElementById<ExclusiveGateway>("my-gateway")) { "gateway returned null" }
         val defaultFlow = model.getModelElementById<SequenceFlow>("flow-b")
         gateway.default = defaultFlow
 
@@ -445,7 +445,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val catchEvent = model.getModelElementById<IntermediateCatchEvent>("my-catch-event")
+        val catchEvent = requireNotNull(model.getModelElementById<IntermediateCatchEvent>("my-catch-event")) { "catchEvent returned null" }
         val msgDef = model.newInstance(MessageEventDefinition::class.java)
         catchEvent.addChildElement(msgDef)
 
@@ -465,7 +465,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val catchEvent = model.getModelElementById<IntermediateCatchEvent>("my-catch-event")
+        val catchEvent = requireNotNull(model.getModelElementById<IntermediateCatchEvent>("my-catch-event")) { "catchEvent returned null" }
         val message = model.newInstance(Message::class.java)
         message.name = "my-message"
         model.definitions.addChildElement(message)
@@ -486,7 +486,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val catchEvent = model.getModelElementById<IntermediateCatchEvent>("my-catch-event")
+        val catchEvent = requireNotNull(model.getModelElementById<IntermediateCatchEvent>("my-catch-event")) { "catchEvent returned null" }
         val msgDef = model.newInstance(MessageEventDefinition::class.java)
         catchEvent.addChildElement(msgDef)
 
@@ -504,7 +504,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val throwEvent = model.getModelElementById<IntermediateThrowEvent>("my-throw-event")
+        val throwEvent = requireNotNull(model.getModelElementById<IntermediateThrowEvent>("my-throw-event")) { "throwEvent returned null" }
         val msgDef = model.newInstance(MessageEventDefinition::class.java)
         throwEvent.addChildElement(msgDef)
 
@@ -524,7 +524,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val throwEvent = model.getModelElementById<IntermediateThrowEvent>("my-throw-event")
+        val throwEvent = requireNotNull(model.getModelElementById<IntermediateThrowEvent>("my-throw-event")) { "throwEvent returned null" }
         val message = model.newInstance(Message::class.java)
         message.name = "my-message"
         model.definitions.addChildElement(message)
@@ -545,7 +545,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val catchEvent = model.getModelElementById<IntermediateCatchEvent>("my-timer-event")
+        val catchEvent = requireNotNull(model.getModelElementById<IntermediateCatchEvent>("my-timer-event")) { "catchEvent returned null" }
         val timerDef = model.newInstance(TimerEventDefinition::class.java)
         catchEvent.addChildElement(timerDef)
 
@@ -565,7 +565,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val catchEvent = model.getModelElementById<IntermediateCatchEvent>("my-timer-event")
+        val catchEvent = requireNotNull(model.getModelElementById<IntermediateCatchEvent>("my-timer-event")) { "catchEvent returned null" }
         val timerDef = model.newInstance(TimerEventDefinition::class.java)
         val timeDuration = model.newInstance(TimeDuration::class.java)
         timeDuration.textContent = "PT30S"
@@ -1243,7 +1243,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("msg-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("msg-start")) { "startEvent returned null" }
         val msgDef = model.newInstance(MessageEventDefinition::class.java)
         startEvent.addChildElement(msgDef)
 
@@ -1261,7 +1261,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("msg-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("msg-start")) { "startEvent returned null" }
         val message = model.newInstance(Message::class.java)
         message.name = "my-message"
         model.definitions.addChildElement(message)
@@ -1281,7 +1281,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("msg-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("msg-start")) { "startEvent returned null" }
         val msgDef = model.newInstance(MessageEventDefinition::class.java)
         startEvent.addChildElement(msgDef)
 
@@ -1297,7 +1297,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("timer-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("timer-start")) { "startEvent returned null" }
         val timerDef = model.newInstance(TimerEventDefinition::class.java)
         startEvent.addChildElement(timerDef)
 
@@ -1315,7 +1315,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("timer-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("timer-start")) { "startEvent returned null" }
         val timerDef = model.newInstance(TimerEventDefinition::class.java)
         val timeDuration = model.newInstance(TimeDuration::class.java)
         timeDuration.textContent = "PT30S"
@@ -1334,7 +1334,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("signal-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("signal-start")) { "startEvent returned null" }
         val signalDef = model.newInstance(SignalEventDefinition::class.java)
         startEvent.addChildElement(signalDef)
 
@@ -1352,7 +1352,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("signal-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("signal-start")) { "startEvent returned null" }
         val signal = model.newInstance(Signal::class.java)
         signal.name = "my-signal"
         model.definitions.addChildElement(signal)
@@ -1372,7 +1372,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("cond-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("cond-start")) { "startEvent returned null" }
         val condDef = model.newInstance(ConditionalEventDefinition::class.java)
         startEvent.addChildElement(condDef)
 
@@ -1390,7 +1390,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("cond-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("cond-start")) { "startEvent returned null" }
         val condDef = model.newInstance(ConditionalEventDefinition::class.java)
         val condition = model.newInstance(Condition::class.java)
         condition.textContent = "\${true}"
@@ -1409,7 +1409,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("error-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("error-start")) { "startEvent returned null" }
         val errorDef = model.newInstance(ErrorEventDefinition::class.java)
         startEvent.addChildElement(errorDef)
 
@@ -1427,7 +1427,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("error-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("error-start")) { "startEvent returned null" }
         val error = model.newInstance(Error::class.java)
         error.errorCode = "MY_ERROR"
         model.definitions.addChildElement(error)
@@ -1447,7 +1447,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("esc-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("esc-start")) { "startEvent returned null" }
         val escDef = model.newInstance(EscalationEventDefinition::class.java)
         startEvent.addChildElement(escDef)
 
@@ -1465,7 +1465,7 @@ class ProcessDefinitionValidatorTest {
             .endEvent()
             .done()
 
-        val startEvent = model.getModelElementById<StartEvent>("esc-start")
+        val startEvent = requireNotNull(model.getModelElementById<StartEvent>("esc-start")) { "startEvent returned null" }
         val escalation = model.newInstance(Escalation::class.java)
         escalation.escalationCode = "MY_ESC"
         model.definitions.addChildElement(escalation)

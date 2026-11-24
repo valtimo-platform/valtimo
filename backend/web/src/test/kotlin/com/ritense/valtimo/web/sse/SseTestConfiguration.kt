@@ -21,18 +21,20 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.http.converter.autoconfigure.HttpMessageConvertersAutoConfiguration
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
 import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration
+import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration
+import org.springframework.boot.tomcat.autoconfigure.servlet.TomcatServletWebServerAutoConfiguration
 import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
 import org.springframework.context.annotation.Configuration
 
 /** Embedded Tomcat + MVC + the SSE auto-configuration, nothing else. */
 @Configuration(proxyBeanMethods = false)
 @ImportAutoConfiguration(
-    ServletWebServerFactoryAutoConfiguration::class,
+    TomcatServletWebServerAutoConfiguration::class,
     DispatcherServletAutoConfiguration::class,
     WebMvcAutoConfiguration::class,
     HttpMessageConvertersAutoConfiguration::class,
     JacksonAutoConfiguration::class,
+    Jackson2AutoConfiguration::class,
     SseAutoConfiguration::class,
 )
 class SseTestConfiguration

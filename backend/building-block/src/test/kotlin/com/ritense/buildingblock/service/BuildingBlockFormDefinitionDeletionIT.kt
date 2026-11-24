@@ -99,7 +99,7 @@ class BuildingBlockFormDefinitionDeletionIT : BaseIntegrationTest() {
     }
 
     private fun createForm(definitionId: BuildingBlockDefinitionId): UUID {
-        val formId = buildingBlockFormDefinitionService.createFormDefinition(definitionId, "linked-form", "{}").id
+        val formId = requireNotNull(buildingBlockFormDefinitionService.createFormDefinition(definitionId, "linked-form", "{}").id) { "formId returned null" }
         entityManager.flush()
         entityManager.clear()
         return formId

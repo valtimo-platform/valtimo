@@ -71,7 +71,7 @@ class CaseTabResourceIntTest : BaseIntegrationTest() {
         val caseDefinitionName = "some-case-type"
         val document = createDocument(caseDefinitionName)
         mockMvc.perform(
-            get("/api/v1/document/{documentId}/tab", document.id.id)
+            get("/api/v1/document/{documentId}/tab", requireNotNull(document.id) { "id returned null" }.id)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
@@ -91,7 +91,7 @@ class CaseTabResourceIntTest : BaseIntegrationTest() {
         val caseDefinitionName = "some-case-type"
         val document = createDocument(caseDefinitionName)
         mockMvc.perform(
-            get("/api/v1/document/{documentId}/tab", document.id.id)
+            get("/api/v1/document/{documentId}/tab", requireNotNull(document.id) { "id returned null" }.id)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
@@ -107,7 +107,7 @@ class CaseTabResourceIntTest : BaseIntegrationTest() {
         val caseDefinitionName = "some-case-type"
         val document = createDocument(caseDefinitionName, "{\"key\": \"CONTEXT\"}")
         mockMvc.perform(
-            get("/api/v1/document/{documentId}/tab", document.id.id)
+            get("/api/v1/document/{documentId}/tab", requireNotNull(document.id) { "id returned null" }.id)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
@@ -123,7 +123,7 @@ class CaseTabResourceIntTest : BaseIntegrationTest() {
         val caseDefinitionName = "some-case-type"
         val document = createDocument(caseDefinitionName)
         mockMvc.perform(
-            get("/api/v1/document/{documentId}/tab", document.id.id)
+            get("/api/v1/document/{documentId}/tab", requireNotNull(document.id) { "id returned null" }.id)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$").isEmpty)
@@ -134,7 +134,7 @@ class CaseTabResourceIntTest : BaseIntegrationTest() {
     fun `should not get case tabs without document view permission`() {
         val document = createDocument("some-case-type")
         mockMvc.perform(
-            get("/api/v1/document/{documentId}/tab", document.id.id)
+            get("/api/v1/document/{documentId}/tab", requireNotNull(document.id) { "id returned null" }.id)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isForbidden)
     }

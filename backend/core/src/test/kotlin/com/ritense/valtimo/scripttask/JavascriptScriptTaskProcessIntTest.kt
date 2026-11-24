@@ -52,10 +52,10 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
             ).processInstanceDto
         }
 
-        val c = historyService.createHistoricVariableInstanceQuery()
+        val c = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("c")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals(3, c)
     }
@@ -129,10 +129,10 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
             ).processInstanceDto
         }
 
-        val result = historyService.createHistoricVariableInstanceQuery()
+        val result = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("result")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals("undefined,undefined,undefined", result)
     }
@@ -162,10 +162,10 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
             ).processInstanceDto
         }
 
-        val c = historyService.createHistoricVariableInstanceQuery()
+        val c = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("c")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals(3, c)
     }

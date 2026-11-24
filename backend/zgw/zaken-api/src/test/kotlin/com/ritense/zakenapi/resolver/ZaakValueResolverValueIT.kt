@@ -76,14 +76,14 @@ class ZaakValueResolverValueIT @Autowired constructor(
     fun `should prefill form with data from the Zaken API`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         runWithoutAuthorization {
-            val documentId = documentService.createDocument(
+            val documentId = requireNotNull(documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
                     "profile",
                     "1.0.0",
                     objectMapper.createObjectNode()
                 )
-            ).resultingDocument().get().id.id
+            ).resultingDocument().get().id) { "id returned null" }.id
 
             // Create zaak instance link so the resolver can find the zaak URL
             zaakInstanceLinkService.createZaakInstanceLink(

@@ -74,15 +74,15 @@ class FlowmailerTokenServiceTest : BaseTest() {
             scope = "api",
             tokenType = "testToken"
         )
-        val responseEntity = ResponseEntity(response, null, status)
+        val responseEntity = ResponseEntity(response, status)
         `when`(flowmailerProperties.clientId).thenReturn("clientId")
         `when`(flowmailerProperties.clientSecret).thenReturn("clientSecret")
         `when`(
             restTemplate.exchange(
                 anyString(),
                 any(HttpMethod::class.java),
-                any(HttpEntity::class.java),
-                any(ParameterizedTypeReference::class.java)
+                any<HttpEntity<*>>(),
+                any<ParameterizedTypeReference<OauthTokenResponse>>()
             )
         ).thenReturn(responseEntity)
     }
@@ -94,8 +94,8 @@ class FlowmailerTokenServiceTest : BaseTest() {
             restTemplate.exchange(
                 anyString(),
                 any(HttpMethod::class.java),
-                any(HttpEntity::class.java),
-                any(ParameterizedTypeReference::class.java)
+                any<HttpEntity<*>>(),
+                any<ParameterizedTypeReference<OauthTokenResponse>>()
             )
         ).thenThrow(HttpClientErrorException(status, "Error"))
     }

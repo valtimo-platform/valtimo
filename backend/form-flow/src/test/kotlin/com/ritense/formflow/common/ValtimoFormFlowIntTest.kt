@@ -144,10 +144,10 @@ class ValtimoFormFlowIntTest : BaseIntegrationTest() {
             """{"address":{"streetName":"Funenpark"}}""",
             documentAndProcess.resultingDocument().get().content().asJson().toString()
         )
-        val processVariableApproved = historyService.createHistoricVariableInstanceQuery()
+        val processVariableApproved = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceIdIn(processInstanceId.toString())
             .variableName("approved")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals(true, processVariableApproved)
     }
@@ -192,10 +192,10 @@ class ValtimoFormFlowIntTest : BaseIntegrationTest() {
 
         assertEquals(1, processDocumentInstances.size)
 
-        val processVariableApproved = historyService.createHistoricVariableInstanceQuery()
+        val processVariableApproved = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceIdIn(processDocumentInstances[0].processDocumentInstanceId().processInstanceId().toString())
             .variableName("approved")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals(true, processVariableApproved)
     }
@@ -243,10 +243,10 @@ class ValtimoFormFlowIntTest : BaseIntegrationTest() {
 
         assertEquals(1, processDocumentInstances.size)
 
-        val processVariableApproved = historyService.createHistoricVariableInstanceQuery()
+        val processVariableApproved = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceIdIn(processDocumentInstances[0].processDocumentInstanceId().processInstanceId().toString())
             .variableName("approved")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals(true, processVariableApproved)
     }
@@ -294,10 +294,10 @@ class ValtimoFormFlowIntTest : BaseIntegrationTest() {
     }
 
     private fun getProcessDefinitionId(): String {
-        return repositoryService.createProcessDefinitionQuery()
+        return requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey("formflow-one-task-process")
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
     }
 

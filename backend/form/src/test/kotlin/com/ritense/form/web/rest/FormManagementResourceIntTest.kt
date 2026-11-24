@@ -182,7 +182,7 @@ class FormManagementResourceIntTest : BaseIntegrationTest() {
     fun `should delete form for case definition`() {
         val savedFormDefinition = formDefinitionRepository.save(formDefinition())
 
-        Assertions.assertThat(formDefinitionRepository.existsById(savedFormDefinition.id)).isTrue()
+        Assertions.assertThat(formDefinitionRepository.existsById(requireNotNull(savedFormDefinition.id) { "id returned null" })).isTrue()
 
         mockMvc.perform(
             MockMvcRequestBuilders.delete("$BASE_URL/{formDefinitionId}",
@@ -196,7 +196,7 @@ class FormManagementResourceIntTest : BaseIntegrationTest() {
 
         formDefinitionRepository.flush()
 
-        Assertions.assertThat(formDefinitionRepository.existsById(savedFormDefinition.id)).isFalse()
+        Assertions.assertThat(formDefinitionRepository.existsById(requireNotNull(savedFormDefinition.id) { "id returned null" })).isFalse()
     }
 
     companion object {

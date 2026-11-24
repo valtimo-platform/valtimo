@@ -156,7 +156,7 @@ class DocumentOpenSearchVersionIsolationIntTest : BaseOpenSearchIntegrationTest(
             query,
             JsonSchemaDocumentOsDocument::class.java,
             IndexCoordinates.of(indexNameResolver.indexNameFor("house")),
-        ).searchHits.map { it.id }
+        ).searchHits.map { requireNotNull(it.id) { "id returned null" } }
     }
 
     private fun concreteBehind(alias: String): String = concretesBehind(alias).single()

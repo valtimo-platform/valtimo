@@ -84,8 +84,8 @@ internal class DeadlockIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     definition().id().name(),
-                    definition().id.caseDefinitionId().key,
-                    definition().id.caseDefinitionId().versionTag.version,
+                    requireNotNull(definition().id) { "id returned null" }.caseDefinitionId().key,
+                    requireNotNull(definition().id) { "id returned null" }.caseDefinitionId().versionTag.version,
                     JsonDocumentContent(content).asJson()
                 )
             )

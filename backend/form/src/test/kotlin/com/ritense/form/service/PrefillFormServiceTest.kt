@@ -114,7 +114,7 @@ class PrefillFormServiceTest : BaseTest() {
             requestedValues.associateWith(dataMap::get)
         }
 
-        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(formDefinition.id!!, document.id.id)
+        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(formDefinition.id!!, requireNotNull(document.id) { "id returned null" }.id)
         assertThat(prefilledFormDefinition).isNotNull
 
         val inputFields = prefilledFormDefinition.inputFields

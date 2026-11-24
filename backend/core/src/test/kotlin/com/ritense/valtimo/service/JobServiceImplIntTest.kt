@@ -56,7 +56,7 @@ class JobServiceImplIntTest: BaseIntegrationTest() {
         processEngine.runtimeService.createMessageCorrelation("message-start-event-offset-delay")
             .processInstanceBusinessKey(testProcessInstance.processInstanceDto.businessKey)
             .correlate()
-        val job = processEngine.managementService.createJobQuery().timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery().timers().activityId("test-timer").singleResult()) { "job returned null" }
         assertEquals(Date.from(Instant.parse("2150-01-01T00:00:00Z")).toString(), job.duedate.toString())
     }
 
@@ -74,7 +74,7 @@ class JobServiceImplIntTest: BaseIntegrationTest() {
         processEngine.runtimeService.createMessageCorrelation("message-start-event-offset-forward")
             .processInstanceBusinessKey(testProcessInstance.processInstanceDto.businessKey)
             .correlate()
-        val job = processEngine.managementService.createJobQuery().timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery().timers().activityId("test-timer").singleResult()) { "job returned null" }
         assertEquals(Date.from(Instant.parse("2149-12-31T23:00:00Z")).toString(), job.duedate.toString())
     }
 
@@ -92,7 +92,7 @@ class JobServiceImplIntTest: BaseIntegrationTest() {
         processEngine.runtimeService.createMessageCorrelation("message-start-event-change-date")
             .processInstanceBusinessKey(testProcessInstance.processInstanceDto.businessKey)
             .correlate()
-        val job = processEngine.managementService.createJobQuery().timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery().timers().activityId("test-timer").singleResult()) { "job returned null" }
         assertEquals(Date.from(Instant.parse("2300-01-01T00:00:00Z")).toString(), job.duedate.toString())
     }
 

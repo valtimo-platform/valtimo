@@ -25,21 +25,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.json.Jackson2Tester;
 import org.springframework.boot.test.json.JsonContent;
 import org.springframework.boot.test.json.ObjectContent;
 
 public class ModifyJsonSchemaDocumentRequestJsonSerializingTestImpl {
 
     private static final String UUID = "4bd8f762-0f83-42a6-8640-741b3f848752";
-    private JacksonTester<ModifyDocumentRequest> jacksonTester;
+    private Jackson2Tester<ModifyDocumentRequest> jacksonTester;
     private String jsonString;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     public void setUp() {
         objectMapper = MapperSingleton.INSTANCE.get();
-        JacksonTester.initFields(this, objectMapper);
+        Jackson2Tester.initFields(this, objectMapper);
         jsonString = """
             {
             \t"documentId": "4bd8f762-0f83-42a6-8640-741b3f848752",

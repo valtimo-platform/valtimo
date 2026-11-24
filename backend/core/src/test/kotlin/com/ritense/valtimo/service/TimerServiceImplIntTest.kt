@@ -51,8 +51,8 @@ class TimerServiceImplIntTest : BaseIntegrationTest() {
         val updated = timerService.updateActiveTimers(businessKey, newDate)
 
         assertThat(updated).isEqualTo(1)
-        val job = processEngine.managementService.createJobQuery()
-            .timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery()
+            .timers().activityId("test-timer").singleResult()) { "job returned null" }
         assertThat(job.duedate).isEqualTo(Date.from(Instant.parse(newDate)))
     }
 
@@ -63,8 +63,8 @@ class TimerServiceImplIntTest : BaseIntegrationTest() {
         val updated = timerService.updateActiveTimers("no-such-business-key", newDate)
 
         assertThat(updated).isEqualTo(0)
-        val job = processEngine.managementService.createJobQuery()
-            .timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery()
+            .timers().activityId("test-timer").singleResult()) { "job returned null" }
         assertThat(job.duedate).isEqualTo(Date.from(Instant.parse(originalDate)))
     }
 
@@ -75,8 +75,8 @@ class TimerServiceImplIntTest : BaseIntegrationTest() {
         val updated = timerService.updateActiveTimers(businessKey, newDate, "test-timer")
 
         assertThat(updated).isEqualTo(1)
-        val job = processEngine.managementService.createJobQuery()
-            .timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery()
+            .timers().activityId("test-timer").singleResult()) { "job returned null" }
         assertThat(job.duedate).isEqualTo(Date.from(Instant.parse(newDate)))
     }
 
@@ -87,8 +87,8 @@ class TimerServiceImplIntTest : BaseIntegrationTest() {
         val updated = timerService.updateActiveTimers(businessKey, newDate, "non-existent-activity")
 
         assertThat(updated).isEqualTo(0)
-        val job = processEngine.managementService.createJobQuery()
-            .timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery()
+            .timers().activityId("test-timer").singleResult()) { "job returned null" }
         assertThat(job.duedate).isEqualTo(Date.from(Instant.parse(originalDate)))
     }
 
@@ -110,15 +110,15 @@ class TimerServiceImplIntTest : BaseIntegrationTest() {
     @Test
     fun `should skip timer job with retries exhausted and not update its duedate`() {
         val businessKey = startTimerProcess()
-        val job = processEngine.managementService.createJobQuery()
-            .timers().activityId("test-timer").singleResult()
+        val job = requireNotNull(processEngine.managementService.createJobQuery()
+            .timers().activityId("test-timer").singleResult()) { "job returned null" }
         processEngine.managementService.setJobRetries(job.id, 0)
 
         val updated = timerService.updateActiveTimers(businessKey, newDate)
 
         assertThat(updated).isEqualTo(0)
-        val jobAfter = processEngine.managementService.createJobQuery()
-            .timers().activityId("test-timer").singleResult()
+        val jobAfter = requireNotNull(processEngine.managementService.createJobQuery()
+            .timers().activityId("test-timer").singleResult()) { "jobAfter returned null" }
         assertThat(jobAfter.duedate).isEqualTo(Date.from(Instant.parse(originalDate)))
     }
 

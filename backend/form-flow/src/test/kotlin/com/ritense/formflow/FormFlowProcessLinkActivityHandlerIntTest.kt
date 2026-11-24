@@ -75,10 +75,10 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
     @Test
     fun `should not create form flow instance when Operaton user task is created`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val processDefinition = repositoryService.createProcessDefinitionQuery()
+        val processDefinition = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .latestVersion()
             .processDefinitionKey("formflow-one-task-process")
-            .singleResult()
+            .singleResult()) { "processDefinition returned null" }
 
         processLinkService.createProcessLink(
             FormFlowProcessLinkCreateRequestDto(
@@ -106,10 +106,10 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
     @WithMockUser(username = TEST_USER, authorities = [USER])
     fun `should create form flow instance when task is opened`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val processDefinition = repositoryService.createProcessDefinitionQuery()
+        val processDefinition = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .latestVersion()
             .processDefinitionKey("formflow-one-task-process")
-            .singleResult()
+            .singleResult()) { "processDefinition returned null" }
 
         processLinkService.createProcessLink(
             FormFlowProcessLinkCreateRequestDto(
@@ -143,10 +143,10 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
     fun `should retrieve form-flow and create instance`(){
         val processLinkId = UUID.randomUUID()
 
-        val processDefinition = repositoryService.createProcessDefinitionQuery()
+        val processDefinition = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .latestVersion()
             .processDefinitionKey("formflow-one-task-process")
-            .singleResult()
+            .singleResult()) { "processDefinition returned null" }
 
         val formFlowDefinition = formFlowService.findDefinition("inkomens_loket_alternate", CaseDefinitionId("profile", "1.0.0"))
 
@@ -183,10 +183,10 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
     @WithMockUser(username = TEST_USER, authorities = [USER])
     fun `should only put registry-declared additional properties on task-opened instances`() {
         val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val processDefinition = repositoryService.createProcessDefinitionQuery()
+        val processDefinition = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .latestVersion()
             .processDefinitionKey("formflow-one-task-process")
-            .singleResult()
+            .singleResult()) { "processDefinition returned null" }
 
         processLinkService.createProcessLink(
             FormFlowProcessLinkCreateRequestDto(
@@ -223,10 +223,10 @@ internal class FormFlowProcessLinkActivityHandlerIntTest: BaseIntegrationTest() 
 
     @Test
     fun `should only put registry-declared additional properties on start-event instances`() {
-        val processDefinition = repositoryService.createProcessDefinitionQuery()
+        val processDefinition = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .latestVersion()
             .processDefinitionKey("formflow-one-task-process")
-            .singleResult()
+            .singleResult()) { "processDefinition returned null" }
         val formFlowDefinition = formFlowService.findDefinition(
             "inkomens_loket_alternate",
             CaseDefinitionId("profile", "1.0.0")

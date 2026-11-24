@@ -81,7 +81,7 @@ class PrefillFormServiceIntTest @Autowired constructor(
             )
         )
 
-        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(formDefinition.id!!, task.processInstanceId, task.id)
+        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(formDefinition.id!!, requireNotNull(task.processInstanceId) { "processInstanceId returned null" }, task.id)
 
         val prefilledJson = prefilledFormDefinition.asJson().toString()
         //value resolver prefill
@@ -124,7 +124,7 @@ class PrefillFormServiceIntTest @Autowired constructor(
 
         val originalJson = formDefinition.asJson().toString()
 
-        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(formDefinition.id!!, task.processInstanceId, task.id)
+        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(formDefinition.id!!, requireNotNull(task.processInstanceId) { "processInstanceId returned null" }, task.id)
 
         val prefilledJson = prefilledFormDefinition.asJson().toString()
 

@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import com.ritense.valtimo.contract.domain.ValtimoMediaType;
 import com.ritense.valtimo.domain.choicefield.ChoiceField;
 import com.ritense.valtimo.domain.choicefield.ChoiceFieldValue;
 import com.ritense.valtimo.service.ChoiceFieldValueService;
@@ -31,7 +32,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -74,7 +74,7 @@ class ChoiceFieldValueResourceTest {
 
         mvc.perform(get("/api/v2/choice-field-values"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].id").value(choiceFieldValue.getId()))
             .andExpect(jsonPath("$.content[0].name").value(choiceFieldValue.getName()))
@@ -103,7 +103,7 @@ class ChoiceFieldValueResourceTest {
 
         mvc.perform(get("/api/v2/choice-field-values/some-name/values"))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].id").value(choiceFieldValue.getId()))
             .andExpect(jsonPath("$.content[0].name").value(choiceFieldValue.getName()))

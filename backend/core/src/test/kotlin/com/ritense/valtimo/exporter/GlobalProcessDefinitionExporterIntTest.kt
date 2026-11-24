@@ -57,10 +57,10 @@ class GlobalProcessDefinitionExporterIntTest @Autowired constructor(
     }
 
     private fun assertExportContainsDmn() {
-        val processDefinitionId = repositoryService.createProcessDefinitionQuery()
+        val processDefinitionId = requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey("dmn-global-sample")
             .latestVersion()
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
 
         val entries = readZipEntryNames(

@@ -236,23 +236,23 @@ class SubprocessRelocatedIntoBuildingBlockIT @Autowired constructor(
 
     /** The one deployment of [processDefinitionKey] carrying [versionTag] — the fixture deploys the key twice. */
     private fun processDefinitionId(processDefinitionKey: String, versionTag: String): String =
-        repositoryService.createProcessDefinitionQuery()
+        requireNotNull(repositoryService.createProcessDefinitionQuery()
             .processDefinitionKey(processDefinitionKey)
             .versionTag(versionTag)
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .id
 
     private fun processDefinitionIdOf(processInstanceId: String): String =
-        runtimeService.createProcessInstanceQuery()
+        requireNotNull(runtimeService.createProcessInstanceQuery()
             .processInstanceId(processInstanceId)
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .processDefinitionId
 
     /** The task definition key of the one task running under [businessKey], whoever owns the process by now. */
     private fun taskKeyOf(businessKey: UUID): String =
-        taskService.createTaskQuery().processInstanceBusinessKey(businessKey.toString()).list()
+        requireNotNull(taskService.createTaskQuery().processInstanceBusinessKey(businessKey.toString()).list()
             .single()
-            .taskDefinitionKey
+            .taskDefinitionKey) { "taskDefinitionKey returned null" }
 
     private companion object {
         const val CASE_KEY = "subproces-naar-bouwsteen"

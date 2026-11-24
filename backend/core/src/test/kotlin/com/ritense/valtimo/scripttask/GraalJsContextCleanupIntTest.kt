@@ -105,10 +105,10 @@ class GraalJsContextCleanupIntTest : BaseIntegrationTest() {
                 .count().toInt()
         )
         processInstanceIds.forEach { id ->
-            val c = historyService.createHistoricVariableInstanceQuery()
+            val c = requireNotNull(historyService.createHistoricVariableInstanceQuery()
                 .processInstanceId(id)
                 .variableName("c")
-                .singleResult()
+                .singleResult()) { "singleResult returned null" }
                 .value
             assertEquals(3, c)
         }
@@ -147,10 +147,10 @@ class GraalJsContextCleanupIntTest : BaseIntegrationTest() {
             ).processInstanceDto
         }
 
-        val json = historyService.createHistoricVariableInstanceQuery()
+        val json = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("json")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals("{\"a\":1}", json)
         assertAllClosed()
@@ -178,10 +178,10 @@ class GraalJsContextCleanupIntTest : BaseIntegrationTest() {
             ).processInstanceDto
         }
 
-        val risk = historyService.createHistoricVariableInstanceQuery()
+        val risk = requireNotNull(historyService.createHistoricVariableInstanceQuery()
             .processInstanceId(processInstance.id)
             .variableName("risk")
-            .singleResult()
+            .singleResult()) { "singleResult returned null" }
             .value
         assertEquals("Low-10", risk)
         assertAllClosed()

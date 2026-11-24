@@ -146,9 +146,9 @@ class BuildingBlockCallActivityListenerIT @Autowired constructor(
         val instance = buildingBlockInstanceRepository.findAll().single()
 
         // The building block process runs with businessKey == building block document id
-        val bbProcessInstance = runtimeService.createProcessInstanceQuery()
+        val bbProcessInstance = requireNotNull(runtimeService.createProcessInstanceQuery()
             .processInstanceBusinessKey(instance.documentId.toString())
-            .singleResult()
+            .singleResult()) { "bbProcessInstance returned null" }
         assertThat(bbProcessInstance).isNotNull
 
         // Resolve the same way PluginService resolves action properties for a service task inside
