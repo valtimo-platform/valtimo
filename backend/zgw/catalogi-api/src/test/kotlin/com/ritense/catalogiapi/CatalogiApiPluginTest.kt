@@ -20,6 +20,7 @@ import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.client.RoltypeRequest
 import com.ritense.catalogiapi.client.ZaaktypeInformatieobjecttypeRequest
 import com.ritense.catalogiapi.domain.Besluittype
+import com.ritense.catalogiapi.domain.BrondatumArchiefprocedure
 import com.ritense.catalogiapi.domain.Eigenschap
 import com.ritense.catalogiapi.domain.InformatieobjecttypeVertrouwelijkheid
 import com.ritense.catalogiapi.domain.Informatieobjecttype
@@ -731,8 +732,8 @@ internal class CatalogiApiPluginTest : BaseTest() {
             eq(processVariable),
             eq(
                 listOf(
-                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
-                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
+                    expectedResultaattypeOutput(url = resultaatTypeUrl("1"), name = "first resultaat"),
+                    expectedResultaattypeOutput(url = resultaatTypeUrl("2"), name = "second resultaat")
                 )
             )
         )
@@ -764,8 +765,8 @@ internal class CatalogiApiPluginTest : BaseTest() {
             eq(processVariable),
             eq(
                 listOf(
-                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
-                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
+                    expectedResultaattypeOutput(url = resultaatTypeUrl("1"), name = "first resultaat"),
+                    expectedResultaattypeOutput(url = resultaatTypeUrl("2"), name = "second resultaat")
                 )
             )
         )
@@ -854,6 +855,143 @@ internal class CatalogiApiPluginTest : BaseTest() {
                 )
         )
     }
+
+    @Test
+    fun `should include new resultaattype fields in resultaat typen process variable`() {
+        // given
+        val processVariable = "resultaatTypenProcessVar"
+        val zaaktypeUrl = zaaktypeUrl()
+        val execution = mockExecution()
+        val catalogusUrl = URI("https://example.com/catalogus/1")
+        val besluittypeUrl = URI("https://example.com/besluittype/1")
+        val beginGeldigheid = LocalDate.of(2019, 1, 1)
+        val eindeGeldigheid = LocalDate.of(2020, 1, 1)
+        val beginObject = LocalDate.of(2019, 1, 1)
+        val eindeObject = LocalDate.of(2019, 8, 24)
+
+        mockResultaattypen(
+            zaaktypeUrl = zaaktypeUrl.toURI(),
+            defaultResultaatTypen = listOf(
+                resultaatType(
+                    url = resultaatTypeUrl("1").toURI(),
+                    zaaktypeUrl = zaaktypeUrl.toURI(),
+                    omschrijving = "first resultaat",
+                    resultaatTypeOmschrijving = resultaatTypeOmschrijvingUrl("1").toURI(),
+                    selectielijstKlasse = selectielijstKlasseUrl("1").toURI(),
+                    archiefnominatie = "vernietigen",
+                    archiefactietermijn = "P10Y",
+                    procesobjectaard = "Adres",
+                    indicatieSpecifiek = true,
+                    procestermijn = "nihil",
+                    catalogus = catalogusUrl,
+                    brondatumArchiefprocedure = BrondatumArchiefprocedure(
+                        afleidingswijze = "afgehandeld",
+                        datumkenmerk = "datum",
+                        einddatumBekend = true,
+                        objecttype = "adres",
+                        registratie = "BRP",
+                        brondatumProcestermijn = "P1Y"
+                    ),
+                    besluittypen = listOf(besluittypeUrl),
+                    besluittypeOmschrijving = listOf("Verleend"),
+                    informatieobjecttypen = listOf("beschikking"),
+                    informatieobjecttypeOmschrijving = listOf("Beschikking"),
+                    beginGeldigheid = beginGeldigheid,
+                    eindeGeldigheid = eindeGeldigheid,
+                    beginObject = beginObject,
+                    eindeObject = eindeObject
+                )
+            )
+        )
+
+        // when
+        plugin.getResultaattypen(
+            execution = execution,
+            processVariable = processVariable,
+            zaaktypeUrl = zaaktypeUrl
+        )
+
+        // then
+        verify(execution, times(1)).setVariable(
+            eq(processVariable),
+            eq(
+                listOf(
+                    expectedResultaattypeOutput(
+                        url = resultaatTypeUrl("1"),
+                        name = "first resultaat",
+                        afleidingswijze = "afgehandeld",
+                        datumkenmerk = "datum",
+                        einddatumBekend = true,
+                        objecttype = "adres",
+                        registratie = "BRP",
+                        brondatumProcestermijn = "P1Y",
+                        archiefnominatie = "vernietigen",
+                        archiefactietermijn = "P10Y",
+                        procesobjectaard = "Adres",
+                        indicatieSpecifiek = true,
+                        resultaatProcestermijn = "nihil",
+                        catalogus = catalogusUrl.toASCIIString(),
+                        besluittypen = listOf(besluittypeUrl.toASCIIString()),
+                        besluittypeOmschrijving = listOf("Verleend"),
+                        informatieobjecttypen = listOf("beschikking"),
+                        informatieobjecttypeOmschrijving = listOf("Beschikking"),
+                        beginGeldigheid = beginGeldigheid,
+                        eindeGeldigheid = eindeGeldigheid,
+                        beginObject = beginObject,
+                        eindeObject = eindeObject
+                    )
+                )
+            )
+        )
+    }
+
+    private fun expectedResultaattypeOutput(
+        url: String,
+        name: String,
+        afleidingswijze: String? = null,
+        datumkenmerk: String? = null,
+        einddatumBekend: Boolean? = null,
+        objecttype: String? = null,
+        registratie: String? = null,
+        brondatumProcestermijn: String? = null,
+        archiefnominatie: String? = null,
+        archiefactietermijn: String? = null,
+        procesobjectaard: String? = null,
+        indicatieSpecifiek: Boolean? = null,
+        resultaatProcestermijn: String? = null,
+        catalogus: String? = null,
+        besluittypen: List<String> = emptyList(),
+        besluittypeOmschrijving: List<String> = emptyList(),
+        informatieobjecttypen: List<String> = emptyList(),
+        informatieobjecttypeOmschrijving: List<String> = emptyList(),
+        beginGeldigheid: LocalDate? = null,
+        eindeGeldigheid: LocalDate? = null,
+        beginObject: LocalDate? = null,
+        eindeObject: LocalDate? = null
+    ) = mapOf(
+        "url" to url,
+        "name" to name,
+        "afleidingswijze" to afleidingswijze,
+        "datumkenmerk" to datumkenmerk,
+        "einddatumBekend" to einddatumBekend,
+        "objecttype" to objecttype,
+        "registratie" to registratie,
+        "procestermijn" to brondatumProcestermijn,
+        "archiefnominatie" to archiefnominatie,
+        "archiefactietermijn" to archiefactietermijn,
+        "procesobjectaard" to procesobjectaard,
+        "indicatieSpecifiek" to indicatieSpecifiek,
+        "resultaatProcestermijn" to resultaatProcestermijn,
+        "catalogus" to catalogus,
+        "besluittypen" to besluittypen,
+        "besluittypeOmschrijving" to besluittypeOmschrijving,
+        "informatieobjecttypen" to informatieobjecttypen,
+        "informatieobjecttypeOmschrijving" to informatieobjecttypeOmschrijving,
+        "beginGeldigheid" to beginGeldigheid,
+        "eindeGeldigheid" to eindeGeldigheid,
+        "beginObject" to beginObject,
+        "eindeObject" to eindeObject
+    )
 
     @Test
     fun `should get besluit type`() {
@@ -1299,7 +1437,22 @@ internal class CatalogiApiPluginTest : BaseTest() {
         zaaktypeUrl: URI,
         omschrijving: String,
         resultaatTypeOmschrijving: URI,
-        selectielijstKlasse: URI
+        selectielijstKlasse: URI,
+        archiefnominatie: String? = null,
+        archiefactietermijn: String? = null,
+        procesobjectaard: String? = null,
+        indicatieSpecifiek: Boolean? = null,
+        procestermijn: String? = null,
+        catalogus: URI? = null,
+        brondatumArchiefprocedure: BrondatumArchiefprocedure? = null,
+        besluittypen: List<URI> = emptyList(),
+        besluittypeOmschrijving: List<String> = emptyList(),
+        informatieobjecttypen: List<String> = emptyList(),
+        informatieobjecttypeOmschrijving: List<String> = emptyList(),
+        beginGeldigheid: LocalDate? = null,
+        eindeGeldigheid: LocalDate? = null,
+        beginObject: LocalDate? = null,
+        eindeObject: LocalDate? = null
     ) = Resultaattype(
         url = url,
         zaaktype = zaaktypeUrl,
@@ -1307,7 +1460,22 @@ internal class CatalogiApiPluginTest : BaseTest() {
         resultaattypeomschrijving = resultaatTypeOmschrijving,
         omschrijvingGeneriek = null,
         selectielijstklasse = selectielijstKlasse,
-        toelichting = null
+        toelichting = null,
+        archiefnominatie = archiefnominatie,
+        archiefactietermijn = archiefactietermijn,
+        procesobjectaard = procesobjectaard,
+        indicatieSpecifiek = indicatieSpecifiek,
+        procestermijn = procestermijn,
+        catalogus = catalogus,
+        brondatumArchiefprocedure = brondatumArchiefprocedure,
+        besluittypen = besluittypen,
+        besluittypeOmschrijving = besluittypeOmschrijving,
+        informatieobjecttypen = informatieobjecttypen,
+        informatieobjecttypeOmschrijving = informatieobjecttypeOmschrijving,
+        beginGeldigheid = beginGeldigheid,
+        eindeGeldigheid = eindeGeldigheid,
+        beginObject = beginObject,
+        eindeObject = eindeObject
     )
 
     private fun roltype(
