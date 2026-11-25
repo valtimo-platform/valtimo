@@ -241,7 +241,7 @@
     },
     "columnLoadError": {
       "title": "Some values could not be loaded",
-      "description": "One or more column values could not be loaded and are shown with a warning. The other cases are shown as usual."
+      "description": "One or more column values could not be loaded and are shown with a warning."
     },
     "startCase": {
       "selectCaseType": "Select case type"

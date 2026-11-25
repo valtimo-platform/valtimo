@@ -241,7 +241,7 @@
     },
     "columnLoadError": {
       "title": "Enkele waarden konden niet geladen worden",
-      "description": "Een of meer kolomwaarden konden niet geladen worden en worden met een waarschuwing getoond. De overige dossiers worden normaal weergegeven."
+      "description": "Een of meer kolomwaarden konden niet geladen worden en worden met een waarschuwing getoond."
     },
     "startCase": {
       "selectCaseType": "Kies dossiertype"
