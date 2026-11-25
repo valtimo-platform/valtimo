@@ -137,6 +137,22 @@ describe('menu configuration resolver', () => {
     expect(resolved.some(item => item.title === 'does-not-exist')).toBeFalse();
   });
 
+  it('silently drops the removed task management page from a menu saved while it was listed', () => {
+    spyOn(console, 'warn');
+    const config: MenuConfiguration = {
+      version: 1,
+      items: [{kind: 'catalog', itemId: 'taskManagement'}],
+    };
+
+    const links = resolveMenuConfiguration(config).flatMap(item => [
+      item.link,
+      ...(item.children ?? []).map(child => child.link),
+    ]);
+
+    expect(links).not.toContain(['/task-management']);
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
   it('forces the required Admin + Settings items present when the saved config omits them', () => {
     const config: MenuConfiguration = {version: 1, items: [{kind: 'catalog', itemId: 'dashboard'}]};
 

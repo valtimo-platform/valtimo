@@ -318,22 +318,26 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private setBreadcrumbs(): void {
-    combineLatest([
-      this._ikoRepositoryConfig$,
-      this.params$,
-      this.translateService.stream('key'),
-    ]).subscribe(([repositoryConfig, params]) => {
-      this.breadcrumbService.setThirdBreadcrumb({
-        route: [`/iko-management/${repositoryConfig.key}`],
-        content: repositoryConfig.title,
-        href: `/iko-management/${repositoryConfig.key}`,
-      });
+    this._subscriptions.add(
+      combineLatest([
+        this._ikoRepositoryConfig$,
+        this.params$,
+        this.translateService.stream('key'),
+      ]).subscribe(([repositoryConfig, params]) => {
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [`/iko-management/${repositoryConfig.key}`],
+          content: repositoryConfig.title,
+          href: `/iko-management/${repositoryConfig.key}`,
+        });
 
-      this.breadcrumbService.setFourthBreadcrumb({
-        route: [`/iko-management/${repositoryConfig.key}/${params.aggregateKey}/${params.tabKey}`],
-        content: this.translateService.instant('ikoManagement.searchActions.title'),
-        href: `/iko-management/${repositoryConfig.key}/${params.aggregateKey}/${params.tabKey}`,
-      });
-    });
+        this.breadcrumbService.setFourthBreadcrumb({
+          route: [
+            `/iko-management/${repositoryConfig.key}/${params.aggregateKey}/${params.tabKey}`,
+          ],
+          content: this.translateService.instant('ikoManagement.searchActions.title'),
+          href: `/iko-management/${repositoryConfig.key}/${params.aggregateKey}/${params.tabKey}`,
+        });
+      })
+    );
   }
 }

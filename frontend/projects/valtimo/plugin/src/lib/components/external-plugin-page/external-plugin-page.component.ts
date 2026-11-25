@@ -19,7 +19,7 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@an
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {LoadingModule} from 'carbon-components-angular';
-import {map, Subscription, switchMap, take, tap, throwError} from 'rxjs';
+import {filter, map, Subscription, switchMap, take, tap, throwError} from 'rxjs';
 import {ExternalPluginIframeComponent} from '../external-plugin-iframe/external-plugin-iframe.component';
 import {FitPageDirective, MenuService, PageTitleService} from '@valtimo/components';
 import {ExternalPluginPageService, ExternalPluginSessionService} from '../../services';
@@ -133,12 +133,15 @@ export class ExternalPluginPageComponent implements OnInit, OnDestroy {
     this._titleSubscription?.unsubscribe();
     this._titleSubscription = this.menuService
       .getMenuItemTitleForUrl(this.router.url)
-      .pipe(take(1))
-      .subscribe(menuTitle => {
-        if (menuTitle) {
-          this.pageTitleService.setCustomPageTitle(this.translateService.instant(menuTitle));
-        }
-      });
+      .pipe(
+        take(1),
+        filter((menuTitle): menuTitle is string => !!menuTitle),
+        // Stream, not instant: follows a language switch like the menu item does
+        switchMap(menuTitle => this.translateService.stream(menuTitle))
+      )
+      .subscribe(translatedMenuTitle =>
+        this.pageTitleService.setCustomPageTitle(translatedMenuTitle)
+      );
   }
 
   private onLoaded(page: ExternalPluginMenuPage): void {

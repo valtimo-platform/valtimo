@@ -24,6 +24,7 @@ import {environment} from '@src/environments/environment';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
 import {of, Subject} from 'rxjs';
+import {PageTitleService} from '../../services';
 
 describe('PageTitleComponent', () => {
   let component: PageTitleComponent;
@@ -110,5 +111,52 @@ describe('PageTitleComponent with real translations', () => {
 
     expect(component.translatedTitle$.getValue()).toBe('');
     expect(titleService.getTitle()).toBe('Valtimo');
+  });
+});
+
+describe('PageTitleComponent on a page with a custom title', () => {
+  let fixture: ComponentFixture<PageTitleComponent>;
+  let titleService: Title;
+  let pageTitleService: PageTitleService;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [RouterTestingModule, LoggerTestingModule, TranslateModule.forRoot()],
+      declarations: [PageTitleComponent],
+      providers: [
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            firstChild: {data: of({customPageTitle: true})},
+            snapshot: {firstChild: {data: {title: 'Case details'}, children: []}},
+          },
+        },
+      ],
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    titleService = TestBed.inject(Title);
+    pageTitleService = TestBed.inject(PageTitleService);
+    fixture = TestBed.createComponent(PageTitleComponent);
+    fixture.detectChanges();
+  });
+
+  it('keeps the route title in the browser tab until the custom title is set', () => {
+    expect(titleService.getTitle()).toBe('Valtimo - Case details');
+  });
+
+  it('shows the custom title in the browser tab, like in the header', () => {
+    pageTitleService.setCustomPageTitle('Kwaliteitscheck');
+
+    expect(titleService.getTitle()).toBe('Valtimo - Kwaliteitscheck');
+  });
+
+  it('falls back to the route title when the custom title is cleared', () => {
+    pageTitleService.setCustomPageTitle('Kwaliteitscheck');
+    pageTitleService.setCustomPageTitle('');
+
+    expect(titleService.getTitle()).toBe('Valtimo - Case details');
   });
 });

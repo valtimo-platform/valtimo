@@ -38,7 +38,10 @@ The settings screen of an external plugin now grows with its content when you ed
 
 | Area | Fix |
 |------|-----|
+| Plugins | Opening an external plugin page no longer leaves the header and browser tab on the previous page's title. The page shows its menu title, follows a language switch, and shows the plugin configuration name when it has no menu item. |
+| Navigation | The browser tab shows the same title as the page header, also on pages that set their own title, such as case, form and plugin pages. |
+| Navigation | Breadcrumbs no longer link to the page you are on, no longer keep the menu section of the previous page, and no longer disappear after opening an IKO view directly. |
+| Cases | Leaving a case before its tabs have loaded, for example through the breadcrumb, no longer reloads the application on the dashboard. |
+| Navigation | Page titles that were still shown in English when Valtimo is in Dutch are now translated, such as the dashboard configuration, access control, plugin hosts, milestones and error pages. |
+| Menu | The menu configuration no longer offers the removed **Tasks (legacy)** page. A saved menu that still contains it no longer shows a menu item that leads nowhere. |
 | Forms | A form that a process link uses can no longer be deleted. Making a case definition final, exporting it and creating a draft now give a clear error when a process link points to a missing form. Case definitions that are already final and contain such a link are not repaired by this change. |
-| Documents | Editing Documenten API documents with status *definitief* is now allowed when the Documenten API supports it, for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw). |
-| Documents | Editing Documenten API documents with any other status is now allowed for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw).  |
-| Plugins | Opening an external plugin page no longer leaves the header and browser tab on the previous page's title, and the page now shows its menu title. |

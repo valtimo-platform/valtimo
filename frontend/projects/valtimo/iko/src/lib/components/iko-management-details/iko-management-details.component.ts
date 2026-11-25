@@ -130,18 +130,21 @@ export class IkoManagementDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Kept with the component: a late response would otherwise set the breadcrumb on the next page
   private setThirdBreadcrumb(): void {
-    this._apiKey$
-      .pipe(
-        take(1),
-        switchMap(apiKey => this.ikoManagementApiService.getIkoRepositoryConfig(apiKey))
-      )
-      .subscribe(repositoryConfig => {
-        this.breadcrumbService.setThirdBreadcrumb({
-          route: [`/iko-management/${repositoryConfig.key}`],
-          content: repositoryConfig?.title ?? '',
-          href: `/iko-management/${repositoryConfig.key}`,
-        });
-      });
+    this._subscriptions.add(
+      this._apiKey$
+        .pipe(
+          take(1),
+          switchMap(apiKey => this.ikoManagementApiService.getIkoRepositoryConfig(apiKey))
+        )
+        .subscribe(repositoryConfig => {
+          this.breadcrumbService.setThirdBreadcrumb({
+            route: [`/iko-management/${repositoryConfig.key}`],
+            content: repositoryConfig?.title ?? '',
+            href: `/iko-management/${repositoryConfig.key}`,
+          });
+        })
+    );
   }
 }

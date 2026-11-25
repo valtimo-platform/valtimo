@@ -78,6 +78,7 @@ export class MenuService implements OnDestroy {
         // No match means no highlight. Defaulting to '0' marked the first item -- the dashboard --
         // as active on every route no item owns.
         let closestSequence = '';
+        let activeParentSequence = '';
         let highestDiff = 0;
 
         const checkItemMatch = (rawUrl: string, seq: string, parentSeq?: string): void => {
@@ -86,7 +87,7 @@ export class MenuService implements OnDestroy {
           if (diff > highestDiff) {
             highestDiff = diff;
             closestSequence = seq;
-            this._activeParentSequenceNumber$.next(parentSeq || '');
+            activeParentSequence = parentSeq || '';
           }
         };
 
@@ -110,6 +111,11 @@ export class MenuService implements OnDestroy {
             }
           });
         });
+
+        // Also when nothing matches, or the previous page's section stays in the breadcrumb
+        if (this._activeParentSequenceNumber$.getValue() !== activeParentSequence) {
+          this._activeParentSequenceNumber$.next(activeParentSequence);
+        }
 
         return closestSequence;
       }),
