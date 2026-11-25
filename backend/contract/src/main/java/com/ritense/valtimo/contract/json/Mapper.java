@@ -30,7 +30,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule;
 public enum Mapper {
     INSTANCE;
     private final ObjectMapper objectMapper = new ObjectMapper()
-        .findAndRegisterModules()
+        .registerModules(JacksonModules.findModules())
         .registerModule(new JavaTimeModule())
         .registerModule(new KotlinModule.Builder().build());
 

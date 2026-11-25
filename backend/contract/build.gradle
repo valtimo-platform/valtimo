@@ -79,6 +79,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "com.jayway.jsonpath:json-path-assert"
+    testImplementation "com.fasterxml.jackson.module:jackson-module-scala_2.13"
 
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
 

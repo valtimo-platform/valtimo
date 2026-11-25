@@ -49,11 +49,15 @@ object MapperSingleton {
     @JvmStatic
     fun get(): ObjectMapper = mapper
 
-    init {
+    internal fun createDefault(): ObjectMapper {
         val builder = Jackson2ObjectMapperBuilder()
         customizer.customize(builder)
-        builder.findModulesViaServiceLoader(true)
-        mapper = builder.build()
+        builder.modulesToInstall(*JacksonModules.findModules().toTypedArray())
+        return builder.build()
+    }
+
+    init {
+        mapper = createDefault()
     }
 
 }

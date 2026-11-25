@@ -18,6 +18,7 @@ package com.ritense.formflow.json
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
+import com.ritense.valtimo.contract.json.JacksonModules
 import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import java.time.format.DateTimeFormatter
@@ -43,7 +44,7 @@ object MapperSingleton {
     init {
         val builder = Jackson2ObjectMapperBuilder()
         customizer.customize(builder)
-        builder.findModulesViaServiceLoader(true)
+        builder.modulesToInstall(*JacksonModules.findModules().toTypedArray())
         mapper = builder.build()
     }
 
