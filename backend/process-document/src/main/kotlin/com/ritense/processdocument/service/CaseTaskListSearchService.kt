@@ -478,7 +478,7 @@ class CaseTaskListSearchService(
         val taskTeamRoot = subquery.from(TaskTeam::class.java)
         subquery.select(taskTeamRoot.get(column))
         subquery.where(entityManager.criteriaBuilder.equal(taskTeamRoot.get<String>("taskId"), taskRoot.get<String>("id")))
-        return subquery.selection
+        return subquery
     }
 
     private fun getValueExpressionForCasePrefix(
