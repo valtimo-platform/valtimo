@@ -76,7 +76,11 @@ interface Documents {
 }
 
 type SpecifiedDocuments = Omit<Documents, 'content'> & {
-  content: Array<{id: string; items: Array<{key: string; value: string}>; locked?: boolean}>;
+  content: Array<{
+    id: string;
+    items: Array<{key: string; value: string; failed?: boolean}>;
+    locked?: boolean;
+  }>;
 };
 
 interface RelatedFile {

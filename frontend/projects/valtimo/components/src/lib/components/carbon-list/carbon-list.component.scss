@@ -228,3 +228,14 @@ td:first-child {
     }
   }
 }
+
+.valtimo-carbon-list__cell-load-failed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--cds-text-secondary);
+
+  svg {
+    fill: var(--cds-support-warning, #f1c21b);
+  }
+}

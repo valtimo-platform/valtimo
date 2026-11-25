@@ -95,6 +95,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
   @ViewChild('tagTemplate') tagTemplate: TemplateRef<any>;
   @ViewChild('defaultTemplate') defaultTemplate: TemplateRef<any>;
+  @ViewChild('cellLoadFailedTemplate') cellLoadFailedTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 
   private _completeDataSource: TableItem[][];
@@ -553,6 +554,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     const row = [
       ...this.getDragAndDropItemsItems(item, index, length),
       ...fields.map((field: ColumnConfig) => {
+        if (item.__failedColumns?.includes(field.key)) {
+          return new TableItem({
+            data: {item, index, length},
+            item,
+            template: this.cellLoadFailedTemplate,
+          });
+        }
         switch (field.viewType) {
           case ViewType.TEMPLATE:
             return new TableItem({

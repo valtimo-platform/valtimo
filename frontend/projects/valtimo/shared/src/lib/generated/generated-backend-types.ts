@@ -1513,6 +1513,7 @@ export interface CaseDefinitionId extends AbstractId<CaseDefinitionId>, Blueprin
 export interface CaseListItemDto {
     key: string;
     value: any | null;
+    failed?: boolean;
 }
 
 export interface ObjectNode extends ContainerNode<ObjectNode>, Serializable {

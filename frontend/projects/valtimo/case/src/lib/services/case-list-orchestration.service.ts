@@ -473,6 +473,9 @@ export class CaseListOrchestrationService {
     map(res => this.mapDocumentsToItems(res)),
     map(res => this.mapStatusAndTagColumns(res)),
     tap(items => {
+      if (Array.isArray(items) && items.some(item => item?.__failedColumns?.length)) {
+        this.showColumnLoadErrorToast();
+      }
       this._documentItems$.next(items);
       this._loadingAssigneeFilter$.next(false);
       this._loadingDocumentItems$.next(false);
@@ -721,6 +724,14 @@ export class CaseListOrchestrationService {
     this.globalNotificationService.showToast({
       title: this.translateService.instant('case.searchError.title'),
       caption: this.translateService.instant('case.searchError.description'),
+      type: 'error',
+    });
+  }
+
+  private showColumnLoadErrorToast(): void {
+    this.globalNotificationService.showToast({
+      title: this.translateService.instant('case.columnLoadError.title'),
+      caption: this.translateService.instant('case.columnLoadError.description'),
       type: 'error',
     });
   }

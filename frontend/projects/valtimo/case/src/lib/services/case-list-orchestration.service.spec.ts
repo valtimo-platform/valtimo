@@ -348,3 +348,128 @@ describe('CaseListOrchestrationService document pipeline resilience', () => {
     expect(latest?.[0]).toEqual(jasmine.objectContaining({id: 'doc-1', name: 'Case A'}));
   }));
 });
+
+describe('CaseListOrchestrationService column load error toast', () => {
+  const definitionContext: CaseListContext = {type: 'definition', key: 'house'};
+
+  const specifiedPage = (items: Array<{key: string; value: any; failed?: boolean}>): any => ({
+    content: [{id: 'doc-1', items}],
+    empty: false,
+    first: true,
+    last: true,
+    number: 0,
+    numberOfElements: 1,
+    size: 10,
+    sort: false,
+    totalElements: 1,
+    totalPages: 1,
+  });
+
+  const buildService = (
+    page: any
+  ): {
+    service: CaseListOrchestrationService;
+    showToast: jasmine.Spy;
+    listService: CaseListService;
+  } => {
+    const parameterStub = {
+      queryStatusParams$: of(null),
+      queryCaseTagsParams$: of(null),
+      searchFieldValues$: new BehaviorSubject({}),
+      setStatusParameter: () => {},
+      setCaseTagParameter: () => {},
+    };
+    const caseStatusService = jasmine.createSpyObj('CaseStatusService', [
+      'getInternalCaseStatuses',
+      'getGroupInternalCaseStatuses',
+    ]) as jasmine.SpyObj<CaseStatusService>;
+    caseStatusService.getInternalCaseStatuses.and.returnValue(of([]));
+    const caseTagService = jasmine.createSpyObj('CaseTagService', [
+      'getCaseTags',
+    ]) as jasmine.SpyObj<CaseTagService>;
+    caseTagService.getCaseTags.and.returnValue(of([]));
+
+    const documentService = {
+      getSpecifiedDocumentsSearch: jasmine
+        .createSpy('getSpecifiedDocumentsSearch')
+        .and.returnValue(of(page)),
+      getDocumentsSearch: jasmine.createSpy('getDocumentsSearch').and.returnValue(of(page)),
+      invalidSearchFields$: of([]),
+    };
+    const listService = new CaseListService(documentService as any);
+    const statusService = new CaseListStatusService(
+      listService,
+      caseStatusService,
+      parameterStub as any
+    );
+    const caseTagListService = new CaseListCaseTagService(
+      listService,
+      caseTagService,
+      parameterStub as any
+    );
+    const showToast = jasmine.createSpy('showToast');
+    const paginationService = {
+      pagination$: new BehaviorSubject({page: 1, size: 10, collectionSize: 0}),
+      setPagination: () => {},
+      setCollectionSize: () => {},
+      checkPage: () => {},
+    };
+
+    const service = new CaseListOrchestrationService(
+      {
+        canHaveAssignee$: new BehaviorSubject(false),
+        assigneeFilter$: new BehaviorSubject('ALL'),
+      } as any,
+      caseTagListService,
+      {getHiddenColumns: () => of([]), saveHiddenColumns: () => of([])} as any,
+      {getColumnsForContext: () => NEVER} as any,
+      {onDestroy: () => () => {}} as any,
+      documentService as any,
+      {showToast} as any,
+      listService,
+      {setCustomPageTitle: () => {}} as any,
+      paginationService as any,
+      parameterStub as any,
+      {requestPermission: () => of(true)} as any,
+      {refresh: () => {}} as any,
+      {
+        documentSearchFields$: new BehaviorSubject(null),
+        globalSearchFilter$: new BehaviorSubject(''),
+        mapSearchValuesToFilters: () => [],
+      } as any,
+      statusService,
+      {stream: () => NEVER, instant: (key: string) => key, get: () => of('x')} as any,
+      {initParams: () => {}} as any
+    );
+    return {service, showToast, listService};
+  };
+
+  const columnToastCount = (showToast: jasmine.Spy): number =>
+    showToast.calls.allArgs().filter(args => args[0]?.title === 'case.columnLoadError.title').length;
+
+  it('shows exactly one column-load-error toast when a page contains a failed cell', fakeAsync(() => {
+    const {service, showToast, listService} = buildService(
+      specifiedPage([{key: 'col', value: null, failed: true}])
+    );
+    service.hasApiColumnConfig$.next(true);
+    service.documentItems$.subscribe();
+
+    listService.setContext(definitionContext);
+    tick(50);
+
+    expect(columnToastCount(showToast)).toBe(1);
+  }));
+
+  it('shows no column-load-error toast when no cell failed', fakeAsync(() => {
+    const {service, showToast, listService} = buildService(
+      specifiedPage([{key: 'col', value: 'ok'}])
+    );
+    service.hasApiColumnConfig$.next(true);
+    service.documentItems$.subscribe();
+
+    listService.setContext(definitionContext);
+    tick(50);
+
+    expect(columnToastCount(showToast)).toBe(0);
+  }));
+});
