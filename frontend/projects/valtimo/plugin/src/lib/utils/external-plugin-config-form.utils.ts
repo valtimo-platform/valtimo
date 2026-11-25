@@ -98,7 +98,7 @@ function getExternalPluginActionStructure(
   };
 }
 
-/** False for keys the structure does not declare or values its inputs cannot hold. */
+/** False for keys the structure does not declare, explicit nulls, or values its inputs cannot hold. */
 function canRenderExternalPluginConfigValue(
   structure: ExternalPluginConfigStructure,
   value: unknown
@@ -271,7 +271,9 @@ function fitsField(
   value: unknown,
   allowValueExpressions: boolean
 ): boolean {
-  if (value === null || value === undefined) return true;
+  // Explicit null: the form drops empty fields, the JSON editor keeps it
+  if (value === null) return false;
+  if (value === undefined) return true;
   if (field.options) return field.options.includes(value as string | number);
 
   switch (field.type) {
