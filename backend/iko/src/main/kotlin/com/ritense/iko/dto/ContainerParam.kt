@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.iko.dto
 
+import com.ritense.case_.widget.interactivetable.InteractiveTableCaseWidgetProperties
 import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -28,6 +29,22 @@ data class ContainerParam(
     val filters: Map<String, String>
 ) {
     companion object {
+        fun fromFilter(
+            config: InteractiveTableCaseWidgetProperties.FilterConfig,
+            value: Any?
+        ): List<Pair<String, String>> {
+            val adapted = FilterConfig(
+                key = config.key,
+                title = config.title,
+                dataType = config.dataType,
+                fieldType = config.fieldType,
+                matchType = config.matchType,
+                dropdownDataProvider = config.dropdownDataProvider,
+                dropdownValues = config.dropdownValues
+            )
+            return fromFilter(adapted, value)
+        }
+
         fun fromFilter(config: FilterConfig, value: Any?): List<Pair<String, String>> {
             return if (value == null || value == "") {
                 emptyList()

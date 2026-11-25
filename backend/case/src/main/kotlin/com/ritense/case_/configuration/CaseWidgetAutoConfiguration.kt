@@ -70,6 +70,8 @@ import com.ritense.case_.widget.map.MapCaseWidgetMapper
 import com.ritense.case_.widget.metroline.MetrolineCaseWidgetDataProvider
 import com.ritense.case_.widget.metroline.MetrolineCaseWidgetMapper
 import com.ritense.case_.widget.metroline.ZaakMetrolineDataService
+import com.ritense.case_.widget.interactivetable.InteractiveTableCaseWidgetDataProvider
+import com.ritense.case_.widget.interactivetable.InteractiveTableCaseWidgetMapper
 import com.ritense.case_.widget.personcard.PersonCardCaseWidgetDataProvider
 import com.ritense.case_.widget.personcard.PersonCardCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
@@ -259,6 +261,17 @@ class CaseWidgetAutoConfiguration {
         objectMapper: ObjectMapper,
         valueResolverService: ValueResolverService
     ) = TableCaseWidgetDataProvider(objectMapper, valueResolverService)
+
+    @ConditionalOnMissingBean(InteractiveTableCaseWidgetMapper::class)
+    @Bean
+    fun interactiveTableCaseWidgetMapper() = InteractiveTableCaseWidgetMapper()
+
+    @ConditionalOnMissingBean(InteractiveTableCaseWidgetDataProvider::class)
+    @Bean
+    fun interactiveTableCaseWidgetDataProvider(
+        objectMapper: ObjectMapper,
+        valueResolverService: ValueResolverService
+    ) = InteractiveTableCaseWidgetDataProvider(objectMapper, valueResolverService)
 
     @ConditionalOnMissingBean(CollectionCaseWidgetMapper::class)
     @Bean

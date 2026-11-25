@@ -21,12 +21,17 @@ import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.domain.impl.JsonSchemaDocumentId.existingId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.NO_PAGE_SIZE
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
+import jakarta.servlet.http.HttpServletRequest
 import com.ritense.valtimo.contract.endpoint.EndpointDescription
 import com.ritense.widget.web.rest.dto.WidgetDataEnvelope
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -67,9 +72,20 @@ class CaseWidgetTabResource(
         @PathVariable documentId: UUID,
         @PathVariable tabKey: String,
         @PathVariable widgetKey: String,
-        @PageableDefault(size = 5) pageable: Pageable
+        @RequestParam properties: LinkedMultiValueMap<String, List<Any>>,
+        @PageableDefault(size = 5) pageable: Pageable,
+        request: HttpServletRequest
     ): ResponseEntity<Any> {
-        val data = caseWidgetService.getCaseWidgetData(documentId, tabKey, widgetKey, pageable)
+        val pageSize = request.parameterMap["size"]?.firstOrNull()?.toIntOrNull()
+        val collapsedProperties = properties
+            .map { if (it.value.size == 1) it.key to it.value.first() else it.key to it.value }
+            .toMap()
+        val allProperties = collapsedProperties + mapOf(
+            TAB_KEY to tabKey,
+            WIDGET_KEY to widgetKey,
+            NO_PAGE_SIZE to (pageSize == null || pageSize <= 0)
+        )
+        val data = caseWidgetService.getCaseWidgetData(documentId, tabKey, widgetKey, pageable, allProperties)
         return ResponseEntity.ofNullable(data)
     }
 
