@@ -54,6 +54,7 @@ import {
   Observable,
   of,
   startWith,
+  Subscription,
   switchMap,
   tap,
 } from 'rxjs';
@@ -172,6 +173,8 @@ export class CaseManagementWidgetTabComponent
     WidgetType.TEXT,
   ];
 
+  private readonly _subscriptions = new Subscription();
+
   /**
    * The selectable widget types. `external-plugin` is only offered when at least one activated
    * plugin configuration exposes a `case-widget` bundle. Emits the base list synchronously (never
@@ -218,6 +221,7 @@ export class CaseManagementWidgetTabComponent
   }
 
   public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
     this.breadcrumbService.clearThirdBreadcrumb();
     this.breadcrumbService.clearFourthBreadcrumb();
     this.pageTitleService.disableReset();
@@ -236,23 +240,25 @@ export class CaseManagementWidgetTabComponent
   }
 
   private initBreadcrumbs(): void {
-    combineLatest([
-      this.caseManagementRouteParams$,
-      this.translateService.stream('caseManagement.tabs.caseDetailsTab.title'),
-    ]).subscribe(([params, caseDetailsTitle]) => {
-      const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
+    this._subscriptions.add(
+      combineLatest([
+        this.caseManagementRouteParams$,
+        this.translateService.stream('caseManagement.tabs.caseDetailsTab.title'),
+      ]).subscribe(([params, caseDetailsTitle]) => {
+        const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
 
-      this.breadcrumbService.setThirdBreadcrumb({
-        route: [route],
-        content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
-        href: route,
-      });
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [route],
+          content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
+          href: route,
+        });
 
-      this.breadcrumbService.setFourthBreadcrumb({
-        route: [`${route}/case-details`],
-        content: caseDetailsTitle,
-        href: `${route}/case-details`,
-      });
-    });
+        this.breadcrumbService.setFourthBreadcrumb({
+          route: [`${route}/case-details`],
+          content: caseDetailsTitle,
+          href: `${route}/case-details`,
+        });
+      })
+    );
   }
 }

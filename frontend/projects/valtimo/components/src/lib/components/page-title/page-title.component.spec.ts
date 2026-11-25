@@ -17,12 +17,14 @@
 import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PageTitleComponent} from './page-title.component';
-import {TranslateService} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/shared';
 import {LoggerTestingModule} from 'ngx-logger/testing';
 import {environment} from '@src/environments/environment';
-import {ActivatedRoute} from '@angular/router';
-import {of} from 'rxjs';
+import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {Title} from '@angular/platform-browser';
+import {of, Subject} from 'rxjs';
+import {PageTitleService} from '../../services';
 
 describe('PageTitleComponent', () => {
   let component: PageTitleComponent;
@@ -59,5 +61,102 @@ describe('PageTitleComponent', () => {
 
   it('should have Valtimo as appTitle', () => {
     expect(component.appTitle).toEqual('Valtimo');
+  });
+});
+
+describe('PageTitleComponent with real translations', () => {
+  let component: PageTitleComponent;
+  let fixture: ComponentFixture<PageTitleComponent>;
+  let router: Router;
+  let titleService: Title;
+  let snapshot: {firstChild: {data: {title?: string}; children: Array<unknown>} | null};
+
+  beforeEach(waitForAsync(() => {
+    snapshot = {firstChild: {data: {title: 'Dashboard'}, children: []}};
+
+    TestBed.configureTestingModule({
+      imports: [RouterTestingModule, LoggerTestingModule, TranslateModule.forRoot()],
+      declarations: [PageTitleComponent],
+      providers: [
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            firstChild: {data: of({})},
+            get snapshot() {
+              return snapshot;
+            },
+          },
+        },
+      ],
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    router = TestBed.inject(Router);
+    titleService = TestBed.inject(Title);
+    fixture = TestBed.createComponent(PageTitleComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('clears the previous title when the next route has no title', () => {
+    expect(component.translatedTitle$.getValue()).toBe('Dashboard');
+    expect(titleService.getTitle()).toContain('Dashboard');
+
+    snapshot.firstChild = {data: {}, children: []};
+    (router.events as Subject<unknown>).next(
+      new NavigationEnd(1, '/plugin-pages/a', '/plugin-pages/a')
+    );
+
+    expect(component.translatedTitle$.getValue()).toBe('');
+    expect(titleService.getTitle()).toBe('Valtimo');
+  });
+});
+
+describe('PageTitleComponent on a page with a custom title', () => {
+  let fixture: ComponentFixture<PageTitleComponent>;
+  let titleService: Title;
+  let pageTitleService: PageTitleService;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [RouterTestingModule, LoggerTestingModule, TranslateModule.forRoot()],
+      declarations: [PageTitleComponent],
+      providers: [
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            firstChild: {data: of({customPageTitle: true})},
+            snapshot: {firstChild: {data: {title: 'Case details'}, children: []}},
+          },
+        },
+      ],
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    titleService = TestBed.inject(Title);
+    pageTitleService = TestBed.inject(PageTitleService);
+    fixture = TestBed.createComponent(PageTitleComponent);
+    fixture.detectChanges();
+  });
+
+  it('keeps the route title in the browser tab until the custom title is set', () => {
+    expect(titleService.getTitle()).toBe('Valtimo - Case details');
+  });
+
+  it('shows the custom title in the browser tab, like in the header', () => {
+    pageTitleService.setCustomPageTitle('Kwaliteitscheck');
+
+    expect(titleService.getTitle()).toBe('Valtimo - Kwaliteitscheck');
+  });
+
+  it('falls back to the route title when the custom title is cleared', () => {
+    pageTitleService.setCustomPageTitle('Kwaliteitscheck');
+    pageTitleService.setCustomPageTitle('');
+
+    expect(titleService.getTitle()).toBe('Valtimo - Case details');
   });
 });
