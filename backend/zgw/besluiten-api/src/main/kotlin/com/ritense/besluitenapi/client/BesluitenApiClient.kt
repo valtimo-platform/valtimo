@@ -20,7 +20,6 @@ import com.ritense.besluitenapi.BesluitenApiAuthentication
 import com.ritense.zgw.ClientTools
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.net.URI
@@ -115,9 +114,6 @@ class BesluitenApiClient(
             .clone()
             .apply {
                 authentication.applyAuth(it)
-            }
-            .messageConverters {
-                it + ResourceHttpMessageConverter(true)
             }
             .build()
     }

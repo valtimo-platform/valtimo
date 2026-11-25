@@ -31,7 +31,6 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8
 import org.apache.commons.io.FilenameUtils
 import org.springframework.core.io.Resource
-import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
@@ -138,9 +137,6 @@ class SmartDocumentsClient(
                     authentication.username,
                     authentication.password
                 )
-            }
-            .messageConverters {
-                it + ResourceHttpMessageConverter(true) // Enables streaming
             }
             .build()
     }

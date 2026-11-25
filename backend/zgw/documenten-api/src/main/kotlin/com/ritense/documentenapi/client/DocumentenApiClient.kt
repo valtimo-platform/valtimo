@@ -48,7 +48,6 @@ import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
-import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
@@ -534,9 +533,6 @@ class DocumentenApiClient(
             .clone()
             .apply {
                 authentication.applyAuth(it)
-            }
-            .messageConverters {
-                it + ResourceHttpMessageConverter(true)
             }
             .build()
     }

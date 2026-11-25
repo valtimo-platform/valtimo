@@ -76,8 +76,8 @@ class PdfConversionClient(
     private fun restClient(): RestClient {
         return restClientBuilder
             .clone()
-            .messageConverters {
-                it.add(ResourceHttpMessageConverter(true))
+            .configureMessageConverters { converters ->
+                converters.configureMessageConvertersList { it.add(ResourceHttpMessageConverter(true)) }
             }
             .build()
     }
