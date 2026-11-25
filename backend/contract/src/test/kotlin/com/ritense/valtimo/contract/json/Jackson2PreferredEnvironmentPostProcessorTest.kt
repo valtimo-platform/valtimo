@@ -36,6 +36,15 @@ class Jackson2PreferredEnvironmentPostProcessorTest {
     }
 
     @Test
+    fun `should default preferred json codec mapper to jackson2`() {
+        val environment = MockEnvironment()
+
+        processor.postProcessEnvironment(environment, SpringApplication())
+
+        assertEquals("jackson2", environment.getProperty(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_CODEC_MAPPER))
+    }
+
+    @Test
     fun `should not override explicitly configured preferred json mapper`() {
         val environment = MockEnvironment()
         environment.propertySources.addFirst(
@@ -45,5 +54,17 @@ class Jackson2PreferredEnvironmentPostProcessorTest {
         processor.postProcessEnvironment(environment, SpringApplication())
 
         assertEquals("jackson", environment.getProperty(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_MAPPER))
+    }
+
+    @Test
+    fun `should not override explicitly configured preferred json codec mapper`() {
+        val environment = MockEnvironment()
+        environment.propertySources.addFirst(
+            MapPropertySource("explicit", mapOf(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_CODEC_MAPPER to "jackson"))
+        )
+
+        processor.postProcessEnvironment(environment, SpringApplication())
+
+        assertEquals("jackson", environment.getProperty(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_CODEC_MAPPER))
     }
 }

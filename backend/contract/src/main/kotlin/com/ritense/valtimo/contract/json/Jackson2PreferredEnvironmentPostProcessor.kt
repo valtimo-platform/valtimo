@@ -23,15 +23,21 @@ import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.MapPropertySource
 
 /**
- * Valtimo serializes with Jackson 2. Spring Boot 4 prefers Jackson 3 for HTTP message converters
- * unless told otherwise, so this registers `jackson2` as the lowest-precedence default.
+ * Valtimo serializes with Jackson 2. Spring Boot 4 prefers Jackson 3 for HTTP message converters and
+ * WebClient codecs unless told otherwise, so this registers `jackson2` as the lowest-precedence default for both.
  */
 class Jackson2PreferredEnvironmentPostProcessor : EnvironmentPostProcessor {
 
     override fun postProcessEnvironment(environment: ConfigurableEnvironment, application: SpringApplication) {
         if (!environment.propertySources.contains(PROPERTY_SOURCE_NAME)) {
             environment.propertySources.addLast(
-                MapPropertySource(PROPERTY_SOURCE_NAME, mapOf(PREFERRED_JSON_MAPPER to "jackson2"))
+                MapPropertySource(
+                    PROPERTY_SOURCE_NAME,
+                    mapOf(
+                        PREFERRED_JSON_MAPPER to "jackson2",
+                        PREFERRED_JSON_CODEC_MAPPER to "jackson2",
+                    )
+                )
             )
         }
     }
@@ -39,5 +45,6 @@ class Jackson2PreferredEnvironmentPostProcessor : EnvironmentPostProcessor {
     companion object {
         const val PROPERTY_SOURCE_NAME = "valtimoJackson2Defaults"
         const val PREFERRED_JSON_MAPPER = "spring.http.converters.preferred-json-mapper"
+        const val PREFERRED_JSON_CODEC_MAPPER = "spring.http.codecs.preferred-json-mapper"
     }
 }

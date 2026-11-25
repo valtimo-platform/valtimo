@@ -34,8 +34,8 @@ class FlowmailerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(RestTemplate::class)
-    fun restTemplate(): RestTemplate {
-        return RestTemplateBuilder().build()
+    fun restTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate {
+        return restTemplateBuilder.build()
     }
 
     @Bean
