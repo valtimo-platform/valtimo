@@ -142,36 +142,57 @@ export class PermissionService {
       this.logger.debug('Permissions: queue timer finished');
 
       const queueCopy = [...this._permissionRequestQueue];
+      const inFlightKeys = queueCopy.map(permissionRequest =>
+        getPermissionRequestKey(permissionRequest)
+      );
 
       this.emptyQueue();
 
       this.permissionApiService
         .resolvePermissionRequestQueue(queueCopy)
         .pipe(take(1))
-        .subscribe(resolvedPermissions => {
-          const resolvedPendingPermissions: ResolvedPermissions = {};
+        .subscribe({
+          next: resolvedPermissions => {
+            const resolvedPendingPermissions: ResolvedPermissions = {};
 
-          Object.keys(resolvedPermissions).forEach(permissionRequestKey => {
-            const pendingPermission = this._pendingPermissions[permissionRequestKey];
+            Object.keys(resolvedPermissions).forEach(permissionRequestKey => {
+              const pendingPermission = this._pendingPermissions[permissionRequestKey];
 
-            // requests invalidated while in flight no longer have a pending permission
-            // and their results are discarded to prevent caching a stale value
-            if (!pendingPermission) return;
+              // requests invalidated while in flight no longer have a pending permission
+              // and their results are discarded to prevent caching a stale value
+              if (!pendingPermission) return;
 
-            pendingPermission.next(resolvedPermissions[permissionRequestKey]);
-            pendingPermission.complete();
-            delete this._pendingPermissions[permissionRequestKey];
+              pendingPermission.next(resolvedPermissions[permissionRequestKey]);
+              pendingPermission.complete();
+              delete this._pendingPermissions[permissionRequestKey];
 
-            resolvedPendingPermissions[permissionRequestKey] =
-              resolvedPermissions[permissionRequestKey];
+              resolvedPendingPermissions[permissionRequestKey] =
+                resolvedPermissions[permissionRequestKey];
 
-            this.logger.debug(
-              `Permissions: resolved pending permission request ${permissionRequestKey}`,
-              resolvedPermissions[permissionRequestKey]
-            );
-          });
+              this.logger.debug(
+                `Permissions: resolved pending permission request ${permissionRequestKey}`,
+                resolvedPermissions[permissionRequestKey]
+              );
+            });
 
-          this.cacheResolvedPermissions(resolvedPendingPermissions);
+            this.cacheResolvedPermissions(resolvedPendingPermissions);
+          },
+          error: () => {
+            // fail-closed: unsettled Subjects hang every forkJoin awaiting them; not cached, so a later request re-queues
+            inFlightKeys.forEach(permissionRequestKey => {
+              const pendingPermission = this._pendingPermissions[permissionRequestKey];
+
+              if (!pendingPermission) return;
+
+              pendingPermission.next(false);
+              pendingPermission.complete();
+              delete this._pendingPermissions[permissionRequestKey];
+
+              this.logger.debug(
+                `Permissions: failed to resolve pending permission request ${permissionRequestKey}; defaulting to false`
+              );
+            });
+          },
         });
     });
   }

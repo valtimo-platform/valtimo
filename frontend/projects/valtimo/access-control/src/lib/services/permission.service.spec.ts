@@ -17,7 +17,7 @@
 import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
-import {of} from 'rxjs';
+import {of, throwError} from 'rxjs';
 import {PermissionRequest, PermissionRequestQueue, ResolvedPermissions} from '../models';
 import {getPermissionRequestKey} from '../utils';
 import {PermissionApiService} from './permission-api.service';
@@ -137,5 +137,47 @@ describe('PermissionService', () => {
       requestPermission(CAN_VIEW_DOCUMENT_PERMISSION, DOCUMENT_RESOURCE, 'document-1')
     ).toBeTrue();
     expect(permissionApiService.resolvePermissionRequestQueue).toHaveBeenCalledTimes(1);
+  }));
+
+  it('settles and completes pending permissions fail-closed when the resolve fails', fakeAsync(() => {
+    permissionApiService.resolvePermissionRequestQueue.and.returnValue(
+      throwError(() => new Error('resolve failed'))
+    );
+
+    let emitted: boolean | undefined;
+    let completed = false;
+    service
+      .requestPermission(CAN_ASSIGN_TASK_PERMISSION, {resource: TASK_RESOURCE, identifier: 'task-1'})
+      .subscribe({next: value => (emitted = value), complete: () => (completed = true)});
+    tick(20);
+
+    expect(emitted).toBeFalse();
+    expect(completed).toBeTrue();
+    expect(permissionApiService.resolvePermissionRequestQueue).toHaveBeenCalledTimes(1);
+  }));
+
+  it('re-queues a subsequent request after a failed resolve instead of serving a stale false', fakeAsync(() => {
+    permissionApiService.resolvePermissionRequestQueue.and.returnValue(
+      throwError(() => new Error('resolve failed'))
+    );
+
+    expect(requestAssignTaskPermission('task-1')).toBeFalse();
+    expect(permissionApiService.resolvePermissionRequestQueue).toHaveBeenCalledTimes(1);
+
+    permissionApiService.resolvePermissionRequestQueue.and.callFake(
+      (permissionRequestQueue: PermissionRequestQueue) =>
+        of(
+          permissionRequestQueue.reduce(
+            (acc: ResolvedPermissions, permissionRequest: PermissionRequest) => ({
+              ...acc,
+              [getPermissionRequestKey(permissionRequest)]: true,
+            }),
+            {}
+          )
+        )
+    );
+
+    expect(requestAssignTaskPermission('task-1')).toBeTrue();
+    expect(permissionApiService.resolvePermissionRequestQueue).toHaveBeenCalledTimes(2);
   }));
 });
