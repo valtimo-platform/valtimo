@@ -16,25 +16,28 @@
 
 package com.ritense.authorization.permission.condition
 
+import org.hibernate.Hibernate
 import java.lang.reflect.Field
 
 abstract class ReflectingPermissionCondition(type: PermissionConditionType) : PermissionCondition(type) {
     protected fun findEntityFieldValue(entity: Any, field: String): Any? {
-        var currentEntity: Any? = entity
-        var currentClass: Class<*> = entity.javaClass
+        val rootEntity: Any = Hibernate.unproxy(entity)
+        var currentEntity: Any? = rootEntity
+        var currentClass: Class<*> = rootEntity.javaClass
         val fields = field.split('.')
         for (value in fields) {
             // Null in path resolves to null, but remaining segments are still validated against declared types
             val classToSearch = currentEntity?.javaClass ?: currentClass
             val declaredField = findDeclaredField(classToSearch, value)
-                ?: throw NoSuchFieldException("Field $fields not found in class ${entity.javaClass}")
+                ?: throw NoSuchFieldException("Field $fields not found in class ${rootEntity.javaClass}")
             currentClass = declaredField.type
 
             if (currentEntity != null) {
                 declaredField.trySetAccessible()
                 // Field.get(obj) does not (always) seem to work according to spec, because it throws a NullPointerException when the value of a property is null
+                // Unproxy: a Hibernate proxy's own fields are always empty
                 currentEntity = try {
-                    declaredField.get(currentEntity)
+                    Hibernate.unproxy(declaredField.get(currentEntity))
                 } catch (_: NullPointerException) {
                     null
                 }
