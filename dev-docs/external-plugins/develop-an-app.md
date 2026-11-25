@@ -157,8 +157,9 @@ The `manifest` follows the same rules as a packaged plugin's `manifest.json` —
 `configurationSchema` (see
 [Project anatomy & manifest](./develop-a-plugin.md#step-2-project-anatomy--manifest)). What you declare
 here is what the administrator is asked to accept, so the same rule applies: declare the minimum
-you need, and ship a `config` bundle unless you want administrators hand-writing your settings as
-JSON.
+you need. Keep `configurationSchema` flat and label it through `config.<property>.*` translations
+so GZAC can [generate the settings form](./develop-a-plugin.md#the-generated-forms); ship a
+`config` bundle only when you need a richer form than that.
 
 Pick a `pluginId` unique to your app: `pluginId@version` is unique across a whole GZAC
 environment, so registering an app whose plugin is already served by another integration there is

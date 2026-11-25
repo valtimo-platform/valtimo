@@ -46,12 +46,15 @@ import {
 })
 export class ExternalPluginService {
   private readonly _baseUrl: string;
+  private readonly _valueResolverUrl: string;
 
   constructor(
     private readonly _http: HttpClient,
     configService: ConfigService
   ) {
-    this._baseUrl = `${configService.config.valtimoApi.endpointUri}management/v1/external-plugin`;
+    const endpointUri = configService.config.valtimoApi.endpointUri;
+    this._baseUrl = `${endpointUri}management/v1/external-plugin`;
+    this._valueResolverUrl = `${endpointUri}management/v1/value-resolver`;
   }
 
   public getHosts(): Observable<Array<ExternalPluginHost>> {
@@ -153,6 +156,11 @@ export class ExternalPluginService {
 
   public getDefinition(definitionId: string): Observable<ExternalPluginDefinition> {
     return this._http.get<ExternalPluginDefinition>(`${this._baseUrl}/definition/${definitionId}`);
+  }
+
+  /** Prefixes such as `pv` and `doc` that GZAC resolves in action properties. */
+  public getValueResolverPrefixes(): Observable<Array<string>> {
+    return this._http.get<Array<string>>(this._valueResolverUrl);
   }
 
   public getConfiguration(configurationId: string): Observable<ExternalPluginConfigurationDetail> {

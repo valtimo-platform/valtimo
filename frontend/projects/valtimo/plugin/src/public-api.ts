@@ -28,6 +28,9 @@ export * from './lib/components/plugin-configuration-container/plugin-configurat
 export * from './lib/components/plugin-configuration-container/plugin-configuration-container.module';
 /* external plugin iframe */
 export * from './lib/components/external-plugin-iframe/external-plugin-iframe.component';
+
+/* external plugin generated configuration form */
+export * from './lib/components/external-plugin-config-form/external-plugin-config-form.component';
 /* external plugin routed page */
 export * from './lib/components/external-plugin-page/external-plugin-page.component';
 export * from './lib/external-plugin-page-routing.module';

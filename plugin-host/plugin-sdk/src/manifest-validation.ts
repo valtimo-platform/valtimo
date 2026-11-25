@@ -202,12 +202,15 @@ export function validatePluginManifest(manifest: unknown): string[] {
           }
         }
       }
+      // An absent list grants nothing, so it fails the pairing rules like an empty one. A non-array
+      // is already reported above and skips them.
+      const declaredCapabilities = capabilities === undefined ? [] : capabilities;
       const endpoints = p.endpoints;
       if (endpoints !== undefined) {
         if (!Array.isArray(endpoints)) {
           errors.push("manifest.json 'permissions.endpoints' must be an array when present");
         }
-        if (capabilities !== undefined && Array.isArray(capabilities) && !capabilities.includes("gzac_api")) {
+        if (Array.isArray(declaredCapabilities) && !declaredCapabilities.includes("gzac_api")) {
           errors.push(
             "manifest.json declares 'permissions.endpoints' but does not include 'gzac_api' in 'permissions.capabilities' — endpoints require the gzac_api capability"
           );
@@ -228,9 +231,8 @@ export function validatePluginManifest(manifest: unknown): string[] {
           // that reaches them is always an authoring mistake.
           if (
             egress.length > 0 &&
-            capabilities !== undefined &&
-            Array.isArray(capabilities) &&
-            !capabilities.includes("http_request")
+            Array.isArray(declaredCapabilities) &&
+            !declaredCapabilities.includes("http_request")
           ) {
             errors.push(
               "manifest.json declares 'permissions.egress' but does not include 'http_request' in 'permissions.capabilities' — egress targets require the http_request capability"
