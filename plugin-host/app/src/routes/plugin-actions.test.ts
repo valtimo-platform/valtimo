@@ -105,6 +105,22 @@ describe("plugin-actions routes", () => {
     );
   });
 
+  it("hands GZAC's reply handle to the action as is", async () => {
+    const replyHandle = "eyJjZmciOiJjZmctMSIsInBpIjoicGktMSJ9.bWFj";
+    await invokeAction(actionBody({ replyHandle }));
+    expect(pluginManager.callAction.mock.calls[0][3]).toMatchObject({ replyHandle });
+  });
+
+  it.each([
+    ["absent", undefined],
+    ["empty", ""],
+    ["not a string", { processInstanceId: "pi-1" }],
+  ])("passes no reply handle when GZAC's is %s", async (_label, replyHandle) => {
+    const res = await invokeAction(actionBody({ replyHandle }));
+    expect(res.statusCode).toBe(200);
+    expect(pluginManager.callAction.mock.calls[0][3]).not.toHaveProperty("replyHandle");
+  });
+
   it("maps a plugin-level error result to 422 (catchable as a BPMN error)", async () => {
     pluginManager.callAction.mockResolvedValueOnce({
       status: "error",

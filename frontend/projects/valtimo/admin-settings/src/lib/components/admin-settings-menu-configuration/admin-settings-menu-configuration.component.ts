@@ -50,6 +50,7 @@ import {
   MenuItemPlacement,
   serializeIncludeFunction,
   TooltipModule,
+  withoutRetiredMenuItems,
 } from '@valtimo/components';
 import {ConfigService, IncludeFunction} from '@valtimo/shared';
 import {ExternalPluginMenuPage, ExternalPluginPageService} from '@valtimo/plugin';
@@ -289,10 +290,12 @@ export class AdminSettingsMenuConfigurationComponent implements OnInit, OnDestro
       pages: this.pluginPageService.getMenuPages().pipe(catchError(() => of([]))),
     }).subscribe(({dto, pages}) => {
       this.$pluginPages.set(pages);
-      const items = hasSavedMenuConfiguration(dto)
-        ? (dto.configuration.items as MenuConfigurationItem[])
-        : buildMenuConfigurationFromRuntimeMenu(this.configService.config?.menu?.menuItems ?? [])
-            .items;
+      const items = withoutRetiredMenuItems(
+        hasSavedMenuConfiguration(dto)
+          ? (dto.configuration.items as MenuConfigurationItem[])
+          : buildMenuConfigurationFromRuntimeMenu(this.configService.config?.menu?.menuItems ?? [])
+              .items
+      );
       this.$structure.set(this._assignUids(items));
       this.$loading.set(false);
     });

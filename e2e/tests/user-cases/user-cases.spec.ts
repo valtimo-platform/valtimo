@@ -160,6 +160,66 @@ test.describe('Feature 2 — Cases (User)', () => {
     });
   });
 
+  // Regression for gzac-issues#1022: Edit was disabled for every definitief document, and for
+  // every document when the API version did not support updating definitief documents.
+  test.describe('2.18 — Edit action on ZGW documents', () => {
+    const {inEditingFile, definitiveFile} = USER_CASES_CONFIG.zgwDocuments;
+    let created: CreatedCase;
+
+    test.beforeAll(async () => {
+      created = await userCasesPage.createCaseViaApi();
+      createdCases.push(created);
+    });
+
+    test.afterAll(async () => {
+      try {
+        await userCasesPage.unstubZgwDocuments(created.documentId);
+      } catch {
+        // Routes already removed
+      }
+    });
+
+    test.describe('API version supports updating definitief documents', () => {
+      test.beforeAll(async () => {
+        await userCasesPage.unstubZgwDocuments(created.documentId);
+        await userCasesPage.stubZgwDocuments(created.documentId, true);
+        await userCasesPage.openZgwDocumentsTab(created.documentId);
+      });
+
+      test('Edit is enabled for an in_bewerking document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(inEditingFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeEnabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+
+      test('Edit is enabled for a definitief document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(definitiveFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeEnabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+    });
+
+    test.describe('API version does not support updating definitief documents', () => {
+      test.beforeAll(async () => {
+        await userCasesPage.unstubZgwDocuments(created.documentId);
+        await userCasesPage.stubZgwDocuments(created.documentId, false);
+        await userCasesPage.openZgwDocumentsTab(created.documentId);
+      });
+
+      test('Edit is still enabled for an in_bewerking document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(inEditingFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeEnabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+
+      test('Edit is disabled for a definitief document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(definitiveFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeDisabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+    });
+  });
+
   test.describe('2.6 — Execute tasks within case', () => {
     let created: CreatedCase;
 

@@ -295,6 +295,11 @@ valtimo:
             TemporaryResourceStorageService:
                 enabled: false
 
+epistola:
+    base-url: ${EPISTOLA_BASE_URL:http://localhost:4000/api}
+    version-check:
+        enabled: false
+
 spring-actuator:
     username: ${SPRING_ACTUATOR_USERNAME:admin}
     password: ${SPRING_ACTUATOR_PASSWORD}

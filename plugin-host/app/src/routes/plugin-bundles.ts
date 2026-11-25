@@ -44,7 +44,7 @@ const MIME_TYPES: Record<string, string> = {
  * honest plugin loses nothing — all of its GZAC traffic flows through the parent-proxy postMessage
  * transport, and its own assets all live under the same bundle path.
  *
- * The `sandbox` directive mirrors the embedding iframe's `sandbox="allow-scripts allow-forms"`
+ * The `sandbox` directive mirrors the embedding iframe's `sandbox="allow-scripts allow-forms allow-downloads"`
  * attribute so a bundle opened directly in a top-level tab is *also* confined to an opaque origin
  * instead of running same-origin with the host.
  *
@@ -62,7 +62,7 @@ const BUNDLE_CSP_DIRECTIVES = [
   "form-action 'self'",
   "base-uri 'none'",
   "object-src 'none'",
-  "sandbox allow-scripts allow-forms",
+  "sandbox allow-scripts allow-forms allow-downloads",
 ];
 
 /**

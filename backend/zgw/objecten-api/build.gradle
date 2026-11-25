@@ -38,6 +38,7 @@ dependencies {
     implementation project(':backend:logging')
     implementation project(':backend:process-document')
     implementation project(':backend:value-resolver')
+    implementation project(':backend:zgw')
     implementation project(':backend:zgw:zaken-api')
     implementation project(':backend:zgw:objecttypen-api')
     implementation project(':backend:outbox')

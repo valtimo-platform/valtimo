@@ -38,6 +38,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginActionComponent} from './components/select-plugin-action/select-plugin-action.component';
 import {
+  ExternalPluginConfigFormComponent,
   ExternalPluginIframeComponent,
   PluginConfigurationContainerModule,
   PluginTranslatePipeModule,
@@ -141,6 +142,7 @@ import {ReadOnlyContentDirective} from './directives';
     PluginActionResultMappingsComponent,
     NotificationModule,
     ExternalPluginIframeComponent,
+    ExternalPluginConfigFormComponent,
   ],
   exports: [
     ProcessLinkComponent,

@@ -3,11 +3,16 @@
 
 When an administrator wires this plugin's action onto a BPMN task, the process-link stepper shows
 this React bundle instead of the form it would otherwise generate from `actions[].properties`. It
-configures **one use** of the action; `frontend/config.tsx` configures the plugin as a whole.
+configures **one use** of the action; the plugin as a whole is configured in the `config` bundle
+when you ship one, otherwise in the form Valtimo generates from `configurationSchema`.
 
 The values it reports through `sdk.setConfiguration(valid, "", data)` arrive as
 `input.properties` in the `action("__PLUGIN_ID__", …)` handler in `src/plugin.ts`. The title
 argument is empty on purpose — a process link has no name of its own.
+
+Its strings are the `action.greeting.label` / `.placeholder` / `.tooltip` keys every scaffolded
+project carries: the same keys Valtimo uses to label the form it generates from
+`actions[].properties`, so removing this bundle leaves a labelled form behind.
 
 GZAC matches this bundle to the action by `key`, which is why the bundle is keyed `__PLUGIN_ID__`,
 exactly like `actions[0]`.

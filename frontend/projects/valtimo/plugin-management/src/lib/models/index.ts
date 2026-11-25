@@ -15,5 +15,6 @@
  */
 
 export * from './external-plugin-permissions.model';
+export * from './external-plugin-configure.model';
 export * from './plugin-modal.model';
 export * from './unified-plugin-definition.model';
