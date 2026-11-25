@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-// Local dev builds use this file so the @valtimo-plugins/* packages are not in
-// the import graph (workspace symlinks would break Vite pre-bundling of their
-// transitive @valtimo/* imports). Release builds swap to app-plugins.prod.ts
-// via angular.json fileReplacements; CI installs the matching packages from
-// release-plugins.json before building.
-export const pluginImports: any[] = [];
-export const pluginSpecifications: any[] = [];
+// Local dev builds use this file. Only plugin packages that resolve against the
+// @valtimo/* sources are imported here: scripts/copy-dev-plugin-packages.js
+// copies them out of node_modules and tsconfig.json maps them to that copy.
+// The @valtimo-plugins/* packages are not in the import graph (their transitive
+// @valtimo/* imports would not resolve against the workspace links). Release
+// builds swap to app-plugins.prod.ts via angular.json fileReplacements; CI
+// installs the matching packages from release-plugins.json before building.
+import {EpistolaPluginModule, epistolaPluginSpecification} from '@epistola.app/valtimo-plugin';
+
+export const pluginImports: any[] = [EpistolaPluginModule];
+export const pluginSpecifications: any[] = [epistolaPluginSpecification];

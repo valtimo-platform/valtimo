@@ -54,8 +54,9 @@ automatically by `ng serve` — no manual rebuild required.
 
 `npm run build:dev` and `npm run build:gzac` produce optimised bundles via
 `ng build <variant> --configuration production`. These swap in
-`app-plugins.prod.ts` (which imports `@valtimo-plugins/{smtpmail,freemarker}`)
-through Angular `fileReplacements`. Those plugin tarballs are **not** in
+`app-plugins.prod.ts` (which imports `@valtimo-plugins/{smtpmail,freemarker}`;
+the dev variant's file also imports `@epistola.app/valtimo-plugin`) through
+Angular `fileReplacements`. The `@valtimo-plugins/*` tarballs are **not** in
 `frontend/package.json` — they are installed only inside CI by
 `.github/workflows/frontend_build_push_docker_image.yml`'s
 "Add release plugin dependencies" step (reading
