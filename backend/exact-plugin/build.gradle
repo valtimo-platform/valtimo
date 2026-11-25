@@ -42,6 +42,7 @@ dependencies {
     testImplementation project(':backend:plugin')
     testImplementation project(':backend:process-document')
     testImplementation project(':backend:resource')
+    testImplementation project(':backend:test-utils-common')
     testImplementation project(':backend:value-resolver')
 
     testImplementation "org.springframework.security:spring-security-test"

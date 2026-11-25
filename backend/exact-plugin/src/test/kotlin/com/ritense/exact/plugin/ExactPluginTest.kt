@@ -11,6 +11,7 @@ import com.ritense.exact.config.ExactPluginAutoConfiguration
 import com.ritense.exact.plugin.ExactPlugin.ExactCallProperties
 import com.ritense.exact.service.ExactService
 import com.ritense.plugin.domain.PluginConfiguration
+import com.ritense.testutilscommon.http.Jackson2Http
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -53,7 +54,10 @@ internal class ExactPluginTest {
     fun setUpEach() {
         exactService = mock()
         context = mock()
-        exactClient = ExactPluginAutoConfiguration().exactClient("http://localhost:${mockWebServer.port}")
+        exactClient = ExactPluginAutoConfiguration().exactClient(
+            "http://localhost:${mockWebServer.port}",
+            Jackson2Http.restClientBuilder(),
+        )
         exactPlugin = ExactPlugin(exactService, exactClient, context)
     }
 

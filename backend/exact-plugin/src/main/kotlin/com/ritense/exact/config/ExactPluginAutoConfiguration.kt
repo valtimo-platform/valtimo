@@ -31,9 +31,11 @@ class ExactPluginAutoConfiguration {
     )
 
     @Bean
-    fun exactClient(@Value("\${exact.baseUrl}") baseUrl: String): RestClient =
-        RestClient
-            .builder()
+    fun exactClient(
+        @Value("\${exact.baseUrl}") baseUrl: String,
+        restClientBuilder: RestClient.Builder,
+    ): RestClient =
+        restClientBuilder
             .baseUrl(baseUrl)
             .defaultHeader("Accept", "application/json")
             .build()

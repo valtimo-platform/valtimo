@@ -11,6 +11,7 @@ import com.ritense.exact.service.request.ExactExchangeRequest
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.json.MapperSingleton
 import java.time.Duration
 import java.time.LocalDateTime
@@ -42,7 +43,10 @@ internal class ExactServiceTest {
 
     @BeforeEach
     fun setUp() {
-        exactClient = ExactPluginAutoConfiguration().exactClient("http://localhost:${mockWebServer.port}")
+        exactClient = ExactPluginAutoConfiguration().exactClient(
+            "http://localhost:${mockWebServer.port}",
+            Jackson2Http.restClientBuilder(),
+        )
         pluginService = mock()
         objectMapper = MapperSingleton.get()
         exactService = ExactService("", exactClient, pluginService, objectMapper)
