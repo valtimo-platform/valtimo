@@ -31,6 +31,7 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginDependency
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
+import com.ritense.zgw.ZgwUrlValidator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -170,28 +171,7 @@ class ObjectenApiPlugin(
             baseUrl != null && isUrlOfObjectenApi(baseUrl, url)
         }
 
-        fun isUrlOfObjectenApi(baseUrl: URI, objectUrl: URI): Boolean {
-            if (baseUrl.isOpaque || objectUrl.isOpaque) return false
-            if (baseUrl.scheme == null || baseUrl.host == null || objectUrl.scheme == null || objectUrl.host == null) {
-                return false
-            }
-            if (!baseUrl.scheme.equals(objectUrl.scheme, ignoreCase = true)) return false
-            if (!baseUrl.host.equals(objectUrl.host, ignoreCase = true)) return false
-            if (effectivePort(baseUrl) != effectivePort(objectUrl)) return false
-            if (objectUrl.rawUserInfo != null && objectUrl.rawUserInfo != baseUrl.rawUserInfo) return false
-
-            val objectPath = objectUrl.path.orEmpty()
-            if (objectPath.split('/').any { it == ".." }) return false
-            val normalizedPath = objectUrl.normalize().path.orEmpty()
-            val basePath = baseUrl.normalize().path.orEmpty().trimEnd('/')
-            return normalizedPath == basePath || normalizedPath.startsWith("$basePath/")
-        }
-
-        private fun effectivePort(uri: URI): Int = when {
-            uri.port != -1 -> uri.port
-            uri.scheme.equals("https", ignoreCase = true) -> 443
-            uri.scheme.equals("http", ignoreCase = true) -> 80
-            else -> -1
-        }
+        fun isUrlOfObjectenApi(baseUrl: URI, objectUrl: URI): Boolean =
+            ZgwUrlValidator.isUrlUnderBaseUrl(baseUrl, objectUrl)
     }
 }

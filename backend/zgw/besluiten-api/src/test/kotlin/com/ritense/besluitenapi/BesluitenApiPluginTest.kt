@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.besluitenapi.client.Besluit
 import com.ritense.besluitenapi.client.BesluitInformatieObject
 import com.ritense.besluitenapi.client.BesluitNotFoundException
+import com.ritense.besluitenapi.client.BesluitUrlNotAllowedException
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.besluitenapi.client.CreateBesluitInformatieObject
 import com.ritense.besluitenapi.client.CreateBesluitRequest
@@ -34,8 +35,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -232,6 +236,7 @@ class BesluitenApiPluginTest {
         val zaakUrlProvider = mock<ZaakUrlProvider>() // only needed for constructor if required
 
         val plugin = BesluitenApiPlugin(besluitenApiClient, zaakUrlProvider, objectMapper)
+        plugin.url = URI("http://besluiten.api/")
         plugin.authenticationPluginConfiguration = authenticationMock
 
         val besluitUrl = URI("http://besluiten.api/besluit")
@@ -288,6 +293,48 @@ class BesluitenApiPluginTest {
         assertEquals(publicatiedatum, patchBesluitRequest.publicatiedatum)
         assertEquals(verzenddatum, patchBesluitRequest.verzenddatum)
         assertEquals(uiterlijkeReactieDatum, patchBesluitRequest.uiterlijkeReactiedatum)
+    }
+
+    @Test
+    fun `should patch besluit when base url has a path`() {
+        val plugin = BesluitenApiPlugin(besluitenApiClient, zaakUrlProvider, objectMapper).apply {
+            url = URI("https://host/besluiten/api/v1/")
+            authenticationPluginConfiguration = mock()
+        }
+        val besluitUrl = URI("https://host/besluiten/api/v1/besluiten/${UUID.randomUUID()}")
+        val besluit = mock<Besluit>()
+        whenever(besluitenApiClient.patchBesluit(any(), any(), any())).thenReturn(besluit)
+
+        val result = plugin.patchBesluit(besluitUrl = besluitUrl, toelichting = "toelichting")
+
+        assertEquals(besluit, result)
+        verify(besluitenApiClient).patchBesluit(any(), eq(besluitUrl), any())
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+        strings = [
+            "http://127.0.0.1:9999/steal-token",
+            "http://besluiten.api.evil.tld/besluiten/123",
+            "https://besluiten.api/besluiten/123",
+            "http://besluiten.api:8080/besluiten/123",
+            "http://besluiten.api/other/besluiten/123",
+            "http://besluiten.api/besluiten/../other/123",
+            "http://user:pass@besluiten.api/besluiten/123",
+            "http://besluiten.api@evil.tld/besluiten/123",
+        ]
+    )
+    fun `should reject patching besluit outside of besluiten api url`(besluitUrl: String) {
+        val plugin = BesluitenApiPlugin(besluitenApiClient, zaakUrlProvider, objectMapper).apply {
+            url = URI("http://besluiten.api/besluiten")
+            authenticationPluginConfiguration = mock()
+        }
+
+        assertThrows(BesluitUrlNotAllowedException::class.java) {
+            plugin.patchBesluit(besluitUrl = URI(besluitUrl), toelichting = "toelichting")
+        }
+
+        verify(besluitenApiClient, never()).patchBesluit(any(), any(), any())
     }
 
     @Test

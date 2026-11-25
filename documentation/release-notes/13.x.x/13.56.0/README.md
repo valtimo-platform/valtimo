@@ -2,6 +2,10 @@
 
 Release date: 25-11-2026
 
+{% hint style="warning" %}
+This release contains security fixes. See [Security](#security) for details.
+{% endhint %}
+
 ---
 
 ## New Features
@@ -47,3 +51,11 @@ The settings screen of an external plugin now grows with its content when you ed
 | Navigation | Page titles that were still shown in English when Valtimo is in Dutch are now translated. |
 | Navigation | The browser tab now shows the same title as the page header on every page. |
 | Plugins | Opening an external plugin page no longer leaves the header and browser tab on the previous page's title. |
+
+---
+
+## Security
+
+| Severity | Fix |
+|----------|-----|
+| High | The **Patch Zaakbesluit** action of the Besluiten API plugin now only accepts besluit URLs that belong to the Besluiten API it is configured with. If your Besluiten API returns besluit URLs with a different host, port or path than the URL in the plugin configuration, update the plugin configuration to match, otherwise the action fails for those besluiten. |
