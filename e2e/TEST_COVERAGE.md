@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered | ⏳ In Progress | `N/A` |
 |-----------------------------|----------|-----------|------------|----------------|----------------|-------|
-| User Features (ROLE_USER)   | 5        | 36        | 31         | 4              | 0              | 1     |
+| User Features (ROLE_USER)   | 5        | 37        | 32         | 4              | 0              | 1     |
 | Admin Features (ROLE_ADMIN) | 15       | 388       | 375        | 7              | 1              | 5     |
-| **Total**                   | **20**   | **424**   | **406**    | **11**         | **1**          | **6** |
+| **Total**                   | **20**   | **425**   | **407**    | **11**         | **1**          | **6** |
 
-**Coverage:** `406 / 424` — `95.8%`
+**Coverage:** `407 / 425` — `95.8%`
 
 > Counts are one per numbered row (lettered sub-rows such as `4.2a` count as their own row). Functions = ✅ + ❌ + ⏳ + `N/A`.
 
@@ -63,6 +63,7 @@
 | 2.15   | Group case list edge cases               | Group without columns renders · failed search shows error, clears rows, next search still runs · unknown group shows 'Case group not available' and loads nothing else · not-found title translated in Dutch on a full page load |    ✅    | group-case-list.spec.ts — backend 404 for unknown group is not asserted (the frontend handles it) |
 | 2.16   | In-panel form persistence | Start form and task form in side panel survive tab switches (incl. task-hiding tabs) · closes via header button, confirming unsaved changes |    ✅    | user-cases.spec.ts |
 | 2.17   | Cases overview colors and menu           | Group tile color without pinning, grey fallback · sidebar dot updates without reload (case type, group) · direct load expands Cases · show-all mode shows dots on tiles, rows and menu items |    ✅    | cases-overview.spec.ts                           |
+| 2.18   | Edit action on ZGW documents             | Edit enabled for in_bewerking documents · enabled for definitief documents when the API version supports updating them · disabled for definitief documents otherwise |    ✅    | user-cases.spec.ts (Documenten API responses stubbed; regression for gzac-issues#1022) |
 
 ---
 
@@ -813,8 +814,8 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   424   |
-| ✅ Covered by Playwright |   406   |
+| Total Functions          |   425   |
+| ✅ Covered by Playwright |   407   |
 | ❌ Not covered           |   11    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    6    |

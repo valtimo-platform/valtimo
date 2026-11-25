@@ -362,6 +362,94 @@ class ExternalPluginEndpointAllowlistFilterTest {
         verify(grantedEndpointRepository, org.mockito.kotlin.times(1)).findAllByConfigurationId(configId)
     }
 
+    @Test
+    fun `service principals reach the contract surface without any endpoint grant`() {
+        val configId = UUID.randomUUID()
+        authenticateAsPlugin(configId)
+        listOf(
+            "POST" to "/api/v1/plugin-contract/call",
+            "POST" to "/api/v1/plugin-contract/jobs",
+            "POST" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}/complete",
+            "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
+        ).forEach { (method, path) ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
+
+            filter.doFilter(request(method, path), response, chain)
+
+            assertThat(chain.request).describedAs("$method $path").isNotNull()
+            assertThat(response.status).isEqualTo(200)
+        }
+        verify(grantedEndpointRepository, never()).findAllByConfigurationId(any())
+    }
+
+    @Test
+    fun `user principals get no contract carve-out`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId)).thenReturn(emptyList())
+        listOf(
+            "POST" to "/api/v1/plugin-contract/call",
+            "POST" to "/api/v1/plugin-contract/jobs",
+            "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
+        ).forEach { (method, path) ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
+
+            filter.doFilter(request(method, path), response, chain)
+
+            assertThat(response.status).describedAs("$method $path").isEqualTo(403)
+            assertThat(chain.request).isNull()
+        }
+    }
+
+    @Test
+    fun `user principals cannot reach the contract surface even when it was granted`() {
+        val configId = UUID.randomUUID()
+        authenticateAsUser(configId)
+        whenever(grantedEndpointRepository.findAllByConfigurationId(configId)).thenReturn(
+            listOf(
+                grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/jobs"),
+                grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/call"),
+                grantedEndpoint(configId, "POST", "/api/v1/plugin-contract/jobs/*/complete"),
+                grantedEndpoint(configId, "GET", "/api/v1/plugin-contract/**"),
+            )
+        )
+        listOf(
+            "POST" to "/api/v1/plugin-contract/jobs",
+            "POST" to "/api/v1/plugin-contract/call",
+            "POST" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}/complete",
+            "GET" to "/api/v1/plugin-contract/jobs/${UUID.randomUUID()}",
+        ).forEach { (method, path) ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
+
+            filter.doFilter(request(method, path), response, chain)
+
+            assertThat(response.status).describedAs("$method $path").isEqualTo(403)
+            assertThat(chain.request).isNull()
+        }
+    }
+
+    @Test
+    fun `the contract carve-out leaves the denylist intact`() {
+        val configId = UUID.randomUUID()
+        authenticateAsPlugin(configId)
+        listOf(
+            "/api/v1/external-plugin/contract-call",
+            "/api/management/v1/external-plugin/contract-job",
+            "/api/v1/plugin-contracts/call",
+        ).forEach { path ->
+            val response = MockHttpServletResponse()
+            val chain = MockFilterChain()
+
+            filter.doFilter(request("POST", path), response, chain)
+
+            assertThat(response.status).describedAs(path).isEqualTo(403)
+            assertThat(chain.request).isNull()
+        }
+    }
+
     private fun request(method: String, path: String) =
         MockHttpServletRequest(method, path).apply { servletPath = path }
 

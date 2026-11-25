@@ -239,9 +239,9 @@ export class CaseManagementPage {
   }
 
   async uploadFileStep(archiveName: string) {
-    await expect(this.page.getByText('Upload file')).toBeVisible();
+    await expect(this.fileUploader.getByText('Upload file')).toBeVisible();
     await expect(
-      this.page.getByText('Max file size is 500kb. Supported file type is ZIP.')
+      this.fileUploader.getByText('Max file size is 500kb. Supported file type is ZIP.')
     ).toBeVisible();
     await this.uploadCaseConfiguration(archiveName);
     await expect(this.uploadWizardNextButton).toBeEnabled();
@@ -249,11 +249,11 @@ export class CaseManagementPage {
   }
 
   async uploadInvalidFileStep(archiveName: string) {
-    await expect(this.page.getByText('Upload file')).toBeVisible();
+    await expect(this.fileUploader.getByText('Upload file')).toBeVisible();
     await this.uploadCaseConfiguration(archiveName);
-    await expect(this.page.getByText('Invalid file')).toBeVisible();
+    await expect(this.fileUploader.getByText('Invalid file')).toBeVisible();
     await expect(
-      this.page.getByText('The file could not be read as a valid case definition archive.')
+      this.fileUploader.getByText('The file could not be read as a valid case definition archive.')
     ).toBeVisible();
     await expect(this.uploadWizardNextButton).toBeDisabled();
   }

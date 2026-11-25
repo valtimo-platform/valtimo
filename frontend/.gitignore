@@ -8,6 +8,7 @@
 
 # dependencies
 /node_modules
+/dev-plugin-packages
 /projects/valtimo/layout/src/beagle/src/assets
 
 # profiling files

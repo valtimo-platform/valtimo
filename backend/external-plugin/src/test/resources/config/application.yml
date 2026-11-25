@@ -35,6 +35,10 @@ spring:
 valtimo:
     plugin:
         encryption-secret: "abcdefghijklmnop"
+    external-plugin:
+        contract-job:
+            # Tests drive the dispatcher directly; a scheduled run would race them.
+            dispatcher-enabled: false
 
 spring-actuator:
     username: admin

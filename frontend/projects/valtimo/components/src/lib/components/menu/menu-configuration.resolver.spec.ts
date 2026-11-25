@@ -15,8 +15,12 @@
  */
 
 import {IncludeFunction, MenuItem, ROLE_ADMIN, ROLE_USER} from '@valtimo/shared';
-import {CatalogMenuConfigurationItem, MenuConfiguration} from './menu-configuration.model';
-import {resolveMenuConfiguration} from './menu-configuration.resolver';
+import {
+  CatalogMenuConfigurationItem,
+  MenuConfiguration,
+  MenuConfigurationItem,
+} from './menu-configuration.model';
+import {resolveMenuConfiguration, withoutRetiredMenuItems} from './menu-configuration.resolver';
 import {buildMenuConfigurationFromRuntimeMenu} from './menu-configuration.seed';
 import {menuLinkToString} from './menu-item-catalog';
 
@@ -135,6 +139,22 @@ describe('menu configuration resolver', () => {
     // tasks survives, plus the auto-injected required Admin item
     expect(resolved.some(item => item.title === 'Tasks')).toBeTrue();
     expect(resolved.some(item => item.title === 'does-not-exist')).toBeFalse();
+  });
+
+  it('silently drops the removed task management page from a menu saved while it was listed', () => {
+    spyOn(console, 'warn');
+    const config: MenuConfiguration = {
+      version: 1,
+      items: [{kind: 'catalog', itemId: 'taskManagement'}],
+    };
+
+    const links = resolveMenuConfiguration(config).flatMap(item => [
+      item.link,
+      ...(item.children ?? []).map(child => child.link),
+    ]);
+
+    expect(links).not.toContain(['/task-management']);
+    expect(console.warn).not.toHaveBeenCalled();
   });
 
   it('forces the required Admin + Settings items present when the saved config omits them', () => {
@@ -395,6 +415,34 @@ describe('menu configuration reverse-seed mapper', () => {
     // The resolver additionally appends the required Admin item (this menu omits it), which the
     // required-item test covers separately.
     expect(resolveMenuConfiguration(config)[0]).toEqual(header);
+  });
+});
+
+describe('withoutRetiredMenuItems', () => {
+  it('drops retired catalog items at the top level and inside sections', () => {
+    const items: MenuConfigurationItem[] = [
+      {kind: 'catalog', itemId: 'taskManagement'},
+      {
+        kind: 'catalog',
+        itemId: 'admin',
+        children: [
+          {kind: 'catalog', itemId: 'processMigration'},
+          {kind: 'catalog', itemId: 'taskManagement'},
+        ],
+      },
+      {kind: 'group', title: 'Group', children: [{kind: 'catalog', itemId: 'taskManagement'}]},
+    ];
+
+    expect(withoutRetiredMenuItems(items)).toEqual([
+      {kind: 'catalog', itemId: 'admin', children: [{kind: 'catalog', itemId: 'processMigration'}]},
+      {kind: 'group', title: 'Group', children: []},
+    ]);
+  });
+
+  it('keeps unknown, non-retired items', () => {
+    const items: MenuConfigurationItem[] = [{kind: 'catalog', itemId: 'somethingElse'}];
+
+    expect(withoutRetiredMenuItems(items)).toEqual(items);
   });
 });
 

@@ -196,7 +196,7 @@ export class PluginUploadModalComponent implements OnChanges {
           this._compatibilityModalOpen$.next(true);
         } else if (error.status === 409 && error.error?.code === 'PLUGIN_VERSION_EXISTS') {
           this._handleVersionExists(error.error);
-        } else if (error.status === 409) {
+        } else if (error.status === 409 || error.status === 400) {
           this.$uploadNotification.set(this._buildUploadErrorNotification(error));
         } else if (error.status === 413) {
           this.$uploadNotification.set(
@@ -323,9 +323,12 @@ export class PluginUploadModalComponent implements OnChanges {
   }
 
   private _buildUploadErrorNotification(error: HttpErrorResponse): NotificationContent {
+    const refusedByGzac = error.error?.code === 'CONTRACT_SCHEMAS_INVALID';
     const hostBody = this._parseRelayedHostBody(error);
     const message = [
-      this._translateService.instant('pluginManagement.upload.rejected'),
+      this._translateService.instant(
+        refusedByGzac ? 'pluginManagement.upload.refused' : 'pluginManagement.upload.rejected'
+      ),
       hostBody?.message ?? hostBody?.error ?? '',
     ]
       .filter(Boolean)

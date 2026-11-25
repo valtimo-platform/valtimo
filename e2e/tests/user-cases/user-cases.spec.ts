@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {CreatedCase, UserCasesPage} from './page';
+import {CreatedCase, FormProcessLink, UserCasesPage} from './page';
 import {USER_CASES_CONFIG} from './user-cases-config';
 
 test.use({storageState: 'playwright/.auth/uiState.json'});
@@ -160,6 +160,66 @@ test.describe('Feature 2 — Cases (User)', () => {
     });
   });
 
+  // Regression for gzac-issues#1022: Edit was disabled for every definitief document, and for
+  // every document when the API version did not support updating definitief documents.
+  test.describe('2.18 — Edit action on ZGW documents', () => {
+    const {inEditingFile, definitiveFile} = USER_CASES_CONFIG.zgwDocuments;
+    let created: CreatedCase;
+
+    test.beforeAll(async () => {
+      created = await userCasesPage.createCaseViaApi();
+      createdCases.push(created);
+    });
+
+    test.afterAll(async () => {
+      try {
+        await userCasesPage.unstubZgwDocuments(created.documentId);
+      } catch {
+        // Routes already removed
+      }
+    });
+
+    test.describe('API version supports updating definitief documents', () => {
+      test.beforeAll(async () => {
+        await userCasesPage.unstubZgwDocuments(created.documentId);
+        await userCasesPage.stubZgwDocuments(created.documentId, true);
+        await userCasesPage.openZgwDocumentsTab(created.documentId);
+      });
+
+      test('Edit is enabled for an in_bewerking document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(inEditingFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeEnabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+
+      test('Edit is enabled for a definitief document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(definitiveFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeEnabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+    });
+
+    test.describe('API version does not support updating definitief documents', () => {
+      test.beforeAll(async () => {
+        await userCasesPage.unstubZgwDocuments(created.documentId);
+        await userCasesPage.stubZgwDocuments(created.documentId, false);
+        await userCasesPage.openZgwDocumentsTab(created.documentId);
+      });
+
+      test('Edit is still enabled for an in_bewerking document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(inEditingFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeEnabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+
+      test('Edit is disabled for a definitief document', async () => {
+        await userCasesPage.openZgwDocumentActionMenu(definitiveFile.titel);
+        await expect(userCasesPage.zgwDocumentEditAction).toBeDisabled();
+        await userCasesPage.closeZgwDocumentActionMenu();
+      });
+    });
+  });
+
   test.describe('2.6 — Execute tasks within case', () => {
     let created: CreatedCase;
 
@@ -210,11 +270,27 @@ test.describe('Feature 2 — Cases (User)', () => {
   // force-closed on each tab switch (and torn down entirely on task-hiding tabs).
   test.describe('2.7 — In-panel start form persists across tab switches', () => {
     const noteSubject = 'Persistent panel note 842';
+    let originalCatalogiLinks: FormProcessLink[] = [];
 
     test.beforeAll(async () => {
+      // Seed opens this read-only start form in a modal; the panel tests need it in the panel
+      originalCatalogiLinks = await userCasesPage.setStartFormDisplayTypeViaApi(
+        USER_CASES_CONFIG.catalogiGetTypenProcessKey,
+        'panel'
+      );
       const created = await userCasesPage.createCaseViaApi();
       createdCases.push(created);
       await userCasesPage.goToCaseDetail(created.documentId);
+    });
+
+    test.afterAll(async () => {
+      for (const link of originalCatalogiLinks) {
+        try {
+          await userCasesPage.updateFormProcessLinkViaApi(link);
+        } catch {
+          // Best-effort restore
+        }
+      }
     });
 
     test('keeps a start form open with entered data across task-hiding tabs and back', async () => {

@@ -35,15 +35,18 @@ External plugins appear alongside embedded ones, with their logo, version, and d
 {% step %}
 In **Enter data**, name the configuration and fill in the plugin's settings
 
-When the plugin ships its own settings screen, this step shows it, so the plugin can explain and
-validate its own fields. A plugin without one gets a generic form instead: a configuration name
-plus the settings as JSON — see [Plugins without a settings form](#plugins-without-a-settings-form).
+If the plugin has its own settings screen, it appears here. Otherwise Valtimo shows a standard
+form with the plugin's settings. For some plugins you enter the settings as JSON instead — see
+[Plugins without a settings form](#plugins-without-a-settings-form).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
 {% endstep %}
 {% step %}
-In **Permissions**, review everything the plugin requests, tick **I trust this plugin and accept
-the requested permissions**, and click **Save configuration**
+In **Permissions & plugins**, bind the contracts the plugin calls, if any, review everything the
+plugin requests, tick **I trust this plugin and accept the requested permissions**, and click
+**Save configuration**
+
+Binding contracts is explained in [Contracts between plugins](contracts.md#binding-a-contract).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/09-configure-plugin-permissions.png" alt=""><figcaption>Permissions</figcaption></figure>
 
@@ -55,19 +58,17 @@ the requested permissions**, and click **Save configuration**
 
 ## Plugins without a settings form
 
-When a plugin provides no settings screen of its own, the **Enter data** step shows a
-**Properties (JSON)** text area, and the settings must be entered as a JSON object.
+A plugin without a settings screen of its own gets a standard form from Valtimo. If the plugin has
+settings that this form cannot show, the **Enter data** step shows a **Properties (JSON)** text area
+instead, and you enter the settings as JSON.
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/22-configure-plugin-properties-json.png" alt=""><figcaption>Properties as JSON</figcaption></figure>
 
-Valtimo validates what you type against the plugin's own schema when you save, so an incorrect
-property name or type is reported rather than silently accepted. It cannot tell you what the
-properties *are*, however — that comes from the plugin's supplier.
+Valtimo checks what you enter when you save and reports a wrong property name or value. It cannot
+tell you which properties the plugin expects.
 
 {% hint style="info" %}
-Ask the supplier for the property names, their types, and an example. A plugin intended for
-functional administrators should ship a settings form; if one does not, that is worth raising with
-the supplier rather than working around permanently.
+Ask the plugin's supplier for the property names and an example.
 {% endhint %}
 
 The same applies to an action's inputs in the process modeler — see
@@ -78,7 +79,7 @@ The same applies to an action's inputs in the process modeler — see
 ## Reviewing permissions
 
 The permissions step is the security decision of the whole flow: everything listed becomes
-available to the plugin, and nothing else ever is. It shows up to four sections:
+available to the plugin, and nothing else ever is. It shows up to four permission sections:
 
 | Section | Meaning |
 |---------|---------|
@@ -86,6 +87,9 @@ available to the plugin, and nothing else ever is. It shows up to four sections:
 | **API endpoints** | Exactly which Valtimo API endpoints the plugin may call, with a description of each. This list bounds everything the plugin can read or change in Valtimo. |
 | **Events** | The platform events the plugin will receive. |
 | **External connections** | The outside addresses the plugin can connect to — and nothing else. Addresses come from the plugin package itself ("Required by the plugin") or from a URL entered in this configuration's settings. Check that you recognize each one. |
+
+When the plugin uses or offers contracts, the step also shows **Called contracts** and
+**Provided contracts** — see [Contracts between plugins](contracts.md#binding-a-contract).
 
 {% hint style="warning" %}
 Accepting is all-or-nothing and must match what the plugin declares — the request list cannot be
@@ -108,17 +112,18 @@ reviews and accepts again.
 On the **Plugins** page, open the row menu (⋮) of the configuration and click **Edit**
 {% endstep %}
 {% step %}
-Change the name or the plugin's settings
+Change the name, the plugin's settings, or the contract bindings
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/16-edit-configuration-modal.png" alt=""><figcaption>Edit configuration</figcaption></figure>
 {% endstep %}
 {% step %}
-Review the **Permissions** step (shown read-only) and save
+In **Permissions & plugins**, change the contract bindings if needed, review the permissions
+(shown read-only) and save
 {% endstep %}
 {% endstepper %}
 
-Editing changes the name and settings only — the accepted permissions cannot be widened or
-narrowed through the edit flow. Secret values are never shown when editing; leaving a secret
+Editing changes the name, settings and contract bindings only — the accepted permissions cannot
+be widened or narrowed through the edit flow. Secret values are never shown when editing; leaving a secret
 field untouched keeps the stored value.
 
 Deleting a configuration is covered in

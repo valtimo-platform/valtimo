@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,12 @@ public interface FormDefinitionService {
     void deleteAllFormDefinitions(CaseDefinitionId caseDefinitionId);
 
     boolean formDefinitionExistsById(UUID id);
+
+    /**
+     * Must be called inside a transaction. Holds a shared lock on the form until commit,
+     * so the form cannot be deleted while a link to it is being written.
+     */
+    boolean formDefinitionExistsByIdWithLock(UUID id);
 
     Long countAllForms();
 }

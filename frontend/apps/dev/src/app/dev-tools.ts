@@ -102,7 +102,7 @@ export const devToolRoutes: Routes = [
   {
     path: 'form-io',
     canActivate: [AuthGuardService],
-    data: {title: 'Valtimo - Form.io V.3.27.1'},
+    data: {title: 'Form.io V.3.27.1'},
     component: FormioComponent,
   },
   {

@@ -25,11 +25,16 @@ import com.ritense.form.autodeployment.FormDefinitionDeploymentService
 import com.ritense.form.casewidget.FormIoCaseWidgetDataProvider
 import com.ritense.form.casewidget.FormIoCaseWidgetMapper
 import com.ritense.form.listener.FormCaseEventListener
+import com.ritense.form.repository.FormDefinitionRepository
+import com.ritense.form.repository.FormProcessLinkRepository
 import com.ritense.form.repository.IntermediateSubmissionRepository
 import com.ritense.form.security.config.FormHttpSecurityConfigurerKotlin
 import com.ritense.form.service.FormDefinitionExporter
 import com.ritense.form.service.FormDefinitionImporter
 import com.ritense.form.service.FormDefinitionService
+import com.ritense.form.service.FormDefinitionUsageGuard
+import com.ritense.form.service.FormProcessLinkUsageResolver
+import com.ritense.form.service.FormProcessLinkCaseDefinitionFinalizationChecker
 import com.ritense.form.service.FormSubmissionService
 import com.ritense.form.service.FormSupportedProcessLinksHandler
 import com.ritense.form.service.GlobalFormDefinitionExporter
@@ -50,6 +55,7 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.resource.service.ResourceService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.service.OperatonProcessService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.interactivetable.InteractiveTableWidgetDataProvider
@@ -235,12 +241,40 @@ class FormAutoConfigurationKotlin {
     )
 
     @Bean
+    @ConditionalOnMissingBean(FormProcessLinkUsageResolver::class)
+    fun formProcessLinkUsageResolver(
+        operatonProcessService: OperatonProcessService,
+    ) = FormProcessLinkUsageResolver(operatonProcessService)
+
+    @Bean
+    @ConditionalOnMissingBean(FormDefinitionUsageGuard::class)
+    fun formDefinitionUsageGuard(
+        formDefinitionRepository: FormDefinitionRepository,
+        formProcessLinkRepository: FormProcessLinkRepository,
+        operatonProcessService: OperatonProcessService,
+        formProcessLinkUsageResolver: FormProcessLinkUsageResolver,
+    ) = FormDefinitionUsageGuard(
+        formDefinitionRepository,
+        formProcessLinkRepository,
+        operatonProcessService,
+        formProcessLinkUsageResolver,
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(FormProcessLinkCaseDefinitionFinalizationChecker::class)
+    fun formProcessLinkCaseDefinitionFinalizationChecker(
+        operatonProcessService: OperatonProcessService,
+        formProcessLinkRepository: FormProcessLinkRepository,
+    ) = FormProcessLinkCaseDefinitionFinalizationChecker(operatonProcessService, formProcessLinkRepository)
+
+    @Bean
     @ConditionalOnMissingBean(FormCaseEventListener::class)
     fun formCaseEventListener(
         formDefinitionService: FormDefinitionService,
-        processLinkService: ProcessLinkService
+        processLinkService: ProcessLinkService,
+        formProcessLinkUsageResolver: FormProcessLinkUsageResolver,
     ) =
-        FormCaseEventListener(formDefinitionService, processLinkService)
+        FormCaseEventListener(formDefinitionService, processLinkService, formProcessLinkUsageResolver)
 
     @Bean
     @ConditionalOnMissingBean(FormIoWidgetDataProvider::class)

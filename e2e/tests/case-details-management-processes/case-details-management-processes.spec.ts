@@ -193,7 +193,7 @@ test.describe('Case details - Processes tab', () => {
     test('Can delete the uploaded process', async () => {
       await processesPage.deleteProcess(TEST_PROCESS_NAME);
 
-      await expectNotificationMessage(page, 'Delete');
+      await expectNotificationMessage(page, 'Process deleted successfully');
 
       const row = processesPage.carbonList.row(TEST_PROCESS_NAME);
       await row.assertNotVisible();
