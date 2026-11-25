@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,9 +44,14 @@ internal class FormFlowServiceIntTest @Autowired constructor(
         formFlowInstanceRepository.deleteAll()
     }
 
+    @AfterEach
+    fun tearDown() {
+        formFlowInstanceRepository.deleteAll()
+    }
+
     @Test
     fun `finds 2 formFlowInstances for 1 additionalProperty`() {
-        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)!!
+        val definition = formFlowService.findDefinitionOrNull("inkomens_loket", caseDefinitionId)!!
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "123")))
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "123")))
         assertEquals(2, formFlowService.findInstances(mutableMapOf("taskId" to "123")).size)
@@ -53,7 +59,7 @@ internal class FormFlowServiceIntTest @Autowired constructor(
 
     @Test
     fun `finds 1 formFlowInstance for 1 additionalProperty`() {
-        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)!!
+        val definition = formFlowService.findDefinitionOrNull("inkomens_loket", caseDefinitionId)!!
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "123")))
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "1234")))
         assertEquals(1, formFlowService.findInstances(mutableMapOf("taskId" to "123")).size)
@@ -79,7 +85,7 @@ internal class FormFlowServiceIntTest @Autowired constructor(
 
     @Test
     fun `finds 0 formFlowInstances for 1 additionalProperty`() {
-        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)!!
+        val definition = formFlowService.findDefinitionOrNull("inkomens_loket", caseDefinitionId)!!
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "123")))
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "1234")))
         assertEquals(0, formFlowService.findInstances(mutableMapOf("documentId" to "123")).size)
@@ -87,7 +93,7 @@ internal class FormFlowServiceIntTest @Autowired constructor(
 
     @Test
     fun `finds 2 formFlowInstances for 2 additionalProperties`() {
-        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)!!
+        val definition = formFlowService.findDefinitionOrNull("inkomens_loket", caseDefinitionId)!!
         formFlowService.save(
             definition.createInstance(
                 mutableMapOf(
@@ -128,7 +134,7 @@ internal class FormFlowServiceIntTest @Autowired constructor(
 
     @Test
     fun `finds 1 formFlowInstance for 1 non-string additionalProperty`() {
-        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)!!
+        val definition = formFlowService.findDefinitionOrNull("inkomens_loket", caseDefinitionId)!!
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to 123)))
         formFlowService.save(definition.createInstance(mutableMapOf("taskId" to 1234)))
         assertEquals(1, formFlowService.findInstances(mutableMapOf("taskId" to 123)).size)
@@ -137,7 +143,7 @@ internal class FormFlowServiceIntTest @Autowired constructor(
     @Test
     @Transactional
     fun `deleteAllByCaseDefinitionId removes form flow definitions with instances`() {
-        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)
+        val definition = formFlowService.findDefinitionOrNull("inkomens_loket", caseDefinitionId)!!
         val instanceId = formFlowService.save(definition.createInstance(mutableMapOf("taskId" to "123"))).id
         entityManager.flush()
         entityManager.clear()
@@ -152,7 +158,7 @@ internal class FormFlowServiceIntTest @Autowired constructor(
 
     @Test
     fun `should find breadcrumbs`() {
-        val definition = formFlowService.findDefinition("inkomens_loket", caseDefinitionId)!!
+        val definition = formFlowService.findDefinitionOrNull("inkomens_loket", caseDefinitionId)!!
 
         val breadcrumbs = formFlowService.getBreadcrumbs(definition.createInstance(mutableMapOf("taskId" to 123)))
 

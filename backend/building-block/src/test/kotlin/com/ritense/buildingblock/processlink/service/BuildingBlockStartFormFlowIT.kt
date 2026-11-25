@@ -109,7 +109,7 @@ class BuildingBlockStartFormFlowIT @Autowired constructor(
         assertThat(formFlowInstance.getAdditionalProperties())
             .containsEntry("processDefinitionId", linkedVersionProcessDefinitionId)
             .containsEntry("processDefinitionKey", MAIN_PROCESS_KEY)
-            .containsEntry("documentId", caseDocumentId)
+            .containsEntry("documentId", caseDocumentId.toString())
 
         runWithoutAuthorization {
             formFlowResource.completeStep(

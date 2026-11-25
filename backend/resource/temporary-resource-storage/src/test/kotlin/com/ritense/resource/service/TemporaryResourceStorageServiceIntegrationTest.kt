@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,11 +45,9 @@ class TemporaryResourceStorageServiceIntegrationTest : BaseIntegrationTest() {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    @Mock
-    lateinit var tika: Tika
+    private val tika: Tika = Mockito.mock(Tika::class.java)
 
-    @Mock
-    lateinit var uploadProperties: ValtimoUploadProperties
+    private val uploadProperties: ValtimoUploadProperties = Mockito.mock(ValtimoUploadProperties::class.java)
 
     @Test
     fun `should store and get resource as inputStream`() {
