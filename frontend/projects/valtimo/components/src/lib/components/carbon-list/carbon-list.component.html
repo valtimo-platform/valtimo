@@ -234,6 +234,16 @@
   <span>{{ data }}</span>
 </ng-template>
 
+<ng-template #cellLoadFailedTemplate>
+  <span
+    class="valtimo-carbon-list__cell-load-failed"
+    ngbTooltip="{{ 'carbonList.cellLoadFailed' | translate }}"
+  >
+    <span class="valtimo-carbon-list__cell-load-failed-dash">-</span>
+    <svg cdsIcon="warning--alt" size="16"></svg>
+  </span>
+</ng-template>
+
 <valtimo-tags-modal
   [open]="tagModalOpen$ | async"
   [tags]="tagModalData$ | async"

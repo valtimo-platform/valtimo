@@ -131,6 +131,7 @@ import com.ritense.valtimo.contract.blueprint.migration.BlueprintVersionLineage
 import com.ritense.valtimo.contract.blueprint.migration.BuildingBlockEntryOwnership
 import com.ritense.valtimo.contract.blueprint.migration.MigrationCandidateProvider
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentDeployer
+import com.ritense.valueresolver.IsolatedValueResolverService
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentExecutor
 import com.ritense.valtimo.contract.blueprint.migration.MigrationComponentSuggester
@@ -331,7 +332,7 @@ class CaseAutoConfiguration {
         caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
         quickSearchRepository: QuickSearchRepository,
         documentSearchService: DocumentSearchService,
-        valueResolverService: ValueResolverService,
+        isolatedValueResolverService: IsolatedValueResolverService,
         authorizationService: AuthorizationService
     ): CaseInstanceService {
         return CaseInstanceService(
@@ -339,7 +340,7 @@ class CaseAutoConfiguration {
             caseDefinitionListColumnRepository,
             quickSearchRepository,
             documentSearchService,
-            valueResolverService,
+            isolatedValueResolverService,
             authorizationService,
         )
     }
@@ -721,7 +722,7 @@ class CaseAutoConfiguration {
         searchFieldPathMappingRepository: GroupSearchFieldPathMappingRepository,
         quickSearchRepository: GroupQuickSearchRepository,
         documentSearchService: DocumentSearchService,
-        valueResolverService: ValueResolverService,
+        isolatedValueResolverService: IsolatedValueResolverService,
         authorizationService: AuthorizationService,
         caseDefinitionService: CaseDefinitionService,
         internalCaseStatusService: InternalCaseStatusService,
@@ -736,7 +737,7 @@ class CaseAutoConfiguration {
             searchFieldPathMappingRepository,
             quickSearchRepository,
             documentSearchService,
-            valueResolverService,
+            isolatedValueResolverService,
             authorizationService,
             caseDefinitionService,
             internalCaseStatusService,

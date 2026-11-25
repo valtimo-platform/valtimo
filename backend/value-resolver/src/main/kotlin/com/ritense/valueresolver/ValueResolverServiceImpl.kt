@@ -205,15 +205,29 @@ class ValueResolverServiceImpl(
         return resolveValues(mapOf(DOCUMENT_ID to documentInstanceId), requestedValues, failOnError = false)
     }
 
+    override fun resolveValuesOrNullWithFailures(
+        @LoggableResource("com.ritense.document.domain.impl.JsonSchemaDocument") documentInstanceId: String,
+        requestedValues: Collection<String>
+    ): ValueResolverResult {
+        return resolveValuesWithFailures(mapOf(DOCUMENT_ID to documentInstanceId), requestedValues, failOnError = false)
+    }
+
     private fun resolveValues(
         properties: Map<String, Any>,
         requestedValues: Collection<String>,
         failOnError: Boolean
-    ): Map<String, Any?> {
+    ): Map<String, Any?> = resolveValuesWithFailures(properties, requestedValues, failOnError).values
+
+    private fun resolveValuesWithFailures(
+        properties: Map<String, Any>,
+        requestedValues: Collection<String>,
+        failOnError: Boolean
+    ): ValueResolverResult {
         val allRequestedValues =
             (extractAdditionalRequestedValuesFromQueryParameters(requestedValues) + requestedValues).distinct()
 
         val resolvedValues = mutableMapOf<String, Any?>()
+        val failedKeys = mutableSetOf<String>()
         toResolverFactoryGroups(allRequestedValues)
             .forEach { (resolverFactory, queryParamProperties, groupRequestedValues) ->
                 try {
@@ -235,9 +249,10 @@ class ValueResolverServiceImpl(
                     }
                     logResolveFailure(resolverFactory.supportedPrefix(), properties, e)
                     groupRequestedValues.forEach { resolvedValues[it] = null }
+                    failedKeys.addAll(groupRequestedValues)
                 }
             }
-        return resolvedValues
+        return ValueResolverResult(resolvedValues, failedKeys)
     }
 
     private fun logResolveFailure(prefix: String, properties: Map<String, Any>, e: Exception) {

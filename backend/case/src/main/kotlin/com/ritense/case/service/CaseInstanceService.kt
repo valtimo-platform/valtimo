@@ -33,7 +33,8 @@ import com.ritense.valtimo.contract.blueprint.BlueprintType
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valueresolver.ValueResolverService
+import com.ritense.valueresolver.IsolatedValueResolverService
+import com.ritense.valueresolver.ValueResolverResult
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -49,7 +50,7 @@ class CaseInstanceService(
     private val caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
     private val quickSearchRepository: QuickSearchRepository,
     private val documentSearchService: DocumentSearchService,
-    private val valueResolverService: ValueResolverService,
+    private val isolatedValueResolver: IsolatedValueResolverService,
     private val authorizationService: AuthorizationService,
 ) {
     fun search(
@@ -71,11 +72,19 @@ class CaseInstanceService(
             .associate { it.toString() to lazySupplier { caseDefinitionService.getCaseDefinition(it) } }
 
 
+        val documentPaths = searchResults.associate { document ->
+            document.id().id.toString() to caseListColumns.map { it.path }
+        }
+        val resolvedByDocument = runWithoutAuthorization {
+            isolatedValueResolver.resolveValuesOrNullIsolated(documentPaths)
+        }
+
         return searchResults
             .map { document ->
                 toCaseListRowDto(
                     document,
                     caseListColumns,
+                    resolvedByDocument.getValue(document.id().id.toString()),
                     lazySupplierMap[document.definitionId().caseDefinitionId().toString()]!!
                 )
             }
@@ -186,15 +195,15 @@ class CaseInstanceService(
     private fun toCaseListRowDto(
         document: Document,
         caseListColumns: List<CaseListColumn>,
+        resolvedValues: ValueResolverResult,
         caseSupplier: () -> CaseDefinition
     ): CaseListRowDto {
-        val paths = caseListColumns.map { it.path }
-        val resolvedValuesMap = runWithoutAuthorization {
-            valueResolverService.resolveValuesOrNull(document.id().id.toString(), paths)
-        }
-
         val items = caseListColumns.map { caseListColumn ->
-            CaseListRowDto.CaseListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])
+            CaseListRowDto.CaseListItemDto(
+                caseListColumn.id.key,
+                resolvedValues.values[caseListColumn.path],
+                caseListColumn.path in resolvedValues.failedKeys
+            )
         }.toMutableList()
 
         if (items.none { it.key == "assigneeFullName" } && caseSupplier().canHaveAssignee) {

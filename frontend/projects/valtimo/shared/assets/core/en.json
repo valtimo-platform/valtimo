@@ -1,4 +1,7 @@
 {
+  "carbonList": {
+    "cellLoadFailed": "This value could not be loaded"
+  },
   "events": {
     "TaskCompletedEvent": "Task completed > {{taskName}}",
     "TaskAssignedEvent": "Task assigned > {{taskName}}",
@@ -235,6 +238,10 @@
     "searchError": {
       "title": "Search failed",
       "description": "The cases could not be searched. Check the search fields or try again later."
+    },
+    "columnLoadError": {
+      "title": "Some values could not be loaded",
+      "description": "One or more column values could not be loaded and are shown with a warning."
     },
     "startCase": {
       "selectCaseType": "Select case type"

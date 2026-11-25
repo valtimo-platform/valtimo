@@ -38,22 +38,27 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.function.Function
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @Import(CaseInstanceServiceIntTest.ValueResolverTestConfiguration::class)
 class CaseInstanceServiceIntTest @Autowired constructor(
     private val caseInstanceService: CaseInstanceService,
     private val caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
     private val transactionManager: PlatformTransactionManager,
+    private val poisoningValueResolverFactory: PoisoningValueResolverFactory,
 ) : BaseIntegrationTest() {
 
     private lateinit var currentUser: ManageableUser
@@ -164,6 +169,71 @@ class CaseInstanceServiceIntTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser(username = USERNAME, authorities = [FULL_ACCESS_ROLE])
+    fun `should flag a poisoning resolver column as failed while another row still resolves`() {
+        // Not transactional: the poisoning column marks the read-only transaction rollback-only,
+        // so the search must survive the real commit boundary rather than 500.
+        val originalColumns = caseDefinitionListColumnRepository
+            .findByIdCaseDefinitionKeyOrderByOrderAsc(CASE_DEFINITION_NAME)
+        documentRepository.deleteAll()
+        deleteListColumnsInOwnTransaction()
+
+        caseDefinitionListColumnRepository.save(
+            CaseListColumn(
+                id = CaseListColumnId(CASE_DEFINITION_NAME, "street"),
+                title = "Street",
+                path = "doc:street",
+                displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+                sortable = false,
+                defaultSort = null,
+                order = 0,
+                exportable = false
+            )
+        )
+        caseDefinitionListColumnRepository.save(
+            CaseListColumn(
+                id = CaseListColumnId(CASE_DEFINITION_NAME, "poison"),
+                title = "Poison",
+                path = "poison:someField",
+                displayType = DisplayType("string", EmptyDisplayTypeParameter()),
+                sortable = false,
+                defaultSort = null,
+                order = 1,
+                exportable = false
+            )
+        )
+
+        try {
+            val healthyDocument = createDocument(definition(), """{"street": "Sesame Street"}""")
+            val poisoningDocument = createDocument(definition(), """{"street": "Evergreen Terrace"}""")
+            poisoningValueResolverFactory.poisonDocumentId = poisoningDocument.id().id.toString()
+
+            val result = caseInstanceService.search(
+                CASE_DEFINITION_NAME,
+                SearchWithConfigRequest(),
+                Pageable.ofSize(10)
+            )
+
+            assertEquals(2, result.totalElements)
+
+            val poisoningRow = result.content.first { it.id == poisoningDocument.id().toString() }
+            val poisonCell = poisoningRow.items.first { it.key == "poison" }
+            assertNull(poisonCell.value)
+            assertTrue(poisonCell.failed)
+
+            val healthyRow = result.content.first { it.id == healthyDocument.id().toString() }
+            val healthyStreetCell = healthyRow.items.first { it.key == "street" }
+            assertEquals("Sesame Street", healthyStreetCell.value)
+            assertFalse(healthyStreetCell.failed)
+        } finally {
+            poisoningValueResolverFactory.poisonDocumentId = null
+            documentRepository.deleteAll()
+            deleteListColumnsInOwnTransaction()
+            caseDefinitionListColumnRepository.saveAll(originalColumns)
+        }
+    }
+
+    @Test
     @Transactional
     @WithMockUser(username = USERNAME, authorities = [FULL_ACCESS_ROLE])
     fun `should sort by column path when sort property is column key`() {
@@ -228,6 +298,18 @@ class CaseInstanceServiceIntTest @Autowired constructor(
         fun failingValueResolverFactory(): ValueResolverFactory {
             return FailingValueResolverFactory()
         }
+
+        @Bean
+        fun poisoningTransactionalOperation(): PoisoningTransactionalOperation {
+            return PoisoningTransactionalOperation()
+        }
+
+        @Bean
+        fun poisoningValueResolverFactory(
+            poisoningTransactionalOperation: PoisoningTransactionalOperation
+        ): PoisoningValueResolverFactory {
+            return PoisoningValueResolverFactory(poisoningTransactionalOperation)
+        }
     }
 
     class PermissionCheckingValueResolverFactory(
@@ -251,6 +333,31 @@ class CaseInstanceServiceIntTest @Autowired constructor(
 
         override fun createResolver(documentId: String): Function<String, Any?> {
             throw IllegalStateException("Simulated Zaken API failure")
+        }
+    }
+
+    open class PoisoningTransactionalOperation {
+        // Nested @Transactional(REQUIRED) that throws: Spring marks the surrounding read-only
+        // transaction rollback-only, reproducing the real #983 persistence-poisoning trigger.
+        @Transactional(propagation = Propagation.REQUIRED)
+        open fun poison() {
+            throw DataIntegrityViolationException("Simulated persistence failure")
+        }
+    }
+
+    class PoisoningValueResolverFactory(
+        private val poisoningOperation: PoisoningTransactionalOperation
+    ) : ValueResolverFactory {
+
+        var poisonDocumentId: String? = null
+
+        override fun supportedPrefix(): String = "poison"
+
+        override fun createResolver(documentId: String): Function<String, Any?> {
+            if (documentId == poisonDocumentId) {
+                poisoningOperation.poison()
+            }
+            return Function { "resolved-poison-value" }
         }
     }
 }

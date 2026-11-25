@@ -90,4 +90,43 @@ describe('CaseListService', () => {
 
     expect(documentService.getCaseDefinitionGroup).toHaveBeenCalledTimes(1);
   });
+
+  describe('mapDocuments failed columns', () => {
+    it('collects the keys of items that failed to resolve into __failedColumns', () => {
+      const documents = {
+        content: [
+          {
+            id: 'd1',
+            items: [
+              {key: 'a', value: 'x', failed: true},
+              {key: 'b', value: 'y'},
+              {key: 'c', value: null, failed: true},
+            ],
+          },
+        ],
+      } as any;
+
+      const rows = service.mapDocuments(documents, true) as any[];
+
+      expect(rows[0].__failedColumns).toEqual(['a', 'c']);
+    });
+
+    it('sets an empty __failedColumns when no item failed', () => {
+      const documents = {
+        content: [
+          {
+            id: 'd1',
+            items: [
+              {key: 'a', value: 'x'},
+              {key: 'b', value: 'y'},
+            ],
+          },
+        ],
+      } as any;
+
+      const rows = service.mapDocuments(documents, true) as any[];
+
+      expect(rows[0].__failedColumns).toEqual([]);
+    });
+  });
 });

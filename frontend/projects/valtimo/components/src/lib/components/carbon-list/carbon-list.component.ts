@@ -28,7 +28,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {ArrowDown16, ArrowUp16, Draggable16, SettingsView16} from '@carbon/icons';
+import {ArrowDown16, ArrowUp16, Draggable16, SettingsView16, WarningAlt16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {SortState} from '@valtimo/document';
 import {SearchField} from '@valtimo/shared';
@@ -95,6 +95,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
   @ViewChild('tagTemplate') tagTemplate: TemplateRef<any>;
   @ViewChild('defaultTemplate') defaultTemplate: TemplateRef<any>;
+  @ViewChild('cellLoadFailedTemplate') cellLoadFailedTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 
   private _completeDataSource: TableItem[][];
@@ -317,7 +318,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly elementRef: ElementRef,
     private readonly cdr: ChangeDetectorRef
   ) {
-    this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16, Draggable16]);
+    this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16, Draggable16, WarningAlt16]);
   }
 
   public ngOnInit(): void {
@@ -553,6 +554,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     const row = [
       ...this.getDragAndDropItemsItems(item, index, length),
       ...fields.map((field: ColumnConfig) => {
+        if (item.__failedColumns?.includes(field.key)) {
+          return new TableItem({
+            data: {item, index, length},
+            item,
+            template: this.cellLoadFailedTemplate,
+          });
+        }
         switch (field.viewType) {
           case ViewType.TEMPLATE:
             return new TableItem({

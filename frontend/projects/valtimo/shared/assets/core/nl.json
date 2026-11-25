@@ -1,4 +1,7 @@
 {
+  "carbonList": {
+    "cellLoadFailed": "Deze waarde kon niet geladen worden"
+  },
   "events": {
     "TaskCompletedEvent": "Taak voltooid > {{taskName}}",
     "TaskAssignedEvent": "Taak toegewezen > {{taskName}}",
@@ -235,6 +238,10 @@
     "searchError": {
       "title": "Zoeken mislukt",
       "description": "De dossiers konden niet doorzocht worden. Controleer de zoekvelden of probeer het later opnieuw."
+    },
+    "columnLoadError": {
+      "title": "Enkele waarden konden niet geladen worden",
+      "description": "Een of meer kolomwaarden konden niet geladen worden en worden met een waarschuwing getoond."
     },
     "startCase": {
       "selectCaseType": "Kies dossiertype"

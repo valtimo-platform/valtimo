@@ -98,10 +98,12 @@ export class CaseParameterService implements OnDestroy {
   public get queryStatusParams$(): Observable<string[] | null> {
     return this.route.queryParams.pipe(
       map(params => {
-        if (params?.status) {
+        if (!params?.status) return null;
+        try {
           return JSON.parse(atob(params.status)) as string[];
+        } catch {
+          return null;
         }
-        return null;
       }),
       distinctUntilChanged(
         (prevParams, currParams) => JSON.stringify(prevParams) === JSON.stringify(currParams)
@@ -112,10 +114,12 @@ export class CaseParameterService implements OnDestroy {
   public get queryCaseTagsParams$(): Observable<string[] | null> {
     return this.route.queryParams.pipe(
       map(params => {
-        if (params?.casetags) {
+        if (!params?.casetags) return null;
+        try {
           return JSON.parse(atob(params.casetags)) as string[];
+        } catch {
+          return null;
         }
-        return null;
       }),
       distinctUntilChanged(
         (prevParams, currParams) => JSON.stringify(prevParams) === JSON.stringify(currParams)

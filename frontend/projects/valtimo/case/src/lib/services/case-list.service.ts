@@ -145,6 +145,9 @@ export class CaseListService {
         curr.items?.forEach(item => {
           propsObject[item.key] = item.value;
         });
+        propsObject.__failedColumns = (curr.items ?? [])
+          .filter(item => item.failed)
+          .map(item => item.key);
         return [...acc, propsObject];
       },
       [] as Record<string, any>[]

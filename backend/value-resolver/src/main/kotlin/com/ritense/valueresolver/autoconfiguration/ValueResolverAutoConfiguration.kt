@@ -18,6 +18,7 @@ package com.ritense.valueresolver.autoconfiguration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valueresolver.FixedValueResolverFactory
+import com.ritense.valueresolver.IsolatedValueResolverService
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverService
@@ -31,6 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
+import org.springframework.transaction.PlatformTransactionManager
 
 @AutoConfiguration
 class ValueResolverAutoConfiguration {
@@ -41,6 +43,15 @@ class ValueResolverAutoConfiguration {
         @Lazy valueResolverFactories: List<ValueResolverFactory>
     ): ValueResolverService {
         return ValueResolverServiceImpl(valueResolverFactories)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IsolatedValueResolverService::class)
+    fun isolatedValueResolverService(
+        transactionManager: PlatformTransactionManager,
+        valueResolverService: ValueResolverService,
+    ): IsolatedValueResolverService {
+        return IsolatedValueResolverService(transactionManager, valueResolverService)
     }
 
     @Bean
