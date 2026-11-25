@@ -48,7 +48,7 @@ public class JsonSchemaDocumentDefinitionSequenceGeneratorService implements Doc
         includes = {LockAcquisitionException.class, CannotAcquireLockException.class},
         maxRetries = 4,
         delay = 500,
-        multiplier = 2.0,
+        jitter = 4500,
         maxDelay = 5000
     )
     public long next(
