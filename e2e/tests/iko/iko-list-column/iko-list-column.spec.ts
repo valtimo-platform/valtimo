@@ -106,8 +106,7 @@ test.describe('Feature 15E — IKO List Columns', () => {
     test('15.45 — opens the Add column modal', async () => {
       await columnsPage.openAddModal();
       await expect(columnsPage.titleInput).toBeVisible();
-      await columnsPage.cancelButton.click();
-      await expect(columnsPage.addModalHeading).toBeHidden();
+      await columnsPage.cancelAddModal();
     });
 
     test('15.46-15.48, 15.51-15.52 — creates a column with title, auto-key, path and display type', async () => {
@@ -133,8 +132,7 @@ test.describe('Feature 15E — IKO List Columns', () => {
       await columnsPage.toggleSortable();
       await expect(columnsPage.sortableToggleInput).toBeChecked();
 
-      await columnsPage.cancelButton.click();
-      await expect(columnsPage.addModalHeading).toBeHidden();
+      await columnsPage.cancelAddModal();
     });
 
     test('15.50 — selecting a default sort enables sortable and disables the toggle', async () => {
@@ -146,8 +144,7 @@ test.describe('Feature 15E — IKO List Columns', () => {
       await expect(columnsPage.sortableToggleInput).toBeChecked();
       await expect(columnsPage.sortableToggleInput).toBeDisabled();
 
-      await columnsPage.cancelButton.click();
-      await expect(columnsPage.addModalHeading).toBeHidden();
+      await columnsPage.cancelAddModal();
     });
 
     test('15.51 — supports the "hidden" display type variant', async () => {
@@ -201,8 +198,7 @@ test.describe('Feature 15E — IKO List Columns', () => {
     test('cannot save with an empty title', async () => {
       await columnsPage.openAddModal();
       await expect(columnsPage.saveButton).toBeDisabled();
-      await columnsPage.cancelButton.click();
-      await expect(columnsPage.addModalHeading).toBeHidden();
+      await columnsPage.cancelAddModal();
     });
 
     test('cannot save without a path', async () => {
@@ -213,8 +209,7 @@ test.describe('Feature 15E — IKO List Columns', () => {
       // Path is required by the form — save must stay disabled.
       await expect(columnsPage.saveButton).toBeDisabled();
 
-      await columnsPage.cancelButton.click();
-      await expect(columnsPage.addModalHeading).toBeHidden();
+      await columnsPage.cancelAddModal();
     });
 
     test('cannot save without a display type', async () => {
@@ -224,8 +219,7 @@ test.describe('Feature 15E — IKO List Columns', () => {
 
       await expect(columnsPage.saveButton).toBeDisabled();
 
-      await columnsPage.cancelButton.click();
-      await expect(columnsPage.addModalHeading).toBeHidden();
+      await columnsPage.cancelAddModal();
     });
   });
 });

@@ -61,6 +61,7 @@
       "@valtimo/task-management": ["./projects/valtimo/task-management/src/public_api.ts"],
       "@valtimo/teams": ["./projects/valtimo/teams/src/public-api.ts"],
       "@valtimo/zgw": ["./projects/valtimo/zgw/src/public_api.ts"],
+      "@epistola.app/valtimo-plugin": ["./dev-plugin-packages/@epistola.app/valtimo-plugin"],
       "@e2e/constants": ["../e2e/constants"]
     }
   },

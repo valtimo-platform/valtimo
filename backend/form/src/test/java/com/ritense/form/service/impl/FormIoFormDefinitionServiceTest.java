@@ -39,7 +39,7 @@ public class FormIoFormDefinitionServiceTest extends BaseTest {
     @BeforeEach
     public void setUp() {
         formDefinitionRepository = mock(FormDefinitionRepository.class);
-        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository, mock());
+        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository, mock(), mock());
     }
 
     @Test

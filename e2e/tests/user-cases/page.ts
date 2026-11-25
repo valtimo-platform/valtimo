@@ -17,9 +17,22 @@
 import {expect, Locator, Page} from '@playwright/test';
 import {CASE_DETAIL_PANEL_TEST_IDS, CONFIRMATION_MODAL_TEST_IDS} from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
-import {apiDelete, apiPost} from '../../utils/api.utils';
+import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/api.utils';
 import {USER_CASES_CONFIG} from './user-cases-config';
 import {openAndSelectOption} from '../../utils/ui.utils';
+
+export type FormDisplayType = 'modal' | 'panel';
+
+export interface FormProcessLink {
+  id: string;
+  activityType: string;
+  processLinkType: string;
+  formDefinitionId: string;
+  viewModelEnabled: boolean;
+  formDisplayType: FormDisplayType;
+  formSize: string;
+  subtitles?: string[] | null;
+}
 
 export interface CreatedCase {
   documentId: string;
@@ -304,6 +317,42 @@ export class UserCasesPage {
     await expect(this.startFormPanel).toBeVisible({timeout: 15_000});
   }
 
+  /** Sets the display type of a process's start-form link on every deployed version; returns the originals for restoring. */
+  async setStartFormDisplayTypeViaApi(
+    processKey: string,
+    formDisplayType: FormDisplayType
+  ): Promise<FormProcessLink[]> {
+    const versions = await apiGet<Array<{id: string}>>(
+      `/api/v1/process/definition/${processKey}/versions`
+    );
+    const originals: FormProcessLink[] = [];
+    for (const {id} of versions) {
+      const links = await apiGet<FormProcessLink[]>(
+        `/api/v1/process-link?processDefinitionId=${encodeURIComponent(id)}`
+      );
+      for (const link of links) {
+        if (link.processLinkType !== 'form' || !link.activityType.startsWith('bpmn:StartEvent')) {
+          continue;
+        }
+        originals.push(link);
+        await this.updateFormProcessLinkViaApi({...link, formDisplayType});
+      }
+    }
+    return originals;
+  }
+
+  async updateFormProcessLinkViaApi(link: FormProcessLink): Promise<void> {
+    await apiPut('/api/v1/process-link', {
+      id: link.id,
+      processLinkType: 'form',
+      formDefinitionId: link.formDefinitionId,
+      viewModelEnabled: link.viewModelEnabled,
+      formDisplayType: link.formDisplayType,
+      formSize: link.formSize,
+      subtitles: link.subtitles,
+    });
+  }
+
   get pendingChangesConfirmButton(): Locator {
     return this.page
       .getByTestId(CASE_DETAIL_PANEL_TEST_IDS.pendingChangesModal)
@@ -365,5 +414,93 @@ export class UserCasesPage {
 
   async submitTaskForm() {
     await this.taskFormStartButton.click();
+  }
+
+  // ─── ZGW documents (stubbed Documenten API) ──────────────────────
+
+  private _supportsUpdatingDefinitiveDocument = false;
+
+  async stubZgwDocuments(documentId: string, supportsUpdatingDefinitiveDocument: boolean) {
+    this._supportsUpdatingDefinitiveDocument = supportsUpdatingDefinitiveDocument;
+    const {zgwDocuments} = USER_CASES_CONFIG;
+
+    await this.page.route(zgwDocuments.versionEndpoint, route =>
+      route.fulfill({
+        json: {
+          selectedVersion: this._supportsUpdatingDefinitiveDocument ? '1.4.3' : '1.0.0',
+          supportsFilterableColumns: false,
+          supportsSortableColumns: false,
+          supportsTrefwoorden: false,
+          supportsUpdatingDefinitiveDocument: this._supportsUpdatingDefinitiveDocument,
+          supportsObjectInformatieObjecten: false,
+        },
+      })
+    );
+
+    const files = [zgwDocuments.inEditingFile, zgwDocuments.definitiveFile].map(file => ({
+      ...file,
+      pluginConfigurationId: zgwDocuments.pluginConfigurationId,
+      creatiedatum: '2026-01-01',
+      createdOn: '2026-01-01T00:00:00Z',
+      createdBy: 'e2e',
+      versie: 1,
+      bestandsomvang: 1024,
+      canView: true,
+      canModify: true,
+      canDelete: true,
+    }));
+
+    await this.page.route(zgwDocuments.filesEndpoint(documentId), route =>
+      route.fulfill({
+        json: {
+          content: files,
+          totalElements: files.length,
+          totalPages: 1,
+          number: 0,
+          size: files.length,
+        },
+      })
+    );
+  }
+
+  async unstubZgwDocuments(documentId: string) {
+    const {zgwDocuments} = USER_CASES_CONFIG;
+    await this.page.unroute(zgwDocuments.versionEndpoint);
+    await this.page.unroute(zgwDocuments.filesEndpoint(documentId));
+  }
+
+  async openZgwDocumentsTab(documentId: string) {
+    await this.goToCaseDetail(documentId);
+    await this.detailTab(USER_CASES_CONFIG.detailTabs.documents).click();
+    await this.zgwDocumentRow(USER_CASES_CONFIG.zgwDocuments.inEditingFile.titel).assertVisible(
+      15_000
+    );
+  }
+
+  get zgwDocumentsList(): CarbonList {
+    return new CarbonList(
+      this.page,
+      this.page.locator('valtimo-case-detail-tab-documenten-api-documents')
+    );
+  }
+
+  zgwDocumentRow(titel: string) {
+    return this.zgwDocumentsList.row(titel);
+  }
+
+  async openZgwDocumentActionMenu(titel: string) {
+    await this.zgwDocumentRow(titel).openActionMenu();
+  }
+
+  // Exact match — plugins may contribute other row actions containing "Edit".
+  get zgwDocumentEditAction(): Locator {
+    return this.page
+      .getByRole('menu')
+      .getByRole('menuitem', {name: USER_CASES_CONFIG.zgwDocuments.editAction, exact: true});
+  }
+
+  async closeZgwDocumentActionMenu() {
+    await this.page.keyboard.press('Escape');
+    await expect(this.page.getByRole('menu')).not.toBeVisible();
   }
 }

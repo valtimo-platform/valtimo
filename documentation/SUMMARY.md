@@ -72,6 +72,7 @@
         * [Configure a plugin](configuration-guides/plugins/external-plugins/configure-a-plugin.md)
         * [Manage an integration](configuration-guides/plugins/external-plugins/manage-an-integration.md)
         * [Plugin status and reviews](configuration-guides/plugins/external-plugins/plugin-status-and-reviews.md)
+        * [Contracts between plugins](configuration-guides/plugins/external-plugins/contracts.md)
         * [Plugin logs](configuration-guides/plugins/external-plugins/plugin-logs.md)
         * [In cases and processes](configuration-guides/plugins/external-plugins/external-plugins-in-cases-and-processes.md)
         * [Troubleshooting](configuration-guides/plugins/external-plugins/troubleshooting.md)
@@ -88,6 +89,7 @@
 
 ## Release notes
 * [13.x.x](release-notes/13.x.x/)
+  * [13.57.0](release-notes/13.x.x/13.57.0/README.md)
   * [13.56.0](release-notes/13.x.x/13.56.0/README.md)
   * [13.55.0](release-notes/13.x.x/13.55.0/README.md)
     * [13.55.1](release-notes/13.x.x/13.55.1/README.md)

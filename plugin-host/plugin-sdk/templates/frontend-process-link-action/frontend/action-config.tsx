@@ -6,9 +6,8 @@ const sdk = new ValtimoPluginSDK();
 
 /**
  * The form an administrator fills in when wiring this plugin's action onto a BPMN task through a
- * process link. It configures **one use** of the action, where `config.tsx` configures the plugin
- * as a whole; what it collects lands in `input.properties` of the `action("__PLUGIN_ID__", …)`
- * handler.
+ * process link. It configures **one use** of the action, not the plugin as a whole; what it
+ * collects lands in `input.properties` of the `action("__PLUGIN_ID__", …)` handler.
  *
  * `setConfiguration` takes an empty title: a process link has no name of its own, so only the
  * validity flag and the data matter here.
@@ -31,7 +30,7 @@ function ActionConfigForm() {
 
   return (
     <div style={{fontFamily: "IBM Plex Sans, sans-serif"}}>
-      <label htmlFor="greeting">{sdk.t("actionConfig.greeting.label")}</label>
+      <label htmlFor="greeting">{sdk.t("action.greeting.label")}</label>
       <input
         id="greeting"
         type="text"
@@ -40,9 +39,9 @@ function ActionConfigForm() {
           setGreeting(e.target.value);
           emit(e.target.value);
         }}
-        placeholder={sdk.t("actionConfig.greeting.placeholder")}
+        placeholder={sdk.t("action.greeting.placeholder")}
       />
-      <p>{sdk.t("actionConfig.greeting.help")}</p>
+      <p>{sdk.t("action.greeting.tooltip")}</p>
     </div>
   );
 }
