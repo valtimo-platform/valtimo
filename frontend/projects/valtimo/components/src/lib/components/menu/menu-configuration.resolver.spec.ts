@@ -15,8 +15,12 @@
  */
 
 import {IncludeFunction, MenuItem, ROLE_ADMIN, ROLE_USER} from '@valtimo/shared';
-import {CatalogMenuConfigurationItem, MenuConfiguration} from './menu-configuration.model';
-import {resolveMenuConfiguration} from './menu-configuration.resolver';
+import {
+  CatalogMenuConfigurationItem,
+  MenuConfiguration,
+  MenuConfigurationItem,
+} from './menu-configuration.model';
+import {resolveMenuConfiguration, withoutRetiredMenuItems} from './menu-configuration.resolver';
 import {buildMenuConfigurationFromRuntimeMenu} from './menu-configuration.seed';
 import {menuLinkToString} from './menu-item-catalog';
 
@@ -411,6 +415,34 @@ describe('menu configuration reverse-seed mapper', () => {
     // The resolver additionally appends the required Admin item (this menu omits it), which the
     // required-item test covers separately.
     expect(resolveMenuConfiguration(config)[0]).toEqual(header);
+  });
+});
+
+describe('withoutRetiredMenuItems', () => {
+  it('drops retired catalog items at the top level and inside sections', () => {
+    const items: MenuConfigurationItem[] = [
+      {kind: 'catalog', itemId: 'taskManagement'},
+      {
+        kind: 'catalog',
+        itemId: 'admin',
+        children: [
+          {kind: 'catalog', itemId: 'processMigration'},
+          {kind: 'catalog', itemId: 'taskManagement'},
+        ],
+      },
+      {kind: 'group', title: 'Group', children: [{kind: 'catalog', itemId: 'taskManagement'}]},
+    ];
+
+    expect(withoutRetiredMenuItems(items)).toEqual([
+      {kind: 'catalog', itemId: 'admin', children: [{kind: 'catalog', itemId: 'processMigration'}]},
+      {kind: 'group', title: 'Group', children: []},
+    ]);
+  });
+
+  it('keeps unknown, non-retired items', () => {
+    const items: MenuConfigurationItem[] = [{kind: 'catalog', itemId: 'somethingElse'}];
+
+    expect(withoutRetiredMenuItems(items)).toEqual(items);
   });
 });
 

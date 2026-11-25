@@ -35,6 +35,24 @@ const PLUGIN_PAGE_ROUTE = '/plugin-pages';
 /** Catalog ids of removed pages. Menus saved earlier still contain them; skipped without a warning. */
 const RETIRED_MENU_CATALOG_ITEM_IDS: ReadonlyArray<string> = ['taskManagement'];
 
+const isRetiredMenuItem = (item: MenuConfigurationItem): boolean =>
+  item.kind === 'catalog' && RETIRED_MENU_CATALOG_ITEM_IDS.includes(item.itemId);
+
+/** Drops retired catalog items at any depth, so the menu editor neither shows nor re-saves them. */
+function withoutRetiredMenuItems(items: MenuConfigurationItem[]): MenuConfigurationItem[] {
+  return items
+    .filter(item => !isRetiredMenuItem(item))
+    .map((item): MenuConfigurationItem => {
+      if (item.kind === 'catalog' && item.children) {
+        return {...item, children: withoutRetiredMenuItems(item.children)};
+      }
+      if (item.kind === 'group' && item.children) {
+        return {...item, children: withoutRetiredMenuItems(item.children)};
+      }
+      return item;
+    });
+}
+
 /** A resolved top-level item paired with the persisted node it came from, so required-item checks can match on stable ids. */
 interface ResolvedMenuItemPair {
   source: MenuConfigurationItem;
@@ -125,7 +143,7 @@ function resolveCatalogItem(
 ): MenuItem | null {
   const entry = getMenuCatalogEntry(item.itemId);
   if (!entry) {
-    if (!RETIRED_MENU_CATALOG_ITEM_IDS.includes(item.itemId)) {
+    if (!isRetiredMenuItem(item)) {
       warn(logger, `Unknown menu catalog itemId "${item.itemId}" — skipping`);
     }
     return null;
@@ -243,4 +261,4 @@ function warn(logger: NGXLogger | undefined, message: string): void {
   }
 }
 
-export {resolveMenuConfiguration, PLUGIN_PAGE_ROUTE};
+export {resolveMenuConfiguration, withoutRetiredMenuItems, PLUGIN_PAGE_ROUTE};
