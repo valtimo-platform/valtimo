@@ -432,7 +432,8 @@ export class CaseDetailsProcessLinksPage {
   async selectBuildingBlockByName(name: string) {
     await expect(this.selectBuildingBlockComponent).toBeVisible();
     const row = this.buildingBlockRow(name);
-    await expect(row).toBeVisible();
+    // List is fetched after the component renders; slow on the nightly env.
+    await expect(row).toBeVisible({timeout: 15_000});
     await row.locator('input[type="radio"]').click({force: true});
   }
 

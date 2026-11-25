@@ -15,13 +15,16 @@ export default defineConfig({
   // forbidOnly: true,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : 1,
-  reporter: [['line'], ['html', {open: 'on-failure'}]],
+  reporter: [['line'], ['html', {open: 'on-failure'}], ['./utils/backend-errors.reporter.ts']],
   globalSetup: './utils/globalSetup.ts',
   globalTeardown: './utils/teardown.ts',
   timeout: process.env.qa_timeout
     ? moment.duration(process.env.qa_timeout).asMilliseconds()
     : 30_000,
-  globalTimeout: 60 * 60 * 1000,
+  // Full suite runs ~60 min on the nightly env; 60 min cut it off mid-run.
+  globalTimeout: process.env.qa_global_timeout
+    ? moment.duration(process.env.qa_global_timeout).asMilliseconds()
+    : 120 * 60 * 1000,
 
   use: {
     launchOptions: {

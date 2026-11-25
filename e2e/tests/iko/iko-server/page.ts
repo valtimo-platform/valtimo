@@ -26,6 +26,7 @@ import {
 } from '../../../constants';
 import {apiDelete, apiGet, apiPost} from '../../../utils/api.utils';
 import {ikoServerConfig} from './iko-server-config';
+import {settleModalReset} from '../../../shared/modal/modal.utils';
 
 interface IkoRepositoryConfigListResponse {
   content: Array<{key: string; title: string}>;
@@ -132,6 +133,7 @@ export class IkoServerPage {
   async openConfigureModal(): Promise<void> {
     await this.configureServerButton.click();
     await expect(this.modalHeading).toBeVisible();
+    await settleModalReset(this.page);
   }
 
   async fillServer(title: string, url?: string): Promise<void> {
@@ -178,6 +180,7 @@ export class IkoServerPage {
   async openEdit(title: string): Promise<void> {
     await this.list.row(title).clickAction('Edit');
     await expect(this.modalHeading).toBeVisible();
+    await settleModalReset(this.page);
   }
 
   async editServerTitle(oldTitle: string, newTitle: string): Promise<void> {

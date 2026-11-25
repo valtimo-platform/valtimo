@@ -45,6 +45,8 @@ test.describe('Feature 15E — IKO List Columns', () => {
   let parentViewKey: string;
 
   test.beforeAll(async ({browser, baseURL}: {browser: Browser; baseURL?: string}) => {
+    // API seeding plus a cold page load exceed the default 30s on the shared env.
+    test.setTimeout(90_000);
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     ikoServerPage = new IkoServerPage(page, context.request);
@@ -62,7 +64,6 @@ test.describe('Feature 15E — IKO List Columns', () => {
     const parentViewTitle = `E2E IKO View column-suite-parent`;
     parentViewKey = await ikoViewPage.createViewViaApi(parentServerKey, parentViewTitle);
 
-    await page.goto('/');
     await columnsPage.goToListTab(parentServerKey, parentViewKey);
   });
 

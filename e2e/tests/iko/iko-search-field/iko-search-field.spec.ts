@@ -49,6 +49,8 @@ test.describe('Feature 15D — IKO Search Fields', () => {
   let parentActionKey: string;
 
   test.beforeAll(async ({browser, baseURL}: {browser: Browser; baseURL?: string}) => {
+    // API seeding plus a cold page load exceed the default 30s on the shared env.
+    test.setTimeout(90_000);
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     ikoServerPage = new IkoServerPage(page, context.request);
@@ -73,7 +75,6 @@ test.describe('Feature 15D — IKO Search Fields', () => {
       parentActionTitle
     );
 
-    await page.goto('/');
     await searchFieldPage.goToSearchFieldsPage(parentServerKey, parentViewKey, parentActionKey);
   });
 

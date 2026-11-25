@@ -38,6 +38,8 @@ test.describe('Feature 15C — IKO Search Actions', () => {
   let parentViewKey: string;
 
   test.beforeAll(async ({browser, baseURL}: {browser: Browser; baseURL?: string}) => {
+    // API seeding plus a cold page load exceed the default 30s on the shared env.
+    test.setTimeout(90_000);
     context = await browser.newContext({baseURL});
     page = await context.newPage();
     ikoServerPage = new IkoServerPage(page, context.request);
@@ -55,7 +57,6 @@ test.describe('Feature 15C — IKO Search Actions', () => {
     const parentViewTitle = `E2E IKO View search-action-suite-parent`;
     parentViewKey = await ikoViewPage.createViewViaApi(parentServerKey, parentViewTitle);
 
-    await page.goto('/');
     await searchActionPage.goToSearchActionsTab(parentServerKey, parentViewKey);
   });
 

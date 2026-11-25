@@ -248,10 +248,13 @@ const DROPPED_CONNECTION_ERROR = /ECONNRESET|ETIMEDOUT|socket hang up|network er
 
 const IDEMPOTENT_METHODS = new Set(['GET', 'PUT', 'DELETE']);
 
+let lastRequestStartedAt = Date.now();
+
 async function send(
   method: string,
   request: () => Promise<APIResponse>
 ): Promise<APIResponse> {
+  lastRequestStartedAt = Date.now();
   for (let attempt = 1; ; attempt++) {
     try {
       return await request();
@@ -283,5 +286,60 @@ async function parseBody<T>(res: APIResponse): Promise<T> {
 async function assertOk(method: string, url: string, res: APIResponse) {
   if (res.ok()) return;
   const snippet = (await res.text()).slice(0, 600);
-  throw new ApiError(res.status(), `[api] ${method} ${url} → ${res.status()} | ${snippet}`);
+  let message = `[api] ${method} ${url} → ${res.status()} | ${snippet}`;
+  // The env sanitizes 5xx bodies; the real cause is only in the backend log.
+  if (res.status() >= 500) {
+    const errors = await fetchBackendErrors(lastRequestStartedAt, {waitForFirst: true});
+    if (errors.length) message += `\n[backend log]\n${errors.join('\n')}`;
+  }
+  throw new ApiError(res.status(), message);
+}
+
+const LOGGING_SEARCH_ENDPOINT = '/api/management/v1/logging';
+// The DB log appender is async (flushes within 5 s).
+const LOG_FLUSH_WAIT_MS = 6_000;
+
+interface LoggingEvent {
+  timestamp: string;
+  formattedMessage: string;
+  stacktrace?: string | null;
+}
+
+/**
+ * Backend ERROR log events since `sinceMs`, each reduced to its exception and `Caused by` lines.
+ * Best-effort: never throws, returns [] when the logging API is unreachable.
+ */
+export async function fetchBackendErrors(
+  sinceMs: number,
+  options: {untilMs?: number; waitForFirst?: boolean; limit?: number} = {}
+): Promise<string[]> {
+  const deadline = Date.now() + (options.waitForFirst ? LOG_FLUSH_WAIT_MS : 0);
+  // Server compares against UTC LocalDateTime; 1 s slack for clock skew.
+  const toLocalDateTime = (ms: number) => new Date(ms).toISOString().slice(0, 19);
+  const afterTimestamp = toLocalDateTime(sinceMs - 1_000);
+  const beforeTimestamp = options.untilMs ? toLocalDateTime(options.untilMs + 1_000) : undefined;
+  try {
+    const ctx = await getContext();
+    for (;;) {
+      const res = await ctx.post(`${LOGGING_SEARCH_ENDPOINT}?size=${options.limit ?? 5}`, {
+        data: {afterTimestamp, beforeTimestamp, level: 'ERROR'},
+      });
+      if (!res.ok()) return [];
+      const events: LoggingEvent[] = (await res.json()).content ?? [];
+      if (events.length || Date.now() >= deadline) return events.map(summarizeLoggingEvent);
+      await new Promise(resolve => setTimeout(resolve, 1_000));
+    }
+  } catch {
+    return [];
+  }
+}
+
+function summarizeLoggingEvent(event: LoggingEvent): string {
+  const causes = (event.stacktrace ?? '')
+    .split('\n')
+    .map(line => line.trim())
+    .filter((line, index) => line && (index === 0 || line.startsWith('Caused by:')));
+  return [`${event.timestamp} ${event.formattedMessage}`, ...causes.map(line => `  ${line}`)].join(
+    '\n'
+  );
 }
