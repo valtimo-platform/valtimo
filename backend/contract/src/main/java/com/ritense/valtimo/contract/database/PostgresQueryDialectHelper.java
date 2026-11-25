@@ -49,6 +49,13 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
                 .when(cb.or(cb.equal(stringValue, "null"), cb.equal(stringValue, "\"\"")), cb.nullLiteral(type))
                 .otherwise(cast(cb.trim('"', stringValue), type))
                 .as(type);
+        } else if (type == Object.class) {
+            // No cast target for an untyped value (null checks): compare as text, JSON null as SQL NULL
+            var stringValue = cast(jsonValue, String.class);
+            return cb.<String>selectCase()
+                .when(cb.equal(stringValue, "null"), cb.nullLiteral(String.class))
+                .otherwise(cb.trim('"', stringValue))
+                .as(type);
         } else if (Collection.class.isAssignableFrom(type)) {
             throw new UnsupportedOperationException("Failed to query '" + jsonPath + "'. Unsupported type '" + type + "'.");
         } else {
