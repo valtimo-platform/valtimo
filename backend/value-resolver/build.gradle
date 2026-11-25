@@ -56,7 +56,7 @@ dependencies {
     api "org.operaton.bpm:operaton-engine:${operatonVersion}"
     api "org.zalando:problem-spring-web:${problemSpringWebVersion}"
 
-    implementation "com.flipkart.zjsonpatch:zjsonpatch:${zjsonpatchVersion}"
+    implementation "io.github.vishwakarma:zjsonpatch:${zjsonpatchVersion}"
 
     testImplementation project(':backend:test-utils-common')
     testImplementation "org.jetbrains.kotlin:kotlin-test"

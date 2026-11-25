@@ -77,7 +77,7 @@ dependencies {
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "com.github.erosb:everit-json-schema:${everitJsonSchemaVersion}"
-    implementation "com.flipkart.zjsonpatch:zjsonpatch:${zjsonpatchVersion}"
+    implementation "io.github.vishwakarma:zjsonpatch:${zjsonpatchVersion}"
     implementation "com.jayway.jsonpath:json-path"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
 

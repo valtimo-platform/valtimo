@@ -17,10 +17,12 @@
 package com.ritense.document.domain.patch;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.flipkart.zjsonpatch.JsonPatchApplicationException;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -225,4 +227,20 @@ public class JsonPatchServiceTest {
 
     }
 
+
+    @Test
+    public void replaceRootIsRejected() {
+        final ObjectNode replaceOperation = JsonNodeFactory.instance.objectNode();
+        replaceOperation.put("op", "replace");
+        replaceOperation.put("path", "");
+        replaceOperation.set("value", JsonNodeFactory.instance.objectNode().put("a", 1));
+        ArrayNode patches = JsonNodeFactory.instance.arrayNode();
+        patches.add(replaceOperation);
+
+        // zjsonpatch < 0.5 silently ignored this in place
+        assertThatThrownBy(() -> JsonPatchService.apply(patches, source))
+            .isInstanceOf(JsonPatchApplicationException.class)
+            .hasMessageContaining("Cannot replace root document");
+        assertThat(source.at("/favorites/0").textValue()).isEqualTo("Croissant");
+    }
 }
