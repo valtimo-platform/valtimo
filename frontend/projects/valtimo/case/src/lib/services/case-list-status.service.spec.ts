@@ -65,4 +65,12 @@ describe('CaseListStatusService', () => {
 
     expect(await firstValueFrom(service.caseStatuses$)).toEqual([CASE_WITHOUT_STATUS_STATUS]);
   });
+
+  it('degrades to the without-status entry when a group statuses request fails (not 403/404)', async () => {
+    caseStatusService.getGroupInternalCaseStatuses.and.returnValue(
+      throwError(() => new HttpErrorResponse({status: 0}))
+    );
+
+    expect(await firstValueFrom(service.caseStatuses$)).toEqual([CASE_WITHOUT_STATUS_STATUS]);
+  });
 });

@@ -29,11 +29,9 @@ import {
   switchMap,
   take,
   tap,
-  throwError,
 } from 'rxjs';
 import {CASE_WITHOUT_STATUS_STATUS} from '../constants';
 import {CaseListContext} from '../models';
-import {isGroupUnavailable} from '../utils';
 
 @Injectable()
 export class CaseListStatusService {
@@ -49,13 +47,7 @@ export class CaseListStatusService {
           context.type === 'group'
             ? this.caseStatusService
                 .getGroupInternalCaseStatuses(context.key)
-                .pipe(
-                  catchError(error =>
-                    isGroupUnavailable(error)
-                      ? of([] as InternalCaseStatus[])
-                      : throwError(() => error)
-                  )
-                )
+                .pipe(catchError(() => of([] as InternalCaseStatus[])))
             : this.caseStatusService
                 .getInternalCaseStatuses(context.key)
                 .pipe(catchError(() => of([] as InternalCaseStatus[]))),
