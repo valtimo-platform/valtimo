@@ -27,6 +27,7 @@ import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.zakenapi.ZaakUrlProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -82,7 +83,9 @@ internal class ZaakObjectResourceForeignObjectUrlTest {
             infoProvider
         )
         val resource = ZaakObjectResource(zaakObjectService, mock<DocumentService>(), mock<AuthorizationService>())
-        mockMvc = MockMvcBuilders.standaloneSetup(resource).build()
+        mockMvc = MockMvcBuilders.standaloneSetup(resource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
+            .build()
     }
 
     @Test

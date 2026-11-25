@@ -23,6 +23,7 @@ import com.ritense.form.domain.IntermediateSubmission
 import com.ritense.form.repository.IntermediateSubmissionRepository
 import com.ritense.form.service.IntermediateSubmissionService
 import com.ritense.form.web.rest.dto.IntermediateSaveRequest
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.operaton.domain.OperatonExecution
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.contract.authentication.ManageableUser
@@ -82,6 +83,7 @@ class IntermediateSubmissionResourceIntTest : BaseIntegrationTest() {
     @BeforeEach
     internal fun init() {
         mockMvc = MockMvcBuilders.standaloneSetup(intermediateSubmissionResource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setControllerAdvice(ExceptionTranslator(Optional.empty()))
             .alwaysDo<StandaloneMockMvcBuilder>(MockMvcResultHandlers.print())

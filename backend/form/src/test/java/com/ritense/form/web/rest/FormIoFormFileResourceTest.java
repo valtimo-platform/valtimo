@@ -26,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ritense.form.BaseTest;
 import com.ritense.form.web.rest.impl.FormIoFormFileResource;
 import com.ritense.resource.service.ResourceService;
+import com.ritense.testutilscommon.http.Jackson2Http;
 import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,7 @@ public class FormIoFormFileResourceTest extends BaseTest {
         formIoFormFileResource = new FormIoFormFileResource(resourceService);
         mockMvc = MockMvcBuilders
             .standaloneSetup(formIoFormFileResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .build();
     }
 

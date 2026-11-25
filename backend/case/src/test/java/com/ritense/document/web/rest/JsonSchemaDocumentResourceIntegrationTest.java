@@ -41,6 +41,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.request.AssignToDocumentsRequest;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.outbox.domain.BaseEvent;
+import com.ritense.testutilscommon.http.Jackson2Http;
 import com.ritense.valtimo.contract.authentication.Team;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import java.util.List;
@@ -84,6 +85,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
         jsonSchemaDocumentResource = new JsonSchemaDocumentResource(documentService);
         mockMvc = MockMvcBuilders
             .standaloneSetup(jsonSchemaDocumentResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(new org.springframework.data.web.PageableHandlerMethodArgumentResolver())
             .build();
     }

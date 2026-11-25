@@ -53,6 +53,7 @@ dependencies {
     implementation("com.jayway.jsonpath:json-path")
 
     testImplementation(project(":backend:core"))
+    testImplementation project(":backend:test-utils-common")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test"

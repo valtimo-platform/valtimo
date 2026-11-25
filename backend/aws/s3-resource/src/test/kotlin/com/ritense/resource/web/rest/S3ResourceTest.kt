@@ -21,6 +21,7 @@ import com.ritense.resource.domain.ResourceId
 import com.ritense.resource.service.S3Service
 import com.ritense.resource.web.ObjectUrlDTO
 import com.ritense.resource.web.ResourceDTO
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
@@ -57,6 +58,7 @@ class S3ResourceTest : BaseTest() {
         s3Resource = S3Resource(s3Service, mock())
         mockMvc = MockMvcBuilders
             .standaloneSetup(s3Resource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .build()
     }

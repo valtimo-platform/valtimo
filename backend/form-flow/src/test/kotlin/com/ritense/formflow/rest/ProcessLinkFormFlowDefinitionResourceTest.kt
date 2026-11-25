@@ -23,6 +23,7 @@ import com.ritense.formflow.domain.definition.FormFlowStepId
 import com.ritense.formflow.domain.definition.configuration.FormFlowStepType
 import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
 import com.ritense.formflow.service.FormFlowService
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
@@ -45,7 +46,9 @@ internal class ProcessLinkFormFlowDefinitionResourceTest {
     fun init() {
         service = mock()
         resource = ProcessLinkFormFlowDefinitionResource(service)
-        mockMvc = MockMvcBuilders.standaloneSetup(resource).build()
+        mockMvc = MockMvcBuilders.standaloneSetup(resource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
+            .build()
     }
 
     @Test

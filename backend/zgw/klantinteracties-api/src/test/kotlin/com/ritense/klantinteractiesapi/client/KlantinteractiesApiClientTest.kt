@@ -29,6 +29,7 @@ import com.ritense.klantinteractiesapi.domain.PartijIdentificator
 import com.ritense.klantinteractiesapi.domain.PartijSoort
 import com.ritense.klantinteractiesapi.domain.PersoonPartijIndentificatie
 import com.ritense.klantinteractiesapi.domain.SoortObject
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -39,7 +40,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.web.client.RestClient
 import java.net.URI
 
@@ -55,13 +55,7 @@ class KlantinteractiesApiClientTest {
             this.registerSubtypes(NamedType(PersoonPartijIndentificatie::class.java))
         }
 
-        restClientBuilder = RestClient.builder().messageConverters { converters ->
-            converters.forEach { converter ->
-                if (converter is MappingJackson2HttpMessageConverter) {
-                    converter.setObjectMapper(objectMapper)
-                }
-            }
-        }
+        restClientBuilder = Jackson2Http.restClientBuilder(objectMapper)
 
         mockApi = MockWebServer()
         mockApi.start()

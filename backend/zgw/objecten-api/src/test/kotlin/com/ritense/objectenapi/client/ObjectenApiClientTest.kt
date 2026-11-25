@@ -32,6 +32,7 @@ import com.ritense.objectenapi.event.ObjectViewed
 import com.ritense.objectenapi.event.ObjectsListed
 import com.ritense.outbox.OutboxService
 import com.ritense.outbox.domain.BaseEvent
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -88,7 +89,7 @@ internal class ObjectenApiClientTest {
         mockApi.start()
         objectMapper = MapperSingleton.get()
         outboxService = mock()
-        restClientBuilder = RestClient.builder()
+        restClientBuilder = Jackson2Http.restClientBuilder()
             .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
         authorizationService = mock()
     }

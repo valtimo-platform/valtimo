@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath
 import com.ritense.form.BaseIntegrationTest
 import com.ritense.form.domain.request.CreateFormDefinitionRequest
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.authentication.ManageableUser
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -41,6 +42,7 @@ class FormManagementResourceIntTest : BaseIntegrationTest() {
     @BeforeEach
     internal fun init() {
         mockMvc = MockMvcBuilders.standaloneSetup(formManagementResource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .alwaysDo<StandaloneMockMvcBuilder>(MockMvcResultHandlers.print())
             .build()

@@ -19,6 +19,7 @@ package com.ritense.plugin.web.rest
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.result.PluginActionDefinitionDto
+import com.ritense.testutilscommon.http.Jackson2Http
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -46,6 +47,7 @@ internal class PluginDefinitionResourceTest {
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(pluginDefinitionResource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
             .build()
     }
 

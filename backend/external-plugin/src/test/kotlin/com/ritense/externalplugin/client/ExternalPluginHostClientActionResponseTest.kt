@@ -17,6 +17,7 @@
 package com.ritense.externalplugin.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.testutilscommon.http.Jackson2Http
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -52,7 +53,7 @@ class ExternalPluginHostClientActionResponseTest {
 
     @BeforeEach
     fun setUp() {
-        restTemplate = RestTemplate()
+        restTemplate = Jackson2Http.restTemplate()
         server = MockRestServiceServer.createServer(restTemplate)
         client = ExternalPluginHostClient(restTemplate, objectMapper)
     }

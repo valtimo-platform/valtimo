@@ -26,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ritense.testutilscommon.http.Jackson2Http;
 import com.ritense.valtimo.BaseIntegrationTest;
 import com.ritense.valtimo.repository.operaton.dto.ProcessInstance;
 import com.ritense.valtimo.web.rest.dto.ProcessInstanceSearchDTO;
@@ -62,6 +63,7 @@ class ProcessResourceIntTest extends BaseIntegrationTest {
     @BeforeEach
     void init() {
         mockMvc = MockMvcBuilders.standaloneSetup(processResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .build();
     }

@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ritense.testutilscommon.http.Jackson2Http;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettings;
 import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettingsRequestImpl;
@@ -62,6 +63,7 @@ class EmailNotificationSettingsResourceTest {
         emailNotificationSettingsResource = new EmailNotificationSettingsResource(emailNotificationService);
         mockMvc = MockMvcBuilders
             .standaloneSetup(emailNotificationSettingsResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .build();
     }
 

@@ -19,6 +19,7 @@ package com.ritense.externalplugin.client
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.domain.EventQueueMode
 import com.ritense.externalplugin.security.ExternalPluginHmacSigner
+import com.ritense.testutilscommon.http.Jackson2Http
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -55,7 +56,7 @@ class ExternalPluginHostClientHmacTest {
 
     @BeforeEach
     fun setup() {
-        restTemplate = RestTemplate()
+        restTemplate = Jackson2Http.restTemplate()
         server = MockRestServiceServer.createServer(restTemplate)
         client = ExternalPluginHostClient(restTemplate, objectMapper)
     }
@@ -348,7 +349,7 @@ class ExternalPluginHostClientHmacTest {
 
     @Test
     fun `contract deliveries and replies go through the contract RestTemplate with the correlation id`() {
-        val contractRestTemplate = RestTemplate()
+        val contractRestTemplate = Jackson2Http.restTemplate()
         val contractServer = MockRestServiceServer.createServer(contractRestTemplate)
         val contractClient = ExternalPluginHostClient(restTemplate, objectMapper, contractRestTemplate)
         val body = objectMapper.createObjectNode().put("jobId", "job-1")

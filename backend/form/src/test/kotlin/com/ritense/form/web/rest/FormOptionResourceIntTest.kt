@@ -17,6 +17,7 @@
 package com.ritense.form.web.rest
 
 import com.ritense.form.BaseIntegrationTest
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.Matchers.hasSize
@@ -45,6 +46,7 @@ class FormOptionResourceIntTest(
         formDefinitionRepository.deleteAll()
         mockMvc = MockMvcBuilders
             .standaloneSetup(resource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .build()
     }

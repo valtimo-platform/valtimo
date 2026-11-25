@@ -26,6 +26,7 @@ import com.ritense.formflow.domain.instance.FormFlowInstanceId
 import com.ritense.formflow.domain.instance.FormFlowStepInstance
 import com.ritense.formflow.domain.instance.FormFlowStepInstanceId
 import com.ritense.formflow.service.FormFlowService
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.formflow.BaseTest
 import com.ritense.formflow.handler.FormTypeProperties
@@ -90,7 +91,9 @@ class FormFlowResourceTest : BaseTest() {
         whenever(stepInstance.id).thenReturn(stepInstanceId)
         whenever(stepInstance.definition).thenReturn(step1)
 
-        mockMvc = MockMvcBuilders.standaloneSetup(formFlowResource).build()
+        mockMvc = MockMvcBuilders.standaloneSetup(formFlowResource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
+            .build()
     }
 
     @Test

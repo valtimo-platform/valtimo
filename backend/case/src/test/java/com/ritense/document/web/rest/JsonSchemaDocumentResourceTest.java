@@ -16,6 +16,7 @@
 
 package com.ritense.document.web.rest;
 
+import com.ritense.testutilscommon.http.Jackson2Http;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.hamcrest.Matchers.hasSize;
@@ -70,6 +71,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
         validator.afterPropertiesSet();
 
         mockMvc = MockMvcBuilders.standaloneSetup(documentResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .setValidator(validator)
             .build();

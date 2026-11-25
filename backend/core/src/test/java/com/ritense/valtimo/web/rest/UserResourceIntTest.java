@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ritense.testutilscommon.http.Jackson2Http;
 import com.ritense.valtimo.BaseIntegrationTest;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
@@ -42,7 +43,9 @@ class UserResourceIntTest extends BaseIntegrationTest {
 
     @BeforeEach
     void init() {
-        mockMvc = MockMvcBuilders.standaloneSetup(userResource).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(userResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
+            .build();
     }
 
     @Test

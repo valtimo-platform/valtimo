@@ -24,6 +24,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.converter.StringToActivityTypeConverter
 import com.ritense.plugin.web.rest.request.CreatePluginConfigurationDto
 import com.ritense.plugin.web.rest.request.UpdatePluginConfigurationDto
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
@@ -63,6 +64,7 @@ internal class PluginConfigurationResourceTest {
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(pluginConfigurationResource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
             .setConversionService(formattingConversionService)
             .build()
     }

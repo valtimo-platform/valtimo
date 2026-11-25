@@ -22,6 +22,7 @@ import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -49,7 +50,7 @@ class NotificatiesApiClientTest {
     fun setup() {
         mockNotificatiesApi = MockWebServer()
         mockNotificatiesApi.start()
-        restClientBuilder = RestClient.builder()
+        restClientBuilder = Jackson2Http.restClientBuilder()
         objectMapper = MapperSingleton.get()
         client = NotificatiesApiClient(restClientBuilder, objectMapper)
     }

@@ -18,6 +18,7 @@ package com.ritense.externalplugin.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.externalplugin.client.ExternalPluginHostClient.HostConfigurationSummary
+import com.ritense.testutilscommon.http.Jackson2Http
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -50,7 +51,7 @@ class ExternalPluginHostClientConfigurationListingTest {
 
     @BeforeEach
     fun setup() {
-        restTemplate = RestTemplate()
+        restTemplate = Jackson2Http.restTemplate()
         server = MockRestServiceServer.createServer(restTemplate)
         client = ExternalPluginHostClient(restTemplate, objectMapper)
     }

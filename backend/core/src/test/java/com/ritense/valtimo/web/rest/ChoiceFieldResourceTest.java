@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.web.rest;
 
+import com.ritense.testutilscommon.http.Jackson2Http;
 import com.ritense.valtimo.contract.domain.ValtimoMediaType;
 import com.ritense.valtimo.domain.choicefield.ChoiceField;
 import com.ritense.valtimo.service.ChoiceFieldService;
@@ -57,6 +58,7 @@ class ChoiceFieldResourceTest {
     @BeforeEach
     void setUp() {
         mvc = MockMvcBuilders.standaloneSetup(choiceFieldResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .build();
     }

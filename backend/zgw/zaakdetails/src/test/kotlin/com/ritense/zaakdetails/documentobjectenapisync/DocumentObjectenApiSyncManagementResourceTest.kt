@@ -18,6 +18,7 @@ package com.ritense.zaakdetails.documentobjectenapisync
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.zaakdetails.mock.MockObjectManagement
@@ -57,7 +58,9 @@ internal class DocumentObjectenApiSyncManagementResourceTest {
         service = mock()
         objectManagementInfoProvider = mock()
         resource = DocumentObjectenApiSyncManagementResource(service, objectManagementInfoProvider)
-        mockMvc = MockMvcBuilders.standaloneSetup(resource).build()
+        mockMvc = MockMvcBuilders.standaloneSetup(resource)
+            .setMessageConverters(*Jackson2Http.serverConverters())
+            .build()
     }
 
     @Test

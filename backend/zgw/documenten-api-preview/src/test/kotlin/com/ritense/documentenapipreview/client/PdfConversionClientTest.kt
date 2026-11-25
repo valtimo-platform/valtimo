@@ -17,6 +17,7 @@
 package com.ritense.documentenapipreview.client
 
 import com.ritense.documentenapipreview.domain.PdfArchiveMethod
+import com.ritense.testutilscommon.http.Jackson2Http
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
@@ -26,7 +27,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.http.MediaType
-import org.springframework.web.client.RestClient
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.HashMap
@@ -54,7 +54,7 @@ internal class PdfConversionClientTest {
 
     @Test
     fun `should send request to correct path`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = PdfConversionClient(restClientBuilder)
 
         val responseBody = "TEST_PDF_CONTENT"
@@ -74,7 +74,7 @@ internal class PdfConversionClientTest {
 
     @Test
     fun `should send request with default conversion parameters`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = PdfConversionClient(restClientBuilder)
 
         val responseBody = "TEST_PDF_CONTENT"
@@ -101,7 +101,7 @@ internal class PdfConversionClientTest {
 
     @Test
     fun `should send request with PDF A-2b and PDF UA set to true`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = PdfConversionClient(restClientBuilder)
 
         val responseBody = "TEST_PDF_CONTENT"
@@ -130,7 +130,7 @@ internal class PdfConversionClientTest {
 
     @Test
     fun `should send request with PDF A-3b and PDF UA set to false`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = PdfConversionClient(restClientBuilder)
 
         val responseBody = "TEST_PDF_CONTENT"

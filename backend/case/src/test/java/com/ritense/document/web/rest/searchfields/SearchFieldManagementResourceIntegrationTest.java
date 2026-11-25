@@ -27,18 +27,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.BaseIntegrationTest;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.searchfield.SearchFieldDto;
 import com.ritense.document.service.SearchFieldService;
 import com.ritense.document.web.rest.impl.SearchFieldManagementResource;
+import com.ritense.testutilscommon.http.Jackson2Http;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.web.rest.error.WebModuleExceptionTranslator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +49,7 @@ import java.util.List;
 class SearchFieldManagementResourceIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
-    private MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter;
+    private ObjectMapper objectMapper;
 
     @Autowired
     private WebModuleExceptionTranslator webModuleExceptionTranslator;
@@ -86,7 +87,7 @@ class SearchFieldManagementResourceIntegrationTest extends BaseIntegrationTest {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(searchFieldManagementResource)
                 .setControllerAdvice(webModuleExceptionTranslator)
-                .setMessageConverters(mappingJackson2HttpMessageConverter)
+                .setMessageConverters(Jackson2Http.serverConverters(objectMapper))
                 .build();
     }
 

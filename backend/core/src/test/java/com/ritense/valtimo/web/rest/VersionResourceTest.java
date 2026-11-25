@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ritense.testutilscommon.http.Jackson2Http;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
@@ -39,6 +40,7 @@ class VersionResourceTest {
         versionResource = new VersionResource();
         mockMvc = MockMvcBuilders
             .standaloneSetup(versionResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .alwaysDo(print())
             .build();
     }

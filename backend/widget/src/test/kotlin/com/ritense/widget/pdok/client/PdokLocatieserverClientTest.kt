@@ -16,6 +16,7 @@
 
 package com.ritense.widget.pdok.client
 
+import com.ritense.testutilscommon.http.Jackson2Http
 import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -45,7 +46,7 @@ class PdokLocatieserverClientTest {
 
     @BeforeEach
     fun setUp() {
-        restClientBuilder = RestClient.builder()
+        restClientBuilder = Jackson2Http.restClientBuilder()
         mockServer = MockRestServiceServer.bindTo(restClientBuilder).build()
         client = PdokLocatieserverClient(restClientBuilder, baseUrl)
     }

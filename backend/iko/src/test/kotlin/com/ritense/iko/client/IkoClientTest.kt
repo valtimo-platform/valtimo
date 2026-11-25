@@ -17,6 +17,7 @@
 package com.ritense.iko.client
 
 import com.ritense.iko.exception.IkoServerException
+import com.ritense.testutilscommon.http.Jackson2Http
 import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -28,7 +29,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.SimpleClientHttpRequestFactory
-import org.springframework.web.client.RestClient
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeUnit.SECONDS
@@ -50,7 +50,7 @@ class IkoClientTest {
 
     @Test
     fun `should get iko JSON by id`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = IkoClient(restClientBuilder, MapperSingleton.get())
 
         val responseBody = """
@@ -120,7 +120,7 @@ class IkoClientTest {
 
     @Test
     fun `should send create besluit request and parse response when vervalreden is null`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = IkoClient(restClientBuilder, MapperSingleton.get())
 
         val responseBody = """
@@ -171,7 +171,7 @@ class IkoClientTest {
 
     @Test
     fun `should throw when the iko server returns an error`() {
-        val client = IkoClient(RestClient.builder(), MapperSingleton.get())
+        val client = IkoClient(Jackson2Http.restClientBuilder(), MapperSingleton.get())
 
         mockApi.enqueue(MockResponse().setResponseCode(500))
 
@@ -190,7 +190,7 @@ class IkoClientTest {
 
     @Test
     fun `should throw when the iko server does not respond in time`() {
-        val restClientBuilder = RestClient.builder().requestFactory(
+        val restClientBuilder = Jackson2Http.restClientBuilder().requestFactory(
             SimpleClientHttpRequestFactory().apply { setReadTimeout(Duration.ofMillis(100)) }
         )
         val client = IkoClient(restClientBuilder, MapperSingleton.get())

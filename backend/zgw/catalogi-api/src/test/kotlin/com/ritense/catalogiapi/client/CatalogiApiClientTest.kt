@@ -20,6 +20,7 @@ import com.ritense.catalogiapi.CatalogiApiAuthentication
 import com.ritense.catalogiapi.client.CatalogiApiClient.Companion.INFORMATIEOBJECTTYPECACHE_KEY
 import com.ritense.catalogiapi.domain.InformatieobjecttypeRichting
 import com.ritense.catalogiapi.domain.InformatieobjecttypeVertrouwelijkheid
+import com.ritense.testutilscommon.http.Jackson2Http
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
@@ -95,7 +96,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should send get informatieobjecttype request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
 
         val responseBody = """
@@ -135,7 +136,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should not send get informatieobjecttype request when url and baseUrl dont match`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
 
         val baseUrl = "http://example.com"
@@ -157,7 +158,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should send get roltypen request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
         val baseUrl = mockApi.url("api").toString()
         val zaakTypeUrl = "$baseUrl/zaaktypen/${UUID.randomUUID()}"
@@ -200,7 +201,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should get statustypen request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
         val baseUrl = mockApi.url("api").toString()
         val zaakTypeUrl = "$baseUrl/zaaktypen/${UUID.randomUUID()}"
@@ -250,7 +251,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should get resultaattypen request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
         val baseUrl = mockApi.url("api").toString()
         val zaakTypeUrl = "$baseUrl/zaaktypen/${UUID.randomUUID()}"
@@ -311,7 +312,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should get beluittypen request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
         val baseUrl = mockApi.url("api").toString()
         val zaakTypeUrl = "$baseUrl/zaaktypen/${UUID.randomUUID()}"
@@ -369,7 +370,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `prefillCache should prefill the cache`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
         val baseUrl = mockApi.url("api").toString()
         val cache = mock<Cache>()
@@ -407,7 +408,7 @@ internal class CatalogiApiClientTest {
     private fun sendGetZaaktypeInformatieobjecttypeRequest(
         request: ZaaktypeInformatieobjecttypeRequest
     ): RecordedRequest {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
 
         val responseBody = """
@@ -469,7 +470,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should get zaaktypen request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
         val baseUrl = mockApi.url("api").toString()
         val responseBody = """
@@ -554,7 +555,7 @@ internal class CatalogiApiClientTest {
 
     @Test
     fun `should get eigenschappen request and parse response`() {
-        val restClientBuilder = RestClient.builder()
+        val restClientBuilder = Jackson2Http.restClientBuilder()
         val client = CatalogiApiClient(restClientBuilder, cacheManager)
         val baseUrl = mockApi.url("api").toString()
         val responseBody = """

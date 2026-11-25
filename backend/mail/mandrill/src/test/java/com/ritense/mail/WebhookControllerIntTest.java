@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ritense.mail.domain.webhook.MandrillWebhookRequest;
 import com.ritense.mail.service.WebhookService;
 import com.ritense.mail.web.rest.WebhookResource;
+import com.ritense.testutilscommon.http.Jackson2Http;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -58,6 +59,7 @@ public class WebhookControllerIntTest {
         webhookResource = new WebhookResource(webhookService);
         mockMvc = MockMvcBuilders
             .standaloneSetup(webhookResource)
+            .setMessageConverters(Jackson2Http.serverConverters())
             .build();
     }
 
