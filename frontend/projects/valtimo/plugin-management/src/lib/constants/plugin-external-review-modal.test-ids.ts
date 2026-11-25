@@ -17,4 +17,7 @@
 export const PLUGIN_EXTERNAL_REVIEW_MODAL_TEST_IDS = {
   cancelButton: 'pluginExternalReviewModalCancelButton',
   acceptButton: 'pluginExternalReviewModalAcceptButton',
+  newContractsNotice: 'pluginExternalReviewModalNewContractsNotice',
+  contractSchemaNotice: 'pluginExternalReviewModalContractSchemaNotice',
+  contractSchemaErrors: 'pluginExternalReviewModalContractSchemaErrors',
 } as const;

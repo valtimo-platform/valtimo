@@ -87,6 +87,11 @@ export const environment: ValtimoConfig = {
           {link: ['/plugins'], title: 'Plugins', sequence: 9},
           {link: ['/plugin-hosts'], title: 'Plugin hosts', sequence: 10},
           {link: ['/plugin-apps'], title: 'Apps', sequence: 11},
+          {
+            link: ['/plugin-contract-jobs'],
+            title: 'pluginManagement.contractJobs.title',
+            sequence: 11.5,
+          },
 
           {
             title: 'Object management',

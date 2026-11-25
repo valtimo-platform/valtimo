@@ -26,22 +26,31 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {LoadingModule} from 'carbon-components-angular';
 import {Subscription} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 import {
+  ExternalPluginContractBindingEntry,
+  ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
   ExternalPluginGrantedEndpointEntry,
   ExternalPluginGrantedEventEntry,
   ExternalPluginIframeComponent,
   ExternalPluginEndpoint,
+  ExternalPluginProvidedContract,
   ExternalPluginService,
   extractExternalDefinitionId,
+  getExternalPluginDeclaredContracts,
+  getExternalPluginProvidedContracts,
   isExternalPluginKey,
 } from '@valtimo/plugin';
 import {PluginManagementStateService} from '../../services';
-import {deriveExternalPluginEgressOrigins} from '../../utils';
+import {
+  buildExternalPluginPropertiesSkeleton,
+  deriveExternalPluginEgressOrigins,
+} from '../../utils';
+import {PluginExternalPropertiesEditorComponent} from '../plugin-external-properties-editor/plugin-external-properties-editor.component';
 
 interface ExternalPluginSaveEvent {
   definitionId: string;
@@ -51,6 +60,7 @@ interface ExternalPluginSaveEvent {
   grantedEvents: Array<ExternalPluginGrantedEventEntry>;
   grantedCapabilities: Array<string>;
   grantedEgress: Array<string>;
+  contractBindings: Array<ExternalPluginContractBindingEntry>;
 }
 
 /**
@@ -75,6 +85,7 @@ interface ExternalPluginSaveEvent {
     TranslateModule,
     LoadingModule,
     ExternalPluginIframeComponent,
+    PluginExternalPropertiesEditorComponent,
   ],
 })
 export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
@@ -93,9 +104,18 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
    * shows them so the full destination set is visible before activation.
    */
   @Output() public derivedEgressResolved = new EventEmitter<Array<string>>();
+  /** `permissions.contracts`; the permissions step lets the admin bind each or leave it unbound. */
+  @Output() public declaredContractsResolved = new EventEmitter<
+    Array<ExternalPluginDeclaredContract>
+  >();
+  @Output() public providedContractsResolved = new EventEmitter<
+    Array<ExternalPluginProvidedContract>
+  >();
 
   public readonly $configBundleUrl = signal<string | null>(null);
   public readonly $loading = signal(true);
+  public readonly $configurationSchema = signal<unknown>(null);
+  public readonly $propertiesInvalid = signal(false);
 
   public readonly _form = new FormGroup({
     title: new FormControl('', Validators.required),
@@ -109,12 +129,14 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   private _grantedEvents: Array<ExternalPluginGrantedEventEntry> = [];
   private _grantedCapabilities: Array<string> = [];
   private _grantedEgress: Array<string> = [];
+  private _contractBindings: Array<ExternalPluginContractBindingEntry> = [];
   private _configurationSchema: unknown = null;
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly _stateService: PluginManagementStateService,
-    private readonly _externalPluginService: ExternalPluginService
+    private readonly _externalPluginService: ExternalPluginService,
+    private readonly _translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -138,6 +160,9 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 this.capabilitiesResolved.emit([]);
                 this.egressResolved.emit([]);
                 this.derivedEgressResolved.emit([]);
+                this.declaredContractsResolved.emit([]);
+                this.providedContractsResolved.emit([]);
+                this._contractBindings = [];
                 this._configurationSchema = null;
                 return [];
               }
@@ -197,6 +222,10 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     this._grantedEgress = targets;
   }
 
+  public setContractBindings(bindings: Array<ExternalPluginContractBindingEntry>): void {
+    this._contractBindings = bindings;
+  }
+
   private _applyDefinition(definition: ExternalPluginDefinition): void {
     const configBundle = definition.manifest?.frontendBundles?.find(b => b.type === 'config');
 
@@ -215,10 +244,26 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     const egress = definition.manifest?.permissions?.egress ?? [];
     this._grantedEgress = [...egress];
     this.egressResolved.emit(egress);
+    this._contractBindings = [];
+    this.declaredContractsResolved.emit(getExternalPluginDeclaredContracts(definition.manifest));
+    this.providedContractsResolved.emit(
+      getExternalPluginProvidedContracts(definition.manifest, this._translateService.currentLang)
+    );
     // Kept so the derived destinations can be recomputed whenever the configuration values
     // change, without re-fetching the definition.
     this._configurationSchema = definition.configurationSchema;
-    this._emitDerivedEgress(null);
+    this.$configurationSchema.set(definition.configurationSchema);
+
+    if (configBundle) {
+      this._emitDerivedEgress(null);
+    } else {
+      const skeleton = buildExternalPluginPropertiesSkeleton(definition.configurationSchema);
+      this._form.controls.properties.setValue(JSON.stringify(skeleton, null, 2), {
+        emitEvent: false,
+      });
+      // Derives the egress the skeleton's defaults already point at
+      this._validateForm();
+    }
 
     this.$loading.set(false);
   }
@@ -244,6 +289,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       }
     }
     // The raw-JSON fallback (no config bundle) feeds the same derivation as the iframe path.
+    this.$propertiesInvalid.set(!jsonValid);
     if (jsonValid) this._emitDerivedEgress(parsed);
     this.validEvent.emit(titleValid && jsonValid);
   }
@@ -260,6 +306,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
         grantedEvents: this._grantedEvents,
         grantedCapabilities: this._grantedCapabilities,
         grantedEgress: this._grantedEgress,
+        contractBindings: this._contractBindings,
       });
       return;
     }
@@ -283,6 +330,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       grantedEvents: this._grantedEvents,
       grantedCapabilities: this._grantedCapabilities,
       grantedEgress: this._grantedEgress,
+      contractBindings: this._contractBindings,
     });
   }
 }

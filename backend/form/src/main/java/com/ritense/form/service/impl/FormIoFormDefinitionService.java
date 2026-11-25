@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
 import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormDefinitionService;
+import com.ritense.form.service.FormDefinitionUsageGuard;
 import com.ritense.form.web.rest.dto.FormOption;
 import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.BlueprintId;
@@ -37,19 +38,23 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 public class FormIoFormDefinitionService implements FormDefinitionService {
 
     private final FormDefinitionRepository formDefinitionRepository;
     private final CaseDefinitionChecker caseDefinitionChecker;
+    private final FormDefinitionUsageGuard formDefinitionUsageGuard;
 
     public FormIoFormDefinitionService(
         final FormDefinitionRepository formDefinitionRepository,
-        final CaseDefinitionChecker caseDefinitionChecker
+        final CaseDefinitionChecker caseDefinitionChecker,
+        final FormDefinitionUsageGuard formDefinitionUsageGuard
     ) {
         this.formDefinitionRepository = formDefinitionRepository;
         this.caseDefinitionChecker = caseDefinitionChecker;
+        this.formDefinitionUsageGuard = formDefinitionUsageGuard;
     }
 
     @Override
@@ -261,13 +266,16 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
         @LoggableResource(resourceType = FormIoFormDefinition.class) UUID formDefinitionId
     ) {
         caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
+        formDefinitionUsageGuard.lockAndAssertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
     }
 
     @Override
     @Transactional
     public void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID formDefinitionId) {
+        formDefinitionRepository.findByIdForUpdate(formDefinitionId);
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
+        formDefinitionUsageGuard.lockAndAssertNotInUse(formDefinitionId);
         formDefinitionRepository.deleteById(formDefinitionId);
     }
 
@@ -275,6 +283,11 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
     @Transactional
     public void deleteAllFormDefinitions(CaseDefinitionId caseDefinitionId) {
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
+        var formDefinitionIds = formDefinitionRepository.findAllByCaseDefinitionId(caseDefinitionId)
+            .stream()
+            .map(FormIoFormDefinition::getId)
+            .toList();
+        formDefinitionUsageGuard.lockAndAssertNotInUseOutside(caseDefinitionId, formDefinitionIds);
         formDefinitionRepository.deleteAllByCaseDefinitionId(caseDefinitionId);
     }
 
@@ -283,6 +296,14 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
         @LoggableResource(resourceType = FormIoFormDefinition.class) UUID id
     ) {
         return formDefinitionRepository.existsById(id);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean formDefinitionExistsByIdWithLock(
+        @LoggableResource(resourceType = FormIoFormDefinition.class) UUID id
+    ) {
+        return formDefinitionRepository.findByIdForShare(id).isPresent();
     }
 
     @Override

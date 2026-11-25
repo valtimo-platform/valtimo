@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2026 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.FormDefinitionExportRequest
 import com.ritense.exporter.request.GlobalFormDefinitionExportRequest
+import com.ritense.form.domain.FormDefinition
 import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.FormSizes
+import com.ritense.form.exception.FormDefinitionMissingForProcessLinkException
+import com.ritense.form.service.FormProcessLinkUsageResolver
 import com.ritense.form.processlink.dto.FormProcessLinkDeployDto
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
@@ -48,6 +51,7 @@ import java.util.UUID
 class FormProcessLinkMapper(
     objectMapper: ObjectMapper,
     private val formDefinitionService: FormDefinitionService,
+    private val formProcessLinkUsageResolver: FormProcessLinkUsageResolver,
 ) : ProcessLinkMapper {
 
     init {
@@ -115,7 +119,7 @@ class FormProcessLinkMapper(
 
     override fun toProcessLinkExportResponseDto(processLink: ProcessLink): ProcessLinkExportResponseDto {
         processLink as FormProcessLink
-        val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
+        val formDefinition = getLinkedFormDefinition(processLink)
         return FormProcessLinkExportResponseDto(
             activityId = processLink.activityId,
             activityType = processLink.activityType,
@@ -129,7 +133,7 @@ class FormProcessLinkMapper(
 
     override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, blueprintId: BlueprintId?): ProcessLink {
         createRequestDto as FormProcessLinkCreateRequestDto
-        if (!formDefinitionService.formDefinitionExistsById(createRequestDto.formDefinitionId)) {
+        if (!formDefinitionService.formDefinitionExistsByIdWithLock(createRequestDto.formDefinitionId)) {
             throw RuntimeException("Form definition not found with id ${createRequestDto.formDefinitionId}")
         }
         return FormProcessLink(
@@ -152,7 +156,7 @@ class FormProcessLinkMapper(
     ): ProcessLink {
         updateRequestDto as FormProcessLinkUpdateRequestDto
         require(processLinkToUpdate.id == updateRequestDto.id)
-        if (!formDefinitionService.formDefinitionExistsById(updateRequestDto.formDefinitionId)) {
+        if (!formDefinitionService.formDefinitionExistsByIdWithLock(updateRequestDto.formDefinitionId)) {
             throw RuntimeException("Form definition not found with id ${updateRequestDto.formDefinitionId}")
         }
         return FormProcessLink(
@@ -170,22 +174,13 @@ class FormProcessLinkMapper(
 
     override fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> {
         processLink as FormProcessLink
-        val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow()
+        val formDefinition = getLinkedFormDefinition(processLink)
         return setOf(FormDefinitionExportRequest(formDefinition.name, caseDefinitionId = caseDefinitionId))
     }
 
     override fun createGlobalRelatedExportRequests(processLink: ProcessLink): Set<ExportRequest> {
         processLink as FormProcessLink
-        // The form is referenced by id, so its name is not available when it no longer exists. The
-        // activity and process the link belongs to are the locator that lets the user find it.
-        val formDefinition = formDefinitionService.getFormDefinitionById(processLink.formDefinitionId)
-            .orElseThrow {
-                IllegalStateException(
-                    "Form definition '${processLink.formDefinitionId}' referenced by the process link on " +
-                        "activity '${processLink.activityId}' of process '${processLink.processDefinitionId}' " +
-                        "could not be found. The form may have been deleted while the process link remained."
-                )
-            }
+        val formDefinition = getLinkedFormDefinition(processLink)
         return setOf(GlobalFormDefinitionExportRequest(formDefinition.name))
     }
 
@@ -213,6 +208,15 @@ class FormProcessLinkMapper(
             )
         } else {
             null
+        }
+    }
+
+    private fun getLinkedFormDefinition(processLink: FormProcessLink): FormDefinition {
+        return formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElseThrow {
+            FormDefinitionMissingForProcessLinkException(
+                processLink.formDefinitionId,
+                formProcessLinkUsageResolver.resolve(processLink),
+            )
         }
     }
 

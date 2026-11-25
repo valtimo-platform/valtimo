@@ -96,7 +96,7 @@ describe("plugin-bundles routes", () => {
       expect(csp).toContain("script-src 'self'");
       expect(csp).toContain("connect-src 'self'");
       expect(csp).toContain("form-action 'self'");
-      expect(csp).toContain("sandbox allow-scripts allow-forms");
+      expect(csp).toContain("sandbox allow-scripts allow-forms allow-downloads");
       expect(res.headers["x-content-type-options"]).toBe("nosniff");
       expect(res.headers["referrer-policy"]).toBe("no-referrer");
     });
@@ -301,7 +301,7 @@ describe("plugin-bundles routes", () => {
 
       expect(csp).toContain("default-src 'none'");
       expect(csp).toContain("connect-src 'self'");
-      expect(csp).toContain("sandbox allow-scripts allow-forms");
+      expect(csp).toContain("sandbox allow-scripts allow-forms allow-downloads");
       expect(csp).toContain("frame-ancestors https://valtimo.example.com");
     });
   });
