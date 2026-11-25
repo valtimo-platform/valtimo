@@ -732,97 +732,8 @@ internal class CatalogiApiPluginTest : BaseTest() {
             eq(processVariable),
             eq(
                 listOf(
-                    expectedResultaattypeOutput(url = resultaatTypeUrl("1"), name = "first resultaat"),
-                    expectedResultaattypeOutput(url = resultaatTypeUrl("2"), name = "second resultaat")
-                )
-            )
-        )
-    }
-
-    @Test
-    fun `should include new resultaattype fields in resultaat typen process variable`() {
-        // given
-        val processVariable = "resultaatTypenProcessVar"
-        val zaaktypeUrl = zaaktypeUrl()
-        val execution = mockExecution()
-        val catalogusUrl = URI("https://example.com/catalogus/1")
-        val besluittypeUrl = URI("https://example.com/besluittype/1")
-        val beginGeldigheid = LocalDate.of(2019, 1, 1)
-        val eindeGeldigheid = LocalDate.of(2020, 1, 1)
-        val beginObject = LocalDate.of(2019, 1, 1)
-        val eindeObject = LocalDate.of(2019, 8, 24)
-
-        mockResultaattypen(
-            zaaktypeUrl = zaaktypeUrl.toURI(),
-            defaultResultaatTypen = listOf(
-                resultaatType(
-                    url = resultaatTypeUrl("1").toURI(),
-                    zaaktypeUrl = zaaktypeUrl.toURI(),
-                    omschrijving = "first resultaat",
-                    resultaatTypeOmschrijving = resultaatTypeOmschrijvingUrl("1").toURI(),
-                    selectielijstKlasse = selectielijstKlasseUrl("1").toURI(),
-                    archiefnominatie = "vernietigen",
-                    archiefactietermijn = "P10Y",
-                    procesobjectaard = "Adres",
-                    indicatieSpecifiek = true,
-                    procestermijn = "nihil",
-                    catalogus = catalogusUrl,
-                    brondatumArchiefprocedure = BrondatumArchiefprocedure(
-                        afleidingswijze = "afgehandeld",
-                        datumkenmerk = "datum",
-                        einddatumBekend = true,
-                        objecttype = "adres",
-                        registratie = "BRP",
-                        brondatumProcestermijn = "P1Y"
-                    ),
-                    besluittypen = listOf(besluittypeUrl),
-                    besluittypeOmschrijving = listOf("Verleend"),
-                    informatieobjecttypen = listOf("beschikking"),
-                    informatieobjecttypeOmschrijving = listOf("Beschikking"),
-                    beginGeldigheid = beginGeldigheid,
-                    eindeGeldigheid = eindeGeldigheid,
-                    beginObject = beginObject,
-                    eindeObject = eindeObject
-                )
-            )
-        )
-
-        // when
-        plugin.getResultaattypen(
-            execution = execution,
-            processVariable = processVariable,
-            zaaktypeUrl = zaaktypeUrl
-        )
-
-        // then
-        verify(execution, times(1)).setVariable(
-            eq(processVariable),
-            eq(
-                listOf(
-                    expectedResultaattypeOutput(
-                        url = resultaatTypeUrl("1"),
-                        name = "first resultaat",
-                        afleidingswijze = "afgehandeld",
-                        datumkenmerk = "datum",
-                        einddatumBekend = true,
-                        objecttype = "adres",
-                        registratie = "BRP",
-                        brondatumProcestermijn = "P1Y",
-                        archiefnominatie = "vernietigen",
-                        archiefactietermijn = "P10Y",
-                        procesobjectaard = "Adres",
-                        indicatieSpecifiek = true,
-                        resultaatProcestermijn = "nihil",
-                        catalogus = catalogusUrl.toASCIIString(),
-                        besluittypen = listOf(besluittypeUrl.toASCIIString()),
-                        besluittypeOmschrijving = listOf("Verleend"),
-                        informatieobjecttypen = listOf("beschikking"),
-                        informatieobjecttypeOmschrijving = listOf("Beschikking"),
-                        beginGeldigheid = beginGeldigheid,
-                        eindeGeldigheid = eindeGeldigheid,
-                        beginObject = beginObject,
-                        eindeObject = eindeObject
-                    )
+                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
+                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
                 )
             )
         )
@@ -854,8 +765,8 @@ internal class CatalogiApiPluginTest : BaseTest() {
             eq(processVariable),
             eq(
                 listOf(
-                    expectedResultaattypeOutput(url = resultaatTypeUrl("1"), name = "first resultaat"),
-                    expectedResultaattypeOutput(url = resultaatTypeUrl("2"), name = "second resultaat")
+                    mapOf("url" to resultaatTypeUrl("1"), "name" to "first resultaat"),
+                    mapOf("url" to resultaatTypeUrl("2"), "name" to "second resultaat")
                 )
             )
         )
@@ -889,118 +800,11 @@ internal class CatalogiApiPluginTest : BaseTest() {
         plugin.getResultaattype(
             execution = execution,
             resultaattype = resultaattype,
-            processVariable = processVariable,
-            detailProcessVariable = null
+            processVariable = processVariable
         )
 
         verify(execution, times(1))
             .setVariable(eq(processVariable), eq(resultaattypeUrl))
-    }
-
-    @Test
-    fun `should get resultaat type by url`() {
-        val resultaattypeUrl = resultaatTypeUrl("4")
-        val processVariable = "resultaatTypeProcessVar"
-        val execution = mockExecution()
-
-        plugin.getResultaattype(
-            execution = execution,
-            resultaattype = resultaattypeUrl,
-            processVariable = processVariable,
-            detailProcessVariable = null
-        )
-
-        verify(execution, times(1)).setVariable(eq(processVariable), eq(resultaattypeUrl))
-        verify(client, never()).getResultaattype(any(), any(), any())
-    }
-
-    @Test
-    fun `should not set detail process variable when detailProcessVariable is null`() {
-        val resultaattypeUrl = resultaatTypeUrl("4")
-        val processVariable = "resultaatTypeProcessVar"
-        val execution = mockExecution()
-
-        plugin.getResultaattype(
-            execution = execution,
-            resultaattype = resultaattypeUrl,
-            processVariable = processVariable,
-            detailProcessVariable = null
-        )
-
-        verify(execution, never()).setVariable(eq("resultaatTypeDetailProcessVar"), any())
-    }
-
-    @Test
-    fun `should get resultaat type detail when resultaattype is a url and detailProcessVariable is set`() {
-        val resultaattypeUrl = resultaatTypeUrl("4")
-        val processVariable = "resultaatTypeProcessVar"
-        val detailProcessVariable = "resultaatTypeDetailProcessVar"
-        val zaaktypeUrl = zaaktypeUrl().toURI()
-        val execution = mockExecution()
-
-        val resultaattypeObject = resultaatType(
-            url = resultaattypeUrl.toURI(),
-            zaaktypeUrl = zaaktypeUrl,
-            omschrijving = "fourth resultaat",
-            resultaatTypeOmschrijving = resultaatTypeOmschrijvingUrl("4").toURI(),
-            selectielijstKlasse = selectielijstKlasseUrl("4").toURI()
-        )
-
-        whenever(client.getResultaattype(any(), any(), eq(resultaattypeUrl.toURI())))
-            .thenReturn(resultaattypeObject)
-
-        plugin.getResultaattype(
-            execution = execution,
-            resultaattype = resultaattypeUrl,
-            processVariable = processVariable,
-            detailProcessVariable = detailProcessVariable
-        )
-
-        verify(execution, times(1)).setVariable(
-            eq(detailProcessVariable),
-            eq(expectedResultaattypeOutput(url = resultaattypeUrl, name = "fourth resultaat"))
-        )
-        verify(execution, times(1)).setVariable(eq(processVariable), eq(resultaattypeUrl))
-    }
-
-    @Test
-    fun `should get resultaat type detail when resultaattype is resolved by omschrijving`() {
-        val resultaattype = "Registered"
-        val processVariable = "resultaatTypeProcessVar"
-        val detailProcessVariable = "resultaatTypeDetailProcessVar"
-        val resultaattypeUrl = resultaatTypeUrl("4")
-        val zaaktypeUrl = zaaktypeUrl().toURI()
-        val documentId = documentId()
-        val document = mockDocument(documentId.toUUID())
-        val execution = mockExecution(documentId)
-
-        mockDocumentService(documentId, document)
-        mockZaakTypeUrlProvider(zaaktypeUrl)
-        mockResultaattypen(
-            zaaktypeUrl = zaaktypeUrl,
-            additionalResultaatTypen = listOf(
-                resultaatType(
-                    url = resultaattypeUrl.toURI(),
-                    zaaktypeUrl = zaaktypeUrl,
-                    omschrijving = resultaattype,
-                    resultaatTypeOmschrijving = resultaatTypeOmschrijvingUrl().toURI(),
-                    selectielijstKlasse = selectielijstKlasseUrl().toURI()
-                )
-            )
-        )
-
-        plugin.getResultaattype(
-            execution = execution,
-            resultaattype = resultaattype,
-            processVariable = processVariable,
-            detailProcessVariable = detailProcessVariable
-        )
-
-        verify(execution, times(1)).setVariable(
-            eq(detailProcessVariable),
-            eq(expectedResultaattypeOutput(url = resultaattypeUrl, name = resultaattype))
-        )
-        verify(client, never()).getResultaattype(any(), any(), any())
     }
 
     @Test
@@ -1708,54 +1512,6 @@ internal class CatalogiApiPluginTest : BaseTest() {
         toelichting = null,
         isEindstatus = null,
         informeren = null
-    )
-
-    private fun expectedResultaattypeOutput(
-        url: String,
-        name: String,
-        afleidingswijze: String? = null,
-        datumkenmerk: String? = null,
-        einddatumBekend: Boolean? = null,
-        objecttype: String? = null,
-        registratie: String? = null,
-        brondatumProcestermijn: String? = null,
-        archiefnominatie: String? = null,
-        archiefactietermijn: String? = null,
-        procesobjectaard: String? = null,
-        indicatieSpecifiek: Boolean? = null,
-        resultaatProcestermijn: String? = null,
-        catalogus: String? = null,
-        besluittypen: List<String> = emptyList(),
-        besluittypeOmschrijving: List<String> = emptyList(),
-        informatieobjecttypen: List<String> = emptyList(),
-        informatieobjecttypeOmschrijving: List<String> = emptyList(),
-        beginGeldigheid: LocalDate? = null,
-        eindeGeldigheid: LocalDate? = null,
-        beginObject: LocalDate? = null,
-        eindeObject: LocalDate? = null
-    ) = mapOf(
-        "url" to url,
-        "name" to name,
-        "afleidingswijze" to afleidingswijze,
-        "datumkenmerk" to datumkenmerk,
-        "einddatumBekend" to einddatumBekend,
-        "objecttype" to objecttype,
-        "registratie" to registratie,
-        "procestermijn" to brondatumProcestermijn,
-        "archiefnominatie" to archiefnominatie,
-        "archiefactietermijn" to archiefactietermijn,
-        "procesobjectaard" to procesobjectaard,
-        "indicatieSpecifiek" to indicatieSpecifiek,
-        "resultaatProcestermijn" to resultaatProcestermijn,
-        "catalogus" to catalogus,
-        "besluittypen" to besluittypen,
-        "besluittypeOmschrijving" to besluittypeOmschrijving,
-        "informatieobjecttypen" to informatieobjecttypen,
-        "informatieobjecttypeOmschrijving" to informatieobjecttypeOmschrijving,
-        "beginGeldigheid" to beginGeldigheid,
-        "eindeGeldigheid" to eindeGeldigheid,
-        "beginObject" to beginObject,
-        "eindeObject" to eindeObject
     )
 
     private fun expectedBesluittypeOutput(
