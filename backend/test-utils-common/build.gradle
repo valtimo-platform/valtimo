@@ -24,6 +24,7 @@ dependencies {
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
     api "org.springframework.boot:spring-boot-webmvc-test"
+    api "org.springframework.boot:spring-boot-security-test"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-webmvc"
