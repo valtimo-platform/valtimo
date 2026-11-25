@@ -1360,7 +1360,7 @@
       "zgw": "ZGW",
       "forms": "Forms",
       "decision": "Decision tables",
-      "formFlows": "Form Flows",
+      "formFlows": "Form flows",
       "tasks": "Tasks",
       "migration": "Migration",
       "generalTab": {
@@ -2294,6 +2294,33 @@
   "Translations": "Translations",
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
+  "Dashboard configuration": "Dashboard configuration",
+  "Dashboard details": "Dashboard details",
+  "Access control": "Access control",
+  "Role details": "Role details",
+  "Case migration": "Case migration",
+  "Case inspection": "Case inspection",
+  "Task details": "Task details",
+  "Widget tab": "Widget tab",
+  "Form flow details": "Form flow details",
+  "Create migration plan": "Create migration plan",
+  "Migration plan": "Migration plan",
+  "Milestones": "Milestones",
+  "Milestone details": "Milestone details",
+  "Milestone Set details": "Milestone set details",
+  "Plugin hosts": "Plugin hosts",
+  "Profile": "Profile",
+  "Password": "Password",
+  "Loading...": "Loading...",
+  "Iko": "IKO",
+  "IKO Details": "IKO details",
+  "IKO Search action details": "IKO search action details",
+  "IKO Widget details": "IKO widget details",
+  "Exact Redirect": "Exact redirect",
+  "Not Found": "Not found",
+  "Access Forbidden": "Access forbidden",
+  "Internal Server Error": "Internal server error",
+  "Service Unavailable": "Service unavailable",
   "processMigration": {
     "warning": {
       "title": "Candidate groups are not migrated",
@@ -3549,6 +3576,8 @@
     "importConfiguration": "Import configuration",
     "externalPlugin": "External plugin",
     "externalPluginActionProperties": "Configure the action properties for this external plugin action as JSON. Click save when done.",
+    "externalPluginActionForm": "Configure the properties of this action.",
+    "externalPluginActionFormHint": "A property can also take its value from the case or the process when the action runs, for example:",
     "actionPropertiesJson": "Action properties (JSON)",
     "invalidJson": "Invalid JSON",
     "resultMappings": {
@@ -3646,6 +3675,25 @@
       "actionKey": "Action key",
       "actionProperties": "Action properties (JSON)",
       "actionPropertiesInvalidJson": "Action properties must be valid JSON"
+    },
+    "configForm": {
+      "noFields": "There is nothing to configure here.",
+      "chooseOption": "Choose an option",
+      "secretKept": "Stored encrypted and not shown. Leave empty to keep the current value.",
+      "errors": {
+        "required": "This field is required.",
+        "number": "Enter a number.",
+        "integer": "Enter a whole number.",
+        "numberOrExpression": "Enter a number, or a value such as pv:amount.",
+        "integerOrExpression": "Enter a whole number, or a value such as pv:count.",
+        "url": "Enter a complete URL, such as https://example.com.",
+        "egressUrl": "Enter a URL starting with http:// or https://, without a username or password.",
+        "minLength": "Enter at least {{value}} characters.",
+        "maxLength": "Enter at most {{value}} characters.",
+        "minimum": "Enter {{value}} or more.",
+        "maximum": "Enter {{value}} or less.",
+        "invalid": "This value is not valid."
+      }
     }
   },
   "processLinkSteps": {

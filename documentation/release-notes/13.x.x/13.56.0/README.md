@@ -2,6 +2,10 @@
 
 Release date: 25-11-2026
 
+{% hint style="warning" %}
+This release contains security fixes. See [Security](#security) for details.
+{% endhint %}
+
 ---
 
 ## New Features
@@ -44,4 +48,20 @@ The settings screen of an external plugin now grows with its content when you ed
 
 | Area | Fix |
 |------|-----|
+| Cases | Leaving a case before its tabs have loaded no longer reloads the application on the dashboard. |
+| Documents | Editing Documenten API documents with status *definitief* is now allowed when the Documenten API supports it, for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw). |
+| Documents | Editing Documenten API documents with any other status is now allowed for users with the correct [permission](/configuration-guides/access-control/configurable-elements#zgw).  |
 | Forms | A form that a process link uses can no longer be deleted. Making a case definition final, exporting it and creating a draft now give a clear error when a process link points to a missing form. Case definitions that are already final and contain such a link are not repaired by this change. |
+| Menu | The removed **Tasks (legacy)** page is no longer offered in the menu configuration or shown in saved menus. |
+| Navigation | Breadcrumbs no longer link to the current page, keep the menu section of the previous page or disappear after opening an IKO view directly. |
+| Navigation | Page titles that were still shown in English when Valtimo is in Dutch are now translated. |
+| Navigation | The browser tab now shows the same title as the page header on every page. |
+| Plugins | Opening an external plugin page no longer leaves the header and browser tab on the previous page's title. |
+
+---
+
+## Security
+
+| Severity | Fix |
+|----------|-----|
+| High | The **Patch Zaakbesluit** action of the Besluiten API plugin now only accepts besluit URLs that belong to the Besluiten API it is configured with. If your Besluiten API returns besluit URLs with a different host, port or path than the URL in the plugin configuration, update the plugin configuration to match, otherwise the action fails for those besluiten. |

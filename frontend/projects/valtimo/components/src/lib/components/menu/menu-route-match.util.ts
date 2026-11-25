@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
+// Malformed escapes stay encoded — throwing would break every stream that matches routes.
+const safeDecode = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 // The root route normalizes to ''.
 const normalizeMenuPath = (value: string): string =>
   (
     '/' +
-    decodeURIComponent(value.split(/[?#]/)[0])
+    safeDecode(value.split(/[?#]/)[0])
       .toLowerCase()
       .replace(/\/{2,}/g, '/')
       .replace(/^\/+/, '')
@@ -41,4 +50,4 @@ const getMenuLinkMatchScore = (currentUrl: string, link: string): number => {
     : 0;
 };
 
-export {getMenuLinkMatchScore};
+export {getMenuLinkMatchScore, normalizeMenuPath};

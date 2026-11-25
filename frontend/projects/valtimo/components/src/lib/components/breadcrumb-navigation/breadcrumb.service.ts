@@ -20,6 +20,7 @@ import {BreadcrumbItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {MenuService} from '../menu/services/menu.service';
+import {normalizeMenuPath} from '../menu/menu-route-match.util';
 
 @Injectable({
   providedIn: 'root',
@@ -73,7 +74,8 @@ export class BreadcrumbService {
         ];
       }
     ),
-    map(breadCrumbItems => this.matchCachedQueryParams(breadCrumbItems))
+    map(breadCrumbItems => this.matchCachedQueryParams(breadCrumbItems)),
+    map(breadCrumbItems => this.withoutEmptyOrCurrentPage(breadCrumbItems))
   );
 
   get breadcrumbItems$(): Observable<Array<BreadcrumbItem>> {
@@ -130,10 +132,27 @@ export class BreadcrumbService {
   // `translateService.stream('key')` source above triggers, and on a runtime language switch.
   // Translating at set-time instead (e.g. via `instant`) would freeze the raw key on a direct page
   // load, before translations are ready. A plain, non-key string is returned unchanged by ngx-translate.
+  // An empty key makes ngx-translate throw, which kills the breadcrumb stream until a reload.
   private translateContent(breadcrumb: BreadcrumbItem): BreadcrumbItem {
-    return typeof breadcrumb.content === 'string'
+    return typeof breadcrumb.content === 'string' && breadcrumb.content
       ? {...breadcrumb, content: this.translateService.instant(breadcrumb.content)}
       : breadcrumb;
+  }
+
+  // Breadcrumbs lead to ancestors. An item targeting the current page would be a link to itself,
+  // e.g. one left behind by the previous page; an empty one renders as a bare separator.
+  private withoutEmptyOrCurrentPage(breadcrumbItems: Array<BreadcrumbItem>): Array<BreadcrumbItem> {
+    const currentPath = normalizeMenuPath(this.router.url);
+
+    return breadcrumbItems.filter(breadcrumbItem => {
+      if (!breadcrumbItem.content) return false;
+
+      const target =
+        breadcrumbItem.href ??
+        (Array.isArray(breadcrumbItem.route) ? breadcrumbItem.route.join('/') : null);
+
+      return !target || normalizeMenuPath(target) !== currentPath;
+    });
   }
 
   private getSecondBreadcrumb(): BreadcrumbItem | false {
