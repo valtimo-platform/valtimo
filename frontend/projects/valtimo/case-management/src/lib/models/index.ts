@@ -23,3 +23,4 @@ export * from './startable-item.model';
 export * from './case-management-actions-modal.model';
 export * from './case-definition-group.model';
 export * from './migration.model';
+export * from './case-configuration.model';
