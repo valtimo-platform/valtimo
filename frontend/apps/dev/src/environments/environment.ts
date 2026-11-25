@@ -146,7 +146,6 @@ export const environment: ValtimoConfig = {
             includeFunction: IncludeFunction.OpenSearchEnabled,
           },
           {link: ['/process-migration'], title: 'Process migration'},
-          {link: ['/task-management'], title: 'Tasks (legacy)'},
           {title: 'Valtimo test tools', textClass: 'text-dark font-weight-bold c-default'},
           {link: ['/notification-test'], title: 'Send notification'},
         ],
