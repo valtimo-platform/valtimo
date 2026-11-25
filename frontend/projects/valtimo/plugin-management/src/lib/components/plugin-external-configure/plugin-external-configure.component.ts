@@ -25,12 +25,15 @@ import {
   signal,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {LoadingModule} from 'carbon-components-angular';
 import {Subscription} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
+import {InputLabelModule} from '@valtimo/components';
 import {
+  ExternalPluginConfigFormComponent,
+  ExternalPluginConfigStructure,
   ExternalPluginContractBindingEntry,
   ExternalPluginDeclaredContract,
   ExternalPluginDefinition,
@@ -40,11 +43,14 @@ import {
   ExternalPluginEndpoint,
   ExternalPluginProvidedContract,
   ExternalPluginService,
+  externalPluginRequiredTextValidator,
   extractExternalDefinitionId,
   getExternalPluginDeclaredContracts,
   getExternalPluginProvidedContracts,
   isExternalPluginKey,
+  resolveExternalPluginFormMode,
 } from '@valtimo/plugin';
+import {ExternalPluginSaveEvent} from '../../models';
 import {PluginManagementStateService} from '../../services';
 import {
   buildExternalPluginPropertiesSkeleton,
@@ -52,20 +58,10 @@ import {
 } from '../../utils';
 import {PluginExternalPropertiesEditorComponent} from '../plugin-external-properties-editor/plugin-external-properties-editor.component';
 
-interface ExternalPluginSaveEvent {
-  definitionId: string;
-  title: string;
-  properties: Record<string, unknown>;
-  grantedEndpoints: Array<ExternalPluginGrantedEndpointEntry>;
-  grantedEvents: Array<ExternalPluginGrantedEventEntry>;
-  grantedCapabilities: Array<string>;
-  grantedEgress: Array<string>;
-  contractBindings: Array<ExternalPluginContractBindingEntry>;
-}
-
 /**
  * The "enter data" step for an external plugin configuration: the plugin's own config bundle in an
- * iframe when it ships one, a title + JSON properties fallback otherwise.
+ * iframe when it ships one, otherwise a title plus a form generated from a flat configuration
+ * schema, or the JSON properties editor for any other schema.
  *
  * Works in two modes:
  * - Bound to {@link PluginManagementStateService} (the plugins page add modal): the definition
@@ -83,7 +79,9 @@ interface ExternalPluginSaveEvent {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    InputLabelModule,
     LoadingModule,
+    ExternalPluginConfigFormComponent,
     ExternalPluginIframeComponent,
     PluginExternalPropertiesEditorComponent,
   ],
@@ -116,9 +114,12 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   public readonly $loading = signal(true);
   public readonly $configurationSchema = signal<unknown>(null);
   public readonly $propertiesInvalid = signal(false);
+  /** Set when the schema is flat enough for the generated form; null keeps the JSON editor. */
+  public readonly $configStructure = signal<ExternalPluginConfigStructure | null>(null);
+  public readonly $initialProperties = signal<Record<string, unknown>>({});
 
-  public readonly _form = new FormGroup({
-    title: new FormControl('', Validators.required),
+  public readonly form = new FormGroup({
+    title: new FormControl('', externalPluginRequiredTextValidator),
     properties: new FormControl('{}'),
   });
 
@@ -130,7 +131,8 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   private _grantedCapabilities: Array<string> = [];
   private _grantedEgress: Array<string> = [];
   private _contractBindings: Array<ExternalPluginContractBindingEntry> = [];
-  private _configurationSchema: unknown = null;
+  private _generatedProperties: Record<string, unknown> = {};
+  private _generatedPropertiesValid = false;
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -163,7 +165,8 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
                 this.declaredContractsResolved.emit([]);
                 this.providedContractsResolved.emit([]);
                 this._contractBindings = [];
-                this._configurationSchema = null;
+                this.$configurationSchema.set(null);
+                this.$configStructure.set(null);
                 return [];
               }
 
@@ -183,7 +186,7 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       this._subscriptions.add(this._stateService.save$.subscribe(() => this._onSaveTriggered()));
     }
 
-    this._subscriptions.add(this._form.valueChanges.subscribe(() => this._validateForm()));
+    this._subscriptions.add(this.form.valueChanges.subscribe(() => this._validateForm()));
   }
 
   public ngOnDestroy(): void {
@@ -204,6 +207,16 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     this._iframeConfigData = event.data;
     this._emitDerivedEgress(event.data);
     this.validEvent.emit(event.valid);
+  }
+
+  public onGeneratedPropertiesChange(properties: Record<string, unknown>): void {
+    this._generatedProperties = properties;
+    this._validateForm();
+  }
+
+  public onGeneratedPropertiesValid(valid: boolean): void {
+    this._generatedPropertiesValid = valid;
+    this._validateForm();
   }
 
   public setGrantedEndpoints(endpoints: Array<ExternalPluginGrantedEndpointEntry>): void {
@@ -227,13 +240,9 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
   }
 
   private _applyDefinition(definition: ExternalPluginDefinition): void {
-    const configBundle = definition.manifest?.frontendBundles?.find(b => b.type === 'config');
-
-    if (configBundle) {
-      this.$configBundleUrl.set(`${definition.baseUrl}/${definition.version}${configBundle.path}`);
-    } else {
-      this.$configBundleUrl.set(null);
-    }
+    const skeleton = buildExternalPluginPropertiesSkeleton(definition.configurationSchema);
+    const mode = resolveExternalPluginFormMode(definition, {type: 'config'}, skeleton);
+    this.$configBundleUrl.set(mode.kind === 'bundle' ? mode.url : null);
 
     const endpoints = definition.manifest?.permissions?.endpoints ?? [];
     this.endpointsResolved.emit(endpoints);
@@ -251,16 +260,24 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
     );
     // Kept so the derived destinations can be recomputed whenever the configuration values
     // change, without re-fetching the definition.
-    this._configurationSchema = definition.configurationSchema;
     this.$configurationSchema.set(definition.configurationSchema);
 
-    if (configBundle) {
+    if (mode.kind === 'bundle') {
+      this.$configStructure.set(null);
       this._emitDerivedEgress(null);
     } else {
-      const skeleton = buildExternalPluginPropertiesSkeleton(definition.configurationSchema);
-      this._form.controls.properties.setValue(JSON.stringify(skeleton, null, 2), {
-        emitEvent: false,
-      });
+      if (mode.kind === 'form') {
+        // Invalid until the form reports in: required fields may still be empty.
+        this._generatedProperties = skeleton;
+        this._generatedPropertiesValid = false;
+        this.$initialProperties.set(skeleton);
+        this.$configStructure.set(mode.structure);
+      } else {
+        this.$configStructure.set(null);
+        this.form.controls.properties.setValue(JSON.stringify(skeleton, null, 2), {
+          emitEvent: false,
+        });
+      }
       // Derives the egress the skeleton's defaults already point at
       this._validateForm();
     }
@@ -270,17 +287,24 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
 
   private _emitDerivedEgress(properties: Record<string, unknown> | null): void {
     this.derivedEgressResolved.emit(
-      deriveExternalPluginEgressOrigins(this._configurationSchema, properties)
+      deriveExternalPluginEgressOrigins(this.$configurationSchema(), properties)
     );
   }
 
   private _validateForm(): void {
     if (this.$configBundleUrl()) return;
 
-    const titleValid = !!this._form.value.title?.trim();
+    const titleValid = this.form.controls.title.valid;
+
+    if (this.$configStructure()) {
+      this._emitDerivedEgress(this._generatedProperties);
+      this.validEvent.emit(titleValid && this._generatedPropertiesValid);
+      return;
+    }
+
     let jsonValid = true;
     let parsed: Record<string, unknown> | null = null;
-    const props = this._form.value.properties?.trim();
+    const props = this.form.value.properties?.trim();
     if (props) {
       try {
         parsed = JSON.parse(props) as Record<string, unknown>;
@@ -311,10 +335,12 @@ export class PluginExternalConfigureComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const title = this._form.value.title?.trim() ?? '';
+    const title = this.form.value.title?.trim() ?? '';
     let properties: Record<string, unknown> = {};
-    const propsStr = this._form.value.properties?.trim();
-    if (propsStr) {
+    const propsStr = this.form.value.properties?.trim();
+    if (this.$configStructure()) {
+      properties = this._generatedProperties;
+    } else if (propsStr) {
       try {
         properties = JSON.parse(propsStr);
       } catch {

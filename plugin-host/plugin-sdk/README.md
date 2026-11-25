@@ -153,14 +153,15 @@ from `1,3`, and identical again to `--bundles case-tab,config`.
 names one thing. It exits 1 pointing at `--bundles`.
 
 **What each bundle adds.** The base project is one `action()` handler plus the manifest entry that
-makes it selectable on a BPMN service task, and `--with-event` adds an `onEvent()` handler with its
+makes it selectable on a BPMN service task, with the `action.greeting.*` strings that label the
+input form GZAC generates for it; `--with-event` adds an `onEvent()` handler with its
 `eventSubscriptions` entry. Each bundle then contributes two `frontend/` files, a `frontendBundles`
 entry, its translation keys, and — where it has one — a backend handler:
 
 | Bundle | Generated | Backend |
 |---|---|---|
-| `config` | `frontend/config.{html,tsx}`, a `configurationSchema`, an unkeyed `config` bundle, `config.*` keys. The action then reads its `greeting` from the configuration as well as from the BPMN property. Replaces the raw **Properties (JSON)** textarea an administrator would otherwise have to fill in. | — |
-| `process-link-action` | `frontend/action-config.{html,tsx}`, a bundle keyed on the plugin id (which is how GZAC matches it to `actions[0]`), `actionConfig.*` keys. Replaces the raw JSON textarea GZAC falls back to for action properties — it does not generate a form from `actions[].properties`. | — |
+| `config` | `frontend/config.{html,tsx}`, a `configurationSchema`, an unkeyed `config` bundle, `config.*` keys. The action then reads its `greeting` from the configuration as well as from the BPMN property. Replaces the settings form GZAC would otherwise generate from the schema. | — |
+| `process-link-action` | `frontend/action-config.{html,tsx}`, a bundle keyed on the plugin id (which is how GZAC matches it to `actions[0]`). Reads the base project's `action.greeting.*` keys, so dropping the bundle later leaves a labelled generated form. Replaces the form GZAC would otherwise generate from `actions[].properties`. | — |
 | `case-tab` | `frontend/case-tab.{html,tsx}`, a bundle keyed `summary`, `caseTab.*` keys, the `frontend_data` capability. | `request("/summary")` |
 | `case-widget` | `frontend/case-widget.{html,tsx}`, a bundle keyed `summary`, `caseWidget.*` keys, the `frontend_data` capability. | `request("/summary")` |
 | `task-form` | `frontend/task-form.{html,tsx}`, a bundle keyed `review` with `submitHandler: true`, `taskForm.*` keys. The only surface that can **reject** what a user did. | `submit("review")` |
@@ -172,9 +173,10 @@ where they mount and what context they receive.
 
 **Why `config` is the default, and nothing else.** It is the only bundle type with a structural
 claim to it: unkeyed, at most one per plugin, and admin-facing plumbing — *how the plugin gets
-configured at all* — rather than a choice about which product surface to build. Defaulting any of
-the other five would privilege one user-facing surface over its peers, which is exactly what
-`--bundles` exists to stop. `--minimal` opts out of everything and composes with the rest:
+configured* — rather than a choice about which product surface to build. GZAC generates a settings
+form from a flat `configurationSchema` on its own, so the bundle is the worked example of going
+beyond that, not a requirement. Defaulting any of the other five would privilege one user-facing
+surface over its peers, which is exactly what `--bundles` exists to stop. `--minimal` opts out of everything and composes with the rest:
 `--minimal --bundles page` gives the action plus a menu page and nothing else.
 
 **Locales.** `en` and `nl` are asked about separately — neither is assumed — and declining both is

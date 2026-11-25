@@ -1,9 +1,9 @@
 # Case Summary Plugin
 
 Reference external plugin exercising the full SDK surface: an action with declared outputs,
-`gzacApi` callbacks (service-token and as-user), request handlers backing eleven frontend bundles
-of all six types, a task-form submit hook, an event handler, `kv` and `http_request` usage, and
-en/nl translations.
+`gzacApi` callbacks (service-token and as-user), request handlers backing nine frontend bundles of
+four types, a task-form submit hook, an event handler, `kv` and `http_request` usage, and en/nl
+translations.
 
 ## What It Does
 
@@ -36,9 +36,13 @@ Beyond the action, the plugin exercises the rest of the SDK surface:
   (posting a note on the document).
 - `kv` usage (per-document view counters, aggregated by `/kv-stats`) and `http_request` egress to
   the declared `jsonplaceholder.typicode.com` plus the admin-configured `externalApiUrl`.
-- Eleven frontend bundles covering all six types — config, process-link-action, two case tabs,
-  two case widgets, three task forms (Levels 0/1/2), two pages — with en/nl translations and a
-  logo.
+- Nine frontend bundles covering four types — two case tabs, two case widgets, three task forms
+  (Levels 0/1/2), two pages — with en/nl translations and a logo.
+- No `config` or `process-link-action` bundle: GZAC generates the settings form from
+  `configurationSchema` and the action's input form from `actions[].properties`, labelled from the
+  `config.<property>.*` and `action.<property>.*` (`.label` / `.tooltip` / `.placeholder`)
+  translations. The demo app shows the `process-link-action` bundle variant;
+  `valtimo-plugin-init --bundles config` shows the `config` one.
 
 That breadth makes this the reference rather than a starting point. For the minimal counterpart,
 scaffold a project with `valtimo-plugin-init` — see
@@ -130,7 +134,7 @@ The `case-summary` action's properties (entered on the process link in the model
 2. Upload `dist/case-summary-0.1.0.zip` to the Plugin Host (`POST /api/host/plugins`).
 3. In GZAC admin UI: create a configuration of `case-summary` (the defaults are fine; adjust `currency` if wanted).
 4. Wire the `case-summary` action onto a BPMN service task with `titleField=/applicantName` (and
-   `amountField=/loanAmount` if your case has it) in the action's properties. Because the action
+   `amountField=/loanAmount` if your case has it) in the action's generated form. Because the action
    declares `outputs` in its manifest, the stepper offers an extra "Output mapping" step after the
    action's properties — select `summary` from the source dropdown and set the target to
    `doc:/summaryText` (or `pv:summaryText` to write a process variable instead).

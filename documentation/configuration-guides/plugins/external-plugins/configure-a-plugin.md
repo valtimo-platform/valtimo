@@ -35,9 +35,9 @@ External plugins appear alongside embedded ones, with their logo, version, and d
 {% step %}
 In **Enter data**, name the configuration and fill in the plugin's settings
 
-When the plugin ships its own settings screen, this step shows it, so the plugin can explain and
-validate its own fields. A plugin without one gets a generic form instead: a configuration name
-plus the settings as JSON — see [Plugins without a settings form](#plugins-without-a-settings-form).
+If the plugin has its own settings screen, it appears here. Otherwise Valtimo shows a standard
+form with the plugin's settings. For some plugins you enter the settings as JSON instead — see
+[Plugins without a settings form](#plugins-without-a-settings-form).
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/08-configure-plugin-enter-data.png" alt=""><figcaption>Enter data</figcaption></figure>
 {% endstep %}
@@ -58,19 +58,17 @@ Binding contracts is explained in [Contracts between plugins](contracts.md#bindi
 
 ## Plugins without a settings form
 
-When a plugin provides no settings screen of its own, the **Enter data** step shows a
-**Properties (JSON)** text area, and the settings must be entered as a JSON object.
+A plugin without a settings screen of its own gets a standard form from Valtimo. If the plugin has
+settings that this form cannot show, the **Enter data** step shows a **Properties (JSON)** text area
+instead, and you enter the settings as JSON.
 
 <figure><img src="../../../assets/configuration-guides/plugins/external-plugins/22-configure-plugin-properties-json.png" alt=""><figcaption>Properties as JSON</figcaption></figure>
 
-Valtimo validates what you type against the plugin's own schema when you save, so an incorrect
-property name or type is reported rather than silently accepted. It cannot tell you what the
-properties *are*, however — that comes from the plugin's supplier.
+Valtimo checks what you enter when you save and reports a wrong property name or value. It cannot
+tell you which properties the plugin expects.
 
 {% hint style="info" %}
-Ask the supplier for the property names, their types, and an example. A plugin intended for
-functional administrators should ship a settings form; if one does not, that is worth raising with
-the supplier rather than working around permanently.
+Ask the plugin's supplier for the property names and an example.
 {% endhint %}
 
 The same applies to an action's inputs in the process modeler — see

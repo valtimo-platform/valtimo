@@ -218,6 +218,9 @@ describe("buildManifest", () => {
     expect(Object.keys(bucket)).toEqual([
       "name",
       "description",
+      "action.greeting.label",
+      "action.greeting.placeholder",
+      "action.greeting.tooltip",
       "config.title.label",
       "config.title.placeholder",
       "config.greeting.label",
@@ -231,6 +234,7 @@ describe("buildManifest", () => {
     const {nl} = buildManifest(optionsWith({}, {locales: ["en", "nl"]})).translations;
 
     expect(nl["config.title.label"]).toBe("Naam van de configuratie");
+    expect(nl["action.greeting.label"]).toBe("Begroeting");
     expect(nl["caseTab.loading"]).toBe("Laden…");
     // Copied, not translated: the validator requires both in every bucket, and an English string
     // in a Dutch bucket is an obvious "translate me" where an empty string looks like a bug.
