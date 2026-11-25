@@ -33,6 +33,7 @@ import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.outbox.OutboxService
 import com.ritense.outbox.domain.BaseEvent
 import com.ritense.testutilscommon.http.Jackson2Http
+import com.ritense.testutilscommon.transaction.NoOpTransactionManager
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Vertrouwelijkheid
@@ -111,7 +112,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send request and parse response`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val responseBody = """
             {
               "url": "http://example.com",
@@ -179,7 +180,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should make put call for bestanddelen`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val request = BestandsdelenRequest(
             inhoud = InputStream.nullInputStream()
@@ -234,7 +235,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send outbox message on saving document`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val documentURL = "http://example.com"
 
         val responseBody = """
@@ -312,7 +313,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox message on error when saving document`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockResponse("").setResponseCode(400))
 
@@ -347,7 +348,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send get document request and parse response`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val responseBody = """
             {
@@ -421,7 +422,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send outbox message on retrieving document informatieobject`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val documentInformatieObjectUrl = "http://example.com/informatie-object/123"
         val responseBody = """
             {
@@ -484,7 +485,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox message on error retrieving document informatieobject`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockResponse("").setResponseCode(400))
 
@@ -506,7 +507,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send get audit trail request and parse response`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val responseBody = """
             [
@@ -568,7 +569,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send outbox event on fetching audit trail`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val responseBody = """
             [
@@ -615,7 +616,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox event on error fetching audit trail`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockResponse("").setResponseCode(400))
 
@@ -638,7 +639,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send outbox message on download document informatieobject content`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val documentInformatieObjectId = "123"
         val buffer = Buffer()
 
@@ -672,7 +673,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox message on error download document informatieobject content`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val documentInformatieObjectId = "123"
 
         mockDocumentenApi.enqueue(mockDocumentInformatieObjectResponse()) // GET document
@@ -698,7 +699,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should send delete document request and send event`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
         mockDocumentenApi.enqueue(mockDocumentInformatieObjectResponse()) // GET document
@@ -729,7 +730,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox message on error deleting document informatieobject`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockDocumentInformatieObjectResponse()) // GET document
         mockDocumentenApi.enqueue(mockResponse("{}").setResponseCode(400))
@@ -754,7 +755,7 @@ internal class DocumentenApiClientTest {
     fun `should send patch document object request and send event`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
             .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
         val documentInformatieObjectUrl = mockDocumentenApi.url("/informatie-object/123").toUri()
@@ -851,7 +852,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox message on error updating document informatieobject`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockDocumentInformatieObjectResponse()) // GET document
         mockDocumentenApi.enqueue(mockResponse("{}").setResponseCode(400))
@@ -1176,7 +1177,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should create objectinformatieobject and send outbox event`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val responseBody = """
             {
@@ -1231,7 +1232,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox event on failed create objectinformatieobject`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         mockDocumentenApi.enqueue(mockResponse("{}").setResponseCode(400))
 
@@ -1258,7 +1259,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should delete objectinformatieobject and send outbox event`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val baseUrl = mockDocumentenApi.url("/").toUri()
         val objectInformatieObjectUrl = mockDocumentenApi
@@ -1288,7 +1289,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should throw when delete objectinformatieobject url does not start with baseUrl`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val baseUrl = URI("http://example.com/")
         val urlFromDifferentHost = URI("http://other-host.com/objectinformatieobjecten/123")
@@ -1303,7 +1304,7 @@ internal class DocumentenApiClientTest {
     @Test
     fun `should not send outbox event on failed delete objectinformatieobject`() {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
 
         val baseUrl = mockDocumentenApi.url("/").toUri()
         mockDocumentenApi.enqueue(mockResponse("{}").setResponseCode(400))
@@ -1336,7 +1337,7 @@ internal class DocumentenApiClientTest {
         expectException: Boolean = false
     ): DocumentSearchResult {
         val restClientBuilder = Jackson2Http.restClientBuilder()
-        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, mock(), authorizationService, mock())
+        val client = DocumentenApiClient(restClientBuilder, outboxService, objectMapper, NoOpTransactionManager(), authorizationService, mock())
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
         // prevent queuing of response when exception is expected to avoid other tests breaking with old data in the queue

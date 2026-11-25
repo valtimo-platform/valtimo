@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.plugin.service.PluginService
+import com.ritense.testutilscommon.transaction.NoOpTransactionManager
 import com.ritense.valtimo.contract.document.CaseDocumentResolver
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.authentication.UserManagementService
@@ -2211,7 +2212,7 @@ internal class ZakenApiPluginTest {
         pluginService: PluginService = mock(),
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock(),
         zaakDocumentService: ZaakDocumentService = mock(),
-        platformTransactionManager: PlatformTransactionManager = mock(),
+        platformTransactionManager: PlatformTransactionManager = NoOpTransactionManager(),
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
         objectMapper: ObjectMapper = MapperSingleton.get(),

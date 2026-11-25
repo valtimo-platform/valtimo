@@ -38,13 +38,13 @@ import com.ritense.externalplugin.repository.ExternalPluginDefinitionRepository
 import com.ritense.externalplugin.repository.ExternalPluginHostRepository
 import com.ritense.externalplugin.security.ExternalPluginReplyHandleSigner
 import com.ritense.plugin.service.EncryptionService
+import com.ritense.testutilscommon.transaction.NoOpTransactionManager
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Clock
 import java.time.Duration
@@ -118,7 +118,7 @@ class ContractJobFixture(
         val binding = ExternalPluginContractBinding(UUID.randomUUID(), requester.id, contract, provider.id)
         whenever(bindingRepository.findByConfigurationIdAndContract(requester.id, contract)).thenReturn(binding)
 
-        val transactionTemplate = TransactionTemplate(mock<PlatformTransactionManager>())
+        val transactionTemplate = TransactionTemplate(NoOpTransactionManager())
         contractService = ExternalPluginContractService(
             configurationRepository, definitionRepository, hostRepository, bindingRepository, hostClient,
             encryptionService, objectMapper, maxDepth = 4, maxPayloadBytes = maxPayloadBytes,
