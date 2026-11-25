@@ -23,6 +23,11 @@ on:
         required: true
         type: string
         default: next-minor
+      publish_to_maven_central:
+        description: "Publish backend artifacts to Maven Central (S3 is always published)"
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   start:
@@ -77,12 +82,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RC_BRANCH: rc/${{ inputs.version }}
+          PUBLISH_TO_MAVEN_CENTRAL: ${{ inputs.publish_to_maven_central }}
         run: |
           set -euo pipefail
           # The branch push may take a moment to propagate before the workflow
           # file is resolvable on the new ref; retry a few times.
           for attempt in 1 2 3 4 5; do
-            if gh workflow run publish_release_candidate.yml --ref "${RC_BRANCH}"; then
+            if gh workflow run publish_release_candidate.yml --ref "${RC_BRANCH}" \
+              -f publish_to_maven_central="${PUBLISH_TO_MAVEN_CENTRAL}"; then
               echo "Dispatched publish_release_candidate.yml on ${RC_BRANCH}."
               exit 0
             fi

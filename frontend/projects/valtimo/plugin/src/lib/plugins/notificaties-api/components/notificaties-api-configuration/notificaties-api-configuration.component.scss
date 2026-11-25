@@ -13,3 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.manual-abonnement {
+  margin-top: var(--cds-spacing-05);
+
+  &__callback-url {
+    display: block;
+    margin-bottom: var(--cds-spacing-05);
+    overflow-wrap: anywhere;
+  }
+}

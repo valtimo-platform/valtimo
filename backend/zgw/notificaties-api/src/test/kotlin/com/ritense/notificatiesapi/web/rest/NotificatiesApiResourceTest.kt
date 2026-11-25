@@ -17,22 +17,18 @@
 package com.ritense.notificatiesapi.web.rest
 
 
-import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
-import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
-import com.ritense.notificatiesapi.exception.AuthorizationException
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
-import java.util.UUID
 import kotlin.test.assertEquals
 
 
@@ -51,11 +47,11 @@ class NotificatiesApiResourceTest {
 
     @Test
     fun `send notification with success`() {
-        doReturn(getAbonnementSubscrition()).whenever(notificatiesApiService).findAbonnementSubscription(any())
+        doReturn(true).whenever(notificatiesApiService).isAuthorizedCallback("sdafads")
         doReturn(true).whenever(notificatiesApiService).registerNotification(any())
         val result = notificatiesApiResource.handleNotification(createNotication(), "sdafads")
         assertEquals(HttpStatus.NO_CONTENT, result.statusCode)
-        verify(notificatiesApiService, times(1)).findAbonnementSubscription(any())
+        verify(notificatiesApiService, times(1)).isAuthorizedCallback("sdafads")
         verify(notificatiesApiService, times(1)).registerNotification(any())
     }
 
@@ -67,17 +63,10 @@ class NotificatiesApiResourceTest {
 
     @Test
     fun `send notification with invalid auth`() {
-        doThrow(AuthorizationException::class).whenever(notificatiesApiService).findAbonnementSubscription(any())
+        doReturn(false).whenever(notificatiesApiService).isAuthorizedCallback("anInvalidHeader")
         val result = notificatiesApiResource.handleNotification(createNotication(), "anInvalidHeader")
         assertEquals(HttpStatus.UNAUTHORIZED, result.statusCode)
-    }
-
-    private fun getAbonnementSubscrition(): NotificatiesApiAbonnementLink {
-        return NotificatiesApiAbonnementLink(
-            notificatiesApiConfigurationId = NotificatiesApiConfigurationId(UUID.randomUUID()),
-            url = "",
-            auth = ""
-        )
+        verify(notificatiesApiService, never()).registerNotification(any())
     }
 
     private fun createNotication(): NotificatiesApiNotificationReceivedEvent {
