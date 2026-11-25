@@ -15,10 +15,14 @@
  */
 
 import {HttpErrorResponse} from '@angular/common/http';
+import {fakeAsync, tick} from '@angular/core/testing';
+import {CaseStatusService, CaseTagService} from '@valtimo/document';
 import {BehaviorSubject, NEVER, of, throwError} from 'rxjs';
 import {CaseListContext} from '../models';
+import {CaseListCaseTagService} from './case-list-case-tag.service';
 import {CaseListOrchestrationService} from './case-list-orchestration.service';
 import {CaseListService} from './case-list.service';
+import {CaseListStatusService} from './case-list-status.service';
 
 describe('CaseListOrchestrationService', () => {
   let listService: CaseListService;
@@ -228,4 +232,119 @@ describe('CaseListOrchestrationService', () => {
     expect(failed).toBeTrue();
     expect(pinnedItemsService.refresh).not.toHaveBeenCalled();
   });
+});
+
+describe('CaseListOrchestrationService document pipeline resilience', () => {
+  const definitionContext: CaseListContext = {type: 'definition', key: 'house'};
+
+  const buildService = (
+    documentService: any,
+    paginationService: any,
+    listService: CaseListService
+  ): CaseListOrchestrationService => {
+    const parameterStub = {
+      queryStatusParams$: of(null),
+      queryCaseTagsParams$: of(null),
+      searchFieldValues$: new BehaviorSubject({}),
+      setStatusParameter: () => {},
+      setCaseTagParameter: () => {},
+    };
+    const caseStatusService = jasmine.createSpyObj('CaseStatusService', [
+      'getInternalCaseStatuses',
+      'getGroupInternalCaseStatuses',
+    ]) as jasmine.SpyObj<CaseStatusService>;
+    caseStatusService.getInternalCaseStatuses.and.returnValue(
+      throwError(() => new HttpErrorResponse({status: 500}))
+    );
+    const caseTagService = jasmine.createSpyObj('CaseTagService', [
+      'getCaseTags',
+    ]) as jasmine.SpyObj<CaseTagService>;
+    caseTagService.getCaseTags.and.returnValue(throwError(() => new HttpErrorResponse({status: 500})));
+
+    const statusService = new CaseListStatusService(
+      listService,
+      caseStatusService,
+      parameterStub as any
+    );
+    const caseTagListService = new CaseListCaseTagService(
+      listService,
+      caseTagService,
+      parameterStub as any
+    );
+
+    return new CaseListOrchestrationService(
+      {
+        canHaveAssignee$: new BehaviorSubject(false),
+        assigneeFilter$: new BehaviorSubject('ALL'),
+      } as any,
+      caseTagListService,
+      {getHiddenColumns: () => of([]), saveHiddenColumns: () => of([])} as any,
+      {getColumnsForContext: () => NEVER} as any,
+      {onDestroy: () => () => {}} as any,
+      documentService,
+      {showToast: () => {}} as any,
+      listService,
+      {setCustomPageTitle: () => {}} as any,
+      paginationService,
+      parameterStub as any,
+      {requestPermission: () => of(true)} as any,
+      {refresh: () => {}} as any,
+      {
+        documentSearchFields$: new BehaviorSubject(null),
+        globalSearchFilter$: new BehaviorSubject(''),
+        mapSearchValuesToFilters: () => [],
+      } as any,
+      statusService,
+      {stream: () => NEVER, instant: (key: string) => key, get: () => of('x')} as any,
+      {initParams: () => {}} as any
+    );
+  };
+
+  it('recovers document items after a search error and degraded statuses and tags', fakeAsync(() => {
+    const page = {
+      content: [{id: 'doc-1', content: {name: 'Case A'}}],
+      empty: false,
+      first: true,
+      last: true,
+      number: 0,
+      numberOfElements: 1,
+      size: 10,
+      sort: false,
+      totalElements: 1,
+      totalPages: 1,
+    };
+    let searchResponse: any = throwError(() => new HttpErrorResponse({status: 500}));
+    const documentService = {
+      getDocumentsSearch: jasmine
+        .createSpy('getDocumentsSearch')
+        .and.callFake(() => searchResponse),
+      invalidSearchFields$: of([]),
+    };
+    const paginationService = {
+      pagination$: new BehaviorSubject({page: 1, size: 10, collectionSize: 0}),
+      setPagination: () => {},
+      setCollectionSize: jasmine.createSpy('setCollectionSize'),
+      checkPage: jasmine.createSpy('checkPage'),
+    };
+    const listService = new CaseListService(documentService as any);
+    const service = buildService(documentService, paginationService, listService);
+
+    const emissions: Array<any[] | null> = [];
+    service.documentItems$.subscribe(items => emissions.push(items));
+
+    listService.setContext(definitionContext);
+    tick(50);
+
+    expect(documentService.getDocumentsSearch).toHaveBeenCalledTimes(1);
+    expect(emissions[emissions.length - 1]).toEqual([]);
+
+    searchResponse = of(page);
+    listService.forceRefresh();
+    tick(50);
+
+    expect(documentService.getDocumentsSearch).toHaveBeenCalledTimes(2);
+    const latest = emissions[emissions.length - 1];
+    expect(latest?.length).toBe(1);
+    expect(latest?.[0]).toEqual(jasmine.objectContaining({id: 'doc-1', name: 'Case A'}));
+  }));
 });

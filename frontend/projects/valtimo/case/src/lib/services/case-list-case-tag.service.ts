@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {CaseTag, CaseTagService} from '@valtimo/document';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   map,
@@ -43,7 +44,7 @@ export class CaseListCaseTagService {
       context.type === 'group'
         ? of<[CaseTag[], null]>([[], null])
         : combineLatest([
-            this.caseTagsService.getCaseTags(context.key),
+            this.caseTagsService.getCaseTags(context.key).pipe(catchError(() => of([] as CaseTag[]))),
             this.caseParameterService.queryCaseTagsParams$,
           ]).pipe(take(1))
     ),

@@ -30,7 +30,11 @@ describe('CaseListStatusService', () => {
   let service: CaseListStatusService;
 
   beforeEach(() => {
-    caseStatusService = jasmine.createSpyObj('CaseStatusService', ['getGroupInternalCaseStatuses']);
+    context$.next({type: 'group', key: 'my_group'});
+    caseStatusService = jasmine.createSpyObj('CaseStatusService', [
+      'getGroupInternalCaseStatuses',
+      'getInternalCaseStatuses',
+    ]);
     TestBed.configureTestingModule({
       providers: [
         CaseListStatusService,
@@ -48,6 +52,15 @@ describe('CaseListStatusService', () => {
   it('yields only the without-status entry when the group is not found', async () => {
     caseStatusService.getGroupInternalCaseStatuses.and.returnValue(
       throwError(() => new HttpErrorResponse({status: 404}))
+    );
+
+    expect(await firstValueFrom(service.caseStatuses$)).toEqual([CASE_WITHOUT_STATUS_STATUS]);
+  });
+
+  it('degrades to the without-status entry when the definition statuses cannot be read', async () => {
+    context$.next({type: 'definition', key: 'house'});
+    caseStatusService.getInternalCaseStatuses.and.returnValue(
+      throwError(() => new HttpErrorResponse({status: 500}))
     );
 
     expect(await firstValueFrom(service.caseStatuses$)).toEqual([CASE_WITHOUT_STATUS_STATUS]);

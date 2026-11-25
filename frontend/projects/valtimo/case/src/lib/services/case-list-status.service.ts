@@ -56,7 +56,9 @@ export class CaseListStatusService {
                       : throwError(() => error)
                   )
                 )
-            : this.caseStatusService.getInternalCaseStatuses(context.key),
+            : this.caseStatusService
+                .getInternalCaseStatuses(context.key)
+                .pipe(catchError(() => of([] as InternalCaseStatus[]))),
           this.caseParameterService.queryStatusParams$,
         ]).pipe(take(1))
       ),

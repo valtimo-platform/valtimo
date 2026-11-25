@@ -15,12 +15,22 @@
  */
 
 import {DefaultUrlSerializer} from '@angular/router';
-import {of} from 'rxjs';
+import {firstValueFrom, of} from 'rxjs';
 import {CaseParameters} from '../models';
 import {CaseParameterService} from './case-parameter.service';
 
 describe('CaseParameterService', () => {
   let service: CaseParameterService;
+
+  const buildService = (queryParams: Record<string, string>): CaseParameterService => {
+    const serializer = new DefaultUrlSerializer();
+    const router = {
+      url: '/groups/my_group',
+      parseUrl: (url: string) => serializer.parse(url),
+      navigate: jasmine.createSpy('navigate'),
+    };
+    return new CaseParameterService(router as any, {queryParams: of(queryParams)} as any);
+  };
 
   beforeEach(() => {
     const serializer = new DefaultUrlSerializer();
@@ -67,5 +77,17 @@ describe('CaseParameterService', () => {
     expect(parameters.isSorting).toBe('true');
     expect(parameters.sortStateName).toBe('created');
     expect(parameters.sortStateDirection).toBe('ASC');
+  });
+
+  it('resolves a malformed status parameter to null without throwing', async () => {
+    const malformedService = buildService({status: '%%%'});
+
+    expect(await firstValueFrom(malformedService.queryStatusParams$)).toBeNull();
+  });
+
+  it('resolves a malformed case tags parameter to null without throwing', async () => {
+    const malformedService = buildService({casetags: '%%%'});
+
+    expect(await firstValueFrom(malformedService.queryCaseTagsParams$)).toBeNull();
   });
 });

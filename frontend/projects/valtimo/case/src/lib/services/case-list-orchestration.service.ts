@@ -736,13 +736,16 @@ export class CaseListOrchestrationService {
     return combineLatest([
       of(res),
       forkJoin(
-        res.documents.content.map(document =>
+        (res.documents?.content ?? []).map(document =>
           this.permissionService
             .requestPermission(CAN_VIEW_CASE_PERMISSION, {
               resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
               identifier: document.id,
             })
-            .pipe(take(1))
+            .pipe(
+              take(1),
+              catchError(() => of(false))
+            )
         )
       ).pipe(defaultIfEmpty([] as boolean[])),
       this._internalStatusKeys$,
@@ -773,8 +776,8 @@ export class CaseListOrchestrationService {
   } {
     const documentsWithLock = {
       ...res.documents,
-      content: res.documents.content.map((document, index) => ({
-        ...document,
+      content: (res.documents?.content ?? []).map((document, index) => ({
+        ...(document ?? {}),
         locked: !documentsAuthorization[index],
       })),
     };
@@ -808,6 +811,7 @@ export class CaseListOrchestrationService {
     this.disableExportButton$.next(res.data.length === 0);
 
     return res.data.map(item => {
+      if (!item) return item;
       const mappedInternalStatusColumns = res.statusColumnKeys.reduce((acc, curr) => {
         const status = res.statuses.find(
           (s: InternalCaseStatus) => s.key === item[curr] || s.key === item.status
