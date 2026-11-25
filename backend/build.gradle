@@ -224,7 +224,7 @@ subprojects { subproject ->
             compilerOptions {
                 jvmTarget = JvmTarget.JVM_21
                 freeCompilerArgs.add("-Xemit-jvm-type-annotations")
-                freeCompilerArgs.add("-Xannotation-default-target=param-property")
+                freeCompilerArgs.add("-Xannotation-default-target=first-only")
             }
         }
 
