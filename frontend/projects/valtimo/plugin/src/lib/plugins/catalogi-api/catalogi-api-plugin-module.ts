@@ -22,6 +22,7 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/c
 import {GetStatustypenConfigurationComponent} from './components/get-statustypen/get-statustypen-configuration.component';
 import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
 import {GetBesluittypeConfigurationComponent} from './components/get-besluittype/get-besluittype-configuration.component';
+import {GetBesluittypenConfigurationComponent} from './components/get-besluittypen/get-besluittypen-configuration.component';
 import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
@@ -34,6 +35,7 @@ import {GetRoltypeConfigurationComponent} from './components/get-roltype/get-rol
   declarations: [
     CatalogiApiConfigurationComponent,
     GetBesluittypeConfigurationComponent,
+    GetBesluittypenConfigurationComponent,
     GetResultaattypenConfigurationComponent,
     GetResultaattypeConfigurationComponent,
     GetStatustypenConfigurationComponent,
@@ -55,6 +57,7 @@ import {GetRoltypeConfigurationComponent} from './components/get-roltype/get-rol
   exports: [
     CatalogiApiConfigurationComponent,
     GetBesluittypeConfigurationComponent,
+    GetBesluittypenConfigurationComponent,
     GetResultaattypenConfigurationComponent,
     GetResultaattypeConfigurationComponent,
     GetStatustypeConfigurationComponent,

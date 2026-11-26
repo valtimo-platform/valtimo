@@ -270,13 +270,25 @@ internal class CatalogiApiClientTest {
                         "toelichting": "test",
                         "archiefnominatie": "vernietigen",
                         "archiefactietermijn": "P10Y",
+                        "procesobjectaard": "Adres",
+                        "indicatieSpecifiek": true,
+                        "procestermijn": "nihil",
+                        "catalogus": "https://example.com/catalogus/id",
+                        "besluittypen": ["https://example.com/besluittype/id"],
+                        "besluittypeOmschrijving": ["Verleend"],
+                        "informatieobjecttypen": ["beschikking"],
+                        "informatieobjecttypeOmschrijving": ["Beschikking"],
+                        "beginGeldigheid": "2019-01-01",
+                        "eindeGeldigheid": "2020-01-01",
+                        "beginObject": "2019-01-01",
+                        "eindeObject": "2019-08-24",
                         "brondatumArchiefprocedure": {
                             "afleidingswijze": "afgehandeld",
                             "datumkenmerk": "",
                             "einddatumBekend": false,
                             "objecttype": "",
                             "registratie": "",
-                            "procestermijn": null
+                            "procestermijn": "P1Y"
                         }
                     }
                 ]
@@ -329,15 +341,17 @@ internal class CatalogiApiClientTest {
                         ],
                         "omschrijving": "Toegewezen",
                         "omschrijvingGeneriek": "Toegewezen",
-                        "besluitcategorie": "",
-                        "reactietermijn": null,
-                        "publicatieIndicatie": false,
-                        "publicatietekst": "",
-                        "publicatietermijn": null,
-                        "toelichting": "",
-                        "informatieobjecttypen": [],
+                        "besluitcategorie": "Vergunning",
+                        "reactietermijn": "P2W",
+                        "publicatieIndicatie": true,
+                        "publicatietekst": "Gepubliceerd in het gemeenteblad",
+                        "publicatietermijn": "P6W",
+                        "toelichting": "Toelichting op het besluit",
+                        "informatieobjecttypen": [
+                            "https://example.com/informatieobjecttypen/id"
+                        ],
                         "beginGeldigheid": "2022-09-12",
-                        "eindeGeldigheid": null,
+                        "eindeGeldigheid": "2023-09-12",
                         "concept": false
                     }
                 ]
@@ -363,8 +377,76 @@ internal class CatalogiApiClientTest {
         assertEquals(zaakTypeUrl, response.results[0].zaaktypen[0].toString())
         assertEquals("Toegewezen", response.results[0].omschrijving)
         assertEquals("Toegewezen", response.results[0].omschrijvingGeneriek)
-        assertEquals(false, response.results[0].publicatieIndicatie)
+        assertEquals("Vergunning", response.results[0].besluitcategorie)
+        assertEquals("P2W", response.results[0].reactietermijn)
+        assertEquals(true, response.results[0].publicatieIndicatie)
+        assertEquals("Gepubliceerd in het gemeenteblad", response.results[0].publicatietekst)
+        assertEquals("P6W", response.results[0].publicatietermijn)
+        assertEquals("Toelichting op het besluit", response.results[0].toelichting)
+        assertEquals(
+            listOf(URI("https://example.com/informatieobjecttypen/id")),
+            response.results[0].informatieobjecttypen
+        )
         assertEquals(LocalDate.parse("2022-09-12"), response.results[0].beginGeldigheid)
+        assertEquals(LocalDate.parse("2023-09-12"), response.results[0].eindeGeldigheid)
+        assertEquals(false, response.results[0].concept)
+    }
+
+    @Test
+    fun `should get besluittypen request and parse response with nullable fields absent`() {
+        val restClientBuilder = RestClient.builder()
+        val client = CatalogiApiClient(restClientBuilder, cacheManager)
+        val baseUrl = mockApi.url("api").toString()
+        val zaakTypeUrl = "$baseUrl/zaaktypen/${UUID.randomUUID()}"
+        val responseBody = """
+            {
+                "count": 1,
+                "next": null,
+                "previous": null,
+                "results": [
+                    {
+                        "url": "http://example.com/id",
+                        "catalogus": "http://example.com/catalogussen/id",
+                        "zaaktypen": [
+                            "$zaakTypeUrl"
+                        ],
+                        "omschrijving": null,
+                        "omschrijvingGeneriek": null,
+                        "besluitcategorie": "",
+                        "reactietermijn": null,
+                        "publicatieIndicatie": false,
+                        "publicatietekst": "",
+                        "publicatietermijn": null,
+                        "toelichting": "",
+                        "informatieobjecttypen": [],
+                        "beginGeldigheid": "2022-09-12",
+                        "eindeGeldigheid": null,
+                        "concept": null
+                    }
+                ]
+            }
+        """.trimIndent()
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val response = client.getBesluittypen(
+            authentication = TestAuthentication(),
+            baseUrl = URI(baseUrl),
+            request = BesluittypeRequest(
+                zaaktypen = URI(zaakTypeUrl),
+                status = ZaakTypePublishedStatus.ALLES,
+                page = 1
+            )
+        )
+
+        mockApi.takeRequest()
+        assertEquals(1, response.results.size)
+        assertEquals(null, response.results[0].omschrijving)
+        assertEquals(null, response.results[0].omschrijvingGeneriek)
+        assertEquals(null, response.results[0].reactietermijn)
+        assertEquals(null, response.results[0].publicatietermijn)
+        assertEquals(emptyList<URI>(), response.results[0].informatieobjecttypen)
+        assertEquals(null, response.results[0].eindeGeldigheid)
+        assertEquals(null, response.results[0].concept)
     }
 
     @Test

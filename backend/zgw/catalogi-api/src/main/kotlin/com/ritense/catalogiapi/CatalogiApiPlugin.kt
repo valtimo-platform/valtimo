@@ -53,9 +53,9 @@ import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.Page
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
-import org.operaton.bpm.engine.delegate.DelegateExecution
 
 @Plugin(
     key = "catalogiapi",
@@ -84,7 +84,7 @@ class CatalogiApiPlugin(
     fun getStatustypen(
         execution: DelegateExecution,
         @PluginActionProperty processVariable: String,
-        @PluginActionProperty zaaktypeUrl: String? = null
+        @PluginActionProperty zaaktypeUrl: String? = null,
     ) {
         logger.debug { "Retrieving statustypen and storing these in process variable: $processVariable" }
         zaaktypeUriFrom(zaaktypeUrl, execution).let { zaaktypeUri ->
@@ -142,9 +142,9 @@ class CatalogiApiPlugin(
     fun getResultaattypen(
         execution: DelegateExecution,
         @PluginActionProperty processVariable: String,
-        @PluginActionProperty zaaktypeUrl: String? = null
+        @PluginActionProperty zaaktypeUrl: String? = null,
 
-    ) {
+        ) {
         logger.debug { "Retrieving resultaattypen and storing these in process variable: $processVariable" }
         zaaktypeUriFrom(zaaktypeUrl, execution).let { zaaktypeUri ->
             withLoggingContext(
@@ -188,6 +188,47 @@ class CatalogiApiPlugin(
             logger.info { "Setting process variable $processVariable with (retrieved) resultaattype URL: $resultaattypeUrl" }
 
             execution.setVariable(processVariable, resultaattypeUrl)
+        }
+    }
+
+    @PluginAction(
+        key = "get-besluittypen",
+        title = "Get Besluittypen",
+        description = "Retrieve the besluittypen and save these in a process variable",
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
+    )
+    fun getBesluittypen(
+        execution: DelegateExecution,
+        @PluginActionProperty resultProcessVariable: String,
+    ) {
+        logger.debug { "Retrieving besluittypen and storing these in process variable: $resultProcessVariable" }
+        getZaaktypeUrl(execution).let { zaaktypeUri ->
+            withLoggingContext(
+                CATALOGI_API.ZAAKTYPE to zaaktypeUri.toString()
+            ) {
+                getBesluittypen(zaaktypeUri).map { besluittype ->
+                    mapOf(
+                        URL_KEY to besluittype.url!!.toASCIIString(),
+                        NAME_KEY to besluittype.omschrijving,
+                        OMSCHRIJVINGGENERIEK_KEY to besluittype.omschrijvingGeneriek,
+                        CATALOGUS_KEY to besluittype.catalogus.toASCIIString(),
+                        ZAAKTYPEN_KEY to besluittype.zaaktypen.map { it.toASCIIString() },
+                        BESLUITCATEGORIE_KEY to besluittype.besluitcategorie,
+                        REACTIETERMIJN_KEY to besluittype.reactietermijn,
+                        PUBLICATIEINDICATIE_KEY to besluittype.publicatieIndicatie,
+                        PUBLICATIETEKST_KEY to besluittype.publicatietekst,
+                        PUBLICATIETERMIJN_KEY to besluittype.publicatietermijn,
+                        TOELICHTING_KEY to besluittype.toelichting,
+                        INFORMATIEOBJECTTYPEN_KEY to besluittype.informatieobjecttypen.map { it.toASCIIString() },
+                        BEGINGELDIGHEID_KEY to besluittype.beginGeldigheid,
+                        EINDEGELDIGHEID_KEY to besluittype.eindeGeldigheid,
+                        CONCEPT_KEY to besluittype.concept
+                    )
+                }.let { besluittypen ->
+                    execution.setVariable(resultProcessVariable, besluittypen)
+                }
+                logger.info { "Setting process variable $resultProcessVariable with (retrieved) besluittypen" }
+            }
         }
     }
 
@@ -263,7 +304,8 @@ class CatalogiApiPlugin(
         ) {
             logger.debug { "Retrieving informatieobjecttype by description '$informatieobjecttype' and storing it in process variable: $processVariable" }
             val zaaktypeUrl = getZaaktypeUrl(execution)
-            val informatieobjecttypeUrl = getInformatieobjecttypeByOmschrijving(zaaktypeUrl, informatieobjecttype).url!!.toASCIIString()
+            val informatieobjecttypeUrl =
+                getInformatieobjecttypeByOmschrijving(zaaktypeUrl, informatieobjecttype).url!!.toASCIIString()
 
             logger.info { "Setting process variable '$processVariable' with informatieobjecttype URL: $informatieobjecttypeUrl" }
 
@@ -280,7 +322,7 @@ class CatalogiApiPlugin(
     fun getInformatieobjecttypen(
         execution: DelegateExecution,
         @PluginActionProperty processVariable: String,
-        @PluginActionProperty zaaktypeUrl: String? = null
+        @PluginActionProperty zaaktypeUrl: String? = null,
     ) {
         logger.debug { "Retrieving informatieobjecttypen and storing these in process variable: $processVariable" }
         zaaktypeUriFrom(zaaktypeUrl, execution).let { zaaktypeUri ->
@@ -309,7 +351,7 @@ class CatalogiApiPlugin(
     fun getRoltypen(
         execution: DelegateExecution,
         @PluginActionProperty processVariable: String,
-        @PluginActionProperty zaaktypeUrl: String? = null
+        @PluginActionProperty zaaktypeUrl: String? = null,
     ) {
         logger.debug { "Retrieving roltypen and storing these in process variable: $processVariable" }
         zaaktypeUriFrom(zaaktypeUrl, execution).let { zaaktypeUri ->
@@ -390,13 +432,13 @@ class CatalogiApiPlugin(
                     if (!informatieobjecttype.concept &&
                         (
                             informatieobjecttype.beginGeldigheid.isBefore(LocalDate.now()) ||
-                            informatieobjecttype.beginGeldigheid.isEqual(LocalDate.now())
-                        ) &&
+                                informatieobjecttype.beginGeldigheid.isEqual(LocalDate.now())
+                            ) &&
                         (
                             informatieobjecttype.eindeGeldigheid == null ||
-                            informatieobjecttype.eindeGeldigheid.isAfter(LocalDate.now()) ||
-                            informatieobjecttype.eindeGeldigheid.isEqual(LocalDate.now())
-                        )
+                                informatieobjecttype.eindeGeldigheid.isAfter(LocalDate.now()) ||
+                                informatieobjecttype.eindeGeldigheid.isEqual(LocalDate.now())
+                            )
                     ) {
                         informatieobjecttype
                     } else {
@@ -582,7 +624,7 @@ class CatalogiApiPlugin(
         }
     }
 
-  fun getEigenschapByName(zaaktypeUrl: URI, eigenschapnaam: String): Eigenschap {
+    fun getEigenschapByName(zaaktypeUrl: URI, eigenschapnaam: String): Eigenschap {
         withLoggingContext(
             CATALOGI_API.EIGENSCHAP to zaaktypeUrl.toString()
         ) {
@@ -662,6 +704,19 @@ class CatalogiApiPlugin(
         private val HTTPS_REGEX = "https?://.+".toRegex()
         private const val NAME_KEY = "name"
         private const val URL_KEY = "url"
+        private const val CATALOGUS_KEY = "catalogus"
+        private const val INFORMATIEOBJECTTYPEN_KEY = "informatieobjecttypen"
+        private const val BEGINGELDIGHEID_KEY = "beginGeldigheid"
+        private const val EINDEGELDIGHEID_KEY = "eindeGeldigheid"
+        private const val OMSCHRIJVINGGENERIEK_KEY = "omschrijvingGeneriek"
+        private const val ZAAKTYPEN_KEY = "zaaktypen"
+        private const val BESLUITCATEGORIE_KEY = "besluitcategorie"
+        private const val REACTIETERMIJN_KEY = "reactietermijn"
+        private const val PUBLICATIEINDICATIE_KEY = "publicatieIndicatie"
+        private const val PUBLICATIETEKST_KEY = "publicatietekst"
+        private const val PUBLICATIETERMIJN_KEY = "publicatietermijn"
+        private const val TOELICHTING_KEY = "toelichting"
+        private const val CONCEPT_KEY = "concept"
 
         const val PLUGIN_KEY = "catalogiapi"
 
