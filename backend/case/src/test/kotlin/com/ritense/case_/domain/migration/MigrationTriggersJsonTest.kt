@@ -17,11 +17,11 @@
 package com.ritense.case_.domain.migration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.valtimo.contract.hibernate.RuntimeTypeJsonFormatMapper
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.hibernate.type.descriptor.WrapperOptions
 import org.hibernate.type.descriptor.java.spi.UnknownBasicJavaType
-import org.hibernate.type.format.jackson.JacksonJsonFormatMapper
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import java.time.Instant
@@ -32,7 +32,7 @@ import java.time.ZoneOffset
 class MigrationTriggersJsonTest {
 
     private val springMapper: ObjectMapper = MapperSingleton.get()
-    private val formatMapper = JacksonJsonFormatMapper(springMapper)
+    private val formatMapper = RuntimeTypeJsonFormatMapper(springMapper)
     private val javaType = UnknownBasicJavaType(MigrationTriggers::class.java)
     private val wrapperOptions = mock(WrapperOptions::class.java)
 
