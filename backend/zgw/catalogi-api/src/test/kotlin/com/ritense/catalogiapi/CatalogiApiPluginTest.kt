@@ -808,6 +808,53 @@ internal class CatalogiApiPluginTest : BaseTest() {
     }
 
     @Test
+    fun `should get resultaat type by url without fetching resultaattype details`() {
+        val resultaattypeUrl = resultaatTypeUrl("4")
+        val processVariable = "resultaatTypeProcessVar"
+        val execution = mockExecution()
+
+        plugin.getResultaattype(
+            execution = execution,
+            resultaattype = resultaattypeUrl,
+            processVariable = processVariable
+        )
+
+        verify(execution, times(1)).setVariable(processVariable, resultaattypeUrl)
+        verify(client, never()).getResultaattype(any(), any(), any())
+    }
+
+    @Test
+    fun `should get resultaat type details in second process variable when resultaattypeProcessVariable is set`() {
+        val resultaattypeUrl = resultaatTypeUrl("4")
+        val processVariable = "resultaatTypeProcessVar"
+        val resultaattypeProcessVariable = "resultaatTypeDetailsProcessVar"
+        val execution = mockExecution()
+        val resultaattype = resultaatType(
+            url = resultaattypeUrl.toURI(),
+            zaaktypeUrl = zaaktypeUrl().toURI(),
+            omschrijving = "Registered",
+            resultaatTypeOmschrijving = resultaatTypeOmschrijvingUrl().toURI(),
+            selectielijstKlasse = selectielijstKlasseUrl().toURI()
+        )
+
+        whenever(client.getResultaattype(any(), any(), eq(resultaattypeUrl.toURI())))
+            .thenReturn(resultaattype)
+
+        plugin.getResultaattype(
+            execution = execution,
+            resultaattype = resultaattypeUrl,
+            processVariable = processVariable,
+            resultaattypeProcessVariable = resultaattypeProcessVariable
+        )
+
+        verify(execution, times(1)).setVariable(processVariable, resultaattypeUrl)
+        verify(execution, times(1)).setVariable(
+            eq(resultaattypeProcessVariable),
+            eq(expectedResultaattypeOutput(url = resultaattypeUrl, name = "Registered"))
+        )
+    }
+
+    @Test
     fun `should throw ResultaattypeNotFoundException when get resultaat type doesn't exist`() {
         val resultaattype = "Registered"
         val zaaktypeUrl = zaaktypeUrl()
