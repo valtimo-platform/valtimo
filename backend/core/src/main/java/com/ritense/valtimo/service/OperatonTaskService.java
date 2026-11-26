@@ -45,7 +45,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
@@ -109,6 +108,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.hibernate.Hibernate;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.ProcessEngineException;
@@ -344,10 +344,10 @@ public class OperatonTaskService {
     public void complete(String taskId) {
         final OperatonTask task = runWithoutAuthorization(() -> findTaskById(taskId));
         requirePermission(task, COMPLETE);
-        // Serialize first: completing may end the process and delete the executions the task refers to
-        final ObjectNode taskJson = objectMapper.valueToTree(task);
+        Hibernate.initialize(task.getVariableInstances());
+        Hibernate.initialize(task.getIdentityLinks());
         taskService.complete(taskId);
-        outboxService.send(() -> new TaskCompleted(taskId, taskJson));
+        outboxService.send(() -> new TaskCompleted(taskId, objectMapper.valueToTree(task)));
     }
 
     @Transactional
