@@ -38,7 +38,6 @@ interface GetResultaattypenConfig {
 interface GetResultaattypeConfig {
   resultaattype: string;
   processVariable: string;
-  detailProcessVariable?: string;
 }
 
 interface GetRoltypenConfig {
