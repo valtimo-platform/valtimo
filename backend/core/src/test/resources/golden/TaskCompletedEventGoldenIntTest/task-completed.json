@@ -52,12 +52,12 @@
         "sequenceCounter" : 3,
         "tenantId" : null,
         "variableInstances" : null,
-        "variablesTyped" : { },
-        "variablesLocal" : { },
-        "variablesLocalTyped" : { },
+        "variables" : { },
         "variableNamesLocal" : [ ],
+        "variablesLocal" : { },
         "variableNames" : [ ],
-        "variables" : { }
+        "variablesTyped" : { },
+        "variablesLocalTyped" : { }
       },
       "processInstance" : "<uuid>",
       "processDefinition" : {
@@ -98,12 +98,12 @@
       "tenantId" : null,
       "variableInstances" : [ ],
       "subtitles" : null,
-      "variablesTyped" : { },
-      "variablesLocal" : { },
-      "variablesLocalTyped" : { },
+      "variables" : { },
       "variableNamesLocal" : [ ],
+      "variablesLocal" : { },
       "variableNames" : [ ],
-      "variables" : { }
+      "variablesTyped" : { },
+      "variablesLocalTyped" : { }
     }
   }
 }

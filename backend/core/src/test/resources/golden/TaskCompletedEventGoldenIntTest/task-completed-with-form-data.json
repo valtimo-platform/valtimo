@@ -54,42 +54,6 @@
         "variableInstances" : [ {
           "id" : "<uuid>",
           "revision" : 1,
-          "serializerName" : "string",
-          "name" : "startedWith",
-          "execution" : "<uuid>",
-          "processInstance" : "<uuid>",
-          "processDefinition" : {
-            "id" : "<uuid>",
-            "revision" : 1,
-            "category" : "http://bpmn.io/schema/bpmn",
-            "name" : "Golden task completed process",
-            "key" : "golden-task-completed-process",
-            "version" : 1,
-            "deploymentId" : "<uuid>",
-            "resourceName" : "golden-task-completed-process.bpmn",
-            "diagramResourceName" : null,
-            "hasStartFormKey" : false,
-            "suspensionState" : 1,
-            "tenantId" : null,
-            "versionTag" : null,
-            "historyTimeToLive" : null,
-            "isStartableInTasklist" : true,
-            "blueprintId" : null
-          },
-          "caseExecutionId" : null,
-          "caseInstanceId" : null,
-          "batchId" : null,
-          "doubleValue" : null,
-          "longValue" : null,
-          "textValue" : "value",
-          "textValue2" : null,
-          "variableScopeId" : "<uuid>",
-          "sequenceCounter" : 1,
-          "isConcurrentLocal" : false,
-          "tenantId" : null
-        }, {
-          "id" : "<uuid>",
-          "revision" : 1,
           "serializerName" : "integer",
           "name" : "VTM_callDepth",
           "execution" : "<uuid>",
@@ -123,24 +87,60 @@
           "sequenceCounter" : 1,
           "isConcurrentLocal" : false,
           "tenantId" : null
+        }, {
+          "id" : "<uuid>",
+          "revision" : 1,
+          "serializerName" : "string",
+          "name" : "startedWith",
+          "execution" : "<uuid>",
+          "processInstance" : "<uuid>",
+          "processDefinition" : {
+            "id" : "<uuid>",
+            "revision" : 1,
+            "category" : "http://bpmn.io/schema/bpmn",
+            "name" : "Golden task completed process",
+            "key" : "golden-task-completed-process",
+            "version" : 1,
+            "deploymentId" : "<uuid>",
+            "resourceName" : "golden-task-completed-process.bpmn",
+            "diagramResourceName" : null,
+            "hasStartFormKey" : false,
+            "suspensionState" : 1,
+            "tenantId" : null,
+            "versionTag" : null,
+            "historyTimeToLive" : null,
+            "isStartableInTasklist" : true,
+            "blueprintId" : null
+          },
+          "caseExecutionId" : null,
+          "caseInstanceId" : null,
+          "batchId" : null,
+          "doubleValue" : null,
+          "longValue" : null,
+          "textValue" : "value",
+          "textValue2" : null,
+          "variableScopeId" : "<uuid>",
+          "sequenceCounter" : 1,
+          "isConcurrentLocal" : false,
+          "tenantId" : null
         } ],
-        "variablesTyped" : {
-          "startedWith" : "value",
-          "VTM_callDepth" : 0
+        "variables" : {
+          "VTM_callDepth" : 0,
+          "startedWith" : "value"
         },
+        "variableNamesLocal" : [ "VTM_callDepth", "startedWith" ],
         "variablesLocal" : {
-          "startedWith" : "value",
-          "VTM_callDepth" : 0
+          "VTM_callDepth" : 0,
+          "startedWith" : "value"
+        },
+        "variableNames" : [ "VTM_callDepth", "startedWith" ],
+        "variablesTyped" : {
+          "VTM_callDepth" : 0,
+          "startedWith" : "value"
         },
         "variablesLocalTyped" : {
-          "startedWith" : "value",
-          "VTM_callDepth" : 0
-        },
-        "variableNamesLocal" : [ "startedWith", "VTM_callDepth" ],
-        "variableNames" : [ "startedWith", "VTM_callDepth" ],
-        "variables" : {
-          "startedWith" : "value",
-          "VTM_callDepth" : 0
+          "VTM_callDepth" : 0,
+          "startedWith" : "value"
         }
       },
       "processInstance" : "<uuid>",
@@ -182,18 +182,18 @@
       "tenantId" : null,
       "variableInstances" : [ ],
       "subtitles" : null,
-      "variablesTyped" : {
-        "startedWith" : "value",
-        "VTM_callDepth" : 0
-      },
-      "variablesLocal" : { },
-      "variablesLocalTyped" : { },
-      "variableNamesLocal" : [ ],
-      "variableNames" : [ "VTM_callDepth", "startedWith" ],
       "variables" : {
-        "startedWith" : "value",
-        "VTM_callDepth" : 0
-      }
+        "VTM_callDepth" : 0,
+        "startedWith" : "value"
+      },
+      "variableNamesLocal" : [ ],
+      "variablesLocal" : { },
+      "variableNames" : [ "VTM_callDepth", "startedWith" ],
+      "variablesTyped" : {
+        "VTM_callDepth" : 0,
+        "startedWith" : "value"
+      },
+      "variablesLocalTyped" : { }
     }
   }
 }

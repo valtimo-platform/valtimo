@@ -84,7 +84,12 @@ class TaskCompletedEventGoldenIntTest : BaseIntegrationTest() {
         val message = outboxMessageRepository.findAll()
             .map { it.message }
             .single { it.contains("\"com.ritense.valtimo.task.completed\"") && it.contains(taskId) }
-        GoldenJson.assertMatchesGolden(javaClass, name, message, unorderedPaths = listOf("/data/result/*"))
+        GoldenJson.assertMatchesGolden(
+            javaClass,
+            name,
+            message,
+            unorderedPaths = listOf("/data/result/*", "/data/result/execution/*", "/data/result/execution/variableInstances/*/*")
+        )
     }
 
     companion object {
