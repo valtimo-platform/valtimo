@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" exporter="Camunda Modeler" exporterVersion="5.2.0" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_1cjlq7v" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+      
+  
+  <bpmn:process camunda:versionTag="CD:house:1.0.0" id="parent-process-with-non-existing-key" isClosed="false" isExecutable="true" name="parent process with non existing key" processType="None">
+            
+    
+    <bpmn:startEvent id="start_event_id" isInterrupting="true" name="start_event_name" parallelMultiple="false">
+                  
+      
+      <bpmn:outgoing>Flow_1bxegcf</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:sequenceFlow id="Flow_1bxegcf" sourceRef="start_event_id" targetRef="start_process_task_id"/>
+            
+    
+    <bpmn:serviceTask camunda:expression="${processService.startProcessByProcessDefinitionKey(&quot;non-existing-key&quot;,execution.businessKey)}" completionQuantity="1" id="start_process_task_id" implementation="##WebService" isForCompensation="false" name="start process_task" startQuantity="1">
+                  
+      
+      <bpmn:incoming>Flow_1bxegcf</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>Flow_1d4dzvc</bpmn:outgoing>
+                
+    
+    </bpmn:serviceTask>
+            
+    
+    <bpmn:endEvent id="Event_1jj68wa">
+                  
+      
+      <bpmn:incoming>Flow_1d4dzvc</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+            
+    
+    <bpmn:sequenceFlow id="Flow_1d4dzvc" sourceRef="start_process_task_id" targetRef="Event_1jj68wa"/>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+            
+    
+    <bpmndi:BPMNPlane bpmnElement="parent-process-with-non-existing-key" id="BPMNPlane_1">
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="Flow_1d4dzvc" id="Flow_1d4dzvc_di">
+                        
+        
+        <di:waypoint x="370" y="117"/>
+                        
+        
+        <di:waypoint x="432" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="Flow_1bxegcf" id="Flow_1bxegcf_di">
+                        
+        
+        <di:waypoint x="215" y="117"/>
+                        
+        
+        <di:waypoint x="270" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="start_event_id" id="_BPMNShape_StartEvent_2">
+                        
+        
+        <dc:Bounds height="36" width="36" x="179" y="99"/>
+                        
+        
+        <bpmndi:BPMNLabel>
+                              
+          
+          <dc:Bounds height="14" width="89" x="153" y="142"/>
+                            
+        
+        </bpmndi:BPMNLabel>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="start_process_task_id" id="Activity_0l6rypb_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="270" y="77"/>
+                        
+        
+        <bpmndi:BPMNLabel/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Event_1jj68wa" id="Event_1jj68wa_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="432" y="99"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                
+    
+    </bpmndi:BPMNPlane>
+          
+  
+  </bpmndi:BPMNDiagram>
+    
+
+</bpmn:definitions>

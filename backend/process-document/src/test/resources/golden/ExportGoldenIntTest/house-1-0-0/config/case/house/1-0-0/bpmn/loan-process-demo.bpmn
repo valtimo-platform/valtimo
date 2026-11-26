@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" exporter="Camunda Modeler" exporterVersion="3.1.0" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_12j1sji" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+      
+  
+  <bpmn:process camunda:versionTag="CD:house:1.0.0" id="loan-process-demo" isClosed="false" isExecutable="true" name="Lening aanvraag process" processType="None">
+            
+    
+    <bpmn:startEvent camunda:formKey="formio:new-load-request" id="start-event" isInterrupting="true" parallelMultiple="false">
+                  
+      
+      <bpmn:extensionElements>
+                        
+        
+        <camunda:formData businessKey="emailadres">
+                              
+          
+          <camunda:formField id="voornaam" label="Voornaam" type="string"/>
+                              
+          
+          <camunda:formField id="achternaam" label="Achternaam" type="string"/>
+                              
+          
+          <camunda:formField id="emailadres" label="Emailadres" type="string"/>
+                              
+          
+          <camunda:formField id="jaar-omzet" label="Jaar omzet" type="string"/>
+                              
+          
+          <camunda:formField id="leen-bedrag" label="Leen bedrag" type="string"/>
+                              
+          
+          <camunda:formField id="lening-startdatum" label="Startdatum lening" type="date"/>
+                            
+        
+        </camunda:formData>
+                      
+      
+      </bpmn:extensionElements>
+                  
+      
+      <bpmn:outgoing>SequenceFlow_1abb79g</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:endEvent id="end-event">
+                  
+      
+      <bpmn:incoming>SequenceFlow_0j10547</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+            
+    
+    <bpmn:sequenceFlow id="SequenceFlow_1abb79g" sourceRef="start-event" targetRef="form-task"/>
+            
+    
+    <bpmn:sequenceFlow id="SequenceFlow_0j10547" sourceRef="form-task" targetRef="end-event"/>
+            
+    
+    <bpmn:userTask camunda:candidateGroups="ROLE_DEVELOPER" camunda:formKey="formio:user-task" completionQuantity="1" id="form-task" implementation="##unspecified" isForCompensation="false" name="Akkoord op lening?" startQuantity="1">
+                  
+      
+      <bpmn:extensionElements>
+                        
+        
+        <camunda:formData>
+                              
+          
+          <camunda:formField id="lening-akkoord" label="Lening akkoord?" type="boolean"/>
+                              
+          
+          <camunda:formField id="upload" label="File" type="FileUpload"/>
+                            
+        
+        </camunda:formData>
+                      
+      
+      </bpmn:extensionElements>
+                  
+      
+      <bpmn:incoming>SequenceFlow_1abb79g</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>SequenceFlow_0j10547</bpmn:outgoing>
+                
+    
+    </bpmn:userTask>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+            
+    
+    <bpmndi:BPMNPlane bpmnElement="loan-process-demo" id="BPMNPlane_1">
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="start-event" id="_BPMNShape_StartEvent_2">
+                        
+        
+        <dc:Bounds height="36" width="36" x="168" y="81"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="end-event" id="EndEvent_030pkfh_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="492" y="81"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1abb79g" id="SequenceFlow_1abb79g_di">
+                        
+        
+        <di:waypoint x="204" y="99"/>
+                        
+        
+        <di:waypoint x="297" y="99"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_0j10547" id="SequenceFlow_0j10547_di">
+                        
+        
+        <di:waypoint x="397" y="99"/>
+                        
+        
+        <di:waypoint x="492" y="99"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="form-task" id="UserTask_18proky_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="297" y="59"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                
+    
+    </bpmndi:BPMNPlane>
+          
+  
+  </bpmndi:BPMNDiagram>
+    
+
+</bpmn:definitions>

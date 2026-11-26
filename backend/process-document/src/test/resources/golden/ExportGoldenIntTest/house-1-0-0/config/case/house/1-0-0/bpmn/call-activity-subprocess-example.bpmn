@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" exporter="Camunda Modeler" exporterVersion="5.23.0" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_1otkihd" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+      
+  
+  <bpmn:collaboration id="Collaboration_0jbsodk" isClosed="false">
+            
+    
+    <bpmn:participant id="Participant_1vf67p7" name="process 1" processRef="call-activity-subprocess-example"/>
+            
+    
+    <bpmn:participant id="Participant_063uqra" name="process 2" processRef="sub-process"/>
+          
+  
+  </bpmn:collaboration>
+      
+  
+  <bpmn:process camunda:versionTag="CD:house:1.0.0" id="call-activity-subprocess-example" isClosed="false" isExecutable="true" name="Call activity subprocess example" processType="None">
+            
+    
+    <bpmn:startEvent id="start-event" isInterrupting="true" parallelMultiple="false">
+                  
+      
+      <bpmn:outgoing>SequenceFlow_1jwc3i1</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:sequenceFlow id="SequenceFlow_1jwc3i1" sourceRef="start-event" targetRef="user-task-pre"/>
+            
+    
+    <bpmn:sequenceFlow id="SequenceFlow_1rlz5h0" sourceRef="user-task-pre" targetRef="Task_0iwv23o"/>
+            
+    
+    <bpmn:sequenceFlow id="SequenceFlow_12s1xoa" sourceRef="Task_0iwv23o" targetRef="end-event"/>
+            
+    
+    <bpmn:userTask completionQuantity="1" id="user-task-pre" implementation="##unspecified" isForCompensation="false" name="Pre" startQuantity="1">
+                  
+      
+      <bpmn:incoming>SequenceFlow_1jwc3i1</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>SequenceFlow_1rlz5h0</bpmn:outgoing>
+                
+    
+    </bpmn:userTask>
+            
+    
+    <bpmn:callActivity calledElement="sub-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="CD:house:1.0.0" completionQuantity="1" id="Task_0iwv23o" isForCompensation="false" name="Call process" startQuantity="1">
+                  
+      
+      <bpmn:extensionElements>
+                        
+        
+        <camunda:in businessKey="#{execution.processBusinessKey}"/>
+                      
+      
+      </bpmn:extensionElements>
+                  
+      
+      <bpmn:incoming>SequenceFlow_1rlz5h0</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>SequenceFlow_12s1xoa</bpmn:outgoing>
+                
+    
+    </bpmn:callActivity>
+            
+    
+    <bpmn:endEvent id="end-event">
+                  
+      
+      <bpmn:incoming>SequenceFlow_12s1xoa</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmn:process camunda:versionTag="CD:house:1.0.0" id="sub-process" isClosed="false" isExecutable="true" name="Sub process" processType="None">
+            
+    
+    <bpmn:startEvent id="StartEvent_0ep39aj" isInterrupting="true" parallelMultiple="false">
+                  
+      
+      <bpmn:outgoing>SequenceFlow_1awmh91</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:sequenceFlow id="SequenceFlow_1awmh91" sourceRef="StartEvent_0ep39aj" targetRef="EndEvent_03u0z2e"/>
+            
+    
+    <bpmn:endEvent id="EndEvent_03u0z2e">
+                  
+      
+      <bpmn:incoming>SequenceFlow_1awmh91</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+            
+    
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_0jbsodk" id="BPMNPlane_1">
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Participant_1vf67p7" id="Participant_1vf67p7_di" isHorizontal="true">
+                        
+        
+        <dc:Bounds height="243" width="495" x="185" y="81"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="start-event" id="_BPMNShape_StartEvent_2">
+                        
+        
+        <dc:Bounds height="36" width="36" x="235" y="183"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="user-task-pre" id="UserTask_18112ai_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="319" y="161"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Task_0iwv23o" id="CallActivity_0r1cydt_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="457" y="161"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="end-event" id="EndEvent_145qc4a_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="605" y="183"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1jwc3i1" id="SequenceFlow_1jwc3i1_di">
+                        
+        
+        <di:waypoint x="271" y="201"/>
+                        
+        
+        <di:waypoint x="319" y="201"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1rlz5h0" id="SequenceFlow_1rlz5h0_di">
+                        
+        
+        <di:waypoint x="419" y="201"/>
+                        
+        
+        <di:waypoint x="457" y="201"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_12s1xoa" id="SequenceFlow_12s1xoa_di">
+                        
+        
+        <di:waypoint x="557" y="201"/>
+                        
+        
+        <di:waypoint x="605" y="201"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Participant_063uqra" id="Participant_063uqra_di" isHorizontal="true">
+                        
+        
+        <dc:Bounds height="194" width="306" x="185" y="378"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="StartEvent_0ep39aj" id="StartEvent_0ep39aj_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="274" y="458"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="EndEvent_03u0z2e" id="EndEvent_03u0z2e_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="400" y="458"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1awmh91" id="SequenceFlow_1awmh91_di">
+                        
+        
+        <di:waypoint x="310" y="476"/>
+                        
+        
+        <di:waypoint x="400" y="476"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                
+    
+    </bpmndi:BPMNPlane>
+          
+  
+  </bpmndi:BPMNDiagram>
+    
+
+</bpmn:definitions>

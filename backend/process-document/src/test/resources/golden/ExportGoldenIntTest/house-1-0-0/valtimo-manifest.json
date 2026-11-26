@@ -1,0 +1,13 @@
+{
+  "artifacts" : [ {
+    "artifactVersionTag" : {
+      "$ref" : "config/case/house/1-0-0/case/definition/house.case-definition.json#/versionTag"
+    },
+    "title" : {
+      "$ref" : "config/case/house/1-0-0/case/definition/house.case-definition.json#/name"
+    },
+    "type" : "CASE_DEFINITION",
+    "valtimoVersion" : "<ignored:string>",
+    "dependencies" : [ ]
+  } ]
+}

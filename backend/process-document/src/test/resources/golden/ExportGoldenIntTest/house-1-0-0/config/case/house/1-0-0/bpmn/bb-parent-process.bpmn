@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" exporter="Camunda Modeler" exporterVersion="5.2.0" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_bb_test" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+      
+  
+  <bpmn:collaboration id="Collaboration_bb_test" isClosed="false">
+            
+    
+    <bpmn:participant id="Participant_parent" name="BB parent process" processRef="bb-parent-process"/>
+            
+    
+    <bpmn:participant id="Participant_sub" name="BB sub process" processRef="bb-sub-process"/>
+          
+  
+  </bpmn:collaboration>
+      
+  
+  <bpmn:process camunda:versionTag="CD:house:1.0.0" id="bb-parent-process" isClosed="false" isExecutable="true" name="BB parent process" processType="None">
+            
+    
+    <bpmn:startEvent id="bb-parent-start" isInterrupting="true" parallelMultiple="false">
+                  
+      
+      <bpmn:outgoing>flow1</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:sequenceFlow id="flow1" sourceRef="bb-parent-start" targetRef="bb-call-activity"/>
+            
+    
+    <bpmn:callActivity calledElement="bb-sub-process" camunda:calledElementBinding="versionTag" camunda:calledElementVersionTag="CD:house:1.0.0" completionQuantity="1" id="bb-call-activity" isForCompensation="false" name="Call building block" startQuantity="1">
+                  
+      
+      <bpmn:extensionElements>
+                        
+        
+        <camunda:in businessKey="#{bbDocumentId}"/>
+                      
+      
+      </bpmn:extensionElements>
+                  
+      
+      <bpmn:incoming>flow1</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>flow2</bpmn:outgoing>
+                
+    
+    </bpmn:callActivity>
+            
+    
+    <bpmn:endEvent id="bb-parent-end">
+                  
+      
+      <bpmn:incoming>flow2</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+            
+    
+    <bpmn:sequenceFlow id="flow2" sourceRef="bb-call-activity" targetRef="bb-parent-end"/>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmn:process camunda:versionTag="CD:house:1.0.0" id="bb-sub-process" isClosed="false" isExecutable="true" name="BB sub process" processType="None">
+            
+    
+    <bpmn:startEvent id="bb-sub-start" isInterrupting="true" parallelMultiple="false">
+                  
+      
+      <bpmn:outgoing>flow3</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:sequenceFlow id="flow3" sourceRef="bb-sub-start" targetRef="bb-user-task"/>
+            
+    
+    <bpmn:userTask camunda:candidateGroups="ROLE_USER" completionQuantity="1" id="bb-user-task" implementation="##unspecified" isForCompensation="false" name="building block user task" startQuantity="1">
+                  
+      
+      <bpmn:incoming>flow3</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>flow4</bpmn:outgoing>
+                
+    
+    </bpmn:userTask>
+            
+    
+    <bpmn:endEvent id="bb-sub-end">
+                  
+      
+      <bpmn:incoming>flow4</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+            
+    
+    <bpmn:sequenceFlow id="flow4" sourceRef="bb-user-task" targetRef="bb-sub-end"/>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+            
+    
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_bb_test" id="BPMNPlane_1">
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Participant_parent" id="Participant_parent_di" isHorizontal="true">
+                        
+        
+        <dc:Bounds height="200" width="460" x="160" y="80"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="bb-parent-start" id="bb-parent-start_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="220" y="162"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="bb-call-activity" id="bb-call-activity_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="310" y="140"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="bb-parent-end" id="bb-parent-end_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="472" y="162"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="flow1_di">
+                        
+        
+        <di:waypoint x="256" y="180"/>
+                        
+        
+        <di:waypoint x="310" y="180"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="flow2_di">
+                        
+        
+        <di:waypoint x="410" y="180"/>
+                        
+        
+        <di:waypoint x="472" y="180"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Participant_sub" id="Participant_sub_di" isHorizontal="true">
+                        
+        
+        <dc:Bounds height="200" width="460" x="160" y="340"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="bb-sub-start" id="bb-sub-start_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="220" y="422"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="bb-user-task" id="bb-user-task_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="310" y="400"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="bb-sub-end" id="bb-sub-end_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="472" y="422"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="flow3_di">
+                        
+        
+        <di:waypoint x="256" y="440"/>
+                        
+        
+        <di:waypoint x="310" y="440"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="flow4_di">
+                        
+        
+        <di:waypoint x="410" y="440"/>
+                        
+        
+        <di:waypoint x="472" y="440"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                
+    
+    </bpmndi:BPMNPlane>
+          
+  
+  </bpmndi:BPMNDiagram>
+    
+
+</bpmn:definitions>

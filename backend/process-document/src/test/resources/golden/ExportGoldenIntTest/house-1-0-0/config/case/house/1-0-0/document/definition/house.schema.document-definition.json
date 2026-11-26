@@ -1,0 +1,28 @@
+{
+  "$id" : "house.schema",
+  "type" : "object",
+  "title" : "House",
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "properties" : {
+    "street" : {
+      "type" : "string",
+      "maxLength" : 100,
+      "description" : "The street name."
+    },
+    "buildDate" : {
+      "type" : "string",
+      "format" : "date"
+    },
+    "floorCount" : {
+      "type" : "number"
+    },
+    "housenumber" : {
+      "type" : "integer",
+      "minimum" : 0,
+      "description" : "house number must be equal to or greater than zero."
+    },
+    "inspectionDateTime" : {
+      "type" : "string"
+    }
+  }
+}

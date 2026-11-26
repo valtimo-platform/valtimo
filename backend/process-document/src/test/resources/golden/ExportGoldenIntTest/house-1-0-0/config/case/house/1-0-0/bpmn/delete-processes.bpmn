@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" exporter="Camunda Modeler" exporterVersion="5.23.0" expressionLanguage="http://www.w3.org/1999/XPath" id="Definitions_1cjlq7v" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0" targetNamespace="http://bpmn.io/schema/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema">
+      
+  
+  <bpmn:process camunda:versionTag="CD:house:1.0.0" id="delete-processes" isClosed="false" isExecutable="true" name="delete processes" processType="None">
+            
+    
+    <bpmn:startEvent id="start_event_id" isInterrupting="true" name="start_event_name" parallelMultiple="false">
+                  
+      
+      <bpmn:outgoing>Flow_1bxegcf</bpmn:outgoing>
+                
+    
+    </bpmn:startEvent>
+            
+    
+    <bpmn:sequenceFlow id="Flow_1bxegcf" sourceRef="start_event_id" targetRef="StartChildProcess"/>
+            
+    
+    <bpmn:endEvent id="Event_1jj68wa">
+                  
+      
+      <bpmn:incoming>Flow_0q496wa</bpmn:incoming>
+                
+    
+    </bpmn:endEvent>
+            
+    
+    <bpmn:sequenceFlow id="Flow_0vsuf63" sourceRef="delete-processes-activity" targetRef="UserTask"/>
+            
+    
+    <bpmn:serviceTask camunda:expression="${processService.deleteAllProcessInstancesForThisDocument(execution,&quot;Test deletion process&quot;)}" completionQuantity="1" id="delete-processes-activity" implementation="##WebService" isForCompensation="false" name="Delete processes" startQuantity="1">
+                  
+      
+      <bpmn:incoming>Flow_0ot55vv</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>Flow_0vsuf63</bpmn:outgoing>
+                
+    
+    </bpmn:serviceTask>
+            
+    
+    <bpmn:sequenceFlow id="Flow_0q496wa" sourceRef="UserTask" targetRef="Event_1jj68wa"/>
+            
+    
+    <bpmn:userTask camunda:candidateGroups="ROLE_USER" completionQuantity="1" id="UserTask" implementation="##unspecified" isForCompensation="false" name="User task" startQuantity="1">
+                  
+      
+      <bpmn:incoming>Flow_0vsuf63</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>Flow_0q496wa</bpmn:outgoing>
+                
+    
+    </bpmn:userTask>
+            
+    
+    <bpmn:sequenceFlow id="Flow_0ot55vv" sourceRef="StartChildProcess" targetRef="delete-processes-activity"/>
+            
+    
+    <bpmn:intermediateThrowEvent id="StartChildProcess" name="Start child process">
+                  
+      
+      <bpmn:incoming>Flow_1bxegcf</bpmn:incoming>
+                  
+      
+      <bpmn:outgoing>Flow_0ot55vv</bpmn:outgoing>
+                  
+      
+      <bpmn:messageEventDefinition camunda:expression="${correlationService.sendStartMessage(&quot;START_CHILD_PROCESS&quot;,execution.businessKey)}" id="MessageEventDefinition_1l3sg6g"/>
+                
+    
+    </bpmn:intermediateThrowEvent>
+          
+  
+  </bpmn:process>
+      
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+            
+    
+    <bpmndi:BPMNPlane bpmnElement="delete-processes" id="BPMNPlane_1">
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="start_event_id" id="_BPMNShape_StartEvent_2">
+                        
+        
+        <dc:Bounds height="36" width="36" x="179" y="99"/>
+                        
+        
+        <bpmndi:BPMNLabel>
+                              
+          
+          <dc:Bounds height="14" width="89" x="153" y="142"/>
+                            
+        
+        </bpmndi:BPMNLabel>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="delete-processes-activity" id="Activity_0xck9ge_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="410" y="77"/>
+                        
+        
+        <bpmndi:BPMNLabel/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Event_1jj68wa" id="Event_1jj68wa_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="712" y="99"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="UserTask" id="Activity_0qaiqaf_di">
+                        
+        
+        <dc:Bounds height="80" width="100" x="560" y="77"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="StartChildProcess" id="Event_1dxtltt_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="292" y="99"/>
+                        
+        
+        <bpmndi:BPMNLabel>
+                              
+          
+          <dc:Bounds height="27" width="49" x="286" y="142"/>
+                            
+        
+        </bpmndi:BPMNLabel>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="Flow_1bxegcf" id="Flow_1bxegcf_di">
+                        
+        
+        <di:waypoint x="215" y="117"/>
+                        
+        
+        <di:waypoint x="292" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="Flow_0vsuf63" id="Flow_0vsuf63_di">
+                        
+        
+        <di:waypoint x="510" y="117"/>
+                        
+        
+        <di:waypoint x="560" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="Flow_0q496wa" id="Flow_0q496wa_di">
+                        
+        
+        <di:waypoint x="660" y="117"/>
+                        
+        
+        <di:waypoint x="712" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="Flow_0ot55vv" id="Flow_0ot55vv_di">
+                        
+        
+        <di:waypoint x="328" y="117"/>
+                        
+        
+        <di:waypoint x="410" y="117"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                
+    
+    </bpmndi:BPMNPlane>
+          
+  
+  </bpmndi:BPMNDiagram>
+    
+
+</bpmn:definitions>

@@ -1,0 +1,15 @@
+{
+  "key" : "house",
+  "versionTag" : "1.0.0",
+  "name" : "house",
+  "description" : null,
+  "createdBy" : null,
+  "createdDate" : null,
+  "basedOnVersionTag" : null,
+  "final" : false,
+  "canHaveAssignee" : true,
+  "autoAssignTasks" : true,
+  "originalKey" : null,
+  "originalName" : null,
+  "originalVersionTag" : null
+}
