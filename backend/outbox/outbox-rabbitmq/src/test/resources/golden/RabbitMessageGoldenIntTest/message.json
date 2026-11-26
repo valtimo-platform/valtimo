@@ -1,0 +1,35 @@
+{
+  "contentType" : "text/plain",
+  "contentEncoding" : "UTF-8",
+  "deliveryMode" : null,
+  "priority" : 0,
+  "messageId" : null,
+  "correlationId" : null,
+  "type" : null,
+  "appId" : null,
+  "headers" : {
+    "spring_listener_return_correlation" : "<uuid>",
+    "spring_returned_message_correlation" : "<uuid>"
+  },
+  "body" : {
+    "specversion" : "1.0",
+    "id" : "<uuid>",
+    "source" : "valtimo",
+    "type" : "com.ritense.golden.created",
+    "datacontenttype" : "application/json",
+    "time" : "<date:dddd-dd-ddTdd:dd:dd.ddd+dd:dd>",
+    "data" : {
+      "userId" : "golden-user",
+      "roles" : [ "ROLE_USER" ],
+      "resultType" : "com.ritense.Golden",
+      "resultId" : "golden-1",
+      "result" : {
+        "name" : "Zoë Çelik ✓",
+        "amount" : 12.5,
+        "nested" : {
+          "list" : [ 1, "two", null ]
+        }
+      }
+    }
+  }
+}

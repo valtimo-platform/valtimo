@@ -1,0 +1,21 @@
+{
+  "id" : "<uuid>",
+  "type" : "com.ritense.golden.created",
+  "date" : [ 2026, 11, 26, 10, 15, 30, 123000000 ],
+  "userId" : "golden-user",
+  "roles" : [ "ROLE_USER" ],
+  "resultType" : "com.ritense.Golden",
+  "resultId" : "golden-1",
+  "result" : {
+    "name" : "Zoë Çelik ✓",
+    "amount" : 12.5,
+    "count" : 3,
+    "active" : true,
+    "nothing" : null,
+    "nested" : {
+      "list" : [ 1, "two", null, {
+        "deep" : "value"
+      } ]
+    }
+  }
+}
