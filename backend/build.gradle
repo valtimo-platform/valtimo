@@ -27,7 +27,7 @@ plugins {
 
     id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
     id "org.jetbrains.kotlin.plugin.spring" version "${kotlinVersion}"
-    id "org.jetbrains.kotlin.plugin.jpa" version "${kotlinVersion}"
+    id "org.jetbrains.kotlin.plugin.noarg" version "${kotlinVersion}"
     id "org.jetbrains.kotlin.plugin.allopen" version "${kotlinVersion}"
     id "org.jetbrains.dokka-javadoc" version "${dokkaPluginVersion}"
     id "com.github.ben-manes.versions" version "${versionsPluginVersion}"
@@ -182,7 +182,7 @@ subprojects { subproject ->
         apply plugin: "jacoco"
         apply plugin: "kotlin"
         apply plugin: "kotlin-spring"
-        apply plugin: "kotlin-jpa"
+        apply plugin: "kotlin-noarg"
         apply plugin: "com.avast.gradle.docker-compose"
         apply plugin: "org.jetbrains.dokka-javadoc"
         apply plugin: "maven-publish"
@@ -197,6 +197,13 @@ subprojects { subproject ->
 
         allOpen {
             annotation("com.ritense.valtimo.contract.annotation.AllOpen")
+        }
+
+        // Not kotlin-jpa: since Kotlin 2.3 it also opens entities, which turns their lazy relations into real proxies
+        noArg {
+            annotation("jakarta.persistence.Entity")
+            annotation("jakarta.persistence.Embeddable")
+            annotation("jakarta.persistence.MappedSuperclass")
         }
 
         java {
