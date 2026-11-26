@@ -13,42 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.ritense.valtimo.test.golden
 
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.ritense.outbox.OutboxMessage
-import com.ritense.outbox.repository.OutboxMessageRepository
+import com.ritense.outbox.CloudEventFactory
+import com.ritense.outbox.OutboxService
+import com.ritense.outbox.domain.BaseEvent
+import io.cloudevents.core.provider.EventFormatProvider
+import io.cloudevents.jackson.JsonFormat
 import org.aopalliance.intercept.MethodInterceptor
 import org.springframework.aop.framework.Advised
 import org.springframework.aop.framework.ProxyFactory
+import org.springframework.aop.framework.ReflectiveMethodInvocation
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.BeanFactoryAware
 import org.springframework.beans.factory.config.BeanPostProcessor
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.APPEND
 import java.nio.file.StandardOpenOption.CREATE
+import java.util.function.Supplier
 
 /**
- * Writes every outbox message a test run stores to `<directory>/<event type>.jsonl`, normalised by [GoldenJson] and
- * de-duplicated, so the events of two builds can be diffed per type.
+ * Writes every event sent to the outbox during a test run to `<directory>/<event type>.jsonl`, serialised as the outbox
+ * does, normalised by [GoldenJson] and de-duplicated, so the events of two builds can be diffed per type. It hooks
+ * [OutboxService.send], so it also sees events of tests that roll back or run with the local outbox.
  */
-class OutboxEventRecorder(private val directory: Path) : BeanPostProcessor {
+class OutboxEventRecorder(private val directory: Path) : BeanPostProcessor, BeanFactoryAware {
 
     private val mapper = JsonMapper.builder()
         .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
         .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
         .build()
     private val seen = mutableMapOf<String, MutableSet<String>>()
+    private lateinit var beanFactory: BeanFactory
+
+    override fun setBeanFactory(beanFactory: BeanFactory) {
+        this.beanFactory = beanFactory
+    }
 
     override fun postProcessAfterInitialization(bean: Any, beanName: String): Any {
-        if (bean !is OutboxMessageRepository) {
+        if (bean !is OutboxService) {
             return bean
         }
         val interceptor = MethodInterceptor { invocation ->
-            when (invocation.method.name) {
-                "save" -> record(listOf(invocation.arguments[0]))
-                "saveAll" -> record((invocation.arguments[0] as Iterable<*>).toList())
+            val supplier = invocation.arguments.singleOrNull()
+            if (invocation.method.name == "send" && supplier is Supplier<*> && invocation is ReflectiveMethodInvocation) {
+                val event = supplier.get() as BaseEvent
+                invocation.arguments[0] = Supplier { event }
+                runCatching { record(event) }.onFailure { System.err.println("[golden] could not record ${event.type}: $it") }
             }
             invocation.proceed()
         }
@@ -56,23 +72,26 @@ class OutboxEventRecorder(private val directory: Path) : BeanPostProcessor {
             bean.addAdvice(0, interceptor)
             return bean
         }
-        return ProxyFactory(bean).apply { addAdvice(interceptor) }.proxy
+        return ProxyFactory(bean).apply {
+            isProxyTargetClass = true
+            addAdvice(interceptor)
+        }.proxy
     }
 
     @Synchronized
-    private fun record(messages: List<Any?>) {
-        messages.filterIsInstance<OutboxMessage>().forEach { message ->
-            val normalized = GoldenJson.normalize(message.message)
-            val type = normalized.path("type").asText("unknown")
-            val line = mapper.writeValueAsString(mapper.treeToValue(normalized, Any::class.java))
-            val file = directory.resolve("$type.jsonl")
-            val lines = seen.getOrPut(type) {
-                if (Files.exists(file)) Files.readAllLines(file).toMutableSet() else mutableSetOf()
-            }
-            if (lines.add(line)) {
-                Files.createDirectories(directory)
-                Files.writeString(file, line + "\n", CREATE, APPEND)
-            }
+    private fun record(event: BaseEvent) {
+        val cloudEvent = beanFactory.getBean(CloudEventFactory::class.java).create(event)
+        val format = checkNotNull(EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE))
+        val json = String(format.serialize(cloudEvent), Charsets.UTF_8)
+        val normalized = GoldenJson.normalize(json)
+        val line = mapper.writeValueAsString(mapper.treeToValue(normalized, Any::class.java))
+        val file = directory.resolve("${event.type}.jsonl")
+        val lines = seen.getOrPut(event.type) {
+            if (Files.exists(file)) Files.readAllLines(file).toMutableSet() else mutableSetOf()
+        }
+        if (lines.add(line)) {
+            Files.createDirectories(directory)
+            Files.writeString(file, line + "\n", CREATE, APPEND)
         }
     }
 }

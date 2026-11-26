@@ -24,7 +24,7 @@ import org.springframework.core.env.Environment
 import java.nio.file.Paths
 
 @AutoConfiguration
-@ConditionalOnClass(name = ["com.ritense.outbox.repository.OutboxMessageRepository"])
+@ConditionalOnClass(name = ["com.ritense.outbox.OutboxService"])
 @ConditionalOnProperty("valtimo.golden.events.dir")
 class OutboxEventRecorderAutoConfiguration {
 
