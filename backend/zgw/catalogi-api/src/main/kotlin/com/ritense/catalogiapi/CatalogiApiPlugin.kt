@@ -151,30 +151,7 @@ class CatalogiApiPlugin(
                 CATALOGI_API.ZAAKTYPE to zaaktypeUri.toString()
             ) {
                 getResultaattypen(zaaktypeUri).map { resultaattype ->
-                    mapOf(
-                        URL_KEY to resultaattype.url!!.toASCIIString(),
-                        NAME_KEY to resultaattype.omschrijving,
-                        AFLEIDINGWIJZE_KEY to resultaattype.brondatumArchiefprocedure?.afleidingswijze,
-                        DATUMKENMERK_KEY to resultaattype.brondatumArchiefprocedure?.datumkenmerk,
-                        EINDDATUMBEKEND_KEY to resultaattype.brondatumArchiefprocedure?.einddatumBekend,
-                        OBJECTTYPE_KEY to resultaattype.brondatumArchiefprocedure?.objecttype,
-                        REGISTRATIE_KEY to resultaattype.brondatumArchiefprocedure?.registratie,
-                        PROCESTERMIJN_KEY to resultaattype.brondatumArchiefprocedure?.brondatumProcestermijn,
-                        ARCHIEFNOMINATIE_KEY to resultaattype.archiefnominatie,
-                        ARCHIEFACTIETERMIJN_KEY to resultaattype.archiefactietermijn,
-                        PROCESOBJECTAARD_KEY to resultaattype.procesobjectaard,
-                        INDICATIESPECIFIEK_KEY to resultaattype.indicatieSpecifiek,
-                        RESULTAAT_PROCESTERMIJN_KEY to resultaattype.procestermijn,
-                        CATALOGUS_KEY to resultaattype.catalogus?.toASCIIString(),
-                        BESLUITTYPEN_KEY to resultaattype.besluittypen.map { it.toASCIIString() },
-                        BESLUITTYPEOMSCHRIJVING_KEY to resultaattype.besluittypeOmschrijving,
-                        INFORMATIEOBJECTTYPEN_KEY to resultaattype.informatieobjecttypen,
-                        INFORMATIEOBJECTTYPEOMSCHRIJVING_KEY to resultaattype.informatieobjecttypeOmschrijving,
-                        BEGINGELDIGHEID_KEY to resultaattype.beginGeldigheid,
-                        EINDEGELDIGHEID_KEY to resultaattype.eindeGeldigheid,
-                        BEGINOBJECT_KEY to resultaattype.beginObject,
-                        EINDEOBJECT_KEY to resultaattype.eindeObject
-                    )
+                    resultaattypeToMap(resultaattype)
                 }.let { resultaattypen ->
                     execution.setVariable(processVariable, resultaattypen)
                 }
@@ -193,21 +170,27 @@ class CatalogiApiPlugin(
         execution: DelegateExecution,
         @PluginActionProperty resultaattype: String,
         @PluginActionProperty processVariable: String,
+        @PluginActionProperty resultaattypeProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.RESULTAATTYPE to resultaattype,
         ) {
             logger.debug { "Retrieving resultaattype: $resultaattype and storing it in process variable: $processVariable" }
-            val resultaattypeUrl = if (resultaattype.matches(HTTPS_REGEX)) {
-                resultaattype
+            val resolvedResultaattype = if (resultaattype.matches(HTTPS_REGEX)) {
+                getResultaattype(URI.create(resultaattype))
             } else {
                 val zaaktypeUrl = getZaaktypeUrl(execution)
-                getResultaattypeByOmschrijving(zaaktypeUrl, resultaattype).url!!.toASCIIString()
+                getResultaattypeByOmschrijving(zaaktypeUrl, resultaattype)
             }
+            val resultaattypeUrl = resolvedResultaattype.url!!.toASCIIString()
 
             logger.info { "Setting process variable $processVariable with (retrieved) resultaattype URL: $resultaattypeUrl" }
-
             execution.setVariable(processVariable, resultaattypeUrl)
+
+            if (!resultaattypeProcessVariable.isNullOrBlank()) {
+                logger.info { "Setting process variable $resultaattypeProcessVariable with (retrieved) resultaattype" }
+                execution.setVariable(resultaattypeProcessVariable, resultaattypeToMap(resolvedResultaattype))
+            }
         }
     }
 
@@ -578,6 +561,31 @@ class CatalogiApiPlugin(
                 ?: throw ResultaattypeNotFoundException("with 'omschrijving': '$omschrijving'")
         }
     }
+
+    private fun resultaattypeToMap(resultaattype: Resultaattype): Map<String, Any?> = mapOf(
+        URL_KEY to resultaattype.url!!.toASCIIString(),
+        NAME_KEY to resultaattype.omschrijving,
+        AFLEIDINGWIJZE_KEY to resultaattype.brondatumArchiefprocedure?.afleidingswijze,
+        DATUMKENMERK_KEY to resultaattype.brondatumArchiefprocedure?.datumkenmerk,
+        EINDDATUMBEKEND_KEY to resultaattype.brondatumArchiefprocedure?.einddatumBekend,
+        OBJECTTYPE_KEY to resultaattype.brondatumArchiefprocedure?.objecttype,
+        REGISTRATIE_KEY to resultaattype.brondatumArchiefprocedure?.registratie,
+        PROCESTERMIJN_KEY to resultaattype.brondatumArchiefprocedure?.brondatumProcestermijn,
+        ARCHIEFNOMINATIE_KEY to resultaattype.archiefnominatie,
+        ARCHIEFACTIETERMIJN_KEY to resultaattype.archiefactietermijn,
+        PROCESOBJECTAARD_KEY to resultaattype.procesobjectaard,
+        INDICATIESPECIFIEK_KEY to resultaattype.indicatieSpecifiek,
+        RESULTAAT_PROCESTERMIJN_KEY to resultaattype.procestermijn,
+        CATALOGUS_KEY to resultaattype.catalogus?.toASCIIString(),
+        BESLUITTYPEN_KEY to resultaattype.besluittypen.map { it.toASCIIString() },
+        BESLUITTYPEOMSCHRIJVING_KEY to resultaattype.besluittypeOmschrijving,
+        INFORMATIEOBJECTTYPEN_KEY to resultaattype.informatieobjecttypen,
+        INFORMATIEOBJECTTYPEOMSCHRIJVING_KEY to resultaattype.informatieobjecttypeOmschrijving,
+        BEGINGELDIGHEID_KEY to resultaattype.beginGeldigheid,
+        EINDEGELDIGHEID_KEY to resultaattype.eindeGeldigheid,
+        BEGINOBJECT_KEY to resultaattype.beginObject,
+        EINDEOBJECT_KEY to resultaattype.eindeObject
+    )
 
     fun getBesluittypen(zaakTypeUrl: URI): List<Besluittype> {
         withLoggingContext(CATALOGI_API.BESLUITTYPE to zaakTypeUrl.toString()) {
