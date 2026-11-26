@@ -16,11 +16,13 @@
 package com.ritense.valtimo
 
 import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 
 @AutoConfiguration
+@ConditionalOnClass(name = ["com.ritense.valtimo.contract.buildingblock.BuildingBlockImporterRan"])
 class GenericValtimoTestAutoConfiguration {
 
     @Bean

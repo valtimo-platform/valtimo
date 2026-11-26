@@ -36,6 +36,9 @@ dependencies {
     implementation "io.cloudevents:cloudevents-json-jackson:$cloudEventsCoreVersion"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation(project(":backend:test-utils-common")) {
+        transitive = false
+    }
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.springframework.security:spring-security-test"
     // Spring cloud stream RabbitMQ
