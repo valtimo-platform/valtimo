@@ -17,7 +17,6 @@
 package com.ritense.catalogiapi.domain
 
 import java.net.URI
-import java.time.LocalDate
 
 class Resultaattype(
     val url: URI?,
@@ -27,20 +26,4 @@ class Resultaattype(
     val omschrijvingGeneriek: String?,
     val selectielijstklasse: URI,
     val toelichting: String?,
-    val archiefnominatie: String?,
-    val archiefactietermijn: String?,
-    val procesobjectaard: String?,
-    val indicatieSpecifiek: Boolean?,
-    val procestermijn: String?,
-    val catalogus: URI?,
-    val brondatumArchiefprocedure: BrondatumArchiefprocedure? = null,
-    val besluittypen: List<URI> = emptyList(),
-    val besluittypeOmschrijving: List<String> = emptyList(),
-    val informatieobjecttypen: List<String> = emptyList(),
-    val informatieobjecttypeOmschrijving: List<String> = emptyList(),
-    val beginGeldigheid: LocalDate?,
-    val eindeGeldigheid: LocalDate?,
-    val beginObject: LocalDate?,
-    val eindeObject: LocalDate?,
-
 )

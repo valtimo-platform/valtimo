@@ -20,7 +20,6 @@ import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.client.RoltypeRequest
 import com.ritense.catalogiapi.client.ZaaktypeInformatieobjecttypeRequest
 import com.ritense.catalogiapi.domain.Besluittype
-import com.ritense.catalogiapi.domain.BrondatumArchiefprocedure
 import com.ritense.catalogiapi.domain.Eigenschap
 import com.ritense.catalogiapi.domain.InformatieobjecttypeVertrouwelijkheid
 import com.ritense.catalogiapi.domain.Informatieobjecttype
@@ -1446,21 +1445,6 @@ internal class CatalogiApiPluginTest : BaseTest() {
         omschrijving: String,
         resultaatTypeOmschrijving: URI,
         selectielijstKlasse: URI,
-        archiefnominatie: String? = null,
-        archiefactietermijn: String? = null,
-        procesobjectaard: String? = null,
-        indicatieSpecifiek: Boolean? = null,
-        procestermijn: String? = null,
-        catalogus: URI? = null,
-        brondatumArchiefprocedure: BrondatumArchiefprocedure? = null,
-        besluittypen: List<URI> = emptyList(),
-        besluittypeOmschrijving: List<String> = emptyList(),
-        informatieobjecttypen: List<String> = emptyList(),
-        informatieobjecttypeOmschrijving: List<String> = emptyList(),
-        beginGeldigheid: LocalDate? = null,
-        eindeGeldigheid: LocalDate? = null,
-        beginObject: LocalDate? = null,
-        eindeObject: LocalDate? = null
     ) = Resultaattype(
         url = url,
         zaaktype = zaaktypeUrl,
@@ -1469,21 +1453,6 @@ internal class CatalogiApiPluginTest : BaseTest() {
         omschrijvingGeneriek = null,
         selectielijstklasse = selectielijstKlasse,
         toelichting = null,
-        archiefnominatie = archiefnominatie,
-        archiefactietermijn = archiefactietermijn,
-        procesobjectaard = procesobjectaard,
-        indicatieSpecifiek = indicatieSpecifiek,
-        procestermijn = procestermijn,
-        catalogus = catalogus,
-        brondatumArchiefprocedure = brondatumArchiefprocedure,
-        besluittypen = besluittypen,
-        besluittypeOmschrijving = besluittypeOmschrijving,
-        informatieobjecttypen = informatieobjecttypen,
-        informatieobjecttypeOmschrijving = informatieobjecttypeOmschrijving,
-        beginGeldigheid = beginGeldigheid,
-        eindeGeldigheid = eindeGeldigheid,
-        beginObject = beginObject,
-        eindeObject = eindeObject
     )
 
     private fun roltype(
