@@ -23,8 +23,10 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -40,6 +42,8 @@ import org.springframework.web.method.HandlerMethod;
 public class OpenApiAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenApiAutoConfiguration.class);
+
+    private static final String JSON_NODE_SCHEMA = "JsonNode";
 
     /**
      * OpenAPI configuration.
@@ -95,4 +99,19 @@ public class OpenApiAutoConfiguration {
         };
     }
 
+    /**
+     * springdoc 3 reads models with Jackson 3, which doesn't know Jackson 2's {@code JsonNode} and documents it as a
+     * bean with getters such as {@code textual} and {@code pojo}. Valtimo's JSON nodes are free-form objects, as springdoc
+     * 2 documented them.
+     */
+    @Bean
+    @ConditionalOnMissingBean(name = "jackson2JsonNodeSchemaCustomizer")
+    public GlobalOpenApiCustomizer jackson2JsonNodeSchemaCustomizer() {
+        return openApi -> {
+            if (openApi.getComponents() != null && openApi.getComponents().getSchemas() != null
+                && openApi.getComponents().getSchemas().containsKey(JSON_NODE_SCHEMA)) {
+                openApi.getComponents().getSchemas().put(JSON_NODE_SCHEMA, new ObjectSchema());
+            }
+        };
+    }
 }

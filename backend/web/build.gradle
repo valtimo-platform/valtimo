@@ -53,6 +53,8 @@ dependencies {
     api "com.google.guava:guava:${guavaVersion}"
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-api:${springDocVersion}"
+    // springdoc 3 reads models with Jackson 3 and only applies Kotlin nullability and naming with its Kotlin module
+    runtimeOnly "tools.jackson.module:jackson-module-kotlin"
 
     implementation "org.zalando:problem-spring-web:${problemSpringWebVersion}"
     implementation "org.zalando:jackson-datatype-problem:${jacksonDatatypeProblemVersion}"
