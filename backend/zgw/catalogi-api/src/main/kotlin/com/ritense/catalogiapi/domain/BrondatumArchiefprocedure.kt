@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class BrondatumArchiefprocedure(
     val afleidingswijze: String,
     val datumkenmerk: String?,
-    val einddatumBekend: Boolean,
+    val einddatumBekend: Boolean?,
     val objecttype: String?,
     val registratie: String?,
     @JsonProperty("procestermijn")
