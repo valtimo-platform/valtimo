@@ -48,4 +48,15 @@
     [fullWidth]="true"
   >
   </v-input>
+  <v-input
+    name="resultaattypeProcessVariable"
+    [title]="'resultaattypeProcessVariable' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.resultaattypeProcessVariable"
+    [disabled]="obs.disabled"
+    [trim]="true"
+    [tooltip]="'resultaattypeProcessVariableTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
 </v-form>

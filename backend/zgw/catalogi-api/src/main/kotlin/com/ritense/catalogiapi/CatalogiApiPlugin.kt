@@ -176,20 +176,25 @@ class CatalogiApiPlugin(
             CATALOGI_API.RESULTAATTYPE to resultaattype,
         ) {
             logger.debug { "Retrieving resultaattype: $resultaattype and storing it in process variable: $processVariable" }
-            val resolvedResultaattype = if (resultaattype.matches(HTTPS_REGEX)) {
-                getResultaattype(URI.create(resultaattype))
+            val resultaattypeUrl: String
+            var resolvedResultaattype: Resultaattype? = null
+            if (resultaattype.matches(HTTPS_REGEX)) {
+                resultaattypeUrl = resultaattype
+                if (!resultaattypeProcessVariable.isNullOrBlank()) {
+                    resolvedResultaattype = getResultaattype(URI.create(resultaattype))
+                }
             } else {
                 val zaaktypeUrl = getZaaktypeUrl(execution)
-                getResultaattypeByOmschrijving(zaaktypeUrl, resultaattype)
+                resolvedResultaattype = getResultaattypeByOmschrijving(zaaktypeUrl, resultaattype)
+                resultaattypeUrl = resolvedResultaattype.url!!.toASCIIString()
             }
-            val resultaattypeUrl = resolvedResultaattype.url!!.toASCIIString()
 
             logger.info { "Setting process variable $processVariable with (retrieved) resultaattype URL: $resultaattypeUrl" }
             execution.setVariable(processVariable, resultaattypeUrl)
 
             if (!resultaattypeProcessVariable.isNullOrBlank()) {
                 logger.info { "Setting process variable $resultaattypeProcessVariable with (retrieved) resultaattype" }
-                execution.setVariable(resultaattypeProcessVariable, resultaattypeToMap(resolvedResultaattype))
+                execution.setVariable(resultaattypeProcessVariable, resultaattypeToMap(resolvedResultaattype!!))
             }
         }
     }
