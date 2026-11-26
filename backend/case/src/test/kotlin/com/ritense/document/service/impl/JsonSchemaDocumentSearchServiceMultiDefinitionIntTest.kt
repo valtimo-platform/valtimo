@@ -245,23 +245,27 @@ class JsonSchemaDocumentSearchServiceMultiDefinitionIntTest : BaseIntegrationTes
     @Test
     @WithMockUser(username = "user@test.com", authorities = [FULL_ACCESS_ROLE])
     fun `should search without filters returning all documents`() {
-        createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
-        createDocumentInDefinition("person", """{"firstName": "Rotterdam"}""")
-
         val filterPathMappings = emptyMap<String, Map<String, String>>()
 
         val searchRequest = SearchWithConfigRequest()
         searchRequest.otherFilters = emptyList()
 
-        val results = documentSearchService.search(
-            listOf("house", "person"),
-            BlueprintType.CASE,
-            searchRequest,
-            filterPathMappings,
-            PageRequest.of(0, 10)
-        )
+        val search = {
+            documentSearchService.search(
+                listOf("house", "person"),
+                BlueprintType.CASE,
+                searchRequest,
+                filterPathMappings,
+                PageRequest.of(0, 10)
+            )
+        }
+        // Other test classes may leave committed documents behind
+        val existing = search().totalElements
 
-        assertThat(results.totalElements).isEqualTo(2)
+        createDocumentInDefinition("house", """{"street": "Amsterdam"}""")
+        createDocumentInDefinition("person", """{"firstName": "Rotterdam"}""")
+
+        assertThat(search().totalElements).isEqualTo(existing + 2)
     }
 
     @Test
