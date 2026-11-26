@@ -4,7 +4,7 @@
   "source" : "application",
   "type" : "com.ritense.valtimo.task.completed",
   "datacontenttype" : "application/json",
-  "time" : "<date:dddd-dd-ddTdd:dd:dd.ddddddZ>",
+  "time" : "<ignored:string>",
   "data" : {
     "userId" : "user@ritense.com",
     "roles" : [ "ROLE_ADMIN" ],

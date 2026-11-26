@@ -88,6 +88,7 @@ class TaskCompletedEventGoldenIntTest : BaseIntegrationTest() {
             javaClass,
             name,
             message,
+            ignorePaths = listOf("/time"),
             unorderedPaths = listOf("/data/result/*", "/data/result/execution/*", "/data/result/execution/variableInstances/*/*")
         )
     }
