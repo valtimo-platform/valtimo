@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright 2015-2026 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!-- A div, not a form: hosts embed this inside their own form. -->
+<div [attr.data-test-id]="testIds.form" [formGroup]="form" class="external-plugin-config-form">
+  <p *ngIf="$fields().length === 0" class="external-plugin-config-form__helper">
+    {{ 'externalPlugin.configForm.noFields' | translate }}
+  </p>
+
+  <div
+    *ngFor="let field of $fields(); trackBy: trackByField"
+    class="external-plugin-config-form__field"
+  >
+    <v-select
+      *ngIf="field.widget === 'select'; else input"
+      [attr.data-test-id]="testIds.fieldPrefix + field.key"
+      [clearable]="!field.required"
+      [formControlName]="field.key"
+      [invalid]="!!$errors()[field.key]"
+      [items]="field.options"
+      [name]="field.key"
+      [placeholder]="'externalPlugin.configForm.chooseOption' | translate"
+      [required]="field.required"
+      [title]="field.label"
+      [tooltip]="field.tooltip"
+    ></v-select>
+
+    <ng-template #input>
+      <v-input
+        [attr.data-test-id]="testIds.fieldPrefix + field.key"
+        [defaultValue]="field.inputValue"
+        [fullWidth]="true"
+        [maxLength]="field.maxLength"
+        [min]="field.minimum"
+        [name]="field.key"
+        [placeholder]="field.placeholder"
+        [required]="field.required"
+        [title]="field.label"
+        [tooltip]="field.tooltip"
+        [type]="field.widget"
+        (valueChange)="onFieldValueChange(field.key, $event)"
+      ></v-input>
+    </ng-template>
+
+    <p
+      *ngIf="$errors()[field.key] as error; else helper"
+      class="external-plugin-config-form__error"
+    >
+      {{ error }}
+    </p>
+
+    <ng-template #helper>
+      <p *ngIf="field.secretKept" class="external-plugin-config-form__helper">
+        {{ 'externalPlugin.configForm.secretKept' | translate }}
+      </p>
+    </ng-template>
+  </div>
+</div>

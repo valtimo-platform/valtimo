@@ -15,6 +15,29 @@
  */
 
 .external-action-config {
+  &__intro {
+    margin-block-end: var(--cds-spacing-06);
+  }
+
+  &__hint {
+    margin-block-start: var(--cds-spacing-03);
+    font-size: var(--cds-helper-text-01-font-size);
+    line-height: var(--cds-helper-text-01-line-height);
+    letter-spacing: var(--cds-helper-text-01-letter-spacing);
+    color: var(--cds-text-helper);
+  }
+
+  &__expression {
+    margin-inline-start: var(--cds-spacing-02);
+    padding: 0 var(--cds-spacing-02);
+    font-family: var(--cds-code-01-font-family, monospace);
+    font-size: var(--cds-code-01-font-size);
+    color: var(--cds-text-primary);
+    background-color: var(--cds-layer-accent-01);
+    // No Carbon token for a chip radius; 2px matches Carbon's inline code snippet.
+    border-radius: 2px;
+  }
+
   .cds--text-area {
     font-family: monospace;
     width: 100%;

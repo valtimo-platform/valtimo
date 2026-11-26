@@ -15,3 +15,6 @@
  */
 
 export * from './external-plugin-data-url.utils';
+export * from './external-plugin-config-form.utils';
+export * from './external-plugin-config-form-validators.utils';
+export * from './external-plugin-egress-origin.utils';

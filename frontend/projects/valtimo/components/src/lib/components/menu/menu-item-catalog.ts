@@ -286,14 +286,6 @@ const MENU_ITEM_CATALOG: MenuItemCatalogEntry[] = [
     category: 'admin',
   },
   {
-    itemId: 'taskManagement',
-    defaultTitleKey: 'Tasks (legacy)',
-    link: '/task-management',
-    roles: [ROLE_ADMIN],
-    placement: 'admin',
-    category: 'admin',
-  },
-  {
     itemId: 'notificationTest',
     defaultTitleKey: 'Send notification',
     link: '/notification-test',

@@ -291,6 +291,18 @@ describe("validatePluginManifest", () => {
       );
     });
 
+    it("rejects endpoints declared without any capability list", () => {
+      // The demo app once shipped exactly this: endpoints, no `capabilities` key, and an
+      // acceptance screen that never mentioned gzac_api.
+      expect(
+        validatePluginManifest(
+          withPermissions({ endpoints: [{ method: "GET", pattern: "/api/v1/document/*" }] })
+        )
+      ).toContain(
+        "manifest.json declares 'permissions.endpoints' but does not include 'gzac_api' in 'permissions.capabilities' — endpoints require the gzac_api capability"
+      );
+    });
+
     it("accepts endpoints alongside the gzac_api capability", () => {
       expect(
         validatePluginManifest(
@@ -298,15 +310,6 @@ describe("validatePluginManifest", () => {
             capabilities: ["gzac_api"],
             endpoints: [{ method: "GET", pattern: "/api/v1/document/*" }],
           })
-        )
-      ).toEqual([]);
-    });
-
-    it("does not require the gzac_api pairing when no capability list is declared at all", () => {
-      // An older manifest without a capabilities block cannot be judged against it.
-      expect(
-        validatePluginManifest(
-          withPermissions({ endpoints: [{ method: "GET", pattern: "/api/v1/document/*" }] })
         )
       ).toEqual([]);
     });
@@ -357,8 +360,11 @@ describe("validatePluginManifest", () => {
         expect(validatePluginManifest(withEgress([], ["kv"]))).toEqual([]);
       });
 
-      it("does not require the pairing when no capability list is declared at all", () => {
-        expect(validatePluginManifest(withPermissions({ egress: ["api.kvk.nl"] }))).toEqual([]);
+      it("requires the pairing even when no capability list is declared at all", () => {
+        // An absent list grants nothing, so the destination is just as unreachable.
+        expect(validatePluginManifest(withPermissions({ egress: ["api.kvk.nl"] }))).toContain(
+          "manifest.json declares 'permissions.egress' but does not include 'http_request' in 'permissions.capabilities' — egress targets require the http_request capability"
+        );
       });
 
       it("reports the index of each bad entry", () => {
