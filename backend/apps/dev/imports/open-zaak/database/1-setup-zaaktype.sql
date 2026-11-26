@@ -55,7 +55,8 @@ INSERT INTO catalogi_eigenschap(id, toelichting, uuid, eigenschapnaam, definitie
 INSERT INTO catalogi_eigenschap(id, toelichting, uuid, eigenschapnaam, definitie, specificatie_van_eigenschap_id, zaaktype_id, _etag) VALUES (19, '', uuid_generate_v4(), 'aanvraagAanvulInfo', 'aanvraagAanvulInfo', 1, 1, '_etag');
 INSERT INTO catalogi_eigenschap(id, toelichting, uuid, eigenschapnaam, definitie, specificatie_van_eigenschap_id, zaaktype_id, _etag) VALUES (20, '', uuid_generate_v4(), 'aanvullendeInfo', 'aanvullendeInfo', 1, 1, '_etag');
 INSERT INTO catalogi_eigenschap(id, toelichting, uuid, eigenschapnaam, definitie, specificatie_van_eigenschap_id, zaaktype_id, _etag) VALUES (21, '', uuid_generate_v4(), 'naamBeslisser', 'naamBeslisser', 1, 1, '_etag');
-SELECT setval(pg_get_serial_sequence('catalogi_eigenschap', 'id'), 21, true);
+INSERT INTO catalogi_eigenschap(id, toelichting, uuid, eigenschapnaam, definitie, specificatie_van_eigenschap_id, zaaktype_id, _etag) VALUES (22, 'testje met naam eigenschap', uuid_generate_v4(), 'eigenschapnaam', 'Naam van een eigenschap', 1, 1, '_etag');
+SELECT setval(pg_get_serial_sequence('catalogi_eigenschap', 'id'), 22, true);
 
 INSERT INTO catalogi_roltype(id, uuid, omschrijving, omschrijving_generiek, zaaktype_id, _etag) VALUES (1, '1c359a1b-c38d-47b8-bed5-994db88ead61', 'Aanvrager', 'initiator', 1, '_etag');
 INSERT INTO catalogi_roltype(id, uuid, omschrijving, omschrijving_generiek, zaaktype_id, _etag) VALUES (2, '7c8f7b09-1fc6-4f14-ad55-2c6e1a2ab8b4', 'Behandelaar', 'behandelaar', 1, '_etag');
