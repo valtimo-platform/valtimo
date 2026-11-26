@@ -1,0 +1,16 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : [ {
+    "id" : "<uuid>",
+    "title" : "golden-config",
+    "properties" : {
+      "property2" : "my-normal-property"
+    },
+    "pluginDefinition" : {
+      "key" : "test-plugin",
+      "title" : "Test plugin",
+      "description" : "This is a test plugin used to verify plugin framework functionality"
+    }
+  } ]
+}

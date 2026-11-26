@@ -1,0 +1,29 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : [ {
+    "key" : "child-override-test-action",
+    "title" : "Override test action",
+    "description" : "This is an action used to test method inheritance"
+  }, {
+    "key" : "parent-test-action",
+    "title" : "Parent test action",
+    "description" : "This is an action used to test method inheritance"
+  }, {
+    "key" : "test-action",
+    "title" : "Test action",
+    "description" : "This is an action used to verify plugin framework functionality"
+  }, {
+    "key" : "other-test-action",
+    "title" : "Test action 2",
+    "description" : "This is an action used to test method overloading"
+  }, {
+    "key" : "test-action-task",
+    "title" : "Test action task",
+    "description" : "This is an action used to verify plugin framework functionality"
+  }, {
+    "key" : "test-action-with-uri-parameter",
+    "title" : "Test action with uri parameter",
+    "description" : "This is an action used to test having an uri as a parameter"
+  } ]
+}

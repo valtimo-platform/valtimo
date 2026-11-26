@@ -1,0 +1,17 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : [ {
+    "key" : "auto-deployment-test-plugin",
+    "title" : "Auto deployment Test plugin",
+    "description" : "This is a test plugin used to verify plugin auto deployment functionality"
+  }, {
+    "key" : "test-category-plugin",
+    "title" : "Test category plugin",
+    "description" : "This is a test plugin used to verify category plugin framework functionality"
+  }, {
+    "key" : "test-plugin",
+    "title" : "Test plugin",
+    "description" : "This is a test plugin used to verify plugin framework functionality"
+  } ]
+}
