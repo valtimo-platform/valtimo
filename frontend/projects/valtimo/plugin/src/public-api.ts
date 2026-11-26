@@ -106,6 +106,7 @@ export * from './lib/plugins/zaken-api/components/end-hersteltermijn/end-herstel
 export * from './lib/plugins/zaken-api/components/create-zaakeigenschap/create-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/update-zaakeigenschap/update-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+export * from './lib/plugins/zaken-api/components/get-zaakeigenschappen/get-zaakeigenschappen.component';
 export * from './lib/plugins/zaken-api/components/create-zaak-object/create-zaak-object-configuration.component';
 export * from './lib/plugins/zaken-api/components/relateer-zaken/relateer-zaken.component';
 export * from './lib/plugins/zaken-api/components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
@@ -129,6 +130,7 @@ export * from './lib/plugins/catalogi-api/components/get-resultaattype/get-resul
 export * from './lib/plugins/catalogi-api/components/get-statustypen/get-statustypen-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-statustype/get-statustype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-eigenschap/get-eigenschap-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-eigenschappen-from-zaaktype/get-eigenschappen-from-zaaktype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-informatieobjecttype/get-informatieobjecttype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-informatieobjecttypen/get-informatieobjecttypen-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-roltypen/get-roltypen-configuration.component';
