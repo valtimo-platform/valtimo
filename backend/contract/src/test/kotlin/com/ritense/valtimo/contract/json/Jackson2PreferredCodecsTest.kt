@@ -28,7 +28,9 @@ import org.springframework.boot.jackson2.autoconfigure.Jackson2AutoConfiguration
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.core.ResolvableType
 import org.springframework.http.MediaType
+import org.springframework.http.codec.DecoderHttpMessageReader
 import org.springframework.http.codec.EncoderHttpMessageWriter
+import org.springframework.http.codec.json.Jackson2JsonDecoder
 import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.http.codec.ClientCodecConfigurer
 import kotlin.test.assertIs
@@ -61,6 +63,21 @@ class Jackson2PreferredCodecsTest {
 
             assertIs<Jackson2JsonEncoder>(encoder)
             assertSame(context.getBean(ObjectMapper::class.java), encoder.objectMapper)
+        }
+    }
+
+    @Test
+    fun `should decode WebClient JSON with the Jackson 2 object mapper`() {
+        contextRunner.run { context ->
+            val configurer = ClientCodecConfigurer.create()
+            context.getBeanProvider(CodecCustomizer::class.java).orderedStream().forEach { it.customize(configurer) }
+
+            val jsonReader = configurer.readers
+                .first { it.canRead(ResolvableType.forClass(ObjectNode::class.java), MediaType.APPLICATION_JSON) }
+            val decoder = assertIs<DecoderHttpMessageReader<*>>(jsonReader).decoder
+
+            assertIs<Jackson2JsonDecoder>(decoder)
+            assertSame(context.getBean(ObjectMapper::class.java), decoder.objectMapper)
         }
     }
 }

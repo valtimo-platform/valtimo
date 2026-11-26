@@ -1,2 +1,4 @@
 org.springframework.boot.EnvironmentPostProcessor=\
   com.ritense.valtimo.contract.json.Jackson2PreferredEnvironmentPostProcessor
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+  com.ritense.valtimo.contract.json.JacksonPropertiesFailureAnalyzer
