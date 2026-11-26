@@ -1,0 +1,25 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : {
+    "id" : "<uuid>",
+    "businessKey" : "<uuid>",
+    "processDefinitionId" : "single-user-task-process:1:<uuid>",
+    "processDefinitionKey" : "single-user-task-process",
+    "processDefinitionName" : "Single user task process",
+    "processDefinitionVersion" : 1,
+    "startTime" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>",
+    "endTime" : null,
+    "removalTime" : null,
+    "durationInMillis" : null,
+    "startUserId" : null,
+    "startActivityId" : "start-event",
+    "deleteReason" : null,
+    "rootProcessInstanceId" : "<uuid>",
+    "superProcessInstanceId" : null,
+    "superCaseInstanceId" : null,
+    "caseInstanceId" : null,
+    "tenantId" : null,
+    "state" : "ACTIVE"
+  }
+}

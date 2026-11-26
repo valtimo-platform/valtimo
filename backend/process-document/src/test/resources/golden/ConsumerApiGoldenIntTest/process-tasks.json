@@ -1,0 +1,38 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : [ {
+    "businessKey" : "<uuid>",
+    "id" : "<uuid>",
+    "name" : "My user task",
+    "assignee" : null,
+    "created" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>",
+    "due" : null,
+    "followUp" : null,
+    "lastUpdated" : null,
+    "delegationState" : "null",
+    "description" : null,
+    "executionId" : "<uuid>",
+    "owner" : null,
+    "parentTaskId" : null,
+    "priority" : 50,
+    "processDefinitionId" : "single-user-task-process:1:<uuid>",
+    "processInstanceId" : "<uuid>",
+    "taskDefinitionKey" : "my-user-task",
+    "caseExecutionId" : null,
+    "caseInstanceId" : null,
+    "caseDefinitionId" : null,
+    "suspended" : false,
+    "tenantId" : null,
+    "assignedTeam" : null,
+    "valtimoAssignee" : null,
+    "external" : false,
+    "processDefinitionKey" : "single-user-task-process",
+    "identityLinks" : [ {
+      "userId" : null,
+      "groupId" : "ROLE_USER",
+      "type" : "candidate"
+    } ],
+    "subtitles" : null
+  } ]
+}

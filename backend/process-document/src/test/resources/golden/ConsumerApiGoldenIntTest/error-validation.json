@@ -1,0 +1,13 @@
+{
+  "status" : 400,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/constraint-violation",
+    "title" : "Method argument not valid",
+    "status" : 400,
+    "path" : "/api/v3/task",
+    "message" : "error.validation",
+    "errors" : [ "taskListSearchDto.caseDefinitionKey: size must be between 0 and 256" ],
+    "referenceId" : "<uuid>"
+  }
+}

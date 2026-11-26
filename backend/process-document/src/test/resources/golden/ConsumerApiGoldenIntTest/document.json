@@ -1,0 +1,31 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : {
+    "id" : "<uuid>",
+    "version" : 0,
+    "createdOn" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>",
+    "modifiedOn" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>",
+    "createdBy" : "user@ritense.com",
+    "sequence" : "<ignored:number>",
+    "retentionDate" : null,
+    "internalStatus" : null,
+    "caseTags" : [ ],
+    "assigneeId" : null,
+    "assigneeFullName" : null,
+    "assignedTeamKey" : null,
+    "assignedTeamTitle" : null,
+    "relatedFiles" : [ ],
+    "definitionId" : {
+      "name" : "house",
+      "blueprintId" : {
+        "blueprintType" : "CASE",
+        "blueprintKey" : "house",
+        "blueprintVersionTag" : "1.0.0",
+        "isBuildingBlock" : false,
+        "isCase" : true
+      }
+    },
+    "relations" : [ ]
+  }
+}

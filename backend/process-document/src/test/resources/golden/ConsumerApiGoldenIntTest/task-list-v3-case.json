@@ -1,0 +1,40 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : {
+    "content" : [ {
+      "id" : "<uuid>",
+      "businessKey" : "<uuid>",
+      "processInstanceId" : "<uuid>",
+      "name" : "My user task",
+      "created" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>",
+      "items" : [ {
+        "key" : "createTime",
+        "value" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>"
+      }, {
+        "key" : "name",
+        "value" : "My user task"
+      }, {
+        "key" : "assignee",
+        "value" : null
+      }, {
+        "key" : "dueDate",
+        "value" : null
+      } ],
+      "isOpened" : true
+    } ],
+    "first" : true,
+    "last" : true,
+    "totalPages" : 1,
+    "totalElements" : 1,
+    "numberOfElements" : 1,
+    "size" : 20,
+    "number" : 0,
+    "sort" : [ {
+      "property" : "task:createTime",
+      "direction" : "ASC",
+      "ignoreCase" : false,
+      "nullHandling" : "NATIVE"
+    } ]
+  }
+}

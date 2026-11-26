@@ -1,0 +1,43 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : {
+    "task" : {
+      "id" : "<uuid>",
+      "name" : "My user task",
+      "assignee" : null,
+      "created" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>",
+      "due" : null,
+      "followUp" : null,
+      "lastUpdated" : null,
+      "delegationState" : "null",
+      "description" : null,
+      "executionId" : "<uuid>",
+      "owner" : null,
+      "parentTaskId" : null,
+      "priority" : 50,
+      "processDefinitionId" : "single-user-task-process:1:<uuid>",
+      "processInstanceId" : "<uuid>",
+      "taskDefinitionKey" : "my-user-task",
+      "caseExecutionId" : null,
+      "caseInstanceId" : null,
+      "caseDefinitionId" : null,
+      "suspended" : false,
+      "tenantId" : null,
+      "assignedTeam" : null,
+      "valtimoAssignee" : null
+    },
+    "formFields" : [ ],
+    "variables" : {
+      "approved" : true,
+      "amount" : 12.5,
+      "VTM_callDepth" : 0,
+      "context" : "Amsterdam"
+    },
+    "formLocation" : null,
+    "processName" : "Single user task process",
+    "processKey" : "single-user-task-process",
+    "processVersion" : "1",
+    "businessKey" : "<uuid>"
+  }
+}

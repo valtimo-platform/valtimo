@@ -1,0 +1,49 @@
+{
+  "status" : 200,
+  "contentType" : "application/json;charset=UTF-8",
+  "body" : {
+    "content" : [ {
+      "id" : "<uuid>",
+      "businessKey" : "<uuid>",
+      "startTime" : "<date:dddd-dd-ddTdd:dd:dd.dddZ>",
+      "endTime" : null,
+      "processDefinitionKey" : "single-user-task-process",
+      "startUserId" : null,
+      "deleteReason" : null,
+      "variables" : [ {
+        "id" : "<uuid>",
+        "type" : "boolean",
+        "name" : "approved",
+        "longValue" : 1,
+        "local" : false
+      }, {
+        "id" : "<uuid>",
+        "type" : "double",
+        "name" : "amount",
+        "doubleValue" : 12.5,
+        "local" : false
+      }, {
+        "id" : "<uuid>",
+        "type" : "integer",
+        "name" : "VTM_callDepth",
+        "textValue" : "0",
+        "longValue" : 0,
+        "local" : false
+      }, {
+        "id" : "<uuid>",
+        "type" : "string",
+        "name" : "context",
+        "textValue" : "Amsterdam",
+        "local" : false
+      } ]
+    } ],
+    "first" : true,
+    "last" : true,
+    "totalPages" : 1,
+    "totalElements" : 1,
+    "numberOfElements" : 1,
+    "size" : 20,
+    "number" : 0,
+    "sort" : [ ]
+  }
+}

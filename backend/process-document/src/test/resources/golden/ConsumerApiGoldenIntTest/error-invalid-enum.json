@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "contentType" : "application/problem+json",
+  "body" : {
+    "type" : "/problem-with-message",
+    "title" : "Bad Request",
+    "status" : 400,
+    "path" : "/api/v2/task",
+    "message" : "error.http.400",
+    "referenceId" : "<uuid>"
+  }
+}
