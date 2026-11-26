@@ -95,7 +95,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
       'get-all-zaaktype-eigenschappen-from-zaaktype': 'Eigenschappen van zaaktype opvragen',
       getEigenschappenFromZaaktypeInformation:
-        'De eigenschappen van het zaaktype van de zaak worden opgehaald en daarna opgeslagen in een procesvariabele.',
+        'Eén pagina met eigenschappen van het zaaktype van de zaak wordt opgehaald en daarna opgeslagen in een procesvariabele.',
       zaaktypeIdentificatie: 'Zaaktype identificatie',
       zaaktypeIdentificatieTooltip:
         'Optioneel: filter op de unieke identificatie van het zaaktype binnen de catalogus.',
@@ -106,6 +106,8 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Optioneel: filter op publicatiestatus. Standaard worden alleen definitieve eigenschappen opgehaald.',
       pageSize: 'Paginagrootte',
       pageSizeTooltip: 'Optioneel: het aantal resultaten per pagina (standaard: 100).',
+      page: 'Paginanummer',
+      pageTooltip: 'Optioneel: het paginanummer dat moet worden opgehaald (standaard: 1).',
       zaaktypeUrl: 'Zaaktype URL',
       zaaktypeUrlTooltip:
         'Voer hier de URL van het betreffende zaaktype in als dit afwijkt van het zaaktype van de zaak die aan het dossier is gekoppeld',
@@ -173,7 +175,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'After the eigenschap is retrieved, it is stored in a process variable with this name.',
       'get-all-zaaktype-eigenschappen-from-zaaktype': 'Retrieve eigenschappen from zaaktype',
       getEigenschappenFromZaaktypeInformation:
-        'The eigenschappen of the zaaktype of the zaak are retrieved and then stored in a process variable.',
+        'A single page of eigenschappen of the zaaktype of the zaak is retrieved and then stored in a process variable.',
       zaaktypeIdentificatie: 'Zaaktype identification',
       zaaktypeIdentificatieTooltip:
         'Optional: filter on the unique identification of the zaaktype within the catalogue.',
@@ -184,6 +186,8 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Optional: filter on publication status. By default, only definitive eigenschappen are retrieved.',
       pageSize: 'Page size',
       pageSizeTooltip: 'Optional: the number of results per page (default: 100).',
+      page: 'Page number',
+      pageTooltip: 'Optional: the page number to retrieve (default: 1).',
       zaaktypeUrl: 'Zaaktype URL',
       zaaktypeUrlTooltip:
         'Specify the URL of the relevant Zaaktype here if it differs from the Zaak linked to the Case',

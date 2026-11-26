@@ -67,6 +67,7 @@ interface GetEigenschappenFromZaaktypeConfig {
   datumGeldigheid?: string;
   status?: string;
   pageSize?: number;
+  page?: number;
 }
 
 interface GetInformatieobjecttypeConfig {

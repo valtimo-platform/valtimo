@@ -87,5 +87,18 @@
       [fullWidth]="true"
     >
     </v-input>
+
+    <v-input
+      name="page"
+      [min]="1"
+      [title]="'page' | pluginTranslate: pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.page"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [tooltip]="'pageTooltip' | pluginTranslate: pluginId | async"
+      [fullWidth]="true"
+    >
+    </v-input>
   </v-form>
 </ng-container>

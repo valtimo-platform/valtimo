@@ -251,7 +251,7 @@ class CatalogiApiPlugin(
     @PluginAction(
         key = "get-all-zaaktype-eigenschappen-from-zaaktype",
         title = "Get Eigenschappen from zaaktype",
-        description = "Retrieve all eigenschappen from zaaktype and save these in a process variable",
+        description = "Retrieve a single page of eigenschappen from zaaktype and save these in a process variable",
         activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START, ActivityTypeWithEventName.CALL_ACTIVITY_START]
     )
     fun getEigenschappenFromZaaktype(
@@ -261,19 +261,25 @@ class CatalogiApiPlugin(
         @PluginActionProperty datumGeldigheid: LocalDate? = null,
         @PluginActionProperty status: String? = null,
         @PluginActionProperty pageSize: Int? = null,
+        @PluginActionProperty page: Int? = null,
     ) {
         val zaaktypeUrl = getZaaktypeUrl(execution)
         logger.debug { "Retrieving eigenschappen and storing these in process variable: $processVariable" }
         withLoggingContext(
             CATALOGI_API.EIGENSCHAP to zaaktypeUrl.toString()
         ) {
-            getAllEigenschappen(
-                zaaktype = zaaktypeUrl,
-                zaaktypeIdentificatie = zaaktypeIdentificatie,
-                datumGeldigheid = datumGeldigheid,
-                status = status?.let { ZaakTypePublishedStatus.valueOf(it.uppercase()) },
-                pageSize = pageSize,
-            ).map { eigenschap ->
+            client.getEigenschappen(
+                authenticationPluginConfiguration,
+                url,
+                EigenschapRequest(
+                    zaaktype = zaaktypeUrl,
+                    zaaktypeIdentificatie = zaaktypeIdentificatie,
+                    datumGeldigheid = datumGeldigheid,
+                    status = status?.let { ZaakTypePublishedStatus.valueOf(it.uppercase()) },
+                    pageSize = pageSize,
+                    page = page,
+                )
+            ).results.map { eigenschap ->
                 eigenschapToMap(eigenschap)
             }.let { eigenschappen ->
                 execution.setVariable(processVariable, eigenschappen)
@@ -650,32 +656,6 @@ class CatalogiApiPlugin(
                     url,
                     EigenschapRequest(
                         zaaktype = zaakTypeUrl,
-                        page = page
-                    )
-                )
-            }
-        }
-    }
-
-    private fun getAllEigenschappen(
-        zaaktype: URI? = null,
-        zaaktypeIdentificatie: String? = null,
-        datumGeldigheid: LocalDate? = null,
-        status: ZaakTypePublishedStatus? = null,
-        pageSize: Int? = null,
-    ): List<Eigenschap> {
-        withLoggingContext(CATALOGI_API.EIGENSCHAP to (zaaktype?.toString() ?: "all")) {
-            return Page.getAll { page ->
-                logger.debug { "Getting page $page of eigenschappen" }
-                client.getEigenschappen(
-                    authenticationPluginConfiguration,
-                    url,
-                    EigenschapRequest(
-                        zaaktype = zaaktype,
-                        zaaktypeIdentificatie = zaaktypeIdentificatie,
-                        datumGeldigheid = datumGeldigheid,
-                        status = status,
-                        pageSize = pageSize,
                         page = page
                     )
                 )

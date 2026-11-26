@@ -1058,7 +1058,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
                         datumGeldigheid = datumGeldigheid,
                         status = ZaakTypePublishedStatus.CONCEPT,
                         pageSize = 50,
-                        page = 1
+                        page = 2
                     )
                 )
             )
@@ -1085,7 +1085,8 @@ internal class CatalogiApiPluginTest : BaseTest() {
             zaaktypeIdentificatie = "ZAAKTYPE-1",
             datumGeldigheid = datumGeldigheid,
             status = "concept",
-            pageSize = 50
+            pageSize = 50,
+            page = 2
         )
 
         // then
@@ -1125,7 +1126,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
             client.getEigenschappen(
                 eq(plugin.authenticationPluginConfiguration),
                 eq(plugin.url),
-                eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI(), page = 1))
+                eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI()))
             )
         ).thenReturn(
             Page(
@@ -1151,7 +1152,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
 
         // then
         verify(client, times(1)).getEigenschappen(
-            any(), any(), eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI(), page = 1))
+            any(), any(), eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI()))
         )
         verify(execution, times(1)).setVariable(
             eq(processVariable),
@@ -1175,7 +1176,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
     }
 
     @Test
-    fun `should get eigenschappen with multiple pages`() {
+    fun `should only get a single page of eigenschappen even when a next page is available`() {
         // given
         val processVariable = "eigenschappenProcessVar"
         val zaaktypeUrl = zaaktypeUrl()
@@ -1186,7 +1187,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
         mockDocumentService(documentId, document)
         mockZaakTypeUrlProvider(zaaktypeUrl.toURI())
         whenever(
-            client.getEigenschappen(any(), any(), eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI(), page = 1)))
+            client.getEigenschappen(any(), any(), eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI())))
         ).thenReturn(
             Page(
                 count = 2,
@@ -1203,23 +1204,6 @@ internal class CatalogiApiPluginTest : BaseTest() {
                 )
             )
         )
-        whenever(
-            client.getEigenschappen(any(), any(), eq(EigenschapRequest(zaaktype = zaaktypeUrl.toURI(), page = 2)))
-        ).thenReturn(
-            Page(
-                count = 2,
-                results = listOf(
-                    Eigenschap(
-                        eigenschapUrl("2").toURI(),
-                        "second eigenschap",
-                        "second",
-                        Specificatie(null, "tekst", "lengte", "1:N", null),
-                        null,
-                        zaaktypeUrl.toURI()
-                    )
-                )
-            )
-        )
 
         // when
         plugin.getEigenschappenFromZaaktype(
@@ -1228,6 +1212,7 @@ internal class CatalogiApiPluginTest : BaseTest() {
         )
 
         // then
+        verify(client, times(1)).getEigenschappen(any(), any(), any())
         verify(execution, times(1)).setVariable(
             eq(processVariable),
             eq(
@@ -1236,18 +1221,6 @@ internal class CatalogiApiPluginTest : BaseTest() {
                         "url" to eigenschapUrl("1"),
                         "name" to "first eigenschap",
                         "definitie" to "first",
-                        "toelichting" to null,
-                        "zaaktype" to zaaktypeUrl,
-                        "groep" to null,
-                        "formaat" to "tekst",
-                        "lengte" to "lengte",
-                        "kardinaliteit" to "1:N",
-                        "waardenverzameling" to null
-                    ),
-                    mapOf(
-                        "url" to eigenschapUrl("2"),
-                        "name" to "second eigenschap",
-                        "definitie" to "second",
                         "toelichting" to null,
                         "zaaktype" to zaaktypeUrl,
                         "groep" to null,
