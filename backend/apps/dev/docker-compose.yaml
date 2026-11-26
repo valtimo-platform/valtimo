@@ -203,9 +203,8 @@ services:
     # Epistola Document Suite (document generation, used by the Epistola plugin)
     # The demo profile seeds tenant "demo" with API key epk_demo_000000000000000000000000000000000000.
     epistola:
-        image: ghcr.io/epistola-app/epistola-suite:1.5.1-demo
+        image: ghcr.io/epistola-app/epistola-suite:2.1.0-demo
         container_name: gzac-docker-compose-epistola
-        platform: linux/amd64
         # A fixed budget for the image's JVM memory calculator, which otherwise sizes from what the
         # (crowded) Docker VM has left and refuses to start when that is too little.
         mem_limit: 1200m
@@ -214,6 +213,9 @@ services:
         environment:
             BPL_JVM_THREAD_COUNT: "100"
             SPRING_PROFILES_ACTIVE: demo,localauth
+            # Suite 2.x refuses localauth with its shipped passwords (admin/user)
+            LOCAL_AUTH_ADMIN_PASSWORD: local-dev-admin
+            LOCAL_AUTH_USER_PASSWORD: local-dev-user
             SPRING_DATASOURCE_URL: jdbc:postgresql://epistola-database:5432/epistola
             SPRING_DATASOURCE_USERNAME: epistola
             SPRING_DATASOURCE_PASSWORD: password
