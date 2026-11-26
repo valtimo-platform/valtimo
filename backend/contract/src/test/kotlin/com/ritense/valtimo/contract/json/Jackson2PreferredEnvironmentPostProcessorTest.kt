@@ -20,7 +20,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.boot.SpringApplication
 import org.springframework.core.env.MapPropertySource
 import org.springframework.mock.env.MockEnvironment
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class Jackson2PreferredEnvironmentPostProcessorTest {
 
@@ -45,15 +47,29 @@ class Jackson2PreferredEnvironmentPostProcessorTest {
     }
 
     @Test
-    fun `should not override explicitly configured preferred json mapper`() {
+    fun `should accept an explicitly configured jackson2 json mapper`() {
+        val environment = MockEnvironment()
+        environment.propertySources.addFirst(
+            MapPropertySource("explicit", mapOf(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_MAPPER to "jackson2"))
+        )
+
+        processor.postProcessEnvironment(environment, SpringApplication())
+
+        assertEquals("jackson2", environment.getProperty(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_MAPPER))
+    }
+
+    @Test
+    fun `should refuse to start with another preferred json mapper`() {
         val environment = MockEnvironment()
         environment.propertySources.addFirst(
             MapPropertySource("explicit", mapOf(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_MAPPER to "jackson"))
         )
 
-        processor.postProcessEnvironment(environment, SpringApplication())
+        val exception = assertFailsWith<IllegalStateException> {
+            processor.postProcessEnvironment(environment, SpringApplication())
+        }
 
-        assertEquals("jackson", environment.getProperty(Jackson2PreferredEnvironmentPostProcessor.PREFERRED_JSON_MAPPER))
+        assertContains(exception.message.orEmpty(), "requires 'jackson2'")
     }
 
     @Test

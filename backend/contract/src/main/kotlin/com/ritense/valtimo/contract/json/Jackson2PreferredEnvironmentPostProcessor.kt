@@ -25,6 +25,9 @@ import org.springframework.core.env.MapPropertySource
 /**
  * Valtimo serializes with Jackson 2. Spring Boot 4 prefers Jackson 3 for HTTP message converters and
  * WebClient codecs unless told otherwise, so this registers `jackson2` as the lowest-precedence default for both.
+ *
+ * The HTTP message converters must stay on `jackson2`: error responses rely on Zalando's Jackson 2 problem module,
+ * and without it they would include stack traces.
  */
 class Jackson2PreferredEnvironmentPostProcessor : EnvironmentPostProcessor {
 
@@ -39,6 +42,11 @@ class Jackson2PreferredEnvironmentPostProcessor : EnvironmentPostProcessor {
                     )
                 )
             )
+        }
+        val preferredJsonMapper = environment.getProperty(PREFERRED_JSON_MAPPER)
+        check(preferredJsonMapper == "jackson2") {
+            "$PREFERRED_JSON_MAPPER is '$preferredJsonMapper', but Valtimo requires 'jackson2'. Error responses " +
+                "need Valtimo's Jackson 2 mapper to hide stack traces. Remove the property or set it to 'jackson2'."
         }
     }
 
