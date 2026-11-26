@@ -20,11 +20,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.ByteArrayInputStream
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.zip.ZipInputStream
 
 /**
  * Compares a zip against golden files: one for the sorted list of entry names, one per entry. JSON entries go through
- * [GoldenJson]; other entries are compared as text with normalised line endings.
+ * [GoldenJson]; other entries are compared as text with normalised line endings. Recording also keeps the zip itself,
+ * so later builds can import what the baseline exported.
  */
 object GoldenZip {
 
@@ -37,7 +39,13 @@ object GoldenZip {
         name: String,
         zip: ByteArray,
         ignorePaths: Map<String, Collection<String>> = emptyMap(),
+        unorderedPaths: Map<String, Collection<String>> = emptyMap(),
     ) {
+        if (GoldenJson.isUpdateMode() && !GoldenJson.isMysql()) {
+            val file = recordedZip(testClass, name)
+            Files.createDirectories(file.parent)
+            Files.write(file, zip)
+        }
         val entries = readEntries(zip)
         GoldenJson.assertMatchesGolden(testClass, "$name/entries", mapper.writeValueAsString(entries.keys.toList()))
         entries.forEach { (entryName, content) ->
@@ -46,13 +54,17 @@ object GoldenZip {
                     testClass,
                     "$name/${entryName.removeSuffix(".json")}",
                     content,
-                    ignorePaths[entryName] ?: emptyList()
+                    ignorePaths[entryName] ?: emptyList(),
+                    unorderedPaths[entryName] ?: emptyList(),
                 )
             } else {
                 assertMatchesGoldenText(testClass, "$name/$entryName", content)
             }
         }
     }
+
+    @JvmStatic
+    fun recordedZip(testClass: Class<*>, name: String): Path = GoldenJson.goldenFile(testClass, name, ".zip")
 
     @JvmStatic
     fun assertMatchesGoldenText(testClass: Class<*>, name: String, actualText: String) {
