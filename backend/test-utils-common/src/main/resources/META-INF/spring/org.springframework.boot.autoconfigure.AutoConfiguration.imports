@@ -14,3 +14,4 @@
 # limitations under the License.
 #
 com.ritense.valtimo.GenericValtimoTestAutoConfiguration
+com.ritense.valtimo.test.golden.OutboxEventRecorderAutoConfiguration

@@ -19,6 +19,9 @@ dependencies {
     compileOnly(project(":backend:core")) {
         exclude(group: "com.ritense.valtimo", module: "authorization")
     }
+    compileOnly project(":backend:outbox")
+    compileOnly "io.cloudevents:cloudevents-core:$cloudEventsCoreVersion"
+    compileOnly "io.cloudevents:cloudevents-json-jackson:$cloudEventsCoreVersion"
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
