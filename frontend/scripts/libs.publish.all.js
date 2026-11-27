@@ -63,6 +63,39 @@ switch (destinationArg) {
     exit(1);
 }
 
+// No node_modules in the publish job, so no semver package
+function parseVersion(version) {
+  const [core, prerelease] = version.split('-', 2);
+  return {parts: core.split('.').map(Number), prerelease};
+}
+
+function isLowerThan(version, other) {
+  const a = parseVersion(version);
+  const b = parseVersion(other);
+  for (let i = 0; i < 3; i++) {
+    if (a.parts[i] !== b.parts[i]) return a.parts[i] < b.parts[i];
+  }
+  return !!a.prerelease && !b.prerelease;
+}
+
+// Older-line patch must not move 'latest' back; npm 11 refuses it anyway
+function determineDistTag(pkg) {
+  let currentLatest;
+  try {
+    currentLatest = exec
+      .execSync(`npm view ${pkg.name} dist-tags.latest --quiet`, {
+        stdio: ['pipe', 'pipe', 'ignore'],
+      })
+      .toString()
+      .trim();
+  } catch (e) {
+    return 'latest';
+  }
+  if (!currentLatest || !isLowerThan(pkg.version, currentLatest)) return 'latest';
+  const [major, minor] = parseVersion(pkg.version).parts;
+  return `release-${major}.${minor}`;
+}
+
 const distDir = './dist/valtimo';
 fs.readdirSync(distDir).forEach(dir => {
   let cwd = process.cwd();
@@ -96,7 +129,9 @@ fs.readdirSync(distDir).forEach(dir => {
     if (alreadyPublished) {
       console.warn(`::warning ::Skipping ${pkg.name}@${pkg.version} as it is already published.`);
     } else {
-      exec.execSync('npm publish' + accessModifier);
+      const tag = determineDistTag(pkg);
+      console.log(`Publishing ${pkg.name}@${pkg.version} under dist-tag '${tag}'`);
+      exec.execSync(`npm publish${accessModifier} --tag ${tag}`, {stdio: 'inherit'});
     }
   }
   if (destinationRegistry === 's3') {
