@@ -74,7 +74,7 @@ class EndpointDescriptionCoverageTest {
     }
 
     /**
-     * Scans the classpath for all controller classes under `com.ritense` and returns every handler
+     * Scans the classpath for all production controller classes under `com.ritense` and returns every handler
      * method (a method carrying a Spring request-mapping annotation) paired with its controller's
      * simple name.
      */
@@ -87,6 +87,7 @@ class EndpointDescriptionCoverageTest {
 
         val endpoints = mutableListOf<Pair<String, Method>>()
         for (resource in resources) {
+            if (isTestClass(resource.url.path)) continue
             val clazz = try {
                 val className = readerFactory.getMetadataReader(resource).classMetadata.className
                 Class.forName(className, false, classLoader)
@@ -105,6 +106,9 @@ class EndpointDescriptionCoverageTest {
         }
         return endpoints
     }
+
+    private fun isTestClass(path: String): Boolean =
+        path.contains("/classes/kotlin/test/") || path.contains("/classes/java/test/")
 
     private fun isController(clazz: Class<*>): Boolean =
         clazz.annotations.any {

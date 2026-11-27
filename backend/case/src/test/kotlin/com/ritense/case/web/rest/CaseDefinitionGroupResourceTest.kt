@@ -125,12 +125,8 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
         whenever(groupCaseInstanceService.getAccessibleGroup("unknown"))
             .thenThrow(CaseDefinitionGroupNotFoundException("unknown"))
 
-        val exception = org.junit.jupiter.api.assertThrows<jakarta.servlet.ServletException> {
-            mockMvc.perform(get("/api/v1/case-definition-group/{groupKey}", "unknown"))
-        }
-
-        val cause = exception.cause as CaseDefinitionGroupNotFoundException
-        org.junit.jupiter.api.Assertions.assertEquals(org.springframework.http.HttpStatus.NOT_FOUND, cause.statusCode)
+        mockMvc.perform(get("/api/v1/case-definition-group/{groupKey}", "unknown"))
+            .andExpect(status().isNotFound)
 
         verify(groupCaseInstanceService).getAccessibleGroup("unknown")
     }
