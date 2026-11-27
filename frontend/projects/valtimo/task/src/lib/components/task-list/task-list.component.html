@@ -31,7 +31,7 @@
     loadingSearchFields: loadingSearchFields$ | async,
     caseDefinitionKey: caseDefinitionKey$ | async,
     noResultsMessage: noResultsMessage$ | async,
-    manualRefresh: manualRefresh$ | async,
+    autoRefresh: autoRefresh$ | async,
   } as obs"
   class="main-content"
 >
@@ -149,16 +149,27 @@
     </div>
 
     <div carbonToolbarContent class="valtimo-task-list__toolbar-content">
-      <button
-        *ngIf="obs.manualRefresh"
-        cdsButton="ghost"
-        (click)="onRefreshTasksClick()"
-        [attr.data-test-id]="testIds.refreshTasksButton"
-      >
-        {{ 'task-list.refreshTasks' | translate }}
+      @if (!obs.autoRefresh) {
+        @if ($tasksChanged()) {
+          <span
+            aria-live="polite"
+            class="valtimo-task-list__tasks-changed"
+            [attr.data-test-id]="testIds.tasksChangedNotice"
+          >
+            {{ 'task-list.tasksChanged' | translate }}
+          </span>
+        }
 
-        <svg class="cds--btn__icon" cdsIcon="renew" size="16"></svg>
-      </button>
+        <button
+          [cdsButton]="$tasksChanged() ? 'tertiary' : 'ghost'"
+          (click)="onRefreshTasksClick()"
+          [attr.data-test-id]="testIds.refreshTasksButton"
+        >
+          {{ 'task-list.refreshTasks' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="renew" size="16"></svg>
+        </button>
+      }
 
       <valtimo-list-column-view
         *ngIf="obs.caseDefinitionKey && obs.caseDefinitionKey !== ALL_CASES_ID"
@@ -166,6 +177,28 @@
         [hiddenColumns]="obs.hiddenColumns"
         (viewUpdateEvent)="onViewUpdateEvent($event)"
       ></valtimo-list-column-view>
+
+      <v-overflow-menu [menuWidth]="240" placement="bottom-end">
+        <button
+          overflowTrigger
+          cdsButton="ghost"
+          [iconOnly]="true"
+          [attr.aria-label]="'task-list.refreshSettings' | translate"
+          [attr.data-test-id]="testIds.refreshSettingsMenu"
+        >
+          <svg cdsIcon="overflow-menu--vertical" size="16"></svg>
+        </button>
+
+        <v-overflow-menu-option
+          [testId]="testIds.autoRefreshOption"
+          (selected)="onAutoRefreshChange(!obs.autoRefresh)"
+        >
+          {{
+            (obs.autoRefresh ? 'task-list.turnOffAutoRefresh' : 'task-list.turnOnAutoRefresh')
+              | translate
+          }}
+        </v-overflow-menu-option>
+      </v-overflow-menu>
     </div>
 
     <valtimo-no-results

@@ -4,11 +4,11 @@
 
 | Category                    | Features | Functions | ✅ Covered | ❌ Not Covered | ⏳ In Progress | `N/A` |
 |-----------------------------|----------|-----------|------------|----------------|----------------|-------|
-| User Features (ROLE_USER)   | 5        | 37        | 32         | 4              | 0              | 1     |
+| User Features (ROLE_USER)   | 5        | 38        | 33         | 4              | 0              | 1     |
 | Admin Features (ROLE_ADMIN) | 15       | 388       | 375        | 7              | 1              | 5     |
-| **Total**                   | **20**   | **425**   | **407**    | **11**         | **1**          | **6** |
+| **Total**                   | **20**   | **426**   | **408**    | **11**         | **1**          | **6** |
 
-**Coverage:** `407 / 425` — `95.8%`
+**Coverage:** `408 / 426` — `95.8%`
 
 > Counts are one per numbered row (lettered sub-rows such as `4.2a` count as their own row). Functions = ✅ + ❌ + ⏳ + `N/A`.
 
@@ -77,6 +77,7 @@
 | 3.4 | Claim task               | Claim an unassigned task                        |    ✅    | task-list.spec.ts                               |
 | 3.5 | Execute task (fill form) | Fill in task form fields                        |    ✅    | task-list.spec.ts                               |
 | 3.6 | Complete task            | Submit and complete task                        |    ✅    | task-list.spec.ts                               |
+| 3.7 | Auto refresh per user    | Manual: notice on task change, cleared by Refresh tasks · Turn automatic refresh on/off via menu · Choice kept after reload |    ✅    | task-list.spec.ts                               |
 
 ---
 
@@ -814,8 +815,8 @@ Covers the standalone `/processes` admin page (the *independent* process context
 | Metric                   |  Count  |
 |:-------------------------|:-------:|
 | Total Features           |   20    |
-| Total Functions          |   425   |
-| ✅ Covered by Playwright |   407   |
+| Total Functions          |   426   |
+| ✅ Covered by Playwright |   408   |
 | ❌ Not covered           |   11    |
 | ⏳ In progress           |    1    |
 | `N/A` Not applicable     |    6    |

@@ -23,3 +23,4 @@ export * from './task-list-query-param.service';
 export * from './task-intermediate-save.service';
 export * from './task-list-quick-search.service';
 export * from './task-list-hidden-columns.service';
+export * from './task-list-refresh.service';

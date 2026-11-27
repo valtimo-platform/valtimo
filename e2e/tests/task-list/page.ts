@@ -16,6 +16,23 @@
 
 import {expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {TASK_LIST_TEST_IDS} from '../../constants';
+import {apiGet, apiPut} from '../../utils/api.utils';
+
+const USER_SETTINGS_ENDPOINT = '/api/v1/user/settings';
+
+interface TaskListRefreshSettings {
+  taskListAutoRefresh?: boolean | null;
+}
+
+export async function getAutoRefreshSettingViaApi(): Promise<boolean | null | undefined> {
+  const settings = await apiGet<TaskListRefreshSettings>(USER_SETTINGS_ENDPOINT);
+  return settings?.taskListAutoRefresh;
+}
+
+export async function setAutoRefreshSettingViaApi(autoRefresh: boolean | null) {
+  await apiPut(USER_SETTINGS_ENDPOINT, {taskListAutoRefresh: autoRefresh});
+}
 
 export class TaskListPage {
   constructor(private readonly page: Page) {}
@@ -36,6 +53,22 @@ export class TaskListPage {
 
   get carbonList(): CarbonList {
     return new CarbonList(this.page);
+  }
+
+  get autoRefreshOption() {
+    return this.page.getByTestId(TASK_LIST_TEST_IDS.autoRefreshOption);
+  }
+
+  get refreshSettingsMenu() {
+    return this.page.getByTestId(TASK_LIST_TEST_IDS.refreshSettingsMenu);
+  }
+
+  get tasksChangedNotice() {
+    return this.page.getByTestId(TASK_LIST_TEST_IDS.tasksChangedNotice);
+  }
+
+  get refreshTasksButton() {
+    return this.page.getByTestId(TASK_LIST_TEST_IDS.refreshTasksButton);
   }
 
   // ─── Task Detail Elements ──────────────────────────────────────────
@@ -155,6 +188,23 @@ export class TaskListPage {
     await expect(this.page.getByText(`${taskName} has successfully been completed`).first()).toBeVisible({
       timeout: 15_000,
     });
+  }
+
+  // ─── Auto refresh ──────────────────────────────────────────────────
+
+  async openRefreshSettings() {
+    await expect(async () => {
+      if (!(await this.autoRefreshOption.isVisible())) {
+        await this.refreshSettingsMenu.click({timeout: 5_000});
+      }
+      await expect(this.autoRefreshOption).toBeVisible({timeout: 3_000});
+    }).toPass({timeout: 15_000});
+  }
+
+  async assertAutoRefreshOption(currentlyEnabled: boolean) {
+    await expect(this.autoRefreshOption).toHaveText(
+      currentlyEnabled ? 'Turn off automatic refresh' : 'Turn on automatic refresh'
+    );
   }
 
   // ─── Assertions ────────────────────────────────────────────────────

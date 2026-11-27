@@ -15,7 +15,7 @@
  */
 
 import {expect, test} from '@playwright/test';
-import {TaskListPage} from './page';
+import {getAutoRefreshSettingViaApi, setAutoRefreshSettingViaApi, TaskListPage} from './page';
 import {TASK_CONFIG} from './task-config';
 import {apiDelete, apiPost} from '../../utils/api.utils';
 
@@ -67,6 +67,87 @@ test.describe('3.1, 3.2 — Task list', () => {
 
     // Verify the dropdown still shows the selected case
     await expect(taskListPage.caseDropdown).toContainText(targetOptionText);
+  });
+});
+
+test.describe('3.7 — Automatic task list refresh per user', () => {
+  let taskListPage: TaskListPage;
+  let originalAutoRefresh: boolean | null | undefined;
+  const createdDocumentIds: string[] = [];
+
+  const startAutoAssignCase = async () => {
+    const created = await apiPost<{document: {id: string}}>(TASK_CONFIG.processDocumentEndpoint, {
+      processDefinitionKey: TASK_CONFIG.autoAssignProcess,
+      request: {
+        definition: TASK_CONFIG.autoAssignProcess,
+        caseDefinitionKey: TASK_CONFIG.autoAssignProcess,
+        caseDefinitionVersionTag: '1.0.0',
+        content: {},
+      },
+    });
+    if (created?.document?.id) createdDocumentIds.push(created.document.id);
+  };
+
+  test.beforeAll(async () => {
+    originalAutoRefresh = await getAutoRefreshSettingViaApi();
+  });
+
+  test.afterAll(async () => {
+    for (const id of createdDocumentIds) {
+      try {
+        await apiDelete(`${TASK_CONFIG.documentEndpoint}/${id}`);
+      } catch {
+        // Best-effort cleanup
+      }
+    }
+
+    try {
+      // null = no user choice, so the admin default applies again
+      await setAutoRefreshSettingViaApi(originalAutoRefresh ?? null);
+    } catch {
+      // Best-effort restore
+    }
+  });
+
+  test('manual refresh shows changes, and the user choice survives a reload', async ({page}) => {
+    test.slow();
+    taskListPage = new TaskListPage(page);
+    await setAutoRefreshSettingViaApi(false);
+
+    await page.goto('/tasks');
+    await taskListPage.waitForTaskListLoaded();
+    await expect(taskListPage.refreshTasksButton).toBeVisible();
+    await expect(taskListPage.tasksChangedNotice).toBeHidden();
+
+    // Manual: a task change shows the notice instead of reloading
+    await startAutoAssignCase();
+    await expect(taskListPage.tasksChangedNotice).toBeVisible({timeout: 15_000});
+
+    await taskListPage.refreshTasksButton.click();
+    await expect(taskListPage.tasksChangedNotice).toBeHidden();
+
+    // Switch to automatic via the menu
+    await taskListPage.openRefreshSettings();
+    await taskListPage.assertAutoRefreshOption(false);
+    const saved = page.waitForResponse(
+      response =>
+        response.url().endsWith('/api/v1/user/settings') && response.request().method() === 'PUT'
+    );
+    await taskListPage.autoRefreshOption.click();
+    await saved;
+
+    await expect(taskListPage.refreshTasksButton).toBeHidden();
+    expect(await getAutoRefreshSettingViaApi()).toBe(true);
+
+    await page.reload();
+    await taskListPage.waitForTaskListLoaded();
+    await expect(taskListPage.refreshTasksButton).toBeHidden();
+    await taskListPage.openRefreshSettings();
+    await taskListPage.assertAutoRefreshOption(true);
+
+    // Back to manual
+    await taskListPage.autoRefreshOption.click();
+    await expect(taskListPage.refreshTasksButton).toBeVisible();
   });
 });
 

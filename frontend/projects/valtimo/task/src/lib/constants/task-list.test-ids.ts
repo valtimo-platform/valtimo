@@ -15,7 +15,10 @@
  */
 
 const TASK_LIST_TEST_IDS = {
+  autoRefreshOption: 'taskListAutoRefreshOption',
+  refreshSettingsMenu: 'taskListRefreshSettingsMenu',
   refreshTasksButton: 'taskListRefreshTasksButton',
+  tasksChangedNotice: 'taskListTasksChangedNotice',
 } as const;
 
 export {TASK_LIST_TEST_IDS};
