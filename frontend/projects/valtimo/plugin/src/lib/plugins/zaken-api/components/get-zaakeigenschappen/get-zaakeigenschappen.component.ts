@@ -18,9 +18,11 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {FunctionConfigurationComponent} from '../../../../models';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   Observable,
+  of,
   Subscription,
   switchMap,
   take,
@@ -113,14 +115,23 @@ export class GetZaakeigenschappenComponent
         }),
         switchMap(([_, params]) =>
           combineLatest([
-            this.zakenApiService.getEigenschappenByCaseAndVersion(
-              params.caseDefinitionKey,
-              params.caseDefinitionVersionTag
-            ),
+            this.zakenApiService
+              .getEigenschappenByCaseAndVersion(
+                params.caseDefinitionKey,
+                params.caseDefinitionVersionTag
+              )
+              .pipe(catchError(() => of(null))),
             this.prefillConfiguration$.pipe(take(1)),
           ])
         ),
         tap(([eigenschappen, prefill]) => {
+          if (!eigenschappen) {
+            this.eigenschapSelectItems$.next([]);
+            this.selectedInputOption$.next('text');
+            this.loading$.next(false);
+            return;
+          }
+
           const selectItems = eigenschappen.map(item => ({id: item.url, text: item.name}));
           this.eigenschapSelectItems$.next(selectItems);
 
