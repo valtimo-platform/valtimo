@@ -27,6 +27,7 @@ import {
   ConfirmationModalModule,
   FormIoModule,
   ListColumnViewComponent,
+  OverflowMenuModule,
   PageHeaderModule,
   QuickSearchComponent,
   RenderInPageHeaderDirective,
@@ -96,6 +97,7 @@ import {TaskRoutingModule} from './task-routing.module';
     SetTaskDueDateComponent,
     ValtimoCdsModalDirective,
     ListColumnViewComponent,
+    OverflowMenuModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })

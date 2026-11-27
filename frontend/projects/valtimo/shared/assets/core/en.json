@@ -2262,7 +2262,11 @@
     "allCases": "All cases",
     "noSearchResultsTitle": "No tasks found",
     "noSearchResultsDescription": "There are no tasks that match your search criteria.",
-    "refreshTasks": "Refresh tasks"
+    "refreshTasks": "Refresh tasks",
+    "refreshSettings": "Refresh settings",
+    "tasksChanged": "Tasks have changed",
+    "turnOffAutoRefresh": "Turn off automatic refresh",
+    "turnOnAutoRefresh": "Turn on automatic refresh"
   },
   "Task": "Task",
   "Tasks": "Tasks",
@@ -4688,8 +4692,8 @@
           "description": "Show every case definition the user has access to in the Cases menu, instead of only their pinned case groups and case types. Pinning is turned off."
         },
         "enableManualTaskListRefresh": {
-          "title": "Enable manual task list refresh",
-          "description": "Show a refresh button in the task list instead of refreshing it automatically when tasks change."
+          "title": "Refresh task list manually by default",
+          "description": "By default, the task list does not refresh by itself. It shows that tasks have changed, and users refresh it with a button. Each user can turn automatic refresh on or off in their own task list."
         }
       }
     },

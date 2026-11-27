@@ -2262,7 +2262,11 @@
     "allCases": "Alle dossiers",
     "noSearchResultsTitle": "Geen taken gevonden",
     "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen.",
-    "refreshTasks": "Taken verversen"
+    "refreshTasks": "Taken verversen",
+    "refreshSettings": "Instellingen voor verversen",
+    "tasksChanged": "Taken zijn gewijzigd",
+    "turnOffAutoRefresh": "Automatisch verversen uitzetten",
+    "turnOnAutoRefresh": "Automatisch verversen aanzetten"
   },
   "Task": "Taak",
   "Tasks": "Taken",
@@ -4688,8 +4692,8 @@
           "description": "Toon elk dossiertype waar de gebruiker toegang toe heeft in het Dossiers-menu, in plaats van alleen de vastgezette dossiergroepen en dossiertypen. Vastzetten is dan uitgeschakeld."
         },
         "enableManualTaskListRefresh": {
-          "title": "Handmatig verversen van takenlijst inschakelen",
-          "description": "Toon een verversknop in de takenlijst in plaats van de lijst automatisch te verversen bij wijzigingen."
+          "title": "Takenlijst standaard handmatig verversen",
+          "description": "Standaard ververst de takenlijst niet vanzelf. De lijst laat zien dat taken zijn gewijzigd en gebruikers verversen met een knop. Elke gebruiker kan automatisch verversen in de eigen takenlijst aan- of uitzetten."
         }
       }
     },

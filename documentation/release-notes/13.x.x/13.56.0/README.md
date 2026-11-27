@@ -32,6 +32,16 @@ More information: [Contracts between plugins](../../../configuration-guides/plug
 
 A screen of an external plugin can now open a case page, for example through a **Dossier** button in a side panel. The page only opens after the user clicks in the plugin screen, and the usual permissions of the case page apply.
 
+### Automatic task list refresh per user
+
+Each user can now choose whether their task list refreshes automatically when tasks change. Open the menu (⋮) in the task list toolbar and choose **Turn on automatic refresh** or **Turn off automatic refresh**. The choice is saved for each user and applies to every task list.
+
+With automatic refresh off, the list stays as it is while you work. When tasks change, the toolbar shows **Tasks have changed**, and you update the list with **Refresh tasks**.
+
+The task list also refreshes once for a burst of task changes, instead of once per change.
+
+The **Refresh task list manually by default** feature toggle under **Admin** > **Settings** > **Feature toggles**, previously called **Enable manual task list refresh**, now only sets the default for users who have not made a choice yet.
+
 ### Plugin settings screens fit their content
 
 The settings screen of an external plugin now grows with its content when you edit a plugin configuration or configure a plugin action in a process, just like it already did when you configure a new plugin.

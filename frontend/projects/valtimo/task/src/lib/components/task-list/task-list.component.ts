@@ -21,6 +21,7 @@ import {
   Inject,
   OnDestroy,
   OnInit,
+  signal,
   TemplateRef,
   ViewChild,
   ViewEncapsulation,
@@ -61,7 +62,14 @@ import {CaseTag, CaseTagsUtils, DocumentService} from '@valtimo/document';
 import {TaskListQuickSearchService} from '../../services/task-list-quick-search.service';
 import {TaskListQuickSearchParams} from '../../models/task-list-quick-search.model';
 import {SseService} from '@valtimo/sse';
-import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  take,
+  withLatestFrom,
+} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
 import {TeamsApiService} from '@valtimo/teams';
 import {
@@ -74,11 +82,12 @@ import {
   TaskListHiddenColumnsService,
   TaskListPaginationService,
   TaskListQueryParamService,
+  TaskListRefreshService,
   TaskListSearchService,
   TaskListService,
 } from '../../services';
 import {isEqual} from 'lodash';
-import {Renew16} from '@carbon/icons';
+import {OverflowMenuVertical16, Renew16} from '@carbon/icons';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
@@ -99,6 +108,7 @@ moment.locale(localStorage.getItem('langKey') || '');
     TaskListColumnService,
     TaskListHiddenColumnsService,
     TaskListPaginationService,
+    TaskListRefreshService,
     TaskListSortService,
     TaskListSearchService,
     TaskListQueryParamService,
@@ -120,6 +130,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   public readonly ALL_CASES_ID = this.taskListService.ALL_CASES_ID;
+
+  private readonly TASK_UPDATE_DEBOUNCE_MS = 500;
 
   public readonly selectedTaskType$ = this.taskListService.selectedTaskType$;
 
@@ -170,9 +182,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   public readonly overrideSortState$ = this.taskListSortService.overrideSortState$;
 
-  public readonly manualRefresh$ = this.configService.getFeatureToggleObservable(
-    'enableManualTaskListRefresh'
-  );
+  public readonly autoRefresh$ = this.taskListRefreshService.autoRefresh$;
+
+  public readonly $tasksChanged = signal<boolean>(false);
 
   protected readonly testIds = TASK_LIST_TEST_IDS;
 
@@ -246,6 +258,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     tap(tasks => {
       this.cachedTasks$.next(tasks);
       this.loadingTasks$.next(false);
+      this.$tasksChanged.set(false);
       this.disableLoadingAnimation();
 
       this.taskListSearchService.otherFilters$.pipe(take(1)).subscribe(otherFilters => {
@@ -306,6 +319,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly taskListColumnService: TaskListColumnService,
     private readonly taskListPaginationService: TaskListPaginationService,
+    private readonly taskListRefreshService: TaskListRefreshService,
     private readonly taskListSortService: TaskListSortService,
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
@@ -317,7 +331,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly quickSearchService: IQuickSearchService<TaskListQuickSearchParams>
   ) {
-    this.iconService.registerAll([Renew16]);
+    this.iconService.registerAll([OverflowMenuVertical16, Renew16]);
   }
 
   public ngOnInit(): void {
@@ -325,6 +339,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.setVisibleTabs();
     this.pageTitleService.disableReset();
     this.setParamsFromQueryParams();
+    this.taskListRefreshService.loadPreference();
     this.openTaskUpdateSseEventSubscription();
   }
 
@@ -340,13 +355,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
               !caseDefinitionKey ||
               caseDefinitionKey === this.ALL_CASES_ID ||
               event.caseDefinitionKey === caseDefinitionKey
-          )
+          ),
+          // One reload per burst; a single case start emits many events
+          debounceTime(this.TASK_UPDATE_DEBOUNCE_MS),
+          withLatestFrom(this.autoRefresh$)
         )
-        .subscribe(() => {
-          // Manual refresh: leave the list as-is until the user asks for it
-          if (this.configService.getFeatureToggle('enableManualTaskListRefresh')) return;
-
-          this.reload(true);
+        .subscribe(([, autoRefresh]) => {
+          if (autoRefresh) this.reload(true);
+          else this.$tasksChanged.set(true);
         })
     );
   }
@@ -432,6 +448,13 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (!silent) this.enableLoadingAnimation();
 
     this._reload$.next(!this._reload$.getValue());
+  }
+
+  public onAutoRefreshChange(autoRefresh: boolean): void {
+    this.taskListRefreshService.setAutoRefresh(autoRefresh);
+
+    // Catch up on changes missed while off
+    if (autoRefresh) this.reload(true);
   }
 
   public onRefreshTasksClick(): void {
