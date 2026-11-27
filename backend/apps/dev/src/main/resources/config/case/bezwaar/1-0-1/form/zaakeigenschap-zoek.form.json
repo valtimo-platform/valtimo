@@ -39,8 +39,8 @@
             },
             "widget": "choicesjs",
             "template": "<span>{{ item.definitie }}</span>",
-            "valueProperty": "naam",
-            "idPath": "naam",
+            "valueProperty": "name",
+            "idPath": "name",
             "validate": {
                 "required": false
             }
