@@ -353,6 +353,35 @@ internal class DocumentenApiPluginIT @Autowired constructor(
     }
 
     @Test
+    fun `should store document when related process instance no longer exists`() {
+        saveProcessLink("store-uploaded-document", "{}")
+
+        val resourceId = temporaryResourceStorageService.store(
+            "content".byteInputStream(),
+            mutableMapOf(
+                MetadataType.FILE_NAME.key to "upload.pdf",
+                "title" to "t",
+                "status" to "in_bewerking",
+                "language" to "nld",
+                "informatieobjecttype" to "ioType",
+                StorageMetadataKeys.PROCESS_INSTANCE_ID.key to UUID.randomUUID().toString()
+            )
+        )
+
+        runWithoutAuthorization {
+            processDocumentService.newDocumentAndStartProcess(
+                NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest())
+                    .withProcessVars(mapOf("resourceId" to resourceId))
+            )
+        }
+
+        val documentUrl =
+            temporaryResourceStorageService.getMetadataValueOrNull(resourceId, StorageMetadataKeys.DOCUMENT_URL)
+        assertNotNull(documentUrl)
+        assertTrue(documentUrl.startsWith(server.url("/").toString()))
+    }
+
+    @Test
     fun `should set custom process variable name when provided in metadata`() {
         // Start related (target) process first
         runWithoutAuthorization {

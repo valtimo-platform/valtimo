@@ -30,6 +30,7 @@ import {PermissionService} from '@valtimo/access-control';
 import {
   AssignmentChangeEvent,
   CarbonModalSize,
+  FormIoStateService,
   runAfterCarbonModalClosed,
 } from '@valtimo/components';
 import {SseService} from '@valtimo/sse';
@@ -151,7 +152,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly iconService: IconService,
     private readonly documentService: DocumentService,
     private readonly taskService: TaskService,
-    private readonly globalNotificationService: GlobalNotificationService
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly formIoStateService: FormIoStateService
   ) {
     this.iconService.registerAll([FolderDetailsReference16]);
   }
@@ -442,6 +444,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this.modalOpen$.next(false);
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
     this.modalClosed.emit();
+    this.formIoStateService.setProcessInstanceId('');
     const session = this._modalSession;
     // Delay clearing task data and submission until after modal close animation completes.
     // When the modal has been reopened for another task within that delay, clearing would wipe
