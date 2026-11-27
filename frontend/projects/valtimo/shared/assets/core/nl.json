@@ -2515,7 +2515,7 @@
     "noProcessesTitle": "Geen processen",
     "noProcessesDescription": "Er zijn nog geen processen gekoppeld aan deze dossierdefinitie",
     "processCreatesCase": "Proces maakt nieuw dossier aan",
-    "processCreatesCaseTooltip": "Wanneer deze optie is geselecteerd, wordt bij het starten van dit proces een nieuw dossier aangemaakt. Hiervoor moet er een startformulier gekoppeld zijn aan de eerste stap in het proces.",
+    "processCreatesCaseTooltip": "Wanneer deze optie is geselecteerd, wordt bij het starten van dit proces een nieuw dossier aangemaakt. Een gebruiker kan het proces starten met een startformulier dat gekoppeld is aan de eerste stap. Een proces met een timer-startgebeurtenis maakt elke keer dat de timer afgaat een nieuw, leeg dossier aan.",
     "startableWithinCase": "Kan gestart worden binnen bestaand dossier",
     "startableWithinCaseTooltip": "Wanneer deze optie is geselecteerd, kan deze procesdefinitie worden gestart vanuit een bestaand dossier. Dit kan via het subprocesmenu op de detailpagina van het dossier."
   },

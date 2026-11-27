@@ -2515,7 +2515,7 @@
     "noProcessesTitle": "No processes",
     "noProcessesDescription": "There are no processes connected to this Case definition yet",
     "processCreatesCase": "Process creates new case",
-    "processCreatesCaseTooltip": "When this option is selected, a new case is created when this process is started. For this to be possible, a start form must be linked to the first step in the process.",
+    "processCreatesCaseTooltip": "When this option is selected, a new case is created when this process is started. A user can start the process with a start form linked to the first step. A process with a timer start event creates a new, empty case every time the timer fires.",
     "startableWithinCase": "Can be started within existing case",
     "startableWithinCaseTooltip": "When this option is selected, this process definition will be available to start from within an existing case. This is done through the sub process menu on the detail page of the case."
   },
