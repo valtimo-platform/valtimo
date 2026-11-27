@@ -16,6 +16,7 @@
 
 import {APIRequestContext, expect, Page} from '@playwright/test';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
+import {settleModalReset} from '../../shared/modal/modal.utils';
 import {AUTO_KEY_INPUT_TEST_IDS, VALUE_PATH_SELECTOR_TEST_IDS} from '../../constants';
 
 export class CaseDetailsManagementSearchFieldsPage {
@@ -165,6 +166,8 @@ export class CaseDetailsManagementSearchFieldsPage {
     matchType?: string;
   }) {
     await this.addSearchFieldButton.click();
+    await expect(this.titleInput).toBeVisible();
+    await settleModalReset(this.page);
 
     if (field.title) {
       await this.titleInput.fill(field.title);

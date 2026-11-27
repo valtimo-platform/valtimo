@@ -69,8 +69,11 @@ export class CarbonListRow {
    * Note: menu items are rendered in a portal/overlay, so we use page-scoped getByRole.
    */
   async clickAction(actionName: string) {
-    await this.openActionMenu();
-    await this.page.getByRole('menu').getByRole('menuitem', {name: actionName}).click();
+    // A list re-render (late search/load response) closes an open menu — reopen and retry.
+    await expect(async () => {
+      await this.openActionMenu();
+      await this.actionMenuItem(actionName).click({timeout: 2_000});
+    }).toPass({timeout: 20_000});
   }
 
   /**
@@ -78,8 +81,14 @@ export class CarbonListRow {
    * offered, and whether they are enabled.
    */
   async openActionMenu() {
-    await this.locator.locator('.v-overflow-menu__trigger').click();
-    await expect(this.page.getByRole('menu')).toBeVisible();
+    const menu = this.page.getByRole('menu');
+    await expect(async () => {
+      // Trigger toggles: only click while closed.
+      if (!(await menu.isVisible())) {
+        await this.locator.locator('.v-overflow-menu__trigger').click();
+      }
+      await expect(menu).toBeVisible({timeout: 2_000});
+    }).toPass({timeout: 15_000});
   }
 
   /** An item in this row's (already open) overflow menu. */

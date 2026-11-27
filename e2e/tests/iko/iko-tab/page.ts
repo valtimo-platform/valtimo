@@ -26,6 +26,7 @@ import {
 import {apiDelete, apiGet, apiPost} from '../../../utils/api.utils';
 import {ikoTabConfig, TAB_TYPE_LABELS} from './iko-tab-config';
 import {openAndSelectOption} from '../../../utils/ui.utils';
+import {settleModalReset} from '../../../shared/modal/modal.utils';
 
 interface TabResponse {
   key: string;
@@ -130,6 +131,7 @@ export class IkoTabPage {
   async openAddModal(): Promise<void> {
     await this.addTabButton.click();
     await expect(this.addModalHeading).toBeVisible();
+    await settleModalReset(this.page);
   }
 
   /**
@@ -139,6 +141,7 @@ export class IkoTabPage {
   async openEditModal(title: string): Promise<void> {
     await this.list.row(title).clickAction('Edit');
     await expect(this.editModalHeading).toBeVisible();
+    await settleModalReset(this.page);
   }
 
   /** Click the v-select combo-box and pick the option matching `label`. */

@@ -30,6 +30,7 @@ import {
 } from '../../constants';
 import {CarbonList} from '../../shared/carbon-list/carbon-list.utils';
 import * as ApiUtils from '../../utils/api.utils';
+import {fillStable} from '../../utils/ui.utils';
 
 export interface PluginConfigurationResponse {
   id: string;
@@ -490,9 +491,7 @@ export class PluginPage {
   }
 
   async fillModalInput(testId: string, value: string): Promise<void> {
-    const input = this.visibleModal.getByTestId(testId).locator('input');
-    await input.fill(value);
-    await expect(input).toHaveValue(value);
+    await fillStable(this.visibleModal.getByTestId(testId).locator('input'), value);
   }
 
   /**
