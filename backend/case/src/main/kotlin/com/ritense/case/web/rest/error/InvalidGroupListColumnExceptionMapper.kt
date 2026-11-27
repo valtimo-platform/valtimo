@@ -19,10 +19,10 @@ package com.ritense.case.web.rest.error
 import com.ritense.case.exception.InvalidGroupListColumnException
 import com.ritense.valtimo.contract.web.rest.error.ErrorConstants
 import com.ritense.valtimo.contract.web.rest.error.ExceptionMapper
+import com.ritense.valtimo.contract.web.rest.error.ValtimoProblemDetail
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.context.request.NativeWebRequest
-import org.zalando.problem.Problem
-import org.zalando.problem.Status
 
 class InvalidGroupListColumnExceptionMapper : ExceptionMapper<InvalidGroupListColumnException> {
 
@@ -32,13 +32,12 @@ class InvalidGroupListColumnExceptionMapper : ExceptionMapper<InvalidGroupListCo
         exception: InvalidGroupListColumnException,
         request: NativeWebRequest
     ): ResponseEntity<*> {
-        val problem = Problem.builder()
-            .withType(ErrorConstants.DEFAULT_TYPE)
-            .withTitle(exception.message)
-            .withStatus(Status.BAD_REQUEST)
-            .with("message", "error.invalidGroupListColumn")
-            .with("params", exception.message)
-            .build()
+        val problem = ValtimoProblemDetail(HttpStatus.BAD_REQUEST.value()).apply {
+            type = ErrorConstants.DEFAULT_TYPE
+            title = exception.message
+            setProperty("message", "error.invalidGroupListColumn")
+            setProperty("params", exception.message)
+        }
         return ResponseEntity.badRequest().body(problem)
     }
 }

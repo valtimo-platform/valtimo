@@ -16,17 +16,13 @@
 
 package com.ritense.zakenapi.link
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
-class ZaakInstanceLinkNotFoundException(message: String?) : AbstractThrowableProblem
+class ZaakInstanceLinkNotFoundException(message: String?) : ProblemException
     (
     null,
     message,
-    Status.INTERNAL_SERVER_ERROR
+    HttpStatus.INTERNAL_SERVER_ERROR
 ) {
-    override fun getCause(): Exceptional? {
-        return null
-    }
 }

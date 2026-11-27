@@ -21,6 +21,7 @@ import com.ritense.deployerapi.web.filter.RequestBodyTooLargeException
 import com.ritense.deployerapi.web.rest.dto.ErrorResponseDto
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Hidden
 import org.springframework.beans.TypeMismatchException
@@ -35,7 +36,6 @@ import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import org.zalando.problem.Problem
 
 @Hidden
 @SkipComponentScan
@@ -94,7 +94,6 @@ class DeployerApiExceptionHandler {
 
     private fun statusOf(exception: Exception): HttpStatus = when {
         exception is ErrorResponse -> HttpStatus.resolve(exception.statusCode.value())
-        exception is Problem -> exception.status?.statusCode?.let { HttpStatus.resolve(it) }
         exception is TypeMismatchException -> HttpStatus.BAD_REQUEST
         else -> AnnotatedElementUtils
             .findMergedAnnotation(exception.javaClass, ResponseStatus::class.java)
@@ -102,7 +101,7 @@ class DeployerApiExceptionHandler {
     } ?: HttpStatus.INTERNAL_SERVER_ERROR
 
     private fun messageOf(exception: Exception, status: HttpStatus): String =
-        (exception as? Problem)?.detail?.takeIf { it.isNotBlank() } ?: status.reasonPhrase
+        (exception as? ProblemException)?.detail?.takeIf { it.isNotBlank() } ?: status.reasonPhrase
 
     private fun errorResponse(status: HttpStatus, message: String) =
         ResponseEntity.status(status).body(ErrorResponseDto(message))

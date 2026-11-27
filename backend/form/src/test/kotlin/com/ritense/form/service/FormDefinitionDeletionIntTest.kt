@@ -26,27 +26,27 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
 import com.ritense.valtimo.service.OperatonProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
-import org.zalando.problem.Status
-import org.zalando.problem.ThrowableProblem
 import java.util.UUID
-import javax.sql.DataSource
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import javax.sql.DataSource
 
 @Transactional
 internal class FormDefinitionDeletionIntTest : BaseIntegrationTest() {
@@ -89,11 +89,11 @@ internal class FormDefinitionDeletionIntTest : BaseIntegrationTest() {
             )
         )
 
-        val exception = assertThrows<ThrowableProblem> {
+        val exception = assertThrows<ProblemException> {
             formDefinitionService.deleteFormDefinition(caseDefinitionId, formId)
         }
 
-        assertThat(exception.status).isEqualTo(Status.CONFLICT)
+        assertThat(exception.statusCode).isEqualTo(HttpStatus.CONFLICT)
         assertThat(formDefinitionRepository.existsById(formId)).isTrue()
     }
 
@@ -104,9 +104,9 @@ internal class FormDefinitionDeletionIntTest : BaseIntegrationTest() {
         ).id
         saveLink(formId)
 
-        val exception = assertThrows<ThrowableProblem> { formDefinitionService.deleteFormDefinition(formId) }
+        val exception = assertThrows<ProblemException> { formDefinitionService.deleteFormDefinition(formId) }
 
-        assertThat(exception.status).isEqualTo(Status.CONFLICT)
+        assertThat(exception.statusCode).isEqualTo(HttpStatus.CONFLICT)
         assertThat(exception.parameters["usages"] as List<*>).hasSize(1)
         assertThat(formDefinitionRepository.existsById(formId)).isTrue()
     }
@@ -120,11 +120,11 @@ internal class FormDefinitionDeletionIntTest : BaseIntegrationTest() {
         ).id
         saveLink(formId)
 
-        val exception = assertThrows<ThrowableProblem> {
+        val exception = assertThrows<ProblemException> {
             formDefinitionService.deleteAllFormDefinitions(caseDefinitionId)
         }
 
-        assertThat(exception.status).isEqualTo(Status.CONFLICT)
+        assertThat(exception.statusCode).isEqualTo(HttpStatus.CONFLICT)
         assertThat(formDefinitionRepository.existsById(formId)).isTrue()
     }
 
@@ -208,8 +208,8 @@ internal class FormDefinitionDeletionIntTest : BaseIntegrationTest() {
             linkFuture.get(10, TimeUnit.SECONDS)
             val exception = assertThrows<ExecutionException> { deleteFuture.get(10, TimeUnit.SECONDS) }
 
-            assertThat(exception.cause).isInstanceOf(ThrowableProblem::class.java)
-            assertThat((exception.cause as ThrowableProblem).status).isEqualTo(Status.CONFLICT)
+            assertThat(exception.cause).isInstanceOf(ProblemException::class.java)
+            assertThat((exception.cause as ProblemException).statusCode).isEqualTo(HttpStatus.CONFLICT)
             assertThat(formDefinitionRepository.existsById(formId)).isTrue()
         } finally {
             release.countDown()
@@ -314,8 +314,8 @@ internal class FormDefinitionDeletionIntTest : BaseIntegrationTest() {
             linkFuture.get(10, TimeUnit.SECONDS)
             val exception = assertThrows<ExecutionException> { deleteFuture.get(10, TimeUnit.SECONDS) }
 
-            assertThat(exception.cause).isInstanceOf(ThrowableProblem::class.java)
-            assertThat((exception.cause as ThrowableProblem).status).isEqualTo(Status.CONFLICT)
+            assertThat(exception.cause).isInstanceOf(ProblemException::class.java)
+            assertThat((exception.cause as ProblemException).statusCode).isEqualTo(HttpStatus.CONFLICT)
             assertThat(formDefinitionRepository.existsById(formId)).isTrue()
         } finally {
             release.countDown()

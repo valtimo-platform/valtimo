@@ -16,17 +16,13 @@
 
 package com.ritense.case.exception
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
-class InvalidListColumnException(message: String?, status: Status) :
-    AbstractThrowableProblem(
+class InvalidListColumnException(message: String?, status: HttpStatus) :
+    ProblemException(
         null,
         message,
         status
     ) {
-    override fun getCause(): Exceptional? {
-        return null
-    }
 }

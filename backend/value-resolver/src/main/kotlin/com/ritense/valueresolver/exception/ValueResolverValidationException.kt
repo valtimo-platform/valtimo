@@ -16,18 +16,17 @@
 
 package com.ritense.valueresolver.exception
 
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Status
+import org.springframework.http.HttpStatus
 
 class ValueResolverValidationException(message: String?, exception: Throwable? = null) :
-    AbstractThrowableProblem(null, message, Status.BAD_REQUEST) {
+    ProblemException(null, message, HttpStatus.BAD_REQUEST) {
 
     init {
         logger.error { exception }
     }
 
-    override fun getCause() = null
 
     companion object {
         private val logger = KotlinLogging.logger {}

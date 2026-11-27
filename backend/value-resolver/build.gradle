@@ -54,7 +54,6 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
 
     api "org.operaton.bpm:operaton-engine:${operatonVersion}"
-    api "org.zalando:problem-spring-web:${problemSpringWebVersion}"
 
     implementation "io.github.vishwakarma:zjsonpatch:${zjsonpatchVersion}"
 

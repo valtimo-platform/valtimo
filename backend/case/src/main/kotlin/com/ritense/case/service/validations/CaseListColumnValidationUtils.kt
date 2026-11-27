@@ -26,7 +26,7 @@ import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
-import org.zalando.problem.Status
+import org.springframework.http.HttpStatus
 
 open class CaseListColumnValidationUtils(
     open val caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
@@ -43,7 +43,7 @@ open class CaseListColumnValidationUtils(
         ) {
             throw InvalidListColumnException(
                 "Unable to create list column. A column with the same key already exists",
-                Status.BAD_REQUEST
+                HttpStatus.BAD_REQUEST
             )
         }
     }
@@ -59,7 +59,7 @@ open class CaseListColumnValidationUtils(
         ) {
             throw InvalidListColumnException(
                 "Unable to create list column. A column with defaultSort value already exists",
-                Status.BAD_REQUEST
+                HttpStatus.BAD_REQUEST
             )
         }
     }
@@ -106,7 +106,7 @@ open class CaseListColumnValidationUtils(
                 valueResolverService.validateValues(caseDefinitionId, listOf(caseListColumnDto.path))
             }
         } catch (ex: Exception) {
-            throw InvalidListColumnException(ex.message, Status.BAD_REQUEST)
+            throw InvalidListColumnException(ex.message, HttpStatus.BAD_REQUEST)
         }
     }
 

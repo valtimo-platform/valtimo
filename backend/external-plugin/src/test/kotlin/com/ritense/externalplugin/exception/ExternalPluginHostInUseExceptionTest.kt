@@ -20,12 +20,12 @@ import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.zalando.problem.Status
+import org.springframework.http.HttpStatus
 import java.util.UUID
 
 /**
- * The `parameters` map on `AbstractThrowableProblem` is rendered as top-level keys on the
- * `application/problem+json` body by Zalando's `ProblemModule`, alongside `title`, `status`, and
+ * The `parameters` map on `ProblemException` is rendered as top-level keys on the
+ * `application/problem+json` body by the exception translator, alongside `title`, `status`, and
  * `detail`. This test pins the shape of those parameters so the frontend contract cannot drift
  * silently.
  */
@@ -53,7 +53,7 @@ class ExternalPluginHostInUseExceptionTest {
         val exception = ExternalPluginHostInUseException(hostId, listOf(usage))
 
         assertThat(exception.title).isEqualTo("External plugin host is in use")
-        assertThat(exception.status).isEqualTo(Status.CONFLICT)
+        assertThat(exception.statusCode).isEqualTo(HttpStatus.CONFLICT)
         assertThat(exception.detail).contains("BPMN process links, case tabs or case widgets reference")
 
         assertThat(exception.parameters).containsEntry("hostId", hostId.toString())

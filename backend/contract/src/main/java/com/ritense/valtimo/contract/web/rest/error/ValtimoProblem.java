@@ -19,40 +19,28 @@ package com.ritense.valtimo.contract.web.rest.error;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import org.zalando.problem.AbstractThrowableProblem;
-import org.zalando.problem.Status;
-import org.zalando.problem.ThrowableProblem;
+import org.springframework.http.HttpStatus;
 
 /**
- * Base for Valtimo exceptions translated to RFC7807 Problem responses.
+ * Base for Valtimo exceptions translated to RFC 9457 problem responses.
  *
  * <p>Captures the repeated boilerplate: {@link ErrorConstants#DEFAULT_TYPE}, the
  * {@code message} / {@code params} alert pair, and optional cause. Subclasses pass
  * the short error key (without the {@code "error."} prefix) and the accompanying
  * parameter value.
- *
- * <p>Implemented in Java to avoid Kotlin/Java interop friction around the
- * {@link org.zalando.problem.ThrowableProblem#getCause()} covariant return type.
  */
-public abstract class ValtimoProblem extends AbstractThrowableProblem {
+public abstract class ValtimoProblem extends ProblemException {
 
-    protected ValtimoProblem(String message, Status status, String errorKey, String params) {
+    protected ValtimoProblem(String message, HttpStatus status, String errorKey, String params) {
         this(ErrorConstants.DEFAULT_TYPE, message, status, errorKey, params, null);
     }
 
-    protected ValtimoProblem(String message, Status status, String errorKey, String params, Throwable cause) {
+    protected ValtimoProblem(String message, HttpStatus status, String errorKey, String params, Throwable cause) {
         this(ErrorConstants.DEFAULT_TYPE, message, status, errorKey, params, cause);
     }
 
-    protected ValtimoProblem(URI type, String message, Status status, String errorKey, String params, Throwable cause) {
-        super(type, message, status, null, null, asThrowableProblem(cause), alertParameters(errorKey, params));
-        if (cause != null && !(cause instanceof ThrowableProblem)) {
-            addSuppressed(cause);
-        }
-    }
-
-    private static ThrowableProblem asThrowableProblem(Throwable cause) {
-        return cause instanceof ThrowableProblem throwableProblem ? throwableProblem : null;
+    protected ValtimoProblem(URI type, String message, HttpStatus status, String errorKey, String params, Throwable cause) {
+        super(type, message, status, null, null, alertParameters(errorKey, params), cause);
     }
 
     private static Map<String, Object> alertParameters(String errorKey, String params) {

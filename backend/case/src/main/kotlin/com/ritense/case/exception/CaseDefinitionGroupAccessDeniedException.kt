@@ -16,17 +16,12 @@
 
 package com.ritense.case.exception
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
 class CaseDefinitionGroupAccessDeniedException(groupKey: String) :
-    AbstractThrowableProblem(
+    ProblemException(
         null,
         "Access denied to case definition group: $groupKey",
-        Status.FORBIDDEN
-    ) {
-    override fun getCause(): Exceptional? {
-        return null
-    }
-}
+        HttpStatus.FORBIDDEN
+    )

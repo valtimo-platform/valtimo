@@ -16,24 +16,21 @@
 
 package com.ritense.externalplugin.exception
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 import java.util.UUID
 
 /**
  * Thrown when an external-plugin resource (host, definition, configuration) does not exist.
- * A Problem with [Status.NOT_FOUND] so a lookup by unknown id surfaces as `404 Not Found`
+ * A Problem with [HttpStatus.NOT_FOUND] so a lookup by unknown id surfaces as `404 Not Found`
  * instead of a 500.
  */
 class ExternalPluginNotFoundException(
     resource: String,
     id: UUID,
-) : AbstractThrowableProblem(
+) : ProblemException(
     null,
     "$resource not found",
-    Status.NOT_FOUND,
+    HttpStatus.NOT_FOUND,
     "$resource $id not found",
-) {
-    override fun getCause(): Exceptional? = null
-}
+)

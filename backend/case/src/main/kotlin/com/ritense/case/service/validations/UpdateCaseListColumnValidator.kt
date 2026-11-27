@@ -22,7 +22,7 @@ import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
-import org.zalando.problem.Status
+import org.springframework.http.HttpStatus
 
 class UpdateCaseListColumnValidator(
     caseDefinitionSettingsRepository: CaseDefinitionListColumnRepository,
@@ -55,7 +55,7 @@ class UpdateCaseListColumnValidator(
         if (defaultSortColumns.size > 1) {
             throw InvalidListColumnException(
                 "Invalid set of columns. There is more than 1 column with default sort value",
-                Status.BAD_REQUEST
+                HttpStatus.BAD_REQUEST
             )
         }
         overrideListColumnDtoWithDefaultSort(caseDefinitionName, caseListColumnDtoList, columns)

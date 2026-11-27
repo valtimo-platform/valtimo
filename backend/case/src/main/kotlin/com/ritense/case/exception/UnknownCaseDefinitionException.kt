@@ -17,19 +17,15 @@
 package com.ritense.case.exception
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
 class UnknownCaseDefinitionException(message: String?) :
-    AbstractThrowableProblem(
+    ProblemException(
         null,
         message,
-        Status.BAD_REQUEST
+        HttpStatus.BAD_REQUEST
     ) {
     constructor(caseDefinitionId: CaseDefinitionId) : this("Case definition with id $caseDefinitionId could not be found")
 
-    override fun getCause(): Exceptional? {
-        return null
-    }
 }

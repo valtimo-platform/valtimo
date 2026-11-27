@@ -15,22 +15,20 @@
  */
 package com.ritense.form.exception
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 import java.util.UUID
 
 class FormDefinitionMissingForProcessLinkException(
     formDefinitionId: UUID,
     usage: FormDefinitionUsage,
-) : AbstractThrowableProblem(
+) : ProblemException(
     null,
     "Form definition is missing",
-    Status.CONFLICT,
+    HttpStatus.CONFLICT,
     "The process link on activity '${usage.activityId}' of process " +
         "'${usage.processDefinitionName ?: usage.processDefinitionKey}' points to form definition " +
         "'$formDefinitionId', which no longer exists. Select an existing form for this process link.",
-    null,
     null,
     mapOf(
         "formDefinitionId" to formDefinitionId.toString(),
@@ -38,6 +36,4 @@ class FormDefinitionMissingForProcessLinkException(
         "processDefinitionKey" to usage.processDefinitionKey,
         "processDefinitionName" to usage.processDefinitionName,
     ),
-) {
-    override fun getCause(): Exceptional? = null
-}
+)

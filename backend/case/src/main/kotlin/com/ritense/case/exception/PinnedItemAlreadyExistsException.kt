@@ -17,17 +17,12 @@
 package com.ritense.case.exception
 
 import com.ritense.case.domain.PinnedItemType
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
 class PinnedItemAlreadyExistsException(itemType: PinnedItemType, itemKey: String) :
-    AbstractThrowableProblem(
+    ProblemException(
         null,
         "${itemType.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() }} is already pinned: $itemKey",
-        Status.CONFLICT
-    ) {
-    override fun getCause(): Exceptional? {
-        return null
-    }
-}
+        HttpStatus.CONFLICT
+    )

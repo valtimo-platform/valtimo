@@ -17,26 +17,22 @@
 package com.ritense.externalplugin.exception
 
 import com.ritense.plugin.web.rest.dto.PluginUsageDto
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 import java.util.UUID
 
 class ExternalPluginHostInUseException(
     hostId: UUID,
     usages: Collection<PluginUsageDto>,
-) : AbstractThrowableProblem(
+) : ProblemException(
     null,
     "External plugin host is in use",
-    Status.CONFLICT,
+    HttpStatus.CONFLICT,
     "One or more BPMN process links, case tabs or case widgets reference configurations under " +
         "this host. Remove the references before deleting the host.",
-    null,
     null,
     mapOf(
         "hostId" to hostId.toString(),
         "usages" to usages,
     ),
-) {
-    override fun getCause(): Exceptional? = null
-}
+)

@@ -17,11 +17,14 @@
 package com.ritense.valtimo.contract.hardening.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.zalando.problem.ProblemBuilder;
-import org.zalando.problem.ThrowableProblem;
+import org.springframework.http.ProblemDetail;
 
 public interface HardeningService {
     Throwable harden(Throwable ex, HttpServletRequest request);
 
-    ProblemBuilder harden(ThrowableProblem throwableProblem, ProblemBuilder problemBuilder, HttpServletRequest request);
+    /**
+     * Adds what the client may know about an error to the response. {@code problem} is the full problem,
+     * including its detail; {@code response} is what is sent to the client.
+     */
+    ProblemDetail harden(ProblemDetail problem, ProblemDetail response, Throwable throwable, HttpServletRequest request);
 }

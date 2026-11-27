@@ -34,8 +34,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import org.zalando.problem.jackson.ProblemModule;
-import org.zalando.problem.violations.ConstraintViolationProblemModule;
 
 @AutoConfiguration
 @EnableConfigurationProperties(WebProperties.class)
@@ -73,21 +71,4 @@ public class WebAutoConfiguration {
     ) {
         return new WebModuleExceptionTranslator(hardeningService, exceptionMappers);
     }
-
-    /*
-     * Module for serialization/deserialization of RFC7807 Problem.
-     */
-    @Bean
-    public ProblemModule problemModule() {
-        return new ProblemModule();
-    }
-
-    /*
-     * Module for serialization/deserialization of ConstraintViolationProblem.
-     */
-    @Bean
-    public ConstraintViolationProblemModule constraintViolationProblemModule() {
-        return new ConstraintViolationProblemModule();
-    }
-
 }

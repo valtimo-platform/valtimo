@@ -36,13 +36,15 @@ dockerCompose {
 dependencies {
     api "org.apache.commons:commons-lang3"
     api "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
-    api "org.zalando:problem-spring-web:${problemSpringWebVersion}"
     api "commons-io:commons-io:${commonsIoVersion}"
     api "commons-codec:commons-codec"
     api "commons-validator:commons-validator:${commonsValidatorVersion}"
     api "com.fasterxml.jackson.module:jackson-module-kotlin"
 
     api "org.springframework.security:spring-security-core"
+    api "org.springframework:spring-webmvc"
+    api "jakarta.validation:jakarta.validation-api"
+    api "jakarta.annotation:jakarta.annotation-api"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.boot:spring-boot-jackson2"
     api "org.springframework.data:spring-data-commons"

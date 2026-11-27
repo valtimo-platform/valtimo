@@ -17,9 +17,8 @@
 package com.ritense.buildingblock.exception
 
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
 data class DuplicateProcessDefinitionDescriptor(
     val key: String,
@@ -30,19 +29,14 @@ data class DuplicateProcessDefinitionDescriptor(
 class BuildingBlockProcessDefinitionKeyAlreadyExistsException(
     buildingBlockDefinitionId: BuildingBlockDefinitionId,
     duplicateProcessDefinitions: Collection<DuplicateProcessDefinitionDescriptor>
-) : AbstractThrowableProblem(
+) : ProblemException(
     null,
     "Process definition key already exists",
-    Status.CONFLICT,
-    null,
+    HttpStatus.CONFLICT,
     null,
     null,
     mapOf(
         "buildingBlockDefinitionId" to buildingBlockDefinitionId.toString(),
         "duplicateProcessDefinitions" to duplicateProcessDefinitions
     )
-) {
-    override fun getCause(): Exceptional? {
-        return null
-    }
-}
+)

@@ -20,7 +20,7 @@ import com.ritense.plugin.web.rest.dto.PluginUsageDto
 import com.ritense.plugin.web.rest.dto.PluginUsageParentType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.zalando.problem.Status
+import org.springframework.http.HttpStatus
 import java.util.UUID
 
 /**
@@ -49,7 +49,7 @@ class ExternalPluginProblemShapeTest {
     fun `configuration-in-use carries the configuration id and usages under a 409`() {
         val exception = ExternalPluginConfigurationInUseException(configurationId, listOf(usage()))
 
-        assertThat(exception.status).isEqualTo(Status.CONFLICT)
+        assertThat(exception.statusCode).isEqualTo(HttpStatus.CONFLICT)
         assertThat(exception.title).isEqualTo("External plugin configuration is in use")
         assertThat(exception.detail).contains("Remove the references before deleting")
         assertThat(exception.parameters["configurationId"]).isEqualTo(configurationId.toString())
@@ -98,7 +98,7 @@ class ExternalPluginProblemShapeTest {
 
         val exception = ExternalPluginNotFoundException("Configuration", id)
 
-        assertThat(exception.status).isEqualTo(Status.NOT_FOUND)
+        assertThat(exception.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
         assertThat(exception.title).isEqualTo("Configuration not found")
         assertThat(exception.detail).isEqualTo("Configuration $id not found")
         assertThat(exception.cause).isNull()

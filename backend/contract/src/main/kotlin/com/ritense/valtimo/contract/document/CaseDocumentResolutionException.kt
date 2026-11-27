@@ -16,21 +16,15 @@
 
 package com.ritense.valtimo.contract.document
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
 /**
  * Thrown when a case document cannot be resolved for a given id. Maps to HTTP 404, since from a
  * client's perspective the requested case document does not exist.
  */
-class CaseDocumentResolutionException(message: String) : AbstractThrowableProblem(
-    DEFAULT_TYPE,
+class CaseDocumentResolutionException(message: String) : ProblemException(
+    null,
     message,
-    Status.NOT_FOUND,
-    null,
-    null,
-    null,
-    null
-) {
-    override fun getCause() = null
-}
+    HttpStatus.NOT_FOUND,
+)

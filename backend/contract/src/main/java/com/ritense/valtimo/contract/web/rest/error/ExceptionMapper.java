@@ -22,13 +22,13 @@ import org.springframework.web.context.request.NativeWebRequest;
 /**
  * Module-contributed mapping from a specific {@link Throwable} to an HTTP response.
  *
- * <p>Prefer making your own exceptions extend {@link org.zalando.problem.AbstractThrowableProblem}
- * — the base advice picks those up automatically via Zalando {@code ProblemHandling}. Implement
+ * <p>Prefer making your own exceptions extend {@link ProblemException}
+ * — the base advice answers those with their own problem body. Implement
  * {@code ExceptionMapper} only when:
  *
  * <ul>
  *   <li>the exception type is third-party and cannot be modified, or</li>
- *   <li>the response body must not be an RFC7807 Problem (e.g. a module-specific DTO).</li>
+ *   <li>the response body must not be an RFC 9457 problem (e.g. a module-specific DTO).</li>
  * </ul>
  *
  * <p>Register implementations as Spring beans; the base advice resolves them by

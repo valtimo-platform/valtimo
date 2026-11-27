@@ -20,6 +20,4 @@ import com.ritense.dataprovider.domain.DataProvider
 import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException
 
 class ProviderNotFoundException(providerName: String, category: String) :
-    BadRequestAlertException("No provider available with name '$providerName' and category '$category'", DataProvider::class.simpleName, "ProviderNotFound") {
-    override fun getCause() = null
-}
+    BadRequestAlertException("No provider available with name '$providerName' and category '$category'", DataProvider::class.simpleName, "ProviderNotFound")

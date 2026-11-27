@@ -16,18 +16,13 @@
 
 package com.ritense.case.exception
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
 class CaseDefinitionGroupNotFoundException(groupKey: String, detail: String? = null) :
-    AbstractThrowableProblem(
+    ProblemException(
         null,
         detail?.let { "$it not found in case definition group: $groupKey" }
             ?: "Case definition group not found: $groupKey",
-        Status.NOT_FOUND
-    ) {
-    override fun getCause(): Exceptional? {
-        return null
-    }
-}
+        HttpStatus.NOT_FOUND
+    )

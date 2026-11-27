@@ -17,20 +17,16 @@
 package com.ritense.buildingblock.exception
 
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 
 class UnknownBuildingBlockDefinitionException(message: String?) :
-    AbstractThrowableProblem(
+    ProblemException(
         null,
         message,
-        Status.NOT_FOUND
+        HttpStatus.NOT_FOUND
     ) {
     constructor(buildingBlockDefinitionId: BuildingBlockDefinitionId) :
         this("Building block definition with id $buildingBlockDefinitionId could not be found")
 
-    override fun getCause(): Exceptional? {
-        return null
-    }
 }

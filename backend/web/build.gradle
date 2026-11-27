@@ -56,8 +56,6 @@ dependencies {
     // springdoc 3 reads models with Jackson 3 and only applies Kotlin nullability and naming with its Kotlin module
     runtimeOnly "tools.jackson.module:jackson-module-kotlin"
 
-    implementation "org.zalando:problem-spring-web:${problemSpringWebVersion}"
-    implementation "org.zalando:jackson-datatype-problem:${jacksonDatatypeProblemVersion}"
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 }

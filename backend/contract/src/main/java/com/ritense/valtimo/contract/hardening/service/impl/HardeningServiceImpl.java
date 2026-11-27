@@ -26,8 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zalando.problem.ProblemBuilder;
-import org.zalando.problem.ThrowableProblem;
+import org.springframework.http.ProblemDetail;
 
 public class HardeningServiceImpl implements HardeningService {
     private static final Logger logger = LoggerFactory.getLogger(HardeningServiceImpl.class);
@@ -57,21 +56,19 @@ public class HardeningServiceImpl implements HardeningService {
     }
 
     @Override
-    public ProblemBuilder harden(ThrowableProblem throwableProblem, ProblemBuilder problemBuilder, HttpServletRequest request) {
+    public ProblemDetail harden(ProblemDetail problem, ProblemDetail response, Throwable throwable, HttpServletRequest request) {
         final Set<String> whitelists = hardeningProperties.getAllowStacktraceOnIps();
         final SourceIpList sourceIpList = new SourceIpList(whitelists, Set.of(request.getRemoteAddr()));
         if (sourceIpList.isWhitelisted()) {
-            return problemBuilder
-                .with("reason-not-sanitized", WHITELIST_MESSSAGE + sourceIpList.getWhiteListedIp())
-                .with("stack-trace", throwableProblem.getStackTrace())
-                .withDetail(throwableProblem.getDetail())
-                .withCause(throwableProblem.getCause());
+            response.setProperty("reason-not-sanitized", WHITELIST_MESSSAGE + sourceIpList.getWhiteListedIp());
+            response.setProperty("stack-trace", throwable.getStackTrace());
+            response.setDetail(problem.getDetail());
         } else {
             UUID referenceId = UUID.randomUUID();
-            logger.info("Exception occurred with reference id {}", referenceId, throwableProblem);
-            return problemBuilder
-                .with("referenceId", referenceId);
+            logger.info("Exception occurred with reference id {}", referenceId, throwable);
+            response.setProperty("referenceId", referenceId);
         }
+        return response;
     }
 
     /**

@@ -21,6 +21,4 @@ import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException
 import java.util.UUID
 
 class NoteNotFoundException(noteId: UUID) :
-    BadRequestAlertException("Failed to find note with ID '$noteId'", Note::class.simpleName, "NoteNotFound") {
-    override fun getCause() = null
-}
+    BadRequestAlertException("Failed to find note with ID '$noteId'", Note::class.simpleName, "NoteNotFound")

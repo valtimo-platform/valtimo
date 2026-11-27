@@ -17,7 +17,7 @@
 package com.ritense.valtimo.contract.web.rest.error;
 
 import java.net.URI;
-import org.zalando.problem.Status;
+import org.springframework.http.HttpStatus;
 
 public class BadRequestAlertException extends ValtimoProblem {
 
@@ -41,9 +41,15 @@ public class BadRequestAlertException extends ValtimoProblem {
     }
 
     public BadRequestAlertException(URI type, String defaultMessage, String entityName, String errorKey, Throwable cause) {
-        super(type, defaultMessage, Status.BAD_REQUEST, errorKey, entityName, cause);
+        super(type, defaultMessage, HttpStatus.BAD_REQUEST, errorKey, entityName, cause);
         this.entityName = entityName;
         this.errorKey = errorKey;
+        if (entityName != null) {
+            getBody().setProperty("entityName", entityName);
+        }
+        if (errorKey != null) {
+            getBody().setProperty("errorKey", errorKey);
+        }
     }
 
     public String getEntityName() {

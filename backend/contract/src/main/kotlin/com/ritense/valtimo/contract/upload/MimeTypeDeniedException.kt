@@ -17,8 +17,5 @@
 package com.ritense.valtimo.contract.upload
 
 import com.ritense.valtimo.contract.web.rest.error.BadRequestAlertException
-import org.zalando.problem.Exceptional
 
-class MimeTypeDeniedException(message: String) : BadRequestAlertException(message, "mimeTypeDenied") {
-    override fun getCause(): Exceptional? = super.cause as Exceptional?
-}
+class MimeTypeDeniedException(message: String) : BadRequestAlertException(message, "mimeTypeDenied")

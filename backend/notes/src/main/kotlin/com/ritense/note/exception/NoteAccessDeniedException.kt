@@ -16,18 +16,12 @@
 
 package com.ritense.note.exception
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 import java.util.UUID
 
-class NoteAccessDeniedException(userName: String, noteId: UUID) : AbstractThrowableProblem(
-    DEFAULT_TYPE,
+class NoteAccessDeniedException(userName: String, noteId: UUID) : ProblemException(
+    null,
     "Access Denied. User '$userName' doesn't have access to note '$noteId'",
-    Status.FORBIDDEN,
-    null,
-    null,
-    null,
-    null
-) {
-    override fun getCause() = null
-}
+    HttpStatus.FORBIDDEN,
+)

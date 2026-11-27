@@ -19,8 +19,8 @@ package com.ritense.case.web.rest.error
 import com.ritense.case.exception.InvalidGroupListColumnException
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
-import org.zalando.problem.Problem
 import org.springframework.http.HttpStatus
+import org.springframework.http.ProblemDetail
 import kotlin.test.assertEquals
 
 class InvalidGroupListColumnExceptionMapperTest {
@@ -31,6 +31,6 @@ class InvalidGroupListColumnExceptionMapperTest {
             .toResponse(InvalidGroupListColumnException("not sortable"), mock())
 
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
-        assertEquals("error.invalidGroupListColumn", (response.body as Problem).parameters["message"])
+        assertEquals("error.invalidGroupListColumn", (response.body as ProblemDetail).properties?.get("message"))
     }
 }

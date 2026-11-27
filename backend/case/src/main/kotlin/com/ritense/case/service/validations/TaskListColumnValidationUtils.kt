@@ -26,7 +26,7 @@ import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
-import org.zalando.problem.Status
+import org.springframework.http.HttpStatus
 
 private const val TASK_PREFIX = "task:"
 
@@ -47,7 +47,7 @@ open class TaskListColumnValidationUtils(
                     .any { column -> column.defaultSort != null }) {
                 throw InvalidListColumnException(
                     "Unable to save list column. Another column with defaultSort value already exists",
-                    Status.BAD_REQUEST
+                    HttpStatus.BAD_REQUEST
                 )
             }
         }
@@ -97,7 +97,7 @@ open class TaskListColumnValidationUtils(
                 valueResolverService.validateValues(caseDefinitionId, listOf(path))
             }
         } catch (ex: Exception) {
-            throw InvalidListColumnException(ex.message, Status.BAD_REQUEST)
+            throw InvalidListColumnException(ex.message, HttpStatus.BAD_REQUEST)
         }
     }
 

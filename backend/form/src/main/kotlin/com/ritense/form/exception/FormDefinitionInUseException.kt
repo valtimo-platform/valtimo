@@ -15,22 +15,20 @@
  */
 package com.ritense.form.exception
 
-import org.zalando.problem.AbstractThrowableProblem
-import org.zalando.problem.Exceptional
-import org.zalando.problem.Status
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
+import org.springframework.http.HttpStatus
 import java.util.UUID
 
 class FormDefinitionInUseException(
     formDefinitionId: UUID,
     usages: List<FormDefinitionUsage>,
-) : AbstractThrowableProblem(
+) : ProblemException(
     null,
     "Form definition is in use",
-    Status.CONFLICT,
+    HttpStatus.CONFLICT,
     "This form definition is used by process links: " +
         usages.joinToString("; ") { it.describe() } +
         ". Remove the references before deleting the form definition.",
-    null,
     null,
     mapOf(
         "formDefinitionId" to formDefinitionId.toString(),
@@ -42,9 +40,7 @@ class FormDefinitionInUseException(
             )
         },
     ),
-) {
-    override fun getCause(): Exceptional? = null
-}
+)
 
 data class FormDefinitionUsage(
     val processDefinitionKey: String,

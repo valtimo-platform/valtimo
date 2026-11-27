@@ -29,8 +29,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
-import org.zalando.problem.Status
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -67,7 +67,7 @@ class BuildingBlockFormDefinitionDeletionIT : BaseIntegrationTest() {
             buildingBlockFormDefinitionService.deleteFormDefinition(definitionId, formId)
         }
 
-        assertThat(exception.status).isEqualTo(Status.CONFLICT)
+        assertThat(exception.statusCode).isEqualTo(HttpStatus.CONFLICT)
         assertThat(formDefinitionRepository.existsById(formId)).isTrue()
     }
 

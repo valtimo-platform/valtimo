@@ -39,8 +39,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.zalando.problem.jackson.ProblemModule;
-import org.zalando.problem.violations.ConstraintViolationProblemModule;
 
 /**
  * Test class for the ExceptionTranslator controller advice.
@@ -72,8 +70,6 @@ public class ExceptionTranslatorIntTest {
 
     @BeforeEach
     public void setup() {
-        mappingJackson2HttpMessageConverter.getObjectMapper().registerModule(new ProblemModule());
-        mappingJackson2HttpMessageConverter.getObjectMapper().registerModule(new ConstraintViolationProblemModule());
         //exceptionTranslator.setHardeningService(hardeningService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(exceptionTranslator)

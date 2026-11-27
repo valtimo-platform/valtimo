@@ -18,11 +18,12 @@ package com.ritense.document.web.rest.error;
 
 import com.ritense.valtimo.contract.web.rest.error.ErrorConstants;
 import com.ritense.valtimo.contract.web.rest.error.ExceptionMapper;
+import com.ritense.valtimo.contract.web.rest.error.ValtimoProblemDetail;
 import jakarta.validation.ValidationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.zalando.problem.Problem;
-import org.zalando.problem.Status;
 
 public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
 
@@ -33,13 +34,11 @@ public class ValidationExceptionMapper implements ExceptionMapper<ValidationExce
 
     @Override
     public ResponseEntity<?> toResponse(ValidationException exception, NativeWebRequest request) {
-        Problem problem = Problem.builder()
-            .withType(ErrorConstants.DEFAULT_TYPE)
-            .withTitle(exception.getMessage())
-            .withStatus(Status.BAD_REQUEST)
-            .with("message", "error.validationException")
-            .with("params", exception.getMessage())
-            .build();
+        ProblemDetail problem = new ValtimoProblemDetail(HttpStatus.BAD_REQUEST.value());
+        problem.setType(ErrorConstants.DEFAULT_TYPE);
+        problem.setTitle(exception.getMessage());
+        problem.setProperty("message", "error.validationException");
+        problem.setProperty("params", exception.getMessage());
 
         return ResponseEntity.badRequest().body(problem);
     }

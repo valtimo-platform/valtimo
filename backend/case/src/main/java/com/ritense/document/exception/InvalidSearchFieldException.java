@@ -16,12 +16,12 @@
 
 package com.ritense.document.exception;
 
-import org.zalando.problem.AbstractThrowableProblem;
-import org.zalando.problem.Status;
+import com.ritense.valtimo.contract.web.rest.error.ProblemException;
+import org.springframework.http.HttpStatus;
 
-public class InvalidSearchFieldException extends AbstractThrowableProblem {
+public class InvalidSearchFieldException extends ProblemException {
 
-    public InvalidSearchFieldException(String message, Status status) {
+    public InvalidSearchFieldException(String message, HttpStatus status) {
         super(null, message, status);
     }
 }

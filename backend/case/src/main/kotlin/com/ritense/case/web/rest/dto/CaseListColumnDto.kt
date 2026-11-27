@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.search.domain.DisplayType
-import org.zalando.problem.Status
+import org.springframework.http.HttpStatus
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class CaseListColumnDto(
@@ -40,7 +40,7 @@ data class CaseListColumnDto(
         if (!displayType.displayTypeParameters.validate()) {
             throw InvalidListColumnException(
                 "Display type parameters are invalid for type ${displayType.type}.",
-                Status.BAD_REQUEST
+                HttpStatus.BAD_REQUEST
             )
         }
     }

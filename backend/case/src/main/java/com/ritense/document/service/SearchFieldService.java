@@ -41,7 +41,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.zalando.problem.Status;
+import org.springframework.http.HttpStatus;
 
 public class SearchFieldService {
 
@@ -191,7 +191,7 @@ public class SearchFieldService {
             throw new InvalidSearchFieldException(
                 "Match type " + searchFieldDto.getMatchType().toString() +
                     " is invalid for data type " + searchFieldDto.getDataType(),
-                Status.BAD_REQUEST
+                HttpStatus.BAD_REQUEST
             );
         }
         if (searchFieldDto.getDataType().equals(SearchFieldDataType.BOOLEAN)
@@ -199,7 +199,7 @@ public class SearchFieldService {
             throw new InvalidSearchFieldException(
                 "Field type " + searchFieldDto.getFieldType().toString() +
                     " is invalid for data type " + searchFieldDto.getDataType(),
-                Status.BAD_REQUEST
+                HttpStatus.BAD_REQUEST
             );
         }
         if ((searchFieldDto.getFieldType().equals(SearchFieldFieldType.MULTI_SELECT_DROPDOWN)
@@ -208,7 +208,7 @@ public class SearchFieldService {
             throw new InvalidSearchFieldException(
                 "Field type " + searchFieldDto.getFieldType().toString() +
                     " must have a datasource for the dropdown list.",
-                Status.BAD_REQUEST
+                HttpStatus.BAD_REQUEST
             );
         }
     }

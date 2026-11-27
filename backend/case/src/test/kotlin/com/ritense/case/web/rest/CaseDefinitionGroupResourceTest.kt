@@ -26,9 +26,9 @@ import com.ritense.case.domain.group.GroupSearchField
 import com.ritense.case.exception.CaseDefinitionGroupNotFoundException
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.GroupCaseInstanceService
-import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.case.web.rest.dto.GroupCaseListRowDto
+import com.ritense.case.web.rest.dto.GroupListColumnDto
 import com.ritense.document.domain.InternalCaseStatus
 import com.ritense.document.domain.InternalCaseStatusColor
 import com.ritense.document.domain.InternalCaseStatusId
@@ -130,7 +130,7 @@ class CaseDefinitionGroupResourceTest : BaseTest() {
         }
 
         val cause = exception.cause as CaseDefinitionGroupNotFoundException
-        org.junit.jupiter.api.Assertions.assertEquals(org.zalando.problem.Status.NOT_FOUND, cause.status)
+        org.junit.jupiter.api.Assertions.assertEquals(org.springframework.http.HttpStatus.NOT_FOUND, cause.statusCode)
 
         verify(groupCaseInstanceService).getAccessibleGroup("unknown")
     }

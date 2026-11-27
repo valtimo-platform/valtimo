@@ -26,10 +26,11 @@ import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
-import org.hamcrest.Matchers.startsWith
+import com.ritense.valtimo.contract.web.rest.error.ProblemException
 import jakarta.servlet.Filter
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletRequestWrapper
+import org.hamcrest.Matchers.startsWith
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -56,8 +57,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import org.springframework.util.unit.DataSize
 import org.springframework.web.server.ResponseStatusException
-import org.zalando.problem.Problem
-import org.zalando.problem.Status
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 import java.util.UUID
@@ -191,7 +190,7 @@ class DeployerCaseDefinitionResourceTest {
     @Test
     fun `should keep the status and detail of a problem`() {
         whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
-            .thenThrow(Problem.valueOf(Status.BAD_REQUEST, "Column 'foo' is not valid"))
+            .thenThrow(ProblemException(null, "Bad Request", HttpStatus.BAD_REQUEST, "Column 'foo' is not valid"))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
             .andExpect(status().isBadRequest)
@@ -201,7 +200,7 @@ class DeployerCaseDefinitionResourceTest {
     @Test
     fun `should not echo the detail of a problem that carries a server error status`() {
         whenever(caseDefinitionService.getCaseDefinitions(isNull(), isNull(), eq(true), isNull()))
-            .thenThrow(Problem.valueOf(Status.INTERNAL_SERVER_ERROR, "jdbc url jdbc:postgresql://db/gzac"))
+            .thenThrow(ProblemException(null, "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR, "jdbc url jdbc:postgresql://db/gzac"))
 
         mockMvc.perform(get("/api/deployer/v1/case-definition"))
             .andExpect(status().isInternalServerError)

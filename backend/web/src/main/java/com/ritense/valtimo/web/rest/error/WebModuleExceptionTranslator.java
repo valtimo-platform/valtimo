@@ -22,15 +22,15 @@ import com.ritense.valtimo.contract.web.rest.error.ExceptionMapper;
 import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.zalando.problem.Problem;
 
 import static com.ritense.logging.LoggingContextKt.withErrorLoggingContext;
 
 /**
- * Layers MDC error-logging context onto the base RFC7807 translator. The base advice already
+ * Layers MDC error-logging context onto the base RFC 9457 translator. The base advice already
  * handles framework exceptions and consults {@link ExceptionMapper}s; this subclass exists
  * only to ensure {@code log} runs inside {@code withErrorLoggingContext}.
  */
@@ -52,9 +52,9 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     @Override
     public void log(
         final Throwable throwable,
-        final Problem problem,
+        final ProblemDetail problem,
         final NativeWebRequest request,
-        final HttpStatus status
+        final HttpStatusCode status
     ) {
         withErrorLoggingContext(() -> {
             super.log(throwable, problem, request, status);
